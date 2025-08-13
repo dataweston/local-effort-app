@@ -8,7 +8,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 // Using a placeholder for the logo to resolve build errors in this environment.
 // In your local development, you would use: import logo from './logo.png';
-const logo = 'https://placehold.co/160x50/111827/f5f5f5?text=Local+Effort&font=mono';
+const logo = '/src/logo.png';
 
 // --- Helper Components & Hooks ---
 
