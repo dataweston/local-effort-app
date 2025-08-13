@@ -1,0 +1,14 @@
+{
+  "name": "local-effort-backend",
+  "version": "1.0.0",
+  "description": "Backend for Local Effort crowdfunder",
+  "main": "api/server.js",
+  "scripts": {
+    "start": "node api/server.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.19.2",
+    "firebase-admin": "^12.1.0"
+  }
+}
