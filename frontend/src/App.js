@@ -97,7 +97,7 @@ function CrowdfundingTab() {
       // In a real app, you might collect the funder's name from a form
       const funderName = `Supporter #${Math.floor(Math.random() * 10000)}`;
 
-      const response = await fetch('http://localhost:3001/api/crowdfund/contribute', {
+      const response = await fetch('https://local-effort-app-lniu.vercel.app/api/crowdfund/contribute', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
