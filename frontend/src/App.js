@@ -66,7 +66,7 @@ function CrowdfundingTab() {
     const fetchStatus = async () => {
       try {
         // IMPORTANT: Replace with your deployed backend URL
-        const response = await fetch('http://localhost:3001/api/crowdfund/status');
+        const response = await fetch('https://local-effort-app-lniu.vercel.app/api/crowdfund/status');
         if (!response.ok) {
           throw new Error('Network response was not ok');
         }
