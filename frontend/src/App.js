@@ -8,7 +8,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 // Using a placeholder for the logo to resolve build errors in this environment.
 // In your local development, you would use: import logo from './logo.png';
-const logo = '/gallery/logo.png';
+const logo = 'https://placehold.co/160x50/111827/f5f5f5?text=Local+Effort&font=mono';
 
 // --- Helper Components & Hooks ---
 
@@ -24,7 +24,14 @@ function useCountUp(endValue, duration = 1500) {
   useEffect(() => {
     let start = 0;
     const end = endValue;
-    if (start === end && count === end) return;
+    // This check is important. If the component re-renders but the end value hasn't changed,
+    // we should not restart the animation. We find the "start" value from the *current* count.
+    if (count !== 0) {
+        start = count;
+    }
+    
+    // If the animation is already complete, do nothing.
+    if (start === end) return;
 
     let startTime = null;
 
@@ -32,152 +39,271 @@ function useCountUp(endValue, duration = 1500) {
       if (startTime === null) startTime = currentTime;
       const elapsedTime = currentTime - startTime;
       const progress = Math.min(elapsedTime / duration, 1);
-      // Ease-out quadratic easing function
+      // Ease-out quadratic easing function for a smoother stop
       const easeOutProgress = progress * (2 - progress);
-      setCount(Math.floor(easeOutProgress * (end - start) + start));
+      const currentVal = Math.floor(easeOutProgress * (end - start) + start);
+      setCount(currentVal);
+      
       if (progress < 1) {
         requestAnimationFrame(animation);
       } else {
+         // Ensure it ends precisely on the end value
         setCount(end);
       }
     };
 
     requestAnimationFrame(animation);
 
-  }, [endValue, duration]);
+  }, [endValue, duration]); // We remove `count` from dependencies to prevent re-triggering
 
   return count;
 }
 
 
-// --- CrowdfundingTab component (pizza tracker) — START ---
-// This is the completely redesigned crowdfunding component.
+// --- CrowdfundingTab component (Complete Redesign) — START ---
 
+// New component for floating "Wow!" text
+function FloatingText({ text, onAnimationEnd }) {
+  return (
+    <motion.div
+      initial={{ y: 0, opacity: 1, scale: 1, x: Math.random() * 60 - 30 }}
+      animate={{ y: -100, opacity: 0, scale: 1.5 }}
+      transition={{ duration: 1.5, ease: "easeOut" }}
+      onAnimationComplete={onAnimationEnd}
+      className="absolute text-2xl font-bold text-yellow-400 drop-shadow-lg"
+      style={{ textShadow: '1px 1px 2px #000' }}
+    >
+      {text}
+    </motion.div>
+  );
+}
+
+// Main Crowdfunding Component
 function CrowdfundingTab() {
-  const [goal, setGoal] = useState(1000);
+  // State Management
+  const [goal, setGoal] =useState(1000);
   const [pizzasSold, setPizzasSold] = useState(0);
   const [funders, setFunders] = useState([]);
+  const [cart, setCart] = useState([]);
+  const [isProcessing, setIsProcessing] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [isProcessing, setIsProcessing] = useState(false);
+  
+  // New state for feedback animations
+  const [floatingTexts, setFloatingTexts] = useState([]);
 
-  // Fetch initial crowdfunding status from the backend
+  // Mock Products
+  const products = [
+    { id: 1, name: "Pizza Voucher", desc: 'One 12" artisan pizza. The classic choice!', price: 20, emoji: "🍕", type: 'pizza' },
+    { id: 2, name: "Pie Voucher", desc: 'One 9" seasonal pie. Sweet or savory!', price: 24, emoji: "🥧", type: 'other' },
+    { id: 3, name: "Supporter Pack", desc: "Sticker + thank-you wall mention.", price: 10, emoji: "💌", type: 'other' },
+    { id: 4, name: "Pizza Party Pack", desc: "Five Pizza Vouchers at a discount!", price: 90, emoji: "🎉", type: 'pizza', pizzaCount: 5 },
+  ];
+
+  // Fetch initial data
   useEffect(() => {
     const fetchStatus = async () => {
       try {
-        // IMPORTANT: Replace with your deployed backend URL
         const response = await fetch('https://local-effort-app-lniu.vercel.app/api/crowdfund/status');
-        if (!response.ok) {
-          throw new Error('Network response was not ok');
-        }
+        if (!response.ok) throw new Error('Network response was not ok');
         const data = await response.json();
         setGoal(data.goal);
         setPizzasSold(data.pizzasSold);
-        setFunders(data.funders.reverse()); // Show most recent first
-        setIsLoading(false);
+        setFunders(data.funders.reverse());
       } catch (err) {
-        setError('Could not load fundraising data. Please try again later.');
-        setIsLoading(false);
-        // Set some default values on error to prevent crashes
+        setError('Could not load fundraising data. Using mock data.');
         setGoal(1000);
-        setPizzasSold(157);
+        setPizzasSold(157); // Start with some initial data for visual appeal
         setFunders([{name: "Alex G."}, {name: "Jordan P."}, {name: "Casey N."}]);
+      } finally {
+        setIsLoading(false);
       }
     };
     fetchStatus();
   }, []);
 
-  const animatedPizzasSold = useCountUp(pizzasSold);
+  // Cart Logic
+  const addToCart = (product) => {
+    setCart(prevCart => [...prevCart, product]);
+  };
+  
+  const cartTotal = useMemo(() => cart.reduce((sum, item) => sum + item.price, 0), [cart]);
+
+  // Animated values
+  const animatedPizzasSold = useCountUp(pizzasSold, 2000);
   const animatedPercentage = Math.min(100, (animatedPizzasSold / goal) * 100);
 
-  // Handle pre-buying a product
-  const handlePrebuy = async (productName, amount) => {
-    setIsProcessing(true);
-    try {
-      // In a real app, you might collect the funder's name from a form
-      const funderName = `Supporter #${Math.floor(Math.random() * 10000)}`;
+  // Encouraging words for animations
+  const encouragement = ['Wow!', 'Nice!', 'Awesome!', 'Sweet!', 'Cool!', 'Super!', '🎉'];
+  
+  // This function now simulates a successful purchase and triggers animations
+  const handleSuccessfulPurchase = (cart) => {
+    const pizzasInCart = cart.filter(p => p.type === 'pizza').reduce((sum, item) => sum + (item.pizzaCount || 1), 0);
+    const supporterName = `Supporter #${Math.floor(Math.random() * 10000)}`;
 
+    if (pizzasInCart > 0) {
+      // Trigger floating text animations
+      for (let i = 0; i < pizzasInCart; i++) {
+        setTimeout(() => {
+          const newText = {
+            id: Date.now() + i,
+            text: encouragement[Math.floor(Math.random() * encouragement.length)],
+          };
+          setFloatingTexts(prev => [...prev, newText]);
+        }, i * 200); // Stagger the text pop-ups
+      }
+      setPizzasSold(prevPizzas => prevPizzas + pizzasInCart);
+    }
+    
+    // Add new funder to the list
+    setFunders(prev => [{ name: supporterName, date: new Date().toISOString() }, ...prev]);
+    setCart([]); // Clear the cart
+  };
+
+  // Checkout handler
+  const handleCheckout = async () => {
+    if (cart.length === 0) return;
+    setIsProcessing(true);
+
+    try {
+      // In a real app, this is where you'd send the cart data to the backend
+      // The backend would then use the Square SDK to create a payment link
       const response = await fetch('https://local-effort-app-lniu.vercel.app/api/crowdfund/contribute', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          productName,
-          amount,
-          funderName,
+          items: cart,
+          totalAmount: cartTotal,
+          funderName: `Supporter #${Math.floor(Math.random() * 10000)}`,
         }),
       });
 
       const result = await response.json();
-
       if (response.ok && result.paymentUrl) {
-        // Redirect to Square for payment
-        window.location.href = result.paymentUrl;
+        // --- SIMULATION ---
+        // In a real app, you would redirect to the Square payment URL:
+        // window.location.href = result.paymentUrl;
+        
+        // For this demo, we'll just simulate a successful payment after a short delay
+        setTimeout(() => {
+          handleSuccessfulPurchase(cart);
+          setIsProcessing(false);
+        }, 1500);
+
       } else {
         throw new Error(result.error || 'Failed to initiate payment.');
       }
     } catch (err) {
-      console.error("Payment Error:", err.message);
-      alert(`Error: ${err.message}`); // Replace with a better notification system
+      alert(`Error: ${err.message}`);
       setIsProcessing(false);
     }
   };
-  
-  if (isLoading) {
-    return <div className="text-center p-12">Loading fundraising campaign...</div>;
-  }
-  
-  if (error) {
-    return <div className="text-center p-12 bg-red-100 text-red-800 rounded-lg">{error}</div>;
-  }
+
+  if (isLoading) return <div className="text-center p-12">Loading fundraising campaign...</div>;
 
   return (
-    <div className="max-w-6xl mx-auto flex flex-col gap-12 p-4 font-sans">
+    <div className="max-w-7xl mx-auto flex flex-col gap-12 p-4 font-sans">
       <header className="text-center">
         <h1 className="text-4xl md:text-5xl font-bold tracking-tight">Help Us Fire Up the Ovens!</h1>
-        <p className="mt-4 text-lg text-gray-600 max-w-2xl mx-auto">
-          We're pre-selling pizzas to fund our new community kitchen. Every purchase gets us one step closer to opening our doors.
+        <p className="mt-4 text-lg text-gray-600 max-w-3xl mx-auto">
+          We're pre-selling products to fund our new community kitchen. Each pizza voucher purchased fills a slice of our goal!
         </p>
       </header>
+      
+      {error && <div className="text-center p-4 bg-yellow-100 text-yellow-800 rounded-lg">{error}</div>}
 
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-12">
-        <div className="lg:col-span-3 flex flex-col items-center gap-8">
-          <PizzaSVG size={400} goal={goal} filled={animatedPizzasSold} />
-          <div className="w-full">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 md:gap-12">
+        {/* Left Side - Pizza Tracker */}
+        <div className="lg:col-span-1 flex flex-col items-center gap-8 order-2 lg:order-1">
+          <div className="relative">
+             <PizzaSVG size={400} goal={goal} filled={animatedPizzasSold} />
+             <div className="absolute inset-0 flex justify-center items-center pointer-events-none">
+                 {floatingTexts.map(ft => (
+                    <FloatingText 
+                        key={ft.id} 
+                        text={ft.text} 
+                        onAnimationEnd={() => setFloatingTexts(prev => prev.filter(t => t.id !== ft.id))}
+                    />
+                 ))}
+             </div>
+          </div>
+          <div className="w-full max-w-md">
             <div className="flex justify-between items-end mb-2">
               <span className="font-bold text-2xl text-gray-800">{animatedPizzasSold.toLocaleString()}</span>
               <span className="text-sm text-gray-500">Goal: {goal.toLocaleString()} pizzas</span>
             </div>
             <div className="w-full bg-gray-200 rounded-full h-4 overflow-hidden">
-              <div
-                className="bg-red-600 h-full rounded-full transition-all duration-1000 ease-out"
-                style={{ width: `${animatedPercentage}%` }}
+              <motion.div
+                className="bg-red-600 h-full rounded-full"
+                initial={{ width: 0 }}
+                animate={{ width: `${animatedPercentage}%` }}
+                transition={{ duration: 1.5, ease: "easeOut" }}
               />
             </div>
-             <div className="text-center mt-2 font-bold text-lg">{animatedPercentage.toFixed(1)}% Funded</div>
+            <div className="text-center mt-2 font-bold text-lg">{animatedPercentage.toFixed(1)}% Funded</div>
           </div>
-        </div>
-
-        <div className="lg:col-span-2 flex flex-col gap-8">
-          <section>
-            <h3 className="text-2xl font-bold mb-4 border-b pb-2">Choose Your Reward</h3>
-            <ProductsPanel onPrebuy={handlePrebuy} isProcessing={isProcessing} />
-          </section>
-
-          <section>
-            <h3 className="text-2xl font-bold mb-4 border-b pb-2">Recent Supporters</h3>
-            <div className="bg-gray-50 rounded-lg p-4 max-h-60 overflow-y-auto">
+           <section className="w-full max-w-md">
+            <h3 className="text-xl font-bold mb-4 border-b pb-2">Recent Supporters</h3>
+            <div className="bg-gray-50 rounded-lg p-4 h-48 overflow-y-auto">
               {funders.length > 0 ? (
                 <ul className="space-y-3">
                   {funders.map((funder, i) => (
-                    <li key={i} className="text-sm text-gray-700">
-                      🍕 <span className="font-semibold">{funder.name}</span> supported the campaign.
+                    <li key={i} className="text-sm text-gray-700 animate-fade-in">
+                      <span className="font-semibold">{funder.name}</span> supported the campaign!
                     </li>
                   ))}
                 </ul>
-              ) : (
-                <p className="text-sm text-gray-500">Be the first to support us!</p>
-              )}
+              ) : <p className="text-sm text-gray-500">Be the first to support us!</p>}
             </div>
+          </section>
+        </div>
+
+        {/* Right Side - Products & Cart */}
+        <div className="lg:col-span-2 flex flex-col gap-8 order-1 lg:order-2">
+          {/* Products Section */}
+          <section>
+            <h3 className="text-2xl font-bold mb-4">Choose Your Reward</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {products.map(product => (
+                 <ProductCard 
+                    key={product.id} 
+                    product={product} 
+                    onAddToCart={() => addToCart(product)}
+                 />
+              ))}
+            </div>
+          </section>
+          {/* Cart & Checkout Section */}
+          <section>
+             <h3 className="text-2xl font-bold mb-4">Your Cart</h3>
+             <div className="bg-white border rounded-lg p-6 flex flex-col">
+                {cart.length === 0 ? (
+                    <p className="text-gray-500 text-center py-8">Your cart is empty.</p>
+                ) : (
+                    <ul className="divide-y divide-gray-200">
+                        {cart.map((item, i) => (
+                            <li key={i} className="py-3 flex justify-between items-center">
+                                <div>
+                                    <span className="font-semibold">{item.name}</span>
+                                    <p className="text-sm text-gray-500">{item.desc}</p>
+                                </div>
+                                <span className="font-bold text-lg">${item.price}</span>
+                            </li>
+                        ))}
+                    </ul>
+                )}
+                <div className="mt-6 pt-6 border-t flex justify-between items-center">
+                    <span className="text-xl font-bold">Total:</span>
+                    <span className="text-2xl font-extrabold">${cartTotal.toFixed(2)}</span>
+                </div>
+                <button 
+                    onClick={handleCheckout} 
+                    disabled={cart.length === 0 || isProcessing}
+                    className="mt-6 w-full px-6 py-3 rounded-lg bg-green-600 text-white font-bold text-lg hover:bg-green-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
+                >
+                    {isProcessing ? "Processing..." : "Checkout with Square"}
+                </button>
+             </div>
           </section>
         </div>
       </div>
@@ -185,113 +311,138 @@ function CrowdfundingTab() {
   );
 }
 
-function PizzaSVG({ size, goal, filled }) {
-  const cx = size / 2, cy = size / 2, R = size * 0.45, r = size * 0.18;
-  const dTheta = (2 * Math.PI) / goal;
-  
-  const slices = useMemo(() => {
-    // Only calculate as many slices as needed to avoid performance issues with large goals
-    const renderCount = Math.min(goal, 2000); 
-    return Array.from({ length: renderCount }, (_, i) => {
-      const a0 = i * dTheta - Math.PI / 2;
-      const a1 = (i + 1) * dTheta - Math.PI / 2;
-      const x0 = cx + R * Math.cos(a0), y0 = cy + R * Math.sin(a0);
-      const x1 = cx + R * Math.cos(a1), y1 = cy + R * Math.sin(a1);
-      const xi1 = cx + r * Math.cos(a1), yi1 = cy + r * Math.sin(a1);
-      const xi0 = cx + r * Math.cos(a0), yi0 = cy + r * Math.sin(a0);
-      return `M ${x0} ${y0} A ${R} ${R} 0 0 1 ${x1} ${y1} L ${xi1} ${yi1} A ${r} ${r} 0 0 0 ${xi0} ${yi0} Z`;
-    });
-  }, [goal, cx, cy, R, r, dTheta]);
+function ProductCard({ product, onAddToCart }) {
+  const [showInfo, setShowInfo] = useState(false);
+  const buttonText = product.type === 'pizza' ? `Buy a ${product.name.split(' ')[0]}` : "Add to Cart";
 
   return (
-    <svg viewBox={`0 0 ${size} ${size}`} width={size} height={size} className="pizza-svg drop-shadow-lg">
-      <defs>
-        <filter id="subtle-glow" x="-50%" y="-50%" width="200%" height="200%">
-          <feGaussianBlur stdDeviation="3" result="coloredBlur" />
-          <feMerge>
-            <feMergeNode in="coloredBlur" />
-            <feMergeNode in="SourceGraphic" />
-          </feMerge>
-        </filter>
-        <linearGradient id="shimmer" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="rgba(255,255,255,0.5)" />
-            <stop offset="50%" stopColor="rgba(255,255,255,0)" />
-            <stop offset="100%" stopColor="rgba(255,255,255,0.5)" />
-        </linearGradient>
-      </defs>
-      <g className="pizza-base">
-        <circle cx={cx} cy={cy} r={R} fill="#f4cf5d" stroke="#e1b44d" strokeWidth="2" />
-        <circle cx={cx} cy={cy} r={R} fill="url(#shimmer)" className="shimmer-effect" opacity="0"/>
-      </g>
-      
-      <g>
-        {slices.map((d, i) => {
-          const isFilled = i < filled;
-          return (
-            <path
-              key={i}
-              d={d}
-              fill={isFilled ? "#d35435" : "#f4cf5d"}
-              stroke={isFilled ? "#9c2d11" : "#e1b44d"}
-              strokeWidth={0.5}
-              opacity={isFilled ? 1 : 0.2}
-              style={{ transition: 'fill 300ms ease-out, opacity 300ms ease-out' }}
-            />
-          );
-        })}
-      </g>
-      
-      <g filter="url(#subtle-glow)">
-        <circle cx={cx} cy={cy} r={r} fill="#fff" stroke="#eee" strokeWidth="2" />
-        <text x={cx} y={cy - 6} textAnchor="middle" fontSize={size * 0.1} fontWeight="700" fill="#333">{filled}</text>
-        <text x={cx} y={cy + 18} textAnchor="middle" fontSize={size * 0.04} fill="#666" opacity="0.8">PIZZAS SOLD</text>
-      </g>
-    </svg>
-  );
-}
-
-function ProductsPanel({ onPrebuy, isProcessing }) {
-  const products = [
-    { name: "Pizza Presale", desc: 'One 12" artisan pizza voucher.', price: 20, emoji: "🍕" },
-    { name: "Pie Presale", desc: 'One 9" seasonal pie voucher.', price: 24, emoji: "🥧" },
-    { name: "Supporter Pack", desc: "Sticker + thank-you wall mention.", price: 10, emoji: "💌" },
-  ];
-
-  return (
-    <div className="grid grid-cols-1 gap-4">
-      {products.map(product => (
-        <ProductCard 
-          key={product.name}
-          {...product}
-          onBuy={() => onPrebuy(product.name, product.price)}
-          isProcessing={isProcessing}
-        />
-      ))}
-    </div>
-  );
-}
-
-function ProductCard({ name, desc, price, emoji, onBuy, isProcessing }) {
-  return (
-    <div className="rounded-lg border border-gray-200 p-4 flex flex-col gap-3 transition-all hover:shadow-md hover:border-red-500">
-      <div className="flex justify-between items-start">
+    <div className="border rounded-lg p-4 flex flex-col gap-3 transition-all hover:shadow-lg hover:border-red-500 bg-white">
+      <div className="flex justify-between items-start cursor-pointer" onClick={() => setShowInfo(!showInfo)}>
         <div className="flex-1">
-          <h4 className="text-lg font-bold">{name}</h4>
-          <p className="text-sm text-gray-600">{desc}</p>
+          <h4 className="text-lg font-bold">{product.name}</h4>
+          <p className="text-sm text-gray-600">{product.desc}</p>
         </div>
-        <div className="text-3xl">{emoji}</div>
+        <div className="text-4xl ml-4">{product.emoji}</div>
       </div>
-      <div className="mt-auto flex items-center justify-between">
-        <div className="font-bold text-xl">${price}</div>
-        <button 
-          className="px-4 py-2 rounded-lg bg-red-600 text-white font-semibold hover:bg-red-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed" 
-          onClick={onBuy}
-          disabled={isProcessing}
+      {showInfo && (
+        <motion.div 
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            className="text-sm text-gray-500 border-t pt-2 mt-2"
         >
-          {isProcessing ? 'Processing...' : 'Pre-buy'}
+            More details about this awesome product would go here. It's a great choice!
+        </motion.div>
+      )}
+      <div className="mt-auto flex items-center justify-between pt-4">
+        <div className="font-bold text-xl">${product.price}</div>
+        <button 
+          className="px-4 py-2 rounded-lg bg-red-600 text-white font-semibold hover:bg-red-700 transition-colors" 
+          onClick={onAddToCart}
+        >
+          {buttonText}
         </button>
       </div>
     </div>
+  );
+}
+
+
+// --- NEW PIZZA SVG ---
+// This is a heavily redesigned SVG for a more "pizza-like" appearance.
+function PizzaSVG({ size, goal, filled }) {
+  const center = size / 2;
+  const radius = size * 0.4;
+  const crustWidth = size * 0.08;
+  const innerRadius = radius - crustWidth;
+  const numSlices = Math.min(goal, 1000); // Cap slices for performance
+  
+  const pepperonis = useMemo(() => {
+    const peps = [];
+    for (let i = 0; i < 15; i++) {
+        const angle = Math.random() * 2 * Math.PI;
+        const dist = Math.sqrt(Math.random()) * (innerRadius - 10);
+        peps.push({
+            cx: center + dist * Math.cos(angle),
+            cy: center + dist * Math.sin(angle),
+            r: size * 0.025 * (Math.random() * 0.4 + 0.8) // Vary size
+        });
+    }
+    return peps;
+  }, [size, center, innerRadius]);
+
+  const Slice = ({ index }) => {
+    const isFilled = index < filled;
+    const anglePerSlice = 360 / numSlices;
+    const startAngle = -90 + index * anglePerSlice;
+    const endAngle = startAngle + anglePerSlice;
+
+    const start = {
+      x: center + innerRadius * Math.cos(startAngle * Math.PI / 180),
+      y: center + innerRadius * Math.sin(startAngle * Math.PI / 180)
+    };
+    const end = {
+      x: center + innerRadius * Math.cos(endAngle * Math.PI / 180),
+      y: center + innerRadius * Math.sin(endAngle * Math.PI / 180)
+    };
+
+    const largeArcFlag = anglePerSlice <= 180 ? "0" : "1";
+    const d = `M ${center},${center} L ${start.x},${start.y} A ${innerRadius},${innerRadius} 0 ${largeArcFlag} 1 ${end.x},${end.y} Z`;
+
+    return (
+      <path
+        d={d}
+        fill={isFilled ? "#df4a21" : "transparent"}
+        stroke={isFilled ? "#c13e1c" : "#e1b44d"}
+        strokeWidth={isFilled ? 1 : 0.5}
+        style={{ transition: 'fill 300ms ease-out' }}
+      />
+    );
+  };
+
+  return (
+    <svg viewBox={`0 0 ${size} ${size}`} width={size} height={size} className="drop-shadow-lg">
+      <defs>
+        <filter id="crust-texture" x="-20%" y="-20%" width="140%" height="140%">
+          <feTurbulence type="fractalNoise" baseFrequency="0.1" numOctaves="3" result="noise"/>
+          <feDiffuseLighting in="noise" lightingColor="#d4a751" surfaceScale="2" result="light">
+            <feDistantLight azimuth="45" elevation="60" />
+          </feDiffuseLighting>
+          <feComposite in="light" in2="SourceGraphic" operator="in" />
+        </filter>
+      </defs>
+      
+      {/* Base Cheese */}
+      <circle cx={center} cy={center} r={innerRadius} fill="#f4cf5d" />
+
+      {/* Slices Layer */}
+      <g>
+        {Array.from({ length: numSlices }).map((_, i) => <Slice key={i} index={i} />)}
+      </g>
+      
+      {/* Pepperoni Layer (visible only on filled part) */}
+      <g clipPath={`url(#filled-mask-${filled})`}>
+         {pepperonis.map((pep, i) => (
+            <circle key={i} cx={pep.cx} cy={pep.cy} r={pep.r} fill="#c13e1c" stroke="#a12a0f" strokeWidth="1"/>
+         ))}
+      </g>
+      <clipPath id={`filled-mask-${filled}`}>
+        <rect x="0" y="0" width={size} height={size} fill="white" />
+        {Array.from({ length: numSlices }).map((_, i) => (
+          i >= filled ? <Slice key={i} index={i} /> : null
+        ))}
+      </clipPath>
+
+      {/* Crust */}
+      <circle cx={center} cy={center} r={radius} fill="#e1b44d" filter="url(#crust-texture)" />
+      <circle cx={center} cy={center} r={innerRadius} fill="none" stroke="#d4a751" strokeWidth="2" />
+      
+       {/* Center Text */}
+       <g filter="url(#subtle-glow)">
+        <circle cx={center} cy={center} r={size * 0.18} fill="#fff" stroke="#eee" strokeWidth="2" />
+        <text x={center} y={center - 6} textAnchor="middle" fontSize={size * 0.1} fontWeight="700" fill="#333">{filled}</text>
+        <text x={center} y={center + 18} textAnchor="middle" fontSize={size * 0.04} fill="#666" opacity="0.8">PIZZAS</text>
+      </g>
+    </svg>
   );
 }
 
@@ -568,13 +719,13 @@ const AboutUsPage = () => {
                 <div className="grid md:grid-cols-2 gap-8">
                     <div className="border border-gray-900 p-8">
                         <h3 className="text-3xl font-bold">Weston Smith</h3>
-                        <img src="/gallery/IMG-1013.JPG?text=Weston+Smith" alt="Weston Smith" className="my-4" />
+                        <img src="https://placehold.co/600x400/e5e7eb/333?text=Weston+Smith" alt="Weston Smith" className="my-4" />
                         <p className="font-mono text-gray-600 mb-4">Chef de Cuisine, Director</p>
                         <p className="font-mono">California-born and New York-trained, Weston is in charge of baking our sourdough bread and creating the menus.</p>
                     </div>
                     <div className="border border-gray-900 p-8">
                         <h3 className="text-3xl font-bold">Catherine Olsen</h3>
-                        <img src="/gallery/IMG-6353.JPG?text=Catherine+Olsen" alt="Catherine Olsen" className="my-4" />
+                        <img src="https://placehold.co/600x400/e5e7eb/333?text=Catherine+Olsen" alt="Catherine Olsen" className="my-4" />
                         <p className="font-mono text-gray-600 mb-4">Pastry, General Manager</p>
                         <p className="font-mono">A Minnesota native specializing in tarts, bars, cakes, and fresh pasta.</p>
                     </div>
