@@ -8,7 +8,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 // Using a placeholder for the logo to resolve build errors in this environment.
 // In your local development, you would use: import logo from './logo.png';
-const logo = 'https://placehold.co/160x50/111827/f5f5f5?text=Local+Effort&font=mono';
+const logo = '/gallery/logo.png?text=Local+Effort&font=mono';
 
 // --- Helper Components & Hooks ---
 
@@ -719,13 +719,13 @@ const AboutUsPage = () => {
                 <div className="grid md:grid-cols-2 gap-8">
                     <div className="border border-gray-900 p-8">
                         <h3 className="text-3xl font-bold">Weston Smith</h3>
-                        <img src="https://placehold.co/600x400/e5e7eb/333?text=Weston+Smith" alt="Weston Smith" className="my-4" />
+                        <img src="/gallery/IMG-1013.JPG?text=Weston+Smith" alt="Weston Smith" className="my-4" />
                         <p className="font-mono text-gray-600 mb-4">Chef de Cuisine, Director</p>
                         <p className="font-mono">California-born and New York-trained, Weston is in charge of baking our sourdough bread and creating the menus.</p>
                     </div>
                     <div className="border border-gray-900 p-8">
                         <h3 className="text-3xl font-bold">Catherine Olsen</h3>
-                        <img src="https://placehold.co/600x400/e5e7eb/333?text=Catherine+Olsen" alt="Catherine Olsen" className="my-4" />
+                        <img src="/gallery/IMG-6353.JPG?text=Catherine+Olsen" alt="Catherine Olsen" className="my-4" />
                         <p className="font-mono text-gray-600 mb-4">Pastry, General Manager</p>
                         <p className="font-mono">A Minnesota native specializing in tarts, bars, cakes, and fresh pasta.</p>
                     </div>
