@@ -1,0 +1,9 @@
+{
+  "dependencies": {
+    "framer-motion": "^12.23.12"
+  },
+  "devDependencies": {
+    "compression-webpack-plugin": "^11.1.0",
+    "webpack-bundle-analyzer": "^4.10.2"
+  }
+}

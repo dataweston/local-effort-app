@@ -1,26 +1,18 @@
+// src/components/layout/AnimatedPage.jsx
 import React from 'react';
 import { motion } from 'framer-motion';
+import { pageTransitions } from '../../utils/animations';
 
-const pageVariants = {
-  initial: { opacity: 0, y: 20 },
-  in: { opacity: 1, y: 0 },
-  out: { opacity: 0, y: -20 },
+export const AnimatedPage = ({ children }) => {
+  return (
+    <motion.div
+      variants={pageTransitions}
+      initial="initial"
+      animate="animate"
+      exit="exit"
+      className="optimize-rendering"
+    >
+      {children}
+    </motion.div>
+  );
 };
-
-const pageTransition = {
-  type: "tween",
-  ease: "anticipate",
-  duration: 0.5,
-};
-
-export const AnimatedPage = ({ children }) => (
-  <motion.div
-    initial="initial"
-    animate="in"
-    exit="out"
-    variants={pageVariants}
-    transition={pageTransition}
-  >
-    {children}
-  </motion.div>
-);
