@@ -79,6 +79,7 @@ function FloatingText({ text, onAnimationEnd }) {
 }
 
 // Main Crowdfunding Component
+// Main Crowdfunding Component
 function CrowdfundingTab() {
   // State Management
   const [goal, setGoal] =useState(1000);
@@ -88,8 +89,6 @@ function CrowdfundingTab() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
-  
-  // New state for feedback animations
   const [floatingTexts, setFloatingTexts] = useState([]);
 
   // Mock Products
@@ -100,33 +99,45 @@ function CrowdfundingTab() {
     { id: 4, name: "Pizza Party Pack", desc: "Five Pizza Vouchers at a discount!", price: 90, emoji: "🎉", type: 'pizza', pizzaCount: 5 },
   ];
 
-  // Fetch initial data
+  const fetchStatus = async () => {
+    try {
+      const response = await fetch('https://local-effort-app-lniu.vercel.app/api/crowdfund/status');
+      if (!response.ok) throw new Error('Network response was not ok');
+      const data = await response.json();
+      setGoal(data.goal);
+      setPizzasSold(data.pizzasSold);
+      setFunders(data.funders.reverse());
+    } catch (err) {
+      setError('Could not load fundraising data. Using mock data.');
+      setGoal(1000);
+      setPizzasSold(157);
+      setFunders([{name: "Alex G."}, {name: "Jordan P."}, {name: "Casey N."}]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // --- NEW: Handle Successful Payment Return ---
+  // This effect runs when the component loads to check if the user is returning from Square
   useEffect(() => {
-    const fetchStatus = async () => {
-      try {
-        const response = await fetch('https://local-effort-app-lniu.vercel.app/api/crowdfund/status');
-        if (!response.ok) throw new Error('Network response was not ok');
-        const data = await response.json();
-        setGoal(data.goal);
-        setPizzasSold(data.pizzasSold);
-        setFunders(data.funders.reverse());
-      } catch (err) {
-        setError('Could not load fundraising data. Using mock data.');
-        setGoal(1000);
-        setPizzasSold(157); // Start with some initial data for visual appeal
-        setFunders([{name: "Alex G."}, {name: "Jordan P."}, {name: "Casey N."}]);
-      } finally {
-        setIsLoading(false);
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('payment') === 'success') {
+      // The user has returned from a successful payment.
+      // We retrieve the cart from localStorage, as the state would have been reset.
+      const lastCart = JSON.parse(localStorage.getItem('le_cart'));
+      if (lastCart && lastCart.length > 0) {
+        handleSuccessfulPurchase(lastCart);
+        // Clear the stored cart and the URL parameter
+        localStorage.removeItem('le_cart');
+        window.history.replaceState(null, '', window.location.pathname);
       }
-    };
+    }
+    // Fetch the initial status regardless
     fetchStatus();
   }, []);
 
   // Cart Logic
-  const addToCart = (product) => {
-    setCart(prevCart => [...prevCart, product]);
-  };
-  
+  const addToCart = (product) => setCart(prevCart => [...prevCart, product]);
   const cartTotal = useMemo(() => cart.reduce((sum, item) => sum + item.price, 0), [cart]);
 
   // Animated values
@@ -136,13 +147,11 @@ function CrowdfundingTab() {
   // Encouraging words for animations
   const encouragement = ['Wow!', 'Nice!', 'Awesome!', 'Sweet!', 'Cool!', 'Super!', '🎉'];
   
-  // This function now simulates a successful purchase and triggers animations
-  const handleSuccessfulPurchase = (cart) => {
-    const pizzasInCart = cart.filter(p => p.type === 'pizza').reduce((sum, item) => sum + (item.pizzaCount || 1), 0);
-    const supporterName = `Supporter #${Math.floor(Math.random() * 10000)}`;
-
+  // This function now triggers the animations and fetches the new total
+  const handleSuccessfulPurchase = (successfulCart) => {
+    const pizzasInCart = successfulCart.filter(p => p.type === 'pizza').reduce((sum, item) => sum + (item.pizzaCount || 1), 0);
+    
     if (pizzasInCart > 0) {
-      // Trigger floating text animations
       for (let i = 0; i < pizzasInCart; i++) {
         setTimeout(() => {
           const newText = {
@@ -150,52 +159,43 @@ function CrowdfundingTab() {
             text: encouragement[Math.floor(Math.random() * encouragement.length)],
           };
           setFloatingTexts(prev => [...prev, newText]);
-        }, i * 200); // Stagger the text pop-ups
+        }, i * 200);
       }
-      setPizzasSold(prevPizzas => prevPizzas + pizzasInCart);
     }
-    
-    // Add new funder to the list
-    setFunders(prev => [{ name: supporterName, date: new Date().toISOString() }, ...prev]);
-    setCart([]); // Clear the cart
+    // After animations, clear the visual cart and fetch the new official status from the server
+    setCart([]);
+    setTimeout(fetchStatus, 500); // Fetch new total from server after a short delay
   };
 
-  // Checkout handler
+  // --- UPDATED: Checkout handler ---
   const handleCheckout = async () => {
     if (cart.length === 0) return;
     setIsProcessing(true);
 
+    // Save the cart to localStorage so we can retrieve it after the redirect
+    localStorage.setItem('le_cart', JSON.stringify(cart));
+
     try {
-      // In a real app, this is where you'd send the cart data to the backend
-      // The backend would then use the Square SDK to create a payment link
+      // This now sends the cart items to the backend
       const response = await fetch('https://local-effort-app-lniu.vercel.app/api/crowdfund/contribute', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          items: cart,
-          totalAmount: cartTotal,
-          funderName: `Supporter #${Math.floor(Math.random() * 10000)}`,
-        }),
+        body: JSON.stringify({ items: cart, totalAmount: cartTotal }),
       });
 
       const result = await response.json();
-      if (response.ok && result.paymentUrl) {
-        // --- SIMULATION ---
-        // In a real app, you would redirect to the Square payment URL:
-        // window.location.href = result.paymentUrl;
-        
-        // For this demo, we'll just simulate a successful payment after a short delay
-        setTimeout(() => {
-          handleSuccessfulPurchase(cart);
-          setIsProcessing(false);
-        }, 1500);
-
+      
+      if (response.ok && result.url) {
+        // --- THIS IS THE REAL REDIRECT ---
+        // Send the user to the Square-hosted checkout page
+        window.location.href = result.url;
       } else {
         throw new Error(result.error || 'Failed to initiate payment.');
       }
     } catch (err) {
       alert(`Error: ${err.message}`);
       setIsProcessing(false);
+      localStorage.removeItem('le_cart'); // Clean up on error
     }
   };
 
@@ -830,7 +830,81 @@ const MenuPage = () => {
             { course: "Menu", items: ["Charcuterie spread - including duck breast 'prosciutto,' beef bresaola from indiana, wisconsin gouda, minnesota 'camembert,' candied hazelnuts, pickled vegetables, flax crackers, jam, and a pate.", "Sourdough focaccia, with herbes de provence.", "Beets over labneh - local beets treated very nicely, over fresh strained yogurt, with citrus and hazelnut", "Simple carrot salad - julienned carrots tossed in cilantro and pistachio", "Duck Pastrami sliders - on fresh buns with aioli and pickled cabbage"] }
         ]
       },
-    ];
+  {
+    title: "Home Event, University gala, 13 guests",
+    sections: [
+      { course: "Passed Apps", items: ["Grilled Lamb loin Skewers marinated in onion and mint", "Grilled Vegetable skewers, early season", "Walleye brandade, on house crackers"] },
+      { course: "Start", items: ["Pork Belly Porchetta with spaetzle, served with peas and carrots, applesauce", "Sourdough focaccia for the table"] },
+      { course: "Main", items: ["Duck leg confit, with red polenta and mushrooms or Alaskan Sockeye wrapped in charred cabbage and fennel, served with crispy russet potatoes or Pheasant ballotine, mushroom, carrot, celery root puree"] },
+      { course: "Dessert", items: ["Citrus tart - blood orange, Meyer lemon, kumquat or Torta Caprese - dense chocolate hazelnut cake"] }
+    ]
+  },
+  {
+    title: "Bar Brava Industry Night",
+    sections: [
+        { course: "Menu", items: ["Sloppy Joe, on fresh potato bun with purple slaw and white onion", "Pate en Croute, with lamb and duck, served with watercress and mustard", "Lamb neck, over white beans with leek confit and tomato vinaigrette", "Chef's Big Salad - fresh greens, beets, carrots, potatoes - add trout", "Cheese and crackers, jam", "Duck Prosciutto, pickles", "Sourdough Focaccia"] },
+        { course: "Dessert", items: ["Carrot cake", "Hazelnut Butter Cup"] }
+    ]
+  },
+  {
+    title: "January Wedding for 60",
+    sections: [
+      { course: "Stationary", items: ["Charcuterie and Cheese spread - local meat and cheeses, including duck ‘prosciutto’, accoutrement like pickles, nuts, chips, jams, sourdough bread and crackers, dips"] },
+      { course: "Passed", items: ["Squash toast - ricotta, roasted Kabocha squash, sage honey, fermented chili flake and olive oil", "Charred Date Cruller Bites - Pork skin, balsalmic"] },
+      { course: "Seated and shared - Vegetable dishes", items: ["White wine-Poached Leeks over mustard vinaigrette", "Roasted beets over cultured labneh with citrus and hazelnuts", "Smoky cauliflower in lemon cream with watercress and pistachio dukkuh", "Raw carrots, julienned and dressed in cilantro and pistachio", "Roasted Winter chicories and cabbages, goat cheese, pepitas, citrus", "Purple sweet potato salad, warm/German style, tahini aioli, red onion and hominy"] },
+      { course: "Seated and shared - Meat dishes", items: ["Braised bison and spaetzle, carrots and peas", "Cassoulet, duck confit with white bean and lamb sausage", "Chicken Ballontine, rolled and sliced, with mushroom and gravy", "Rainbow Trout over potato galette, gruyere"] },
+      { course: "Desserts", items: ["Cookie plates, ex. Cardamom citrus shortbread, hazelnut linzer with plum, cranberry oat bars"] }
+    ]
+  },
+  {
+    title: "Late Spring Wedding for 130",
+    sections: [
+        { course: "Start/Share", items: ["Sourdough Focaccia “breadsticks”", "All-belly Porchetta, braised in cider", "Skewers - lamb and vegetable", "Crackers, Pickles and pickled fish, Walleye Brandade", "Crudite, Bagna Cauda", "Lamb hand pies, carrots potatoes and peas"] },
+        { course: "Main", items: ["Duck leg confit, over red polenta and grilled asparagus Or Alaskan Sockeye, wild mushroom risotto with peas"] },
+        { course: "Desserts", items: ["Hazelnut linzer with jam", "Millionaire shortbread", "Coconut macaron", "Cornish Fairing"] }
+    ]
+  },
+  {
+    title: "Bachelorette Party, Summer, 11 Guests",
+    sections: [
+      { course: "Start", items: ["Sourdough focaccia - basil and cherry tomato", "Prosciutto and melon", "Snap pea salad, fresh yogurt and strawberry, hazelnut"] },
+      { course: "Main", items: ["Sockeye salmon OR Hanger Steak OR chicken breast paillard - grilled sweet corn and summer squash, fregola sarda, heirloom tomato"] },
+      { course: "Dessert", items: ["Blueberry tart - vanilla creme"] }
+    ]
+  },
+  {
+    title: "Home Event, Christmas Work Party, 50 guests - Sample 1",
+    sections: [
+        { course: "To start", items: ["Salo (cured pork fat), garlic, sourdough bread, pickles", "stuffed cabbage rolls", "beets with dill", "potatoes filled with mushroom", "fresh watermelon, pickled watermelon", "seasonal greens", "olive salad"] },
+        { course: "Main", items: ["kabob/shashlik - just mountains of skewers. including: roasted chicken, steak, lamb, tomatoes, mushrooms, and seasonal vegetables, garlic sauce and other sauces and marinades"] }
+    ]
+  },
+  {
+    title: "Home Event, Christmas Work Party, 50 guests - Sample 2",
+    sections: [
+        { course: "Start", items: ["Sourdough focaccia with olive oil and za'atar", "Fresh ricotta", "Spring/summer salad - based on availability"] },
+        { course: "Mid-course", items: ["Agnolotti, filled with artichoke and shitake, with crispy sunchokes drizzled with honey"] },
+        { course: "Main", items: ["Beef tenderloin, finished in foie gras butter and leek ash", "Asparagus, cured egg yolk, parmesan"] },
+        { course: "Movement - Dessert and outdoor fire", items: ["Raspberry marshmallow, with chocolate graham shortbread", "Cognac, or Scotch"] }
+    ]
+  },
+  {
+    title: "Home Event, Christmas Work Party, 50 guests - Sample 3",
+    sections: [
+        { course: "Stationary", items: ["Charcuterie and cheese - a mix of local (Minnesota, Wisconsin, and Indiana) and import (mostly italian, some french), with accoutrement like crudites, olives, jams, nuts, pickles, and housemade chips and crackers. (We can get really specific if you prefer.)", "Fresh Bread - sourdough with local flour - suggesting focaccia and baguette - with olive oil and butter"] },
+        { course: "Passed and Placed", items: ["Carrot salad with pistachio and cilantro", "Frites", "James Beard's onion sandwich - onion and mayo with parsley on white bread, crusts cut off", "Duck egg with duck bacon and asparagus", "Scallop and apple", "Short rib \"nigiri\"", "Croque Monsieur"] },
+        { course: "Desserts", items: ["Cookie plate - Chocolate Chip, Hazelnut Linzer, + 3rd undecided option", "\"Twinkies\" - citrus chiffon filled with foie gras buttercream", "Japanese cheesecake"] }
+    ]
+  },
+  {
+    title: "Home Event, Christmas Work Party, 50 guests - Sample 4",
+    sections: [
+        { course: "Stationary", items: ["Charcuterie and cheese platters, including: breseola, cured pork tenderloin, marinated olives, pickled beets, tomato jam, 3-5 cheeses, candied walnuts, duck rillettes, house crackers and chips", "Garlic focaccia", "Carrot salad with pistachio and coriander"] },
+        { course: "Passed", items: ["Duck egg with duck pastrami", "Kabocha squash toast, ricotta and persimmon honey", "Perfect Beef tenderloin, leek and corn ash, foie gras butter"] },
+        { course: "Desserts", items: ["Cookies and bars", "Persimmon cake with cranberry", "Hot chocolate with marshmallows and local peppermint schnapps"] }
+    ]
+  }
+];
     const [openMenu, setOpenMenu] = useState(0);
     return (
         <>
