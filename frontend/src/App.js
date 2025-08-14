@@ -5,8 +5,6 @@ import { useState, useEffect, useMemo } from 'react';
 import { Helmet, HelmetProvider } from 'react-helmet-async';
 import { HashRouter, Routes, Route, Link, useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import initCardTilt from './utils/cardTilt';
-
 
 // Using a placeholder for the logo to resolve build errors in this environment.
 // In your local development, you would use: import logo from './logo.png';
