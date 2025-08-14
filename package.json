@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "anime": "^0.1.2",
     "framer-motion": "^12.23.12"
   },
   "devDependencies": {
