@@ -1,19 +1,21 @@
+// src/data/sampleMenus.js
+
 export const sampleMenus = [
-      {
-        title: "Cabin dinner for 12 in May",
-        sections: [
-          { course: "Start", items: ["Sourdough focaccia with spring herbs", "Roasted beets over labneh - local beets, fresh strained yogurt, citrus and hazelnut or Asparagus salad, bacon, hazelnut, parmesan", "Agnolotti - fresh pasta filled with ricotta and gouda, served with butter and crispy mushroom, honey"] },
-          { course: "Main", items: ["Rainbow trout (raised in Forest Hills!) wrapped in fennel and broweston iled cabbage - with asparagus, potato puree or Chicken ballotine with chewy carrots, ramps, sherry jus"] },
-          { course: "Dessert", items: ["Strawberry shortcake"] }
-        ]
-      },
-      {
-        title: "Office Party for 20",
-        description: "(Stationary, substantial appetizers)",
-        sections: [
-            { course: "Menu", items: ["Charcuterie spread - including duck breast 'prosciutto,' beef bresaola from indiana, wisconsin gouda, minnesota 'camembert,' candied hazelnuts, pickled vegetables, flax crackers, jam, and a pate.", "Sourdough focaccia, with herbes de provence.", "Beets over labneh - local beets treated very nicely, over fresh strained yogurt, with citrus and hazelnut", "Simple carrot salad - julienned carrots tossed in cilantro and pistachio", "Duck Pastrami sliders - on fresh buns with aioli and pickled cabbage"] }
-        ]
-      },
+  {
+    title: "Cabin dinner for 12 in May",
+    sections: [
+      { course: "Start", items: ["Sourdough focaccia with spring herbs", "Roasted beets over labneh - local beets, fresh strained yogurt, citrus and hazelnut or Asparagus salad, bacon, hazelnut, parmesan", "Agnolotti - fresh pasta filled with ricotta and gouda, served with butter and crispy mushroom, honey"] },
+      { course: "Main", items: ["Rainbow trout (raised in Forest Hills!) wrapped in fennel and broweston iled cabbage - with asparagus, potato puree or Chicken ballotine with chewy carrots, ramps, sherry jus"] },
+      { course: "Dessert", items: ["Strawberry shortcake"] }
+    ]
+  },
+  {
+    title: "Office Party for 20",
+    description: "(Stationary, substantial appetizers)",
+    sections: [
+        { course: "Menu", items: ["Charcuterie spread - including duck breast 'prosciutto,' beef bresaola from indiana, wisconsin gouda, minnesota 'camembert,' candied hazelnuts, pickled vegetables, flax crackers, jam, and a pate.", "Sourdough focaccia, with herbes de provence.", "Beets over labneh - local beets treated very nicely, over fresh strained yogurt, with citrus and hazelnut", "Simple carrot salad - julienned carrots tossed in cilantro and pistachio", "Duck Pastrami sliders - on fresh buns with aioli and pickled cabbage"] }
+    ]
+  },
   {
     title: "Home Event, University gala, 13 guests",
     sections: [
@@ -89,43 +91,3 @@ export const sampleMenus = [
     ]
   }
 ];
-    const [openMenu, setOpenMenu] = useState(0);
-    return (
-        <>
-            <Helmet>
-                <title>Menu Examples | Local Effort</title>
-                <meta name="description" content="View sample menus from real events catered by Local Effort." />
-            </Helmet>
-            <div className="space-y-16">
-                <h2 className="text-5xl md:text-7xl font-bold uppercase">Menu Examples</h2>
-                <p className="font-mono text-lg max-w-3xl">We create custom menus for every event. These are from real events and are intended as inspiration.</p>
-                <div className="space-y-px bg-gray-900 border border-gray-900">
-                    {sampleMenus.map((menu, index) => (
-                        <div key={index} className="bg-[#F5F5F5]">
-                            <button onClick={() => setOpenMenu(openMenu === index ? null : index)} className="w-full p-8 text-left flex justify-between items-center">
-                                <div>
-                                    <h3 className="text-2xl font-bold">"{menu.title}"</h3>
-                                    {menu.description && <p className="font-mono text-gray-600">{menu.description}</p>}
-                                </div>
-                                <span className={`transform transition-transform duration-300 text-3xl ${openMenu === index ? 'rotate-45' : ''}`}>+</span>
-                            </button>
-                            {openMenu === index && (
-                                <div className="p-8 pt-0 font-mono text-sm">
-                                    <div className="border-t border-gray-300 pt-4 space-y-4">
-                                        {menu.sections.map((section, sIndex) => (
-                                            <div key={sIndex}>
-                                                <h4 className="font-bold uppercase border-b border-gray-300 pb-1 mb-2">{section.course}</h4>
-                                                <ul className="list-disc list-inside space-y-1">
-                                                    {section.items.map((item, iIndex) => <li key={iIndex}>{item}</li>)}
-                                                </ul>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-                            )}
-                        </div>
-                    ))}
-                </div>
-            </div>
-        </>
-    );

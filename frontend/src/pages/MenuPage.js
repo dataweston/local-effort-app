@@ -1,7 +1,10 @@
+// src/pages/MenuPage.js
+
 import React, { useState } from 'react';
 import { Helmet } from 'react-helmet-async';
-import { sampleMenus } from '../data/sampleMenus';
+import { sampleMenus } from '../data/sampleMenus'; // We import the data here
 
+// This is a React component, so it can have state and return JSX.
 export const MenuPage = () => {
     const [openMenu, setOpenMenu] = useState(0);
     return (
