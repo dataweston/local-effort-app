@@ -6,6 +6,7 @@ import { ProductCard } from '../components/common/ProductCard';
 import { PizzaSVG } from '../components/crowdfunding/PizzaSVG';
 import { FloatingText } from '../components/crowdfunding/FloatingText';
 
+
 export const CrowdfundingPage = () => {
   const [goal, setGoal] = useState(1000);
   const [pizzasSold, setPizzasSold] = useState(0);
@@ -93,161 +94,110 @@ export const CrowdfundingPage = () => {
     }
   };
 
-  if (isLoading) return (
-    <div className="flex items-center justify-center min-h-[400px]">
-      <div className="text-center">
-        <div className="animate-pulse-warm w-12 h-12 bg-primary-warm rounded-full mx-auto mb-4"></div>
-        <p className="text-body">Loading fundraising campaign...</p>
-      </div>
-    </div>
-  );
+  if (isLoading) return <div className="text-center p-12">Loading fundraising campaign...</div>;
 
   return (
-    <div className="container space-y-12">
-      {/* Header */}
-      <header className="text-center animate-fade-in-up">
-        <h1 className="text-hero font-display gradient-text mb-6">
-          Help Us Fire Up the Ovens!
-        </h1>
-        <p className="text-body-large max-w-4xl mx-auto">
-          We're pre-selling products to fund our new community kitchen. 
-          Each pizza voucher purchased fills a slice of our goal!
+    <div className="max-w-7xl mx-auto flex flex-col gap-12 p-4 font-sans">
+      <header className="text-center">
+        <h1 className="text-4xl md:text-5xl font-bold tracking-tight">Help Us Fire Up the Ovens!</h1>
+        <p className="mt-4 text-lg text-gray-600 max-w-3xl mx-auto">
+          We're pre-selling products to fund our new community kitchen. Each pizza voucher purchased fills a slice of our goal!
         </p>
       </header>
       
-      {/* Error Message */}
-      {error && (
-        <div className="card bg-yellow-50 border-yellow-200 animate-fade-in-up stagger-1">
-          <div className="card-content py-4">
-            <p className="text-body text-yellow-800">{error}</p>
-          </div>
-        </div>
-      )}
+      {error && <div className="text-center p-4 bg-yellow-100 text-yellow-800 rounded-lg">{error}</div>}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 md:gap-12">
-        {/* Progress Section */}
         <div className="lg:col-span-1 flex flex-col items-center gap-8 order-2 lg:order-1">
-          {/* Pizza Visualization */}
-          <div className="relative animate-fade-in-scale stagger-2">
-            <PizzaSVG size={400} goal={goal} filled={animatedPizzasSold} />
-            <div className="absolute inset-0 flex justify-center items-center pointer-events-none">
-              {floatingTexts.map(ft => (
-                <FloatingText 
-                  key={ft.id} 
-                  text={ft.text} 
-                  onAnimationEnd={() => setFloatingTexts(prev => prev.filter(t => t.id !== ft.id))}
-                />
-              ))}
-            </div>
+          <div className="relative">
+             <PizzaSVG size={400} goal={goal} filled={animatedPizzasSold} />
+             <div className="absolute inset-0 flex justify-center items-center pointer-events-none">
+                 {floatingTexts.map(ft => (
+                    <FloatingText 
+                        key={ft.id} 
+                        text={ft.text} 
+                        onAnimationEnd={() => setFloatingTexts(prev => prev.filter(t => t.id !== ft.id))}
+                    />
+                 ))}
+             </div>
           </div>
-
-          {/* Progress Bar */}
-          <div className="w-full max-w-md animate-fade-in-up stagger-3">
-            <div className="flex justify-between items-end mb-4">
-              <span className="text-heading font-display gradient-text">
-                {animatedPizzasSold.toLocaleString()}
-              </span>
-              <span className="text-caption">Goal: {goal.toLocaleString()} pizzas</span>
+          <div className="w-full max-w-md">
+            <div className="flex justify-between items-end mb-2">
+              <span className="font-bold text-2xl text-gray-800">{animatedPizzasSold.toLocaleString()}</span>
+              <span className="text-sm text-gray-500">Goal: {goal.toLocaleString()} pizzas</span>
             </div>
-            
-            <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
+            <div className="w-full bg-gray-200 rounded-full h-4 overflow-hidden">
               <motion.div
-                className="h-full rounded-full bg-gradient-warm"
+                className="bg-red-600 h-full rounded-full"
                 initial={{ width: 0 }}
                 animate={{ width: `${animatedPercentage}%` }}
                 transition={{ duration: 1.5, ease: "easeOut" }}
               />
             </div>
-            
-            <div className="text-center mt-3">
-              <span className="text-subheading font-display">
-                {animatedPercentage.toFixed(1)}% Funded
-              </span>
-            </div>
+            <div className="text-center mt-2 font-bold text-lg">{animatedPercentage.toFixed(1)}% Funded</div>
           </div>
-
-          {/* Recent Supporters */}
-          <section className="w-full max-w-md animate-fade-in-up stagger-4">
-            <h3 className="text-subheading font-display mb-4">Recent Supporters</h3>
-            <div className="card bg-secondary-cream">
-              <div className="card-content max-h-48 overflow-y-auto">
-                {funders.length > 0 ? (
-                  <ul className="space-y-3">
-                    {funders.map((funder, i) => (
-                      <li key={i} className="text-body animate-fade-in-left" style={{ animationDelay: `${i * 0.1}s` }}>
-                        <span className="font-semibold">{funder.name}</span> supported the campaign!
-                      </li>
-                    ))}
-                  </ul>
-                ) : (
-                  <p className="text-caption text-center py-8">Be the first to support us!</p>
-                )}
-              </div>
+           <section className="w-full max-w-md">
+            <h3 className="text-xl font-bold mb-4 border-b pb-2">Recent Supporters</h3>
+            <div className="bg-gray-50 rounded-lg p-4 h-48 overflow-y-auto">
+              {funders.length > 0 ? (
+                <ul className="space-y-3">
+                  {funders.map((funder, i) => (
+                    <li key={i} className="text-sm text-gray-700 animate-fade-in">
+                      <span className="font-semibold">{funder.name}</span> supported the campaign!
+                    </li>
+                  ))}
+                </ul>
+              ) : <p className="text-sm text-gray-500">Be the first to support us!</p>}
             </div>
           </section>
         </div>
 
-        {/* Products and Cart Section */}
         <div className="lg:col-span-2 flex flex-col gap-8 order-1 lg:order-2">
-          {/* Products */}
-          <section className="animate-fade-in-up stagger-2">
-            <h3 className="text-heading font-display mb-6">Choose Your Reward</h3>
-            <div className="grid md:grid-cols-2 gap-6">
-              {products.map((product, index) => (
-                <div key={product.id} className="animate-fade-in-up" style={{ animationDelay: `${0.3 + index * 0.1}s` }}>
-                  <ProductCard 
+          <section>
+            <h3 className="text-2xl font-bold mb-4">Choose Your Reward</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {products.map(product => (
+                 <ProductCard 
+                    key={product.id} 
                     product={product} 
                     onAddToCart={() => addToCart(product)}
-                  />
-                </div>
+                 />
               ))}
             </div>
           </section>
-
-          {/* Cart */}
-          <section className="animate-fade-in-up stagger-3">
-            <h3 className="text-heading font-display mb-6">Your Cart</h3>
-            <div className="card">
-              <div className="card-content">
+          <section>
+             <h3 className="text-2xl font-bold mb-4">Your Cart</h3>
+             <div className="bg-white border rounded-lg p-6 flex flex-col">
                 {cart.length === 0 ? (
-                  <p className="text-body text-center py-12 text-neutral-warm-gray">
-                    Your cart is empty.
-                  </p>
+                    <p className="text-gray-500 text-center py-8">Your cart is empty.</p>
                 ) : (
-                  <ul className="space-y-4 mb-8">
-                    {cart.map((item, i) => (
-                      <li key={i} className="flex justify-between items-start py-4 border-b border-gray-100 last:border-0">
-                        <div>
-                          <span className="text-subheading font-display">{item.name}</span>
-                          <p className="text-caption mt-1">{item.desc}</p>
-                        </div>
-                        <span className="text-subheading font-display gradient-text">
-                          ${item.price}
-                        </span>
-                      </li>
-                    ))}
-                  </ul>
+                    <ul className="divide-y divide-gray-200">
+                        {cart.map((item, i) => (
+                            <li key={i} className="py-3 flex justify-between items-center">
+                                <div>
+                                    <span className="font-semibold">{item.name}</span>
+                                    <p className="text-sm text-gray-500">{item.desc}</p>
+                                </div>
+                                <span className="font-bold text-lg">${item.price}</span>
+                            </li>
+                        ))}
+                    </ul>
                 )}
-                
-                <div className="border-t pt-6 flex justify-between items-center mb-6">
-                  <span className="text-heading font-display">Total:</span>
-                  <span className="text-heading font-display gradient-text">
-                    ${cartTotal.toFixed(2)}
-                  </span>
+                <div className="mt-6 pt-6 border-t flex justify-between items-center">
+                    <span className="text-xl font-bold">Total:</span>
+                    <span className="text-2xl font-extrabold">${cartTotal.toFixed(2)}</span>
                 </div>
-                
                 <button 
-                  onClick={handleCheckout} 
-                  disabled={cart.length === 0 || isProcessing}
-                  className={`btn w-full text-lg ${cart.length === 0 || isProcessing ? 'opacity-50 cursor-not-allowed' : 'btn-primary'}`}
+                    onClick={handleCheckout} 
+                    disabled={cart.length === 0 || isProcessing}
+                    className="mt-6 w-full px-6 py-3 rounded-lg bg-green-600 text-white font-bold text-lg hover:bg-green-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
                 >
-                  {isProcessing ? "Processing..." : "Checkout with Square"}
+                    {isProcessing ? "Processing..." : "Checkout with Square"}
                 </button>
-              </div>
-            </div>
+             </div>
           </section>
         </div>
       </div>
     </div>
   );
-};
+}

@@ -10,7 +10,6 @@ export const AboutUsPage = () => {
         { name: "Fermentation", description: "We use fermentation to create unique flavors and preserve the harvest, making everything from hot sauce to kombucha." }
     ];
     const [activeSkill, setActiveSkill] = useState(specialSkills[0]);
-    
     return (
         <>
             <Helmet>
@@ -18,85 +17,34 @@ export const AboutUsPage = () => {
                 <meta name="description" content="Meet the chefs behind Local Effort, Weston Smith and Catherine Olsen." />
             </Helmet>
             <div className="space-y-16">
-                {/* Header with custom typography */}
-                <div className="animate-fade-in-up">
-                    <h1 className="text-hero font-display">About Us</h1>
-                    <div className="w-24 h-1 bg-gradient-warm mt-4"></div>
-                </div>
-
-                {/* Intro with enhanced typography */}
-                <p className="text-body-large font-body max-w-4xl animate-fade-in-up stagger-1">
-                    With 30 years of collective experience, we are passionate about food and hospitality. 
-                    We believe in quality, handmade products and sourcing the best local ingredients without compromise.
-                </p>
-
-                {/* Team Cards */}
-                <div className="grid md:grid-cols-2 gap-8 animate-fade-in-up stagger-2">
-                    <div className="card">
-                        <img 
-                            src="/gallery/IMG-1013.JPG" 
-                            alt="Weston Smith" 
-                            className="card-image"
-                        />
-                        <div className="card-content">
-                            <h3 className="text-subheading font-display mb-2">Weston Smith</h3>
-                            <p className="text-caption mb-4">Chef de Cuisine, Director</p>
-                            <p className="text-body">
-                                California-born and New York-trained, Weston is in charge of baking our sourdough bread and creating the menus.
-                            </p>
-                        </div>
+                <h2 className="text-5xl md:text-7xl font-bold uppercase border-b border-gray-900 pb-4">About Us</h2>
+                <p className="font-mono text-lg max-w-3xl">With 30 years of collective experience, we are passionate about food and hospitality. We believe in quality, handmade products and sourcing the best local ingredients without compromise.</p>
+                <div className="grid md:grid-cols-2 gap-8">
+                    <div className="border border-gray-900 p-8">
+                        <h3 className="text-3xl font-bold">Weston Smith</h3>
+                        <img src="/gallery/IMG-1013.JPG?text=Weston+Smith" alt="Weston Smith" className="my-4" />
+                        <p className="font-mono text-gray-600 mb-4">Chef de Cuisine, Director</p>
+                        <p className="font-mono">California-born and New York-trained, Weston is in charge of baking our sourdough bread and creating the menus.</p>
                     </div>
-                    
-                    <div className="card">
-                        <img 
-                            src="/gallery/IMG-6353.JPG" 
-                            alt="Catherine Olsen" 
-                            className="card-image"
-                        />
-                        <div className="card-content">
-                            <h3 className="text-subheading font-display mb-2">Catherine Olsen</h3>
-                            <p className="text-caption mb-4">Pastry, General Manager</p>
-                            <p className="text-body">
-                                A Minnesota native specializing in tarts, bars, cakes, and fresh pasta.
-                            </p>
-                        </div>
+                    <div className="border border-gray-900 p-8">
+                        <h3 className="text-3xl font-bold">Catherine Olsen</h3>
+                        <img src="/gallery/IMG-6353.JPG?text=Catherine+Olsen" alt="Catherine Olsen" className="my-4" />
+                        <p className="font-mono text-gray-600 mb-4">Pastry, General Manager</p>
+                        <p className="font-mono">A Minnesota native specializing in tarts, bars, cakes, and fresh pasta.</p>
                     </div>
                 </div>
-
-                {/* Special Skills Section */}
-                <div className="card animate-fade-in-up stagger-3">
-                    <div className="card-content">
-                        <h3 className="text-heading font-display mb-8">Special Skills</h3>
-                        <div className="grid md:grid-cols-3 gap-8">
-                            {/* Skills Navigation */}
-                            <div className="md:col-span-1 space-y-2">
-                                {specialSkills.map((skill, index) => (
-                                    <button 
-                                        key={skill.name} 
-                                        onMouseEnter={() => setActiveSkill(skill)}
-                                        className={`btn-ghost w-full text-left justify-start transition-all duration-300 ${
-                                            activeSkill.name === skill.name 
-                                                ? 'bg-secondary-cream border-primary-warm text-primary-warm' 
-                                                : 'hover:bg-secondary-cream'
-                                        }`}
-                                        style={{ animationDelay: `${index * 0.1}s` }}
-                                    >
-                                        {skill.name}
-                                    </button>
-                                ))}
-                            </div>
-                            
-                            {/* Skill Description */}
-                            <div className="md:col-span-2">
-                                <div className="bg-secondary-cream rounded-lg p-6 min-h-[200px] transition-all duration-500">
-                                    <h4 className="text-subheading font-display mb-4 gradient-text">
-                                        {activeSkill.name}
-                                    </h4>
-                                    <p className="text-body leading-relaxed">
-                                        {activeSkill.description}
-                                    </p>
-                                </div>
-                            </div>
+                 <div className="border border-gray-900 p-8">
+                    <h3 className="text-2xl font-bold mb-4">Special Skills</h3>
+                    <div className="grid md:grid-cols-3 gap-8">
+                        <div className="md:col-span-1 font-mono flex flex-col space-y-2">
+                           {specialSkills.map(skill => (
+                               <button key={skill.name} onMouseEnter={() => setActiveSkill(skill)} className={`text-left p-2 border-l-2 ${activeSkill.name === skill.name ? 'border-gray-900 bg-gray-200' : 'border-transparent hover:bg-gray-200'}`}>
+                                   {skill.name}
+                               </button>
+                           ))}
+                        </div>
+                        <div className="md:col-span-2 bg-gray-200 p-6 font-mono min-h-[150px]">
+                            <p>{activeSkill.description}</p>
                         </div>
                     </div>
                 </div>
