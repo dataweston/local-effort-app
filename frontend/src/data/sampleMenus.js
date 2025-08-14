@@ -1,5 +1,4 @@
-const MenuPage = () => {
-    const sampleMenus = [
+export const sampleMenus = [
       {
         title: "Cabin dinner for 12 in May",
         sections: [
@@ -130,4 +129,3 @@ const MenuPage = () => {
             </div>
         </>
     );
-};
