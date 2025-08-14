@@ -61,10 +61,7 @@ function useCountUp(endValue, duration = 1500) {
   return count;
 }
 
-function App() {
-  useEffect(() => {
-    initCardTilt();
-  }, []);
+
 // --- CrowdfundingTab component (Complete Redesign) — START ---
 
 // New component for floating "Wow!" text
