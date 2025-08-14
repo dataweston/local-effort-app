@@ -47,11 +47,7 @@ const AppContent = () => {
 }
 
 function App() {
-  return (
-    <HashRouter>
-      <AppContent />
-    </HashRouter>
-  );
+  return <AppContent />
 }
 
 export default App;
