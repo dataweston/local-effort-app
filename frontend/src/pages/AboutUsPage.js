@@ -27,6 +27,7 @@ const AboutUsPage = () => {
     }, []);
 
     if (loading) return <div>Loading...</div>;
+    if (!aboutData) return <div>Could not load page data.</div>; // Added this check
 
     const { page, persons, skills } = aboutData;
     const weston = persons?.find(p => p.name.includes("Weston"));
