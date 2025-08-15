@@ -9,7 +9,7 @@ const ShareIcon = ({ children }) => (
     </div>
 );
 
-export const CrowdfundingPage = () => {
+ const CrowdfundingPage = () => {
     const [campaignData, setCampaignData] = useState(null);
     const [loading, setLoading] = useState(true);
 
@@ -134,3 +134,4 @@ export const CrowdfundingPage = () => {
         </>
     );
 };
+export default CrowdfundingPage;

@@ -4,13 +4,14 @@ import { HashRouter, Routes, Route, useLocation } from 'react-router-dom';
 import { Header } from './components/layout/Header';
 import { Footer } from './components/layout/Footer';
 
-// Lazily import page components using the correct pattern for named exports
-const HomePage = lazy(() => import('./pages/HomePage').then(module => ({ default: module.HomePage })));
-const AboutUsPage = lazy(() => import('./pages/AboutUsPage').then(module => ({ default: module.AboutUsPage })));
-const ServicesPage = lazy(() => import('./pages/ServicesPage').then(module => ({ default: module.ServicesPage })));
-const PricingPage = lazy(() => import('./pages/PricingPage').then(module => ({ default: module.PricingPage })));
-const CrowdfundingPage = lazy(() => import('./pages/CrowdfundingPage').then(module => ({ default: module.CrowdfundingPage })));
-const MenuPage = lazy(() => import('./pages/MenuPage').then(module => ({ default: module.MenuPage })));
+// Lazily import page components using the default export pattern
+const HomePage = lazy(() => import('./pages/HomePage'));
+const AboutUsPage = lazy(() => import('./pages/AboutUsPage'));
+const ServicesPage = lazy(() => import('./pages/ServicesPage'));
+const PricingPage = lazy(() => import('./pages/PricingPage'));
+const CrowdfundingPage = lazy(() => import('./pages/CrowdfundingPage'));
+const MenuPage = lazy(() => import('./pages/MenuPage'));
+// Make sure you also update MenuPage.js, etc. to use "export default"
 
 const AppContent = () => {
   const location = useLocation();
@@ -27,8 +28,7 @@ const AppContent = () => {
               <Route path="/services" element={<ServicesPage />} />
               <Route path="/pricing" element={<PricingPage />} />
               <Route path="/crowdfunding" element={<CrowdfundingPage />} />
-                            <Route path="/menu" element={<MenuPage />} />
-
+              <Route path="/menu" element={<MenuPage />} />
             </Routes>
           </Suspense>
         </main>
@@ -38,7 +38,6 @@ const AppContent = () => {
   );
 };
 
-// ... rest of your App.js file
 function App() {
   useEffect(() => {
     document.fonts.ready.then(() => document.body.classList.add('fonts-loaded'));

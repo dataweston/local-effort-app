@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { CostEstimator } from '../components/pricing/CostEstimator';
 
-export const PricingPage = () => {
+ const PricingPage = () => {
     const [openFaq, setOpenFaq] = useState(null);
     const pricingFaqData = [ { name: "How much does a weekly meal plan cost?", answer: "Our weekly meal plans range from $13.50 for lighter breakfast options to $24 for full dinner meals." }, { name: "What is the cost for a small event or party?", answer: "A simple food drop-off service starts as low as $25 per person. Full-service events can range up to $85 per person or more." }, { name: "How much does an intimate dinner at home cost?", answer: "An intimate dinner at your home generally ranges from $65 to $125 per person." }, { name: "How much is a private pizza party?", answer: "Our private pizza parties start at $300 for groups of up to 15 people." } ];
     return (
@@ -40,3 +40,4 @@ export const PricingPage = () => {
         </>
     );
 };
+export default PricingPage;
