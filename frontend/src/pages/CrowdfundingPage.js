@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import  anime  from 'animejs/lib/anime.es.js';
+import { animate, stagger } from 'animejs';
 import { useCountUp } from '../hooks/useCountUp';
 import { fetchStatus, createCheckoutSession } from '../api/crowdfundService';
 import { ProductCard } from '../components/common/ProductCard';
@@ -48,13 +48,13 @@ export const CrowdfundingPage = () => {
       entries => {
         entries.forEach(entry => {
           if (entry.isIntersecting) {
-            anime.default({
+            animate({
               targets: entry.target.querySelectorAll('.reveal'),
               opacity: [0, 1],
               translateY: [40, 0],
               easing: 'easeOutQuad',
               duration: 700,
-              delay: anime.stagger(100),
+              delay: stagger(100),
             });
           }
         });
