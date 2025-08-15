@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { anime } from 'animejs/lib/anime.es.js';
+import  anime  from 'animejs/lib/anime.es.js';
 import { useCountUp } from '../hooks/useCountUp';
 import { fetchStatus, createCheckoutSession } from '../api/crowdfundService';
 import { ProductCard } from '../components/common/ProductCard';
