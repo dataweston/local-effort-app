@@ -43,9 +43,22 @@ const AboutUsPage = () => {
                 <meta name="description" content={page?.introduction || "Meet the chefs behind Local Effort."} />
             </Helmet>
             <div className="space-y-16">
+                {/* This section will now show a message if the main page content is missing */}
+                {!page && (
+                    <div className="card text-body bg-yellow-100 border-yellow-400">
+                        <strong>Content Missing:</strong> Please ensure a "Page" document with the exact slug "about-us" has been created and published in your Sanity Studio.
+                    </div>
+                )}
                 <h2 className="text-hero uppercase border-b border-gray-900 pb-4">{page?.title}</h2>
                 <p className="text-body text-lg max-w-3xl">{page?.introduction}</p>
+                
+                {/* This section will now show a message if the person documents are missing */}
                 <div className="grid md:grid-cols-2 gap-8">
+                    {persons.length === 0 && (
+                         <div className="card text-body md:col-span-2 bg-yellow-100 border-yellow-400">
+                            <strong>Content Missing:</strong> Please ensure "Person" documents for the team have been created and published in your Sanity Studio.
+                        </div>
+                    )}
                     {weston && (
                         <div className="card">
                             <h3 className="text-heading">{weston.name}</h3>
