@@ -9,7 +9,7 @@ const ShareIcon = ({ children }) => (
     </div>
 );
 
- const CrowdfundingPage = () => {
+const CrowdfundingPage = () => {
     const [campaignData, setCampaignData] = useState(null);
     const [loading, setLoading] = useState(true);
 
@@ -44,7 +44,7 @@ const ShareIcon = ({ children }) => (
     }
 
     if (!campaignData) {
-        return <div>No campaign found.</div>;
+        return <div>No campaign found. Have you created and published it in Sanity Studio?</div>;
     }
     
     // Calculate days left from the endDate
@@ -134,4 +134,5 @@ const ShareIcon = ({ children }) => (
         </>
     );
 };
+
 export default CrowdfundingPage;
