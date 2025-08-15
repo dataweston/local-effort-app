@@ -2,7 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 
-export const ServicesPage = () => {
+ const ServicesPage = () => {
     const navigate = useNavigate();
     return (
         <>
@@ -33,3 +33,4 @@ export const ServicesPage = () => {
         </>
     );
 };
+export default ServicesPage;
