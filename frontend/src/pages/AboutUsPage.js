@@ -18,7 +18,8 @@ const AboutUsPage = () => {
         sanityClient.fetch(query)
             .then((data) => {
                 setAboutData(data);
-                if (data.skills && data.skills.length > 0) {
+                // Set the active skill only if skills exist
+                if (data?.skills && data.skills.length > 0) {
                     setActiveSkill(data.skills[0]);
                 }
                 setLoading(false);
@@ -27,11 +28,13 @@ const AboutUsPage = () => {
     }, []);
 
     if (loading) return <div>Loading...</div>;
-    if (!aboutData) return <div>Could not load page data.</div>; // Added this check
+    if (!aboutData) return <div>Could not load page data.</div>;
 
-    const { page, persons, skills } = aboutData;
-    const weston = persons?.find(p => p.name.includes("Weston"));
-    const catherine = persons?.find(p => p.name.includes("Catherine"));
+    // By adding "= []", we ensure that if persons or skills don't exist,
+    // we get an empty array instead of an error.
+    const { page, persons = [], skills = [] } = aboutData;
+    const weston = persons.find(p => p.name.includes("Weston"));
+    const catherine = persons.find(p => p.name.includes("Catherine"));
 
     return (
         <>
@@ -65,7 +68,7 @@ const AboutUsPage = () => {
                     <h3 className="text-heading mb-4">Special Skills</h3>
                     <div className="grid md:grid-cols-3 gap-8">
                         <div className="md:col-span-1 text-body flex flex-col space-y-2">
-                           {skills?.map(skill => (
+                           {skills.map(skill => (
                                <button key={skill.name} onMouseEnter={() => setActiveSkill(skill)} className={`text-left p-2 border-l-2 rounded-sm ${activeSkill?.name === skill.name ? 'border-[var(--color-accent)] bg-gray-200' : 'border-transparent hover:bg-gray-200'}`}>
                                    {skill.name}
                                </button>
