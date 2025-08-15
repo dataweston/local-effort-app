@@ -10,6 +10,7 @@ const AboutUsPage = lazy(() => import('./pages/AboutUsPage').then(module => ({ d
 const ServicesPage = lazy(() => import('./pages/ServicesPage').then(module => ({ default: module.ServicesPage })));
 const PricingPage = lazy(() => import('./pages/PricingPage').then(module => ({ default: module.PricingPage })));
 const CrowdfundingPage = lazy(() => import('./pages/CrowdfundingPage').then(module => ({ default: module.CrowdfundingPage })));
+const MenuPage = lazy(() => import('./pages/MenuPage').then(module => ({ default: module.MenuPage })));
 
 const AppContent = () => {
   const location = useLocation();
@@ -26,6 +27,8 @@ const AppContent = () => {
               <Route path="/services" element={<ServicesPage />} />
               <Route path="/pricing" element={<PricingPage />} />
               <Route path="/crowdfunding" element={<CrowdfundingPage />} />
+                            <Route path="/menu" element={<MenuPage />} />
+
             </Routes>
           </Suspense>
         </main>
