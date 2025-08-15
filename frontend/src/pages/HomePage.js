@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { ServiceCard } from '../components/common/ServiceCard';
 
-export const HomePage = () => {
+const HomePage = () => {
   const navigate = useNavigate();
   return (
     <>
@@ -35,3 +35,5 @@ export const HomePage = () => {
     </>
   );
 };
+
+export default HomePage;
