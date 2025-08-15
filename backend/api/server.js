@@ -1,8 +1,14 @@
 // backend/api/server.js
-
+require('dotenv').config();
 const express = require('express');
-const cors = require('cors');
-const admin = require('firebase-admin');
+const cors = require('cors');n
+const { createClient } = require('@sanity/client');
+const sanityClient = createClient({
+  projectId: process.env.SANITY_PROJECT_ID,
+  dataset: 'production',
+  useCdn: false, // `false` for write operations
+  token: process.env.SANITY_API_TOKEN, // A token with write access
+});
 const { Client, Environment } = require('square'); // Import Square Client
 const { v4: uuidv4 } = require('uuid'); // Import UUID for idempotency
 

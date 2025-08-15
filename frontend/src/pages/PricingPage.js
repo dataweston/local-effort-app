@@ -12,15 +12,15 @@ export const PricingPage = () => {
                 <meta name="description" content="Find pricing information for Local Effort's personal chef services." />
             </Helmet>
             <div className="space-y-16">
-                <h2 className="text-5xl md:text-7xl font-bold uppercase">Pricing</h2>
-                <p className="font-mono text-lg max-w-3xl">Use our estimator for a ballpark figure, or review our general pricing guidelines below.</p>
+                <h2 className="text-hero uppercase">Pricing</h2>
+                <p className="text-body text-lg max-w-3xl">Use our estimator for a ballpark figure, or review our general pricing guidelines below.</p>
                 <section>
-                    <h3 className="text-3xl font-bold uppercase mb-4">Cost Estimator</h3>
+                    <h3 className="text-heading uppercase mb-4">Cost Estimator</h3>
                     <CostEstimator />
                 </section>
                 <section>
-                    <h3 className="text-3xl font-bold uppercase mb-4">General Pricing FAQ</h3>
-                     <div className="space-y-px bg-gray-900 border border-gray-900">
+                    <h3 className="text-heading uppercase mb-4">General Pricing FAQ</h3>
+                     <div className="space-y-px bg-gray-900 border border-gray-900 rounded-lg overflow-hidden">
                         {pricingFaqData.map((item, index) => (
                             <div key={index} className="bg-[#F5F5F5]">
                                 <button onClick={() => setOpenFaq(openFaq === index ? null : index)} className="w-full p-8 text-left flex justify-between items-center">
@@ -29,7 +29,7 @@ export const PricingPage = () => {
                                 </button>
                                 {openFaq === index && (
                                     <div className="p-8 pt-0">
-                                        <p className="font-mono text-gray-700 border-t border-gray-300 pt-4">{item.answer}</p>
+                                        <p className="text-body text-gray-700 border-t border-gray-300 pt-4">{item.answer}</p>
                                     </div>
                                 )}
                             </div>
