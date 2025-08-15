@@ -7,7 +7,9 @@
     "start": "node api/server.js"
   },
   "dependencies": {
+    "@sanity/client": "^7.8.2",
     "cors": "^2.8.5",
+    "dotenv": "^17.2.1",
     "express": "^4.19.2",
     "firebase-admin": "^12.1.0",
     "square": "^43.0.1",
