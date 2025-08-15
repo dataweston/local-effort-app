@@ -1,5 +1,3 @@
-// src/pages/MenuPage.js
-
 import React, { useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { sampleMenus } from '../data/sampleMenus'; // We import the data here
