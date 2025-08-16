@@ -1,7 +1,7 @@
 // src/pages/MenuPage.js
 import React, { useState } from "react";
 import { sampleMenus } from "../data/sampleMenus";
-import ServiceCard from '../components/common/ServiceCard';
+import ServiceCard from "../components/common/ServiceCard";
 import { motion } from "framer-motion";
 
 export default function MenuPage() {
@@ -16,18 +16,19 @@ export default function MenuPage() {
       <h1 className="text-4xl font-bold mb-8 text-center">Our Menus</h1>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {sampleMenus.map((menu) => {
-          const isOpen = openMenu === menu.id;
+        {sampleMenus.map((menu, index) => {
+          const menuId = menu.id ?? index; // use menu.id if it exists, otherwise index
+          const isOpen = openMenu === menuId;
 
           return (
             <ServiceCard
-              key={menu.id}
+              key={menuId}
               title={menu.title}
               description={menu.subtitle || menu.description || ""}
               to="#"
             >
               <button
-                onClick={() => toggleMenu(menu.id)}
+                onClick={() => toggleMenu(menuId)}
                 className="mt-2 text-sm font-medium text-blue-600 hover:underline"
               >
                 {isOpen ? "Hide Sections ▲" : "Show Sections ▼"}
