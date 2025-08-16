@@ -2,384 +2,374 @@
 
 export const sampleMenus = [
   {
-    id: "cabin-dinner-12-may",
-    title: "Cabin Dinner for 12",
-    subtitle: "Spring seasonal menu",
-    eventType: "private-dinner",
-    date: "2024-05-10",
-    image: "/images/cabin-dinner.jpg",
-    tags: ["spring", "seasonal", "private"],
+    id: 1,
+    title: "Cabin dinner for 12 in May",
+    description: "",
     sections: [
       {
-        course: "Appetizer",
+        course: "Start",
         items: [
-          { name: "Sourdough focaccia", note: "spring herbs" },
-          { name: "Roasted beets over labneh", note: "local beets, yogurt, citrus, hazelnut" },
-          { name: "Asparagus salad", note: "bacon, hazelnut, parmesan" },
-          { name: "Agnolotti", note: "ricotta + gouda, butter, crispy mushroom, honey" }
+          { name: "Sourdough focaccia with spring herbs", note: "", dietary: [] },
+          { name: "Roasted beets over labneh", note: "local beets, fresh strained yogurt, citrus and hazelnut", dietary: ["v", "gf"] },
+          { name: "Asparagus salad", note: "bacon, hazelnut, parmesan", dietary: ["gf"] },
+          { name: "Agnolotti", note: "fresh pasta filled with ricotta and gouda, served with butter and crispy mushroom, honey", dietary: [] }
         ]
       },
       {
         course: "Main",
         items: [
-          { name: "Rainbow trout", note: "raised in Forest Hills, wrapped in fennel + cabbage, asparagus, potato purée" },
-          { name: "Chicken ballotine", note: "with carrots, ramps, sherry jus" }
+          { name: "Rainbow trout", note: "raised in Forest Hills, wrapped in fennel and broweston iled cabbage, with asparagus and potato puree", dietary: ["gf"] },
+          { name: "Chicken ballotine", note: "with chewy carrots, ramps, sherry jus", dietary: [] }
         ]
       },
       {
         course: "Dessert",
-        items: [{ name: "Strawberry shortcake" }]
+        items: [{ name: "Strawberry shortcake", note: "", dietary: [] }]
       }
     ]
   },
   {
-    id: "office-party-20",
+    id: 2,
     title: "Office Party for 20",
-    subtitle: "Stationary appetizers",
-    eventType: "corporate",
-    date: "2024-06-15",
-    image: "/images/office-party.jpg",
-    tags: ["corporate", "appetizers"],
-    sections: [
-      {
-        course: "Appetizers",
-        items: [
-          { name: "Charcuterie spread", note: "duck breast prosciutto, beef bresaola, gouda, camembert, hazelnuts, pickles, flax crackers, jam, pâté" },
-          { name: "Sourdough focaccia", note: "herbes de provence" },
-          { name: "Beets over labneh", note: "local beets, yogurt, citrus, hazelnut" },
-          { name: "Carrot salad", note: "julienned, cilantro + pistachio" },
-          { name: "Duck pastrami sliders", note: "fresh buns, aioli, pickled cabbage" }
-        ]
-      }
-    ]
-  },
-  {
-    id: "gala-13",
-    title: "University Gala Dinner",
-    subtitle: "13 guests, home event",
-    eventType: "gala",
-    date: "2024-04-22",
-    image: "/images/university-gala.jpg",
-    tags: ["formal", "multi-course"],
-    sections: [
-      {
-        course: "Passed Apps",
-        items: [
-          { name: "Grilled lamb loin skewers", note: "onion + mint" },
-          { name: "Grilled vegetable skewers", note: "early season" },
-          { name: "Walleye brandade", note: "house crackers" }
-        ]
-      },
-      {
-        course: "Appetizer",
-        items: [
-          { name: "Pork Belly Porchetta", note: "spaetzle, peas + carrots, applesauce" },
-          { name: "Sourdough focaccia", note: "for the table" }
-        ]
-      },
-      {
-        course: "Main",
-        items: [
-          { name: "Duck leg confit", note: "red polenta, mushrooms" },
-          { name: "Alaskan sockeye", note: "charred cabbage, fennel, crispy potatoes" },
-          { name: "Pheasant ballotine", note: "mushroom, carrot, celery root purée" }
-        ]
-      },
-      {
-        course: "Dessert",
-        items: [
-          { name: "Citrus tart", note: "blood orange, Meyer lemon, kumquat" },
-          { name: "Torta Caprese", note: "dense chocolate hazelnut cake" }
-        ]
-      }
-    ]
-  },
-  {
-    id: "bar-brava-industry",
-    title: "Bar Brava Industry Night",
-    subtitle: "Casual plates + desserts",
-    eventType: "industry-night",
-    date: "2024-07-01",
-    image: "/images/bar-brava.jpg",
-    tags: ["casual", "bar"],
+    description: "(Stationary, substantial appetizers)",
     sections: [
       {
         course: "Menu",
         items: [
-          { name: "Sloppy Joe", note: "potato bun, purple slaw, onion" },
-          { name: "Pâté en Croute", note: "lamb + duck, watercress, mustard" },
-          { name: "Lamb neck", note: "white beans, leek confit, tomato vinaigrette" },
-          { name: "Chef's Big Salad", note: "greens, beets, carrots, potatoes, add trout" },
-          { name: "Cheese and crackers", note: "jam" },
-          { name: "Duck prosciutto", note: "pickles" },
-          { name: "Sourdough focaccia" }
-        ]
-      },
-      {
-        course: "Dessert",
-        items: [
-          { name: "Carrot cake" },
-          { name: "Hazelnut butter cup" }
+          { name: "Charcuterie spread", note: "duck breast 'prosciutto,' beef bresaola from Indiana, Wisconsin gouda, Minnesota 'camembert,' candied hazelnuts, pickled vegetables, flax crackers, jam, and a pate", dietary: [] },
+          { name: "Sourdough focaccia", note: "with herbes de Provence", dietary: [] },
+          { name: "Beets over labneh", note: "local beets treated very nicely, over fresh strained yogurt, with citrus and hazelnut", dietary: ["v", "gf"] },
+          { name: "Simple carrot salad", note: "julienned carrots tossed in cilantro and pistachio", dietary: ["v", "gf"] },
+          { name: "Duck Pastrami sliders", note: "on fresh buns with aioli and pickled cabbage", dietary: [] }
         ]
       }
     ]
   },
   {
-    id: "wedding-jan-60",
+    id: 3,
+    title: "Home Event, University gala, 13 guests",
+    description: "",
+    sections: [
+      {
+        course: "Passed Apps",
+        items: [
+          { name: "Grilled Lamb loin Skewers", note: "marinated in onion and mint", dietary: [] },
+          { name: "Grilled Vegetable skewers", note: "early season", dietary: ["v", "gf"] },
+          { name: "Walleye brandade", note: "on house crackers", dietary: [] }
+        ]
+      },
+      {
+        course: "Start",
+        items: [
+          { name: "Pork Belly Porchetta with spaetzle", note: "served with peas and carrots, applesauce", dietary: [] },
+          { name: "Sourdough focaccia for the table", note: "", dietary: [] }
+        ]
+      },
+      {
+        course: "Main",
+        items: [
+          { name: "Duck leg confit", note: "with red polenta and mushrooms", dietary: ["gf"] },
+          { name: "Alaskan Sockeye", note: "wrapped in charred cabbage and fennel, served with crispy russet potatoes", dietary: ["gf"] },
+          { name: "Pheasant ballotine", note: "mushroom, carrot, celery root puree", dietary: [] }
+        ]
+      },
+      {
+        course: "Dessert",
+        items: [
+          { name: "Citrus tart", note: "blood orange, Meyer lemon, kumquat", dietary: [] },
+          { name: "Torta Caprese", note: "dense chocolate hazelnut cake", dietary: [] }
+        ]
+      }
+    ]
+  },
+  {
+    id: 4,
+    title: "Bar Brava Industry Night",
+    description: "",
+    sections: [
+      {
+        course: "Menu",
+        items: [
+          { name: "Sloppy Joe", note: "on fresh potato bun with purple slaw and white onion", dietary: [] },
+          { name: "Pate en Croute", note: "with lamb and duck, served with watercress and mustard", dietary: [] },
+          { name: "Lamb neck", note: "over white beans with leek confit and tomato vinaigrette", dietary: [] },
+          { name: "Chef's Big Salad", note: "fresh greens, beets, carrots, potatoes - add trout", dietary: ["v", "gf"] },
+          { name: "Cheese and crackers", note: "with jam", dietary: [] },
+          { name: "Duck Prosciutto", note: "with pickles", dietary: [] },
+          { name: "Sourdough Focaccia", note: "", dietary: [] }
+        ]
+      },
+      {
+        course: "Dessert",
+        items: [
+          { name: "Carrot cake", note: "", dietary: [] },
+          { name: "Hazelnut Butter Cup", note: "", dietary: [] }
+        ]
+      }
+    ]
+  },
+  {
+    id: 5,
     title: "January Wedding for 60",
-    subtitle: "Winter wedding feast",
-    eventType: "wedding",
-    date: "2024-01-20",
-    image: "/images/january-wedding.jpg",
-    tags: ["wedding", "winter"],
+    description: "",
     sections: [
       {
         course: "Stationary",
         items: [
-          { name: "Charcuterie and cheese", note: "duck prosciutto, local meats, pickles, nuts, chips, jams, bread + crackers, dips" }
+          { name: "Charcuterie and Cheese spread", note: "local meat and cheeses, including duck ‘prosciutto’, accoutrement like pickles, nuts, chips, jams, sourdough bread and crackers, dips", dietary: [] }
         ]
       },
       {
         course: "Passed",
         items: [
-          { name: "Squash toast", note: "ricotta, roasted kabocha, sage honey, chili flake, olive oil" },
-          { name: "Charred Date Cruller Bites", note: "pork skin, balsamic" }
+          { name: "Squash toast", note: "ricotta, roasted Kabocha squash, sage honey, fermented chili flake and olive oil", dietary: ["v", "gf"] },
+          { name: "Charred Date Cruller Bites", note: "Pork skin, balsalmic", dietary: [] }
         ]
       },
       {
-        course: "Vegetable Dishes",
+        course: "Seated and shared - Vegetable dishes",
         items: [
-          { name: "White wine-poached leeks", note: "mustard vinaigrette" },
-          { name: "Roasted beets over labneh", note: "citrus, hazelnuts" },
-          { name: "Smoky cauliflower", note: "lemon cream, watercress, pistachio dukkuh" },
-          { name: "Raw carrots", note: "cilantro + pistachio" },
-          { name: "Roasted chicories + cabbages", note: "goat cheese, pepitas, citrus" },
-          { name: "Purple sweet potato salad", note: "tahini aioli, red onion, hominy" }
+          { name: "White wine-Poached Leeks over mustard vinaigrette", note: "", dietary: ["v", "gf"] },
+          { name: "Roasted beets over cultured labneh with citrus and hazelnuts", note: "", dietary: ["v", "gf"] },
+          { name: "Smoky cauliflower in lemon cream with watercress and pistachio dukkuh", note: "", dietary: ["v"] },
+          { name: "Raw carrots, julienned and dressed in cilantro and pistachio", note: "", dietary: ["v", "gf"] },
+          { name: "Roasted Winter chicories and cabbages, goat cheese, pepitas, citrus", note: "", dietary: ["v", "gf"] },
+          { name: "Purple sweet potato salad, warm/German style, tahini aioli, red onion and hominy", note: "", dietary: ["v"] }
         ]
       },
       {
-        course: "Meat Dishes",
+        course: "Seated and shared - Meat dishes",
         items: [
-          { name: "Braised bison + spaetzle", note: "carrots + peas" },
-          { name: "Cassoulet", note: "duck confit, white bean, lamb sausage" },
-          { name: "Chicken ballotine", note: "mushroom + gravy" },
-          { name: "Rainbow trout", note: "potato galette, gruyere" }
+          { name: "Braised bison and spaetzle, carrots and peas", note: "", dietary: [] },
+          { name: "Cassoulet, duck confit with white bean and lamb sausage", note: "", dietary: [] },
+          { name: "Chicken Ballontine, rolled and sliced, with mushroom and gravy", note: "", dietary: [] },
+          { name: "Rainbow Trout over potato galette, gruyere", note: "", dietary: ["gf"] }
         ]
       },
       {
         course: "Desserts",
         items: [
-          { name: "Cookie plates", note: "cardamom citrus shortbread, hazelnut linzer, cranberry oat bars" }
+          { name: "Cookie plates", note: "ex. Cardamom citrus shortbread, hazelnut linzer with plum, cranberry oat bars", dietary: [] }
         ]
       }
     ]
   },
   {
-    id: "wedding-spring-130",
+    id: 6,
     title: "Late Spring Wedding for 130",
-    subtitle: "Shared plates + mains",
-    eventType: "wedding",
-    date: "2024-05-25",
-    image: "/images/spring-wedding.jpg",
-    tags: ["wedding", "spring"],
+    description: "",
     sections: [
       {
-        course: "Appetizers",
+        course: "Start/Share",
         items: [
-          { name: "Sourdough focaccia breadsticks" },
-          { name: "All-belly Porchetta", note: "braised in cider" },
-          { name: "Lamb + vegetable skewers" },
-          { name: "Crackers, pickles + fish", note: "walleye brandade" },
-          { name: "Crudité", note: "bagna cauda" },
-          { name: "Lamb hand pies", note: "carrots, potatoes, peas" }
+          { name: "Sourdough Focaccia “breadsticks”", note: "", dietary: [] },
+          { name: "All-belly Porchetta, braised in cider", note: "", dietary: [] },
+          { name: "Skewers - lamb and vegetable", note: "", dietary: [] },
+          { name: "Crackers, Pickles and pickled fish, Walleye Brandade", note: "", dietary: [] },
+          { name: "Crudite, Bagna Cauda", note: "", dietary: ["v"] },
+          { name: "Lamb hand pies, carrots potatoes and peas", note: "", dietary: [] }
         ]
       },
       {
         course: "Main",
         items: [
-          { name: "Duck leg confit", note: "red polenta, grilled asparagus" },
-          { name: "Alaskan sockeye", note: "wild mushroom risotto, peas" }
+          { name: "Duck leg confit, over red polenta and grilled asparagus", note: "", dietary: ["gf"] },
+          { name: "Alaskan Sockeye, wild mushroom risotto with peas", note: "", dietary: ["gf"] }
         ]
       },
       {
         course: "Desserts",
         items: [
-          { name: "Hazelnut linzer with jam" },
-          { name: "Millionaire shortbread" },
-          { name: "Coconut macaron" },
-          { name: "Cornish Fairing" }
+          { name: "Hazelnut linzer with jam", note: "", dietary: [] },
+          { name: "Millionaire shortbread", note: "", dietary: [] },
+          { name: "Coconut macaron", note: "", dietary: [] },
+          { name: "Cornish Fairing", note: "", dietary: [] }
         ]
       }
     ]
   },
   {
-    id: "bachelorette-11",
-    title: "Bachelorette Party",
-    subtitle: "Summer, 11 guests",
-    eventType: "private-party",
-    date: "2024-08-12",
-    image: "/images/bachelorette.jpg",
-    tags: ["summer", "party"],
+    id: 7,
+    title: "Bachelorette Party, Summer, 11 Guests",
+    description: "",
     sections: [
       {
-        course: "Appetizer",
+        course: "Start",
         items: [
-          { name: "Sourdough focaccia", note: "basil + cherry tomato" },
-          { name: "Prosciutto + melon" },
-          { name: "Snap pea salad", note: "yogurt, strawberry, hazelnut" }
+          { name: "Sourdough focaccia - basil and cherry tomato", note: "", dietary: ["v"] },
+          { name: "Prosciutto and melon", note: "", dietary: [] },
+          { name: "Snap pea salad, fresh yogurt and strawberry, hazelnut", note: "", dietary: ["gf"] }
         ]
       },
       {
         course: "Main",
         items: [
-          { name: "Sockeye salmon" },
-          { name: "Hanger steak" },
-          { name: "Chicken breast paillard", note: "with grilled corn + squash, fregola sarda, heirloom tomato" }
+          { name: "Sockeye salmon OR Hanger Steak OR chicken breast paillard", note: "grilled sweet corn and summer squash, fregola sarda, heirloom tomato", dietary: ["gf"] }
         ]
       },
       {
         course: "Dessert",
-        items: [{ name: "Blueberry tart", note: "vanilla crème" }]
+        items: [{ name: "Blueberry tart - vanilla creme", note: "", dietary: [] }]
       }
     ]
   },
   {
-    id: "xmas-party-50-1",
-    title: "Christmas Work Party - Sample 1",
-    subtitle: "Home event, 50 guests",
-    eventType: "holiday",
-    date: "2023-12-20",
-    image: "/images/xmas1.jpg",
-    tags: ["holiday", "buffet"],
+    id: 8,
+    title: "Home Event, Christmas Work Party, 50 guests - Sample 1",
+    description: "",
     sections: [
       {
-        course: "Appetizers",
+        course: "To start",
         items: [
-          { name: "Salo", note: "cured pork fat, garlic, bread, pickles" },
-          { name: "Stuffed cabbage rolls" },
-          { name: "Beets with dill" },
-          { name: "Mushroom-filled potatoes" },
-          { name: "Watermelon (fresh + pickled)" },
-          { name: "Seasonal greens" },
-          { name: "Olive salad" }
+          { name: "Salo (cured pork fat), garlic, sourdough bread, pickles", note: "", dietary: [] },
+          { name: "Stuffed cabbage rolls", note: "", dietary: [] },
+          { name: "Beets with dill", note: "", dietary: ["v", "gf"] },
+          { name: "Potatoes filled with mushroom", note: "", dietary: ["v"] },
+          { name: "Fresh watermelon, pickled watermelon", note: "", dietary: ["v"] },
+          { name: "Seasonal greens", note: "", dietary: ["v"] },
+          { name: "Olive salad", note: "", dietary: ["v"] }
         ]
       },
       {
         course: "Main",
         items: [
-          { name: "Shashlik (kabobs)", note: "chicken, steak, lamb, vegetables, sauces" }
+          { name: "Kabob/shashlik - mountains of skewers", note: "including: roasted chicken, steak, lamb, tomatoes, mushrooms, and seasonal vegetables, garlic sauce and other sauces and marinades", dietary: [] }
         ]
       }
     ]
   },
   {
-    id: "xmas-party-50-2",
-    title: "Christmas Work Party - Sample 2",
-    subtitle: "Home event, 50 guests",
-    eventType: "holiday",
-    date: "2023-12-20",
-    image: "/images/xmas2.jpg",
-    tags: ["holiday", "formal"],
+    id: 9,
+    title: "Home Event, Christmas Work Party, 50 guests - Sample 2",
+    description: "",
     sections: [
       {
-        course: "Appetizer",
+        course: "Start",
         items: [
-          { name: "Sourdough focaccia", note: "olive oil + za'atar" },
-          { name: "Fresh ricotta" },
-          { name: "Spring/summer salad", note: "seasonal" }
+          { name: "Sourdough focaccia with olive oil and za'atar", note: "", dietary: ["v"] },
+          { name: "Fresh ricotta", note: "", dietary: [] },
+          { name: "Spring/summer salad - based on availability", note: "", dietary: ["v", "gf"] }
         ]
       },
       {
         course: "Mid-course",
         items: [
-          { name: "Agnolotti", note: "artichoke + shiitake, crispy sunchokes, honey" }
+          { name: "Agnolotti, filled with artichoke and shitake, with crispy sunchokes drizzled with honey", note: "", dietary: [] }
         ]
       },
       {
         course: "Main",
         items: [
-          { name: "Beef tenderloin", note: "foie gras butter, leek ash" },
-          { name: "Asparagus", note: "cured egg yolk, parmesan" }
+          { name: "Beef tenderloin, finished in foie gras butter and leek ash", note: "", dietary: [] },
+          { name: "Asparagus, cured egg yolk, parmesan", note: "", dietary: ["v", "gf"] }
+        ]
+      },
+      {
+        course: "Movement - Dessert and outdoor fire",
+        items: [
+          { name: "Raspberry marshmallow, with chocolate graham shortbread", note: "", dietary: [] },
+          { name: "Cognac, or Scotch", note: "", dietary: [] }
+        ]
+      }
+    ]
+  },
+  {
+    id: 10,
+    title: "Home Event, Christmas Work Party, 50 guests - Sample 3",
+    description: "",
+    sections: [
+      {
+        course: "Stationary",
+        items: [
+          { name: "Charcuterie and cheese", note: "mix of local and import with crudites, olives, jams, nuts, pickles, housemade chips and crackers", dietary: [] },
+          { name: "Fresh Bread - sourdough with local flour", note: "focaccia and baguette with olive oil and butter", dietary: ["v"] }
+        ]
+      },
+      {
+        course: "Passed and Placed",
+        items: [
+          { name: "Carrot salad with pistachio and cilantro", note: "", dietary: ["v"] },
+          { name: "Frites", note: "", dietary: ["v"] },
+          { name: "James Beard's onion sandwich", note: "onion and mayo with parsley on white bread, crusts cut off", dietary: [] },
+          { name: "Duck egg with duck bacon and asparagus", note: "", dietary: [] },
+          { name: "Scallop and apple", note: "", dietary: [] },
+          { name: "Short rib nigiri", note: "", dietary: [] },
+          { name: "Croque Monsieur", note: "", dietary: [] }
+        ]
+      },
+      {
+        course: "Desserts",
+        items: [
+          { name: "Cookie plate", note: "Chocolate Chip, Hazelnut Linzer, + 3rd undecided option", dietary: [] },
+          { name: "\"Twinkies\"", note: "citrus chiffon filled with foie gras buttercream", dietary: [] },
+          { name: "Japanese cheesecake", note: "", dietary: [] }
+        ]
+      }
+    ]
+  },
+  {
+    id: 11,
+    title: "Home Event, Christmas Work Party, 50 guests - Sample 4",
+    description: "",
+    sections: [
+      {
+        course: "Stationary",
+        items: [
+          { name: "Charcuterie and cheese platters", note: "including: breseola, cured pork tenderloin, marinated olives, pickled beets, tomato jam, 3-5 cheeses, candied walnuts, duck rillettes, house crackers and chips", dietary: [] },
+          { name: "Garlic focaccia", note: "", dietary: ["v"] },
+          { name: "Carrot salad with pistachio and coriander", note: "", dietary: ["v"] }
+        ]
+      },
+      {
+        course: "Passed",
+        items: [
+          { name: "Duck egg with duck pastrami", note: "", dietary: [] },
+          { name: "Kabocha squash toast, ricotta and persimmon honey", note: "", dietary: ["v"] },
+          { name: "Perfect Beef tenderloin bites", note: "", dietary: [] }
+        ]
+      },
+      {
+        course: "Main",
+        items: [
+          { name: "Duck confit with potato puree", note: "", dietary: ["gf"] },
+          { name: "Sockeye with fennel puree", note: "", dietary: ["gf"] }
+        ]
+      },
+      {
+        course: "Desserts",
+        items: [
+          { name: "Torta Caprese", note: "", dietary: [] },
+          { name: "Chocolate-hazelnut tart", note: "", dietary: [] }
+        ]
+      }
+    ]
+  },
+  {
+    id: 12,
+    title: "Private Pizza Party Sample",
+    description: "",
+    sections: [
+      {
+        course: "Pizza",
+        items: [
+          { name: "Classic Margherita", note: "", dietary: ["v"] },
+          { name: "Prosciutto and Arugula", note: "", dietary: [] },
+          { name: "Mushroom and Truffle Oil", note: "", dietary: ["v"] },
+          { name: "Four Cheese", note: "", dietary: ["v"] }
+        ]
+      },
+      {
+        course: "Sides",
+        items: [
+          { name: "Arugula salad with parmesan", note: "", dietary: ["v", "gf"] },
+          { name: "Garlic knots", note: "", dietary: ["v"] }
         ]
       },
       {
         course: "Dessert",
         items: [
-          { name: "Raspberry marshmallow", note: "chocolate graham shortbread" },
-          { name: "Cognac or Scotch" }
-        ]
-      }
-    ]
-  },
-  {
-    id: "xmas-party-50-3",
-    title: "Christmas Work Party - Sample 3",
-    subtitle: "Home event, 50 guests",
-    eventType: "holiday",
-    date: "2023-12-20",
-    image: "/images/xmas3.jpg",
-    tags: ["holiday"],
-    sections: [
-      {
-        course: "Stationary",
-        items: [
-          { name: "Charcuterie + cheese", note: "local + imported, crudités, olives, jams, nuts, pickles, chips, crackers" },
-          { name: "Fresh bread", note: "focaccia, baguette, olive oil, butter" }
-        ]
-      },
-      {
-        course: "Passed",
-        items: [
-          { name: "Carrot salad", note: "pistachio + cilantro" },
-          { name: "Frites" },
-          { name: "Onion sandwich", note: "mayo, parsley, white bread" },
-          { name: "Duck egg", note: "duck bacon, asparagus" },
-          { name: "Scallop and apple" },
-          { name: "Short rib nigiri" },
-          { name: "Croque Monsieur" }
-        ]
-      },
-      {
-        course: "Desserts",
-        items: [
-          { name: "Cookie plate", note: "chocolate chip, hazelnut linzer, third rotating" },
-          { name: "Citrus chiffon Twinkies", note: "foie gras buttercream" },
-          { name: "Japanese cheesecake" }
-        ]
-      }
-    ]
-  },
-  {
-    id: "xmas-party-50-4",
-    title: "Christmas Work Party - Sample 4",
-    subtitle: "Home event, 50 guests",
-    eventType: "holiday",
-    date: "2023-12-20",
-    image: "/images/xmas4.jpg",
-    tags: ["holiday"],
-    sections: [
-      {
-        course: "Stationary",
-        items: [
-          { name: "Charcuterie + cheese platters", note: "bresaola, cured pork, olives, beets, tomato jam, cheeses, walnuts, duck rillettes, house crackers + chips" },
-          { name: "Garlic focaccia" },
-          { name: "Carrot salad", note: "pistachio + coriander" }
-        ]
-      },
-      {
-        course: "Passed",
-        items: [
-          { name: "Duck egg with duck pastrami" },
-          { name: "Kabocha squash toast", note: "ricotta + persimmon honey" },
-          { name: "Beef tenderloin", note: "leek + corn ash, foie gras butter" }
-        ]
-      },
-      {
-        course: "Desserts",
-        items: [
-          { name: "Cookies + bars" },
-          { name: "Persimmon cake", note: "cranberry" },
-          { name: "Hot chocolate", note: "marshmallows, peppermint schnapps" }
+          { name: "Tiramisu", note: "", dietary: [] },
+          { name: "Chocolate chip cookie plate", note: "", dietary: [] }
         ]
       }
     ]
