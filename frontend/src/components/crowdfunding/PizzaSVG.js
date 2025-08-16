@@ -115,7 +115,7 @@ export const PizzaSVG = ({ size, goal, filled }) => {
           animate={{ scale: [1, 1.1, 1], opacity: [1, 0.7, 1] }}
           transition={{ duration: 0.6 }}
         />
-        <text
+        <motion.text
           x={center}
           y={center - 6}
           textAnchor="middle"
@@ -124,8 +124,8 @@ export const PizzaSVG = ({ size, goal, filled }) => {
           fill="#333"
         >
           {rounded}
-        </text>
-        <text
+        </motion.text>
+        <motion.text
           x={center}
           y={center + 18}
           textAnchor="middle"
@@ -134,7 +134,7 @@ export const PizzaSVG = ({ size, goal, filled }) => {
           opacity="0.8"
         >
           PIZZAS
-        </text>
+        </motion.text>
       </g>
     </svg>
   );
