@@ -1,7 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
-import { ServiceCard } from '../components/common/ServiceCard';
+import ServiceCard from '../components/common/ServiceCard';
 import { motion, useMotionValue, useTransform, animate } from 'framer-motion';
 import { fadeInUp, fadeInLeft } from '../utils/animations';
 import { PizzaSVG } from '../components/crowdfunding/PizzaSVG';
