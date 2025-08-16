@@ -1,101 +1,118 @@
 import React, { useState, useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const logo = '/gallery/logo.png?text=Local+Effort&font=mono';
 
+const links = [
+  { path: '/services', name: 'Services' },
+  { path: '/pricing',  name: 'Pricing'  },
+  { path: '/menu',     name: 'Menus'    },
+  { path: '/about',    name: 'About'    },
+];
+
 export const Header = () => {
-    const [isOpen, setIsMenuOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
 
-    // This effect locks the body scroll when the mobile menu is open
-    useEffect(() => {
-        if (isOpen) {
-            document.body.style.overflow = 'hidden';
-        } else {
-            document.body.style.overflow = 'auto';
-        }
-        // Cleanup function to remove the style if the component unmounts
-        return () => {
-            document.body.style.overflow = 'auto';
-        };
-    }, [isOpen]);
+  useEffect(() => {
+    document.body.style.overflow = isOpen ? 'hidden' : 'auto';
+    return () => { document.body.style.overflow = 'auto'; };
+  }, [isOpen]);
 
-    // Define navigation links for consistency
-    const navLinks = [
-        { path: "/services", name: "Services" },
-        { path: "/pricing", name: "Pricing" },
-        { path: "/menu", name: "Menus" },
-        { path: "/about", name: "About" }
-    ];
+  return (
+    <header className="sticky top-0 z-40 bg-white/80 backdrop-blur supports-[backdrop-filter]:bg-white/60 border-b border-neutral-200">
+      <div className="mx-auto max-w-6xl px-4 md:px-6 lg:px-8 h-16 flex items-center justify-between">
+        {/* Logo */}
+        <NavLink to="/" onClick={() => setIsOpen(false)} className="flex items-center gap-2">
+          <motion.img
+            src={logo}
+            alt="Local Effort Logo"
+            className="h-9 w-auto"
+            whileHover={{ scale: 1.03 }}
+            transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+          />
+        </NavLink>
 
-    return (
-        <header className="py-6 px-4 md:px-8 lg:px-16 flex justify-between items-center relative">
-            {/* --- Logo / Home Link --- */}
-            <NavLink to="/" className="z-50" onClick={() => setIsMenuOpen(false)}>
-                <img src={logo} alt="Local Effort Logo" className="h-10 w-auto" />
+        {/* Desktop nav */}
+        <nav className="hidden md:flex items-center gap-2 font-mono text-[0.9rem]">
+          {links.map(({ path, name }) => (
+            <NavLink key={path} to={path} className="relative px-2 py-1 rounded">
+              {({ isActive }) => (
+                <>
+                  <span className="transition-colors hover:text-neutral-900 text-neutral-700">{name}</span>
+                  <motion.span
+                    layoutId="nav-underline"
+                    className="absolute left-2 right-2 -bottom-0.5 h-0.5 bg-[var(--color-accent)]"
+                    initial={false}
+                    animate={{ opacity: isActive ? 1 : 0 }}
+                    transition={{ duration: 0.2 }}
+                  />
+                </>
+              )}
             </NavLink>
+          ))}
+          <NavLink to="/crowdfunding" className="ml-2">
+            <motion.span
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.98 }}
+              className="inline-flex items-center rounded-md bg-[var(--color-accent)] px-3 py-1.5 font-semibold text-white shadow-sm"
+            >
+              Fundraiser
+            </motion.span>
+          </NavLink>
+        </nav>
 
-            {/* --- Desktop Navigation --- */}
-            <nav className="hidden md:flex items-center space-x-2 font-mono text-sm">
-                {navLinks.map(link => (
-                    <NavLink
-                        key={link.path}
-                        to={link.path}
-                        className="p-2 rounded hover:bg-gray-200 transition-colors"
-                    >
-                        {link.name}
-                    </NavLink>
-                ))}
-                <NavLink
-                    to="/crowdfunding"
-                    className="p-2 px-4 rounded bg-red-600 text-white font-semibold hover:bg-red-700 transition-colors"
-                >
-                    Fundraiser
+        {/* Mobile menu button */}
+        <button
+          onClick={() => setIsOpen(v => !v)}
+          className="md:hidden z-50 w-9 h-7 flex flex-col justify-between"
+          aria-label="Toggle menu"
+        >
+          <span className={`block h-0.5 w-full bg-black transition-transform ${isOpen ? 'rotate-45 translate-y-[10px]' : ''}`} />
+          <span className={`block h-0.5 w-full bg-black transition-opacity ${isOpen ? 'opacity-0' : 'opacity-100'}`} />
+          <span className={`block h-0.5 w-full bg-black transition-transform ${isOpen ? '-rotate-45 -translate-y-[10px]' : ''}`} />
+        </button>
+      </div>
+
+      {/* Mobile overlay */}
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="md:hidden fixed inset-0 bg-neutral-50"
+          >
+            <motion.nav
+              initial="hidden"
+              animate="show"
+              exit="hidden"
+              variants={{
+                hidden: { opacity: 0 },
+                show: {
+                  opacity: 1,
+                  transition: { staggerChildren: 0.08, delayChildren: 0.12 }
+                }
+              }}
+              className="flex flex-col items-center justify-center h-full space-y-6 font-mono"
+            >
+              {links.map((l) => (
+                <motion.div key={l.path} variants={{ hidden: { y: 10, opacity: 0 }, show: { y: 0, opacity: 1 } }}>
+                  <NavLink to={l.path} onClick={() => setIsOpen(false)} className="text-3xl uppercase">
+                    {l.name}
+                  </NavLink>
+                </motion.div>
+              ))}
+              <motion.div variants={{ hidden: { y: 10, opacity: 0 }, show: { y: 0, opacity: 1 } }}>
+                <NavLink to="/crowdfunding" onClick={() => setIsOpen(false)}
+                  className="text-2xl uppercase bg-[var(--color-accent)] text-white px-6 py-3 rounded font-semibold">
+                  Fundraiser
                 </NavLink>
-            </nav>
-
-            {/* --- Mobile Menu Button (Animated Hamburger) --- */}
-            <button
-                onClick={() => setIsMenuOpen(!isOpen)}
-                className="md:hidden z-50 w-8 h-6 flex flex-col justify-between"
-                aria-label="Toggle menu"
-            >
-                <span
-                    className={`block h-0.5 w-full bg-black transform transition-transform duration-300 ease-in-out ${isOpen ? 'rotate-45 translate-y-[11px]' : ''}`}
-                />
-                <span
-                    className={`block h-0.5 w-full bg-black transition-opacity duration-300 ease-in-out ${isOpen ? 'opacity-0' : 'opacity-100'}`}
-                />
-                <span
-                    className={`block h-0.5 w-full bg-black transform transition-transform duration-300 ease-in-out ${isOpen ? '-rotate-45 -translate-y-[11px]' : ''}`}
-                />
-            </button>
-
-            {/* --- Mobile Menu Overlay --- */}
-            <div
-                className={`md:hidden fixed inset-0 bg-[#F5F5F5] transition-opacity duration-300 ease-in-out ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
-            >
-                <nav className="flex flex-col items-center justify-center h-full space-y-6 font-mono">
-                    {navLinks.map((link, index) => (
-                        <NavLink
-                            key={link.path}
-                            to={link.path}
-                            onClick={() => setIsMenuOpen(false)} // Close menu on link click
-                            className={`text-3xl uppercase transition-all duration-300 ${isOpen ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-4'}`}
-                            style={{ transitionDelay: isOpen ? `${150 + index * 50}ms` : '0ms' }}
-                        >
-                            {link.name}
-                        </NavLink>
-                    ))}
-                    <NavLink
-                        to="/crowdfunding"
-                        onClick={() => setIsMenuOpen(false)}
-                        className={`text-3xl uppercase bg-red-600 text-white px-6 py-3 rounded font-semibold transition-all duration-300 ${isOpen ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-4'}`}
-                        style={{ transitionDelay: isOpen ? `${150 + navLinks.length * 50}ms` : '0ms' }}
-                    >
-                        Fundraiser
-                    </NavLink>
-                </nav>
-            </div>
-        </header>
-    );
+              </motion.div>
+            </motion.nav>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </header>
+  );
 };

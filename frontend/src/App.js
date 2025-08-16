@@ -1,8 +1,12 @@
 import React, { useEffect, Suspense, lazy } from 'react';
 import { HelmetProvider } from 'react-helmet-async';
 import { HashRouter, Routes, Route, useLocation } from 'react-router-dom';
+import { AnimatePresence } from 'framer-motion';
+
 import { Header } from './components/layout/Header';
 import { Footer } from './components/layout/Footer';
+import { LoadingSpinner } from './components/layout/LoadingSpinner';
+import { AnimatedPage } from './components/layout/AnimatedPage';
 
 // Lazily import page components using the default export pattern
 const HomePage = lazy(() => import('./pages/HomePage'));
@@ -11,25 +15,30 @@ const ServicesPage = lazy(() => import('./pages/ServicesPage'));
 const PricingPage = lazy(() => import('./pages/PricingPage'));
 const CrowdfundingPage = lazy(() => import('./pages/CrowdfundingPage'));
 const MenuPage = lazy(() => import('./pages/MenuPage'));
-// Make sure you also update MenuPage.js, etc. to use "export default"
 
 const AppContent = () => {
   const location = useLocation();
 
+  useEffect(() => {
+    document.fonts?.ready?.then(() => document.body.classList.add('fonts-loaded'));
+  }, []);
+
   return (
     <HelmetProvider>
-      <div className="min-h-screen flex flex-col bg-gradient-to-br from-neutral-50 to-neutral-100">
+      <div className="min-h-screen flex flex-col bg-white">
         <Header />
-        <main className="flex-1 px-4 py-8 md:px-8 lg:px-16">
-          <Suspense fallback={<div>Loading...</div>}>
-            <Routes location={location} key={location.pathname}>
-              <Route path="/" element={<HomePage />} />
-              <Route path="/about" element={<AboutUsPage />} />
-              <Route path="/services" element={<ServicesPage />} />
-              <Route path="/pricing" element={<PricingPage />} />
-              <Route path="/crowdfunding" element={<CrowdfundingPage />} />
-              <Route path="/menu" element={<MenuPage />} />
-            </Routes>
+        <main className="flex-1">
+          <Suspense fallback={<LoadingSpinner /> }>
+            <AnimatePresence mode="wait">
+              <Routes location={location} key={location.pathname}>
+                <Route path="/" element={<AnimatedPage><HomePage /></AnimatedPage>} />
+                <Route path="/about" element={<AnimatedPage><AboutUsPage /></AnimatedPage>} />
+                <Route path="/services" element={<AnimatedPage><ServicesPage /></AnimatedPage>} />
+                <Route path="/pricing" element={<AnimatedPage><PricingPage /></AnimatedPage>} />
+                <Route path="/crowdfunding" element={<AnimatedPage><CrowdfundingPage /></AnimatedPage>} />
+                <Route path="/menu" element={<AnimatedPage><MenuPage /></AnimatedPage>} />
+              </Routes>
+            </AnimatePresence>
           </Suspense>
         </main>
         <Footer />
@@ -39,10 +48,6 @@ const AppContent = () => {
 };
 
 function App() {
-  useEffect(() => {
-    document.fonts.ready.then(() => document.body.classList.add('fonts-loaded'));
-  }, []);
-
   return (
     <HashRouter>
       <AppContent />

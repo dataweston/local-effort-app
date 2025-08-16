@@ -2,16 +2,18 @@ import React from 'react';
 
 export const Footer = () => {
   return (
-    <footer className="p-8 mt-16 border-t border-gray-900 font-mono text-sm">
-      <div className="flex justify-between">
-        <div>
+    <footer className="mt-16 border-t border-neutral-200">
+      <div className="mx-auto max-w-6xl px-4 md:px-6 lg:px-8 py-8 font-mono text-sm text-neutral-700">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div>
             <p>&copy; {new Date().getFullYear()} Local Effort</p>
-            <p className="text-gray-600">Roseville, MN | Midwest</p>
-        </div>
-        <div className="flex space-x-4">
-          <a href="https://instagram.com/localeffort" className="underline">Instagram</a>
-          <a href="https://facebook.com/localeffort" className="underline">Facebook</a>
-          <a href="https://www.thumbtack.com/mn/saint-paul/personal-chefs/weston-smith/service/429294230165643268" className="underline">Thumbtack</a>
+            <p className="text-neutral-500">Roseville, MN · Midwest</p>
+          </div>
+          <div className="flex gap-4">
+            <a href="https://instagram.com/localeffort" className="underline underline-offset-4 hover:opacity-80">Instagram</a>
+            <a href="https://facebook.com/localeffort" className="underline underline-offset-4 hover:opacity-80">Facebook</a>
+            <a href="https://www.thumbtack.com/mn/saint-paul/personal-chefs/weston-smith/service/429294230165643268" className="underline underline-offset-4 hover:opacity-80">Thumbtack</a>
+          </div>
         </div>
       </div>
     </footer>
