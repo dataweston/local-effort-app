@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
-import sanityClient from '../client'; // Make sure this path is correct
+import sanityClient from '../sanityClient'; // Make sure this path is correct
 
 const AboutUsPage = () => {
     const [aboutData, setAboutData] = useState(null);

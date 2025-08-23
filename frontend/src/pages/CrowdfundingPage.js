@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
-import sanityClient from '../client.js'; // Adjust the path if needed
+import sanityClient from '../sanityClient.js'; // Adjust the path if needed
 
 // Helper component for social sharing icons (remains the same)
 const ShareIcon = ({ children }) => (
