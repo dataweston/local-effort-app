@@ -15,7 +15,7 @@ const HappyMondayPage = () => {
 
   useEffect(() => {
     // Define the query to fetch menu items
-    const query = '*[_type == "menuItem"]';
+    const query = '*[_type == "menuItems"]';
 
     sanityClient.fetch(query)
       .then((data) => {
