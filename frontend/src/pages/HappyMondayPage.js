@@ -1,55 +1,29 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { motion, AnimatePresence } from 'framer-motion';
 
+import sanityClient from '../sanityClient'; // Import the configured client
 import FoodItemCard from '../components/menu/FoodItemCard';
 import FoodItemModal from '../components/menu/FoodItemModal';
 import FeedbackForm from '../components/menu/FeedbackForm';
-
-// Data extracted directly from the provided GitHub link
-const menuItems = [
-  {
-    id: '1',
-    name: 'Sourdough Loaf',
-    description: 'Classic sourdough bread, perfect for sandwiches or toast.',
-    ingredients: ['Flour', 'Water', 'Salt', 'Sourdough Starter'],
-  },
-  {
-    id: '2',
-    name: 'Pizza Dough',
-    description: 'Ready-to-use pizza dough for a delicious homemade pizza.',
-    ingredients: ['Flour', 'Water', 'Salt', 'Yeast', 'Olive Oil'],
-  },
-  {
-    id: '3',
-    name: 'Bagels (6-pack)',
-    description: 'Freshly baked bagels, available in plain, sesame, or everything.',
-    ingredients: ['Flour', 'Water', 'Salt', 'Yeast', 'Malt'],
-  },
-  {
-    id: '4',
-    name: 'Focaccia',
-    description: 'Light and airy focaccia with rosemary and sea salt.',
-    ingredients: ['Flour', 'Water', 'Salt', 'Yeast', 'Olive Oil', 'Rosemary'],
-  },
-  {
-    id: '5',
-    name: 'Dinner Rolls (Dozen)',
-    description: 'Soft and fluffy dinner rolls, a perfect side for any meal.',
-    ingredients: ['Flour', 'Water', 'Salt', 'Yeast', 'Butter', 'Milk'],
-  },
-  {
-    id: '6',
-    name: 'Cinnamon Rolls (4-pack)',
-    description: 'Gooey and delicious cinnamon rolls with a cream cheese frosting.',
-    ingredients: ['Flour', 'Butter', 'Sugar', 'Cinnamon', 'Cream Cheese'],
-  },
-];
-
+import { LoadingSpinner } from '../components/layout/LoadingSpinner'; // Assuming you have this
 
 const HappyMondayPage = () => {
-  // We no longer need isLoading or useEffect for menu items
+  const [menuItems, setMenuItems] = useState([]);
   const [selectedItem, setSelectedItem] = useState(null);
+  const [isLoading, setIsLoading] = useState(true); // State to handle loading
+
+  useEffect(() => {
+    // Define the query to fetch menu items
+    const query = '*[_type == "menuItem"]';
+
+    sanityClient.fetch(query)
+      .then((data) => {
+        setMenuItems(data);
+        setIsLoading(false);
+      })
+      .catch(console.error);
+  }, []); // Empty dependency array ensures this runs only once
 
   const handleCardClick = (item) => {
     setSelectedItem(item);
@@ -70,19 +44,24 @@ const HappyMondayPage = () => {
         {/* Menu Items Section */}
         <section className="mx-auto max-w-6xl px-4 md:px-6 lg:px-8">
           <h2 className="text-heading uppercase mb-6 border-b border-neutral-300 pb-3">Happy Monday Menu</h2>
-          <motion.div
-            className="grid md:grid-cols-2 lg:grid-cols-3 gap-6"
-            initial="initial"
-            animate="animate"
-            variants={{
-              animate: { transition: { staggerChildren: 0.1 } }
-            }}
-          >
-            {/* The component now maps over the local menuItems array */}
-            {menuItems.map(item => (
-              <FoodItemCard key={item.id} item={item} onClick={() => handleCardClick(item)} />
-            ))}
-          </motion.div>
+          {isLoading ? (
+            <div className="flex justify-center items-center h-64">
+              <LoadingSpinner />
+            </div>
+          ) : (
+            <motion.div
+              className="grid md:grid-cols-2 lg:grid-cols-3 gap-6"
+              initial="initial"
+              animate="animate"
+              variants={{
+                animate: { transition: { staggerChildren: 0.1 } }
+              }}
+            >
+              {menuItems.map(item => (
+                <FoodItemCard key={item._id} item={item} onClick={() => handleCardClick(item)} />
+              ))}
+            </motion.div>
+          )}
         </section>
 
         {/* Feedback Section (This remains unchanged) */}
