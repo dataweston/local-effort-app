@@ -1,11 +1,5 @@
-// First, import your new schema
+// Import your new schema
 import menuItems from './menuItems'
 
-export const schema = {
-  types: [
-    // Add your new schema to the list
-    menuItems,
-    
-    // ... any other schemas you might have will be here
-  ],
-}
+// Export the schemas as a named constant called 'schemaTypes'
+export const schemaTypes = [menuItems]
