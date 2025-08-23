@@ -9,6 +9,8 @@ const links = [
   { path: '/pricing',  name: 'Pricing'  },
   { path: '/menu',     name: 'Menus'    },
   { path: '/about',    name: 'About'    },
+  { path: '/happy-monday',    name: 'Happy Monday'    },
+
 ];
 
 export const Header = () => {

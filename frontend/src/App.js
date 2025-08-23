@@ -15,6 +15,8 @@ const ServicesPage = lazy(() => import('./pages/ServicesPage'));
 const PricingPage = lazy(() => import('./pages/PricingPage'));
 const CrowdfundingPage = lazy(() => import('./pages/CrowdfundingPage'));
 const MenuPage = lazy(() => import('./pages/MenuPage'));
+const HappyMondayPage = lazy(() => import('./pages/HappyMondayPage'));
+
 
 const AppContent = () => {
   const location = useLocation();
@@ -37,6 +39,7 @@ const AppContent = () => {
                 <Route path="/pricing" element={<AnimatedPage><PricingPage /></AnimatedPage>} />
                 <Route path="/crowdfunding" element={<AnimatedPage><CrowdfundingPage /></AnimatedPage>} />
                 <Route path="/menu" element={<AnimatedPage><MenuPage /></AnimatedPage>} />
+                Route path="/happy-monday" element={<AnimatedPage><HappyMondayPage /></AnimatedPage>} />
               </Routes>
             </AnimatePresence>
           </Suspense>
