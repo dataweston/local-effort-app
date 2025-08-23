@@ -39,7 +39,7 @@ const AppContent = () => {
                 <Route path="/pricing" element={<AnimatedPage><PricingPage /></AnimatedPage>} />
                 <Route path="/crowdfunding" element={<AnimatedPage><CrowdfundingPage /></AnimatedPage>} />
                 <Route path="/menu" element={<AnimatedPage><MenuPage /></AnimatedPage>} />
-                Route path="/happy-monday" element={<AnimatedPage><HappyMondayPage /></AnimatedPage>} />
+                <Route path="/happy-monday" element={<AnimatedPage><HappyMondayPage /></AnimatedPage>} />
               </Routes>
             </AnimatePresence>
           </Suspense>
