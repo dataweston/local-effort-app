@@ -1,5 +1,3 @@
-// src/data/sampleMenus.js
-
 export const sampleMenus = [
   {
     id: 1,
@@ -9,22 +7,22 @@ export const sampleMenus = [
       {
         course: "Start",
         items: [
-          { name: "Sourdough focaccia with spring herbs", note: "", dietary: [] },
-          { name: "Roasted beets over labneh", note: "local beets, fresh strained yogurt, citrus and hazelnut", dietary: ["v", "gf"] },
-          { name: "Asparagus salad", note: "bacon, hazelnut, parmesan", dietary: ["gf"] },
-          { name: "Agnolotti", note: "fresh pasta filled with ricotta and gouda, served with butter and crispy mushroom, honey", dietary: [] }
+          { name: "Sourdough focaccia with spring herbs", note: "", dietary: [], imagePublicId: "dishes/focaccia_spring_herbs" },
+          { name: "Roasted beets over labneh", note: "local beets, fresh strained yogurt, citrus and hazelnut", dietary: ["v", "gf"], imagePublicId: "dishes/beets_labneh" },
+          { name: "Asparagus salad", note: "bacon, hazelnut, parmesan", dietary: ["gf"], imagePublicId: "dishes/asparagus_salad_bacon" },
+          { name: "Agnolotti", note: "fresh pasta filled with ricotta and gouda, served with butter and crispy mushroom, honey", dietary: [], imagePublicId: "dishes/agnolotti_ricotta" }
         ]
       },
       {
         course: "Main",
         items: [
-          { name: "Rainbow trout", note: "raised in Forest Hills, wrapped in fennel and broweston iled cabbage, with asparagus and potato puree", dietary: ["gf"] },
-          { name: "Chicken ballotine", note: "with chewy carrots, ramps, sherry jus", dietary: [] }
+          { name: "Rainbow trout", note: "raised in Forest Hills, wrapped in fennel and broweston iled cabbage, with asparagus and potato puree", dietary: ["gf"], imagePublicId: "dishes/rainbow_trout_fennel" },
+          { name: "Chicken ballotine", note: "with chewy carrots, ramps, sherry jus", dietary: [], imagePublicId: "dishes/chicken_ballotine_carrots" }
         ]
       },
       {
         course: "Dessert",
-        items: [{ name: "Strawberry shortcake", note: "", dietary: [] }]
+        items: [{ name: "Strawberry shortcake", note: "", dietary: [], imagePublicId: "dishes/strawberry_shortcake" }]
       }
     ]
   },
@@ -36,11 +34,11 @@ export const sampleMenus = [
       {
         course: "Menu",
         items: [
-          { name: "Charcuterie spread", note: "duck breast 'prosciutto,' beef bresaola from Indiana, Wisconsin gouda, Minnesota 'camembert,' candied hazelnuts, pickled vegetables, flax crackers, jam, and a pate", dietary: [] },
-          { name: "Sourdough focaccia", note: "with herbes de Provence", dietary: [] },
-          { name: "Beets over labneh", note: "local beets treated very nicely, over fresh strained yogurt, with citrus and hazelnut", dietary: ["v", "gf"] },
-          { name: "Simple carrot salad", note: "julienned carrots tossed in cilantro and pistachio", dietary: ["v", "gf"] },
-          { name: "Duck Pastrami sliders", note: "on fresh buns with aioli and pickled cabbage", dietary: [] }
+          { name: "Charcuterie spread", note: "duck breast 'prosciutto,' beef bresaola from Indiana, Wisconsin gouda, Minnesota 'camembert,' candied hazelnuts, pickled vegetables, flax crackers, jam, and a pate", dietary: [], imagePublicId: "events/charcuterie_spread_full" },
+          { name: "Sourdough focaccia", note: "with herbes de Provence", dietary: [], imagePublicId: "dishes/focaccia_provence" },
+          { name: "Beets over labneh", note: "local beets treated very nicely, over fresh strained yogurt, with citrus and hazelnut", dietary: ["v", "gf"], imagePublicId: "dishes/beets_labneh_citrus" },
+          { name: "Simple carrot salad", note: "julienned carrots tossed in cilantro and pistachio", dietary: ["v", "gf"], imagePublicId: "dishes/carrot_salad_pistachio" },
+          { name: "Duck Pastrami sliders", note: "on fresh buns with aioli and pickled cabbage", dietary: [], imagePublicId: "dishes/duck_sliders" }
         ]
       }
     ]
@@ -53,31 +51,31 @@ export const sampleMenus = [
       {
         course: "Passed Apps",
         items: [
-          { name: "Grilled Lamb loin Skewers", note: "marinated in onion and mint", dietary: [] },
-          { name: "Grilled Vegetable skewers", note: "early season", dietary: ["v", "gf"] },
-          { name: "Walleye brandade", note: "on house crackers", dietary: [] }
+          { name: "Grilled Lamb loin Skewers", note: "marinated in onion and mint", dietary: [], imagePublicId: "dishes/lamb_skewers_mint" },
+          { name: "Grilled Vegetable skewers", note: "early season", dietary: ["v", "gf"], imagePublicId: "dishes/veg_skewers_summer" },
+          { name: "Walleye brandade", note: "on house crackers", dietary: [], imagePublicId: "dishes/walleye_brandade_crackers" }
         ]
       },
       {
         course: "Start",
         items: [
-          { name: "Pork Belly Porchetta with spaetzle", note: "served with peas and carrots, applesauce", dietary: [] },
-          { name: "Sourdough focaccia for the table", note: "", dietary: [] }
+          { name: "Pork Belly Porchetta with spaetzle", note: "served with peas and carrots, applesauce", dietary: [], imagePublicId: "dishes/porchetta_spaetzle" },
+          { name: "Sourdough focaccia for the table", note: "", dietary: [], imagePublicId: "dishes/focaccia_table" }
         ]
       },
       {
         course: "Main",
         items: [
-          { name: "Duck leg confit", note: "with red polenta and mushrooms", dietary: ["gf"] },
-          { name: "Alaskan Sockeye", note: "wrapped in charred cabbage and fennel, served with crispy russet potatoes", dietary: ["gf"] },
-          { name: "Pheasant ballotine", note: "mushroom, carrot, celery root puree", dietary: [] }
+          { name: "Duck leg confit", note: "with red polenta and mushrooms", dietary: ["gf"], imagePublicId: "dishes/duck_confit_polenta" },
+          { name: "Alaskan Sockeye", note: "wrapped in charred cabbage and fennel, served with crispy russet potatoes", dietary: ["gf"], imagePublicId: "dishes/sockeye_cabbage" },
+          { name: "Pheasant ballotine", note: "mushroom, carrot, celery root puree", dietary: [], imagePublicId: "dishes/pheasant_ballotine" }
         ]
       },
       {
         course: "Dessert",
         items: [
-          { name: "Citrus tart", note: "blood orange, Meyer lemon, kumquat", dietary: [] },
-          { name: "Torta Caprese", note: "dense chocolate hazelnut cake", dietary: [] }
+          { name: "Citrus tart", note: "blood orange, Meyer lemon, kumquat", dietary: [], imagePublicId: "dishes/citrus_tart" },
+          { name: "Torta Caprese", note: "dense chocolate hazelnut cake", dietary: [], imagePublicId: "dishes/torta_caprese" }
         ]
       }
     ]
@@ -90,20 +88,20 @@ export const sampleMenus = [
       {
         course: "Menu",
         items: [
-          { name: "Sloppy Joe", note: "on fresh potato bun with purple slaw and white onion", dietary: [] },
-          { name: "Pate en Croute", note: "with lamb and duck, served with watercress and mustard", dietary: [] },
-          { name: "Lamb neck", note: "over white beans with leek confit and tomato vinaigrette", dietary: [] },
-          { name: "Chef's Big Salad", note: "fresh greens, beets, carrots, potatoes - add trout", dietary: ["v", "gf"] },
-          { name: "Cheese and crackers", note: "with jam", dietary: [] },
-          { name: "Duck Prosciutto", note: "with pickles", dietary: [] },
-          { name: "Sourdough Focaccia", note: "", dietary: [] }
+          { name: "Sloppy Joe", note: "on fresh potato bun with purple slaw and white onion", dietary: [], imagePublicId: "dishes/sloppy_joe" },
+          { name: "Pate en Croute", note: "with lamb and duck, served with watercress and mustard", dietary: [], imagePublicId: "dishes/pate_en_croute" },
+          { name: "Lamb neck", note: "over white beans with leek confit and tomato vinaigrette", dietary: [], imagePublicId: "dishes/lamb_neck_beans" },
+          { name: "Chef's Big Salad", note: "fresh greens, beets, carrots, potatoes - add trout", dietary: ["v", "gf"], imagePublicId: "dishes/chefs_salad" },
+          { name: "Cheese and crackers", note: "with jam", dietary: [], imagePublicId: "dishes/cheese_crackers" },
+          { name: "Duck Prosciutto", note: "with pickles", dietary: [], imagePublicId: "dishes/duck_prosciutto" },
+          { name: "Sourdough Focaccia", note: "", dietary: [], imagePublicId: "dishes/focaccia_plain" }
         ]
       },
       {
         course: "Dessert",
         items: [
-          { name: "Carrot cake", note: "", dietary: [] },
-          { name: "Hazelnut Butter Cup", note: "", dietary: [] }
+          { name: "Carrot cake", note: "", dietary: [], imagePublicId: "dishes/carrot_cake" },
+          { name: "Hazelnut Butter Cup", note: "", dietary: [], imagePublicId: "dishes/hazelnut_cup" }
         ]
       }
     ]
@@ -116,40 +114,40 @@ export const sampleMenus = [
       {
         course: "Stationary",
         items: [
-          { name: "Charcuterie and Cheese spread", note: "local meat and cheeses, including duck ‘prosciutto’, accoutrement like pickles, nuts, chips, jams, sourdough bread and crackers, dips", dietary: [] }
+          { name: "Charcuterie and Cheese spread", note: "local meat and cheeses, including duck ‘prosciutto’, accoutrement like pickles, nuts, chips, jams, sourdough bread and crackers, dips", dietary: [], imagePublicId: "events/charcuterie_wedding" }
         ]
       },
       {
         course: "Passed",
         items: [
-          { name: "Squash toast", note: "ricotta, roasted Kabocha squash, sage honey, fermented chili flake and olive oil", dietary: ["v", "gf"] },
-          { name: "Charred Date Cruller Bites", note: "Pork skin, balsalmic", dietary: [] }
+          { name: "Squash toast", note: "ricotta, roasted Kabocha squash, sage honey, fermented chili flake and olive oil", dietary: ["v", "gf"], imagePublicId: "dishes/squash_toast" },
+          { name: "Charred Date Cruller Bites", note: "Pork skin, balsalmic", dietary: [], imagePublicId: "dishes/date_cruller" }
         ]
       },
       {
         course: "Seated and shared - Vegetable dishes",
         items: [
-          { name: "White wine-Poached Leeks over mustard vinaigrette", note: "", dietary: ["v", "gf"] },
-          { name: "Roasted beets over cultured labneh with citrus and hazelnuts", note: "", dietary: ["v", "gf"] },
-          { name: "Smoky cauliflower in lemon cream with watercress and pistachio dukkuh", note: "", dietary: ["v"] },
-          { name: "Raw carrots, julienned and dressed in cilantro and pistachio", note: "", dietary: ["v", "gf"] },
-          { name: "Roasted Winter chicories and cabbages, goat cheese, pepitas, citrus", note: "", dietary: ["v", "gf"] },
-          { name: "Purple sweet potato salad, warm/German style, tahini aioli, red onion and hominy", note: "", dietary: ["v"] }
+          { name: "White wine-Poached Leeks over mustard vinaigrette", note: "", dietary: ["v", "gf"], imagePublicId: "dishes/poached_leeks" },
+          { name: "Roasted beets over cultured labneh with citrus and hazelnuts", note: "", dietary: ["v", "gf"], imagePublicId: "dishes/beets_labneh_wedding" },
+          { name: "Smoky cauliflower in lemon cream with watercress and pistachio dukkuh", note: "", dietary: ["v"], imagePublicId: "dishes/smoky_cauliflower" },
+          { name: "Raw carrots, julienned and dressed in cilantro and pistachio", note: "", dietary: ["v", "gf"], imagePublicId: "dishes/raw_carrots_julienned" },
+          { name: "Roasted Winter chicories and cabbages, goat cheese, pepitas, citrus", note: "", dietary: ["v", "gf"], imagePublicId: "dishes/winter_chicories" },
+          { name: "Purple sweet potato salad, warm/German style, tahini aioli, red onion and hominy", note: "", dietary: ["v"], imagePublicId: "dishes/sweet_potato_salad" }
         ]
       },
       {
         course: "Seated and shared - Meat dishes",
         items: [
-          { name: "Braised bison and spaetzle, carrots and peas", note: "", dietary: [] },
-          { name: "Cassoulet, duck confit with white bean and lamb sausage", note: "", dietary: [] },
-          { name: "Chicken Ballontine, rolled and sliced, with mushroom and gravy", note: "", dietary: [] },
-          { name: "Rainbow Trout over potato galette, gruyere", note: "", dietary: ["gf"] }
+          { name: "Braised bison and spaetzle, carrots and peas", note: "", dietary: [], imagePublicId: "dishes/bison_spaetzle" },
+          { name: "Cassoulet, duck confit with white bean and lamb sausage", note: "", dietary: [], imagePublicId: "dishes/cassoulet" },
+          { name: "Chicken Ballontine, rolled and sliced, with mushroom and gravy", note: "", dietary: [], imagePublicId: "dishes/chicken_ballotine_gravy" },
+          { name: "Rainbow Trout over potato galette, gruyere", note: "", dietary: ["gf"], imagePublicId: "dishes/trout_galette" }
         ]
       },
       {
         course: "Desserts",
         items: [
-          { name: "Cookie plates", note: "ex. Cardamom citrus shortbread, hazelnut linzer with plum, cranberry oat bars", dietary: [] }
+          { name: "Cookie plates", note: "ex. Cardamom citrus shortbread, hazelnut linzer with plum, cranberry oat bars", dietary: [], imagePublicId: "events/cookie_plates" }
         ]
       }
     ]
@@ -162,28 +160,28 @@ export const sampleMenus = [
       {
         course: "Start/Share",
         items: [
-          { name: "Sourdough Focaccia “breadsticks”", note: "", dietary: [] },
-          { name: "All-belly Porchetta, braised in cider", note: "", dietary: [] },
-          { name: "Skewers - lamb and vegetable", note: "", dietary: [] },
-          { name: "Crackers, Pickles and pickled fish, Walleye Brandade", note: "", dietary: [] },
-          { name: "Crudite, Bagna Cauda", note: "", dietary: ["v"] },
-          { name: "Lamb hand pies, carrots potatoes and peas", note: "", dietary: [] }
+          { name: "Sourdough Focaccia “breadsticks”", note: "", dietary: [], imagePublicId: "dishes/focaccia_sticks" },
+          { name: "All-belly Porchetta, braised in cider", note: "", dietary: [], imagePublicId: "dishes/porchetta_cider" },
+          { name: "Skewers - lamb and vegetable", note: "", dietary: [], imagePublicId: "dishes/mixed_skewers" },
+          { name: "Crackers, Pickles and pickled fish, Walleye Brandade", note: "", dietary: [], imagePublicId: "dishes/pickled_fish_crackers" },
+          { name: "Crudite, Bagna Cauda", note: "", dietary: ["v"], imagePublicId: "dishes/crudite_bagna_cauda" },
+          { name: "Lamb hand pies, carrots potatoes and peas", note: "", dietary: [], imagePublicId: "dishes/lamb_hand_pies" }
         ]
       },
       {
         course: "Main",
         items: [
-          { name: "Duck leg confit, over red polenta and grilled asparagus", note: "", dietary: ["gf"] },
-          { name: "Alaskan Sockeye, wild mushroom risotto with peas", note: "", dietary: ["gf"] }
+          { name: "Duck leg confit, over red polenta and grilled asparagus", note: "", dietary: ["gf"], imagePublicId: "dishes/duck_confit_asparagus" },
+          { name: "Alaskan Sockeye, wild mushroom risotto with peas", note: "", dietary: ["gf"], imagePublicId: "dishes/sockeye_risotto" }
         ]
       },
       {
         course: "Desserts",
         items: [
-          { name: "Hazelnut linzer with jam", note: "", dietary: [] },
-          { name: "Millionaire shortbread", note: "", dietary: [] },
-          { name: "Coconut macaron", note: "", dietary: [] },
-          { name: "Cornish Fairing", note: "", dietary: [] }
+          { name: "Hazelnut linzer with jam", note: "", dietary: [], imagePublicId: "dishes/hazelnut_linzer" },
+          { name: "Millionaire shortbread", note: "", dietary: [], imagePublicId: "dishes/millionaire_shortbread" },
+          { name: "Coconut macaron", note: "", dietary: [], imagePublicId: "dishes/coconut_macaron" },
+          { name: "Cornish Fairing", note: "", dietary: [], imagePublicId: "dishes/cornish_fairing" }
         ]
       }
     ]
@@ -196,20 +194,20 @@ export const sampleMenus = [
       {
         course: "Start",
         items: [
-          { name: "Sourdough focaccia - basil and cherry tomato", note: "", dietary: ["v"] },
-          { name: "Prosciutto and melon", note: "", dietary: [] },
-          { name: "Snap pea salad, fresh yogurt and strawberry, hazelnut", note: "", dietary: ["gf"] }
+          { name: "Sourdough focaccia - basil and cherry tomato", note: "", dietary: ["v"], imagePublicId: "dishes/focaccia_basil_tomato" },
+          { name: "Prosciutto and melon", note: "", dietary: [], imagePublicId: "dishes/prosciutto_melon" },
+          { name: "Snap pea salad, fresh yogurt and strawberry, hazelnut", note: "", dietary: ["gf"], imagePublicId: "dishes/snap_pea_salad" }
         ]
       },
       {
         course: "Main",
         items: [
-          { name: "Sockeye salmon OR Hanger Steak OR chicken breast paillard", note: "grilled sweet corn and summer squash, fregola sarda, heirloom tomato", dietary: ["gf"] }
+          { name: "Sockeye salmon OR Hanger Steak OR chicken breast paillard", note: "grilled sweet corn and summer squash, fregola sarda, heirloom tomato", dietary: ["gf"], imagePublicId: "dishes/summer_grill_platter" }
         ]
       },
       {
         course: "Dessert",
-        items: [{ name: "Blueberry tart - vanilla creme", note: "", dietary: [] }]
+        items: [{ name: "Blueberry tart - vanilla creme", note: "", dietary: [], imagePublicId: "dishes/blueberry_tart" }]
       }
     ]
   },
@@ -221,19 +219,19 @@ export const sampleMenus = [
       {
         course: "To start",
         items: [
-          { name: "Salo (cured pork fat), garlic, sourdough bread, pickles", note: "", dietary: [] },
-          { name: "Stuffed cabbage rolls", note: "", dietary: [] },
-          { name: "Beets with dill", note: "", dietary: ["v", "gf"] },
-          { name: "Potatoes filled with mushroom", note: "", dietary: ["v"] },
-          { name: "Fresh watermelon, pickled watermelon", note: "", dietary: ["v"] },
-          { name: "Seasonal greens", note: "", dietary: ["v"] },
-          { name: "Olive salad", note: "", dietary: ["v"] }
+          { name: "Salo (cured pork fat), garlic, sourdough bread, pickles", note: "", dietary: [], imagePublicId: "dishes/salo_platter" },
+          { name: "Stuffed cabbage rolls", note: "", dietary: [], imagePublicId: "dishes/cabbage_rolls" },
+          { name: "Beets with dill", note: "", dietary: ["v", "gf"], imagePublicId: "dishes/beets_dill" },
+          { name: "Potatoes filled with mushroom", note: "", dietary: ["v"], imagePublicId: "dishes/stuffed_potatoes" },
+          { name: "Fresh watermelon, pickled watermelon", note: "", dietary: ["v"], imagePublicId: "dishes/watermelon_salad" },
+          { name: "Seasonal greens", note: "", dietary: ["v"], imagePublicId: "dishes/seasonal_greens" },
+          { name: "Olive salad", note: "", dietary: ["v"], imagePublicId: "dishes/olive_salad" }
         ]
       },
       {
         course: "Main",
         items: [
-          { name: "Kabob/shashlik - mountains of skewers", note: "including: roasted chicken, steak, lamb, tomatoes, mushrooms, and seasonal vegetables, garlic sauce and other sauces and marinades", dietary: [] }
+          { name: "Kabob/shashlik - mountains of skewers", note: "including: roasted chicken, steak, lamb, tomatoes, mushrooms, and seasonal vegetables, garlic sauce and other sauces and marinades", dietary: [], imagePublicId: "events/kabob_skewers" }
         ]
       }
     ]
@@ -246,29 +244,29 @@ export const sampleMenus = [
       {
         course: "Start",
         items: [
-          { name: "Sourdough focaccia with olive oil and za'atar", note: "", dietary: ["v"] },
-          { name: "Fresh ricotta", note: "", dietary: [] },
-          { name: "Spring/summer salad - based on availability", note: "", dietary: ["v", "gf"] }
+          { name: "Sourdough focaccia with olive oil and za'atar", note: "", dietary: ["v"], imagePublicId: "dishes/focaccia_zaatar" },
+          { name: "Fresh ricotta", note: "", dietary: [], imagePublicId: "dishes/fresh_ricotta" },
+          { name: "Spring/summer salad - based on availability", note: "", dietary: ["v", "gf"], imagePublicId: "dishes/spring_salad" }
         ]
       },
       {
         course: "Mid-course",
         items: [
-          { name: "Agnolotti, filled with artichoke and shitake, with crispy sunchokes drizzled with honey", note: "", dietary: [] }
+          { name: "Agnolotti, filled with artichoke and shitake, with crispy sunchokes drizzled with honey", note: "", dietary: [], imagePublicId: "dishes/agnolotti_artichoke" }
         ]
       },
       {
         course: "Main",
         items: [
-          { name: "Beef tenderloin, finished in foie gras butter and leek ash", note: "", dietary: [] },
-          { name: "Asparagus, cured egg yolk, parmesan", note: "", dietary: ["v", "gf"] }
+          { name: "Beef tenderloin, finished in foie gras butter and leek ash", note: "", dietary: [], imagePublicId: "dishes/beef_tenderloin_foie" },
+          { name: "Asparagus, cured egg yolk, parmesan", note: "", dietary: ["v", "gf"], imagePublicId: "dishes/asparagus_egg_yolk" }
         ]
       },
       {
         course: "Movement - Dessert and outdoor fire",
         items: [
-          { name: "Raspberry marshmallow, with chocolate graham shortbread", note: "", dietary: [] },
-          { name: "Cognac, or Scotch", note: "", dietary: [] }
+          { name: "Raspberry marshmallow, with chocolate graham shortbread", note: "", dietary: [], imagePublicId: "dishes/raspberry_marshmallow" },
+          { name: "Cognac, or Scotch", note: "", dietary: [], imagePublicId: "events/cognac_fire" }
         ]
       }
     ]
@@ -281,28 +279,28 @@ export const sampleMenus = [
       {
         course: "Stationary",
         items: [
-          { name: "Charcuterie and cheese", note: "mix of local and import with crudites, olives, jams, nuts, pickles, housemade chips and crackers", dietary: [] },
-          { name: "Fresh Bread - sourdough with local flour", note: "focaccia and baguette with olive oil and butter", dietary: ["v"] }
+          { name: "Charcuterie and cheese", note: "mix of local and import with crudites, olives, jams, nuts, pickles, housemade chips and crackers", dietary: [], imagePublicId: "events/charcuterie_christmas" },
+          { name: "Fresh Bread - sourdough with local flour", note: "focaccia and baguette with olive oil and butter", dietary: ["v"], imagePublicId: "dishes/bread_basket" }
         ]
       },
       {
         course: "Passed and Placed",
         items: [
-          { name: "Carrot salad with pistachio and cilantro", note: "", dietary: ["v"] },
-          { name: "Frites", note: "", dietary: ["v"] },
-          { name: "James Beard's onion sandwich", note: "onion and mayo with parsley on white bread, crusts cut off", dietary: [] },
-          { name: "Duck egg with duck bacon and asparagus", note: "", dietary: [] },
-          { name: "Scallop and apple", note: "", dietary: [] },
-          { name: "Short rib nigiri", note: "", dietary: [] },
-          { name: "Croque Monsieur", note: "", dietary: [] }
+          { name: "Carrot salad with pistachio and cilantro", note: "", dietary: ["v"], imagePublicId: "dishes/carrot_salad_cilantro" },
+          { name: "Frites", note: "", dietary: ["v"], imagePublicId: "dishes/frites" },
+          { name: "James Beard's onion sandwich", note: "onion and mayo with parsley on white bread, crusts cut off", dietary: [], imagePublicId: "dishes/onion_sandwich" },
+          { name: "Duck egg with duck bacon and asparagus", note: "", dietary: [], imagePublicId: "dishes/duck_egg_bacon" },
+          { name: "Scallop and apple", note: "", dietary: [], imagePublicId: "dishes/scallop_apple" },
+          { name: "Short rib nigiri", note: "", dietary: [], imagePublicId: "dishes/short_rib_nigiri" },
+          { name: "Croque Monsieur", note: "", dietary: [], imagePublicId: "dishes/croque_monsieur" }
         ]
       },
       {
         course: "Desserts",
         items: [
-          { name: "Cookie plate", note: "Chocolate Chip, Hazelnut Linzer, + 3rd undecided option", dietary: [] },
-          { name: "\"Twinkies\"", note: "citrus chiffon filled with foie gras buttercream", dietary: [] },
-          { name: "Japanese cheesecake", note: "", dietary: [] }
+          { name: "Cookie plate", note: "Chocolate Chip, Hazelnut Linzer, + 3rd undecided option", dietary: [], imagePublicId: "dishes/cookie_plate_christmas" },
+          { name: "\"Twinkies\"", note: "citrus chiffon filled with foie gras buttercream", dietary: [], imagePublicId: "dishes/foie_twinkie" },
+          { name: "Japanese cheesecake", note: "", dietary: [], imagePublicId: "dishes/japanese_cheesecake" }
         ]
       }
     ]
@@ -315,63 +313,33 @@ export const sampleMenus = [
       {
         course: "Stationary",
         items: [
-          { name: "Charcuterie and cheese platters", note: "including: breseola, cured pork tenderloin, marinated olives, pickled beets, tomato jam, 3-5 cheeses, candied walnuts, duck rillettes, house crackers and chips", dietary: [] },
-          { name: "Garlic focaccia", note: "", dietary: ["v"] },
-          { name: "Carrot salad with pistachio and coriander", note: "", dietary: ["v"] }
+          { name: "Charcuterie and cheese platters", note: "including: breseola, cured pork tenderloin, marinated olives, pickled beets, tomato jam, 3-5 cheeses, candied walnuts, duck rillettes, house crackers and chips", dietary: [], imagePublicId: "events/charcuterie_platters_full" },
+          { name: "Garlic focaccia", note: "", dietary: ["v"], imagePublicId: "dishes/garlic_focaccia" },
+          { name: "Carrot salad with pistachio and coriander", note: "", dietary: ["v"], imagePublicId: "dishes/carrot_salad_coriander" }
         ]
       },
       {
         course: "Passed",
         items: [
-          { name: "Duck egg with duck pastrami", note: "", dietary: [] },
-          { name: "Kabocha squash toast, ricotta and persimmon honey", note: "", dietary: ["v"] },
-          { name: "Perfect Beef tenderloin bites", note: "", dietary: [] }
+          { name: "Duck egg with duck pastrami", note: "", dietary: [], imagePublicId: "dishes/duck_egg_pastrami" },
+          { name: "Kabocha squash toast, ricotta and persimmon honey", note: "", dietary: ["v"], imagePublicId: "dishes/kabocha_toast" },
+          { name: "Perfect Beef tenderloin bites", note: "", dietary: [], imagePublicId: "dishes/beef_tenderloin_bites" }
         ]
       },
       {
         course: "Main",
         items: [
-          { name: "Duck confit with potato puree", note: "", dietary: ["gf"] },
-          { name: "Sockeye with fennel puree", note: "", dietary: ["gf"] }
+          { name: "Duck confit with potato puree", note: "", dietary: ["gf"], imagePublicId: "dishes/duck_confit_puree" },
+          { name: "Sockeye with fennel puree", note: "", dietary: ["gf"], imagePublicId: "dishes/sockeye_fennel_puree" }
         ]
       },
       {
         course: "Desserts",
         items: [
-          { name: "Torta Caprese", note: "", dietary: [] },
-          { name: "Chocolate-hazelnut tart", note: "", dietary: [] }
+          { name: "Torta Caprese", note: "", dietary: [], imagePublicId: "dishes/torta_caprese_chocolate" },
+          { name: "Chocolate-hazelnut tart", note: "", dietary: [], imagePublicId: "dishes/chocolate_hazelnut_tart" }
         ]
       }
     ]
   },
-  {
-    id: 12,
-    title: "Private Pizza Party Sample",
-    description: "",
-    sections: [
-      {
-        course: "Pizza",
-        items: [
-          { name: "Classic Margherita", note: "", dietary: ["v"] },
-          { name: "Prosciutto and Arugula", note: "", dietary: [] },
-          { name: "Mushroom and Truffle Oil", note: "", dietary: ["v"] },
-          { name: "Four Cheese", note: "", dietary: ["v"] }
-        ]
-      },
-      {
-        course: "Sides",
-        items: [
-          { name: "Arugula salad with parmesan", note: "", dietary: ["v", "gf"] },
-          { name: "Garlic knots", note: "", dietary: ["v"] }
-        ]
-      },
-      {
-        course: "Dessert",
-        items: [
-          { name: "Tiramisu", note: "", dietary: [] },
-          { name: "Chocolate chip cookie plate", note: "", dietary: [] }
-        ]
-      }
-    ]
-  }
 ];
