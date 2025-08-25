@@ -40,6 +40,7 @@ const AppContent = () => {
                 <Route path="/crowdfunding" element={<AnimatedPage><CrowdfundingPage /></AnimatedPage>} />
                 <Route path="/menu" element={<AnimatedPage><MenuPage /></AnimatedPage>} />
                 <Route path="/happy-monday" element={<AnimatedPage><HappyMondayPage /></AnimatedPage>} />
+                <Route path="/gallery" element={<AnimatedPage><GalleryPage /></AnimatedPage>} />
               </Routes>
             </AnimatePresence>
           </Suspense>

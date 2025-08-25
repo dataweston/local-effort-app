@@ -5,6 +5,7 @@ import ServiceCard from '../components/common/ServiceCard';
 import { motion, useMotionValue, useTransform, animate } from 'framer-motion';
 import { fadeInUp, fadeInLeft } from '../utils/animations';
 import { PizzaSVG } from '../components/crowdfunding/PizzaSVG';
+import CloudinaryImage from '../components/CloudinaryImage'; // Import the new component
 
 const HomePage = () => {
   const navigate = useNavigate();
@@ -19,11 +20,36 @@ const HomePage = () => {
     return controls.stop;
   }, [filled]);
 
+  // --- NEW: Define image data for both the component and structured data ---
+  const heroImage = {
+    publicId: 'gallery/IMG_3145', // The public ID from Cloudinary
+    alt: 'A beautifully plated dish with microgreens and edible flowers',
+    // You must replace 'your-cloud-name' with your actual Cloudinary cloud name
+    url: 'https://res.cloudinary.com/your-cloud-name/image/upload/v1/gallery/IMG_3145.jpg'
+  };
+
+  // --- NEW: Define the JSON-LD structured data object for SEO ---
+  const imageJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "ImageObject",
+    "contentUrl": heroImage.url,
+    "name": heroImage.alt,
+    "description": "A sample of the professional in-home dining experience by Local Effort.",
+    "creator": {
+      "@type": "Organization",
+      "name": "Local Effort"
+    }
+  };
+
   return (
     <>
       <Helmet>
         <title>Local Effort | Personal Chef & Event Catering in Roseville, MN</title>
         <meta name="description" content="Local Effort offers personal chef services, event catering, and weekly meal prep in Roseville, MN." />
+        {/* --- NEW: Inject the structured data into the page head --- */}
+        <script type="application/ld+json">
+          {JSON.stringify(imageJsonLd)}
+        </script>
       </Helmet>
 
       <div className="space-y-24">
@@ -50,14 +76,18 @@ const HomePage = () => {
           </div>
 
           <motion.div
-            className="w-full min-h-[400px] h-full bg-neutral-100 border border-neutral-200 p-4 rounded-xl"
+            className="w-full min-h-[400px] h-full rounded-xl overflow-hidden" // Added overflow-hidden
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
           >
-            <div
-              className="w-full h-full rounded-lg border border-neutral-200 bg-cover bg-center"
-              style={{ backgroundImage: "url('/gallery/IMG_3145.jpg')" }}
+            {/* --- REPLACED: The old div is replaced with the CloudinaryImage component --- */}
+            <CloudinaryImage
+              publicId={heroImage.publicId}
+              alt={heroImage.alt}
+              width={600}
+              height={600}
+              className="w-full h-full object-cover" // Ensure it fills the container
             />
           </motion.div>
         </section>
