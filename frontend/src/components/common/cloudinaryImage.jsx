@@ -7,14 +7,15 @@ import { Cloudinary } from '@cloudinary/url-gen';
 // Each function/action must be imported from its specific file path within the library.
 import { fill } from "@cloudinary/url-gen/actions/resize";
 import { autoGravity } from "@cloudinary/url-gen/qualifiers/gravity";
-import { auto as qualityAuto } from "@cloudinary/url-gen/actions/quality";
-import { auto as formatAuto } from "@cloudinary/url-gen/actions/delivery";
+// The 'auto' helpers for quality and format are 'qualifiers', not 'actions'.
+import { auto as qualityAuto } from "@cloudinary/url-gen/qualifiers/quality";
+import { auto as formatAuto } from "@cloudinary/url-gen/qualifiers/format";
 
 // Initialize Cloudinary.
 // IMPORTANT: Replace 'your-cloud-name' with your actual Cloudinary cloud name.
 const cld = new Cloudinary({
   cloud: {
-    cloudName: 'dokyhfvyd'
+    cloudName: 'your-cloud-name'
   }
 });
 
@@ -43,8 +44,8 @@ const CloudinaryImage = ({ publicId, alt, width, height, className }) => {
 
   // Apply standard optimizations and transformations using the correctly imported functions
   myImage
-    .quality(qualityAuto()) // Renamed to avoid keyword conflict
-    .delivery(formatAuto()); // Renamed to avoid keyword conflict
+    .quality(qualityAuto()) // Use the .quality() method for q_auto
+    .format(formatAuto());   // Use the .format() method for f_auto
 
   // If width and height are provided, apply a fill transformation with auto-gravity
   if (width && height) {
