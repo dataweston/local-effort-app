@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
-import CloudinaryImage from '../components/CloudinaryImage'; // Use our new component
+import CloudinaryImage from '../components/common/cloudinaryImage'; // Use our new component
 
 const GalleryPage = () => {
   const [images, setImages] = useState([]);
