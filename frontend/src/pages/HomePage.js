@@ -5,7 +5,7 @@ import ServiceCard from '../components/common/ServiceCard';
 import { motion, useMotionValue, useTransform, animate } from 'framer-motion';
 import { fadeInUp, fadeInLeft } from '../utils/animations';
 import { PizzaSVG } from '../components/crowdfunding/PizzaSVG';
-import CloudinaryImage from '../components/CloudinaryImage'; // Import the new component
+import CloudinaryImage from '../components/common/cloudinaryImage'; // Import the new component
 
 const HomePage = () => {
   const navigate = useNavigate();
