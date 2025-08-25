@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import { sampleMenus } from "../data/sampleMenus";
 import { motion, AnimatePresence } from "framer-motion";
-import CloudinaryImage from '../components/CloudinaryImage'; // Make sure you have this component
+import CloudinaryImage from '../components/common/cloudinaryImage'; // Make sure you have this component
 
 // This is the card component for each menu. It remains largely the same.
 const ServiceCard = ({ title, description, children }) => (
