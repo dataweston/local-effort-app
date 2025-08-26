@@ -19,7 +19,7 @@ const HappyMondayPage = () => {
     // This query fetches both menu items and the page content in one request
     const query = `{
       "menuItems": *[_type == "menuItem"],
-      "pageContent": *[_type == "happyMondayPage"][0]
+      "pageContent": *[_type == "HappyMondayPage"][0]
     }`;
 
     sanityClient.fetch(query)
