@@ -25,7 +25,7 @@ const HomePage = () => {
     publicId: 'gallery/IMG_3145', // The public ID from Cloudinary
     alt: 'A beautifully plated dish with microgreens and edible flowers',
     // You must replace 'your-cloud-name' with your actual Cloudinary cloud name
-    url: 'https://res.cloudinary.com/your-cloud-name/image/upload/v1/gallery/IMG_3145.jpg'
+    url: 'https://res.cloudinary.com/dokyhfvyd/image/upload/v1/gallery/IMG_3145.jpg'
   };
 
   // --- NEW: Define the JSON-LD structured data object for SEO ---
