@@ -2,6 +2,7 @@
   "name": "local-effort-website",
   "version": "1.0.0",
   "private": true,
+  "proxy": "http://localhost:3001",
   "dependencies": {
     "18": "0.0.0",
     "@cloudinary/react": "^1.14.3",
