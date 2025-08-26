@@ -1,11 +1,9 @@
-// server.js
 
 require('dotenv').config();
 const express = require('express');
 const cloudinary = require('cloudinary');
 
-const app = express();
-const port = 3001; // Run the backend on a different port from React
+const app = express(); // Initialize express
 
 // Configure Cloudinary
 cloudinary.config({
@@ -15,19 +13,17 @@ cloudinary.config({
   secure: true,
 });
 
-// Create the API route
+// The API route
 app.get('/api/search-images', async (req, res) => {
   const searchQuery = req.query.query || '';
-
   try {
-    // Use the Cloudinary Search API
     const result = await cloudinary.v2.search
-      .expression(searchQuery) // Use the query from the frontend
+      .expression(searchQuery)
       .sort_by('created_at', 'desc')
-      .with_field('context') // Include context metadata like alt text
+      .with_field('context')
       .max_results(30)
       .execute();
-    
+
     res.json({ images: result.resources });
   } catch (error) {
     console.error('Error fetching images from Cloudinary:', error);
@@ -35,6 +31,5 @@ app.get('/api/search-images', async (req, res) => {
   }
 });
 
-app.listen(port, () => {
-  console.log(`Server listening at http://localhost:${port}`);
-});
+// Export the app for Vercel
+module.exports = app;
