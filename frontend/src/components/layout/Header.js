@@ -10,6 +10,7 @@ const links = [
   { path: '/menu',     name: 'Menus'    },
   { path: '/about',    name: 'About'    },
   { path: '/happy-monday',    name: 'Happy Monday'    },
+  { path: '/gallery',    name: 'Gallery'     }
 
 ];
 
