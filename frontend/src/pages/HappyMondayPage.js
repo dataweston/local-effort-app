@@ -18,7 +18,7 @@ const HappyMondayPage = () => {
   useEffect(() => {
     // This query fetches both menu items and the page content in one request
     const query = `{
-      "menuItems": *[_type == "menuItem"],
+      "menuItems": *[_type == "menuItems"],
       "pageContent": *[_type == "happyMondayPage"][0]
     }`;
 
