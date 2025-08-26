@@ -16,6 +16,8 @@ const PricingPage = lazy(() => import('./pages/PricingPage'));
 const CrowdfundingPage = lazy(() => import('./pages/CrowdfundingPage'));
 const MenuPage = lazy(() => import('./pages/MenuPage'));
 const HappyMondayPage = lazy(() => import('./pages/HappyMondayPage'));
+// --- NEW: Lazily import the GalleryPage ---
+const GalleryPage = lazy(() => import('./pages/GalleryPage'));
 
 
 const AppContent = () => {
@@ -40,6 +42,7 @@ const AppContent = () => {
                 <Route path="/crowdfunding" element={<AnimatedPage><CrowdfundingPage /></AnimatedPage>} />
                 <Route path="/menu" element={<AnimatedPage><MenuPage /></AnimatedPage>} />
                 <Route path="/happy-monday" element={<AnimatedPage><HappyMondayPage /></AnimatedPage>} />
+                {/* --- NEW: Add the route for the gallery page --- */}
                 <Route path="/gallery" element={<AnimatedPage><GalleryPage /></AnimatedPage>} />
               </Routes>
             </AnimatePresence>
