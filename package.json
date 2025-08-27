@@ -24,6 +24,9 @@
     "react-router": "^6.25.1",
     "react-router-dom": "^6.25.1",
     "react-scripts": "^5.0.1"
+      },
+  "overrides": {
+    "ajv": "^8.17.1"
   },
   "devDependencies": {
     "@tailwindcss/typography": "^0.5.16",
