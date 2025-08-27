@@ -55,10 +55,8 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
-  }
-{,
+  },
   "overrides": {
     "source-map": "0.6.1"
+    }
   }
-}
-}
