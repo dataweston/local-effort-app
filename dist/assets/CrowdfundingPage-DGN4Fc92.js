@@ -1,4 +1,4 @@
-import{r,R as e,W as i}from"./index-B3HY2L9O.js";import{s as u}from"./sanityClient-BrgDi-f7.js";const n=({children:t})=>e.createElement("div",{className:"w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center cursor-pointer hover:bg-gray-300 transition-colors"},t),E=()=>{const[t,c]=r.useState(null),[s,o]=r.useState(!0);if(r.useEffect(()=>{u.fetch(`*[_type == "crowdfundingCampaign"][0]{
+import{r,R as e,W as i}from"./index-BgyG4ZeM.js";import{s as u}from"./sanityClient-crUC0hsq.js";const n=({children:t})=>e.createElement("div",{className:"w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center cursor-pointer hover:bg-gray-300 transition-colors"},t),E=()=>{const[t,c]=r.useState(null),[s,o]=r.useState(!0);if(r.useEffect(()=>{u.fetch(`*[_type == "crowdfundingCampaign"][0]{
             title,
             description,
             goal,
