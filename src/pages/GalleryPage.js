@@ -55,7 +55,7 @@ const GalleryPage = () => {
   return (
     <>
       <Helmet>
-        <title>Gallery | Local Effort</title>
+        <title>Pictures of Food | Local Effort</title>
       </Helmet>
       <div className="container mx-auto px-4 py-8">
         <h1 className="text-4xl font-bold mb-4 text-center">Image Gallery</h1>
@@ -68,7 +68,7 @@ const GalleryPage = () => {
           <p>Images count: {images.length}</p>
           <p>Current query: "{query}"</p>
           <p>Current URL: {window.location.href}</p>
-          <p>API URL: /api/search-images</p>
+          <p>API URL: /api/search-images.js</p>
         </div>
         
         <input
