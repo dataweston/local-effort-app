@@ -18,25 +18,35 @@ const StatBox = ({ value, label }) => (
     </div>
 );
 
-const RewardTierCard = ({ tier }) => (
-    <div className="card p-6 border hover:border-[var(--color-accent)] transition-colors">
-        <p className="text-2xl font-bold">Pledge ${tier.amount?.toLocaleString() || 0} or more</p>
-        <h4 className="text-xl font-bold text-[var(--color-accent)] mt-1">{tier.title}</h4>
-        <p className="text-body text-gray-600 my-3">{tier.description}</p>
-        {tier.limit && <p className="text-sm font-semibold text-gray-500 mb-3">LIMITED ({tier.limit} left)</p>}
-        <button className="btn btn-secondary w-full">Select this reward</button>
-    </div>
-);
+const RewardTierCard = ({ tier }) => {
+    // 💡 IMPROVEMENT: Handle cases where a referenced reward tier might have been deleted.
+    if (!tier) {
+        return null;
+    }
+    return (
+        <div className="card p-6 border hover:border-[var(--color-accent)] transition-colors">
+            <p className="text-2xl font-bold">Pledge ${tier.amount?.toLocaleString() || 0} or more</p>
+            <h4 className="text-xl font-bold text-[var(--color-accent)] mt-1">{tier.title}</h4>
+            <p className="text-body text-gray-600 my-3">{tier.description}</p>
+            {tier.limit && <p className="text-sm font-semibold text-gray-500 mb-3">LIMITED ({tier.limit} left)</p>}
+            <button className="btn btn-secondary w-full">Select this reward</button>
+        </div>
+    );
+};
 
 
 // --- Main Page Component ---
 const CrowdfundingPage = () => {
     const [campaignData, setCampaignData] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null); // 💡 IMPROVEMENT: Add error state
     const [activeTab, setActiveTab] = useState('story');
 
     useEffect(() => {
-        const query = `*[_type == "crowdfundingCampaign"][0]{
+        // 💡 IMPROVEMENT: Fetch a specific campaign by its slug for a more robust component.
+        // For this example, we'll hardcode a slug. In a real app, you'd get this from the URL.
+        const slug = "your-campaign-slug-here"; // Replace with a real slug from your Sanity data
+        const query = `*[_type == "crowdfundingCampaign" && slug.current == $slug][0]{
             title,
             description,
             goal,
@@ -49,47 +59,54 @@ const CrowdfundingPage = () => {
             "rewardTiers": rewardTiers[]->{ amount, title, description, limit } | order(amount asc),
             "updates": updates[]->{ title, publishedAt, body } | order(publishedAt desc)
         }`;
+        
+        const params = { slug };
 
-        sanityClient.fetch(query)
+        sanityClient.fetch(query, params)
             .then((data) => {
-             console.log('Fetched data:', data);
                 setCampaignData(data);
-                setLoading(false);
             })
-            .catch(console.error);
+            .catch(err => {
+                console.error('Sanity fetch error:', err);
+                setError('Failed to load campaign data.'); // Set error state
+            })
+            .finally(() => {
+                setLoading(false); // Ensure loading is always set to false
+            });
     }, []);
 
     if (loading) {
         return <div className="text-center p-12">Loading campaign...</div>;
     }
 
+    if (error) {
+        return <div className="text-center p-12 text-red-600">{error}</div>;
+    }
+
     if (!campaignData) {
         return <div className="text-center p-12">No campaign found. Have you created and published it in Sanity Studio?</div>;
     }
 
-    // --- SAFEGUARD 1: Comprehensive Default Values ---
-    // This ensures every variable has a valid type (e.g., [] for arrays, 0 for numbers)
-    // even if the data is missing from Sanity.
+    // --- ✅ FIX: More robust default values ---
+    // This handles both `undefined` and `null` cases by using the `||` operator.
     const {
-  title = 'Untitled Campaign',
-  description = '',
-  goal = 0,
-  raisedAmount = 0,
-  backers = 0,
-  endDate = null,
-  heroImage = null,
-  story = [],
-  faq = [],
-  rewardTiers = [],
-  updates = [],
-} = campaignData;
+        title = 'Untitled Campaign',
+        description = '',
+        goal = 0,
+        raisedAmount = 0,
+        backers = 0,
+        endDate = null,
+        heroImage = null,
+    } = campaignData;
 
-    // --- SAFEGUARD 2: Safe Date Calculation ---
-    // This prevents errors if the endDate is not set.
+    // Specifically safeguard array types to prevent the .length error
+    const story = campaignData.story || [];
+    const faq = campaignData.faq || [];
+    const rewardTiers = campaignData.rewardTiers || [];
+    const updates = campaignData.updates || [];
+
+
     const daysLeft = endDate ? Math.ceil((new Date(endDate) - new Date()) / (1000 * 60 * 60 * 24)) : 0;
-
-    // --- SAFEGUARD 3: Prevent Division by Zero ---
-    // This prevents the progress bar from showing NaN (Not a Number) if the goal is 0.
     const progressPercentage = goal > 0 ? Math.min((raisedAmount / goal) * 100, 100) : 0;
 
 
@@ -145,7 +162,8 @@ const CrowdfundingPage = () => {
                                     {updates.map((update, index) => (
                                         <div key={index} className="p-4 border-l-4 border-gray-200">
                                             <h3 className="text-heading mt-0">{update.title}</h3>
-                                            <p className="text-sm text-gray-500 mb-2">{new Date(update.publishedAt).toLocaleDateString()}</p>
+                                            {/* 💡 IMPROVEMENT: Better date formatting */}
+                                            <p className="text-sm text-gray-500 mb-2">{new Date(update.publishedAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
                                             <PortableText value={update.body} />
                                         </div>
                                     ))}
@@ -186,7 +204,7 @@ const CrowdfundingPage = () => {
                         <div className="space-y-4">
                             <h3 className="text-heading uppercase">Support Us</h3>
                             {rewardTiers.map((tier) => (
-                                <RewardTierCard key={tier.title} tier={tier} />
+                                <RewardTierCard key={tier?.title || Math.random()} tier={tier} />
                             ))}
                         </div>
                     </div>
