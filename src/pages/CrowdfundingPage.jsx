@@ -67,8 +67,19 @@ const CrowdfundingPage = () => {
     if (!campaignData) {
         return <div className="text-center p-12">No campaign found. Have you created and published it in Sanity Studio?</div>;
     }
-
-    const { title, description, goal = 0, raisedAmount = 0, backers = 0, endDate = 0, heroImage = 0, story = 0, faq = 0, rewardTiers = 0, updates = 0, } = campaignData;
+const {
+    title = '',
+    description = '',
+    goal = 0,
+    raisedAmount = 0,
+    backers = 0,
+    endDate = null,
+    heroImage = null,
+    story = [],
+    faq = [],
+    rewardTiers = [],
+    updates = [],
+} = campaignData;
     const daysLeft = Math.ceil((new Date(endDate) - new Date()) / (1000 * 60 * 60 * 24));
     const progressPercentage = Math.min((raisedAmount / goal) * 100, 100);
 
