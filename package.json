@@ -6,6 +6,7 @@
   "dependencies": {
     "@cloudinary/react": "^1.14.3",
     "@cloudinary/url-gen": "^1.21.0",
+    "@portabletext/react": "^4.0.1",
     "@sanity/block-content-to-react": "^3.0.0",
     "@sanity/client": "^7.9.0",
     "@sanity/image-url": "^1.1.0",
