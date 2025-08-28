@@ -10,8 +10,7 @@ function urlFor(source) {
     return builder.image(source);
 }
 
-// --- Helper & Child Components ---
-
+// --- Helper & Child Components (No changes needed here) ---
 const StatBox = ({ value, label }) => (
     <div>
         <p className="text-3xl font-bold">{value}</p>
@@ -21,7 +20,7 @@ const StatBox = ({ value, label }) => (
 
 const RewardTierCard = ({ tier }) => (
     <div className="card p-6 border hover:border-[var(--color-accent)] transition-colors">
-        <p className="text-2xl font-bold">Pledge ${tier.amount} or more</p>
+        <p className="text-2xl font-bold">Pledge ${tier.amount?.toLocaleString() || 0} or more</p>
         <h4 className="text-xl font-bold text-[var(--color-accent)] mt-1">{tier.title}</h4>
         <p className="text-body text-gray-600 my-3">{tier.description}</p>
         {tier.limit && <p className="text-sm font-semibold text-gray-500 mb-3">LIMITED ({tier.limit} left)</p>}
@@ -29,15 +28,14 @@ const RewardTierCard = ({ tier }) => (
     </div>
 );
 
-// --- Main Page Component ---
 
+// --- Main Page Component ---
 const CrowdfundingPage = () => {
     const [campaignData, setCampaignData] = useState(null);
     const [loading, setLoading] = useState(true);
-    const [activeTab, setActiveTab] = useState('story'); // 'story', 'updates', 'faq'
+    const [activeTab, setActiveTab] = useState('story');
 
     useEffect(() => {
-        // --- Updated and more comprehensive GROQ query ---
         const query = `*[_type == "crowdfundingCampaign"][0]{
             title,
             description,
@@ -67,21 +65,32 @@ const CrowdfundingPage = () => {
     if (!campaignData) {
         return <div className="text-center p-12">No campaign found. Have you created and published it in Sanity Studio?</div>;
     }
-const {
-    title = '',
-    description = '',
-    goal = 0,
-    raisedAmount = 0,
-    backers = 0,
-    endDate = null,
-    heroImage = null,
-    story = [],
-    faq = [],
-    rewardTiers = [],
-    updates = [],
-} = campaignData;
-    const daysLeft = Math.ceil((new Date(endDate) - new Date()) / (1000 * 60 * 60 * 24));
-    const progressPercentage = Math.min((raisedAmount / goal) * 100, 100);
+
+    // --- SAFEGUARD 1: Comprehensive Default Values ---
+    // This ensures every variable has a valid type (e.g., [] for arrays, 0 for numbers)
+    // even if the data is missing from Sanity.
+    const {
+        title = 'Untitled Campaign',
+        description = '',
+        goal = 0,
+        raisedAmount = 0,
+        backers = 0,
+        endDate = null,
+        heroImage = null,
+        story = [],
+        faq = [],
+        rewardTiers = [],
+        updates = [],
+    } = campaignData;
+
+    // --- SAFEGUARD 2: Safe Date Calculation ---
+    // This prevents errors if the endDate is not set.
+    const daysLeft = endDate ? Math.ceil((new Date(endDate) - new Date()) / (1000 * 60 * 60 * 24)) : 0;
+
+    // --- SAFEGUARD 3: Prevent Division by Zero ---
+    // This prevents the progress bar from showing NaN (Not a Number) if the goal is 0.
+    const progressPercentage = goal > 0 ? Math.min((raisedAmount / goal) * 100, 100) : 0;
+
 
     const TabButton = ({ tabName, label }) => (
         <button
@@ -121,16 +130,15 @@ const {
                             />
                         )}
 
-                        {/* --- Content Tabs --- */}
                         <div className="border-b border-gray-200">
                             <nav className="flex space-x-8">
                                 <TabButton tabName="story" label="Story" />
-                                {updates?.length > 0 && <TabButton tabName="updates" label={`Updates (${updates.length})`} />}
-                                {faq?.length > 0 && <TabButton tabName="faq" label="FAQ" />}
+                                {updates.length > 0 && <TabButton tabName="updates" label={`Updates (${updates.length})`} />}
+                                {faq.length > 0 && <TabButton tabName="faq" label="FAQ" />}
                             </nav>
                         </div>
                         <div className="prose max-w-none text-body">
-                            {activeTab === 'story' && <PortableText value={story} />}
+                            {activeTab === 'story' && story.length > 0 && <PortableText value={story} />}
                             {activeTab === 'updates' && (
                                 <div className="space-y-8">
                                     {updates.map((update, index) => (
@@ -157,7 +165,6 @@ const {
 
                     {/* --- Right Column (Stats & Rewards) --- */}
                     <div className="lg:col-span-2 space-y-8 mt-12 lg:mt-0">
-                        {/* --- Progress Card --- */}
                         <div className="card p-6 space-y-4">
                             <div className="w-full bg-gray-200 rounded-full h-2.5">
                                 <div className="bg-[var(--color-accent)] h-2.5 rounded-full" style={{ width: `${progressPercentage}%` }}></div>
@@ -175,10 +182,9 @@ const {
                             </button>
                         </div>
 
-                        {/* --- Rewards Tiers --- */}
                         <div className="space-y-4">
                             <h3 className="text-heading uppercase">Support Us</h3>
-                            {rewardTiers?.map((tier) => (
+                            {rewardTiers.map((tier) => (
                                 <RewardTierCard key={tier.title} tier={tier} />
                             ))}
                         </div>
