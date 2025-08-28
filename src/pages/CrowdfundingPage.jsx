@@ -1,20 +1,43 @@
 import React, { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
-import sanityClient from '../sanityClient.js'; // Adjust the path if needed
+import { PortableText } from '@portabletext/react';
+import imageUrlBuilder from '@sanity/image-url';
+import sanityClient from '../sanityClient.js';
 
-// Helper component for social sharing icons (remains the same)
-const ShareIcon = ({ children }) => (
-    <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center cursor-pointer hover:bg-gray-300 transition-colors">
-        {children}
+// --- Sanity Image URL Builder Setup ---
+const builder = imageUrlBuilder(sanityClient);
+function urlFor(source) {
+    return builder.image(source);
+}
+
+// --- Helper & Child Components ---
+
+const StatBox = ({ value, label }) => (
+    <div>
+        <p className="text-3xl font-bold">{value}</p>
+        <p className="text-gray-600">{label}</p>
     </div>
 );
+
+const RewardTierCard = ({ tier }) => (
+    <div className="card p-6 border hover:border-[var(--color-accent)] transition-colors">
+        <p className="text-2xl font-bold">Pledge ${tier.amount} or more</p>
+        <h4 className="text-xl font-bold text-[var(--color-accent)] mt-1">{tier.title}</h4>
+        <p className="text-body text-gray-600 my-3">{tier.description}</p>
+        {tier.limit && <p className="text-sm font-semibold text-gray-500 mb-3">LIMITED ({tier.limit} left)</p>}
+        <button className="btn btn-secondary w-full">Select this reward</button>
+    </div>
+);
+
+// --- Main Page Component ---
 
 const CrowdfundingPage = () => {
     const [campaignData, setCampaignData] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [activeTab, setActiveTab] = useState('story'); // 'story', 'updates', 'faq'
 
     useEffect(() => {
-        // The GROQ query to fetch the campaign data
+        // --- Updated and more comprehensive GROQ query ---
         const query = `*[_type == "crowdfundingCampaign"][0]{
             title,
             description,
@@ -22,13 +45,11 @@ const CrowdfundingPage = () => {
             raisedAmount,
             backers,
             endDate,
-            "heroImageUrl": heroImage.asset->url,
+            heroImage,
             story,
-            rewardTiers[]->{
-                amount,
-                title,
-                description
-            }
+            faq,
+            "rewardTiers": rewardTiers[]->{ amount, title, description, limit } | order(amount asc),
+            "updates": updates[]->{ title, publishedAt, body } | order(publishedAt desc)
         }`;
 
         sanityClient.fetch(query)
@@ -40,43 +61,87 @@ const CrowdfundingPage = () => {
     }, []);
 
     if (loading) {
-        return <div>Loading...</div>; // Or a more sophisticated loading spinner
+        return <div className="text-center p-12">Loading campaign...</div>;
     }
 
     if (!campaignData) {
-        return <div>No campaign found. Have you created and published it in Sanity Studio?</div>;
+        return <div className="text-center p-12">No campaign found. Have you created and published it in Sanity Studio?</div>;
     }
-    
-    // Calculate days left from the endDate
-    const daysLeft = Math.ceil((new Date(campaignData.endDate) - new Date()) / (1000 * 60 * 60 * 24));
-    const progressPercentage = Math.min((campaignData.raisedAmount / campaignData.goal) * 100, 100);
+
+    const { title, description, goal = 0, raisedAmount = 0, backers = 0, endDate, heroImage, story, faq, rewardTiers, updates } = campaignData;
+
+    const daysLeft = Math.ceil((new Date(endDate) - new Date()) / (1000 * 60 * 60 * 24));
+    const progressPercentage = Math.min((raisedAmount / goal) * 100, 100);
+
+    const TabButton = ({ tabName, label }) => (
+        <button
+            onClick={() => setActiveTab(tabName)}
+            className={`pb-2 px-1 text-lg font-semibold transition-colors ${activeTab === tabName
+                ? 'border-b-2 border-[var(--color-accent)] text-gray-900'
+                : 'text-gray-500 hover:text-gray-800'
+                }`}
+        >
+            {label}
+        </button>
+    );
 
     return (
         <>
             <Helmet>
-                <title>{campaignData.title || 'Fund Our Next Step'} | Local Effort</title>
-                <meta name="description" content={campaignData.description || 'Help Local Effort expand!'} />
+                <title>{`${title} | Crowdfunding Campaign`}</title>
+                <meta name="description" content={description} />
             </Helmet>
 
             <div className="space-y-12">
                 {/* --- Page Header --- */}
                 <div>
-                    <h2 className="text-hero uppercase">{campaignData.title}</h2>
-                    <p className="text-body max-w-3xl mt-2">{campaignData.description}</p>
+                    <h1 className="text-hero uppercase">{title}</h1>
+                    <p className="text-body max-w-3xl mt-2">{description}</p>
                 </div>
 
                 {/* --- Main Content Grid --- */}
                 <div className="grid grid-cols-1 lg:grid-cols-5 lg:gap-16">
-
-                    {/* --- Left Column (Story & Details) --- */}
+                    {/* --- Left Column (Media & Content Tabs) --- */}
                     <div className="lg:col-span-3 space-y-8">
-                        {campaignData.heroImageUrl && (
-                             <img src={campaignData.heroImageUrl} alt={campaignData.title} className="w-full object-cover rounded-lg aspect-video" />
+                        {heroImage && (
+                            <img
+                                src={urlFor(heroImage).width(1200).quality(80).url()}
+                                alt={title}
+                                className="w-full object-cover rounded-lg aspect-video bg-gray-100"
+                            />
                         )}
-                        <div className="prose max-w-none text-body text-gray-800">
-                             <h3 className="text-heading uppercase border-b border-gray-300 pb-2 mb-4">About This Project</h3>
-                             {/* Note: You'll need a library like @portabletext/react to render the 'story' block content properly */}
-                             <p><em>Content from Sanity for the story will go here.</em></p>
+
+                        {/* --- Content Tabs --- */}
+                        <div className="border-b border-gray-200">
+                            <nav className="flex space-x-8">
+                                <TabButton tabName="story" label="Story" />
+                                {updates?.length > 0 && <TabButton tabName="updates" label={`Updates (${updates.length})`} />}
+                                {faq?.length > 0 && <TabButton tabName="faq" label="FAQ" />}
+                            </nav>
+                        </div>
+                        <div className="prose max-w-none text-body">
+                            {activeTab === 'story' && <PortableText value={story} />}
+                            {activeTab === 'updates' && (
+                                <div className="space-y-8">
+                                    {updates.map((update, index) => (
+                                        <div key={index} className="p-4 border-l-4 border-gray-200">
+                                            <h3 className="text-heading mt-0">{update.title}</h3>
+                                            <p className="text-sm text-gray-500 mb-2">{new Date(update.publishedAt).toLocaleDateString()}</p>
+                                            <PortableText value={update.body} />
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                            {activeTab === 'faq' && (
+                                <div className="space-y-6">
+                                    {faq.map((item, index) => (
+                                        <div key={index}>
+                                            <h4 className="font-bold text-lg mb-1">{item.question}</h4>
+                                            <p className="mt-0">{item.answer}</p>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
                         </div>
                     </div>
 
@@ -88,44 +153,23 @@ const CrowdfundingPage = () => {
                                 <div className="bg-[var(--color-accent)] h-2.5 rounded-full" style={{ width: `${progressPercentage}%` }}></div>
                             </div>
                             <div>
-                                <p className="text-4xl font-bold text-[var(--color-accent)]">${(campaignData.raisedAmount || 0).toLocaleString()}</p>
-                                <p className="text-body text-gray-600">pledged of ${(campaignData.goal || 0).toLocaleString()} goal</p>
+                                <p className="text-4xl font-bold text-[var(--color-accent)]">${raisedAmount.toLocaleString()}</p>
+                                <p className="text-body text-gray-600">pledged of ${goal.toLocaleString()} goal</p>
                             </div>
                             <div className="flex justify-between text-body text-center border-y py-3">
-                                <div>
-                                    <p className="text-3xl font-bold">{campaignData.backers}</p>
-                                    <p className="text-gray-600">backers</p>
-                                </div>
-                                 <div>
-                                    <p className="text-3xl font-bold">{daysLeft > 0 ? daysLeft : 'Ended'}</p>
-                                    <p className="text-gray-600">{daysLeft > 0 ? 'days to go' : ''}</p>
-                                </div>
+                                <StatBox value={backers.toLocaleString()} label="backers" />
+                                <StatBox value={daysLeft > 0 ? daysLeft : 'Ended'} label={daysLeft > 0 ? 'days to go' : ''} />
                             </div>
                             <button className="btn btn-primary w-full text-lg py-3">
                                 Back this project
                             </button>
-                             <div className="flex justify-center items-center pt-2 space-x-3">
-                               <p className="text-body text-sm text-gray-500">Share:</p>
-                               <ShareIcon>FB</ShareIcon>
-                               <ShareIcon>TW</ShareIcon>
-                               <ShareIcon>LI</ShareIcon>
-                            </div>
                         </div>
 
                         {/* --- Rewards Tiers --- */}
                         <div className="space-y-4">
                             <h3 className="text-heading uppercase">Support Us</h3>
-                            {campaignData.rewardTiers?.map((tier) => (
-                                <div key={tier.amount} className="card p-6">
-                                    <p className="text-2xl font-bold">Pledge ${tier.amount} or more</p>
-                                    <h4 className="text-xl font-bold text-[var(--color-accent)] mt-1">{tier.title}</h4>
-                                    <p className="text-body text-gray-600 my-3">{tier.description}</p>
-                                    <button 
-                                        className="w-full bg-gray-800 text-white font-bold py-2 rounded-md hover:bg-gray-900 transition-colors"
-                                    >
-                                        Select this reward
-                                    </button>
-                                </div>
+                            {rewardTiers?.map((tier) => (
+                                <RewardTierCard key={tier.title} tier={tier} />
                             ))}
                         </div>
                     </div>

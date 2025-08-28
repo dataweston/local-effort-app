@@ -9,6 +9,8 @@ import menu from './menu'
 import menuSection from './menuSection'
 import pricingFaq from './pricingFaq'
 import crowdfundingCampaign from './crowdfundingCampaign'
+import campaignUpdate from './campaignUpdate'
+import rewardTier from './rewardTier'
 
 export const schemaTypes = [
   page,
@@ -19,4 +21,6 @@ export const schemaTypes = [
   menuSection,
   pricingFaq,
   crowdfundingCampaign,
+  rewardTier,
+  campaignUpdate
 ]
