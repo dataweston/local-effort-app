@@ -15,7 +15,7 @@ import { auto as formatAuto } from "@cloudinary/url-gen/qualifiers/format";
 // IMPORTANT: Replace 'your-cloud-name' with your actual Cloudinary cloud name.
 const cld = new Cloudinary({
   cloud: {
-    cloudName: 'your-cloud-name'
+    cloudName: 'dokyhfvyd'
   }
 });
 
