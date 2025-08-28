@@ -70,18 +70,18 @@ const CrowdfundingPage = () => {
     // This ensures every variable has a valid type (e.g., [] for arrays, 0 for numbers)
     // even if the data is missing from Sanity.
     const {
-        title = 'Untitled Campaign',
-        description = '',
-        goal = 0,
-        raisedAmount = 0,
-        backers = 0,
-        endDate = null,
-        heroImage = null,
-        story = [],
-        faq = [],
-        rewardTiers = [],
-        updates = [],
-    } = campaignData;
+  title = 'Untitled Campaign',
+  description = '',
+  goal = 0,
+  raisedAmount = 0,
+  backers = 0,
+  endDate = null,
+  heroImage = null,
+  story = [],
+  faq = [],
+  rewardTiers = [],
+  updates = [],
+} = campaignData;
 
     // --- SAFEGUARD 2: Safe Date Calculation ---
     // This prevents errors if the endDate is not set.
