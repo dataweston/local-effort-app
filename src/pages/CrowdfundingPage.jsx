@@ -52,6 +52,7 @@ const CrowdfundingPage = () => {
 
         sanityClient.fetch(query)
             .then((data) => {
+             console.log('Fetched data:', data);
                 setCampaignData(data);
                 setLoading(false);
             })
