@@ -88,8 +88,8 @@ const CrowdfundingPage = () => {
                                 <div className="bg-[var(--color-accent)] h-2.5 rounded-full" style={{ width: `${progressPercentage}%` }}></div>
                             </div>
                             <div>
-                                <p className="text-4xl font-bold text-[var(--color-accent)]">${campaignData.raisedAmount.toLocaleString()}</p>
-                                <p className="text-body text-gray-600">pledged of ${campaignData.goal.toLocaleString()} goal</p>
+                                <p className="text-4xl font-bold text-[var(--color-accent)]">${(campaignData.raisedAmount || 0).toLocaleString()}</p>
+                                <p className="text-body text-gray-600">pledged of ${(campaignData.goal || 0).toLocaleString()} goal</p>
                             </div>
                             <div className="flex justify-between text-body text-center border-y py-3">
                                 <div>
