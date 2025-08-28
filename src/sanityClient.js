@@ -2,8 +2,12 @@
 import {createClient} from '@sanity/client'
 
 export default createClient({
-  projectId: 'd6l9d0ea', // Find this in your sanity.json or at manage.sanity.io
-  dataset: 'localeffort', // Or the name of your dataset
-  useCdn: false, // `false` if you want to ensure fresh data
-  apiVersion: '2023-05-03', // Use a consistent API version
+  // Read the projectId from the .env file
+  projectId: import.meta.env.VITE_APP_SANITY_PROJECT_ID, 
+  
+  // Read the dataset from the .env file
+  dataset: import.meta.env.VITE_APP_SANITY_DATASET, 
+  
+  useCdn: false, 
+  apiVersion: '2023-05-03',
 })
