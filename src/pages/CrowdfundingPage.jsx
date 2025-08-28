@@ -45,7 +45,7 @@ const CrowdfundingPage = () => {
     useEffect(() => {
         // 💡 IMPROVEMENT: Fetch a specific campaign by its slug for a more robust component.
         // For this example, we'll hardcode a slug. In a real app, you'd get this from the URL.
-        const slug = "your-campaign-slug-here"; // Replace with a real slug from your Sanity data
+        const slug = "local-pizza-by-local-effort-let-s-make-1000-pizzas"; // Replace with a real slug from your Sanity data
         const query = `*[_type == "crowdfundingCampaign" && slug.current == $slug][0]{
             title,
             description,
