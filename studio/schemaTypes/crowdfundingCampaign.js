@@ -30,21 +30,38 @@ export default {
       description: 'A brief, compelling summary of the campaign. This appears at the top of the page and in search results.',
       validation: Rule => Rule.required().error('A short description is required.'),
     },
+    // --- Pizza-first fields (new) ---
+    {
+      name: 'pizzaGoal',
+      title: 'Pizza Goal',
+      type: 'number',
+      description: 'Total number of pizzas you aim to sell (e.g. 1000). Prefer this over the legacy monetary goal.',
+      initialValue: 1000,
+      validation: Rule => Rule.min(1).error('The pizza goal must be at least 1.'),
+    },
+    {
+      name: 'pizzasSold',
+      title: 'Pizzas Sold',
+      type: 'number',
+      description: 'Number of pizzas sold so far. Use this field to track progress in pizza units.',
+      initialValue: 0,
+      validation: Rule => Rule.min(0).error('Pizzas sold must be zero or a positive number.'),
+    },
     {
       name: 'goal',
-      title: 'Funding Goal ($)',
-      type: 'number',
-      description: 'The total amount of money you aim to raise.',
-      initialValue: 10000,
-      validation: Rule => Rule.required().min(0).error('The funding goal must be zero or a positive number.'),
+  title: 'Funding Goal (legacy $)',
+  type: 'number',
+  description: 'Legacy: the total amount of money you aim to raise. Kept for backwards compatibility.',
+  initialValue: 10000,
+  validation: Rule => Rule.min(0).error('The funding goal must be zero or a positive number.'),
     },
     {
       name: 'raisedAmount',
-      title: 'Amount Raised ($)',
-      type: 'number',
-      description: 'The current amount of money that has been pledged. This can be updated manually.',
-      initialValue: 0,
-      validation: Rule => Rule.required().min(0).error('The amount raised must be zero or a positive number.'),
+  title: 'Amount Raised (legacy $)',
+  type: 'number',
+  description: 'Legacy: current amount of money pledged. Kept for backwards compatibility.',
+  initialValue: 0,
+  validation: Rule => Rule.min(0).error('The amount raised must be zero or a positive number.'),
     },
     {
       name: 'backers',
@@ -117,16 +134,21 @@ export default {
   preview: {
     select: {
       title: 'title',
-      raised: 'raisedAmount',
-      goal: 'goal',
+      raised: 'pizzasSold',
+      legacyRaised: 'raisedAmount',
+      goal: 'pizzaGoal',
+      legacyGoal: 'goal',
       media: 'heroImage',
     },
     prepare(selection) {
-      const { title, raised, goal, media } = selection;
-      const progress = goal > 0 ? ((raised / goal) * 100).toFixed(0) : 0;
+      const { title, raised, legacyRaised, goal, legacyGoal, media } = selection;
+      // Prefer pizza fields, fall back to legacy monetary fields
+      const pizzas = (raised ?? legacyRaised) || 0;
+      const pizzaGoal = (goal ?? legacyGoal) || 1000;
+      const progress = pizzaGoal > 0 ? ((pizzas / pizzaGoal) * 100).toFixed(0) : 0;
       return {
         title: title || 'Untitled Campaign',
-        subtitle: `Raised $${(raised || 0).toLocaleString()} of $${(goal || 0).toLocaleString()} (${progress}%)`,
+        subtitle: `${pizzas.toLocaleString()} pizzas sold of ${pizzaGoal.toLocaleString()} (${progress}%)`,
         media: media,
       };
     },

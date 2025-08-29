@@ -1,3 +1,4 @@
+// ...existing code...
 import React, { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { PortableText } from '@portabletext/react';
@@ -23,16 +24,24 @@ const RewardTierCard = ({ tier }) => {
     if (!tier) {
         return null;
     }
+
+    // Display pizza count when available, otherwise fall back to legacy dollar amount
+    const pizzaCountLabel = tier.pizzaCount ? `${tier.pizzaCount.toLocaleString()} pizzas` : null;
+    const moneyLabel = tier.amount ? `$${tier.amount.toLocaleString()}` : null;
+
     return (
         <div className="card p-6 border hover:border-[var(--color-accent)] transition-colors">
-            <p className="text-2xl font-bold">Pledge ${tier.amount?.toLocaleString() || 0} or more</p>
-            <h4 className="text-xl font-bold text-[var(--color-accent)] mt-1">{tier.title}</h4>
+            <p className="text-2xl font-bold">
+                {pizzaCountLabel ? `${pizzaCountLabel} — ${tier.title}` : `Pledge ${moneyLabel || '$0'} or more`}
+            </p>
+            {!pizzaCountLabel && <h4 className="text-xl font-bold text-[var(--color-accent)] mt-1">{tier.title}</h4>}
             <p className="text-body text-gray-600 my-3">{tier.description}</p>
             {tier.limit && <p className="text-sm font-semibold text-gray-500 mb-3">LIMITED ({tier.limit} left)</p>}
             <button className="btn btn-secondary w-full">Select this reward</button>
         </div>
     );
 };
+// ...existing code...
 
 
 // --- Main Page Component ---
@@ -49,6 +58,9 @@ const CrowdfundingPage = () => {
         const query = `*[_type == "crowdfundingCampaign" && slug.current == $slug][0]{
             title,
             description,
+            // pizza-specific fields (keep legacy fields for backwards compatibility)
+            pizzaGoal,
+            pizzasSold,
             goal,
             raisedAmount,
             backers,
@@ -56,7 +68,7 @@ const CrowdfundingPage = () => {
             heroImage,
             story,
             faq,
-            "rewardTiers": rewardTiers[]->{ amount, title, description, limit } | order(amount asc),
+            "rewardTiers": rewardTiers[]->{ amount, pizzaCount, title, description, limit } | order(amount asc),
             "updates": updates[]->{ title, publishedAt, body } | order(publishedAt desc)
         }`;
         
@@ -106,8 +118,11 @@ const CrowdfundingPage = () => {
     const updates = campaignData.updates || [];
 
 
+    // --- Pizza-specific values (prefer pizza fields, fallback to legacy money values) ---
+    const pizzasSold = (campaignData.pizzasSold ?? campaignData.raisedAmount) || 0;
+    const pizzaGoal = (campaignData.pizzaGoal ?? campaignData.goal) || 1000; // default goal to 1000 pizzas
     const daysLeft = endDate ? Math.ceil((new Date(endDate) - new Date()) / (1000 * 60 * 60 * 24)) : 0;
-    const progressPercentage = goal > 0 ? Math.min((raisedAmount / goal) * 100, 100) : 0;
+    const progressPercentage = pizzaGoal > 0 ? Math.min((pizzasSold / pizzaGoal) * 100, 100) : 0;
 
 
     const TabButton = ({ tabName, label }) => (
@@ -189,15 +204,15 @@ const CrowdfundingPage = () => {
                                 <div className="bg-[var(--color-accent)] h-2.5 rounded-full" style={{ width: `${progressPercentage}%` }}></div>
                             </div>
                             <div>
-                                <p className="text-4xl font-bold text-[var(--color-accent)]">${raisedAmount.toLocaleString()}</p>
-                                <p className="text-body text-gray-600">pledged of ${goal.toLocaleString()} goal</p>
+                                <p className="text-4xl font-bold text-[var(--color-accent)]">{pizzasSold.toLocaleString()} pizzas</p>
+                                <p className="text-body text-gray-600">sold of {pizzaGoal.toLocaleString()} pizzas goal</p>
                             </div>
                             <div className="flex justify-between text-body text-center border-y py-3">
                                 <StatBox value={backers.toLocaleString()} label="backers" />
                                 <StatBox value={daysLeft > 0 ? daysLeft : 'Ended'} label={daysLeft > 0 ? 'days to go' : ''} />
                             </div>
                             <button className="btn btn-primary w-full text-lg py-3">
-                                Back this project
+                                Order a pizza
                             </button>
                         </div>
 
