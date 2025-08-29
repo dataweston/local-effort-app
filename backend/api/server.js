@@ -1,29 +1,80 @@
 // backend/api/server.js
 require('dotenv').config();
 const express = require('express');
-const cors = require('cors');n
+const cors = require('cors');
+const admin = require('firebase-admin');
 const { createClient } = require('@sanity/client');
+const fs = require('fs');
 const sanityClient = createClient({
   projectId: process.env.SANITY_PROJECT_ID,
   dataset: 'production',
   useCdn: false, // `false` for write operations
   token: process.env.SANITY_API_TOKEN, // A token with write access
+  apiVersion: '2024-01-01',
 });
-const { Client, Environment } = require('square'); // Import Square Client
+// Import Square Client (defensive: warn if not available)
+let Client, Environment;
+try {
+  const squarePkg = require('square');
+  Client = squarePkg.Client;
+  Environment = squarePkg.Environment;
+} catch (err) {
+  console.warn('Square SDK not available or failed to load:', err.message);
+}
 const { v4: uuidv4 } = require('uuid'); // Import UUID for idempotency
 
 // --- INITIALIZE FIREBASE ---
-const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_JSON);
-if (!admin.apps.length) {
-  admin.initializeApp({ credential: admin.credential.cert(serviceAccount) });
-}
-const db = admin.firestore();
+let db;
+// Support either raw JSON in FIREBASE_SERVICE_ACCOUNT_JSON or a path to a JSON file in FIREBASE_SERVICE_ACCOUNT_PATH
+try {
+  let serviceAccount = null;
+  if (process.env.FIREBASE_SERVICE_ACCOUNT_JSON) {
+    serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_JSON);
+  } else if (process.env.FIREBASE_SERVICE_ACCOUNT_PATH) {
+    const path = process.env.FIREBASE_SERVICE_ACCOUNT_PATH;
+    if (fs.existsSync(path)) {
+      const raw = fs.readFileSync(path, 'utf8');
+      serviceAccount = JSON.parse(raw);
+    } else {
+      console.warn(`FIREBASE_SERVICE_ACCOUNT_PATH set but file does not exist: ${path}`);
+    }
+  }
 
-// --- INITIALIZE SQUARE CLIENT ---
-const squareClient = new Client({
-  environment: Environment.Sandbox, // Use Sandbox for testing, change to Environment.Production for real payments
-  accessToken: process.env.SQUARE_ACCESS_TOKEN,
-});
+  if (serviceAccount) {
+    if (!admin.apps.length) {
+      admin.initializeApp({ credential: admin.credential.cert(serviceAccount) });
+    }
+    db = admin.firestore();
+  } else {
+    console.warn('Firebase service account not provided — Firestore will be unavailable in this process.');
+  }
+} catch (err) {
+  console.error('Failed to initialize Firebase admin:', err.message);
+  console.warn('Firestore will be unavailable in this process.');
+}
+
+// --- INITIALIZE SQUARE CLIENT (defensive) ---
+let squareClient = null;
+if (Client) {
+  // Resolve environment: prefer SDK Environment enum when available
+  const envName = process.env.SQUARE_ENVIRONMENT || 'Sandbox';
+  let resolvedEnv = null;
+  if (Environment && Environment[envName]) {
+    resolvedEnv = Environment[envName];
+  } else if (Environment && Environment.Sandbox) {
+    resolvedEnv = Environment.Sandbox;
+  } else {
+    // fall back to string (some SDK versions tolerate this)
+    resolvedEnv = envName;
+  }
+
+  squareClient = new Client({
+    environment: resolvedEnv,
+    accessToken: process.env.SQUARE_ACCESS_TOKEN,
+  });
+} else {
+  console.warn('Square client not initialized because SDK is missing. /api/crowdfund endpoints that use Square will return errors.');
+}
 
 const app = express();
 
@@ -72,6 +123,10 @@ app.post('/api/crowdfund/contribute', async (req, res) => {
       },
     }));
 
+    if (!squareClient) {
+      return res.status(500).json({ error: 'Payment provider not configured on this server.' });
+    }
+
     // Create a payment link with Square
     const response = await squareClient.checkoutApi.createPaymentLink({
       idempotencyKey: uuidv4(), // Prevents accidental duplicate charges
@@ -109,7 +164,9 @@ app.post('/api/crowdfund/confirm-payment', async (req, res) => {
         return res.json({ success: true, message: "No pizza items to update." });
     }
 
-    const docRef = db.collection('crowdfund').doc('status');
+  if (!db) return res.status(500).json({ error: 'Database not configured on this server.' });
+
+  const docRef = db.collection('crowdfund').doc('status');
     await db.runTransaction(async (transaction) => {
       const doc = await transaction.get(docRef);
       if (!doc.exists) throw "Document does not exist!";
@@ -124,7 +181,10 @@ app.post('/api/crowdfund/confirm-payment', async (req, res) => {
       });
     });
 
-    res.json({ success: true, newTotal: pizzasSold });
+  // Return the new total after successful transaction
+  const updatedDoc = await db.collection('crowdfund').doc('status').get();
+  const updatedTotal = updatedDoc.exists ? (updatedDoc.data().pizzasSold || 0) : null;
+  res.json({ success: true, newTotal: updatedTotal });
 
   } catch (error) {
     console.error("Error confirming payment:", error);
@@ -132,5 +192,12 @@ app.post('/api/crowdfund/confirm-payment', async (req, res) => {
   }
 });
 
+
+// Start server when run directly
+const PORT = process.env.PORT || 3001;
+if (require.main === module) {
+  if (!db) console.warn('Firestore not initialized — some endpoints will fail without FIREBASE_SERVICE_ACCOUNT_JSON');
+  app.listen(PORT, () => console.log(`Backend API listening on http://localhost:${PORT}`));
+}
 
 module.exports = app;
