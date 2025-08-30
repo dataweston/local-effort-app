@@ -9,6 +9,37 @@ const GalleryPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selected, setSelected] = useState(null);
+  const fallbackLoadedRef = useRef(false);
+
+  const tryLoadFallback = useCallback(async () => {
+    if (fallbackLoadedRef.current) return null;
+    return new Promise((resolve) => {
+      const already = typeof window !== 'undefined' && window.photoData;
+      const finish = () => {
+        const list = (window && window.photoData) || [];
+        if (Array.isArray(list) && list.length) {
+          const mapped = list.map((p, i) => ({
+            asset_id: p.src || String(i),
+            public_id: p.src || String(i),
+            context: { alt: p.title || 'Gallery image' },
+            thumbnail_url: p.src,
+            large_url: p.src,
+          }));
+          fallbackLoadedRef.current = true;
+          resolve(mapped);
+        } else {
+          resolve(null);
+        }
+      };
+      if (already) return finish();
+      const s = document.createElement('script');
+      s.src = '/gallery/photos.js';
+      s.async = true;
+      s.onload = finish;
+      s.onerror = () => resolve(null);
+      document.body.appendChild(s);
+    });
+  }, []);
   const closeBtnRef = useRef(null);
 
   useEffect(() => {
@@ -19,8 +50,8 @@ const GalleryPage = () => {
       try {
         controller = new AbortController();
         const { signal } = controller;
-        const searchQuery = query ? `tags:${query}` : '';
-        const apiUrl = `/api/search-images?query=${encodeURIComponent(searchQuery)}`;
+  // Pass raw query; server will convert to a Cloudinary expression (tags:<query>)
+  const apiUrl = `/api/search-images${query ? `?query=${encodeURIComponent(query)}` : ''}`;
 
         const response = await fetch(apiUrl, { signal });
 
@@ -32,16 +63,29 @@ const GalleryPage = () => {
           throw new Error('API endpoint not found - got HTML instead of JSON');
         }
 
+        // Parse JSON; if error status, surface server error details
+        const data = await response.json();
         if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
+          const details = data && (data.error || data.details || JSON.stringify(data));
+          throw new Error(`Search failed (${response.status}): ${details}`);
         }
 
-        const data = await response.json();
         setImages(data.images || []);
       } catch (err) {
         if (err.name === 'AbortError') return;
         console.error('Error fetching images:', err);
-        setError(err.message || String(err));
+        // Attempt a static fallback so the gallery still shows something
+        try {
+          const fallback = await tryLoadFallback();
+          if (fallback && fallback.length) {
+            setImages(fallback);
+            setError('Showing fallback images while the gallery API is unavailable.');
+          } else {
+            setError(err.message || String(err));
+          }
+        } catch (_) {
+          setError(err.message || String(err));
+        }
       } finally {
         setLoading(false);
       }
