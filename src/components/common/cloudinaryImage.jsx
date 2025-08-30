@@ -15,8 +15,8 @@ import { auto as formatAuto } from '@cloudinary/url-gen/qualifiers/format';
 // Cloud name can be provided via Vite env var VITE_CLOUDINARY_CLOUD_NAME or
 // NODE env CLOUDINARY_CLOUD_NAME. Falls back to the current default.
 const CLOUD_NAME =
-  (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_CLOUDINARY_CLOUD_NAME) ||
-  process.env.CLOUDINARY_CLOUD_NAME ||
+  import.meta.env?.VITE_CLOUDINARY_CLOUD_NAME ||
+  (typeof process !== 'undefined' && process?.env?.CLOUDINARY_CLOUD_NAME) ||
   'dokyhfvyd';
 
 const cld = new Cloudinary({
