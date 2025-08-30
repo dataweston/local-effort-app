@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { motion, AnimatePresence } from 'framer-motion';
 import CloudinaryImage from '../components/common/cloudinaryImage';
@@ -11,18 +11,17 @@ const GalleryPage = () => {
   const [selected, setSelected] = useState(null);
 
   useEffect(() => {
+    let controller = null;
     const handler = setTimeout(async () => {
       setLoading(true);
       setError(null);
-
       try {
+        controller = new AbortController();
+        const { signal } = controller;
         const searchQuery = query ? `tags:${query}` : '';
         const apiUrl = `/api/search-images?query=${encodeURIComponent(searchQuery)}`;
 
-        console.log('Making API call to:', apiUrl);
-        console.log('Current location:', window.location.href);
-
-  const response = await fetch(apiUrl);
+        const response = await fetch(apiUrl, { signal });
 
         // Check if response is actually JSON
         const contentType = response.headers.get('content-type');
@@ -36,19 +35,28 @@ const GalleryPage = () => {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
 
-  const data = await response.json();
-
+        const data = await response.json();
         setImages(data.images || []);
       } catch (err) {
+        if (err.name === 'AbortError') return;
         console.error('Error fetching images:', err);
-        setError(err.message);
+        setError(err.message || String(err));
       } finally {
+      const closeBtnRef = useRef(null);
         setLoading(false);
       }
     }, 500);
 
-    return () => clearTimeout(handler);
+    return () => {
+      clearTimeout(handler);
+      if (controller) controller.abort();
+    };
   }, [query]);
+
+  // Client-side pagination to limit initial DOM nodes
+  const PAGE_SIZE = 24;
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
+  useEffect(() => setVisibleCount(PAGE_SIZE), [images]);
 
   // lightbox controls
   const openLightbox = useCallback(
@@ -149,53 +157,30 @@ const GalleryPage = () => {
             onClick={closeLightbox}
           >
             <motion.div
-              className="max-w-4xl w-full max-h-full"
+              className="max-w-5xl w-full max-h-full"
               initial={{ y: 20, scale: 0.98 }}
               animate={{ y: 0, scale: 1 }}
               exit={{ y: 20, scale: 0.98 }}
               onClick={(e) => e.stopPropagation()}
             >
-              <div className="relative bg-white rounded-lg overflow-hidden">
+              <div className="relative overflow-hidden">
                 <button
-                  className="absolute right-2 top-2 z-10 bg-white/80 rounded-full p-2"
+                  className="absolute right-2 top-2 z-10 bg-black/60 text-white rounded-full p-2"
                   onClick={closeLightbox}
                   aria-label="Close image"
                 >
                   ✕
                 </button>
 
-                <div className="flex items-center justify-center p-4">
+                <div className="flex items-center justify-center p-2">
                   <CloudinaryImage
                     publicId={selected.img.public_id}
                     alt={selected.img.context?.alt || 'Large gallery image'}
-                    width={1200}
-                    height={800}
-                    className="w-full h-auto max-h-[80vh] object-contain"
+                    width={1400}
+                    height={1000}
+                    disableLazy
+                    className="w-full h-auto max-h-[90vh] object-contain"
                   />
-                </div>
-
-                <div className="flex justify-between items-center p-3 border-t">
-                  <button
-                    onClick={() => {
-                      const prev = (selected.idx - 1 + images.length) % images.length;
-                      setSelected({ img: images[prev], idx: prev });
-                    }}
-                    className="btn btn-ghost"
-                    aria-label="Previous image"
-                  >
-                    ‹ Prev
-                  </button>
-
-                  <button
-                    onClick={() => {
-                      const next = (selected.idx + 1) % images.length;
-                      setSelected({ img: images[next], idx: next });
-                    }}
-                    className="btn btn-ghost"
-                    aria-label="Next image"
-                  >
-                    Next ›
-                  </button>
                 </div>
               </div>
             </motion.div>
