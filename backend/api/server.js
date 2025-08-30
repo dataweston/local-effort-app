@@ -86,6 +86,22 @@ app.use(express.json());
 
 // --- API ENDPOINTS ---
 
+// Mount the standalone search-images handler (from root /api) so the
+// backend will serve /api/search-images when deployed via Vercel.
+try {
+  // require the handler from the repository root api/search-images.js
+  // path relative to this file: ../../api/search-images.js
+  // The handler exports a function (req, res)
+  // We mount it at GET /api/search-images to preserve the original behavior.
+  // eslint-disable-next-line global-require
+  const searchImagesHandler = require('../../api/search-images.js');
+  if (typeof searchImagesHandler === 'function') {
+    app.get('/api/search-images', (req, res) => searchImagesHandler(req, res));
+  }
+} catch (err) {
+  console.warn('search-images handler not available:', err.message);
+}
+
 // This endpoint remains the same
 app.get('/api/crowdfund/status', async (req, res) => {
   // ... (No changes to this function)
