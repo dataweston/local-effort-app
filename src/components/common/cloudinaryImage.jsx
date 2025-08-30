@@ -12,10 +12,16 @@ import { auto as qualityAuto } from '@cloudinary/url-gen/qualifiers/quality';
 import { auto as formatAuto } from '@cloudinary/url-gen/qualifiers/format';
 
 // Initialize Cloudinary.
-// IMPORTANT: Replace 'your-cloud-name' with your actual Cloudinary cloud name.
+// Cloud name can be provided via Vite env var VITE_CLOUDINARY_CLOUD_NAME or
+// NODE env CLOUDINARY_CLOUD_NAME. Falls back to the current default.
+const CLOUD_NAME =
+  (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_CLOUDINARY_CLOUD_NAME) ||
+  process.env.CLOUDINARY_CLOUD_NAME ||
+  'dokyhfvyd';
+
 const cld = new Cloudinary({
   cloud: {
-    cloudName: 'dokyhfvyd',
+    cloudName: CLOUD_NAME,
   },
 });
 
@@ -27,7 +33,11 @@ const cld = new Cloudinary({
  * @param {number} [height] - The desired height for a fill transformation.
  * @param {string} [className] - Optional CSS classes to apply to the image.
  */
+import { useState, useEffect, useRef } from 'react';
+
 const CloudinaryImage = ({ publicId, alt, width, height, className }) => {
+  const [loaded, setLoaded] = useState(false);
+  const imgRef = useRef(null);
   // If no publicId is provided, render a placeholder to avoid errors
   if (!publicId) {
     const placeholderStyle = {
@@ -42,6 +52,10 @@ const CloudinaryImage = ({ publicId, alt, width, height, className }) => {
   // Use the public ID to get the image object from Cloudinary
   const myImage = cld.image(publicId);
 
+  // Build a small blurred placeholder URL (very low-res)
+  const placeholderImg = cld.image(publicId).resize(fill(20, Math.round((height || 20) * (20 / (width || 20))))).quality(10).format(formatAuto());
+  const placeholderUrl = placeholderImg.toURL();
+
   // Apply standard optimizations and transformations using the correctly imported functions
   myImage
     .quality(qualityAuto()) // Use the .quality() method for q_auto
@@ -52,14 +66,28 @@ const CloudinaryImage = ({ publicId, alt, width, height, className }) => {
     myImage.resize(fill(width, height).gravity(autoGravity()));
   }
 
+  // use effect to attach a load handler to the AdvancedImage internal <img>
+  useEffect(() => {
+    const el = imgRef.current && imgRef.current.querySelector('img');
+    if (!el) return undefined;
+    const onLoad = () => setLoaded(true);
+    el.addEventListener('load', onLoad);
+    return () => el.removeEventListener('load', onLoad);
+  }, [publicId]);
+
   return (
-    <AdvancedImage
-      cldImg={myImage}
-      alt={alt}
-      className={className}
-      // These plugins add responsiveness (srcset) and lazy loading for performance
-      plugins={[responsive({ steps: [800, 1000, 1400] }), lazyload()]}
-    />
+    <div
+      ref={imgRef}
+      className={`${className} relative overflow-hidden`}
+      style={{ backgroundImage: `url(${placeholderUrl})`, backgroundSize: 'cover', backgroundPosition: 'center' }}
+    >
+      <AdvancedImage
+        cldImg={myImage}
+        alt={alt}
+        className={`transition-opacity duration-500 ${loaded ? 'opacity-100' : 'opacity-0'}`}
+        plugins={[responsive({ steps: [800, 1000, 1400] }), lazyload()]}
+      />
+    </div>
   );
 };
 
