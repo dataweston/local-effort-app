@@ -1,13 +1,23 @@
 // api/search-images.js
 const cloudinary = require('cloudinary').v2;
 
-// Configure Cloudinary
-cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
-  secure: true,
-});
+// Configure Cloudinary defensively
+const CLOUD_NAME = process.env.CLOUDINARY_CLOUD_NAME;
+const CLOUD_KEY = process.env.CLOUDINARY_API_KEY;
+const CLOUD_SECRET = process.env.CLOUDINARY_API_SECRET;
+
+if (CLOUD_NAME && CLOUD_KEY && CLOUD_SECRET) {
+  cloudinary.config({
+    cloud_name: CLOUD_NAME,
+    api_key: CLOUD_KEY,
+    api_secret: CLOUD_SECRET,
+    secure: true,
+  });
+} else {
+  // Don't call cloudinary.config with undefined values; handler will return a clear error.
+  // eslint-disable-next-line no-console
+  console.warn('Cloudinary environment variables are not fully configured. Please set CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET.');
+}
 
 async function handler(req, res) {
   // Add CORS headers for local dev / preview
@@ -23,8 +33,18 @@ async function handler(req, res) {
   const perPage = Math.min(100, parseInt(per_page, 10) || 24);
 
   try {
+    // Defensive: ensure Cloudinary credentials are present before calling the API
+    if (!CLOUD_NAME || !CLOUD_KEY || !CLOUD_SECRET) {
+      return res.status(500).json({ error: 'Cloudinary not configured on server', details: 'Missing CLOUDINARY_CLOUD_NAME/API_KEY/SECRET' });
+    }
+
     // Optional: verify Cloudinary credentials quickly
-    await cloudinary.api.ping();
+    try {
+      await cloudinary.api.ping();
+    } catch (pingErr) {
+      console.error('Cloudinary ping failed:', pingErr && (pingErr.message || pingErr));
+      return res.status(500).json({ error: 'Cloudinary ping failed', details: String(pingErr) });
+    }
 
     const searchExpression = query ? `tags:${query}` : 'resource_type:image';
 
