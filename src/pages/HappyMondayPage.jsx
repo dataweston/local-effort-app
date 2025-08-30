@@ -1,7 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, lazy, Suspense } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { motion, AnimatePresence } from 'framer-motion';
-import React, { lazy, Suspense } from 'react';
 const BlockContent = lazy(() => import('@sanity/block-content-to-react'));
 import sanityClient from '../sanityClient.js';
 import FoodItemCard from '../components/menu/FoodItemCard';
