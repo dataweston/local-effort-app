@@ -35,7 +35,7 @@ const cld = new Cloudinary({
  */
 import { useState, useEffect, useRef } from 'react';
 
-const CloudinaryImage = ({ publicId, alt, width, height, className }) => {
+const CloudinaryImage = ({ publicId, alt, width, height, className, disableLazy = false }) => {
   const [loaded, setLoaded] = useState(false);
   const imgRef = useRef(null);
   // If no publicId is provided, render a placeholder to avoid errors
@@ -119,7 +119,7 @@ const CloudinaryImage = ({ publicId, alt, width, height, className }) => {
         cldImg={myImage}
         alt={alt}
         className={`transition-opacity duration-500 ${loaded ? 'opacity-100' : 'opacity-0'}`}
-        plugins={[responsive({ steps: [800, 1000, 1400] }), lazyload()]}
+        plugins={disableLazy ? [responsive({ steps: [800, 1000, 1400] })] : [responsive({ steps: [800, 1000, 1400] }), lazyload()]}
       />
     </div>
   );
