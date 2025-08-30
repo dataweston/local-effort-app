@@ -7,6 +7,7 @@ import FoodItemCard from '../components/menu/FoodItemCard';
 const FoodItemModal = lazy(() => import('../components/menu/FoodItemModal'));
 const FeedbackForm = lazy(() => import('../components/menu/FeedbackForm'));
 const LoadingSpinner = lazy(() => import('../components/layout/LoadingSpinner'));
+import ErrorBoundary from '../components/ErrorBoundary';
 
 const HappyMondayPage = () => {
   const [menuItems, setMenuItems] = useState([]);
@@ -82,18 +83,28 @@ const HappyMondayPage = () => {
           </Suspense>
         </section>
 
-        <section className="mx-auto max-w-6xl px-4 md:px-6 lg:px-8">
+          <section className="mx-auto max-w-6xl px-4 md:px-6 lg:px-8">
           <h2 className="text-heading uppercase mb-6 border-b border-neutral-300 pb-3">Feedback</h2>
           <p className="text-body mb-8 max-w-2xl">
             Have a suggestion, a request, or feedback on our quality? We'd love to hear it. Your
             input helps us grow and improve.
           </p>
-          <FeedbackForm />
+          <ErrorBoundary>
+            <Suspense fallback={<div className="text-center p-8">Loading form…</div>}>
+              <FeedbackForm />
+            </Suspense>
+          </ErrorBoundary>
         </section>
       </div>
 
       <AnimatePresence>
-        {selectedItem && <FoodItemModal item={selectedItem} onClose={handleCloseModal} />}
+        {selectedItem && (
+          <ErrorBoundary>
+            <Suspense fallback={<div className="fixed inset-0 flex items-center justify-center">Loading…</div>}>
+              <FoodItemModal item={selectedItem} onClose={handleCloseModal} />
+            </Suspense>
+          </ErrorBoundary>
+        )}
       </AnimatePresence>
     </>
   );

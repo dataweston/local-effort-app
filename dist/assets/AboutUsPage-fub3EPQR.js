@@ -1,4 +1,4 @@
-import{r as o,R as e,W as g}from"./index-Dtqo3_P9.js";import{s as f}from"./sanityClient-CslqeiBD.js";const N=()=>{const[d,i]=o.useState(null),[p,y]=o.useState(!0),[l,u]=o.useState(null);if(o.useEffect(()=>{const a=`{
+import{r as o,R as e,W as g}from"./index-BNYhxoav.js";import{s as f}from"./sanityClient-yUTz_zYv.js";const N=()=>{const[d,i]=o.useState(null),[p,y]=o.useState(!0),[l,u]=o.useState(null);if(o.useEffect(()=>{const a=`{
       "page": *[_type == "page" && slug.current == "about-us"][0]{ title, introduction },
       "persons": *[_type == "person"]{ name, role, bio, image{asset->{_ref}} },
       "skills": *[_type == "specialSkill"]{ name, description }
