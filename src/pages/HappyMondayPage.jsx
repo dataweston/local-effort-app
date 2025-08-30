@@ -6,7 +6,8 @@ import sanityClient from '../sanityClient.js';
 import FoodItemCard from '../components/menu/FoodItemCard';
 const FoodItemModal = lazy(() => import('../components/menu/FoodItemModal'));
 const FeedbackForm = lazy(() => import('../components/menu/FeedbackForm'));
-const LoadingSpinner = lazy(() => import('../components/layout/LoadingSpinner'));
+// LoadingSpinner is a named export; map it to default for React.lazy
+const LoadingSpinner = lazy(() => import('../components/layout/LoadingSpinner').then(mod => ({ default: mod.LoadingSpinner })));
 import ErrorBoundary from '../components/ErrorBoundary';
 
 const HappyMondayPage = () => {
