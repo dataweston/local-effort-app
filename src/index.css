@@ -22,7 +22,12 @@ body {
   scroll-behavior: smooth;
 }
 
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   font-family: var(--font-display);
   font-weight: 600;
   line-height: 1.2;
@@ -53,7 +58,9 @@ h1, h2, h3, h4, h5, h6 {
   font-size: 0.95rem;
   font-weight: 600;
   cursor: pointer;
-  transition: background 0.2s ease, transform 0.2s ease;
+  transition:
+    background 0.2s ease,
+    transform 0.2s ease;
 }
 
 .btn-primary {
@@ -71,5 +78,5 @@ h1, h2, h3, h4, h5, h6 {
   background: #fff;
   border-radius: 0.75rem;
   padding: 1.5rem;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
 }

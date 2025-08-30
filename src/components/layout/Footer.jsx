@@ -10,9 +10,24 @@ export const Footer = () => {
             <p className="text-neutral-500">Roseville, MN · Midwest</p>
           </div>
           <div className="flex gap-4">
-            <a href="https://instagram.com/localeffort" className="underline underline-offset-4 hover:opacity-80">Instagram</a>
-            <a href="https://facebook.com/localeffort" className="underline underline-offset-4 hover:opacity-80">Facebook</a>
-            <a href="https://www.thumbtack.com/mn/saint-paul/personal-chefs/weston-smith/service/429294230165643268" className="underline underline-offset-4 hover:opacity-80">Thumbtack</a>
+            <a
+              href="https://instagram.com/localeffort"
+              className="underline underline-offset-4 hover:opacity-80"
+            >
+              Instagram
+            </a>
+            <a
+              href="https://facebook.com/localeffort"
+              className="underline underline-offset-4 hover:opacity-80"
+            >
+              Facebook
+            </a>
+            <a
+              href="https://www.thumbtack.com/mn/saint-paul/personal-chefs/weston-smith/service/429294230165643268"
+              className="underline underline-offset-4 hover:opacity-80"
+            >
+              Thumbtack
+            </a>
           </div>
         </div>
       </div>

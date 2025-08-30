@@ -19,7 +19,6 @@ const HappyMondayPage = lazy(() => import('./pages/HappyMondayPage'));
 // --- NEW: Lazily import the GalleryPage ---
 const GalleryPage = lazy(() => import('./pages/GalleryPage'));
 
-
 const AppContent = () => {
   const location = useLocation();
 
@@ -32,18 +31,74 @@ const AppContent = () => {
       <div className="min-h-screen flex flex-col bg-white">
         <Header />
         <main className="flex-1">
-          <Suspense fallback={<LoadingSpinner /> }>
+          <Suspense fallback={<LoadingSpinner />}>
             <AnimatePresence mode="wait">
               <Routes location={location} key={location.pathname}>
-                <Route path="/" element={<AnimatedPage><HomePage /></AnimatedPage>} />
-                <Route path="/about" element={<AnimatedPage><AboutUsPage /></AnimatedPage>} />
-                <Route path="/services" element={<AnimatedPage><ServicesPage /></AnimatedPage>} />
-                <Route path="/pricing" element={<AnimatedPage><PricingPage /></AnimatedPage>} />
-                <Route path="/crowdfunding" element={<AnimatedPage><CrowdfundingPage /></AnimatedPage>} />
-                <Route path="/menu" element={<AnimatedPage><MenuPage /></AnimatedPage>} />
-                <Route path="/happy-monday" element={<AnimatedPage><HappyMondayPage /></AnimatedPage>} />
+                <Route
+                  path="/"
+                  element={
+                    <AnimatedPage>
+                      <HomePage />
+                    </AnimatedPage>
+                  }
+                />
+                <Route
+                  path="/about"
+                  element={
+                    <AnimatedPage>
+                      <AboutUsPage />
+                    </AnimatedPage>
+                  }
+                />
+                <Route
+                  path="/services"
+                  element={
+                    <AnimatedPage>
+                      <ServicesPage />
+                    </AnimatedPage>
+                  }
+                />
+                <Route
+                  path="/pricing"
+                  element={
+                    <AnimatedPage>
+                      <PricingPage />
+                    </AnimatedPage>
+                  }
+                />
+                <Route
+                  path="/crowdfunding"
+                  element={
+                    <AnimatedPage>
+                      <CrowdfundingPage />
+                    </AnimatedPage>
+                  }
+                />
+                <Route
+                  path="/menu"
+                  element={
+                    <AnimatedPage>
+                      <MenuPage />
+                    </AnimatedPage>
+                  }
+                />
+                <Route
+                  path="/happy-monday"
+                  element={
+                    <AnimatedPage>
+                      <HappyMondayPage />
+                    </AnimatedPage>
+                  }
+                />
                 {/* --- NEW: Add the route for the gallery page --- */}
-                <Route path="/gallery" element={<AnimatedPage><GalleryPage /></AnimatedPage>} />
+                <Route
+                  path="/gallery"
+                  element={
+                    <AnimatedPage>
+                      <GalleryPage />
+                    </AnimatedPage>
+                  }
+                />
               </Routes>
             </AnimatePresence>
           </Suspense>

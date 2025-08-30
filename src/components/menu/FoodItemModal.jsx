@@ -7,8 +7,8 @@ const backdrop = {
 };
 
 const modal = {
-  hidden: { y: "-50px", opacity: 0 },
-  visible: { y: "0", opacity: 1, transition: { delay: 0.1 } },
+  hidden: { y: '-50px', opacity: 0 },
+  visible: { y: '0', opacity: 1, transition: { delay: 0.1 } },
 };
 
 const FoodItemModal = ({ item, onClose }) => {
@@ -26,7 +26,12 @@ const FoodItemModal = ({ item, onClose }) => {
         className="bg-white rounded-lg shadow-xl max-w-lg w-full p-8 relative"
         onClick={(e) => e.stopPropagation()} // Prevents modal from closing when clicking inside
       >
-        <button onClick={onClose} className="absolute top-4 right-4 text-neutral-500 hover:text-neutral-800 text-2xl">&times;</button>
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 text-neutral-500 hover:text-neutral-800 text-2xl"
+        >
+          &times;
+        </button>
         <h3 className="text-3xl font-bold mb-4">{item.name}</h3>
         <p className="text-body mb-6">{item.description}</p>
         <div>

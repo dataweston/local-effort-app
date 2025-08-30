@@ -1,4 +1,4 @@
-import React, {useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { motion, AnimatePresence } from 'framer-motion';
 import BlockContent from '@sanity/block-content-to-react'; // Import the block renderer
@@ -22,7 +22,8 @@ const HappyMondayPage = () => {
       "pageContent": *[_type == "happyMondayPage"][0]
     }`;
 
-    sanityClient.fetch(query)
+    sanityClient
+      .fetch(query)
       .then((data) => {
         setMenuItems(data.menuItems || []);
         setPageContent(data.pageContent); // Set the new page content
@@ -43,7 +44,10 @@ const HappyMondayPage = () => {
     <>
       <Helmet>
         <title>Happy Monday | Local Effort</title>
-        <meta name="description" content="Explore our special Happy Monday menu, made with the finest local ingredients." />
+        <meta
+          name="description"
+          content="Explore our special Happy Monday menu, made with the finest local ingredients."
+        />
       </Helmet>
 
       <div className="space-y-24 mb-24">
@@ -70,7 +74,7 @@ const HappyMondayPage = () => {
               animate="animate"
               variants={{ animate: { transition: { staggerChildren: 0.1 } } }}
             >
-              {menuItems.map(item => (
+              {menuItems.map((item) => (
                 <FoodItemCard key={item._id} item={item} onClick={() => handleCardClick(item)} />
               ))}
             </motion.div>
@@ -78,16 +82,17 @@ const HappyMondayPage = () => {
         </section>
 
         <section className="mx-auto max-w-6xl px-4 md:px-6 lg:px-8">
-            <h2 className="text-heading uppercase mb-6 border-b border-neutral-300 pb-3">Feedback</h2>
-            <p className="text-body mb-8 max-w-2xl">Have a suggestion, a request, or feedback on our quality? We'd love to hear it. Your input helps us grow and improve.</p>
-            <FeedbackForm />
+          <h2 className="text-heading uppercase mb-6 border-b border-neutral-300 pb-3">Feedback</h2>
+          <p className="text-body mb-8 max-w-2xl">
+            Have a suggestion, a request, or feedback on our quality? We'd love to hear it. Your
+            input helps us grow and improve.
+          </p>
+          <FeedbackForm />
         </section>
       </div>
 
       <AnimatePresence>
-        {selectedItem && (
-          <FoodItemModal item={selectedItem} onClose={handleCloseModal} />
-        )}
+        {selectedItem && <FoodItemModal item={selectedItem} onClose={handleCloseModal} />}
       </AnimatePresence>
     </>
   );

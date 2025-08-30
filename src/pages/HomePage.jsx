@@ -25,45 +25,63 @@ const HomePage = () => {
     publicId: 'gallery/IMG_3145', // The public ID from Cloudinary
     alt: 'A beautifully plated dish with microgreens and edible flowers',
     // You must replace 'your-cloud-name' with your actual Cloudinary cloud name
-    url: 'https://res.cloudinary.com/dokyhfvyd/image/upload/v1/gallery/IMG_3145.jpg'
+    url: 'https://res.cloudinary.com/dokyhfvyd/image/upload/v1/gallery/IMG_3145.jpg',
   };
 
   // --- NEW: Define the JSON-LD structured data object for SEO ---
   const imageJsonLd = {
-    "@context": "https://schema.org",
-    "@type": "ImageObject",
-    "contentUrl": heroImage.url,
-    "name": heroImage.alt,
-    "description": "A sample of the professional in-home dining experience by Local Effort.",
-    "creator": {
-      "@type": "Organization",
-      "name": "Local Effort"
-    }
+    '@context': 'https://schema.org',
+    '@type': 'ImageObject',
+    contentUrl: heroImage.url,
+    name: heroImage.alt,
+    description: 'A sample of the professional in-home dining experience by Local Effort.',
+    creator: {
+      '@type': 'Organization',
+      name: 'Local Effort',
+    },
   };
 
   return (
     <>
       <Helmet>
         <title>Local Effort | Personal Chef & Event Catering in Roseville, MN</title>
-        <meta name="description" content="Local Effort offers personal chef services, event catering, and weekly meal prep in Roseville, MN." />
+        <meta
+          name="description"
+          content="Local Effort offers personal chef services, event catering, and weekly meal prep in Roseville, MN."
+        />
         {/* --- NEW: Inject the structured data into the page head --- */}
-        <script type="application/ld+json">
-          {JSON.stringify(imageJsonLd)}
-        </script>
+        <script type="application/ld+json">{JSON.stringify(imageJsonLd)}</script>
       </Helmet>
 
       <div className="space-y-24">
         {/* Hero */}
         <section className="mx-auto max-w-6xl px-4 md:px-6 lg:px-8 grid md:grid-cols-2 gap-8 items-center min-h-[60vh]">
           <div>
-            <motion.h2 variants={fadeInLeft} initial="initial" animate="animate" className="text-hero uppercase">
+            <motion.h2
+              variants={fadeInLeft}
+              initial="initial"
+              animate="animate"
+              className="text-hero uppercase"
+            >
               Minnesotan Food
             </motion.h2>
-            <motion.h3 variants={fadeInLeft} initial="initial" animate="animate" transition={{ delay: 0.05 }} className="text-hero uppercase text-neutral-400">
+            <motion.h3
+              variants={fadeInLeft}
+              initial="initial"
+              animate="animate"
+              transition={{ delay: 0.05 }}
+              className="text-hero uppercase text-neutral-400"
+            >
               For Your Functions.
             </motion.h3>
-            <motion.p variants={fadeInUp} initial="initial" animate="animate" className="mt-8 text-body max-w-md">
-              Professional in-home dining. 30 years collective fine food experience. Sourcing the best local ingredients without compromise.
+            <motion.p
+              variants={fadeInUp}
+              initial="initial"
+              animate="animate"
+              className="mt-8 text-body max-w-md"
+            >
+              Professional in-home dining. 30 years collective fine food experience. Sourcing the
+              best local ingredients without compromise.
             </motion.p>
             <motion.button
               whileHover={{ scale: 1.03 }}
@@ -99,20 +117,32 @@ const HomePage = () => {
             <div className="flex justify-center">
               <PizzaSVG size={300} goal={goal} filled={filled} />
             </div>
-            <motion.div className="text-4xl font-bold">
-              {rounded}
-            </motion.div>
+            <motion.div className="text-4xl font-bold">{rounded}</motion.div>
             <p className="text-neutral-600">Pizzas sold towards our fundraiser</p>
           </div>
         </section>
 
         {/* Offerings */}
         <section className="mx-auto max-w-6xl px-4 md:px-6 lg:px-8">
-          <h3 className="text-heading uppercase mb-6 border-b border-neutral-300 pb-3">Core Offerings</h3>
+          <h3 className="text-heading uppercase mb-6 border-b border-neutral-300 pb-3">
+            Core Offerings
+          </h3>
           <div className="grid md:grid-cols-3 gap-6">
-            <ServiceCard to="/meal-prep" title="Weekly Meal Prep" description="Foundation & custom plans. Basic, good nutrition from local Midwest sources." />
-            <ServiceCard to="/events" title="Dinners & Events" description="Event catering and in-home chef experiences, for parties of 2 to 50." />
-            <ServiceCard to="/pizza-party" title="Pizza Parties" description="Mobile high-temperature pizza oven, sourdough crusts, and all local ingredients." />
+            <ServiceCard
+              to="/meal-prep"
+              title="Weekly Meal Prep"
+              description="Foundation & custom plans. Basic, good nutrition from local Midwest sources."
+            />
+            <ServiceCard
+              to="/events"
+              title="Dinners & Events"
+              description="Event catering and in-home chef experiences, for parties of 2 to 50."
+            />
+            <ServiceCard
+              to="/pizza-party"
+              title="Pizza Parties"
+              description="Mobile high-temperature pizza oven, sourdough crusts, and all local ingredients."
+            />
           </div>
         </section>
       </div>

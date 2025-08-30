@@ -7,7 +7,7 @@ export function useCountUp(endValue, duration = 1500) {
     let start = 0;
     const end = endValue;
     if (count !== 0) {
-        start = count;
+      start = count;
     }
     if (start === end) return;
 
@@ -20,7 +20,7 @@ export function useCountUp(endValue, duration = 1500) {
       const easeOutProgress = progress * (2 - progress);
       const currentVal = Math.floor(easeOutProgress * (end - start) + start);
       setCount(currentVal);
-      
+
       if (progress < 1) {
         requestAnimationFrame(animation);
       } else {
@@ -29,7 +29,6 @@ export function useCountUp(endValue, duration = 1500) {
     };
 
     requestAnimationFrame(animation);
-
   }, [endValue, duration]);
 
   return count;
