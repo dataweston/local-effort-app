@@ -96,10 +96,24 @@ try {
   // eslint-disable-next-line global-require
   const searchImagesHandler = require('../../api/search-images.js');
   if (typeof searchImagesHandler === 'function') {
-    app.get('/api/search-images', (req, res) => searchImagesHandler(req, res));
+    app.get('/api/search-images', async (req, res) => {
+      try {
+        // Delegate to the handler and await if it returns a promise
+        await Promise.resolve(searchImagesHandler(req, res));
+      } catch (err) {
+        console.error('search-images handler runtime error:', err);
+        // Ensure we always return JSON on error (avoid HTML error pages)
+        res.status(500).json({ error: 'search-images failed', details: String(err) });
+      }
+    });
   }
 } catch (err) {
   console.warn('search-images handler not available:', err.message);
+}
+
+// Helpful startup log for local debugging
+if (require.main === module) {
+  console.log('Starting backend API (local) — routes mounted: /api/crowdfund/status, /api/crowdfund/contribute, /api/crowdfund/confirm-payment, /api/search-images (if available)');
 }
 
 // This endpoint remains the same
