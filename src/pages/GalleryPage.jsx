@@ -9,6 +9,7 @@ const GalleryPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selected, setSelected] = useState(null);
+  const closeBtnRef = useRef(null);
 
   useEffect(() => {
     let controller = null;
@@ -42,7 +43,6 @@ const GalleryPage = () => {
         console.error('Error fetching images:', err);
         setError(err.message || String(err));
       } finally {
-      const closeBtnRef = useRef(null);
         setLoading(false);
       }
     }, 500);
@@ -62,8 +62,19 @@ const GalleryPage = () => {
   const openLightbox = useCallback(
     (img, idx) => {
       setSelected({ img, idx });
+      // Prefetch the large image for the selected and the next image
+      if (img && img.large_url) {
+        const p = new Image();
+        p.src = img.large_url;
+      }
+      const nextIdx = (idx + 1) % images.length;
+      const next = images[nextIdx];
+      if (next && next.large_url) {
+        const pn = new Image();
+        pn.src = next.large_url;
+      }
     },
-    [setSelected]
+    [setSelected, images]
   );
 
   const closeLightbox = useCallback(() => setSelected(null), [setSelected]);
@@ -85,6 +96,11 @@ const GalleryPage = () => {
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, [selected, images, closeLightbox]);
+
+  // focus the close button when modal opens for accessibility
+  useEffect(() => {
+    if (selected && closeBtnRef.current) closeBtnRef.current.focus();
+  }, [selected]);
 
   return (
     <>
@@ -135,13 +151,22 @@ const GalleryPage = () => {
                 className="border p-2 bg-white rounded-lg overflow-hidden"
                 aria-label={img.context?.alt || `Gallery image ${idx + 1}`}
               >
-                <CloudinaryImage
-                  publicId={img.public_id}
-                  alt={img.context?.alt || 'Gallery image'}
-                  width={600}
-                  height={600}
-                  className="rounded-lg object-cover w-full h-full aspect-square"
-                />
+                {img.thumbnail_url ? (
+                  <img
+                    src={img.thumbnail_url}
+                    alt={img.context?.alt || 'Gallery image'}
+                    className="rounded-lg object-cover w-full h-full aspect-square"
+                    loading="lazy"
+                  />
+                ) : (
+                  <CloudinaryImage
+                    publicId={img.public_id}
+                    alt={img.context?.alt || 'Gallery image'}
+                    width={600}
+                    height={600}
+                    className="rounded-lg object-cover w-full h-full aspect-square"
+                  />
+                )}
               </motion.button>
             ))}
           </div>
@@ -165,6 +190,7 @@ const GalleryPage = () => {
             >
               <div className="relative overflow-hidden">
                 <button
+                  ref={closeBtnRef}
                   className="absolute right-2 top-2 z-10 bg-black/60 text-white rounded-full p-2"
                   onClick={closeLightbox}
                   aria-label="Close image"
@@ -173,14 +199,22 @@ const GalleryPage = () => {
                 </button>
 
                 <div className="flex items-center justify-center p-2">
-                  <CloudinaryImage
-                    publicId={selected.img.public_id}
-                    alt={selected.img.context?.alt || 'Large gallery image'}
-                    width={1400}
-                    height={1000}
-                    disableLazy
-                    className="w-full h-auto max-h-[90vh] object-contain"
-                  />
+                  {selected.img.large_url ? (
+                    <img
+                      src={selected.img.large_url}
+                      alt={selected.img.context?.alt || 'Large gallery image'}
+                      className="w-full h-auto max-h-[90vh] object-contain"
+                    />
+                  ) : (
+                    <CloudinaryImage
+                      publicId={selected.img.public_id}
+                      alt={selected.img.context?.alt || 'Large gallery image'}
+                      width={1400}
+                      height={1000}
+                      disableLazy
+                      className="w-full h-auto max-h-[90vh] object-contain"
+                    />
+                  )}
                 </div>
               </div>
             </motion.div>
