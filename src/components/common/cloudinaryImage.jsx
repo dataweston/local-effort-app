@@ -52,8 +52,10 @@ const CloudinaryImage = ({ publicId, alt, width, height, className }) => {
   // Use the public ID to get the image object from Cloudinary
   const myImage = cld.image(publicId);
 
-  // Build a small blurred placeholder URL (very low-res)
-  const placeholderImg = cld.image(publicId).resize(fill(20, Math.round((height || 20) * (20 / (width || 20))))).quality(10).format(formatAuto());
+  // Build a small blurred placeholder URL (low-res but not tiny so it looks better on slow networks)
+  const phW = 80; // small preview width
+  const phH = Math.max(20, Math.round((height || 80) * (phW / (width || 80))));
+  const placeholderImg = cld.image(publicId).resize(fill(phW, phH)).quality(20).format(formatAuto());
   const placeholderUrl = placeholderImg.toURL();
 
   // Apply standard optimizations and transformations using the correctly imported functions
@@ -68,11 +70,43 @@ const CloudinaryImage = ({ publicId, alt, width, height, className }) => {
 
   // use effect to attach a load handler to the AdvancedImage internal <img>
   useEffect(() => {
-    const el = imgRef.current && imgRef.current.querySelector('img');
-    if (!el) return undefined;
-    const onLoad = () => setLoaded(true);
-    el.addEventListener('load', onLoad);
-    return () => el.removeEventListener('load', onLoad);
+    let mounted = true;
+    let el = null;
+    let pollTimer = null;
+    let onLoad = null;
+
+    // Safety fallback: if the high-res image doesn't load within this time, show it anyway
+    const fallbackTimeout = setTimeout(() => {
+      if (mounted) setLoaded(true);
+    }, 2500);
+
+    const attachListener = () => {
+      el = imgRef.current && imgRef.current.querySelector('img');
+      if (!el) {
+        // try again briefly
+        pollTimer = setTimeout(attachListener, 200);
+        return;
+      }
+
+      onLoad = () => {
+        if (!mounted) return;
+        clearTimeout(fallbackTimeout);
+        setLoaded(true);
+      };
+
+      el.addEventListener('load', onLoad);
+      // If the image is already cached/complete, trigger immediately
+      if (el.complete) onLoad();
+    };
+
+    attachListener();
+
+    return () => {
+      mounted = false;
+      clearTimeout(fallbackTimeout);
+      if (pollTimer) clearTimeout(pollTimer);
+      if (el && onLoad) el.removeEventListener('load', onLoad);
+    };
   }, [publicId]);
 
   return (

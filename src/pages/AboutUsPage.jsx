@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
-import sanityClient from '../sanityClient'; // Make sure this path is correct
+import sanityClient from '../sanityClient.js'; // explicit file extension for consistency
 
 const AboutUsPage = () => {
   const [aboutData, setAboutData] = useState(null);
@@ -8,24 +8,30 @@ const AboutUsPage = () => {
   const [activeSkill, setActiveSkill] = useState(null);
 
   useEffect(() => {
-    // Query to get the page content, the two persons, and all special skills
+    // Limit fields we request to reduce payload size
     const query = `{
-            "page": *[_type == "page" && slug.current == "about-us"][0],
-            "persons": *[_type == "person"],
-            "skills": *[_type == "specialSkill"]
-        }`;
+      "page": *[_type == "page" && slug.current == "about-us"][0]{ title, introduction },
+      "persons": *[_type == "person"]{ name, role, bio, image{asset->{_ref}} },
+      "skills": *[_type == "specialSkill"]{ name, description }
+    }`;
 
-    sanityClient
-      .fetch(query)
-      .then((data) => {
+    let mounted = true;
+    (async () => {
+      try {
+        const data = await sanityClient.fetch(query);
+        if (!mounted) return;
         setAboutData(data);
-        // Set the active skill only if skills exist
-        if (data?.skills && data.skills.length > 0) {
-          setActiveSkill(data.skills[0]);
-        }
-        setLoading(false);
-      })
-      .catch(console.error);
+        if (data?.skills?.length) setActiveSkill(data.skills[0]);
+      } catch (err) {
+        console.error('Failed to load About page data:', err);
+        setAboutData(null);
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    })();
+    return () => {
+      mounted = false;
+    };
   }, []);
 
   if (loading) return <div>Loading...</div>;
