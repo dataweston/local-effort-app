@@ -7,6 +7,14 @@
       "config": { "distDir": "dist" }
     },
     {
+      "src": "api/search-images.js",
+      "use": "@vercel/node"
+    },
+    {
+      "src": "api/_ping.js",
+      "use": "@vercel/node"
+    },
+    {
       "src": "backend/api/server.js",
       "use": "@vercel/node"
     },
@@ -17,12 +25,20 @@
   ],
   "routes": [
     {
+      "src": "/api/search-images",
+      "dest": "/api/search-images.js"
+    },
+    {
       "src": "/api/_ping",
-      "dest": "/backend/api/ping.js"
+      "dest": "/api/_ping.js"
     },
     {
       "src": "/api/(.*)",
       "dest": "/backend/api/server.js"
+    },
+    {
+      "src": "/((?!api|assets|.*\\.|_next).*)",
+      "dest": "/index.html"
     }
   ]
 }
