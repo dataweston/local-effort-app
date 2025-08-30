@@ -5,13 +5,27 @@ const cors = require('cors');
 const admin = require('firebase-admin');
 const { createClient } = require('@sanity/client');
 const fs = require('fs');
-const sanityClient = createClient({
-  projectId: process.env.SANITY_PROJECT_ID,
-  dataset: 'production',
-  useCdn: false, // `false` for write operations
-  token: process.env.SANITY_API_TOKEN, // A token with write access
-  apiVersion: '2024-01-01',
-});
+
+// Lazily create Sanity client to avoid throwing during module load when
+// SANITY_PROJECT_ID is not provided in the environment (this prevents
+// serverless functions from failing with "Configuration must contain `projectId`").
+let sanityClient = null;
+function getSanityClient() {
+  if (sanityClient) return sanityClient;
+  const projectId = process.env.SANITY_PROJECT_ID;
+  if (!projectId) {
+    console.warn('SANITY_PROJECT_ID not set — Sanity client unavailable.');
+    return null;
+  }
+  sanityClient = createClient({
+    projectId,
+    dataset: 'production',
+    useCdn: false, // `false` for write operations
+    token: process.env.SANITY_API_TOKEN, // A token with write access
+    apiVersion: '2024-01-01',
+  });
+  return sanityClient;
+}
 // Import Square Client (defensive: warn if not available)
 let Client, Environment;
 try {
@@ -85,6 +99,35 @@ app.use(cors(corsOptions));
 app.use(express.json());
 
 // --- API ENDPOINTS ---
+
+// Diagnostic endpoint (safe): reports whether required env vars are present
+// and attempts a lightweight Cloudinary ping if configured. Do NOT expose
+// credentials. This endpoint is intended for temporary debugging in staging.
+app.get('/api/_diag', async (req, res) => {
+  try {
+  const hasCloudinary = !!(process.env.CLOUDINARY_CLOUD_NAME && process.env.CLOUDINARY_API_KEY && process.env.CLOUDINARY_API_SECRET);
+  const sanityAvailable = !!getSanityClient();
+    const result = { ok: true, hasCloudinary };
+  result.sanity = { available: sanityAvailable };
+    if (hasCloudinary) {
+      try {
+        // require cloudinary lazily to avoid issues when not installed in some environments
+        // eslint-disable-next-line global-require
+        const cloudinary = require('cloudinary').v2;
+        // Use configured cloudinary if available
+        await cloudinary.api.ping();
+        result.cloudinary = { ping: 'ok' };
+      } catch (err) {
+        // don't include error stack or secrets — only a short message
+        result.cloudinary = { ping: 'failed', message: String(err).slice(0, 200) };
+      }
+    }
+    res.json(result);
+  } catch (err) {
+    console.error('Diag endpoint error:', err);
+    res.status(500).json({ ok: false, error: 'diag-failed' });
+  }
+});
 
 // Mount the standalone search-images handler (from root /api) so the
 // backend will serve /api/search-images when deployed via Vercel.

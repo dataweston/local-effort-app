@@ -9,9 +9,17 @@
     {
       "src": "backend/api/server.js",
       "use": "@vercel/node"
+    },
+    {
+      "src": "backend/api/ping.js",
+      "use": "@vercel/node"
     }
   ],
   "routes": [
+    {
+      "src": "/api/_ping",
+      "dest": "/backend/api/ping.js"
+    },
     {
       "src": "/api/(.*)",
       "dest": "/backend/api/server.js"

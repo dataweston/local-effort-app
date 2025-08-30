@@ -46,7 +46,18 @@ async function handler(req, res) {
       return res.status(500).json({ error: 'Cloudinary ping failed', details: String(pingErr) });
     }
 
-    const searchExpression = query ? `tags:${query}` : 'resource_type:image';
+    // Support a friendly `collection` query param (e.g. collection=home)
+    // which maps to tags:collection:<name> and tags:published by default.
+    const { collection } = req.query || {};
+    let searchExpression;
+    if (collection) {
+      // lazy-require the helper to avoid circular issues in serverless bundles
+      // eslint-disable-next-line global-require
+      const { buildExpression } = require('../backend/utils/searchExpression');
+      searchExpression = buildExpression({ collection, type: undefined, published: true });
+    } else {
+      searchExpression = query ? `tags:${query}` : 'resource_type:image';
+    }
 
     const builder = cloudinary.search
       .expression(searchExpression)
