@@ -12,18 +12,18 @@ const GalleryPage = () => {
     const handler = setTimeout(async () => {
       setLoading(true);
       setError(null);
-      
+
       try {
         const searchQuery = query ? `tags:${query}` : '';
         const apiUrl = `/api/search-images?query=${encodeURIComponent(searchQuery)}`;
-        
+
         console.log('Making API call to:', apiUrl);
         console.log('Current location:', window.location.href);
-        
+
         const response = await fetch(apiUrl);
         console.log('Response status:', response.status);
         console.log('Response content-type:', response.headers.get('content-type'));
-        
+
         // Check if response is actually JSON
         const contentType = response.headers.get('content-type');
         if (!contentType || !contentType.includes('application/json')) {
@@ -31,16 +31,15 @@ const GalleryPage = () => {
           console.error('Non-JSON response:', textResponse.substring(0, 200));
           throw new Error('API endpoint not found - got HTML instead of JSON');
         }
-        
+
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
-        
+
         const data = await response.json();
         console.log('API Response data:', data);
-        
+
         setImages(data.images || []);
-        
       } catch (err) {
         console.error('Error fetching images:', err);
         setError(err.message);
@@ -59,9 +58,7 @@ const GalleryPage = () => {
       </Helmet>
       <div className="container mx-auto px-4 py-8">
         <h1 className="text-4xl font-bold mb-4 text-center">Image Gallery</h1>
-        
-       
-        
+
         <input
           type="text"
           value={query}
@@ -93,7 +90,7 @@ const GalleryPage = () => {
           </div>
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {images.map(img => {
+            {images.map((img) => {
               console.log('Rendering image:', img.public_id);
               return (
                 <div key={img.asset_id} className="border p-2">

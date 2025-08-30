@@ -1,7 +1,7 @@
 // src/pages/MenuPage.js
-import React, { useState } from "react";
-import { sampleMenus } from "../data/sampleMenus";
-import { motion, AnimatePresence } from "framer-motion";
+import React, { useState } from 'react';
+import { sampleMenus } from '../data/sampleMenus';
+import { motion, AnimatePresence } from 'framer-motion';
 import CloudinaryImage from '../components/common/cloudinaryImage'; // Make sure you have this component
 
 // This is the card component for each menu. It remains largely the same.
@@ -35,21 +35,17 @@ export default function MenuPage() {
           const isOpen = openMenu === menu.id;
 
           return (
-            <ServiceCard
-              key={menu.id}
-              title={menu.title}
-              description={menu.description || ""}
-            >
+            <ServiceCard key={menu.id} title={menu.title} description={menu.description || ''}>
               <button
                 onClick={() => toggleMenu(menu.id)}
                 className="mt-2 text-sm font-medium text-blue-600 hover:underline"
               >
-                {isOpen ? "Hide Sections ▲" : "Show Sections ▼"}
+                {isOpen ? 'Hide Sections ▲' : 'Show Sections ▼'}
               </button>
 
               <motion.div
                 initial={{ height: 0, opacity: 0 }}
-                animate={{ height: isOpen ? "auto" : 0, opacity: isOpen ? 1 : 0 }}
+                animate={{ height: isOpen ? 'auto' : 0, opacity: isOpen ? 1 : 0 }}
                 transition={{ duration: 0.3 }}
                 className="overflow-hidden mt-4"
               >
@@ -70,15 +66,16 @@ export default function MenuPage() {
                             <span className="font-medium">{item.name}</span>
                             {item.note && (
                               <span className="text-gray-600 italic">
-                                {" — "}{item.note}
+                                {' — '}
+                                {item.note}
                               </span>
                             )}
                             {item.dietary?.length > 0 && (
                               <span className="ml-2 text-sm text-green-600">
-                                [{item.dietary.join(", ")}]
+                                [{item.dietary.join(', ')}]
                               </span>
                             )}
-                            
+
                             {/* AnimatePresence allows the image to fade in and out smoothly */}
                             <AnimatePresence>
                               {hoveredImage === item.imagePublicId && (
@@ -89,7 +86,7 @@ export default function MenuPage() {
                                   initial={{ opacity: 0, y: 10, scale: 0.9 }}
                                   animate={{ opacity: 1, y: 0, scale: 1 }}
                                   exit={{ opacity: 0, y: 10, scale: 0.9 }}
-                                  transition={{ duration: 0.2, ease: "easeInOut" }}
+                                  transition={{ duration: 0.2, ease: 'easeInOut' }}
                                 >
                                   <CloudinaryImage
                                     publicId={item.imagePublicId}

@@ -5,18 +5,18 @@ import { Cloudinary } from '@cloudinary/url-gen';
 
 // --- CORRECTED IMPORTS ---
 // Each function/action must be imported from its specific file path within the library.
-import { fill } from "@cloudinary/url-gen/actions/resize";
-import { autoGravity } from "@cloudinary/url-gen/qualifiers/gravity";
+import { fill } from '@cloudinary/url-gen/actions/resize';
+import { autoGravity } from '@cloudinary/url-gen/qualifiers/gravity';
 // The 'auto' helpers for quality and format are 'qualifiers', not 'actions'.
-import { auto as qualityAuto } from "@cloudinary/url-gen/qualifiers/quality";
-import { auto as formatAuto } from "@cloudinary/url-gen/qualifiers/format";
+import { auto as qualityAuto } from '@cloudinary/url-gen/qualifiers/quality';
+import { auto as formatAuto } from '@cloudinary/url-gen/qualifiers/format';
 
 // Initialize Cloudinary.
 // IMPORTANT: Replace 'your-cloud-name' with your actual Cloudinary cloud name.
 const cld = new Cloudinary({
   cloud: {
-    cloudName: 'dokyhfvyd'
-  }
+    cloudName: 'dokyhfvyd',
+  },
 });
 
 /**
@@ -45,7 +45,7 @@ const CloudinaryImage = ({ publicId, alt, width, height, className }) => {
   // Apply standard optimizations and transformations using the correctly imported functions
   myImage
     .quality(qualityAuto()) // Use the .quality() method for q_auto
-    .format(formatAuto());   // Use the .format() method for f_auto
+    .format(formatAuto()); // Use the .format() method for f_auto
 
   // If width and height are provided, apply a fill transformation with auto-gravity
   if (width && height) {
@@ -58,10 +58,7 @@ const CloudinaryImage = ({ publicId, alt, width, height, className }) => {
       alt={alt}
       className={className}
       // These plugins add responsiveness (srcset) and lazy loading for performance
-      plugins={[
-        responsive({ steps: [800, 1000, 1400] }),
-        lazyload()
-      ]}
+      plugins={[responsive({ steps: [800, 1000, 1400] }), lazyload()]}
     />
   );
 };

@@ -4,12 +4,12 @@ export const addResourceHints = () => {
     { rel: 'dns-prefetch', href: '//fonts.googleapis.com' },
     { rel: 'dns-prefetch', href: '//fonts.gstatic.com' },
     { rel: 'preconnect', href: 'https://fonts.googleapis.com', crossOrigin: 'anonymous' },
-    { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossOrigin: 'anonymous' }
+    { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossOrigin: 'anonymous' },
   ];
 
-  hints.forEach(hint => {
+  hints.forEach((hint) => {
     const link = document.createElement('link');
-    Object.keys(hint).forEach(key => {
+    Object.keys(hint).forEach((key) => {
       if (key === 'crossOrigin') {
         link.crossOrigin = hint[key];
       } else {
@@ -23,10 +23,10 @@ export const addResourceHints = () => {
 export const loadFonts = () => {
   const fonts = [
     'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap',
-    'https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&display=swap'
+    'https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&display=swap',
   ];
 
-  fonts.forEach(href => {
+  fonts.forEach((href) => {
     const link = document.createElement('link');
     link.rel = 'preload';
     link.as = 'style';

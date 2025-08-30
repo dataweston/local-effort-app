@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { scaleOnHover } from '../../utils/animations';
 
-const ServiceCard = ({ to = "#", title, description, children }) => (
+const ServiceCard = ({ to = '#', title, description, children }) => (
   <motion.div
     {...scaleOnHover}
     className="group rounded-xl bg-neutral-50 p-8 shadow-sm ring-1 ring-neutral-200 transition-shadow hover:shadow-md"

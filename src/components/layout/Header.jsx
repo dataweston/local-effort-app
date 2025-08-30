@@ -6,12 +6,11 @@ const logo = '/gallery/logo.png?text=Local+Effort&font=mono';
 
 const links = [
   { path: '/services', name: 'Services' },
-  { path: '/pricing',  name: 'Pricing'  },
-  { path: '/menu',     name: 'Menus'    },
-  { path: '/about',    name: 'About'    },
-  { path: '/happy-monday',    name: 'Happy Monday'    },
-  { path: '/gallery',    name: 'Gallery'     }
-
+  { path: '/pricing', name: 'Pricing' },
+  { path: '/menu', name: 'Menus' },
+  { path: '/about', name: 'About' },
+  { path: '/happy-monday', name: 'Happy Monday' },
+  { path: '/gallery', name: 'Gallery' },
 ];
 
 export const Header = () => {
@@ -19,7 +18,9 @@ export const Header = () => {
 
   useEffect(() => {
     document.body.style.overflow = isOpen ? 'hidden' : 'auto';
-    return () => { document.body.style.overflow = 'auto'; };
+    return () => {
+      document.body.style.overflow = 'auto';
+    };
   }, [isOpen]);
 
   return (
@@ -42,7 +43,9 @@ export const Header = () => {
             <NavLink key={path} to={path} className="relative px-2 py-1 rounded">
               {({ isActive }) => (
                 <>
-                  <span className="transition-colors hover:text-neutral-900 text-neutral-700">{name}</span>
+                  <span className="transition-colors hover:text-neutral-900 text-neutral-700">
+                    {name}
+                  </span>
                   <motion.span
                     layoutId="nav-underline"
                     className="absolute left-2 right-2 -bottom-0.5 h-0.5 bg-[var(--color-accent)]"
@@ -67,13 +70,19 @@ export const Header = () => {
 
         {/* Mobile menu button */}
         <button
-          onClick={() => setIsOpen(v => !v)}
+          onClick={() => setIsOpen((v) => !v)}
           className="md:hidden z-50 w-9 h-7 flex flex-col justify-between"
           aria-label="Toggle menu"
         >
-          <span className={`block h-0.5 w-full bg-black transition-transform ${isOpen ? 'rotate-45 translate-y-[10px]' : ''}`} />
-          <span className={`block h-0.5 w-full bg-black transition-opacity ${isOpen ? 'opacity-0' : 'opacity-100'}`} />
-          <span className={`block h-0.5 w-full bg-black transition-transform ${isOpen ? '-rotate-45 -translate-y-[10px]' : ''}`} />
+          <span
+            className={`block h-0.5 w-full bg-black transition-transform ${isOpen ? 'rotate-45 translate-y-[10px]' : ''}`}
+          />
+          <span
+            className={`block h-0.5 w-full bg-black transition-opacity ${isOpen ? 'opacity-0' : 'opacity-100'}`}
+          />
+          <span
+            className={`block h-0.5 w-full bg-black transition-transform ${isOpen ? '-rotate-45 -translate-y-[10px]' : ''}`}
+          />
         </button>
       </div>
 
@@ -94,21 +103,31 @@ export const Header = () => {
                 hidden: { opacity: 0 },
                 show: {
                   opacity: 1,
-                  transition: { staggerChildren: 0.08, delayChildren: 0.12 }
-                }
+                  transition: { staggerChildren: 0.08, delayChildren: 0.12 },
+                },
               }}
               className="flex flex-col items-center justify-center h-full space-y-6 font-mono"
             >
               {links.map((l) => (
-                <motion.div key={l.path} variants={{ hidden: { y: 10, opacity: 0 }, show: { y: 0, opacity: 1 } }}>
-                  <NavLink to={l.path} onClick={() => setIsOpen(false)} className="text-3xl uppercase">
+                <motion.div
+                  key={l.path}
+                  variants={{ hidden: { y: 10, opacity: 0 }, show: { y: 0, opacity: 1 } }}
+                >
+                  <NavLink
+                    to={l.path}
+                    onClick={() => setIsOpen(false)}
+                    className="text-3xl uppercase"
+                  >
                     {l.name}
                   </NavLink>
                 </motion.div>
               ))}
               <motion.div variants={{ hidden: { y: 10, opacity: 0 }, show: { y: 0, opacity: 1 } }}>
-                <NavLink to="/crowdfunding" onClick={() => setIsOpen(false)}
-                  className="text-2xl uppercase bg-[var(--color-accent)] text-white px-6 py-3 rounded font-semibold">
+                <NavLink
+                  to="/crowdfunding"
+                  onClick={() => setIsOpen(false)}
+                  className="text-2xl uppercase bg-[var(--color-accent)] text-white px-6 py-3 rounded font-semibold"
+                >
                   Fundraiser
                 </NavLink>
               </motion.div>
