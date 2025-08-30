@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { motion, AnimatePresence } from 'framer-motion';
-import BlockContent from '@sanity/block-content-to-react'; // Import the block renderer
-
-import sanityClient from '../sanityClient';
+import React, { lazy, Suspense } from 'react';
+const BlockContent = lazy(() => import('@sanity/block-content-to-react'));
+import sanityClient from '../sanityClient.js';
 import FoodItemCard from '../components/menu/FoodItemCard';
-import FoodItemModal from '../components/menu/FoodItemModal';
-import FeedbackForm from '../components/menu/FeedbackForm';
-import { LoadingSpinner } from '../components/layout/LoadingSpinner';
+const FoodItemModal = lazy(() => import('../components/menu/FoodItemModal'));
+const FeedbackForm = lazy(() => import('../components/menu/FeedbackForm'));
+const LoadingSpinner = lazy(() => import('../components/layout/LoadingSpinner'));
 
 const HappyMondayPage = () => {
   const [menuItems, setMenuItems] = useState([]);
@@ -63,22 +63,24 @@ const HappyMondayPage = () => {
             </div>
           )}
 
-          {isLoading ? (
-            <div className="flex justify-center items-center h-64">
-              <LoadingSpinner />
-            </div>
-          ) : (
-            <motion.div
-              className="grid md:grid-cols-2 lg:grid-cols-3 gap-6"
-              initial="initial"
-              animate="animate"
-              variants={{ animate: { transition: { staggerChildren: 0.1 } } }}
-            >
-              {menuItems.map((item) => (
-                <FoodItemCard key={item._id} item={item} onClick={() => handleCardClick(item)} />
-              ))}
-            </motion.div>
-          )}
+          <Suspense fallback={<div className="flex justify-center items-center h-64">Loading…</div>}>
+            {isLoading ? (
+              <div className="flex justify-center items-center h-64">
+                <LoadingSpinner />
+              </div>
+            ) : (
+              <motion.div
+                className="grid md:grid-cols-2 lg:grid-cols-3 gap-6"
+                initial="initial"
+                animate="animate"
+                variants={{ animate: { transition: { staggerChildren: 0.1 } } }}
+              >
+                {menuItems.map((item) => (
+                  <FoodItemCard key={item._id} item={item} onClick={() => handleCardClick(item)} />
+                ))}
+              </motion.div>
+            )}
+          </Suspense>
         </section>
 
         <section className="mx-auto max-w-6xl px-4 md:px-6 lg:px-8">
