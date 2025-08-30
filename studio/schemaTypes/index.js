@@ -11,6 +11,7 @@ import pricingFaq from './pricingFaq'
 import crowdfundingCampaign from './crowdfundingCampaign'
 import campaignUpdate from './campaignUpdate'
 import rewardTier from './rewardTier'
+import partner from './partner'
 
 export const schemaTypes = [
   page,
@@ -23,4 +24,5 @@ export const schemaTypes = [
   crowdfundingCampaign,
   rewardTier,
   campaignUpdate
+  ,partner
 ]

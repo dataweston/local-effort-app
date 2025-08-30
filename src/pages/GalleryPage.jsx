@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Helmet } from 'react-helmet-async';
+import { motion, AnimatePresence } from 'framer-motion';
 import CloudinaryImage from '../components/common/cloudinaryImage';
 
 const GalleryPage = () => {
@@ -51,6 +52,31 @@ const GalleryPage = () => {
     return () => clearTimeout(handler);
   }, [query]);
 
+  // lightbox controls
+  const openLightbox = useCallback((img, idx) => {
+    setSelected({ img, idx });
+  }, []);
+
+  const closeLightbox = useCallback(() => setSelected(null), []);
+
+  // keyboard navigation for lightbox
+  useEffect(() => {
+    const onKey = (e) => {
+      if (!selected) return;
+      if (e.key === 'Escape') closeLightbox();
+      if (e.key === 'ArrowRight') {
+        const next = (selected.idx + 1) % images.length;
+        setSelected({ img: images[next], idx: next });
+      }
+      if (e.key === 'ArrowLeft') {
+        const prev = (selected.idx - 1 + images.length) % images.length;
+        setSelected({ img: images[prev], idx: prev });
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [selected, images, closeLightbox]);
+
   return (
     <>
       <Helmet>
@@ -67,7 +93,7 @@ const GalleryPage = () => {
           className="w-full max-w-md mx-auto block p-3 border rounded-md mb-8"
         />
 
-        {loading ? (
+  {loading ? (
           <p>Loading...</p>
         ) : error ? (
           <div className="text-red-600 bg-red-50 p-4 rounded">
@@ -90,24 +116,90 @@ const GalleryPage = () => {
           </div>
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {images.map((img) => {
-              console.log('Rendering image:', img.public_id);
-              return (
-                <div key={img.asset_id} className="border p-2">
-                  <CloudinaryImage
-                    publicId={img.public_id}
-                    alt={img.context?.alt || 'Gallery image'}
-                    width={400}
-                    height={400}
-                    className="rounded-lg object-cover w-full h-full aspect-square"
-                  />
-                  <p className="text-xs mt-2 text-gray-600">ID: {img.public_id}</p>
-                </div>
-              );
-            })}
+            {images.map((img, idx) => (
+              <motion.button
+                key={img.asset_id}
+                onClick={() => openLightbox(img, idx)}
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.98 }}
+                className="border p-2 bg-white rounded-lg overflow-hidden"
+                aria-label={img.context?.alt || `Gallery image ${idx + 1}`}
+              >
+                <CloudinaryImage
+                  publicId={img.public_id}
+                  alt={img.context?.alt || 'Gallery image'}
+                  width={600}
+                  height={600}
+                  className="rounded-lg object-cover w-full h-full aspect-square"
+                />
+              </motion.button>
+            ))}
           </div>
         )}
       </div>
+      <AnimatePresence>
+        {selected && (
+          <motion.div
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={closeLightbox}
+          >
+            <motion.div
+              className="max-w-4xl w-full max-h-full"
+              initial={{ y: 20, scale: 0.98 }}
+              animate={{ y: 0, scale: 1 }}
+              exit={{ y: 20, scale: 0.98 }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="relative bg-white rounded-lg overflow-hidden">
+                <button
+                  className="absolute right-2 top-2 z-10 bg-white/80 rounded-full p-2"
+                  onClick={closeLightbox}
+                  aria-label="Close image"
+                >
+                  ✕
+                </button>
+
+                <div className="flex items-center justify-center p-4">
+                  <CloudinaryImage
+                    publicId={selected.img.public_id}
+                    alt={selected.img.context?.alt || 'Large gallery image'}
+                    width={1200}
+                    height={800}
+                    className="w-full h-auto max-h-[80vh] object-contain"
+                  />
+                </div>
+
+                <div className="flex justify-between items-center p-3 border-t">
+                  <button
+                    onClick={() => {
+                      const prev = (selected.idx - 1 + images.length) % images.length;
+                      setSelected({ img: images[prev], idx: prev });
+                    }}
+                    className="btn btn-ghost"
+                    aria-label="Previous image"
+                  >
+                    ‹ Prev
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      const next = (selected.idx + 1) % images.length;
+                      setSelected({ img: images[next], idx: next });
+                    }}
+                    className="btn btn-ghost"
+                    aria-label="Next image"
+                  >
+                    Next ›
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </>
   );
 };

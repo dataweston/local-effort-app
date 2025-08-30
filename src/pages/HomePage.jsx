@@ -2,23 +2,74 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import ServiceCard from '../components/common/ServiceCard';
-import { motion, useMotionValue, useTransform, animate } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { fadeInUp, fadeInLeft } from '../utils/animations';
-import { PizzaSVG } from '../components/crowdfunding/PizzaSVG';
-import CloudinaryImage from '../components/common/cloudinaryImage'; // Import the new component
+import CloudinaryImage from '../components/common/cloudinaryImage'; // Import the Cloudinary image component
+import sanityClient from '../sanityClient.js';
+import { useEffect, useState } from 'react';
 
 const HomePage = () => {
   const navigate = useNavigate();
-  const goal = 1000;
-  const filled = 327; // fetch this dynamically if possible
+  // (removed pizza tracker) — fetch dynamic stats from backend or Sanity if desired
 
-  // Animate pizza count-up
-  const count = useMotionValue(0);
-  const rounded = useTransform(count, Math.round);
-  React.useEffect(() => {
-    const controls = animate(count, filled, { duration: 2, ease: 'easeOut' });
-    return controls.stop;
-  }, [filled]);
+  const [partners, setPartners] = useState([]);
+
+  useEffect(() => {
+    let mounted = true;
+    const q = `*[_type == "partner" && published == true] | order(order asc){ name, "publicId": logo.publicId, "image": logo.asset, url }`;
+    sanityClient
+      .fetch(q)
+      .then((res) => {
+        if (mounted && res && res.length) setPartners(res);
+      })
+      .catch((err) => {
+        console.warn('Failed to fetch partners from Sanity, falling back to static list:', err.message);
+      });
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  const PartnerGrid = () => {
+    const items = partners.length
+      ? partners
+      : [
+          { publicId: 'gallery/logo.png', name: 'Local Effort' },
+          { publicId: 'gallery/logo_sticker.png', name: 'Sticker' },
+          { publicId: 'gallery/C6460B50-A88D-4C61-A6AA-9C460373DF29.JPG', name: 'Partner A' },
+        ];
+
+    return (
+      <div className="max-w-6xl mx-auto grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6 items-center px-4">
+        {items.map((p, i) => (
+          <a
+            key={(p.publicId || (p.image && p.image._ref) || i) + i}
+            href={p.url || '#'}
+            onClick={(e) => {
+              if (!p.url) e.preventDefault();
+              if (window && window.gtag) {
+                window.gtag('event', 'partner_click', { partner: p.name || p.publicId });
+              } else {
+                console.log('partner_click', p.name || p.publicId);
+              }
+            }}
+            className="flex items-center justify-center p-4 bg-white rounded-lg shadow-sm"
+            aria-label={p.name || `Partner ${i + 1}`}
+            rel="noopener noreferrer"
+            target={p.url ? '_blank' : undefined}
+          >
+            <CloudinaryImage
+              publicId={p.publicId}
+              alt={p.name || `Partner ${i + 1}`}
+              width={300}
+              height={80}
+              className="max-h-16 object-contain grayscale hover:grayscale-0 transition-all"
+            />
+          </a>
+        ))}
+      </div>
+    );
+  };
 
   // --- NEW: Define image data for both the component and structured data ---
   const heroImage = {
@@ -110,16 +161,15 @@ const HomePage = () => {
           </motion.div>
         </section>
 
-        {/* Pizza Tracker */}
-        <section className="bg-neutral-50 py-16">
-          <div className="mx-auto max-w-4xl text-center space-y-8">
-            <h3 className="text-heading uppercase">Our Goal: 1000 Pizzas</h3>
-            <div className="flex justify-center">
-              <PizzaSVG size={300} goal={goal} filled={filled} />
-            </div>
-            <motion.div className="text-4xl font-bold">{rounded}</motion.div>
-            <p className="text-neutral-600">Pizzas sold towards our fundraiser</p>
-          </div>
+        {/* Partner / Logo Wall */}
+        <section className="py-12">
+          <h3 className="text-heading uppercase text-center mb-4">Our Partners</h3>
+          <p className="text-center text-sm text-gray-600 max-w-2xl mx-auto mb-6">
+            Proud partners who help make this project possible. Support local — shop and
+            collaborate with them.
+          </p>
+
+          <PartnerGrid />
         </section>
 
         {/* Offerings */}
