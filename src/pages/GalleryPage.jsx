@@ -8,6 +8,7 @@ const GalleryPage = () => {
   const [query, setQuery] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [selected, setSelected] = useState(null);
 
   useEffect(() => {
     const handler = setTimeout(async () => {
@@ -21,15 +22,13 @@ const GalleryPage = () => {
         console.log('Making API call to:', apiUrl);
         console.log('Current location:', window.location.href);
 
-        const response = await fetch(apiUrl);
-        console.log('Response status:', response.status);
-        console.log('Response content-type:', response.headers.get('content-type'));
+  const response = await fetch(apiUrl);
 
         // Check if response is actually JSON
         const contentType = response.headers.get('content-type');
         if (!contentType || !contentType.includes('application/json')) {
           const textResponse = await response.text();
-          console.error('Non-JSON response:', textResponse.substring(0, 200));
+          console.error('Non-JSON response (truncated):', textResponse.substring(0, 200));
           throw new Error('API endpoint not found - got HTML instead of JSON');
         }
 
@@ -37,8 +36,7 @@ const GalleryPage = () => {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
 
-        const data = await response.json();
-        console.log('API Response data:', data);
+  const data = await response.json();
 
         setImages(data.images || []);
       } catch (err) {
@@ -53,11 +51,14 @@ const GalleryPage = () => {
   }, [query]);
 
   // lightbox controls
-  const openLightbox = useCallback((img, idx) => {
-    setSelected({ img, idx });
-  }, []);
+  const openLightbox = useCallback(
+    (img, idx) => {
+      setSelected({ img, idx });
+    },
+    [setSelected]
+  );
 
-  const closeLightbox = useCallback(() => setSelected(null), []);
+  const closeLightbox = useCallback(() => setSelected(null), [setSelected]);
 
   // keyboard navigation for lightbox
   useEffect(() => {
@@ -118,6 +119,7 @@ const GalleryPage = () => {
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {images.map((img, idx) => (
               <motion.button
+                type="button"
                 key={img.asset_id}
                 onClick={() => openLightbox(img, idx)}
                 whileHover={{ scale: 1.03 }}
