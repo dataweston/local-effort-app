@@ -56,9 +56,13 @@ const HappyMondayPage = () => {
           {pageContent && (
             <div className="text-center mb-12">
               <h2 className="text-heading uppercase mb-4">{pageContent.title}</h2>
-              {/* The BlockContent component renders rich text */}
+              {/* The BlockContent component renders rich text. Wrap lazy import in Suspense + ErrorBoundary */}
               <div className="prose lg:prose-lg mx-auto max-w-3xl">
-                <BlockContent blocks={pageContent.body} client={sanityClient} />
+                <ErrorBoundary>
+                  <Suspense fallback={<div className="text-center">Loading content…</div>}>
+                    <BlockContent blocks={pageContent.body} client={sanityClient} />
+                  </Suspense>
+                </ErrorBoundary>
               </div>
             </div>
           )}
