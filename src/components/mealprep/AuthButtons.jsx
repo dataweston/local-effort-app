@@ -1,10 +1,12 @@
 import React from 'react';
-import { signInWithGoogle, signOutUser } from '../../firebaseConfig';
+import { signInWithGoogle, signOutUser, auth } from '../../firebaseConfig';
 
 export function AuthButtons({ user }) {
   return (
     <div className="flex items-center gap-3">
-      {user ? (
+      {!auth ? (
+        <span className="text-sm text-gray-600">Sign-in unavailable</span>
+      ) : user ? (
         <>
           <span className="text-sm text-gray-700">Hi, {user.displayName || user.email}</span>
           <button onClick={signOutUser} className="px-3 py-2 text-sm rounded border">Sign out</button>
