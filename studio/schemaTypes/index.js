@@ -12,6 +12,7 @@ import crowdfundingCampaign from './crowdfundingCampaign'
 import campaignUpdate from './campaignUpdate'
 import rewardTier from './rewardTier'
 import partner from './partner'
+import mealPrepMenu from './mealPrepMenu'
 
 export const schemaTypes = [
   page,
@@ -25,4 +26,5 @@ export const schemaTypes = [
   rewardTier,
   campaignUpdate
   ,partner
+  ,mealPrepMenu
 ]
