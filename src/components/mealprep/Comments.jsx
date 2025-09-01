@@ -15,7 +15,7 @@ export function Comments({ menuId, user }) {
   const inputRef = useRef(null);
 
   useEffect(() => {
-    if (!menuId) return;
+  if (!menuId || !db) return;
     const q = query(collection(db, 'mealprep_comments', menuId, 'comments'), orderBy('createdAt', 'desc'));
     const unsub = onSnapshot(q, (snap) => {
       setComments(snap.docs.map((d) => ({ id: d.id, ...d.data() })));
@@ -27,7 +27,8 @@ export function Comments({ menuId, user }) {
     e.preventDefault();
     const body = text.trim();
     if (!body) return;
-    await addDoc(collection(db, 'mealprep_comments', menuId, 'comments'), {
+  if (!db) return;
+  await addDoc(collection(db, 'mealprep_comments', menuId, 'comments'), {
       body,
       createdAt: serverTimestamp(),
       uid: user?.uid || null,

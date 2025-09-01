@@ -28,6 +28,9 @@ export const MealPrepPage = () => {
       try {
         setLoading(true);
         setError(null);
+        if (!client || !client.fetch) {
+          throw new Error('Content service unavailable');
+        }
         // Fetch latest published menus from Sanity; include date, clientName, menu, notes
         const data = await client.fetch(
           `*[_type == "mealPrepMenu" && published == true] | order(date desc)[0...50]{
