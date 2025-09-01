@@ -1,30 +1,119 @@
-import React from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { VennDiagram } from '../components/common/VennDiagram';
+import client from '../sanityClient';
+import { useAuthUser } from '../hooks/useAuthUser';
+import { AuthButtons } from '../components/mealprep/AuthButtons';
+import { MenuList } from '../components/mealprep/MenuList';
+import { MenuDetail } from '../components/mealprep/MenuDetail';
+import { Comments } from '../components/mealprep/Comments';
 
-export const MealPrepPage = () => (
-  <>
-    <Helmet>
-      <title>Weekly Meal Prep | Local Effort</title>
-      <meta
-        name="description"
-        content="Our Foundation Meal Plan provides 21 nutritious meals per week from local Midwest sources."
-      />
-    </Helmet>
-    <div className="space-y-16">
-      <h2 className="text-5xl md:text-7xl font-bold uppercase">Weekly Meal Prep</h2>
-      <p className="font-mono text-lg max-w-3xl">
-        Basic, good nutrition from local Midwest sources. We offer a Foundation Plan and are happy
-        to create custom plans for any diet.
-      </p>
-      <div className="border border-gray-900 p-8">
-        <h3 className="text-3xl font-bold mb-4">Foundation Meal Plan</h3>
-        <VennDiagram />
-        <p className="font-mono mb-6 max-w-2xl">
-          Inspired by the 'Protocol' by Bryan Johnson, this plan provides up to 21 meals/week at
-          ~1800 calories/day.
+export const MealPrepPage = () => {
+  const { user } = useAuthUser();
+  const [menus, setMenus] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [selected, setSelected] = useState(null);
+  const [filterName, setFilterName] = useState('');
+
+  useEffect(() => {
+    let mounted = true;
+    if (!user) {
+      setMenus([]);
+      setLoading(false);
+      setError(null);
+      return () => { mounted = false; };
+    }
+    (async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        // Fetch latest published menus from Sanity; include date, clientName, menu, notes
+        const data = await client.fetch(
+          `*[_type == "mealPrepMenu" && published == true] | order(date desc)[0...50]{
+            _id, date, clientName, menu, notes
+          }`
+        );
+        if (mounted) setMenus(data || []);
+      } catch (e) {
+        if (mounted) setError(e.message || String(e));
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    })();
+    return () => {
+      mounted = false;
+    };
+  }, [user]);
+
+  const filtered = useMemo(() => {
+    const q = filterName.trim().toLowerCase();
+    if (!q) return menus;
+    return menus.filter((m) => (m.clientName || '').toLowerCase().includes(q));
+  }, [menus, filterName]);
+
+  return (
+    <>
+      <Helmet>
+        <title>Weekly Meal Prep | Local Effort</title>
+        <meta
+          name="description"
+          content="Our Foundation Meal Plan provides 21 nutritious meals per week from local Midwest sources."
+        />
+      </Helmet>
+      <div className="space-y-10">
+        <div className="flex items-center justify-between">
+          <h2 className="text-5xl md:text-7xl font-bold uppercase">Weekly Meal Prep</h2>
+          <AuthButtons user={user} />
+        </div>
+
+        <p className="font-mono text-lg max-w-3xl">
+          Basic, good nutrition from local Midwest sources. We offer a Foundation Plan and are happy
+          to create custom plans for any diet.
         </p>
+
+        <div className="flex gap-4 items-center">
+          <a href="#menus" className="underline">Current member</a>
+          <a href="#menus" className="underline">View current menus</a>
+        </div>
+
+        <div className="border border-gray-900 p-8">
+          <h3 className="text-3xl font-bold mb-4">Foundation Meal Plan</h3>
+          <VennDiagram />
+          <p className="font-mono mb-6 max-w-2xl">
+            Inspired by the 'Protocol' by Bryan Johnson, this plan provides up to 21 meals/week at
+            ~1800 calories/day.
+          </p>
+        </div>
+
+        <section id="menus" className="space-y-4">
+          <h3 className="text-2xl font-bold">Current Menus</h3>
+          <div className="flex gap-2 items-center">
+            <input
+              type="text"
+              value={filterName}
+              onChange={(e) => setFilterName(e.target.value)}
+              placeholder="Filter by client name"
+              className="border rounded px-3 py-2"
+            />
+          </div>
+
+          {!user ? (
+            <p className="text-sm text-gray-700">Sign in as a current member to view menus.</p>
+          ) : loading ? (
+            <p>Loading menus…</p>
+          ) : error ? (
+            <p className="text-red-600">{error}</p>
+          ) : !selected ? (
+            <MenuList menus={filtered} onSelect={setSelected} />
+          ) : (
+            <div>
+              <MenuDetail menu={selected} onBack={() => setSelected(null)} />
+              <Comments menuId={selected._id} user={user} />
+            </div>
+          )}
+        </section>
       </div>
-    </div>
-  </>
-);
+    </>
+  );
+};
