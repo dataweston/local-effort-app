@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import CloudinaryImage from '../common/cloudinaryImage';
+const logo = '/gallery/logo.png?text=Local+Effort&font=mono';
 
 const links = [
   { path: '/services', name: 'Services' },
@@ -27,15 +27,13 @@ export const Header = () => {
       <div className="mx-auto max-w-6xl px-4 md:px-6 lg:px-8 h-16 flex items-center justify-between">
         {/* Logo */}
         <NavLink to="/" onClick={() => setIsOpen(false)} className="flex items-center gap-2">
-          <motion.div whileHover={{ scale: 1.03 }} transition={{ type: 'spring', stiffness: 300, damping: 20 }}>
-            <CloudinaryImage
-              publicId="gallery/logo.png"
-              alt="Local Effort Logo"
-              width={160}
-              height={50}
-              className="h-9 w-auto"
-            />
-          </motion.div>
+          <motion.img
+            src={logo}
+            alt="Local Effort Logo"
+            className="h-9 w-auto"
+            whileHover={{ scale: 1.03 }}
+            transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+          />
         </NavLink>
 
         {/* Desktop nav */}

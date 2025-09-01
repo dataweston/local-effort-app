@@ -11,7 +11,7 @@ import { Comments } from '../components/mealprep/Comments';
 export const MealPrepPage = () => {
   const { user } = useAuthUser();
   const [menus, setMenus] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [selected, setSelected] = useState(null);
   const [filterName, setFilterName] = useState('');
@@ -106,7 +106,10 @@ export const MealPrepPage = () => {
           ) : loading ? (
             <p>Loading menus…</p>
           ) : error ? (
-            <p className="text-red-600">{error}</p>
+            <div className="text-red-700 bg-red-50 border border-red-200 p-3 rounded">
+              <p className="font-semibold">{error}</p>
+              <p className="text-sm mt-1">If this persists, ensure Sanity env vars are set on the web app (VITE_APP_SANITY_PROJECT_ID, VITE_APP_SANITY_DATASET) and that the Studio has the new Meal Prep Menu content.</p>
+            </div>
           ) : !selected ? (
             <MenuList menus={filtered} onSelect={setSelected} />
           ) : (
