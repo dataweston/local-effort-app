@@ -191,7 +191,7 @@ const HomePage = () => {
               initial="initial"
               animate="animate"
               transition={{ delay: 0.05 }}
-              className="text-hero uppercase text-neutral-400 tracking-[-0.02em] leading-[1.05] mt-1"
+              className="text-hero uppercase text-neutral-400 tracking-[-0.02em] leading-[1.03] -mt-2 md:-mt-3"
             >
               For Your Functions.
             </motion.h3>

@@ -13,6 +13,7 @@ import campaignUpdate from './campaignUpdate'
 import rewardTier from './rewardTier'
 import partner from './partner'
 import mealPrepMenu from './mealPrepMenu'
+import testimonial from './testimonial'
 
 export const schemaTypes = [
   page,
@@ -27,4 +28,5 @@ export const schemaTypes = [
   campaignUpdate
   ,partner
   ,mealPrepMenu
+  ,testimonial
 ]

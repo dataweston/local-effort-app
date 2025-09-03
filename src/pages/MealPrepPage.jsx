@@ -8,6 +8,8 @@ import { auth, signInWithGoogle } from '../firebaseConfig';
 import { MenuList } from '../components/mealprep/MenuList';
 import { MenuDetail } from '../components/mealprep/MenuDetail';
 import { Comments } from '../components/mealprep/Comments';
+import { getAssignedClientNameForUser } from '../data/mealPrepClients';
+import { getUserProfile, saveUserProfile } from '../utils/userProfiles';
 
 export const MealPrepPage = () => {
   const { user } = useAuthUser();
@@ -16,6 +18,45 @@ export const MealPrepPage = () => {
   const [error, setError] = useState(null);
   const [selected, setSelected] = useState(null);
   const [filterName, setFilterName] = useState('');
+  const [assignedClient, setAssignedClient] = useState(null);
+  const [openSection, setOpenSection] = useState(null); // 'foundation' | 'custom' | null
+
+  // Resolve assigned client for signed-in user and persist mapping.
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      if (!user) {
+        setAssignedClient(null);
+        return;
+      }
+      // Try to read persisted mapping first
+      let clientName = null;
+      try {
+        const profile = await getUserProfile(user.uid);
+        clientName = profile?.mealPrepClientName || null;
+      } catch (_e) {}
+
+      // Fallback to mapping by email/displayName
+      if (!clientName) {
+        clientName = getAssignedClientNameForUser(user);
+      }
+
+      // Persist if we discovered a mapping
+      if (clientName) {
+        try {
+          await saveUserProfile(user.uid, {
+            mealPrepClientName: clientName,
+            email: user.email || null,
+            displayName: user.displayName || null,
+          });
+        } catch (_e) {}
+      }
+      if (mounted) setAssignedClient(clientName);
+    })();
+    return () => {
+      mounted = false;
+    };
+  }, [user]);
 
   useEffect(() => {
     let mounted = true;
@@ -27,7 +68,7 @@ export const MealPrepPage = () => {
         mounted = false;
       };
     }
-    (async () => {
+  (async () => {
       try {
         setLoading(true);
         setError(null);
@@ -52,10 +93,14 @@ export const MealPrepPage = () => {
   }, [user]);
 
   const filtered = useMemo(() => {
+    // If user has an assigned client, show only those menus
+    const base = assignedClient
+      ? menus.filter((m) => (m.clientName || '').toLowerCase() === assignedClient.toLowerCase())
+      : menus;
     const q = filterName.trim().toLowerCase();
-    if (!q) return menus;
-    return menus.filter((m) => (m.clientName || '').toLowerCase().includes(q));
-  }, [menus, filterName]);
+    if (!q) return base;
+    return base.filter((m) => (m.clientName || '').toLowerCase().includes(q));
+  }, [menus, filterName, assignedClient]);
 
   return (
     <>
@@ -93,21 +138,69 @@ export const MealPrepPage = () => {
               Already a member? Sign in
             </button>
           ) : (
-            <a href="#menus" className="underline">View current menus</a>
+            <div className="text-sm text-gray-700">
+              <a href="#menus" className="underline">View current menus</a>
+              {assignedClient ? (
+                <span className="ml-2">for <strong>{assignedClient}</strong></span>
+              ) : (
+                <span className="ml-2 italic">no client assigned yet</span>
+              )}
+            </div>
           )}
         </div>
 
-        <div className="border border-gray-900 p-8">
-          <h3 className="text-3xl font-bold mb-4">Foundation Meal Plan</h3>
-          <VennDiagram />
-          <p className="font-mono mb-6 max-w-2xl">
-            Inspired by the 'Protocol' by Bryan Johnson, this plan provides up to 21 meals/week at
-            ~1800 calories/day.
-          </p>
+        {/* Foundation Plan Accordion */}
+        <div className="border border-gray-900 rounded-md overflow-hidden">
+          <button
+            type="button"
+            className="w-full flex items-center justify-between px-4 py-3 bg-gray-50 hover:bg-gray-100"
+            onClick={() => setOpenSection(openSection === 'foundation' ? null : 'foundation')}
+          >
+            <span className="text-xl font-bold">Foundation Meal Plan</span>
+            <span className="text-sm text-gray-600">{openSection === 'foundation' ? 'Hide ▲' : 'View More ▼'}</span>
+          </button>
+          <div
+            className={`transition-[max-height,opacity] duration-300 ease-in-out ${
+              openSection === 'foundation' ? 'max-h-[1000px] opacity-100' : 'max-h-0 opacity-0'
+            } overflow-hidden`}
+          >
+            <div className="p-6">
+              <VennDiagram />
+              <p className="font-mono mt-6 max-w-2xl">
+                Inspired by the 'Protocol' by Bryan Johnson, this plan provides up to 21 meals/week at
+                ~1800 calories/day.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Custom Plan Accordion */}
+        <div className="border border-gray-900 rounded-md overflow-hidden">
+          <button
+            type="button"
+            className="w-full flex items-center justify-between px-4 py-3 bg-gray-50 hover:bg-gray-100"
+            onClick={() => setOpenSection(openSection === 'custom' ? null : 'custom')}
+          >
+            <span className="text-xl font-bold">Custom Plan</span>
+            <span className="text-sm text-gray-600">{openSection === 'custom' ? 'Hide ▲' : 'View More ▼'}</span>
+          </button>
+          <div
+            className={`transition-[max-height,opacity] duration-300 ease-in-out ${
+              openSection === 'custom' ? 'max-h-[1000px] opacity-100' : 'max-h-0 opacity-0'
+            } overflow-hidden`}
+          >
+            <div className="p-6">
+              <VennDiagram />
+              <p className="font-mono mt-6 max-w-2xl">
+                We tailor plans to your needs (gluten-free, vegetarian, high-protein, etc.). Tell us your goals
+                and preferences and we’ll propose a weekly plan and schedule.
+              </p>
+            </div>
+          </div>
         </div>
 
         <section id="menus" className="space-y-4">
-          <h3 className="text-2xl font-bold">Current Menus</h3>
+          <h3 className="text-2xl font-bold">Past Menu Examples.</h3>
           {/* Filter removed per request */}
 
           {!user ? (
@@ -137,7 +230,7 @@ export const MealPrepPage = () => {
               <p className="text-sm mt-1">If this persists, ensure Sanity env vars are set on the web app (VITE_APP_SANITY_PROJECT_ID, VITE_APP_SANITY_DATASET) and that the Studio has the new Meal Prep Menu content.</p>
             </div>
           ) : !selected ? (
-            <MenuList menus={menus} onSelect={setSelected} />
+            <MenuList menus={filtered} onSelect={setSelected} />
           ) : (
             <div>
               <MenuDetail menu={selected} onBack={() => setSelected(null)} />

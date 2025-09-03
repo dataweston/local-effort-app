@@ -114,27 +114,7 @@ const AboutUsPage = () => {
             </div>
           )}
         </div>
-        <div className="card">
-          <h3 className="text-heading mb-4">Special Skills</h3>
-          <div className="grid md:grid-cols-3 gap-8">
-            <div className="md:col-span-1 text-body flex flex-col space-y-2">
-              {skills.map((skill) => (
-                <button
-                  key={skill.name}
-                  onMouseEnter={() => setActiveSkill(skill)}
-                  className={`text-left p-2 border-l-2 rounded-sm ${activeSkill?.name === skill.name ? 'border-[var(--color-accent)] bg-gray-200' : 'border-transparent hover:bg-gray-200'}`}
-                >
-                  {skill.name}
-                </button>
-              ))}
-            </div>
-            {activeSkill && (
-              <div className="md:col-span-2 bg-gray-200 p-6 text-body min-h-[150px] rounded-md">
-                <p>{activeSkill.description}</p>
-              </div>
-            )}
-          </div>
-        </div>
+  {/* Special Skills section removed per request */}
       </div>
     </>
   );
