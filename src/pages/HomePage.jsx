@@ -5,15 +5,19 @@ import ServiceCard from '../components/common/ServiceCard';
 import { motion } from 'framer-motion';
 import { fadeInUp, fadeInLeft } from '../utils/animations';
 import CloudinaryImage from '../components/common/cloudinaryImage'; // Import the Cloudinary image component
+import Carousel from '../components/common/Carousel';
 import sanityClient from '../sanityClient.js';
 import { useEffect, useState } from 'react';
 import { cloudinaryConfig, heroPublicId, heroFallbackSrc, partnerLogos } from '../data/cloudinaryContent';
+import Testimonials from '../components/common/Testimonials';
+import { testimonials } from '../data/testimonials';
 
 const HomePage = () => {
   const navigate = useNavigate();
   // (removed pizza tracker) — fetch dynamic stats from backend or Sanity if desired
 
   const [partners, setPartners] = useState([]);
+  const [heroItems, setHeroItems] = useState([]);
 
   useEffect(() => {
     let mounted = true;
@@ -28,6 +32,74 @@ const HomePage = () => {
       });
     return () => {
       mounted = false;
+    };
+  }, []);
+
+  // Load hero images for carousel via Cloudinary search API
+  useEffect(() => {
+    let abort = false;
+    async function loadHero() {
+      try {
+        const res = await fetch(`/api/search-images?collection=home&type=hero&per_page=10`);
+        if (!res.ok) throw new Error(`Hero fetch failed: ${res.status}`);
+        const data = await res.json();
+        if (abort) return;
+        const resources = data.images || [];
+        if (resources.length) {
+          setHeroItems(
+            resources.map((r, i) => ({
+              key: r.public_id || `${i}`,
+              node: (
+                <CloudinaryImage
+                  publicId={r.public_id}
+                  alt={`Local Effort — hero ${i + 1}`}
+                  width={600}
+                  height={600}
+                  className="w-full h-full object-cover"
+                  fallbackSrc={heroFallbackSrc}
+                />
+              ),
+            }))
+          );
+        } else {
+          setHeroItems([
+            {
+              key: heroPublicId,
+              node: (
+                <CloudinaryImage
+                  publicId={heroPublicId}
+                  alt="Local Effort — hero"
+                  width={600}
+                  height={600}
+                  className="w-full h-full object-cover"
+                  fallbackSrc={heroFallbackSrc}
+                />
+              ),
+            },
+          ]);
+        }
+      } catch (e) {
+        console.warn('Falling back to single hero image:', e.message);
+        setHeroItems([
+          {
+            key: heroPublicId,
+            node: (
+              <CloudinaryImage
+                publicId={heroPublicId}
+                alt="Local Effort — hero"
+                width={600}
+                height={600}
+                className="w-full h-full object-cover"
+                fallbackSrc={heroFallbackSrc}
+              />
+            ),
+          },
+        ]);
+      }
+    }
+    loadHero();
+    return () => {
+      abort = true;
     };
   }, []);
 
@@ -61,6 +133,7 @@ const HomePage = () => {
               height={80}
               className="max-h-16 object-contain grayscale hover:grayscale-0 transition-all"
               fallbackSrc={p.fallbackSrc}
+              resizeMode="fit"
             />
           </a>
         ))}
@@ -109,7 +182,7 @@ const HomePage = () => {
               variants={fadeInLeft}
               initial="initial"
               animate="animate"
-              className="text-hero uppercase"
+              className="text-hero uppercase tracking-tight leading-tight"
             >
               Minnesotan Food
             </motion.h2>
@@ -118,7 +191,7 @@ const HomePage = () => {
               initial="initial"
               animate="animate"
               transition={{ delay: 0.05 }}
-              className="text-hero uppercase text-neutral-400"
+              className="text-hero uppercase text-neutral-400 tracking-tight leading-tight mt-1"
             >
               For Your Functions.
             </motion.h3>
@@ -142,20 +215,23 @@ const HomePage = () => {
           </div>
 
           <motion.div
-            className="w-full min-h-[400px] h-full rounded-xl overflow-hidden" // Added overflow-hidden
+            className="w-full min-h-[400px] h-full rounded-xl overflow-hidden"
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
           >
-            {/* --- REPLACED: The old div is replaced with the CloudinaryImage component --- */}
-            <CloudinaryImage
-              publicId={heroImage.publicId}
-              alt={heroImage.alt}
-              width={600}
-              height={600}
-              className="w-full h-full object-cover" // Ensure it fills the container
-              fallbackSrc={heroFallbackSrc}
-            />
+            {heroItems && heroItems.length ? (
+              <Carousel items={heroItems} intervalMs={6000} className="w-full h-full" />
+            ) : (
+              <CloudinaryImage
+                publicId={heroImage.publicId}
+                alt={heroImage.alt}
+                width={600}
+                height={600}
+                className="w-full h-full object-cover"
+                fallbackSrc={heroFallbackSrc}
+              />
+            )}
           </motion.div>
         </section>
 
@@ -193,6 +269,8 @@ const HomePage = () => {
             />
           </div>
         </section>
+  {/* Testimonials */}
+  <Testimonials items={testimonials} />
       </div>
     </>
   );
