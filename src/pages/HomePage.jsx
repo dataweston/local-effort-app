@@ -5,7 +5,6 @@ import ServiceCard from '../components/common/ServiceCard';
 import { motion } from 'framer-motion';
 import { fadeInUp, fadeInLeft } from '../utils/animations';
 import CloudinaryImage from '../components/common/cloudinaryImage'; // Import the Cloudinary image component
-import Carousel from '../components/common/Carousel';
 import sanityClient from '../sanityClient.js';
 import { useEffect, useState } from 'react';
 import { cloudinaryConfig, heroPublicId, heroFallbackSrc, partnerLogos } from '../data/cloudinaryContent';
@@ -17,7 +16,6 @@ const HomePage = () => {
   // (removed pizza tracker) — fetch dynamic stats from backend or Sanity if desired
 
   const [partners, setPartners] = useState([]);
-  const [heroItems, setHeroItems] = useState([]);
 
   useEffect(() => {
     let mounted = true;
@@ -35,73 +33,7 @@ const HomePage = () => {
     };
   }, []);
 
-  // Load hero images for carousel via Cloudinary search API
-  useEffect(() => {
-    let abort = false;
-    async function loadHero() {
-      try {
-        const res = await fetch(`/api/search-images?collection=home&type=hero&per_page=10`);
-        if (!res.ok) throw new Error(`Hero fetch failed: ${res.status}`);
-        const data = await res.json();
-        if (abort) return;
-        const resources = data.images || [];
-        if (resources.length) {
-          setHeroItems(
-            resources.map((r, i) => ({
-              key: r.public_id || `${i}`,
-              node: (
-                <CloudinaryImage
-                  publicId={r.public_id}
-                  alt={`Local Effort — hero ${i + 1}`}
-                  width={600}
-                  height={600}
-                  className="w-full h-full object-cover"
-                  fallbackSrc={heroFallbackSrc}
-                />
-              ),
-            }))
-          );
-        } else {
-          setHeroItems([
-            {
-              key: heroPublicId,
-              node: (
-                <CloudinaryImage
-                  publicId={heroPublicId}
-                  alt="Local Effort — hero"
-                  width={600}
-                  height={600}
-                  className="w-full h-full object-cover"
-                  fallbackSrc={heroFallbackSrc}
-                />
-              ),
-            },
-          ]);
-        }
-      } catch (e) {
-        console.warn('Falling back to single hero image:', e.message);
-        setHeroItems([
-          {
-            key: heroPublicId,
-            node: (
-              <CloudinaryImage
-                publicId={heroPublicId}
-                alt="Local Effort — hero"
-                width={600}
-                height={600}
-                className="w-full h-full object-cover"
-                fallbackSrc={heroFallbackSrc}
-              />
-            ),
-          },
-        ]);
-      }
-    }
-    loadHero();
-    return () => {
-      abort = true;
-    };
-  }, []);
+  // No hero carousel — use single hero image only
 
   const PartnerGrid = () => {
   const sanitized = (partners || []).filter((p) => p && p.publicId);
@@ -220,18 +152,16 @@ const HomePage = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
           >
-            {heroItems && heroItems.length ? (
-              <Carousel items={heroItems} intervalMs={6000} className="w-full h-full" />
-            ) : (
-              <CloudinaryImage
-                publicId={heroImage.publicId}
-                alt={heroImage.alt}
-                width={600}
-                height={600}
-                className="w-full h-full object-cover"
-                fallbackSrc={heroFallbackSrc}
-              />
-            )}
+            <CloudinaryImage
+              publicId={heroImage.publicId}
+              alt={heroImage.alt}
+              width={600}
+              height={600}
+              className="w-full h-full object-cover"
+              fallbackSrc={heroFallbackSrc}
+              sizes="(min-width: 1024px) 50vw, 100vw"
+              eager
+            />
           </motion.div>
         </section>
 

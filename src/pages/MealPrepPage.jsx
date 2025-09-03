@@ -24,32 +24,31 @@ export const MealPrepPage = () => {
   const [openSection, setOpenSection] = useState(null); // 'foundation' | 'custom' | null
   const [galleryItems, setGalleryItems] = useState([]);
 
-  // Load Cloudinary images tagged 'meal' and create a 3-wide carousel
+  // Load Cloudinary images tagged 'mealplan' and create a 3-wide carousel
   useEffect(() => {
     let abort = false;
     (async () => {
       try {
-        const res = await fetch(`/api/search-images?query=meal&per_page=12`);
+        const res = await fetch(`/api/search-images?query=mealplan&per_page=12`);
         if (!res.ok) throw new Error(`Gallery fetch failed: ${res.status}`);
         const data = await res.json();
         if (abort) return;
         const images = (data.images || []).slice(0, 12);
-        // Group into chunks of 3 for each slide
         const slides = [];
         for (let i = 0; i < images.length; i += 3) {
           const group = images.slice(i, i + 3);
-          slides.push({
+      slides.push({
             key: group.map((g) => g.public_id).join('|') || `${i}`,
             node: (
-              <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-3 gap-3">
                 {group.map((img, idx) => (
                   <CloudinaryImage
                     key={img.public_id || idx}
                     publicId={img.public_id}
                     alt={img.public_id}
-                    width={300}
-                    height={300}
-                    className="w-full h-36 md:h-44 lg:h-48 object-cover rounded"
+          className="w-full aspect-square object-cover rounded transition-transform duration-300 hover:scale-[1.03]"
+                    placeholderMode="none"
+                    sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
                   />
                 ))}
               </div>
@@ -74,19 +73,14 @@ export const MealPrepPage = () => {
         setAssignedClient(null);
         return;
       }
-      // Try to read persisted mapping first
       let clientName = null;
       try {
         const profile = await getUserProfile(user.uid);
         clientName = profile?.mealPrepClientName || null;
       } catch (_e) {}
-
-      // Fallback to mapping by email/displayName
       if (!clientName) {
         clientName = getAssignedClientNameForUser(user);
       }
-
-      // Persist if we discovered a mapping
       if (clientName) {
         try {
           await saveUserProfile(user.uid, {
@@ -103,6 +97,7 @@ export const MealPrepPage = () => {
     };
   }, [user]);
 
+  // Load menus once signed in
   useEffect(() => {
     let mounted = true;
     if (!user) {
@@ -113,7 +108,7 @@ export const MealPrepPage = () => {
         mounted = false;
       };
     }
-  (async () => {
+    (async () => {
       try {
         setLoading(true);
         setError(null);
@@ -197,10 +192,10 @@ export const MealPrepPage = () => {
           )}
         </div>
 
-        {/* 3-wide gallery carousel for #meal */}
+        {/* 3-wide gallery carousel for #mealplan */}
         {galleryItems.length > 0 && (
-          <div className="mt-4">
-            <Carousel items={galleryItems} intervalMs={7000} className="w-full" />
+          <div className="mt-4 min-h-[14rem] md:min-h-[18rem] lg:min-h-[22rem]">
+            <Carousel items={galleryItems} intervalMs={7000} className="w-full" hideDots transitionStyle="slide" />
           </div>
         )}
 
