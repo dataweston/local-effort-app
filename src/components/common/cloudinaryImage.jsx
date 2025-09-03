@@ -10,6 +10,7 @@ import { autoGravity } from '@cloudinary/url-gen/qualifiers/gravity';
 // The 'auto' helpers for quality and format are 'qualifiers', not 'actions'.
 import { auto as qualityAuto } from '@cloudinary/url-gen/qualifiers/quality';
 import { auto as formatAuto } from '@cloudinary/url-gen/qualifiers/format';
+import { dpr } from '@cloudinary/url-gen/actions/delivery';
 
 // Initialize Cloudinary.
 // Cloud name can be provided via Vite env var VITE_CLOUDINARY_CLOUD_NAME or
@@ -35,7 +36,7 @@ const cld = new Cloudinary({
  */
 import { useState, useEffect, useRef } from 'react';
 
-const CloudinaryImage = ({ publicId, alt, width, height, className, disableLazy = false, fallbackSrc, resizeMode = 'fill' }) => {
+const CloudinaryImage = ({ publicId, alt, width, height, className, disableLazy = false, fallbackSrc, resizeMode = 'fill', placeholderMode = 'blur', sizes, responsiveSteps = [480, 768, 1024, 1400], eager = false }) => {
   const [loaded, setLoaded] = useState(false);
   const [error, setError] = useState(false);
   const imgRef = useRef(null);
@@ -62,7 +63,8 @@ const CloudinaryImage = ({ publicId, alt, width, height, className, disableLazy 
   // Apply standard optimizations and transformations using the correctly imported functions
   myImage
     .quality(qualityAuto()) // Use the .quality() method for q_auto
-    .format(formatAuto()); // Use the .format() method for f_auto
+  .format(formatAuto())  // Use the .format() method for f_auto
+  .delivery(dpr('auto')); // Sharper images on high-DPI screens
 
   // If width and height are provided, apply a fill transformation with auto-gravity
   if (width && height) {
@@ -139,17 +141,27 @@ const CloudinaryImage = ({ publicId, alt, width, height, className, disableLazy 
     );
   }
 
+  const baseStyle = placeholderMode === 'blur'
+    ? { backgroundImage: `url(${placeholderUrl})`, backgroundSize: 'cover', backgroundPosition: 'center' }
+    : { backgroundColor: '#f3f4f6' };
+
   return (
     <div
       ref={imgRef}
       className={`${className} relative overflow-hidden`}
-      style={{ backgroundImage: `url(${placeholderUrl})`, backgroundSize: 'cover', backgroundPosition: 'center' }}
+      style={baseStyle}
     >
       <AdvancedImage
         cldImg={myImage}
         alt={alt}
         className={`transition-opacity duration-500 ${loaded ? 'opacity-100' : 'opacity-0'}`}
-        plugins={disableLazy ? [responsive({ steps: [800, 1000, 1400] })] : [responsive({ steps: [800, 1000, 1400] }), lazyload()]}
+        sizes={sizes}
+        loading={eager ? 'eager' : 'lazy'}
+        plugins={(() => {
+          const base = [responsive({ steps: responsiveSteps })];
+          const isLazy = !eager && !disableLazy;
+          return isLazy ? [...base, lazyload()] : base;
+        })()}
       />
     </div>
   );
