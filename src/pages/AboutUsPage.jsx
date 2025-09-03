@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
 import sanityClient from '../sanityClient.js'; // explicit file extension for consistency
+import CloudinaryImage from '../components/common/cloudinaryImage';
 
 const AboutUsPage = () => {
   const [aboutData, setAboutData] = useState(null);
@@ -11,7 +12,7 @@ const AboutUsPage = () => {
     // Limit fields we request to reduce payload size
     const query = `{
       "page": *[_type == "page" && slug.current == "about-us"][0]{ title, introduction },
-      "persons": *[_type == "person"]{ name, role, bio, image{asset->{_ref}} },
+  "persons": *[_type == "person"]{ name, role, bio, image{asset->{_ref}}, headshot{ asset{ public_id }, alt } },
       "skills": *[_type == "specialSkill"]{ name, description }
     }`;
 
@@ -74,8 +75,17 @@ const AboutUsPage = () => {
           {weston && (
             <div className="card">
               <h3 className="text-heading">{weston.name}</h3>
-              {/* You would need to configure image URLs from Sanity */}
-              {/* <img src={urlFor(weston.image).url()} alt={weston.name} className="my-4 rounded-md" /> */}
+              {weston.headshot?.asset?.public_id ? (
+                <div className="my-4">
+                  <CloudinaryImage
+                    publicId={weston.headshot.asset.public_id}
+                    alt={weston.headshot.alt || weston.name}
+                    width={600}
+                    height={400}
+                    className="rounded-md w-full h-auto object-cover"
+                  />
+                </div>
+              ) : null}
               <p className="text-body text-gray-600 mb-4">{weston.role}</p>
               <p className="text-body">{weston.bio}</p>
             </div>
@@ -83,7 +93,17 @@ const AboutUsPage = () => {
           {catherine && (
             <div className="card">
               <h3 className="text-heading">{catherine.name}</h3>
-              {/* <img src={urlFor(catherine.image).url()} alt={catherine.name} className="my-4 rounded-md" /> */}
+              {catherine.headshot?.asset?.public_id ? (
+                <div className="my-4">
+                  <CloudinaryImage
+                    publicId={catherine.headshot.asset.public_id}
+                    alt={catherine.headshot.alt || catherine.name}
+                    width={600}
+                    height={400}
+                    className="rounded-md w-full h-auto object-cover"
+                  />
+                </div>
+              ) : null}
               <p className="text-body text-gray-600 mb-4">{catherine.role}</p>
               <p className="text-body">{catherine.bio}</p>
             </div>

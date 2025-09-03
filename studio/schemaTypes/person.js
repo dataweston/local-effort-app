@@ -27,6 +27,13 @@ export default {
         hotspot: true,
       },
     },
+    // Optional: Cloudinary-powered headshot; preferred if you use Cloudinary across the site
+    {
+      name: 'headshot',
+      title: 'Headshot (Cloudinary)',
+      type: 'cloudinaryImage',
+      description: 'Preferred image source; provides a Cloudinary public_id for optimized delivery.',
+    },
     {
       name: 'role',
       title: 'Role',
