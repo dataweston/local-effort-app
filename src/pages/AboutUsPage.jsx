@@ -78,11 +78,11 @@ const AboutUsPage = () => {
       {(weston && (westonPublicId || weston.headshot)) && (
             <div className="card">
               <h3 className="text-heading">{weston.name}</h3>
-        {westonPublicId ? (
+      {westonPublicId ? (
                 <div className="my-4">
                   <CloudinaryImage
           publicId={westonPublicId}
-                    alt={weston.headshot.alt || weston.name}
+        alt={weston?.headshot?.alt || weston?.name || 'Team member headshot'}
                     width={600}
                     height={400}
           className="rounded-md w-full h-auto object-cover"
@@ -90,18 +90,18 @@ const AboutUsPage = () => {
                   />
                 </div>
               ) : null}
-              <p className="text-body text-gray-600 mb-4">{weston.role}</p>
-              <p className="text-body">{weston.bio}</p>
+      {weston?.role && <p className="text-body text-gray-600 mb-4">{weston.role}</p>}
+      {weston?.bio && <p className="text-body">{weston.bio}</p>}
             </div>
           )}
       {(catherine && (catherinePublicId || catherine.headshot)) && (
             <div className="card">
               <h3 className="text-heading">{catherine.name}</h3>
-        {catherinePublicId ? (
+      {catherinePublicId ? (
                 <div className="my-4">
                   <CloudinaryImage
           publicId={catherinePublicId}
-                    alt={catherine.headshot.alt || catherine.name}
+        alt={catherine?.headshot?.alt || catherine?.name || 'Team member headshot'}
                     width={600}
                     height={400}
           className="rounded-md w-full h-auto object-cover"
@@ -109,8 +109,8 @@ const AboutUsPage = () => {
                   />
                 </div>
               ) : null}
-              <p className="text-body text-gray-600 mb-4">{catherine.role}</p>
-              <p className="text-body">{catherine.bio}</p>
+      {catherine?.role && <p className="text-body text-gray-600 mb-4">{catherine.role}</p>}
+      {catherine?.bio && <p className="text-body">{catherine.bio}</p>}
             </div>
           )}
         </div>
