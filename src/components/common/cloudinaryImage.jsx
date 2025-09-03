@@ -5,7 +5,7 @@ import { Cloudinary } from '@cloudinary/url-gen';
 
 // --- CORRECTED IMPORTS ---
 // Each function/action must be imported from its specific file path within the library.
-import { fill } from '@cloudinary/url-gen/actions/resize';
+import { fill, fit, pad } from '@cloudinary/url-gen/actions/resize';
 import { autoGravity } from '@cloudinary/url-gen/qualifiers/gravity';
 // The 'auto' helpers for quality and format are 'qualifiers', not 'actions'.
 import { auto as qualityAuto } from '@cloudinary/url-gen/qualifiers/quality';
@@ -35,7 +35,7 @@ const cld = new Cloudinary({
  */
 import { useState, useEffect, useRef } from 'react';
 
-const CloudinaryImage = ({ publicId, alt, width, height, className, disableLazy = false, fallbackSrc }) => {
+const CloudinaryImage = ({ publicId, alt, width, height, className, disableLazy = false, fallbackSrc, resizeMode = 'fill' }) => {
   const [loaded, setLoaded] = useState(false);
   const [error, setError] = useState(false);
   const imgRef = useRef(null);
@@ -66,7 +66,13 @@ const CloudinaryImage = ({ publicId, alt, width, height, className, disableLazy 
 
   // If width and height are provided, apply a fill transformation with auto-gravity
   if (width && height) {
-    myImage.resize(fill(width, height).gravity(autoGravity()));
+    if (resizeMode === 'fit') {
+      myImage.resize(fit(width, height));
+    } else if (resizeMode === 'pad') {
+      myImage.resize(pad(width, height));
+    } else {
+      myImage.resize(fill(width, height).gravity(autoGravity()));
+    }
   }
 
   // use effect to attach a load handler to the AdvancedImage internal <img>
