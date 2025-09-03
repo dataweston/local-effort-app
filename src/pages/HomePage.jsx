@@ -182,7 +182,7 @@ const HomePage = () => {
               variants={fadeInLeft}
               initial="initial"
               animate="animate"
-              className="text-hero uppercase tracking-tight leading-tight"
+              className="text-hero uppercase tracking-[-0.02em] leading-[1.05]"
             >
               Minnesotan Food
             </motion.h2>
@@ -191,7 +191,7 @@ const HomePage = () => {
               initial="initial"
               animate="animate"
               transition={{ delay: 0.05 }}
-              className="text-hero uppercase text-neutral-400 tracking-tight leading-tight mt-1"
+              className="text-hero uppercase text-neutral-400 tracking-[-0.02em] leading-[1.05] mt-1"
             >
               For Your Functions.
             </motion.h3>
@@ -199,7 +199,7 @@ const HomePage = () => {
               variants={fadeInUp}
               initial="initial"
               animate="animate"
-              className="mt-8 text-body max-w-md"
+              className="mt-6 md:mt-8 text-body max-w-md"
             >
               Professional in-home dining. 30 years collective fine food experience. Sourcing the
               best local ingredients without compromise.

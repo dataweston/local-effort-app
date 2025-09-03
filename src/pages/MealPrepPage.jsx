@@ -4,6 +4,7 @@ import { VennDiagram } from '../components/common/VennDiagram';
 import client from '../sanityClient';
 import { useAuthUser } from '../hooks/useAuthUser';
 import { AuthButtons } from '../components/mealprep/AuthButtons';
+import { auth, signInWithGoogle } from '../firebaseConfig';
 import { MenuList } from '../components/mealprep/MenuList';
 import { MenuDetail } from '../components/mealprep/MenuDetail';
 import { Comments } from '../components/mealprep/Comments';
@@ -68,7 +69,7 @@ export const MealPrepPage = () => {
       <div className="space-y-10">
         <div className="flex items-center justify-between">
           <h2 className="text-5xl md:text-7xl font-bold uppercase">Weekly Meal Prep</h2>
-          <AuthButtons user={user} />
+          {auth ? <AuthButtons user={user} /> : null}
         </div>
 
         <p className="font-mono text-lg max-w-3xl">
@@ -77,8 +78,21 @@ export const MealPrepPage = () => {
         </p>
 
         <div className="flex gap-4 items-center">
-          <a href="#menus" className="underline">Current member</a>
-          <a href="#menus" className="underline">View current menus</a>
+          {!user ? (
+            <button
+              type="button"
+              className="underline"
+              onClick={() => {
+                if (auth) {
+                  signInWithGoogle().catch(() => {});
+                }
+              }}
+            >
+              Already a member? Sign in
+            </button>
+          ) : (
+            <a href="#menus" className="underline">View current menus</a>
+          )}
         </div>
 
         <div className="border border-gray-900 p-8">
@@ -92,18 +106,25 @@ export const MealPrepPage = () => {
 
         <section id="menus" className="space-y-4">
           <h3 className="text-2xl font-bold">Current Menus</h3>
-          <div className="flex gap-2 items-center">
-            <input
-              type="text"
-              value={filterName}
-              onChange={(e) => setFilterName(e.target.value)}
-              placeholder="Filter by client name"
-              className="border rounded px-3 py-2"
-            />
-          </div>
+          {/* Filter removed per request */}
 
           {!user ? (
-            <p className="text-sm text-gray-700">Sign in as a current member to view menus.</p>
+            <div className="text-sm text-gray-700">
+              <button
+                type="button"
+                className="underline"
+                onClick={() => {
+                  if (auth) {
+                    signInWithGoogle().catch(() => {});
+                  }
+                }}
+              >
+                Already a member? Sign in
+              </button>
+              {!auth && (
+                <p className="mt-2 text-xs text-gray-500">Sign-in temporarily unavailable. Check Firebase env variables.</p>
+              )}
+            </div>
           ) : loading ? (
             <p>Loading menus…</p>
           ) : error ? (
@@ -112,7 +133,7 @@ export const MealPrepPage = () => {
               <p className="text-sm mt-1">If this persists, ensure Sanity env vars are set on the web app (VITE_APP_SANITY_PROJECT_ID, VITE_APP_SANITY_DATASET) and that the Studio has the new Meal Prep Menu content.</p>
             </div>
           ) : !selected ? (
-            <MenuList menus={filtered} onSelect={setSelected} />
+            <MenuList menus={menus} onSelect={setSelected} />
           ) : (
             <div>
               <MenuDetail menu={selected} onBack={() => setSelected(null)} />
