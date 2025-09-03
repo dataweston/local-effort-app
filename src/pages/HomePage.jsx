@@ -132,7 +132,7 @@ const HomePage = () => {
               width={300}
               height={80}
               className="max-h-16 object-contain grayscale hover:grayscale-0 transition-all"
-              fallbackSrc={p.fallbackSrc}
+              fallbackSrc={p.fallbackSrc || '/gallery/logo.png'}
               resizeMode="fit"
             />
           </a>

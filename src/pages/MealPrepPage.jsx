@@ -123,3 +123,5 @@ export const MealPrepPage = () => {
     </>
   );
 };
+
+export default MealPrepPage;
