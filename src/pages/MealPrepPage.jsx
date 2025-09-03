@@ -82,9 +82,11 @@ export const MealPrepPage = () => {
             <button
               type="button"
               className="underline"
-              onClick={() => {
-                if (auth) {
-                  signInWithGoogle().catch(() => {});
+              onClick={async () => {
+                try {
+                  await signInWithGoogle();
+                } catch (e) {
+                  alert(`Sign-in unavailable: ${e?.message || e}`);
                 }
               }}
             >
@@ -113,9 +115,11 @@ export const MealPrepPage = () => {
               <button
                 type="button"
                 className="underline"
-                onClick={() => {
-                  if (auth) {
-                    signInWithGoogle().catch(() => {});
+                onClick={async () => {
+                  try {
+                    await signInWithGoogle();
+                  } catch (e) {
+                    alert(`Sign-in unavailable: ${e?.message || e}`);
                   }
                 }}
               >
