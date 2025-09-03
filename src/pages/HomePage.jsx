@@ -7,6 +7,7 @@ import { fadeInUp, fadeInLeft } from '../utils/animations';
 import CloudinaryImage from '../components/common/cloudinaryImage'; // Import the Cloudinary image component
 import sanityClient from '../sanityClient.js';
 import { useEffect, useState } from 'react';
+import { cloudinaryConfig, heroPublicId, partnerPublicIds } from '../data/cloudinaryContent';
 
 const HomePage = () => {
   const navigate = useNavigate();
@@ -33,11 +34,7 @@ const HomePage = () => {
   const PartnerGrid = () => {
     const items = partners.length
       ? partners
-      : [
-          { publicId: 'gallery/logo.png', name: 'Local Effort' },
-          { publicId: 'gallery/logo_sticker.png', name: 'Sticker' },
-          { publicId: 'gallery/C6460B50-A88D-4C61-A6AA-9C460373DF29.JPG', name: 'Partner A' },
-        ];
+      : partnerPublicIds.map((id, i) => ({ publicId: id, name: `Partner ${i + 1}` }));
 
     return (
       <div className="max-w-6xl mx-auto grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6 items-center px-4">
@@ -72,16 +69,13 @@ const HomePage = () => {
   };
 
   // --- NEW: Define image data for both the component and structured data ---
-  const heroImage = {
-    publicId: 'gallery/IMG_3145',
-    alt: 'A beautifully plated dish with microgreens and edible flowers',
-  };
+  const heroImage = { publicId: heroPublicId, alt: 'Local Effort — hero' };
 
   // --- NEW: Define the JSON-LD structured data object for SEO ---
   const imageJsonLd = {
     '@context': 'https://schema.org',
     '@type': 'ImageObject',
-    contentUrl: `https://res.cloudinary.com/${import.meta.env?.VITE_CLOUDINARY_CLOUD_NAME || 'dokyhfvyd'}/image/upload/v1/${heroImage.publicId}.jpg`,
+  contentUrl: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/f_auto,q_auto/${heroImage.publicId}`,
     name: heroImage.alt,
     description: 'A sample of the professional in-home dining experience by Local Effort.',
     creator: {
