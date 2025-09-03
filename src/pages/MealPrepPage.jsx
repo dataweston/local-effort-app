@@ -18,12 +18,6 @@ export const MealPrepPage = () => {
 
   useEffect(() => {
     let mounted = true;
-    if (!user) {
-      setMenus([]);
-      setLoading(false);
-      setError(null);
-      return () => { mounted = false; };
-    }
     (async () => {
       try {
         setLoading(true);
@@ -101,9 +95,7 @@ export const MealPrepPage = () => {
             />
           </div>
 
-          {!user ? (
-            <p className="text-sm text-gray-700">Sign in as a current member to view menus.</p>
-          ) : loading ? (
+          {loading ? (
             <p>Loading menus…</p>
           ) : error ? (
             <div className="text-red-700 bg-red-50 border border-red-200 p-3 rounded">
