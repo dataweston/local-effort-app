@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
 import sanityClient from '../sanityClient.js'; // explicit file extension for consistency
 import CloudinaryImage from '../components/common/cloudinaryImage';
+import { peoplePublicIds } from '../data/cloudinaryContent';
 
 const AboutUsPage = () => {
   const [aboutData, setAboutData] = useState(null);
@@ -41,8 +42,10 @@ const AboutUsPage = () => {
   // By adding "= []", we ensure that if persons or skills don't exist,
   // we get an empty array instead of an error.
   const { page, persons = [], skills = [] } = aboutData;
-  const weston = persons.find((p) => p.name.includes('Weston'));
-  const catherine = persons.find((p) => p.name.includes('Catherine'));
+  const weston = persons.find((p) => p.name && p.name.includes('Weston')) || {};
+  const catherine = persons.find((p) => p.name && p.name.includes('Catherine')) || {};
+  const westonPublicId = weston?.headshot?.asset?.public_id || peoplePublicIds.weston;
+  const catherinePublicId = catherine?.headshot?.asset?.public_id || peoplePublicIds.catherine;
 
   return (
     <>
@@ -72,17 +75,18 @@ const AboutUsPage = () => {
               been created and published in your Sanity Studio.
             </div>
           )}
-          {weston && (
+      {(weston && (westonPublicId || weston.headshot)) && (
             <div className="card">
               <h3 className="text-heading">{weston.name}</h3>
-              {weston.headshot?.asset?.public_id ? (
+        {westonPublicId ? (
                 <div className="my-4">
                   <CloudinaryImage
-                    publicId={weston.headshot.asset.public_id}
+          publicId={westonPublicId}
                     alt={weston.headshot.alt || weston.name}
                     width={600}
                     height={400}
-                    className="rounded-md w-full h-auto object-cover"
+          className="rounded-md w-full h-auto object-cover"
+          fallbackSrc="/gallery/IMG_3145.jpg"
                   />
                 </div>
               ) : null}
@@ -90,17 +94,18 @@ const AboutUsPage = () => {
               <p className="text-body">{weston.bio}</p>
             </div>
           )}
-          {catherine && (
+      {(catherine && (catherinePublicId || catherine.headshot)) && (
             <div className="card">
               <h3 className="text-heading">{catherine.name}</h3>
-              {catherine.headshot?.asset?.public_id ? (
+        {catherinePublicId ? (
                 <div className="my-4">
                   <CloudinaryImage
-                    publicId={catherine.headshot.asset.public_id}
+          publicId={catherinePublicId}
                     alt={catherine.headshot.alt || catherine.name}
                     width={600}
                     height={400}
-                    className="rounded-md w-full h-auto object-cover"
+          className="rounded-md w-full h-auto object-cover"
+          fallbackSrc="/gallery/catherine.jpg"
                   />
                 </div>
               ) : null}
