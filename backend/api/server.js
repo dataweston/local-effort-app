@@ -323,7 +323,7 @@ async function upsertContact({ email, firstName, lastName, phone }) {
 // Public: customer form submission -> store + notify team via Brevo
 app.post('/api/messages/submit', async (req, res) => {
   try {
-    const { name, email, phone, subject, message, type = 'general' } = req.body || {};
+  const { name, email, phone, subject, message, type = 'general', sendCopy = false } = req.body || {};
     if (!email || !message) return res.status(400).json({ error: 'Missing email or message' });
 
     const [firstName, ...rest] = (name || '').split(' ');
@@ -379,6 +379,9 @@ app.post('/api/messages/submit', async (req, res) => {
       tags: ['inquiry', type].filter(Boolean),
       headers: msgDoc?._id ? { 'X-Message-Id': msgDoc._id } : undefined,
     };
+    if (sendCopy && email) {
+      payload.cc = [{ email, name: name || email }];
+    }
     const resp = await fetch('https://api.brevo.com/v3/smtp/email', {
       method: 'POST',
       headers,

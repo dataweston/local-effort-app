@@ -148,10 +148,10 @@ const HomePage = () => {
             <motion.button
               whileHover={{ scale: 1.03 }}
               whileTap={{ scale: 0.98 }}
-              onClick={() => navigate('/services')}
+              onClick={() => navigate('/services#event-request')}
               className="btn btn-primary mt-8 text-lg"
             >
-              Explore Services
+              Book an event
             </motion.button>
           </div>
 

@@ -1,9 +1,95 @@
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useEffect, useMemo, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 
 const ServicesPage = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // Smooth-scroll to anchor when navigated with a hash (e.g., /services#event-request)
+  useEffect(() => {
+    if (location.hash) {
+      const id = location.hash.replace('#', '');
+      const el = document.getElementById(id);
+      if (el) {
+        // Delay to ensure layout is ready
+        setTimeout(() => el.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
+      }
+    }
+  }, [location.hash]);
+
+  const initialForm = useMemo(
+    () => ({
+      firstName: '',
+      lastName: '',
+      phone: '',
+      email: '',
+      eventDate: '', // MM-DD-YYYY
+      city: '',
+      state: '',
+      zip: '',
+      eventType: '',
+      guestCount: '',
+      notes: '',
+      sendCopy: false,
+    }),
+    []
+  );
+  const [form, setForm] = useState(initialForm);
+  const [submitting, setSubmitting] = useState(false);
+  const [result, setResult] = useState(null);
+
+  const required = (v) => String(v || '').trim().length > 0;
+  const handleChange = (e) => {
+    const { name, type, checked, value } = e.target;
+    setForm((f) => ({ ...f, [name]: type === 'checkbox' ? checked : value }));
+  };
+  const reset = () => setForm(initialForm);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setResult(null);
+    // Basic validation
+    if (!required(form.firstName) || !required(form.lastName) || !required(form.phone) || !required(form.email)) {
+      setResult({ ok: false, message: 'Please complete first name, last name, phone, and email.' });
+      return;
+    }
+    try {
+      setSubmitting(true);
+      const subject = `Event Request${form.guestCount ? `: ${form.guestCount} guests` : ''}${form.eventDate ? ` on ${form.eventDate}` : ''}`;
+      const summary = [
+        form.eventType ? `Event Type: ${form.eventType}` : null,
+        form.eventDate ? `Event Date: ${form.eventDate}` : null,
+        form.guestCount ? `Estimated Guests: ${form.guestCount}` : null,
+        form.city || form.state || form.zip ? `Location: ${[form.city, form.state, form.zip].filter(Boolean).join(', ')}` : null,
+      ]
+        .filter(Boolean)
+        .join('\n');
+      const message = `${summary}\n\nNotes:\n${form.notes || '(none)'}`;
+
+      const resp = await fetch('/api/messages/submit', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          name: `${form.firstName} ${form.lastName}`.trim(),
+          email: form.email,
+          phone: form.phone,
+          subject,
+          message,
+          type: 'event',
+          sendCopy: !!form.sendCopy,
+        }),
+      });
+      const data = await resp.json().catch(() => ({}));
+      if (!resp.ok) throw new Error(data.error || 'Failed to submit');
+      setResult({ ok: true, message: "thank you so much! we'll get right back to you." });
+      reset();
+    } catch (err) {
+      setResult({ ok: false, message: err.message || 'Submission failed. Please try again.' });
+    } finally {
+      setSubmitting(false);
+    }
+  };
   return (
     <>
       <Helmet>
@@ -43,6 +129,178 @@ const ServicesPage = () => {
             </button>
           </div>
         </div>
+
+        {/* Event Request Form */}
+        <section id="event-request" className="border-t border-neutral-200 pt-10">
+          <div className="max-w-3xl">
+            <h3 className="text-heading uppercase mb-2">Book an Event</h3>
+            <p className="text-body mb-6">Tell us about your event and we’ll follow up with availability and a tailored menu.</p>
+
+            <form onSubmit={handleSubmit} className="space-y-4">
+              {/* Contact Name (First/Last) */}
+              <div>
+                <label className="block text-sm font-medium">Contact Name *</label>
+                <div className="grid md:grid-cols-2 gap-4 mt-1">
+                  <input
+                    name="firstName"
+                    value={form.firstName}
+                    onChange={handleChange}
+                    className="w-full border rounded-md p-2"
+                    placeholder="First Name"
+                    required
+                  />
+                  <input
+                    name="lastName"
+                    value={form.lastName}
+                    onChange={handleChange}
+                    className="w-full border rounded-md p-2"
+                    placeholder="Last Name"
+                    required
+                  />
+                </div>
+                <p className="text-xs text-neutral-500 mt-1">This field is required.</p>
+              </div>
+
+              {/* Phone and Email */}
+              <div className="grid md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium">Phone Number *</label>
+                  <input
+                    type="tel"
+                    name="phone"
+                    value={form.phone}
+                    onChange={handleChange}
+                    className="mt-1 w-full border rounded-md p-2"
+                    placeholder="(000) 000-0000"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium">E-mail *</label>
+                  <input
+                    type="email"
+                    name="email"
+                    value={form.email}
+                    onChange={handleChange}
+                    className="mt-1 w-full border rounded-md p-2"
+                    placeholder="example@example.com"
+                    required
+                  />
+                </div>
+              </div>
+
+              {/* Event Date */}
+              <div>
+                <label className="block text-sm font-medium">Event Date:</label>
+                <input
+                  type="text"
+                  name="eventDate"
+                  value={form.eventDate}
+                  onChange={handleChange}
+                  className="mt-1 w-full border rounded-md p-2"
+                  placeholder="MM-DD-YYYY"
+                />
+                <p className="text-xs text-neutral-500 mt-1">Date</p>
+              </div>
+
+              {/* Location: City, State, Zip */}
+              <div>
+                <label className="block text-sm font-medium">Where will the event take place?</label>
+                <div className="grid md:grid-cols-3 gap-4 mt-1">
+                  <input
+                    name="city"
+                    value={form.city}
+                    onChange={handleChange}
+                    className="w-full border rounded-md p-2"
+                    placeholder="City"
+                  />
+                  <select
+                    name="state"
+                    value={form.state}
+                    onChange={handleChange}
+                    className="w-full border rounded-md p-2 bg-white"
+                  >
+                    <option value="">Please Select</option>
+                    {['AL','AK','AZ','AR','CA','CO','CT','DE','FL','GA','HI','ID','IL','IN','IA','KS','KY','LA','ME','MD','MA','MI','MN','MS','MO','MT','NE','NV','NH','NJ','NM','NY','NC','ND','OH','OK','OR','PA','RI','SC','SD','TN','TX','UT','VT','VA','WA','WV','WI','WY'].map(s => (
+                      <option key={s} value={s}>{s}</option>
+                    ))}
+                  </select>
+                  <input
+                    name="zip"
+                    value={form.zip}
+                    onChange={handleChange}
+                    className="w-full border rounded-md p-2"
+                    placeholder="Zip Code"
+                  />
+                </div>
+              </div>
+
+              {/* Event Type */}
+              <div>
+                <label className="block text-sm font-medium">Event Type</label>
+                <select
+                  name="eventType"
+                  value={form.eventType}
+                  onChange={handleChange}
+                  className="mt-1 w-full border rounded-md p-2 bg-white"
+                >
+                  <option value="">Please Select</option>
+                  <option>Dinner</option>
+                  <option>Catering</option>
+                  <option>Pizza Party</option>
+                  <option>Other</option>
+                </select>
+              </div>
+
+              {/* Estimated guest count */}
+              <div>
+                <label className="block text-sm font-medium">Estimated guest count</label>
+                <input
+                  type="number"
+                  name="guestCount"
+                  value={form.guestCount}
+                  onChange={handleChange}
+                  className="mt-1 w-full border rounded-md p-2"
+                  placeholder="ex: 23"
+                  min="1"
+                />
+              </div>
+
+              {/* Notes */}
+              <div>
+                <label className="block text-sm font-medium">Tell us more! What sort of meal are you thinking? Which foods do you like? What questions do you have for us straight away?</label>
+                <textarea
+                  name="notes"
+                  value={form.notes}
+                  onChange={handleChange}
+                  className="mt-1 w-full border rounded-md p-2"
+                  rows={4}
+                  placeholder="Type here..."
+                />
+              </div>
+
+              {/* Send a copy */}
+              <label className="inline-flex items-center gap-2">
+                <input type="checkbox" name="sendCopy" checked={form.sendCopy} onChange={handleChange} />
+                <span className="text-sm">Email me a copy of this request</span>
+              </label>
+
+              {result && (
+                <div className={"text-sm " + (result.ok ? 'text-green-700' : 'text-red-700')}>
+                  {result.message}
+                </div>
+              )}
+
+              <button
+                type="submit"
+                disabled={submitting}
+                className="btn btn-primary"
+              >
+                {submitting ? 'Submitting…' : 'Submit'}
+              </button>
+            </form>
+          </div>
+        </section>
       </div>
     </>
   );
