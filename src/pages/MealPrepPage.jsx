@@ -18,6 +18,14 @@ export const MealPrepPage = () => {
 
   useEffect(() => {
     let mounted = true;
+    if (!user) {
+      setMenus([]);
+      setLoading(false);
+      setError(null);
+      return () => {
+        mounted = false;
+      };
+    }
     (async () => {
       try {
         setLoading(true);
@@ -25,7 +33,6 @@ export const MealPrepPage = () => {
         if (!client || !client.fetch) {
           throw new Error('Content service unavailable');
         }
-        // Fetch latest published menus from Sanity; include date, clientName, menu, notes
         const data = await client.fetch(
           `*[_type == "mealPrepMenu" && published == true] | order(date desc)[0...50]{
             _id, date, clientName, menu, notes
@@ -95,7 +102,9 @@ export const MealPrepPage = () => {
             />
           </div>
 
-          {loading ? (
+          {!user ? (
+            <p className="text-sm text-gray-700">Sign in as a current member to view menus.</p>
+          ) : loading ? (
             <p>Loading menus…</p>
           ) : error ? (
             <div className="text-red-700 bg-red-50 border border-red-200 p-3 rounded">
