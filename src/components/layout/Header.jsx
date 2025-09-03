@@ -8,9 +8,12 @@ const links = [
   { path: '/pricing', name: 'Pricing' },
   { path: '/menu', name: 'Menus' },
   { path: '/about', name: 'About' },
-  { path: '/happy-monday', name: 'Happy Monday' },
+  // { path: '/happy-monday', name: 'Happy Monday' }, // temporarily hidden
   { path: '/gallery', name: 'Gallery' },
 ];
+
+// Toggle to show/hide fundraiser button in nav (routes still accessible directly)
+const SHOW_FUNDRAISER = false;
 
 export const Header = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -56,15 +59,17 @@ export const Header = () => {
               )}
             </NavLink>
           ))}
-          <NavLink to="/crowdfunding" className="ml-2">
-            <motion.span
-              whileHover={{ scale: 1.03 }}
-              whileTap={{ scale: 0.98 }}
-              className="inline-flex items-center rounded-md bg-[var(--color-accent)] px-3 py-1.5 font-semibold text-white shadow-sm"
-            >
-              Fundraiser
-            </motion.span>
-          </NavLink>
+          {SHOW_FUNDRAISER && (
+            <NavLink to="/crowdfunding" className="ml-2">
+              <motion.span
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.98 }}
+                className="inline-flex items-center rounded-md bg-[var(--color-accent)] px-3 py-1.5 font-semibold text-white shadow-sm"
+              >
+                Fundraiser
+              </motion.span>
+            </NavLink>
+          )}
         </nav>
 
         {/* Mobile menu button */}
@@ -121,15 +126,17 @@ export const Header = () => {
                   </NavLink>
                 </motion.div>
               ))}
-              <motion.div variants={{ hidden: { y: 10, opacity: 0 }, show: { y: 0, opacity: 1 } }}>
-                <NavLink
-                  to="/crowdfunding"
-                  onClick={() => setIsOpen(false)}
-                  className="text-2xl uppercase bg-[var(--color-accent)] text-white px-6 py-3 rounded font-semibold"
-                >
-                  Fundraiser
-                </NavLink>
-              </motion.div>
+              {SHOW_FUNDRAISER && (
+                <motion.div variants={{ hidden: { y: 10, opacity: 0 }, show: { y: 0, opacity: 1 } }}>
+                  <NavLink
+                    to="/crowdfunding"
+                    onClick={() => setIsOpen(false)}
+                    className="text-2xl uppercase bg-[var(--color-accent)] text-white px-6 py-3 rounded font-semibold"
+                  >
+                    Fundraiser
+                  </NavLink>
+                </motion.div>
+              )}
             </motion.nav>
           </motion.div>
         )}

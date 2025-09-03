@@ -18,6 +18,8 @@ const MenuPage = lazy(() => import('./pages/MenuPage'));
 const HappyMondayPage = lazy(() => import('./pages/HappyMondayPage'));
 // --- NEW: Lazily import the GalleryPage ---
 const GalleryPage = lazy(() => import('./pages/GalleryPage'));
+// --- NEW: Lazily import the MealPrepPage ---
+const MealPrepPage = lazy(() => import('./pages/MealPrepPage'));
 
 const AppContent = () => {
   const location = useLocation();
@@ -79,6 +81,14 @@ const AppContent = () => {
                   element={
                     <AnimatedPage>
                       <MenuPage />
+                    </AnimatedPage>
+                  }
+                />
+                <Route
+                  path="/meal-prep"
+                  element={
+                    <AnimatedPage>
+                      <MealPrepPage />
                     </AnimatedPage>
                   }
                 />

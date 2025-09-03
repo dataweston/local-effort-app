@@ -73,17 +73,15 @@ const HomePage = () => {
 
   // --- NEW: Define image data for both the component and structured data ---
   const heroImage = {
-    publicId: 'gallery/IMG_3145', // The public ID from Cloudinary
+    publicId: 'gallery/IMG_3145',
     alt: 'A beautifully plated dish with microgreens and edible flowers',
-    // You must replace 'your-cloud-name' with your actual Cloudinary cloud name
-    url: 'https://res.cloudinary.com/dokyhfvyd/image/upload/v1/gallery/IMG_3145.jpg',
   };
 
   // --- NEW: Define the JSON-LD structured data object for SEO ---
   const imageJsonLd = {
     '@context': 'https://schema.org',
     '@type': 'ImageObject',
-    contentUrl: heroImage.url,
+    contentUrl: `https://res.cloudinary.com/${import.meta.env?.VITE_CLOUDINARY_CLOUD_NAME || 'dokyhfvyd'}/image/upload/v1/${heroImage.publicId}.jpg`,
     name: heroImage.alt,
     description: 'A sample of the professional in-home dining experience by Local Effort.',
     creator: {
