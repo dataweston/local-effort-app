@@ -35,8 +35,9 @@ const cld = new Cloudinary({
  */
 import { useState, useEffect, useRef } from 'react';
 
-const CloudinaryImage = ({ publicId, alt, width, height, className, disableLazy = false }) => {
+const CloudinaryImage = ({ publicId, alt, width, height, className, disableLazy = false, fallbackSrc }) => {
   const [loaded, setLoaded] = useState(false);
+  const [error, setError] = useState(false);
   const imgRef = useRef(null);
   // If no publicId is provided, render a placeholder to avoid errors
   if (!publicId) {
@@ -74,6 +75,7 @@ const CloudinaryImage = ({ publicId, alt, width, height, className, disableLazy 
     let el = null;
     let pollTimer = null;
     let onLoad = null;
+    let onError = null;
 
     // Safety fallback: if the high-res image doesn't load within this time, show it anyway
     const fallbackTimeout = setTimeout(() => {
@@ -93,8 +95,16 @@ const CloudinaryImage = ({ publicId, alt, width, height, className, disableLazy 
         clearTimeout(fallbackTimeout);
         setLoaded(true);
       };
+      onError = () => {
+        if (!mounted) return;
+        setError(true);
+        if (typeof window !== 'undefined') {
+          console.warn('[CloudinaryImage] failed to load', { cloudName: CLOUD_NAME, publicId });
+        }
+      };
 
       el.addEventListener('load', onLoad);
+      el.addEventListener('error', onError);
       // If the image is already cached/complete, trigger immediately
       if (el.complete) onLoad();
     };
@@ -106,8 +116,22 @@ const CloudinaryImage = ({ publicId, alt, width, height, className, disableLazy 
       clearTimeout(fallbackTimeout);
       if (pollTimer) clearTimeout(pollTimer);
       if (el && onLoad) el.removeEventListener('load', onLoad);
+      if (el && onError) el.removeEventListener('error', onError);
     };
   }, [publicId]);
+
+  if (error && fallbackSrc) {
+    return (
+      <img
+        src={fallbackSrc}
+        alt={alt}
+        width={width}
+        height={height}
+        className={className}
+        style={{ objectFit: 'cover' }}
+      />
+    );
+  }
 
   return (
     <div

@@ -7,7 +7,7 @@ import { fadeInUp, fadeInLeft } from '../utils/animations';
 import CloudinaryImage from '../components/common/cloudinaryImage'; // Import the Cloudinary image component
 import sanityClient from '../sanityClient.js';
 import { useEffect, useState } from 'react';
-import { cloudinaryConfig, heroPublicId, partnerPublicIds } from '../data/cloudinaryContent';
+import { cloudinaryConfig, heroPublicId, heroFallbackSrc, partnerLogos } from '../data/cloudinaryContent';
 
 const HomePage = () => {
   const navigate = useNavigate();
@@ -32,9 +32,8 @@ const HomePage = () => {
   }, []);
 
   const PartnerGrid = () => {
-    const items = partners.length
-      ? partners
-      : partnerPublicIds.map((id, i) => ({ publicId: id, name: `Partner ${i + 1}` }));
+  const sanitized = (partners || []).filter((p) => p && p.publicId);
+  const items = sanitized.length ? sanitized : partnerLogos;
 
     return (
       <div className="max-w-6xl mx-auto grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6 items-center px-4">
@@ -61,6 +60,7 @@ const HomePage = () => {
               width={300}
               height={80}
               className="max-h-16 object-contain grayscale hover:grayscale-0 transition-all"
+              fallbackSrc={p.fallbackSrc}
             />
           </a>
         ))}
@@ -97,6 +97,11 @@ const HomePage = () => {
       </Helmet>
 
       <div className="space-y-24">
+        {!cloudinaryConfig.cloudName && (
+          <div className="card bg-yellow-100 border-yellow-400 text-body">
+            Cloudinary not configured. Set VITE_CLOUDINARY_CLOUD_NAME in your environment.
+          </div>
+        )}
         {/* Hero */}
         <section className="mx-auto max-w-6xl px-4 md:px-6 lg:px-8 grid md:grid-cols-2 gap-8 items-center min-h-[60vh]">
           <div>
@@ -149,6 +154,7 @@ const HomePage = () => {
               width={600}
               height={600}
               className="w-full h-full object-cover" // Ensure it fills the container
+              fallbackSrc={heroFallbackSrc}
             />
           </motion.div>
         </section>
