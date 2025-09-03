@@ -43,38 +43,23 @@ const GalleryPage = () => {
   const closeBtnRef = useRef(null);
 
   useEffect(() => {
-    let controller = null;
+    const controller = new AbortController();
     const handler = setTimeout(async () => {
       setLoading(true);
       setError(null);
       try {
-        controller = new AbortController();
-        const { signal } = controller;
-            <title>pictures of food. | Local Effort</title>
-  const apiUrl = `/api/search-images${query ? `?query=${encodeURIComponent(query)}` : ''}`;
-
-            <h1 className="text-4xl font-bold mb-4 text-center">pictures of food.</h1>
+        const apiUrl = `/api/search-images${query ? `?query=${encodeURIComponent(query)}` : ''}`;
+        const response = await fetch(apiUrl, { signal: controller.signal });
 
         // Check if response is actually JSON
-        const contentType = response.headers.get('content-type');
-        if (!contentType || !contentType.includes('application/json')) {
-          const textResponse = await response.text();
-              placeholder="Search by tag (e.g., pizza, events, mealplan, plates, dinner, eggs)..."
-          throw new Error('API endpoint not found - got HTML instead of JSON');
+        const contentType = response.headers.get('content-type') || '';
+        if (!contentType.includes('application/json')) {
+          const text = await response.text().catch(() => '');
+          const msg = text && text.includes('<!DOCTYPE')
+            ? 'API endpoint not found - got HTML instead of JSON'
+            : (text || 'Unexpected non-JSON response');
+          throw new Error(msg);
         }
-            <div className="w-full max-w-md mx-auto mb-8 flex flex-wrap gap-2 justify-center text-sm">
-              {['pizza','events','mealplan','plates','dinner','eggs'].map((k) => (
-                <button
-                  key={k}
-                  type="button"
-                  onClick={() => setQuery(k)}
-                  className="px-2.5 py-1 rounded-full border border-neutral-300 hover:border-black hover:bg-neutral-50"
-                  aria-label={`Search ${k}`}
-                >
-                  {k}
-                </button>
-              ))}
-            </div>
 
         // Parse JSON; if error status, surface server error details
         const data = await response.json();
@@ -83,7 +68,7 @@ const GalleryPage = () => {
           throw new Error(`Search failed (${response.status}): ${details}`);
         }
 
-        setImages(data.images || []);
+        setImages(Array.isArray(data.images) ? data.images : []);
       } catch (err) {
         if (err.name === 'AbortError') return;
         console.error('Error fetching images:', err);
@@ -102,11 +87,11 @@ const GalleryPage = () => {
       } finally {
         setLoading(false);
       }
-    }, 500);
+    }, 300);
 
     return () => {
       clearTimeout(handler);
-      if (controller) controller.abort();
+      controller.abort();
     };
   }, [query]);
 
@@ -175,13 +160,13 @@ const GalleryPage = () => {
           })}</script>
       </Helmet>
       <div className="container mx-auto px-4 py-8">
-        <h1 className="text-4xl font-bold mb-4 text-center">Image Gallery</h1>
+        <h1 className="text-4xl font-bold mb-4 text-center">pictures of food.</h1>
 
         <input
           type="text"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Search by tag (e.g., pizza, events)..."
+          placeholder="Search by tag (e.g., pizza, events, mealplan, plates, dinner, eggs)..."
           className="w-full max-w-md mx-auto block p-3 border rounded-md mb-8"
         />
 
