@@ -1,6 +1,8 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { VennDiagram } from '../components/common/VennDiagram';
+import Carousel from '../components/common/Carousel';
+import CloudinaryImage from '../components/common/cloudinaryImage';
 import client from '../sanityClient';
 import { useAuthUser } from '../hooks/useAuthUser';
 import { AuthButtons } from '../components/mealprep/AuthButtons';
@@ -20,6 +22,49 @@ export const MealPrepPage = () => {
   const [filterName, setFilterName] = useState('');
   const [assignedClient, setAssignedClient] = useState(null);
   const [openSection, setOpenSection] = useState(null); // 'foundation' | 'custom' | null
+  const [galleryItems, setGalleryItems] = useState([]);
+
+  // Load Cloudinary images tagged 'meal' and create a 3-wide carousel
+  useEffect(() => {
+    let abort = false;
+    (async () => {
+      try {
+        const res = await fetch(`/api/search-images?query=meal&per_page=12`);
+        if (!res.ok) throw new Error(`Gallery fetch failed: ${res.status}`);
+        const data = await res.json();
+        if (abort) return;
+        const images = (data.images || []).slice(0, 12);
+        // Group into chunks of 3 for each slide
+        const slides = [];
+        for (let i = 0; i < images.length; i += 3) {
+          const group = images.slice(i, i + 3);
+          slides.push({
+            key: group.map((g) => g.public_id).join('|') || `${i}`,
+            node: (
+              <div className="grid grid-cols-3 gap-3">
+                {group.map((img, idx) => (
+                  <CloudinaryImage
+                    key={img.public_id || idx}
+                    publicId={img.public_id}
+                    alt={img.public_id}
+                    width={300}
+                    height={300}
+                    className="w-full h-36 md:h-44 lg:h-48 object-cover rounded"
+                  />
+                ))}
+              </div>
+            ),
+          });
+        }
+        setGalleryItems(slides);
+      } catch (_e) {
+        // silent fallback: just no gallery
+      }
+    })();
+    return () => {
+      abort = true;
+    };
+  }, []);
 
   // Resolve assigned client for signed-in user and persist mapping.
   useEffect(() => {
@@ -147,10 +192,22 @@ export const MealPrepPage = () => {
               )}
             </div>
           )}
+          {!auth && !user && (
+            <p className="text-xs text-gray-500 ml-3">Sign-in unavailable. Check Firebase env in .env (VITE_FIREBASE_*) and allowed domains.</p>
+          )}
         </div>
 
-        {/* Foundation Plan Accordion */}
-        <div className="border border-gray-900 rounded-md overflow-hidden">
+        {/* 3-wide gallery carousel for #meal */}
+        {galleryItems.length > 0 && (
+          <div className="mt-4">
+            <Carousel items={galleryItems} intervalMs={7000} className="w-full" />
+          </div>
+        )}
+
+  {/* Side-by-side accordions */}
+  <div className="grid md:grid-cols-2 gap-6">
+  {/* Foundation Plan Accordion */}
+  <div className="border border-gray-900 rounded-md overflow-hidden">
           <button
             type="button"
             className="w-full flex items-center justify-between px-4 py-3 bg-gray-50 hover:bg-gray-100"
@@ -198,31 +255,13 @@ export const MealPrepPage = () => {
             </div>
           </div>
         </div>
+  </div>
 
+        {user && (
         <section id="menus" className="space-y-4">
-          <h3 className="text-2xl font-bold">Past Menu Examples.</h3>
+          <h3 className="text-2xl font-bold">Current Menus</h3>
           {/* Filter removed per request */}
-
-          {!user ? (
-            <div className="text-sm text-gray-700">
-              <button
-                type="button"
-                className="underline"
-                onClick={async () => {
-                  try {
-                    await signInWithGoogle();
-                  } catch (e) {
-                    alert(`Sign-in unavailable: ${e?.message || e}`);
-                  }
-                }}
-              >
-                Already a member? Sign in
-              </button>
-              {!auth && (
-                <p className="mt-2 text-xs text-gray-500">Sign-in temporarily unavailable. Check Firebase env variables.</p>
-              )}
-            </div>
-          ) : loading ? (
+          {loading ? (
             <p>Loading menus…</p>
           ) : error ? (
             <div className="text-red-700 bg-red-50 border border-red-200 p-3 rounded">
@@ -238,6 +277,7 @@ export const MealPrepPage = () => {
             </div>
           )}
         </section>
+        )}
       </div>
     </>
   );
