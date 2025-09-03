@@ -1,4 +1,4 @@
-import{r as n,R as e,W as P}from"./index-B5PZCLOy.js";import{c as _}from"./sanityClient-BrVy1SUw.js";import{C as x}from"./cloudinaryImage-BE8avuXi.js";import{b as N}from"./cloudinaryContent-DL-VHaHa.js";const M=()=>{var b,h,p,y,g,E;const[i,m]=n.useState(null),[v,S]=n.useState(!0),[I,k]=n.useState(null);if(n.useEffect(()=>{const s=`{
+import{r as n,R as e,W as P}from"./index-B4cIQvsT.js";import{c as _}from"./sanityClient-CfKX1QDA.js";import{C as x}from"./cloudinaryImage-CJ6RoUlG.js";import{b as N}from"./cloudinaryContent-DL-VHaHa.js";const M=()=>{var b,h,p,y,g,E;const[i,m]=n.useState(null),[v,S]=n.useState(!0),[I,k]=n.useState(null);if(n.useEffect(()=>{const s=`{
       "page": *[_type == "page" && slug.current == "about-us"][0]{ title, introduction },
   "persons": *[_type == "person"]{ name, role, bio, image{asset->{_ref}}, headshot{ asset{ public_id }, alt } },
       "skills": *[_type == "specialSkill"]{ name, description }

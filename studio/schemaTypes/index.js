@@ -14,6 +14,10 @@ import rewardTier from './rewardTier'
 import partner from './partner'
 import mealPrepMenu from './mealPrepMenu'
 import testimonial from './testimonial'
+import contact from './contact'
+import message from './message'
+import campaign from './campaign'
+import pushSubscription from './pushSubscription'
 
 export const schemaTypes = [
   page,
@@ -29,4 +33,8 @@ export const schemaTypes = [
   ,partner
   ,mealPrepMenu
   ,testimonial
+  ,contact
+  ,message
+  ,campaign
+  ,pushSubscription
 ]

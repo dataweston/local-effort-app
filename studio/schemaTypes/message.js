@@ -1,0 +1,21 @@
+export default {
+  name: 'message',
+  type: 'document',
+  title: 'Message',
+  fields: [
+    { name: 'direction', type: 'string', options: { list: ['inbound', 'outbound'] }, title: 'Direction' },
+    { name: 'status', type: 'string', options: { list: ['open', 'closed', 'sent', 'draft'] }, title: 'Status' },
+    { name: 'subject', type: 'string', title: 'Subject' },
+    { name: 'bodyText', type: 'text', title: 'Text Body' },
+    { name: 'bodyHtml', type: 'text', title: 'HTML Body' },
+    { name: 'fromEmail', type: 'string', title: 'From Email' },
+    { name: 'fromName', type: 'string', title: 'From Name' },
+    { name: 'toEmails', type: 'array', of: [{ type: 'string' }], title: 'To Emails' },
+    { name: 'phone', type: 'string', title: 'Phone' },
+    { name: 'channel', type: 'string', options: { list: ['email', 'square', 'form'] }, title: 'Channel' },
+    { name: 'inbox', type: 'string', title: 'Inbox' },
+    { name: 'messageType', type: 'string', title: 'Message Type' },
+    { name: 'threadId', type: 'string', title: 'Thread ID' },
+    { name: 'createdAt', type: 'datetime', title: 'Created at' },
+  ],
+}
