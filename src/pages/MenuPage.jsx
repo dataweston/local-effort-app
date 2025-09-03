@@ -1,5 +1,6 @@
 // src/pages/MenuPage.js
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
+import { Helmet } from 'react-helmet-async';
 import { sampleMenus } from '../data/sampleMenus';
 import { motion, AnimatePresence } from 'framer-motion';
 import CloudinaryImage from '../components/common/cloudinaryImage'; // Make sure you have this component
@@ -34,9 +35,39 @@ export default function MenuPage() {
 
   const toggleMenu = (id) => setOpenMenu(openMenu === id ? null : id);
 
+  const menuJsonLd = useMemo(() => {
+    // Build a basic Restaurant with hasMenu JSON-LD
+    const menuSections = sampleMenus.map((m) => ({
+      '@type': 'Menu',
+      name: m.title,
+      hasMenuSection: (m.sections || []).map((s) => ({
+        '@type': 'MenuSection',
+        name: s.course,
+        hasMenuItem: (s.items || []).map((it) => ({ '@type': 'MenuItem', name: it.name }))
+      }))
+    }));
+    return {
+      '@context': 'https://schema.org',
+      '@type': 'Restaurant',
+      name: 'Local Effort',
+      url: 'https://local-effort-app.vercel.app/menu',
+      servesCuisine: ['American', 'Italian', 'Seasonal', 'Local'],
+      areaServed: 'Portland, OR',
+      hasMenu: menuSections
+    };
+  }, []);
+
   return (
     <div className="container mx-auto px-4 py-8">
-      <h1 className="text-4xl font-bold mb-8 text-center">Past Menu Examples.</h1>
+      <Helmet>
+        <title>Past Menu Examples | Local Effort</title>
+        <meta name="description" content="Real menus from recent events, showcasing wide options and locally sourced food." />
+        <script type="application/ld+json">{JSON.stringify(menuJsonLd)}</script>
+      </Helmet>
+      <h1 className="text-4xl font-bold mb-4 text-center">Past Menu Examples.</h1>
+      <p className="max-w-3xl mx-auto text-center text-neutral-700 mb-8">
+        these are all real menus from events in the past couple years, just to show how wide the options are. We love to &quot;make it local.&quot;
+      </p>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {sampleMenus.map((menu) => {

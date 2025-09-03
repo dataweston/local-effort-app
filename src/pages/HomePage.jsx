@@ -99,6 +99,15 @@ const HomePage = () => {
         />
         {/* --- NEW: Inject the structured data into the page head --- */}
         <script type="application/ld+json">{JSON.stringify(imageJsonLd)}</script>
+        <script type="application/ld+json">{JSON.stringify({
+          '@context': 'https://schema.org',
+          '@type': 'Restaurant',
+          name: 'Local Effort',
+          url: 'https://local-effort-app.vercel.app/',
+          address: { '@type': 'PostalAddress', addressLocality: 'Roseville', addressRegion: 'MN', addressCountry: 'US' },
+          servesCuisine: ['American','Local','Seasonal'],
+          priceRange: '$$'
+        })}</script>
       </Helmet>
 
       <div className="space-y-24">

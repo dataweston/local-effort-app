@@ -7,6 +7,8 @@ import { Header } from './components/layout/Header';
 import { Footer } from './components/layout/Footer';
 import { LoadingSpinner } from './components/layout/LoadingSpinner';
 import { AnimatedPage } from './components/layout/AnimatedPage';
+import { SupportWidget } from './components/support/SupportWidget';
+import { RequireAuth } from './components/auth/RequireAuth';
 
 // Lazily import page components using the default export pattern
 const HomePage = lazy(() => import('./pages/HomePage'));
@@ -22,6 +24,9 @@ const GalleryPage = lazy(() => import('./pages/GalleryPage'));
 const MealPrepPage = lazy(() => import('./pages/MealPrepPage'));
 // --- NEW: Partner Portal ---
 const PartnerPortalPage = lazy(() => import('./pages/PartnerPortalPage'));
+const InboxPage = lazy(() => import('./pages/InboxPage'));
+const CampaignsPage = lazy(() => import('./pages/CampaignsPage'));
+const AuthPage = lazy(() => import('./pages/AuthPage'));
 
 const AppContent = () => {
   const location = useLocation();
@@ -119,11 +124,40 @@ const AppContent = () => {
                     </AnimatedPage>
                   }
                 />
+                <Route
+                  path="/auth"
+                  element={
+                    <AnimatedPage>
+                      <AuthPage />
+                    </AnimatedPage>
+                  }
+                />
+                <Route
+                  path="/inbox"
+                  element={
+                    <AnimatedPage>
+                      <RequireAuth>
+                        <InboxPage />
+                      </RequireAuth>
+                    </AnimatedPage>
+                  }
+                />
+                <Route
+                  path="/campaigns"
+                  element={
+                    <AnimatedPage>
+                      <RequireAuth>
+                        <CampaignsPage />
+                      </RequireAuth>
+                    </AnimatedPage>
+                  }
+                />
               </Routes>
             </AnimatePresence>
           </Suspense>
         </main>
         <Footer />
+  <SupportWidget />
       </div>
     </HelmetProvider>
   );

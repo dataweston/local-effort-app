@@ -17,9 +17,10 @@ function getSanityClient() {
     console.warn('SANITY_PROJECT_ID not set — Sanity client unavailable.');
     return null;
   }
+  const dataset = process.env.SANITY_DATASET || 'localeffort';
   sanityClient = createClient({
     projectId,
-    dataset: 'production',
+    dataset,
     useCdn: false, // `false` for write operations
     token: process.env.SANITY_API_TOKEN, // A token with write access
     apiVersion: '2024-01-01',
@@ -156,7 +157,7 @@ try {
 
 // Helpful startup log for local debugging
 if (require.main === module) {
-  console.log('Starting backend API (local) — routes mounted: /api/crowdfund/status, /api/crowdfund/contribute, /api/crowdfund/confirm-payment, /api/search-images (if available)');
+  console.log('Starting backend API (local) — routes mounted: /api/crowdfund/status, /api/crowdfund/contribute, /api/crowdfund/confirm-payment, /api/search-images (if available), /api/inbox, /api/messages/*, /api/push/*');
 }
 
 // This endpoint remains the same
@@ -262,6 +263,287 @@ app.post('/api/crowdfund/confirm-payment', async (req, res) => {
   } catch (error) {
     console.error("Error confirming payment:", error);
     res.status(500).json({ error: 'Failed to update database after payment.' });
+  }
+});
+
+// --- EMAIL/MESSAGING ENDPOINTS (Brevo + Sanity mirror) ---
+
+function getBrevoHeaders() {
+  const key = process.env.BREVO_API_KEY;
+  if (!key) return null;
+  return {
+    'api-key': key,
+    'content-type': 'application/json',
+    accept: 'application/json',
+  };
+}
+
+// Create or update a contact in Brevo and mirror in Sanity
+async function upsertContact({ email, firstName, lastName, phone }) {
+  const headers = getBrevoHeaders();
+  if (!headers) throw new Error('BREVO_API_KEY is not configured on the server');
+  const body = {
+    email,
+    attributes: {
+      FIRSTNAME: firstName || undefined,
+      LASTNAME: lastName || undefined,
+      SMS: phone || undefined,
+    },
+    updateEnabled: true,
+  };
+  const resp = await fetch('https://api.brevo.com/v3/contacts', {
+    method: 'POST',
+    headers,
+    body: JSON.stringify(body),
+  });
+  // 204/201/202 possible; treat 400 email-invalid gracefully
+  if (!resp.ok && resp.status !== 400) {
+    const text = await resp.text().catch(() => '');
+    throw new Error(`Brevo contacts error ${resp.status}: ${text}`);
+  }
+  // Mirror in Sanity
+  const sc = getSanityClient();
+  if (sc) {
+    try {
+      await sc.createIfNotExists({
+        _id: `contact-${email}`,
+        _type: 'contact',
+        email,
+        firstName: firstName || null,
+        lastName: lastName || null,
+        phone: phone || null,
+        updatedAt: new Date().toISOString(),
+      });
+    } catch (e) {
+      console.warn('Failed to mirror contact in Sanity:', e && e.message);
+    }
+  }
+}
+
+// Public: customer form submission -> store + notify team via Brevo
+app.post('/api/messages/submit', async (req, res) => {
+  try {
+    const { name, email, phone, subject, message, type = 'general' } = req.body || {};
+    if (!email || !message) return res.status(400).json({ error: 'Missing email or message' });
+
+    const [firstName, ...rest] = (name || '').split(' ');
+    const lastName = rest.join(' ');
+
+    await upsertContact({ email, firstName, lastName, phone });
+
+    // Mirror message in Sanity
+    const sc = getSanityClient();
+    let msgDoc = null;
+    if (sc) {
+      try {
+        msgDoc = await sc.create({
+          _type: 'message',
+          direction: 'inbound',
+          status: 'open',
+          subject: subject || '(no subject)',
+          bodyText: message,
+          fromEmail: email,
+          fromName: name || null,
+          phone: phone || null,
+          channel: 'email',
+          inbox: 'general',
+          messageType: type,
+          createdAt: new Date().toISOString(),
+        });
+      } catch (e) {
+        console.warn('Failed to write message to Sanity:', e && e.message);
+      }
+    }
+
+    // Notify team via Brevo transactional email
+    const headers = getBrevoHeaders();
+    if (!headers) return res.status(500).json({ error: 'Email service not configured' });
+    const teamEmail = process.env.SUPPORT_INBOX_EMAIL || process.env.TEAM_INBOX_EMAIL || process.env.SENDER_EMAIL;
+    const senderEmail = process.env.SENDER_EMAIL || teamEmail;
+    if (!teamEmail) return res.status(500).json({ error: 'No TEAM/SUPPORT inbox configured on server' });
+
+    const htmlContent = `
+      <p>New inquiry from <strong>${name || email}</strong></p>
+      <p><strong>Email:</strong> ${email}</p>
+      ${phone ? `<p><strong>Phone:</strong> ${phone}</p>` : ''}
+      <p><strong>Type:</strong> ${type}</p>
+      <hr />
+      <pre style="white-space:pre-wrap;font-family:inherit">${(message || '').replace(/</g, '&lt;')}</pre>
+    `;
+    const payload = {
+      to: [{ email: teamEmail }],
+      sender: { email: senderEmail, name: 'Local Effort' },
+      subject: subject || 'New inquiry',
+      htmlContent,
+      replyTo: { email, name: name || email },
+      tags: ['inquiry', type].filter(Boolean),
+      headers: msgDoc?._id ? { 'X-Message-Id': msgDoc._id } : undefined,
+    };
+    const resp = await fetch('https://api.brevo.com/v3/smtp/email', {
+      method: 'POST',
+      headers,
+      body: JSON.stringify(payload),
+    });
+    if (!resp.ok) {
+      const text = await resp.text().catch(() => '');
+      return res.status(502).json({ error: 'Failed to send email', details: text });
+    }
+
+    return res.json({ ok: true, id: msgDoc?._id || null });
+  } catch (err) {
+    console.error('messages/submit error', err);
+    return res.status(500).json({ error: 'submit-failed' });
+  }
+});
+
+// Save campaign (draft) to Sanity
+app.post('/api/campaigns/save', async (req, res) => {
+  try {
+    const { name, html } = req.body || {};
+    if (!name) return res.status(400).json({ error: 'Missing name' });
+    const sc = getSanityClient();
+    if (!sc) return res.status(500).json({ error: 'Sanity not configured' });
+    const doc = await sc.create({ _type: 'campaign', name, status: 'draft', html, createdAt: new Date().toISOString() });
+    return res.json({ ok: true, id: doc._id });
+  } catch (err) {
+    console.error('campaigns/save error', err);
+    return res.status(500).json({ error: 'save-failed' });
+  }
+});
+
+// Team: send outbound message
+app.post('/api/messages/send', async (req, res) => {
+  try {
+    const { to, subject, html, text, threadId, fromName, fromEmail } = req.body || {};
+    if (!to || !Array.isArray(to) || to.length === 0) return res.status(400).json({ error: 'Missing recipients' });
+    const headers = getBrevoHeaders();
+    if (!headers) return res.status(500).json({ error: 'Email service not configured' });
+
+    const senderEmail = fromEmail || process.env.SENDER_EMAIL;
+    if (!senderEmail) return res.status(500).json({ error: 'Missing SENDER_EMAIL' });
+
+    const payload = {
+      to: to.map((e) => ({ email: e })),
+      sender: { email: senderEmail, name: fromName || 'Local Effort' },
+      subject: subject || '(no subject)',
+      htmlContent: html || undefined,
+      textContent: text || undefined,
+      tags: ['outbound'],
+      headers: threadId ? { 'X-Thread-Id': String(threadId) } : undefined,
+    };
+    const resp = await fetch('https://api.brevo.com/v3/smtp/email', {
+      method: 'POST',
+      headers,
+      body: JSON.stringify(payload),
+    });
+    if (!resp.ok) {
+      const t = await resp.text().catch(() => '');
+      return res.status(502).json({ error: 'send-failed', details: t });
+    }
+
+    // Mirror into Sanity
+    const sc = getSanityClient();
+    let msgDoc = null;
+    if (sc) {
+      try {
+        msgDoc = await sc.create({
+          _type: 'message',
+          direction: 'outbound',
+          status: 'sent',
+          subject: subject || '(no subject)',
+          bodyHtml: html || null,
+          bodyText: text || null,
+          toEmails: to,
+          channel: 'email',
+          inbox: 'general',
+          threadId: threadId || null,
+          createdAt: new Date().toISOString(),
+        });
+      } catch (e) {
+        console.warn('Failed to mirror outbound message:', e && e.message);
+      }
+    }
+    return res.json({ ok: true, id: msgDoc?._id || null });
+  } catch (err) {
+    console.error('messages/send error', err);
+    return res.status(500).json({ error: 'send-failed' });
+  }
+});
+
+// Team: read inbox (basic, newest first)
+app.get('/api/inbox', async (req, res) => {
+  try {
+    const sc = getSanityClient();
+    if (!sc) return res.status(500).json({ error: 'Sanity not configured' });
+    const { status = 'open', limit = '50' } = req.query || {};
+    const lim = Math.min(200, parseInt(limit, 10) || 50);
+    const query = `*[_type == "message" && status == $status] | order(createdAt desc)[0...$lim]{
+      _id, direction, subject, fromEmail, fromName, toEmails, createdAt, inbox, status
+    }`;
+    const docs = await sc.fetch(query, { status, lim });
+    return res.json({ items: docs });
+  } catch (err) {
+    console.error('inbox error', err);
+    return res.status(500).json({ error: 'inbox-failed' });
+  }
+});
+
+// --- Push subscriptions (Web Push) ---
+let webPush = null;
+try {
+  webPush = require('web-push');
+  const pub = process.env.VAPID_PUBLIC_KEY;
+  const priv = process.env.VAPID_PRIVATE_KEY;
+  const email = process.env.VAPID_SUBJECT || 'mailto:admin@localhost';
+  if (pub && priv) webPush.setVapidDetails(email, pub, priv);
+} catch (e) {
+  console.warn('web-push not available:', e && e.message);
+}
+
+app.post('/api/push/subscribe', async (req, res) => {
+  try {
+    const { userId, subscription } = req.body || {};
+    if (!subscription) return res.status(400).json({ error: 'Missing subscription' });
+    const sc = getSanityClient();
+    if (!sc) return res.status(500).json({ error: 'Sanity not configured' });
+    const doc = await sc.create({
+      _type: 'pushSubscription',
+      userId: userId || null,
+      endpoint: subscription.endpoint,
+      keys: subscription.keys || null,
+      createdAt: new Date().toISOString(),
+    });
+    return res.json({ ok: true, id: doc._id });
+  } catch (err) {
+    console.error('push subscribe error', err);
+    return res.status(500).json({ error: 'subscribe-failed' });
+  }
+});
+
+app.post('/api/push/notify', async (req, res) => {
+  try {
+    if (!webPush) return res.status(500).json({ error: 'web-push not configured' });
+    const { title, body, url = '/' } = req.body || {};
+    const sc = getSanityClient();
+    if (!sc) return res.status(500).json({ error: 'Sanity not configured' });
+    const subs = await sc.fetch('*[_type == "pushSubscription"]').catch(() => []);
+    const payload = JSON.stringify({ title: title || 'Local Effort', body: body || '', url });
+    const results = [];
+    for (const s of subs) {
+      try {
+        // minimal shape for webpush
+        const sub = { endpoint: s.endpoint, keys: s.keys };
+        // eslint-disable-next-line no-await-in-loop
+        await webPush.sendNotification(sub, payload);
+        results.push({ id: s._id, ok: true });
+      } catch (e) {
+        results.push({ id: s._id, ok: false, error: String(e).slice(0, 120) });
+      }
+    }
+    return res.json({ ok: true, sent: results.length, results });
+  } catch (err) {
+    console.error('push notify error', err);
+    return res.status(500).json({ error: 'notify-failed' });
   }
 });
 

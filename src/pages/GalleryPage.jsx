@@ -50,18 +50,31 @@ const GalleryPage = () => {
       try {
         controller = new AbortController();
         const { signal } = controller;
-  // Pass raw query; server will convert to a Cloudinary expression (tags:<query>)
+            <title>pictures of food. | Local Effort</title>
   const apiUrl = `/api/search-images${query ? `?query=${encodeURIComponent(query)}` : ''}`;
 
-        const response = await fetch(apiUrl, { signal });
+            <h1 className="text-4xl font-bold mb-4 text-center">pictures of food.</h1>
 
         // Check if response is actually JSON
         const contentType = response.headers.get('content-type');
         if (!contentType || !contentType.includes('application/json')) {
           const textResponse = await response.text();
-          console.error('Non-JSON response (truncated):', textResponse.substring(0, 200));
+              placeholder="Search by tag (e.g., pizza, events, mealplan, plates, dinner, eggs)..."
           throw new Error('API endpoint not found - got HTML instead of JSON');
         }
+            <div className="w-full max-w-md mx-auto mb-8 flex flex-wrap gap-2 justify-center text-sm">
+              {['pizza','events','mealplan','plates','dinner','eggs'].map((k) => (
+                <button
+                  key={k}
+                  type="button"
+                  onClick={() => setQuery(k)}
+                  className="px-2.5 py-1 rounded-full border border-neutral-300 hover:border-black hover:bg-neutral-50"
+                  aria-label={`Search ${k}`}
+                >
+                  {k}
+                </button>
+              ))}
+            </div>
 
         // Parse JSON; if error status, surface server error details
         const data = await response.json();
@@ -149,7 +162,17 @@ const GalleryPage = () => {
   return (
     <>
       <Helmet>
-        <title>Pictures of Food | Local Effort</title>
+          <title>pictures of food. | Local Effort</title>
+          <meta name="description" content="A visual gallery of dinners, events, meal prep, and plates from Local Effort." />
+          <script type="application/ld+json">{JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'Restaurant',
+            name: 'Local Effort',
+            url: 'https://local-effort-app.vercel.app/gallery',
+            image: images.slice(0,8).map(i => i.large_url || i.thumbnail_url).filter(Boolean),
+            servesCuisine: ['American','Local','Seasonal'],
+            sameAs: []
+          })}</script>
       </Helmet>
       <div className="container mx-auto px-4 py-8">
         <h1 className="text-4xl font-bold mb-4 text-center">Image Gallery</h1>
