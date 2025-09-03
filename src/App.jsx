@@ -20,6 +20,8 @@ const HappyMondayPage = lazy(() => import('./pages/HappyMondayPage'));
 const GalleryPage = lazy(() => import('./pages/GalleryPage'));
 // --- NEW: Lazily import the MealPrepPage ---
 const MealPrepPage = lazy(() => import('./pages/MealPrepPage'));
+// --- NEW: Partner Portal ---
+const PartnerPortalPage = lazy(() => import('./pages/PartnerPortalPage'));
 
 const AppContent = () => {
   const location = useLocation();
@@ -106,6 +108,14 @@ const AppContent = () => {
                   element={
                     <AnimatedPage>
                       <GalleryPage />
+                    </AnimatedPage>
+                  }
+                />
+                <Route
+                  path="/partner-portal"
+                  element={
+                    <AnimatedPage>
+                      <PartnerPortalPage />
                     </AnimatedPage>
                   }
                 />

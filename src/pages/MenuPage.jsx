@@ -4,17 +4,24 @@ import { sampleMenus } from '../data/sampleMenus';
 import { motion, AnimatePresence } from 'framer-motion';
 import CloudinaryImage from '../components/common/cloudinaryImage'; // Make sure you have this component
 
-// This is the card component for each menu. It remains largely the same.
-const ServiceCard = ({ title, description, children }) => (
+// This is the card component for each menu. Adds a compact mode when collapsed.
+const ServiceCard = ({ title, description, children, isOpen = false }) => (
   <motion.div
-    className="group rounded-xl bg-neutral-50 p-8 shadow-sm ring-1 ring-neutral-200 transition-shadow hover:shadow-md"
+    className={
+      `group rounded-xl bg-neutral-50 shadow-sm ring-1 ring-neutral-200 transition-all hover:shadow-md ` +
+      (isOpen ? 'p-8' : 'p-4 md:p-5')
+    }
     initial={{ opacity: 0, y: 20 }}
     animate={{ opacity: 1, y: 0 }}
     transition={{ duration: 0.3 }}
   >
-    <h4 className="text-2xl font-bold uppercase tracking-tight">{title}</h4>
-    <p className="font-mono text-neutral-600 min-h-[2rem] mt-2">{description}</p>
-    <div className="mt-4">{children}</div>
+    <h4 className={isOpen ? 'text-2xl font-bold uppercase tracking-tight' : 'text-xl font-bold uppercase tracking-tight'}>
+      {title}
+    </h4>
+    <p className={isOpen ? 'font-mono text-neutral-600 min-h-[2rem] mt-2' : 'font-mono text-neutral-600 mt-1'}>
+      {description}
+    </p>
+    <div className={isOpen ? 'mt-4' : 'mt-2'}>{children}</div>
   </motion.div>
 );
 
@@ -28,19 +35,19 @@ export default function MenuPage() {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <h1 className="text-4xl font-bold mb-8 text-center">Our Menus</h1>
+      <h1 className="text-4xl font-bold mb-8 text-center">Past Menu Examples.</h1>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {sampleMenus.map((menu) => {
           const isOpen = openMenu === menu.id;
 
           return (
-            <ServiceCard key={menu.id} title={menu.title} description={menu.description || ''}>
+      <ServiceCard key={menu.id} title={menu.title} description={menu.description || ''} isOpen={isOpen}>
               <button
                 onClick={() => toggleMenu(menu.id)}
                 className="mt-2 text-sm font-medium text-blue-600 hover:underline"
               >
-                {isOpen ? 'Hide Sections ▲' : 'Show Sections ▼'}
+        {isOpen ? 'Hide Sections ▲' : 'View More ▼'}
               </button>
 
               <motion.div
