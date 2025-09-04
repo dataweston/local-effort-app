@@ -60,16 +60,16 @@ const ServicesPage = () => {
         const data = await res.json();
         if (abort) return;
         const images = data.images || [];
-        const slides = images.map((img, i) => ({
+    const slides = images.map((img, i) => ({
           key: img.public_id || String(i),
           node: (
-            <div className="w-full h-[46vh] md:h-[56vh] lg:h-[64vh] rounded-xl overflow-hidden">
+      <div className="w-full aspect-[16/9] md:aspect-[21/9] lg:aspect-[21/9] max-h-[70vh] rounded-xl overflow-hidden">
               <CloudinaryImage
                 publicId={img.public_id}
                 alt={img.public_id}
-                className="w-full h-full object-cover"
+        className="w-full h-full object-cover"
                 placeholderMode="none"
-                sizes="100vw"
+        sizes="(min-width: 1024px) 100vw, 100vw"
                 eager={i === 0}
               />
             </div>
@@ -159,28 +159,26 @@ const ServicesPage = () => {
 
         {/* Hero carousel from Cloudinary tag `service` */}
         {serviceSlides.length > 0 && (
-          <Carousel items={serviceSlides} intervalMs={6500} transitionStyle="fade" />
+          <Carousel items={serviceSlides} intervalMs={6500} transitionStyle="fade" className="w-full" />
         )}
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
           <div className="card space-y-4">
             <h3 className="text-heading">Weekly Meal Prep</h3>
-            <p className="text-body">
-              Nutritious, locally-sourced meals delivered weekly. Foundation & custom plans.
-            </p>
+            <p className="text-body">Nutritious, locally-sourced meals delivered weekly.</p>
             <button onClick={() => navigate('/meal-prep')} className="text-body text-sm underline">
               Details &rarr;
             </button>
           </div>
           <div className="card space-y-4">
             <h3 className="text-heading">Dinners & Events</h3>
-            <p className="text-body">In-home chef experiences for parties of 2 to 50.</p>
+            <p className="text-body">in-home dinner parties and small events up to 50</p>
             <button onClick={() => navigate('/events')} className="text-body text-sm underline">
               Details &rarr;
             </button>
           </div>
           <div className="card space-y-4">
             <h3 className="text-heading">Pizza Parties</h3>
-            <p className="text-body">Mobile wood-fired pizza for a fun, delicious event.</p>
+            <p className="text-body">local pizza at your party. we'll bring the oven.</p>
             <button
               onClick={() => navigate('/pizza-party')}
               className="text-body text-sm underline"
@@ -326,8 +324,10 @@ const ServicesPage = () => {
                   className="mt-1 w-full border rounded-md p-2 bg-white"
                 >
                   <option value="">Please Select</option>
-                  <option>Dinner</option>
-                  <option>Catering</option>
+                  <option>Home Dinner</option>
+                  <option>Small Event</option>
+                  <option>Wedding</option>
+                  <option>Baby Shower</option>
                   <option>Pizza Party</option>
                   <option>Other</option>
                 </select>

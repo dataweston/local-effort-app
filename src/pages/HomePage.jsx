@@ -321,19 +321,19 @@ const HomePage = () => {
           <h3 className="text-heading uppercase mb-6 border-b border-neutral-300 pb-3">What We Do</h3>
           <div className="grid md:grid-cols-3 gap-6">
             <ServiceCard
-              to="/meal-prep"
-              title="Weekly Meal Prep"
-              description="Foundation & custom plans. Basic, good nutrition from local Midwest sources."
-            />
-            <ServiceCard
               to="/events"
               title="Dinners & Events"
-              description="Event catering and in-home chef experiences, for parties of 2 to 50."
+              description="in-home dinner parties and small events up to 50"
+            />
+            <ServiceCard
+              to="/meal-prep"
+              title="Weekly Meal Prep"
+              description="Basic, good nutrition from local Midwest sources."
             />
             <ServiceCard
               to="/pizza-party"
               title="Pizza Parties"
-              description="Mobile high-temperature pizza oven, sourdough crusts, and all local ingredients."
+              description="local pizza at your party. we'll bring the oven."
             />
           </div>
         </section>
