@@ -6,6 +6,7 @@
     (optional) OPENAI_API_KEY for embeddings
 */
 /* eslint-disable no-console */
+require('dotenv').config();
 const { createClient: createSanity } = require('@sanity/client');
 const { createClient: createSupabase } = require('@supabase/supabase-js');
 

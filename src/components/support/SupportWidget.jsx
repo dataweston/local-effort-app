@@ -9,7 +9,7 @@ export function SupportWidget() {
   const [searching, setSearching] = useState(false);
   const [error, setError] = useState(null);
 
-  const useKbApi = Boolean(import.meta?.env?.VITE_SUPPORT_KB_API ?? true);
+  const useKbApi = import.meta?.env?.VITE_SUPPORT_KB_API !== 'false';
   const onSearch = async () => {
     setError(null);
     setAnswer(null);
@@ -90,6 +90,9 @@ export function SupportWidget() {
                 </ul>
               )}
               {answer && results.length === 0 && <p className="text-sm text-gray-700 mt-1">{answer}</p>}
+              {!answer && results.length === 0 && !searching && (
+                <p className="text-xs text-gray-500 mt-1">Tip: try keywords like “meal prep”, “events”, or “pricing”.</p>
+              )}
             </div>
             <form className="space-y-2" onSubmit={onSend}>
               <input name="name" className="w-full border p-2" placeholder="Your name" />
