@@ -45,6 +45,7 @@
     "@vitejs/plugin-react": "^5.0.1",
     "autoprefixer": "^10.4.21",
     "compression-webpack-plugin": "^11.1.0",
+    "esbuild": "^0.23.1",
     "eslint": "^8.57.1",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-jsx-a11y": "^6.10.2",
@@ -73,13 +74,14 @@
   },
   "scripts": {
     "start": "vite",
-    "build": "vite build",
+    "build": "vite build && node tools/static-export.js && npm run build:prerender:copy",
+    "build:prerender:copy": "node tools/copy-prerender.js",
     "test": "vite test",
     "eject": "vite eject",
     "lint": "eslint \"src/**/*.{js,jsx}\" --max-warnings=0",
     "lint:fix": "eslint \"src/**/*.{js,jsx}\" --fix",
-  "format": "prettier --write \"src/**/*.{js,jsx,css,json,md}\"",
-  "reviews:parse": "node tools/parse-thumbtack-widget.js tools/thumbtackwidget.html > public/reviews/thumbtack.json",
+    "format": "prettier --write \"src/**/*.{js,jsx,css,json,md}\"",
+    "reviews:parse": "node tools/parse-thumbtack-widget.js tools/thumbtackwidget.html > public/reviews/thumbtack.json",
     "check-format": "prettier --check \"src/**/*.{js,jsx,css,json,md}\""
   },
   "browserslist": {
