@@ -1,8 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { VennDiagram } from '../components/common/VennDiagram';
-import EmblaCarousel from '../components/common/EmblaCarousel';
-import CloudinaryImage from '../components/common/cloudinaryImage';
 import client from '../sanityClient';
 import { useAuthUser } from '../hooks/useAuthUser';
 import { AuthButtons } from '../components/mealprep/AuthButtons';
@@ -22,48 +20,9 @@ export const MealPrepPage = () => {
   const [filterName] = useState('');
   const [assignedClient, setAssignedClient] = useState(null);
   const [openSection, setOpenSection] = useState(null); // 'foundation' | 'custom' | null
-  const [galleryItems, setGalleryItems] = useState([]);
+  // const [galleryItems, setGalleryItems] = useState([]);
 
-  // Load Cloudinary images tagged 'mealplan' and create a 3-wide carousel
-  useEffect(() => {
-    let abort = false;
-    (async () => {
-      try {
-        const res = await fetch(`/api/search-images?query=mealplan&per_page=12`);
-        if (!res.ok) throw new Error(`Gallery fetch failed: ${res.status}`);
-        const data = await res.json();
-        if (abort) return;
-        const images = (data.images || []).slice(0, 12);
-        const slides = [];
-        for (let i = 0; i < images.length; i += 3) {
-          const group = images.slice(i, i + 3);
-      slides.push({
-            key: group.map((g) => g.public_id).join('|') || `${i}`,
-            node: (
-        <div className="grid grid-cols-3 gap-3">
-                {group.map((img, idx) => (
-                  <CloudinaryImage
-                    key={img.public_id || idx}
-                    publicId={img.public_id}
-                    alt={img.public_id}
-          className="w-full aspect-square object-cover rounded transition-transform duration-300 hover:scale-[1.03]"
-                    placeholderMode="none"
-                    sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
-                  />
-                ))}
-              </div>
-            ),
-          });
-        }
-        setGalleryItems(slides);
-      } catch (_e) {
-        // silent fallback: just no gallery
-      }
-    })();
-    return () => {
-      abort = true;
-    };
-  }, []);
+  // Gallery carousel removed per request
 
   // Resolve assigned client for signed-in user and persist mapping.
   useEffect(() => {
@@ -219,38 +178,7 @@ export const MealPrepPage = () => {
         )}
 
         {/* 3-wide gallery carousel for #mealplan */}
-        {galleryItems.length > 0 && (
-          <div className="min-h-[14rem] md:min-h-[18rem] lg:min-h-[22rem]">
-            <EmblaCarousel
-              slides={galleryItems.map((g, i) => ({
-                key: g.key || i,
-                // render the grouped node as HTML content using node prop
-                node: (
-                  <div className="grid grid-cols-3 gap-3">
-                    {g.node.props.children.map((child, idx) => (
-                      <div key={idx} className="overflow-hidden rounded">
-                        {/* child is a CloudinaryImage element; try to render its props into an <img> fallback */}
-                        {child.props && child.props.publicId ? (
-                          <img
-                            src={`https://res.cloudinary.com/${(import.meta.env && import.meta.env.VITE_CLOUDINARY_CLOUD_NAME) || ''}/image/upload/f_auto,q_auto,w_800/${child.props.publicId}`}
-                            alt={child.props.alt || ''}
-                            className="w-full aspect-square object-cover"
-                          />
-                        ) : (
-                          child
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                ),
-              }))}
-              autoPlayMs={7000}
-              contain={false}
-              heightClass="h-[22vh] md:h-[28vh] lg:h-[34vh]"
-              showThumbs={false}
-            />
-          </div>
-        )}
+  {/* Gallery carousel removed */}
 
   {/* Side-by-side accordions */}
   <div className="grid md:grid-cols-2 gap-6">
