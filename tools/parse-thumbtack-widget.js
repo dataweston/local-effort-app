@@ -33,7 +33,9 @@ function parseWidgets(html) {
   // Split by each tt-right block which contains name, stars, spans, and the <p> review
   const blocks = html.split(/<div\s+class=["']tt-right["'][^>]*>/i).slice(1);
   for (const block of blocks) {
-    const segment = block.split(/<\/div>/i)[0] + '</div>';
+    // Take everything up to the next tt-right block or end of string
+    const nextIdx = block.search(/<div\s+class=["']tt-right["'][^>]*>/i);
+    const segment = nextIdx === -1 ? block : block.slice(0, nextIdx);
     const nameMatch = segment.match(/<div\s+class=["']tt-name["'][^>]*>([\s\S]*?)<\/div>/i);
     const pMatch = segment.match(/<p[^>]*>([\s\S]*?)<\/p>/i);
     const starsCount = (segment.match(/orange_star\.svg/gi) || []).length;
@@ -53,6 +55,7 @@ function parseWidgets(html) {
 (async () => {
   try {
     const file = process.argv[2];
+    const outFile = process.argv[3] || '';
     let html = '';
     if (file) {
       html = fs.readFileSync(file, 'utf8');
@@ -60,7 +63,13 @@ function parseWidgets(html) {
       html = await readAllStdin();
     }
     const items = parseWidgets(html);
-    process.stdout.write(JSON.stringify(items, null, 2));
+    const json = JSON.stringify(items, null, 2);
+    if (outFile) {
+      fs.mkdirSync(require('path').dirname(outFile), { recursive: true });
+      fs.writeFileSync(outFile, json);
+    } else {
+      process.stdout.write(json);
+    }
   } catch (err) {
     console.error('Failed to parse widget:', err.message);
     process.exit(1);
