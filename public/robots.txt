@@ -1,0 +1,13 @@
+# Robots.txt for Local Effort
+
+User-agent: *
+Allow: /
+
+# Explicitly allow common AI crawlers (optional; keep or adjust to your policy)
+User-agent: GPTBot
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+Sitemap: https://local-effort-app.vercel.app/sitemap.xml

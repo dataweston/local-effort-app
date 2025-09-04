@@ -5,6 +5,7 @@ const cors = require('cors');
 const admin = require('firebase-admin');
 const { createClient } = require('@sanity/client');
 const fs = require('fs');
+const path = require('path');
 
 // Lazily create Sanity client to avoid throwing during module load when
 // SANITY_PROJECT_ID is not provided in the environment (this prevents
@@ -576,6 +577,87 @@ app.post('/api/push/notify', async (req, res) => {
   } catch (err) {
     console.error('push notify error', err);
     return res.status(500).json({ error: 'notify-failed' });
+  }
+});
+
+// --- Public, machine-readable JSON endpoints ---
+// Lightweight, JS-free data for crawlers/LLMs and integrations.
+app.get('/api/public/site', (req, res) => {
+  try {
+    const url = process.env.PUBLIC_URL || 'https://local-effort-app.vercel.app/';
+    const routes = [
+      '/',
+      '/#/services',
+      '/#/pricing',
+      '/#/menu',
+      '/#/about',
+      '/#/gallery',
+      '/#/crowdfunding',
+    ];
+    const endpoints = [
+      { path: '/api/support/search', method: 'GET', query: 'q' },
+      { path: '/api/messages/submit', method: 'POST' },
+      { path: '/api/subscribe', method: 'POST' },
+      { path: '/api/public/pricing-faq', method: 'GET' },
+      { path: '/api/public/estimator-help', method: 'GET' },
+    ];
+    return res.json({
+      name: 'Local Effort',
+      url,
+      routes,
+      endpoints,
+      sitemap: url.replace(/\/$/, '') + '/sitemap.xml',
+      aiTxt: url.replace(/\/$/, '') + '/ai.txt',
+      updatedAt: new Date().toISOString(),
+    });
+  } catch (err) {
+    console.error('public/site error', err);
+    return res.status(500).json({ error: 'public-site-failed' });
+  }
+});
+
+function readJsonFileSafe(filePath, fallback = []) {
+  try {
+    const raw = fs.readFileSync(filePath, 'utf8');
+    return JSON.parse(raw);
+  } catch (e) {
+    return fallback;
+  }
+}
+
+app.get('/api/public/pricing-faq', (req, res) => {
+  try {
+    const file = path.resolve(__dirname, '../../src/data/pricingFaq.json');
+    const items = readJsonFileSafe(file, []);
+    let updatedAt = null;
+    try {
+      const st = fs.statSync(file);
+      updatedAt = st.mtime.toISOString();
+    } catch (e) {
+      updatedAt = null;
+    }
+    return res.json({ items, updatedAt });
+  } catch (err) {
+    console.error('public/pricing-faq error', err);
+    return res.status(500).json({ error: 'public-pricing-faq-failed' });
+  }
+});
+
+app.get('/api/public/estimator-help', (req, res) => {
+  try {
+    const file = path.resolve(__dirname, '../../src/data/estimatorHelp.json');
+    const items = readJsonFileSafe(file, []);
+    let updatedAt = null;
+    try {
+      const st = fs.statSync(file);
+      updatedAt = st.mtime.toISOString();
+    } catch (e) {
+      updatedAt = null;
+    }
+    return res.json({ items, updatedAt });
+  } catch (err) {
+    console.error('public/estimator-help error', err);
+    return res.status(500).json({ error: 'public-estimator-help-failed' });
   }
 });
 
