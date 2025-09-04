@@ -33,7 +33,7 @@ const AuthPage = lazy(() => import('./pages/AuthPage'));
 // ZAFA Events app embedded from local-effort-zafa-events (.jsx for JSX parsing)
 const ZafaEmbeddedApp = lazy(() => import('../local-effort-zafa-events/src/app.jsx'));
 const GallantEmbeddedApp = lazy(() => import('../gallant-hawking-l8r4wz/src/App'));
-const HMEmbeddedApp = lazy(() => import('../happymonday/src/App.js?jsx'));
+const HMEmbeddedApp = lazy(() => import('../happymonday/src/App.jsx'));
 
 const AppContent = () => {
   const location = useLocation();
