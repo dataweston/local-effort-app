@@ -272,7 +272,7 @@ const HomePage = () => {
         <script type="application/ld+json">{JSON.stringify(imageJsonLd)}</script>
         <script type="application/ld+json">{JSON.stringify({
           '@context': 'https://schema.org',
-          '@type': 'Restaurant',
+          '@type': ['Restaurant','Caterer'],
           name: 'Local Effort',
           url: 'https://local-effort-app.vercel.app/',
           address: { '@type': 'PostalAddress', addressLocality: 'Roseville', addressRegion: 'MN', addressCountry: 'US' },
