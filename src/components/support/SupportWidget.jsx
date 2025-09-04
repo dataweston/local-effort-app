@@ -1,15 +1,52 @@
 import React, { useState } from 'react';
+import sanityClient from '../../sanityClient';
 
 export function SupportWidget() {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
   const [answer, setAnswer] = useState(null);
+  const [results, setResults] = useState([]);
+  const [searching, setSearching] = useState(false);
+  const [error, setError] = useState(null);
 
+  const useKbApi = Boolean(import.meta?.env?.VITE_SUPPORT_KB_API ?? true);
   const onSearch = async () => {
-    // Placeholder: in a follow-up, wire to Sanity FAQ index
-    if (!query) return setAnswer(null);
-    if (query.toLowerCase().includes('menu')) setAnswer('Menus rotate weekly. Ask us for the next week\'s options.');
-    else setAnswer("We couldn't find an instant answer. Send us a note and we'll reply fast.");
+    setError(null);
+    setAnswer(null);
+    setResults([]);
+    const q = (query || '').trim();
+    if (!q) return;
+    setSearching(true);
+    try {
+      if (useKbApi) {
+        const resp = await fetch(`/api/support/search?q=${encodeURIComponent(q)}`);
+        if (!resp.ok) throw new Error(await resp.text());
+        const payload = await resp.json();
+        if (payload.cached) {
+          setResults([]);
+          setAnswer(payload.answer);
+        } else {
+          const mapped = (payload.results || []).map((r) => ({ _id: r.id || r.chunk_id, question: r.heading || 'Result', answer: r.text }));
+          setResults(mapped);
+        }
+      } else {
+        // Fallback: query Sanity directly
+        const pattern = `*${q}*`;
+        const data = await sanityClient.fetch(
+          `*[_type == "pricingFaq" && (question match $q || answer match $q)] | order(_updatedAt desc)[0...10]{ _id, question, answer }`,
+          { q: pattern }
+        );
+        setResults(Array.isArray(data) ? data : []);
+      }
+      if (!results || results.length === 0) {
+        setAnswer("We couldn't find an instant answer. Send us a note and we'll reply fast.");
+      }
+    } catch (e) {
+      setError(e?.message || 'Search failed');
+      setAnswer("Search is temporarily unavailable. Send us a note and we'll reply fast.");
+    } finally {
+      setSearching(false);
+    }
   };
 
   const onSend = async (e) => {
@@ -38,8 +75,21 @@ export function SupportWidget() {
           <div className="space-y-2">
             <div>
               <input className="w-full border p-2" placeholder="Search FAQs" value={query} onChange={(e) => setQuery(e.target.value)} />
-              <button className="mt-1 px-3 py-1 bg-black text-white rounded" onClick={onSearch}>Search</button>
-              {answer && <p className="text-sm text-gray-700 mt-1">{answer}</p>}
+              <button className="mt-1 px-3 py-1 bg-black text-white rounded" onClick={onSearch} disabled={searching}>
+                {searching ? 'Searching…' : 'Search'}
+              </button>
+              {error && <p className="text-sm text-red-700 mt-1">{error}</p>}
+              {results.length > 0 && (
+                <ul className="mt-2 space-y-2 max-h-48 overflow-auto">
+                  {results.map((r) => (
+                    <li key={r._id} className="border rounded p-2">
+                      <p className="font-medium text-sm">{r.question}</p>
+                      {r.answer && <p className="text-sm text-gray-700 mt-1 whitespace-pre-wrap">{r.answer}</p>}
+                    </li>
+                  ))}
+                </ul>
+              )}
+              {answer && results.length === 0 && <p className="text-sm text-gray-700 mt-1">{answer}</p>}
             </div>
             <form className="space-y-2" onSubmit={onSend}>
               <input name="name" className="w-full border p-2" placeholder="Your name" />
