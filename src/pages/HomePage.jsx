@@ -246,7 +246,7 @@ const HomePage = () => {
               variants={fadeInLeft}
               initial="initial"
               animate="animate"
-              className="text-hero uppercase tracking-[-0.02em] leading-[1.02]"
+              className="text-4xl md:text-6xl font-bold uppercase tracking-[-0.02em] leading-[1.02]"
             >
               Minnesotan Food
             </motion.h2>
@@ -255,7 +255,7 @@ const HomePage = () => {
               initial="initial"
               animate="animate"
               transition={{ delay: 0.05 }}
-              className="text-hero uppercase text-neutral-400 tracking-[-0.02em] leading-[1.0] -mt-3 md:-mt-5 lg:-mt-6"
+              className="text-4xl md:text-6xl font-bold uppercase text-neutral-400 tracking-[-0.02em] leading-[1.0] -mt-3 md:-mt-5 lg:-mt-6"
             >
               For Your Functions.
             </motion.h3>

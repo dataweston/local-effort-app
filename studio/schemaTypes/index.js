@@ -38,3 +38,5 @@ export const schemaTypes = [
   ,campaign
   ,pushSubscription
 ]
+
+export default schemaTypes;
