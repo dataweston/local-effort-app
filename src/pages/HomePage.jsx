@@ -8,8 +8,8 @@ import CloudinaryImage from '../components/common/cloudinaryImage'; // Import th
 import sanityClient from '../sanityClient.js';
 import { useEffect } from 'react';
 import { cloudinaryConfig, heroPublicId, heroFallbackSrc, partnerLogos } from '../data/cloudinaryContent';
-import Testimonials from '../components/common/Testimonials';
-import { testimonials } from '../data/testimonials';
+import TestimonialsCarousel from '../components/common/TestimonialsCarousel';
+import { testimonials as localTestimonials } from '../data/testimonials';
 
 const HomePage = () => {
   const navigate = useNavigate();
@@ -34,6 +34,54 @@ const HomePage = () => {
   }, []);
 
   // No hero carousel — use single hero image only
+
+  const [reviews, setReviews] = useState(localTestimonials);
+
+  // Try to fetch testimonials from Sanity and merge with local
+  useEffect(() => {
+    let mounted = true;
+    const q = `*[_type == "testimonial" && published == true] | order(order asc){ author, context, quote }`;
+    sanityClient
+      .fetch(q)
+      .then((res) => {
+        if (!mounted) return;
+        if (Array.isArray(res) && res.length) {
+          // de-dup by quote+author
+          const seen = new Set();
+          const merged = [...res, ...localTestimonials].filter((t) => {
+            const k = `${(t.quote||'').trim()}|${(t.author||'').trim()}`;
+            if (seen.has(k)) return false;
+            seen.add(k);
+            return true;
+          });
+          setReviews(merged);
+        }
+      })
+      .catch(() => {});
+    return () => { mounted = false; };
+  }, []);
+
+  // Optionally fetch external reviews JSON (e.g., Thumbtack export placed under public/reviews)
+  useEffect(() => {
+    let mounted = true;
+    fetch('/reviews/thumbtack.json')
+      .then((r) => (r.ok ? r.json() : null))
+      .then((ext) => {
+        if (!mounted || !Array.isArray(ext) || !ext.length) return;
+        setReviews((prev) => {
+          const seen = new Set();
+          const merged = [...ext, ...prev].filter((t) => {
+            const k = `${(t.quote||'').trim()}|${(t.author||'').trim()}`;
+            if (seen.has(k)) return false;
+            seen.add(k);
+            return true;
+          });
+          return merged;
+        });
+      })
+      .catch(() => {});
+    return () => { mounted = false; };
+  }, []);
 
   const PartnerGrid = () => {
   const sanitized = (partners || []).filter((p) => p && p.publicId);
@@ -338,8 +386,8 @@ const HomePage = () => {
           </div>
         </section>
   {/* Feedback (formerly Testimonials) */}
-  <Testimonials
-    items={testimonials}
+  <TestimonialsCarousel
+    items={reviews}
     title="Feedback"
     headingExtra={
       <span className="text-sm text-neutral-600">
