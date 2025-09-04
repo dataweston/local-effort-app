@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import CloudinaryImage from '../components/common/cloudinaryImage';
-import Carousel from '../components/common/Carousel';
+import EmblaCarousel from '../components/common/EmblaCarousel';
 
 const ServicesPage = () => {
   const navigate = useNavigate();
@@ -60,20 +60,10 @@ const ServicesPage = () => {
         const data = await res.json();
         if (abort) return;
         const images = data.images || [];
-    const slides = images.map((img, i) => ({
+        const slides = images.map((img, i) => ({
           key: img.public_id || String(i),
-          node: (
-      <div className="w-full aspect-[16/9] md:aspect-[21/9] lg:aspect-[21/9] max-h-[70vh] rounded-xl overflow-hidden">
-              <CloudinaryImage
-                publicId={img.public_id}
-                alt={img.public_id}
-        className="w-full h-full object-cover"
-                placeholderMode="none"
-        sizes="(min-width: 1024px) 100vw, 100vw"
-                eager={i === 0}
-              />
-            </div>
-          ),
+          src: img.large_url || img.thumbnail_url || '',
+          alt: (img.context && img.context.custom && img.context.custom.alt) || img.public_id || `slide-${i}`,
         }));
         setServiceSlides(slides);
       } catch (_e) {
@@ -155,24 +145,30 @@ const ServicesPage = () => {
         />
       </Helmet>
       <div className="space-y-16 mx-auto max-w-6xl px-4 md:px-6 lg:px-8">
-        <h2 className="text-hero uppercase border-b border-gray-900 pb-4">Services</h2>
+        <h2 className="text-4xl md:text-6xl font-bold uppercase border-b border-gray-900 pb-4">Services</h2>
 
         {/* Hero carousel from Cloudinary tag `service` */}
         {serviceSlides.length > 0 && (
-          <Carousel items={serviceSlides} intervalMs={6500} transitionStyle="fade" className="w-full" />
+          <EmblaCarousel
+            slides={serviceSlides.map((s) => ({ key: s.key, src: s.src || s.large_url || s.node?.props?.publicId || '', alt: s.alt || '' , node: s.node }))}
+            autoPlayMs={6500}
+            contain={true}
+            heightClass="h-[40vh] md:h-[54vh] lg:h-[60vh]"
+            showThumbs={true}
+          />
         )}
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-          <div className="card space-y-4">
-            <h3 className="text-heading">Weekly Meal Prep</h3>
-            <p className="text-body">Nutritious, locally-sourced meals delivered weekly.</p>
-            <button onClick={() => navigate('/meal-prep')} className="text-body text-sm underline">
-              Details &rarr;
-            </button>
-          </div>
           <div className="card space-y-4">
             <h3 className="text-heading">Dinners & Events</h3>
             <p className="text-body">in-home dinner parties and small events up to 50</p>
             <button onClick={() => navigate('/events')} className="text-body text-sm underline">
+              Details &rarr;
+            </button>
+          </div>
+          <div className="card space-y-4">
+            <h3 className="text-heading">Weekly Meal Plans</h3>
+            <p className="text-body">Nutritious, locally-sourced meals delivered weekly.</p>
+            <button onClick={() => navigate('/meal-prep')} className="text-body text-sm underline">
               Details &rarr;
             </button>
           </div>

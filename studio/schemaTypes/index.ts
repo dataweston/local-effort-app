@@ -40,3 +40,5 @@ export const schemaTypes = [
 	menuItems,
 	happyMondayPage,
 ]
+
+export default schemaTypes;

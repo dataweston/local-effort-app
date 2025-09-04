@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { VennDiagram } from '../components/common/VennDiagram';
-import Carousel from '../components/common/Carousel';
+import EmblaCarousel from '../components/common/EmblaCarousel';
 import CloudinaryImage from '../components/common/cloudinaryImage';
 import client from '../sanityClient';
 import { useAuthUser } from '../hooks/useAuthUser';
@@ -221,7 +221,34 @@ export const MealPrepPage = () => {
         {/* 3-wide gallery carousel for #mealplan */}
         {galleryItems.length > 0 && (
           <div className="min-h-[14rem] md:min-h-[18rem] lg:min-h-[22rem]">
-            <Carousel items={galleryItems} intervalMs={7000} className="w-full" hideDots transitionStyle="slide" />
+            <EmblaCarousel
+              slides={galleryItems.map((g, i) => ({
+                key: g.key || i,
+                // render the grouped node as HTML content using node prop
+                node: (
+                  <div className="grid grid-cols-3 gap-3">
+                    {g.node.props.children.map((child, idx) => (
+                      <div key={idx} className="overflow-hidden rounded">
+                        {/* child is a CloudinaryImage element; try to render its props into an <img> fallback */}
+                        {child.props && child.props.publicId ? (
+                          <img
+                            src={`https://res.cloudinary.com/${(import.meta.env && import.meta.env.VITE_CLOUDINARY_CLOUD_NAME) || ''}/image/upload/f_auto,q_auto,w_800/${child.props.publicId}`}
+                            alt={child.props.alt || ''}
+                            className="w-full aspect-square object-cover"
+                          />
+                        ) : (
+                          child
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                ),
+              }))}
+              autoPlayMs={7000}
+              contain={false}
+              heightClass="h-[22vh] md:h-[28vh] lg:h-[34vh]"
+              showThumbs={false}
+            />
           </div>
         )}
 
