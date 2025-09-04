@@ -1,6 +1,8 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
+import CloudinaryImage from '../components/common/cloudinaryImage';
+import Carousel from '../components/common/Carousel';
 
 const ServicesPage = () => {
   const navigate = useNavigate();
@@ -38,6 +40,8 @@ const ServicesPage = () => {
   const [form, setForm] = useState(initialForm);
   const [submitting, setSubmitting] = useState(false);
   const [result, setResult] = useState(null);
+  const [serviceSlides, setServiceSlides] = useState([]);
+  const [bookHero, setBookHero] = useState(null);
 
   const required = (v) => String(v || '').trim().length > 0;
   const handleChange = (e) => {
@@ -45,6 +49,57 @@ const ServicesPage = () => {
     setForm((f) => ({ ...f, [name]: type === 'checkbox' ? checked : value }));
   };
   const reset = () => setForm(initialForm);
+
+  // Load hero carousel images tagged 'service'
+  useEffect(() => {
+    let abort = false;
+    (async () => {
+      try {
+        const res = await fetch(`/api/search-images?query=service&per_page=12`);
+        if (!res.ok) throw new Error(`Service images failed: ${res.status}`);
+        const data = await res.json();
+        if (abort) return;
+        const images = data.images || [];
+        const slides = images.map((img, i) => ({
+          key: img.public_id || String(i),
+          node: (
+            <div className="w-full h-[46vh] md:h-[56vh] lg:h-[64vh] rounded-xl overflow-hidden">
+              <CloudinaryImage
+                publicId={img.public_id}
+                alt={img.public_id}
+                className="w-full h-full object-cover"
+                placeholderMode="none"
+                sizes="100vw"
+                eager={i === 0}
+              />
+            </div>
+          ),
+        }));
+        setServiceSlides(slides);
+      } catch (_e) {
+        // silent fail
+      }
+    })();
+    return () => { abort = true; };
+  }, []);
+
+  // Load a single hero image for the Book section from tag 'book'
+  useEffect(() => {
+    let abort = false;
+    (async () => {
+      try {
+        const res = await fetch(`/api/search-images?query=book&per_page=1`);
+        if (!res.ok) throw new Error(`Book image failed: ${res.status}`);
+        const data = await res.json();
+        if (abort) return;
+        const first = (data.images || [])[0];
+        if (first) setBookHero(first.public_id);
+      } catch (_e) {
+        // ignore
+      }
+    })();
+    return () => { abort = true; };
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -99,8 +154,13 @@ const ServicesPage = () => {
           content="Explore the personal chef and catering services offered by Local Effort."
         />
       </Helmet>
-      <div className="space-y-16">
+      <div className="space-y-16 mx-auto max-w-6xl px-4 md:px-6 lg:px-8">
         <h2 className="text-hero uppercase border-b border-gray-900 pb-4">Services</h2>
+
+        {/* Hero carousel from Cloudinary tag `service` */}
+        {serviceSlides.length > 0 && (
+          <Carousel items={serviceSlides} intervalMs={6500} transitionStyle="fade" />
+        )}
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
           <div className="card space-y-4">
             <h3 className="text-heading">Weekly Meal Prep</h3>
@@ -132,9 +192,21 @@ const ServicesPage = () => {
 
         {/* Event Request Form */}
         <section id="event-request" className="border-t border-neutral-200 pt-10">
-          <div className="max-w-3xl">
-            <h3 className="text-heading uppercase mb-2">Book an Event</h3>
-            <p className="text-body mb-6">Tell us about your event and we’ll follow up with availability and a tailored menu.</p>
+          <div className="max-w-3xl mx-auto">
+            {/* Book section hero image */}
+            {bookHero && (
+              <div className="w-full h-[30vh] md:h-[36vh] lg:h-[42vh] rounded-xl overflow-hidden mb-6">
+                <CloudinaryImage
+                  publicId={bookHero}
+                  alt="Book an event"
+                  className="w-full h-full object-cover"
+                  sizes="100vw"
+                  eager
+                />
+              </div>
+            )}
+            <h3 className="mb-1 text-center text-2xl font-bold">book an event</h3>
+            <p className="text-body mb-6 text-center">Tell us about your event and we’ll follow up with availability and a tailored menu.</p>
 
             <div className="form-card">
             <form onSubmit={handleSubmit} className="space-y-4">
@@ -196,17 +268,16 @@ const ServicesPage = () => {
 
               {/* Event Date */}
               <div>
-                <label className="block text-sm font-medium" htmlFor="eventDate">Event Date:</label>
+                <label className="block text-sm font-medium" htmlFor="eventDate">Event Date</label>
                 <input
-                  type="text"
+                  type="date"
                   id="eventDate"
                   name="eventDate"
                   value={form.eventDate}
                   onChange={handleChange}
                   className="mt-1 w-full border rounded-md p-2"
-                  placeholder="MM-DD-YYYY"
                 />
-                <p className="hint mt-1">Date</p>
+                <p className="hint mt-1">Choose a date from the calendar.</p>
               </div>
 
               {/* Location: City, State, Zip */}
