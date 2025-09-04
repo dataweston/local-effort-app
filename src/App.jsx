@@ -30,9 +30,8 @@ const InboxPage = lazy(() => import('./pages/InboxPage'));
 const CampaignsPage = lazy(() => import('./pages/CampaignsPage'));
 const AuthPage = lazy(() => import('./pages/AuthPage'));
 // Integrated partner tools (embed their App components directly)
-// ZAFA Events app embedded from local-effort-zafa-events
-// Use ?jsx so Vite parses .js files with JSX
-const ZafaEmbeddedApp = lazy(() => import('../local-effort-zafa-events/src/app.js?jsx'));
+// ZAFA Events app embedded from local-effort-zafa-events (.jsx for JSX parsing)
+const ZafaEmbeddedApp = lazy(() => import('../local-effort-zafa-events/src/app.jsx'));
 const GallantEmbeddedApp = lazy(() => import('../gallant-hawking-l8r4wz/src/App'));
 const HMEmbeddedApp = lazy(() => import('../happymonday/src/App.js?jsx'));
 
