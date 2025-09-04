@@ -28,6 +28,9 @@ export function SupportWidget() {
         } else {
           const mapped = (payload.results || []).map((r) => ({ _id: r.id || r.chunk_id, question: r.heading || 'Result', answer: r.text }));
           setResults(mapped);
+          if ((!mapped || mapped.length === 0) && /estimate|price|cost|calculator|budget/i.test(q)) {
+            setAnswer('Try the Pricing estimator on the Pricing page for a tailored ballpark.');
+          }
         }
       } else {
         // Fallback: query Sanity directly

@@ -163,6 +163,14 @@ try {
   console.warn('support search not available:', err?.message);
 }
 
+// Mount support ingestion endpoints (manual sync + webhook)
+try {
+  const { registerSupportIngest } = require('./supportIngest');
+  if (registerSupportIngest) registerSupportIngest(app);
+} catch (err) {
+  console.warn('support ingest not available:', err?.message);
+}
+
 // Helpful startup log for local debugging
 // if (require.main === module) {
 //   console.info('Backend API starting (local)');
