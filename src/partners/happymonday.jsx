@@ -1,8 +1,14 @@
 import React, { lazy, Suspense } from 'react';
 
 const ENABLE_LOCAL = import.meta.env.VITE_ENABLE_HAPPYMONDAY_LOCAL === 'true';
+const ENABLE_INTEGRATED = (import.meta.env.VITE_ENABLE_HAPPYMONDAY_MODULE ?? 'true') !== 'false';
 const HM_URL = import.meta.env.VITE_HAPPYMONDAY_URL || '';
-const RealHM = ENABLE_LOCAL ? lazy(() => import('../../happymonday/src/App.jsx')) : null;
+
+const RealHM = ENABLE_LOCAL
+  ? lazy(() => import('../../happymonday/src/App.jsx'))
+  : ENABLE_INTEGRATED
+    ? lazy(() => import('./happymonday/App.jsx'))
+    : null;
 
 export default function HappyMondayProxy() {
 	if (RealHM) {

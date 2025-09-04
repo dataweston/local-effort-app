@@ -1,8 +1,14 @@
 import React, { lazy, Suspense } from 'react';
 
 const ENABLE_LOCAL = (import.meta.env.VITE_ENABLE_GALLANT === 'true') || (import.meta.env.VITE_ENABLE_GALLANT_LOCAL === 'true');
+const ENABLE_INTEGRATED = (import.meta.env.VITE_ENABLE_GALLANT_MODULE ?? 'true') !== 'false';
 const GALLANT_URL = import.meta.env.VITE_GALLANT_URL || '';
-const RealGallant = ENABLE_LOCAL ? lazy(() => import('../../gallant-hawking-l8r4wz/src/App.jsx')) : null;
+
+const RealGallant = ENABLE_LOCAL
+  ? lazy(() => import('../../gallant-hawking-l8r4wz/src/App.jsx'))
+  : ENABLE_INTEGRATED
+    ? lazy(() => import('./gallant/App.jsx'))
+    : null;
 
 export default function GallantProxy() {
 	if (RealGallant) {
