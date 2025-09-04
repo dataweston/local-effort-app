@@ -4,11 +4,13 @@ const ENABLE_LOCAL = (import.meta.env.VITE_ENABLE_GALLANT === 'true') || (import
 const ENABLE_INTEGRATED = (import.meta.env.VITE_ENABLE_GALLANT_MODULE ?? 'true') !== 'false';
 const GALLANT_URL = import.meta.env.VITE_GALLANT_URL || '';
 
-const RealGallant = ENABLE_LOCAL
-  ? lazy(() => import('../../gallant-hawking-l8r4wz/src/App.jsx'))
-  : ENABLE_INTEGRATED
-    ? lazy(() => import('./gallant/App.jsx'))
-    : null;
+let RealGallant = null;
+if (ENABLE_LOCAL) {
+	const localPath = ['..', '..', 'gallant-hawking-l8r4wz', 'src', 'App.jsx'].join('/');
+	RealGallant = lazy(() => import(/* @vite-ignore */ localPath));
+} else if (ENABLE_INTEGRATED) {
+	RealGallant = lazy(() => import('./gallant/App.jsx'));
+}
 
 export default function GallantProxy() {
 	if (RealGallant) {
