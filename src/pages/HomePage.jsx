@@ -313,7 +313,7 @@ const HomePage = () => {
               animate="animate"
               className="mt-6 md:mt-8 text-body max-w-md"
             >
-            Event hospitality and personal chef services, with an obsessive focus on local ingredients.
+            Event hospitality and personal chef services, with an obsessive focus on local ingredients.<br /><br />
 
             Think of us for special occasions and special events. Count on us for weekly home cooked meals. We're comfortable in homes, offices, bars and cafes, parks, vineyards, and uh.. anywhere, really.
             </motion.p>
