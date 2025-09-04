@@ -228,7 +228,7 @@ const HomePage = () => {
           name: 'Local Effort',
           url: 'https://local-effort-app.vercel.app/',
           address: { '@type': 'PostalAddress', addressLocality: 'Roseville', addressRegion: 'MN', addressCountry: 'US' },
-          servesCuisine: ['American','Local','Seasonal'],
+          servesCuisine: ['American','Local','Farm to Table','Seasonal'],
           priceRange: '$$'
         })}</script>
       </Helmet>
@@ -265,8 +265,7 @@ const HomePage = () => {
               animate="animate"
               className="mt-6 md:mt-8 text-body max-w-md"
             >
-              Professional in-home dining. 30 years collective fine food experience. Sourcing the
-              best local ingredients without compromise.
+            Event hospitality and personal chef services, with an obsessive focus on local ingredients. 
             </motion.p>
             <motion.button
               whileHover={{ scale: 1.03 }}
