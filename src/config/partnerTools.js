@@ -12,6 +12,22 @@ export const PARTNER_TOOLS = [
   icon: 'ClipboardList',
   },
   {
+    key: 'inbox',
+    name: 'Inbox',
+    description: 'Mailbox (Brevo) for inbound messages.',
+    type: 'internal',
+    route: '/inbox',
+    icon: 'Inbox',
+  },
+  {
+    key: 'studio',
+    name: 'Sanity Studio',
+    description: 'Content management studio (opens in new tab).',
+    type: 'external',
+    href: '/studio',
+    icon: 'FileText',
+  },
+  {
     key: 'zafa',
     name: 'ZAFA Events',
     description: 'Events management utilities for ZAFA.',
