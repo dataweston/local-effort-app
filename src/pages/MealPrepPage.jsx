@@ -19,7 +19,7 @@ export const MealPrepPage = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [selected, setSelected] = useState(null);
-  const [filterName, setFilterName] = useState('');
+  const [filterName] = useState('');
   const [assignedClient, setAssignedClient] = useState(null);
   const [openSection, setOpenSection] = useState(null); // 'foundation' | 'custom' | null
   const [galleryItems, setGalleryItems] = useState([]);
@@ -77,7 +77,9 @@ export const MealPrepPage = () => {
       try {
         const profile = await getUserProfile(user.uid);
         clientName = profile?.mealPrepClientName || null;
-      } catch (_e) {}
+      } catch (_e) {
+        // ignore profile fetch errors; mapping will fall back
+      }
       if (!clientName) {
         clientName = getAssignedClientNameForUser(user);
       }
@@ -88,7 +90,9 @@ export const MealPrepPage = () => {
             email: user.email || null,
             displayName: user.displayName || null,
           });
-        } catch (_e) {}
+        } catch (_e) {
+          // non-fatal: profile save can be retried later
+        }
       }
       if (mounted) setAssignedClient(clientName);
     })();
@@ -151,22 +155,14 @@ export const MealPrepPage = () => {
           content="Our Foundation Meal Plan provides 21 nutritious meals per week from local Midwest sources."
         />
       </Helmet>
-      <div className="space-y-10">
+      <div className="space-y-8">
         <div className="flex items-center justify-between">
-          <h2 className="text-5xl md:text-7xl font-bold uppercase">Weekly Meal Prep</h2>
+          <h2 className="text-4xl md:text-6xl font-bold uppercase">Weekly Meal Prep</h2>
           {auth ? <AuthButtons user={user} /> : null}
-        </div>
-
-        <p className="font-mono text-lg max-w-3xl">
-          Basic, good nutrition from local Midwest sources. We offer a Foundation Plan and are happy
-          to create custom plans for any diet.
-        </p>
-
-        <div className="flex gap-4 items-center">
-          {!user ? (
+          {!user && auth && (
             <button
               type="button"
-              className="underline"
+              className="btn btn-primary ml-4"
               onClick={async () => {
                 try {
                   await signInWithGoogle();
@@ -175,22 +171,26 @@ export const MealPrepPage = () => {
                 }
               }}
             >
-              Already a member? Sign in
+              Sign in
             </button>
-          ) : (
-            <div className="text-sm text-gray-700">
-              <a href="#menus" className="underline">View current menus</a>
-              {assignedClient ? (
-                <span className="ml-2">for <strong>{assignedClient}</strong></span>
-              ) : (
-                <span className="ml-2 italic">no client assigned yet</span>
-              )}
-            </div>
-          )}
-          {!auth && !user && (
-            <p className="text-xs text-gray-500 ml-3">Sign-in unavailable. Check Firebase env in .env (VITE_FIREBASE_*) and allowed domains.</p>
           )}
         </div>
+
+        <p className="font-mono text-lg max-w-3xl">
+          Basic, good nutrition from local Midwest sources. We offer a Foundation Plan and are happy
+          to create custom plans for any diet.
+        </p>
+
+        {user && (
+          <div className="flex gap-2 items-center text-sm text-gray-700">
+            <a href="#menus" className="underline">View current menus</a>
+            {assignedClient ? (
+              <span>for <strong>{assignedClient}</strong></span>
+            ) : (
+              <span className="italic">no client assigned yet</span>
+            )}
+          </div>
+        )}
 
         {/* 3-wide gallery carousel for #mealplan */}
         {galleryItems.length > 0 && (

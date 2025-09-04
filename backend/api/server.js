@@ -156,9 +156,9 @@ try {
 }
 
 // Helpful startup log for local debugging
-if (require.main === module) {
-  console.log('Starting backend API (local) — routes mounted: /api/crowdfund/status, /api/crowdfund/contribute, /api/crowdfund/confirm-payment, /api/search-images (if available), /api/inbox, /api/messages/*, /api/push/*');
-}
+// if (require.main === module) {
+//   console.info('Backend API starting (local)');
+// }
 
 // This endpoint remains the same
 app.get('/api/crowdfund/status', async (req, res) => {
@@ -180,7 +180,7 @@ app.get('/api/crowdfund/status', async (req, res) => {
 
 // --- THIS ENDPOINT IS FULLY REBUILT ---
 app.post('/api/crowdfund/contribute', async (req, res) => {
-  const { items, totalAmount } = req.body;
+  const { items } = req.body;
 
   if (!items || items.length === 0) {
     return res.status(400).json({ error: 'Cart is empty.' });
@@ -399,6 +399,19 @@ app.post('/api/messages/submit', async (req, res) => {
   }
 });
 
+// Basic subscribe endpoint: accepts { email, firstName?, lastName?, phone? }
+app.post('/api/subscribe', async (req, res) => {
+  try {
+    const { email, firstName, lastName, phone } = req.body || {};
+    if (!email) return res.status(400).json({ error: 'Missing email' });
+    await upsertContact({ email, firstName, lastName, phone });
+    return res.json({ ok: true });
+  } catch (err) {
+    console.error('subscribe error', err);
+    return res.status(500).json({ error: 'subscribe-failed' });
+  }
+});
+
 // Save campaign (draft) to Sanity
 app.post('/api/campaigns/save', async (req, res) => {
   try {
@@ -555,7 +568,7 @@ app.post('/api/push/notify', async (req, res) => {
 const PORT = process.env.PORT || 3001;
 if (require.main === module) {
   if (!db) console.warn('Firestore not initialized — some endpoints will fail without FIREBASE_SERVICE_ACCOUNT_JSON');
-  app.listen(PORT, () => console.log(`Backend API listening on http://localhost:${PORT}`));
+  app.listen(PORT);
 }
 
 module.exports = app;
