@@ -136,12 +136,14 @@ const ServicesPage = () => {
             <h3 className="text-heading uppercase mb-2">Book an Event</h3>
             <p className="text-body mb-6">Tell us about your event and we’ll follow up with availability and a tailored menu.</p>
 
+            <div className="form-card">
             <form onSubmit={handleSubmit} className="space-y-4">
               {/* Contact Name (First/Last) */}
               <div>
-                <label className="block text-sm font-medium">Contact Name *</label>
+                <label className="block text-sm font-medium" htmlFor="firstName">Contact Name *</label>
                 <div className="grid md:grid-cols-2 gap-4 mt-1">
                   <input
+                    id="firstName"
                     name="firstName"
                     value={form.firstName}
                     onChange={handleChange}
@@ -150,6 +152,7 @@ const ServicesPage = () => {
                     required
                   />
                   <input
+                    id="lastName"
                     name="lastName"
                     value={form.lastName}
                     onChange={handleChange}
@@ -158,15 +161,16 @@ const ServicesPage = () => {
                     required
                   />
                 </div>
-                <p className="text-xs text-neutral-500 mt-1">This field is required.</p>
+                <p className="hint mt-1">This field is required.</p>
               </div>
 
               {/* Phone and Email */}
               <div className="grid md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium">Phone Number *</label>
+                  <label className="block text-sm font-medium" htmlFor="phone">Phone Number *</label>
                   <input
                     type="tel"
+                    id="phone"
                     name="phone"
                     value={form.phone}
                     onChange={handleChange}
@@ -176,9 +180,10 @@ const ServicesPage = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium">E-mail *</label>
+                  <label className="block text-sm font-medium" htmlFor="email">E-mail *</label>
                   <input
                     type="email"
+                    id="email"
                     name="email"
                     value={form.email}
                     onChange={handleChange}
@@ -191,23 +196,25 @@ const ServicesPage = () => {
 
               {/* Event Date */}
               <div>
-                <label className="block text-sm font-medium">Event Date:</label>
+                <label className="block text-sm font-medium" htmlFor="eventDate">Event Date:</label>
                 <input
                   type="text"
+                  id="eventDate"
                   name="eventDate"
                   value={form.eventDate}
                   onChange={handleChange}
                   className="mt-1 w-full border rounded-md p-2"
                   placeholder="MM-DD-YYYY"
                 />
-                <p className="text-xs text-neutral-500 mt-1">Date</p>
+                <p className="hint mt-1">Date</p>
               </div>
 
               {/* Location: City, State, Zip */}
               <div>
-                <label className="block text-sm font-medium">Where will the event take place?</label>
+                <label className="block text-sm font-medium" htmlFor="city">Where will the event take place?</label>
                 <div className="grid md:grid-cols-3 gap-4 mt-1">
                   <input
+                    id="city"
                     name="city"
                     value={form.city}
                     onChange={handleChange}
@@ -215,6 +222,7 @@ const ServicesPage = () => {
                     placeholder="City"
                   />
                   <select
+                    id="state"
                     name="state"
                     value={form.state}
                     onChange={handleChange}
@@ -226,6 +234,7 @@ const ServicesPage = () => {
                     ))}
                   </select>
                   <input
+                    id="zip"
                     name="zip"
                     value={form.zip}
                     onChange={handleChange}
@@ -237,8 +246,9 @@ const ServicesPage = () => {
 
               {/* Event Type */}
               <div>
-                <label className="block text-sm font-medium">Event Type</label>
+                <label className="block text-sm font-medium" htmlFor="eventType">Event Type</label>
                 <select
+                  id="eventType"
                   name="eventType"
                   value={form.eventType}
                   onChange={handleChange}
@@ -254,9 +264,10 @@ const ServicesPage = () => {
 
               {/* Estimated guest count */}
               <div>
-                <label className="block text-sm font-medium">Estimated guest count</label>
+                <label className="block text-sm font-medium" htmlFor="guestCount">Estimated guest count</label>
                 <input
                   type="number"
+                  id="guestCount"
                   name="guestCount"
                   value={form.guestCount}
                   onChange={handleChange}
@@ -268,8 +279,9 @@ const ServicesPage = () => {
 
               {/* Notes */}
               <div>
-                <label className="block text-sm font-medium">Tell us more! What sort of meal are you thinking? Which foods do you like? What questions do you have for us straight away?</label>
+                <label className="block text-sm font-medium" htmlFor="notes">Tell us more! What sort of meal are you thinking? Which foods do you like? What questions do you have for us straight away?</label>
                 <textarea
+                  id="notes"
                   name="notes"
                   value={form.notes}
                   onChange={handleChange}
@@ -291,6 +303,7 @@ const ServicesPage = () => {
                 </div>
               )}
 
+              <div className="actions">
               <button
                 type="submit"
                 disabled={submitting}
@@ -298,7 +311,9 @@ const ServicesPage = () => {
               >
                 {submitting ? 'Submitting…' : 'Submit'}
               </button>
+              </div>
             </form>
+            </div>
           </div>
         </section>
       </div>
