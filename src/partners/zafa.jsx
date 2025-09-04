@@ -1,11 +1,15 @@
 import React, { lazy, Suspense } from 'react';
 
-// Safe stub: real ZAFA app is not included in production build by default.
-// To enable locally, set VITE_ENABLE_ZAFA=true and adjust vite alias.
-
+// Safe proxy: choose from integrated module, local external app, or iframe/stub.
 const ENABLE_LOCAL = import.meta.env.VITE_ENABLE_ZAFA_LOCAL === 'true';
+const ENABLE_INTEGRATED = (import.meta.env.VITE_ENABLE_ZAFA_MODULE ?? 'true') !== 'false';
 const ZAFA_URL = import.meta.env.VITE_ZAFA_URL || '';
-const RealZafa = ENABLE_LOCAL ? lazy(() => import('../../local-effort-zafa-events/src/app.jsx')) : null;
+
+const RealZafa = ENABLE_LOCAL
+	? lazy(() => import('../../local-effort-zafa-events/src/app.jsx'))
+	: ENABLE_INTEGRATED
+		? lazy(() => import('./zafa/App.jsx'))
+		: null;
 
 export default function ZafaProxy() {
 	if (RealZafa) {
@@ -18,7 +22,11 @@ export default function ZafaProxy() {
 	if (ZAFA_URL) {
 		return (
 			<div style={{ height: '80vh', padding: 0 }}>
-				<iframe title="ZAFA Events" src={ZAFA_URL} style={{ width: '100%', height: '100%', border: '1px solid #e5e7eb', borderRadius: 8 }} />
+				<iframe
+					title="ZAFA Events"
+					src={ZAFA_URL}
+					style={{ width: '100%', height: '100%', border: '1px solid #e5e7eb', borderRadius: 8 }}
+				/>
 			</div>
 		);
 	}
