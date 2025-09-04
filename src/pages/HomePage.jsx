@@ -313,7 +313,9 @@ const HomePage = () => {
               animate="animate"
               className="mt-6 md:mt-8 text-body max-w-md"
             >
-            Event hospitality and personal chef services, with an obsessive focus on local ingredients. 
+            Event hospitality and personal chef services, with an obsessive focus on local ingredients.
+
+            Think of us for special occasions and special events. Count on us for weekly home cooked meals. We're comfortable in homes, offices, bars and cafes, parks, vineyards, and uh.. anywhere, really.
             </motion.p>
             <motion.button
               whileHover={{ scale: 1.03 }}
@@ -376,12 +378,12 @@ const HomePage = () => {
             <ServiceCard
               to="/meal-prep"
               title="Weekly Meal Prep"
-              description="Basic, good nutrition from local Midwest sources."
+              description="Nutritious, locally-sourced meals delivered weekly."
             />
             <ServiceCard
               to="/pizza-party"
               title="Pizza Parties"
-              description="local pizza at your party. we'll bring the oven."
+              description="Local Pizza at your party (or bar). We'll bring the oven."
             />
           </div>
         </section>
