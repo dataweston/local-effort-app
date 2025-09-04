@@ -1,9 +1,8 @@
 import React, { lazy, Suspense } from 'react';
 
-const ENABLED = import.meta.env.VITE_ENABLE_HAPPYMONDAY === 'true';
-const RealHM = ENABLED
-	? lazy(() => import('../../happymonday/src/App.jsx'))
-	: null;
+const ENABLE_LOCAL = import.meta.env.VITE_ENABLE_HAPPYMONDAY_LOCAL === 'true';
+const HM_URL = import.meta.env.VITE_HAPPYMONDAY_URL || '';
+const RealHM = ENABLE_LOCAL ? lazy(() => import('../../happymonday/src/App.jsx')) : null;
 
 export default function HappyMondayProxy() {
 	if (RealHM) {
@@ -11,6 +10,13 @@ export default function HappyMondayProxy() {
 			<Suspense fallback={<div style={{ padding: 24 }}>Loading Happy Monday…</div>}>
 				<RealHM />
 			</Suspense>
+		);
+	}
+	if (HM_URL) {
+		return (
+			<div style={{ height: '80vh', padding: 0 }}>
+				<iframe title="Happy Monday" src={HM_URL} style={{ width: '100%', height: '100%', border: '1px solid #e5e7eb', borderRadius: 8 }} />
+			</div>
 		);
 	}
 	return (
