@@ -5,11 +5,14 @@ const ENABLE_LOCAL = import.meta.env.VITE_ENABLE_ZAFA_LOCAL === 'true';
 const ENABLE_INTEGRATED = (import.meta.env.VITE_ENABLE_ZAFA_MODULE ?? 'true') !== 'false';
 const ZAFA_URL = import.meta.env.VITE_ZAFA_URL || '';
 
-const RealZafa = ENABLE_LOCAL
-	? lazy(() => import('../../local-effort-zafa-events/src/app.jsx'))
-	: ENABLE_INTEGRATED
-		? lazy(() => import('./zafa/App.jsx'))
-		: null;
+let RealZafa = null;
+if (ENABLE_LOCAL) {
+	// Build the path dynamically and ask Vite to ignore pre-bundling so Rollup won't try to resolve it in production.
+	const localPath = ['..', '..', 'local-effort-zafa-events', 'src', 'app.jsx'].join('/');
+	RealZafa = lazy(() => import(/* @vite-ignore */ localPath));
+} else if (ENABLE_INTEGRATED) {
+	RealZafa = lazy(() => import('./zafa/App.jsx'));
+}
 
 export default function ZafaProxy() {
 	if (RealZafa) {
