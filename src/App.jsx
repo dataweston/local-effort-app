@@ -9,6 +9,7 @@ import { LoadingSpinner } from './components/layout/LoadingSpinner';
 import { AnimatedPage } from './components/layout/AnimatedPage';
 import { SupportWidget } from './components/support/SupportWidget';
 import { RequireAuth } from './components/auth/RequireAuth';
+import { RequirePartnerAccess } from './components/auth/RequirePartnerAccess';
 
 // Lazily import page components using the default export pattern
 const HomePage = lazy(() => import('./pages/HomePage'));
@@ -24,9 +25,14 @@ const GalleryPage = lazy(() => import('./pages/GalleryPage'));
 const MealPrepPage = lazy(() => import('./pages/MealPrepPage'));
 // --- NEW: Partner Portal ---
 const PartnerPortalPage = lazy(() => import('./pages/PartnerPortalPage'));
+const PartnerPortalWelcome = lazy(() => import('./pages/PartnerPortalWelcome'));
 const InboxPage = lazy(() => import('./pages/InboxPage'));
 const CampaignsPage = lazy(() => import('./pages/CampaignsPage'));
 const AuthPage = lazy(() => import('./pages/AuthPage'));
+// Integrated partner tools (embed their App components directly)
+const ZafaEmbeddedApp = lazy(() => import('../gallant-hawking-l8r4wz/src/App'));
+const GallantEmbeddedApp = lazy(() => import('../gallant-hawking-l8r4wz/src/App'));
+const HMEmbeddedApp = lazy(() => import('../happymonday/src/App'));
 
 const AppContent = () => {
   const location = useLocation();
@@ -125,6 +131,14 @@ const AppContent = () => {
                   }
                 />
                 <Route
+                  path="/partner-portal/welcome"
+                  element={
+                    <AnimatedPage>
+                      <PartnerPortalWelcome />
+                    </AnimatedPage>
+                  }
+                />
+                <Route
                   path="/auth"
                   element={
                     <AnimatedPage>
@@ -149,6 +163,36 @@ const AppContent = () => {
                       <RequireAuth>
                         <CampaignsPage />
                       </RequireAuth>
+                    </AnimatedPage>
+                  }
+                />
+                <Route
+                  path="/partners/zafa-events"
+                  element={
+                    <AnimatedPage>
+                      <RequirePartnerAccess toolKey="zafa">
+                        <ZafaEmbeddedApp />
+                      </RequirePartnerAccess>
+                    </AnimatedPage>
+                  }
+                />
+                <Route
+                  path="/partners/gallant-hawking"
+                  element={
+                    <AnimatedPage>
+                      <RequirePartnerAccess toolKey="gallant">
+                        <GallantEmbeddedApp />
+                      </RequirePartnerAccess>
+                    </AnimatedPage>
+                  }
+                />
+                <Route
+                  path="/partners/happy-monday"
+                  element={
+                    <AnimatedPage>
+                      <RequirePartnerAccess toolKey="happymonday">
+                        <HMEmbeddedApp />
+                      </RequirePartnerAccess>
                     </AnimatedPage>
                   }
                 />
