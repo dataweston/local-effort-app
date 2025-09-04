@@ -46,7 +46,7 @@ async function supportSearchHandler(req, res) {
       supabase
         .from('content_chunks')
         .select('id, source_id, ord, heading, anchor, text', { count: 'planned', head: false })
-        .textSearch('text', q, { type: 'websearch', config: 'english' })
+        .textSearch('ts', q, { type: 'websearch', config: 'english' })
         .limit(10),
       getEmbedding(q),
     ]);
