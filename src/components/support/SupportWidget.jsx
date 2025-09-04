@@ -107,7 +107,7 @@ export function SupportWidget() {
           </div>
         </div>
       )}
-      <button onClick={() => setOpen(!open)} className="px-4 py-2 rounded-full bg-black text-white shadow">Support</button>
+  <button onClick={() => setOpen(!open)} className="px-4 py-2 rounded-full bg-black text-white shadow" aria-label="get help">get help</button>
     </div>
   );
 }
