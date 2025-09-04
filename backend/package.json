@@ -4,7 +4,8 @@
   "description": "Backend for Local Effort crowdfunder",
   "main": "api/server.js",
   "scripts": {
-    "start": "node api/server.js"
+  "start": "node api/server.js",
+  "sync:kb": "node utils/syncSupportKB.js"
   },
   "dependencies": {
     "@sanity/client": "^7.8.2",
