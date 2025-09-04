@@ -82,3 +82,47 @@ h6 {
   padding: 1.5rem;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
 }
+
+/* Rich text defaults for page descriptions */
+.prose-lite {
+  color: #1f2937; /* neutral-800 */
+  font-size: 1.0625rem; /* ~17px */
+  line-height: 1.75;
+}
+.prose-lite p { margin: 0.75rem 0; }
+.prose-lite h2 { font-size: 1.5rem; margin: 1.25rem 0 0.5rem; }
+.prose-lite h3 { font-size: 1.25rem; margin: 1rem 0 0.5rem; }
+.prose-lite ul, .prose-lite ol { padding-left: 1.25rem; margin: 0.75rem 0; }
+.prose-lite li { margin: 0.25rem 0; }
+.prose-lite a { color: #111827; text-decoration: underline; text-underline-offset: 3px; }
+.prose-lite strong { font-weight: 700; }
+
+/* Modern form styling */
+.form-card {
+  background: #ffffff;
+  border: 1px solid rgba(0,0,0,0.06);
+  border-radius: 0.75rem;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.06);
+  padding: 1.5rem;
+}
+.form-card .form-grid { display: grid; gap: 1rem; }
+.form-card label { font-size: 0.9rem; color: #111827; font-weight: 600; }
+.form-card input,
+.form-card select,
+.form-card textarea {
+  width: 100%;
+  background: #fff;
+  border: 1px solid #e5e7eb; /* neutral-200 */
+  border-radius: 0.5rem;
+  padding: 0.6rem 0.75rem;
+  font-size: 0.95rem;
+}
+.form-card input:focus,
+.form-card select:focus,
+.form-card textarea:focus {
+  outline: none;
+  border-color: #111827;
+  box-shadow: 0 0 0 3px rgba(17,24,39,0.08);
+}
+.form-card .hint { font-size: 0.75rem; color: #6b7280; }
+.form-card .actions { margin-top: 1rem; }

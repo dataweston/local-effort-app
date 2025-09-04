@@ -65,9 +65,11 @@ export default function MenuPage() {
         <script type="application/ld+json">{JSON.stringify(menuJsonLd)}</script>
       </Helmet>
       <h1 className="text-4xl font-bold mb-4 text-center">Past Menu Examples.</h1>
-      <p className="max-w-3xl mx-auto text-center text-neutral-700 mb-8">
-        these are all real menus from events in the past couple years, just to show how wide the options are. We love to &quot;make it local.&quot;
-      </p>
+      <div className="prose-lite max-w-3xl mx-auto text-center mb-8">
+        <p>
+          these are all real menus from events in the past couple years, just to show how wide the options are. We love to &quot;make it local.&quot;
+        </p>
+      </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {sampleMenus.map((menu) => {

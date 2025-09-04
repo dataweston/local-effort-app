@@ -7,14 +7,13 @@ import { peoplePublicIds } from '../data/cloudinaryContent';
 const AboutUsPage = () => {
   const [aboutData, setAboutData] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [activeSkill, setActiveSkill] = useState(null);
+  // const [activeSkill, setActiveSkill] = useState(null);
 
   useEffect(() => {
     // Limit fields we request to reduce payload size
     const query = `{
       "page": *[_type == "page" && slug.current == "about-us"][0]{ title, introduction },
-  "persons": *[_type == "person"]{ name, role, bio, image{asset->{_ref}}, headshot{ asset{ public_id }, alt } },
-      "skills": *[_type == "specialSkill"]{ name, description }
+  "persons": *[_type == "person"]{ name, role, bio, image{asset->{_ref}}, headshot{ asset{ public_id }, alt } }
     }`;
 
     let mounted = true;
@@ -22,8 +21,7 @@ const AboutUsPage = () => {
       try {
         const data = await sanityClient.fetch(query);
         if (!mounted) return;
-        setAboutData(data);
-        if (data?.skills?.length) setActiveSkill(data.skills[0]);
+  setAboutData(data);
       } catch (err) {
         console.error('Failed to load About page data:', err);
         setAboutData(null);
@@ -41,7 +39,7 @@ const AboutUsPage = () => {
 
   // By adding "= []", we ensure that if persons or skills don't exist,
   // we get an empty array instead of an error.
-  const { page, persons = [], skills = [] } = aboutData;
+  const { page, persons = [] } = aboutData;
   const weston = persons.find((p) => p.name && p.name.includes('Weston')) || {};
   const catherine = persons.find((p) => p.name && p.name.includes('Catherine')) || {};
   const westonPublicId = weston?.headshot?.asset?.public_id || peoplePublicIds.weston;
@@ -65,7 +63,9 @@ const AboutUsPage = () => {
           </div>
         )}
         <h2 className="text-hero uppercase border-b border-gray-900 pb-4">{page?.title}</h2>
-        <p className="text-body text-lg max-w-3xl">{page?.introduction}</p>
+        <div className="prose-lite max-w-3xl">
+          <p>{page?.introduction}</p>
+        </div>
 
         {/* This section will now show a message if the person documents are missing */}
         <div className="grid md:grid-cols-2 gap-8">

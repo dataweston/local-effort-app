@@ -48,7 +48,7 @@ const GalleryPage = () => {
       setLoading(true);
       setError(null);
       try {
-        const apiUrl = `/api/search-images${query ? `?query=${encodeURIComponent(query)}` : ''}`;
+  const apiUrl = `/api/search-images${query ? `?query=${encodeURIComponent(query)}&per_page=${PAGE_SIZE}` : `?per_page=${PAGE_SIZE}`}`;
         const response = await fetch(apiUrl, { signal: controller.signal });
 
         // Check if response is actually JSON
@@ -62,13 +62,14 @@ const GalleryPage = () => {
         }
 
         // Parse JSON; if error status, surface server error details
-        const data = await response.json();
+    const data = await response.json();
         if (!response.ok) {
           const details = data && (data.error || data.details || JSON.stringify(data));
           throw new Error(`Search failed (${response.status}): ${details}`);
         }
 
-        setImages(Array.isArray(data.images) ? data.images : []);
+  const imgs = Array.isArray(data.images) ? data.images : [];
+  setImages(imgs);
       } catch (err) {
         if (err.name === 'AbortError') return;
         console.error('Error fetching images:', err);
@@ -96,7 +97,7 @@ const GalleryPage = () => {
   }, [query]);
 
   // Client-side pagination to limit initial DOM nodes
-  const PAGE_SIZE = 24;
+  const PAGE_SIZE = 36;
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
   useEffect(() => setVisibleCount(PAGE_SIZE), [images]);
 
@@ -193,7 +194,7 @@ const GalleryPage = () => {
           </div>
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {images.map((img, idx) => (
+            {images.slice(0, visibleCount).map((img, idx) => (
               <motion.button
                 type="button"
                 key={img.asset_id}
