@@ -62,8 +62,9 @@ function ToolGrid({ profile }) {
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
       {visible.map((t) => {
         const Icon = Icons[t.icon] || Icons.AppWindow;
-        return (
-          <Link key={t.key} to={t.route} className="group block p-5 border rounded-xl hover:shadow transition bg-white">
+        const isExternal = t.type === 'external' && t.href;
+        const content = (
+          <div className="group block p-5 border rounded-xl hover:shadow transition bg-white">
             <div className="flex items-center gap-3">
               <span className="inline-flex items-center justify-center w-10 h-10 rounded-lg bg-neutral-100 group-hover:bg-neutral-200">
                 <Icon className="w-5 h-5 text-neutral-800" />
@@ -73,7 +74,12 @@ function ToolGrid({ profile }) {
                 <div className="text-sm text-neutral-600">{t.description}</div>
               </div>
             </div>
-          </Link>
+          </div>
+        );
+        return isExternal ? (
+          <a key={t.key} href={t.href} target="_blank" rel="noopener noreferrer">{content}</a>
+        ) : (
+          <Link key={t.key} to={t.route}>{content}</Link>
         );
       })}
     </div>
