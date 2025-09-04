@@ -158,22 +158,27 @@ export const MealPrepPage = () => {
       <div className="space-y-8">
         <div className="flex items-center justify-between">
           <h2 className="text-4xl md:text-6xl font-bold uppercase">Weekly Meal Prep</h2>
-          {auth ? <AuthButtons user={user} /> : null}
-          {!user && auth && (
-            <button
-              type="button"
-              className="btn btn-primary ml-4"
-              onClick={async () => {
-                try {
-                  await signInWithGoogle();
-                } catch (e) {
-                  alert(`Sign-in unavailable: ${e?.message || e}`);
-                }
-              }}
-            >
-              Sign in
-            </button>
-          )}
+          <div className="flex items-center gap-3">
+            {user ? (
+              <AuthButtons user={user} />
+            ) : (
+              auth ? (
+                <button
+                  type="button"
+                  className="btn btn-primary"
+                  onClick={async () => {
+                    try {
+                      await signInWithGoogle();
+                    } catch (e) {
+                      alert(`Sign-in unavailable: ${e?.message || e}`);
+                    }
+                  }}
+                >
+                  Sign in
+                </button>
+              ) : null
+            )}
+          </div>
         </div>
 
         <p className="font-mono text-lg max-w-3xl">
@@ -192,9 +197,30 @@ export const MealPrepPage = () => {
           </div>
         )}
 
+        {user && (
+          <section id="menus" className="space-y-4">
+            <h3 className="text-2xl font-bold">Current Menus</h3>
+            {loading ? (
+              <p>Loading menus…</p>
+            ) : error ? (
+              <div className="text-red-700 bg-red-50 border border-red-200 p-3 rounded">
+                <p className="font-semibold">{error}</p>
+                <p className="text-sm mt-1">If this persists, ensure Sanity env vars are set on the web app (VITE_APP_SANITY_PROJECT_ID, VITE_APP_SANITY_DATASET) and that the Studio has the new Meal Prep Menu content.</p>
+              </div>
+            ) : !selected ? (
+              <MenuList menus={filtered} onSelect={setSelected} />
+            ) : (
+              <div>
+                <MenuDetail menu={selected} onBack={() => setSelected(null)} />
+                <Comments menuId={selected._id} user={user} />
+              </div>
+            )}
+          </section>
+        )}
+
         {/* 3-wide gallery carousel for #mealplan */}
         {galleryItems.length > 0 && (
-          <div className="mt-4 min-h-[14rem] md:min-h-[18rem] lg:min-h-[22rem]">
+          <div className="min-h-[14rem] md:min-h-[18rem] lg:min-h-[22rem]">
             <Carousel items={galleryItems} intervalMs={7000} className="w-full" hideDots transitionStyle="slide" />
           </div>
         )}
@@ -252,27 +278,7 @@ export const MealPrepPage = () => {
         </div>
   </div>
 
-        {user && (
-        <section id="menus" className="space-y-4">
-          <h3 className="text-2xl font-bold">Current Menus</h3>
-          {/* Filter removed per request */}
-          {loading ? (
-            <p>Loading menus…</p>
-          ) : error ? (
-            <div className="text-red-700 bg-red-50 border border-red-200 p-3 rounded">
-              <p className="font-semibold">{error}</p>
-              <p className="text-sm mt-1">If this persists, ensure Sanity env vars are set on the web app (VITE_APP_SANITY_PROJECT_ID, VITE_APP_SANITY_DATASET) and that the Studio has the new Meal Prep Menu content.</p>
-            </div>
-          ) : !selected ? (
-            <MenuList menus={filtered} onSelect={setSelected} />
-          ) : (
-            <div>
-              <MenuDetail menu={selected} onBack={() => setSelected(null)} />
-              <Comments menuId={selected._id} user={user} />
-            </div>
-          )}
-        </section>
-        )}
+  {/* Menus moved above; section removed here */}
       </div>
     </>
   );
