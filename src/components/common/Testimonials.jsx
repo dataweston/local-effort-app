@@ -1,11 +1,14 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 
-export default function Testimonials({ items = [] }) {
+export default function Testimonials({ items = [], title = 'Testimonials', headingExtra = null }) {
   if (!items.length) return null;
   return (
     <section className="mx-auto max-w-6xl px-4 md:px-6 lg:px-8">
-      <h3 className="text-heading uppercase mb-6 border-b border-neutral-300 pb-3">Testimonials</h3>
+      <div className="mb-6 border-b border-neutral-300 pb-3">
+        <h3 className="text-heading uppercase inline-block mr-3">{title}</h3>
+        {headingExtra}
+      </div>
       <div className="grid md:grid-cols-3 gap-6">
         {items.map((t, i) => (
           <motion.blockquote

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import ServiceCard from '../components/common/ServiceCard';
@@ -6,7 +6,7 @@ import { motion } from 'framer-motion';
 import { fadeInUp, fadeInLeft } from '../utils/animations';
 import CloudinaryImage from '../components/common/cloudinaryImage'; // Import the Cloudinary image component
 import sanityClient from '../sanityClient.js';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { cloudinaryConfig, heroPublicId, heroFallbackSrc, partnerLogos } from '../data/cloudinaryContent';
 import Testimonials from '../components/common/Testimonials';
 import { testimonials } from '../data/testimonials';
@@ -49,8 +49,6 @@ const HomePage = () => {
               if (!p.url) e.preventDefault();
               if (window && window.gtag) {
                 window.gtag('event', 'partner_click', { partner: p.name || p.publicId });
-              } else {
-                console.log('partner_click', p.name || p.publicId);
               }
             }}
             className="flex items-center justify-center p-4 bg-white rounded-lg shadow-sm"
@@ -88,6 +86,131 @@ const HomePage = () => {
       name: 'Local Effort',
     },
   };
+
+  // --- Feedback Modal state & component ---
+  const [showFeedback, setShowFeedback] = useState(false);
+  const [fb, setFb] = useState({ name: '', email: '', sentiment: 'positive', message: '' });
+  const [fbStatus, setFbStatus] = useState('idle'); // idle | sending | sent | error
+
+  // --- Subscribe form component ---
+  function SubscribeForm() {
+    const [email, setEmail] = useState('');
+    const [status, setStatus] = useState('idle'); // idle | sending | ok | error
+    return (
+      <form
+        onSubmit={async (e) => {
+          e.preventDefault();
+          if (!email) return;
+          setStatus('sending');
+          try {
+            const res = await fetch('/api/subscribe', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ email }),
+            });
+            if (!res.ok) throw new Error(await res.text());
+            setStatus('ok');
+            setEmail('');
+          } catch (_e) {
+            setStatus('error');
+          }
+        }}
+        className="mt-4 flex gap-3"
+      >
+        <input
+          type="email"
+          required
+          placeholder="you@example.com"
+          className="input flex-1"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          aria-label="Email address"
+        />
+        <button type="submit" className="btn btn-primary" disabled={status==='sending'}>
+          {status==='sending' ? 'Subscribing…' : 'Subscribe'}
+        </button>
+        {status==='ok' && <span className="text-green-700 text-sm self-center">Thanks! You’re on the list.</span>}
+        {status==='error' && <span className="text-red-700 text-sm self-center">Couldn’t subscribe.</span>}
+      </form>
+    );
+  }
+
+  const FeedbackModal = useMemo(() => {
+    if (!showFeedback) return null;
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4" role="dialog" aria-modal="true">
+        <div className="form-card w-full max-w-lg relative">
+          <button
+            className="absolute right-4 top-4 text-sm underline"
+            onClick={() => setShowFeedback(false)}
+            aria-label="Close feedback"
+          >
+            Close
+          </button>
+          <h4 className="text-xl font-bold mb-2">Send Feedback</h4>
+          <p className="text-sm text-gray-600 mb-4">We read every note. Thanks for helping us improve.</p>
+          <form
+            onSubmit={async (e) => {
+              e.preventDefault();
+              setFbStatus('sending');
+              try {
+                const payload = {
+                  name: fb.name,
+                  email: fb.email,
+                  subject: `Website feedback (${fb.sentiment})`,
+                  message: fb.message,
+                  type: 'feedback',
+                };
+                const res = await fetch('/api/messages/submit', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify(payload),
+                });
+                if (!res.ok) throw new Error(await res.text());
+                setFbStatus('sent');
+                setFb({ name: '', email: '', sentiment: 'positive', message: '' });
+                setTimeout(() => setShowFeedback(false), 900);
+              } catch (_e) {
+                setFbStatus('error');
+              }
+            }}
+            className="space-y-3"
+          >
+            <div>
+              <label className="label" htmlFor="fb-name">Name</label>
+              <input id="fb-name" className="input" value={fb.name} onChange={(e) => setFb({ ...fb, name: e.target.value })} required />
+            </div>
+            <div>
+              <label className="label" htmlFor="fb-email">Email</label>
+              <input id="fb-email" type="email" className="input" value={fb.email} onChange={(e) => setFb({ ...fb, email: e.target.value })} required />
+            </div>
+            <div>
+              <label className="label" htmlFor="fb-sentiment">Type</label>
+              <div className="flex gap-4" id="fb-sentiment">
+                {['positive','neutral','negative'].map((s) => (
+                  <label key={s} className="inline-flex items-center gap-2">
+                    <input type="radio" name="sentiment" value={s} checked={fb.sentiment === s} onChange={() => setFb({ ...fb, sentiment: s })} />
+                    <span className="capitalize">{s}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+            <div>
+              <label className="label" htmlFor="fb-message">Message</label>
+              <textarea id="fb-message" className="textarea" value={fb.message} onChange={(e) => setFb({ ...fb, message: e.target.value })} rows={5} required />
+            </div>
+            <div className="flex items-center gap-3">
+              <button type="submit" className="btn btn-primary" disabled={fbStatus==='sending'}>
+                {fbStatus==='sending' ? 'Sending…' : 'Send feedback'}
+              </button>
+              {fbStatus==='sent' && <span className="text-green-700 text-sm">Thanks! Sent.</span>}
+              {fbStatus==='error' && <span className="text-red-700 text-sm">Could not send. Try again.</span>}
+            </div>
+          </form>
+        </div>
+      </div>
+    );
+  }, [showFeedback, fb, fbStatus]);
 
   return (
     <>
@@ -174,6 +297,15 @@ const HomePage = () => {
           </motion.div>
         </section>
 
+        {/* Subscribe callout */}
+        <section className="mx-auto max-w-3xl px-4 md:px-6 lg:px-8">
+          <div className="form-card">
+            <h3 className="text-xl font-bold">Subscribe to our email list</h3>
+            <p className="text-sm text-gray-600 mt-1">Occasional updates about seasonal menus, events, and meal prep openings.</p>
+            <SubscribeForm />
+          </div>
+        </section>
+
         {/* Partner / Logo Wall */}
         <section className="py-12">
           <h3 className="text-heading uppercase text-center mb-4">Our Partners</h3>
@@ -187,9 +319,7 @@ const HomePage = () => {
 
         {/* Offerings */}
         <section className="mx-auto max-w-6xl px-4 md:px-6 lg:px-8">
-          <h3 className="text-heading uppercase mb-6 border-b border-neutral-300 pb-3">
-            Core Offerings
-          </h3>
+          <h3 className="text-heading uppercase mb-6 border-b border-neutral-300 pb-3">What We Do</h3>
           <div className="grid md:grid-cols-3 gap-6">
             <ServiceCard
               to="/meal-prep"
@@ -208,8 +338,17 @@ const HomePage = () => {
             />
           </div>
         </section>
-  {/* Testimonials */}
-  <Testimonials items={testimonials} />
+  {/* Feedback (formerly Testimonials) */}
+  <Testimonials
+    items={testimonials}
+    title="Feedback"
+    headingExtra={
+      <span className="text-sm text-neutral-600">
+        Want to <button className="underline" onClick={() => setShowFeedback(true)}>provide feedback</button>?
+      </span>
+    }
+  />
+  {FeedbackModal}
       </div>
     </>
   );
