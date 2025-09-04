@@ -1,0 +1,1 @@
+import{R as e}from"./index-BgR84bYn.js";function a(){return e.createElement("div",{style:{padding:24}},e.createElement("h2",null,"Gallant Hawking"),e.createElement("p",null,"This partner app isn't enabled in this build."))}export{a as default};

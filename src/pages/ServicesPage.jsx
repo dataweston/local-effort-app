@@ -2,7 +2,6 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import CloudinaryImage from '../components/common/cloudinaryImage';
-import EmblaCarousel from '../components/common/EmblaCarousel';
 
 const ServicesPage = () => {
   const navigate = useNavigate();
@@ -40,7 +39,7 @@ const ServicesPage = () => {
   const [form, setForm] = useState(initialForm);
   const [submitting, setSubmitting] = useState(false);
   const [result, setResult] = useState(null);
-  const [serviceSlides, setServiceSlides] = useState([]);
+  // const [serviceSlides, setServiceSlides] = useState([]);
   const [bookHero, setBookHero] = useState(null);
 
   const required = (v) => String(v || '').trim().length > 0;
@@ -50,28 +49,7 @@ const ServicesPage = () => {
   };
   const reset = () => setForm(initialForm);
 
-  // Load hero carousel images tagged 'service'
-  useEffect(() => {
-    let abort = false;
-    (async () => {
-      try {
-        const res = await fetch(`/api/search-images?query=service&per_page=12`);
-        if (!res.ok) throw new Error(`Service images failed: ${res.status}`);
-        const data = await res.json();
-        if (abort) return;
-        const images = data.images || [];
-        const slides = images.map((img, i) => ({
-          key: img.public_id || String(i),
-          src: img.large_url || img.thumbnail_url || '',
-          alt: (img.context && img.context.custom && img.context.custom.alt) || img.public_id || `slide-${i}`,
-        }));
-        setServiceSlides(slides);
-      } catch (_e) {
-        // silent fail
-      }
-    })();
-    return () => { abort = true; };
-  }, []);
+  // Hero carousel removed per request
 
   // Load a single hero image for the Book section from tag 'book'
   useEffect(() => {
@@ -147,16 +125,7 @@ const ServicesPage = () => {
       <div className="space-y-16 mx-auto max-w-6xl px-4 md:px-6 lg:px-8">
         <h2 className="text-4xl md:text-6xl font-bold uppercase border-b border-gray-900 pb-4">Services</h2>
 
-        {/* Hero carousel from Cloudinary tag `service` */}
-        {serviceSlides.length > 0 && (
-          <EmblaCarousel
-            slides={serviceSlides.map((s) => ({ key: s.key, src: s.src || s.large_url || s.node?.props?.publicId || '', alt: s.alt || '' , node: s.node }))}
-            autoPlayMs={6500}
-            contain={true}
-            heightClass="h-[40vh] md:h-[54vh] lg:h-[60vh]"
-            showThumbs={true}
-          />
-        )}
+  {/* Hero carousel removed */}
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
           <div className="card space-y-4">
             <h3 className="text-heading">Dinners & Events</h3>

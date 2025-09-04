@@ -1,6 +1,18 @@
-import React from 'react';
+import React, { lazy, Suspense } from 'react';
 
-export default function GallantStub() {
+const ENABLED = import.meta.env.VITE_ENABLE_GALLANT === 'true';
+const RealGallant = ENABLED
+	? lazy(() => import('../../gallant-hawking-l8r4wz/src/App.jsx'))
+	: null;
+
+export default function GallantProxy() {
+	if (RealGallant) {
+		return (
+			<Suspense fallback={<div style={{ padding: 24 }}>Loading Gallant…</div>}>
+				<RealGallant />
+			</Suspense>
+		);
+	}
 	return (
 		<div style={{ padding: 24 }}>
 			<h2>Gallant Hawking</h2>

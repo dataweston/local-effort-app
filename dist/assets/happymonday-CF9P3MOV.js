@@ -1,1 +1,0 @@
-import{R as e}from"./index-1W_aNcTa.js";function a(){return e.createElement("div",{style:{padding:24}},e.createElement("h2",null,"Happy Monday"),e.createElement("p",null,"This partner app isn't enabled in this build."))}export{a as default};

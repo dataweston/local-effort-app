@@ -1,6 +1,18 @@
-import React from 'react';
+import React, { lazy, Suspense } from 'react';
 
-export default function HappyMondayStub() {
+const ENABLED = import.meta.env.VITE_ENABLE_HAPPYMONDAY === 'true';
+const RealHM = ENABLED
+	? lazy(() => import('../../happymonday/src/App.jsx'))
+	: null;
+
+export default function HappyMondayProxy() {
+	if (RealHM) {
+		return (
+			<Suspense fallback={<div style={{ padding: 24 }}>Loading Happy Monday…</div>}>
+				<RealHM />
+			</Suspense>
+		);
+	}
 	return (
 		<div style={{ padding: 24 }}>
 			<h2>Happy Monday</h2>
