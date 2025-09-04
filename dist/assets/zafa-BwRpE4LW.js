@@ -1,0 +1,1 @@
+import{R as e}from"./index-1W_aNcTa.js";function n(){return e.createElement("div",{style:{padding:24}},e.createElement("h2",null,"ZAFA Events"),e.createElement("p",null,"The ZAFA partner tool isn't enabled in this build."))}export{n as default};

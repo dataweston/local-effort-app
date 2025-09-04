@@ -1,1 +1,0 @@
-import{r as t,e as s,z as f}from"./index-evq1tli4.js";function c(){const[u,r]=t.useState(null),[n,e]=t.useState(!0);return t.useEffect(()=>{if(!s)return e(!1),()=>{};const a=f(s,o=>{r(o||null),e(!1)});return()=>a()},[]),{user:u,loading:n}}export{c as u};

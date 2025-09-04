@@ -18,7 +18,7 @@ export const partnerLogos = [
 // People headshots mapped by simple slugs (lowercase names)
 export const peoplePublicIds = {
   // Provided by user
-  weston: 'auto_uploads/blazer/2021/01/img8982-9dec1364',
+  weston: 'site/people/weston',
   // Update this to your actual public_id when ready
   catherine: 'site/people/catherine',
 };
