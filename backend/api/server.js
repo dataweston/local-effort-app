@@ -155,6 +155,14 @@ try {
   console.warn('search-images handler not available:', err.message);
 }
 
+// Mount support search endpoint (Supabase-powered hybrid search)
+try {
+  const { registerSupportSearch } = require('./supportSearch');
+  if (registerSupportSearch) registerSupportSearch(app);
+} catch (err) {
+  console.warn('support search not available:', err?.message);
+}
+
 // Helpful startup log for local debugging
 // if (require.main === module) {
 //   console.info('Backend API starting (local)');
