@@ -36,7 +36,7 @@ const cld = new Cloudinary({
  */
 import { useState, useEffect, useRef } from 'react';
 
-const CloudinaryImage = ({ publicId, alt, width, height, className, disableLazy = false, fallbackSrc, resizeMode = 'fill', placeholderMode = 'blur', sizes, responsiveSteps = [480, 768, 1024, 1400], eager = false }) => {
+const CloudinaryImage = ({ publicId, alt, width, height, className, containerClassName, imgClassName, containerStyle, disableLazy = false, fallbackSrc, resizeMode = 'fill', placeholderMode = 'blur', sizes, responsiveSteps = [480, 768, 1024, 1400], eager = false }) => {
   const [loaded, setLoaded] = useState(false);
   const [error, setError] = useState(false);
   const imgRef = useRef(null);
@@ -145,18 +145,34 @@ const CloudinaryImage = ({ publicId, alt, width, height, className, disableLazy 
     ? { backgroundImage: `url(${placeholderUrl})`, backgroundSize: 'cover', backgroundPosition: 'center' }
     : { backgroundColor: '#f3f4f6' };
 
+  // Compute image style based on resize mode; ensure it fills the container without distortion
+  const imgStyle = (() => {
+    const s = { };
+    if (width && height) {
+      s.width = '100%';
+      s.height = '100%';
+    }
+    if (resizeMode === 'fit' || resizeMode === 'pad') {
+      s.objectFit = 'contain';
+    } else {
+      s.objectFit = 'cover';
+    }
+    return s;
+  })();
+
   return (
     <div
       ref={imgRef}
-      className={`${className} relative overflow-hidden`}
-      style={baseStyle}
+      className={`${containerClassName || className || ''} relative overflow-hidden w-full`}
+      style={{ ...baseStyle, ...(containerStyle || {}) }}
     >
       <AdvancedImage
         cldImg={myImage}
         alt={alt}
-        className={`transition-opacity duration-500 ${loaded ? 'opacity-100' : 'opacity-0'}`}
+        className={`transition-opacity duration-500 ${loaded ? 'opacity-100' : 'opacity-0'} ${imgClassName || ''}`}
         sizes={sizes}
         loading={eager ? 'eager' : 'lazy'}
+        style={imgStyle}
         plugins={(() => {
           const base = [responsive({ steps: responsiveSteps })];
           const isLazy = !eager && !disableLazy;
