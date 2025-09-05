@@ -48,22 +48,86 @@ async function handler(req, res) {
 
     // Support a friendly `collection` query param (e.g. collection=home)
     // which maps to tags:collection:<name> and tags:published by default.
-    const { collection, type } = req.query || {};
-    let searchExpression;
+  const { collection, type } = req.query || {};
+  let searchExpression;
     if (collection) {
       // lazy-require the helper to avoid circular issues in serverless bundles
       // eslint-disable-next-line global-require
       const { buildExpression } = require('../backend/utils/searchExpression');
       searchExpression = buildExpression({ collection, type, published: true });
     } else {
-      searchExpression = query ? `tags:${query}` : 'resource_type:image';
+      // Build a more forgiving search:
+      // - split on spaces/commas
+      // - for each token, include plural/singular variants
+      // - combine terms with AND; within a term, OR its variants
+      const raw = String(query || '').trim();
+      if (!raw) {
+        searchExpression = 'resource_type:image';
+      } else {
+        const tokens = raw
+          .split(/[\s,]+/)
+          .map((t) => t.trim().toLowerCase())
+          .filter(Boolean);
+        // lightweight synonyms
+        const SYNONYMS = {
+          pasta: ['spaghetti', 'noodles', 'macaroni', 'penne', 'fettuccine', 'lasagna'],
+          beef: ['steak', 'steaks', 'roast beef', 'sirloin'],
+          pork: ['ham', 'bacon', 'pancetta', 'prosciutto'],
+          dessert: ['desserts', 'sweets', 'pastry', 'pastries', 'cake', 'cakes'],
+          salad: ['salads', 'greens'],
+          appetizer: ['appetizers', 'starter', 'starters', 'tapas'],
+          soup: ['soups', 'broth'],
+          bread: ['breads', 'loaf', 'loaves', 'focaccia', 'sourdough'],
+          tomato: ['tomatoes'],
+          potato: ['potatoes'],
+          berry: ['berries'],
+          pizza: ['pizzas', 'margherita'],
+        };
+        const variants = (t) => {
+          // simple rules: tomato <-> tomatoes, potato <-> potatoes, general trailing s
+          const v = new Set();
+          v.add(t);
+          if (t.endsWith('ies') && t.length > 3) {
+            v.add(t.slice(0, -3) + 'y');
+          }
+          if (t.endsWith('es')) {
+            // tomatoes -> tomato
+            v.add(t.slice(0, -2));
+          }
+          if (t.endsWith('s')) {
+            v.add(t.slice(0, -1));
+          } else {
+            v.add(t + 's');
+            v.add(t + 'es');
+          }
+          // add synonyms
+          if (SYNONYMS[t]) {
+            SYNONYMS[t].forEach((syn) => v.add(String(syn).toLowerCase()));
+          }
+          return Array.from(v);
+        };
+
+        const parts = tokens.map((tok) => {
+          const vs = variants(tok)
+            .map((v) => `tags:${v}`)
+            .join(' OR ');
+          return `(${vs})`;
+        });
+        searchExpression = parts.length ? parts.join(' AND ') : 'resource_type:image';
+      }
     }
 
     const builder = cloudinary.search
       .expression(searchExpression)
-      .sort_by('created_at', 'desc')
       .with_field('context')
       .max_results(perPage);
+
+    // Sort by relevance if a query is present; otherwise by recency
+    if (String(query || '').trim()) {
+      builder.sort_by('score', 'desc');
+    } else {
+      builder.sort_by('created_at', 'desc');
+    }
 
     if (next_cursor) builder.next_cursor(next_cursor);
 
@@ -81,14 +145,14 @@ async function handler(req, res) {
         format: r.format,
         // client-friendly URLs (thumbnails for gallery, large for modal)
         thumbnail_url: cloudinary.url(publicId, {
-          width: 600,
-          height: 600,
-          crop: 'fill',
+          width: 800,
+          crop: 'limit', // preserve aspect ratio up to width
           quality: 'auto',
           fetch_format: 'auto',
         }),
         large_url: cloudinary.url(publicId, {
-          width: 1400,
+          width: 1600,
+          crop: 'limit',
           quality: 'auto',
           fetch_format: 'auto',
         }),

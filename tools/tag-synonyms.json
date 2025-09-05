@@ -1,0 +1,14 @@
+{
+  "pasta": ["spaghetti", "noodles", "macaroni", "penne", "fettuccine", "lasagna"],
+  "beef": ["steak", "steaks", "sirloin", "roast"],
+  "pork": ["ham", "bacon", "pancetta", "prosciutto"],
+  "dessert": ["desserts", "sweets", "pastry", "pastries", "cake", "cakes"],
+  "salad": ["salads", "greens"],
+  "appetizer": ["appetizers", "starter", "starters", "tapas"],
+  "soup": ["soups", "broth"],
+  "bread": ["breads", "loaf", "loaves", "focaccia", "sourdough"],
+  "tomato": ["tomatoes"],
+  "potato": ["potatoes"],
+  "berry": ["berries"],
+  "pizza": ["pizzas", "margherita"]
+}
