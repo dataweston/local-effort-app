@@ -1,5 +1,7 @@
 const { createClient: createSanity } = require('@sanity/client');
 const { createClient: createSupabase } = require('@supabase/supabase-js');
+const fs = require('fs');
+const path = require('path');
 
 function getClients() {
   const sanity = createSanity({
@@ -181,4 +183,64 @@ module.exports = {
   fetchFaqsFromSanity,
   fetchPagesFromSanity,
   ingestPages,
+  // local docs ingestion helpers (exported for testing if needed)
 };
+
+// --- Local docs ingestion (Markdown/JSON) ---
+
+function readAllFiles(dir, exts = ['.md', '.markdown', '.json']) {
+  const abs = path.resolve(dir);
+  if (!fs.existsSync(abs)) return [];
+  const out = [];
+  const walk = (d) => {
+    for (const name of fs.readdirSync(d)) {
+      const full = path.join(d, name);
+      const stat = fs.statSync(full);
+      if (stat.isDirectory()) walk(full);
+      else if (exts.includes(path.extname(name).toLowerCase())) out.push(full);
+    }
+  };
+  walk(abs);
+  return out;
+}
+
+function loadLocalDocs(baseDir = 'docs/support') {
+  const files = readAllFiles(baseDir);
+  const docs = [];
+  for (const file of files) {
+    const ext = path.extname(file).toLowerCase();
+    try {
+      const raw = fs.readFileSync(file, 'utf8');
+      if (ext === '.json') {
+        const data = JSON.parse(raw);
+        const title = data.title || path.basename(file);
+        const body = data.body || JSON.stringify(data, null, 2);
+        docs.push({ _id: `local-${path.relative(baseDir, file)}`.replace(/[^a-z0-9_-]/gi, '-'), title, text: body, url: null, tags: ['local', 'json'] });
+      } else {
+        // Markdown as-is
+        const title = raw.split('\n')[0].replace(/^#\s*/, '').slice(0, 120) || path.basename(file);
+        docs.push({ _id: `local-${path.relative(baseDir, file)}`.replace(/[^a-z0-9_-]/gi, '-'), title, text: raw, url: null, tags: ['local', 'md'] });
+      }
+    } catch (e) {
+      // eslint-disable-next-line no-console
+      console.warn('Failed to read local doc:', file, e && e.message);
+    }
+  }
+  return docs;
+}
+
+async function ingestLocalDocs({ supabase, docs }) {
+  for (const doc of docs) {
+    const title = doc.title || '(Doc)';
+    const text = String(doc.text || '');
+    const url = doc.url || null;
+    const tags = Array.isArray(doc.tags) ? doc.tags : ['local'];
+    const sourceId = await upsertSource(supabase, { type: 'doc', source_id: doc._id, url, title, tags });
+    const sections = chunkByHeadings(text);
+    const rows = await replaceChunksForSource(supabase, sourceId, sections.map((s, i) => ({ ...s, ord: i, tags })));
+    await upsertEmbeddings(supabase, rows, sections.map((s) => `${s.heading || title}\n\n${s.text}`));
+  }
+}
+
+module.exports.loadLocalDocs = loadLocalDocs;
+module.exports.ingestLocalDocs = ingestLocalDocs;

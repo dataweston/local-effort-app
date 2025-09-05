@@ -86,6 +86,8 @@
   "cloudinary:tag:dry": "node tools/cloudinary-tag-all.js --prefix gallery",
   "cloudinary:tag:apply": "node tools/cloudinary-tag-all.js --prefix gallery --apply",
   "cloudinary:tag:apply:map": "node tools/cloudinary-tag-all.js --prefix gallery --mapFile tools/tag-synonyms.json --apply"
+  ,
+  "emails:extract": "node tools/email-extract.js --include yum@localeffortfood.com"
   },
   "browserslist": {
     "production": [

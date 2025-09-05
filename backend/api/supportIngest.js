@@ -8,6 +8,8 @@ const {
   fetchPagesFromSanity,
   ingestFaqs,
   ingestPages,
+  loadLocalDocs,
+  ingestLocalDocs,
 } = require('./utils/kbIngest');
 
 async function runIngest() {
@@ -54,7 +56,17 @@ async function runIngest() {
   if (all.pages && all.pages.length) {
     await ingestPages({ supabase, pages: all.pages });
   }
-  return { faqs: all.faqs?.length || 0, pages: all.pages?.length || 0 };
+  // Ingest local docs under docs/support
+  try {
+    const local = loadLocalDocs(path.resolve(__dirname, '../../docs/support'));
+    if (Array.isArray(local) && local.length) {
+      await ingestLocalDocs({ supabase, docs: local });
+      all.localDocs = local.length;
+    }
+  } catch (e) {
+    console.warn('Local docs ingest failed:', e && e.message);
+  }
+  return { faqs: all.faqs?.length || 0, pages: all.pages?.length || 0, localDocs: all.localDocs || 0 };
 }
 
 function authorize(req) {
