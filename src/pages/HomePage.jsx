@@ -65,7 +65,7 @@ const HomePage = () => {
     const items = (partners || []).filter((p) => p && p.publicId);
     if (!items.length) return null;
     return (
-      <div className="max-w-6xl mx-auto grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6 items-center px-4">
+  <div className="max-w-6xl mx-auto grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-5 items-center px-4">
         {items.map((p, i) => (
           <motion.a
             key={(p.publicId || i) + i}
@@ -76,27 +76,29 @@ const HomePage = () => {
                 window.gtag('event', 'partner_click', { partner: p.name || p.publicId });
               }
             }}
-            className="flex items-center justify-center p-4 bg-white rounded-lg shadow-sm"
+    className="flex items-center justify-center p-3 bg-white rounded-lg shadow-sm"
             aria-label={p.name || `Partner ${i + 1}`}
             rel="noopener noreferrer"
             target={p.url ? '_blank' : undefined}
-            initial={{ opacity: 0, y: 10 }}
-            whileInView={{ opacity: 1, y: 0 }}
+    initial={{ opacity: 0, scale: 0.98 }}
+    whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.3, delay: i * 0.03 }}
+    transition={{ duration: 0.25, ease: 'easeOut', delay: i * 0.03 }}
           >
             <div className="w-full">
-              <div className="relative w-full" style={{ paddingTop: '26%' }}>
+      <div className="relative w-full" style={{ paddingTop: '18.2%' }}>
                 <CloudinaryImage
                   publicId={p.publicId}
                   alt={p.name || `Partner ${i + 1}`}
-                  width={1200}
-                  height={320}
+      width={1000}
+      height={250}
                   containerClassName="absolute inset-0"
-                  imgClassName="w-full h-full"
+      imgClassName="w-full h-full grayscale hover:grayscale-0 transition-all"
                   resizeMode="fit"
-                  sizes="(max-width: 640px) 45vw, (max-width: 1024px) 28vw, 22vw"
-                  responsiveSteps={[360, 640, 900, 1200]}
+      placeholderMode="solid"
+      containerStyle={{ backgroundImage: 'none', backgroundColor: 'transparent' }}
+      sizes="(max-width: 640px) 32vw, (max-width: 1024px) 20vw, 16vw"
+      responsiveSteps={[320, 560, 820, 1000]}
                 />
               </div>
             </div>
@@ -317,7 +319,9 @@ const HomePage = () => {
               animate="animate"
               className="mt-6 md:mt-8 text-body max-w-md"
             >
-            Event hospitality and personal chef services, with an obsessive focus on local ingredients.
+            Event hospitality and personal chef services, with an obsessive focus on local ingredients.<br /><br />
+
+            Think of us for special occasions and special events. Count on us for weekly home cooked meals. We're comfortable in homes, offices, bars and cafes, parks, vineyards, and uh.. anywhere, really.
             </motion.p>
             <motion.button
               whileHover={{ scale: 1.03 }}
