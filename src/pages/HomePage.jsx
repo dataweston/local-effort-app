@@ -85,14 +85,21 @@ const HomePage = () => {
             viewport={{ once: true }}
             transition={{ duration: 0.3, delay: i * 0.03 }}
           >
-            <CloudinaryImage
-              publicId={p.publicId}
-              alt={p.name || `Partner ${i + 1}`}
-              width={300}
-              height={80}
-              className="max-h-16 object-contain grayscale hover:grayscale-0 transition-all"
-              resizeMode="fit"
-            />
+            <div className="w-full">
+              <div className="relative w-full" style={{ paddingTop: '26%' }}>
+                <CloudinaryImage
+                  publicId={p.publicId}
+                  alt={p.name || `Partner ${i + 1}`}
+                  width={1200}
+                  height={320}
+                  containerClassName="absolute inset-0"
+                  imgClassName="w-full h-full"
+                  resizeMode="fit"
+                  sizes="(max-width: 640px) 45vw, (max-width: 1024px) 28vw, 22vw"
+                  responsiveSteps={[360, 640, 900, 1200]}
+                />
+              </div>
+            </div>
           </motion.a>
         ))}
       </div>

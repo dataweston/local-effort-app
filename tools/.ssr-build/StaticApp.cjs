@@ -1201,7 +1201,7 @@ var cld = new import_url_gen.Cloudinary({
     cloudName: CLOUD_NAME
   }
 });
-var CloudinaryImage = ({ publicId, alt, width, height, className, disableLazy = false, fallbackSrc, resizeMode = "fill", placeholderMode = "blur", sizes, responsiveSteps = [480, 768, 1024, 1400], eager = false }) => {
+var CloudinaryImage = ({ publicId, alt, width, height, className, containerClassName, imgClassName, containerStyle, disableLazy = false, fallbackSrc, resizeMode = "fill", placeholderMode = "blur", sizes, responsiveSteps = [480, 768, 1024, 1400], eager = false }) => {
   const [loaded, setLoaded] = (0, import_react6.useState)(false);
   const [error, setError] = (0, import_react6.useState)(false);
   const imgRef = (0, import_react6.useRef)(null);
@@ -1284,20 +1284,34 @@ var CloudinaryImage = ({ publicId, alt, width, height, className, disableLazy = 
     );
   }
   const baseStyle = placeholderMode === "blur" ? { backgroundImage: `url(${placeholderUrl})`, backgroundSize: "cover", backgroundPosition: "center" } : { backgroundColor: "#f3f4f6" };
+  const imgStyle = (() => {
+    const s = {};
+    if (width && height) {
+      s.width = "100%";
+      s.height = "100%";
+    }
+    if (resizeMode === "fit" || resizeMode === "pad") {
+      s.objectFit = "contain";
+    } else {
+      s.objectFit = "cover";
+    }
+    return s;
+  })();
   return /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(
     "div",
     {
       ref: imgRef,
-      className: `${className} relative overflow-hidden`,
-      style: baseStyle,
+      className: `${containerClassName || className || ""} relative overflow-hidden w-full`,
+      style: { ...baseStyle, ...containerStyle || {} },
       children: /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(
         import_react5.AdvancedImage,
         {
           cldImg: myImage,
           alt,
-          className: `transition-opacity duration-500 ${loaded ? "opacity-100" : "opacity-0"}`,
+          className: `transition-opacity duration-500 ${loaded ? "opacity-100" : "opacity-0"} ${imgClassName || ""}`,
           sizes,
           loading: eager ? "eager" : "lazy",
+          style: imgStyle,
           plugins: (() => {
             const base = [(0, import_react5.responsive)({ steps: responsiveSteps })];
             const isLazy = !eager && !disableLazy;
@@ -3228,17 +3242,20 @@ var HomePage = () => {
         whileInView: { opacity: 1, y: 0 },
         viewport: { once: true },
         transition: { duration: 0.3, delay: i * 0.03 },
-        children: /* @__PURE__ */ (0, import_jsx_runtime7.jsx)(
+        children: /* @__PURE__ */ (0, import_jsx_runtime7.jsx)("div", { className: "w-full", children: /* @__PURE__ */ (0, import_jsx_runtime7.jsx)("div", { className: "relative w-full", style: { paddingTop: "26%" }, children: /* @__PURE__ */ (0, import_jsx_runtime7.jsx)(
           cloudinaryImage_default,
           {
             publicId: p.publicId,
             alt: p.name || `Partner ${i + 1}`,
-            width: 300,
-            height: 80,
-            className: "max-h-16 object-contain grayscale hover:grayscale-0 transition-all",
-            resizeMode: "fit"
+            width: 1200,
+            height: 320,
+            containerClassName: "absolute inset-0",
+            imgClassName: "w-full h-full",
+            resizeMode: "fit",
+            sizes: "(max-width: 640px) 45vw, (max-width: 1024px) 28vw, 22vw",
+            responsiveSteps: [360, 640, 900, 1200]
           }
-        )
+        ) }) })
       },
       (p.publicId || i) + i
     )) });
