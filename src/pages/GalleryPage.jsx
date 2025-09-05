@@ -231,15 +231,19 @@ const GalleryPage = () => {
                     <img
                       src={img.thumbnail_url}
                       alt={img.context?.alt || 'Gallery image'}
-            className="rounded-lg w-full h-auto"
+                      className="rounded-lg w-full h-auto"
+                      width={img.width || undefined}
+                      height={img.height || undefined}
+                      style={img.width && img.height ? { aspectRatio: `${img.width} / ${img.height}` } : undefined}
                       loading="lazy"
                     />
                   ) : (
                     <CloudinaryImage
                       publicId={img.public_id}
                       alt={img.context?.alt || 'Gallery image'}
-            width={800}
-            className="rounded-lg w-full h-auto"
+                      width={800}
+                      className="rounded-lg w-full h-auto"
+                      containerStyle={img.width && img.height ? { aspectRatio: `${img.width} / ${img.height}` } : undefined}
                     />
                   )}
                 </motion.button>
@@ -250,13 +254,15 @@ const GalleryPage = () => {
                 <button
                   type="button"
                   onClick={() => {
+                    // Refresh whole gallery and scroll to top
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
                     setLoading(true);
                     setError(null);
-                    fetchImages({ append: true, cursor: nextCursor });
+                    fetchImages({ append: false, cursor: null });
                   }}
                   className="px-4 py-2 rounded bg-black text-white hover:bg-neutral-800"
                 >
-                  Load more
+                  Refresh gallery
                 </button>
               </div>
             )}
