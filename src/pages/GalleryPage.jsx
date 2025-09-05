@@ -5,6 +5,7 @@ import CloudinaryImage from '../components/common/cloudinaryImage';
 
 const GalleryPage = () => {
   const [images, setImages] = useState([]);
+  const [nextCursor, setNextCursor] = useState(null);
   const [query, setQuery] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -42,14 +43,24 @@ const GalleryPage = () => {
   }, []);
   const closeBtnRef = useRef(null);
 
-  useEffect(() => {
-    const controller = new AbortController();
-    const handler = setTimeout(async () => {
-      setLoading(true);
-      setError(null);
-      try {
-  const apiUrl = `/api/search-images${query ? `?query=${encodeURIComponent(query)}&per_page=${PAGE_SIZE}` : `?per_page=${PAGE_SIZE}`}`;
-        const response = await fetch(apiUrl, { signal: controller.signal });
+  const PAGE_SIZE = 36;
+
+  const shuffle = useCallback((arr) => {
+    const a = arr.slice();
+    for (let i = a.length - 1; i > 0; i -= 1) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }, []);
+
+  const fetchImages = useCallback(async (opts = {}) => {
+    const { append = false, cursor = null, signal } = opts;
+    const q = query ? `query=${encodeURIComponent(query)}&` : '';
+    const c = cursor ? `next_cursor=${encodeURIComponent(cursor)}&` : '';
+    const apiUrl = `/api/search-images?${q}${c}per_page=${PAGE_SIZE}`;
+    try {
+      const response = await fetch(apiUrl, { signal });
 
         // Check if response is actually JSON
         const contentType = response.headers.get('content-type') || '';
@@ -68,8 +79,10 @@ const GalleryPage = () => {
           throw new Error(`Search failed (${response.status}): ${details}`);
         }
 
-  const imgs = Array.isArray(data.images) ? data.images : [];
-  setImages(imgs);
+    const imgs = Array.isArray(data.images) ? data.images : [];
+    const batch = shuffle(imgs);
+    setImages((prev) => (append ? [...prev, ...batch] : batch));
+    setNextCursor(data.next_cursor || null);
       } catch (err) {
         if (err.name === 'AbortError') return;
         console.error('Error fetching images:', err);
@@ -77,7 +90,7 @@ const GalleryPage = () => {
         try {
           const fallback = await tryLoadFallback();
           if (fallback && fallback.length) {
-            setImages(fallback);
+            setImages(shuffle(fallback));
             setError('Showing fallback images while the gallery API is unavailable.');
           } else {
             setError(err.message || String(err));
@@ -88,18 +101,25 @@ const GalleryPage = () => {
       } finally {
         setLoading(false);
       }
-    }, 300);
+  }, [query, shuffle, tryLoadFallback]);
 
+  // initial / query-changed fetch
+  useEffect(() => {
+    const controller = new AbortController();
+    const handler = setTimeout(() => {
+      setLoading(true);
+      setError(null);
+      setNextCursor(null);
+      fetchImages({ append: false, cursor: null, signal: controller.signal });
+    }, 300);
     return () => {
       clearTimeout(handler);
       controller.abort();
     };
-  }, [query]);
+  }, [query, fetchImages]);
 
   // Client-side pagination to limit initial DOM nodes
-  const PAGE_SIZE = 36;
-  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
-  useEffect(() => setVisibleCount(PAGE_SIZE), [images]);
+  // Remove client-side reveal pagination; rely on server pagination via next_cursor
 
   // Load more is handled by button; reset visibleCount on new image set above.
 
@@ -196,41 +216,44 @@ const GalleryPage = () => {
           </div>
         ) : (
           <>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-              {images.slice(0, visibleCount).map((img, idx) => (
+            <div className="columns-2 md:columns-3 lg:columns-4 gap-4 [column-fill:_balance]">
+              {images.map((img, idx) => (
                 <motion.button
                   type="button"
                   key={img.asset_id}
                   onClick={() => openLightbox(img, idx)}
                   whileHover={{ scale: 1.03 }}
                   whileTap={{ scale: 0.98 }}
-                  className="border p-2 bg-white rounded-lg overflow-hidden"
+          className="mb-4 w-full break-inside-avoid border p-2 bg-white rounded-lg overflow-hidden"
                   aria-label={img.context?.alt || `Gallery image ${idx + 1}`}
                 >
                   {img.thumbnail_url ? (
                     <img
                       src={img.thumbnail_url}
                       alt={img.context?.alt || 'Gallery image'}
-                      className="rounded-lg object-cover w-full h-full aspect-square"
+            className="rounded-lg w-full h-auto"
                       loading="lazy"
                     />
                   ) : (
                     <CloudinaryImage
                       publicId={img.public_id}
                       alt={img.context?.alt || 'Gallery image'}
-                      width={600}
-                      height={600}
-                      className="rounded-lg object-cover w-full h-full aspect-square"
+            width={800}
+            className="rounded-lg w-full h-auto"
                     />
                   )}
                 </motion.button>
               ))}
             </div>
-            {images.length > visibleCount && (
+            {nextCursor && (
               <div className="mt-6 text-center">
                 <button
                   type="button"
-                  onClick={() => setVisibleCount((c) => Math.min(c + PAGE_SIZE, images.length))}
+                  onClick={() => {
+                    setLoading(true);
+                    setError(null);
+                    fetchImages({ append: true, cursor: nextCursor });
+                  }}
                   className="px-4 py-2 rounded bg-black text-white hover:bg-neutral-800"
                 >
                   Load more

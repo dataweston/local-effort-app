@@ -82,7 +82,10 @@
     "lint:fix": "eslint \"src/**/*.{js,jsx}\" --fix",
     "format": "prettier --write \"src/**/*.{js,jsx,css,json,md}\"",
     "reviews:parse": "node tools/parse-thumbtack-widget.js tools/thumbtackwidget.html > public/reviews/thumbtack.json",
-    "check-format": "prettier --check \"src/**/*.{js,jsx,css,json,md}\""
+  "check-format": "prettier --check \"src/**/*.{js,jsx,css,json,md}\"",
+  "cloudinary:tag:dry": "node tools/cloudinary-tag-all.js --prefix gallery",
+  "cloudinary:tag:apply": "node tools/cloudinary-tag-all.js --prefix gallery --apply",
+  "cloudinary:tag:apply:map": "node tools/cloudinary-tag-all.js --prefix gallery --mapFile tools/tag-synonyms.json --apply"
   },
   "browserslist": {
     "production": [
