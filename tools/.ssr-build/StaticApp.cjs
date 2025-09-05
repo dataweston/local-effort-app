@@ -3662,7 +3662,7 @@ var AboutUsPage = () => {
               width: 600,
               height: 400,
               className: "rounded-md w-full h-auto object-cover",
-              fallbackSrc: "/gallery/IMG_3145.jpg"
+              fallbackSrc: "/gallery/IMG-1013.JPG"
             }
           ) }) : null,
           weston?.role && /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("p", { className: "text-body text-gray-600 mb-4", children: weston.role }),
@@ -3909,7 +3909,7 @@ ${form.notes || "(none)"}`;
           )
         ] })
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime10.jsx)(PhotoGrid, { tags: "service", title: "Service photos", perPage: 24 }),
+      /* @__PURE__ */ (0, import_jsx_runtime10.jsx)(PhotoGrid, { tags: "service", title: "", perPage: 24 }),
       /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("section", { id: "event-request", className: "border-t border-neutral-200 pt-10", children: /* @__PURE__ */ (0, import_jsx_runtime10.jsxs)("div", { className: "max-w-3xl mx-auto", children: [
         bookHero && /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("div", { className: "w-full h-[30vh] md:h-[36vh] lg:h-[42vh] rounded-xl overflow-hidden mb-6", children: /* @__PURE__ */ (0, import_jsx_runtime10.jsx)(
           cloudinaryImage_default,
@@ -5756,36 +5756,47 @@ var GalleryPage = () => {
       ] }) : images.length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "text-center p-8", children: [
         /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("p", { children: "No images found." }),
         /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("p", { className: "text-sm text-gray-600 mt-2", children: "Try removing search terms or check that you have images in your Cloudinary account." })
-      ] }) : /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4", children: images.slice(0, visibleCount).map((img, idx) => /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
-        import_framer_motion11.motion.button,
-        {
-          type: "button",
-          onClick: () => openLightbox(img, idx),
-          whileHover: { scale: 1.03 },
-          whileTap: { scale: 0.98 },
-          className: "border p-2 bg-white rounded-lg overflow-hidden",
-          "aria-label": img.context?.alt || `Gallery image ${idx + 1}`,
-          children: img.thumbnail_url ? /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
-            "img",
-            {
-              src: img.thumbnail_url,
-              alt: img.context?.alt || "Gallery image",
-              className: "rounded-lg object-cover w-full h-full aspect-square",
-              loading: "lazy"
-            }
-          ) : /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
-            cloudinaryImage_default,
-            {
-              publicId: img.public_id,
-              alt: img.context?.alt || "Gallery image",
-              width: 600,
-              height: 600,
-              className: "rounded-lg object-cover w-full h-full aspect-square"
-            }
-          )
-        },
-        img.asset_id
-      )) })
+      ] }) : /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)(import_jsx_runtime20.Fragment, { children: [
+        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4", children: images.slice(0, visibleCount).map((img, idx) => /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+          import_framer_motion11.motion.button,
+          {
+            type: "button",
+            onClick: () => openLightbox(img, idx),
+            whileHover: { scale: 1.03 },
+            whileTap: { scale: 0.98 },
+            className: "border p-2 bg-white rounded-lg overflow-hidden",
+            "aria-label": img.context?.alt || `Gallery image ${idx + 1}`,
+            children: img.thumbnail_url ? /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+              "img",
+              {
+                src: img.thumbnail_url,
+                alt: img.context?.alt || "Gallery image",
+                className: "rounded-lg object-cover w-full h-full aspect-square",
+                loading: "lazy"
+              }
+            ) : /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+              cloudinaryImage_default,
+              {
+                publicId: img.public_id,
+                alt: img.context?.alt || "Gallery image",
+                width: 600,
+                height: 600,
+                className: "rounded-lg object-cover w-full h-full aspect-square"
+              }
+            )
+          },
+          img.asset_id
+        )) }),
+        images.length > visibleCount && /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "mt-6 text-center", children: /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+          "button",
+          {
+            type: "button",
+            onClick: () => setVisibleCount((c) => Math.min(c + PAGE_SIZE, images.length)),
+            className: "px-4 py-2 rounded bg-black text-white hover:bg-neutral-800",
+            children: "Load more"
+          }
+        ) })
+      ] })
     ] }),
     /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(import_framer_motion11.AnimatePresence, { children: selected && /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
       import_framer_motion11.motion.div,

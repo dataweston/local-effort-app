@@ -101,6 +101,8 @@ const GalleryPage = () => {
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
   useEffect(() => setVisibleCount(PAGE_SIZE), [images]);
 
+  // Load more is handled by button; reset visibleCount on new image set above.
+
   // lightbox controls
   const openLightbox = useCallback(
     (img, idx) => {
@@ -193,36 +195,49 @@ const GalleryPage = () => {
             </p>
           </div>
         ) : (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {images.slice(0, visibleCount).map((img, idx) => (
-              <motion.button
-                type="button"
-                key={img.asset_id}
-                onClick={() => openLightbox(img, idx)}
-                whileHover={{ scale: 1.03 }}
-                whileTap={{ scale: 0.98 }}
-                className="border p-2 bg-white rounded-lg overflow-hidden"
-                aria-label={img.context?.alt || `Gallery image ${idx + 1}`}
-              >
-                {img.thumbnail_url ? (
-                  <img
-                    src={img.thumbnail_url}
-                    alt={img.context?.alt || 'Gallery image'}
-                    className="rounded-lg object-cover w-full h-full aspect-square"
-                    loading="lazy"
-                  />
-                ) : (
-                  <CloudinaryImage
-                    publicId={img.public_id}
-                    alt={img.context?.alt || 'Gallery image'}
-                    width={600}
-                    height={600}
-                    className="rounded-lg object-cover w-full h-full aspect-square"
-                  />
-                )}
-              </motion.button>
-            ))}
-          </div>
+          <>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+              {images.slice(0, visibleCount).map((img, idx) => (
+                <motion.button
+                  type="button"
+                  key={img.asset_id}
+                  onClick={() => openLightbox(img, idx)}
+                  whileHover={{ scale: 1.03 }}
+                  whileTap={{ scale: 0.98 }}
+                  className="border p-2 bg-white rounded-lg overflow-hidden"
+                  aria-label={img.context?.alt || `Gallery image ${idx + 1}`}
+                >
+                  {img.thumbnail_url ? (
+                    <img
+                      src={img.thumbnail_url}
+                      alt={img.context?.alt || 'Gallery image'}
+                      className="rounded-lg object-cover w-full h-full aspect-square"
+                      loading="lazy"
+                    />
+                  ) : (
+                    <CloudinaryImage
+                      publicId={img.public_id}
+                      alt={img.context?.alt || 'Gallery image'}
+                      width={600}
+                      height={600}
+                      className="rounded-lg object-cover w-full h-full aspect-square"
+                    />
+                  )}
+                </motion.button>
+              ))}
+            </div>
+            {images.length > visibleCount && (
+              <div className="mt-6 text-center">
+                <button
+                  type="button"
+                  onClick={() => setVisibleCount((c) => Math.min(c + PAGE_SIZE, images.length))}
+                  className="px-4 py-2 rounded bg-black text-white hover:bg-neutral-800"
+                >
+                  Load more
+                </button>
+              </div>
+            )}
+          </>
         )}
       </div>
       <AnimatePresence>
