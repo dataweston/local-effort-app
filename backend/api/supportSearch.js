@@ -1,5 +1,28 @@
 const { getSupabase } = require('./supabaseClient');
 
+// Simple in-memory LRU cache for search results to speed up repeats
+const MAX_CACHE_ENTRIES = 200;
+const DEFAULT_TTL_MS = 60 * 1000; // 60s
+const memoryCache = new Map(); // key -> { expires, value }
+
+function setCache(key, value, ttlMs = DEFAULT_TTL_MS) {
+  if (memoryCache.size >= MAX_CACHE_ENTRIES) {
+    // delete oldest entry (Map iteration order is insertion order)
+    const firstKey = memoryCache.keys().next().value;
+    if (firstKey) memoryCache.delete(firstKey);
+  }
+  memoryCache.set(key, { expires: Date.now() + ttlMs, value });
+}
+function getCache(key) {
+  const hit = memoryCache.get(key);
+  if (!hit) return null;
+  if (Date.now() > hit.expires) {
+    memoryCache.delete(key);
+    return null;
+  }
+  return hit.value;
+}
+
 async function getEmbedding(text) {
   const key = process.env.OPENAI_API_KEY;
   if (!key) return null;
@@ -29,6 +52,8 @@ async function supportSearchHandler(req, res) {
     if (!supabase) return res.status(500).json({ error: 'search-not-configured' });
 
     const cacheKey = normalizeKey(q);
+    const mem = getCache(cacheKey);
+    if (mem) return res.json({ cached: true, results: mem });
     // Try cached answer first
     const nowIso = new Date().toISOString();
     const cached = await supabase
@@ -41,12 +66,44 @@ async function supportSearchHandler(req, res) {
       return res.json({ cached: true, answer: cached.data.answer_md, citations: cached.data.citations, confidence: cached.data.confidence });
     }
 
+    // Expand query terms with plural/singular and synonyms for the FTS path
+    const SYNONYMS = {
+      pasta: ['spaghetti', 'noodles', 'macaroni', 'penne', 'fettuccine', 'lasagna'],
+      beef: ['steak', 'steaks', 'sirloin', 'roast beef'],
+      pork: ['ham', 'bacon', 'pancetta', 'prosciutto'],
+      dessert: ['desserts', 'sweets', 'pastry', 'pastries', 'cake', 'cakes'],
+      salad: ['salads', 'greens'],
+      appetizer: ['appetizers', 'starter', 'starters', 'tapas'],
+      soup: ['soups', 'broth'],
+      bread: ['breads', 'loaf', 'loaves', 'focaccia', 'sourdough'],
+      tomato: ['tomatoes'],
+      potato: ['potatoes'],
+      berry: ['berries'],
+      pizza: ['pizzas', 'margherita']
+    };
+    const tokens = q
+      .toLowerCase()
+      .split(/[\s,]+/)
+      .map((t) => t.trim())
+      .filter(Boolean);
+    const expand = (t) => {
+      const v = new Set([t]);
+      if (t.endsWith('ies') && t.length > 3) v.add(t.slice(0, -3) + 'y');
+      if (t.endsWith('es')) v.add(t.slice(0, -2));
+      if (t.endsWith('s')) v.add(t.slice(0, -1)); else { v.add(t + 's'); v.add(t + 'es'); }
+      if (SYNONYMS[t]) SYNONYMS[t].forEach((s) => v.add(String(s).toLowerCase()));
+      return Array.from(v);
+    };
+    const websearch = tokens
+      .map((t) => `(${expand(t).map((v) => `"${v}"`).join(' | ')})`)
+      .join(' & ');
+
     // Hybrid search: text + vector
     const [fts, emb] = await Promise.all([
       supabase
         .from('content_chunks')
         .select('id, source_id, ord, heading, anchor, text', { count: 'planned', head: false })
-        .textSearch('ts', q, { type: 'websearch', config: 'english' })
+        .textSearch('ts', websearch || q, { type: 'websearch', config: 'english' })
         .limit(10),
       getEmbedding(q),
     ]);
@@ -76,7 +133,10 @@ async function supportSearchHandler(req, res) {
     }
     // Limit to top 10
     merged.sort((a, b) => b.score - a.score);
-    const results = merged.slice(0, 10);
+  const results = merged.slice(0, 10);
+
+  // store in memory cache for a short time
+  setCache(cacheKey, results);
 
     return res.json({ cached: false, results });
   } catch (err) {
