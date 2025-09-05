@@ -6154,31 +6154,9 @@ var MealPrepPage_default = MealPrepPage;
 var import_react31 = __toESM(require("react"));
 var import_react_helmet_async9 = __toESM(require_lib());
 var import_react_router_dom5 = require("react-router-dom");
-var import_jsx_runtime26 = require("react/jsx-runtime");
-var PartnerPortalPage = () => {
-  return /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)(import_jsx_runtime26.Fragment, { children: [
-    /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)(import_react_helmet_async9.Helmet, { children: [
-      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("title", { children: "Partner Portal | Local Effort" }),
-      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("meta", { name: "description", content: "Tools and resources for Local Effort partners." })
-    ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "space-y-6", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("h2", { className: "text-5xl md:text-7xl font-bold uppercase", children: "Partner Portal" }),
-      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("p", { className: "text-body max-w-2xl", children: "Welcome. Continue to the portal welcome to sign in and see tools." }),
-      /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "flex gap-3", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(import_react_router_dom5.Link, { to: "/auth", className: "inline-block px-4 py-2 rounded border", children: "Sign in" }),
-        /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(import_react_router_dom5.Link, { to: "/partner-portal/welcome", className: "inline-block px-4 py-2 rounded bg-black text-white", children: "Enter Portal" })
-      ] })
-    ] })
-  ] });
-};
-var PartnerPortalPage_default = PartnerPortalPage;
-
-// src/pages/PartnerPortalWelcome.jsx
-var import_react32 = __toESM(require("react"));
-var import_react_helmet_async10 = __toESM(require_lib());
-var import_react_router_dom6 = require("react-router-dom");
 
 // src/config/partnerTools.js
+var import_meta6 = {};
 var PARTNER_TOOLS = [
   {
     key: "happymonday",
@@ -6226,11 +6204,87 @@ var PARTNER_TOOLS = [
 function hasAccess(profile, toolKey) {
   const roles = profile && (profile.roles || profile.tools || profile.apps) || [];
   if (roles === "all") return true;
+  if (Array.isArray(roles) && (roles.includes("admin") || roles.includes("owner"))) return true;
   return Array.isArray(roles) ? roles.includes(toolKey) : false;
+}
+function isAdminProfile(profile) {
+  const roles = profile && (profile.roles || profile.tools || profile.apps) || [];
+  if (roles === "all") return true;
+  return Array.isArray(roles) && (roles.includes("admin") || roles.includes("owner"));
+}
+function isAdminEmail(email) {
+  if (!email) return false;
+  const list = (import_meta6?.env?.VITE_ADMIN_EMAILS || import_meta6?.env?.VITE_OWNER_EMAILS || "").split(/[\s,]+/).map((s) => s.trim().toLowerCase()).filter(Boolean);
+  return list.includes(String(email).toLowerCase());
+}
+
+// src/pages/PartnerPortalPage.jsx
+var Icons = __toESM(require("lucide-react"));
+var import_jsx_runtime26 = require("react/jsx-runtime");
+var PartnerPortalPage = () => {
+  const { user, loading } = useAuthUser();
+  const [profile, setProfile] = import_react31.default.useState(null);
+  const [pLoading, setPLoading] = import_react31.default.useState(false);
+  import_react31.default.useEffect(() => {
+    let cancelled = false;
+    const load = async () => {
+      if (!user) return setProfile(null);
+      setPLoading(true);
+      try {
+        const p = await getUserProfile(user.uid);
+        if (!cancelled) setProfile(p || null);
+      } finally {
+        if (!cancelled) setPLoading(false);
+      }
+    };
+    load();
+    return () => {
+      cancelled = true;
+    };
+  }, [user]);
+  return /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)(import_jsx_runtime26.Fragment, { children: [
+    /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)(import_react_helmet_async9.Helmet, { children: [
+      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("title", { children: "Partner Portal | Local Effort" }),
+      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("meta", { name: "description", content: "Tools and resources for Local Effort partners." })
+    ] }),
+    /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "space-y-6", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("h2", { className: "text-5xl md:text-7xl font-bold uppercase", children: "Partner Portal" }),
+      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("p", { className: "text-body max-w-2xl", children: "Welcome. Sign in to see your tools, or jump to the portal welcome." }),
+      !loading && !user && /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "p-6 border rounded-md max-w-xl bg-neutral-50", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("h3", { className: "text-xl font-semibold mb-2", children: "Sign in required" }),
+        /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("p", { className: "mb-4 text-gray-600", children: "Use your Google account to continue." }),
+        /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "flex gap-3", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(import_react_router_dom5.Link, { to: "/auth", className: "inline-block px-4 py-2 rounded bg-black text-white", children: "Sign in" }),
+          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(import_react_router_dom5.Link, { to: "/partner-portal/welcome", className: "inline-block px-4 py-2 rounded border", children: "Portal welcome" })
+        ] })
+      ] }),
+      user && /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(ToolGrid, { profile, user, loading: pLoading })
+    ] })
+  ] });
+};
+var PartnerPortalPage_default = PartnerPortalPage;
+function ToolGrid({ profile, user }) {
+  const isAdmin = isAdminProfile(profile) || isAdminEmail(user?.email);
+  const visible = isAdmin ? PARTNER_TOOLS : PARTNER_TOOLS.filter((t) => hasAccess(profile, t.key));
+  return /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4", children: visible.map((t) => {
+    const Icon = Icons[t.icon] || Icons.AppWindow;
+    const isExternal = t.type === "external" && t.href;
+    const content = /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "group block p-5 border rounded-xl hover:shadow transition bg-white", children: /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "flex items-center gap-3", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("span", { className: "inline-flex items-center justify-center w-10 h-10 rounded-lg bg-neutral-100 group-hover:bg-neutral-200", children: /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(Icon, { className: "w-5 h-5 text-neutral-800" }) }),
+      /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { children: [
+        /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "font-semibold", children: t.name }),
+        /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "text-sm text-neutral-600", children: t.description })
+      ] })
+    ] }) });
+    return isExternal ? /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("a", { href: t.href, target: "_blank", rel: "noopener noreferrer", children: content }, t.key) : /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(import_react_router_dom5.Link, { to: t.route, children: content }, t.key);
+  }) });
 }
 
 // src/pages/PartnerPortalWelcome.jsx
-var Icons = __toESM(require("lucide-react"));
+var import_react32 = __toESM(require("react"));
+var import_react_helmet_async10 = __toESM(require_lib());
+var import_react_router_dom6 = require("react-router-dom");
+var Icons2 = __toESM(require("lucide-react"));
 var import_jsx_runtime27 = require("react/jsx-runtime");
 function PartnerPortalWelcome() {
   const { user, loading } = useAuthUser();
@@ -6266,16 +6320,16 @@ function PartnerPortalWelcome() {
         /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("p", { className: "mb-4 text-gray-600", children: "Use your Google account to continue." }),
         /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(import_react_router_dom6.Link, { to: "/auth", className: "inline-block px-4 py-2 rounded bg-black text-white", children: "Continue with Google" })
       ] }),
-      user && /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(ToolGrid, { profile, loading: pLoading })
+      user && /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(ToolGrid2, { profile, loading: pLoading })
     ] })
   ] });
 }
-function ToolGrid({ profile }) {
-  const roles = profile && (profile.roles || profile.tools || profile.apps) || [];
-  const isAdmin = roles === "all" || Array.isArray(roles) && roles.includes("admin");
+function ToolGrid2({ profile }) {
+  const { user } = useAuthUser();
+  const isAdmin = isAdminProfile(profile) || isAdminEmail(user?.email);
   const visible = isAdmin ? PARTNER_TOOLS : PARTNER_TOOLS.filter((t) => hasAccess(profile, t.key));
   return /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("div", { className: "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4", children: visible.map((t) => {
-    const Icon = Icons[t.icon] || Icons.AppWindow;
+    const Icon = Icons2[t.icon] || Icons2.AppWindow;
     const isExternal = t.type === "external" && t.href;
     const content = /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("div", { className: "group block p-5 border rounded-xl hover:shadow transition bg-white", children: /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)("div", { className: "flex items-center gap-3", children: [
       /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("span", { className: "inline-flex items-center justify-center w-10 h-10 rounded-lg bg-neutral-100 group-hover:bg-neutral-200", children: /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(Icon, { className: "w-5 h-5 text-neutral-800" }) }),

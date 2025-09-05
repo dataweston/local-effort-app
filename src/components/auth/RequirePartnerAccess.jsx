@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { onAuthStateChanged } from 'firebase/auth';
 import { auth } from '../../firebaseConfig';
 import { getUserProfile } from '../../utils/userProfiles';
-import { hasAccess } from '../../config/partnerTools';
+import { hasAccess, isAdminEmail } from '../../config/partnerTools';
 import { Link } from 'react-router-dom';
 
 export function RequirePartnerAccess({ toolKey, children }) {
@@ -24,7 +24,8 @@ export function RequirePartnerAccess({ toolKey, children }) {
       }
       try {
         const profile = await getUserProfile(u.uid);
-        setAllowed(hasAccess(profile, toolKey));
+        const emailAdmin = isAdminEmail(u.email);
+        setAllowed(emailAdmin ? true : hasAccess(profile, toolKey));
       } catch (e) {
         setAllowed(false);
       } finally {
