@@ -86,7 +86,7 @@ const AboutUsPage = () => {
                     width={600}
                     height={400}
           className="rounded-md w-full h-auto object-cover"
-          fallbackSrc=""
+          fallbackSrc="/gallery/IMG-1013.JPG"
                   />
                 </div>
               ) : null}
