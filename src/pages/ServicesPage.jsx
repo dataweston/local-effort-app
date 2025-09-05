@@ -155,7 +155,7 @@ const ServicesPage = () => {
         </div>
 
   {/* Photos tagged 'service' */}
-  <PhotoGrid tags="service" title="Service photos" perPage={24} />
+  <PhotoGrid tags="service" title="" perPage={24} />
 
         {/* Event Request Form */}
         <section id="event-request" className="border-t border-neutral-200 pt-10">
