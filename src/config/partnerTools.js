@@ -65,9 +65,30 @@ export function isAdminProfile(profile) {
 // Treat configured emails as administrators (comma or space separated)
 export function isAdminEmail(email) {
   if (!email) return false;
-  const list = (import.meta?.env?.VITE_ADMIN_EMAILS || import.meta?.env?.VITE_OWNER_EMAILS || '')
-    .split(/[\s,]+/)
+  const env = (import.meta && import.meta.env) ? import.meta.env : {};
+  // Support multiple common env names and both single-value and CSV lists.
+  const raw =
+    env.VITE_ADMIN_EMAILS ||
+    env.VITE_ADMIN_EMAIL ||
+    env.VITE_OWNER_EMAILS ||
+    env.VITE_OWNER_EMAIL ||
+    env.NEXT_PUBLIC_ADMIN_EMAILS ||
+    env.NEXT_PUBLIC_ADMIN_EMAIL ||
+    '';
+
+  const target = String(email).trim().toLowerCase();
+  const list = String(raw)
+    .split(/[\s,;]+/)
     .map((s) => s.trim().toLowerCase())
     .filter(Boolean);
-  return list.includes(String(email).toLowerCase());
+
+  // Exact email match
+  if (list.includes(target)) return true;
+
+  // Optional: allow domain entries like "@example.com" to match any user at that domain
+  const domain = target.includes('@') ? target.split('@')[1] : '';
+  if (domain && list.some((entry) => entry.startsWith('@') && entry.slice(1) === domain)) {
+    return true;
+  }
+  return false;
 }
