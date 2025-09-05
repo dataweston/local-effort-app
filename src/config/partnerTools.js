@@ -50,5 +50,24 @@ export const PARTNER_TOOLS = [
 export function hasAccess(profile, toolKey) {
   const roles = (profile && (profile.roles || profile.tools || profile.apps)) || [];
   if (roles === 'all') return true;
+  // Treat 'admin' and 'owner' as having access to all tools
+  if (Array.isArray(roles) && (roles.includes('admin') || roles.includes('owner'))) return true;
   return Array.isArray(roles) ? roles.includes(toolKey) : false;
+}
+
+// Convenience helper to determine if a profile should see all tools
+export function isAdminProfile(profile) {
+  const roles = (profile && (profile.roles || profile.tools || profile.apps)) || [];
+  if (roles === 'all') return true;
+  return Array.isArray(roles) && (roles.includes('admin') || roles.includes('owner'));
+}
+
+// Treat configured emails as administrators (comma or space separated)
+export function isAdminEmail(email) {
+  if (!email) return false;
+  const list = (import.meta?.env?.VITE_ADMIN_EMAILS || import.meta?.env?.VITE_OWNER_EMAILS || '')
+    .split(/[\s,]+/)
+    .map((s) => s.trim().toLowerCase())
+    .filter(Boolean);
+  return list.includes(String(email).toLowerCase());
 }

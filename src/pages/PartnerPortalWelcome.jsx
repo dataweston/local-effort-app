@@ -2,7 +2,7 @@ import React from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Link } from 'react-router-dom';
 import { useAuthUser } from '../hooks/useAuthUser';
-import { PARTNER_TOOLS, hasAccess } from '../config/partnerTools';
+import { PARTNER_TOOLS, hasAccess, isAdminProfile, isAdminEmail } from '../config/partnerTools';
 import * as Icons from 'lucide-react';
 import { getUserProfile } from '../utils/userProfiles';
 
@@ -54,8 +54,8 @@ export default function PartnerPortalWelcome() {
 }
 
 function ToolGrid({ profile }) {
-  const roles = (profile && (profile.roles || profile.tools || profile.apps)) || [];
-  const isAdmin = roles === 'all' || (Array.isArray(roles) && roles.includes('admin'));
+  const { user } = useAuthUser();
+  const isAdmin = isAdminProfile(profile) || isAdminEmail(user?.email);
   const visible = isAdmin ? PARTNER_TOOLS : PARTNER_TOOLS.filter((t) => hasAccess(profile, t.key));
 
   return (
