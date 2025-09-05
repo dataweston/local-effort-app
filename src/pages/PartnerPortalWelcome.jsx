@@ -10,15 +10,37 @@ export default function PartnerPortalWelcome() {
   const { user, loading } = useAuthUser();
   const [profile, setProfile] = React.useState(null);
   const [pLoading, setPLoading] = React.useState(false);
+  const [profileError, setProfileError] = React.useState(null);
 
   React.useEffect(() => {
     let cancelled = false;
     const load = async () => {
-      if (!user) return setProfile(null);
+      if (!user) {
+        setProfile(null);
+        setProfileError(null);
+        return;
+      }
       setPLoading(true);
+      setProfileError(null);
       try {
         const p = await getUserProfile(user.uid);
-        if (!cancelled) setProfile(p || null);
+        if (!cancelled) {
+          setProfile(p || null);
+          if (!p) {
+            // Could be missing doc OR permission denied if rules block read.
+            setProfileError(null); // stay silent unless explicit permission error thrown below.
+          }
+        }
+      } catch (e) {
+        if (!cancelled) {
+          const code = e && e.code;
+            if (code === 'permission-denied') {
+              setProfileError('You are signed in but do not have permission to load your partner profile. Ask an admin to grant access.');
+            } else {
+              setProfileError(e.message || 'Failed to load profile');
+            }
+          setProfile(null);
+        }
       } finally {
         if (!cancelled) setPLoading(false);
       }
@@ -46,7 +68,14 @@ export default function PartnerPortalWelcome() {
         )}
 
         {user && (
-          <ToolGrid profile={profile} loading={pLoading} />
+          <>
+            {profileError && (
+              <div className="p-4 border border-amber-300 bg-amber-50 rounded text-sm text-amber-800 mb-4">
+                {profileError}
+              </div>
+            )}
+            <ToolGrid profile={profile} loading={pLoading} />
+          </>
         )}
       </div>
     </>

@@ -254,15 +254,15 @@ const GalleryPage = () => {
                 <button
                   type="button"
                   onClick={() => {
-                    // Refresh whole gallery and scroll to top
-                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                    if (loading) return; // prevent double clicks
                     setLoading(true);
                     setError(null);
-                    fetchImages({ append: false, cursor: null });
+                    fetchImages({ append: true, cursor: nextCursor });
                   }}
-                  className="px-4 py-2 rounded bg-black text-white hover:bg-neutral-800"
+                  className="px-4 py-2 rounded bg-black text-white hover:bg-neutral-800 disabled:opacity-50"
+                  disabled={loading}
                 >
-                  Refresh gallery
+                  {loading ? 'Loading…' : 'Load more'}
                 </button>
               </div>
             )}

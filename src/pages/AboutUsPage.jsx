@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
-import sanityClient from '../sanityClient.js'; // explicit file extension for consistency
+// Fetch via backend proxy to avoid CORS issues
 import CloudinaryImage from '../components/common/cloudinaryImage';
 import { peoplePublicIds } from '../data/cloudinaryContent';
 
@@ -10,16 +10,14 @@ const AboutUsPage = () => {
   // const [activeSkill, setActiveSkill] = useState(null);
 
   useEffect(() => {
-    // Limit fields we request to reduce payload size
-    const query = `{
-      "page": *[_type == "page" && slug.current == "about-us"][0]{ title, introduction },
-  "persons": *[_type == "person"]{ name, role, bio, image{asset->{_ref}}, headshot{ asset{ public_id }, alt } }
-    }`;
+  // Data fetched via backend proxy
 
     let mounted = true;
     (async () => {
       try {
-        const data = await sanityClient.fetch(query);
+        const resp = await fetch('/api/about');
+        if (!resp.ok) throw new Error(`About fetch failed: ${resp.status}`);
+        const data = await resp.json();
         if (!mounted) return;
   setAboutData(data);
       } catch (err) {
