@@ -143,7 +143,7 @@ const CloudinaryImage = ({ publicId, alt, width, height, className, containerCla
 
   const baseStyle = placeholderMode === 'blur'
     ? { backgroundImage: `url(${placeholderUrl})`, backgroundSize: 'cover', backgroundPosition: 'center' }
-    : { backgroundColor: '#f3f4f6' };
+    : { backgroundColor: placeholderMode === 'solid' ? 'transparent' : '#f3f4f6' };
 
   // Compute image style based on resize mode; ensure it fills the container without distortion
   const imgStyle = (() => {

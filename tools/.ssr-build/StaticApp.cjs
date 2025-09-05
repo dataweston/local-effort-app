@@ -1283,7 +1283,7 @@ var CloudinaryImage = ({ publicId, alt, width, height, className, containerClass
       }
     );
   }
-  const baseStyle = placeholderMode === "blur" ? { backgroundImage: `url(${placeholderUrl})`, backgroundSize: "cover", backgroundPosition: "center" } : { backgroundColor: "#f3f4f6" };
+  const baseStyle = placeholderMode === "blur" ? { backgroundImage: `url(${placeholderUrl})`, backgroundSize: "cover", backgroundPosition: "center" } : { backgroundColor: placeholderMode === "solid" ? "transparent" : "#f3f4f6" };
   const imgStyle = (() => {
     const s = {};
     if (width && height) {
@@ -3224,7 +3224,7 @@ var HomePage = () => {
   const PartnerGrid = () => {
     const items = (partners || []).filter((p) => p && p.publicId);
     if (!items.length) return null;
-    return /* @__PURE__ */ (0, import_jsx_runtime7.jsx)("div", { className: "max-w-6xl mx-auto grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6 items-center px-4", children: items.map((p, i) => /* @__PURE__ */ (0, import_jsx_runtime7.jsx)(
+    return /* @__PURE__ */ (0, import_jsx_runtime7.jsx)("div", { className: "max-w-6xl mx-auto grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-5 items-center px-4", children: items.map((p, i) => /* @__PURE__ */ (0, import_jsx_runtime7.jsx)(
       import_framer_motion3.motion.a,
       {
         href: p.url || "#",
@@ -3234,26 +3234,28 @@ var HomePage = () => {
             window.gtag("event", "partner_click", { partner: p.name || p.publicId });
           }
         },
-        className: "flex items-center justify-center p-4 bg-white rounded-lg shadow-sm",
+        className: "flex items-center justify-center p-3 bg-white rounded-lg shadow-sm",
         "aria-label": p.name || `Partner ${i + 1}`,
         rel: "noopener noreferrer",
         target: p.url ? "_blank" : void 0,
-        initial: { opacity: 0, y: 10 },
-        whileInView: { opacity: 1, y: 0 },
+        initial: { opacity: 0, scale: 0.98 },
+        whileInView: { opacity: 1, scale: 1 },
         viewport: { once: true },
-        transition: { duration: 0.3, delay: i * 0.03 },
-        children: /* @__PURE__ */ (0, import_jsx_runtime7.jsx)("div", { className: "w-full", children: /* @__PURE__ */ (0, import_jsx_runtime7.jsx)("div", { className: "relative w-full", style: { paddingTop: "26%" }, children: /* @__PURE__ */ (0, import_jsx_runtime7.jsx)(
+        transition: { duration: 0.25, ease: "easeOut", delay: i * 0.03 },
+        children: /* @__PURE__ */ (0, import_jsx_runtime7.jsx)("div", { className: "w-full", children: /* @__PURE__ */ (0, import_jsx_runtime7.jsx)("div", { className: "relative w-full", style: { paddingTop: "18.2%" }, children: /* @__PURE__ */ (0, import_jsx_runtime7.jsx)(
           cloudinaryImage_default,
           {
             publicId: p.publicId,
             alt: p.name || `Partner ${i + 1}`,
-            width: 1200,
-            height: 320,
+            width: 1e3,
+            height: 250,
             containerClassName: "absolute inset-0",
-            imgClassName: "w-full h-full",
+            imgClassName: "w-full h-full grayscale hover:grayscale-0 transition-all",
             resizeMode: "fit",
-            sizes: "(max-width: 640px) 45vw, (max-width: 1024px) 28vw, 22vw",
-            responsiveSteps: [360, 640, 900, 1200]
+            placeholderMode: "solid",
+            containerStyle: { backgroundImage: "none", backgroundColor: "transparent" },
+            sizes: "(max-width: 640px) 32vw, (max-width: 1024px) 20vw, 16vw",
+            responsiveSteps: [320, 560, 820, 1e3]
           }
         ) }) })
       },
@@ -3453,14 +3455,19 @@ var HomePage = () => {
               children: "For Your Functions."
             }
           ),
-          /* @__PURE__ */ (0, import_jsx_runtime7.jsx)(
+          /* @__PURE__ */ (0, import_jsx_runtime7.jsxs)(
             import_framer_motion3.motion.p,
             {
               variants: fadeInUp,
               initial: "initial",
               animate: "animate",
               className: "mt-6 md:mt-8 text-body max-w-md",
-              children: "Event hospitality and personal chef services, with an obsessive focus on local ingredients."
+              children: [
+                "Event hospitality and personal chef services, with an obsessive focus on local ingredients.",
+                /* @__PURE__ */ (0, import_jsx_runtime7.jsx)("br", {}),
+                /* @__PURE__ */ (0, import_jsx_runtime7.jsx)("br", {}),
+                "Think of us for special occasions and special events. Count on us for weekly home cooked meals. We're comfortable in homes, offices, bars and cafes, parks, vineyards, and uh.. anywhere, really."
+              ]
             }
           ),
           /* @__PURE__ */ (0, import_jsx_runtime7.jsx)(
