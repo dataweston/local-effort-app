@@ -10,6 +10,7 @@ import PricingPage from '../pages/PricingPage';
 import MenuPage from '../pages/MenuPage';
 import HappyMondayPage from '../pages/HappyMondayPage';
 import GalleryPage from '../pages/GalleryPage';
+import EventsPage from '../pages/EventsPage';
 import MealPrepPage from '../pages/MealPrepPage';
 import PartnerPortalPage from '../pages/PartnerPortalPage';
 import PartnerPortalWelcome from '../pages/PartnerPortalWelcome';
@@ -28,6 +29,7 @@ export default function StaticApp() {
             <Route path="/menu" element={<MenuPage />} />
             <Route path="/happy-monday" element={<HappyMondayPage />} />
             <Route path="/gallery" element={<GalleryPage />} />
+            <Route path="/events" element={<EventsPage />} />
             <Route path="/meal-prep" element={<MealPrepPage />} />
             <Route path="/partner-portal" element={<PartnerPortalPage />} />
             <Route path="/partner-portal/welcome" element={<PartnerPortalWelcome />} />

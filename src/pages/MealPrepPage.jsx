@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { VennDiagram } from '../components/common/VennDiagram';
+import PhotoGrid from '../components/common/PhotoGrid';
 import client from '../sanityClient';
 import { useAuthUser } from '../hooks/useAuthUser';
 import { AuthButtons } from '../components/mealprep/AuthButtons';
@@ -145,7 +146,7 @@ export const MealPrepPage = () => {
           to create custom plans for any diet.
         </p>
 
-        {user && (
+  {user && (
           <div className="flex gap-2 items-center text-sm text-gray-700">
             <a href="#menus" className="underline">View current menus</a>
             {assignedClient ? (
@@ -177,8 +178,8 @@ export const MealPrepPage = () => {
           </section>
         )}
 
-        {/* 3-wide gallery carousel for #mealplan */}
-  {/* Gallery carousel removed */}
+  {/* Photo grid for meal plan images */}
+  <PhotoGrid tags="mealplan" title="Meal plan photos" perPage={24} />
 
   {/* Side-by-side accordions */}
   <div className="grid md:grid-cols-2 gap-6">

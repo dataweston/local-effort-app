@@ -19,6 +19,7 @@ const PricingPage = lazy(() => import('./pages/PricingPage'));
 const CrowdfundingPage = lazy(() => import('./pages/CrowdfundingPage'));
 const MenuPage = lazy(() => import('./pages/MenuPage'));
 const HappyMondayPage = lazy(() => import('./pages/HappyMondayPage'));
+const EventsPage = lazy(() => import('./pages/EventsPage'));
 // --- NEW: Lazily import the GalleryPage ---
 const GalleryPage = lazy(() => import('./pages/GalleryPage'));
 // --- NEW: Lazily import the MealPrepPage ---
@@ -110,6 +111,14 @@ const AppContent = () => {
                   element={
                     <AnimatedPage>
                       <HappyMondayPage />
+                    </AnimatedPage>
+                  }
+                />
+                <Route
+                  path="/events"
+                  element={
+                    <AnimatedPage>
+                      <EventsPage />
                     </AnimatedPage>
                   }
                 />
