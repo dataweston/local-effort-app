@@ -1310,47 +1310,16 @@ var CloudinaryImage = ({ publicId, alt, width, height, className, disableLazy = 
 };
 var cloudinaryImage_default = CloudinaryImage;
 
-// src/sanityClient.js
-var import_client = require("@sanity/client");
-var import_meta2 = {};
-var env = (typeof import_meta2 !== "undefined" ? import_meta2.env : {}) || {};
-var projectId = env.VITE_APP_SANITY_PROJECT_ID || env.VITE_SANITY_PROJECT_ID;
-var dataset = env.VITE_APP_SANITY_DATASET || env.VITE_SANITY_DATASET;
-var client = null;
-try {
-  if (projectId && dataset) {
-    client = (0, import_client.createClient)({ projectId, dataset, useCdn: true, apiVersion: "2023-05-03" });
-  } else {
-    client = {
-      fetch: async () => {
-        throw new Error("Sanity client unavailable");
-      }
-    };
-  }
-} catch (e) {
-  console.warn("Failed to initialize Sanity client:", e && (e.message || e));
-  client = {
-    fetch: async () => {
-      throw new Error("Sanity client unavailable");
-    }
-  };
-}
-var sanityClient_default = client;
-
 // src/pages/HomePage.jsx
 var import_react11 = require("react");
 
 // src/data/cloudinaryContent.js
-var import_meta3 = {};
+var import_meta2 = {};
 var cloudinaryConfig = {
-  cloudName: typeof import_meta3 !== "undefined" && import_meta3.env?.VITE_CLOUDINARY_CLOUD_NAME || "dokyhfvyd"
+  cloudName: typeof import_meta2 !== "undefined" && import_meta2.env?.VITE_CLOUDINARY_CLOUD_NAME || "dokyhfvyd"
 };
 var heroPublicId = "site/hero/home-hero-1";
 var heroFallbackSrc = "/gallery/IMG_3145.jpg";
-var partnerLogos = [
-  { publicId: "site/partners/local-effort-logo", name: "Local Effort", fallbackSrc: "/gallery/logo.png" },
-  { publicId: "site/partners/logo-sticker", name: "Logo Sticker", fallbackSrc: "/gallery/logo_sticker.png" }
-];
 var peoplePublicIds = {
   // Provided by user
   weston: "site/people/weston",
@@ -3068,7 +3037,7 @@ useEmblaCarousel.globalOptions = void 0;
 
 // src/components/common/EmblaCarousel.jsx
 var import_jsx_runtime5 = require("react/jsx-runtime");
-var import_meta4 = {};
+var import_meta3 = {};
 function buildCloudinarySrcSet(publicId, cloudName) {
   if (!publicId || !cloudName) return null;
   const widths = [480, 768, 1024, 1400, 2e3];
@@ -3086,7 +3055,7 @@ function EmblaCarousel2({
   contain = true,
   showThumbs = true
 }) {
-  const cloudName = typeof import_meta4 !== "undefined" && import_meta4.env?.VITE_CLOUDINARY_CLOUD_NAME || "";
+  const cloudName = typeof import_meta3 !== "undefined" && import_meta3.env?.VITE_CLOUDINARY_CLOUD_NAME || "";
   const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true, align: "center" });
   (0, import_react8.useEffect)(() => {
     if (!emblaApi || !autoPlayMs) return void 0;
@@ -3147,25 +3116,14 @@ function chunk(arr, size) {
   for (let i = 0; i < arr.length; i += size) out.push(arr.slice(i, i + size));
   return out;
 }
-function TestimonialsCarousel({ items = [], title = "Testimonials", headingExtra = null }) {
+function TestimonialsCarousel({ items = [], title = "Testimonials", headingExtra = null, maxLines = 5 }) {
   const slides = (0, import_react9.useMemo)(() => {
     if (!items.length) return [];
     const randomized = shuffle(items);
     const groups = chunk(randomized, 3);
     return groups.map((group, idx) => ({
       key: `t-slide-${idx}`,
-      node: /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("div", { className: "grid md:grid-cols-3 gap-6", children: group.map((t, i) => /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("blockquote", { className: "p-6 rounded-xl bg-white shadow", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("p", { className: "text-body italic", children: [
-          "\u201C",
-          t.quote,
-          "\u201D"
-        ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("footer", { className: "mt-4 text-sm text-neutral-600", children: [
-          "\u2014 ",
-          t.author,
-          t.context ? /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("span", { className: "block text-neutral-400 mt-1", children: t.context }) : null
-        ] })
-      ] }, i)) })
+      node: /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("div", { className: "grid md:grid-cols-3 gap-6", children: group.map((t, i) => /* @__PURE__ */ (0, import_jsx_runtime6.jsx)(TestimonialCard, { t, maxLines }, i)) })
     }));
   }, [items]);
   if (!slides.length) return null;
@@ -3177,25 +3135,32 @@ function TestimonialsCarousel({ items = [], title = "Testimonials", headingExtra
     /* @__PURE__ */ (0, import_jsx_runtime6.jsx)(EmblaCarousel2, { slides, autoPlayMs: 7e3, contain: false, heightClass: "h-auto", showThumbs: false })
   ] });
 }
-
-// src/data/testimonials.js
-var testimonials = [
-  {
-    quote: "The in-home dinner was flawless. Every bite was a delight and the team was professional and kind.",
-    author: "Megan K.",
-    context: "Birthday dinner for 10"
-  },
-  {
-    quote: "Our company happy hour was the best yet\u2014fresh, local, and super tasty.",
-    author: "Chris D.",
-    context: "Corporate event catering"
-  },
-  {
-    quote: "Meal prep has been a lifesaver. Healthy, simple, and actually delicious.",
-    author: "Priya S.",
-    context: "Weekly meal prep client"
-  }
-];
+function TestimonialCard({ t, maxLines = 5 }) {
+  const [expanded, setExpanded] = (0, import_react9.useState)(false);
+  const quote = String(t.quote || "").trim();
+  const author = t.author || "Anonymous";
+  const context = t.context;
+  return /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("blockquote", { className: "p-6 rounded-xl bg-white shadow flex flex-col", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)(
+      "p",
+      {
+        className: `text-body italic ${expanded ? "" : "line-clamp-" + maxLines}`,
+        style: !expanded ? { display: "-webkit-box", WebkitLineClamp: maxLines, WebkitBoxOrient: "vertical", overflow: "hidden" } : void 0,
+        children: [
+          "\u201C",
+          quote,
+          "\u201D"
+        ]
+      }
+    ),
+    quote.length > 220 && /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("button", { className: "mt-2 text-sm underline self-start", onClick: () => setExpanded((v) => !v), "aria-expanded": expanded, children: expanded ? "See less" : "See more" }),
+    /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("footer", { className: "mt-4 text-sm text-neutral-600", children: [
+      "\u2014 ",
+      author,
+      context ? /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("span", { className: "block text-neutral-400 mt-1", children: context }) : null
+    ] })
+  ] });
+}
 
 // src/pages/HomePage.jsx
 var import_jsx_runtime7 = require("react/jsx-runtime");
@@ -3204,38 +3169,24 @@ var HomePage = () => {
   const [partners, setPartners] = (0, import_react10.useState)([]);
   (0, import_react11.useEffect)(() => {
     let mounted = true;
-    const q = `*[_type == "partner" && published == true] | order(order asc){ name, "publicId": logo.publicId, "image": logo.asset, url }`;
-    sanityClient_default.fetch(q).then((res) => {
-      if (mounted && res && res.length) setPartners(res);
-    }).catch((err) => {
-      console.warn("Failed to fetch partners from Sanity, falling back to static list:", err.message);
-    });
-    return () => {
-      mounted = false;
-    };
-  }, []);
-  const [reviews, setReviews] = (0, import_react10.useState)(testimonials);
-  (0, import_react11.useEffect)(() => {
-    let mounted = true;
-    const q = `*[_type == "testimonial" && published == true] | order(order asc){ author, context, quote }`;
-    sanityClient_default.fetch(q).then((res) => {
-      if (!mounted) return;
-      if (Array.isArray(res) && res.length) {
-        const seen = /* @__PURE__ */ new Set();
-        const merged = [...res, ...testimonials].filter((t) => {
-          const k = `${(t.quote || "").trim()}|${(t.author || "").trim()}`;
-          if (seen.has(k)) return false;
-          seen.add(k);
-          return true;
-        });
-        setReviews(merged);
-      }
+    fetch("/api/search-images?query=partner&per_page=48").then((r) => r.ok ? r.json() : null).then((data) => {
+      if (!mounted || !data || !Array.isArray(data.images)) return;
+      const items = data.images.map((img) => {
+        const ctx = img.context && (img.context.custom || img.context);
+        return {
+          publicId: img.public_id || img.publicId,
+          name: ctx && (ctx.name || ctx.title || ctx.alt) || img.public_id || "Partner",
+          url: ctx && (ctx.url || ctx.link || ctx.href)
+        };
+      }).filter((p) => p.publicId);
+      setPartners(items);
     }).catch(() => {
     });
     return () => {
       mounted = false;
     };
   }, []);
+  const [reviews, setReviews] = (0, import_react10.useState)([]);
   (0, import_react11.useEffect)(() => {
     let mounted = true;
     fetch("/reviews/thumbtack.json").then((r) => r.ok ? r.json() : null).then((ext) => {
@@ -3257,15 +3208,15 @@ var HomePage = () => {
     };
   }, []);
   const PartnerGrid = () => {
-    const sanitized = (partners || []).filter((p) => p && p.publicId);
-    const items = sanitized.length ? sanitized : partnerLogos;
+    const items = (partners || []).filter((p) => p && p.publicId);
+    if (!items.length) return null;
     return /* @__PURE__ */ (0, import_jsx_runtime7.jsx)("div", { className: "max-w-6xl mx-auto grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6 items-center px-4", children: items.map((p, i) => /* @__PURE__ */ (0, import_jsx_runtime7.jsx)(
-      "a",
+      import_framer_motion3.motion.a,
       {
         href: p.url || "#",
         onClick: (e) => {
           if (!p.url) e.preventDefault();
-          if (window && window.gtag) {
+          if (typeof window !== "undefined" && window.gtag) {
             window.gtag("event", "partner_click", { partner: p.name || p.publicId });
           }
         },
@@ -3273,6 +3224,10 @@ var HomePage = () => {
         "aria-label": p.name || `Partner ${i + 1}`,
         rel: "noopener noreferrer",
         target: p.url ? "_blank" : void 0,
+        initial: { opacity: 0, y: 10 },
+        whileInView: { opacity: 1, y: 0 },
+        viewport: { once: true },
+        transition: { duration: 0.3, delay: i * 0.03 },
         children: /* @__PURE__ */ (0, import_jsx_runtime7.jsx)(
           cloudinaryImage_default,
           {
@@ -3281,12 +3236,11 @@ var HomePage = () => {
             width: 300,
             height: 80,
             className: "max-h-16 object-contain grayscale hover:grayscale-0 transition-all",
-            fallbackSrc: p.fallbackSrc || "/gallery/logo.png",
             resizeMode: "fit"
           }
         )
       },
-      (p.publicId || p.image && p.image._ref || i) + i
+      (p.publicId || i) + i
     )) });
   };
   const heroImage = { publicId: heroPublicId, alt: "Local Effort \u2014 hero" };
@@ -3301,6 +3255,21 @@ var HomePage = () => {
       name: "Local Effort"
     }
   };
+  const partnersJsonLd = partners && partners.length ? {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    name: "Partners",
+    itemListElement: partners.map((p, idx) => ({
+      "@type": "ListItem",
+      position: idx + 1,
+      item: {
+        "@type": "ImageObject",
+        name: p.name || `Partner ${idx + 1}`,
+        contentUrl: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/f_auto,q_auto/${p.publicId}`,
+        url: p.url || void 0
+      }
+    }))
+  } : null;
   const [showFeedback, setShowFeedback] = (0, import_react10.useState)(false);
   const [fb, setFb] = (0, import_react10.useState)({ name: "", email: "", sentiment: "positive", message: "" });
   const [fbStatus, setFbStatus] = (0, import_react10.useState)("idle");
@@ -3427,10 +3396,11 @@ var HomePage = () => {
         "meta",
         {
           name: "description",
-          content: "Local Effort offers personal chef services, event catering, and weekly meal prep in Roseville, MN."
+          content: "Local Effort offers personal chef services, event catering, and weekly meal plans in Roseville, MN."
         }
       ),
       /* @__PURE__ */ (0, import_jsx_runtime7.jsx)("script", { type: "application/ld+json", children: JSON.stringify(imageJsonLd) }),
+      partnersJsonLd && /* @__PURE__ */ (0, import_jsx_runtime7.jsx)("script", { type: "application/ld+json", children: JSON.stringify(partnersJsonLd) }),
       /* @__PURE__ */ (0, import_jsx_runtime7.jsx)("script", { type: "application/ld+json", children: JSON.stringify({
         "@context": "https://schema.org",
         "@type": ["Restaurant", "Caterer"],
@@ -3535,8 +3505,8 @@ var HomePage = () => {
             ServiceCard_default,
             {
               to: "/meal-prep",
-              title: "Weekly Meal Prep",
-              description: "Basic, good nutrition from local Midwest sources."
+              title: "Weekly Meal Plans",
+              description: "Nutritious, locally-sourced weekly menus and plans."
             }
           ),
           /* @__PURE__ */ (0, import_jsx_runtime7.jsx)(
@@ -3544,7 +3514,7 @@ var HomePage = () => {
             {
               to: "/pizza-party",
               title: "Pizza Parties",
-              description: "local pizza at your party. we'll bring the oven."
+              description: "Local Pizza at your party (or bar). We'll bring the oven."
             }
           )
         ] })
@@ -3570,6 +3540,35 @@ var HomePage_default = HomePage;
 // src/pages/AboutUsPage.jsx
 var import_react12 = __toESM(require("react"));
 var import_react_helmet_async2 = __toESM(require_lib());
+
+// src/sanityClient.js
+var import_client = require("@sanity/client");
+var import_meta4 = {};
+var env = (typeof import_meta4 !== "undefined" ? import_meta4.env : {}) || {};
+var projectId = env.VITE_APP_SANITY_PROJECT_ID || env.VITE_SANITY_PROJECT_ID;
+var dataset = env.VITE_APP_SANITY_DATASET || env.VITE_SANITY_DATASET;
+var client = null;
+try {
+  if (projectId && dataset) {
+    client = (0, import_client.createClient)({ projectId, dataset, useCdn: true, apiVersion: "2023-05-03" });
+  } else {
+    client = {
+      fetch: async () => {
+        throw new Error("Sanity client unavailable");
+      }
+    };
+  }
+} catch (e) {
+  console.warn("Failed to initialize Sanity client:", e && (e.message || e));
+  client = {
+    fetch: async () => {
+      throw new Error("Sanity client unavailable");
+    }
+  };
+}
+var sanityClient_default = client;
+
+// src/pages/AboutUsPage.jsx
 var import_jsx_runtime8 = require("react/jsx-runtime");
 var AboutUsPage = () => {
   const [aboutData, setAboutData] = (0, import_react12.useState)(null);
