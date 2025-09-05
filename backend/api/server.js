@@ -95,7 +95,11 @@ if (Client) {
 const app = express();
 
 // --- CORS CONFIGURATION ---
-const allowedOrigins = ['https://local-effort-app.vercel.app'];
+const allowedOrigins = [
+  'https://local-effort-app.vercel.app',
+  'https://www.localeffortfood.com',
+  'https://localeffortfood.com'
+];
 const corsOptions = { origin: allowedOrigins };
 app.use(cors(corsOptions));
 app.use(express.json());
@@ -155,6 +159,23 @@ try {
 } catch (err) {
   console.warn('search-images handler not available:', err.message);
 }
+
+// --- Proxy About page data from Sanity (to avoid client-side CORS) ---
+app.get('/api/about', async (req, res) => {
+  try {
+    const sanity = getSanityClient();
+    if (!sanity) return res.status(500).json({ error: 'sanity-not-configured' });
+    const query = `{
+      "page": *[_type == "page" && slug.current == "about-us"][0]{ title, introduction },
+      "persons": *[_type == "person"]{ name, role, bio, image{asset->{_ref}}, headshot{ asset{ public_id }, alt } }
+    }`;
+    const data = await sanity.fetch(query);
+    return res.json(data || {});
+  } catch (err) {
+    console.error('About proxy error:', err);
+    return res.status(500).json({ error: 'about-fetch-failed' });
+  }
+});
 
 // Mount support search endpoint (Supabase-powered hybrid search)
 try {
