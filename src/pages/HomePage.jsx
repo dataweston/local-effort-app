@@ -5,63 +5,41 @@ import ServiceCard from '../components/common/ServiceCard';
 import { motion } from 'framer-motion';
 import { fadeInUp, fadeInLeft } from '../utils/animations';
 import CloudinaryImage from '../components/common/cloudinaryImage'; // Import the Cloudinary image component
-import sanityClient from '../sanityClient.js';
 import { useEffect } from 'react';
-import { cloudinaryConfig, heroPublicId, heroFallbackSrc, partnerLogos } from '../data/cloudinaryContent';
+import { cloudinaryConfig, heroPublicId, heroFallbackSrc } from '../data/cloudinaryContent';
 import TestimonialsCarousel from '../components/common/TestimonialsCarousel';
-import { testimonials as localTestimonials } from '../data/testimonials';
 
 const HomePage = () => {
   const navigate = useNavigate();
   // (removed pizza tracker) — fetch dynamic stats from backend or Sanity if desired
 
   const [partners, setPartners] = useState([]);
-
+  // Load partners from Cloudinary by tag "partner" via our serverless search endpoint
   useEffect(() => {
     let mounted = true;
-    const q = `*[_type == "partner" && published == true] | order(order asc){ name, "publicId": logo.publicId, "image": logo.asset, url }`;
-    sanityClient
-      .fetch(q)
-      .then((res) => {
-        if (mounted && res && res.length) setPartners(res);
-      })
-      .catch((err) => {
-        console.warn('Failed to fetch partners from Sanity, falling back to static list:', err.message);
-      });
-    return () => {
-      mounted = false;
-    };
-  }, []);
-
-  // No hero carousel — use single hero image only
-
-  const [reviews, setReviews] = useState(localTestimonials);
-
-  // Try to fetch testimonials from Sanity and merge with local
-  useEffect(() => {
-    let mounted = true;
-    const q = `*[_type == "testimonial" && published == true] | order(order asc){ author, context, quote }`;
-    sanityClient
-      .fetch(q)
-      .then((res) => {
-        if (!mounted) return;
-        if (Array.isArray(res) && res.length) {
-          // de-dup by quote+author
-          const seen = new Set();
-          const merged = [...res, ...localTestimonials].filter((t) => {
-            const k = `${(t.quote||'').trim()}|${(t.author||'').trim()}`;
-            if (seen.has(k)) return false;
-            seen.add(k);
-            return true;
-          });
-          setReviews(merged);
-        }
+    fetch('/api/search-images?query=partner&per_page=48')
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        if (!mounted || !data || !Array.isArray(data.images)) return;
+        const items = data.images.map((img) => {
+          const ctx = img.context && (img.context.custom || img.context);
+          return {
+            publicId: img.public_id || img.publicId,
+            name: (ctx && (ctx.name || ctx.title || ctx.alt)) || img.public_id || 'Partner',
+            url: ctx && (ctx.url || ctx.link || ctx.href),
+          };
+        }).filter((p) => p.publicId);
+        setPartners(items);
       })
       .catch(() => {});
     return () => { mounted = false; };
   }, []);
 
-  // Optionally fetch external reviews JSON (e.g., Thumbtack export placed under public/reviews)
+  // No hero carousel — use single hero image only
+
+  const [reviews, setReviews] = useState([]);
+
+  // Load external Thumbtack reviews JSON (public/reviews/thumbtack.json)
   useEffect(() => {
     let mounted = true;
     fetch('/reviews/thumbtack.json')
@@ -84,18 +62,17 @@ const HomePage = () => {
   }, []);
 
   const PartnerGrid = () => {
-  const sanitized = (partners || []).filter((p) => p && p.publicId);
-  const items = sanitized.length ? sanitized : partnerLogos;
-
+    const items = (partners || []).filter((p) => p && p.publicId);
+    if (!items.length) return null;
     return (
       <div className="max-w-6xl mx-auto grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6 items-center px-4">
         {items.map((p, i) => (
-          <a
-            key={(p.publicId || (p.image && p.image._ref) || i) + i}
+          <motion.a
+            key={(p.publicId || i) + i}
             href={p.url || '#'}
             onClick={(e) => {
               if (!p.url) e.preventDefault();
-              if (window && window.gtag) {
+              if (typeof window !== 'undefined' && window.gtag) {
                 window.gtag('event', 'partner_click', { partner: p.name || p.publicId });
               }
             }}
@@ -103,6 +80,10 @@ const HomePage = () => {
             aria-label={p.name || `Partner ${i + 1}`}
             rel="noopener noreferrer"
             target={p.url ? '_blank' : undefined}
+            initial={{ opacity: 0, y: 10 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.3, delay: i * 0.03 }}
           >
             <CloudinaryImage
               publicId={p.publicId}
@@ -110,10 +91,9 @@ const HomePage = () => {
               width={300}
               height={80}
               className="max-h-16 object-contain grayscale hover:grayscale-0 transition-all"
-              fallbackSrc={p.fallbackSrc || '/gallery/logo.png'}
               resizeMode="fit"
             />
-          </a>
+          </motion.a>
         ))}
       </div>
     );
@@ -134,6 +114,22 @@ const HomePage = () => {
       name: 'Local Effort',
     },
   };
+  // Build partner ItemList schema dynamically
+  const partnersJsonLd = partners && partners.length ? {
+    '@context': 'https://schema.org',
+    '@type': 'ItemList',
+    name: 'Partners',
+    itemListElement: partners.map((p, idx) => ({
+      '@type': 'ListItem',
+      position: idx + 1,
+      item: {
+        '@type': 'ImageObject',
+        name: p.name || `Partner ${idx + 1}`,
+        contentUrl: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/f_auto,q_auto/${p.publicId}`,
+        url: p.url || undefined,
+      },
+    })),
+  } : null;
 
   // --- Feedback Modal state & component ---
   const [showFeedback, setShowFeedback] = useState(false);
@@ -266,10 +262,11 @@ const HomePage = () => {
         <title>Local Effort | Personal Chef & Event Catering in Roseville, MN</title>
         <meta
           name="description"
-          content="Local Effort offers personal chef services, event catering, and weekly meal prep in Roseville, MN."
+          content="Local Effort offers personal chef services, event catering, and weekly meal plans in Roseville, MN."
         />
         {/* --- NEW: Inject the structured data into the page head --- */}
         <script type="application/ld+json">{JSON.stringify(imageJsonLd)}</script>
+        {partnersJsonLd && <script type="application/ld+json">{JSON.stringify(partnersJsonLd)}</script>}
         <script type="application/ld+json">{JSON.stringify({
           '@context': 'https://schema.org',
           '@type': ['Restaurant','Caterer'],
@@ -313,9 +310,7 @@ const HomePage = () => {
               animate="animate"
               className="mt-6 md:mt-8 text-body max-w-md"
             >
-            Event hospitality and personal chef services, with an obsessive focus on local ingredients.<br /><br />
-
-            Think of us for special occasions and special events. Count on us for weekly home cooked meals. We're comfortable in homes, offices, bars and cafes, parks, vineyards, and uh.. anywhere, really.
+            Event hospitality and personal chef services, with an obsessive focus on local ingredients.
             </motion.p>
             <motion.button
               whileHover={{ scale: 1.03 }}
@@ -377,8 +372,8 @@ const HomePage = () => {
             />
             <ServiceCard
               to="/meal-prep"
-              title="Weekly Meal Prep"
-              description="Nutritious, locally-sourced meals delivered weekly."
+              title="Weekly Meal Plans"
+              description="Nutritious, locally-sourced weekly menus and plans."
             />
             <ServiceCard
               to="/pizza-party"
