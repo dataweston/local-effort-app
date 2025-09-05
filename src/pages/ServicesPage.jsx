@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import CloudinaryImage from '../components/common/cloudinaryImage';
+import PhotoGrid from '../components/common/PhotoGrid';
 
 const ServicesPage = () => {
   const navigate = useNavigate();
@@ -152,6 +153,9 @@ const ServicesPage = () => {
             </button>
           </div>
         </div>
+
+  {/* Photos tagged 'service' */}
+  <PhotoGrid tags="service" title="Service photos" perPage={24} />
 
         {/* Event Request Form */}
         <section id="event-request" className="border-t border-neutral-200 pt-10">

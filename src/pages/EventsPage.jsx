@@ -1,7 +1,8 @@
 import React from 'react';
 import { Helmet } from 'react-helmet-async';
+import PhotoGrid from '../components/common/PhotoGrid';
 
-export const EventsPage = () => (
+const EventsPage = () => (
   <>
     <Helmet>
       <title>Dinners & Events | Local Effort</title>
@@ -17,5 +18,12 @@ export const EventsPage = () => (
         cooking for parties from 2 to 50 people.
       </p>
     </div>
+
+    {/* Photos tagged 'dinner' and 'event' */}
+    <div className="container mx-auto px-4 py-8">
+      <PhotoGrid tags={["dinner","event"]} title="Dinners & events photos" perPage={24} />
+    </div>
   </>
 );
+
+export default EventsPage;
