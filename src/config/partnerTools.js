@@ -8,7 +8,7 @@ export const PARTNER_TOOLS = [
     name: 'Happy Monday',
   description: 'Planning & operations app (internal partner app).',
   type: 'internal',
-  route: '/partners/happymonday/app',
+  route: '/partners/happymonday',
   icon: 'ClipboardList',
   },
   {
@@ -63,37 +63,37 @@ export function isAdminProfile(profile) {
 }
 
 // Treat configured emails as administrators (comma or space separated)
-export function isAdminEmail(email) {
-  if (!email) return false;
+export function getAdminEmails() {
   const env = (import.meta && import.meta.env) ? import.meta.env : {};
-  // Support multiple common env names and both single-value and CSV lists.
-  const raw =
-    env.VITE_ADMIN_EMAILS ||
-    env.VITE_ADMIN_EMAIL ||
-    env.VITE_OWNER_EMAILS ||
-    env.VITE_OWNER_EMAIL ||
-    env.NEXT_PUBLIC_ADMIN_EMAILS ||
-    env.NEXT_PUBLIC_ADMIN_EMAIL ||
-    '';
-
-  const target = String(email).trim().toLowerCase();
-  const list = String(raw)
-    .split(/[\s,;]+/)
+  const sources = [
+    env.VITE_ADMIN_EMAILS,
+    env.VITE_ADMIN_EMAIL,
+    env.VITE_OWNER_EMAILS,
+    env.VITE_OWNER_EMAIL,
+    env.NEXT_PUBLIC_ADMIN_EMAILS,
+    env.NEXT_PUBLIC_ADMIN_EMAIL,
+  ].filter(Boolean);
+  if (!sources.length) return [];
+  return sources
+    .join(',')
+    .split(/[\s,;,]+/)
     .map((s) => s.trim().toLowerCase())
     .filter(Boolean);
+}
 
-  // Exact email match
+export function isAdminEmail(email) {
+  if (!email) return false;
+  const target = String(email).trim().toLowerCase();
+  const list = getAdminEmails();
+  // Exact match
   if (list.includes(target)) return true;
-
-  // Optional: allow domain entries like "@example.com" to match any user at that domain
-  const domain = target.includes('@') ? target.split('@')[1] : '';
-  if (domain && list.some((entry) => entry.startsWith('@') && entry.slice(1) === domain)) {
-    return true;
-  }
-  // Fallback: if no admin emails configured at all, treat first logged-in email as admin (session scope only)
+  // Domain match entries like @example.com
+  const domain = target.split('@')[1];
+  if (domain && list.some((entry) => entry.startsWith('@') && entry.slice(1) === domain)) return true;
+  // Fallback ephemeral first-login admin if none configured
   if (list.length === 0 && typeof window !== 'undefined') {
     if (!window.__LE_FIRST_ADMIN_EMAIL) {
-      window.__LE_FIRST_ADMIN_EMAIL = target; // ephemeral; not persisted
+      window.__LE_FIRST_ADMIN_EMAIL = target;
       return true;
     }
     return window.__LE_FIRST_ADMIN_EMAIL === target;
