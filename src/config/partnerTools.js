@@ -8,7 +8,7 @@ export const PARTNER_TOOLS = [
     name: 'Happy Monday',
   description: 'Planning & operations app (internal partner app).',
   type: 'internal',
-  route: '/partners/happymonday',
+  route: '/partners/happymonday.jsx',
   icon: 'ClipboardList',
   },
   {
@@ -16,7 +16,7 @@ export const PARTNER_TOOLS = [
     name: 'Inbox',
     description: 'Mailbox (Brevo) for inbound messages.',
     type: 'internal',
-    route: '/inbox',
+    route: 'https://app.brevo.com/',
     icon: 'Inbox',
   },
   {
@@ -32,7 +32,7 @@ export const PARTNER_TOOLS = [
     name: 'ZAFA Events',
     description: 'Events management utilities for ZAFA.',
   type: 'internal',
-    route: '/partners/zafa-events',
+    route: '/partners/zafa.jsx',
   icon: 'Calendar',
   // Source pending: add local-effort-zafa-events/src and embed its App here.
   },
@@ -41,7 +41,7 @@ export const PARTNER_TOOLS = [
     name: 'Gallant Hawking',
     description: 'Landing builder / micro-site utilities.',
   type: 'internal',
-    route: '/partners/gallant-hawking',
+    route: '/partners/gallant.jsx',
   icon: 'LayoutDashboard',
   // Embedded directly via component import
   },
