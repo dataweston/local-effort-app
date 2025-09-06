@@ -6,9 +6,9 @@ export const PARTNER_TOOLS = [
   {
     key: 'happymonday',
     name: 'Happy Monday',
-    description: 'Menu management and feedback collector.',
-    type: 'internal',
-    route: '/partners/happy-monday',
+  description: 'Planning & operations app (internal partner app).',
+  type: 'internal',
+  route: '/partners/happymonday/app',
   icon: 'ClipboardList',
   },
   {
@@ -22,9 +22,9 @@ export const PARTNER_TOOLS = [
   {
     key: 'studio',
     name: 'Sanity Studio',
-    description: 'Content management studio (opens in new tab).',
-    type: 'external',
-    href: '/studio',
+  description: 'Content management studio (opens in new tab).',
+  type: 'external',
+  href: 'https://www.sanity.io/@oz5yeSAiw/studio/q4scncd6uaeyzxo567jir45u/default',
     icon: 'FileText',
   },
   {
@@ -89,6 +89,14 @@ export function isAdminEmail(email) {
   const domain = target.includes('@') ? target.split('@')[1] : '';
   if (domain && list.some((entry) => entry.startsWith('@') && entry.slice(1) === domain)) {
     return true;
+  }
+  // Fallback: if no admin emails configured at all, treat first logged-in email as admin (session scope only)
+  if (list.length === 0 && typeof window !== 'undefined') {
+    if (!window.__LE_FIRST_ADMIN_EMAIL) {
+      window.__LE_FIRST_ADMIN_EMAIL = target; // ephemeral; not persisted
+      return true;
+    }
+    return window.__LE_FIRST_ADMIN_EMAIL === target;
   }
   return false;
 }
