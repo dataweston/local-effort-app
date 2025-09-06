@@ -8,7 +8,7 @@ export const PARTNER_TOOLS = [
     name: 'Happy Monday',
   description: 'Planning & operations app (internal partner app).',
   type: 'internal',
-  route: '/partners/happymonday.jsx',
+  route: '/partners/happymonday',
   icon: 'ClipboardList',
   },
   {
@@ -32,7 +32,7 @@ export const PARTNER_TOOLS = [
     name: 'ZAFA Events',
     description: 'Events management utilities for ZAFA.',
   type: 'internal',
-    route: '/partners/zafa.jsx',
+    route: '/partners/zafa-events',
   icon: 'Calendar',
   // Source pending: add local-effort-zafa-events/src and embed its App here.
   },
@@ -41,7 +41,7 @@ export const PARTNER_TOOLS = [
     name: 'Gallant Hawking',
     description: 'Landing builder / micro-site utilities.',
   type: 'internal',
-    route: '/partners/gallant.jsx',
+    route: '/partners/gallant-hawking',
   icon: 'LayoutDashboard',
   // Embedded directly via component import
   },
