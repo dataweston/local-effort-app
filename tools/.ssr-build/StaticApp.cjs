@@ -3564,48 +3564,17 @@ var HomePage_default = HomePage;
 // src/pages/AboutUsPage.jsx
 var import_react12 = __toESM(require("react"));
 var import_react_helmet_async2 = __toESM(require_lib());
-
-// src/sanityClient.js
-var import_client = require("@sanity/client");
-var import_meta4 = {};
-var env = (typeof import_meta4 !== "undefined" ? import_meta4.env : {}) || {};
-var projectId = env.VITE_APP_SANITY_PROJECT_ID || env.VITE_SANITY_PROJECT_ID;
-var dataset = env.VITE_APP_SANITY_DATASET || env.VITE_SANITY_DATASET;
-var client = null;
-try {
-  if (projectId && dataset) {
-    client = (0, import_client.createClient)({ projectId, dataset, useCdn: true, apiVersion: "2023-05-03" });
-  } else {
-    client = {
-      fetch: async () => {
-        throw new Error("Sanity client unavailable");
-      }
-    };
-  }
-} catch (e) {
-  console.warn("Failed to initialize Sanity client:", e && (e.message || e));
-  client = {
-    fetch: async () => {
-      throw new Error("Sanity client unavailable");
-    }
-  };
-}
-var sanityClient_default = client;
-
-// src/pages/AboutUsPage.jsx
 var import_jsx_runtime8 = require("react/jsx-runtime");
 var AboutUsPage = () => {
   const [aboutData, setAboutData] = (0, import_react12.useState)(null);
   const [loading, setLoading] = (0, import_react12.useState)(true);
   (0, import_react12.useEffect)(() => {
-    const query2 = `{
-      "page": *[_type == "page" && slug.current == "about-us"][0]{ title, introduction },
-  "persons": *[_type == "person"]{ name, role, bio, image{asset->{_ref}}, headshot{ asset{ public_id }, alt } }
-    }`;
     let mounted = true;
     (async () => {
       try {
-        const data = await sanityClient_default.fetch(query2);
+        const resp = await fetch("/api/about");
+        if (!resp.ok) throw new Error(`About fetch failed: ${resp.status}`);
+        const data = await resp.json();
         if (!mounted) return;
         setAboutData(data);
       } catch (err) {
@@ -5468,6 +5437,33 @@ var import_react23 = __toESM(require("react"));
 var import_react_helmet_async6 = __toESM(require_lib());
 var import_framer_motion10 = require("framer-motion");
 
+// src/sanityClient.js
+var import_client = require("@sanity/client");
+var import_meta4 = {};
+var env = (typeof import_meta4 !== "undefined" ? import_meta4.env : {}) || {};
+var projectId = env.VITE_APP_SANITY_PROJECT_ID || env.VITE_SANITY_PROJECT_ID;
+var dataset = env.VITE_APP_SANITY_DATASET || env.VITE_SANITY_DATASET;
+var client = null;
+try {
+  if (projectId && dataset) {
+    client = (0, import_client.createClient)({ projectId, dataset, useCdn: true, apiVersion: "2023-05-03" });
+  } else {
+    client = {
+      fetch: async () => {
+        throw new Error("Sanity client unavailable");
+      }
+    };
+  }
+} catch (e) {
+  console.warn("Failed to initialize Sanity client:", e && (e.message || e));
+  client = {
+    fetch: async () => {
+      throw new Error("Sanity client unavailable");
+    }
+  };
+}
+var sanityClient_default = client;
+
 // src/components/menu/FoodItemCard.jsx
 var import_react18 = __toESM(require("react"));
 var import_framer_motion6 = require("framer-motion");
@@ -5599,6 +5595,7 @@ var import_framer_motion11 = require("framer-motion");
 var import_jsx_runtime20 = require("react/jsx-runtime");
 var GalleryPage = () => {
   const [images, setImages] = (0, import_react24.useState)([]);
+  const [nextCursor, setNextCursor] = (0, import_react24.useState)(null);
   const [query2, setQuery] = (0, import_react24.useState)("");
   const [loading, setLoading] = (0, import_react24.useState)(true);
   const [error, setError] = (0, import_react24.useState)(null);
@@ -5634,53 +5631,68 @@ var GalleryPage = () => {
     });
   }, []);
   const closeBtnRef = (0, import_react24.useRef)(null);
-  (0, import_react24.useEffect)(() => {
-    const controller = new AbortController();
-    const handler = setTimeout(async () => {
-      setLoading(true);
-      setError(null);
+  const PAGE_SIZE = 36;
+  const shuffle2 = (0, import_react24.useCallback)((arr) => {
+    const a = arr.slice();
+    for (let i = a.length - 1; i > 0; i -= 1) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }, []);
+  const fetchImages = (0, import_react24.useCallback)(async (opts = {}) => {
+    const { append = false, cursor = null, signal } = opts;
+    const q = query2 ? `query=${encodeURIComponent(query2)}&` : "";
+    const c = cursor ? `next_cursor=${encodeURIComponent(cursor)}&` : "";
+    const apiUrl = `/api/search-images?${q}${c}per_page=${PAGE_SIZE}`;
+    try {
+      const response = await fetch(apiUrl, { signal });
+      const contentType = response.headers.get("content-type") || "";
+      if (!contentType.includes("application/json")) {
+        const text = await response.text().catch(() => "");
+        const msg = text && text.includes("<!DOCTYPE") ? "API endpoint not found - got HTML instead of JSON" : text || "Unexpected non-JSON response";
+        throw new Error(msg);
+      }
+      const data = await response.json();
+      if (!response.ok) {
+        const details = data && (data.error || data.details || JSON.stringify(data));
+        throw new Error(`Search failed (${response.status}): ${details}`);
+      }
+      const imgs = Array.isArray(data.images) ? data.images : [];
+      const batch = shuffle2(imgs);
+      setImages((prev) => append ? [...prev, ...batch] : batch);
+      setNextCursor(data.next_cursor || null);
+    } catch (err) {
+      if (err.name === "AbortError") return;
+      console.error("Error fetching images:", err);
       try {
-        const apiUrl = `/api/search-images${query2 ? `?query=${encodeURIComponent(query2)}&per_page=${PAGE_SIZE}` : `?per_page=${PAGE_SIZE}`}`;
-        const response = await fetch(apiUrl, { signal: controller.signal });
-        const contentType = response.headers.get("content-type") || "";
-        if (!contentType.includes("application/json")) {
-          const text = await response.text().catch(() => "");
-          const msg = text && text.includes("<!DOCTYPE") ? "API endpoint not found - got HTML instead of JSON" : text || "Unexpected non-JSON response";
-          throw new Error(msg);
-        }
-        const data = await response.json();
-        if (!response.ok) {
-          const details = data && (data.error || data.details || JSON.stringify(data));
-          throw new Error(`Search failed (${response.status}): ${details}`);
-        }
-        const imgs = Array.isArray(data.images) ? data.images : [];
-        setImages(imgs);
-      } catch (err) {
-        if (err.name === "AbortError") return;
-        console.error("Error fetching images:", err);
-        try {
-          const fallback = await tryLoadFallback();
-          if (fallback && fallback.length) {
-            setImages(fallback);
-            setError("Showing fallback images while the gallery API is unavailable.");
-          } else {
-            setError(err.message || String(err));
-          }
-        } catch (_) {
+        const fallback = await tryLoadFallback();
+        if (fallback && fallback.length) {
+          setImages(shuffle2(fallback));
+          setError("Showing fallback images while the gallery API is unavailable.");
+        } else {
           setError(err.message || String(err));
         }
-      } finally {
-        setLoading(false);
+      } catch (_) {
+        setError(err.message || String(err));
       }
+    } finally {
+      setLoading(false);
+    }
+  }, [query2, shuffle2, tryLoadFallback]);
+  (0, import_react24.useEffect)(() => {
+    const controller = new AbortController();
+    const handler = setTimeout(() => {
+      setLoading(true);
+      setError(null);
+      setNextCursor(null);
+      fetchImages({ append: false, cursor: null, signal: controller.signal });
     }, 300);
     return () => {
       clearTimeout(handler);
       controller.abort();
     };
-  }, [query2]);
-  const PAGE_SIZE = 36;
-  const [visibleCount, setVisibleCount] = (0, import_react24.useState)(PAGE_SIZE);
-  (0, import_react24.useEffect)(() => setVisibleCount(PAGE_SIZE), [images]);
+  }, [query2, fetchImages]);
   const openLightbox = (0, import_react24.useCallback)(
     (img, idx) => {
       setSelected({ img, idx });
@@ -5757,21 +5769,24 @@ var GalleryPage = () => {
         /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("p", { children: "No images found." }),
         /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("p", { className: "text-sm text-gray-600 mt-2", children: "Try removing search terms or check that you have images in your Cloudinary account." })
       ] }) : /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)(import_jsx_runtime20.Fragment, { children: [
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4", children: images.slice(0, visibleCount).map((img, idx) => /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "columns-2 md:columns-3 lg:columns-4 gap-4 [column-fill:_balance]", children: images.map((img, idx) => /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
           import_framer_motion11.motion.button,
           {
             type: "button",
             onClick: () => openLightbox(img, idx),
             whileHover: { scale: 1.03 },
             whileTap: { scale: 0.98 },
-            className: "border p-2 bg-white rounded-lg overflow-hidden",
+            className: "mb-4 w-full break-inside-avoid border p-2 bg-white rounded-lg overflow-hidden",
             "aria-label": img.context?.alt || `Gallery image ${idx + 1}`,
             children: img.thumbnail_url ? /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
               "img",
               {
                 src: img.thumbnail_url,
                 alt: img.context?.alt || "Gallery image",
-                className: "rounded-lg object-cover w-full h-full aspect-square",
+                className: "rounded-lg w-full h-auto",
+                width: img.width || void 0,
+                height: img.height || void 0,
+                style: img.width && img.height ? { aspectRatio: `${img.width} / ${img.height}` } : void 0,
                 loading: "lazy"
               }
             ) : /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
@@ -5779,21 +5794,27 @@ var GalleryPage = () => {
               {
                 publicId: img.public_id,
                 alt: img.context?.alt || "Gallery image",
-                width: 600,
-                height: 600,
-                className: "rounded-lg object-cover w-full h-full aspect-square"
+                width: 800,
+                className: "rounded-lg w-full h-auto",
+                containerStyle: img.width && img.height ? { aspectRatio: `${img.width} / ${img.height}` } : void 0
               }
             )
           },
           img.asset_id
         )) }),
-        images.length > visibleCount && /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "mt-6 text-center", children: /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+        nextCursor && /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "mt-6 text-center", children: /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
           "button",
           {
             type: "button",
-            onClick: () => setVisibleCount((c) => Math.min(c + PAGE_SIZE, images.length)),
-            className: "px-4 py-2 rounded bg-black text-white hover:bg-neutral-800",
-            children: "Load more"
+            onClick: () => {
+              if (loading) return;
+              setLoading(true);
+              setError(null);
+              fetchImages({ append: true, cursor: nextCursor });
+            },
+            className: "px-4 py-2 rounded bg-black text-white hover:bg-neutral-800 disabled:opacity-50",
+            disabled: loading,
+            children: loading ? "Loading\u2026" : "Load more"
           }
         ) })
       ] })
@@ -6298,9 +6319,9 @@ var PARTNER_TOOLS = [
   {
     key: "happymonday",
     name: "Happy Monday",
-    description: "Menu management and feedback collector.",
+    description: "Planning & operations app (internal partner app).",
     type: "internal",
-    route: "/partners/happy-monday",
+    route: "/partners/happymonday",
     icon: "ClipboardList"
   },
   {
@@ -6308,7 +6329,7 @@ var PARTNER_TOOLS = [
     name: "Inbox",
     description: "Mailbox (Brevo) for inbound messages.",
     type: "internal",
-    route: "/inbox",
+    route: "https://app.brevo.com/",
     icon: "Inbox"
   },
   {
@@ -6316,7 +6337,7 @@ var PARTNER_TOOLS = [
     name: "Sanity Studio",
     description: "Content management studio (opens in new tab).",
     type: "external",
-    href: "/studio",
+    href: "https://www.sanity.io/@oz5yeSAiw/studio/q4scncd6uaeyzxo567jir45u/default",
     icon: "FileText"
   },
   {
@@ -6349,10 +6370,34 @@ function isAdminProfile(profile) {
   if (roles === "all") return true;
   return Array.isArray(roles) && (roles.includes("admin") || roles.includes("owner"));
 }
+function getAdminEmails() {
+  const env3 = import_meta6 && import_meta6.env ? import_meta6.env : {};
+  const sources = [
+    env3.VITE_ADMIN_EMAILS,
+    env3.VITE_ADMIN_EMAIL,
+    env3.VITE_OWNER_EMAILS,
+    env3.VITE_OWNER_EMAIL,
+    env3.NEXT_PUBLIC_ADMIN_EMAILS,
+    env3.NEXT_PUBLIC_ADMIN_EMAIL
+  ].filter(Boolean);
+  if (!sources.length) return [];
+  return sources.join(",").split(/[\s,;,]+/).map((s) => s.trim().toLowerCase()).filter(Boolean);
+}
 function isAdminEmail(email) {
   if (!email) return false;
-  const list = (import_meta6?.env?.VITE_ADMIN_EMAILS || import_meta6?.env?.VITE_OWNER_EMAILS || "").split(/[\s,]+/).map((s) => s.trim().toLowerCase()).filter(Boolean);
-  return list.includes(String(email).toLowerCase());
+  const target = String(email).trim().toLowerCase();
+  const list = getAdminEmails();
+  if (list.includes(target)) return true;
+  const domain = target.split("@")[1];
+  if (domain && list.some((entry) => entry.startsWith("@") && entry.slice(1) === domain)) return true;
+  if (list.length === 0 && typeof window !== "undefined") {
+    if (!window.__LE_FIRST_ADMIN_EMAIL) {
+      window.__LE_FIRST_ADMIN_EMAIL = target;
+      return true;
+    }
+    return window.__LE_FIRST_ADMIN_EMAIL === target;
+  }
+  return false;
 }
 
 // src/pages/PartnerPortalPage.jsx
@@ -6427,14 +6472,35 @@ function PartnerPortalWelcome() {
   const { user, loading } = useAuthUser();
   const [profile, setProfile] = import_react34.default.useState(null);
   const [pLoading, setPLoading] = import_react34.default.useState(false);
+  const [profileError, setProfileError] = import_react34.default.useState(null);
   import_react34.default.useEffect(() => {
     let cancelled = false;
     const load = async () => {
-      if (!user) return setProfile(null);
+      if (!user) {
+        setProfile(null);
+        setProfileError(null);
+        return;
+      }
       setPLoading(true);
+      setProfileError(null);
       try {
         const p = await getUserProfile(user.uid);
-        if (!cancelled) setProfile(p || null);
+        if (!cancelled) {
+          setProfile(p || null);
+          if (!p) {
+            setProfileError(null);
+          }
+        }
+      } catch (e) {
+        if (!cancelled) {
+          const code = e && e.code;
+          if (code === "permission-denied") {
+            setProfileError("You are signed in but do not have permission to load your partner profile. Ask an admin to grant access.");
+          } else {
+            setProfileError(e.message || "Failed to load profile");
+          }
+          setProfile(null);
+        }
       } finally {
         if (!cancelled) setPLoading(false);
       }
@@ -6457,7 +6523,10 @@ function PartnerPortalWelcome() {
         /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("p", { className: "mb-4 text-gray-600", children: "Use your Google account to continue." }),
         /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(import_react_router_dom6.Link, { to: "/auth", className: "inline-block px-4 py-2 rounded bg-black text-white", children: "Continue with Google" })
       ] }),
-      user && /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(ToolGrid2, { profile, loading: pLoading })
+      user && /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)(import_jsx_runtime29.Fragment, { children: [
+        profileError && /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("div", { className: "p-4 border border-amber-300 bg-amber-50 rounded text-sm text-amber-800 mb-4", children: profileError }),
+        /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(ToolGrid2, { profile, loading: pLoading })
+      ] })
     ] })
   ] });
 }
