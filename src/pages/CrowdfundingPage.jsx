@@ -94,18 +94,44 @@ const CrowdfundingPage = () => {
 
     const params = { slug };
 
-    sanityClient
-      .fetch(query, params)
-      .then((data) => {
+    const doFetch = async () => {
+      try {
+        const data = await sanityClient.fetch(query, params);
         setCampaignData(data);
-      })
-      .catch((err) => {
-        console.error('Sanity fetch error:', err);
+      } catch (err) {
+        // Provide richer logging so we can see the real failure in browser consoles
+        try {
+          const msg = err && err.message ? err.message : String(err);
+          console.error('Sanity fetch error message:', msg);
+          if (err && err.response && typeof err.response.text === 'function') {
+            const body = await err.response.text();
+            console.error('Sanity fetch response body:', body);
+          }
+        } catch (logErr) {
+          console.error('Error while logging Sanity error:', logErr);
+        }
+
+        // Attempt a safe fallback: fetch the first crowdfundingCampaign available
+        try {
+          const fallback = `*[_type == "crowdfundingCampaign"][0]{ title,description,pizzaGoal,pizzasSold,goal,raisedAmount,backers,endDate,heroImage,story,faq,"rewardTiers": rewardTiers[]->{ amount, pizzaCount, title, description, limit } | order(amount asc),"updates": updates[]->{ title, publishedAt, body } | order(publishedAt desc) }`;
+          const fbData = await sanityClient.fetch(fallback);
+          if (fbData) {
+            console.warn('Loaded fallback campaign (first in dataset)');
+            setCampaignData(fbData);
+            setError(null);
+            return;
+          }
+        } catch (fbErr) {
+          console.error('Fallback fetch also failed:', fbErr && (fbErr.message || fbErr));
+        }
+
         setError('Failed to load campaign data.'); // Set error state
-      })
-      .finally(() => {
+      } finally {
         setLoading(false); // Ensure loading is always set to false
-      });
+      }
+    };
+
+    doFetch();
   }, []);
 
   if (loading) {
@@ -113,7 +139,9 @@ const CrowdfundingPage = () => {
   }
 
   if (error) {
-    return <div className="text-center p-12 text-red-600">{error}</div>;
+    // If error is an object with a message, surface it for easier debugging in the UI
+    const errorMessage = typeof error === 'string' ? error : (error && (error.message || JSON.stringify(error))) || 'Failed to load campaign data.';
+    return <div className="text-center p-12 text-red-600">{errorMessage}</div>;
   }
 
   if (!campaignData) {
