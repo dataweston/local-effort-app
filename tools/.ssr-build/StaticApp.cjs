@@ -5440,9 +5440,12 @@ var import_framer_motion10 = require("framer-motion");
 // src/sanityClient.js
 var import_client = require("@sanity/client");
 var import_meta4 = {};
-var env = (typeof import_meta4 !== "undefined" ? import_meta4.env : {}) || {};
-var projectId = env.VITE_APP_SANITY_PROJECT_ID || env.VITE_SANITY_PROJECT_ID;
-var dataset = env.VITE_APP_SANITY_DATASET || env.VITE_SANITY_DATASET;
+var rawBuildEnv = typeof import_meta4 !== "undefined" && import_meta4.env ? import_meta4.env : {};
+var runtimeWindowEnv = typeof window !== "undefined" && window.__SANITY_CONFIG__ ? window.__SANITY_CONFIG__ : {};
+var nodeEnv = typeof process !== "undefined" && process.env ? process.env : {};
+var env = { ...nodeEnv, ...rawBuildEnv, ...runtimeWindowEnv };
+var projectId = env.VITE_APP_SANITY_PROJECT_ID || env.VITE_SANITY_PROJECT_ID || env.SANITY_PROJECT_ID || env.PROJECT_ID;
+var dataset = env.VITE_APP_SANITY_DATASET || env.VITE_SANITY_DATASET || env.SANITY_DATASET || env.DATASET;
 var client = null;
 try {
   if (projectId && dataset) {
@@ -6370,26 +6373,17 @@ function isAdminProfile(profile) {
   if (roles === "all") return true;
   return Array.isArray(roles) && (roles.includes("admin") || roles.includes("owner"));
 }
-function getAdminEmails() {
-  const env3 = import_meta6 && import_meta6.env ? import_meta6.env : {};
-  const sources = [
-    env3.VITE_ADMIN_EMAILS,
-    env3.VITE_ADMIN_EMAIL,
-    env3.VITE_OWNER_EMAILS,
-    env3.VITE_OWNER_EMAIL,
-    env3.NEXT_PUBLIC_ADMIN_EMAILS,
-    env3.NEXT_PUBLIC_ADMIN_EMAIL
-  ].filter(Boolean);
-  if (!sources.length) return [];
-  return sources.join(",").split(/[\s,;,]+/).map((s) => s.trim().toLowerCase()).filter(Boolean);
-}
 function isAdminEmail(email) {
   if (!email) return false;
+  const env3 = import_meta6 && import_meta6.env ? import_meta6.env : {};
+  const raw = env3.VITE_ADMIN_EMAILS || env3.VITE_ADMIN_EMAIL || env3.VITE_OWNER_EMAILS || env3.VITE_OWNER_EMAIL || env3.NEXT_PUBLIC_ADMIN_EMAILS || env3.NEXT_PUBLIC_ADMIN_EMAIL || "";
   const target = String(email).trim().toLowerCase();
-  const list = getAdminEmails();
+  const list = String(raw).split(/[\s,;]+/).map((s) => s.trim().toLowerCase()).filter(Boolean);
   if (list.includes(target)) return true;
-  const domain = target.split("@")[1];
-  if (domain && list.some((entry) => entry.startsWith("@") && entry.slice(1) === domain)) return true;
+  const domain = target.includes("@") ? target.split("@")[1] : "";
+  if (domain && list.some((entry) => entry.startsWith("@") && entry.slice(1) === domain)) {
+    return true;
+  }
   if (list.length === 0 && typeof window !== "undefined") {
     if (!window.__LE_FIRST_ADMIN_EMAIL) {
       window.__LE_FIRST_ADMIN_EMAIL = target;
