@@ -25,7 +25,6 @@ const PartnerPortalPage = () => {
           <p className="mb-4 text-gray-600">Tools and links for partners. Sign in if you need to access account-specific features.</p>
           <div className="flex gap-3">
             <Link to="/auth" className="inline-block px-4 py-2 rounded bg-black text-white">Sign in</Link>
-            <Link to="/partner-portal/welcome" className="inline-block px-4 py-2 rounded border">Portal welcome</Link>
           </div>
         </div>
 

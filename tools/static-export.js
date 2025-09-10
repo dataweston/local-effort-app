@@ -88,7 +88,6 @@ const routes = [
   '/gallery',
   '/meal-prep',
   '/partner-portal',
-  '/partner-portal/welcome',
 ];
 
 function inject(html, body, title, description) {
@@ -108,8 +107,7 @@ function guessMeta(url) {
     '/happy-monday': ['Happy Monday | Local Effort', 'Weekly lunch program details and feedback.'],
     '/gallery': ['Gallery | Local Effort', 'A selection of events and dishes.'],
     '/meal-prep': ['Meal Prep | Local Effort', 'Meal prep options and ordering info.'],
-    '/partner-portal': ['Partner Portal | Local Effort', 'Tools and resources for partners.'],
-    '/partner-portal/welcome': ['Partner Portal Welcome | Local Effort', 'Sign in to access partner tools.'],
+  '/partner-portal': ['Partner Portal | Local Effort', 'Tools and resources for partners.'],
   };
   return map[url] || map['/'];
 }
