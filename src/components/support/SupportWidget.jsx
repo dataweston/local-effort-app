@@ -3,6 +3,20 @@ import sanityClient from '../../sanityClient';
 
 export function SupportWidget() {
   const [open, setOpen] = useState(false);
+  // Ensure Brevo (Conversations) script is loaded only once at runtime
+  const ensureBrevo = () => {
+    if (typeof window === 'undefined') return;
+    // Already loaded or loading
+    if (window.BrevoConversations || document.querySelector('script[src*="brevo-conversations.js"]')) return;
+    // Set ID so the widget can initialize when script loads
+    window.BrevoConversationsID = '68b8c39faa42260ca10998a0';
+    window.BrevoConversations = window.BrevoConversations || function() { (window.BrevoConversations.q = window.BrevoConversations.q || []).push(arguments); };
+    const s = document.createElement('script');
+    s.async = true;
+    s.src = 'https://conversations-widget.brevo.com/brevo-conversations.js';
+    s.addEventListener('error', (e) => { console.warn('Brevo script failed to load', e); });
+    document.head.appendChild(s);
+  };
   const [query, setQuery] = useState('');
   const [answer, setAnswer] = useState(null);
   const [results, setResults] = useState([]);
@@ -107,7 +121,7 @@ export function SupportWidget() {
           </div>
         </div>
       )}
-  <button onClick={() => setOpen(!open)} className="px-4 py-2 rounded-full bg-black text-white shadow" aria-label="get help">get help</button>
+  <button onClick={() => { ensureBrevo(); setOpen(!open); }} className="px-4 py-2 rounded-full bg-black text-white shadow" aria-label="get help">get help</button>
     </div>
   );
 }

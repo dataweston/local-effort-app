@@ -48,6 +48,14 @@ export default {
       validation: Rule => Rule.min(0).error('Pizzas sold must be zero or a positive number.'),
     },
     {
+      name: 'piesSold',
+      title: 'Pies Sold',
+      type: 'number',
+      description: 'Number of pies sold so far. Displayed alongside pizzas but has no separate goal.',
+      initialValue: 0,
+      validation: Rule => Rule.min(0).error('Pies sold must be zero or a positive number.'),
+    },
+    {
       name: 'goal',
   title: 'Funding Goal (legacy $)',
   type: 'number',

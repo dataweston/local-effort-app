@@ -164,6 +164,9 @@ const CrowdfundingPage = () => {
     heroImage = null,
   } = campaignData;
 
+  // New pies sold count (optional field)
+  const piesSold = campaignData.piesSold ?? 0;
+
   // Specifically safeguard array types to prevent the .length error
   const story = campaignData.story || [];
   const faq = campaignData.faq || [];
@@ -282,6 +285,9 @@ const CrowdfundingPage = () => {
                 <p className="text-body text-gray-600">
                   sold of {pizzaGoal.toLocaleString()} pizzas goal
                 </p>
+                {/* Pies sold (no goal) */}
+                <p className="mt-2 text-2xl font-semibold">{piesSold.toLocaleString()} pies</p>
+                <p className="text-body text-gray-600">sold</p>
               </div>
               <div className="flex justify-between text-body text-center border-y py-3">
                 <StatBox value={backers.toLocaleString()} label="backers" />
