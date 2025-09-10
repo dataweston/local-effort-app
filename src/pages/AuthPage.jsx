@@ -17,14 +17,14 @@ export default function AuthPage() {
       try {
         const res = await getRedirectResult(auth);
         if (res && res.user) {
-          navigate('/partner-portal/welcome', { replace: true });
+          navigate('/partner-portal', { replace: true });
         }
       } catch (e) {
         setError(cleanError(e));
       }
     })();
     if (!loading && user) {
-      navigate('/partner-portal/welcome', { replace: true });
+      navigate('/partner-portal', { replace: true });
     }
   }, [user, loading, navigate]);
 
@@ -36,8 +36,8 @@ export default function AuthPage() {
     }
     setBusy(true);
     try {
-      await signInWithPopup(auth, googleProvider);
-      navigate('/partner-portal/welcome', { replace: true });
+  await signInWithPopup(auth, googleProvider);
+  navigate('/partner-portal', { replace: true });
     } catch (e) {
       const code = e && e.code ? String(e.code) : '';
       // Fallback to redirect for popup issues or iOS/Safari restrictions

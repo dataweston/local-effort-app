@@ -25,7 +25,6 @@ const GalleryPage = lazy(() => import('./pages/GalleryPage'));
 const MealPrepPage = lazy(() => import('./pages/MealPrepPage'));
 // --- NEW: Partner Portal ---
 const PartnerPortalPage = lazy(() => import('./pages/PartnerPortalPage'));
-const PartnerPortalWelcome = lazy(() => import('./pages/PartnerPortalWelcome'));
 const InboxPage = lazy(() => import('./pages/InboxPage'));
 const CampaignsPage = lazy(() => import('./pages/CampaignsPage'));
 const AuthPage = lazy(() => import('./pages/AuthPage'));
@@ -138,14 +137,7 @@ const AppContent = () => {
                     </AnimatedPage>
                   }
                 />
-                <Route
-                  path="/partner-portal/welcome"
-                  element={
-                    <AnimatedPage>
-                      <PartnerPortalWelcome />
-                    </AnimatedPage>
-                  }
-                />
+                {/* Partner portal welcome route removed in favor of single landing */}
                 <Route
                   path="/auth"
                   element={
