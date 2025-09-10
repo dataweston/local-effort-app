@@ -26,9 +26,8 @@ export default {
     {
       name: 'description',
       title: 'Short Description',
-      type: 'array',
-      of: [{ type: 'block' }],
-      description: 'A brief, editable summary of the campaign. Use Portable Text to add simple formatting and paragraphs.',
+      type: 'text',
+      description: 'A brief, compelling summary of the campaign. This appears at the top of the page and in search results.',
       validation: Rule => Rule.required().error('A short description is required.'),
     },
     // --- Pizza-first fields (new) ---
@@ -47,14 +46,6 @@ export default {
       description: 'Number of pizzas sold so far. Use this field to track progress in pizza units.',
       initialValue: 0,
       validation: Rule => Rule.min(0).error('Pizzas sold must be zero or a positive number.'),
-    },
-    {
-      name: 'piesSold',
-      title: 'Pies Sold',
-      type: 'number',
-      description: 'Number of pies sold so far. Displayed alongside pizzas but has no separate goal.',
-      initialValue: 0,
-      validation: Rule => Rule.min(0).error('Pies sold must be zero or a positive number.'),
     },
     {
       name: 'goal',
@@ -107,13 +98,6 @@ export default {
       type: 'array',
       of: [{ type: 'block' }],
       description: 'The main content of your campaign page. Tell your story, explain your project, and show your passion.',
-    },
-    {
-      name: 'goals',
-      title: 'Goals',
-      type: 'array',
-      of: [{ type: 'block' }],
-      description: 'Describe your campaign goals in a structured, rich text field.',
     },
     {
       name: 'rewardTiers',
