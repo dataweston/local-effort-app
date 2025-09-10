@@ -18,6 +18,13 @@ export default {
       validation: (Rule) => Rule.min(0),
     },
     {
+      name: 'pieCount',
+      title: 'Pie Count (optional)',
+      type: 'number',
+      description: 'Optional: how many pies this reward reserves or represents. If set, the UI will show pie counts instead of a dollar amount.',
+      validation: (Rule) => Rule.min(0),
+    },
+    {
       name: 'title',
       title: 'Tier Title',
       type: 'string',
@@ -42,17 +49,15 @@ export default {
       title: 'title',
       amount: 'amount',
       pizzaCount: 'pizzaCount',
+      pieCount: 'pieCount',
     },
-    prepare({title, amount}) {
-      // Prefer pizzaCount subtitle when available
-      const subtitle = (pizzaCount => {
-        if (typeof pizzaCount === 'number' && pizzaCount >= 0) return `${pizzaCount} pizzas`;
-        return `$${amount}`;
-      })(arguments[0].pizzaCount);
-      return {
-        title: title,
-        subtitle,
-      }
+    prepare(selection) {
+      const { title, amount, pizzaCount, pieCount } = selection;
+      // Prefer pieCount, then pizzaCount, otherwise show amount
+      let subtitle = `$${amount}`;
+      if (typeof pieCount === 'number' && pieCount >= 0) subtitle = `${pieCount} pies`;
+      else if (typeof pizzaCount === 'number' && pizzaCount >= 0) subtitle = `${pizzaCount} pizzas`;
+      return { title: title, subtitle };
     },
   },
 }

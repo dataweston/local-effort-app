@@ -26,8 +26,9 @@ export default {
     {
       name: 'description',
       title: 'Short Description',
-      type: 'text',
-      description: 'A brief, compelling summary of the campaign. This appears at the top of the page and in search results.',
+      type: 'array',
+      of: [{ type: 'block' }],
+      description: 'A brief, editable summary of the campaign. Use Portable Text to add simple formatting and paragraphs.',
       validation: Rule => Rule.required().error('A short description is required.'),
     },
     // --- Pizza-first fields (new) ---
@@ -106,6 +107,13 @@ export default {
       type: 'array',
       of: [{ type: 'block' }],
       description: 'The main content of your campaign page. Tell your story, explain your project, and show your passion.',
+    },
+    {
+      name: 'goals',
+      title: 'Goals',
+      type: 'array',
+      of: [{ type: 'block' }],
+      description: 'Describe your campaign goals in a structured, rich text field.',
     },
     {
       name: 'rewardTiers',
