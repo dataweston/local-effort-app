@@ -9,6 +9,7 @@ export const PARTNER_TOOLS = [
   description: 'Planning & operations app (internal partner app).',
   type: 'internal',
   route: '/partners/happymonday',
+  public: true,
   icon: 'ClipboardList',
   },
   {
@@ -34,6 +35,7 @@ export const PARTNER_TOOLS = [
   type: 'internal',
     route: '/partners/zafa-events',
   icon: 'Calendar',
+  public: true,
   // Source pending: add local-effort-zafa-events/src and embed its App here.
   },
   {
@@ -44,11 +46,19 @@ export const PARTNER_TOOLS = [
     route: '/partners/gallant-hawking',
   icon: 'LayoutDashboard',
   // Embedded directly via component import
+  public: true,
   },
 ];
 
 export function hasAccess(profile, toolKey) {
   const roles = (profile && (profile.roles || profile.tools || profile.apps)) || [];
+  // Allow access to tools explicitly marked public in registry
+  try {
+    const tool = PARTNER_TOOLS.find((t) => t.key === toolKey);
+    if (tool && tool.public) return true;
+  } catch (e) {
+    // ignore
+  }
   if (roles === 'all') return true;
   // Treat 'admin' and 'owner' as having access to all tools
   if (Array.isArray(roles) && (roles.includes('admin') || roles.includes('owner'))) return true;

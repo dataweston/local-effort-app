@@ -9,7 +9,6 @@ import { LoadingSpinner } from './components/layout/LoadingSpinner';
 import { AnimatedPage } from './components/layout/AnimatedPage';
 import { SupportWidget } from './components/support/SupportWidget';
 import { RequireAuth } from './components/auth/RequireAuth';
-import { RequirePartnerAccess } from './components/auth/RequirePartnerAccess';
 
 // Lazily import page components using the default export pattern
 const HomePage = lazy(() => import('./pages/HomePage'));
@@ -171,9 +170,7 @@ const AppContent = () => {
                   path="/partners/zafa-events"
                   element={
                     <AnimatedPage>
-                      <RequirePartnerAccess toolKey="zafa">
-                        <ZafaEmbeddedApp />
-                      </RequirePartnerAccess>
+                      <ZafaEmbeddedApp />
                     </AnimatedPage>
                   }
                 />
@@ -181,9 +178,7 @@ const AppContent = () => {
                   path="/partners/gallant-hawking"
                   element={
                     <AnimatedPage>
-                      <RequirePartnerAccess toolKey="gallant">
-                        <GallantEmbeddedApp />
-                      </RequirePartnerAccess>
+                      <GallantEmbeddedApp />
                     </AnimatedPage>
                   }
                 />
@@ -191,9 +186,7 @@ const AppContent = () => {
                   path="/partners/happy-monday"
                   element={
                     <AnimatedPage>
-                      <RequirePartnerAccess toolKey="happymonday">
-                        <HMEmbeddedApp />
-                      </RequirePartnerAccess>
+                      <HMEmbeddedApp />
                     </AnimatedPage>
                   }
                 />
