@@ -6,10 +6,17 @@ import { PortableText } from '@portabletext/react';
 import imageUrlBuilder from '@sanity/image-url';
 import sanityClient from '../sanityClient.js';
 
-// --- Sanity Image URL Builder Setup ---
-const builder = imageUrlBuilder(sanityClient);
-function urlFor(source) {
-  return builder.image(source);
+// --- Sanity Image URL Builder Setup (defensive) ---
+let urlFor = () => ({ url: () => '' });
+try {
+  // Some test environments may provide a stub client; guard builder creation
+  if (sanityClient && typeof sanityClient.fetch === 'function') {
+    const builder = imageUrlBuilder(sanityClient);
+    urlFor = (source) => builder.image(source);
+  }
+} catch (e) {
+  // eslint-disable-next-line no-console
+  console.warn('Sanity image builder unavailable', e && (e.message || e));
 }
 
 // --- Helper & Child Components (No changes needed here) ---
@@ -94,18 +101,21 @@ const CrowdfundingPage = () => {
 
     const params = { slug };
 
-    sanityClient
-      .fetch(query, params)
-      .then((data) => {
+    (async () => {
+      try {
+        if (!sanityClient || typeof sanityClient.fetch !== 'function') {
+          throw new Error('Sanity client unavailable');
+        }
+        const data = await sanityClient.fetch(query, params);
         setCampaignData(data);
-      })
-      .catch((err) => {
+      } catch (err) {
+        // eslint-disable-next-line no-console
         console.error('Sanity fetch error:', err);
         setError('Failed to load campaign data.'); // Set error state
-      })
-      .finally(() => {
-        setLoading(false); // Ensure loading is always set to false
-      });
+      } finally {
+        setLoading(false);
+      }
+    })();
   }, []);
 
   if (loading) {
@@ -129,8 +139,7 @@ const CrowdfundingPage = () => {
   const {
     title = 'Untitled Campaign',
     description = '',
-    goal = 0,
-    raisedAmount = 0,
+    
     backers = 0,
     endDate = null,
     heroImage = null,
