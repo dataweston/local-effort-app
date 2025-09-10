@@ -32,13 +32,16 @@ const RewardTierCard = ({ tier }) => {
   }
 
   // Display pizza count when available, otherwise fall back to legacy dollar amount
+  const pieCountLabel = tier.pieCount ? `${tier.pieCount.toLocaleString()} pies` : null;
   const pizzaCountLabel = tier.pizzaCount ? `${tier.pizzaCount.toLocaleString()} pizzas` : null;
   const moneyLabel = tier.amount ? `$${tier.amount.toLocaleString()}` : null;
 
   return (
     <div className="card p-6 border hover:border-[var(--color-accent)] transition-colors">
       <p className="text-2xl font-bold">
-        {pizzaCountLabel
+        {pieCountLabel
+          ? `${pieCountLabel} — ${tier.title}`
+          : pizzaCountLabel
           ? `${pizzaCountLabel} — ${tier.title}`
           : `Pledge ${moneyLabel || '$0'} or more`}
       </p>
@@ -55,7 +58,8 @@ const RewardTierCard = ({ tier }) => {
 };
 RewardTierCard.propTypes = {
   tier: PropTypes.shape({
-    pizzaCount: PropTypes.number,
+  pizzaCount: PropTypes.number,
+  pieCount: PropTypes.number,
     amount: PropTypes.number,
     title: PropTypes.string,
     description: PropTypes.string,
@@ -94,18 +98,44 @@ const CrowdfundingPage = () => {
 
     const params = { slug };
 
-    sanityClient
-      .fetch(query, params)
-      .then((data) => {
+    const doFetch = async () => {
+      try {
+        const data = await sanityClient.fetch(query, params);
         setCampaignData(data);
-      })
-      .catch((err) => {
-        console.error('Sanity fetch error:', err);
+      } catch (err) {
+        // Provide richer logging so we can see the real failure in browser consoles
+        try {
+          const msg = err && err.message ? err.message : String(err);
+          console.error('Sanity fetch error message:', msg);
+          if (err && err.response && typeof err.response.text === 'function') {
+            const body = await err.response.text();
+            console.error('Sanity fetch response body:', body);
+          }
+        } catch (logErr) {
+          console.error('Error while logging Sanity error:', logErr);
+        }
+
+        // Attempt a safe fallback: fetch the first crowdfundingCampaign available
+        try {
+          const fallback = `*[_type == "crowdfundingCampaign"][0]{ title,description,pizzaGoal,pizzasSold,goal,raisedAmount,backers,endDate,heroImage,story,faq,"rewardTiers": rewardTiers[]->{ amount, pizzaCount, title, description, limit } | order(amount asc),"updates": updates[]->{ title, publishedAt, body } | order(publishedAt desc) }`;
+          const fbData = await sanityClient.fetch(fallback);
+          if (fbData) {
+            console.warn('Loaded fallback campaign (first in dataset)');
+            setCampaignData(fbData);
+            setError(null);
+            return;
+          }
+        } catch (fbErr) {
+          console.error('Fallback fetch also failed:', fbErr && (fbErr.message || fbErr));
+        }
+
         setError('Failed to load campaign data.'); // Set error state
-      })
-      .finally(() => {
+      } finally {
         setLoading(false); // Ensure loading is always set to false
-      });
+      }
+    };
+
+    doFetch();
   }, []);
 
   if (loading) {
@@ -113,7 +143,9 @@ const CrowdfundingPage = () => {
   }
 
   if (error) {
-    return <div className="text-center p-12 text-red-600">{error}</div>;
+    // If error is an object with a message, surface it for easier debugging in the UI
+    const errorMessage = typeof error === 'string' ? error : (error && (error.message || JSON.stringify(error))) || 'Failed to load campaign data.';
+    return <div className="text-center p-12 text-red-600">{errorMessage}</div>;
   }
 
   if (!campaignData) {
@@ -128,13 +160,14 @@ const CrowdfundingPage = () => {
   // This handles both `undefined` and `null` cases by using the `||` operator.
   const {
     title = 'Untitled Campaign',
-    description = '',
-    goal = 0,
-    raisedAmount = 0,
+    description = [],
     backers = 0,
     endDate = null,
     heroImage = null,
   } = campaignData;
+
+  // New pies sold count (optional field)
+  const piesSold = campaignData.piesSold ?? 0;
 
   // Specifically safeguard array types to prevent the .length error
   const story = campaignData.story || [];
@@ -170,19 +203,39 @@ const CrowdfundingPage = () => {
     label: PropTypes.string.isRequired,
   };
 
+  // Helper to extract a plain-text excerpt from Portable Text arrays for meta description
+  const plainTextFromPortable = (blocks) => {
+    if (!blocks) return '';
+    if (typeof blocks === 'string') return blocks;
+    return (blocks || [])
+      .filter(Boolean)
+      .map((blk) => {
+        if (typeof blk === 'string') return blk;
+        if (blk.children && Array.isArray(blk.children)) {
+          return blk.children.map((c) => c.text || '').join('');
+        }
+        return '';
+      })
+      .join('\n')
+      .trim();
+  };
+
   return (
     <>
       <Helmet>
         <title>{`${title} | Crowdfunding Campaign`}</title>
-        <meta name="description" content={description} />
+  <meta name="description" content={plainTextFromPortable(description).slice(0,160)} />
       </Helmet>
 
       <div className="space-y-12">
         {/* --- Page Header --- */}
         <div>
-          <h1 className="text-hero uppercase">{title}</h1>
-          <p className="text-body max-w-3xl mt-2">{description}</p>
-        </div>
+                <h1 className="text-hero uppercase">{title}</h1>
+                {/* Short description rendered with Portable Text (supports paragraphs and formatting) */}
+                <div className="mt-6 md:mt-8 text-body max-w-3xl">
+                  <PortableText value={description} />
+                </div>
+              </div>
 
         {/* --- Main Content Grid --- */}
         <div className="grid grid-cols-1 lg:grid-cols-5 lg:gap-16">
@@ -198,10 +251,11 @@ const CrowdfundingPage = () => {
 
             <div className="border-b border-gray-200">
               <nav className="flex space-x-8">
-                <TabButton tabName="story" label="Story" />
+                <TabButton tabName="story" label="Our Story" />
                 {updates.length > 0 && (
                   <TabButton tabName="updates" label={`Updates (${updates.length})`} />
                 )}
+                <TabButton tabName="goals" label="Goals" />
                 {faq.length > 0 && <TabButton tabName="faq" label="FAQ" />}
               </nav>
             </div>
@@ -212,7 +266,6 @@ const CrowdfundingPage = () => {
                   {updates.map((update, index) => (
                     <div key={index} className="p-4 border-l-4 border-gray-200">
                       <h3 className="text-heading mt-0">{update.title}</h3>
-                      {/* 💡 IMPROVEMENT: Better date formatting */}
                       <p className="text-sm text-gray-500 mb-2">
                         {new Date(update.publishedAt).toLocaleDateString('en-US', {
                           year: 'numeric',
@@ -223,6 +276,11 @@ const CrowdfundingPage = () => {
                       <PortableText value={update.body} />
                     </div>
                   ))}
+                </div>
+              )}
+              {activeTab === 'goals' && (
+                <div className="space-y-6">
+                  <PortableText value={campaignData.goals || []} />
                 </div>
               )}
               {activeTab === 'faq' && (
@@ -254,6 +312,9 @@ const CrowdfundingPage = () => {
                 <p className="text-body text-gray-600">
                   sold of {pizzaGoal.toLocaleString()} pizzas goal
                 </p>
+                {/* Pies sold (no goal) */}
+                <p className="mt-2 text-2xl font-semibold">{piesSold.toLocaleString()} pies</p>
+                <p className="text-body text-gray-600">sold</p>
               </div>
               <div className="flex justify-between text-body text-center border-y py-3">
                 <StatBox value={backers.toLocaleString()} label="backers" />
