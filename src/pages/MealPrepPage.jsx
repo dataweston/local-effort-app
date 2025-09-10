@@ -3,9 +3,7 @@ import { Helmet } from 'react-helmet-async';
 import { VennDiagram } from '../components/common/VennDiagram';
 import PhotoGrid from '../components/common/PhotoGrid';
 import client from '../sanityClient';
-import { useAuthUser } from '../hooks/useAuthUser';
-import { AuthButtons } from '../components/mealprep/AuthButtons';
-import { auth, signInWithGoogle } from '../firebaseConfig';
+// Meal prep is now public: remove Firebase auth gating
 import { MenuList } from '../components/mealprep/MenuList';
 import { MenuDetail } from '../components/mealprep/MenuDetail';
 import { Comments } from '../components/mealprep/Comments';
@@ -13,7 +11,8 @@ import { getAssignedClientNameForUser } from '../data/mealPrepClients';
 import { getUserProfile, saveUserProfile } from '../utils/userProfiles';
 
 export const MealPrepPage = () => {
-  const { user } = useAuthUser();
+  // no auth gating; menus are public
+  const user = null;
   const [menus, setMenus] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -64,14 +63,7 @@ export const MealPrepPage = () => {
   // Load menus once signed in
   useEffect(() => {
     let mounted = true;
-    if (!user) {
-      setMenus([]);
-      setLoading(false);
-      setError(null);
-      return () => {
-        mounted = false;
-      };
-    }
+  // load menus publicly
     (async () => {
       try {
         setLoading(true);
@@ -119,25 +111,7 @@ export const MealPrepPage = () => {
         <div className="flex items-center justify-between">
           <h2 className="text-4xl md:text-6xl font-bold uppercase">Weekly Meal Prep</h2>
           <div className="flex items-center gap-3">
-            {user ? (
-              <AuthButtons user={user} />
-            ) : (
-              auth ? (
-                <button
-                  type="button"
-                  className="btn btn-primary"
-                  onClick={async () => {
-                    try {
-                      await signInWithGoogle();
-                    } catch (e) {
-                      alert(`Sign-in unavailable: ${e?.message || e}`);
-                    }
-                  }}
-                >
-                  Sign in
-                </button>
-              ) : null
-            )}
+            {/* Public access — no sign-in required */}
           </div>
         </div>
 
@@ -146,7 +120,6 @@ export const MealPrepPage = () => {
           to create custom plans for any diet.
         </p>
 
-  {user && (
           <div className="flex gap-2 items-center text-sm text-gray-700">
             <a href="#menus" className="underline">View current menus</a>
             {assignedClient ? (
@@ -155,9 +128,7 @@ export const MealPrepPage = () => {
               <span className="italic">no client assigned yet</span>
             )}
           </div>
-        )}
 
-        {user && (
           <section id="menus" className="space-y-4">
             <h3 className="text-2xl font-bold">Current Menus</h3>
             {loading ? (
@@ -172,11 +143,11 @@ export const MealPrepPage = () => {
             ) : (
               <div>
                 <MenuDetail menu={selected} onBack={() => setSelected(null)} />
-                <Comments menuId={selected._id} user={user} />
+                <Comments menuId={selected._id} />
               </div>
             )}
           </section>
-        )}
+        
 
   {/* Photo grid for meal plan images */}
   <PhotoGrid tags="mealplan" title="Meal plan photos" perPage={24} />

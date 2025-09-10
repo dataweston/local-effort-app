@@ -1,39 +1,35 @@
 // src/sanityClient.js
 import { createClient } from '@sanity/client';
 
-// Gather build-time env first (Vite)
-const env = (typeof import.meta !== 'undefined' ? import.meta.env : {}) || {};
-// Also allow runtime injection via `window.__SANITY_CONFIG__` for deployed builds
-const runtime = typeof window !== 'undefined' ? window.__SANITY_CONFIG__ || window.__SANITY_CLIENT_CONFIG__ : null;
+// Resolve environment values with multiple fallbacks:
+// 1. Vite's import.meta.env at build-time (browser)
+// 2. `window.__SANITY_CONFIG__` injected at runtime (optional)
+// 3. Node's process.env (for scripts/tests)
+const rawBuildEnv = (typeof import.meta !== 'undefined' && import.meta.env) ? import.meta.env : {};
+const runtimeWindowEnv = (typeof window !== 'undefined' && window.__SANITY_CONFIG__) ? window.__SANITY_CONFIG__ : {};
+const nodeEnv = (typeof process !== 'undefined' && process.env) ? process.env : {};
+const env = { ...nodeEnv, ...rawBuildEnv, ...runtimeWindowEnv } || {};
 
-const projectIdFromEnv = env.VITE_APP_SANITY_PROJECT_ID || env.VITE_SANITY_PROJECT_ID;
-const datasetFromEnv = env.VITE_APP_SANITY_DATASET || env.VITE_SANITY_DATASET;
-
-const projectId = projectIdFromEnv || (runtime && runtime.projectId);
-const dataset = datasetFromEnv || (runtime && runtime.dataset);
+const projectId = env.VITE_APP_SANITY_PROJECT_ID || env.VITE_SANITY_PROJECT_ID || env.SANITY_PROJECT_ID || env.PROJECT_ID;
+const dataset = env.VITE_APP_SANITY_DATASET || env.VITE_SANITY_DATASET || env.SANITY_DATASET || env.DATASET;
 
 let client = null;
-if (projectId && dataset) {
-  try {
+try {
+  if (projectId && dataset) {
     client = createClient({ projectId, dataset, useCdn: true, apiVersion: '2023-05-03' });
-  } catch (e) {
-    // Fallback stub with clear error
-    // eslint-disable-next-line no-console
-    console.warn('Failed to initialize Sanity client:', e && (e.message || e));
+  } else {
+    // No env — export a stub to avoid crashing during import
     client = {
       fetch: async () => {
-        throw new Error('Sanity client unavailable: initialization failed');
+        throw new Error('Sanity client unavailable');
       },
     };
   }
-} else {
-  // Export a stub that throws with a helpful message. This allows imports to succeed
-  // (so SSR/build steps don't crash) while surfacing a clear runtime error in the browser.
+} catch (e) {
+  console.warn('Failed to initialize Sanity client:', e && (e.message || e));
   client = {
     fetch: async () => {
-      throw new Error(
-        'Sanity client unavailable: missing projectId/dataset. Provide VITE_SANITY_PROJECT_ID and VITE_SANITY_DATASET at build time, or set window.__SANITY_CONFIG__ = { projectId, dataset } before your app boots.'
-      );
+      throw new Error('Sanity client unavailable');
     },
   };
 }

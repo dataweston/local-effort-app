@@ -8,7 +8,7 @@ import { Footer } from './components/layout/Footer';
 import { LoadingSpinner } from './components/layout/LoadingSpinner';
 import { AnimatedPage } from './components/layout/AnimatedPage';
 import { SupportWidget } from './components/support/SupportWidget';
-import { RequireAuth } from './components/auth/RequireAuth';
+// Auth guards removed for public access to partner tools and partner portal
 
 // Lazily import page components using the default export pattern
 const HomePage = lazy(() => import('./pages/HomePage'));
@@ -150,9 +150,7 @@ const AppContent = () => {
                   path="/inbox"
                   element={
                     <AnimatedPage>
-                      <RequireAuth>
-                        <InboxPage />
-                      </RequireAuth>
+                      <InboxPage />
                     </AnimatedPage>
                   }
                 />
@@ -160,9 +158,7 @@ const AppContent = () => {
                   path="/campaigns"
                   element={
                     <AnimatedPage>
-                      <RequireAuth>
-                        <CampaignsPage />
-                      </RequireAuth>
+                      <CampaignsPage />
                     </AnimatedPage>
                   }
                 />
