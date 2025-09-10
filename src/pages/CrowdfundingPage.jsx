@@ -79,22 +79,25 @@ const CrowdfundingPage = () => {
     // 💡 IMPROVEMENT: Fetch a specific campaign by its slug for a more robust component.
     // For this example, we'll hardcode a slug. In a real app, you'd get this from the URL.
     const slug = 'local-pizza-by-local-effort-let-s-make-1000-pizzas'; // Replace with a real slug from your Sanity data
-    const query = `*[_type == "crowdfundingCampaign" && slug.current == $slug][0]{
-            title,
-            description,
-            // pizza-specific fields (keep legacy fields for backwards compatibility)
-            pizzaGoal,
-            pizzasSold,
-            goal,
-            raisedAmount,
-            backers,
-            endDate,
-            heroImage,
-            story,
-            faq,
-            "rewardTiers": rewardTiers[]->{ amount, pizzaCount, title, description, limit } | order(amount asc),
-            "updates": updates[]->{ title, publishedAt, body } | order(publishedAt desc)
-        }`;
+  const query = `*[_type == "crowdfundingCampaign" && slug.current == $slug][0]{
+      title,
+      // Short description: prefer new field name, fallback to legacy if present
+      "description": coalesce(description, shortDescription),
+      // pizza-specific fields (keep legacy fields for backwards compatibility)
+      pizzaGoal,
+      pizzasSold,
+      piesSold,
+      goal,
+      raisedAmount,
+      backers,
+      endDate,
+      heroImage,
+      story,
+      goals,
+      faq,
+      "rewardTiers": rewardTiers[]->{ amount, pizzaCount, title, description, limit } | order(amount asc),
+      "updates": updates[]->{ title, publishedAt, body } | order(publishedAt desc)
+    }`;
 
     const params = { slug };
 
@@ -117,7 +120,23 @@ const CrowdfundingPage = () => {
 
         // Attempt a safe fallback: fetch the first crowdfundingCampaign available
         try {
-          const fallback = `*[_type == "crowdfundingCampaign"][0]{ title,description,pizzaGoal,pizzasSold,goal,raisedAmount,backers,endDate,heroImage,story,faq,"rewardTiers": rewardTiers[]->{ amount, pizzaCount, title, description, limit } | order(amount asc),"updates": updates[]->{ title, publishedAt, body } | order(publishedAt desc) }`;
+          const fallback = `*[_type == "crowdfundingCampaign"][0]{
+            title,
+            "description": coalesce(description, shortDescription),
+            pizzaGoal,
+            pizzasSold,
+            piesSold,
+            goal,
+            raisedAmount,
+            backers,
+            endDate,
+            heroImage,
+            story,
+            goals,
+            faq,
+            "rewardTiers": rewardTiers[]->{ amount, pizzaCount, title, description, limit } | order(amount asc),
+            "updates": updates[]->{ title, publishedAt, body } | order(publishedAt desc)
+          }`;
           const fbData = await sanityClient.fetch(fallback);
           if (fbData) {
             console.warn('Loaded fallback campaign (first in dataset)');
@@ -280,7 +299,11 @@ const CrowdfundingPage = () => {
               )}
               {activeTab === 'goals' && (
                 <div className="space-y-6">
-                  <PortableText value={campaignData.goals || []} />
+                  {Array.isArray(campaignData.goals) && campaignData.goals.length > 0 ? (
+                    <PortableText value={campaignData.goals} />
+                  ) : (
+                    <p className="text-gray-500">No goals content yet. Add content in the Goals field in Sanity Studio.</p>
+                  )}
                 </div>
               )}
               {activeTab === 'faq' && (

@@ -28,9 +28,7 @@ export const Footer = () => {
             >
               Thumbtack
             </a>
-            <a href="/partner-portal" className="underline underline-offset-4 hover:opacity-80">
-              Partner Portal
-            </a>
+            {/* Partner Portal link removed */}
           </div>
         </div>
       </div>
