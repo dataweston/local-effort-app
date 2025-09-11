@@ -1,0 +1,3 @@
+# Ignore service account credentials placed here
+*.json
+!.gitignore
