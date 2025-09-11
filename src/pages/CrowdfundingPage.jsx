@@ -260,12 +260,12 @@ const CrowdfundingPage = () => {
   <meta name="description" content={plainTextFromPortable(description).slice(0,160)} />
       </Helmet>
 
-      <div className="space-y-12">
+      <div className="space-y-16 mx-auto max-w-6xl px-4 md:px-6 lg:px-8">
         {/* --- Page Header --- */}
         <div>
-                <h1 className="text-hero uppercase">{title}</h1>
+                <h1 className="text-4xl md:text-6xl font-bold uppercase tracking-[-0.02em] leading-[1.02]">{title}</h1>
                 {/* Short description rendered with Portable Text (supports paragraphs and formatting) */}
-                <div className="mt-6 md:mt-8 text-body max-w-3xl">
+                <div className="mt-6 md:mt-8 text-body max-w-2xl">
                   {description && (Array.isArray(description) ? (
                     <PortableText value={description} />
                   ) : (
@@ -275,14 +275,14 @@ const CrowdfundingPage = () => {
               </div>
 
         {/* --- Main Content Grid --- */}
-        <div className="grid grid-cols-1 lg:grid-cols-5 lg:gap-16">
+  <div className="grid grid-cols-1 lg:grid-cols-5 lg:gap-16">
           {/* --- Left Column (Media & Content Tabs) --- */}
           <div className="lg:col-span-3 space-y-8">
             {heroImage && (
               <img
                 src={urlFor(heroImage).width(1200).quality(80).url()}
                 alt={title}
-                className="w-full object-cover rounded-lg aspect-video bg-gray-100"
+    className="w-full object-cover rounded-lg aspect-video bg-gray-100"
               />
             )}
 

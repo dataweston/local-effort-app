@@ -21,7 +21,7 @@ export const LoadingSpinner = () => (
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.2 }}
       >
-        Preparing something delicious...
+        Just a moment
       </motion.p>
     </div>
   </motion.div>
