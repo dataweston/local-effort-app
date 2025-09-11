@@ -717,13 +717,18 @@ var init_FoodItemModal = __esm({
 });
 
 // src/firebaseConfig.js
-var import_app, import_firestore, import_auth, import_meta5, env2, firebaseConfig, app, db, auth, googleProvider, signInWithGoogle, signOutUser;
+var import_app, import_firestore, import_auth, import_meta5, initializeAppCheck, ReCaptchaV3Provider, loadAppCheck, env2, firebaseConfig, app, db, auth, googleProvider, firebaseProjectId;
 var init_firebaseConfig = __esm({
   "src/firebaseConfig.js"() {
     import_app = require("firebase/app");
     import_firestore = require("firebase/firestore");
     import_auth = require("firebase/auth");
     import_meta5 = {};
+    loadAppCheck = () => import("firebase/app-check").then((m) => {
+      initializeAppCheck = m.initializeAppCheck;
+      ReCaptchaV3Provider = m.ReCaptchaV3Provider;
+    }).catch(() => {
+    });
     env2 = (typeof import_meta5 !== "undefined" ? import_meta5.env : {}) || {};
     firebaseConfig = {
       apiKey: env2.VITE_API_KEY || env2.VITE_FIREBASE_API_KEY || env2.REACT_APP_API_KEY,
@@ -737,6 +742,21 @@ var init_firebaseConfig = __esm({
     try {
       if (firebaseConfig.apiKey) {
         app = (0, import_app.initializeApp)(firebaseConfig);
+        const siteKey = env2.VITE_APPCHECK_SITE_KEY || env2.VITE_RECAPTCHA_SITE_KEY;
+        if (siteKey) {
+          loadAppCheck().then(() => {
+            if (initializeAppCheck && ReCaptchaV3Provider) {
+              try {
+                initializeAppCheck(app, {
+                  provider: new ReCaptchaV3Provider(siteKey),
+                  isTokenAutoRefreshEnabled: true
+                });
+              } catch (e) {
+                console.warn("App Check initialization failed:", e && (e.message || e));
+              }
+            }
+          });
+        }
       } else {
         console.warn("Firebase config missing \u2014 auth/comments disabled on client.");
       }
@@ -746,14 +766,7 @@ var init_firebaseConfig = __esm({
     db = app ? (0, import_firestore.getFirestore)(app) : null;
     auth = app ? (0, import_auth.getAuth)(app) : null;
     googleProvider = app ? new import_auth.GoogleAuthProvider() : null;
-    signInWithGoogle = () => {
-      if (!auth || !googleProvider) return Promise.reject(new Error("Auth not configured"));
-      return (0, import_auth.signInWithPopup)(auth, googleProvider);
-    };
-    signOutUser = () => {
-      if (!auth) return Promise.resolve();
-      return (0, import_auth.signOut)(auth);
-    };
+    firebaseProjectId = firebaseConfig.projectId || null;
   }
 });
 
@@ -941,9 +954,9 @@ __export(StaticApp_exports, {
   default: () => StaticApp
 });
 module.exports = __toCommonJS(StaticApp_exports);
-var import_react35 = __toESM(require("react"));
-var import_react_router_dom7 = require("react-router-dom");
-var import_react_helmet_async12 = __toESM(require_lib());
+var import_react32 = __toESM(require("react"));
+var import_react_router_dom6 = require("react-router-dom");
+var import_react_helmet_async11 = __toESM(require_lib());
 
 // src/components/layout/Header.jsx
 var import_react = __toESM(require("react"));
@@ -1125,8 +1138,7 @@ var Footer = () => {
           className: "underline underline-offset-4 hover:opacity-80",
           children: "Thumbtack"
         }
-      ),
-      /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("a", { href: "/partner-portal", className: "underline underline-offset-4 hover:opacity-80", children: "Partner Portal" })
+      )
     ] })
   ] }) }) });
 };
@@ -5900,7 +5912,7 @@ var EventsPage = () => /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)(import_jsx
 var EventsPage_default = EventsPage;
 
 // src/pages/MealPrepPage.jsx
-var import_react32 = __toESM(require("react"));
+var import_react30 = __toESM(require("react"));
 var import_react_helmet_async9 = __toESM(require_lib());
 
 // src/components/common/VennDiagram.jsx
@@ -5926,61 +5938,22 @@ var VennDiagram = () => {
   ] });
 };
 
-// src/hooks/useAuthUser.js
-var import_react27 = require("react");
-init_firebaseConfig();
-var import_auth2 = require("firebase/auth");
-function useAuthUser() {
-  const [user, setUser] = (0, import_react27.useState)(null);
-  const [loading, setLoading] = (0, import_react27.useState)(true);
-  (0, import_react27.useEffect)(() => {
-    if (!auth) {
-      setLoading(false);
-      return () => {
-      };
-    }
-    const unsub = (0, import_auth2.onAuthStateChanged)(auth, (u) => {
-      setUser(u || null);
-      setLoading(false);
-    });
-    return () => unsub();
-  }, []);
-  return { user, loading };
-}
-
-// src/components/mealprep/AuthButtons.jsx
-var import_react28 = __toESM(require("react"));
-init_firebaseConfig();
-var import_jsx_runtime23 = require("react/jsx-runtime");
-function AuthButtons({ user }) {
-  return /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("div", { className: "flex items-center gap-3", children: !auth ? /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("span", { className: "text-sm text-gray-600", children: "Sign-in unavailable" }) : user ? /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)(import_jsx_runtime23.Fragment, { children: [
-    /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("span", { className: "text-sm text-gray-700", children: [
-      "Hi, ",
-      user.displayName || user.email
-    ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("button", { onClick: signOutUser, className: "px-3 py-2 text-sm rounded border", children: "Sign out" })
-  ] }) : /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("button", { onClick: signInWithGoogle, className: "px-3 py-2 text-sm rounded border", children: "Sign in" }) });
-}
-
-// src/pages/MealPrepPage.jsx
-init_firebaseConfig();
-
 // src/components/mealprep/MenuList.jsx
-var import_react29 = __toESM(require("react"));
-var import_jsx_runtime24 = require("react/jsx-runtime");
+var import_react27 = __toESM(require("react"));
+var import_jsx_runtime23 = require("react/jsx-runtime");
 function MenuList({ menus, onSelect }) {
   if (!menus || menus.length === 0) {
-    return /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("p", { className: "text-gray-600", children: "No menus yet." });
+    return /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("p", { className: "text-gray-600", children: "No menus yet." });
   }
-  return /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("ul", { className: "divide-y divide-gray-200 border rounded-md", children: menus.map((m) => /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("li", { className: "p-4 flex items-center justify-between", children: [
-    /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { children: [
-      /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("p", { className: "font-semibold", children: m.clientName }),
-      /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("p", { className: "text-sm text-gray-500", children: [
+  return /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("ul", { className: "divide-y divide-gray-200 border rounded-md", children: menus.map((m) => /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("li", { className: "p-4 flex items-center justify-between", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { children: [
+      /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("p", { className: "font-semibold", children: m.clientName }),
+      /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("p", { className: "text-sm text-gray-500", children: [
         "Week of ",
         m.date
       ] })
     ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
+    /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(
       "button",
       {
         type: "button",
@@ -5993,32 +5966,32 @@ function MenuList({ menus, onSelect }) {
 }
 
 // src/components/mealprep/MenuDetail.jsx
-var import_react30 = __toESM(require("react"));
-var import_jsx_runtime25 = require("react/jsx-runtime");
+var import_react28 = __toESM(require("react"));
+var import_jsx_runtime24 = require("react/jsx-runtime");
 function MenuDetail({ menu, onBack }) {
   if (!menu) return null;
-  return /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { className: "space-y-4", children: [
-    /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("button", { onClick: onBack, className: "text-sm text-blue-600", children: "\u2190 Back" }),
-    /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("h4", { className: "text-2xl font-bold", children: menu.clientName }),
-    /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("p", { className: "text-gray-600", children: [
+  return /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "space-y-4", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("button", { onClick: onBack, className: "text-sm text-blue-600", children: "\u2190 Back" }),
+    /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("h4", { className: "text-2xl font-bold", children: menu.clientName }),
+    /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("p", { className: "text-gray-600", children: [
       "Week of ",
       menu.date
     ] }),
-    menu.notes && /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("p", { className: "italic text-gray-700", children: menu.notes }),
-    /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("ul", { className: "list-disc ml-6", children: menu.menu?.map((item, idx) => /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("li", { children: item }, idx)) })
+    menu.notes && /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("p", { className: "italic text-gray-700", children: menu.notes }),
+    /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("ul", { className: "list-disc ml-6", children: menu.menu?.map((item, idx) => /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("li", { children: item }, idx)) })
   ] });
 }
 
 // src/components/mealprep/Comments.jsx
-var import_react31 = __toESM(require("react"));
+var import_react29 = __toESM(require("react"));
 init_firebaseConfig();
 var import_firestore3 = require("firebase/firestore");
-var import_jsx_runtime26 = require("react/jsx-runtime");
+var import_jsx_runtime25 = require("react/jsx-runtime");
 function Comments({ menuId, user }) {
-  const [comments, setComments] = (0, import_react31.useState)([]);
-  const [text, setText] = (0, import_react31.useState)("");
-  const inputRef = (0, import_react31.useRef)(null);
-  (0, import_react31.useEffect)(() => {
+  const [comments, setComments] = (0, import_react29.useState)([]);
+  const [text, setText] = (0, import_react29.useState)("");
+  const inputRef = (0, import_react29.useRef)(null);
+  (0, import_react29.useEffect)(() => {
     if (!menuId || !db) return;
     const q = (0, import_firestore3.query)((0, import_firestore3.collection)(db, "mealprep_comments", menuId, "comments"), (0, import_firestore3.orderBy)("createdAt", "desc"));
     const unsub = (0, import_firestore3.onSnapshot)(q, (snap) => {
@@ -6040,10 +6013,10 @@ function Comments({ menuId, user }) {
     setText("");
     inputRef.current?.focus();
   };
-  return /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "mt-8 border-t pt-4", children: [
-    /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("h5", { className: "font-semibold mb-2", children: "Comments" }),
-    user ? /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("form", { onSubmit: submit, className: "flex gap-2 mb-4", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(
+  return /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { className: "mt-8 border-t pt-4", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("h5", { className: "font-semibold mb-2", children: "Comments" }),
+    user ? /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("form", { onSubmit: submit, className: "flex gap-2 mb-4", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(
         "input",
         {
           ref: inputRef,
@@ -6053,11 +6026,11 @@ function Comments({ menuId, user }) {
           placeholder: "Leave a comment"
         }
       ),
-      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("button", { className: "px-3 py-2 bg-gray-900 text-white rounded", type: "submit", children: "Post" })
-    ] }) : /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("p", { className: "text-sm text-gray-600", children: "Sign in to comment." }),
-    /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("ul", { className: "space-y-3", children: comments.map((c) => /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("li", { className: "border rounded p-3", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("p", { className: "text-sm text-gray-500", children: c.name || "Anon" }),
-      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("p", { children: c.body })
+      /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("button", { className: "px-3 py-2 bg-gray-900 text-white rounded", type: "submit", children: "Post" })
+    ] }) : /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("p", { className: "text-sm text-gray-600", children: "Sign in to comment." }),
+    /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("ul", { className: "space-y-3", children: comments.map((c) => /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("li", { className: "border rounded p-3", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("p", { className: "text-sm text-gray-500", children: c.name || "Anon" }),
+      /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("p", { children: c.body })
     ] }, c.id)) })
   ] });
 }
@@ -6126,17 +6099,17 @@ async function getUserProfile(uid) {
 }
 
 // src/pages/MealPrepPage.jsx
-var import_jsx_runtime27 = require("react/jsx-runtime");
+var import_jsx_runtime26 = require("react/jsx-runtime");
 var MealPrepPage = () => {
-  const { user } = useAuthUser();
-  const [menus, setMenus] = (0, import_react32.useState)([]);
-  const [loading, setLoading] = (0, import_react32.useState)(false);
-  const [error, setError] = (0, import_react32.useState)(null);
-  const [selected, setSelected] = (0, import_react32.useState)(null);
-  const [filterName] = (0, import_react32.useState)("");
-  const [assignedClient, setAssignedClient] = (0, import_react32.useState)(null);
-  const [openSection, setOpenSection] = (0, import_react32.useState)(null);
-  (0, import_react32.useEffect)(() => {
+  const user = null;
+  const [menus, setMenus] = (0, import_react30.useState)([]);
+  const [loading, setLoading] = (0, import_react30.useState)(false);
+  const [error, setError] = (0, import_react30.useState)(null);
+  const [selected, setSelected] = (0, import_react30.useState)(null);
+  const [filterName] = (0, import_react30.useState)("");
+  const [assignedClient, setAssignedClient] = (0, import_react30.useState)(null);
+  const [openSection, setOpenSection] = (0, import_react30.useState)(null);
+  (0, import_react30.useEffect)(() => {
     let mounted = true;
     (async () => {
       if (!user) {
@@ -6168,16 +6141,8 @@ var MealPrepPage = () => {
       mounted = false;
     };
   }, [user]);
-  (0, import_react32.useEffect)(() => {
+  (0, import_react30.useEffect)(() => {
     let mounted = true;
-    if (!user) {
-      setMenus([]);
-      setLoading(false);
-      setError(null);
-      return () => {
-        mounted = false;
-      };
-    }
     (async () => {
       try {
         setLoading(true);
@@ -6201,16 +6166,16 @@ var MealPrepPage = () => {
       mounted = false;
     };
   }, [user]);
-  const filtered = (0, import_react32.useMemo)(() => {
+  const filtered = (0, import_react30.useMemo)(() => {
     const base = assignedClient ? menus.filter((m) => (m.clientName || "").toLowerCase() === assignedClient.toLowerCase()) : menus;
     const q = filterName.trim().toLowerCase();
     if (!q) return base;
     return base.filter((m) => (m.clientName || "").toLowerCase().includes(q));
   }, [menus, filterName, assignedClient]);
-  return /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)(import_jsx_runtime27.Fragment, { children: [
-    /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)(import_react_helmet_async9.Helmet, { children: [
-      /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("title", { children: "Weekly Meal Prep | Local Effort" }),
-      /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(
+  return /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)(import_jsx_runtime26.Fragment, { children: [
+    /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)(import_react_helmet_async9.Helmet, { children: [
+      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("title", { children: "Weekly Meal Prep | Local Effort" }),
+      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(
         "meta",
         {
           name: "description",
@@ -6218,89 +6183,75 @@ var MealPrepPage = () => {
         }
       )
     ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)("div", { className: "space-y-8", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)("div", { className: "flex items-center justify-between", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("h2", { className: "text-4xl md:text-6xl font-bold uppercase", children: "Weekly Meal Prep" }),
-        /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("div", { className: "flex items-center gap-3", children: user ? /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(AuthButtons, { user }) : auth ? /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(
-          "button",
-          {
-            type: "button",
-            className: "btn btn-primary",
-            onClick: async () => {
-              try {
-                await signInWithGoogle();
-              } catch (e) {
-                alert(`Sign-in unavailable: ${e?.message || e}`);
-              }
-            },
-            children: "Sign in"
-          }
-        ) : null })
+    /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "space-y-8", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "flex items-center justify-between", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("h2", { className: "text-4xl md:text-6xl font-bold uppercase", children: "Weekly Meal Prep" }),
+        /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "flex items-center gap-3" })
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("p", { className: "font-mono text-lg max-w-3xl", children: "Basic, good nutrition from local Midwest sources. We offer a Foundation Plan and are happy to create custom plans for any diet." }),
-      user && /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)("div", { className: "flex gap-2 items-center text-sm text-gray-700", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("a", { href: "#menus", className: "underline", children: "View current menus" }),
-        assignedClient ? /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)("span", { children: [
+      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("p", { className: "font-mono text-lg max-w-3xl", children: "Basic, good nutrition from local Midwest sources. We offer a Foundation Plan and are happy to create custom plans for any diet." }),
+      /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "flex gap-2 items-center text-sm text-gray-700", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("a", { href: "#menus", className: "underline", children: "View current menus" }),
+        assignedClient ? /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("span", { children: [
           "for ",
-          /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("strong", { children: assignedClient })
-        ] }) : /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("span", { className: "italic", children: "no client assigned yet" })
+          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("strong", { children: assignedClient })
+        ] }) : /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("span", { className: "italic", children: "no client assigned yet" })
       ] }),
-      user && /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)("section", { id: "menus", className: "space-y-4", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("h3", { className: "text-2xl font-bold", children: "Current Menus" }),
-        loading ? /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("p", { children: "Loading menus\u2026" }) : error ? /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)("div", { className: "text-red-700 bg-red-50 border border-red-200 p-3 rounded", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("p", { className: "font-semibold", children: error }),
-          /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("p", { className: "text-sm mt-1", children: "If this persists, ensure Sanity env vars are set on the web app (VITE_APP_SANITY_PROJECT_ID, VITE_APP_SANITY_DATASET) and that the Studio has the new Meal Prep Menu content." })
-        ] }) : !selected ? /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(MenuList, { menus: filtered, onSelect: setSelected }) : /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)("div", { children: [
-          /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(MenuDetail, { menu: selected, onBack: () => setSelected(null) }),
-          /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(Comments, { menuId: selected._id, user })
+      /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("section", { id: "menus", className: "space-y-4", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("h3", { className: "text-2xl font-bold", children: "Current Menus" }),
+        loading ? /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("p", { children: "Loading menus\u2026" }) : error ? /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "text-red-700 bg-red-50 border border-red-200 p-3 rounded", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("p", { className: "font-semibold", children: error }),
+          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("p", { className: "text-sm mt-1", children: "If this persists, ensure Sanity env vars are set on the web app (VITE_APP_SANITY_PROJECT_ID, VITE_APP_SANITY_DATASET) and that the Studio has the new Meal Prep Menu content." })
+        ] }) : !selected ? /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(MenuList, { menus: filtered, onSelect: setSelected }) : /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { children: [
+          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(MenuDetail, { menu: selected, onBack: () => setSelected(null) }),
+          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(Comments, { menuId: selected._id })
         ] })
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(PhotoGrid, { tags: "mealplan", title: "Meal plan photos", perPage: 24 }),
-      /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)("div", { className: "grid md:grid-cols-2 gap-6", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)("div", { className: "border border-gray-900 rounded-md overflow-hidden", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)(
+      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(PhotoGrid, { tags: "mealplan", title: "Meal plan photos", perPage: 24 }),
+      /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "grid md:grid-cols-2 gap-6", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "border border-gray-900 rounded-md overflow-hidden", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)(
             "button",
             {
               type: "button",
               className: "w-full flex items-center justify-between px-4 py-3 bg-gray-50 hover:bg-gray-100",
               onClick: () => setOpenSection(openSection === "foundation" ? null : "foundation"),
               children: [
-                /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("span", { className: "text-xl font-bold", children: "Foundation Meal Plan" }),
-                /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("span", { className: "text-sm text-gray-600", children: openSection === "foundation" ? "Hide \u25B2" : "View More \u25BC" })
+                /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("span", { className: "text-xl font-bold", children: "Foundation Meal Plan" }),
+                /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("span", { className: "text-sm text-gray-600", children: openSection === "foundation" ? "Hide \u25B2" : "View More \u25BC" })
               ]
             }
           ),
-          /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(
+          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(
             "div",
             {
               className: `transition-[max-height,opacity] duration-300 ease-in-out ${openSection === "foundation" ? "max-h-[1000px] opacity-100" : "max-h-0 opacity-0"} overflow-hidden`,
-              children: /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)("div", { className: "p-6", children: [
-                /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(VennDiagram, {}),
-                /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("p", { className: "font-mono mt-6 max-w-2xl", children: "Inspired by the 'Protocol' by Bryan Johnson, this plan provides up to 21 meals/week at ~1800 calories/day." })
+              children: /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "p-6", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(VennDiagram, {}),
+                /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("p", { className: "font-mono mt-6 max-w-2xl", children: "Inspired by the 'Protocol' by Bryan Johnson, this plan provides up to 21 meals/week at ~1800 calories/day." })
               ] })
             }
           )
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)("div", { className: "border border-gray-900 rounded-md overflow-hidden", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)(
+        /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "border border-gray-900 rounded-md overflow-hidden", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)(
             "button",
             {
               type: "button",
               className: "w-full flex items-center justify-between px-4 py-3 bg-gray-50 hover:bg-gray-100",
               onClick: () => setOpenSection(openSection === "custom" ? null : "custom"),
               children: [
-                /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("span", { className: "text-xl font-bold", children: "Custom Plan" }),
-                /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("span", { className: "text-sm text-gray-600", children: openSection === "custom" ? "Hide \u25B2" : "View More \u25BC" })
+                /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("span", { className: "text-xl font-bold", children: "Custom Plan" }),
+                /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("span", { className: "text-sm text-gray-600", children: openSection === "custom" ? "Hide \u25B2" : "View More \u25BC" })
               ]
             }
           ),
-          /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(
+          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(
             "div",
             {
               className: `transition-[max-height,opacity] duration-300 ease-in-out ${openSection === "custom" ? "max-h-[1000px] opacity-100" : "max-h-0 opacity-0"} overflow-hidden`,
-              children: /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)("div", { className: "p-6", children: [
-                /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(VennDiagram, {}),
-                /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("p", { className: "font-mono mt-6 max-w-2xl", children: "We tailor plans to your needs (gluten-free, vegetarian, high-protein, etc.). Tell us your goals and preferences and we\u2019ll propose a weekly plan and schedule." })
+              children: /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "p-6", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(VennDiagram, {}),
+                /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("p", { className: "font-mono mt-6 max-w-2xl", children: "We tailor plans to your needs (gluten-free, vegetarian, high-protein, etc.). Tell us your goals and preferences and we\u2019ll propose a weekly plan and schedule." })
               ] })
             }
           )
@@ -6312,12 +6263,11 @@ var MealPrepPage = () => {
 var MealPrepPage_default = MealPrepPage;
 
 // src/pages/PartnerPortalPage.jsx
-var import_react33 = __toESM(require("react"));
+var import_react31 = __toESM(require("react"));
 var import_react_helmet_async10 = __toESM(require_lib());
 var import_react_router_dom5 = require("react-router-dom");
 
 // src/config/partnerTools.js
-var import_meta6 = {};
 var PARTNER_TOOLS = [
   {
     key: "happymonday",
@@ -6325,7 +6275,8 @@ var PARTNER_TOOLS = [
     description: "Planning & operations app (internal partner app).",
     type: "internal",
     route: "/partners/happymonday",
-    icon: "ClipboardList"
+    icon: "ClipboardList",
+    public: true
   },
   {
     key: "inbox",
@@ -6349,7 +6300,8 @@ var PARTNER_TOOLS = [
     description: "Events management utilities for ZAFA.",
     type: "internal",
     route: "/partners/zafa-events",
-    icon: "Calendar"
+    icon: "Calendar",
+    public: true
     // Source pending: add local-effort-zafa-events/src and embed its App here.
   },
   {
@@ -6358,208 +6310,62 @@ var PARTNER_TOOLS = [
     description: "Landing builder / micro-site utilities.",
     type: "internal",
     route: "/partners/gallant-hawking",
-    icon: "LayoutDashboard"
+    icon: "LayoutDashboard",
+    public: true
     // Embedded directly via component import
   }
 ];
-function hasAccess(profile, toolKey) {
-  const roles = profile && (profile.roles || profile.tools || profile.apps) || [];
-  if (roles === "all") return true;
-  if (Array.isArray(roles) && (roles.includes("admin") || roles.includes("owner"))) return true;
-  return Array.isArray(roles) ? roles.includes(toolKey) : false;
-}
-function isAdminProfile(profile) {
-  const roles = profile && (profile.roles || profile.tools || profile.apps) || [];
-  if (roles === "all") return true;
-  return Array.isArray(roles) && (roles.includes("admin") || roles.includes("owner"));
-}
-function isAdminEmail(email) {
-  if (!email) return false;
-  const env3 = import_meta6 && import_meta6.env ? import_meta6.env : {};
-  const raw = env3.VITE_ADMIN_EMAILS || env3.VITE_ADMIN_EMAIL || env3.VITE_OWNER_EMAILS || env3.VITE_OWNER_EMAIL || env3.NEXT_PUBLIC_ADMIN_EMAILS || env3.NEXT_PUBLIC_ADMIN_EMAIL || "";
-  const target = String(email).trim().toLowerCase();
-  const list = String(raw).split(/[\s,;]+/).map((s) => s.trim().toLowerCase()).filter(Boolean);
-  if (list.includes(target)) return true;
-  const domain = target.includes("@") ? target.split("@")[1] : "";
-  if (domain && list.some((entry) => entry.startsWith("@") && entry.slice(1) === domain)) {
-    return true;
-  }
-  if (list.length === 0 && typeof window !== "undefined") {
-    if (!window.__LE_FIRST_ADMIN_EMAIL) {
-      window.__LE_FIRST_ADMIN_EMAIL = target;
-      return true;
-    }
-    return window.__LE_FIRST_ADMIN_EMAIL === target;
-  }
-  return false;
-}
 
 // src/pages/PartnerPortalPage.jsx
 var Icons = __toESM(require("lucide-react"));
-var import_jsx_runtime28 = require("react/jsx-runtime");
+var import_jsx_runtime27 = require("react/jsx-runtime");
 var PartnerPortalPage = () => {
-  const { user, loading } = useAuthUser();
-  const [profile, setProfile] = import_react33.default.useState(null);
-  const [pLoading, setPLoading] = import_react33.default.useState(false);
-  import_react33.default.useEffect(() => {
-    let cancelled = false;
-    const load = async () => {
-      if (!user) return setProfile(null);
-      setPLoading(true);
-      try {
-        const p = await getUserProfile(user.uid);
-        if (!cancelled) setProfile(p || null);
-      } finally {
-        if (!cancelled) setPLoading(false);
-      }
-    };
-    load();
-    return () => {
-      cancelled = true;
-    };
-  }, [user]);
-  return /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)(import_jsx_runtime28.Fragment, { children: [
-    /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)(import_react_helmet_async10.Helmet, { children: [
-      /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("title", { children: "Partner Portal | Local Effort" }),
-      /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("meta", { name: "description", content: "Tools and resources for Local Effort partners." })
+  return /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)(import_jsx_runtime27.Fragment, { children: [
+    /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)(import_react_helmet_async10.Helmet, { children: [
+      /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("title", { children: "Partner Portal | Local Effort" }),
+      /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("meta", { name: "description", content: "Tools and resources for Local Effort partners." })
     ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("div", { className: "space-y-6", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("h2", { className: "text-5xl md:text-7xl font-bold uppercase", children: "Partner Portal" }),
-      /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("p", { className: "text-body max-w-2xl", children: "Welcome. Sign in to see your tools, or jump to the portal welcome." }),
-      !loading && !user && /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("div", { className: "p-6 border rounded-md max-w-xl bg-neutral-50", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("h3", { className: "text-xl font-semibold mb-2", children: "Sign in required" }),
-        /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("p", { className: "mb-4 text-gray-600", children: "Use your Google account to continue." }),
-        /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("div", { className: "flex gap-3", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(import_react_router_dom5.Link, { to: "/auth", className: "inline-block px-4 py-2 rounded bg-black text-white", children: "Sign in" }),
-          /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(import_react_router_dom5.Link, { to: "/partner-portal/welcome", className: "inline-block px-4 py-2 rounded border", children: "Portal welcome" })
-        ] })
-      ] }),
-      user && /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(ToolGrid, { profile, user, loading: pLoading })
+    /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)("div", { className: "space-y-6", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("h2", { className: "text-5xl md:text-7xl font-bold uppercase", children: "Partner Portal" }),
+      /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("p", { className: "text-body max-w-2xl", children: "Public tools and links for partners. No sign-in required." }),
+      /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(ToolGrid, {})
     ] })
   ] });
 };
 var PartnerPortalPage_default = PartnerPortalPage;
-function ToolGrid({ profile, user }) {
-  const isAdmin = isAdminProfile(profile) || isAdminEmail(user?.email);
-  const visible = isAdmin ? PARTNER_TOOLS : PARTNER_TOOLS.filter((t) => hasAccess(profile, t.key));
-  return /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("div", { className: "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4", children: visible.map((t) => {
+function ToolGrid() {
+  const visible = PARTNER_TOOLS;
+  return /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("div", { className: "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4", children: visible.map((t) => {
     const Icon = Icons[t.icon] || Icons.AppWindow;
     const isExternal = t.type === "external" && t.href;
-    const content = /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("div", { className: "group block p-5 border rounded-xl hover:shadow transition bg-white", children: /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("div", { className: "flex items-center gap-3", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("span", { className: "inline-flex items-center justify-center w-10 h-10 rounded-lg bg-neutral-100 group-hover:bg-neutral-200", children: /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(Icon, { className: "w-5 h-5 text-neutral-800" }) }),
-      /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("div", { children: [
-        /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("div", { className: "font-semibold", children: t.name }),
-        /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("div", { className: "text-sm text-neutral-600", children: t.description })
+    const content = /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("div", { className: "group block p-5 border rounded-xl hover:shadow transition bg-white", children: /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)("div", { className: "flex items-center gap-3", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("span", { className: "inline-flex items-center justify-center w-10 h-10 rounded-lg bg-neutral-100 group-hover:bg-neutral-200", children: /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(Icon, { className: "w-5 h-5 text-neutral-800" }) }),
+      /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)("div", { children: [
+        /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("div", { className: "font-semibold", children: t.name }),
+        /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("div", { className: "text-sm text-neutral-600", children: t.description })
       ] })
     ] }) });
-    return isExternal ? /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("a", { href: t.href, target: "_blank", rel: "noopener noreferrer", children: content }, t.key) : /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(import_react_router_dom5.Link, { to: t.route, children: content }, t.key);
-  }) });
-}
-
-// src/pages/PartnerPortalWelcome.jsx
-var import_react34 = __toESM(require("react"));
-var import_react_helmet_async11 = __toESM(require_lib());
-var import_react_router_dom6 = require("react-router-dom");
-var Icons2 = __toESM(require("lucide-react"));
-var import_jsx_runtime29 = require("react/jsx-runtime");
-function PartnerPortalWelcome() {
-  const { user, loading } = useAuthUser();
-  const [profile, setProfile] = import_react34.default.useState(null);
-  const [pLoading, setPLoading] = import_react34.default.useState(false);
-  const [profileError, setProfileError] = import_react34.default.useState(null);
-  import_react34.default.useEffect(() => {
-    let cancelled = false;
-    const load = async () => {
-      if (!user) {
-        setProfile(null);
-        setProfileError(null);
-        return;
-      }
-      setPLoading(true);
-      setProfileError(null);
-      try {
-        const p = await getUserProfile(user.uid);
-        if (!cancelled) {
-          setProfile(p || null);
-          if (!p) {
-            setProfileError(null);
-          }
-        }
-      } catch (e) {
-        if (!cancelled) {
-          const code = e && e.code;
-          if (code === "permission-denied") {
-            setProfileError("You are signed in but do not have permission to load your partner profile. Ask an admin to grant access.");
-          } else {
-            setProfileError(e.message || "Failed to load profile");
-          }
-          setProfile(null);
-        }
-      } finally {
-        if (!cancelled) setPLoading(false);
-      }
-    };
-    load();
-    return () => {
-      cancelled = true;
-    };
-  }, [user]);
-  return /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)(import_jsx_runtime29.Fragment, { children: [
-    /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)(import_react_helmet_async11.Helmet, { children: [
-      /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("title", { children: "Partner Portal | Welcome" }),
-      /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("meta", { name: "description", content: "Local Effort partner tools and resources." })
-    ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("div", { className: "space-y-6", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("h2", { className: "text-5xl md:text-7xl font-bold uppercase", children: "Partner Portal" }),
-      /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("p", { className: "text-body max-w-2xl", children: "Welcome! Access tools and resources for partners. Sign in to see your tools." }),
-      !loading && !user && /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("div", { className: "p-6 border rounded-md max-w-xl bg-neutral-50", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("h3", { className: "text-xl font-semibold mb-2", children: "Sign in required" }),
-        /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("p", { className: "mb-4 text-gray-600", children: "Use your Google account to continue." }),
-        /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(import_react_router_dom6.Link, { to: "/auth", className: "inline-block px-4 py-2 rounded bg-black text-white", children: "Continue with Google" })
-      ] }),
-      user && /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)(import_jsx_runtime29.Fragment, { children: [
-        profileError && /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("div", { className: "p-4 border border-amber-300 bg-amber-50 rounded text-sm text-amber-800 mb-4", children: profileError }),
-        /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(ToolGrid2, { profile, loading: pLoading })
-      ] })
-    ] })
-  ] });
-}
-function ToolGrid2({ profile }) {
-  const { user } = useAuthUser();
-  const isAdmin = isAdminProfile(profile) || isAdminEmail(user?.email);
-  const visible = isAdmin ? PARTNER_TOOLS : PARTNER_TOOLS.filter((t) => hasAccess(profile, t.key));
-  return /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("div", { className: "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4", children: visible.map((t) => {
-    const Icon = Icons2[t.icon] || Icons2.AppWindow;
-    const isExternal = t.type === "external" && t.href;
-    const content = /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("div", { className: "group block p-5 border rounded-xl hover:shadow transition bg-white", children: /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("div", { className: "flex items-center gap-3", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("span", { className: "inline-flex items-center justify-center w-10 h-10 rounded-lg bg-neutral-100 group-hover:bg-neutral-200", children: /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(Icon, { className: "w-5 h-5 text-neutral-800" }) }),
-      /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("div", { children: [
-        /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("div", { className: "font-semibold", children: t.name }),
-        /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("div", { className: "text-sm text-neutral-600", children: t.description })
-      ] })
-    ] }) });
-    return isExternal ? /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("a", { href: t.href, target: "_blank", rel: "noopener noreferrer", children: content }, t.key) : /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(import_react_router_dom6.Link, { to: t.route, children: content }, t.key);
+    return isExternal ? /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("a", { href: t.href, target: "_blank", rel: "noopener noreferrer", children: content }, t.key) : /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(import_react_router_dom5.Link, { to: t.route, children: content }, t.key);
   }) });
 }
 
 // src/ssr/StaticApp.jsx
-var import_jsx_runtime30 = require("react/jsx-runtime");
+var import_jsx_runtime28 = require("react/jsx-runtime");
 function StaticApp() {
-  return /* @__PURE__ */ (0, import_jsx_runtime30.jsx)(import_react_helmet_async12.HelmetProvider, { children: /* @__PURE__ */ (0, import_jsx_runtime30.jsxs)("div", { className: "app-root min-h-screen flex flex-col", children: [
-    /* @__PURE__ */ (0, import_jsx_runtime30.jsx)(Header, {}),
-    /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("main", { className: "flex-1", children: /* @__PURE__ */ (0, import_jsx_runtime30.jsxs)(import_react_router_dom7.Routes, { children: [
-      /* @__PURE__ */ (0, import_jsx_runtime30.jsx)(import_react_router_dom7.Route, { path: "/", element: /* @__PURE__ */ (0, import_jsx_runtime30.jsx)(HomePage_default, {}) }),
-      /* @__PURE__ */ (0, import_jsx_runtime30.jsx)(import_react_router_dom7.Route, { path: "/about", element: /* @__PURE__ */ (0, import_jsx_runtime30.jsx)(AboutUsPage_default, {}) }),
-      /* @__PURE__ */ (0, import_jsx_runtime30.jsx)(import_react_router_dom7.Route, { path: "/services", element: /* @__PURE__ */ (0, import_jsx_runtime30.jsx)(ServicesPage_default, {}) }),
-      /* @__PURE__ */ (0, import_jsx_runtime30.jsx)(import_react_router_dom7.Route, { path: "/pricing", element: /* @__PURE__ */ (0, import_jsx_runtime30.jsx)(PricingPage_default, {}) }),
-      /* @__PURE__ */ (0, import_jsx_runtime30.jsx)(import_react_router_dom7.Route, { path: "/menu", element: /* @__PURE__ */ (0, import_jsx_runtime30.jsx)(MenuPage, {}) }),
-      /* @__PURE__ */ (0, import_jsx_runtime30.jsx)(import_react_router_dom7.Route, { path: "/happy-monday", element: /* @__PURE__ */ (0, import_jsx_runtime30.jsx)(HappyMondayPage_default, {}) }),
-      /* @__PURE__ */ (0, import_jsx_runtime30.jsx)(import_react_router_dom7.Route, { path: "/gallery", element: /* @__PURE__ */ (0, import_jsx_runtime30.jsx)(GalleryPage_default, {}) }),
-      /* @__PURE__ */ (0, import_jsx_runtime30.jsx)(import_react_router_dom7.Route, { path: "/events", element: /* @__PURE__ */ (0, import_jsx_runtime30.jsx)(EventsPage_default, {}) }),
-      /* @__PURE__ */ (0, import_jsx_runtime30.jsx)(import_react_router_dom7.Route, { path: "/meal-prep", element: /* @__PURE__ */ (0, import_jsx_runtime30.jsx)(MealPrepPage_default, {}) }),
-      /* @__PURE__ */ (0, import_jsx_runtime30.jsx)(import_react_router_dom7.Route, { path: "/partner-portal", element: /* @__PURE__ */ (0, import_jsx_runtime30.jsx)(PartnerPortalPage_default, {}) }),
-      /* @__PURE__ */ (0, import_jsx_runtime30.jsx)(import_react_router_dom7.Route, { path: "/partner-portal/welcome", element: /* @__PURE__ */ (0, import_jsx_runtime30.jsx)(PartnerPortalWelcome, {}) })
+  return /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(import_react_helmet_async11.HelmetProvider, { children: /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("div", { className: "app-root min-h-screen flex flex-col", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(Header, {}),
+    /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("main", { className: "flex-1", children: /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)(import_react_router_dom6.Routes, { children: [
+      /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(import_react_router_dom6.Route, { path: "/", element: /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(HomePage_default, {}) }),
+      /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(import_react_router_dom6.Route, { path: "/about", element: /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(AboutUsPage_default, {}) }),
+      /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(import_react_router_dom6.Route, { path: "/services", element: /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(ServicesPage_default, {}) }),
+      /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(import_react_router_dom6.Route, { path: "/pricing", element: /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(PricingPage_default, {}) }),
+      /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(import_react_router_dom6.Route, { path: "/menu", element: /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(MenuPage, {}) }),
+      /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(import_react_router_dom6.Route, { path: "/happy-monday", element: /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(HappyMondayPage_default, {}) }),
+      /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(import_react_router_dom6.Route, { path: "/gallery", element: /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(GalleryPage_default, {}) }),
+      /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(import_react_router_dom6.Route, { path: "/events", element: /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(EventsPage_default, {}) }),
+      /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(import_react_router_dom6.Route, { path: "/meal-prep", element: /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(MealPrepPage_default, {}) }),
+      /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(import_react_router_dom6.Route, { path: "/partner-portal", element: /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(PartnerPortalPage_default, {}) })
     ] }) }),
-    /* @__PURE__ */ (0, import_jsx_runtime30.jsx)(Footer, {})
+    /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(Footer, {})
   ] }) });
 }
