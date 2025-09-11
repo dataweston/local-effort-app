@@ -4,6 +4,14 @@ export default {
   name: 'crowdfundingCampaign',
   title: 'Crowdfunding Campaign',
   type: 'document',
+  groups: [
+    { name: 'overview', title: 'Overview' },
+    { name: 'story', title: 'Story' },
+    { name: 'goals', title: 'Goals' },
+    { name: 'rewards', title: 'Rewards' },
+    { name: 'updates', title: 'Updates' },
+    { name: 'faq', title: 'FAQ' },
+  ],
   fields: [
     {
       name: 'title',
@@ -11,6 +19,7 @@ export default {
       type: 'string',
       description: 'The main headline for the campaign. This is a required field.',
       validation: Rule => Rule.required().error('A campaign title is required.'),
+      group: 'overview',
     },
     {
       name: 'slug',
@@ -22,6 +31,7 @@ export default {
       },
       description: 'A unique, URL-friendly identifier for the campaign. Click "Generate" to create one from the title.',
       validation: Rule => Rule.required().error('A slug is required to generate a unique URL for the campaign.'),
+      group: 'overview',
     },
     {
       name: 'description',
@@ -30,6 +40,7 @@ export default {
       of: [{ type: 'block' }],
       description: 'A brief, editable summary of the campaign. Use Portable Text to add simple formatting and paragraphs.',
       validation: Rule => Rule.required().error('A short description is required.'),
+      group: 'overview',
     },
     // --- Pizza-first fields (new) ---
     {
@@ -39,6 +50,7 @@ export default {
       description: 'Total number of pizzas you aim to sell (e.g. 1000). Prefer this over the legacy monetary goal.',
       initialValue: 1000,
       validation: Rule => Rule.min(1).error('The pizza goal must be at least 1.'),
+      group: 'overview',
     },
     {
       name: 'pizzasSold',
@@ -47,6 +59,7 @@ export default {
       description: 'Number of pizzas sold so far. Use this field to track progress in pizza units.',
       initialValue: 0,
       validation: Rule => Rule.min(0).error('Pizzas sold must be zero or a positive number.'),
+      group: 'overview',
     },
     {
       name: 'piesSold',
@@ -55,6 +68,7 @@ export default {
       description: 'Number of pies sold so far. Displayed alongside pizzas but has no separate goal.',
       initialValue: 0,
       validation: Rule => Rule.min(0).error('Pies sold must be zero or a positive number.'),
+      group: 'overview',
     },
     {
       name: 'goal',
@@ -63,6 +77,7 @@ export default {
   description: 'Legacy: the total amount of money you aim to raise. Kept for backwards compatibility.',
   initialValue: 10000,
   validation: Rule => Rule.min(0).error('The funding goal must be zero or a positive number.'),
+  group: 'overview',
     },
     {
       name: 'raisedAmount',
@@ -71,6 +86,7 @@ export default {
   description: 'Legacy: current amount of money pledged. Kept for backwards compatibility.',
   initialValue: 0,
   validation: Rule => Rule.min(0).error('The amount raised must be zero or a positive number.'),
+  group: 'overview',
     },
     {
       name: 'backers',
@@ -79,6 +95,7 @@ export default {
       description: 'The total number of people who have backed the project.',
       initialValue: 0,
       validation: Rule => Rule.required().min(0).error('The number of backers must be zero or a positive integer.'),
+      group: 'overview',
     },
     {
       name: 'endDate',
@@ -86,6 +103,7 @@ export default {
       type: 'datetime',
       description: 'The date and time when the campaign will officially end.',
       validation: Rule => Rule.required().error('An end date for the campaign is required.'),
+      group: 'overview',
     },
     {
       name: 'heroImage',
@@ -94,12 +112,14 @@ export default {
       options: { hotspot: true },
       description: 'The main visual for the campaign. 16:9 aspect ratio is recommended. This is a required field.',
       validation: Rule => Rule.required().error('A hero image is required to visually represent the campaign.'),
+      group: 'overview',
     },
     {
       name: 'videoUrl',
       title: 'Campaign Video URL',
       type: 'url',
       description: 'Optional: A link to a video about the campaign (e.g., YouTube, Vimeo).',
+      group: 'overview',
     },
     {
       name: 'story',
@@ -107,6 +127,7 @@ export default {
       type: 'array',
       of: [{ type: 'block' }],
       description: 'The main content of your campaign page. Tell your story, explain your project, and show your passion.',
+      group: 'story',
     },
     {
       name: 'goals',
@@ -114,6 +135,7 @@ export default {
       type: 'array',
       of: [{ type: 'block' }],
       description: 'Describe your campaign goals in a structured, rich text field.',
+      group: 'goals',
     },
     {
       name: 'rewardTiers',
@@ -121,6 +143,7 @@ export default {
       type: 'array',
       of: [{ type: 'reference', to: { type: 'rewardTier' }}],
       description: 'Create and link the different pledge levels for your backers.',
+      group: 'rewards',
     },
     {
       name: 'updates',
@@ -128,6 +151,7 @@ export default {
       type: 'array',
       of: [{ type: 'reference', to: { type: 'campaignUpdate' }}],
       description: 'Add posts to keep your backers informed about the campaign\'s progress.',
+      group: 'updates',
     },
     {
       name: 'faq',
@@ -145,6 +169,7 @@ export default {
         },
       ],
       description: 'Add frequently asked questions to build trust and proactively address backers\' concerns.',
+      group: 'faq',
     }
   ],
   preview: {
