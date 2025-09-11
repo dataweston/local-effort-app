@@ -40,3 +40,6 @@ export const signOutUser = () => {
   if (!auth) return Promise.resolve();
   return signOut(auth);
 };
+
+// Debug/info: expose which Firebase project the app is configured to use
+export const firebaseProjectId = firebaseConfig.projectId || null;

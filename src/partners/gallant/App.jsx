@@ -1,6 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Calendar, Plus, DollarSign, TrendingUp, ShoppingCart, Save, X, ChevronLeft, ChevronRight, Trash2 } from 'lucide-react';
-import { db } from '../../firebaseConfig';
+import { db, firebaseProjectId } from '../../firebaseConfig';
+
+function toDateSafe(v) {
+  if (!v) return new Date();
+  if (typeof v.toDate === 'function') return v.toDate();
+  const d = new Date(v);
+  return isNaN(d.getTime()) ? new Date() : d;
+}
 import { collection, onSnapshot, addDoc, updateDoc, deleteDoc, doc } from 'firebase/firestore';
 
 const CateringSalesApp = () => {
@@ -19,32 +26,49 @@ const CateringSalesApp = () => {
   const [activeView, setActiveView] = useState('calendar');
   const [calendarView, setCalendarView] = useState('monthly'); // monthly, 3month, annual
   const [selectedMonthForSpending, setSelectedMonthForSpending] = useState(new Date());
+  const [errorMsg, setErrorMsg] = useState('');
+  const projectId = firebaseProjectId || 'unknown';
 
   // --- DATA FETCHING from FIRESTORE ---
   useEffect(() => {
-    if (!db) return;
-    const unsubscribe = onSnapshot(collection(db, 'events'), (snapshot) => {
-      const eventsData = snapshot.docs.map(d => ({
-        id: d.id,
-        ...d.data(),
-        date: d.data().date ? d.data().date.toDate() : new Date(),
-        repeatUntil: d.data().repeatUntil ? d.data().repeatUntil.toDate() : new Date()
-      }));
+    if (!db) {
+      setErrorMsg('Not connected to Firebase (missing VITE_* config).');
+      return;
+    }
+    const unsubscribe = onSnapshot(
+      collection(db, 'events'),
+      (snapshot) => {
+        const eventsData = snapshot.docs.map(d => ({
+          id: d.id,
+          ...d.data(),
+          date: toDateSafe(d.data().date),
+          repeatUntil: toDateSafe(d.data().repeatUntil),
+        }));
       setEvents(eventsData);
-    });
+      },
+      (err) => {
+        setErrorMsg(err && (err.message || String(err)));
+      }
+    );
     return () => unsubscribe();
   }, []);
 
   useEffect(() => {
     if (!db) return;
-    const unsubscribe = onSnapshot(collection(db, 'receipts'), (snapshot) => {
-      const receiptsData = snapshot.docs.map(d => ({
-        id: d.id,
-        ...d.data(),
-        date: d.data().date ? d.data().date.toDate() : new Date(),
-      }));
+    const unsubscribe = onSnapshot(
+      collection(db, 'receipts'),
+      (snapshot) => {
+        const receiptsData = snapshot.docs.map(d => ({
+          id: d.id,
+          ...d.data(),
+          date: toDateSafe(d.data().date),
+        }));
       setReceipts(receiptsData);
-    });
+      },
+      (err) => {
+        setErrorMsg(err && (err.message || String(err)));
+      }
+    );
     return () => unsubscribe();
   }, []);
 
@@ -190,6 +214,25 @@ const CateringSalesApp = () => {
         </div>
       </div>
     );
+  };
+
+  const renderStatus = () => {
+    if (!db) {
+      return (
+        <div className="mb-3 p-2 text-sm rounded-md bg-yellow-50 text-yellow-800 border border-yellow-200">
+          Gallant isn’t connected to Firebase. Set VITE_* Firebase env vars to your MAIN project and redeploy. Project: {projectId}
+        </div>
+      );
+    }
+    if (errorMsg) {
+      const isPerm = /permission/i.test(errorMsg);
+      return (
+        <div className={`mb-3 p-2 text-sm rounded-md border ${isPerm ? 'bg-red-50 text-red-800 border-red-200' : 'bg-yellow-50 text-yellow-800 border-yellow-200'}`}>
+          {isPerm ? 'Firestore permission issue.' : 'Firestore error.'} {errorMsg}
+        </div>
+      );
+    }
+    return null;
   };
 
   const renderThreeMonthView = () => {
@@ -444,6 +487,7 @@ const CateringSalesApp = () => {
         </div>
       </header>
       <main className="max-w-7xl mx-auto px-4 py-8">
+  {renderStatus()}
         {activeView === 'calendar' ? (calendarView === 'monthly' ? renderCalendar() : calendarView === '3month' ? renderThreeMonthView() : renderAnnualView()) : renderFinancials()}
       </main>
       {/* Event Modal */}
