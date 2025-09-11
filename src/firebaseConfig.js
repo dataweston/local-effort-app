@@ -3,11 +3,15 @@ import { initializeApp } from 'firebase/app';
 // Optional: App Check for protecting Firestore writes without auth
 // This activates only if VITE_APPCHECK_SITE_KEY is provided
 let initializeAppCheck, ReCaptchaV3Provider;
-try {
-  ({ initializeAppCheck, ReCaptchaV3Provider } = await import('firebase/app-check'));
-} catch (_) {
-  // app-check is optional; ignore if not available
-}
+const loadAppCheck = () =>
+  import('firebase/app-check')
+    .then((m) => {
+      initializeAppCheck = m.initializeAppCheck;
+      ReCaptchaV3Provider = m.ReCaptchaV3Provider;
+    })
+    .catch(() => {
+      // app-check is optional; ignore if not available
+    });
 import { getFirestore } from 'firebase/firestore';
 import { getAuth, GoogleAuthProvider, signInWithPopup, signOut } from 'firebase/auth';
 
@@ -27,17 +31,21 @@ let app = null;
 try {
   if (firebaseConfig.apiKey) {
     app = initializeApp(firebaseConfig);
-    // Initialize App Check if configured
+    // Initialize App Check if configured (no top-level await)
     const siteKey = env.VITE_APPCHECK_SITE_KEY || env.VITE_RECAPTCHA_SITE_KEY;
-    if (initializeAppCheck && siteKey) {
-      try {
-        initializeAppCheck(app, {
-          provider: new ReCaptchaV3Provider(siteKey),
-          isTokenAutoRefreshEnabled: true,
-        });
-      } catch (e) {
-        console.warn('App Check initialization failed:', e && (e.message || e));
-      }
+    if (siteKey) {
+      loadAppCheck().then(() => {
+        if (initializeAppCheck && ReCaptchaV3Provider) {
+          try {
+            initializeAppCheck(app, {
+              provider: new ReCaptchaV3Provider(siteKey),
+              isTokenAutoRefreshEnabled: true,
+            });
+          } catch (e) {
+            console.warn('App Check initialization failed:', e && (e.message || e));
+          }
+        }
+      });
     }
   } else {
     console.warn('Firebase config missing — auth/comments disabled on client.');
