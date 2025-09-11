@@ -11,6 +11,8 @@ const GalleryPage = () => {
   const [error, setError] = useState(null);
   const [selected, setSelected] = useState(null);
   const fallbackLoadedRef = useRef(false);
+  // Track which URLs we've already prefetched to avoid duplicates
+  const prefetched = useRef(new Set());
 
   const tryLoadFallback = useCallback(async () => {
     if (fallbackLoadedRef.current) return null;
@@ -103,6 +105,45 @@ const GalleryPage = () => {
       }
   }, [query, shuffle, tryLoadFallback]);
 
+  // Preconnect to Cloudinary for faster TLS handshake
+  // and provide a small helper to prefetch images by URL.
+  const ensurePreconnect = useCallback(() => {
+    if (typeof document === 'undefined') return;
+    const id = 'cld-preconnect';
+    if (document.getElementById(id)) return;
+    const link1 = document.createElement('link');
+    link1.id = id;
+    link1.rel = 'preconnect';
+    link1.href = 'https://res.cloudinary.com';
+    link1.crossOrigin = '';
+    document.head.appendChild(link1);
+
+    const link2 = document.createElement('link');
+    link2.rel = 'dns-prefetch';
+    link2.href = 'https://res.cloudinary.com';
+    document.head.appendChild(link2);
+  }, []);
+
+  const prefetchImage = useCallback((url) => {
+    if (!url || typeof document === 'undefined') return;
+    if (prefetched.current.has(url)) return;
+    try {
+      // Add a <link rel="preload" as="image"> hint
+      const link = document.createElement('link');
+      link.rel = 'preload';
+      link.as = 'image';
+      link.href = url;
+      document.head.appendChild(link);
+    } catch (_) {
+      // no-op
+    }
+    // Kick off actual download into HTTP cache
+    const img = new Image();
+    img.decoding = 'async';
+    img.src = url;
+    prefetched.current.add(url);
+  }, []);
+
   // initial / query-changed fetch
   useEffect(() => {
     const controller = new AbortController();
@@ -129,17 +170,16 @@ const GalleryPage = () => {
       setSelected({ img, idx });
       // Prefetch the large image for the selected and the next image
       if (img && img.large_url) {
-        const p = new Image();
-        p.src = img.large_url;
+    ensurePreconnect();
+    prefetchImage(img.large_url);
       }
       const nextIdx = (idx + 1) % images.length;
       const next = images[nextIdx];
       if (next && next.large_url) {
-        const pn = new Image();
-        pn.src = next.large_url;
+    prefetchImage(next.large_url);
       }
     },
-    [setSelected, images]
+  [setSelected, images, prefetchImage, ensurePreconnect]
   );
 
   const closeLightbox = useCallback(() => setSelected(null), [setSelected]);
@@ -172,6 +212,8 @@ const GalleryPage = () => {
       <Helmet>
           <title>pictures of food. | Local Effort</title>
           <meta name="description" content="A visual gallery of dinners, events, meal prep, and plates from Local Effort." />
+          <link rel="preconnect" href="https://res.cloudinary.com" crossOrigin="" />
+          <link rel="dns-prefetch" href="https://res.cloudinary.com" />
           <script type="application/ld+json">{JSON.stringify({
             '@context': 'https://schema.org',
             '@type': 'Restaurant',
@@ -222,6 +264,7 @@ const GalleryPage = () => {
                   type="button"
                   key={img.asset_id}
                   onClick={() => openLightbox(img, idx)}
+                  onMouseEnter={() => img?.large_url && prefetchImage(img.large_url)}
                   whileHover={{ scale: 1.03 }}
                   whileTap={{ scale: 0.98 }}
           className="mb-4 w-full break-inside-avoid border p-2 bg-white rounded-lg overflow-hidden"
@@ -300,6 +343,8 @@ const GalleryPage = () => {
                     <img
                       src={selected.img.large_url}
                       alt={selected.img.context?.alt || 'Large gallery image'}
+                      decoding="async"
+                      fetchPriority="high"
                       className="w-full h-auto max-h-[90vh] object-contain"
                     />
                   ) : (
@@ -309,6 +354,7 @@ const GalleryPage = () => {
                       width={1400}
                       height={1000}
                       disableLazy
+                      eager
                       className="w-full h-auto max-h-[90vh] object-contain"
                     />
                   )}

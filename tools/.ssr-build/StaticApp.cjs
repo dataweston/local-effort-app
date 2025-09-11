@@ -939,7 +939,7 @@ var init_LoadingSpinner = __esm({
               initial: { opacity: 0, y: 10 },
               animate: { opacity: 1, y: 0 },
               transition: { delay: 0.2 },
-              children: "Preparing something delicious..."
+              children: "Just a moment"
             }
           )
         ] })
@@ -3679,7 +3679,7 @@ var import_react_helmet_async3 = __toESM(require_lib());
 // src/components/common/PhotoGrid.jsx
 var import_react13 = __toESM(require("react"));
 var import_jsx_runtime9 = require("react/jsx-runtime");
-function PhotoGrid({ tags, title, perPage = 24 }) {
+function PhotoGrid({ tags, title, perPage = 24, layout, masonry = false }) {
   const tagList = (0, import_react13.useMemo)(() => Array.isArray(tags) ? tags.filter(Boolean) : [tags].filter(Boolean), [tags]);
   const [images, setImages] = (0, import_react13.useState)([]);
   const [loading, setLoading] = (0, import_react13.useState)(false);
@@ -3725,12 +3725,36 @@ function PhotoGrid({ tags, title, perPage = 24 }) {
     };
   }, [tagList.join(","), perPage]);
   if (!tagList.length) return null;
+  const useMasonry = masonry || String(layout || "").toLowerCase() === "masonry";
   return /* @__PURE__ */ (0, import_jsx_runtime9.jsxs)("section", { className: "space-y-4", children: [
     title ? /* @__PURE__ */ (0, import_jsx_runtime9.jsx)("h3", { className: "text-2xl font-bold", children: title }) : null,
     loading ? /* @__PURE__ */ (0, import_jsx_runtime9.jsx)("p", { children: "Loading photos\u2026" }) : error ? /* @__PURE__ */ (0, import_jsx_runtime9.jsxs)("div", { className: "text-red-700 bg-red-50 border border-red-200 p-3 rounded", children: [
       /* @__PURE__ */ (0, import_jsx_runtime9.jsx)("p", { className: "font-semibold", children: error }),
       /* @__PURE__ */ (0, import_jsx_runtime9.jsx)("p", { className: "text-sm mt-1", children: "If this persists, check Cloudinary env vars and the serverless function logs." })
-    ] }) : images.length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime9.jsx)("p", { className: "text-sm text-gray-600", children: "No photos found." }) : /* @__PURE__ */ (0, import_jsx_runtime9.jsx)("div", { className: "grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4", children: images.map((img, idx) => /* @__PURE__ */ (0, import_jsx_runtime9.jsx)("div", { className: "border p-2 bg-white rounded-lg overflow-hidden", children: img.thumbnail_url ? /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(
+    ] }) : images.length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime9.jsx)("p", { className: "text-sm text-gray-600", children: "No photos found." }) : useMasonry ? /* @__PURE__ */ (0, import_jsx_runtime9.jsx)("div", { className: "columns-2 md:columns-3 lg:columns-4 gap-4 [column-fill:_balance]", children: images.map((img, idx) => /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(
+      "div",
+      {
+        className: "mb-4 break-inside-avoid border p-2 bg-white rounded-lg overflow-hidden",
+        children: img.thumbnail_url ? /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(
+          "img",
+          {
+            src: img.thumbnail_url,
+            alt: img.context?.alt || "Grid image",
+            className: "rounded-lg w-full h-auto",
+            loading: "lazy"
+          }
+        ) : /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(
+          cloudinaryImage_default,
+          {
+            publicId: img.public_id || img.publicId,
+            alt: img.context?.alt || "Grid image",
+            width: 800,
+            className: "rounded-lg w-full h-auto"
+          }
+        )
+      },
+      (img.asset_id || img.public_id || idx) + ":" + idx
+    )) }) : /* @__PURE__ */ (0, import_jsx_runtime9.jsx)("div", { className: "grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4", children: images.map((img, idx) => /* @__PURE__ */ (0, import_jsx_runtime9.jsx)("div", { className: "border p-2 bg-white rounded-lg overflow-hidden", children: img.thumbnail_url ? /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(
       "img",
       {
         src: img.thumbnail_url,
@@ -3866,6 +3890,7 @@ ${form.notes || "(none)"}`;
     ] }),
     /* @__PURE__ */ (0, import_jsx_runtime10.jsxs)("div", { className: "space-y-16 mx-auto max-w-6xl px-4 md:px-6 lg:px-8", children: [
       /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("h2", { className: "text-4xl md:text-6xl font-bold uppercase border-b border-gray-900 pb-4", children: "Services" }),
+      /* @__PURE__ */ (0, import_jsx_runtime10.jsx)(PhotoGrid, { tags: "service", perPage: 24, masonry: true }),
       /* @__PURE__ */ (0, import_jsx_runtime10.jsxs)("div", { className: "grid md:grid-cols-2 lg:grid-cols-3 gap-8", children: [
         /* @__PURE__ */ (0, import_jsx_runtime10.jsxs)("div", { className: "card space-y-4", children: [
           /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("h3", { className: "text-heading", children: "Dinners & Events" }),
@@ -5616,6 +5641,7 @@ var GalleryPage = () => {
   const [error, setError] = (0, import_react24.useState)(null);
   const [selected, setSelected] = (0, import_react24.useState)(null);
   const fallbackLoadedRef = (0, import_react24.useRef)(false);
+  const prefetched = (0, import_react24.useRef)(/* @__PURE__ */ new Set());
   const tryLoadFallback = (0, import_react24.useCallback)(async () => {
     if (fallbackLoadedRef.current) return null;
     return new Promise((resolve) => {
@@ -5695,6 +5721,37 @@ var GalleryPage = () => {
       setLoading(false);
     }
   }, [query2, shuffle2, tryLoadFallback]);
+  const ensurePreconnect = (0, import_react24.useCallback)(() => {
+    if (typeof document === "undefined") return;
+    const id = "cld-preconnect";
+    if (document.getElementById(id)) return;
+    const link1 = document.createElement("link");
+    link1.id = id;
+    link1.rel = "preconnect";
+    link1.href = "https://res.cloudinary.com";
+    link1.crossOrigin = "";
+    document.head.appendChild(link1);
+    const link2 = document.createElement("link");
+    link2.rel = "dns-prefetch";
+    link2.href = "https://res.cloudinary.com";
+    document.head.appendChild(link2);
+  }, []);
+  const prefetchImage = (0, import_react24.useCallback)((url) => {
+    if (!url || typeof document === "undefined") return;
+    if (prefetched.current.has(url)) return;
+    try {
+      const link = document.createElement("link");
+      link.rel = "preload";
+      link.as = "image";
+      link.href = url;
+      document.head.appendChild(link);
+    } catch (_) {
+    }
+    const img = new Image();
+    img.decoding = "async";
+    img.src = url;
+    prefetched.current.add(url);
+  }, []);
   (0, import_react24.useEffect)(() => {
     const controller = new AbortController();
     const handler = setTimeout(() => {
@@ -5712,17 +5769,16 @@ var GalleryPage = () => {
     (img, idx) => {
       setSelected({ img, idx });
       if (img && img.large_url) {
-        const p = new Image();
-        p.src = img.large_url;
+        ensurePreconnect();
+        prefetchImage(img.large_url);
       }
       const nextIdx = (idx + 1) % images.length;
       const next = images[nextIdx];
       if (next && next.large_url) {
-        const pn = new Image();
-        pn.src = next.large_url;
+        prefetchImage(next.large_url);
       }
     },
-    [setSelected, images]
+    [setSelected, images, prefetchImage, ensurePreconnect]
   );
   const closeLightbox = (0, import_react24.useCallback)(() => setSelected(null), [setSelected]);
   (0, import_react24.useEffect)(() => {
@@ -5748,6 +5804,8 @@ var GalleryPage = () => {
     /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)(import_react_helmet_async7.Helmet, { children: [
       /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("title", { children: "pictures of food. | Local Effort" }),
       /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("meta", { name: "description", content: "A visual gallery of dinners, events, meal prep, and plates from Local Effort." }),
+      /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("link", { rel: "preconnect", href: "https://res.cloudinary.com", crossOrigin: "" }),
+      /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("link", { rel: "dns-prefetch", href: "https://res.cloudinary.com" }),
       /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("script", { type: "application/ld+json", children: JSON.stringify({
         "@context": "https://schema.org",
         "@type": "Restaurant",
@@ -5789,6 +5847,7 @@ var GalleryPage = () => {
           {
             type: "button",
             onClick: () => openLightbox(img, idx),
+            onMouseEnter: () => img?.large_url && prefetchImage(img.large_url),
             whileHover: { scale: 1.03 },
             whileTap: { scale: 0.98 },
             className: "mb-4 w-full break-inside-avoid border p-2 bg-white rounded-lg overflow-hidden",
@@ -5866,6 +5925,8 @@ var GalleryPage = () => {
                 {
                   src: selected.img.large_url,
                   alt: selected.img.context?.alt || "Large gallery image",
+                  decoding: "async",
+                  fetchPriority: "high",
                   className: "w-full h-auto max-h-[90vh] object-contain"
                 }
               ) : /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
@@ -5876,6 +5937,7 @@ var GalleryPage = () => {
                   width: 1400,
                   height: 1e3,
                   disableLazy: true,
+                  eager: true,
                   className: "w-full h-auto max-h-[90vh] object-contain"
                 }
               ) })
@@ -5941,99 +6003,16 @@ var VennDiagram = () => {
 // src/components/mealprep/MenuList.jsx
 var import_react27 = __toESM(require("react"));
 var import_jsx_runtime23 = require("react/jsx-runtime");
-function MenuList({ menus, onSelect }) {
-  if (!menus || menus.length === 0) {
-    return /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("p", { className: "text-gray-600", children: "No menus yet." });
-  }
-  return /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("ul", { className: "divide-y divide-gray-200 border rounded-md", children: menus.map((m) => /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("li", { className: "p-4 flex items-center justify-between", children: [
-    /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { children: [
-      /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("p", { className: "font-semibold", children: m.clientName }),
-      /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("p", { className: "text-sm text-gray-500", children: [
-        "Week of ",
-        m.date
-      ] })
-    ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(
-      "button",
-      {
-        type: "button",
-        className: "px-3 py-1 rounded bg-gray-900 text-white text-sm",
-        onClick: () => onSelect && onSelect(m),
-        children: "View"
-      }
-    )
-  ] }, m._id)) });
-}
 
 // src/components/mealprep/MenuDetail.jsx
 var import_react28 = __toESM(require("react"));
 var import_jsx_runtime24 = require("react/jsx-runtime");
-function MenuDetail({ menu, onBack }) {
-  if (!menu) return null;
-  return /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "space-y-4", children: [
-    /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("button", { onClick: onBack, className: "text-sm text-blue-600", children: "\u2190 Back" }),
-    /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("h4", { className: "text-2xl font-bold", children: menu.clientName }),
-    /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("p", { className: "text-gray-600", children: [
-      "Week of ",
-      menu.date
-    ] }),
-    menu.notes && /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("p", { className: "italic text-gray-700", children: menu.notes }),
-    /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("ul", { className: "list-disc ml-6", children: menu.menu?.map((item, idx) => /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("li", { children: item }, idx)) })
-  ] });
-}
 
 // src/components/mealprep/Comments.jsx
 var import_react29 = __toESM(require("react"));
 init_firebaseConfig();
 var import_firestore3 = require("firebase/firestore");
 var import_jsx_runtime25 = require("react/jsx-runtime");
-function Comments({ menuId, user }) {
-  const [comments, setComments] = (0, import_react29.useState)([]);
-  const [text, setText] = (0, import_react29.useState)("");
-  const inputRef = (0, import_react29.useRef)(null);
-  (0, import_react29.useEffect)(() => {
-    if (!menuId || !db) return;
-    const q = (0, import_firestore3.query)((0, import_firestore3.collection)(db, "mealprep_comments", menuId, "comments"), (0, import_firestore3.orderBy)("createdAt", "desc"));
-    const unsub = (0, import_firestore3.onSnapshot)(q, (snap) => {
-      setComments(snap.docs.map((d) => ({ id: d.id, ...d.data() })));
-    });
-    return () => unsub();
-  }, [menuId]);
-  const submit = async (e) => {
-    e.preventDefault();
-    const body = text.trim();
-    if (!body) return;
-    if (!db) return;
-    await (0, import_firestore3.addDoc)((0, import_firestore3.collection)(db, "mealprep_comments", menuId, "comments"), {
-      body,
-      createdAt: (0, import_firestore3.serverTimestamp)(),
-      uid: user?.uid || null,
-      name: user?.displayName || "Anonymous"
-    });
-    setText("");
-    inputRef.current?.focus();
-  };
-  return /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { className: "mt-8 border-t pt-4", children: [
-    /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("h5", { className: "font-semibold mb-2", children: "Comments" }),
-    user ? /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("form", { onSubmit: submit, className: "flex gap-2 mb-4", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(
-        "input",
-        {
-          ref: inputRef,
-          value: text,
-          onChange: (e) => setText(e.target.value),
-          className: "flex-1 border rounded px-3 py-2",
-          placeholder: "Leave a comment"
-        }
-      ),
-      /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("button", { className: "px-3 py-2 bg-gray-900 text-white rounded", type: "submit", children: "Post" })
-    ] }) : /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("p", { className: "text-sm text-gray-600", children: "Sign in to comment." }),
-    /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("ul", { className: "space-y-3", children: comments.map((c) => /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("li", { className: "border rounded p-3", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("p", { className: "text-sm text-gray-500", children: c.name || "Anon" }),
-      /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("p", { children: c.body })
-    ] }, c.id)) })
-  ] });
-}
 
 // src/data/mealPrepClients.js
 var mealPrepClients = [
@@ -6183,30 +6162,21 @@ var MealPrepPage = () => {
         }
       )
     ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "space-y-8", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "space-y-16 mx-auto max-w-6xl px-4 md:px-6 lg:px-8", children: [
       /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "flex items-center justify-between", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("h2", { className: "text-4xl md:text-6xl font-bold uppercase", children: "Weekly Meal Prep" }),
+        /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("h2", { className: "text-4xl md:text-6xl font-bold uppercase tracking-[-0.02em] leading-[1.02]", children: "Weekly Meal Prep" }),
         /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "flex items-center gap-3" })
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("p", { className: "font-mono text-lg max-w-3xl", children: "Basic, good nutrition from local Midwest sources. We offer a Foundation Plan and are happy to create custom plans for any diet." }),
-      /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "flex gap-2 items-center text-sm text-gray-700", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("p", { className: "text-body max-w-2xl", children: "Basic, good nutrition from local Midwest sources. We offer a Foundation Plan and are happy to create custom plans for any diet." }),
+      /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "flex gap-2 items-center text-sm text-gray-700 mt-2", children: [
         /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("a", { href: "#menus", className: "underline", children: "View current menus" }),
         assignedClient ? /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("span", { children: [
           "for ",
           /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("strong", { children: assignedClient })
         ] }) : /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("span", { className: "italic", children: "no client assigned yet" })
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("section", { id: "menus", className: "space-y-4", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("h3", { className: "text-2xl font-bold", children: "Current Menus" }),
-        loading ? /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("p", { children: "Loading menus\u2026" }) : error ? /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "text-red-700 bg-red-50 border border-red-200 p-3 rounded", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("p", { className: "font-semibold", children: error }),
-          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("p", { className: "text-sm mt-1", children: "If this persists, ensure Sanity env vars are set on the web app (VITE_APP_SANITY_PROJECT_ID, VITE_APP_SANITY_DATASET) and that the Studio has the new Meal Prep Menu content." })
-        ] }) : !selected ? /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(MenuList, { menus: filtered, onSelect: setSelected }) : /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { children: [
-          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(MenuDetail, { menu: selected, onBack: () => setSelected(null) }),
-          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(Comments, { menuId: selected._id })
-        ] })
-      ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(PhotoGrid, { tags: "mealplan", title: "Meal plan photos", perPage: 24 }),
+      false,
+      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(PhotoGrid, { tags: "mealplan", perPage: 24, masonry: true }),
       /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "grid md:grid-cols-2 gap-6", children: [
         /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "border border-gray-900 rounded-md overflow-hidden", children: [
           /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)(

@@ -107,20 +107,20 @@ export const MealPrepPage = () => {
           content="Our Foundation Meal Plan provides 21 nutritious meals per week from local Midwest sources."
         />
       </Helmet>
-      <div className="space-y-8">
+      <div className="space-y-16 mx-auto max-w-6xl px-4 md:px-6 lg:px-8">
         <div className="flex items-center justify-between">
-          <h2 className="text-4xl md:text-6xl font-bold uppercase">Weekly Meal Prep</h2>
+          <h2 className="text-4xl md:text-6xl font-bold uppercase tracking-[-0.02em] leading-[1.02]">Weekly Meal Prep</h2>
           <div className="flex items-center gap-3">
             {/* Public access — no sign-in required */}
           </div>
         </div>
 
-        <p className="font-mono text-lg max-w-3xl">
+        <p className="text-body max-w-2xl">
           Basic, good nutrition from local Midwest sources. We offer a Foundation Plan and are happy
           to create custom plans for any diet.
         </p>
 
-          <div className="flex gap-2 items-center text-sm text-gray-700">
+          <div className="flex gap-2 items-center text-sm text-gray-700 mt-2">
             <a href="#menus" className="underline">View current menus</a>
             {assignedClient ? (
               <span>for <strong>{assignedClient}</strong></span>
@@ -129,28 +129,30 @@ export const MealPrepPage = () => {
             )}
           </div>
 
-          <section id="menus" className="space-y-4">
-            <h3 className="text-2xl font-bold">Current Menus</h3>
-            {loading ? (
-              <p>Loading menus…</p>
-            ) : error ? (
-              <div className="text-red-700 bg-red-50 border border-red-200 p-3 rounded">
-                <p className="font-semibold">{error}</p>
-                <p className="text-sm mt-1">If this persists, ensure Sanity env vars are set on the web app (VITE_APP_SANITY_PROJECT_ID, VITE_APP_SANITY_DATASET) and that the Studio has the new Meal Prep Menu content.</p>
-              </div>
-            ) : !selected ? (
-              <MenuList menus={filtered} onSelect={setSelected} />
-            ) : (
-              <div>
-                <MenuDetail menu={selected} onBack={() => setSelected(null)} />
-                <Comments menuId={selected._id} />
-              </div>
-            )}
-          </section>
+          {false && (
+            <section id="menus" className="space-y-4">
+              <h3 className="text-2xl font-bold">Current Menus</h3>
+              {loading ? (
+                <p>Loading menus…</p>
+              ) : error ? (
+                <div className="text-red-700 bg-red-50 border border-red-200 p-3 rounded">
+                  <p className="font-semibold">{error}</p>
+                  <p className="text-sm mt-1">If this persists, ensure Sanity env vars are set on the web app (VITE_APP_SANITY_PROJECT_ID, VITE_APP_SANITY_DATASET) and that the Studio has the new Meal Prep Menu content.</p>
+                </div>
+              ) : !selected ? (
+                <MenuList menus={filtered} onSelect={setSelected} />
+              ) : (
+                <div>
+                  <MenuDetail menu={selected} onBack={() => setSelected(null)} />
+                  <Comments menuId={selected._id} />
+                </div>
+              )}
+            </section>
+          )}
         
 
   {/* Photo grid for meal plan images */}
-  <PhotoGrid tags="mealplan" title="Meal plan photos" perPage={24} />
+  <PhotoGrid tags="mealplan" perPage={24} masonry />
 
   {/* Side-by-side accordions */}
   <div className="grid md:grid-cols-2 gap-6">

@@ -8,7 +8,7 @@ import CloudinaryImage from './cloudinaryImage';
  * - title?: string — optional heading above the grid.
  * - perPage?: number — max images to fetch per tag.
  */
-export default function PhotoGrid({ tags, title, perPage = 24 }) {
+export default function PhotoGrid({ tags, title, perPage = 24, layout, masonry = false }) {
   const tagList = useMemo(() => (Array.isArray(tags) ? tags.filter(Boolean) : [tags].filter(Boolean)), [tags]);
   const [images, setImages] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -60,6 +60,8 @@ export default function PhotoGrid({ tags, title, perPage = 24 }) {
 
   if (!tagList.length) return null;
 
+  const useMasonry = masonry || String(layout || '').toLowerCase() === 'masonry';
+
   return (
     <section className="space-y-4">
       {title ? <h3 className="text-2xl font-bold">{title}</h3> : null}
@@ -72,6 +74,31 @@ export default function PhotoGrid({ tags, title, perPage = 24 }) {
         </div>
       ) : images.length === 0 ? (
         <p className="text-sm text-gray-600">No photos found.</p>
+      ) : useMasonry ? (
+        <div className="columns-2 md:columns-3 lg:columns-4 gap-4 [column-fill:_balance]">
+          {images.map((img, idx) => (
+            <div
+              key={(img.asset_id || img.public_id || idx) + ':' + idx}
+              className="mb-4 break-inside-avoid border p-2 bg-white rounded-lg overflow-hidden"
+            >
+              {img.thumbnail_url ? (
+                <img
+                  src={img.thumbnail_url}
+                  alt={img.context?.alt || 'Grid image'}
+                  className="rounded-lg w-full h-auto"
+                  loading="lazy"
+                />
+              ) : (
+                <CloudinaryImage
+                  publicId={img.public_id || img.publicId}
+                  alt={img.context?.alt || 'Grid image'}
+                  width={800}
+                  className="rounded-lg w-full h-auto"
+                />
+              )}
+            </div>
+          ))}
+        </div>
       ) : (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           {images.map((img, idx) => (

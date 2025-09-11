@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import sanityClient from '../../sanityClient';
 
 export function SupportWidget() {
   const [open, setOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState('answers'); // 'answers' | 'chat'
   // Ensure Brevo (Conversations) script is loaded only once at runtime
   const ensureBrevo = () => {
     if (typeof window === 'undefined') return;
@@ -17,6 +18,20 @@ export function SupportWidget() {
     s.addEventListener('error', (e) => { console.warn('Brevo script failed to load', e); });
     document.head.appendChild(s);
   };
+  // When user switches to Chat, ensure script is loaded and try to open overlay once available
+  useEffect(() => {
+    if (activeTab !== 'chat') return;
+    ensureBrevo();
+    const id = setTimeout(() => {
+      try {
+        if (window.BrevoConversations) window.BrevoConversations('open');
+      } catch (e) {
+        // ignore if the widget isn't ready yet
+        // console.debug('Brevo open failed (not ready yet)');
+      }
+    }, 200);
+    return () => clearTimeout(id);
+  }, [activeTab]);
   const [query, setQuery] = useState('');
   const [answer, setAnswer] = useState(null);
   const [results, setResults] = useState([]);
@@ -32,31 +47,52 @@ export function SupportWidget() {
     if (!q) return;
     setSearching(true);
     try {
+      let hadAny = false;
       if (useKbApi) {
-        const resp = await fetch(`/api/support/search?q=${encodeURIComponent(q)}`);
-        if (!resp.ok) throw new Error(await resp.text());
-        const payload = await resp.json();
-        if (payload.cached) {
-          setResults([]);
-          setAnswer(payload.answer);
-        } else {
-          const mapped = (payload.results || []).map((r) => ({ _id: r.id || r.chunk_id, question: r.heading || 'Result', answer: r.text }));
-          setResults(mapped);
-          if ((!mapped || mapped.length === 0) && /estimate|price|cost|calculator|budget/i.test(q)) {
-            setAnswer('Try the Pricing estimator on the Pricing page for a tailored ballpark.');
+        try {
+          const resp = await fetch(`/api/support/search?q=${encodeURIComponent(q)}`);
+          if (resp.ok) {
+            const payload = await resp.json();
+            if (payload.cached && payload.answer) {
+              setResults([]);
+              setAnswer(payload.answer);
+              hadAny = true;
+            } else {
+              const mapped = (payload.results || []).map((r) => ({ _id: r.id || r.chunk_id, question: r.heading || 'Result', answer: r.text }));
+              if (mapped.length > 0) {
+                setResults(mapped);
+                hadAny = true;
+              }
+            }
           }
+        } catch (_) {
+          // fall through to Sanity
         }
-      } else {
-        // Fallback: query Sanity directly
-        const pattern = `*${q}*`;
-        const data = await sanityClient.fetch(
-          `*[_type == "pricingFaq" && (question match $q || answer match $q)] | order(_updatedAt desc)[0...10]{ _id, question, answer }`,
-          { q: pattern }
-        );
-        setResults(Array.isArray(data) ? data : []);
       }
-      if (!results || results.length === 0) {
-        setAnswer("We couldn't find an instant answer. Send us a note and we'll reply fast.");
+
+      // Fallback to Sanity if KB API returned nothing
+      if (!hadAny) {
+        try {
+          const pattern = `*${q}*`;
+          const data = await sanityClient.fetch(
+            `*[_type in ["pricingFaq","page","post"] && (defined(question) && question match $q || defined(answer) && answer match $q || defined(title) && title match $q || defined(body) && body match $q)] | order(_updatedAt desc)[0...10]{ _id, question, answer, title }`,
+            { q: pattern }
+          );
+          const mapped = (Array.isArray(data) ? data : []).map((d) => ({ _id: d._id, question: d.question || d.title || 'Result', answer: d.answer }));
+          setResults(mapped);
+          hadAny = mapped.length > 0;
+        } catch (e2) {
+          // if even fallback fails, surface error but keep going
+          setError(e2?.message || 'Search failed');
+        }
+      }
+
+      if (!hadAny) {
+        if (/estimate|price|cost|calculator|budget/i.test(q)) {
+          setAnswer('Try the Pricing estimator on the Pricing page for a tailored ballpark.');
+        } else {
+          setAnswer("We couldn't find an instant answer. Send us a note and we'll reply fast.");
+        }
       }
     } catch (e) {
       setError(e?.message || 'Search failed');
@@ -90,6 +126,11 @@ export function SupportWidget() {
             <button onClick={() => setOpen(false)} className="text-sm text-gray-500">Close</button>
           </div>
           <div className="space-y-2">
+            <div className="flex border-b text-sm">
+              <button className={`px-3 py-2 ${activeTab==='answers'?'border-b-2 border-black font-medium':''}`} onClick={() => setActiveTab('answers')}>Answers</button>
+              <button className={`px-3 py-2 ${activeTab==='chat'?'border-b-2 border-black font-medium':''}`} onClick={() => setActiveTab('chat')}>Chat</button>
+            </div>
+            {activeTab === 'answers' && (
             <div>
               <input className="w-full border p-2" placeholder="Search FAQs" value={query} onChange={(e) => setQuery(e.target.value)} />
               <button className="mt-1 px-3 py-1 bg-black text-white rounded" onClick={onSearch} disabled={searching}>
@@ -111,6 +152,13 @@ export function SupportWidget() {
                 <p className="text-xs text-gray-500 mt-1">Tip: try keywords like “meal prep”, “events”, or “pricing”.</p>
               )}
             </div>
+            )}
+            {activeTab === 'chat' && (
+              <div className="space-y-2">
+                <p className="text-sm text-gray-700">Chat opens in this page (no new window). If it doesn’t appear, click the button below.</p>
+                <button className="px-3 py-2 bg-black text-white rounded" onClick={() => { ensureBrevo(); try { window.BrevoConversations && window.BrevoConversations('open'); } catch (e) { /* ignore */ } }}>Open chat</button>
+              </div>
+            )}
             <form className="space-y-2" onSubmit={onSend}>
               <input name="name" className="w-full border p-2" placeholder="Your name" />
               <input name="email" type="email" required className="w-full border p-2" placeholder="Email" />
