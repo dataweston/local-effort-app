@@ -2,7 +2,6 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import CloudinaryImage from '../components/common/cloudinaryImage';
-import PhotoGrid from '../components/common/PhotoGrid';
 
 const ServicesPage = () => {
   const navigate = useNavigate();
@@ -125,9 +124,6 @@ const ServicesPage = () => {
       </Helmet>
       <div className="space-y-16 mx-auto max-w-6xl px-4 md:px-6 lg:px-8">
         <h2 className="text-4xl md:text-6xl font-bold uppercase border-b border-gray-900 pb-4">Services</h2>
-    {/* Services photo grid moved directly under the title, masonry layout */}
-    <PhotoGrid tags="service" perPage={24} masonry />
-
   {/* Hero carousel removed */}
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
           <div className="card space-y-4">
@@ -156,8 +152,7 @@ const ServicesPage = () => {
           </div>
         </div>
 
-  {/* Photos tagged 'service' */}
-  <PhotoGrid tags="service" title="" perPage={24} />
+  {/* Photo grid removed per request */}
 
         {/* Event Request Form */}
         <section id="event-request" className="border-t border-neutral-200 pt-10">

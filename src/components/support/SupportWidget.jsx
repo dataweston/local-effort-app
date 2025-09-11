@@ -3,35 +3,44 @@ import sanityClient from '../../sanityClient';
 
 export function SupportWidget() {
   const [open, setOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState('answers'); // 'answers' | 'chat'
+  // Single-mode widget: answers + chat in one place; no tabs
   // Ensure Brevo (Conversations) script is loaded only once at runtime
   const ensureBrevo = () => {
     if (typeof window === 'undefined') return;
     // Already loaded or loading
     if (window.BrevoConversations || document.querySelector('script[src*="brevo-conversations.js"]')) return;
     // Set ID so the widget can initialize when script loads
-    window.BrevoConversationsID = '68b8c39faa42260ca10998a0';
-    window.BrevoConversations = window.BrevoConversations || function() { (window.BrevoConversations.q = window.BrevoConversations.q || []).push(arguments); };
+  window.BrevoConversationsID = '68b8c39faa42260ca10998a0';
+  window.BrevoConversations = window.BrevoConversations || function() { (window.BrevoConversations.q = window.BrevoConversations.q || []).push(arguments); };
     const s = document.createElement('script');
     s.async = true;
     s.src = 'https://conversations-widget.brevo.com/brevo-conversations.js';
     s.addEventListener('error', (e) => { console.warn('Brevo script failed to load', e); });
+    s.addEventListener('load', () => {
+      try {
+        // Hide the default Brevo floating bubble; we control opening via our widget
+        window.BrevoConversations && window.BrevoConversations('hide');
+      } catch (e) { /* noop */ }
+    });
     document.head.appendChild(s);
   };
-  // When user switches to Chat, ensure script is loaded and try to open overlay once available
+  // Mount Brevo seamlessly when widget opens
   useEffect(() => {
-    if (activeTab !== 'chat') return;
+    if (!open) return;
     ensureBrevo();
     const id = setTimeout(() => {
       try {
-        if (window.BrevoConversations) window.BrevoConversations('open');
-      } catch (e) {
-        // ignore if the widget isn't ready yet
-        // console.debug('Brevo open failed (not ready yet)');
+        if (window.BrevoConversations) {
+          // Ensure their default launcher stays hidden and open the chat panel
+          window.BrevoConversations('hide');
+          window.BrevoConversations('open');
+        }
+      } catch (_) {
+        /* ignore */
       }
     }, 200);
     return () => clearTimeout(id);
-  }, [activeTab]);
+  }, [open]);
   const [query, setQuery] = useState('');
   const [answer, setAnswer] = useState(null);
   const [results, setResults] = useState([]);
@@ -126,11 +135,6 @@ export function SupportWidget() {
             <button onClick={() => setOpen(false)} className="text-sm text-gray-500">Close</button>
           </div>
           <div className="space-y-2">
-            <div className="flex border-b text-sm">
-              <button className={`px-3 py-2 ${activeTab==='answers'?'border-b-2 border-black font-medium':''}`} onClick={() => setActiveTab('answers')}>Answers</button>
-              <button className={`px-3 py-2 ${activeTab==='chat'?'border-b-2 border-black font-medium':''}`} onClick={() => setActiveTab('chat')}>Chat</button>
-            </div>
-            {activeTab === 'answers' && (
             <div>
               <input className="w-full border p-2" placeholder="Search FAQs" value={query} onChange={(e) => setQuery(e.target.value)} />
               <button className="mt-1 px-3 py-1 bg-black text-white rounded" onClick={onSearch} disabled={searching}>
@@ -152,13 +156,15 @@ export function SupportWidget() {
                 <p className="text-xs text-gray-500 mt-1">Tip: try keywords like “meal prep”, “events”, or “pricing”.</p>
               )}
             </div>
-            )}
-            {activeTab === 'chat' && (
-              <div className="space-y-2">
-                <p className="text-sm text-gray-700">Chat opens in this page (no new window). If it doesn’t appear, click the button below.</p>
-                <button className="px-3 py-2 bg-black text-white rounded" onClick={() => { ensureBrevo(); try { window.BrevoConversations && window.BrevoConversations('open'); } catch (e) { /* ignore */ } }}>Open chat</button>
-              </div>
-            )}
+            <div className="space-y-2">
+              <p className="text-sm text-gray-700">Need to chat? Click below to open chat in this window.</p>
+              <button
+                className="px-3 py-2 bg-black text-white rounded"
+                onClick={() => { ensureBrevo(); try { window.BrevoConversations && window.BrevoConversations('open'); } catch (e) { void e; } }}
+              >
+                Open chat
+              </button>
+            </div>
             <form className="space-y-2" onSubmit={onSend}>
               <input name="name" className="w-full border p-2" placeholder="Your name" />
               <input name="email" type="email" required className="w-full border p-2" placeholder="Email" />
