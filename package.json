@@ -21,6 +21,7 @@
     "embla-carousel-react": "^8.1.6",
     "express": "^4.19.2",
     "firebase": "^12.1.0",
+    "firebase-admin": "^12.5.0",
     "framer-motion": "^12.23.12",
     "lucide-react": "^0.451.0",
     "react": "^18.3.1",
@@ -50,7 +51,8 @@
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-jsx-a11y": "^6.10.2",
     "eslint-plugin-prettier": "^5.5.4",
-    "eslint-plugin-react": "^7.37.5",
+  "eslint-plugin-react": "^7.37.5",
+  "cross-env": "^7.0.3",
     "husky": "^9.1.7",
     "lint-staged": "^16.1.5",
     "prettier": "^3.6.2",
@@ -82,12 +84,13 @@
     "lint:fix": "eslint \"src/**/*.{js,jsx}\" --fix",
     "format": "prettier --write \"src/**/*.{js,jsx,css,json,md}\"",
     "reviews:parse": "node tools/parse-thumbtack-widget.js tools/thumbtackwidget.html > public/reviews/thumbtack.json",
-  "check-format": "prettier --check \"src/**/*.{js,jsx,css,json,md}\"",
-  "cloudinary:tag:dry": "node tools/cloudinary-tag-all.js --prefix gallery",
-  "cloudinary:tag:apply": "node tools/cloudinary-tag-all.js --prefix gallery --apply",
-  "cloudinary:tag:apply:map": "node tools/cloudinary-tag-all.js --prefix gallery --mapFile tools/tag-synonyms.json --apply"
-  ,
-  "emails:extract": "node tools/email-extract.js --include yum@localeffortfood.com"
+    "migrate:gallant": "node tools/firestore-migrate/migrate.js",
+  "migrate:gallant:dry": "cross-env FS_MIGRATE_DRYRUN=1 node tools/firestore-migrate/migrate.js",
+    "check-format": "prettier --check \"src/**/*.{js,jsx,css,json,md}\"",
+    "cloudinary:tag:dry": "node tools/cloudinary-tag-all.js --prefix gallery",
+    "cloudinary:tag:apply": "node tools/cloudinary-tag-all.js --prefix gallery --apply",
+    "cloudinary:tag:apply:map": "node tools/cloudinary-tag-all.js --prefix gallery --mapFile tools/tag-synonyms.json --apply",
+    "emails:extract": "node tools/email-extract.js --include yum@localeffortfood.com"
   },
   "browserslist": {
     "production": [
