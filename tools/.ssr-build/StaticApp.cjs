@@ -3890,7 +3890,6 @@ ${form.notes || "(none)"}`;
     ] }),
     /* @__PURE__ */ (0, import_jsx_runtime10.jsxs)("div", { className: "space-y-16 mx-auto max-w-6xl px-4 md:px-6 lg:px-8", children: [
       /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("h2", { className: "text-4xl md:text-6xl font-bold uppercase border-b border-gray-900 pb-4", children: "Services" }),
-      /* @__PURE__ */ (0, import_jsx_runtime10.jsx)(PhotoGrid, { tags: "service", perPage: 24, masonry: true }),
       /* @__PURE__ */ (0, import_jsx_runtime10.jsxs)("div", { className: "grid md:grid-cols-2 lg:grid-cols-3 gap-8", children: [
         /* @__PURE__ */ (0, import_jsx_runtime10.jsxs)("div", { className: "card space-y-4", children: [
           /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("h3", { className: "text-heading", children: "Dinners & Events" }),
