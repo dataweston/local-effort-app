@@ -239,10 +239,24 @@ const CrowdfundingPage = () => {
       .trim();
   };
 
+  // Ensure PortableText always receives an array of blocks
+  const toPortableBlocks = (val) => {
+    if (Array.isArray(val)) return val;
+    if (!val) return [];
+    const text = typeof val === 'string' ? val : String(val);
+    return [
+      {
+        _type: 'block',
+        style: 'normal',
+        children: [{ _type: 'span', text }],
+      },
+    ];
+  };
+
   return (
     <>
       <Helmet>
-        <title>{`${title} | Crowdfunding Campaign`}</title>
+    <title>{`${title} | Crowdfunding Campaign`}</title>
   <meta name="description" content={plainTextFromPortable(description).slice(0,160)} />
       </Helmet>
 
@@ -252,7 +266,11 @@ const CrowdfundingPage = () => {
                 <h1 className="text-hero uppercase">{title}</h1>
                 {/* Short description rendered with Portable Text (supports paragraphs and formatting) */}
                 <div className="mt-6 md:mt-8 text-body max-w-3xl">
-                  <PortableText value={description} />
+                  {description && (Array.isArray(description) ? (
+                    <PortableText value={description} />
+                  ) : (
+                    <PortableText value={toPortableBlocks(description)} />
+                  ))}
                 </div>
               </div>
 
@@ -299,11 +317,15 @@ const CrowdfundingPage = () => {
               )}
               {activeTab === 'goals' && (
                 <div className="space-y-6">
-                  {Array.isArray(campaignData.goals) && campaignData.goals.length > 0 ? (
-                    <PortableText value={campaignData.goals} />
-                  ) : (
-                    <p className="text-gray-500">No goals content yet. Add content in the Goals field in Sanity Studio.</p>
-                  )}
+                  {campaignData.goals
+                    ? (
+                        Array.isArray(campaignData.goals)
+                          ? <PortableText value={campaignData.goals} />
+                          : <PortableText value={toPortableBlocks(campaignData.goals)} />
+                      )
+                    : (
+                      <p className="text-gray-500">No goals content yet. Add content in the Goals field in Sanity Studio.</p>
+                    )}
                 </div>
               )}
               {activeTab === 'faq' && (
