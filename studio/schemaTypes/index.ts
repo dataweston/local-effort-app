@@ -38,9 +38,9 @@ export const schemaTypes = [
 	message,
 	campaign,
 	pushSubscription,
+	product,
 	menuItems,
-		happyMondayPage,
-		product,
+	happyMondayPage,
 ]
 
 export default schemaTypes;
