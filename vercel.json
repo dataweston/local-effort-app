@@ -7,6 +7,18 @@
       "config": { "distDir": "dist" }
     },
     {
+      "src": "api/store/products.js",
+      "use": "@vercel/node"
+    },
+    {
+      "src": "api/store/checkout.js",
+      "use": "@vercel/node"
+    },
+    {
+      "src": "api/store/sync-square.js",
+      "use": "@vercel/node"
+    },
+    {
       "src": "api/search-images.js",
       "use": "@vercel/node"
     },
@@ -31,6 +43,18 @@
     {
       "src": "/api/_ping",
       "dest": "/api/_ping.js"
+    },
+    {
+      "src": "/api/store/products",
+      "dest": "/api/store/products.js"
+    },
+    {
+      "src": "/api/store/checkout",
+      "dest": "/api/store/checkout.js"
+    },
+    {
+      "src": "/api/store/sync-square",
+      "dest": "/api/store/sync-square.js"
     },
     {
       "src": "/api/(.*)",

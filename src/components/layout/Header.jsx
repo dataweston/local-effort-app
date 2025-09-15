@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 const logo = '/gallery/logo.png?text=Local+Effort&font=mono';
 
 const links = [
+  { path: '/sale', name: 'SALE', sale: true },
   { path: '/services', name: 'Services' },
   { path: '/pricing', name: 'Pricing' },
   { path: '/menu', name: 'Menus' },
@@ -41,20 +42,28 @@ export const Header = () => {
 
         {/* Desktop nav */}
         <nav className="hidden md:flex items-center gap-2 font-mono text-[0.9rem]">
-          {links.map(({ path, name }) => (
+          {links.map(({ path, name, sale }) => (
             <NavLink key={path} to={path} className="relative px-2 py-1 rounded">
               {({ isActive }) => (
                 <>
-                  <span className="transition-colors hover:text-neutral-900 text-neutral-700">
-                    {name}
-                  </span>
-                  <motion.span
-                    layoutId="nav-underline"
-                    className="absolute left-2 right-2 -bottom-0.5 h-0.5 bg-[var(--color-accent)]"
-                    initial={false}
-                    animate={{ opacity: isActive ? 1 : 0 }}
-                    transition={{ duration: 0.2 }}
-                  />
+                  {sale ? (
+                    <span className={`inline-flex items-center rounded-md px-2 py-1 text-white shadow-sm transition-transform ${isActive ? 'scale-[1.02]' : ''}`} style={{ backgroundColor: '#e11d48' }}>
+                      {name}
+                    </span>
+                  ) : (
+                    <span className="transition-colors hover:text-neutral-900 text-neutral-700">
+                      {name}
+                    </span>
+                  )}
+                  {!sale && (
+                    <motion.span
+                      layoutId="nav-underline"
+                      className="absolute left-2 right-2 -bottom-0.5 h-0.5 bg-[var(--color-accent)]"
+                      initial={false}
+                      animate={{ opacity: isActive ? 1 : 0 }}
+                      transition={{ duration: 0.2 }}
+                    />
+                  )}
                 </>
               )}
             </NavLink>
@@ -112,7 +121,7 @@ export const Header = () => {
               }}
               className="flex flex-col items-center justify-center h-full space-y-6 font-mono"
             >
-              {links.map((l) => (
+      {links.map((l) => (
                 <motion.div
                   key={l.path}
                   variants={{ hidden: { y: 10, opacity: 0 }, show: { y: 0, opacity: 1 } }}
@@ -120,7 +129,7 @@ export const Header = () => {
                   <NavLink
                     to={l.path}
                     onClick={() => setIsOpen(false)}
-                    className="text-3xl uppercase"
+        className={`text-3xl uppercase ${l.sale ? 'bg-rose-600 text-white px-4 py-2 rounded-md' : ''}`}
                   >
                     {l.name}
                   </NavLink>

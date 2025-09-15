@@ -8,6 +8,7 @@ import { Footer } from './components/layout/Footer';
 import { LoadingSpinner } from './components/layout/LoadingSpinner';
 import { AnimatedPage } from './components/layout/AnimatedPage';
 import { SupportWidget } from './components/support/SupportWidget';
+import { CartProvider } from './store/cart/CartContext';
 // Auth guards removed for public access to partner tools and partner portal
 
 // Lazily import page components using the default export pattern
@@ -23,6 +24,8 @@ const EventsPage = lazy(() => import('./pages/EventsPage'));
 const GalleryPage = lazy(() => import('./pages/GalleryPage'));
 // --- NEW: Lazily import the MealPrepPage ---
 const MealPrepPage = lazy(() => import('./pages/MealPrepPage'));
+// --- NEW: Sale page ---
+const SalePage = lazy(() => import('./pages/SalePage'));
 // --- NEW: Partner Portal ---
 const PartnerPortalPage = lazy(() => import('./pages/PartnerPortalPage'));
 const InboxPage = lazy(() => import('./pages/InboxPage'));
@@ -42,9 +45,10 @@ const AppContent = () => {
 
   return (
     <HelmetProvider>
-      <div className="min-h-screen flex flex-col bg-white">
-        <Header />
-        <main className="flex-1">
+      <CartProvider>
+        <div className="min-h-screen flex flex-col bg-white">
+          <Header />
+          <main className="flex-1">
           <Suspense fallback={<LoadingSpinner />}>
             <AnimatePresence mode="wait">
               <Routes location={location} key={location.pathname}>
@@ -93,6 +97,14 @@ const AppContent = () => {
                   element={
                     <AnimatedPage>
                       <MenuPage />
+                    </AnimatedPage>
+                  }
+                />
+                <Route
+                  path="/sale"
+                  element={
+                    <AnimatedPage>
+                      <SalePage />
                     </AnimatedPage>
                   }
                 />
@@ -189,10 +201,11 @@ const AppContent = () => {
               </Routes>
             </AnimatePresence>
           </Suspense>
-        </main>
-        <Footer />
-  <SupportWidget />
-      </div>
+          </main>
+          <Footer />
+          <SupportWidget />
+        </div>
+      </CartProvider>
     </HelmetProvider>
   );
 };
