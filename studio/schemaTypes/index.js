@@ -18,6 +18,7 @@ import contact from './contact'
 import message from './message'
 import campaign from './campaign'
 import pushSubscription from './pushSubscription'
+import product from './product'
 
 export const schemaTypes = [
   page,
@@ -37,6 +38,7 @@ export const schemaTypes = [
   ,message
   ,campaign
   ,pushSubscription
+  ,product
 ]
 
 export default schemaTypes;
