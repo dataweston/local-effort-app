@@ -10,7 +10,31 @@ export default defineConfig({
   projectId: 'd6l9d0ea',
   dataset: 'localeffort',
 
-  plugins: [structureTool(), visionTool()],
+  plugins: [
+    structureTool({
+      structure: (S) =>
+        S.list()
+          .title('Content')
+          .items([
+            // Store section
+            S.listItem()
+              .title('Store')
+              .child(
+                S.list()
+                  .title('Store')
+                  .items([
+                    S.documentTypeListItem('product').title('Products'),
+                  ]),
+              ),
+            S.divider(),
+            // Fallback: all other types
+            ...S.documentTypeListItems().filter(
+              (li) => li.getId() && li.getId() !== 'product',
+            ),
+          ]),
+    }),
+    visionTool(),
+  ],
 
   schema: {
     types: schemaTypes,
