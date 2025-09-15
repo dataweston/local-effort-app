@@ -27,12 +27,13 @@ export default {
         hotspot: true,
       },
     },
-    // Optional: Cloudinary-powered headshot; preferred if you use Cloudinary across the site
+    // Optional: Headshot image (native Sanity image)
     {
       name: 'headshot',
-      title: 'Headshot (Cloudinary)',
-      type: 'cloudinaryImage',
-      description: 'Preferred image source; provides a Cloudinary public_id for optimized delivery.',
+      title: 'Headshot',
+      type: 'image',
+      options: { hotspot: true },
+      description: 'Upload a headshot image; add alt text in the image field when available.',
     },
     {
       name: 'role',

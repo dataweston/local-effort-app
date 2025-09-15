@@ -30,15 +30,15 @@ export const schemaTypes = [
   pricingFaq,
   crowdfundingCampaign,
   rewardTier,
-  campaignUpdate
-  ,partner
-  ,mealPrepMenu
-  ,testimonial
-  ,contact
-  ,message
-  ,campaign
-  ,pushSubscription
-  ,product
+  campaignUpdate,
+  partner,
+  mealPrepMenu,
+  testimonial,
+  contact,
+  message,
+  campaign,
+  pushSubscription,
+  product
 ]
 
 export default schemaTypes;
