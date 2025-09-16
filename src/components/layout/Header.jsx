@@ -5,7 +5,9 @@ const logo = '/gallery/logo.png?text=Local+Effort&font=mono';
 
 const links = [
   { path: '/sale', name: 'SALE', sale: true },
-  { path: '/services', name: 'Services' },
+  { path: '/services', name: 'Services', children: [
+    { path: '/services#event-request', name: 'Submit an event request' },
+  ] },
   { path: '/pricing', name: 'Pricing' },
   { path: '/menu', name: 'Menus' },
   { path: '/about', name: 'About' },
@@ -42,8 +44,9 @@ export const Header = () => {
 
         {/* Desktop nav */}
         <nav className="hidden md:flex items-center gap-2 font-mono text-[0.9rem]">
-          {links.map(({ path, name, sale }) => (
-            <NavLink key={path} to={path} className="relative px-2 py-1 rounded">
+          {links.map(({ path, name, sale, children }) => (
+            <div key={path} className="relative group">
+            <NavLink to={path} className="relative px-2 py-1 rounded">
               {({ isActive }) => (
                 <>
                   {sale ? (
@@ -67,6 +70,20 @@ export const Header = () => {
                 </>
               )}
             </NavLink>
+            {children && (
+              <div className="absolute left-0 mt-1">
+                <div className="invisible group-hover:visible opacity-0 group-hover:opacity-100 transition-opacity">
+                  <div className="mt-1 rounded-md border bg-white shadow-lg py-1 min-w-[220px]">
+                    {children.map((c) => (
+                      <NavLink key={c.path} to={c.path} className="block px-3 py-2 text-sm text-neutral-700 hover:bg-neutral-50">
+                        {c.name}
+                      </NavLink>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+            </div>
           ))}
           {SHOW_FUNDRAISER && (
             <NavLink to="/crowdfunding" className="ml-2">
@@ -133,6 +150,17 @@ export const Header = () => {
                   >
                     {l.name}
                   </NavLink>
+                  {l.children && (
+                    <div className="mt-2 space-y-1">
+                      {l.children.map((c) => (
+                        <div key={c.path}>
+                          <NavLink to={c.path} onClick={() => setIsOpen(false)} className="text-base underline">
+                            {c.name}
+                          </NavLink>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </motion.div>
               ))}
               {SHOW_FUNDRAISER && (

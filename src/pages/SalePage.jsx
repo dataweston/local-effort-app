@@ -6,7 +6,7 @@ import ProductCard from '../store/components/ProductCard';
 import CheckoutPanel from '../store/components/CheckoutPanel';
 
 const SalePage = () => {
-  const { items, openCart } = useCart();
+  const { totalQty, openCart } = useCart();
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -64,7 +64,7 @@ const SalePage = () => {
 
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-3xl font-bold tracking-tight">Sale</h1>
-        <button onClick={openCart} className="btn btn-primary">Cart ({items.length})</button>
+  <button onClick={openCart} className="btn btn-primary">Cart ({totalQty})</button>
       </div>
 
       {loading ? (
