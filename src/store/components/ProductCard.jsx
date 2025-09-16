@@ -5,13 +5,19 @@ import { useCart } from '../cart/CartContext';
 
 export default function ProductCard({ product }) {
   const { add, map } = useCart();
-  const [hover, setHover] = useState(false);
   const [variantIdx, setVariantIdx] = useState(0);
   const hasVariants = Array.isArray(product.variants) && product.variants.length > 0;
   const chosen = hasVariants ? product.variants[Math.max(0, Math.min(variantIdx, product.variants.length-1))] : null;
   const price = chosen?.price ?? (product.salePrice ?? product.price);
-  const primary = product.images && product.images[0];
-  const rest = (product.images || []).slice(1);
+
+  const images = useMemo(() => {
+    const arr = Array.isArray(product?.images) ? product.images : [];
+    return arr
+      .map((i) => (typeof i === 'string' ? i : (i?.url || i?.asset?.url || null)))
+      .filter(Boolean);
+  }, [product]);
+  const primary = images[0];
+  const rest = images.slice(1);
 
   const handleAdd = () => {
     const variationId = chosen?.squareVariationId || product.squareVariationId || null;
@@ -32,12 +38,29 @@ export default function ProductCard({ product }) {
         'group relative rounded-xl border border-neutral-200 bg-white shadow-sm overflow-hidden',
         'transition hover:shadow-md'
       )}
-      onMouseEnter={() => setHover(true)}
-      onMouseLeave={() => setHover(false)}
     >
-      <div className="aspect-[4/3] w-full bg-neutral-100 overflow-hidden">
+      <div className="relative aspect-[4/3] w-full bg-neutral-100 overflow-hidden">
         {primary ? (
-          <img src={primary} alt={product.title} className="w-full h-full object-cover" />
+          <>
+            <img
+              src={primary}
+              alt={product.title}
+              loading="lazy"
+              className={cn(
+                'absolute inset-0 h-full w-full object-cover',
+                rest[0] ? 'transition-opacity duration-300 opacity-100 group-hover:opacity-0' : ''
+              )}
+            />
+            {rest[0] ? (
+              <img
+                src={rest[0]}
+                alt=""
+                aria-hidden="true"
+                loading="lazy"
+                className="absolute inset-0 h-full w-full object-cover transition-opacity duration-300 opacity-0 group-hover:opacity-100"
+              />
+            ) : null}
+          </>
         ) : (
           <div className="w-full h-full grid place-items-center text-neutral-400">No image</div>
         )}
@@ -84,15 +107,16 @@ export default function ProductCard({ product }) {
       {/* Quick view hover overlay */}
       <div
         className={cn(
-          'pointer-events-none absolute inset-0 bg-white/95 p-4 transition-opacity duration-200',
-          hover ? 'opacity-100' : 'opacity-0'
+          'absolute inset-0 bg-white/95 p-4 transition-opacity duration-200',
+          'opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto',
+          'focus-within:opacity-100 focus-within:pointer-events-auto'
         )}
       >
         <div className="flex flex-col h-full">
           <h4 className="text-lg font-semibold mb-2 pr-8">{product.title}</h4>
           <div className="grid grid-cols-3 gap-2 mb-3">
             {[primary, ...rest].filter(Boolean).slice(0,3).map((src, i) => (
-              <img key={i} src={src} alt="" className="h-24 w-full object-cover rounded" />
+              <img key={i} src={src} alt="" loading="lazy" className="h-24 w-full object-cover rounded" />
             ))}
           </div>
           {product.longDescription ? (
