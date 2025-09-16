@@ -27,6 +27,7 @@ const GalleryPage = lazy(() => import('./pages/GalleryPage'));
 const MealPrepPage = lazy(() => import('./pages/MealPrepPage'));
 // --- NEW: Sale page ---
 const SalePage = lazy(() => import('./pages/SalePage'));
+const ProductPage = lazy(() => import('./pages/ProductPage'));
 // --- NEW: Partner Portal ---
 const PartnerPortalPage = lazy(() => import('./pages/PartnerPortalPage'));
 const InboxPage = lazy(() => import('./pages/InboxPage'));
@@ -107,6 +108,14 @@ const AppContent = () => {
                   element={
                     <AnimatedPage>
                       <SalePage />
+                    </AnimatedPage>
+                  }
+                />
+                <Route
+                  path="/product/:slug"
+                  element={
+                    <AnimatedPage>
+                      <ProductPage />
                     </AnimatedPage>
                   }
                 />
