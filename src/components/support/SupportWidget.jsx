@@ -1,46 +1,42 @@
-import React, { useEffect, useState } from 'react';
+import React, { useMemo, useRef, useState } from 'react';
 import sanityClient from '../../sanityClient';
 
 export function SupportWidget() {
   const [open, setOpen] = useState(false);
   // Single-mode widget: answers + chat in one place; no tabs
   // Ensure Brevo (Conversations) script is loaded only once at runtime
-  const ensureBrevo = () => {
-    if (typeof window === 'undefined') return;
-    // Already loaded or loading
-    if (window.BrevoConversations || document.querySelector('script[src*="brevo-conversations.js"]')) return;
-    // Set ID so the widget can initialize when script loads
-  window.BrevoConversationsID = '68b8c39faa42260ca10998a0';
-  window.BrevoConversations = window.BrevoConversations || function() { (window.BrevoConversations.q = window.BrevoConversations.q || []).push(arguments); };
-    const s = document.createElement('script');
-    s.async = true;
-    s.src = 'https://conversations-widget.brevo.com/brevo-conversations.js';
-    s.addEventListener('error', (e) => { console.warn('Brevo script failed to load', e); });
-    s.addEventListener('load', () => {
-      try {
-        // Hide the default Brevo floating bubble; we control opening via our widget
-        window.BrevoConversations && window.BrevoConversations('hide');
-      } catch (e) { /* noop */ }
-    });
-    document.head.appendChild(s);
-  };
-  // Mount Brevo seamlessly when widget opens
-  useEffect(() => {
-    if (!open) return;
-    ensureBrevo();
-    const id = setTimeout(() => {
-      try {
-        if (window.BrevoConversations) {
-          // Ensure their default launcher stays hidden and open the chat panel
-          window.BrevoConversations('hide');
-          window.BrevoConversations('open');
-        }
-      } catch (_) {
-        /* ignore */
+  const brevoReadyRef = useRef(false);
+  const readyWaitersRef = useRef([]);
+  const ensureBrevo = useMemo(() => {
+    return () => {
+      if (typeof window === 'undefined') return;
+      if (brevoReadyRef.current) return;
+      if (!window.BrevoConversations) {
+        window.BrevoConversationsID = '68b8c39faa42260ca10998a0';
+        window.BrevoConversations = function() {
+          (window.BrevoConversations.q = window.BrevoConversations.q || []).push(arguments);
+        };
       }
-    }, 200);
-    return () => clearTimeout(id);
-  }, [open]);
+      if (!document.querySelector('script[src*="brevo-conversations.js"]')) {
+        const s = document.createElement('script');
+        s.async = true;
+        s.src = 'https://conversations-widget.brevo.com/brevo-conversations.js';
+        s.addEventListener('error', (e) => { console.warn('Brevo script failed to load', e); });
+        s.addEventListener('load', () => {
+          brevoReadyRef.current = true;
+          try { window.BrevoConversations && window.BrevoConversations('hide'); } catch (e) { /* noop */ }
+          readyWaitersRef.current.splice(0).forEach((fn) => {
+            try { fn(); } catch (e) { /* noop */ }
+          });
+        });
+        document.head.appendChild(s);
+      }
+    };
+  }, []);
+  const whenBrevoReady = () => new Promise((resolve) => {
+    if (brevoReadyRef.current) return resolve();
+    readyWaitersRef.current.push(resolve);
+  });
   const [query, setQuery] = useState('');
   const [answer, setAnswer] = useState(null);
   const [results, setResults] = useState([]);
@@ -160,7 +156,16 @@ export function SupportWidget() {
               <p className="text-sm text-gray-700">Need to chat? Click below to open chat in this window.</p>
               <button
                 className="px-3 py-2 bg-black text-white rounded"
-                onClick={() => { ensureBrevo(); try { window.BrevoConversations && window.BrevoConversations('open'); } catch (e) { void e; } }}
+                onClick={async () => {
+                  ensureBrevo();
+                  await whenBrevoReady();
+                  try {
+                    window.BrevoConversations && window.BrevoConversations('hide');
+                    window.BrevoConversations && window.BrevoConversations('open');
+                  } catch (e) { /* noop */ }
+                  // Close our panel so the Brevo drawer isn’t obscured by our z-index
+                  setOpen(false);
+                }}
               >
                 Open chat
               </button>
