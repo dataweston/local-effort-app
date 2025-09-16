@@ -60,7 +60,7 @@ export default function CheckoutPanel() {
           await card.mount(cardElRef.current);
         }
       } catch (e) {
-        setError('Payment form failed to load');
+        setError(e?.message ? `Payment form failed: ${e.message}` : 'Payment form failed to load');
       }
     })();
     return () => { canceled = true; };

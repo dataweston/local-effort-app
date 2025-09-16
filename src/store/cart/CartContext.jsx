@@ -10,7 +10,7 @@ function reducer(state, action) {
       const { productId, variationId, unitPrice, title, image } = action.payload;
       const key = `${productId}:${variationId||''}`;
       const qty = Math.max(1, action.payload.qty || 1);
-      const next = { ...state };
+      const next = { ...state, items: { ...(state.items || {}) } };
       const existing = next.items[key];
       next.items[key] = existing
         ? { ...existing, qty: existing.qty + qty }
@@ -19,13 +19,13 @@ function reducer(state, action) {
       return next;
     }
     case 'remove': {
-      const next = { ...state };
+      const next = { ...state, items: { ...(state.items || {}) } };
       delete next.items[action.key];
       next.updatedAt = Date.now();
       return next;
     }
     case 'updateQty': {
-      const next = { ...state };
+      const next = { ...state, items: { ...(state.items || {}) } };
       const li = next.items[action.key];
       if (!li) return state;
       li.qty = Math.max(0, action.qty);
@@ -71,15 +71,17 @@ export function CartProvider({ children }) {
   const closeCart = useCallback(() => setOpen(false), []);
 
   const itemsArr = useMemo(() => Object.values(state.items || {}), [state.items]);
+  const totalQty = useMemo(() => itemsArr.reduce((s, i) => s + (i.qty || 0), 0), [itemsArr]);
   const subtotal = useMemo(() => itemsArr.reduce((s, i) => s + i.unitPrice * i.qty, 0), [itemsArr]);
 
   const value = useMemo(() => ({
     items: itemsArr,
     map: state.items,
+    totalQty,
     add, remove, updateQty, clear,
     subtotal,
     open, openCart, closeCart,
-  }), [itemsArr, state.items, add, remove, updateQty, clear, subtotal, open, openCart, closeCart]);
+  }), [itemsArr, state.items, totalQty, add, remove, updateQty, clear, subtotal, open, openCart, closeCart]);
 
   return (
     <CartContext.Provider value={value}>
