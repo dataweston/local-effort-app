@@ -8,18 +8,24 @@ export default function CheckoutPanel() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [pickup, setPickup] = useState(true);
-  const [payments, setPayments] = useState(null);
+  // Square Web Payments SDK handles its own internal state; we keep refs only
   const cardRef = React.useRef(null);
   const cardElRef = React.useRef(null);
 
   // Load Square Web Payments SDK once panel opens
   React.useEffect(() => {
     const appId = import.meta?.env?.VITE_SQUARE_APP_ID || window?.__SQUARE_APP_ID__;
-    if (!open || payments || !appId) return;
+    const locationId = import.meta?.env?.VITE_SQUARE_LOCATION_ID || window?.__SQUARE_LOCATION_ID__;
+    if (!open) return;
+    setError('');
+    // Require config
+    if (!appId || !locationId) {
+      setError('Square not configured');
+      return;
+    }
     let canceled = false;
     (async () => {
       try {
-        // dynamically load SDK
         if (!document.getElementById('sq-wpsdk')) {
           await new Promise((resolve, reject) => {
             const s = document.createElement('script');
@@ -30,18 +36,29 @@ export default function CheckoutPanel() {
           });
         }
         if (canceled) return;
-        const p = window.Square ? window.Square.payments(appId, import.meta?.env?.VITE_SQUARE_LOCATION_ID || window?.__SQUARE_LOCATION_ID__) : null;
-        if (!p) return;
-        setPayments(p);
+        const p = window.Square ? window.Square.payments(appId, locationId) : null;
+        if (!p) throw new Error('Square payments unavailable');
         const card = await p.card();
         cardRef.current = card;
-        if (cardElRef.current) await card.mount(cardElRef.current);
+        if (cardElRef.current) {
+          // clear container before mount in case of re-open
+          cardElRef.current.innerHTML = '';
+          await card.mount(cardElRef.current);
+        }
       } catch (e) {
         setError('Payment form failed to load');
       }
     })();
     return () => { canceled = true; };
-  }, [open, payments]);
+  }, [open]);
+
+  // Cleanup card when panel closes to avoid stale mounts
+  React.useEffect(() => {
+    if (!open && cardRef.current && typeof cardRef.current.destroy === 'function') {
+      try { cardRef.current.destroy(); } catch (e) { /* ignore */ }
+      cardRef.current = null;
+    }
+  }, [open]);
 
   const onSubmit = async (e) => {
     e.preventDefault();

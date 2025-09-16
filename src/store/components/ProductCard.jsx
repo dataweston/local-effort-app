@@ -1,10 +1,11 @@
 import React, { useMemo, useState } from 'react';
-import { PortableText } from '@portabletext/react';
 import { cn } from '../../lib/utils';
 import { useCart } from '../cart/CartContext';
+import { useToast } from '../../components/common/ToastProvider';
 
 export default function ProductCard({ product }) {
-  const { add, map } = useCart();
+  const { add, map, updateQty, open, openCart } = useCart();
+  const { notify } = useToast();
   const [variantIdx, setVariantIdx] = useState(0);
   const hasVariants = Array.isArray(product.variants) && product.variants.length > 0;
   const chosen = hasVariants ? product.variants[Math.max(0, Math.min(variantIdx, product.variants.length-1))] : null;
@@ -28,7 +29,11 @@ export default function ProductCard({ product }) {
       if (left <= 0) return; // out of stock
     }
     add({ productId: product.id, variationId, unitPrice: price, qty: 1, title: product.title, image: primary });
+    notify('Added to cart', { actionLabel: open ? undefined : 'View cart', onAction: open ? undefined : openCart });
   };
+
+  const key = `${product.id}:${(chosen?.squareVariationId || product.squareVariationId || '')}`;
+  const inCartQty = map?.[key]?.qty || 0;
 
   const formatted = useMemo(() => `$${(price / 100).toFixed(2)}`, [price]);
 
@@ -91,44 +96,40 @@ export default function ProductCard({ product }) {
               ))}
             </select>
           )}
-          <button
-            className="btn btn-primary"
-            onClick={handleAdd}
-            disabled={product.inventoryManaged && (product.inventory ?? 0) <= (map?.[`${product.id}:${(chosen?.squareVariationId || product.squareVariationId || '')}`]?.qty || 0)}
-            aria-disabled={product.inventoryManaged && (product.inventory ?? 0) <= (map?.[`${product.id}:${(chosen?.squareVariationId || product.squareVariationId || '')}`]?.qty || 0)}
-            title={product.inventoryManaged && (product.inventory ?? 0) <= (map?.[`${product.id}:${(chosen?.squareVariationId || product.squareVariationId || '')}`]?.qty || 0) ? 'Out of stock' : 'Add to cart'}
-          >
-            {product.inventoryManaged && (product.inventory ?? 0) <= (map?.[`${product.id}:${(chosen?.squareVariationId || product.squareVariationId || '')}`]?.qty || 0) ? 'Out of stock' : 'Add to cart'}
-          </button>
+          {inCartQty > 0 ? (
+            <div className="inline-flex items-center gap-2">
+              <button className="btn" onClick={() => updateQty(key, Math.max(0, inCartQty - 1))} aria-label="Decrease quantity">-</button>
+              <span className="min-w-[2ch] text-center text-sm">{inCartQty}</span>
+              <button className="btn" onClick={() => updateQty(key, inCartQty + 1)} aria-label="Increase quantity">+</button>
+            </div>
+          ) : (
+            <button
+              className="btn btn-primary"
+              onClick={handleAdd}
+              disabled={product.inventoryManaged && (product.inventory ?? 0) <= inCartQty}
+              aria-disabled={product.inventoryManaged && (product.inventory ?? 0) <= inCartQty}
+              title={product.inventoryManaged && (product.inventory ?? 0) <= inCartQty ? 'Out of stock' : 'Add to cart'}
+            >
+              {product.inventoryManaged && (product.inventory ?? 0) <= inCartQty ? 'Out of stock' : 'Add to cart'}
+            </button>
+          )}
           {/* Placeholder for variants selector if provided */}
         </div>
       </div>
 
-      {/* Quick view hover overlay */}
+      {/* Hover info bar (no full overlay to avoid shrink) */}
       <div
         className={cn(
-          'absolute inset-0 bg-white/95 p-4 transition-opacity duration-200',
-          'opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto',
-          'focus-within:opacity-100 focus-within:pointer-events-auto'
+          'pointer-events-none absolute inset-x-0 bottom-0 transition-opacity duration-200',
+          'opacity-0 group-hover:opacity-100 group-focus-within:opacity-100'
         )}
       >
-        <div className="flex flex-col h-full">
-          <h4 className="text-lg font-semibold mb-2 pr-8">{product.title}</h4>
-          <div className="grid grid-cols-3 gap-2 mb-3">
-            {[primary, ...rest].filter(Boolean).slice(0,3).map((src, i) => (
-              <img key={i} src={src} alt="" loading="lazy" className="h-24 w-full object-cover rounded" />
-            ))}
-          </div>
-          {product.longDescription ? (
-            <div className="prose prose-sm max-w-none text-neutral-700 overflow-auto" dangerouslySetInnerHTML={{ __html: product.longDescription }} />
-          ) : Array.isArray(product.longDescriptionBlocks) && product.longDescriptionBlocks.length ? (
-            <div className="prose prose-sm max-w-none text-neutral-700 overflow-auto">
-              <PortableText value={product.longDescriptionBlocks} />
-            </div>
+        <div className="pointer-events-auto bg-gradient-to-t from-black/70 to-transparent text-white p-3">
+          {product.shortDescription ? (
+            <p className="text-xs leading-snug line-clamp-2 mb-2">{product.shortDescription}</p>
           ) : null}
-          <div className="mt-auto flex justify-end gap-2">
-            <button className="btn" onClick={handleAdd}>Add to cart</button>
-            <button className="btn btn-primary" onClick={handleAdd}>Buy now</button>
+          <div className="flex items-center justify-end gap-2">
+            <button className="btn btn-primary" onClick={handleAdd}>Add to cart</button>
           </div>
         </div>
       </div>
