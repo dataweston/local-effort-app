@@ -1,3 +1,5 @@
+import PriceUsdInput from '../components/PriceUsdInput.jsx'
+
 export default {
   name: 'product',
   title: 'Product',
@@ -8,8 +10,8 @@ export default {
     { name: 'shortDescription', title: 'Short Description', type: 'string' },
     { name: 'longDescription', title: 'Long Description (Portable Text)', type: 'array', of: [{ type: 'block' }] },
     { name: 'images', title: 'Images', type: 'array', of: [{ type: 'image' }], options: { layout: 'grid' } },
-    { name: 'price', title: 'Price (cents)', type: 'number', validation: (Rule) => Rule.min(0) },
-    { name: 'salePrice', title: 'Sale Price (cents)', type: 'number' },
+  { name: 'price', title: 'Price (USD)', description: 'Enter dollars.cents. Stored internally as cents for accuracy.', type: 'number', components: { input: PriceUsdInput }, validation: (Rule) => Rule.min(0) },
+  { name: 'salePrice', title: 'Sale Price (USD)', description: 'Optional sale price in dollars.cents. Stored as cents.', type: 'number', components: { input: PriceUsdInput } },
     { name: 'currency', title: 'Currency', type: 'string', initialValue: 'USD', readOnly: true },
     { name: 'squareItemId', title: 'Square Item ID', type: 'string' },
     { name: 'squareVariationId', title: 'Square Variation ID', type: 'string' },
@@ -22,7 +24,7 @@ export default {
         fields: [
           { name: 'name', type: 'string', title: 'Name' },
           { name: 'squareVariationId', type: 'string', title: 'Square Variation ID' },
-          { name: 'price', type: 'number', title: 'Price (cents)' },
+          { name: 'price', type: 'number', title: 'Price (USD)', description: 'Enter dollars.cents. Stored as cents.', components: { input: PriceUsdInput } },
         ]
       }]
     },
