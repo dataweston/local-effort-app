@@ -35,7 +35,7 @@ const SalePage = () => {
       item: {
         '@type': 'Product',
         name: p.title,
-        image: p.images && p.images[0],
+        image: Array.isArray(p.images) ? p.images.filter(Boolean) : (p.images ? [p.images] : []),
         description: p.shortDescription,
         sku: p.squareVariationId || p.squareItemId || p.id,
         offers: {
