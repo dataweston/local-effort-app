@@ -65,6 +65,19 @@ export default function ProductCard({ product }) {
                 className="absolute inset-0 h-full w-full object-cover transition-opacity duration-300 opacity-0 group-hover:opacity-100"
               />
             ) : null}
+            {/* Hover info bar over image only */}
+            <div
+              className={cn(
+                'pointer-events-none absolute inset-x-0 bottom-0 transition-opacity duration-200',
+                'opacity-0 group-hover:opacity-100 group-focus-within:opacity-100'
+              )}
+            >
+              <div className="pointer-events-none bg-gradient-to-t from-black/70 to-transparent text-white p-3">
+                {product.shortDescription ? (
+                  <p className="text-xs leading-snug line-clamp-2">{product.shortDescription}</p>
+                ) : null}
+              </div>
+            </div>
           </>
         ) : (
           <div className="w-full h-full grid place-items-center text-neutral-400">No image</div>
@@ -117,22 +130,6 @@ export default function ProductCard({ product }) {
         </div>
       </div>
 
-      {/* Hover info bar (no full overlay to avoid shrink) */}
-      <div
-        className={cn(
-          'pointer-events-none absolute inset-x-0 bottom-0 transition-opacity duration-200',
-          'opacity-0 group-hover:opacity-100 group-focus-within:opacity-100'
-        )}
-      >
-        <div className="pointer-events-auto bg-gradient-to-t from-black/70 to-transparent text-white p-3">
-          {product.shortDescription ? (
-            <p className="text-xs leading-snug line-clamp-2 mb-2">{product.shortDescription}</p>
-          ) : null}
-          <div className="flex items-center justify-end gap-2">
-            <button className="btn btn-primary" onClick={handleAdd}>Add to cart</button>
-          </div>
-        </div>
-      </div>
     </div>
   );
 }

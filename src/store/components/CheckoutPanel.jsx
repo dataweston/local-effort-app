@@ -17,8 +17,8 @@ export default function CheckoutPanel() {
     const appId = import.meta?.env?.VITE_SQUARE_APP_ID || window?.__SQUARE_APP_ID__;
     const locationId = import.meta?.env?.VITE_SQUARE_LOCATION_ID || window?.__SQUARE_LOCATION_ID__;
     if (!open) return;
+    if (!items || items.length === 0) return; // mount form only when there are items
     setError('');
-    // Require config
     if (!appId || !locationId) {
       setError('Square not configured');
       return;
@@ -26,6 +26,7 @@ export default function CheckoutPanel() {
     let canceled = false;
     (async () => {
       try {
+        // Ensure SDK is loaded
         if (!document.getElementById('sq-wpsdk')) {
           await new Promise((resolve, reject) => {
             const s = document.createElement('script');
@@ -36,12 +37,25 @@ export default function CheckoutPanel() {
           });
         }
         if (canceled) return;
+        // Wait for global
+        const ensureSquare = () => new Promise((resolve, reject) => {
+          let tries = 0;
+          const t = setInterval(() => {
+            tries++;
+            if (window.Square && typeof window.Square.payments === 'function') {
+              clearInterval(t); resolve();
+            } else if (tries > 50) { // ~5s
+              clearInterval(t); reject(new Error('Square SDK not ready'));
+            }
+          }, 100);
+        });
+        await ensureSquare();
         const p = window.Square ? window.Square.payments(appId, locationId) : null;
         if (!p) throw new Error('Square payments unavailable');
+        // Recreate card each time we open with items
         const card = await p.card();
         cardRef.current = card;
         if (cardElRef.current) {
-          // clear container before mount in case of re-open
           cardElRef.current.innerHTML = '';
           await card.mount(cardElRef.current);
         }
@@ -50,7 +64,7 @@ export default function CheckoutPanel() {
       }
     })();
     return () => { canceled = true; };
-  }, [open]);
+  }, [open, items]);
 
   // Cleanup card when panel closes to avoid stale mounts
   React.useEffect(() => {
