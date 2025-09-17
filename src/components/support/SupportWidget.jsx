@@ -38,6 +38,24 @@ export function SupportWidget() {
     if (brevoReadyRef.current) return resolve();
     readyWaitersRef.current.push(resolve);
   });
+  const openBrevoChat = async () => {
+    ensureBrevo();
+    await whenBrevoReady();
+    // Close our panel first so Brevo drawer isn't obscured
+    setOpen(false);
+    // Try multiple Brevo API variants to open the chat drawer directly
+    const api = window.BrevoConversations;
+    if (!api) return;
+    const calls = ['open', 'openChat', 'openWidget', 'toggle', 'show'];
+    for (const method of calls) {
+      try {
+        api(method);
+        break;
+      } catch (_) {
+        // try next method
+      }
+    }
+  };
   const [query, setQuery] = useState('');
   const [answer, setAnswer] = useState(null);
   const [results, setResults] = useState([]);
@@ -133,7 +151,13 @@ export function SupportWidget() {
           </div>
           <div className="space-y-2">
             <div>
-              <input className="w-full border p-2" placeholder="Search FAQs" value={query} onChange={(e) => setQuery(e.target.value)} />
+              <input
+                className="w-full border p-2"
+                placeholder="Search FAQs"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); onSearch(); } }}
+              />
               <button className="mt-1 px-3 py-1 bg-black text-white rounded" onClick={onSearch} disabled={searching}>
                 {searching ? 'Searching…' : 'Search'}
               </button>
@@ -154,24 +178,10 @@ export function SupportWidget() {
               )}
             </div>
             <div className="space-y-2">
-              <p className="text-sm text-gray-700">Need to chat? Click below to open chat in this window.</p>
+              <p className="text-sm text-gray-700">Need to chat? Click below to open chat right here.</p>
               <button
                 className="px-3 py-2 bg-black text-white rounded"
-                onClick={async () => {
-                  ensureBrevo();
-                  await whenBrevoReady();
-                  try {
-                    if (window.BrevoConversations) {
-                      // Some versions support 'hide'/'show'; 'open' may not exist
-                      try { window.BrevoConversations('hide'); } catch (e) { /* ignore */ }
-                      try { window.BrevoConversations('show'); }
-                      catch (e) { try { window.BrevoConversations('toggle'); } catch (e2) { /* ignore */ } }
-                    }
-                  } finally {
-                    // Close our panel so the Brevo drawer isn’t obscured by our z-index
-                    setOpen(false);
-                  }
-                }}
+                onClick={openBrevoChat}
               >
                 Open chat
               </button>

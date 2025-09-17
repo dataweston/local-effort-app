@@ -20,6 +20,7 @@ const SHOW_FUNDRAISER = false;
 
 export const Header = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const [openMobileSection, setOpenMobileSection] = useState(null);
 
   useEffect(() => {
     document.body.style.overflow = isOpen ? 'hidden' : 'auto';
@@ -136,29 +137,66 @@ export const Header = () => {
                   transition: { staggerChildren: 0.08, delayChildren: 0.12 },
                 },
               }}
-              className="flex flex-col items-center justify-center h-full space-y-6 font-mono"
+              className="flex flex-col items-center justify-center h-full space-y-6 font-mono px-6"
             >
       {links.map((l) => (
                 <motion.div
                   key={l.path}
                   variants={{ hidden: { y: 10, opacity: 0 }, show: { y: 0, opacity: 1 } }}
                 >
-                  <NavLink
-                    to={l.path}
-                    onClick={() => setIsOpen(false)}
-        className={`text-3xl uppercase ${l.sale ? 'bg-rose-600 text-white px-4 py-2 rounded-md' : ''}`}
-                  >
-                    {l.name}
-                  </NavLink>
-                  {l.children && (
-                    <div className="mt-2 space-y-1">
-                      {l.children.map((c) => (
-                        <div key={c.path}>
-                          <NavLink to={c.path} onClick={() => setIsOpen(false)} className="text-base underline">
-                            {c.name}
-                          </NavLink>
-                        </div>
-                      ))}
+                  {!l.children ? (
+                    <NavLink
+                      to={l.path}
+                      onClick={() => setIsOpen(false)}
+                      className={`block text-3xl uppercase text-center ${l.sale ? 'bg-rose-600 text-white px-4 py-2 rounded-md' : ''}`}
+                    >
+                      {l.name}
+                    </NavLink>
+                  ) : (
+                    <div className="w-full max-w-md">
+                      <button
+                        type="button"
+                        onClick={() => setOpenMobileSection(openMobileSection === l.path ? null : l.path)}
+                        className="w-full text-3xl uppercase text-center flex items-center justify-center gap-2"
+                        aria-expanded={openMobileSection === l.path}
+                        aria-controls={`section-${l.path}`}
+                      >
+                        {l.name}
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className={`h-6 w-6 transition-transform ${openMobileSection === l.path ? 'rotate-180' : ''}`}
+                          viewBox="0 0 20 20"
+                          fill="currentColor"
+                          aria-hidden="true"
+                        >
+                          <path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0L5.21 8.29a.75.75 0 01.02-1.08z" clipRule="evenodd" />
+                        </svg>
+                      </button>
+                      <AnimatePresence initial={false}>
+                        {openMobileSection === l.path && (
+                          <motion.div
+                            id={`section-${l.path}`}
+                            initial={{ height: 0, opacity: 0 }}
+                            animate={{ height: 'auto', opacity: 1 }}
+                            exit={{ height: 0, opacity: 0 }}
+                            transition={{ duration: 0.2 }}
+                            className="overflow-hidden mt-2"
+                          >
+                            <div className="flex flex-col items-center space-y-2">
+                              {l.children.map((c) => (
+                                <NavLink
+                                  key={c.path}
+                                  to={c.path}
+                                  onClick={() => setIsOpen(false)}
+                                  className="text-base text-neutral-800 hover:text-black"
+                                >
+                                  {c.name}
+                                </NavLink>
+                              ))}
+                            </div>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
                     </div>
                   )}
                 </motion.div>
