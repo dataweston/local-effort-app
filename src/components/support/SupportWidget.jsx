@@ -12,7 +12,8 @@ export function SupportWidget() {
       if (typeof window === 'undefined') return;
       if (brevoReadyRef.current) return;
       if (!window.BrevoConversations) {
-        window.BrevoConversationsID = '68b8c39faa42260ca10998a0';
+        const id = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_BREVO_CONVERSATIONS_ID) || (window && window.__BREVO_CONVERSATIONS_ID__) || '68b8c39faa42260ca10998a0';
+        window.BrevoConversationsID = id;
         window.BrevoConversations = function() {
           (window.BrevoConversations.q = window.BrevoConversations.q || []).push(arguments);
         };
@@ -160,11 +161,16 @@ export function SupportWidget() {
                   ensureBrevo();
                   await whenBrevoReady();
                   try {
-                    window.BrevoConversations && window.BrevoConversations('hide');
-                    window.BrevoConversations && window.BrevoConversations('open');
-                  } catch (e) { /* noop */ }
-                  // Close our panel so the Brevo drawer isn’t obscured by our z-index
-                  setOpen(false);
+                    if (window.BrevoConversations) {
+                      // Some versions support 'hide'/'show'; 'open' may not exist
+                      try { window.BrevoConversations('hide'); } catch (e) { /* ignore */ }
+                      try { window.BrevoConversations('show'); }
+                      catch (e) { try { window.BrevoConversations('toggle'); } catch (e2) { /* ignore */ } }
+                    }
+                  } finally {
+                    // Close our panel so the Brevo drawer isn’t obscured by our z-index
+                    setOpen(false);
+                  }
                 }}
               >
                 Open chat
