@@ -58,7 +58,7 @@ const RewardTierCard = ({ tier, onContribute, busy }) => {
           if (typeof tier.amount === 'number' && tier.amount > 0) onContribute({ name: tier.title || 'Pledge', price: tier.amount });
         }}
       >
-        {typeof tier.amount === 'number' ? `Contribute $${tier.amount.toLocaleString()}` : 'Unavailable online'}
+        {typeof tier.amount === 'number' ? 'Select this reward' : 'Unavailable online'}
       </button>
     </div>
   );
@@ -84,6 +84,7 @@ const CrowdfundingPage = () => {
   const [paying, setPaying] = useState(false);
   const [payError, setPayError] = useState('');
   const [funderName, setFunderName] = useState('');
+  const [pizzaQty, setPizzaQty] = useState(1);
   const [confirmMsg, setConfirmMsg] = useState('');
 
   useEffect(() => {
@@ -439,15 +440,29 @@ const CrowdfundingPage = () => {
               {confirmMsg && <p className="text-sm text-emerald-700">{confirmMsg}</p>}
               {payError && <p className="text-sm text-red-600">{payError}</p>}
               <div className="flex flex-col gap-2">
-                <label className="text-sm" htmlFor="cf-name">Your name (optional)</label>
+                {/* Name input without label */}
                 <input id="cf-name" className="input w-full" placeholder="Name" value={funderName} onChange={(e) => setFunderName(e.target.value)} />
               </div>
+              {firstPayTier && (
+                <div className="flex items-center gap-3">
+                  <label htmlFor="pizza-qty" className="text-sm">Quantity</label>
+                  <input
+                    id="pizza-qty"
+                    type="number"
+                    min={1}
+                    max={50}
+                    value={pizzaQty}
+                    onChange={(e) => setPizzaQty(Math.max(1, Math.min(50, Number(e.target.value) || 1)))}
+                    className="input w-24"
+                  />
+                </div>
+              )}
               <button
                 disabled={!firstPayTier}
-                onClick={() => firstPayTier && contribute([{ name: firstPayTier.title || 'Pizza', price: firstPayTier.amount, type: 'pizza', pizzaCount: 1 }])}
+                onClick={() => firstPayTier && contribute([{ name: firstPayTier.title || 'Pizza', price: firstPayTier.amount, type: 'pizza', pizzaCount: pizzaQty, quantity: pizzaQty }])}
                 className="btn btn-primary w-full text-lg py-3 disabled:opacity-60"
               >
-                {paying ? 'Preparing checkout…' : 'Order a pizza'}
+                {paying ? 'Preparing checkout…' : 'i want pizza'}
               </button>
             </div>
 
