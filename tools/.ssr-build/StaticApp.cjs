@@ -978,6 +978,7 @@ var links = [
 var SHOW_FUNDRAISER = false;
 var Header = () => {
   const [isOpen, setIsOpen] = (0, import_react.useState)(false);
+  const [openMobileSection, setOpenMobileSection] = (0, import_react.useState)(null);
   (0, import_react.useEffect)(() => {
     document.body.style.overflow = isOpen ? "hidden" : "auto";
     return () => {
@@ -1072,24 +1073,67 @@ var Header = () => {
                 transition: { staggerChildren: 0.08, delayChildren: 0.12 }
               }
             },
-            className: "flex flex-col items-center justify-center h-full space-y-6 font-mono",
+            className: "flex flex-col items-center justify-center h-full space-y-6 font-mono px-6",
             children: [
-              links.map((l) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(
+              links.map((l) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
                 import_framer_motion.motion.div,
                 {
                   variants: { hidden: { y: 10, opacity: 0 }, show: { y: 0, opacity: 1 } },
-                  children: [
-                    /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
-                      import_react_router_dom.NavLink,
+                  children: !l.children ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+                    import_react_router_dom.NavLink,
+                    {
+                      to: l.path,
+                      onClick: () => setIsOpen(false),
+                      className: `block text-3xl uppercase text-center ${l.sale ? "bg-rose-600 text-white px-4 py-2 rounded-md" : ""}`,
+                      children: l.name
+                    }
+                  ) : /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "w-full max-w-md", children: [
+                    /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(
+                      "button",
                       {
-                        to: l.path,
-                        onClick: () => setIsOpen(false),
-                        className: `text-3xl uppercase ${l.sale ? "bg-rose-600 text-white px-4 py-2 rounded-md" : ""}`,
-                        children: l.name
+                        type: "button",
+                        onClick: () => setOpenMobileSection(openMobileSection === l.path ? null : l.path),
+                        className: "w-full text-3xl uppercase text-center flex items-center justify-center gap-2",
+                        "aria-expanded": openMobileSection === l.path,
+                        "aria-controls": `section-${l.path}`,
+                        children: [
+                          l.name,
+                          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+                            "svg",
+                            {
+                              xmlns: "http://www.w3.org/2000/svg",
+                              className: `h-6 w-6 transition-transform ${openMobileSection === l.path ? "rotate-180" : ""}`,
+                              viewBox: "0 0 20 20",
+                              fill: "currentColor",
+                              "aria-hidden": "true",
+                              children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", { fillRule: "evenodd", d: "M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0L5.21 8.29a.75.75 0 01.02-1.08z", clipRule: "evenodd" })
+                            }
+                          )
+                        ]
                       }
                     ),
-                    l.children && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "mt-2 space-y-1", children: l.children.map((c) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_react_router_dom.NavLink, { to: c.path, onClick: () => setIsOpen(false), className: "text-base underline", children: c.name }) }, c.path)) })
-                  ]
+                    /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_framer_motion.AnimatePresence, { initial: false, children: openMobileSection === l.path && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+                      import_framer_motion.motion.div,
+                      {
+                        id: `section-${l.path}`,
+                        initial: { height: 0, opacity: 0 },
+                        animate: { height: "auto", opacity: 1 },
+                        exit: { height: 0, opacity: 0 },
+                        transition: { duration: 0.2 },
+                        className: "overflow-hidden mt-2",
+                        children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "flex flex-col items-center space-y-2", children: l.children.map((c) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+                          import_react_router_dom.NavLink,
+                          {
+                            to: c.path,
+                            onClick: () => setIsOpen(false),
+                            className: "text-base text-neutral-800 hover:text-black",
+                            children: c.name
+                          },
+                          c.path
+                        )) })
+                      }
+                    ) })
+                  ] })
                 },
                 l.path
               )),
