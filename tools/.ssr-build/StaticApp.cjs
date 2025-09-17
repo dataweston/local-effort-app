@@ -661,12 +661,12 @@ var FoodItemModal_exports = {};
 __export(FoodItemModal_exports, {
   default: () => FoodItemModal_default
 });
-var import_react20, import_framer_motion7, import_jsx_runtime16, backdrop, modal, FoodItemModal, FoodItemModal_default;
+var import_react19, import_framer_motion7, import_jsx_runtime15, backdrop, modal, FoodItemModal, FoodItemModal_default;
 var init_FoodItemModal = __esm({
   "src/components/menu/FoodItemModal.jsx"() {
-    import_react20 = __toESM(require("react"));
+    import_react19 = __toESM(require("react"));
     import_framer_motion7 = require("framer-motion");
-    import_jsx_runtime16 = require("react/jsx-runtime");
+    import_jsx_runtime15 = require("react/jsx-runtime");
     backdrop = {
       visible: { opacity: 1 },
       hidden: { opacity: 0 }
@@ -676,7 +676,7 @@ var init_FoodItemModal = __esm({
       visible: { y: "0", opacity: 1, transition: { delay: 0.1 } }
     };
     FoodItemModal = ({ item, onClose }) => {
-      return /* @__PURE__ */ (0, import_jsx_runtime16.jsx)(
+      return /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(
         import_framer_motion7.motion.div,
         {
           className: "fixed inset-0 bg-black bg-opacity-60 z-50 flex justify-center items-center p-4",
@@ -685,14 +685,14 @@ var init_FoodItemModal = __esm({
           animate: "visible",
           exit: "hidden",
           onClick: onClose,
-          children: /* @__PURE__ */ (0, import_jsx_runtime16.jsxs)(
+          children: /* @__PURE__ */ (0, import_jsx_runtime15.jsxs)(
             import_framer_motion7.motion.div,
             {
               variants: modal,
               className: "bg-white rounded-lg shadow-xl max-w-lg w-full p-8 relative",
               onClick: (e) => e.stopPropagation(),
               children: [
-                /* @__PURE__ */ (0, import_jsx_runtime16.jsx)(
+                /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(
                   "button",
                   {
                     onClick: onClose,
@@ -700,11 +700,11 @@ var init_FoodItemModal = __esm({
                     children: "\xD7"
                   }
                 ),
-                /* @__PURE__ */ (0, import_jsx_runtime16.jsx)("h3", { className: "text-3xl font-bold mb-4", children: item.name }),
-                /* @__PURE__ */ (0, import_jsx_runtime16.jsx)("p", { className: "text-body mb-6", children: item.description }),
-                /* @__PURE__ */ (0, import_jsx_runtime16.jsxs)("div", { children: [
-                  /* @__PURE__ */ (0, import_jsx_runtime16.jsx)("h4", { className: "font-bold text-lg mb-2", children: "Ingredients:" }),
-                  /* @__PURE__ */ (0, import_jsx_runtime16.jsx)("ul", { className: "list-disc list-inside text-neutral-600 space-y-1", children: item.ingredients.map((ingredient, index) => /* @__PURE__ */ (0, import_jsx_runtime16.jsx)("li", { children: ingredient }, index)) })
+                /* @__PURE__ */ (0, import_jsx_runtime15.jsx)("h3", { className: "text-3xl font-bold mb-4", children: item.name }),
+                /* @__PURE__ */ (0, import_jsx_runtime15.jsx)("p", { className: "text-body mb-6", children: item.description }),
+                /* @__PURE__ */ (0, import_jsx_runtime15.jsxs)("div", { children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime15.jsx)("h4", { className: "font-bold text-lg mb-2", children: "Ingredients:" }),
+                  /* @__PURE__ */ (0, import_jsx_runtime15.jsx)("ul", { className: "list-disc list-inside text-neutral-600 space-y-1", children: item.ingredients.map((ingredient, index) => /* @__PURE__ */ (0, import_jsx_runtime15.jsx)("li", { children: ingredient }, index)) })
                 ] })
               ]
             }
@@ -775,23 +775,23 @@ var FeedbackForm_exports = {};
 __export(FeedbackForm_exports, {
   default: () => FeedbackForm_default
 });
-var import_react21, import_framer_motion8, import_firestore2, import_jsx_runtime17, FeedbackForm, FeedbackForm_default;
+var import_react20, import_framer_motion8, import_firestore2, import_jsx_runtime16, FeedbackForm, FeedbackForm_default;
 var init_FeedbackForm = __esm({
   "src/components/menu/FeedbackForm.jsx"() {
-    import_react21 = __toESM(require("react"));
+    import_react20 = __toESM(require("react"));
     import_framer_motion8 = require("framer-motion");
     import_firestore2 = require("firebase/firestore");
     init_firebaseConfig();
-    import_jsx_runtime17 = require("react/jsx-runtime");
+    import_jsx_runtime16 = require("react/jsx-runtime");
     FeedbackForm = () => {
-      const [formData, setFormData] = (0, import_react21.useState)({
+      const [formData, setFormData] = (0, import_react20.useState)({
         name: "",
         email: "",
         phone: "",
         category: "requests",
         message: ""
       });
-      const [status, setStatus] = (0, import_react21.useState)({ type: "", message: "" });
+      const [status, setStatus] = (0, import_react20.useState)({ type: "", message: "" });
       const handleChange = (e) => {
         const { name, value } = e.target;
         setFormData((prev) => ({ ...prev, [name]: value }));
@@ -815,10 +815,10 @@ var init_FeedbackForm = __esm({
           setStatus({ type: "error", message: "Something went wrong. Please try again." });
         }
       };
-      return /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("div", { className: "max-w-2xl bg-neutral-50 border border-neutral-200 p-8 rounded-lg", children: /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("form", { onSubmit: handleSubmit, className: "space-y-6", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("div", { className: "grid sm:grid-cols-2 gap-6", children: /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("div", { children: [
-          /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("label", { htmlFor: "category", className: "block text-sm font-medium text-neutral-700", children: "Category" }),
-          /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)(
+      return /* @__PURE__ */ (0, import_jsx_runtime16.jsx)("div", { className: "max-w-2xl bg-neutral-50 border border-neutral-200 p-8 rounded-lg", children: /* @__PURE__ */ (0, import_jsx_runtime16.jsxs)("form", { onSubmit: handleSubmit, className: "space-y-6", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime16.jsx)("div", { className: "grid sm:grid-cols-2 gap-6", children: /* @__PURE__ */ (0, import_jsx_runtime16.jsxs)("div", { children: [
+          /* @__PURE__ */ (0, import_jsx_runtime16.jsx)("label", { htmlFor: "category", className: "block text-sm font-medium text-neutral-700", children: "Category" }),
+          /* @__PURE__ */ (0, import_jsx_runtime16.jsxs)(
             "select",
             {
               id: "category",
@@ -827,16 +827,16 @@ var init_FeedbackForm = __esm({
               onChange: handleChange,
               className: "mt-1 block w-full rounded-md border-neutral-300 shadow-sm focus:border-primary focus:ring-primary",
               children: [
-                /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("option", { value: "requests", children: "Requests" }),
-                /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("option", { value: "quality", children: "Quality Feedback" }),
-                /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("option", { value: "other", children: "Other" })
+                /* @__PURE__ */ (0, import_jsx_runtime16.jsx)("option", { value: "requests", children: "Requests" }),
+                /* @__PURE__ */ (0, import_jsx_runtime16.jsx)("option", { value: "quality", children: "Quality Feedback" }),
+                /* @__PURE__ */ (0, import_jsx_runtime16.jsx)("option", { value: "other", children: "Other" })
               ]
             }
           )
         ] }) }),
-        /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("div", { children: [
-          /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("label", { htmlFor: "message", className: "block text-sm font-medium text-neutral-700", children: "Message" }),
-          /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(
+        /* @__PURE__ */ (0, import_jsx_runtime16.jsxs)("div", { children: [
+          /* @__PURE__ */ (0, import_jsx_runtime16.jsx)("label", { htmlFor: "message", className: "block text-sm font-medium text-neutral-700", children: "Message" }),
+          /* @__PURE__ */ (0, import_jsx_runtime16.jsx)(
             "textarea",
             {
               id: "message",
@@ -849,10 +849,10 @@ var init_FeedbackForm = __esm({
             }
           )
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("div", { className: "grid sm:grid-cols-2 gap-6", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("div", { children: [
-            /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("label", { htmlFor: "name", className: "block text-sm font-medium text-neutral-700", children: "Name (Optional)" }),
-            /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(
+        /* @__PURE__ */ (0, import_jsx_runtime16.jsxs)("div", { className: "grid sm:grid-cols-2 gap-6", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime16.jsxs)("div", { children: [
+            /* @__PURE__ */ (0, import_jsx_runtime16.jsx)("label", { htmlFor: "name", className: "block text-sm font-medium text-neutral-700", children: "Name (Optional)" }),
+            /* @__PURE__ */ (0, import_jsx_runtime16.jsx)(
               "input",
               {
                 type: "text",
@@ -864,9 +864,9 @@ var init_FeedbackForm = __esm({
               }
             )
           ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("div", { children: [
-            /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("label", { htmlFor: "email", className: "block text-sm font-medium text-neutral-700", children: "Email (Optional)" }),
-            /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(
+          /* @__PURE__ */ (0, import_jsx_runtime16.jsxs)("div", { children: [
+            /* @__PURE__ */ (0, import_jsx_runtime16.jsx)("label", { htmlFor: "email", className: "block text-sm font-medium text-neutral-700", children: "Email (Optional)" }),
+            /* @__PURE__ */ (0, import_jsx_runtime16.jsx)(
               "input",
               {
                 type: "email",
@@ -879,8 +879,8 @@ var init_FeedbackForm = __esm({
             )
           ] })
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("div", { className: "flex items-center justify-between", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(
+        /* @__PURE__ */ (0, import_jsx_runtime16.jsxs)("div", { className: "flex items-center justify-between", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime16.jsx)(
             import_framer_motion8.motion.button,
             {
               type: "submit",
@@ -891,7 +891,7 @@ var init_FeedbackForm = __esm({
               children: status.type === "loading" ? "Sending..." : "Submit Feedback"
             }
           ),
-          status.message && /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(
+          status.message && /* @__PURE__ */ (0, import_jsx_runtime16.jsx)(
             "p",
             {
               className: `text-sm ${status.type === "success" ? "text-green-600" : "text-red-600"}`,
@@ -910,21 +910,21 @@ var LoadingSpinner_exports = {};
 __export(LoadingSpinner_exports, {
   LoadingSpinner: () => LoadingSpinner
 });
-var import_react22, import_framer_motion9, import_jsx_runtime18, LoadingSpinner;
+var import_react21, import_framer_motion9, import_jsx_runtime17, LoadingSpinner;
 var init_LoadingSpinner = __esm({
   "src/components/layout/LoadingSpinner.jsx"() {
-    import_react22 = __toESM(require("react"));
+    import_react21 = __toESM(require("react"));
     import_framer_motion9 = require("framer-motion");
-    import_jsx_runtime18 = require("react/jsx-runtime");
-    LoadingSpinner = () => /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(
+    import_jsx_runtime17 = require("react/jsx-runtime");
+    LoadingSpinner = () => /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(
       import_framer_motion9.motion.div,
       {
         className: "min-h-screen flex items-center justify-center bg-gradient-to-br from-orange-50 to-red-50",
         initial: { opacity: 0 },
         animate: { opacity: 1 },
         exit: { opacity: 0 },
-        children: /* @__PURE__ */ (0, import_jsx_runtime18.jsxs)("div", { className: "text-center", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(
+        children: /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("div", { className: "text-center", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(
             import_framer_motion9.motion.div,
             {
               className: "w-16 h-16 mx-auto mb-4 border-4 border-orange-200 border-t-orange-500 rounded-full",
@@ -932,7 +932,7 @@ var init_LoadingSpinner = __esm({
               transition: { duration: 1, repeat: Infinity, ease: "linear" }
             }
           ),
-          /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(
+          /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(
             import_framer_motion9.motion.p,
             {
               className: "text-gray-600 font-medium",
@@ -965,7 +965,10 @@ var import_framer_motion = require("framer-motion");
 var import_jsx_runtime = require("react/jsx-runtime");
 var logo = "/gallery/logo.png?text=Local+Effort&font=mono";
 var links = [
-  { path: "/services", name: "Services" },
+  { path: "/sale", name: "SALE", sale: true },
+  { path: "/services", name: "Services", children: [
+    { path: "/services#event-request", name: "Submit an event request" }
+  ] },
   { path: "/pricing", name: "Pricing" },
   { path: "/menu", name: "Menus" },
   { path: "/about", name: "About" },
@@ -994,19 +997,22 @@ var Header = () => {
         }
       ) }),
       /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("nav", { className: "hidden md:flex items-center gap-2 font-mono text-[0.9rem]", children: [
-        links.map(({ path, name }) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_react_router_dom.NavLink, { to: path, className: "relative px-2 py-1 rounded", children: ({ isActive }) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: "transition-colors hover:text-neutral-900 text-neutral-700", children: name }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
-            import_framer_motion.motion.span,
-            {
-              layoutId: "nav-underline",
-              className: "absolute left-2 right-2 -bottom-0.5 h-0.5 bg-[var(--color-accent)]",
-              initial: false,
-              animate: { opacity: isActive ? 1 : 0 },
-              transition: { duration: 0.2 }
-            }
-          )
-        ] }) }, path)),
+        links.map(({ path, name, sale, children }) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "relative group", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_react_router_dom.NavLink, { to: path, className: "relative px-2 py-1 rounded", children: ({ isActive }) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [
+            sale ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: `inline-flex items-center rounded-md px-2 py-1 text-white shadow-sm transition-transform ${isActive ? "scale-[1.02]" : ""}`, style: { backgroundColor: "#e11d48" }, children: name }) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: "transition-colors hover:text-neutral-900 text-neutral-700", children: name }),
+            !sale && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+              import_framer_motion.motion.span,
+              {
+                layoutId: "nav-underline",
+                className: "absolute left-2 right-2 -bottom-0.5 h-0.5 bg-[var(--color-accent)]",
+                initial: false,
+                animate: { opacity: isActive ? 1 : 0 },
+                transition: { duration: 0.2 }
+              }
+            )
+          ] }) }),
+          children && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "absolute left-0 mt-1", children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "invisible group-hover:visible opacity-0 group-hover:opacity-100 transition-opacity", children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "mt-1 rounded-md border bg-white shadow-lg py-1 min-w-[220px]", children: children.map((c) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_react_router_dom.NavLink, { to: c.path, className: "block px-3 py-2 text-sm text-neutral-700 hover:bg-neutral-50", children: c.name }, c.path)) }) }) })
+        ] }, path)),
         SHOW_FUNDRAISER && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_react_router_dom.NavLink, { to: "/crowdfunding", className: "ml-2", children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
           import_framer_motion.motion.span,
           {
@@ -1068,19 +1074,22 @@ var Header = () => {
             },
             className: "flex flex-col items-center justify-center h-full space-y-6 font-mono",
             children: [
-              links.map((l) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+              links.map((l) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(
                 import_framer_motion.motion.div,
                 {
                   variants: { hidden: { y: 10, opacity: 0 }, show: { y: 0, opacity: 1 } },
-                  children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
-                    import_react_router_dom.NavLink,
-                    {
-                      to: l.path,
-                      onClick: () => setIsOpen(false),
-                      className: "text-3xl uppercase",
-                      children: l.name
-                    }
-                  )
+                  children: [
+                    /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+                      import_react_router_dom.NavLink,
+                      {
+                        to: l.path,
+                        onClick: () => setIsOpen(false),
+                        className: `text-3xl uppercase ${l.sale ? "bg-rose-600 text-white px-4 py-2 rounded-md" : ""}`,
+                        children: l.name
+                      }
+                    ),
+                    l.children && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "mt-2 space-y-1", children: l.children.map((c) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_react_router_dom.NavLink, { to: c.path, onClick: () => setIsOpen(false), className: "text-base underline", children: c.name }) }, c.path)) })
+                  ]
                 },
                 l.path
               )),
@@ -3672,115 +3681,14 @@ var AboutUsPage = () => {
 var AboutUsPage_default = AboutUsPage;
 
 // src/pages/ServicesPage.jsx
-var import_react14 = __toESM(require("react"));
+var import_react13 = __toESM(require("react"));
 var import_react_router_dom4 = require("react-router-dom");
 var import_react_helmet_async3 = __toESM(require_lib());
-
-// src/components/common/PhotoGrid.jsx
-var import_react13 = __toESM(require("react"));
 var import_jsx_runtime9 = require("react/jsx-runtime");
-function PhotoGrid({ tags, title, perPage = 24, layout, masonry = false }) {
-  const tagList = (0, import_react13.useMemo)(() => Array.isArray(tags) ? tags.filter(Boolean) : [tags].filter(Boolean), [tags]);
-  const [images, setImages] = (0, import_react13.useState)([]);
-  const [loading, setLoading] = (0, import_react13.useState)(false);
-  const [error, setError] = (0, import_react13.useState)(null);
-  (0, import_react13.useEffect)(() => {
-    let abort = false;
-    const controller = new AbortController();
-    (async () => {
-      if (!tagList.length) {
-        setImages([]);
-        return;
-      }
-      setLoading(true);
-      setError(null);
-      try {
-        const fetches = tagList.map(async (t) => {
-          const res = await fetch(`/api/search-images?query=${encodeURIComponent(t)}&per_page=${perPage}`, { signal: controller.signal });
-          const data = await res.json().catch(() => ({}));
-          if (!res.ok) throw new Error(data.error || `Failed loading tag ${t}`);
-          return Array.isArray(data.images) ? data.images : [];
-        });
-        const results = await Promise.all(fetches);
-        if (abort) return;
-        const merged = [].concat(...results);
-        const seen = /* @__PURE__ */ new Set();
-        const unique = merged.filter((img) => {
-          const key = img.asset_id || img.public_id || img.publicId;
-          if (!key || seen.has(key)) return false;
-          seen.add(key);
-          return true;
-        });
-        setImages(unique);
-      } catch (e) {
-        if (abort) return;
-        setError(e.message || String(e));
-      } finally {
-        if (!abort) setLoading(false);
-      }
-    })();
-    return () => {
-      abort = true;
-      controller.abort();
-    };
-  }, [tagList.join(","), perPage]);
-  if (!tagList.length) return null;
-  const useMasonry = masonry || String(layout || "").toLowerCase() === "masonry";
-  return /* @__PURE__ */ (0, import_jsx_runtime9.jsxs)("section", { className: "space-y-4", children: [
-    title ? /* @__PURE__ */ (0, import_jsx_runtime9.jsx)("h3", { className: "text-2xl font-bold", children: title }) : null,
-    loading ? /* @__PURE__ */ (0, import_jsx_runtime9.jsx)("p", { children: "Loading photos\u2026" }) : error ? /* @__PURE__ */ (0, import_jsx_runtime9.jsxs)("div", { className: "text-red-700 bg-red-50 border border-red-200 p-3 rounded", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime9.jsx)("p", { className: "font-semibold", children: error }),
-      /* @__PURE__ */ (0, import_jsx_runtime9.jsx)("p", { className: "text-sm mt-1", children: "If this persists, check Cloudinary env vars and the serverless function logs." })
-    ] }) : images.length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime9.jsx)("p", { className: "text-sm text-gray-600", children: "No photos found." }) : useMasonry ? /* @__PURE__ */ (0, import_jsx_runtime9.jsx)("div", { className: "columns-2 md:columns-3 lg:columns-4 gap-4 [column-fill:_balance]", children: images.map((img, idx) => /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(
-      "div",
-      {
-        className: "mb-4 break-inside-avoid border p-2 bg-white rounded-lg overflow-hidden",
-        children: img.thumbnail_url ? /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(
-          "img",
-          {
-            src: img.thumbnail_url,
-            alt: img.context?.alt || "Grid image",
-            className: "rounded-lg w-full h-auto",
-            loading: "lazy"
-          }
-        ) : /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(
-          cloudinaryImage_default,
-          {
-            publicId: img.public_id || img.publicId,
-            alt: img.context?.alt || "Grid image",
-            width: 800,
-            className: "rounded-lg w-full h-auto"
-          }
-        )
-      },
-      (img.asset_id || img.public_id || idx) + ":" + idx
-    )) }) : /* @__PURE__ */ (0, import_jsx_runtime9.jsx)("div", { className: "grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4", children: images.map((img, idx) => /* @__PURE__ */ (0, import_jsx_runtime9.jsx)("div", { className: "border p-2 bg-white rounded-lg overflow-hidden", children: img.thumbnail_url ? /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(
-      "img",
-      {
-        src: img.thumbnail_url,
-        alt: img.context?.alt || "Grid image",
-        className: "rounded-lg object-cover w-full h-full aspect-square",
-        loading: "lazy"
-      }
-    ) : /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(
-      cloudinaryImage_default,
-      {
-        publicId: img.public_id || img.publicId,
-        alt: img.context?.alt || "Grid image",
-        width: 600,
-        height: 600,
-        className: "rounded-lg object-cover w-full h-full aspect-square"
-      }
-    ) }, (img.asset_id || img.public_id || idx) + ":" + idx)) })
-  ] });
-}
-
-// src/pages/ServicesPage.jsx
-var import_jsx_runtime10 = require("react/jsx-runtime");
 var ServicesPage = () => {
   const navigate = (0, import_react_router_dom4.useNavigate)();
   const location = (0, import_react_router_dom4.useLocation)();
-  (0, import_react14.useEffect)(() => {
+  (0, import_react13.useEffect)(() => {
     if (location.hash) {
       const id = location.hash.replace("#", "");
       const el = document.getElementById(id);
@@ -3789,7 +3697,7 @@ var ServicesPage = () => {
       }
     }
   }, [location.hash]);
-  const initialForm = (0, import_react14.useMemo)(
+  const initialForm = (0, import_react13.useMemo)(
     () => ({
       firstName: "",
       lastName: "",
@@ -3807,17 +3715,17 @@ var ServicesPage = () => {
     }),
     []
   );
-  const [form, setForm] = (0, import_react14.useState)(initialForm);
-  const [submitting, setSubmitting] = (0, import_react14.useState)(false);
-  const [result, setResult] = (0, import_react14.useState)(null);
-  const [bookHero, setBookHero] = (0, import_react14.useState)(null);
+  const [form, setForm] = (0, import_react13.useState)(initialForm);
+  const [submitting, setSubmitting] = (0, import_react13.useState)(false);
+  const [result, setResult] = (0, import_react13.useState)(null);
+  const [bookHero, setBookHero] = (0, import_react13.useState)(null);
   const required = (v) => String(v || "").trim().length > 0;
   const handleChange = (e) => {
     const { name, type, checked, value } = e.target;
     setForm((f) => ({ ...f, [name]: type === "checkbox" ? checked : value }));
   };
   const reset = () => setForm(initialForm);
-  (0, import_react14.useEffect)(() => {
+  (0, import_react13.useEffect)(() => {
     let abort = false;
     (async () => {
       try {
@@ -3877,10 +3785,10 @@ ${form.notes || "(none)"}`;
       setSubmitting(false);
     }
   };
-  return /* @__PURE__ */ (0, import_jsx_runtime10.jsxs)(import_jsx_runtime10.Fragment, { children: [
-    /* @__PURE__ */ (0, import_jsx_runtime10.jsxs)(import_react_helmet_async3.Helmet, { children: [
-      /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("title", { children: "Services | Local Effort" }),
-      /* @__PURE__ */ (0, import_jsx_runtime10.jsx)(
+  return /* @__PURE__ */ (0, import_jsx_runtime9.jsxs)(import_jsx_runtime9.Fragment, { children: [
+    /* @__PURE__ */ (0, import_jsx_runtime9.jsxs)(import_react_helmet_async3.Helmet, { children: [
+      /* @__PURE__ */ (0, import_jsx_runtime9.jsx)("title", { children: "Services | Local Effort" }),
+      /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(
         "meta",
         {
           name: "description",
@@ -3888,23 +3796,23 @@ ${form.notes || "(none)"}`;
         }
       )
     ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime10.jsxs)("div", { className: "space-y-16 mx-auto max-w-6xl px-4 md:px-6 lg:px-8", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("h2", { className: "text-4xl md:text-6xl font-bold uppercase border-b border-gray-900 pb-4", children: "Services" }),
-      /* @__PURE__ */ (0, import_jsx_runtime10.jsxs)("div", { className: "grid md:grid-cols-2 lg:grid-cols-3 gap-8", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime10.jsxs)("div", { className: "card space-y-4", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("h3", { className: "text-heading", children: "Dinners & Events" }),
-          /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("p", { className: "text-body", children: "in-home dinner parties and small events up to 50" }),
-          /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("button", { onClick: () => navigate("/events"), className: "text-body text-sm underline", children: "Details \u2192" })
+    /* @__PURE__ */ (0, import_jsx_runtime9.jsxs)("div", { className: "space-y-16 mx-auto max-w-6xl px-4 md:px-6 lg:px-8", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime9.jsx)("h2", { className: "text-4xl md:text-6xl font-bold uppercase border-b border-gray-900 pb-4", children: "Services" }),
+      /* @__PURE__ */ (0, import_jsx_runtime9.jsxs)("div", { className: "grid md:grid-cols-2 lg:grid-cols-3 gap-8", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime9.jsxs)("div", { className: "card space-y-4", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime9.jsx)("h3", { className: "text-heading", children: "Dinners & Events" }),
+          /* @__PURE__ */ (0, import_jsx_runtime9.jsx)("p", { className: "text-body", children: "in-home dinner parties and small events up to 50" }),
+          /* @__PURE__ */ (0, import_jsx_runtime9.jsx)("button", { onClick: () => navigate("/events"), className: "text-body text-sm underline", children: "Details \u2192" })
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime10.jsxs)("div", { className: "card space-y-4", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("h3", { className: "text-heading", children: "Weekly Meal Plans" }),
-          /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("p", { className: "text-body", children: "Nutritious, locally-sourced meals delivered weekly." }),
-          /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("button", { onClick: () => navigate("/meal-prep"), className: "text-body text-sm underline", children: "Details \u2192" })
+        /* @__PURE__ */ (0, import_jsx_runtime9.jsxs)("div", { className: "card space-y-4", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime9.jsx)("h3", { className: "text-heading", children: "Weekly Meal Plans" }),
+          /* @__PURE__ */ (0, import_jsx_runtime9.jsx)("p", { className: "text-body", children: "Nutritious, locally-sourced meals delivered weekly." }),
+          /* @__PURE__ */ (0, import_jsx_runtime9.jsx)("button", { onClick: () => navigate("/meal-prep"), className: "text-body text-sm underline", children: "Details \u2192" })
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime10.jsxs)("div", { className: "card space-y-4", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("h3", { className: "text-heading", children: "Pizza Parties" }),
-          /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("p", { className: "text-body", children: "local pizza at your party. we'll bring the oven." }),
-          /* @__PURE__ */ (0, import_jsx_runtime10.jsx)(
+        /* @__PURE__ */ (0, import_jsx_runtime9.jsxs)("div", { className: "card space-y-4", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime9.jsx)("h3", { className: "text-heading", children: "Pizza Parties" }),
+          /* @__PURE__ */ (0, import_jsx_runtime9.jsx)("p", { className: "text-body", children: "local pizza at your party. we'll bring the oven." }),
+          /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(
             "button",
             {
               onClick: () => navigate("/pizza-party"),
@@ -3914,9 +3822,8 @@ ${form.notes || "(none)"}`;
           )
         ] })
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime10.jsx)(PhotoGrid, { tags: "service", title: "", perPage: 24 }),
-      /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("section", { id: "event-request", className: "border-t border-neutral-200 pt-10", children: /* @__PURE__ */ (0, import_jsx_runtime10.jsxs)("div", { className: "max-w-3xl mx-auto", children: [
-        bookHero && /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("div", { className: "w-full h-[30vh] md:h-[36vh] lg:h-[42vh] rounded-xl overflow-hidden mb-6", children: /* @__PURE__ */ (0, import_jsx_runtime10.jsx)(
+      /* @__PURE__ */ (0, import_jsx_runtime9.jsx)("section", { id: "event-request", className: "border-t border-neutral-200 pt-10", children: /* @__PURE__ */ (0, import_jsx_runtime9.jsxs)("div", { className: "max-w-3xl mx-auto", children: [
+        bookHero && /* @__PURE__ */ (0, import_jsx_runtime9.jsx)("div", { className: "w-full h-[30vh] md:h-[36vh] lg:h-[42vh] rounded-xl overflow-hidden mb-6", children: /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(
           cloudinaryImage_default,
           {
             publicId: bookHero,
@@ -3926,13 +3833,13 @@ ${form.notes || "(none)"}`;
             eager: true
           }
         ) }),
-        /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("h3", { className: "mb-1 text-center text-2xl font-bold", children: "book an event" }),
-        /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("p", { className: "text-body mb-6 text-center", children: "Tell us about your event and we\u2019ll follow up with availability and a tailored menu." }),
-        /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("div", { className: "form-card", children: /* @__PURE__ */ (0, import_jsx_runtime10.jsxs)("form", { onSubmit: handleSubmit, className: "space-y-4", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime10.jsxs)("div", { children: [
-            /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("label", { className: "block text-sm font-medium", htmlFor: "firstName", children: "Contact Name *" }),
-            /* @__PURE__ */ (0, import_jsx_runtime10.jsxs)("div", { className: "grid md:grid-cols-2 gap-4 mt-1", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime10.jsx)(
+        /* @__PURE__ */ (0, import_jsx_runtime9.jsx)("h3", { className: "mb-1 text-center text-2xl font-bold", children: "book an event" }),
+        /* @__PURE__ */ (0, import_jsx_runtime9.jsx)("p", { className: "text-body mb-6 text-center", children: "Tell us about your event and we\u2019ll follow up with availability and a tailored menu." }),
+        /* @__PURE__ */ (0, import_jsx_runtime9.jsx)("div", { className: "form-card", children: /* @__PURE__ */ (0, import_jsx_runtime9.jsxs)("form", { onSubmit: handleSubmit, className: "space-y-4", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime9.jsxs)("div", { children: [
+            /* @__PURE__ */ (0, import_jsx_runtime9.jsx)("label", { className: "block text-sm font-medium", htmlFor: "firstName", children: "Contact Name *" }),
+            /* @__PURE__ */ (0, import_jsx_runtime9.jsxs)("div", { className: "grid md:grid-cols-2 gap-4 mt-1", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(
                 "input",
                 {
                   id: "firstName",
@@ -3944,7 +3851,7 @@ ${form.notes || "(none)"}`;
                   required: true
                 }
               ),
-              /* @__PURE__ */ (0, import_jsx_runtime10.jsx)(
+              /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(
                 "input",
                 {
                   id: "lastName",
@@ -3957,12 +3864,12 @@ ${form.notes || "(none)"}`;
                 }
               )
             ] }),
-            /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("p", { className: "hint mt-1", children: "This field is required." })
+            /* @__PURE__ */ (0, import_jsx_runtime9.jsx)("p", { className: "hint mt-1", children: "This field is required." })
           ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime10.jsxs)("div", { className: "grid md:grid-cols-2 gap-4", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime10.jsxs)("div", { children: [
-              /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("label", { className: "block text-sm font-medium", htmlFor: "phone", children: "Phone Number *" }),
-              /* @__PURE__ */ (0, import_jsx_runtime10.jsx)(
+          /* @__PURE__ */ (0, import_jsx_runtime9.jsxs)("div", { className: "grid md:grid-cols-2 gap-4", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime9.jsxs)("div", { children: [
+              /* @__PURE__ */ (0, import_jsx_runtime9.jsx)("label", { className: "block text-sm font-medium", htmlFor: "phone", children: "Phone Number *" }),
+              /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(
                 "input",
                 {
                   type: "tel",
@@ -3976,9 +3883,9 @@ ${form.notes || "(none)"}`;
                 }
               )
             ] }),
-            /* @__PURE__ */ (0, import_jsx_runtime10.jsxs)("div", { children: [
-              /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("label", { className: "block text-sm font-medium", htmlFor: "email", children: "E-mail *" }),
-              /* @__PURE__ */ (0, import_jsx_runtime10.jsx)(
+            /* @__PURE__ */ (0, import_jsx_runtime9.jsxs)("div", { children: [
+              /* @__PURE__ */ (0, import_jsx_runtime9.jsx)("label", { className: "block text-sm font-medium", htmlFor: "email", children: "E-mail *" }),
+              /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(
                 "input",
                 {
                   type: "email",
@@ -3993,9 +3900,9 @@ ${form.notes || "(none)"}`;
               )
             ] })
           ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime10.jsxs)("div", { children: [
-            /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("label", { className: "block text-sm font-medium", htmlFor: "eventDate", children: "Event Date" }),
-            /* @__PURE__ */ (0, import_jsx_runtime10.jsx)(
+          /* @__PURE__ */ (0, import_jsx_runtime9.jsxs)("div", { children: [
+            /* @__PURE__ */ (0, import_jsx_runtime9.jsx)("label", { className: "block text-sm font-medium", htmlFor: "eventDate", children: "Event Date" }),
+            /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(
               "input",
               {
                 type: "date",
@@ -4006,12 +3913,12 @@ ${form.notes || "(none)"}`;
                 className: "mt-1 w-full border rounded-md p-2"
               }
             ),
-            /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("p", { className: "hint mt-1", children: "Choose a date from the calendar." })
+            /* @__PURE__ */ (0, import_jsx_runtime9.jsx)("p", { className: "hint mt-1", children: "Choose a date from the calendar." })
           ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime10.jsxs)("div", { children: [
-            /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("label", { className: "block text-sm font-medium", htmlFor: "city", children: "Where will the event take place?" }),
-            /* @__PURE__ */ (0, import_jsx_runtime10.jsxs)("div", { className: "grid md:grid-cols-3 gap-4 mt-1", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime10.jsx)(
+          /* @__PURE__ */ (0, import_jsx_runtime9.jsxs)("div", { children: [
+            /* @__PURE__ */ (0, import_jsx_runtime9.jsx)("label", { className: "block text-sm font-medium", htmlFor: "city", children: "Where will the event take place?" }),
+            /* @__PURE__ */ (0, import_jsx_runtime9.jsxs)("div", { className: "grid md:grid-cols-3 gap-4 mt-1", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(
                 "input",
                 {
                   id: "city",
@@ -4022,7 +3929,7 @@ ${form.notes || "(none)"}`;
                   placeholder: "City"
                 }
               ),
-              /* @__PURE__ */ (0, import_jsx_runtime10.jsxs)(
+              /* @__PURE__ */ (0, import_jsx_runtime9.jsxs)(
                 "select",
                 {
                   id: "state",
@@ -4031,12 +3938,12 @@ ${form.notes || "(none)"}`;
                   onChange: handleChange,
                   className: "w-full border rounded-md p-2 bg-white",
                   children: [
-                    /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("option", { value: "", children: "Please Select" }),
-                    ["AL", "AK", "AZ", "AR", "CA", "CO", "CT", "DE", "FL", "GA", "HI", "ID", "IL", "IN", "IA", "KS", "KY", "LA", "ME", "MD", "MA", "MI", "MN", "MS", "MO", "MT", "NE", "NV", "NH", "NJ", "NM", "NY", "NC", "ND", "OH", "OK", "OR", "PA", "RI", "SC", "SD", "TN", "TX", "UT", "VT", "VA", "WA", "WV", "WI", "WY"].map((s) => /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("option", { value: s, children: s }, s))
+                    /* @__PURE__ */ (0, import_jsx_runtime9.jsx)("option", { value: "", children: "Please Select" }),
+                    ["AL", "AK", "AZ", "AR", "CA", "CO", "CT", "DE", "FL", "GA", "HI", "ID", "IL", "IN", "IA", "KS", "KY", "LA", "ME", "MD", "MA", "MI", "MN", "MS", "MO", "MT", "NE", "NV", "NH", "NJ", "NM", "NY", "NC", "ND", "OH", "OK", "OR", "PA", "RI", "SC", "SD", "TN", "TX", "UT", "VT", "VA", "WA", "WV", "WI", "WY"].map((s) => /* @__PURE__ */ (0, import_jsx_runtime9.jsx)("option", { value: s, children: s }, s))
                   ]
                 }
               ),
-              /* @__PURE__ */ (0, import_jsx_runtime10.jsx)(
+              /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(
                 "input",
                 {
                   id: "zip",
@@ -4049,9 +3956,9 @@ ${form.notes || "(none)"}`;
               )
             ] })
           ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime10.jsxs)("div", { children: [
-            /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("label", { className: "block text-sm font-medium", htmlFor: "eventType", children: "Event Type" }),
-            /* @__PURE__ */ (0, import_jsx_runtime10.jsxs)(
+          /* @__PURE__ */ (0, import_jsx_runtime9.jsxs)("div", { children: [
+            /* @__PURE__ */ (0, import_jsx_runtime9.jsx)("label", { className: "block text-sm font-medium", htmlFor: "eventType", children: "Event Type" }),
+            /* @__PURE__ */ (0, import_jsx_runtime9.jsxs)(
               "select",
               {
                 id: "eventType",
@@ -4060,20 +3967,20 @@ ${form.notes || "(none)"}`;
                 onChange: handleChange,
                 className: "mt-1 w-full border rounded-md p-2 bg-white",
                 children: [
-                  /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("option", { value: "", children: "Please Select" }),
-                  /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("option", { children: "Home Dinner" }),
-                  /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("option", { children: "Small Event" }),
-                  /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("option", { children: "Wedding" }),
-                  /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("option", { children: "Baby Shower" }),
-                  /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("option", { children: "Pizza Party" }),
-                  /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("option", { children: "Other" })
+                  /* @__PURE__ */ (0, import_jsx_runtime9.jsx)("option", { value: "", children: "Please Select" }),
+                  /* @__PURE__ */ (0, import_jsx_runtime9.jsx)("option", { children: "Home Dinner" }),
+                  /* @__PURE__ */ (0, import_jsx_runtime9.jsx)("option", { children: "Small Event" }),
+                  /* @__PURE__ */ (0, import_jsx_runtime9.jsx)("option", { children: "Wedding" }),
+                  /* @__PURE__ */ (0, import_jsx_runtime9.jsx)("option", { children: "Baby Shower" }),
+                  /* @__PURE__ */ (0, import_jsx_runtime9.jsx)("option", { children: "Pizza Party" }),
+                  /* @__PURE__ */ (0, import_jsx_runtime9.jsx)("option", { children: "Other" })
                 ]
               }
             )
           ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime10.jsxs)("div", { children: [
-            /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("label", { className: "block text-sm font-medium", htmlFor: "guestCount", children: "Estimated guest count" }),
-            /* @__PURE__ */ (0, import_jsx_runtime10.jsx)(
+          /* @__PURE__ */ (0, import_jsx_runtime9.jsxs)("div", { children: [
+            /* @__PURE__ */ (0, import_jsx_runtime9.jsx)("label", { className: "block text-sm font-medium", htmlFor: "guestCount", children: "Estimated guest count" }),
+            /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(
               "input",
               {
                 type: "number",
@@ -4087,9 +3994,9 @@ ${form.notes || "(none)"}`;
               }
             )
           ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime10.jsxs)("div", { children: [
-            /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("label", { className: "block text-sm font-medium", htmlFor: "notes", children: "Tell us more! What sort of meal are you thinking? Which foods do you like? What questions do you have for us straight away?" }),
-            /* @__PURE__ */ (0, import_jsx_runtime10.jsx)(
+          /* @__PURE__ */ (0, import_jsx_runtime9.jsxs)("div", { children: [
+            /* @__PURE__ */ (0, import_jsx_runtime9.jsx)("label", { className: "block text-sm font-medium", htmlFor: "notes", children: "Tell us more! What sort of meal are you thinking? Which foods do you like? What questions do you have for us straight away?" }),
+            /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(
               "textarea",
               {
                 id: "notes",
@@ -4102,12 +4009,12 @@ ${form.notes || "(none)"}`;
               }
             )
           ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime10.jsxs)("label", { className: "inline-flex items-center gap-2", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("input", { type: "checkbox", name: "sendCopy", checked: form.sendCopy, onChange: handleChange }),
-            /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("span", { className: "text-sm", children: "Email me a copy of this request" })
+          /* @__PURE__ */ (0, import_jsx_runtime9.jsxs)("label", { className: "inline-flex items-center gap-2", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime9.jsx)("input", { type: "checkbox", name: "sendCopy", checked: form.sendCopy, onChange: handleChange }),
+            /* @__PURE__ */ (0, import_jsx_runtime9.jsx)("span", { className: "text-sm", children: "Email me a copy of this request" })
           ] }),
-          result && /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("div", { className: "text-sm " + (result.ok ? "text-green-700" : "text-red-700"), children: result.message }),
-          /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("div", { className: "actions", children: /* @__PURE__ */ (0, import_jsx_runtime10.jsx)(
+          result && /* @__PURE__ */ (0, import_jsx_runtime9.jsx)("div", { className: "text-sm " + (result.ok ? "text-green-700" : "text-red-700"), children: result.message }),
+          /* @__PURE__ */ (0, import_jsx_runtime9.jsx)("div", { className: "actions", children: /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(
             "button",
             {
               type: "submit",
@@ -4124,19 +4031,19 @@ ${form.notes || "(none)"}`;
 var ServicesPage_default = ServicesPage;
 
 // src/pages/PricingPage.jsx
-var import_react16 = __toESM(require("react"));
+var import_react15 = __toESM(require("react"));
 var import_react_helmet_async4 = __toESM(require_lib());
 
 // src/components/pricing/CostEstimator.jsx
-var import_react15 = __toESM(require("react"));
-var import_jsx_runtime11 = require("react/jsx-runtime");
+var import_react14 = __toESM(require("react"));
+var import_jsx_runtime10 = require("react/jsx-runtime");
 var CostEstimator = () => {
-  const [userAnswers, setUserAnswers] = (0, import_react15.useState)({});
-  const [currentQuestionKey, setCurrentQuestionKey] = (0, import_react15.useState)("start");
-  const [questionPath, setQuestionPath] = (0, import_react15.useState)([]);
-  const [finalCost, setFinalCost] = (0, import_react15.useState)(0);
-  const [breakdown, setBreakdown] = (0, import_react15.useState)([]);
-  const [showResults, setShowResults] = (0, import_react15.useState)(false);
+  const [userAnswers, setUserAnswers] = (0, import_react14.useState)({});
+  const [currentQuestionKey, setCurrentQuestionKey] = (0, import_react14.useState)("start");
+  const [questionPath, setQuestionPath] = (0, import_react14.useState)([]);
+  const [finalCost, setFinalCost] = (0, import_react14.useState)(0);
+  const [breakdown, setBreakdown] = (0, import_react14.useState)([]);
+  const [showResults, setShowResults] = (0, import_react14.useState)(false);
   const questions = {
     start: {
       id: "serviceType",
@@ -4280,22 +4187,22 @@ var CostEstimator = () => {
     setShowResults(false);
   };
   if (showResults) {
-    return /* @__PURE__ */ (0, import_jsx_runtime11.jsxs)("div", { className: "border border-gray-900 p-8 text-center", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime11.jsx)("h3", { className: "text-2xl font-bold", children: "All-Inclusive Ballpark Estimate" }),
-      /* @__PURE__ */ (0, import_jsx_runtime11.jsxs)("p", { className: "text-6xl font-bold my-4", children: [
+    return /* @__PURE__ */ (0, import_jsx_runtime10.jsxs)("div", { className: "border border-gray-900 p-8 text-center", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("h3", { className: "text-2xl font-bold", children: "All-Inclusive Ballpark Estimate" }),
+      /* @__PURE__ */ (0, import_jsx_runtime10.jsxs)("p", { className: "text-6xl font-bold my-4", children: [
         "$",
         finalCost.toFixed(2)
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime11.jsx)("div", { className: "bg-gray-200 p-4 text-left mb-6 font-mono text-sm", children: [`- Based on your selections for a ${userAnswers.serviceType} service.`].map(
-        (item, i) => /* @__PURE__ */ (0, import_jsx_runtime11.jsx)("p", { children: item }, i)
+      /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("div", { className: "bg-gray-200 p-4 text-left mb-6 font-mono text-sm", children: [`- Based on your selections for a ${userAnswers.serviceType} service.`].map(
+        (item, i) => /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("p", { children: item }, i)
       ) }),
-      /* @__PURE__ */ (0, import_jsx_runtime11.jsx)("button", { onClick: restart, className: "mt-6 text-sm underline font-mono", children: "Start Over" })
+      /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("button", { onClick: restart, className: "mt-6 text-sm underline font-mono", children: "Start Over" })
     ] });
   }
   const currentQData = questions[currentQuestionKey];
-  return /* @__PURE__ */ (0, import_jsx_runtime11.jsxs)("div", { className: "relative w-full border border-gray-900 p-8 min-h-[400px]", children: [
-    /* @__PURE__ */ (0, import_jsx_runtime11.jsx)("h2", { className: "text-3xl font-bold mb-6", children: currentQData.title }),
-    currentQData.type === "options" && /* @__PURE__ */ (0, import_jsx_runtime11.jsx)("div", { className: "space-y-3 font-mono", children: currentQData.options.map((opt) => /* @__PURE__ */ (0, import_jsx_runtime11.jsx)(
+  return /* @__PURE__ */ (0, import_jsx_runtime10.jsxs)("div", { className: "relative w-full border border-gray-900 p-8 min-h-[400px]", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("h2", { className: "text-3xl font-bold mb-6", children: currentQData.title }),
+    currentQData.type === "options" && /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("div", { className: "space-y-3 font-mono", children: currentQData.options.map((opt) => /* @__PURE__ */ (0, import_jsx_runtime10.jsx)(
       "button",
       {
         onClick: () => handleAnswer(currentQData, opt.value),
@@ -4304,8 +4211,8 @@ var CostEstimator = () => {
       },
       opt.value.toString()
     )) }),
-    currentQData.type === "number" && /* @__PURE__ */ (0, import_jsx_runtime11.jsxs)("div", { children: [
-      /* @__PURE__ */ (0, import_jsx_runtime11.jsx)(
+    currentQData.type === "number" && /* @__PURE__ */ (0, import_jsx_runtime10.jsxs)("div", { children: [
+      /* @__PURE__ */ (0, import_jsx_runtime10.jsx)(
         "input",
         {
           type: "number",
@@ -4319,7 +4226,7 @@ var CostEstimator = () => {
           }
         }
       ),
-      /* @__PURE__ */ (0, import_jsx_runtime11.jsx)(
+      /* @__PURE__ */ (0, import_jsx_runtime10.jsx)(
         "button",
         {
           onClick: () => handleAnswer(
@@ -4331,10 +4238,10 @@ var CostEstimator = () => {
         }
       )
     ] }),
-    currentQData.type === "multi_number" && /* @__PURE__ */ (0, import_jsx_runtime11.jsxs)("div", { className: "font-mono space-y-4", children: [
-      currentQData.fields.map((field) => /* @__PURE__ */ (0, import_jsx_runtime11.jsxs)("div", { className: "grid grid-cols-2 items-center gap-4", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime11.jsx)("label", { htmlFor: `input-${field.id}`, className: "text-lg", children: field.label }),
-        /* @__PURE__ */ (0, import_jsx_runtime11.jsx)(
+    currentQData.type === "multi_number" && /* @__PURE__ */ (0, import_jsx_runtime10.jsxs)("div", { className: "font-mono space-y-4", children: [
+      currentQData.fields.map((field) => /* @__PURE__ */ (0, import_jsx_runtime10.jsxs)("div", { className: "grid grid-cols-2 items-center gap-4", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("label", { htmlFor: `input-${field.id}`, className: "text-lg", children: field.label }),
+        /* @__PURE__ */ (0, import_jsx_runtime10.jsx)(
           "input",
           {
             type: "number",
@@ -4344,7 +4251,7 @@ var CostEstimator = () => {
           }
         )
       ] }, field.id)),
-      /* @__PURE__ */ (0, import_jsx_runtime11.jsx)(
+      /* @__PURE__ */ (0, import_jsx_runtime10.jsx)(
         "button",
         {
           onClick: () => {
@@ -4364,10 +4271,10 @@ var CostEstimator = () => {
 
 // src/pages/PricingPage.jsx
 var import_framer_motion4 = require("framer-motion");
-var import_jsx_runtime12 = require("react/jsx-runtime");
+var import_jsx_runtime11 = require("react/jsx-runtime");
 var PricingPage = () => {
-  const [openFaq, setOpenFaq] = (0, import_react16.useState)(null);
-  const faqRefs = (0, import_react16.useRef)([]);
+  const [openFaq, setOpenFaq] = (0, import_react15.useState)(null);
+  const faqRefs = (0, import_react15.useRef)([]);
   const pricingFaqData = [
     {
       name: "How much does a weekly meal plan cost?",
@@ -4386,15 +4293,15 @@ var PricingPage = () => {
       answer: "Our private pizza parties start at $300 for groups of up to 15 people."
     }
   ];
-  (0, import_react16.useEffect)(() => {
+  (0, import_react15.useEffect)(() => {
     if (openFaq !== null && faqRefs.current[openFaq]) {
       faqRefs.current[openFaq].scrollIntoView({ behavior: "smooth", block: "start" });
     }
   }, [openFaq]);
-  return /* @__PURE__ */ (0, import_jsx_runtime12.jsxs)(import_jsx_runtime12.Fragment, { children: [
-    /* @__PURE__ */ (0, import_jsx_runtime12.jsxs)(import_react_helmet_async4.Helmet, { children: [
-      /* @__PURE__ */ (0, import_jsx_runtime12.jsx)("title", { children: "Pricing | Local Effort" }),
-      /* @__PURE__ */ (0, import_jsx_runtime12.jsx)(
+  return /* @__PURE__ */ (0, import_jsx_runtime11.jsxs)(import_jsx_runtime11.Fragment, { children: [
+    /* @__PURE__ */ (0, import_jsx_runtime11.jsxs)(import_react_helmet_async4.Helmet, { children: [
+      /* @__PURE__ */ (0, import_jsx_runtime11.jsx)("title", { children: "Pricing | Local Effort" }),
+      /* @__PURE__ */ (0, import_jsx_runtime11.jsx)(
         "meta",
         {
           name: "description",
@@ -4402,8 +4309,8 @@ var PricingPage = () => {
         }
       )
     ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime12.jsxs)("div", { className: "space-y-16 max-w-5xl mx-auto px-4 py-12", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime12.jsxs)(
+    /* @__PURE__ */ (0, import_jsx_runtime11.jsxs)("div", { className: "space-y-16 max-w-5xl mx-auto px-4 py-12", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime11.jsxs)(
         import_framer_motion4.motion.div,
         {
           initial: { opacity: 0, y: 20 },
@@ -4411,12 +4318,12 @@ var PricingPage = () => {
           transition: { duration: 0.5 },
           className: "text-center",
           children: [
-            /* @__PURE__ */ (0, import_jsx_runtime12.jsx)("h2", { className: "text-4xl font-extrabold uppercase mb-4", children: "Pricing" }),
-            /* @__PURE__ */ (0, import_jsx_runtime12.jsx)("p", { className: "text-lg text-gray-700 max-w-3xl mx-auto", children: "Use our estimator for a ballpark figure, or review our general pricing guidelines below." })
+            /* @__PURE__ */ (0, import_jsx_runtime11.jsx)("h2", { className: "text-4xl font-extrabold uppercase mb-4", children: "Pricing" }),
+            /* @__PURE__ */ (0, import_jsx_runtime11.jsx)("p", { className: "text-lg text-gray-700 max-w-3xl mx-auto", children: "Use our estimator for a ballpark figure, or review our general pricing guidelines below." })
           ]
         }
       ),
-      /* @__PURE__ */ (0, import_jsx_runtime12.jsxs)(
+      /* @__PURE__ */ (0, import_jsx_runtime11.jsxs)(
         import_framer_motion4.motion.section,
         {
           initial: { opacity: 0, y: 20 },
@@ -4424,12 +4331,12 @@ var PricingPage = () => {
           viewport: { once: true, amount: 0.2 },
           transition: { duration: 0.5 },
           children: [
-            /* @__PURE__ */ (0, import_jsx_runtime12.jsx)("h3", { className: "text-2xl font-bold uppercase mb-4", children: "Cost Estimator" }),
-            /* @__PURE__ */ (0, import_jsx_runtime12.jsx)(CostEstimator, {})
+            /* @__PURE__ */ (0, import_jsx_runtime11.jsx)("h3", { className: "text-2xl font-bold uppercase mb-4", children: "Cost Estimator" }),
+            /* @__PURE__ */ (0, import_jsx_runtime11.jsx)(CostEstimator, {})
           ]
         }
       ),
-      /* @__PURE__ */ (0, import_jsx_runtime12.jsxs)(
+      /* @__PURE__ */ (0, import_jsx_runtime11.jsxs)(
         import_framer_motion4.motion.section,
         {
           initial: { opacity: 0, y: 20 },
@@ -4437,23 +4344,23 @@ var PricingPage = () => {
           viewport: { once: true, amount: 0.2 },
           transition: { duration: 0.5 },
           children: [
-            /* @__PURE__ */ (0, import_jsx_runtime12.jsx)("h3", { className: "text-2xl font-bold uppercase mb-4", children: "General Pricing FAQ" }),
-            /* @__PURE__ */ (0, import_jsx_runtime12.jsx)("div", { className: "space-y-2", children: pricingFaqData.map((item, index) => {
+            /* @__PURE__ */ (0, import_jsx_runtime11.jsx)("h3", { className: "text-2xl font-bold uppercase mb-4", children: "General Pricing FAQ" }),
+            /* @__PURE__ */ (0, import_jsx_runtime11.jsx)("div", { className: "space-y-2", children: pricingFaqData.map((item, index) => {
               const isOpen = openFaq === index;
-              return /* @__PURE__ */ (0, import_jsx_runtime12.jsxs)(
+              return /* @__PURE__ */ (0, import_jsx_runtime11.jsxs)(
                 "div",
                 {
                   ref: (el) => faqRefs.current[index] = el,
                   className: "bg-[#F5F5F5] border border-gray-300 rounded-lg overflow-hidden",
                   children: [
-                    /* @__PURE__ */ (0, import_jsx_runtime12.jsxs)(
+                    /* @__PURE__ */ (0, import_jsx_runtime11.jsxs)(
                       "button",
                       {
                         onClick: () => setOpenFaq(isOpen ? null : index),
                         className: "w-full p-6 text-left flex justify-between items-center",
                         children: [
-                          /* @__PURE__ */ (0, import_jsx_runtime12.jsx)("h3", { className: "text-xl font-semibold", children: item.name }),
-                          /* @__PURE__ */ (0, import_jsx_runtime12.jsx)(
+                          /* @__PURE__ */ (0, import_jsx_runtime11.jsx)("h3", { className: "text-xl font-semibold", children: item.name }),
+                          /* @__PURE__ */ (0, import_jsx_runtime11.jsx)(
                             import_framer_motion4.motion.span,
                             {
                               animate: { rotate: isOpen ? 45 : 0 },
@@ -4465,14 +4372,14 @@ var PricingPage = () => {
                         ]
                       }
                     ),
-                    /* @__PURE__ */ (0, import_jsx_runtime12.jsx)(
+                    /* @__PURE__ */ (0, import_jsx_runtime11.jsx)(
                       import_framer_motion4.motion.div,
                       {
                         initial: { height: 0, opacity: 0 },
                         animate: { height: isOpen ? "auto" : 0, opacity: isOpen ? 1 : 0 },
                         transition: { duration: 0.3 },
                         className: "overflow-hidden px-6 pt-0 pb-6 border-t border-gray-300",
-                        children: /* @__PURE__ */ (0, import_jsx_runtime12.jsx)("p", { className: "text-gray-700 text-base", children: item.answer })
+                        children: /* @__PURE__ */ (0, import_jsx_runtime11.jsx)("p", { className: "text-gray-700 text-base", children: item.answer })
                       }
                     )
                   ]
@@ -4489,7 +4396,7 @@ var PricingPage = () => {
 var PricingPage_default = PricingPage;
 
 // src/pages/MenuPage.jsx
-var import_react17 = __toESM(require("react"));
+var import_react16 = __toESM(require("react"));
 var import_react_helmet_async5 = __toESM(require_lib());
 
 // src/data/sampleMenus.js
@@ -5320,8 +5227,8 @@ var sampleMenus = [
 
 // src/pages/MenuPage.jsx
 var import_framer_motion5 = require("framer-motion");
-var import_jsx_runtime13 = require("react/jsx-runtime");
-var ServiceCard2 = ({ title, description, children, isOpen = false }) => /* @__PURE__ */ (0, import_jsx_runtime13.jsxs)(
+var import_jsx_runtime12 = require("react/jsx-runtime");
+var ServiceCard2 = ({ title, description, children, isOpen = false }) => /* @__PURE__ */ (0, import_jsx_runtime12.jsxs)(
   import_framer_motion5.motion.div,
   {
     className: `group rounded-xl bg-neutral-50 shadow-sm ring-1 ring-neutral-200 transition-all hover:shadow-md ` + (isOpen ? "p-8" : "p-4 md:p-5"),
@@ -5329,18 +5236,18 @@ var ServiceCard2 = ({ title, description, children, isOpen = false }) => /* @__P
     animate: { opacity: 1, y: 0 },
     transition: { duration: 0.3 },
     children: [
-      /* @__PURE__ */ (0, import_jsx_runtime13.jsx)("h4", { className: isOpen ? "text-2xl font-bold uppercase tracking-tight" : "text-xl font-bold uppercase tracking-tight", children: title }),
-      /* @__PURE__ */ (0, import_jsx_runtime13.jsx)("p", { className: isOpen ? "font-mono text-neutral-600 min-h-[2rem] mt-2" : "font-mono text-neutral-600 mt-1", children: description }),
-      /* @__PURE__ */ (0, import_jsx_runtime13.jsx)("div", { className: isOpen ? "mt-4" : "mt-2", children })
+      /* @__PURE__ */ (0, import_jsx_runtime12.jsx)("h4", { className: isOpen ? "text-2xl font-bold uppercase tracking-tight" : "text-xl font-bold uppercase tracking-tight", children: title }),
+      /* @__PURE__ */ (0, import_jsx_runtime12.jsx)("p", { className: isOpen ? "font-mono text-neutral-600 min-h-[2rem] mt-2" : "font-mono text-neutral-600 mt-1", children: description }),
+      /* @__PURE__ */ (0, import_jsx_runtime12.jsx)("div", { className: isOpen ? "mt-4" : "mt-2", children })
     ]
   }
 );
 function MenuPage() {
-  const [openMenu, setOpenMenu] = (0, import_react17.useState)(null);
-  const [hoveredKey, setHoveredKey] = (0, import_react17.useState)(null);
-  const [lookup, setLookup] = (0, import_react17.useState)({});
+  const [openMenu, setOpenMenu] = (0, import_react16.useState)(null);
+  const [hoveredKey, setHoveredKey] = (0, import_react16.useState)(null);
+  const [lookup, setLookup] = (0, import_react16.useState)({});
   const toggleMenu = (id) => setOpenMenu(openMenu === id ? null : id);
-  const menuJsonLd = (0, import_react17.useMemo)(() => {
+  const menuJsonLd = (0, import_react16.useMemo)(() => {
     const menuSections = sampleMenus.map((m) => ({
       "@type": "Menu",
       name: m.title,
@@ -5360,18 +5267,18 @@ function MenuPage() {
       hasMenu: menuSections
     };
   }, []);
-  return /* @__PURE__ */ (0, import_jsx_runtime13.jsxs)("div", { className: "container mx-auto px-4 py-8", children: [
-    /* @__PURE__ */ (0, import_jsx_runtime13.jsxs)(import_react_helmet_async5.Helmet, { children: [
-      /* @__PURE__ */ (0, import_jsx_runtime13.jsx)("title", { children: "Past Menu Examples | Local Effort" }),
-      /* @__PURE__ */ (0, import_jsx_runtime13.jsx)("meta", { name: "description", content: "Real menus from recent events, showcasing wide options and locally sourced food." }),
-      /* @__PURE__ */ (0, import_jsx_runtime13.jsx)("script", { type: "application/ld+json", children: JSON.stringify(menuJsonLd) })
+  return /* @__PURE__ */ (0, import_jsx_runtime12.jsxs)("div", { className: "container mx-auto px-4 py-8", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime12.jsxs)(import_react_helmet_async5.Helmet, { children: [
+      /* @__PURE__ */ (0, import_jsx_runtime12.jsx)("title", { children: "Past Menu Examples | Local Effort" }),
+      /* @__PURE__ */ (0, import_jsx_runtime12.jsx)("meta", { name: "description", content: "Real menus from recent events, showcasing wide options and locally sourced food." }),
+      /* @__PURE__ */ (0, import_jsx_runtime12.jsx)("script", { type: "application/ld+json", children: JSON.stringify(menuJsonLd) })
     ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime13.jsx)("h1", { className: "text-4xl font-bold mb-4 text-center", children: "Past Menu Examples." }),
-    /* @__PURE__ */ (0, import_jsx_runtime13.jsx)("div", { className: "prose-lite max-w-3xl mx-auto text-center mb-8", children: /* @__PURE__ */ (0, import_jsx_runtime13.jsx)("p", { children: 'these are all real menus from events in the past couple years, just to show how wide the options are. We love to "make it local."' }) }),
-    /* @__PURE__ */ (0, import_jsx_runtime13.jsx)("div", { className: "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6", children: sampleMenus.map((menu) => {
+    /* @__PURE__ */ (0, import_jsx_runtime12.jsx)("h1", { className: "text-4xl font-bold mb-4 text-center", children: "Past Menu Examples." }),
+    /* @__PURE__ */ (0, import_jsx_runtime12.jsx)("div", { className: "prose-lite max-w-3xl mx-auto text-center mb-8", children: /* @__PURE__ */ (0, import_jsx_runtime12.jsx)("p", { children: 'these are all real menus from events in the past couple years, just to show how wide the options are. We love to "make it local."' }) }),
+    /* @__PURE__ */ (0, import_jsx_runtime12.jsx)("div", { className: "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6", children: sampleMenus.map((menu) => {
       const isOpen = openMenu === menu.id;
-      return /* @__PURE__ */ (0, import_jsx_runtime13.jsxs)(ServiceCard2, { title: menu.title, description: menu.description || "", isOpen, children: [
-        /* @__PURE__ */ (0, import_jsx_runtime13.jsx)(
+      return /* @__PURE__ */ (0, import_jsx_runtime12.jsxs)(ServiceCard2, { title: menu.title, description: menu.description || "", isOpen, children: [
+        /* @__PURE__ */ (0, import_jsx_runtime12.jsx)(
           "button",
           {
             onClick: () => toggleMenu(menu.id),
@@ -5379,16 +5286,16 @@ function MenuPage() {
             children: isOpen ? "Hide Sections \u25B2" : "View More \u25BC"
           }
         ),
-        /* @__PURE__ */ (0, import_jsx_runtime13.jsx)(
+        /* @__PURE__ */ (0, import_jsx_runtime12.jsx)(
           import_framer_motion5.motion.div,
           {
             initial: { height: 0, opacity: 0 },
             animate: { height: isOpen ? "auto" : 0, opacity: isOpen ? 1 : 0 },
             transition: { duration: 0.3 },
             className: "overflow-hidden mt-4",
-            children: isOpen && menu.sections.map((section, idx) => /* @__PURE__ */ (0, import_jsx_runtime13.jsxs)("div", { className: "mt-4", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime13.jsx)("h5", { className: "text-lg font-semibold", children: section.course }),
-              /* @__PURE__ */ (0, import_jsx_runtime13.jsx)("ul", { className: "list-disc list-inside mt-2 space-y-1", children: section.items.map((item, i) => {
+            children: isOpen && menu.sections.map((section, idx) => /* @__PURE__ */ (0, import_jsx_runtime12.jsxs)("div", { className: "mt-4", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime12.jsx)("h5", { className: "text-lg font-semibold", children: section.course }),
+              /* @__PURE__ */ (0, import_jsx_runtime12.jsx)("ul", { className: "list-disc list-inside mt-2 space-y-1", children: section.items.map((item, i) => {
                 const hasImage = typeof item.imagePublicId === "string" && item.imagePublicId.trim().length > 0;
                 const itemKey = `${menu.id}-${section.course}-${i}`;
                 const previewPublicId = hasImage ? item.imagePublicId : lookup[itemKey];
@@ -5412,29 +5319,29 @@ function MenuPage() {
                   } catch (_) {
                   }
                 };
-                return /* @__PURE__ */ (0, import_jsx_runtime13.jsxs)(
+                return /* @__PURE__ */ (0, import_jsx_runtime12.jsxs)(
                   "li",
                   {
                     onMouseEnter: handleEnter,
                     onMouseLeave: () => setHoveredKey(null),
                     className: `relative py-1 ${hasImage || lookup[itemKey] ? "cursor-pointer" : "cursor-default"}`,
                     children: [
-                      /* @__PURE__ */ (0, import_jsx_runtime13.jsx)("span", { className: `font-medium ${hasImage || lookup[itemKey] ? "underline decoration-dotted underline-offset-2" : ""}`, children: item.name }),
-                      hasImage || lookup[itemKey] ? /* @__PURE__ */ (0, import_jsx_runtime13.jsx)("span", { className: "ml-1 align-middle inline-block text-neutral-500", title: "Preview available", "aria-hidden": "true", children: /* @__PURE__ */ (0, import_jsx_runtime13.jsxs)("svg", { width: "14", height: "14", viewBox: "0 0 24 24", fill: "none", xmlns: "http://www.w3.org/2000/svg", children: [
-                        /* @__PURE__ */ (0, import_jsx_runtime13.jsx)("path", { d: "M3 7a2 2 0 012-2h14a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2V7z", stroke: "currentColor", strokeWidth: "1.5" }),
-                        /* @__PURE__ */ (0, import_jsx_runtime13.jsx)("path", { d: "M9 11l3 3 3-3 4 5H5l4-5z", stroke: "currentColor", strokeWidth: "1.5" }),
-                        /* @__PURE__ */ (0, import_jsx_runtime13.jsx)("circle", { cx: "8", cy: "9", r: "1.5", fill: "currentColor" })
+                      /* @__PURE__ */ (0, import_jsx_runtime12.jsx)("span", { className: `font-medium ${hasImage || lookup[itemKey] ? "underline decoration-dotted underline-offset-2" : ""}`, children: item.name }),
+                      hasImage || lookup[itemKey] ? /* @__PURE__ */ (0, import_jsx_runtime12.jsx)("span", { className: "ml-1 align-middle inline-block text-neutral-500", title: "Preview available", "aria-hidden": "true", children: /* @__PURE__ */ (0, import_jsx_runtime12.jsxs)("svg", { width: "14", height: "14", viewBox: "0 0 24 24", fill: "none", xmlns: "http://www.w3.org/2000/svg", children: [
+                        /* @__PURE__ */ (0, import_jsx_runtime12.jsx)("path", { d: "M3 7a2 2 0 012-2h14a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2V7z", stroke: "currentColor", strokeWidth: "1.5" }),
+                        /* @__PURE__ */ (0, import_jsx_runtime12.jsx)("path", { d: "M9 11l3 3 3-3 4 5H5l4-5z", stroke: "currentColor", strokeWidth: "1.5" }),
+                        /* @__PURE__ */ (0, import_jsx_runtime12.jsx)("circle", { cx: "8", cy: "9", r: "1.5", fill: "currentColor" })
                       ] }) }) : null,
-                      item.note && /* @__PURE__ */ (0, import_jsx_runtime13.jsxs)("span", { className: "text-gray-600 italic", children: [
+                      item.note && /* @__PURE__ */ (0, import_jsx_runtime12.jsxs)("span", { className: "text-gray-600 italic", children: [
                         " \u2014 ",
                         item.note
                       ] }),
-                      item.dietary?.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime13.jsxs)("span", { className: "ml-2 text-sm text-green-600", children: [
+                      item.dietary?.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime12.jsxs)("span", { className: "ml-2 text-sm text-green-600", children: [
                         "[",
                         item.dietary.join(", "),
                         "]"
                       ] }),
-                      (hasImage || previewPublicId) && /* @__PURE__ */ (0, import_jsx_runtime13.jsx)(import_framer_motion5.AnimatePresence, { children: hoveredKey === itemKey && /* @__PURE__ */ (0, import_jsx_runtime13.jsx)(
+                      (hasImage || previewPublicId) && /* @__PURE__ */ (0, import_jsx_runtime12.jsx)(import_framer_motion5.AnimatePresence, { children: hoveredKey === itemKey && /* @__PURE__ */ (0, import_jsx_runtime12.jsx)(
                         import_framer_motion5.motion.div,
                         {
                           className: "absolute bottom-full left-1/2 -translate-x-1/2 mb-2 p-2 bg-white rounded-lg shadow-xl z-20 w-48 h-48 pointer-events-none",
@@ -5442,7 +5349,7 @@ function MenuPage() {
                           animate: { opacity: 1, y: 0, scale: 1 },
                           exit: { opacity: 0, y: 10, scale: 0.9 },
                           transition: { duration: 0.2, ease: "easeInOut" },
-                          children: /* @__PURE__ */ (0, import_jsx_runtime13.jsx)(
+                          children: /* @__PURE__ */ (0, import_jsx_runtime12.jsx)(
                             cloudinaryImage_default,
                             {
                               publicId: previewPublicId,
@@ -5469,7 +5376,7 @@ function MenuPage() {
 }
 
 // src/pages/HappyMondayPage.jsx
-var import_react23 = __toESM(require("react"));
+var import_react22 = __toESM(require("react"));
 var import_react_helmet_async6 = __toESM(require_lib());
 var import_framer_motion10 = require("framer-motion");
 
@@ -5504,11 +5411,11 @@ try {
 var sanityClient_default = client;
 
 // src/components/menu/FoodItemCard.jsx
-var import_react18 = __toESM(require("react"));
+var import_react17 = __toESM(require("react"));
 var import_framer_motion6 = require("framer-motion");
-var import_jsx_runtime14 = require("react/jsx-runtime");
+var import_jsx_runtime13 = require("react/jsx-runtime");
 var FoodItemCard = ({ item, onClick }) => {
-  return /* @__PURE__ */ (0, import_jsx_runtime14.jsxs)(
+  return /* @__PURE__ */ (0, import_jsx_runtime13.jsxs)(
     import_framer_motion6.motion.div,
     {
       variants: fadeInUp,
@@ -5517,8 +5424,8 @@ var FoodItemCard = ({ item, onClick }) => {
       whileHover: { scale: 1.03 },
       whileTap: { scale: 0.98 },
       children: [
-        /* @__PURE__ */ (0, import_jsx_runtime14.jsx)("h4", { className: "text-xl font-bold text-neutral-800", children: item.name }),
-        /* @__PURE__ */ (0, import_jsx_runtime14.jsx)("p", { className: "text-neutral-600 mt-2 line-clamp-2", children: item.description })
+        /* @__PURE__ */ (0, import_jsx_runtime13.jsx)("h4", { className: "text-xl font-bold text-neutral-800", children: item.name }),
+        /* @__PURE__ */ (0, import_jsx_runtime13.jsx)("p", { className: "text-neutral-600 mt-2 line-clamp-2", children: item.description })
       ]
     }
   );
@@ -5526,9 +5433,9 @@ var FoodItemCard = ({ item, onClick }) => {
 var FoodItemCard_default = FoodItemCard;
 
 // src/components/ErrorBoundary.jsx
-var import_react19 = __toESM(require("react"));
-var import_jsx_runtime15 = require("react/jsx-runtime");
-var ErrorBoundary = class extends import_react19.default.Component {
+var import_react18 = __toESM(require("react"));
+var import_jsx_runtime14 = require("react/jsx-runtime");
+var ErrorBoundary = class extends import_react18.default.Component {
   constructor(props) {
     super(props);
     this.state = { error: null };
@@ -5541,10 +5448,10 @@ var ErrorBoundary = class extends import_react19.default.Component {
   }
   render() {
     if (this.state.error) {
-      return /* @__PURE__ */ (0, import_jsx_runtime15.jsxs)("div", { className: "p-6 bg-yellow-50 text-center", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime15.jsx)("h3", { className: "font-bold", children: "Something failed to load." }),
-        /* @__PURE__ */ (0, import_jsx_runtime15.jsx)("p", { className: "text-sm text-gray-700 mt-2", children: this.state.error?.message }),
-        /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(
+      return /* @__PURE__ */ (0, import_jsx_runtime14.jsxs)("div", { className: "p-6 bg-yellow-50 text-center", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime14.jsx)("h3", { className: "font-bold", children: "Something failed to load." }),
+        /* @__PURE__ */ (0, import_jsx_runtime14.jsx)("p", { className: "text-sm text-gray-700 mt-2", children: this.state.error?.message }),
+        /* @__PURE__ */ (0, import_jsx_runtime14.jsx)(
           "button",
           {
             type: "button",
@@ -5561,17 +5468,17 @@ var ErrorBoundary = class extends import_react19.default.Component {
 var ErrorBoundary_default = ErrorBoundary;
 
 // src/pages/HappyMondayPage.jsx
-var import_jsx_runtime19 = require("react/jsx-runtime");
-var BlockContent = (0, import_react23.lazy)(() => import("@sanity/block-content-to-react"));
-var FoodItemModal2 = (0, import_react23.lazy)(() => Promise.resolve().then(() => (init_FoodItemModal(), FoodItemModal_exports)));
-var FeedbackForm2 = (0, import_react23.lazy)(() => Promise.resolve().then(() => (init_FeedbackForm(), FeedbackForm_exports)));
-var LoadingSpinner2 = (0, import_react23.lazy)(() => Promise.resolve().then(() => (init_LoadingSpinner(), LoadingSpinner_exports)).then((mod) => ({ default: mod.LoadingSpinner })));
+var import_jsx_runtime18 = require("react/jsx-runtime");
+var BlockContent = (0, import_react22.lazy)(() => import("@sanity/block-content-to-react"));
+var FoodItemModal2 = (0, import_react22.lazy)(() => Promise.resolve().then(() => (init_FoodItemModal(), FoodItemModal_exports)));
+var FeedbackForm2 = (0, import_react22.lazy)(() => Promise.resolve().then(() => (init_FeedbackForm(), FeedbackForm_exports)));
+var LoadingSpinner2 = (0, import_react22.lazy)(() => Promise.resolve().then(() => (init_LoadingSpinner(), LoadingSpinner_exports)).then((mod) => ({ default: mod.LoadingSpinner })));
 var HappyMondayPage = () => {
-  const [menuItems, setMenuItems] = (0, import_react23.useState)([]);
-  const [pageContent, setPageContent] = (0, import_react23.useState)(null);
-  const [selectedItem, setSelectedItem] = (0, import_react23.useState)(null);
-  const [isLoading, setIsLoading] = (0, import_react23.useState)(true);
-  (0, import_react23.useEffect)(() => {
+  const [menuItems, setMenuItems] = (0, import_react22.useState)([]);
+  const [pageContent, setPageContent] = (0, import_react22.useState)(null);
+  const [selectedItem, setSelectedItem] = (0, import_react22.useState)(null);
+  const [isLoading, setIsLoading] = (0, import_react22.useState)(true);
+  (0, import_react22.useEffect)(() => {
     const query2 = `{
       "menuItems": *[_type == "menuItems"],
       "pageContent": *[_type == "happyMondayPage"][0]
@@ -5588,10 +5495,10 @@ var HappyMondayPage = () => {
   const handleCloseModal = () => {
     setSelectedItem(null);
   };
-  return /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)(import_jsx_runtime19.Fragment, { children: [
-    /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)(import_react_helmet_async6.Helmet, { children: [
-      /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("title", { children: "Happy Monday | Local Effort" }),
-      /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(
+  return /* @__PURE__ */ (0, import_jsx_runtime18.jsxs)(import_jsx_runtime18.Fragment, { children: [
+    /* @__PURE__ */ (0, import_jsx_runtime18.jsxs)(import_react_helmet_async6.Helmet, { children: [
+      /* @__PURE__ */ (0, import_jsx_runtime18.jsx)("title", { children: "Happy Monday | Local Effort" }),
+      /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(
         "meta",
         {
           name: "description",
@@ -5599,49 +5506,49 @@ var HappyMondayPage = () => {
         }
       )
     ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("div", { className: "space-y-24 mb-24", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("section", { className: "mx-auto max-w-6xl px-4 md:px-6 lg:px-8", children: [
-        pageContent && /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("div", { className: "text-center mb-12", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("h2", { className: "text-heading uppercase mb-4", children: pageContent.title }),
-          /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("div", { className: "prose lg:prose-lg mx-auto max-w-3xl", children: /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(ErrorBoundary_default, { children: /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(import_react23.Suspense, { fallback: /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("div", { className: "text-center", children: "Loading content\u2026" }), children: /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(BlockContent, { blocks: pageContent.body, client: sanityClient_default }) }) }) })
+    /* @__PURE__ */ (0, import_jsx_runtime18.jsxs)("div", { className: "space-y-24 mb-24", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime18.jsxs)("section", { className: "mx-auto max-w-6xl px-4 md:px-6 lg:px-8", children: [
+        pageContent && /* @__PURE__ */ (0, import_jsx_runtime18.jsxs)("div", { className: "text-center mb-12", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime18.jsx)("h2", { className: "text-heading uppercase mb-4", children: pageContent.title }),
+          /* @__PURE__ */ (0, import_jsx_runtime18.jsx)("div", { className: "prose lg:prose-lg mx-auto max-w-3xl", children: /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(ErrorBoundary_default, { children: /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(import_react22.Suspense, { fallback: /* @__PURE__ */ (0, import_jsx_runtime18.jsx)("div", { className: "text-center", children: "Loading content\u2026" }), children: /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(BlockContent, { blocks: pageContent.body, client: sanityClient_default }) }) }) })
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(import_react23.Suspense, { fallback: /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("div", { className: "flex justify-center items-center h-64", children: "Loading\u2026" }), children: isLoading ? /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("div", { className: "flex justify-center items-center h-64", children: /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(LoadingSpinner2, {}) }) : /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(
+        /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(import_react22.Suspense, { fallback: /* @__PURE__ */ (0, import_jsx_runtime18.jsx)("div", { className: "flex justify-center items-center h-64", children: "Loading\u2026" }), children: isLoading ? /* @__PURE__ */ (0, import_jsx_runtime18.jsx)("div", { className: "flex justify-center items-center h-64", children: /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(LoadingSpinner2, {}) }) : /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(
           import_framer_motion10.motion.div,
           {
             className: "grid md:grid-cols-2 lg:grid-cols-3 gap-6",
             initial: "initial",
             animate: "animate",
             variants: { animate: { transition: { staggerChildren: 0.1 } } },
-            children: menuItems.map((item) => /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(FoodItemCard_default, { item, onClick: () => handleCardClick(item) }, item._id))
+            children: menuItems.map((item) => /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(FoodItemCard_default, { item, onClick: () => handleCardClick(item) }, item._id))
           }
         ) })
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("section", { className: "mx-auto max-w-6xl px-4 md:px-6 lg:px-8", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("h2", { className: "text-heading uppercase mb-6 border-b border-neutral-300 pb-3", children: "Feedback" }),
-        /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("p", { className: "text-body mb-8 max-w-2xl", children: "Have a suggestion, a request, or feedback on our quality? We'd love to hear it. Your input helps us grow and improve." }),
-        /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(ErrorBoundary_default, { children: /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(import_react23.Suspense, { fallback: /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("div", { className: "text-center p-8", children: "Loading form\u2026" }), children: /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(FeedbackForm2, {}) }) })
+      /* @__PURE__ */ (0, import_jsx_runtime18.jsxs)("section", { className: "mx-auto max-w-6xl px-4 md:px-6 lg:px-8", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime18.jsx)("h2", { className: "text-heading uppercase mb-6 border-b border-neutral-300 pb-3", children: "Feedback" }),
+        /* @__PURE__ */ (0, import_jsx_runtime18.jsx)("p", { className: "text-body mb-8 max-w-2xl", children: "Have a suggestion, a request, or feedback on our quality? We'd love to hear it. Your input helps us grow and improve." }),
+        /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(ErrorBoundary_default, { children: /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(import_react22.Suspense, { fallback: /* @__PURE__ */ (0, import_jsx_runtime18.jsx)("div", { className: "text-center p-8", children: "Loading form\u2026" }), children: /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(FeedbackForm2, {}) }) })
       ] })
     ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(import_framer_motion10.AnimatePresence, { children: selectedItem && /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(ErrorBoundary_default, { children: /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(import_react23.Suspense, { fallback: /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("div", { className: "fixed inset-0 flex items-center justify-center", children: "Loading\u2026" }), children: /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(FoodItemModal2, { item: selectedItem, onClose: handleCloseModal }) }) }) })
+    /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(import_framer_motion10.AnimatePresence, { children: selectedItem && /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(ErrorBoundary_default, { children: /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(import_react22.Suspense, { fallback: /* @__PURE__ */ (0, import_jsx_runtime18.jsx)("div", { className: "fixed inset-0 flex items-center justify-center", children: "Loading\u2026" }), children: /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(FoodItemModal2, { item: selectedItem, onClose: handleCloseModal }) }) }) })
   ] });
 };
 var HappyMondayPage_default = HappyMondayPage;
 
 // src/pages/GalleryPage.jsx
-var import_react24 = __toESM(require("react"));
+var import_react23 = __toESM(require("react"));
 var import_react_helmet_async7 = __toESM(require_lib());
 var import_framer_motion11 = require("framer-motion");
-var import_jsx_runtime20 = require("react/jsx-runtime");
+var import_jsx_runtime19 = require("react/jsx-runtime");
 var GalleryPage = () => {
-  const [images, setImages] = (0, import_react24.useState)([]);
-  const [nextCursor, setNextCursor] = (0, import_react24.useState)(null);
-  const [query2, setQuery] = (0, import_react24.useState)("");
-  const [loading, setLoading] = (0, import_react24.useState)(true);
-  const [error, setError] = (0, import_react24.useState)(null);
-  const [selected, setSelected] = (0, import_react24.useState)(null);
-  const fallbackLoadedRef = (0, import_react24.useRef)(false);
-  const prefetched = (0, import_react24.useRef)(/* @__PURE__ */ new Set());
-  const tryLoadFallback = (0, import_react24.useCallback)(async () => {
+  const [images, setImages] = (0, import_react23.useState)([]);
+  const [nextCursor, setNextCursor] = (0, import_react23.useState)(null);
+  const [query2, setQuery] = (0, import_react23.useState)("");
+  const [loading, setLoading] = (0, import_react23.useState)(true);
+  const [error, setError] = (0, import_react23.useState)(null);
+  const [selected, setSelected] = (0, import_react23.useState)(null);
+  const fallbackLoadedRef = (0, import_react23.useRef)(false);
+  const prefetched = (0, import_react23.useRef)(/* @__PURE__ */ new Set());
+  const tryLoadFallback = (0, import_react23.useCallback)(async () => {
     if (fallbackLoadedRef.current) return null;
     return new Promise((resolve) => {
       const already = typeof window !== "undefined" && window.photoData;
@@ -5670,9 +5577,9 @@ var GalleryPage = () => {
       document.body.appendChild(s);
     });
   }, []);
-  const closeBtnRef = (0, import_react24.useRef)(null);
+  const closeBtnRef = (0, import_react23.useRef)(null);
   const PAGE_SIZE = 36;
-  const shuffle2 = (0, import_react24.useCallback)((arr) => {
+  const shuffle2 = (0, import_react23.useCallback)((arr) => {
     const a = arr.slice();
     for (let i = a.length - 1; i > 0; i -= 1) {
       const j = Math.floor(Math.random() * (i + 1));
@@ -5680,7 +5587,7 @@ var GalleryPage = () => {
     }
     return a;
   }, []);
-  const fetchImages = (0, import_react24.useCallback)(async (opts = {}) => {
+  const fetchImages = (0, import_react23.useCallback)(async (opts = {}) => {
     const { append = false, cursor = null, signal } = opts;
     const q = query2 ? `query=${encodeURIComponent(query2)}&` : "";
     const c = cursor ? `next_cursor=${encodeURIComponent(cursor)}&` : "";
@@ -5720,7 +5627,7 @@ var GalleryPage = () => {
       setLoading(false);
     }
   }, [query2, shuffle2, tryLoadFallback]);
-  const ensurePreconnect = (0, import_react24.useCallback)(() => {
+  const ensurePreconnect = (0, import_react23.useCallback)(() => {
     if (typeof document === "undefined") return;
     const id = "cld-preconnect";
     if (document.getElementById(id)) return;
@@ -5735,7 +5642,7 @@ var GalleryPage = () => {
     link2.href = "https://res.cloudinary.com";
     document.head.appendChild(link2);
   }, []);
-  const prefetchImage = (0, import_react24.useCallback)((url) => {
+  const prefetchImage = (0, import_react23.useCallback)((url) => {
     if (!url || typeof document === "undefined") return;
     if (prefetched.current.has(url)) return;
     try {
@@ -5751,7 +5658,7 @@ var GalleryPage = () => {
     img.src = url;
     prefetched.current.add(url);
   }, []);
-  (0, import_react24.useEffect)(() => {
+  (0, import_react23.useEffect)(() => {
     const controller = new AbortController();
     const handler = setTimeout(() => {
       setLoading(true);
@@ -5764,7 +5671,7 @@ var GalleryPage = () => {
       controller.abort();
     };
   }, [query2, fetchImages]);
-  const openLightbox = (0, import_react24.useCallback)(
+  const openLightbox = (0, import_react23.useCallback)(
     (img, idx) => {
       setSelected({ img, idx });
       if (img && img.large_url) {
@@ -5779,8 +5686,8 @@ var GalleryPage = () => {
     },
     [setSelected, images, prefetchImage, ensurePreconnect]
   );
-  const closeLightbox = (0, import_react24.useCallback)(() => setSelected(null), [setSelected]);
-  (0, import_react24.useEffect)(() => {
+  const closeLightbox = (0, import_react23.useCallback)(() => setSelected(null), [setSelected]);
+  (0, import_react23.useEffect)(() => {
     const onKey = (e) => {
       if (!selected) return;
       if (e.key === "Escape") closeLightbox();
@@ -5796,16 +5703,16 @@ var GalleryPage = () => {
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [selected, images, closeLightbox]);
-  (0, import_react24.useEffect)(() => {
+  (0, import_react23.useEffect)(() => {
     if (selected && closeBtnRef.current) closeBtnRef.current.focus();
   }, [selected]);
-  return /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)(import_jsx_runtime20.Fragment, { children: [
-    /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)(import_react_helmet_async7.Helmet, { children: [
-      /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("title", { children: "pictures of food. | Local Effort" }),
-      /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("meta", { name: "description", content: "A visual gallery of dinners, events, meal prep, and plates from Local Effort." }),
-      /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("link", { rel: "preconnect", href: "https://res.cloudinary.com", crossOrigin: "" }),
-      /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("link", { rel: "dns-prefetch", href: "https://res.cloudinary.com" }),
-      /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("script", { type: "application/ld+json", children: JSON.stringify({
+  return /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)(import_jsx_runtime19.Fragment, { children: [
+    /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)(import_react_helmet_async7.Helmet, { children: [
+      /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("title", { children: "pictures of food. | Local Effort" }),
+      /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("meta", { name: "description", content: "A visual gallery of dinners, events, meal prep, and plates from Local Effort." }),
+      /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("link", { rel: "preconnect", href: "https://res.cloudinary.com", crossOrigin: "" }),
+      /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("link", { rel: "dns-prefetch", href: "https://res.cloudinary.com" }),
+      /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("script", { type: "application/ld+json", children: JSON.stringify({
         "@context": "https://schema.org",
         "@type": "Restaurant",
         name: "Local Effort",
@@ -5815,9 +5722,9 @@ var GalleryPage = () => {
         sameAs: []
       }) })
     ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "container mx-auto px-4 py-8", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("h1", { className: "text-4xl font-bold mb-4 text-center", children: "pictures of food." }),
-      /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+    /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("div", { className: "container mx-auto px-4 py-8", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("h1", { className: "text-4xl font-bold mb-4 text-center", children: "pictures of food." }),
+      /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(
         "input",
         {
           type: "text",
@@ -5827,21 +5734,21 @@ var GalleryPage = () => {
           className: "w-full max-w-md mx-auto block p-3 border rounded-md mb-8"
         }
       ),
-      loading ? /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("p", { children: "Loading..." }) : error ? /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "text-red-600 bg-red-50 p-4 rounded", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("h3", { className: "font-bold", children: "Error Details:" }),
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("p", { children: error }),
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("p", { className: "mt-2 text-sm", children: "This usually means:" }),
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("ul", { className: "list-disc ml-6 text-sm", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("li", { children: "The /api/search-images.js file wasn't created properly" }),
-          /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("li", { children: "Environment variables aren't set in Vercel" }),
-          /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("li", { children: "The serverless function has an error" })
+      loading ? /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("p", { children: "Loading..." }) : error ? /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("div", { className: "text-red-600 bg-red-50 p-4 rounded", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("h3", { className: "font-bold", children: "Error Details:" }),
+        /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("p", { children: error }),
+        /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("p", { className: "mt-2 text-sm", children: "This usually means:" }),
+        /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("ul", { className: "list-disc ml-6 text-sm", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("li", { children: "The /api/search-images.js file wasn't created properly" }),
+          /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("li", { children: "Environment variables aren't set in Vercel" }),
+          /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("li", { children: "The serverless function has an error" })
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("p", { className: "mt-2 text-sm", children: "Check the browser Network tab and Vercel function logs." })
-      ] }) : images.length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "text-center p-8", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("p", { children: "No images found." }),
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("p", { className: "text-sm text-gray-600 mt-2", children: "Try removing search terms or check that you have images in your Cloudinary account." })
-      ] }) : /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)(import_jsx_runtime20.Fragment, { children: [
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "columns-2 md:columns-3 lg:columns-4 gap-4 [column-fill:_balance]", children: images.map((img, idx) => /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+        /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("p", { className: "mt-2 text-sm", children: "Check the browser Network tab and Vercel function logs." })
+      ] }) : images.length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("div", { className: "text-center p-8", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("p", { children: "No images found." }),
+        /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("p", { className: "text-sm text-gray-600 mt-2", children: "Try removing search terms or check that you have images in your Cloudinary account." })
+      ] }) : /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)(import_jsx_runtime19.Fragment, { children: [
+        /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("div", { className: "columns-2 md:columns-3 lg:columns-4 gap-4 [column-fill:_balance]", children: images.map((img, idx) => /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(
           import_framer_motion11.motion.button,
           {
             type: "button",
@@ -5851,7 +5758,7 @@ var GalleryPage = () => {
             whileTap: { scale: 0.98 },
             className: "mb-4 w-full break-inside-avoid border p-2 bg-white rounded-lg overflow-hidden",
             "aria-label": img.context?.alt || `Gallery image ${idx + 1}`,
-            children: img.thumbnail_url ? /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+            children: img.thumbnail_url ? /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(
               "img",
               {
                 src: img.thumbnail_url,
@@ -5862,7 +5769,7 @@ var GalleryPage = () => {
                 style: img.width && img.height ? { aspectRatio: `${img.width} / ${img.height}` } : void 0,
                 loading: "lazy"
               }
-            ) : /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+            ) : /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(
               cloudinaryImage_default,
               {
                 publicId: img.public_id,
@@ -5875,7 +5782,7 @@ var GalleryPage = () => {
           },
           img.asset_id
         )) }),
-        nextCursor && /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "mt-6 text-center", children: /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+        nextCursor && /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("div", { className: "mt-6 text-center", children: /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(
           "button",
           {
             type: "button",
@@ -5892,7 +5799,7 @@ var GalleryPage = () => {
         ) })
       ] })
     ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(import_framer_motion11.AnimatePresence, { children: selected && /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+    /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(import_framer_motion11.AnimatePresence, { children: selected && /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(
       import_framer_motion11.motion.div,
       {
         className: "fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4",
@@ -5900,7 +5807,7 @@ var GalleryPage = () => {
         animate: { opacity: 1 },
         exit: { opacity: 0 },
         onClick: closeLightbox,
-        children: /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+        children: /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(
           import_framer_motion11.motion.div,
           {
             className: "max-w-5xl w-full max-h-full",
@@ -5908,8 +5815,8 @@ var GalleryPage = () => {
             animate: { y: 0, scale: 1 },
             exit: { y: 20, scale: 0.98 },
             onClick: (e) => e.stopPropagation(),
-            children: /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "relative overflow-hidden", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+            children: /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("div", { className: "relative overflow-hidden", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(
                 "button",
                 {
                   ref: closeBtnRef,
@@ -5919,7 +5826,7 @@ var GalleryPage = () => {
                   children: "\u2715"
                 }
               ),
-              /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "flex items-center justify-center p-2", children: selected.img.large_url ? /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+              /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("div", { className: "flex items-center justify-center p-2", children: selected.img.large_url ? /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(
                 "img",
                 {
                   src: selected.img.large_url,
@@ -5928,7 +5835,7 @@ var GalleryPage = () => {
                   fetchPriority: "high",
                   className: "w-full h-auto max-h-[90vh] object-contain"
                 }
-              ) : /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+              ) : /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(
                 cloudinaryImage_default,
                 {
                   publicId: selected.img.public_id,
@@ -5952,6 +5859,107 @@ var GalleryPage_default = GalleryPage;
 // src/pages/EventsPage.jsx
 var import_react25 = __toESM(require("react"));
 var import_react_helmet_async8 = __toESM(require_lib());
+
+// src/components/common/PhotoGrid.jsx
+var import_react24 = __toESM(require("react"));
+var import_jsx_runtime20 = require("react/jsx-runtime");
+function PhotoGrid({ tags, title, perPage = 24, layout, masonry = false }) {
+  const tagList = (0, import_react24.useMemo)(() => Array.isArray(tags) ? tags.filter(Boolean) : [tags].filter(Boolean), [tags]);
+  const [images, setImages] = (0, import_react24.useState)([]);
+  const [loading, setLoading] = (0, import_react24.useState)(false);
+  const [error, setError] = (0, import_react24.useState)(null);
+  (0, import_react24.useEffect)(() => {
+    let abort = false;
+    const controller = new AbortController();
+    (async () => {
+      if (!tagList.length) {
+        setImages([]);
+        return;
+      }
+      setLoading(true);
+      setError(null);
+      try {
+        const fetches = tagList.map(async (t) => {
+          const res = await fetch(`/api/search-images?query=${encodeURIComponent(t)}&per_page=${perPage}`, { signal: controller.signal });
+          const data = await res.json().catch(() => ({}));
+          if (!res.ok) throw new Error(data.error || `Failed loading tag ${t}`);
+          return Array.isArray(data.images) ? data.images : [];
+        });
+        const results = await Promise.all(fetches);
+        if (abort) return;
+        const merged = [].concat(...results);
+        const seen = /* @__PURE__ */ new Set();
+        const unique = merged.filter((img) => {
+          const key = img.asset_id || img.public_id || img.publicId;
+          if (!key || seen.has(key)) return false;
+          seen.add(key);
+          return true;
+        });
+        setImages(unique);
+      } catch (e) {
+        if (abort) return;
+        setError(e.message || String(e));
+      } finally {
+        if (!abort) setLoading(false);
+      }
+    })();
+    return () => {
+      abort = true;
+      controller.abort();
+    };
+  }, [tagList.join(","), perPage]);
+  if (!tagList.length) return null;
+  const useMasonry = masonry || String(layout || "").toLowerCase() === "masonry";
+  return /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("section", { className: "space-y-4", children: [
+    title ? /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("h3", { className: "text-2xl font-bold", children: title }) : null,
+    loading ? /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("p", { children: "Loading photos\u2026" }) : error ? /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "text-red-700 bg-red-50 border border-red-200 p-3 rounded", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("p", { className: "font-semibold", children: error }),
+      /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("p", { className: "text-sm mt-1", children: "If this persists, check Cloudinary env vars and the serverless function logs." })
+    ] }) : images.length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("p", { className: "text-sm text-gray-600", children: "No photos found." }) : useMasonry ? /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "columns-2 md:columns-3 lg:columns-4 gap-4 [column-fill:_balance]", children: images.map((img, idx) => /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+      "div",
+      {
+        className: "mb-4 break-inside-avoid border p-2 bg-white rounded-lg overflow-hidden",
+        children: img.thumbnail_url ? /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+          "img",
+          {
+            src: img.thumbnail_url,
+            alt: img.context?.alt || "Grid image",
+            className: "rounded-lg w-full h-auto",
+            loading: "lazy"
+          }
+        ) : /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+          cloudinaryImage_default,
+          {
+            publicId: img.public_id || img.publicId,
+            alt: img.context?.alt || "Grid image",
+            width: 800,
+            className: "rounded-lg w-full h-auto"
+          }
+        )
+      },
+      (img.asset_id || img.public_id || idx) + ":" + idx
+    )) }) : /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4", children: images.map((img, idx) => /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "border p-2 bg-white rounded-lg overflow-hidden", children: img.thumbnail_url ? /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+      "img",
+      {
+        src: img.thumbnail_url,
+        alt: img.context?.alt || "Grid image",
+        className: "rounded-lg object-cover w-full h-full aspect-square",
+        loading: "lazy"
+      }
+    ) : /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+      cloudinaryImage_default,
+      {
+        publicId: img.public_id || img.publicId,
+        alt: img.context?.alt || "Grid image",
+        width: 600,
+        height: 600,
+        className: "rounded-lg object-cover w-full h-full aspect-square"
+      }
+    ) }, (img.asset_id || img.public_id || idx) + ":" + idx)) })
+  ] });
+}
+
+// src/pages/EventsPage.jsx
 var import_jsx_runtime21 = require("react/jsx-runtime");
 var EventsPage = () => /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)(import_jsx_runtime21.Fragment, { children: [
   /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)(import_react_helmet_async8.Helmet, { children: [

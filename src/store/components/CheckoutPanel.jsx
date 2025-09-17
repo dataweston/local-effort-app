@@ -52,12 +52,16 @@ export default function CheckoutPanel() {
         await ensureSquare();
         const p = window.Square ? window.Square.payments(appId, locationId) : null;
         if (!p) throw new Error('Square payments unavailable');
+        // Destroy any existing card before creating a new one
+        if (cardRef.current && typeof cardRef.current.destroy === 'function') {
+          try { cardRef.current.destroy(); } catch (e) { /* ignore */ }
+          cardRef.current = null;
+        }
         // Recreate card each time we open with items
         const card = await p.card();
         cardRef.current = card;
         if (cardElRef.current) {
-          cardElRef.current.innerHTML = '';
-          await card.mount(cardElRef.current);
+          await card.attach('#sq-card');
         }
       } catch (e) {
         setError(e?.message ? `Payment form failed: ${e.message}` : 'Payment form failed to load');
@@ -152,7 +156,7 @@ export default function CheckoutPanel() {
               </div>
               {/* Square Card placeholder: we’ll render Web Payments SDK after backend is wired */}
               <div className="rounded-md border p-3 text-sm text-neutral-600">
-                <div ref={cardElRef} className="min-h-[52px]" />
+                <div id="sq-card" ref={cardElRef} className="min-h-[52px]" />
               </div>
               {error && <div className="text-sm text-red-600">{error}</div>}
               <button type="submit" className="btn btn-primary w-full" disabled={processing}>{processing ? 'Processing…' : 'Checkout'}</button>

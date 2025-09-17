@@ -193,6 +193,36 @@ try {
   console.warn('support ingest not available:', err?.message);
 }
 
+// Lightweight messages submit endpoint used by SupportWidget
+app.post('/api/messages/submit', async (req, res) => {
+  try {
+    const { name, email, subject, message } = req.body || {};
+    if (!email || !message) return res.status(400).json({ error: 'missing-fields' });
+    const payload = {
+      name: name || null,
+      email,
+      subject: subject || null,
+      message,
+      createdAt: new Date().toISOString(),
+      ip: req.headers['x-forwarded-for'] || req.socket.remoteAddress || null,
+      ua: req.headers['user-agent'] || null,
+    };
+    // If Firestore is configured, persist the message
+    try {
+      if (db) {
+        await db.collection('contact_messages').add(payload);
+      } else {
+        // Received contact message (no Firestore configured)
+      }
+    } catch (e) {
+      console.warn('Failed to persist contact message:', e && e.message);
+    }
+    return res.json({ ok: true });
+  } catch (err) {
+    return res.status(500).json({ error: 'submit-failed' });
+  }
+});
+
 // Helpful startup log for local debugging
 // if (require.main === module) {
 //   console.info('Backend API starting (local)');
