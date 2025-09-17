@@ -30,14 +30,14 @@ export function PriceUsdInput(props) {
 
   return (
     <div style={{display: 'flex', alignItems: 'center', gap: 6}}>
-      <span style={{fontFamily: 'system-ui, sans-serif'}}>$</span>
+  <span style={{fontFamily: 'system-ui, sans-serif'}}>$</span>
       <input
         type="text"
         inputMode="decimal"
         step="0.01"
         value={display}
         onChange={handleChange}
-        placeholder="0.00"
+  placeholder="0.00"
         disabled={readOnly}
         style={{
           flex: 1,
@@ -47,7 +47,7 @@ export function PriceUsdInput(props) {
         }}
         aria-label={schemaType?.title || 'Price'}
       />
-      <span style={{fontSize: 12, color: '#666'}}>USD</span>
+  <span style={{fontSize: 12, color: '#666'}}>USD</span>
     </div>
   )
 }
