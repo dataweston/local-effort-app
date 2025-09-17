@@ -258,7 +258,7 @@ app.post('/api/crowdfund/contribute', async (req, res) => {
     // Create line items for the Square Order from the cart
     const lineItems = items.map(item => ({
       name: item.name,
-      quantity: '1',
+      quantity: String(item.quantity && item.quantity > 0 ? item.quantity : (item.pizzaCount || 1)),
       basePriceMoney: {
         amount: item.price * 100, // Square expects amounts in cents
         currency: 'USD',
