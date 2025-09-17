@@ -168,6 +168,40 @@ const CrowdfundingPage = () => {
     doFetch();
   }, []);
 
+  // Derive reward tiers safely for hooks below
+  const rewardTiers = (campaignData?.rewardTiers) || [];
+  const firstPayTier = useMemo(
+    () => rewardTiers.find(t => typeof t?.amount === 'number' && t.amount > 0) || null,
+    [rewardTiers]
+  );
+
+  // On return from Square (?payment=success), confirm and update counters
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('payment') === 'success') {
+      (async () => {
+        try {
+          const raw = localStorage.getItem('cf_items');
+          const items = raw ? JSON.parse(raw) : [];
+          const name = localStorage.getItem('cf_name') || undefined;
+          if (Array.isArray(items) && items.length > 0) {
+            const res = await fetch('/api/crowdfund/confirm-payment', {
+              method: 'POST', headers: { 'content-type': 'application/json' },
+              body: JSON.stringify({ items, funderName: name })
+            });
+            if (res.ok) {
+              setConfirmMsg('Thanks! Your contribution has been recorded.');
+            }
+          }
+        } catch (_) {
+          // ignore
+        } finally {
+          try { localStorage.removeItem('cf_items'); localStorage.removeItem('cf_name'); } catch (e) { /* ignore */ }
+        }
+      })();
+    }
+  }, []);
+
   if (loading) {
     return <div className="text-center p-12">Loading campaign...</div>;
   }
@@ -202,8 +236,6 @@ const CrowdfundingPage = () => {
   // Specifically safeguard array types to prevent the .length error
   const story = campaignData.story || [];
   const faq = campaignData.faq || [];
-  const rewardTiers = campaignData.rewardTiers || [];
-  const firstPayTier = useMemo(() => rewardTiers.find(t => typeof t?.amount === 'number' && t.amount > 0) || null, [rewardTiers]);
 
   const contribute = async (items) => {
     setPayError('');
@@ -228,32 +260,6 @@ const CrowdfundingPage = () => {
     }
   };
 
-  // On return from Square (?payment=success), confirm and update counters
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    if (params.get('payment') === 'success') {
-      (async () => {
-        try {
-          const raw = localStorage.getItem('cf_items');
-          const items = raw ? JSON.parse(raw) : [];
-          const name = localStorage.getItem('cf_name') || undefined;
-          if (Array.isArray(items) && items.length > 0) {
-            const res = await fetch('/api/crowdfund/confirm-payment', {
-              method: 'POST', headers: { 'content-type': 'application/json' },
-              body: JSON.stringify({ items, funderName: name })
-            });
-            if (res.ok) {
-              setConfirmMsg('Thanks! Your contribution has been recorded.');
-            }
-          }
-        } catch (_) {
-          // ignore
-        } finally {
-          try { localStorage.removeItem('cf_items'); localStorage.removeItem('cf_name'); } catch (e) { /* ignore */ }
-        }
-      })();
-    }
-  }, []);
   const updates = campaignData.updates || [];
 
   // --- Pizza-specific values (prefer pizza fields, fallback to legacy money values) ---
