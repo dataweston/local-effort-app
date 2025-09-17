@@ -8,6 +8,8 @@ export default function CheckoutPanel() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [pickup, setPickup] = useState(true);
+  const [phone, setPhone] = useState('');
+  const [address, setAddress] = useState({ line1: '', line2: '', city: '', state: '', postal: '' });
   // Square Web Payments SDK handles its own internal state; we keep refs only
   const cardRef = React.useRef(null);
   const cardElRef = React.useRef(null);
@@ -86,15 +88,19 @@ export default function CheckoutPanel() {
       let token = null;
       if (cardRef.current) {
         const result = await cardRef.current.tokenize();
-        if (result.status !== 'OK') throw new Error('Card tokenize failed');
+        if (result.status !== 'OK') {
+          const msg = (result?.errors && result.errors[0]?.message) || result?.status || 'Card details invalid';
+          throw new Error(msg);
+        }
         token = result.token;
       }
       const res = await fetch('/api/store/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          customer: { name, email },
+          customer: { name, email, phone },
           pickup,
+          address: pickup ? null : address,
           items: items.map(i => ({ productId: i.productId, variationId: i.variationId, qty: i.qty, unitPrice: i.unitPrice, title: i.title })),
           token,
         }),
@@ -150,10 +156,40 @@ export default function CheckoutPanel() {
                 <label className="label" htmlFor="co-email">Email</label>
                 <input id="co-email" type="email" className="input w-full" value={email} onChange={(e) => setEmail(e.target.value)} required />
               </div>
+              <div>
+                <label className="label" htmlFor="co-phone">Phone</label>
+                <input id="co-phone" type="tel" className="input w-full" value={phone} onChange={(e) => setPhone(e.target.value)} />
+              </div>
               <div className="flex items-center gap-2 text-sm">
                 <input id="pickup" type="checkbox" checked={pickup} onChange={(e) => setPickup(e.target.checked)} />
                 <label htmlFor="pickup">Pickup / local service</label>
               </div>
+              {!pickup && (
+                <div className="grid grid-cols-1 gap-2">
+                  <div>
+                    <label className="label" htmlFor="addr1">Address line 1</label>
+                    <input id="addr1" className="input w-full" value={address.line1} onChange={(e) => setAddress({ ...address, line1: e.target.value })} required />
+                  </div>
+                  <div>
+                    <label className="label" htmlFor="addr2">Address line 2 (optional)</label>
+                    <input id="addr2" className="input w-full" value={address.line2} onChange={(e) => setAddress({ ...address, line2: e.target.value })} />
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <label className="label" htmlFor="city">City</label>
+                      <input id="city" className="input w-full" value={address.city} onChange={(e) => setAddress({ ...address, city: e.target.value })} required />
+                    </div>
+                    <div>
+                      <label className="label" htmlFor="state">State</label>
+                      <input id="state" className="input w-full" value={address.state} onChange={(e) => setAddress({ ...address, state: e.target.value })} required />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="label" htmlFor="zip">Postal code</label>
+                    <input id="zip" className="input w-full" value={address.postal} onChange={(e) => setAddress({ ...address, postal: e.target.value })} required />
+                  </div>
+                </div>
+              )}
               {/* Square Card placeholder: we’ll render Web Payments SDK after backend is wired */}
               <div className="rounded-md border p-3 text-sm text-neutral-600">
                 <div id="sq-card" ref={cardElRef} className="min-h-[52px]" />

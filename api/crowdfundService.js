@@ -1,4 +1,4 @@
-const API_BASE_URL = 'https://local-effort-app-lniu.vercel.app/api/crowdfund';
+const API_BASE_URL = '/api/crowdfund';
 
 export const fetchStatus = async () => {
   const response = await fetch(`${API_BASE_URL}/status`);

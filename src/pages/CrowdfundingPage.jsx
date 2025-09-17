@@ -1,5 +1,5 @@
 // ...existing code...
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import PropTypes from 'prop-types';
 import { Helmet } from 'react-helmet-async';
 import { PortableText } from '@portabletext/react';
@@ -25,7 +25,7 @@ StatBox.propTypes = {
   label: PropTypes.string.isRequired,
 };
 
-const RewardTierCard = ({ tier }) => {
+const RewardTierCard = ({ tier, onContribute, busy }) => {
   // 💡 IMPROVEMENT: Handle cases where a referenced reward tier might have been deleted.
   if (!tier) {
     return null;
@@ -52,7 +52,14 @@ const RewardTierCard = ({ tier }) => {
       {tier.limit && (
         <p className="text-sm font-semibold text-gray-500 mb-3">LIMITED ({tier.limit} left)</p>
       )}
-      <button className="btn btn-secondary w-full">Select this reward</button>
+      <button
+        className="btn btn-secondary w-full disabled:opacity-60" disabled={busy || !(typeof tier.amount === 'number' && tier.amount > 0)}
+        onClick={() => {
+          if (typeof tier.amount === 'number' && tier.amount > 0) onContribute({ name: tier.title || 'Pledge', price: tier.amount });
+        }}
+      >
+        {typeof tier.amount === 'number' ? `Contribute $${tier.amount.toLocaleString()}` : 'Unavailable online'}
+      </button>
     </div>
   );
 };
@@ -74,6 +81,10 @@ const CrowdfundingPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null); // 💡 IMPROVEMENT: Add error state
   const [activeTab, setActiveTab] = useState('story');
+  const [paying, setPaying] = useState(false);
+  const [payError, setPayError] = useState('');
+  const [funderName, setFunderName] = useState('');
+  const [confirmMsg, setConfirmMsg] = useState('');
 
   useEffect(() => {
     // 💡 IMPROVEMENT: Fetch a specific campaign by its slug for a more robust component.
@@ -192,6 +203,57 @@ const CrowdfundingPage = () => {
   const story = campaignData.story || [];
   const faq = campaignData.faq || [];
   const rewardTiers = campaignData.rewardTiers || [];
+  const firstPayTier = useMemo(() => rewardTiers.find(t => typeof t?.amount === 'number' && t.amount > 0) || null, [rewardTiers]);
+
+  const contribute = async (items) => {
+    setPayError('');
+    setPaying(true);
+    try {
+      // Persist items + name to confirm after redirect
+      try {
+        localStorage.setItem('cf_items', JSON.stringify(items));
+        localStorage.setItem('cf_name', funderName || '');
+  } catch (e) { /* ignore */ }
+      const res = await fetch('/api/crowdfund/contribute', {
+        method: 'POST', headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ items })
+      });
+      const data = await res.json();
+      if (!res.ok || !data?.url) throw new Error(data?.error || 'Failed to create checkout');
+      window.location.href = data.url;
+    } catch (e) {
+      setPayError(e?.message || 'Payment link failed');
+    } finally {
+      setPaying(false);
+    }
+  };
+
+  // On return from Square (?payment=success), confirm and update counters
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('payment') === 'success') {
+      (async () => {
+        try {
+          const raw = localStorage.getItem('cf_items');
+          const items = raw ? JSON.parse(raw) : [];
+          const name = localStorage.getItem('cf_name') || undefined;
+          if (Array.isArray(items) && items.length > 0) {
+            const res = await fetch('/api/crowdfund/confirm-payment', {
+              method: 'POST', headers: { 'content-type': 'application/json' },
+              body: JSON.stringify({ items, funderName: name })
+            });
+            if (res.ok) {
+              setConfirmMsg('Thanks! Your contribution has been recorded.');
+            }
+          }
+        } catch (_) {
+          // ignore
+        } finally {
+          try { localStorage.removeItem('cf_items'); localStorage.removeItem('cf_name'); } catch (e) { /* ignore */ }
+        }
+      })();
+    }
+  }, []);
   const updates = campaignData.updates || [];
 
   // --- Pizza-specific values (prefer pizza fields, fallback to legacy money values) ---
@@ -368,13 +430,25 @@ const CrowdfundingPage = () => {
                   label={daysLeft > 0 ? 'days to go' : ''}
                 />
               </div>
-              <button className="btn btn-primary w-full text-lg py-3">Order a pizza</button>
+              {confirmMsg && <p className="text-sm text-emerald-700">{confirmMsg}</p>}
+              {payError && <p className="text-sm text-red-600">{payError}</p>}
+              <div className="flex flex-col gap-2">
+                <label className="text-sm" htmlFor="cf-name">Your name (optional)</label>
+                <input id="cf-name" className="input w-full" placeholder="Name" value={funderName} onChange={(e) => setFunderName(e.target.value)} />
+              </div>
+              <button
+                disabled={!firstPayTier}
+                onClick={() => firstPayTier && contribute([{ name: firstPayTier.title || 'Pizza', price: firstPayTier.amount, type: 'pizza', pizzaCount: 1 }])}
+                className="btn btn-primary w-full text-lg py-3 disabled:opacity-60"
+              >
+                {paying ? 'Preparing checkout…' : 'Order a pizza'}
+              </button>
             </div>
 
             <div className="space-y-4">
               <h3 className="text-heading uppercase">Support Us</h3>
               {rewardTiers.map((tier) => (
-                <RewardTierCard key={tier?.title || Math.random()} tier={tier} />
+                <RewardTierCard key={tier?.title || Math.random()} tier={tier} busy={paying} onContribute={(item) => contribute([item])} />
               ))}
             </div>
           </div>
