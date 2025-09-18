@@ -96,6 +96,7 @@
     "cloudinary:tag:apply:map": "node tools/cloudinary-tag-all.js --prefix gallery --mapFile tools/tag-synonyms.json --apply",
     "emails:extract": "node tools/email-extract.js --include yum@localeffortfood.com",
   "brevo:import": "node tools/brevo-import-csv.mjs",
+  "square:to-brevo": "node tools/square-to-brevo.mjs",
   "square:import:brevo": "node tools/square-import-brevo.mjs",
   "backend:start": "node backend/api/server.js"
   },
