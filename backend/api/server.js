@@ -712,6 +712,25 @@ app.get('/api/public/estimator-help', (req, res) => {
   }
 });
 
+// --- Referral: validate a code (Sanity-backed) ---
+app.post('/api/referrals/validate', async (req, res) => {
+  try {
+    const { code } = req.body || {};
+    if (!code || typeof code !== 'string') {
+      return res.status(400).json({ ok: false, error: 'missing-code' });
+    }
+    const sc = getSanityClient();
+    if (!sc) return res.status(500).json({ ok: false, error: 'sanity-not-configured' });
+    const trimmed = code.trim();
+    const doc = await sc.fetch('*[_type == "referralParticipant" && code == $code][0]{ _id, name, email, code }', { code: trimmed }).catch(() => null);
+    if (!doc) return res.json({ ok: false, valid: false });
+    return res.json({ ok: true, valid: true, participant: { id: doc._id, name: doc.name || null, email: doc.email || null, code: doc.code } });
+  } catch (err) {
+    console.error('referrals/validate error', err);
+    return res.status(500).json({ ok: false, error: 'validate-failed' });
+  }
+});
+
 
 // Start server when run directly
 const PORT = process.env.PORT || 3001;

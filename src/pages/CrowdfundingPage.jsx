@@ -86,6 +86,8 @@ const CrowdfundingPage = () => {
   const [funderName, setFunderName] = useState('');
   const [pizzaQty, setPizzaQty] = useState(1);
   const [confirmMsg, setConfirmMsg] = useState('');
+  const [referralInput, setReferralInput] = useState('');
+  const [referralState, setReferralState] = useState({ status: 'idle', valid: false, participant: null, code: '' });
 
   useEffect(() => {
     // 💡 IMPROVEMENT: Fetch a specific campaign by its slug for a more robust component.
@@ -107,7 +109,7 @@ const CrowdfundingPage = () => {
       story,
       goals,
       faq,
-      "rewardTiers": rewardTiers[]->{ amount, pizzaCount, title, description, limit } | order(amount asc),
+  "rewardTiers": rewardTiers[]->{ amount, pizzaCount, pieCount, title, description, limit, referralOnly, referralCode } | order(amount asc),
       "updates": updates[]->{ title, publishedAt, body } | order(publishedAt desc)
     }`;
 
@@ -146,7 +148,7 @@ const CrowdfundingPage = () => {
             story,
             goals,
             faq,
-            "rewardTiers": rewardTiers[]->{ amount, pizzaCount, title, description, limit } | order(amount asc),
+            "rewardTiers": rewardTiers[]->{ amount, pizzaCount, pieCount, title, description, limit, referralOnly, referralCode } | order(amount asc),
             "updates": updates[]->{ title, publishedAt, body } | order(publishedAt desc)
           }`;
           const fbData = await sanityClient.fetch(fallback);
@@ -171,9 +173,20 @@ const CrowdfundingPage = () => {
 
   // Derive reward tiers safely for hooks below
   const rewardTiers = (campaignData?.rewardTiers) || [];
+  const visibleTiers = useMemo(() => {
+    const hasValid = referralState.valid && referralState.code;
+    return rewardTiers.filter((t) => {
+      if (!t?.referralOnly) return true;
+      if (!hasValid) return false;
+      if (t.referralCode && typeof t.referralCode === 'string') {
+        return t.referralCode.trim().toLowerCase() === referralState.code.trim().toLowerCase();
+      }
+      return true;
+    });
+  }, [rewardTiers, referralState]);
   const firstPayTier = useMemo(
-    () => rewardTiers.find(t => typeof t?.amount === 'number' && t.amount > 0) || null,
-    [rewardTiers]
+    () => visibleTiers.find(t => typeof t?.amount === 'number' && t.amount > 0) || null,
+    [visibleTiers]
   );
 
   // On return from Square (?payment=success), confirm and update counters
@@ -443,6 +456,48 @@ const CrowdfundingPage = () => {
                 {/* Name input without label */}
                 <input id="cf-name" className="input w-full" placeholder="Name" value={funderName} onChange={(e) => setFunderName(e.target.value)} />
               </div>
+              {/* Referral code apply */}
+              <div className="flex items-center gap-2">
+                <input
+                  className="input flex-1"
+                  placeholder="Have a referral code?"
+                  value={referralInput}
+                  onChange={(e) => setReferralInput(e.target.value)}
+                />
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  disabled={!referralInput || referralState.status === 'checking'}
+                  onClick={async () => {
+                    const code = (referralInput || '').trim();
+                    if (!code) return;
+                    setReferralState({ status: 'checking', valid: false, participant: null, code });
+                    try {
+                      const resp = await fetch('/api/referrals/validate', {
+                        method: 'POST',
+                        headers: { 'content-type': 'application/json' },
+                        body: JSON.stringify({ code }),
+                      });
+                      const data = await resp.json().catch(() => ({}));
+                      if (resp.ok && data && data.valid) {
+                        setReferralState({ status: 'ok', valid: true, participant: data.participant || null, code });
+                      } else {
+                        setReferralState({ status: 'ok', valid: false, participant: null, code });
+                      }
+                    } catch (_) {
+                      setReferralState({ status: 'error', valid: false, participant: null, code });
+                    }
+                  }}
+                >
+                  {referralState.status === 'checking' ? 'Checking…' : 'Apply'}
+                </button>
+              </div>
+              {referralState.status === 'ok' && referralState.valid && (
+                <p className="text-sm text-emerald-700">Code applied{referralState.participant?.name ? ` for ${referralState.participant.name}` : ''}.</p>
+              )}
+              {referralState.status === 'ok' && !referralState.valid && (
+                <p className="text-sm text-red-600">That code is not valid.</p>
+              )}
               {firstPayTier && (
                 <div className="flex items-center gap-3">
                   <label htmlFor="pizza-qty" className="text-sm">Quantity</label>
@@ -468,7 +523,7 @@ const CrowdfundingPage = () => {
 
             <div className="space-y-4">
               <h3 className="text-heading uppercase">Support Us</h3>
-              {rewardTiers.map((tier) => (
+              {visibleTiers.map((tier) => (
                 <RewardTierCard key={tier?.title || Math.random()} tier={tier} busy={paying} onContribute={(item) => contribute([item])} />
               ))}
             </div>

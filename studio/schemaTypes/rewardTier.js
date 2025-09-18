@@ -43,6 +43,19 @@ export default {
       type: 'number',
       description: 'Optional: Limit the number of backers for this tier.',
     },
+    {
+      name: 'referralOnly',
+      title: 'Referral-only Reward',
+      type: 'boolean',
+      description: 'Only visible/unlockable with a valid referral code.',
+      initialValue: false,
+    },
+    {
+      name: 'referralCode',
+      title: 'Specific Code (optional)',
+      type: 'string',
+      description: 'If set, this reward unlocks only for this code. Leave blank to unlock for any valid participant code.'
+    },
   ],
   preview: {
     select: {
