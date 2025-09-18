@@ -8,6 +8,8 @@ import CloudinaryImage from '../components/common/cloudinaryImage'; // Import th
 import { useEffect } from 'react';
 import { cloudinaryConfig, heroPublicId, heroFallbackSrc } from '../data/cloudinaryContent';
 import TestimonialsCarousel from '../components/common/TestimonialsCarousel';
+import sanityClient from '../sanityClient';
+import { PortableText } from '@portabletext/react';
 
 const HomePage = () => {
   const navigate = useNavigate();
@@ -38,6 +40,8 @@ const HomePage = () => {
   // No hero carousel — use single hero image only
 
   const [reviews, setReviews] = useState([]);
+  const [events, setEvents] = useState([]);
+  const [eventModal, setEventModal] = useState(null);
 
   // Load external Thumbtack reviews JSON (public/reviews/thumbtack.json)
   useEffect(() => {
@@ -58,6 +62,25 @@ const HomePage = () => {
         });
       })
       .catch(() => {});
+    return () => { mounted = false; };
+  }, []);
+
+  // Load upcoming public events from Sanity
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        const items = await sanityClient.fetch(`*[_type == "publicEvent"]|order(startDate asc){ _id, location, startDate, endDate, foodType, ticketsUrl, description }`).catch(() => []);
+        if (!mounted) return;
+        const today = new Date(); today.setHours(0,0,0,0);
+        const upcoming = (items || []).filter(ev => {
+          const end = ev.endDate ? new Date(ev.endDate) : new Date(ev.startDate);
+          end.setHours(23,59,59,999);
+          return end >= today;
+        });
+        setEvents(upcoming);
+  } catch (_) { /* ignore events fetch error */ }
+    })();
     return () => { mounted = false; };
   }, []);
 
@@ -265,6 +288,54 @@ const HomePage = () => {
     );
   }, [showFeedback, fb, fbStatus]);
 
+  function EventsWidget() {
+    if (!events || events.length === 0) return null;
+    return (
+      <div className="max-w-6xl mx-auto px-4 mt-8">
+        <div className="border rounded-lg p-4 bg-white shadow-sm">
+          <h3 className="text-lg font-semibold mb-2">Public events</h3>
+          <ul className="divide-y">
+            {events.map((ev) => {
+              const range = ev.endDate && ev.endDate !== ev.startDate ? `${ev.startDate}–${ev.endDate}` : ev.startDate;
+              return (
+                <li key={ev._id} className="py-2">
+                  <button
+                    className="text-left hover:underline"
+                    onClick={() => setEventModal(ev)}
+                  >
+                    {ev.location}, {range}, {ev.foodType || 'Food'}
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+        {eventModal && (
+          <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
+            <div className="bg-white rounded-lg shadow-xl max-w-lg w-full p-5 relative">
+              <button className="absolute right-3 top-3 text-sm underline" onClick={() => setEventModal(null)}>Close</button>
+              <h4 className="text-xl font-bold mb-1">{eventModal.location}</h4>
+              <p className="text-sm text-gray-600 mb-3">{eventModal.startDate}{eventModal.endDate && eventModal.endDate!==eventModal.startDate ? ` – ${eventModal.endDate}` : ''}</p>
+              {eventModal.description && (
+                <div className="prose max-w-none">
+                  <PortableText value={eventModal.description} />
+                </div>
+              )}
+              {eventModal.ticketsUrl && (
+                <a className="btn btn-primary mt-4 inline-block" href={eventModal.ticketsUrl} target="_blank" rel="noreferrer">Get tickets</a>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // Insert the events widget near the top of the page under the hero/intro
+  // Render starts below
+  
+  // Existing JSX continues...
+
   return (
     <>
       <Helmet>
@@ -350,6 +421,11 @@ const HomePage = () => {
               eager
             />
           </motion.div>
+        </section>
+
+        {/* Public Events */}
+        <section>
+          <EventsWidget />
         </section>
 
         {/* Subscribe callout */}

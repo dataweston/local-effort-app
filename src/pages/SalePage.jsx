@@ -4,11 +4,14 @@ import { motion } from 'framer-motion';
 import { useCart } from '../store/cart/CartContext';
 import ProductCard from '../store/components/ProductCard';
 import CheckoutPanel from '../store/components/CheckoutPanel';
+import { PortableText } from '@portabletext/react';
+import sanityClient from '../sanityClient';
 
 const SalePage = () => {
   const { totalQty, openCart } = useCart();
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [saleIntro, setSaleIntro] = useState({ subheading: '', intro: [] });
 
   useEffect(() => {
     let alive = true;
@@ -24,6 +27,14 @@ const SalePage = () => {
       } finally {
         if (alive) setLoading(false);
       }
+    })();
+    // Fetch Sale page intro from Sanity (optional)
+    (async () => {
+      try {
+        const doc = await sanityClient.fetch('*[_type == "salePage"][0]{ subheading, intro }').catch(() => null);
+        if (!alive) return;
+        if (doc) setSaleIntro({ subheading: doc.subheading || '', intro: Array.isArray(doc.intro) ? doc.intro : [] });
+      } catch (_) { /* ignore */ }
     })();
     return () => { alive = false; };
   }, []);
@@ -62,9 +73,19 @@ const SalePage = () => {
         <script type="application/ld+json">{JSON.stringify(schema)}</script>
       </Helmet>
 
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-3xl font-bold tracking-tight">Sale</h1>
-  <button onClick={openCart} className="btn btn-primary">Cart ({totalQty})</button>
+      <div className="flex items-start justify-between mb-4 gap-4">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Sale</h1>
+          {saleIntro.subheading && (
+            <p className="mt-1 text-neutral-700">{saleIntro.subheading}</p>
+          )}
+          {Array.isArray(saleIntro.intro) && saleIntro.intro.length > 0 && (
+            <div className="prose prose-neutral max-w-none mt-3">
+              <PortableText value={saleIntro.intro} />
+            </div>
+          )}
+        </div>
+        <button onClick={openCart} className="btn btn-primary whitespace-nowrap">Cart ({totalQty})</button>
       </div>
 
       {loading ? (

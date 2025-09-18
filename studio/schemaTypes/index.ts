@@ -19,6 +19,9 @@ import pushSubscription from './pushSubscription'
 import menuItems from './menuItems'
 import happyMondayPage from './happyMondayPage'
 import product from './product'
+import salePage from './salePage'
+import publicEvent from './publicEvent'
+import referralParticipant from './referralParticipant'
 
 export const schemaTypes = [
 	page,
@@ -41,6 +44,9 @@ export const schemaTypes = [
 	product,
 	menuItems,
 	happyMondayPage,
+	salePage,
+	publicEvent,
+	referralParticipant,
 ]
 
 export default schemaTypes;
