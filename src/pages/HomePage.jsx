@@ -288,12 +288,11 @@ const HomePage = () => {
     );
   }, [showFeedback, fb, fbStatus]);
 
-  function EventsWidget() {
+  function EventsWidget({ asCard = false }) {
     if (!events || events.length === 0) return null;
-    return (
-  <div className="max-w-6xl mx-auto px-4 mt-8">
+    const content = (
         <div className="border rounded-lg p-4 bg-white shadow-sm">
-          <h3 className="text-lg font-semibold mb-2">Public events</h3>
+          <h3 className="text-lg font-semibold mb-2">upcoming public events.</h3>
           <ul className="divide-y">
             {events.map((ev) => {
               const range = ev.endDate && ev.endDate !== ev.startDate ? `${ev.startDate}–${ev.endDate}` : ev.startDate;
@@ -310,6 +309,11 @@ const HomePage = () => {
             })}
           </ul>
         </div>
+    );
+    if (asCard) return content;
+    return (
+      <div className="max-w-6xl mx-auto px-4 mt-8">
+        {content}
         {eventModal && (
           <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
             <div className="bg-white rounded-lg shadow-xl max-w-lg w-full p-5 relative">
@@ -436,18 +440,37 @@ const HomePage = () => {
             />
           </motion.div>
         </section>
+        {eventModal && (
+          <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
+            <div className="bg-white rounded-lg shadow-xl max-w-lg w-full p-5 relative">
+              <button className="absolute right-3 top-3 text-sm underline" onClick={() => setEventModal(null)}>Close</button>
+              <h4 className="text-xl font-bold mb-1">{eventModal.location}</h4>
+              <p className="text-sm text-gray-600 mb-3">{eventModal.startDate}{eventModal.endDate && eventModal.endDate!==eventModal.startDate ? ` – ${eventModal.endDate}` : ''}</p>
+              {eventModal.description && (
+                <div className="prose max-w-none">
+                  <PortableText value={eventModal.description} />
+                </div>
+              )}
+              {eventModal.ticketsUrl && (
+                <a className="btn btn-primary mt-4 inline-block" href={eventModal.ticketsUrl} target="_blank" rel="noreferrer">Get tickets</a>
+              )}
+            </div>
+          </div>
+        )}
 
-        {/* Public Events */}
-        <section>
-          <EventsWidget />
-        </section>
-
-        {/* Subscribe callout */}
-  <section className="mx-auto max-w-3xl px-4 md:px-6 lg:px-8">
-          <div className="form-card">
-            <h3 className="text-xl font-bold">Subscribe to our email list</h3>
-            <p className="text-sm text-gray-600 mt-1">Occasional updates about seasonal menus, events, and meal prep openings.</p>
-            <SubscribeForm />
+        {/* Events + Subscribe side-by-side on desktop, stack on mobile */}
+        <section className="mx-auto max-w-6xl px-4 md:px-6 lg:px-8">
+          <div className="grid md:grid-cols-2 gap-6 items-start">
+            <div>
+              <EventsWidget asCard />
+            </div>
+            <div>
+              <div className="form-card h-full">
+                <h3 className="text-xl font-bold">Subscribe to our email list</h3>
+                <p className="text-sm text-gray-600 mt-1">Occasional updates about seasonal menus, events, and meal prep openings.</p>
+                <SubscribeForm />
+              </div>
+            </div>
           </div>
         </section>
 

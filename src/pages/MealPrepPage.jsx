@@ -9,6 +9,7 @@ import { MenuDetail } from '../components/mealprep/MenuDetail';
 import { Comments } from '../components/mealprep/Comments';
 import { getAssignedClientNameForUser } from '../data/mealPrepClients';
 import { getUserProfile, saveUserProfile } from '../utils/userProfiles';
+import { Link } from 'react-router-dom';
 
 export const MealPrepPage = () => {
   // no auth gating; menus are public
@@ -208,9 +209,47 @@ export const MealPrepPage = () => {
   </div>
 
   {/* Menus moved above; section removed here */}
+  {/* Blog teasers */}
+  <section className="mt-10">
+    <MealPrepBlogTeasers />
+  </section>
       </div>
     </>
   );
 };
 
 export default MealPrepPage;
+
+function MealPrepBlogTeasers() {
+  const [posts, setPosts] = useState([]);
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        const q = `*[_type == "blogPost"] | order(publishedAt desc)[0...3]{ title, "slug": slug.current, publishedAt }`;
+        const items = await client.fetch(q);
+        if (mounted) setPosts(items || []);
+      } catch (_) {
+        // ignore blog fetch errors
+      }
+    })();
+    return () => { mounted = false };
+  }, []);
+  if (!posts.length) return null;
+  return (
+    <div className="border rounded-md p-4 bg-white">
+      <div className="flex items-center justify-between">
+        <h3 className="text-xl font-bold">From the blog</h3>
+        <Link to="/blog" className="text-sm underline">View all</Link>
+      </div>
+      <ul className="mt-3 space-y-2">
+        {posts.map((p) => (
+          <li key={p.slug}>
+            <Link to={`/blog/${p.slug}`} className="hover:underline">{p.title}</Link>
+            <span className="text-sm text-gray-500 ml-2">{p.publishedAt ? new Date(p.publishedAt).toLocaleDateString() : ''}</span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}

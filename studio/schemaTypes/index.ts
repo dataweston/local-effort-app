@@ -22,6 +22,7 @@ import product from './product'
 import salePage from './salePage'
 import publicEvent from './publicEvent'
 import referralParticipant from './referralParticipant'
+import blogPost from './blogPost'
 
 export const schemaTypes = [
 	page,
@@ -47,6 +48,7 @@ export const schemaTypes = [
 	salePage,
 	publicEvent,
 	referralParticipant,
+  blogPost,
 ]
 
 export default schemaTypes;
