@@ -291,7 +291,7 @@ const HomePage = () => {
   function EventsWidget() {
     if (!events || events.length === 0) return null;
     return (
-      <div className="max-w-6xl mx-auto px-4 mt-8">
+      <div className="max-w-6xl mx-auto px-2 md:px-3 lg:px-4 mt-8">
         <div className="border rounded-lg p-4 bg-white shadow-sm">
           <h3 className="text-lg font-semibold mb-2">Public events</h3>
           <ul className="divide-y">
@@ -365,7 +365,7 @@ const HomePage = () => {
           </div>
         )}
         {/* Hero */}
-        <section className="mx-auto max-w-6xl px-4 md:px-6 lg:px-8 grid md:grid-cols-2 gap-8 items-center min-h-[60vh]">
+  <section className="mx-auto max-w-6xl px-2 md:px-3 lg:px-4 grid md:grid-cols-2 gap-8 items-center min-h-[60vh]">
           <div>
             <motion.h2
               variants={fadeInLeft}
@@ -424,12 +424,12 @@ const HomePage = () => {
         </section>
 
         {/* Public Events */}
-        <section>
+        <section className="px-2 md:px-3 lg:px-4">
           <EventsWidget />
         </section>
 
         {/* Subscribe callout */}
-        <section className="mx-auto max-w-3xl px-4 md:px-6 lg:px-8">
+        <section className="mx-auto max-w-3xl px-2 md:px-3 lg:px-4">
           <div className="form-card">
             <h3 className="text-xl font-bold">Subscribe to our email list</h3>
             <p className="text-sm text-gray-600 mt-1">Occasional updates about seasonal menus, events, and meal prep openings.</p>
@@ -438,7 +438,7 @@ const HomePage = () => {
         </section>
 
         {/* Partner / Logo Wall */}
-        <section className="py-12">
+  <section className="py-12 px-2 md:px-3 lg:px-4">
           <h3 className="text-heading uppercase text-center mb-4">Our Partners</h3>
           <p className="text-center text-sm text-gray-600 max-w-2xl mx-auto mb-6">
             Proud partners who help make this project possible. Support local — shop and
@@ -449,7 +449,7 @@ const HomePage = () => {
         </section>
 
         {/* Offerings */}
-        <section className="mx-auto max-w-6xl px-4 md:px-6 lg:px-8">
+        <section className="mx-auto max-w-6xl px-2 md:px-3 lg:px-4">
           <h3 className="text-heading uppercase mb-6 border-b border-neutral-300 pb-3">What We Do</h3>
           <div className="grid md:grid-cols-3 gap-6">
             <ServiceCard
