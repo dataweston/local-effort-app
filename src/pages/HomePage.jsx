@@ -291,7 +291,7 @@ const HomePage = () => {
   function EventsWidget() {
     if (!events || events.length === 0) return null;
     return (
-      <div className="max-w-6xl mx-auto px-2 md:px-3 lg:px-4 mt-8">
+  <div className="max-w-6xl mx-auto px-4 mt-8">
         <div className="border rounded-lg p-4 bg-white shadow-sm">
           <h3 className="text-lg font-semibold mb-2">Public events</h3>
           <ul className="divide-y">
@@ -365,7 +365,7 @@ const HomePage = () => {
           </div>
         )}
         {/* Hero */}
-  <section className="mx-auto max-w-6xl px-2 md:px-3 lg:px-4 grid md:grid-cols-2 gap-8 items-center min-h-[60vh]">
+  <section className="mx-auto max-w-6xl px-4 md:px-6 lg:px-8 grid md:grid-cols-2 gap-8 items-center min-h-[60vh]">
           <div>
             <motion.h2
               variants={fadeInLeft}
