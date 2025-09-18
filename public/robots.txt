@@ -10,4 +10,4 @@ Allow: /
 User-agent: Google-Extended
 Allow: /
 
-Sitemap: https://local-effort-app.vercel.app/sitemap.xml
+Sitemap: https://localeffortfood.com/sitemap.xml

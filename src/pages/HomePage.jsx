@@ -344,6 +344,7 @@ const HomePage = () => {
           name="description"
           content="Local Effort offers personal chef services, event catering, and weekly meal plans in Roseville, MN."
         />
+        <link rel="canonical" href="https://localeffortfood.com/" />
         {/* --- NEW: Inject the structured data into the page head --- */}
         <script type="application/ld+json">{JSON.stringify(imageJsonLd)}</script>
         {partnersJsonLd && <script type="application/ld+json">{JSON.stringify(partnersJsonLd)}</script>}
@@ -356,6 +357,19 @@ const HomePage = () => {
           servesCuisine: ['American','Local','Farm to Table','Seasonal'],
           priceRange: '$$'
         })}</script>
+        <script type="application/ld+json">{JSON.stringify({
+          '@context': 'https://schema.org',
+          '@type': 'LocalBusiness',
+          name: 'Local Effort',
+          url: 'https://localeffortfood.com/',
+          image: imageJsonLd.contentUrl,
+          address: { '@type': 'PostalAddress', addressLocality: 'Roseville', addressRegion: 'MN', addressCountry: 'US' },
+          areaServed: 'Twin Cities, MN',
+          sameAs: [
+            'https://www.instagram.com/localeffortfood',
+            'https://www.facebook.com/localeffortfood'
+          ]
+        })}</script>
       </Helmet>
 
       <div className="space-y-24">
@@ -367,14 +381,14 @@ const HomePage = () => {
         {/* Hero */}
   <section className="mx-auto max-w-6xl px-4 md:px-6 lg:px-8 grid md:grid-cols-2 gap-8 items-center min-h-[60vh]">
           <div>
-            <motion.h2
+            <motion.h1
               variants={fadeInLeft}
               initial="initial"
               animate="animate"
               className="text-4xl md:text-6xl font-bold uppercase tracking-[-0.02em] leading-[1.02]"
             >
               Minnesotan Food
-            </motion.h2>
+            </motion.h1>
             <motion.h3
               variants={fadeInLeft}
               initial="initial"

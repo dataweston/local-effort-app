@@ -50,9 +50,9 @@ export default function MenuPage() {
       '@context': 'https://schema.org',
       '@type': 'Restaurant',
       name: 'Local Effort',
-      url: 'https://local-effort-app.vercel.app/menu',
-      servesCuisine: ['American', 'Italian', 'Seasonal', 'Local'],
-      areaServed: 'Portland, OR',
+      url: 'https://localeffortfood.com/menu',
+      servesCuisine: ['American', 'Local', 'Farm to Table', 'Seasonal'],
+      areaServed: 'Twin Cities, MN',
       hasMenu: menuSections
     };
   }, []);
@@ -62,6 +62,7 @@ export default function MenuPage() {
       <Helmet>
         <title>Past Menu Examples | Local Effort</title>
         <meta name="description" content="Real menus from recent events, showcasing wide options and locally sourced food." />
+        <link rel="canonical" href="https://localeffortfood.com/menu" />
         <script type="application/ld+json">{JSON.stringify(menuJsonLd)}</script>
       </Helmet>
       <h1 className="text-4xl font-bold mb-4 text-center">Past Menu Examples.</h1>

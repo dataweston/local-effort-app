@@ -1,4 +1,5 @@
 // backend/api/server.js
+/* eslint-disable no-console */
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
@@ -6,6 +7,16 @@ const admin = require('firebase-admin');
 const { createClient } = require('@sanity/client');
 const fs = require('fs');
 const path = require('path');
+
+// Fallback: if critical vars are missing, also try loading project root .env
+if (!process.env.SQUARE_ACCESS_TOKEN || !process.env.BREVO_API_KEY) {
+  try {
+    const rootEnvPath = path.resolve(__dirname, '../../.env');
+    require('dotenv').config({ path: rootEnvPath });
+  } catch (e) {
+    // no-op
+  }
+}
 
 // Lazily create Sanity client to avoid throwing during module load when
 // SANITY_PROJECT_ID is not provided in the environment (this prevents
@@ -28,14 +39,14 @@ function getSanityClient() {
   });
   return sanityClient;
 }
-// Import Square Client (defensive: warn if not available)
+// Import Square Client (defensive: handle varying export shapes across versions)
 let Client, Environment;
 try {
   const squarePkg = require('square');
-  Client = squarePkg.Client;
-  Environment = squarePkg.Environment;
+  Client = squarePkg.Client || (squarePkg.default && squarePkg.default.Client);
+  Environment = squarePkg.Environment || (squarePkg.default && squarePkg.default.Environment) || null;
 } catch (err) {
-  console.warn('Square SDK not available or failed to load:', err.message);
+  console.warn('Square SDK not available or failed to load:', err && err.message);
 }
 const { v4: uuidv4 } = require('uuid'); // Import UUID for idempotency
 
@@ -88,6 +99,7 @@ if (Client) {
     environment: resolvedEnv,
     accessToken: process.env.SQUARE_ACCESS_TOKEN,
   });
+  console.log('Square client initialized:', { env: envName, hasToken: !!process.env.SQUARE_ACCESS_TOKEN });
 } else {
   console.warn('Square client not initialized because SDK is missing. /api/crowdfund endpoints that use Square will return errors.');
 }
@@ -115,6 +127,12 @@ app.get('/api/_diag', async (req, res) => {
   const sanityAvailable = !!getSanityClient();
     const result = { ok: true, hasCloudinary };
   result.sanity = { available: sanityAvailable };
+    result.square = {
+      sdkLoaded: !!Client,
+      clientInitialized: !!squareClient,
+      hasToken: !!process.env.SQUARE_ACCESS_TOKEN,
+      env: process.env.SQUARE_ENVIRONMENT || 'Sandbox',
+    };
     if (hasCloudinary) {
       try {
         // require cloudinary lazily to avoid issues when not installed in some environments
@@ -731,12 +749,112 @@ app.post('/api/referrals/validate', async (req, res) => {
   }
 });
 
+// --- Square Customers: list and import ---
+// List Square customers (minimal fields) with pagination cursor support
+app.get('/api/square/customers', async (req, res) => {
+  try {
+    if (!squareClient) return res.status(500).json({ error: 'square-not-configured' });
+    const { cursor } = req.query || {};
+    const result = await squareClient.customersApi.listCustomers(cursor ? { cursor } : undefined);
+    const customers = (result.result.customers || []).map((c) => ({
+      id: c.id,
+      givenName: c.givenName,
+      familyName: c.familyName,
+      email: c.emailAddress,
+      phone: c.phoneNumber,
+      createdAt: c.createdAt,
+      updatedAt: c.updatedAt,
+    }));
+    return res.json({ items: customers, cursor: result.result.cursor || null });
+  } catch (err) {
+    console.error('square/customers list error:', err && err.message);
+    return res.status(500).json({ error: 'square-list-failed' });
+  }
+});
+
+async function mirrorContactInSanity({ email, firstName, lastName, phone, tags }) {
+  const sc = getSanityClient();
+  if (!sc) return null;
+  const now = new Date().toISOString();
+  const hasEmail = !!email;
+  const id = hasEmail ? `contact-${email}` : undefined;
+  try {
+    if (id) {
+      // Upsert by deterministic id when email exists
+      return await sc.createOrReplace({
+        _id: id,
+        _type: 'contact',
+        email,
+        firstName: firstName || null,
+        lastName: lastName || null,
+        phone: phone || null,
+        tags: Array.isArray(tags) && tags.length ? tags : ['square'],
+        updatedAt: now,
+      });
+    }
+    // No email: create new document with generated id
+    return await sc.create({
+      _type: 'contact',
+      email: null,
+      firstName: firstName || null,
+      lastName: lastName || null,
+      phone: phone || null,
+      tags: Array.isArray(tags) && tags.length ? tags : ['square'],
+      updatedAt: now,
+    });
+  } catch (e) {
+    console.warn('Failed to mirror contact in Sanity:', e && e.message);
+    return null;
+  }
+}
+
+// Import Square customers into Sanity contacts (and optionally Brevo)
+// POST body: { cursor?, limit?, upsertBrevo?: boolean }
+app.post('/api/square/customers/import', async (req, res) => {
+  try {
+    if (!squareClient) return res.status(500).json({ error: 'square-not-configured' });
+    const { cursor, upsertBrevo = false } = req.body || {};
+    const out = { imported: 0, skipped: 0, errors: 0, cursor: null };
+    // Pull one page to keep request sizes modest; clients can call repeatedly with cursor
+    const result = await squareClient.customersApi.listCustomers(cursor ? { cursor } : undefined);
+    const list = result.result.customers || [];
+    out.cursor = result.result.cursor || null;
+    for (const c of list) {
+      try {
+        const email = c.emailAddress || null;
+        const firstName = c.givenName || null;
+        const lastName = c.familyName || null;
+        const phone = c.phoneNumber || null;
+        // Mirror to Sanity
+        await mirrorContactInSanity({ email, firstName, lastName, phone, tags: ['square'] });
+        // Optional: upsert to Brevo contacts
+        if (upsertBrevo && email) {
+          try {
+            await upsertContact({ email, firstName, lastName, phone });
+          } catch (e) {
+            console.warn('Brevo upsert failed:', e && e.message);
+          }
+        }
+        out.imported += 1;
+      } catch (e) {
+        out.errors += 1;
+      }
+    }
+    return res.json(out);
+  } catch (err) {
+    console.error('square/customers import error:', err && err.message);
+    return res.status(500).json({ error: 'square-import-failed' });
+  }
+});
+
 
 // Start server when run directly
 const PORT = process.env.PORT || 3001;
 if (require.main === module) {
   if (!db) console.warn('Firestore not initialized — some endpoints will fail without FIREBASE_SERVICE_ACCOUNT_JSON');
-  app.listen(PORT);
+  app.listen(PORT, () => {
+    console.log(`Backend server listening on http://localhost:${PORT}`);
+  });
 }
 
 module.exports = app;
