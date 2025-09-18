@@ -31,13 +31,13 @@ export const Header = () => {
 
   return (
     <header className="sticky top-0 z-40 bg-white/80 backdrop-blur supports-[backdrop-filter]:bg-white/60">
-      <div className="mx-auto max-w-6xl px-2 md:px-5 lg:px-6 h-14 flex items-center justify-between">
+  <div className="mx-auto max-w-6xl px-2 md:px-5 lg:px-6 h-14 flex items-center justify-between">
         {/* Logo */}
         <NavLink to="/" onClick={() => setIsOpen(false)} className="flex items-center gap-2">
           <motion.img
             src={logo}
             alt="Local Effort Logo"
-            className="h-6 w-auto"
+            className="h-7 w-auto"
             whileHover={{ scale: 1.03 }}
             transition={{ type: 'spring', stiffness: 300, damping: 20 }}
           />
