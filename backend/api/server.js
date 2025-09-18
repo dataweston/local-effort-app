@@ -498,6 +498,111 @@ app.post('/api/subscribe', async (req, res) => {
   }
 });
 
+// Create a blog post in Sanity. Accepts either { title, bodyBlocks?, text? }.
+// If `text` is provided, convert to a simple Portable Text block array.
+// Optional: { publishedAt, emailOnPublish, emailTo[] }
+app.post('/api/blog/publish', async (req, res) => {
+  try {
+    const { title, bodyBlocks, text, publishedAt, emailOnPublish = false, emailTo } = req.body || {};
+    if (!title) return res.status(400).json({ error: 'missing-title' });
+    const sc = getSanityClient();
+    if (!sc) return res.status(500).json({ error: 'sanity-not-configured' });
+
+    const blocks = Array.isArray(bodyBlocks) && bodyBlocks.length
+      ? bodyBlocks
+      : [{
+          _type: 'block',
+          style: 'normal',
+          children: [{ _type: 'span', text: (text || '').trim(), marks: [] }],
+        }];
+
+    const slugBase = (title || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '').slice(0, 80);
+    const now = new Date().toISOString();
+    const doc = await sc.create({
+      _type: 'blogPost',
+      title,
+      slug: { current: `${slugBase}-${Date.now().toString(36)}` },
+      body: blocks,
+      publishedAt: publishedAt || now,
+      emailOnPublish: !!emailOnPublish,
+    });
+
+    let emailed = null;
+    if (emailOnPublish) {
+      const headers = getBrevoHeaders();
+      if (headers) {
+        const recipients = Array.isArray(emailTo) && emailTo.length
+          ? emailTo
+          : (process.env.BLOG_ANNOUNCE_TO || '').split(',').map(s => s.trim()).filter(Boolean);
+        if (recipients.length) {
+          const url = (process.env.PUBLIC_URL || 'https://local-effort-app.vercel.app') + '/#/blog/' + doc.slug.current;
+          const snippet = (text || JSON.stringify(blocks)).slice(0, 400);
+          const payload = {
+            to: recipients.map((e) => ({ email: e })),
+            sender: { email: process.env.SENDER_EMAIL || recipients[0], name: 'Local Effort' },
+            subject: `New post: ${title}`,
+            htmlContent: `<h2>${title}</h2><p>${snippet}…</p><p><a href="${url}">Read on the site</a></p>`,
+            tags: ['blog','auto'],
+          };
+          const resp = await fetch('https://api.brevo.com/v3/smtp/email', { method: 'POST', headers, body: JSON.stringify(payload) });
+          emailed = resp.ok ? recipients.length : 0;
+        }
+      }
+    }
+
+    return res.json({ ok: true, id: doc._id, slug: doc.slug?.current, emailed });
+  } catch (err) {
+    console.error('blog/publish error', err);
+    return res.status(500).json({ error: 'publish-failed' });
+  }
+});
+
+// Sanity webhook: on blogPost publish, send Brevo email to a small list
+app.post('/api/webhooks/sanity/blog', async (req, res) => {
+  try {
+    const { _type, slug, title } = req.body || {};
+    if (_type !== 'blogPost') return res.status(400).json({ ok: false });
+    // Fetch the full post content
+    const sc = getSanityClient();
+    if (!sc) return res.status(500).json({ error: 'sanity-not-configured' });
+    const doc = await sc.fetch('*[_type == "blogPost" && slug.current == $slug][0]{ title, publishedAt, body }', { slug: slug?.current || slug });
+
+    // Render a simple HTML from blocks (very basic)
+    const text = JSON.stringify(doc?.body || []);
+    const snippet = (text || '').slice(0, 400);
+
+    const headers = getBrevoHeaders();
+    if (!headers) return res.status(500).json({ error: 'email-not-configured' });
+
+    const recipientsRaw = process.env.BLOG_ANNOUNCE_TO || '';
+    const recipients = recipientsRaw.split(',').map(s => s.trim()).filter(Boolean);
+    if (!recipients.length) return res.json({ ok: true, skipped: 'no-recipients' });
+
+    const payload = {
+      to: recipients.map((e) => ({ email: e })),
+      sender: { email: process.env.SENDER_EMAIL || recipients[0], name: 'Local Effort' },
+      subject: `New post: ${doc?.title || title || 'Local Effort Blog'}`,
+      htmlContent: `
+        <h2>${doc?.title || title || 'Local Effort Blog'}</h2>
+        <p>${snippet}…</p>
+        <p><a href="${(process.env.PUBLIC_URL || 'https://local-effort-app.vercel.app')}/#/blog/${slug?.current || slug}">Read on the site</a></p>
+      `,
+      tags: ['blog', 'auto'],
+    };
+    const resp = await fetch('https://api.brevo.com/v3/smtp/email', {
+      method: 'POST', headers, body: JSON.stringify(payload)
+    });
+    if (!resp.ok) {
+      const t = await resp.text().catch(() => '');
+      return res.status(502).json({ ok: false, error: 'email-failed', details: t });
+    }
+    return res.json({ ok: true, recipients: recipients.length });
+  } catch (err) {
+    console.error('sanity blog webhook error', err);
+    return res.status(500).json({ error: 'webhook-failed' });
+  }
+});
+
 // Save campaign (draft) to Sanity
 app.post('/api/campaigns/save', async (req, res) => {
   try {
