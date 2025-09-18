@@ -88,42 +88,59 @@ const routes = [
   '/gallery',
   '/meal-prep',
   '/partner-portal',
+  '/crowdfunding',
 ];
 
-function inject(html, body, title, description) {
+function inject(html, body, head) {
   let out = html.replace('<div id="root"></div>', `<div id="root">${body}</div>`);
-  if (title) out = out.replace(/<title>.*?<\/title>/, `<title>${title}</title>`);
-  if (description) out = out.replace(/<meta name="description" content="[^"]*"\s*\/>/, `<meta name="description" content="${description}"/>`);
+  if (head && typeof head === 'string' && head.trim()) {
+    out = out.replace('</head>', `${head}\n</head>`);
+  }
   return out;
-}
-
-function guessMeta(url) {
-  const map = {
-    '/': ['Local Effort | Personal Chef & Event Catering', 'Local Effort offers personal chef services, event catering, and meal prep in Roseville, MN.'],
-    '/about': ['About Local Effort', 'Learn about our philosophy, sourcing, and team.'],
-    '/services': ['Services | Local Effort', 'Private dinners, events, and custom menus.'],
-    '/pricing': ['Pricing | Local Effort', 'Transparent pricing for services and events.'],
-    '/menu': ['Menus | Local Effort', 'Seasonal menus and popular dishes.'],
-    '/happy-monday': ['Happy Monday | Local Effort', 'Weekly lunch program details and feedback.'],
-    '/gallery': ['Gallery | Local Effort', 'A selection of events and dishes.'],
-    '/meal-prep': ['Meal Prep | Local Effort', 'Meal prep options and ordering info.'],
-  '/partner-portal': ['Partner Portal | Local Effort', 'Tools and resources for partners.'],
-  };
-  return map[url] || map['/'];
 }
 
 function ensureDir(p) { fs.mkdirSync(p, { recursive: true }); }
 
 (async () => {
+  const abs = (u) => `https://localeffortfood.com${u}`;
+  const seenUrls = [];
   for (const url of routes) {
-    const app = React.createElement(StaticRouter, { location: url }, React.createElement(StaticApp));
-    const html = renderToString(app);
-    const [title, description] = guessMeta(url);
-    const full = inject(template, html, title, description);
+    const helmetContext = {};
+    const app = React.createElement(
+      StaticRouter,
+      { location: url },
+      React.createElement(StaticApp, { helmetContext })
+    );
+    const bodyHtml = renderToString(app);
+    // Prefer Helmet-rendered head (title, meta, JSON-LD) when available
+    const helmet = helmetContext.helmet;
+    const head = helmet
+      ? [helmet.title?.toString?.(), helmet.meta?.toString?.(), helmet.link?.toString?.(), helmet.script?.toString?.()]
+          .filter(Boolean)
+          .join('\n')
+      : '';
+    const full = inject(template, bodyHtml, head);
     const outDir = path.join(process.cwd(), 'prerender', url === '/' ? '' : url);
     const outPath = path.join(outDir, 'index.html');
     ensureDir(outDir);
     fs.writeFileSync(outPath, full, 'utf8');
-    console.log('Wrote', outPath);
+    seenUrls.push(abs(url));
+    process.stdout.write(`Wrote ${outPath}\n`);
   }
+
+  // Generate a basic sitemap from prerendered routes
+      const sitemap = [
+        '<?xml version="1.0" encoding="UTF-8"?>',
+        '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
+        ...seenUrls.map((loc) => `  <url><loc>${loc}</loc></url>`),
+        '</urlset>',
+        ''
+      ].join('\n');
+  // Write to dist and public to keep hosting consistent
+  const distPath = path.join(process.cwd(), 'dist', 'sitemap.xml');
+  const pubPath = path.join(process.cwd(), 'public', 'sitemap.xml');
+  try { fs.mkdirSync(path.dirname(distPath), { recursive: true }); } catch (e) { /* noop */ }
+  fs.writeFileSync(distPath, sitemap, 'utf8');
+  fs.writeFileSync(pubPath, sitemap, 'utf8');
+  process.stdout.write('Updated sitemap.xml\n');
 })();

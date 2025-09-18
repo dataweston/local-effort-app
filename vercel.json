@@ -69,6 +69,7 @@
   { "src": "^/gallery$", "dest": "/prerender/gallery/index.html" },
   { "src": "^/meal-prep$", "dest": "/prerender/meal-prep/index.html" },
   { "src": "^/partner-portal$", "dest": "/prerender/partner-portal/index.html" },
+  { "src": "^/crowdfunding$", "dest": "/prerender/crowdfunding/index.html" },
     {
       "src": "/((?!api|assets|.*\\.|_next).*)",
       "dest": "/index.html"

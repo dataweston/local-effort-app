@@ -13,10 +13,11 @@ import GalleryPage from '../pages/GalleryPage';
 import EventsPage from '../pages/EventsPage';
 import MealPrepPage from '../pages/MealPrepPage';
 import PartnerPortalPage from '../pages/PartnerPortalPage';
+import CrowdfundingPage from '../pages/CrowdfundingPage';
 
-export default function StaticApp() {
+export default function StaticApp({ helmetContext }) {
   return (
-    <HelmetProvider>
+    <HelmetProvider context={helmetContext}>
       <div className="app-root min-h-screen flex flex-col">
         <Header />
         <main className="flex-1">
@@ -31,6 +32,7 @@ export default function StaticApp() {
             <Route path="/events" element={<EventsPage />} />
             <Route path="/meal-prep" element={<MealPrepPage />} />
             <Route path="/partner-portal" element={<PartnerPortalPage />} />
+            <Route path="/crowdfunding" element={<CrowdfundingPage />} />
           </Routes>
         </main>
         <Footer />

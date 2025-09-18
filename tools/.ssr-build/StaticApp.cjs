@@ -661,10 +661,10 @@ var FoodItemModal_exports = {};
 __export(FoodItemModal_exports, {
   default: () => FoodItemModal_default
 });
-var import_react19, import_framer_motion7, import_jsx_runtime15, backdrop, modal, FoodItemModal, FoodItemModal_default;
+var import_react20, import_framer_motion7, import_jsx_runtime15, backdrop, modal, FoodItemModal, FoodItemModal_default;
 var init_FoodItemModal = __esm({
   "src/components/menu/FoodItemModal.jsx"() {
-    import_react19 = __toESM(require("react"));
+    import_react20 = __toESM(require("react"));
     import_framer_motion7 = require("framer-motion");
     import_jsx_runtime15 = require("react/jsx-runtime");
     backdrop = {
@@ -775,23 +775,23 @@ var FeedbackForm_exports = {};
 __export(FeedbackForm_exports, {
   default: () => FeedbackForm_default
 });
-var import_react20, import_framer_motion8, import_firestore2, import_jsx_runtime16, FeedbackForm, FeedbackForm_default;
+var import_react21, import_framer_motion8, import_firestore2, import_jsx_runtime16, FeedbackForm, FeedbackForm_default;
 var init_FeedbackForm = __esm({
   "src/components/menu/FeedbackForm.jsx"() {
-    import_react20 = __toESM(require("react"));
+    import_react21 = __toESM(require("react"));
     import_framer_motion8 = require("framer-motion");
     import_firestore2 = require("firebase/firestore");
     init_firebaseConfig();
     import_jsx_runtime16 = require("react/jsx-runtime");
     FeedbackForm = () => {
-      const [formData, setFormData] = (0, import_react20.useState)({
+      const [formData, setFormData] = (0, import_react21.useState)({
         name: "",
         email: "",
         phone: "",
         category: "requests",
         message: ""
       });
-      const [status, setStatus] = (0, import_react20.useState)({ type: "", message: "" });
+      const [status, setStatus] = (0, import_react21.useState)({ type: "", message: "" });
       const handleChange = (e) => {
         const { name, value } = e.target;
         setFormData((prev) => ({ ...prev, [name]: value }));
@@ -910,10 +910,10 @@ var LoadingSpinner_exports = {};
 __export(LoadingSpinner_exports, {
   LoadingSpinner: () => LoadingSpinner
 });
-var import_react21, import_framer_motion9, import_jsx_runtime17, LoadingSpinner;
+var import_react22, import_framer_motion9, import_jsx_runtime17, LoadingSpinner;
 var init_LoadingSpinner = __esm({
   "src/components/layout/LoadingSpinner.jsx"() {
-    import_react21 = __toESM(require("react"));
+    import_react22 = __toESM(require("react"));
     import_framer_motion9 = require("framer-motion");
     import_jsx_runtime17 = require("react/jsx-runtime");
     LoadingSpinner = () => /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(
@@ -954,9 +954,9 @@ __export(StaticApp_exports, {
   default: () => StaticApp
 });
 module.exports = __toCommonJS(StaticApp_exports);
-var import_react32 = __toESM(require("react"));
+var import_react35 = __toESM(require("react"));
 var import_react_router_dom6 = require("react-router-dom");
-var import_react_helmet_async11 = __toESM(require_lib());
+var import_react_helmet_async12 = __toESM(require_lib());
 
 // src/components/layout/Header.jsx
 var import_react = __toESM(require("react"));
@@ -985,14 +985,14 @@ var Header = () => {
       document.body.style.overflow = "auto";
     };
   }, [isOpen]);
-  return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("header", { className: "sticky top-0 z-40 bg-white/80 backdrop-blur supports-[backdrop-filter]:bg-white/60 border-b border-neutral-200", children: [
-    /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "mx-auto max-w-6xl px-4 md:px-6 lg:px-8 h-16 flex items-center justify-between", children: [
+  return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("header", { className: "sticky top-0 z-40 bg-white/80 backdrop-blur supports-[backdrop-filter]:bg-white/60", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "mx-auto max-w-6xl px-2 md:px-5 lg:px-6 h-14 flex items-center justify-between", children: [
       /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_react_router_dom.NavLink, { to: "/", onClick: () => setIsOpen(false), className: "flex items-center gap-2", children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
         import_framer_motion.motion.img,
         {
           src: logo,
           alt: "Local Effort Logo",
-          className: "h-9 w-auto",
+          className: "h-7 w-auto",
           whileHover: { scale: 1.03 },
           transition: { type: "spring", stiffness: 300, damping: 20 }
         }
@@ -3241,7 +3241,38 @@ function TestimonialCard({ t, maxLines = 5 }) {
   ] });
 }
 
+// src/sanityClient.js
+var import_client = require("@sanity/client");
+var import_meta4 = {};
+var rawBuildEnv = typeof import_meta4 !== "undefined" && import_meta4.env ? import_meta4.env : {};
+var runtimeWindowEnv = typeof window !== "undefined" && window.__SANITY_CONFIG__ ? window.__SANITY_CONFIG__ : {};
+var nodeEnv = typeof process !== "undefined" && process.env ? process.env : {};
+var env = { ...nodeEnv, ...rawBuildEnv, ...runtimeWindowEnv };
+var projectId = env.VITE_APP_SANITY_PROJECT_ID || env.VITE_SANITY_PROJECT_ID || env.SANITY_PROJECT_ID || env.PROJECT_ID;
+var dataset = env.VITE_APP_SANITY_DATASET || env.VITE_SANITY_DATASET || env.SANITY_DATASET || env.DATASET;
+var client = null;
+try {
+  if (projectId && dataset) {
+    client = (0, import_client.createClient)({ projectId, dataset, useCdn: true, apiVersion: "2023-05-03" });
+  } else {
+    client = {
+      fetch: async () => {
+        throw new Error("Sanity client unavailable");
+      }
+    };
+  }
+} catch (e) {
+  console.warn("Failed to initialize Sanity client:", e && (e.message || e));
+  client = {
+    fetch: async () => {
+      throw new Error("Sanity client unavailable");
+    }
+  };
+}
+var sanityClient_default = client;
+
 // src/pages/HomePage.jsx
+var import_react12 = require("@portabletext/react");
 var import_jsx_runtime7 = require("react/jsx-runtime");
 var HomePage = () => {
   const navigate = (0, import_react_router_dom3.useNavigate)();
@@ -3266,6 +3297,8 @@ var HomePage = () => {
     };
   }, []);
   const [reviews, setReviews] = (0, import_react10.useState)([]);
+  const [events, setEvents] = (0, import_react10.useState)([]);
+  const [eventModal, setEventModal] = (0, import_react10.useState)(null);
   (0, import_react11.useEffect)(() => {
     let mounted = true;
     fetch("/reviews/thumbtack.json").then((r) => r.ok ? r.json() : null).then((ext) => {
@@ -3282,6 +3315,27 @@ var HomePage = () => {
       });
     }).catch(() => {
     });
+    return () => {
+      mounted = false;
+    };
+  }, []);
+  (0, import_react11.useEffect)(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        const items = await sanityClient_default.fetch(`*[_type == "publicEvent"]|order(startDate asc){ _id, location, startDate, endDate, foodType, ticketsUrl, description }`).catch(() => []);
+        if (!mounted) return;
+        const today = /* @__PURE__ */ new Date();
+        today.setHours(0, 0, 0, 0);
+        const upcoming = (items || []).filter((ev) => {
+          const end = ev.endDate ? new Date(ev.endDate) : new Date(ev.startDate);
+          end.setHours(23, 59, 59, 999);
+          return end >= today;
+        });
+        setEvents(upcoming);
+      } catch (_) {
+      }
+    })();
     return () => {
       mounted = false;
     };
@@ -3473,6 +3527,41 @@ var HomePage = () => {
       )
     ] }) });
   }, [showFeedback, fb, fbStatus]);
+  function EventsWidget() {
+    if (!events || events.length === 0) return null;
+    return /* @__PURE__ */ (0, import_jsx_runtime7.jsxs)("div", { className: "max-w-6xl mx-auto px-4 mt-8", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime7.jsxs)("div", { className: "border rounded-lg p-4 bg-white shadow-sm", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime7.jsx)("h3", { className: "text-lg font-semibold mb-2", children: "Public events" }),
+        /* @__PURE__ */ (0, import_jsx_runtime7.jsx)("ul", { className: "divide-y", children: events.map((ev) => {
+          const range = ev.endDate && ev.endDate !== ev.startDate ? `${ev.startDate}\u2013${ev.endDate}` : ev.startDate;
+          return /* @__PURE__ */ (0, import_jsx_runtime7.jsx)("li", { className: "py-2", children: /* @__PURE__ */ (0, import_jsx_runtime7.jsxs)(
+            "button",
+            {
+              className: "text-left hover:underline",
+              onClick: () => setEventModal(ev),
+              children: [
+                ev.location,
+                ", ",
+                range,
+                ", ",
+                ev.foodType || "Food"
+              ]
+            }
+          ) }, ev._id);
+        }) })
+      ] }),
+      eventModal && /* @__PURE__ */ (0, import_jsx_runtime7.jsx)("div", { className: "fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4", children: /* @__PURE__ */ (0, import_jsx_runtime7.jsxs)("div", { className: "bg-white rounded-lg shadow-xl max-w-lg w-full p-5 relative", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime7.jsx)("button", { className: "absolute right-3 top-3 text-sm underline", onClick: () => setEventModal(null), children: "Close" }),
+        /* @__PURE__ */ (0, import_jsx_runtime7.jsx)("h4", { className: "text-xl font-bold mb-1", children: eventModal.location }),
+        /* @__PURE__ */ (0, import_jsx_runtime7.jsxs)("p", { className: "text-sm text-gray-600 mb-3", children: [
+          eventModal.startDate,
+          eventModal.endDate && eventModal.endDate !== eventModal.startDate ? ` \u2013 ${eventModal.endDate}` : ""
+        ] }),
+        eventModal.description && /* @__PURE__ */ (0, import_jsx_runtime7.jsx)("div", { className: "prose max-w-none", children: /* @__PURE__ */ (0, import_jsx_runtime7.jsx)(import_react12.PortableText, { value: eventModal.description }) }),
+        eventModal.ticketsUrl && /* @__PURE__ */ (0, import_jsx_runtime7.jsx)("a", { className: "btn btn-primary mt-4 inline-block", href: eventModal.ticketsUrl, target: "_blank", rel: "noreferrer", children: "Get tickets" })
+      ] }) })
+    ] });
+  }
   return /* @__PURE__ */ (0, import_jsx_runtime7.jsxs)(import_jsx_runtime7.Fragment, { children: [
     /* @__PURE__ */ (0, import_jsx_runtime7.jsxs)(import_react_helmet_async.Helmet, { children: [
       /* @__PURE__ */ (0, import_jsx_runtime7.jsx)("title", { children: "Local Effort | Personal Chef & Event Catering in Roseville, MN" }),
@@ -3483,6 +3572,7 @@ var HomePage = () => {
           content: "Local Effort offers personal chef services, event catering, and weekly meal plans in Roseville, MN."
         }
       ),
+      /* @__PURE__ */ (0, import_jsx_runtime7.jsx)("link", { rel: "canonical", href: "https://localeffortfood.com/" }),
       /* @__PURE__ */ (0, import_jsx_runtime7.jsx)("script", { type: "application/ld+json", children: JSON.stringify(imageJsonLd) }),
       partnersJsonLd && /* @__PURE__ */ (0, import_jsx_runtime7.jsx)("script", { type: "application/ld+json", children: JSON.stringify(partnersJsonLd) }),
       /* @__PURE__ */ (0, import_jsx_runtime7.jsx)("script", { type: "application/ld+json", children: JSON.stringify({
@@ -3493,6 +3583,19 @@ var HomePage = () => {
         address: { "@type": "PostalAddress", addressLocality: "Roseville", addressRegion: "MN", addressCountry: "US" },
         servesCuisine: ["American", "Local", "Farm to Table", "Seasonal"],
         priceRange: "$$"
+      }) }),
+      /* @__PURE__ */ (0, import_jsx_runtime7.jsx)("script", { type: "application/ld+json", children: JSON.stringify({
+        "@context": "https://schema.org",
+        "@type": "LocalBusiness",
+        name: "Local Effort",
+        url: "https://localeffortfood.com/",
+        image: imageJsonLd.contentUrl,
+        address: { "@type": "PostalAddress", addressLocality: "Roseville", addressRegion: "MN", addressCountry: "US" },
+        areaServed: "Twin Cities, MN",
+        sameAs: [
+          "https://www.instagram.com/localeffortfood",
+          "https://www.facebook.com/localeffortfood"
+        ]
       }) })
     ] }),
     /* @__PURE__ */ (0, import_jsx_runtime7.jsxs)("div", { className: "space-y-24", children: [
@@ -3500,7 +3603,7 @@ var HomePage = () => {
       /* @__PURE__ */ (0, import_jsx_runtime7.jsxs)("section", { className: "mx-auto max-w-6xl px-4 md:px-6 lg:px-8 grid md:grid-cols-2 gap-8 items-center min-h-[60vh]", children: [
         /* @__PURE__ */ (0, import_jsx_runtime7.jsxs)("div", { children: [
           /* @__PURE__ */ (0, import_jsx_runtime7.jsx)(
-            import_framer_motion3.motion.h2,
+            import_framer_motion3.motion.h1,
             {
               variants: fadeInLeft,
               initial: "initial",
@@ -3569,6 +3672,7 @@ var HomePage = () => {
           }
         )
       ] }),
+      /* @__PURE__ */ (0, import_jsx_runtime7.jsx)("section", { children: /* @__PURE__ */ (0, import_jsx_runtime7.jsx)(EventsWidget, {}) }),
       /* @__PURE__ */ (0, import_jsx_runtime7.jsx)("section", { className: "mx-auto max-w-3xl px-4 md:px-6 lg:px-8", children: /* @__PURE__ */ (0, import_jsx_runtime7.jsxs)("div", { className: "form-card", children: [
         /* @__PURE__ */ (0, import_jsx_runtime7.jsx)("h3", { className: "text-xl font-bold", children: "Subscribe to our email list" }),
         /* @__PURE__ */ (0, import_jsx_runtime7.jsx)("p", { className: "text-sm text-gray-600 mt-1", children: "Occasional updates about seasonal menus, events, and meal prep openings." }),
@@ -3627,13 +3731,13 @@ var HomePage = () => {
 var HomePage_default = HomePage;
 
 // src/pages/AboutUsPage.jsx
-var import_react12 = __toESM(require("react"));
+var import_react13 = __toESM(require("react"));
 var import_react_helmet_async2 = __toESM(require_lib());
 var import_jsx_runtime8 = require("react/jsx-runtime");
 var AboutUsPage = () => {
-  const [aboutData, setAboutData] = (0, import_react12.useState)(null);
-  const [loading, setLoading] = (0, import_react12.useState)(true);
-  (0, import_react12.useEffect)(() => {
+  const [aboutData, setAboutData] = (0, import_react13.useState)(null);
+  const [loading, setLoading] = (0, import_react13.useState)(true);
+  (0, import_react13.useEffect)(() => {
     let mounted = true;
     (async () => {
       try {
@@ -3725,14 +3829,14 @@ var AboutUsPage = () => {
 var AboutUsPage_default = AboutUsPage;
 
 // src/pages/ServicesPage.jsx
-var import_react13 = __toESM(require("react"));
+var import_react14 = __toESM(require("react"));
 var import_react_router_dom4 = require("react-router-dom");
 var import_react_helmet_async3 = __toESM(require_lib());
 var import_jsx_runtime9 = require("react/jsx-runtime");
 var ServicesPage = () => {
   const navigate = (0, import_react_router_dom4.useNavigate)();
   const location = (0, import_react_router_dom4.useLocation)();
-  (0, import_react13.useEffect)(() => {
+  (0, import_react14.useEffect)(() => {
     if (location.hash) {
       const id = location.hash.replace("#", "");
       const el = document.getElementById(id);
@@ -3741,7 +3845,7 @@ var ServicesPage = () => {
       }
     }
   }, [location.hash]);
-  const initialForm = (0, import_react13.useMemo)(
+  const initialForm = (0, import_react14.useMemo)(
     () => ({
       firstName: "",
       lastName: "",
@@ -3759,17 +3863,17 @@ var ServicesPage = () => {
     }),
     []
   );
-  const [form, setForm] = (0, import_react13.useState)(initialForm);
-  const [submitting, setSubmitting] = (0, import_react13.useState)(false);
-  const [result, setResult] = (0, import_react13.useState)(null);
-  const [bookHero, setBookHero] = (0, import_react13.useState)(null);
+  const [form, setForm] = (0, import_react14.useState)(initialForm);
+  const [submitting, setSubmitting] = (0, import_react14.useState)(false);
+  const [result, setResult] = (0, import_react14.useState)(null);
+  const [bookHero, setBookHero] = (0, import_react14.useState)(null);
   const required = (v) => String(v || "").trim().length > 0;
   const handleChange = (e) => {
     const { name, type, checked, value } = e.target;
     setForm((f) => ({ ...f, [name]: type === "checkbox" ? checked : value }));
   };
   const reset = () => setForm(initialForm);
-  (0, import_react13.useEffect)(() => {
+  (0, import_react14.useEffect)(() => {
     let abort = false;
     (async () => {
       try {
@@ -4075,19 +4179,19 @@ ${form.notes || "(none)"}`;
 var ServicesPage_default = ServicesPage;
 
 // src/pages/PricingPage.jsx
-var import_react15 = __toESM(require("react"));
+var import_react16 = __toESM(require("react"));
 var import_react_helmet_async4 = __toESM(require_lib());
 
 // src/components/pricing/CostEstimator.jsx
-var import_react14 = __toESM(require("react"));
+var import_react15 = __toESM(require("react"));
 var import_jsx_runtime10 = require("react/jsx-runtime");
 var CostEstimator = () => {
-  const [userAnswers, setUserAnswers] = (0, import_react14.useState)({});
-  const [currentQuestionKey, setCurrentQuestionKey] = (0, import_react14.useState)("start");
-  const [questionPath, setQuestionPath] = (0, import_react14.useState)([]);
-  const [finalCost, setFinalCost] = (0, import_react14.useState)(0);
-  const [breakdown, setBreakdown] = (0, import_react14.useState)([]);
-  const [showResults, setShowResults] = (0, import_react14.useState)(false);
+  const [userAnswers, setUserAnswers] = (0, import_react15.useState)({});
+  const [currentQuestionKey, setCurrentQuestionKey] = (0, import_react15.useState)("start");
+  const [questionPath, setQuestionPath] = (0, import_react15.useState)([]);
+  const [finalCost, setFinalCost] = (0, import_react15.useState)(0);
+  const [breakdown, setBreakdown] = (0, import_react15.useState)([]);
+  const [showResults, setShowResults] = (0, import_react15.useState)(false);
   const questions = {
     start: {
       id: "serviceType",
@@ -4317,8 +4421,8 @@ var CostEstimator = () => {
 var import_framer_motion4 = require("framer-motion");
 var import_jsx_runtime11 = require("react/jsx-runtime");
 var PricingPage = () => {
-  const [openFaq, setOpenFaq] = (0, import_react15.useState)(null);
-  const faqRefs = (0, import_react15.useRef)([]);
+  const [openFaq, setOpenFaq] = (0, import_react16.useState)(null);
+  const faqRefs = (0, import_react16.useRef)([]);
   const pricingFaqData = [
     {
       name: "How much does a weekly meal plan cost?",
@@ -4337,7 +4441,7 @@ var PricingPage = () => {
       answer: "Our private pizza parties start at $300 for groups of up to 15 people."
     }
   ];
-  (0, import_react15.useEffect)(() => {
+  (0, import_react16.useEffect)(() => {
     if (openFaq !== null && faqRefs.current[openFaq]) {
       faqRefs.current[openFaq].scrollIntoView({ behavior: "smooth", block: "start" });
     }
@@ -4440,7 +4544,7 @@ var PricingPage = () => {
 var PricingPage_default = PricingPage;
 
 // src/pages/MenuPage.jsx
-var import_react16 = __toESM(require("react"));
+var import_react17 = __toESM(require("react"));
 var import_react_helmet_async5 = __toESM(require_lib());
 
 // src/data/sampleMenus.js
@@ -5287,11 +5391,11 @@ var ServiceCard2 = ({ title, description, children, isOpen = false }) => /* @__P
   }
 );
 function MenuPage() {
-  const [openMenu, setOpenMenu] = (0, import_react16.useState)(null);
-  const [hoveredKey, setHoveredKey] = (0, import_react16.useState)(null);
-  const [lookup, setLookup] = (0, import_react16.useState)({});
+  const [openMenu, setOpenMenu] = (0, import_react17.useState)(null);
+  const [hoveredKey, setHoveredKey] = (0, import_react17.useState)(null);
+  const [lookup, setLookup] = (0, import_react17.useState)({});
   const toggleMenu = (id) => setOpenMenu(openMenu === id ? null : id);
-  const menuJsonLd = (0, import_react16.useMemo)(() => {
+  const menuJsonLd = (0, import_react17.useMemo)(() => {
     const menuSections = sampleMenus.map((m) => ({
       "@type": "Menu",
       name: m.title,
@@ -5305,9 +5409,9 @@ function MenuPage() {
       "@context": "https://schema.org",
       "@type": "Restaurant",
       name: "Local Effort",
-      url: "https://local-effort-app.vercel.app/menu",
-      servesCuisine: ["American", "Italian", "Seasonal", "Local"],
-      areaServed: "Portland, OR",
+      url: "https://localeffortfood.com/menu",
+      servesCuisine: ["American", "Local", "Farm to Table", "Seasonal"],
+      areaServed: "Twin Cities, MN",
       hasMenu: menuSections
     };
   }, []);
@@ -5315,6 +5419,7 @@ function MenuPage() {
     /* @__PURE__ */ (0, import_jsx_runtime12.jsxs)(import_react_helmet_async5.Helmet, { children: [
       /* @__PURE__ */ (0, import_jsx_runtime12.jsx)("title", { children: "Past Menu Examples | Local Effort" }),
       /* @__PURE__ */ (0, import_jsx_runtime12.jsx)("meta", { name: "description", content: "Real menus from recent events, showcasing wide options and locally sourced food." }),
+      /* @__PURE__ */ (0, import_jsx_runtime12.jsx)("link", { rel: "canonical", href: "https://localeffortfood.com/menu" }),
       /* @__PURE__ */ (0, import_jsx_runtime12.jsx)("script", { type: "application/ld+json", children: JSON.stringify(menuJsonLd) })
     ] }),
     /* @__PURE__ */ (0, import_jsx_runtime12.jsx)("h1", { className: "text-4xl font-bold mb-4 text-center", children: "Past Menu Examples." }),
@@ -5420,42 +5525,12 @@ function MenuPage() {
 }
 
 // src/pages/HappyMondayPage.jsx
-var import_react22 = __toESM(require("react"));
+var import_react23 = __toESM(require("react"));
 var import_react_helmet_async6 = __toESM(require_lib());
 var import_framer_motion10 = require("framer-motion");
 
-// src/sanityClient.js
-var import_client = require("@sanity/client");
-var import_meta4 = {};
-var rawBuildEnv = typeof import_meta4 !== "undefined" && import_meta4.env ? import_meta4.env : {};
-var runtimeWindowEnv = typeof window !== "undefined" && window.__SANITY_CONFIG__ ? window.__SANITY_CONFIG__ : {};
-var nodeEnv = typeof process !== "undefined" && process.env ? process.env : {};
-var env = { ...nodeEnv, ...rawBuildEnv, ...runtimeWindowEnv };
-var projectId = env.VITE_APP_SANITY_PROJECT_ID || env.VITE_SANITY_PROJECT_ID || env.SANITY_PROJECT_ID || env.PROJECT_ID;
-var dataset = env.VITE_APP_SANITY_DATASET || env.VITE_SANITY_DATASET || env.SANITY_DATASET || env.DATASET;
-var client = null;
-try {
-  if (projectId && dataset) {
-    client = (0, import_client.createClient)({ projectId, dataset, useCdn: true, apiVersion: "2023-05-03" });
-  } else {
-    client = {
-      fetch: async () => {
-        throw new Error("Sanity client unavailable");
-      }
-    };
-  }
-} catch (e) {
-  console.warn("Failed to initialize Sanity client:", e && (e.message || e));
-  client = {
-    fetch: async () => {
-      throw new Error("Sanity client unavailable");
-    }
-  };
-}
-var sanityClient_default = client;
-
 // src/components/menu/FoodItemCard.jsx
-var import_react17 = __toESM(require("react"));
+var import_react18 = __toESM(require("react"));
 var import_framer_motion6 = require("framer-motion");
 var import_jsx_runtime13 = require("react/jsx-runtime");
 var FoodItemCard = ({ item, onClick }) => {
@@ -5477,9 +5552,9 @@ var FoodItemCard = ({ item, onClick }) => {
 var FoodItemCard_default = FoodItemCard;
 
 // src/components/ErrorBoundary.jsx
-var import_react18 = __toESM(require("react"));
+var import_react19 = __toESM(require("react"));
 var import_jsx_runtime14 = require("react/jsx-runtime");
-var ErrorBoundary = class extends import_react18.default.Component {
+var ErrorBoundary = class extends import_react19.default.Component {
   constructor(props) {
     super(props);
     this.state = { error: null };
@@ -5513,16 +5588,16 @@ var ErrorBoundary_default = ErrorBoundary;
 
 // src/pages/HappyMondayPage.jsx
 var import_jsx_runtime18 = require("react/jsx-runtime");
-var BlockContent = (0, import_react22.lazy)(() => import("@sanity/block-content-to-react"));
-var FoodItemModal2 = (0, import_react22.lazy)(() => Promise.resolve().then(() => (init_FoodItemModal(), FoodItemModal_exports)));
-var FeedbackForm2 = (0, import_react22.lazy)(() => Promise.resolve().then(() => (init_FeedbackForm(), FeedbackForm_exports)));
-var LoadingSpinner2 = (0, import_react22.lazy)(() => Promise.resolve().then(() => (init_LoadingSpinner(), LoadingSpinner_exports)).then((mod) => ({ default: mod.LoadingSpinner })));
+var BlockContent = (0, import_react23.lazy)(() => import("@sanity/block-content-to-react"));
+var FoodItemModal2 = (0, import_react23.lazy)(() => Promise.resolve().then(() => (init_FoodItemModal(), FoodItemModal_exports)));
+var FeedbackForm2 = (0, import_react23.lazy)(() => Promise.resolve().then(() => (init_FeedbackForm(), FeedbackForm_exports)));
+var LoadingSpinner2 = (0, import_react23.lazy)(() => Promise.resolve().then(() => (init_LoadingSpinner(), LoadingSpinner_exports)).then((mod) => ({ default: mod.LoadingSpinner })));
 var HappyMondayPage = () => {
-  const [menuItems, setMenuItems] = (0, import_react22.useState)([]);
-  const [pageContent, setPageContent] = (0, import_react22.useState)(null);
-  const [selectedItem, setSelectedItem] = (0, import_react22.useState)(null);
-  const [isLoading, setIsLoading] = (0, import_react22.useState)(true);
-  (0, import_react22.useEffect)(() => {
+  const [menuItems, setMenuItems] = (0, import_react23.useState)([]);
+  const [pageContent, setPageContent] = (0, import_react23.useState)(null);
+  const [selectedItem, setSelectedItem] = (0, import_react23.useState)(null);
+  const [isLoading, setIsLoading] = (0, import_react23.useState)(true);
+  (0, import_react23.useEffect)(() => {
     const query2 = `{
       "menuItems": *[_type == "menuItems"],
       "pageContent": *[_type == "happyMondayPage"][0]
@@ -5554,9 +5629,9 @@ var HappyMondayPage = () => {
       /* @__PURE__ */ (0, import_jsx_runtime18.jsxs)("section", { className: "mx-auto max-w-6xl px-4 md:px-6 lg:px-8", children: [
         pageContent && /* @__PURE__ */ (0, import_jsx_runtime18.jsxs)("div", { className: "text-center mb-12", children: [
           /* @__PURE__ */ (0, import_jsx_runtime18.jsx)("h2", { className: "text-heading uppercase mb-4", children: pageContent.title }),
-          /* @__PURE__ */ (0, import_jsx_runtime18.jsx)("div", { className: "prose lg:prose-lg mx-auto max-w-3xl", children: /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(ErrorBoundary_default, { children: /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(import_react22.Suspense, { fallback: /* @__PURE__ */ (0, import_jsx_runtime18.jsx)("div", { className: "text-center", children: "Loading content\u2026" }), children: /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(BlockContent, { blocks: pageContent.body, client: sanityClient_default }) }) }) })
+          /* @__PURE__ */ (0, import_jsx_runtime18.jsx)("div", { className: "prose lg:prose-lg mx-auto max-w-3xl", children: /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(ErrorBoundary_default, { children: /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(import_react23.Suspense, { fallback: /* @__PURE__ */ (0, import_jsx_runtime18.jsx)("div", { className: "text-center", children: "Loading content\u2026" }), children: /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(BlockContent, { blocks: pageContent.body, client: sanityClient_default }) }) }) })
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(import_react22.Suspense, { fallback: /* @__PURE__ */ (0, import_jsx_runtime18.jsx)("div", { className: "flex justify-center items-center h-64", children: "Loading\u2026" }), children: isLoading ? /* @__PURE__ */ (0, import_jsx_runtime18.jsx)("div", { className: "flex justify-center items-center h-64", children: /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(LoadingSpinner2, {}) }) : /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(
+        /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(import_react23.Suspense, { fallback: /* @__PURE__ */ (0, import_jsx_runtime18.jsx)("div", { className: "flex justify-center items-center h-64", children: "Loading\u2026" }), children: isLoading ? /* @__PURE__ */ (0, import_jsx_runtime18.jsx)("div", { className: "flex justify-center items-center h-64", children: /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(LoadingSpinner2, {}) }) : /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(
           import_framer_motion10.motion.div,
           {
             className: "grid md:grid-cols-2 lg:grid-cols-3 gap-6",
@@ -5570,29 +5645,29 @@ var HappyMondayPage = () => {
       /* @__PURE__ */ (0, import_jsx_runtime18.jsxs)("section", { className: "mx-auto max-w-6xl px-4 md:px-6 lg:px-8", children: [
         /* @__PURE__ */ (0, import_jsx_runtime18.jsx)("h2", { className: "text-heading uppercase mb-6 border-b border-neutral-300 pb-3", children: "Feedback" }),
         /* @__PURE__ */ (0, import_jsx_runtime18.jsx)("p", { className: "text-body mb-8 max-w-2xl", children: "Have a suggestion, a request, or feedback on our quality? We'd love to hear it. Your input helps us grow and improve." }),
-        /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(ErrorBoundary_default, { children: /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(import_react22.Suspense, { fallback: /* @__PURE__ */ (0, import_jsx_runtime18.jsx)("div", { className: "text-center p-8", children: "Loading form\u2026" }), children: /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(FeedbackForm2, {}) }) })
+        /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(ErrorBoundary_default, { children: /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(import_react23.Suspense, { fallback: /* @__PURE__ */ (0, import_jsx_runtime18.jsx)("div", { className: "text-center p-8", children: "Loading form\u2026" }), children: /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(FeedbackForm2, {}) }) })
       ] })
     ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(import_framer_motion10.AnimatePresence, { children: selectedItem && /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(ErrorBoundary_default, { children: /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(import_react22.Suspense, { fallback: /* @__PURE__ */ (0, import_jsx_runtime18.jsx)("div", { className: "fixed inset-0 flex items-center justify-center", children: "Loading\u2026" }), children: /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(FoodItemModal2, { item: selectedItem, onClose: handleCloseModal }) }) }) })
+    /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(import_framer_motion10.AnimatePresence, { children: selectedItem && /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(ErrorBoundary_default, { children: /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(import_react23.Suspense, { fallback: /* @__PURE__ */ (0, import_jsx_runtime18.jsx)("div", { className: "fixed inset-0 flex items-center justify-center", children: "Loading\u2026" }), children: /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(FoodItemModal2, { item: selectedItem, onClose: handleCloseModal }) }) }) })
   ] });
 };
 var HappyMondayPage_default = HappyMondayPage;
 
 // src/pages/GalleryPage.jsx
-var import_react23 = __toESM(require("react"));
+var import_react24 = __toESM(require("react"));
 var import_react_helmet_async7 = __toESM(require_lib());
 var import_framer_motion11 = require("framer-motion");
 var import_jsx_runtime19 = require("react/jsx-runtime");
 var GalleryPage = () => {
-  const [images, setImages] = (0, import_react23.useState)([]);
-  const [nextCursor, setNextCursor] = (0, import_react23.useState)(null);
-  const [query2, setQuery] = (0, import_react23.useState)("");
-  const [loading, setLoading] = (0, import_react23.useState)(true);
-  const [error, setError] = (0, import_react23.useState)(null);
-  const [selected, setSelected] = (0, import_react23.useState)(null);
-  const fallbackLoadedRef = (0, import_react23.useRef)(false);
-  const prefetched = (0, import_react23.useRef)(/* @__PURE__ */ new Set());
-  const tryLoadFallback = (0, import_react23.useCallback)(async () => {
+  const [images, setImages] = (0, import_react24.useState)([]);
+  const [nextCursor, setNextCursor] = (0, import_react24.useState)(null);
+  const [query2, setQuery] = (0, import_react24.useState)("");
+  const [loading, setLoading] = (0, import_react24.useState)(true);
+  const [error, setError] = (0, import_react24.useState)(null);
+  const [selected, setSelected] = (0, import_react24.useState)(null);
+  const fallbackLoadedRef = (0, import_react24.useRef)(false);
+  const prefetched = (0, import_react24.useRef)(/* @__PURE__ */ new Set());
+  const tryLoadFallback = (0, import_react24.useCallback)(async () => {
     if (fallbackLoadedRef.current) return null;
     return new Promise((resolve) => {
       const already = typeof window !== "undefined" && window.photoData;
@@ -5621,9 +5696,9 @@ var GalleryPage = () => {
       document.body.appendChild(s);
     });
   }, []);
-  const closeBtnRef = (0, import_react23.useRef)(null);
+  const closeBtnRef = (0, import_react24.useRef)(null);
   const PAGE_SIZE = 36;
-  const shuffle2 = (0, import_react23.useCallback)((arr) => {
+  const shuffle2 = (0, import_react24.useCallback)((arr) => {
     const a = arr.slice();
     for (let i = a.length - 1; i > 0; i -= 1) {
       const j = Math.floor(Math.random() * (i + 1));
@@ -5631,7 +5706,7 @@ var GalleryPage = () => {
     }
     return a;
   }, []);
-  const fetchImages = (0, import_react23.useCallback)(async (opts = {}) => {
+  const fetchImages = (0, import_react24.useCallback)(async (opts = {}) => {
     const { append = false, cursor = null, signal } = opts;
     const q = query2 ? `query=${encodeURIComponent(query2)}&` : "";
     const c = cursor ? `next_cursor=${encodeURIComponent(cursor)}&` : "";
@@ -5671,7 +5746,7 @@ var GalleryPage = () => {
       setLoading(false);
     }
   }, [query2, shuffle2, tryLoadFallback]);
-  const ensurePreconnect = (0, import_react23.useCallback)(() => {
+  const ensurePreconnect = (0, import_react24.useCallback)(() => {
     if (typeof document === "undefined") return;
     const id = "cld-preconnect";
     if (document.getElementById(id)) return;
@@ -5686,7 +5761,7 @@ var GalleryPage = () => {
     link2.href = "https://res.cloudinary.com";
     document.head.appendChild(link2);
   }, []);
-  const prefetchImage = (0, import_react23.useCallback)((url) => {
+  const prefetchImage = (0, import_react24.useCallback)((url) => {
     if (!url || typeof document === "undefined") return;
     if (prefetched.current.has(url)) return;
     try {
@@ -5702,7 +5777,7 @@ var GalleryPage = () => {
     img.src = url;
     prefetched.current.add(url);
   }, []);
-  (0, import_react23.useEffect)(() => {
+  (0, import_react24.useEffect)(() => {
     const controller = new AbortController();
     const handler = setTimeout(() => {
       setLoading(true);
@@ -5715,7 +5790,7 @@ var GalleryPage = () => {
       controller.abort();
     };
   }, [query2, fetchImages]);
-  const openLightbox = (0, import_react23.useCallback)(
+  const openLightbox = (0, import_react24.useCallback)(
     (img, idx) => {
       setSelected({ img, idx });
       if (img && img.large_url) {
@@ -5730,8 +5805,8 @@ var GalleryPage = () => {
     },
     [setSelected, images, prefetchImage, ensurePreconnect]
   );
-  const closeLightbox = (0, import_react23.useCallback)(() => setSelected(null), [setSelected]);
-  (0, import_react23.useEffect)(() => {
+  const closeLightbox = (0, import_react24.useCallback)(() => setSelected(null), [setSelected]);
+  (0, import_react24.useEffect)(() => {
     const onKey = (e) => {
       if (!selected) return;
       if (e.key === "Escape") closeLightbox();
@@ -5747,7 +5822,7 @@ var GalleryPage = () => {
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [selected, images, closeLightbox]);
-  (0, import_react23.useEffect)(() => {
+  (0, import_react24.useEffect)(() => {
     if (selected && closeBtnRef.current) closeBtnRef.current.focus();
   }, [selected]);
   return /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)(import_jsx_runtime19.Fragment, { children: [
@@ -5901,18 +5976,18 @@ var GalleryPage = () => {
 var GalleryPage_default = GalleryPage;
 
 // src/pages/EventsPage.jsx
-var import_react25 = __toESM(require("react"));
+var import_react26 = __toESM(require("react"));
 var import_react_helmet_async8 = __toESM(require_lib());
 
 // src/components/common/PhotoGrid.jsx
-var import_react24 = __toESM(require("react"));
+var import_react25 = __toESM(require("react"));
 var import_jsx_runtime20 = require("react/jsx-runtime");
 function PhotoGrid({ tags, title, perPage = 24, layout, masonry = false }) {
-  const tagList = (0, import_react24.useMemo)(() => Array.isArray(tags) ? tags.filter(Boolean) : [tags].filter(Boolean), [tags]);
-  const [images, setImages] = (0, import_react24.useState)([]);
-  const [loading, setLoading] = (0, import_react24.useState)(false);
-  const [error, setError] = (0, import_react24.useState)(null);
-  (0, import_react24.useEffect)(() => {
+  const tagList = (0, import_react25.useMemo)(() => Array.isArray(tags) ? tags.filter(Boolean) : [tags].filter(Boolean), [tags]);
+  const [images, setImages] = (0, import_react25.useState)([]);
+  const [loading, setLoading] = (0, import_react25.useState)(false);
+  const [error, setError] = (0, import_react25.useState)(null);
+  (0, import_react25.useEffect)(() => {
     let abort = false;
     const controller = new AbortController();
     (async () => {
@@ -6025,11 +6100,11 @@ var EventsPage = () => /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)(import_jsx
 var EventsPage_default = EventsPage;
 
 // src/pages/MealPrepPage.jsx
-var import_react30 = __toESM(require("react"));
+var import_react31 = __toESM(require("react"));
 var import_react_helmet_async9 = __toESM(require_lib());
 
 // src/components/common/VennDiagram.jsx
-var import_react26 = __toESM(require("react"));
+var import_react27 = __toESM(require("react"));
 var import_jsx_runtime22 = require("react/jsx-runtime");
 var VennDiagram = () => {
   const svgStyle = {
@@ -6052,15 +6127,15 @@ var VennDiagram = () => {
 };
 
 // src/components/mealprep/MenuList.jsx
-var import_react27 = __toESM(require("react"));
+var import_react28 = __toESM(require("react"));
 var import_jsx_runtime23 = require("react/jsx-runtime");
 
 // src/components/mealprep/MenuDetail.jsx
-var import_react28 = __toESM(require("react"));
+var import_react29 = __toESM(require("react"));
 var import_jsx_runtime24 = require("react/jsx-runtime");
 
 // src/components/mealprep/Comments.jsx
-var import_react29 = __toESM(require("react"));
+var import_react30 = __toESM(require("react"));
 init_firebaseConfig();
 var import_firestore3 = require("firebase/firestore");
 var import_jsx_runtime25 = require("react/jsx-runtime");
@@ -6132,14 +6207,14 @@ async function getUserProfile(uid) {
 var import_jsx_runtime26 = require("react/jsx-runtime");
 var MealPrepPage = () => {
   const user = null;
-  const [menus, setMenus] = (0, import_react30.useState)([]);
-  const [loading, setLoading] = (0, import_react30.useState)(false);
-  const [error, setError] = (0, import_react30.useState)(null);
-  const [selected, setSelected] = (0, import_react30.useState)(null);
-  const [filterName] = (0, import_react30.useState)("");
-  const [assignedClient, setAssignedClient] = (0, import_react30.useState)(null);
-  const [openSection, setOpenSection] = (0, import_react30.useState)(null);
-  (0, import_react30.useEffect)(() => {
+  const [menus, setMenus] = (0, import_react31.useState)([]);
+  const [loading, setLoading] = (0, import_react31.useState)(false);
+  const [error, setError] = (0, import_react31.useState)(null);
+  const [selected, setSelected] = (0, import_react31.useState)(null);
+  const [filterName] = (0, import_react31.useState)("");
+  const [assignedClient, setAssignedClient] = (0, import_react31.useState)(null);
+  const [openSection, setOpenSection] = (0, import_react31.useState)(null);
+  (0, import_react31.useEffect)(() => {
     let mounted = true;
     (async () => {
       if (!user) {
@@ -6171,7 +6246,7 @@ var MealPrepPage = () => {
       mounted = false;
     };
   }, [user]);
-  (0, import_react30.useEffect)(() => {
+  (0, import_react31.useEffect)(() => {
     let mounted = true;
     (async () => {
       try {
@@ -6196,7 +6271,7 @@ var MealPrepPage = () => {
       mounted = false;
     };
   }, [user]);
-  const filtered = (0, import_react30.useMemo)(() => {
+  const filtered = (0, import_react31.useMemo)(() => {
     const base = assignedClient ? menus.filter((m) => (m.clientName || "").toLowerCase() === assignedClient.toLowerCase()) : menus;
     const q = filterName.trim().toLowerCase();
     if (!q) return base;
@@ -6284,7 +6359,7 @@ var MealPrepPage = () => {
 var MealPrepPage_default = MealPrepPage;
 
 // src/pages/PartnerPortalPage.jsx
-var import_react31 = __toESM(require("react"));
+var import_react32 = __toESM(require("react"));
 var import_react_helmet_async10 = __toESM(require_lib());
 var import_react_router_dom5 = require("react-router-dom");
 
@@ -6370,23 +6445,460 @@ function ToolGrid() {
   }) });
 }
 
-// src/ssr/StaticApp.jsx
+// src/pages/CrowdfundingPage.jsx
+var import_react33 = __toESM(require("react"));
+var import_prop_types = __toESM(require_prop_types());
+var import_react_helmet_async11 = __toESM(require_lib());
+var import_react34 = require("@portabletext/react");
+var import_image_url = __toESM(require("@sanity/image-url"));
 var import_jsx_runtime28 = require("react/jsx-runtime");
-function StaticApp() {
-  return /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(import_react_helmet_async11.HelmetProvider, { children: /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("div", { className: "app-root min-h-screen flex flex-col", children: [
-    /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(Header, {}),
-    /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("main", { className: "flex-1", children: /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)(import_react_router_dom6.Routes, { children: [
-      /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(import_react_router_dom6.Route, { path: "/", element: /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(HomePage_default, {}) }),
-      /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(import_react_router_dom6.Route, { path: "/about", element: /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(AboutUsPage_default, {}) }),
-      /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(import_react_router_dom6.Route, { path: "/services", element: /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(ServicesPage_default, {}) }),
-      /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(import_react_router_dom6.Route, { path: "/pricing", element: /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(PricingPage_default, {}) }),
-      /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(import_react_router_dom6.Route, { path: "/menu", element: /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(MenuPage, {}) }),
-      /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(import_react_router_dom6.Route, { path: "/happy-monday", element: /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(HappyMondayPage_default, {}) }),
-      /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(import_react_router_dom6.Route, { path: "/gallery", element: /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(GalleryPage_default, {}) }),
-      /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(import_react_router_dom6.Route, { path: "/events", element: /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(EventsPage_default, {}) }),
-      /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(import_react_router_dom6.Route, { path: "/meal-prep", element: /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(MealPrepPage_default, {}) }),
-      /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(import_react_router_dom6.Route, { path: "/partner-portal", element: /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(PartnerPortalPage_default, {}) })
+var builder = (0, import_image_url.default)(sanityClient_default);
+function urlFor(source) {
+  return builder.image(source);
+}
+var StatBox = ({ value, label }) => /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("div", { children: [
+  /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("p", { className: "text-3xl font-bold", children: value }),
+  /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("p", { className: "text-gray-600", children: label })
+] });
+StatBox.propTypes = {
+  value: import_prop_types.default.oneOfType([import_prop_types.default.string, import_prop_types.default.number]).isRequired,
+  label: import_prop_types.default.string.isRequired
+};
+var RewardTierCard = ({ tier, onContribute, busy }) => {
+  if (!tier) {
+    return null;
+  }
+  const pieCountLabel = tier.pieCount ? `${tier.pieCount.toLocaleString()} pies` : null;
+  const pizzaCountLabel = tier.pizzaCount ? `${tier.pizzaCount.toLocaleString()} pizzas` : null;
+  const moneyLabel = tier.amount ? `$${tier.amount.toLocaleString()}` : null;
+  return /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("div", { className: "card p-6 border hover:border-[var(--color-accent)] transition-colors", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("p", { className: "text-2xl font-bold", children: pieCountLabel ? `${pieCountLabel} \u2014 ${tier.title}` : pizzaCountLabel ? `${pizzaCountLabel} \u2014 ${tier.title}` : `Pledge ${moneyLabel || "$0"} or more` }),
+    !pizzaCountLabel && /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("h4", { className: "text-xl font-bold text-[var(--color-accent)] mt-1", children: tier.title }),
+    /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("p", { className: "text-body text-gray-600 my-3", children: tier.description }),
+    tier.limit && /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("p", { className: "text-sm font-semibold text-gray-500 mb-3", children: [
+      "LIMITED (",
+      tier.limit,
+      " left)"
+    ] }),
+    /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(
+      "button",
+      {
+        className: "btn btn-secondary w-full disabled:opacity-60",
+        disabled: busy || !(typeof tier.amount === "number" && tier.amount > 0),
+        onClick: () => {
+          if (typeof tier.amount === "number" && tier.amount > 0) onContribute({ name: tier.title || "Pledge", price: tier.amount });
+        },
+        children: typeof tier.amount === "number" ? "Select this reward" : "Unavailable online"
+      }
+    )
+  ] });
+};
+RewardTierCard.propTypes = {
+  tier: import_prop_types.default.shape({
+    pizzaCount: import_prop_types.default.number,
+    pieCount: import_prop_types.default.number,
+    amount: import_prop_types.default.number,
+    title: import_prop_types.default.string,
+    description: import_prop_types.default.string,
+    limit: import_prop_types.default.number
+  })
+};
+var CrowdfundingPage = () => {
+  const [campaignData, setCampaignData] = (0, import_react33.useState)(null);
+  const [loading, setLoading] = (0, import_react33.useState)(true);
+  const [error, setError] = (0, import_react33.useState)(null);
+  const [activeTab, setActiveTab] = (0, import_react33.useState)("story");
+  const [paying, setPaying] = (0, import_react33.useState)(false);
+  const [payError, setPayError] = (0, import_react33.useState)("");
+  const [funderName, setFunderName] = (0, import_react33.useState)("");
+  const [pizzaQty, setPizzaQty] = (0, import_react33.useState)(1);
+  const [confirmMsg, setConfirmMsg] = (0, import_react33.useState)("");
+  const [referralInput, setReferralInput] = (0, import_react33.useState)("");
+  const [referralState, setReferralState] = (0, import_react33.useState)({ status: "idle", valid: false, participant: null, code: "" });
+  (0, import_react33.useEffect)(() => {
+    const slug = "local-pizza-by-local-effort-let-s-make-1000-pizzas";
+    const query2 = `*[_type == "crowdfundingCampaign" && slug.current == $slug][0]{
+      title,
+      // Short description: prefer new field name, fallback to legacy if present
+      "description": coalesce(description, shortDescription),
+      // pizza-specific fields (keep legacy fields for backwards compatibility)
+      pizzaGoal,
+      pizzasSold,
+      piesSold,
+      goal,
+      raisedAmount,
+      backers,
+      endDate,
+      heroImage,
+      story,
+      goals,
+      faq,
+  "rewardTiers": rewardTiers[]->{ amount, pizzaCount, pieCount, title, description, limit, referralOnly, referralCode } | order(amount asc),
+      "updates": updates[]->{ title, publishedAt, body } | order(publishedAt desc)
+    }`;
+    const params = { slug };
+    const doFetch = async () => {
+      try {
+        const data = await sanityClient_default.fetch(query2, params);
+        setCampaignData(data);
+      } catch (err) {
+        try {
+          const msg = err && err.message ? err.message : String(err);
+          console.error("Sanity fetch error message:", msg);
+          if (err && err.response && typeof err.response.text === "function") {
+            const body = await err.response.text();
+            console.error("Sanity fetch response body:", body);
+          }
+        } catch (logErr) {
+          console.error("Error while logging Sanity error:", logErr);
+        }
+        try {
+          const fallback = `*[_type == "crowdfundingCampaign"][0]{
+            title,
+            "description": coalesce(description, shortDescription),
+            pizzaGoal,
+            pizzasSold,
+            piesSold,
+            goal,
+            raisedAmount,
+            backers,
+            endDate,
+            heroImage,
+            story,
+            goals,
+            faq,
+            "rewardTiers": rewardTiers[]->{ amount, pizzaCount, pieCount, title, description, limit, referralOnly, referralCode } | order(amount asc),
+            "updates": updates[]->{ title, publishedAt, body } | order(publishedAt desc)
+          }`;
+          const fbData = await sanityClient_default.fetch(fallback);
+          if (fbData) {
+            console.warn("Loaded fallback campaign (first in dataset)");
+            setCampaignData(fbData);
+            setError(null);
+            return;
+          }
+        } catch (fbErr) {
+          console.error("Fallback fetch also failed:", fbErr && (fbErr.message || fbErr));
+        }
+        setError("Failed to load campaign data.");
+      } finally {
+        setLoading(false);
+      }
+    };
+    doFetch();
+  }, []);
+  const rewardTiers = campaignData?.rewardTiers || [];
+  const visibleTiers = (0, import_react33.useMemo)(() => {
+    const hasValid = referralState.valid && referralState.code;
+    return rewardTiers.filter((t) => {
+      if (!t?.referralOnly) return true;
+      if (!hasValid) return false;
+      if (t.referralCode && typeof t.referralCode === "string") {
+        return t.referralCode.trim().toLowerCase() === referralState.code.trim().toLowerCase();
+      }
+      return true;
+    });
+  }, [rewardTiers, referralState]);
+  const firstPayTier = (0, import_react33.useMemo)(
+    () => visibleTiers.find((t) => typeof t?.amount === "number" && t.amount > 0) || null,
+    [visibleTiers]
+  );
+  (0, import_react33.useEffect)(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("payment") === "success") {
+      (async () => {
+        try {
+          const raw = localStorage.getItem("cf_items");
+          const items = raw ? JSON.parse(raw) : [];
+          const name = localStorage.getItem("cf_name") || void 0;
+          if (Array.isArray(items) && items.length > 0) {
+            const res = await fetch("/api/crowdfund/confirm-payment", {
+              method: "POST",
+              headers: { "content-type": "application/json" },
+              body: JSON.stringify({ items, funderName: name })
+            });
+            if (res.ok) {
+              setConfirmMsg("Thanks! Your contribution has been recorded.");
+            }
+          }
+        } catch (_) {
+        } finally {
+          try {
+            localStorage.removeItem("cf_items");
+            localStorage.removeItem("cf_name");
+          } catch (e) {
+          }
+        }
+      })();
+    }
+  }, []);
+  if (loading) {
+    return /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("div", { className: "text-center p-12", children: "Loading campaign..." });
+  }
+  if (error) {
+    const errorMessage = typeof error === "string" ? error : error && (error.message || JSON.stringify(error)) || "Failed to load campaign data.";
+    return /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("div", { className: "text-center p-12 text-red-600", children: errorMessage });
+  }
+  if (!campaignData) {
+    return /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("div", { className: "text-center p-12", children: "No campaign found. Have you created and published it in Sanity Studio?" });
+  }
+  const {
+    title = "Untitled Campaign",
+    description = [],
+    backers = 0,
+    endDate = null,
+    heroImage = null
+  } = campaignData;
+  const piesSold = campaignData.piesSold ?? 0;
+  const story = campaignData.story || [];
+  const faq = campaignData.faq || [];
+  const contribute = async (items) => {
+    setPayError("");
+    setPaying(true);
+    try {
+      try {
+        localStorage.setItem("cf_items", JSON.stringify(items));
+        localStorage.setItem("cf_name", funderName || "");
+      } catch (e) {
+      }
+      const res = await fetch("/api/crowdfund/contribute", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ items })
+      });
+      const data = await res.json();
+      if (!res.ok || !data?.url) throw new Error(data?.error || "Failed to create checkout");
+      window.location.href = data.url;
+    } catch (e) {
+      setPayError(e?.message || "Payment link failed");
+    } finally {
+      setPaying(false);
+    }
+  };
+  const updates = campaignData.updates || [];
+  const pizzasSold = (campaignData.pizzasSold ?? campaignData.raisedAmount) || 0;
+  const pizzaGoal = (campaignData.pizzaGoal ?? campaignData.goal) || 1e3;
+  const daysLeft = endDate ? Math.ceil((new Date(endDate) - /* @__PURE__ */ new Date()) / (1e3 * 60 * 60 * 24)) : 0;
+  const progressPercentage = pizzaGoal > 0 ? Math.min(pizzasSold / pizzaGoal * 100, 100) : 0;
+  const TabButton = ({ tabName, label }) => /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(
+    "button",
+    {
+      type: "button",
+      onClick: () => setActiveTab(tabName),
+      "aria-pressed": activeTab === tabName,
+      className: `pb-2 px-1 text-lg font-semibold transition-colors ${activeTab === tabName ? "border-b-2 border-[var(--color-accent)] text-gray-900" : "text-gray-500 hover:text-gray-800"}`,
+      children: label
+    }
+  );
+  TabButton.propTypes = {
+    tabName: import_prop_types.default.string.isRequired,
+    label: import_prop_types.default.string.isRequired
+  };
+  const plainTextFromPortable = (blocks) => {
+    if (!blocks) return "";
+    if (typeof blocks === "string") return blocks;
+    return (blocks || []).filter(Boolean).map((blk) => {
+      if (typeof blk === "string") return blk;
+      if (blk.children && Array.isArray(blk.children)) {
+        return blk.children.map((c) => c.text || "").join("");
+      }
+      return "";
+    }).join("\n").trim();
+  };
+  const toPortableBlocks = (val) => {
+    if (Array.isArray(val)) return val;
+    if (!val) return [];
+    const text = typeof val === "string" ? val : String(val);
+    return [
+      {
+        _type: "block",
+        style: "normal",
+        children: [{ _type: "span", text }]
+      }
+    ];
+  };
+  return /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)(import_jsx_runtime28.Fragment, { children: [
+    /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)(import_react_helmet_async11.Helmet, { children: [
+      /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("title", { children: `${title} | Crowdfunding Campaign` }),
+      /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("meta", { name: "description", content: plainTextFromPortable(description).slice(0, 160) })
+    ] }),
+    /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("div", { className: "space-y-16 mx-auto max-w-6xl px-4 md:px-6 lg:px-8", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("div", { children: [
+        /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("h1", { className: "text-4xl md:text-6xl font-bold uppercase tracking-[-0.02em] leading-[1.02]", children: title }),
+        /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("div", { className: "mt-6 md:mt-8 text-body max-w-2xl", children: description && (Array.isArray(description) ? /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(import_react34.PortableText, { value: description }) : /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(import_react34.PortableText, { value: toPortableBlocks(description) })) })
+      ] }),
+      /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("div", { className: "grid grid-cols-1 lg:grid-cols-5 lg:gap-16", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("div", { className: "lg:col-span-3 space-y-8", children: [
+          heroImage && /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(
+            "img",
+            {
+              src: urlFor(heroImage).width(1200).quality(80).url(),
+              alt: title,
+              className: "w-full object-cover rounded-lg aspect-video bg-gray-100"
+            }
+          ),
+          /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("div", { className: "border-b border-gray-200", children: /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("nav", { className: "flex space-x-8", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(TabButton, { tabName: "story", label: "Our Story" }),
+            updates.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(TabButton, { tabName: "updates", label: `Updates (${updates.length})` }),
+            /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(TabButton, { tabName: "goals", label: "Goals" }),
+            faq.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(TabButton, { tabName: "faq", label: "FAQ" })
+          ] }) }),
+          /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("div", { className: "prose max-w-none text-body", children: [
+            activeTab === "story" && story.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(import_react34.PortableText, { value: story }),
+            activeTab === "updates" && /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("div", { className: "space-y-8", children: updates.map((update, index) => /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("div", { className: "p-4 border-l-4 border-gray-200", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("h3", { className: "text-heading mt-0", children: update.title }),
+              /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("p", { className: "text-sm text-gray-500 mb-2", children: new Date(update.publishedAt).toLocaleDateString("en-US", {
+                year: "numeric",
+                month: "long",
+                day: "numeric"
+              }) }),
+              /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(import_react34.PortableText, { value: update.body })
+            ] }, index)) }),
+            activeTab === "goals" && /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("div", { className: "space-y-6", children: campaignData.goals ? Array.isArray(campaignData.goals) ? /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(import_react34.PortableText, { value: campaignData.goals }) : /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(import_react34.PortableText, { value: toPortableBlocks(campaignData.goals) }) : /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("p", { className: "text-gray-500", children: "No goals content yet. Add content in the Goals field in Sanity Studio." }) }),
+            activeTab === "faq" && /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("div", { className: "space-y-6", children: faq.map((item, index) => /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("div", { children: [
+              /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("h4", { className: "font-bold text-lg mb-1", children: item.question }),
+              /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("p", { className: "mt-0", children: item.answer })
+            ] }, index)) })
+          ] })
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("div", { className: "lg:col-span-2 space-y-8 mt-12 lg:mt-0", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("div", { className: "card p-6 space-y-4", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("div", { className: "w-full bg-gray-200 rounded-full h-2.5", children: /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(
+              "div",
+              {
+                className: "bg-[var(--color-accent)] h-2.5 rounded-full",
+                style: { width: `${progressPercentage}%` }
+              }
+            ) }),
+            /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("div", { children: [
+              /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("p", { className: "text-4xl font-bold text-[var(--color-accent)]", children: [
+                pizzasSold.toLocaleString(),
+                " pizzas"
+              ] }),
+              /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("p", { className: "text-body text-gray-600", children: [
+                "sold of ",
+                pizzaGoal.toLocaleString(),
+                " pizzas goal"
+              ] }),
+              /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("p", { className: "mt-2 text-2xl font-semibold", children: [
+                piesSold.toLocaleString(),
+                " pies"
+              ] }),
+              /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("p", { className: "text-body text-gray-600", children: "sold" })
+            ] }),
+            /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("div", { className: "flex justify-between text-body text-center border-y py-3", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(StatBox, { value: backers.toLocaleString(), label: "backers" }),
+              /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(
+                StatBox,
+                {
+                  value: daysLeft > 0 ? daysLeft : "Ended",
+                  label: daysLeft > 0 ? "days to go" : ""
+                }
+              )
+            ] }),
+            confirmMsg && /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("p", { className: "text-sm text-emerald-700", children: confirmMsg }),
+            payError && /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("p", { className: "text-sm text-red-600", children: payError }),
+            /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("div", { className: "flex flex-col gap-2", children: /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("input", { id: "cf-name", className: "input w-full", placeholder: "Name", value: funderName, onChange: (e) => setFunderName(e.target.value) }) }),
+            /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("div", { className: "flex items-center gap-2", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(
+                "input",
+                {
+                  className: "input flex-1",
+                  placeholder: "Have a referral code?",
+                  value: referralInput,
+                  onChange: (e) => setReferralInput(e.target.value)
+                }
+              ),
+              /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(
+                "button",
+                {
+                  type: "button",
+                  className: "btn btn-secondary",
+                  disabled: !referralInput || referralState.status === "checking",
+                  onClick: async () => {
+                    const code = (referralInput || "").trim();
+                    if (!code) return;
+                    setReferralState({ status: "checking", valid: false, participant: null, code });
+                    try {
+                      const resp = await fetch("/api/referrals/validate", {
+                        method: "POST",
+                        headers: { "content-type": "application/json" },
+                        body: JSON.stringify({ code })
+                      });
+                      const data = await resp.json().catch(() => ({}));
+                      if (resp.ok && data && data.valid) {
+                        setReferralState({ status: "ok", valid: true, participant: data.participant || null, code });
+                      } else {
+                        setReferralState({ status: "ok", valid: false, participant: null, code });
+                      }
+                    } catch (_) {
+                      setReferralState({ status: "error", valid: false, participant: null, code });
+                    }
+                  },
+                  children: referralState.status === "checking" ? "Checking\u2026" : "Apply"
+                }
+              )
+            ] }),
+            referralState.status === "ok" && referralState.valid && /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("p", { className: "text-sm text-emerald-700", children: [
+              "Code applied",
+              referralState.participant?.name ? ` for ${referralState.participant.name}` : "",
+              "."
+            ] }),
+            referralState.status === "ok" && !referralState.valid && /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("p", { className: "text-sm text-red-600", children: "That code is not valid." }),
+            firstPayTier && /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("div", { className: "flex items-center gap-3", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("label", { htmlFor: "pizza-qty", className: "text-sm", children: "Quantity" }),
+              /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(
+                "input",
+                {
+                  id: "pizza-qty",
+                  type: "number",
+                  min: 1,
+                  max: 50,
+                  value: pizzaQty,
+                  onChange: (e) => setPizzaQty(Math.max(1, Math.min(50, Number(e.target.value) || 1))),
+                  className: "input w-24"
+                }
+              )
+            ] }),
+            /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(
+              "button",
+              {
+                disabled: !firstPayTier,
+                onClick: () => firstPayTier && contribute([{ name: firstPayTier.title || "Pizza", price: firstPayTier.amount, type: "pizza", pizzaCount: pizzaQty, quantity: pizzaQty }]),
+                className: "btn btn-primary w-full text-lg py-3 disabled:opacity-60",
+                children: paying ? "Preparing checkout\u2026" : "i want pizza"
+              }
+            )
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("div", { className: "space-y-4", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("h3", { className: "text-heading uppercase", children: "Support Us" }),
+            visibleTiers.map((tier) => /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(RewardTierCard, { tier, busy: paying, onContribute: (item) => contribute([item]) }, tier?.title || Math.random()))
+          ] })
+        ] })
+      ] })
+    ] })
+  ] });
+};
+var CrowdfundingPage_default = CrowdfundingPage;
+
+// src/ssr/StaticApp.jsx
+var import_jsx_runtime29 = require("react/jsx-runtime");
+function StaticApp({ helmetContext }) {
+  return /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(import_react_helmet_async12.HelmetProvider, { context: helmetContext, children: /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("div", { className: "app-root min-h-screen flex flex-col", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(Header, {}),
+    /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("main", { className: "flex-1", children: /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)(import_react_router_dom6.Routes, { children: [
+      /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(import_react_router_dom6.Route, { path: "/", element: /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(HomePage_default, {}) }),
+      /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(import_react_router_dom6.Route, { path: "/about", element: /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(AboutUsPage_default, {}) }),
+      /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(import_react_router_dom6.Route, { path: "/services", element: /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(ServicesPage_default, {}) }),
+      /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(import_react_router_dom6.Route, { path: "/pricing", element: /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(PricingPage_default, {}) }),
+      /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(import_react_router_dom6.Route, { path: "/menu", element: /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(MenuPage, {}) }),
+      /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(import_react_router_dom6.Route, { path: "/happy-monday", element: /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(HappyMondayPage_default, {}) }),
+      /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(import_react_router_dom6.Route, { path: "/gallery", element: /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(GalleryPage_default, {}) }),
+      /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(import_react_router_dom6.Route, { path: "/events", element: /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(EventsPage_default, {}) }),
+      /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(import_react_router_dom6.Route, { path: "/meal-prep", element: /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(MealPrepPage_default, {}) }),
+      /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(import_react_router_dom6.Route, { path: "/partner-portal", element: /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(PartnerPortalPage_default, {}) }),
+      /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(import_react_router_dom6.Route, { path: "/crowdfunding", element: /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(CrowdfundingPage_default, {}) })
     ] }) }),
-    /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(Footer, {})
+    /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(Footer, {})
   ] }) });
 }

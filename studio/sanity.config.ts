@@ -1,3 +1,5 @@
+// If some environments fail to resolve 'sanity', consider swapping to:
+// import {defineConfig} from 'sanity/lib/exports'
 import {defineConfig} from 'sanity'
 import {structureTool} from 'sanity/structure'
 import {visionTool} from '@sanity/vision'

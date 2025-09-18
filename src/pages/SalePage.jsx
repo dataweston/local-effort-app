@@ -70,6 +70,7 @@ const SalePage = () => {
       <Helmet>
         <title>SALE | Local Effort</title>
         <meta name="description" content="Shop Local Effort sale items. Pickup/local service with on-site checkout." />
+        <link rel="canonical" href="https://localeffortfood.com/sale" />
         <script type="application/ld+json">{JSON.stringify(schema)}</script>
       </Helmet>
 
