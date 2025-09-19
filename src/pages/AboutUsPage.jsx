@@ -1,119 +1,153 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Helmet } from 'react-helmet-async';
-// Fetch via backend proxy to avoid CORS issues
-import CloudinaryImage from '../components/common/cloudinaryImage';
-import { peoplePublicIds } from '../data/cloudinaryContent';
+import { cn } from '../lib/utils';
+import { ModernButton } from '../components/ui/ModernButton';
+import PhotoGrid from '../components/common/PhotoGrid';
 
 const AboutUsPage = () => {
-  const [aboutData, setAboutData] = useState(null);
-  const [loading, setLoading] = useState(true);
-  // const [activeSkill, setActiveSkill] = useState(null);
-
-  useEffect(() => {
-  // Data fetched via backend proxy
-
-    let mounted = true;
-    (async () => {
-      try {
-        const resp = await fetch('/api/about');
-        if (!resp.ok) throw new Error(`About fetch failed: ${resp.status}`);
-        const data = await resp.json();
-        if (!mounted) return;
-  setAboutData(data);
-      } catch (err) {
-        console.error('Failed to load About page data:', err);
-        setAboutData(null);
-      } finally {
-        if (mounted) setLoading(false);
-      }
-    })();
-    return () => {
-      mounted = false;
-    };
-  }, []);
-
-  if (loading) return <div>Loading...</div>;
-  if (!aboutData) return <div>Could not load page data.</div>;
-
-  // By adding "= []", we ensure that if persons or skills don't exist,
-  // we get an empty array instead of an error.
-  const { page, persons = [] } = aboutData;
-  const weston = persons.find((p) => p.name && p.name.includes('Weston')) || {};
-  const catherine = persons.find((p) => p.name && p.name.includes('Catherine')) || {};
-  const westonPublicId = weston?.headshot?.asset?.public_id || peoplePublicIds.weston;
-  const catherinePublicId = catherine?.headshot?.asset?.public_id || peoplePublicIds.catherine;
-
   return (
     <>
       <Helmet>
-        <title>{page?.title || 'About Us'} | Local Effort</title>
+        <title>About | Local Effort</title>
         <meta
           name="description"
-          content={page?.introduction || 'Meet the chefs behind Local Effort.'}
+          content={
+            "Stubbornly local since 2022 — because it’s healthier, tastier, and better for Minnesota."
+          }
         />
       </Helmet>
-  <div className="space-y-16 mx-auto max-w-6xl px-4 md:px-6 lg:px-8">
-        {/* This section will now show a message if the main page content is missing */}
-        {!page && (
-          <div className="card text-body bg-yellow-100 border-yellow-400">
-            <strong>Content Missing:</strong> Please ensure a "Page" document with the exact slug
-            "about-us" has been created and published in your Sanity Studio.
-          </div>
-        )}
-  <h2 className="text-hero uppercase tracking-[-0.02em] border-b border-neutral-200 pb-4">{page?.title}</h2>
-  <div className="prose-lite max-w-3xl">
-          <p>{page?.introduction}</p>
-        </div>
 
-        {/* This section will now show a message if the person documents are missing */}
-  <div className="grid md:grid-cols-2 gap-8">
-          {persons.length === 0 && (
-            <div className="card text-body md:col-span-2 bg-yellow-100 border-yellow-400">
-              <strong>Content Missing:</strong> Please ensure "Person" documents for the team have
-              been created and published in your Sanity Studio.
+      <article className="container-page space-y-16 md:space-y-24" aria-labelledby="about-hero-title">
+        {/* Hero */}
+        <section className="grid gap-8 md:grid-cols-2 md:items-center rounded-2xl bg-gradient-to-br from-rose-50/60 to-transparent p-6 md:p-10 ring-1 ring-neutral-200">
+          <div>
+            <h1 id="about-hero-title" className="text-hero">Local Effort</h1>
+            <p className="mt-4 text-lg text-neutral-700">
+              Stubbornly local since 2022 — because it’s healthier, tastier, and better for Minnesota.
+            </p>
+          </div>
+          <div className="relative w-full h-full">
+            <img
+              src="/images/team-hero.jpg"
+              alt="Local Effort chefs cooking"
+              className={cn(
+                'w-full h-64 md:h-full object-cover rounded-xl shadow-sm ring-1 ring-neutral-200'
+              )}
+              loading="lazy"
+            />
+          </div>
+        </section>
+
+        <div className="h-px bg-neutral-200" />
+
+        {/* Our Story */}
+        <section aria-labelledby="our-story-title" className="space-y-4">
+          <h2 id="our-story-title" className="text-heading">Our Story</h2>
+          <p className="prose-lite max-w-3xl">
+            We began in Minneapolis in 2022 with one simple, stubborn idea: eat local first, no matter the cost. Local and seasonal eating is good for our health, good for our economy, and good for our community. That commitment shapes everything we do today.
+          </p>
+        </section>
+
+        <div className="h-px bg-neutral-200" />
+
+        {/* What We Do */}
+        <section aria-labelledby="what-we-do-title" className="space-y-4">
+          <h2 id="what-we-do-title" className="text-heading">What We Do</h2>
+          <ul className="list-disc pl-6 max-w-3xl text-neutral-800">
+            <li>Meal planning and nutrition support for families</li>
+            <li>Sourcing and shopping directly from Minnesota producers</li>
+            <li>Catering and events built around local ingredients</li>
+            <li>Completely local pizzas — our specialty</li>
+          </ul>
+        </section>
+
+        <div className="h-px bg-neutral-200" />
+
+        {/* Meet the Chefs */}
+        <section aria-labelledby="meet-chefs-title" className="space-y-6">
+          <h2 id="meet-chefs-title" className="text-heading">Meet the Chefs</h2>
+          <div className="grid gap-8 md:grid-cols-2">
+            <article className="card">
+              <div className="relative w-full overflow-hidden rounded-md ring-1 ring-neutral-200" style={{ paddingTop: '75%' }}>
+                <img
+                  src="/images/weston.jpg"
+                  alt="Chef Weston Smith"
+                  className="absolute inset-0 h-full w-full object-cover"
+                  loading="lazy"
+                />
+              </div>
+              <h3 className="mt-4 text-xl font-semibold">Chef Weston Smith</h3>
+              <p className="mt-2 text-neutral-800">
+                Began in coffee in Portland, trained in fine dining in New York, opened Weston Fine Foods (a chocolate shop in the North Loop during the pandemic), and has been focused on Local Effort since 2022.
+              </p>
+            </article>
+
+            <article className="card">
+              <div className="relative w-full overflow-hidden rounded-md ring-1 ring-neutral-200" style={{ paddingTop: '75%' }}>
+                <img
+                  src="/images/catherine.jpg"
+                  alt="Chef Catherine Olsen"
+                  className="absolute inset-0 h-full w-full object-cover"
+                  loading="lazy"
+                />
+              </div>
+              <h3 className="mt-4 text-xl font-semibold">Chef Catherine Olsen</h3>
+              <p className="mt-2 text-neutral-800">
+                Born and raised in Minneapolis. A skilled baker with a lifelong career in food, including Wuollet Bakery, Lucia’s, and Churchill Street. She brings warmth, craft, and deep local roots to our kitchen.
+              </p>
+            </article>
+          </div>
+        </section>
+
+        {/* Modular photo grids from Cloudinary tags */}
+        <section aria-label="Photo galleries" className="space-y-10">
+          <div className="grid gap-6 md:grid-cols-2">
+            <div className="card">
+              <PhotoGrid tags={["team","kitchen"]} title="In the kitchen" perPage={8} />
             </div>
-          )}
-      {(weston && (westonPublicId || weston.headshot)) && (
-            <div className="card ring-1 ring-neutral-200">
-              <h3 className="text-heading">{weston.name}</h3>
-      {westonPublicId ? (
-                <div className="my-4">
-                  <CloudinaryImage
-          publicId={westonPublicId}
-        alt={weston?.headshot?.alt || weston?.name || 'Team member headshot'}
-                    width={600}
-                    height={400}
-          className="rounded-md w-full h-auto object-cover"
-          fallbackSrc="/gallery/IMG-1013.JPG"
-                  />
-                </div>
-              ) : null}
-      {weston?.role && <p className="text-body text-gray-600 mb-4">{weston.role}</p>}
-      {weston?.bio && <p className="text-body">{weston.bio}</p>}
+            <div className="card">
+              <PhotoGrid tags={["event","dinner"]} title="At events" perPage={8} />
             </div>
-          )}
-      {(catherine && (catherinePublicId || catherine.headshot)) && (
-            <div className="card ring-1 ring-neutral-200">
-              <h3 className="text-heading">{catherine.name}</h3>
-      {catherinePublicId ? (
-                <div className="my-4">
-                  <CloudinaryImage
-          publicId={catherinePublicId}
-        alt={catherine?.headshot?.alt || catherine?.name || 'Team member headshot'}
-                    width={600}
-                    height={400}
-          className="rounded-md w-full h-auto object-cover"
-          fallbackSrc="/gallery/catherine.jpg"
-                  />
-                </div>
-              ) : null}
-      {catherine?.role && <p className="text-body text-gray-600 mb-4">{catherine.role}</p>}
-      {catherine?.bio && <p className="text-body">{catherine.bio}</p>}
-            </div>
-          )}
-        </div>
-  {/* Special Skills section removed per request */}
-      </div>
+          </div>
+        </section>
+
+        <div className="h-px bg-neutral-200" />
+
+        {/* What We Value */}
+        <section aria-labelledby="values-title" className="space-y-4">
+          <h2 id="values-title" className="text-heading">What We Value</h2>
+          <ul className="list-disc pl-6 max-w-3xl text-neutral-800">
+            <li>Celebrating home cooks</li>
+            <li>Supporting family nutrition</li>
+            <li>Spending with local producers</li>
+            <li>Collaborating with Minnesota organizations</li>
+            <li>Sharing and shaping Minnesota food culture</li>
+          </ul>
+        </section>
+
+        <div className="h-px bg-neutral-200" />
+
+        {/* Why Work With Us */}
+        <section aria-labelledby="why-us-title" className="space-y-4">
+          <h2 id="why-us-title" className="text-heading">Why Work With Us</h2>
+          <p className="prose-lite max-w-3xl">
+            Clients trust us for our professional experience, pride in ingredients, and equal care for nutrition and flavor. We keep presentation humble, but our food — and our commitment to your happiness — is anything but.
+          </p>
+        </section>
+
+        {/* Call to Action */}
+        <section aria-labelledby="cta-title" className="space-y-6">
+          <h2 id="cta-title" className="text-heading">Let’s Cook Something Local</h2>
+          <p className="prose-lite max-w-3xl">
+            We’d love to bring Minnesota-grown food to your table or event.
+          </p>
+          <div>
+            <a href="https://www.localeffortfood.com/services#event-request" aria-label="Submit Event Request">
+              <ModernButton size="md" variant="primary">Submit Event Request</ModernButton>
+            </a>
+          </div>
+        </section>
+      </article>
     </>
   );
 };

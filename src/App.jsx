@@ -21,8 +21,8 @@ const CrowdfundingPage = lazy(() => import('./pages/CrowdfundingPage'));
 const MenuPage = lazy(() => import('./pages/MenuPage'));
 const HappyMondayPage = lazy(() => import('./pages/HappyMondayPage'));
 const EventsPage = lazy(() => import('./pages/EventsPage'));
-const BlogList = lazy(() => import('./pages/BlogList'));
-const BlogPost = lazy(() => import('./pages/BlogPost'));
+const WeeklyList = lazy(() => import('./pages/WeeklyList'));
+const WeeklyPost = lazy(() => import('./pages/WeeklyPost'));
 // --- NEW: Lazily import the GalleryPage ---
 const GalleryPage = lazy(() => import('./pages/GalleryPage'));
 // --- NEW: Lazily import the MealPrepPage ---
@@ -146,18 +146,18 @@ const AppContent = () => {
                   }
                 />
                 <Route
-                  path="/blog"
+                  path="/weekly"
                   element={
                     <AnimatedPage>
-                      <BlogList />
+                      <WeeklyList />
                     </AnimatedPage>
                   }
                 />
                 <Route
-                  path="/blog/:slug"
+                  path="/weekly/:slug"
                   element={
                     <AnimatedPage>
-                      <BlogPost />
+                      <WeeklyPost />
                     </AnimatedPage>
                   }
                 />

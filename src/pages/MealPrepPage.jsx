@@ -209,9 +209,9 @@ export const MealPrepPage = () => {
   </div>
 
   {/* Menus moved above; section removed here */}
-  {/* Blog teasers */}
+  {/* Weekly Journal embeds */}
   <section className="mt-10">
-    <MealPrepBlogTeasers />
+    <WeeklyJournalEmbeds />
   </section>
       </div>
     </>
@@ -220,13 +220,13 @@ export const MealPrepPage = () => {
 
 export default MealPrepPage;
 
-function MealPrepBlogTeasers() {
+function WeeklyJournalEmbeds() {
   const [posts, setPosts] = useState([]);
   useEffect(() => {
     let mounted = true;
     (async () => {
       try {
-        const q = `*[_type == "blogPost"] | order(publishedAt desc)[0...3]{ title, "slug": slug.current, publishedAt }`;
+        const q = `*[_type == "blogPost"] | order(publishedAt desc)[0...3]{ title, "slug": slug.current, excerpt, publishedAt }`;
         const items = await client.fetch(q);
         if (mounted) setPosts(items || []);
       } catch (_) {
@@ -237,19 +237,25 @@ function MealPrepBlogTeasers() {
   }, []);
   if (!posts.length) return null;
   return (
-    <div className="border rounded-md p-4 bg-white">
+    <div className="border rounded-lg p-5 bg-white shadow-sm">
       <div className="flex items-center justify-between">
-        <h3 className="text-xl font-bold">From the blog</h3>
-        <Link to="/blog" className="text-sm underline">View all</Link>
+        <h3 className="text-xl font-bold">Weekly Meal Prep Journal</h3>
+        <Link to="/weekly" className="text-sm underline">View more</Link>
       </div>
-      <ul className="mt-3 space-y-2">
+      <div className="mt-4 grid gap-4 sm:grid-cols-2">
         {posts.map((p) => (
-          <li key={p.slug}>
-            <Link to={`/blog/${p.slug}`} className="hover:underline">{p.title}</Link>
-            <span className="text-sm text-gray-500 ml-2">{p.publishedAt ? new Date(p.publishedAt).toLocaleDateString() : ''}</span>
-          </li>
+          <article key={p.slug} className="rounded-md ring-1 ring-neutral-200 p-4">
+            <h4 className="text-lg font-semibold">
+              <Link to={`/weekly/${p.slug}`} className="hover:underline">{p.title}</Link>
+            </h4>
+            <div className="text-sm text-gray-500 mt-1">{p.publishedAt ? new Date(p.publishedAt).toLocaleDateString() : ''}</div>
+            {p.excerpt && <p className="text-gray-700 mt-2">{p.excerpt}</p>}
+            <div className="mt-3">
+              <Link to={`/weekly/${p.slug}`} className="btn btn-ghost px-3 py-1 text-sm">Read</Link>
+            </div>
+          </article>
         ))}
-      </ul>
+      </div>
     </div>
   );
 }
