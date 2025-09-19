@@ -2,6 +2,8 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import CloudinaryImage from '../components/common/cloudinaryImage';
+import SectionHeader from '../components/ui/SectionHeader';
+import Separator from '../components/ui/Separator';
 
 const ServicesPage = () => {
   const navigate = useNavigate();
@@ -117,7 +119,7 @@ const ServicesPage = () => {
         />
       </Helmet>
       <div className="space-y-16 mx-auto max-w-6xl px-4 md:px-6 lg:px-8">
-        <h2 className="text-4xl md:text-6xl font-bold uppercase border-b border-gray-900 pb-4">Services</h2>
+        <SectionHeader overline="Capabilities" title="Services" />
   {/* Hero carousel removed */}
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
           <div className="card space-y-4">
@@ -148,9 +150,11 @@ const ServicesPage = () => {
 
   {/* Photo grid removed per request */}
 
+        <Separator />
         {/* Event Request Form */}
-        <section id="event-request" className="border-t border-neutral-200 pt-10">
+        <section id="event-request" className="pt-10">
           <div className="max-w-3xl mx-auto">
+            <SectionHeader overline="Get Started" title="Book an event" />
             {/* Book section hero image */}
             {bookHero && (
               <div className="w-full h-[30vh] md:h-[36vh] lg:h-[42vh] rounded-xl overflow-hidden mb-6">
@@ -163,7 +167,6 @@ const ServicesPage = () => {
                 />
               </div>
             )}
-            <h3 className="mb-1 text-center text-2xl font-bold">book an event</h3>
             <p className="text-body mb-6 text-center">Tell us about your event and we’ll follow up with availability and a tailored menu.</p>
 
             <div className="form-card">

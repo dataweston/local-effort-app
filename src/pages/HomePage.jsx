@@ -10,6 +10,8 @@ import { cloudinaryConfig, heroPublicId, heroFallbackSrc } from '../data/cloudin
 import TestimonialsCarousel from '../components/common/TestimonialsCarousel';
 import sanityClient from '../sanityClient';
 import { PortableText } from '@portabletext/react';
+import SectionHeader from '../components/ui/SectionHeader';
+import Separator from '../components/ui/Separator';
 
 const HomePage = () => {
   const navigate = useNavigate();
@@ -476,8 +478,10 @@ const HomePage = () => {
 
         {/* Partner / Logo Wall */}
   <section className="py-12">
-          <h3 className="text-heading uppercase text-center mb-4">Our Partners</h3>
-          <p className="text-center text-sm text-gray-600 max-w-2xl mx-auto mb-6">
+          <div className="max-w-6xl mx-auto px-4 md:px-6 lg:px-8">
+            <SectionHeader overline="Community" title="Our Partners" />
+          </div>
+          <p className="text-center text-sm text-gray-600 max-w-2xl mx-auto mt-2 mb-6">
             Proud partners who help make this project possible. Support local — shop and
             collaborate with them.
           </p>
@@ -487,7 +491,7 @@ const HomePage = () => {
 
         {/* Offerings */}
   <section className="mx-auto max-w-6xl px-4 md:px-6 lg:px-8">
-          <h3 className="text-heading uppercase mb-6 border-b border-neutral-300 pb-3">What We Do</h3>
+          <SectionHeader overline="Capabilities" title="What We Do" />
           <div className="grid md:grid-cols-3 gap-6">
             <ServiceCard
               to="/events"
@@ -506,6 +510,7 @@ const HomePage = () => {
             />
           </div>
         </section>
+        <Separator />
   {/* Feedback (formerly Testimonials) */}
   <TestimonialsCarousel
     items={reviews}
