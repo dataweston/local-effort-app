@@ -80,6 +80,32 @@ try {
   console.warn('Firestore will be unavailable in this process.');
 }
 
+// --- Auth middleware for admin-only endpoints (Gallant tools) ---
+const GALLANT_ALLOWED = new Set([
+  'dataweston@gmail.com',
+  'colsen03@gmail.com',
+  ...(process.env.GALLANT_ALLOWED_EMAILS || '')
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean),
+]);
+
+async function requireAllowedUser(req, res, next) {
+  try {
+    const authHeader = req.headers.authorization || '';
+    const m = authHeader.match(/^Bearer\s+(.+)$/i);
+    if (!m) return res.status(401).json({ error: 'missing-auth' });
+    if (!admin?.auth) return res.status(500).json({ error: 'auth-unavailable' });
+    const decoded = await admin.auth().verifyIdToken(m[1]);
+    const email = decoded?.email;
+    if (!email || !GALLANT_ALLOWED.has(email)) return res.status(403).json({ error: 'forbidden' });
+    req.user = { uid: decoded.uid, email };
+    return next();
+  } catch (err) {
+    return res.status(401).json({ error: 'invalid-auth' });
+  }
+}
+
 // --- INITIALIZE SQUARE CLIENT (defensive) ---
 let squareClient = null;
 if (Client) {
@@ -670,7 +696,7 @@ app.post('/api/events/request', async (req, res) => {
 });
 
 // Admin/Tool endpoint: confirm or update an event and optionally publish to public events in Sanity
-app.post('/api/events/confirm', async (req, res) => {
+app.post('/api/events/confirm', requireAllowedUser, async (req, res) => {
   try {
     const { eventId, status = 'confirmed', startDateTime, endDateTime, location, visibility = 'private', ticketsUrl, description } = req.body || {};
     if (!eventId) return res.status(400).json({ error: 'missing-eventId' });
@@ -787,7 +813,8 @@ app.post('/api/blog/publish', async (req, res) => {
           ? emailTo
           : (process.env.BLOG_ANNOUNCE_TO || '').split(',').map(s => s.trim()).filter(Boolean);
         if (recipients.length) {
-          const url = (process.env.PUBLIC_URL || 'https://local-effort-app.vercel.app') + '/#/blog/' + doc.slug.current;
+          const base = (process.env.PUBLIC_URL || 'https://local-effort-app.vercel.app');
+          const url = base.replace(/\/$/, '') + '/weekly/' + doc.slug.current;
           const snippet = (text || JSON.stringify(blocks)).slice(0, 400);
           const payload = {
             to: recipients.map((e) => ({ email: e })),
@@ -837,7 +864,7 @@ app.post('/api/webhooks/sanity/blog', async (req, res) => {
       htmlContent: `
         <h2>${doc?.title || title || 'Local Effort Blog'}</h2>
         <p>${snippet}…</p>
-        <p><a href="${(process.env.PUBLIC_URL || 'https://local-effort-app.vercel.app')}/#/blog/${slug?.current || slug}">Read on the site</a></p>
+        <p><a href="${(process.env.PUBLIC_URL || 'https://local-effort-app.vercel.app').replace(/\/$/, '')}/weekly/${slug?.current || slug}">Read on the site</a></p>
       `,
       tags: ['blog', 'auto'],
     };
@@ -852,6 +879,51 @@ app.post('/api/webhooks/sanity/blog', async (req, res) => {
   } catch (err) {
     console.error('sanity blog webhook error', err);
     return res.status(500).json({ error: 'webhook-failed' });
+  }
+});
+
+// --- Notes (admin-backed) endpoints to support Gallant Notepad ---
+// List notes (newest first)
+app.get('/api/notes', requireAllowedUser, async (req, res) => {
+  try {
+    if (!db) return res.status(500).json({ error: 'firestore-unavailable' });
+    const snap = await db.collection('notes').orderBy('updatedAt', 'desc').limit(200).get();
+    const items = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    return res.json({ items });
+  } catch (err) {
+    console.error('notes:list error', err);
+    return res.status(500).json({ error: 'notes-list-failed' });
+  }
+});
+
+// Create a note
+app.post('/api/notes', requireAllowedUser, async (req, res) => {
+  try {
+    if (!db) return res.status(500).json({ error: 'firestore-unavailable' });
+    const { title, content } = req.body || {};
+    const now = admin.firestore.FieldValue.serverTimestamp();
+    const ref = await db.collection('notes').add({ title: title || 'Untitled', content: content || '', createdAt: now, updatedAt: now });
+    return res.json({ ok: true, id: ref.id });
+  } catch (err) {
+    console.error('notes:create error', err);
+    return res.status(500).json({ error: 'notes-create-failed' });
+  }
+});
+
+// Update a note
+app.put('/api/notes/:id', requireAllowedUser, async (req, res) => {
+  try {
+    if (!db) return res.status(500).json({ error: 'firestore-unavailable' });
+    const { id } = req.params;
+    const { title, content } = req.body || {};
+    const patch = { updatedAt: admin.firestore.FieldValue.serverTimestamp() };
+    if (typeof title === 'string') patch.title = title;
+    if (typeof content === 'string') patch.content = content;
+    await db.collection('notes').doc(id).update(patch);
+    return res.json({ ok: true });
+  } catch (err) {
+    console.error('notes:update error', err);
+    return res.status(500).json({ error: 'notes-update-failed' });
   }
 });
 
