@@ -52,7 +52,7 @@ const AboutUsPage = () => {
           content={page?.introduction || 'Meet the chefs behind Local Effort.'}
         />
       </Helmet>
-      <div className="space-y-16">
+  <div className="space-y-16 mx-auto max-w-6xl px-4 md:px-6 lg:px-8">
         {/* This section will now show a message if the main page content is missing */}
         {!page && (
           <div className="card text-body bg-yellow-100 border-yellow-400">
@@ -60,13 +60,13 @@ const AboutUsPage = () => {
             "about-us" has been created and published in your Sanity Studio.
           </div>
         )}
-        <h2 className="text-hero uppercase border-b border-gray-900 pb-4">{page?.title}</h2>
-        <div className="prose-lite max-w-3xl">
+  <h2 className="text-hero uppercase tracking-[-0.02em] border-b border-neutral-200 pb-4">{page?.title}</h2>
+  <div className="prose-lite max-w-3xl">
           <p>{page?.introduction}</p>
         </div>
 
         {/* This section will now show a message if the person documents are missing */}
-        <div className="grid md:grid-cols-2 gap-8">
+  <div className="grid md:grid-cols-2 gap-8">
           {persons.length === 0 && (
             <div className="card text-body md:col-span-2 bg-yellow-100 border-yellow-400">
               <strong>Content Missing:</strong> Please ensure "Person" documents for the team have
@@ -74,7 +74,7 @@ const AboutUsPage = () => {
             </div>
           )}
       {(weston && (westonPublicId || weston.headshot)) && (
-            <div className="card">
+            <div className="card ring-1 ring-neutral-200">
               <h3 className="text-heading">{weston.name}</h3>
       {westonPublicId ? (
                 <div className="my-4">
@@ -93,7 +93,7 @@ const AboutUsPage = () => {
             </div>
           )}
       {(catherine && (catherinePublicId || catherine.headshot)) && (
-            <div className="card">
+            <div className="card ring-1 ring-neutral-200">
               <h3 className="text-heading">{catherine.name}</h3>
       {catherinePublicId ? (
                 <div className="my-4">

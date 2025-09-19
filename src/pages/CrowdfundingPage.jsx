@@ -289,11 +289,7 @@ const CrowdfundingPage = () => {
       type="button"
       onClick={() => setActiveTab(tabName)}
       aria-pressed={activeTab === tabName}
-      className={`pb-2 px-1 text-lg font-semibold transition-colors ${
-        activeTab === tabName
-          ? 'border-b-2 border-[var(--color-accent)] text-gray-900'
-          : 'text-gray-500 hover:text-gray-800'
-      }`}
+      className="tab"
     >
       {label}
     </button>
@@ -342,7 +338,7 @@ const CrowdfundingPage = () => {
   <meta name="description" content={plainTextFromPortable(description).slice(0,160)} />
       </Helmet>
 
-      <div className="space-y-16 mx-auto max-w-6xl px-4 md:px-6 lg:px-8">
+  <div className="space-y-16 mx-auto max-w-6xl px-4 md:px-6 lg:px-8">
         {/* --- Page Header --- */}
         <div>
                 <h1 className="text-4xl md:text-6xl font-bold uppercase tracking-[-0.02em] leading-[1.02]">{title}</h1>
@@ -368,8 +364,8 @@ const CrowdfundingPage = () => {
               />
             )}
 
-            <div className="border-b border-gray-200">
-              <nav className="flex space-x-8">
+            <div className="border-b border-neutral-200">
+              <nav className="tablist">
                 <TabButton tabName="story" label="Our Story" />
                 {updates.length > 0 && (
                   <TabButton tabName="updates" label={`Updates (${updates.length})`} />
@@ -425,7 +421,7 @@ const CrowdfundingPage = () => {
 
           {/* --- Right Column (Stats & Rewards) --- */}
           <div className="lg:col-span-2 space-y-8 mt-12 lg:mt-0">
-            <div className="card p-6 space-y-4">
+            <div className="card p-6 space-y-4 ring-1 ring-neutral-200">
               <div className="w-full bg-gray-200 rounded-full h-2.5">
                 <div
                   className="bg-[var(--color-accent)] h-2.5 rounded-full"
