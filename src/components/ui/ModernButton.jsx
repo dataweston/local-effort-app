@@ -4,6 +4,7 @@ import PropTypes from 'prop-types';
 import { motion } from 'framer-motion';
 
 export const ModernButton = ({
+  as: Component = 'button',
   children,
   variant = 'primary',
   size = 'md',
@@ -11,6 +12,9 @@ export const ModernButton = ({
   onClick,
   className = '',
   disabled = false,
+  href,
+  target,
+  rel,
   ...props
 }) => {
   const baseClasses = 'btn optimize-rendering';
@@ -26,11 +30,16 @@ export const ModernButton = ({
     lg: 'px-8 py-4 text-lg',
   };
 
+  const Tag = motion(Component);
+  const motionProps = Component === 'button' ? { disabled } : {};
   return (
-    <motion.button
+    <Tag
       className={`${baseClasses} ${variantClasses[variant]} ${sizeClasses[size]} ${className}`}
       onClick={onClick}
-      disabled={disabled}
+      href={Component === 'a' ? href : undefined}
+      target={Component === 'a' ? target : undefined}
+      rel={Component === 'a' ? rel : undefined}
+      {...motionProps}
       whileHover={{ scale: disabled ? 1 : 1.02 }}
       whileTap={{ scale: disabled ? 1 : 0.98 }}
       transition={{ type: 'spring', stiffness: 400, damping: 25 }}
@@ -38,7 +47,7 @@ export const ModernButton = ({
     >
       {icon && <span className="mr-2">{icon}</span>}
       {children}
-    </motion.button>
+    </Tag>
   );
 };
 
@@ -47,9 +56,13 @@ ModernButton.propTypes = {
   variant: PropTypes.oneOf(['primary', 'secondary', 'ghost']),
   size: PropTypes.oneOf(['sm', 'md', 'lg']),
   icon: PropTypes.node,
+  as: PropTypes.oneOfType([PropTypes.string, PropTypes.elementType]),
   onClick: PropTypes.func,
   className: PropTypes.string,
   disabled: PropTypes.bool,
+  href: PropTypes.string,
+  target: PropTypes.string,
+  rel: PropTypes.string,
 };
 
 ModernButton.defaultProps = {
