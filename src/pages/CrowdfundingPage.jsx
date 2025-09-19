@@ -4,6 +4,7 @@ import PropTypes from 'prop-types';
 import { Helmet } from 'react-helmet-async';
 import { PortableText } from '@portabletext/react';
 import imageUrlBuilder from '@sanity/image-url';
+import SectionHeader from '../components/ui/SectionHeader';
 import sanityClient from '../sanityClient.js';
 
 // --- Sanity Image URL Builder Setup ---
@@ -380,7 +381,9 @@ const CrowdfundingPage = () => {
                 <div className="space-y-8">
                   {updates.map((update, index) => (
                     <div key={index} className="p-4 border-l-4 border-gray-200">
-                      <h3 className="text-heading mt-0">{update.title}</h3>
+                      <div className="mt-0">
+                        <SectionHeader overline="Update" title={update.title} />
+                      </div>
                       <p className="text-sm text-gray-500 mb-2">
                         {new Date(update.publishedAt).toLocaleDateString('en-US', {
                           year: 'numeric',
@@ -518,7 +521,7 @@ const CrowdfundingPage = () => {
             </div>
 
             <div className="space-y-4">
-              <h3 className="text-heading uppercase">Support Us</h3>
+              <SectionHeader overline="Contribute" title="Support Us" />
               {visibleTiers.map((tier) => (
                 <RewardTierCard key={tier?.title || Math.random()} tier={tier} busy={paying} onContribute={(item) => contribute([item])} />
               ))}

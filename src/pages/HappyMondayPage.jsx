@@ -9,6 +9,8 @@ const FeedbackForm = lazy(() => import('../components/menu/FeedbackForm'));
 // LoadingSpinner is a named export; map it to default for React.lazy
 const LoadingSpinner = lazy(() => import('../components/layout/LoadingSpinner').then(mod => ({ default: mod.LoadingSpinner })));
 import ErrorBoundary from '../components/ErrorBoundary';
+import SectionHeader from '../components/ui/SectionHeader';
+import Separator from '../components/ui/Separator';
 
 const HappyMondayPage = () => {
   const [menuItems, setMenuItems] = useState([]);
@@ -56,7 +58,7 @@ const HappyMondayPage = () => {
           {/* Render the dynamic content box */}
           {pageContent && (
             <div className="text-center mb-12">
-              <h2 className="text-heading uppercase mb-4">{pageContent.title}</h2>
+              <SectionHeader overline="Weekly Special" title={pageContent.title} />
               {/* The BlockContent component renders rich text. Wrap lazy import in Suspense + ErrorBoundary */}
               <div className="prose lg:prose-lg mx-auto max-w-3xl">
                 <ErrorBoundary>
@@ -89,7 +91,7 @@ const HappyMondayPage = () => {
         </section>
 
           <section className="mx-auto max-w-6xl px-4 md:px-6 lg:px-8">
-          <h2 className="text-heading uppercase mb-6 border-b border-neutral-300 pb-3">Feedback</h2>
+          <SectionHeader overline="Help Us Improve" title="Feedback" />
           <p className="text-body mb-8 max-w-2xl">
             Have a suggestion, a request, or feedback on our quality? We'd love to hear it. Your
             input helps us grow and improve.
@@ -100,6 +102,7 @@ const HappyMondayPage = () => {
             </Suspense>
           </ErrorBoundary>
         </section>
+        <Separator />
       </div>
 
       <AnimatePresence>
