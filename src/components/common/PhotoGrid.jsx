@@ -8,7 +8,7 @@ import CloudinaryImage from './cloudinaryImage';
  * - title?: string — optional heading above the grid.
  * - perPage?: number — max images to fetch per tag.
  */
-export default function PhotoGrid({ tags, title, perPage = 24, layout, masonry = false }) {
+export default function PhotoGrid({ tags, title, perPage = 24, layout, masonry = false, className = '', ...rest }) {
   const tagList = useMemo(() => (Array.isArray(tags) ? tags.filter(Boolean) : [tags].filter(Boolean)), [tags]);
   const [images, setImages] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -63,7 +63,7 @@ export default function PhotoGrid({ tags, title, perPage = 24, layout, masonry =
   const useMasonry = masonry || String(layout || '').toLowerCase() === 'masonry';
 
   return (
-    <section className="space-y-4">
+    <section className={["space-y-4", className].filter(Boolean).join(' ')} {...rest}>
       {title ? <h3 className="text-2xl font-bold">{title}</h3> : null}
       {loading ? (
         <p>Loading photos…</p>
