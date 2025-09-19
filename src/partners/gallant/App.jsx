@@ -76,6 +76,7 @@ const CateringSalesApp = () => {
   const [newEvent, setNewEvent] = useState({
     title: '',
     date: new Date(),
+    location: '',
     estimatedRevenue: '',
     estimatedFoodCost: '',
     estimatedLaborCost: '',
@@ -171,8 +172,51 @@ const CateringSalesApp = () => {
   
   const openEditModal = (event) => {
     setEditingEvent(event);
-    setNewEvent({ ...event, date: event.date, estimatedRevenue: event.estimatedRevenue.toString(), estimatedFoodCost: event.estimatedFoodCost.toString(), estimatedLaborCost: event.estimatedLaborCost.toString() });
+    setNewEvent({
+      ...event,
+      date: event.date,
+      location: event.location || '',
+      estimatedRevenue: (event.estimatedRevenue ?? '').toString(),
+      estimatedFoodCost: (event.estimatedFoodCost ?? '').toString(),
+      estimatedLaborCost: (event.estimatedLaborCost ?? '').toString()
+    });
     setShowEventModal(true);
+  };
+
+  // Confirm via backend: status + optional visibility (public/private), syncs Sanity + email
+  const [confirmVisibility, setConfirmVisibility] = useState('private');
+  useEffect(() => {
+    if (editingEvent) setConfirmVisibility(editingEvent.isPublic ? 'public' : 'private');
+  }, [editingEvent]);
+
+  const [confirming, setConfirming] = useState(false);
+  const [confirmError, setConfirmError] = useState('');
+  const handleConfirmEvent = async () => {
+    if (!editingEvent) return;
+    setConfirming(true);
+    setConfirmError('');
+    try {
+      const payload = {
+        eventId: editingEvent.id,
+        status: newEvent.status || 'confirmed',
+        startDateTime: newEvent.date ? newEvent.date.toISOString() : undefined,
+        location: newEvent.location || undefined,
+        visibility: confirmVisibility,
+      };
+      const resp = await fetch('/api/events/confirm', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      if (!resp.ok) throw new Error(`Confirm failed: ${resp.status}`);
+      // Close modal; Firestore listener will reflect updates (status/isPublic/publicEventId)
+      setShowEventModal(false);
+      setEditingEvent(null);
+    } catch (e) {
+      setConfirmError(e.message || String(e));
+    } finally {
+      setConfirming(false);
+    }
   };
 
   const renderCalendar = () => {
@@ -514,6 +558,10 @@ const CateringSalesApp = () => {
                   <input id="event-date" type="date" value={newEvent.date.toISOString().split('T')[0]} onChange={(e) => setNewEvent({...newEvent, date: new Date(e.target.value.replace(/-/g, '/') )})} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
                 </div>
                 <div>
+                  <label htmlFor="event-location" className="block text-sm font-medium text-gray-700 mb-1">Location</label>
+                  <input id="event-location" type="text" value={newEvent.location} onChange={(e) => setNewEvent({ ...newEvent, location: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="Venue, city" />
+                </div>
+                <div>
                   <label htmlFor="event-estimated-revenue" className="block text-sm font-medium text-gray-700 mb-1">Estimated Revenue</label>
                   <input id="event-estimated-revenue" type="number" value={newEvent.estimatedRevenue} onChange={(e) => setNewEvent({...newEvent, estimatedRevenue: e.target.value})} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="0.00" />
                 </div>
@@ -569,13 +617,41 @@ const CateringSalesApp = () => {
                     </button>
                   )}
                 </div>
-                <div className="flex space-x-3">
-                  <button onClick={() => { setShowEventModal(false); setEditingEvent(null); }} className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors">Cancel</button>
-                  <button onClick={handleSaveEvent} className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md transition-colors">
-                    <Save className="w-4 h-4 inline mr-2" />
-                    Save Event
-                  </button>
+                <div className="flex flex-col sm:flex-row gap-3 sm:items-center">
+                  {editingEvent && (
+                    <div className="flex items-center gap-2">
+                      <label htmlFor="confirm-visibility" className="text-sm text-gray-700">Publish:</label>
+                      <select id="confirm-visibility" value={confirmVisibility} onChange={(e) => setConfirmVisibility(e.target.value)} className="text-sm rounded border-gray-300">
+                        <option value="private">Private</option>
+                        <option value="public">Public</option>
+                      </select>
+                      <button onClick={handleConfirmEvent} disabled={confirming} className={`px-3 py-2 text-sm font-medium text-white rounded-md transition-colors ${confirming ? 'bg-gray-400' : 'bg-emerald-600 hover:bg-emerald-700'}`}>
+                        {confirming ? 'Confirming…' : 'Confirm'}
+                      </button>
+                    </div>
+                  )}
+                  <div className="flex space-x-3 ml-auto">
+                    <button onClick={() => { setShowEventModal(false); setEditingEvent(null); }} className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors">Cancel</button>
+                    <button onClick={handleSaveEvent} className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md transition-colors">
+                      <Save className="w-4 h-4 inline mr-2" />
+                      Save Event
+                    </button>
+                  </div>
                 </div>
+                {editingEvent && (
+                  <div className="mt-3">
+                    <p className="text-xs text-gray-500">Status: <span className={`px-1.5 py-0.5 rounded ${newEvent.status === 'confirmed' ? 'bg-green-100 text-green-700' : newEvent.status === 'pending' ? 'bg-yellow-100 text-yellow-700' : 'bg-gray-100 text-gray-700'}`}>{newEvent.status}</span></p>
+                    {typeof editingEvent.isPublic !== 'undefined' && (
+                      <p className="text-xs text-gray-500 mt-1">Visibility: <span className={`px-1.5 py-0.5 rounded ${editingEvent.isPublic ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-100 text-gray-700'}`}>{editingEvent.isPublic ? 'Public' : 'Private'}</span></p>
+                    )}
+                    {editingEvent.publicEventId && (
+                      <p className="text-xs text-gray-500 mt-1">Public Event ID: <span className="font-mono">{editingEvent.publicEventId}</span></p>
+                    )}
+                    {confirmError && (
+                      <p className="text-xs text-red-600 mt-1">{confirmError}</p>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
           </div>

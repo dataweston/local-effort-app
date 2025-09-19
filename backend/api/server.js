@@ -470,6 +470,286 @@ app.post('/api/subscribe', async (req, res) => {
   }
 });
 
+// --- EVENTS WORKFLOW ---
+function icsEscape(text) {
+  return String(text || '')
+    .replace(/\\/g, '\\\\')
+    .replace(/\n/g, '\\n')
+    .replace(/,/g, '\\,')
+    .replace(/;/g, '\\;');
+}
+
+function formatDateBasic(date) {
+  const d = new Date(date);
+  const y = d.getUTCFullYear();
+  const m = String(d.getUTCMonth() + 1).padStart(2, '0');
+  const day = String(d.getUTCDate()).padStart(2, '0');
+  return `${y}${m}${day}`;
+}
+
+function buildICS({ uid, summary, description, location, startDate, endDate, allDay = true, method = 'PUBLISH' }) {
+  const dtstamp = new Date().toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+  const lines = [
+    'BEGIN:VCALENDAR',
+    'VERSION:2.0',
+    `METHOD:${method}`,
+    'PRODID:-//Local Effort//Event Request//EN',
+    'CALSCALE:GREGORIAN',
+    'BEGIN:VEVENT',
+    `UID:${uid}`,
+    `DTSTAMP:${dtstamp}`,
+  ];
+  if (allDay) {
+    lines.push(`DTSTART;VALUE=DATE:${formatDateBasic(startDate)}`);
+    if (endDate) lines.push(`DTEND;VALUE=DATE:${formatDateBasic(endDate)}`);
+  } else {
+    const dt = (d) => new Date(d).toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+    lines.push(`DTSTART:${dt(startDate)}`);
+    if (endDate) lines.push(`DTEND:${dt(endDate)}`);
+  }
+  if (summary) lines.push(`SUMMARY:${icsEscape(summary)}`);
+  if (location) lines.push(`LOCATION:${icsEscape(location)}`);
+  if (description) lines.push(`DESCRIPTION:${icsEscape(description)}`);
+  lines.push('END:VEVENT', 'END:VCALENDAR');
+  return lines.join('\r\n');
+}
+
+function safeDateFromInput(dateStr) {
+  if (!dateStr) return null;
+  // Accept YYYY-MM-DD or ISO date strings
+  const d = new Date(dateStr);
+  if (!isNaN(d.getTime())) return d;
+  return null;
+}
+
+function hashKey(str) {
+  // lightweight hash
+  let h = 0;
+  const s = String(str || '');
+  for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) | 0;
+  return String(h >>> 0);
+}
+
+// Public endpoint: accept event request and create pending Firestore event, Sanity message, and notify via Brevo
+app.post('/api/events/request', async (req, res) => {
+  try {
+    const {
+      firstName, lastName, email, phone,
+      eventDate, city, state, zip,
+      eventType, guestCount, notes,
+      sendCopy = false,
+    } = req.body || {};
+
+    if (!email || !firstName || !lastName || !phone) {
+      return res.status(400).json({ error: 'missing-required-fields' });
+    }
+
+    const name = `${firstName} ${lastName}`.trim();
+    const startDate = safeDateFromInput(eventDate);
+    const location = [city, state, zip].filter(Boolean).join(', ');
+    const summary = [eventType || 'Event', guestCount ? `(${guestCount} guests)` : null, startDate ? `on ${eventDate}` : null]
+      .filter(Boolean).join(' ');
+    const details = [
+      eventType ? `Event Type: ${eventType}` : null,
+      startDate ? `Event Date: ${eventDate}` : null,
+      guestCount ? `Estimated Guests: ${guestCount}` : null,
+      location ? `Location: ${location}` : null,
+      '',
+      'Notes:',
+      notes || '(none)'
+    ].filter((l) => l !== null).join('\n');
+
+    // Upsert contact (Brevo + Sanity mirror)
+    const [first, ...rest] = (name || '').split(' ');
+    await upsertContact({ email, firstName: first, lastName: rest.join(' '), phone });
+
+    // Dedupe by email+date+city within 48h
+    const dedupeKey = hashKey(`${email.toLowerCase()}|${eventDate || ''}|${(city || '').toLowerCase()}`);
+    let existingId = null;
+    if (db) {
+      const snap = await db.collection('events').where('dedupeKey', '==', dedupeKey).limit(1).get().catch(() => null);
+      if (snap && !snap.empty) {
+        const doc = snap.docs[0];
+        const createdAt = doc.get('submittedAt');
+        const ts = createdAt && createdAt.toDate ? createdAt.toDate() : new Date(createdAt);
+        if (ts && (Date.now() - ts.getTime()) < 1000 * 60 * 60 * 48) {
+          existingId = doc.id;
+        }
+      }
+    }
+
+    // Mirror message in Sanity
+    const sc = getSanityClient();
+    let msgDoc = null;
+    if (sc) {
+      try {
+        msgDoc = await sc.create({
+          _type: 'message',
+          direction: 'inbound',
+          status: 'open',
+          subject: summary || 'Event Request',
+          bodyText: details,
+          fromEmail: email,
+          fromName: name,
+          phone: phone || null,
+          channel: 'form',
+          inbox: 'events',
+          messageType: 'event-request',
+          createdAt: new Date().toISOString(),
+        });
+      } catch (e) {
+        console.warn('Failed to write event-request message to Sanity:', e && e.message);
+      }
+    }
+
+    // Create or reuse Firestore event
+    let eventId = existingId;
+    if (db && !existingId) {
+      const payload = {
+        title: summary || 'Event Request',
+        date: startDate || new Date(),
+        status: 'pending',
+        notes: details,
+        contact: { name, email, phone },
+        location: location || null,
+        eventType: eventType || null,
+        guestCount: guestCount ? Number(guestCount) : null,
+        source: 'website',
+        submittedAt: new Date(),
+        dedupeKey,
+      };
+      const ref = await db.collection('events').add(payload);
+      eventId = ref.id;
+    }
+
+    // Email team + optional copy to client with ICS attachment
+    const headers = getBrevoHeaders();
+    if (headers) {
+      const teamEmail = process.env.SUPPORT_INBOX_EMAIL || process.env.TEAM_INBOX_EMAIL || process.env.SENDER_EMAIL;
+      const senderEmail = process.env.SENDER_EMAIL || teamEmail;
+      const html = `
+        <p>New <strong>Event Request</strong> from <strong>${name}</strong></p>
+        <p><strong>Email:</strong> ${email}${phone ? ` · <strong>Phone:</strong> ${phone}` : ''}</p>
+        <p><strong>Summary:</strong> ${summary || '(n/a)'}${location ? ` · <strong>Location:</strong> ${location}` : ''}</p>
+        <hr />
+        <pre style="white-space:pre-wrap;font-family:inherit">${(details || '').replace(/</g, '&lt;')}</pre>
+        ${eventId ? `<p>Event ID: ${eventId}</p>` : ''}
+      `;
+      const attachments = [];
+      if (startDate) {
+        const ics = buildICS({
+          uid: `evt-${eventId || Date.now()}@localeffortfood.com`,
+          summary: summary || 'Event Request',
+          description: `${name} — ${email}${phone ? `, ${phone}` : ''}\n\n${details}`,
+          location,
+          startDate,
+          allDay: true,
+        });
+        attachments.push({ name: 'event-request.ics', content: Buffer.from(ics).toString('base64') });
+      }
+      const payload = {
+        to: [{ email: teamEmail }],
+        sender: { email: senderEmail, name: 'Local Effort' },
+        subject: summary || 'New Event Request',
+        htmlContent: html,
+        replyTo: { email, name },
+        tags: ['event-request'],
+        attachment: attachments,
+      };
+      if (sendCopy && email) {
+        payload.cc = [{ email, name }];
+      }
+      await fetch('https://api.brevo.com/v3/smtp/email', { method: 'POST', headers, body: JSON.stringify(payload) }).catch(() => {});
+    }
+
+    return res.json({ ok: true, eventId, sanityMessageId: msgDoc?._id || null });
+  } catch (err) {
+    console.error('events/request error', err);
+    return res.status(500).json({ error: 'event-request-failed' });
+  }
+});
+
+// Admin/Tool endpoint: confirm or update an event and optionally publish to public events in Sanity
+app.post('/api/events/confirm', async (req, res) => {
+  try {
+    const { eventId, status = 'confirmed', startDateTime, endDateTime, location, visibility = 'private', ticketsUrl, description } = req.body || {};
+    if (!eventId) return res.status(400).json({ error: 'missing-eventId' });
+    if (!db) return res.status(500).json({ error: 'firestore-unavailable' });
+
+    const ref = db.collection('events').doc(eventId);
+    const snap = await ref.get();
+    if (!snap.exists) return res.status(404).json({ error: 'not-found' });
+
+  const updates = { status };
+    if (startDateTime) updates.date = new Date(startDateTime);
+    if (location !== undefined) updates.location = location;
+  // set isPublic flag; publicEventId handled below
+  updates.isPublic = visibility === 'public';
+  await ref.update(updates);
+
+    let publicEventId = null;
+    if (visibility === 'public') {
+      const sc = getSanityClient();
+      if (!sc) return res.status(500).json({ error: 'sanity-unavailable' });
+      const ev = snap.data();
+      const start = startDateTime ? new Date(startDateTime) : (ev.date?.toDate ? ev.date.toDate() : new Date(ev.date));
+      const end = endDateTime ? new Date(endDateTime) : null;
+      const toDateOnly = (d) => d.toISOString().slice(0, 10);
+      const blocks = description ? [{ _type: 'block', style: 'normal', children: [{ _type: 'span', text: String(description), marks: [] }] }] : [{ _type: 'block', style: 'normal', children: [{ _type: 'span', text: ev.notes || '', marks: [] }] }];
+      const doc = await sc.create({
+        _type: 'publicEvent',
+        location: location || ev.location || '',
+        startDate: toDateOnly(start),
+        endDate: end ? toDateOnly(end) : undefined,
+        foodType: ev.eventType || undefined,
+        ticketsUrl: ticketsUrl || undefined,
+        description: blocks,
+        firestoreEventId: eventId,
+      });
+      publicEventId = doc._id;
+      await ref.update({ publicEventId });
+    } else {
+      // mark as private: clear publicEventId in Firestore; leave any existing Sanity doc untouched for now
+      await ref.update({ publicEventId: null });
+    }
+
+    // Send confirmation email with ICS to client if we have their contact
+    try {
+      const ev = (await ref.get()).data();
+      const contact = ev && ev.contact;
+      const headers = getBrevoHeaders();
+      if (headers && contact && contact.email) {
+        const title = ev.title || 'Your Event';
+        const start = startDateTime ? new Date(startDateTime) : (ev.date?.toDate ? ev.date.toDate() : new Date(ev.date));
+        const ics = buildICS({
+          uid: `evt-${eventId}@localeffortfood.com`,
+          summary: title,
+          description: ev.notes || '',
+          location: location || ev.location || '',
+          startDate: start,
+          allDay: true,
+        });
+        const payload = {
+          to: [{ email: contact.email, name: contact.name }],
+          sender: { email: process.env.SENDER_EMAIL || contact.email, name: 'Local Effort' },
+          subject: `Confirmed: ${title}`,
+          htmlContent: `<p>We’ve confirmed your event. Details below.</p><pre style="white-space:pre-wrap;font-family:inherit">${(ev.notes || '').replace(/</g, '&lt;')}</pre>`,
+          attachment: [{ name: 'event.ics', content: Buffer.from(ics).toString('base64') }],
+          tags: ['event-confirmed'],
+        };
+        await fetch('https://api.brevo.com/v3/smtp/email', { method: 'POST', headers, body: JSON.stringify(payload) });
+      }
+    } catch (_e) {
+      // ignore email errors
+    }
+
+    return res.json({ ok: true, eventId, isPublic: visibility === 'public', publicEventId });
+  } catch (err) {
+    console.error('events/confirm error', err);
+    return res.status(500).json({ error: 'event-confirm-failed' });
+  }
+});
+
 // Create a blog post in Sanity. Accepts either { title, bodyBlocks?, text? }.
 // If `text` is provided, convert to a simple Portable Text block array.
 // Optional: { publishedAt, emailOnPublish, emailTo[] }

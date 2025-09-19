@@ -79,27 +79,21 @@ const ServicesPage = () => {
     }
     try {
       setSubmitting(true);
-      const subject = `Event Request${form.guestCount ? `: ${form.guestCount} guests` : ''}${form.eventDate ? ` on ${form.eventDate}` : ''}`;
-      const summary = [
-        form.eventType ? `Event Type: ${form.eventType}` : null,
-        form.eventDate ? `Event Date: ${form.eventDate}` : null,
-        form.guestCount ? `Estimated Guests: ${form.guestCount}` : null,
-        form.city || form.state || form.zip ? `Location: ${[form.city, form.state, form.zip].filter(Boolean).join(', ')}` : null,
-      ]
-        .filter(Boolean)
-        .join('\n');
-      const message = `${summary}\n\nNotes:\n${form.notes || '(none)'}`;
-
-      const resp = await fetch('/api/messages/submit', {
+      const resp = await fetch('/api/events/request', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({
-          name: `${form.firstName} ${form.lastName}`.trim(),
+          firstName: form.firstName,
+          lastName: form.lastName,
           email: form.email,
           phone: form.phone,
-          subject,
-          message,
-          type: 'event',
+          eventDate: form.eventDate,
+          city: form.city,
+          state: form.state,
+          zip: form.zip,
+          eventType: form.eventType,
+          guestCount: form.guestCount,
+          notes: form.notes,
           sendCopy: !!form.sendCopy,
         }),
       });
