@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Calendar, Plus, DollarSign, TrendingUp, ShoppingCart, Save, X, ChevronLeft, ChevronRight, Trash2, FileText } from 'lucide-react';
 import { db, firebaseProjectId } from '../../firebaseConfig';
 import Notepad from './Notepad';
+import { auth, signInWithGoogle, signOutUser } from '../../firebaseConfig';
+import { onAuthStateChanged } from 'firebase/auth';
 
 function toDateSafe(v) {
   if (!v) return new Date();
@@ -12,6 +14,23 @@ function toDateSafe(v) {
 import { collection, onSnapshot, addDoc, updateDoc, deleteDoc, doc } from 'firebase/firestore';
 
 const CateringSalesApp = () => {
+  const ALLOWED = new Set(['dataweston@gmail.com', 'colsen03@gmail.com']);
+  const [user, setUser] = useState(null);
+  const [authReady, setAuthReady] = useState(false);
+  useEffect(() => {
+    if (!auth) { setAuthReady(true); return; }
+    const unsub = onAuthStateChanged(auth, (u) => { setUser(u); setAuthReady(true); });
+    return () => unsub();
+  }, []);
+
+  const getAuthHeaders = async () => {
+    try {
+      const token = await auth?.currentUser?.getIdToken?.();
+      return token ? { Authorization: `Bearer ${token}` } : {};
+    } catch {
+      return {};
+    }
+  };
   // The state will now start empty and be populated from Firestore
   const [events, setEvents] = useState([]);
   const [receipts, setReceipts] = useState([]);
@@ -203,9 +222,10 @@ const CateringSalesApp = () => {
         location: newEvent.location || undefined,
         visibility: confirmVisibility,
       };
+      const authHeaders = await getAuthHeaders();
       const resp = await fetch('/api/events/confirm', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...authHeaders },
         body: JSON.stringify(payload),
       });
       if (!resp.ok) throw new Error(`Confirm failed: ${resp.status}`);
@@ -491,6 +511,32 @@ const CateringSalesApp = () => {
     )
   }
 
+  if (!authReady) {
+    return <div className="p-6">Loading…</div>;
+  }
+  if (!user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 p-6">
+        <div className="bg-white border rounded-lg shadow-sm p-6 max-w-md w-full text-center">
+          <h2 className="text-xl font-semibold mb-2">Gallant Hawking</h2>
+          <p className="text-sm text-gray-600 mb-4">Sign in with Google to access tools.</p>
+          <button onClick={() => signInWithGoogle()} className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Sign in with Google</button>
+        </div>
+      </div>
+    );
+  }
+  if (!ALLOWED.has(user.email || '')) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 p-6">
+        <div className="bg-white border rounded-lg shadow-sm p-6 max-w-md w-full text-center">
+          <h2 className="text-xl font-semibold mb-2">Access Denied</h2>
+          <p className="text-sm text-gray-600 mb-4">Your account is not authorized for Gallant tools.</p>
+          <button onClick={() => signOutUser()} className="px-4 py-2 bg-gray-100 rounded hover:bg-gray-200">Sign out</button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       <header className="bg-white shadow-sm border-b border-gray-200">
@@ -506,6 +552,7 @@ const CateringSalesApp = () => {
                 <Plus className="w-4 h-4" />
                 <span>New Event</span>
               </button>
+              <button onClick={() => signOutUser()} className="px-3 py-2 text-sm bg-gray-100 rounded hover:bg-gray-200">Sign out</button>
             </div>
           </div>
           <nav className="mt-4">

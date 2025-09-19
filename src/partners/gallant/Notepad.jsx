@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { db } from '../../firebaseConfig';
+import { db, auth } from '../../firebaseConfig';
 import { collection, addDoc, updateDoc, onSnapshot, doc, serverTimestamp } from 'firebase/firestore';
 
 function formatTitleFromContent(text) {
@@ -17,40 +17,86 @@ export default function Notepad() {
   const [saving, setSaving] = useState(false);
   const saveTimer = useRef(null);
 
+  const getAuthHeaders = async () => {
+    try {
+      const token = await auth?.currentUser?.getIdToken?.();
+      return token ? { Authorization: `Bearer ${token}` } : {};
+    } catch {
+      return {};
+    }
+  };
+
   useEffect(() => {
-    if (!db) return; // Render read-only empty state if no DB
-    const unsub = onSnapshot(collection(db, 'notes'), (snap) => {
-      const list = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
-      list.sort((a, b) => (b.updatedAt?.seconds || 0) - (a.updatedAt?.seconds || 0));
-      setNotes(list);
-      if (!activeId && list.length) {
-        setActiveId(list[0].id);
-        setOpenIds((ids) => (ids.includes(list[0].id) ? ids : [...ids, list[0].id]));
-      }
-    });
-    return () => unsub();
+    if (db) {
+      const unsub = onSnapshot(collection(db, 'notes'), (snap) => {
+        const list = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+        list.sort((a, b) => (b.updatedAt?.seconds || 0) - (a.updatedAt?.seconds || 0));
+        setNotes(list);
+        if (!activeId && list.length) {
+          setActiveId(list[0].id);
+          setOpenIds((ids) => (ids.includes(list[0].id) ? ids : [...ids, list[0].id]));
+        }
+      });
+      return () => unsub();
+    } else {
+      // Fallback to server-side list
+      (async () => {
+        try {
+          const authHeaders = await getAuthHeaders();
+          const res = await fetch('/api/notes', { headers: { ...authHeaders } });
+          const data = await res.json();
+          const list = (data.items || []).sort((a, b) => (b.updatedAt?.seconds || 0) - (a.updatedAt?.seconds || 0));
+          setNotes(list);
+          if (!activeId && list.length) {
+            setActiveId(list[0].id);
+            setOpenIds((ids) => (ids.includes(list[0].id) ? ids : [...ids, list[0].id]));
+          }
+  } catch (_) { /* ignore */ }
+      })();
+    }
   }, [activeId]);
 
   const activeNote = useMemo(() => notes.find((n) => n.id === activeId) || null, [notes, activeId]);
 
   const createNote = useCallback(async () => {
-    if (!db) return;
-    const init = { title: `Note ${new Date().toLocaleString()}`, content: '', createdAt: serverTimestamp(), updatedAt: serverTimestamp() };
-    const ref = await addDoc(collection(db, 'notes'), init);
-    setOpenIds((ids) => [...ids, ref.id]);
-    setActiveId(ref.id);
+    if (db) {
+      const init = { title: `Note ${new Date().toLocaleString()}`, content: '', createdAt: serverTimestamp(), updatedAt: serverTimestamp() };
+      const ref = await addDoc(collection(db, 'notes'), init);
+      setOpenIds((ids) => [...ids, ref.id]);
+      setActiveId(ref.id);
+    } else {
+      try {
+        const authHeaders = await getAuthHeaders();
+        const res = await fetch('/api/notes', { method: 'POST', headers: { 'content-type': 'application/json', ...authHeaders }, body: JSON.stringify({ title: `Note ${new Date().toLocaleString()}`, content: '' }) });
+        const data = await res.json();
+        if (data.id) {
+          setOpenIds((ids) => [...ids, data.id]);
+          setActiveId(data.id);
+          // Soft refresh notes
+          const listRes = await fetch('/api/notes', { headers: { ...authHeaders } });
+          const listData = await listRes.json();
+          setNotes(listData.items || []);
+        }
+  } catch (_) { /* ignore */ }
+    }
   }, []);
 
   const closeTab = (id) => setOpenIds((ids) => ids.filter((x) => x !== id));
 
   const queueSave = useCallback((id, next) => {
-    if (!db) return;
     setSaving(true);
     if (saveTimer.current) window.clearTimeout(saveTimer.current);
     saveTimer.current = window.setTimeout(async () => {
       try {
         const nextTitle = next.title?.trim() || formatTitleFromContent(next.content || '');
-        await updateDoc(doc(db, 'notes', id), { ...next, title: nextTitle, updatedAt: serverTimestamp() });
+        if (db) {
+          await updateDoc(doc(db, 'notes', id), { ...next, title: nextTitle, updatedAt: serverTimestamp() });
+        } else {
+          const authHeaders = await getAuthHeaders();
+          await fetch(`/api/notes/${id}`, {
+            method: 'PUT', headers: { 'content-type': 'application/json', ...authHeaders }, body: JSON.stringify({ title: nextTitle, content: next.content })
+          });
+        }
       } catch (_) {
         // ignore
       } finally {
@@ -66,22 +112,21 @@ export default function Notepad() {
         body: JSON.stringify({ title: note.title || 'Untitled', text: note.content || '', emailOnPublish: true })
       });
       if (!res.ok) throw new Error(await res.text());
-      alert('Published to blog and emailed (if configured).');
+      const data = await res.json().catch(() => ({}));
+      const slug = data?.slug;
+      if (slug) {
+        const url = `/weekly/${slug}`;
+        // lightweight toast via window.confirm for minimal UI change
+        if (window.confirm(`Published! Open the post now?\n${window.location.origin}${url}`)) {
+          window.open(url, '_blank', 'noopener');
+        }
+      } else {
+        alert('Published to blog and emailed (if configured).');
+      }
     } catch (e) {
       alert('Publish failed: ' + (e?.message || String(e)));
     }
   }, []);
-
-  if (!db) {
-    return (
-      <div className="p-4 border rounded bg-white">
-        <div className="flex items-center justify-between">
-          <h3 className="text-lg font-semibold">Notepad</h3>
-        </div>
-        <p className="text-sm text-gray-600 mt-2">Connect Firebase to enable notes.</p>
-      </div>
-    );
-  }
 
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200">
