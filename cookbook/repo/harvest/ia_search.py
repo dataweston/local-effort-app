@@ -33,17 +33,17 @@ def build_query() -> str:
     ]
     cookbook_clause = "(title:(" + " OR ".join(cookbook_terms) + ") OR subject:(" + " OR ".join(cookbook_terms) + "))"
 
-    # Regional signal: MN/WI/IA or "Midwest" in title/desc/subject/coverage/place
+    # Regional signal: MN/WI/IA or "Midwest" in title/desc/subject/publisher
     region_terms = ["Minnesota", "Wisconsin", "Iowa", "Midwest"]
-    region_fields = ["title", "description", "subject", "coverage", "place"]
+    region_fields = ["title", "description", "subject", "publisher"]
     region_parts: List[str] = []
     for f in region_fields:
         field_or = " OR ".join([f + ":" + t for t in region_terms])
         region_parts.append("(" + field_or + ")")
     region_clause = "(" + " OR ".join(region_parts) + ")"
 
-    # Prefer text materials
-    mediatype_clause = "mediatype:text"
+    # Prefer text materials (IA uses mediatype:texts)
+    mediatype_clause = "mediatype:texts"
 
     # Final: text AND cookbook AND (MN/WI/IA/Midwest across fields)
     return f"({mediatype_clause}) AND {cookbook_clause} AND {region_clause}"
