@@ -48,11 +48,18 @@ def normalize(item: Dict[str, Any]) -> Dict[str, Any]:
 
 def harvest(out_dir: Path, page_size: int, max_pages: int, api_key: Optional[str]) -> None:
     ensure_dir(out_dir)
+    # Build cookbook + Midwest query
+    cookbook_terms = ["cookbook", "cook book", "recipe", "recipes", "cookery", "cooking", "home economics"]
+    q = "(" + " OR ".join([f"sourceResource.title:{t}" for t in cookbook_terms] + [f"sourceResource.subject.name:{t}" for t in cookbook_terms]) + ")"
+    spatial = ["Minnesota", "Wisconsin", "Iowa", "Midwest"]
     params: Dict[str, Any] = {
-        "q": "midwest",
+        "q": q,
         "page_size": page_size,
-        # filter for Minnesota OR Wisconsin in spatial
-        "sourceResource.spatial.name": ["Minnesota", "Wisconsin"],
+        # spatial filter accepts a single value; iterate pages will keep it broad
+        # We’ll pass multiple via additional request cycles if needed; here we include a comma-separated value
+        "sourceResource.spatial.name": ",".join(spatial),
+        # Prefer text type
+        "sourceResource.type": "text",
     }
     if api_key:
         params["api_key"] = api_key

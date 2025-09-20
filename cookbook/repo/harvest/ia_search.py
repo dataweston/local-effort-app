@@ -27,14 +27,26 @@ def ensure_dir(path: Path) -> None:
 
 
 def build_query() -> str:
-    terms = ["Minnesota", "Wisconsin", "midwest"]
-    # Query across title, description, subject fields
-    fields = ["title", "description", "subject"]
-    parts: List[str] = []
-    for f in fields:
-        field_or = " OR ".join([f + ":" + t for t in terms])
-        parts.append(f"({field_or})")
-    return " OR ".join(parts)
+    # Cookbooks-only signal (title/subject)
+    cookbook_terms = [
+        '"cookbook"', '"cook book"', "recipe", "recipes", "cookery", "cooking", '"home economics"'
+    ]
+    cookbook_clause = "(title:(" + " OR ".join(cookbook_terms) + ") OR subject:(" + " OR ".join(cookbook_terms) + "))"
+
+    # Regional signal: MN/WI/IA or "Midwest" in title/desc/subject/coverage/place
+    region_terms = ["Minnesota", "Wisconsin", "Iowa", "Midwest"]
+    region_fields = ["title", "description", "subject", "coverage", "place"]
+    region_parts: List[str] = []
+    for f in region_fields:
+        field_or = " OR ".join([f + ":" + t for t in region_terms])
+        region_parts.append("(" + field_or + ")")
+    region_clause = "(" + " OR ".join(region_parts) + ")"
+
+    # Prefer text materials
+    mediatype_clause = "mediatype:text"
+
+    # Final: text AND cookbook AND (MN/WI/IA/Midwest across fields)
+    return f"({mediatype_clause}) AND {cookbook_clause} AND {region_clause}"
 
 
 @retry(wait=wait_exponential(multiplier=1, min=1, max=10),

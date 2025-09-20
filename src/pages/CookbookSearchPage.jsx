@@ -19,11 +19,12 @@ export default function CookbookSearchPage() {
 
   const apiBase = useMemo(() => {
     const env = (import.meta && import.meta.env) ? import.meta.env : {};
+    // Prefer same-origin in production
+    if (typeof window !== 'undefined' && window.location && window.location.origin) {
+      return window.location.origin;
+    }
     return (
-      env.VITE_COOKBOOK_API_URL ||
-      env.VITE_API_URL ||
-      env.NEXT_PUBLIC_API_URL ||
-      'http://localhost:8000'
+      env.VITE_COOKBOOK_API_URL || env.VITE_API_URL || env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000'
     );
   }, []);
 
