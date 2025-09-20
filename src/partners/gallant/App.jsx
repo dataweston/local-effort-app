@@ -55,6 +55,10 @@ const CateringSalesApp = () => {
       setErrorMsg('Not connected to Firebase (missing VITE_* config).');
       return;
     }
+    if (!authReady) return;
+    const email = (user?.email || '').toLowerCase();
+    if (!user || !ALLOWED.has(email)) return;
+
     const unsubscribe = onSnapshot(
       collection(db, 'events'),
       (snapshot) => {
@@ -64,17 +68,21 @@ const CateringSalesApp = () => {
           date: toDateSafe(d.data().date),
           repeatUntil: toDateSafe(d.data().repeatUntil),
         }));
-      setEvents(eventsData);
+        setEvents(eventsData);
       },
       (err) => {
-        setErrorMsg(err && (err.message || String(err)));
+        setErrorMsg((err && (err.code ? `${err.code}: ${err.message}` : err.message)) || 'Firestore error');
       }
     );
     return () => unsubscribe();
-  }, []);
+  }, [db, authReady, user]);
 
   useEffect(() => {
     if (!db) return;
+    if (!authReady) return;
+    const email = (user?.email || '').toLowerCase();
+    if (!user || !ALLOWED.has(email)) return;
+
     const unsubscribe = onSnapshot(
       collection(db, 'receipts'),
       (snapshot) => {
@@ -83,14 +91,14 @@ const CateringSalesApp = () => {
           ...d.data(),
           date: toDateSafe(d.data().date),
         }));
-      setReceipts(receiptsData);
+        setReceipts(receiptsData);
       },
       (err) => {
-        setErrorMsg(err && (err.message || String(err)));
+        setErrorMsg((err && (err.code ? `${err.code}: ${err.message}` : err.message)) || 'Firestore error');
       }
     );
     return () => unsubscribe();
-  }, []);
+  }, [db, authReady, user]);
 
   const [newEvent, setNewEvent] = useState({
     title: '',
@@ -135,8 +143,16 @@ const CateringSalesApp = () => {
   };
 
   // --- DATA MODIFICATION with FIRESTORE ---
+  const ensureAllowed = () => {
+    if (!auth?.currentUser) { setErrorMsg('auth: not signed in'); return false; }
+    const email = (auth.currentUser.email || '').toLowerCase();
+    if (!ALLOWED.has(email)) { setErrorMsg('auth: not authorized'); return false; }
+    return true;
+  };
+
   const handleSaveEvent = async () => {
     if (!db) return;
+    if (!ensureAllowed()) return;
     const eventData = {
       ...newEvent,
       estimatedRevenue: parseFloat(newEvent.estimatedRevenue) || 0,
@@ -173,6 +189,7 @@ const CateringSalesApp = () => {
 
   const handleDeleteEvent = async (eventId) => {
     if (!db) return;
+    if (!ensureAllowed()) return;
     if (window.confirm('Are you sure you want to delete this event?')) {
       const eventDoc = doc(db, 'events', eventId);
       await deleteDoc(eventDoc);
@@ -183,6 +200,7 @@ const CateringSalesApp = () => {
 
   const handleSaveReceipt = async () => {
     if (!db) return;
+    if (!ensureAllowed()) return;
     const receiptData = { ...newReceipt, total: parseFloat(newReceipt.total) || 0, date: new Date(newReceipt.date) };
     await addDoc(collection(db, 'receipts'), receiptData);
     setShowReceiptModal(false);
