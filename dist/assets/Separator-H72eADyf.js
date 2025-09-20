@@ -1,0 +1,1 @@
+import{R as l}from"./index-CUxUiH5k.js";function c({className:e="",orientation:a="horizontal",decorative:o=!0,...r}){const t=[a!=="vertical"?"h-px w-full my-12":"w-px h-full mx-4","bg-neutral-200",e].filter(Boolean).join(" ");return l.createElement("div",{role:o?"none":"separator","aria-orientation":a,className:t,...r})}export{c as S};

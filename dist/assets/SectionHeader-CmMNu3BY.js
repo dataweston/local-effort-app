@@ -1,0 +1,1 @@
+import{R as e}from"./index-CUxUiH5k.js";function c({overline:t,title:a,className:n=""}){return e.createElement("div",{className:["space-y-1",n].filter(Boolean).join(" ")},t?e.createElement("div",{className:"text-xs font-semibold uppercase tracking-wider text-neutral-500"},t):null,a?e.createElement("h2",{className:"text-heading"},a):null)}export{c as S};

@@ -39,6 +39,8 @@ const AuthPage = lazy(() => import('./pages/AuthPage'));
 const ZafaEmbeddedApp = lazy(() => import('./partners/zafa'));
 const GallantEmbeddedApp = lazy(() => import('./partners/gallant'));
 const HMEmbeddedApp = lazy(() => import('./partners/happymonday'));
+const CookbookSearchPage = lazy(() => import('./pages/CookbookSearchPage'));
+const CookbookRecipePage = lazy(() => import('./pages/CookbookRecipePage'));
 
 const AppContent = () => {
   const location = useLocation();
@@ -224,6 +226,22 @@ const AppContent = () => {
                   element={
                     <AnimatedPage>
                       <HMEmbeddedApp />
+                    </AnimatedPage>
+                  }
+                />
+                <Route
+                  path="/cookbook"
+                  element={
+                    <AnimatedPage>
+                      <CookbookSearchPage />
+                    </AnimatedPage>
+                  }
+                />
+                <Route
+                  path="/recipes/:id"
+                  element={
+                    <AnimatedPage>
+                      <CookbookRecipePage />
                     </AnimatedPage>
                   }
                 />
