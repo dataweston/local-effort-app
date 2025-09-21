@@ -1276,6 +1276,51 @@ app.post('/api/square/customers/import', async (req, res) => {
   }
 });
 
+// --- COOKBOOK API PROXY (same-origin for frontend) ---
+const COOKBOOK_API_BASE = process.env.COOKBOOK_API_BASE || process.env.VITE_COOKBOOK_API_URL || process.env.NEXT_PUBLIC_API_URL;
+if (COOKBOOK_API_BASE) {
+  const buildCookbookUrl = (path, qs) => {
+    const base = COOKBOOK_API_BASE.replace(/\/$/, '');
+    const url = new URL(base + path);
+    if (qs && typeof qs === 'object') {
+      for (const [k, v] of Object.entries(qs)) {
+        if (v !== undefined && v !== null) url.searchParams.set(k, String(v));
+      }
+    }
+    return url.toString();
+  };
+
+  app.get('/api/search', async (req, res) => {
+    try {
+      const upstream = buildCookbookUrl('/api/search', { q: req.query.q || '' });
+      const r = await fetch(upstream, { headers: { Accept: 'application/json' } });
+      const contentType = r.headers.get('content-type') || '';
+      const body = contentType.includes('application/json') ? await r.json() : await r.text();
+      if (!r.ok) return res.status(r.status).json({ error: 'upstream-error', details: body });
+      return res.status(200).json(body);
+    } catch (err) {
+      console.error('Cookbook proxy /api/search failed:', err);
+      return res.status(502).json({ error: 'cookbook-proxy-failed' });
+    }
+  });
+
+  app.get('/api/recipes/:id', async (req, res) => {
+    try {
+      const id = req.params.id;
+      const upstream = buildCookbookUrl(`/api/recipes/${encodeURIComponent(id)}`);
+      const r = await fetch(upstream, { headers: { Accept: 'application/json' } });
+      const contentType = r.headers.get('content-type') || '';
+      const body = contentType.includes('application/json') ? await r.json() : await r.text();
+      if (!r.ok) return res.status(r.status).json({ error: 'upstream-error', details: body });
+      return res.status(200).json(body);
+    } catch (err) {
+      console.error('Cookbook proxy /api/recipes failed:', err);
+      return res.status(502).json({ error: 'cookbook-proxy-failed' });
+    }
+  });
+} else {
+  console.warn('COOKBOOK_API_BASE not set — /api/search and /api/recipes proxy disabled.');
+}
 
 // Start server when run directly
 const PORT = process.env.PORT || 3001;
