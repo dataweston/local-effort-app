@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+from collections import Counter
 from typing import List, Optional
 
 from fastapi import FastAPI, HTTPException, Query
@@ -69,9 +70,26 @@ async def get_recipe(doc_id: str, index: str = "recipes"):
 
 
 @app.get("/api/search")
-async def search(q: str = Query("", min_length=0), size: int = 10, index: str = "recipes"):
+async def search(
+    q: str = Query("", min_length=0),
+    size: int = 10,
+    index: str = "recipes",
+    state: Optional[str] = Query(None),
+    county: Optional[str] = Query(None),
+    institution: Optional[str] = Query(None),
+    has_scans: Optional[bool] = Query(None),
+):
     client = get_client()
     if client is not None:
+        filter_clauses: List[dict] = []
+        if state:
+            filter_clauses.append({"term": {"location.state": state}})
+        if county:
+            filter_clauses.append({"term": {"location.county": county}})
+        if institution:
+            filter_clauses.append({"term": {"institution": institution}})
+        if has_scans is True:
+            filter_clauses.append({"term": {"curation.has_digital_assets": True}})
         body = {
             "query": {
                 "bool": {
@@ -79,22 +97,34 @@ async def search(q: str = Query("", min_length=0), size: int = 10, index: str = 
                         {"multi_match": {"query": q, "fields": ["title^2", "ingredients", "instructions"]}},
                     ],
                     "minimum_should_match": 1 if q else 0,
+                    "filter": filter_clauses,
                 }
             },
             "size": size,
-            "highlight": {"fields": {"instructions": {}}},
+            "highlight": {"fields": {"instructions": {}, "ingredients": {}}},
+            "aggs": {
+                "states": {"terms": {"field": "location.state", "size": 25}},
+                "counties": {"terms": {"field": "location.county", "size": 25}},
+                "institutions": {"terms": {"field": "institution", "size": 25}},
+            },
         }
         res = client.search(index=index, body=body)
         hits = [
             {"id": h.get("_id"), **(h.get("_source") or {}), "highlight": h.get("highlight")}
             for h in res.get("hits", {}).get("hits", [])
         ]
-        return {"results": hits, "total": res.get("hits", {}).get("total")}
+        aggs = res.get("aggregations", {})
+        facets = {
+            name: bucket.get("buckets", []) if isinstance(bucket, dict) else []
+            for name, bucket in aggs.items()
+        }
+        return {"results": hits, "total": res.get("hits", {}).get("total"), "facets": facets}
 
     # Local fallback search
     if not LOCAL_RECIPES:
-        return {"results": [], "total": {"value": 0}}
+        return {"results": [], "total": {"value": 0}, "facets": {}}
     ql = (q or "").strip().lower()
+
     def match(doc: dict) -> bool:
         if not ql:
             return True
@@ -106,10 +136,58 @@ async def search(q: str = Query("", min_length=0), size: int = 10, index: str = 
             if isinstance(arr, list) and any(ql in str(x).lower() for x in arr):
                 return True
         return False
-    matched = [
-        {**doc, "id": doc.get("id") or doc.get("identifier")}
-        for doc in LOCAL_RECIPES
-        if match(doc)
-    ]
-    return {"results": matched[: max(1, int(size))], "total": {"value": len(matched)}}
+
+    def matches_filters(doc: dict) -> bool:
+        location = doc.get("location") or {}
+        if state and location.get("state") != state:
+            return False
+        if county and location.get("county") != county:
+            return False
+        if institution and doc.get("institution") != institution:
+            return False
+        if has_scans is True:
+            if not (doc.get("iiif_manifest") or doc.get("pdf_url") or doc.get("curation", {}).get("has_digital_assets")):
+                return False
+        return True
+
+    matched_docs = []
+    for doc in LOCAL_RECIPES:
+        if not matches_filters(doc):
+            continue
+        if not match(doc):
+            continue
+        doc_id = doc.get("id") or doc.get("identifier")
+        highlight = None
+        if ql:
+            ingredients = doc.get("ingredients") or []
+            instructions = doc.get("instructions") or []
+            highlight_map = {
+                "ingredients": [x for x in ingredients if ql in str(x).lower()],
+                "instructions": [x for x in instructions if ql in str(x).lower()],
+            }
+            highlight_map = {k: v for k, v in highlight_map.items() if v}
+            if highlight_map:
+                highlight = highlight_map
+        matched_docs.append({**doc, "id": doc_id, "highlight": highlight})
+
+    limited = matched_docs[: max(1, int(size))]
+
+    def build_facet(counter: Counter) -> List[dict]:
+        return [{"key": key, "doc_count": count} for key, count in counter.most_common()]
+
+    state_counter = Counter(
+        [doc.get("location", {}).get("state") for doc in matched_docs if doc.get("location", {}).get("state")]
+    )
+    county_counter = Counter(
+        [doc.get("location", {}).get("county") for doc in matched_docs if doc.get("location", {}).get("county")]
+    )
+    institution_counter = Counter([doc.get("institution") for doc in matched_docs if doc.get("institution")])
+
+    facets = {
+        "states": build_facet(state_counter),
+        "counties": build_facet(county_counter),
+        "institutions": build_facet(institution_counter),
+    }
+
+    return {"results": limited, "total": {"value": len(matched_docs)}, "facets": facets}
 

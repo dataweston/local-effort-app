@@ -44,6 +44,24 @@ def ensure_recipes_index(client: OpenSearch, index: str = "recipes") -> None:
                 "source": {"type": "keyword"},
                 "identifier": {"type": "keyword"},
                 "iiif_manifest": {"type": "keyword"},
+                "pdf_url": {"type": "keyword"},
+                "institution": {"type": "keyword"},
+                "curation_notes": {"type": "text"},
+                "year": {"type": "integer"},
+                "location": {
+                    "properties": {
+                        "state": {"type": "keyword"},
+                        "county": {"type": "keyword"},
+                        "city": {"type": "keyword"},
+                    }
+                },
+                "curation": {
+                    "properties": {
+                        "score": {"type": "integer"},
+                        "has_digital_assets": {"type": "boolean"},
+                        "matched_community": {"type": "keyword"},
+                    }
+                },
             }
         },
     }

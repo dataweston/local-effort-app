@@ -1,0 +1,84 @@
+{
+  "allow": {
+    "cookbook": [
+      "cookbook",
+      "cook book",
+      "recipe",
+      "recipes",
+      "cookery",
+      "cooking",
+      "home economics",
+      "community cookbook"
+    ],
+    "community": [
+      "church",
+      "parish",
+      "ladies aid",
+      "auxiliary",
+      "guild",
+      "ptsa",
+      "pta",
+      "women's club",
+      "lodge",
+      "grange",
+      "school",
+      "4-h"
+    ],
+    "institutions": [
+      "lutheran",
+      "catholic",
+      "methodist",
+      "synagogue",
+      "temple",
+      "county historical society",
+      "garden club"
+    ],
+    "locations": {
+      "states": [
+        "Minnesota",
+        "Wisconsin"
+      ],
+      "state_abbreviations": [
+        "MN",
+        "WI"
+      ],
+      "counties": [
+        "Hennepin County",
+        "Ramsey County",
+        "Dakota County",
+        "Olmsted County",
+        "St. Louis County",
+        "Brown County",
+        "Dane County",
+        "Milwaukee County",
+        "La Crosse County",
+        "Door County",
+        "Marathon County"
+      ],
+      "cities": [
+        "Minneapolis",
+        "Saint Paul",
+        "St. Paul",
+        "Rochester",
+        "Duluth",
+        "Madison",
+        "Milwaukee",
+        "Green Bay"
+      ],
+      "regions": [
+        "Twin Cities",
+        "Upper Midwest"
+      ]
+    }
+  },
+  "deny": {
+    "keywords": [
+      "diet",
+      "microwave",
+      "corporate",
+      "weight loss",
+      "advertising",
+      "dietetic"
+    ]
+  }
+}

@@ -20,3 +20,21 @@ def test_basic_recipe_parsing():
     assert any('mix ingredients' in x.lower() for x in recipes[0]['instructions'])
     assert recipes[1]['title'].lower() == 'pancakes'
     assert len(recipes[1]['ingredients']) >= 1
+
+
+def test_headings_not_treated_as_titles():
+    text = """
+    FAVORITE BROWNIES
+    Ingredients:
+    1 cup sugar
+    2 eggs
+    Directions:
+    Mix together and bake.
+    """
+
+    recipes = parse_recipes_from_text(text)
+    assert len(recipes) == 1
+    recipe = recipes[0]
+    assert recipe['title'] == 'FAVORITE BROWNIES'
+    assert any('1 cup sugar' in step for step in recipe['ingredients'])
+    assert any('mix together' in step.lower() for step in recipe['instructions'])

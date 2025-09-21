@@ -39,7 +39,7 @@ def is_title(line: str) -> bool:
         return False
     # Avoid lines that end with a colon typical for headings wrongly captured
     if s.endswith(":"):
-        return True
+        return False
     return bool(TITLE_RE.match(s))
 
 
