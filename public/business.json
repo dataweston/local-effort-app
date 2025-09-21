@@ -1,0 +1,12 @@
+{
+  "name": "Local Effort Food Co.",
+  "description": "Personal chef and event catering serving Minneapolis, St. Paul, Roseville, and the Twin Cities. In-home private dinners, weekly meal prep, and small event catering.",
+  "services": ["personal chef", "meal prep", "event catering"],
+  "serviceArea": ["Minneapolis", "St. Paul", "Roseville", "Twin Cities", "Minnesota", "Western Wisconsin"],
+  "telephone": "+1-612-555-XXXX",
+  "url": "https://localeffortfood.com",
+  "sameAs": [
+    "https://www.instagram.com/localeffortfood",
+    "https://www.facebook.com/localeffortfood"
+  ]
+}

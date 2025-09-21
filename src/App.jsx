@@ -41,6 +41,10 @@ const GallantEmbeddedApp = lazy(() => import('./partners/gallant'));
 const HMEmbeddedApp = lazy(() => import('./partners/happymonday'));
 const CookbookSearchPage = lazy(() => import('./pages/CookbookSearchPage'));
 const CookbookRecipePage = lazy(() => import('./pages/CookbookRecipePage'));
+// City landing pages
+const PersonalChefMinneapolisPage = lazy(() => import('./pages/PersonalChefMinneapolis'));
+const PersonalChefStPaulPage = lazy(() => import('./pages/PersonalChefStPaul'));
+const PersonalChefTwinCitiesPage = lazy(() => import('./pages/PersonalChefTwinCities'));
 
 const AppContent = () => {
   const location = useLocation();
@@ -169,6 +173,30 @@ const AppContent = () => {
                   element={
                     <AnimatedPage>
                       <GalleryPage />
+                    </AnimatedPage>
+                  }
+                />
+                <Route
+                  path="/personal-chef-minneapolis"
+                  element={
+                    <AnimatedPage>
+                      <PersonalChefMinneapolisPage />
+                    </AnimatedPage>
+                  }
+                />
+                <Route
+                  path="/personal-chef-st-paul"
+                  element={
+                    <AnimatedPage>
+                      <PersonalChefStPaulPage />
+                    </AnimatedPage>
+                  }
+                />
+                <Route
+                  path="/personal-chef-twin-cities"
+                  element={
+                    <AnimatedPage>
+                      <PersonalChefTwinCitiesPage />
                     </AnimatedPage>
                   }
                 />
