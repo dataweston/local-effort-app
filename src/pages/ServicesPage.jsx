@@ -189,13 +189,13 @@ const ServicesPage = () => {
           </div>
         </div>
 
-        {/* Local city pages quick links for internal linking */}
+        {/* Local city pages quick links (visually hidden, available to crawlers) */}
         <div className="text-center">
-          <div className="inline-flex flex-wrap gap-3 mt-2">
+          <span className="sr-only">
             <a href="/personal-chef-minneapolis" className="btn btn-ghost">Personal Chef Minneapolis</a>
             <a href="/personal-chef-st-paul" className="btn btn-ghost">Personal Chef St. Paul</a>
             <a href="/personal-chef-twin-cities" className="btn btn-ghost">Twin Cities Personal Chef</a>
-          </div>
+          </span>
         </div>
 
   {/* Photo grid removed per request */}

@@ -483,9 +483,11 @@ const HomePage = () => {
               >
                 Book an event
               </motion.button>
-              <a href="/personal-chef-minneapolis" className="btn">Personal Chef Minneapolis</a>
-              <a href="/personal-chef-st-paul" className="btn">Personal Chef St. Paul</a>
-              <a href="/personal-chef-twin-cities" className="btn">Twin Cities Personal Chef</a>
+              <span className="sr-only">
+                <a href="/personal-chef-minneapolis" className="btn">Personal Chef Minneapolis</a>
+                <a href="/personal-chef-st-paul" className="btn">Personal Chef St. Paul</a>
+                <a href="/personal-chef-twin-cities" className="btn">Twin Cities Personal Chef</a>
+              </span>
             </div>
           </div>
 
