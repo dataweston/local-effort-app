@@ -29,7 +29,13 @@ def ensure_dir(path: Path) -> None:
     path.mkdir(parents=True, exist_ok=True)
 
 
-def build_location_groups(chunk_size: int = 10) -> List[List[str]]:
+def _field_clause(field: str, terms: Iterable[str]) -> str:
+    cleaned = [quote_term(term) for term in terms if term]
+    inner = " OR ".join(cleaned)
+    return f"{field}:(" + inner + ")"
+
+
+def build_location_groups(chunk_size: int = 2) -> List[List[str]]:
     """Return grouped location terms so advancedsearch queries stay below size limits."""
     terms = load_terms()
     locations = terms.get("allow", {}).get("locations", {})
@@ -62,12 +68,8 @@ def build_query(location_terms: Optional[List[str]] = None) -> str:
         allow.get("community", []),
         allow.get("institutions", []),
     )
-    cookbook_fields = ["title", "subject", "description", "creator", "publisher", "collection"]
-    cookbook_parts: List[str] = []
-    for field in cookbook_fields:
-        field_terms = " OR ".join(f"{field}:{quote_term(term)}" for term in cookbook_terms)
-        cookbook_parts.append(f"({field_terms})")
-    cookbook_clause = "(" + " OR ".join(cookbook_parts) + ")"
+    cookbook_fields = ["title", "description", "subject"]
+    cookbook_clause = "(" + " OR ".join(_field_clause(field, cookbook_terms) for field in cookbook_fields) + ")"
 
     locations = allow.get("locations", {})
     if location_terms is None:
@@ -80,22 +82,15 @@ def build_query(location_terms: Optional[List[str]] = None) -> str:
         )
     else:
         location_terms = list(dict.fromkeys(location_terms))
-    location_fields = ["title", "description", "subject", "creator", "publisher", "coverage", "notes"]
-    location_parts: List[str] = []
-    for field in location_fields:
-        field_terms = " OR ".join(f"{field}:{quote_term(term)}" for term in location_terms)
-        location_parts.append(f"({field_terms})")
-    location_clause = "(" + " OR ".join(location_parts) + ")"
+    location_fields = ["title", "description", "subject", "coverage"]
+    location_clause = "(" + " OR ".join(_field_clause(field, location_terms) for field in location_fields) + ")"
 
     negative_terms = flatten_terms(deny.get("keywords", []))
     negative_clause = ""
     if negative_terms:
         negative_fields = ["title", "description", "subject", "publisher"]
-        neg_parts: List[str] = []
-        for field in negative_fields:
-            field_terms = " OR ".join(f"{field}:{quote_term(term)}" for term in negative_terms)
-            neg_parts.append(f"({field_terms})")
-        negative_clause = " AND NOT (" + " OR ".join(neg_parts) + ")"
+        neg_clause = " OR ".join(_field_clause(field, negative_terms) for field in negative_fields)
+        negative_clause = " AND NOT (" + neg_clause + ")"
 
     availability_clause = "(mediatype:texts AND (format:pdf OR format:\"Text PDF\" OR has_fulltext:true))"
 
@@ -210,6 +205,9 @@ def harvest(output_dir: Path, rows: int, start_page: int, max_pages: int) -> Non
                 rows=rows,
                 page=page,
             )
+            if "error" in data:
+                logging.warning("IA query error group=%s page=%s error=%s", group_index, page, data["error"])
+                break
             resp = data.get("response", {})
             if total is None:
                 total = resp.get("numFound")

@@ -14,11 +14,12 @@ def test_ia_query_uses_external_terms():
 
 
 def test_ia_queries_chunk_locations():
-    groups = build_location_groups(chunk_size=5)
-    assert groups
+    groups = build_location_groups()
+    assert len(groups) > 1
     for group in groups:
         query = build_ia_query(location_terms=group)
-        assert len(query) < 6000
+        assert len(group) <= 6
+        assert len(query) < 3000
 
 
 def test_dpla_plan_includes_negative_and_spatial():

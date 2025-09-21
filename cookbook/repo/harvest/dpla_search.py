@@ -1,8 +1,8 @@
 """
 DPLA harvester for Midwest content.
 
-Uses `DPLA_API_KEY` from env. Queries q=midwest with spatial filters for
-Minnesota/Wisconsin, normalizes, and writes JSON files to `./data/dpla/{id}.json`.
+Uses DPLA_API_KEY from env. Queries q=midwest with spatial filters for
+Minnesota/Wisconsin, normalizes, and writes JSON files to ./data/dpla/{id}.json.
 """
 from __future__ import annotations
 
@@ -31,22 +31,12 @@ def build_query_plan() -> Dict[str, Any]:
     allow = terms.get("allow", {})
     deny = terms.get("deny", {})
 
-    cookbook_terms = flatten_terms(allow.get("cookbook", []))
+    cookbook_terms = [t for t in flatten_terms(allow.get("cookbook", [])) if t]
     community_terms = flatten_terms(allow.get("community", []), allow.get("institutions", []))
-    negative_terms = flatten_terms(deny.get("keywords", []))
+    key_terms = list(dict.fromkeys(cookbook_terms))[:5] or ["cookbook"]
+    query = "(" + " OR ".join(quote_term(term) for term in key_terms) + ")"
 
-    positive_fields = [
-        "sourceResource.title",
-        "sourceResource.description",
-        "sourceResource.subject.name",
-        "dataProvider",
-    ]
-    positive_clauses: List[str] = []
-    for term in cookbook_terms + community_terms:
-        quoted = quote_term(term)
-        field_clauses = [f"{field}:{quoted}" for field in positive_fields]
-        positive_clauses.append("(" + " OR ".join(field_clauses) + ")")
-    query = "(" + " OR ".join(positive_clauses) + ")"
+    negative_terms = flatten_terms(deny.get("keywords", []))
     if negative_terms:
         negatives = " ".join(f"-{quote_term(term)}" for term in negative_terms)
         query = f"{query} {negatives}".strip()
@@ -59,7 +49,6 @@ def build_query_plan() -> Dict[str, Any]:
         locations.get("states", []),
         locations.get("cities", []),
     )
-    # Preserve order while deduplicating
     spatial_terms = list(dict.fromkeys(spatial_terms))
 
     return {
@@ -142,7 +131,6 @@ def _collect_spatial(value: Any) -> List[str]:
             names.extend(_collect_spatial(v))
     elif isinstance(value, str):
         names.append(value)
-    # Deduplicate while preserving order
     return list(dict.fromkeys([n for n in names if isinstance(n, str)]))
 
 
