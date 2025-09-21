@@ -33,7 +33,7 @@ def build_query_plan() -> Dict[str, Any]:
 
     cookbook_terms = [t for t in flatten_terms(allow.get("cookbook", [])) if t]
     community_terms = flatten_terms(allow.get("community", []), allow.get("institutions", []))
-    key_terms = list(dict.fromkeys(cookbook_terms))[:5] or ["cookbook"]
+    key_terms = list(dict.fromkeys(cookbook_terms))[:4] or ["cookbook"]
     query = "(" + " OR ".join(quote_term(term) for term in key_terms) + ")"
 
     negative_terms = flatten_terms(deny.get("keywords", []))
@@ -41,7 +41,7 @@ def build_query_plan() -> Dict[str, Any]:
         negatives = " ".join(f"-{quote_term(term)}" for term in negative_terms)
         query = f"{query} {negatives}".strip()
 
-    subject_filter = "|".join(community_terms) if community_terms else None
+    subject_filter = None
 
     locations = allow.get("locations", {})
     spatial_terms = flatten_terms(
@@ -71,7 +71,7 @@ def normalize(item: Dict[str, Any]) -> Dict[str, Any]:
     source_resource = item.get("sourceResource", {}) or {}
     title = _first_text(source_resource.get("title"))
     description = _first_text(source_resource.get("description"))
-    subjects = source_resource.get("subject")
+    subjects = _collect_subjects(source_resource.get("subject"))
     spatial = _collect_spatial(source_resource.get("spatial"))
     provider = item.get("provider") or {}
     provider_name = None
@@ -83,6 +83,7 @@ def normalize(item: Dict[str, Any]) -> Dict[str, Any]:
         dp = item.get("dataProvider")
         provider_name = _first_text(dp)
 
+    raw_links = {k: item.get(k) for k in ("object", "isShownAt", "hasView") if item.get(k) is not None}
     norm: Dict[str, Any] = {
         "source": "dpla",
         "id": item.get("id"),
@@ -94,8 +95,9 @@ def normalize(item: Dict[str, Any]) -> Dict[str, Any]:
         "isShownAt": item.get("isShownAt"),
         "provider": provider,
         "institution": provider_name,
-        "data": item,
     }
+    if raw_links:
+        norm["data"] = raw_links
     iiif = _extract_iiif(item)
     if iiif:
         norm["iiif_manifest"] = iiif
@@ -116,6 +118,24 @@ def _first_text(value: Any) -> Optional[str]:
             if text:
                 return text
     return None
+
+
+def _collect_subjects(value: Any) -> List[str]:
+    names: List[str] = []
+    if isinstance(value, list):
+        for item in value:
+            names.extend(_collect_subjects(item))
+    elif isinstance(value, dict):
+        name = value.get("name") or value.get("label")
+        if isinstance(name, str):
+            names.append(name)
+        for v in value.values():
+            if v is name:
+                continue
+            names.extend(_collect_subjects(v))
+    elif isinstance(value, str):
+        names.append(value)
+    return list(dict.fromkeys([n for n in names if isinstance(n, str)]))
 
 
 def _collect_spatial(value: Any) -> List[str]:

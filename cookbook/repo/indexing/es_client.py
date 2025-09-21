@@ -23,6 +23,7 @@ def ensure_recipes_index(client: OpenSearch, index: str = "recipes") -> None:
         return
     body = {
         "settings": {
+            "index.mapping.total_fields.limit": 5000,
             "analysis": {
                 "filter": {
                     "autocomplete_filter": {"type": "edge_ngram", "min_gram": 1, "max_gram": 15}

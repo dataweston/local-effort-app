@@ -282,7 +282,7 @@ const GalleryPage = () => {
                     {img.thumbnail_url ? (
                       <img
                         src={img.thumbnail_url}
-                        alt={img.context?.alt || 'Gallery image'}
+                        alt={img.context?.alt || 'Private chef plated dish — Local Effort Personal Chef — Minneapolis / St. Paul'}
                         className="rounded-lg w-full h-auto"
                         width={img.width || undefined}
                         height={img.height || undefined}
@@ -293,7 +293,7 @@ const GalleryPage = () => {
                     ) : (
                       <CloudinaryImage
                         publicId={img.public_id}
-                        alt={img.context?.alt || 'Gallery image'}
+                        alt={img.context?.alt || 'Private chef plated dish — Local Effort Personal Chef — Minneapolis / St. Paul'}
                         width={800}
                         className="rounded-lg w-full h-auto"
                         containerStyle={img.width && img.height ? { aspectRatio: `${img.width} / ${img.height}` } : undefined}
@@ -301,7 +301,7 @@ const GalleryPage = () => {
                     )}
                   </button>
                   <figcaption className="text-xs text-neutral-600 mt-2">
-                    {img.context?.alt || 'Local Effort personal chef — Twin Cities'}
+                    {img.context?.alt || 'Private chef plated seared trout — Local Effort Personal Chef — Minneapolis'}
                   </figcaption>
                 </figure>
               ))}

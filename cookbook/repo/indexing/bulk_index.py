@@ -72,8 +72,19 @@ def bulk_index(data_root: Path, index: str = "recipes") -> None:
             yield {"_index": index, "_id": doc_id, "_source": doc}
 
     actions = actions_iter()
-    success, errors = helpers.bulk(client, actions, raise_on_error=False, stats_only=False)
-    logging.info("indexed=%s errors=%s", success, len(errors) if isinstance(errors, list) else errors)
+    success, errors = helpers.bulk(
+        client,
+        actions,
+        raise_on_error=False,
+        stats_only=False,
+        chunk_size=200,
+        request_timeout=60,
+    )
+    error_count = len(errors) if isinstance(errors, list) else errors
+    logging.info("indexed=%s errors=%s", success, error_count)
+    if isinstance(errors, list) and errors:
+        for sample in errors[:3]:
+            logging.warning("sample_error=%s", sample)
 
 
 def main() -> None:
