@@ -20,6 +20,8 @@ const staticPaths = [
   '/personal-chef-minneapolis',
   '/personal-chef-st-paul',
   '/personal-chef-twin-cities',
+  '/personal-chef-minnesota',
+  '/personal-chef-wisconsin',
 ];
 
 module.exports = async (req, res) => {

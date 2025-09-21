@@ -8,6 +8,23 @@ export const Footer = () => {
           <div>
             <p>&copy; {new Date().getFullYear()} Local Effort</p>
             <p className="text-neutral-500">Roseville, MN · Midwest</p>
+            <p className="mt-2 text-neutral-600">
+              Service Areas:
+              {' '}
+              <a href="/personal-chef-minneapolis" className="underline underline-offset-4 hover:opacity-80">Minneapolis</a>
+              {' '}|
+              {' '}
+              <a href="/personal-chef-st-paul" className="underline underline-offset-4 hover:opacity-80">St. Paul</a>
+              {' '}|
+              {' '}
+              <a href="/personal-chef-twin-cities" className="underline underline-offset-4 hover:opacity-80">Twin Cities</a>
+              {' '}|
+              {' '}
+              <a href="/personal-chef-minnesota" className="underline underline-offset-4 hover:opacity-80">Minnesota</a>
+              {' '}|
+              {' '}
+              <a href="/personal-chef-wisconsin" className="underline underline-offset-4 hover:opacity-80">Wisconsin</a>
+            </p>
           </div>
           <div className="flex gap-4">
             <a

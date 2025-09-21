@@ -45,6 +45,8 @@ const CookbookRecipePage = lazy(() => import('./pages/CookbookRecipePage'));
 const PersonalChefMinneapolisPage = lazy(() => import('./pages/PersonalChefMinneapolis'));
 const PersonalChefStPaulPage = lazy(() => import('./pages/PersonalChefStPaul'));
 const PersonalChefTwinCitiesPage = lazy(() => import('./pages/PersonalChefTwinCities'));
+const PersonalChefMinnesotaPage = lazy(() => import('./pages/PersonalChefMinnesota'));
+const PersonalChefWisconsinPage = lazy(() => import('./pages/PersonalChefWisconsin'));
 
 const AppContent = () => {
   const location = useLocation();
@@ -197,6 +199,22 @@ const AppContent = () => {
                   element={
                     <AnimatedPage>
                       <PersonalChefTwinCitiesPage />
+                    </AnimatedPage>
+                  }
+                />
+                <Route
+                  path="/personal-chef-minnesota"
+                  element={
+                    <AnimatedPage>
+                      <PersonalChefMinnesotaPage />
+                    </AnimatedPage>
+                  }
+                />
+                <Route
+                  path="/personal-chef-wisconsin"
+                  element={
+                    <AnimatedPage>
+                      <PersonalChefWisconsinPage />
                     </AnimatedPage>
                   }
                 />

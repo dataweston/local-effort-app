@@ -377,10 +377,10 @@ const HomePage = () => {
   return (
     <>
       <Helmet>
-        <title>Local Effort | Personal Chef & Event Catering in Roseville, MN</title>
+        <title>Personal Chef in Minneapolis & Twin Cities | Local Effort</title>
         <meta
           name="description"
-          content="Local Effort offers personal chef services, event catering, and weekly meal plans in Roseville, MN."
+          content="Personal chef in Minneapolis–St. Paul and the Twin Cities. In-home private dinners, weekly meal prep, and intimate event catering."
         />
         <link rel="canonical" href="https://localeffortfood.com/" />
         {/* Preload hero for faster LCP */}
@@ -451,19 +451,19 @@ const HomePage = () => {
               variants={fadeInLeft}
               initial="initial"
               animate="animate"
-              className="text-4xl md:text-6xl font-bold uppercase tracking-[-0.02em] leading-[1.02]"
+              className="text-4xl md:text-6xl font-bold tracking-[-0.02em] leading-[1.02]"
             >
-              Minnesotan Food
+              Personal Chef in Minneapolis & the Twin Cities
             </motion.h1>
-            <motion.h3
+            <motion.h2
               variants={fadeInLeft}
               initial="initial"
               animate="animate"
               transition={{ delay: 0.05 }}
-              className="text-4xl md:text-6xl font-bold uppercase text-neutral-400 tracking-[-0.02em] leading-[1.0] -mt-3 md:-mt-5 lg:-mt-6"
+              className="text-3xl md:text-5xl font-bold text-neutral-600 tracking-[-0.02em] leading-[1.0] -mt-2 md:-mt-4"
             >
-              For Your Functions.
-            </motion.h3>
+              In-home dinners • Meal prep • Event catering
+            </motion.h2>
             <motion.p
               variants={fadeInUp}
               initial="initial"
