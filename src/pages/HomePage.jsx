@@ -44,6 +44,17 @@ const HomePage = () => {
   const [reviews, setReviews] = useState([]);
   const [events, setEvents] = useState([]);
   const [eventModal, setEventModal] = useState(null);
+  const [business, setBusiness] = useState(null);
+
+  // Load canonical business metadata
+  useEffect(() => {
+    let mounted = true;
+    fetch('/business.json')
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => { if (mounted) setBusiness(data || null); })
+      .catch(() => {});
+    return () => { mounted = false; };
+  }, []);
 
   // Load external Thumbtack reviews JSON (public/reviews/thumbtack.json)
   useEffect(() => {
@@ -147,6 +158,27 @@ const HomePage = () => {
       '@type': 'Organization',
       name: 'Local Effort',
     },
+  };
+  const homeFaqJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: [
+      {
+        '@type': 'Question',
+        name: 'Do you serve Minneapolis and St. Paul?',
+        acceptedAnswer: { '@type': 'Answer', text: 'Yes. We regularly serve Minneapolis, St. Paul, Roseville, and the Twin Cities metro.' }
+      },
+      {
+        '@type': 'Question',
+        name: 'What types of services do you offer?',
+        acceptedAnswer: { '@type': 'Answer', text: 'Personal chef dinners, weekly meal prep, and small event catering up to about 50 guests.' }
+      },
+      {
+        '@type': 'Question',
+        name: 'Do you handle dietary restrictions?',
+        acceptedAnswer: { '@type': 'Answer', text: 'Absolutely. We can accommodate common restrictions and preferences with advance notice.' }
+      }
+    ]
   };
   // Build partner ItemList schema dynamically
   const partnersJsonLd = partners && partners.length ? {
@@ -351,31 +383,59 @@ const HomePage = () => {
           content="Local Effort offers personal chef services, event catering, and weekly meal plans in Roseville, MN."
         />
         <link rel="canonical" href="https://localeffortfood.com/" />
+        {/* Preload hero for faster LCP */}
+        <link
+          rel="preload"
+          as="image"
+          href={`https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/f_auto,q_auto,w_1200/${heroImage.publicId}`}
+          imageSrcSet={`https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/f_auto,q_auto,w_600/${heroImage.publicId} 600w, https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/f_auto,q_auto,w_1200/${heroImage.publicId} 1200w, https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/f_auto,q_auto,w_1800/${heroImage.publicId} 1800w`}
+          imageSizes="(min-width: 1024px) 50vw, 100vw"
+        />
         {/* --- NEW: Inject the structured data into the page head --- */}
         <script type="application/ld+json">{JSON.stringify(imageJsonLd)}</script>
         {partnersJsonLd && <script type="application/ld+json">{JSON.stringify(partnersJsonLd)}</script>}
-        <script type="application/ld+json">{JSON.stringify({
-          '@context': 'https://schema.org',
-          '@type': ['Restaurant','Caterer'],
-          name: 'Local Effort',
-          url: 'https://local-effort-app.vercel.app/',
-          address: { '@type': 'PostalAddress', addressLocality: 'Roseville', addressRegion: 'MN', addressCountry: 'US' },
-          servesCuisine: ['American','Local','Farm to Table','Seasonal'],
-          priceRange: '$$'
-        })}</script>
-        <script type="application/ld+json">{JSON.stringify({
-          '@context': 'https://schema.org',
-          '@type': 'LocalBusiness',
-          name: 'Local Effort',
-          url: 'https://localeffortfood.com/',
-          image: imageJsonLd.contentUrl,
-          address: { '@type': 'PostalAddress', addressLocality: 'Roseville', addressRegion: 'MN', addressCountry: 'US' },
-          areaServed: 'Twin Cities, MN',
-          sameAs: [
-            'https://www.instagram.com/localeffortfood',
-            'https://www.facebook.com/localeffortfood'
-          ]
-        })}</script>
+        {/* Consolidated ProfessionalService schema with reviews and services (pulls base details from /business.json) */}
+        <script type="application/ld+json">{JSON.stringify((() => {
+          const src = business || {};
+          const biz = {
+            '@context': 'https://schema.org',
+            '@type': 'ProfessionalService',
+            name: src.name || 'Local Effort',
+            url: src.url || 'https://localeffortfood.com/',
+            image: imageJsonLd.contentUrl,
+            areaServed: Array.isArray(src.serviceArea) && src.serviceArea.length ? src.serviceArea : ['Minneapolis','St. Paul','Twin Cities','Roseville','Minnesota','Western Wisconsin'],
+            address: { '@type': 'PostalAddress', addressLocality: 'Roseville', addressRegion: 'MN', addressCountry: 'US' },
+            sameAs: Array.isArray(src.sameAs) ? src.sameAs : ['https://www.instagram.com/localeffortfood','https://www.facebook.com/localeffortfood'],
+            telephone: src.telephone || undefined
+          };
+          const reviewList = (Array.isArray(reviews) ? reviews.slice(0, 12) : []).map(r => ({
+            '@type': 'Review',
+            reviewBody: r.quote,
+            author: { '@type': 'Person', name: r.author || 'Customer' },
+            reviewRating: r.context && /5★/.test(r.context) ? { '@type': 'Rating', ratingValue: 5, bestRating: 5 } : undefined,
+            publisher: r.context ? { '@type': 'Organization', name: r.context.split('·')[0].trim() } : undefined,
+          }));
+          const ratings = reviewList.map(r => (r.reviewRating && r.reviewRating.ratingValue) || 0).filter(Boolean);
+          if (ratings.length) {
+            biz.aggregateRating = {
+              '@type': 'AggregateRating',
+              ratingValue: (ratings.reduce((a, b) => a + b, 0) / ratings.length).toFixed(1),
+              reviewCount: ratings.length
+            };
+          }
+          biz.review = reviewList;
+          biz.hasOfferCatalog = {
+            '@type': 'OfferCatalog',
+            name: 'Services',
+            itemListElement: [
+              { '@type': 'Service', name: 'Personal Chef', areaServed: ['Twin Cities'] },
+              { '@type': 'Service', name: 'Weekly Meal Prep', areaServed: ['Twin Cities'] },
+              { '@type': 'Service', name: 'Event Catering', areaServed: ['Twin Cities'] }
+            ]
+          };
+          return biz;
+        })())}</script>
+        <script type="application/ld+json">{JSON.stringify(homeFaqJsonLd)}</script>
       </Helmet>
 
       <div className="space-y-24">
@@ -414,14 +474,19 @@ const HomePage = () => {
 
             Think of us for special occasions and special events. Count on us for weekly home cooked meals. We're comfortable in homes, offices, bars and cafes, parks, vineyards, and uh.. anywhere, really.
             </motion.p>
-            <motion.button
-              whileHover={{ scale: 1.03 }}
-              whileTap={{ scale: 0.98 }}
-              onClick={() => navigate('/services#event-request')}
-              className="btn btn-primary mt-8 text-lg"
-            >
-              Book an event
-            </motion.button>
+            <div className="mt-8 flex flex-wrap gap-3">
+              <motion.button
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => navigate('/services#event-request')}
+                className="btn btn-primary text-lg"
+              >
+                Book an event
+              </motion.button>
+              <a href="/personal-chef-minneapolis" className="btn">Personal Chef Minneapolis</a>
+              <a href="/personal-chef-st-paul" className="btn">Personal Chef St. Paul</a>
+              <a href="/personal-chef-twin-cities" className="btn">Twin Cities Personal Chef</a>
+            </div>
           </div>
 
           <motion.div

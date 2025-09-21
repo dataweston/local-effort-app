@@ -223,6 +223,17 @@ const GalleryPage = () => {
             servesCuisine: ['American','Local','Seasonal'],
             sameAs: []
           })}</script>
+          {images.slice(0, 12).map((img, idx) => (
+            <script key={`imgld-${idx}`} type="application/ld+json">{JSON.stringify({
+              '@context': 'https://schema.org',
+              '@type': 'ImageObject',
+              contentUrl: img.large_url || img.thumbnail_url,
+              thumbnail: img.thumbnail_url || undefined,
+              name: img.context?.alt || 'Local Effort gallery image',
+              description: img.context?.alt || undefined,
+              creator: { '@type': 'Organization', name: 'Local Effort Food Co.' }
+            })}</script>
+          ))}
       </Helmet>
       <div className="container mx-auto px-4 py-8">
         <h1 className="text-4xl font-bold mb-4 text-center">pictures of food.</h1>
@@ -260,38 +271,48 @@ const GalleryPage = () => {
           <>
             <div className="columns-2 md:columns-3 lg:columns-4 gap-4 [column-fill:_balance]">
               {images.map((img, idx) => (
-                <motion.button
-                  type="button"
-                  key={img.asset_id}
-                  onClick={() => openLightbox(img, idx)}
-                  onMouseEnter={() => img?.large_url && prefetchImage(img.large_url)}
-                  whileHover={{ scale: 1.03 }}
-                  whileTap={{ scale: 0.98 }}
-          className="mb-4 w-full break-inside-avoid border p-2 bg-white rounded-lg overflow-hidden"
-                  aria-label={img.context?.alt || `Gallery image ${idx + 1}`}
-                >
-                  {img.thumbnail_url ? (
-                    <img
-                      src={img.thumbnail_url}
-                      alt={img.context?.alt || 'Gallery image'}
-                      className="rounded-lg w-full h-auto"
-                      width={img.width || undefined}
-                      height={img.height || undefined}
-                      style={img.width && img.height ? { aspectRatio: `${img.width} / ${img.height}` } : undefined}
-                      loading="lazy"
-                    />
-                  ) : (
-                    <CloudinaryImage
-                      publicId={img.public_id}
-                      alt={img.context?.alt || 'Gallery image'}
-                      width={800}
-                      className="rounded-lg w-full h-auto"
-                      containerStyle={img.width && img.height ? { aspectRatio: `${img.width} / ${img.height}` } : undefined}
-                    />
-                  )}
-                </motion.button>
+                <figure key={img.asset_id} className="mb-4 w-full break-inside-avoid border p-2 bg-white rounded-lg overflow-hidden">
+                  <button
+                    type="button"
+                    onClick={() => openLightbox(img, idx)}
+                    onMouseEnter={() => img?.large_url && prefetchImage(img.large_url)}
+                    aria-label={img.context?.alt || `Gallery image ${idx + 1}`}
+                    className="block"
+                  >
+                    {img.thumbnail_url ? (
+                      <img
+                        src={img.thumbnail_url}
+                        alt={img.context?.alt || 'Gallery image'}
+                        className="rounded-lg w-full h-auto"
+                        width={img.width || undefined}
+                        height={img.height || undefined}
+                        style={img.width && img.height ? { aspectRatio: `${img.width} / ${img.height}` } : undefined}
+                        loading="lazy"
+                        decoding="async"
+                      />
+                    ) : (
+                      <CloudinaryImage
+                        publicId={img.public_id}
+                        alt={img.context?.alt || 'Gallery image'}
+                        width={800}
+                        className="rounded-lg w-full h-auto"
+                        containerStyle={img.width && img.height ? { aspectRatio: `${img.width} / ${img.height}` } : undefined}
+                      />
+                    )}
+                  </button>
+                  <figcaption className="text-xs text-neutral-600 mt-2">
+                    {img.context?.alt || 'Local Effort personal chef — Twin Cities'}
+                  </figcaption>
+                </figure>
               ))}
             </div>
+            <noscript>
+              <div>
+                <img src="/gallery/5Z0A5729-Edit.jpg" alt="Local Effort personal chef — Minneapolis" />
+                <img src="/gallery/5Z0A5665-Edit.jpg" alt="Seasonal menu — Twin Cities" />
+                <img src="/gallery/IMG_3145.jpg" alt="Private dinner — St. Paul" />
+              </div>
+            </noscript>
             {nextCursor && (
               <div className="mt-6 text-center">
                 <button

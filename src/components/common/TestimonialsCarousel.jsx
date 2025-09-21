@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import EmblaCarousel from './EmblaCarousel';
 
 function shuffle(array) {
@@ -17,6 +17,43 @@ function chunk(arr, size) {
 }
 
 export default function TestimonialsCarousel({ items = [], title = 'Testimonials', headingExtra = null, maxLines = 5 }) {
+  const [business, setBusiness] = useState(null);
+  useEffect(() => {
+    let mounted = true;
+    fetch('/business.json')
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => { if (mounted) setBusiness(data || null); })
+      .catch(() => {});
+    return () => { mounted = false; };
+  }, []);
+
+  function parseDateFromContext(ctx) {
+    if (!ctx) return undefined;
+    const m = String(ctx).match(/[A-Za-z]{3,9} \d{1,2}, \d{4}/);
+    if (!m) return undefined;
+    const d = new Date(m[0]);
+    if (isNaN(d)) return undefined;
+    return d.toISOString().slice(0, 10);
+  }
+
+  const reviewsJsonLd = useMemo(() => {
+    if (!items || !items.length) return null;
+    const subj = {
+      '@type': 'ProfessionalService',
+      name: (business && business.name) || 'Local Effort',
+      url: (business && business.url) || 'https://localeffortfood.com/'
+    };
+  const graph = items.slice(0, 20).map((t) => ({
+      '@type': 'Review',
+      reviewBody: String(t.quote || '').trim(),
+      author: { '@type': 'Person', name: t.author || 'Customer' },
+      reviewRating: /5★/.test(String(t.context || '')) ? { '@type': 'Rating', ratingValue: 5, bestRating: 5 } : undefined,
+      publisher: t.context ? { '@type': 'Organization', name: String(t.context).split('·')[0].trim() } : undefined,
+      datePublished: parseDateFromContext(t.context),
+      itemReviewed: subj
+    }));
+    return { '@context': 'https://schema.org', '@graph': graph };
+  }, [items, business]);
   const slides = useMemo(() => {
     if (!items.length) return [];
     const randomized = shuffle(items);
@@ -37,6 +74,9 @@ export default function TestimonialsCarousel({ items = [], title = 'Testimonials
 
   return (
     <section className="mx-auto max-w-6xl px-4 md:px-6 lg:px-8">
+      {reviewsJsonLd && (
+        <script type="application/ld+json">{JSON.stringify(reviewsJsonLd)}</script>
+      )}
       <div className="mb-6 border-b border-neutral-300 pb-3 flex items-end justify-between gap-3">
         <h3 className="text-heading uppercase">{title}</h3>
         {headingExtra}

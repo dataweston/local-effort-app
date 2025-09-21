@@ -89,6 +89,9 @@ const routes = [
   '/meal-prep',
   '/partner-portal',
   '/crowdfunding',
+  '/personal-chef-minneapolis',
+  '/personal-chef-st-paul',
+  '/personal-chef-twin-cities',
 ];
 
 function inject(html, body, head) {

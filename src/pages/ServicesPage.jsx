@@ -43,6 +43,7 @@ const ServicesPage = () => {
   const [result, setResult] = useState(null);
   // const [serviceSlides, setServiceSlides] = useState([]);
   const [bookHero, setBookHero] = useState(null);
+  const [business, setBusiness] = useState(null);
 
   const required = (v) => String(v || '').trim().length > 0;
   const handleChange = (e) => {
@@ -69,6 +70,16 @@ const ServicesPage = () => {
       }
     })();
     return () => { abort = true; };
+  }, []);
+
+  // Load canonical business metadata
+  useEffect(() => {
+    let mounted = true;
+    fetch('/business.json')
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => { if (mounted) setBusiness(data || null); })
+      .catch(() => {});
+    return () => { mounted = false; };
   }, []);
 
   const handleSubmit = async (e) => {
@@ -117,6 +128,36 @@ const ServicesPage = () => {
           name="description"
           content="Explore the personal chef and catering services offered by Local Effort."
         />
+        <script type="application/ld+json">{JSON.stringify((() => {
+          const src = business || {};
+          return {
+            '@context': 'https://schema.org',
+            '@type': 'ProfessionalService',
+            name: src.name || 'Local Effort',
+            url: (src.url || 'https://localeffortfood.com') + '/services',
+            areaServed: Array.isArray(src.serviceArea) && src.serviceArea.length ? src.serviceArea : ['Minneapolis','St. Paul','Twin Cities','Roseville','Minnesota','Western Wisconsin'],
+            sameAs: Array.isArray(src.sameAs) ? src.sameAs : undefined,
+            telephone: src.telephone || undefined,
+            hasOfferCatalog: {
+              '@type': 'OfferCatalog',
+              name: 'Services',
+              itemListElement: [
+                { '@type': 'Service', name: 'Personal Chef', description: 'In-home private dinners and small gatherings.' },
+                { '@type': 'Service', name: 'Weekly Meal Prep', description: 'Nutritious, locally-sourced weekly menus and plans.' },
+                { '@type': 'Service', name: 'Event Catering', description: 'Small event catering with seasonal, local ingredients.' }
+              ]
+            }
+          };
+        })())}</script>
+        <script type="application/ld+json">{JSON.stringify({
+          '@context': 'https://schema.org',
+          '@type': 'FAQPage',
+          mainEntity: [
+            { '@type': 'Question', name: 'How far in advance should I book?', acceptedAnswer: { '@type': 'Answer', text: 'As early as you can—two to four weeks is helpful, but we can sometimes accommodate short notice.' } },
+            { '@type': 'Question', name: 'What is the typical group size?', acceptedAnswer: { '@type': 'Answer', text: 'We specialize in intimate dinners and small events up to about 50 guests.' } },
+            { '@type': 'Question', name: 'Can you customize the menu?', acceptedAnswer: { '@type': 'Answer', text: 'Yes. We tailor menus around your tastes, dietary needs, and seasonal local ingredients.' } }
+          ]
+        })}</script>
       </Helmet>
       <div className="space-y-16 mx-auto max-w-6xl px-4 md:px-6 lg:px-8">
         <SectionHeader overline="Capabilities" title="Services" />
@@ -145,6 +186,15 @@ const ServicesPage = () => {
             >
               Details &rarr;
             </button>
+          </div>
+        </div>
+
+        {/* Local city pages quick links for internal linking */}
+        <div className="text-center">
+          <div className="inline-flex flex-wrap gap-3 mt-2">
+            <a href="/personal-chef-minneapolis" className="btn btn-ghost">Personal Chef Minneapolis</a>
+            <a href="/personal-chef-st-paul" className="btn btn-ghost">Personal Chef St. Paul</a>
+            <a href="/personal-chef-twin-cities" className="btn btn-ghost">Twin Cities Personal Chef</a>
           </div>
         </div>
 
