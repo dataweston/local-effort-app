@@ -1277,23 +1277,38 @@ app.post('/api/square/customers/import', async (req, res) => {
 });
 
 // --- COOKBOOK API PROXY (same-origin for frontend) ---
-const COOKBOOK_API_BASE = process.env.COOKBOOK_API_BASE || process.env.VITE_COOKBOOK_API_URL || process.env.NEXT_PUBLIC_API_URL;
+// IMPORTANT: Require explicit external base to avoid self-origin loops.
+const COOKBOOK_API_BASE = process.env.COOKBOOK_API_BASE;
 if (COOKBOOK_API_BASE) {
-  const buildCookbookUrl = (path, qs) => {
+  const buildCookbookUrl = (p, qs) => {
     const base = COOKBOOK_API_BASE.replace(/\/$/, '');
-    const url = new URL(base + path);
+    const url = new URL(base + p);
     if (qs && typeof qs === 'object') {
       for (const [k, v] of Object.entries(qs)) {
         if (v !== undefined && v !== null) url.searchParams.set(k, String(v));
       }
     }
-    return url.toString();
+    return url;
+  };
+
+  const isSameOrigin = (targetUrl, req) => {
+    try {
+      const host = (req.headers.host || '').toLowerCase();
+      const tu = new URL(String(targetUrl));
+      return host === tu.host.toLowerCase();
+    } catch {
+      return false;
+    }
   };
 
   app.get('/api/search', async (req, res) => {
     try {
       const upstream = buildCookbookUrl('/api/search', { q: req.query.q || '' });
-      const r = await fetch(upstream, { headers: { Accept: 'application/json' } });
+      if (isSameOrigin(upstream, req)) {
+        console.error('COOKBOOK_API_BASE misconfigured: points to same origin, would loop:', String(upstream));
+        return res.status(500).json({ error: 'proxy-misconfigured', message: 'COOKBOOK_API_BASE must point to external Cookbook API, not this site.' });
+      }
+      const r = await fetch(String(upstream), { headers: { Accept: 'application/json' } });
       const contentType = r.headers.get('content-type') || '';
       const body = contentType.includes('application/json') ? await r.json() : await r.text();
       if (!r.ok) return res.status(r.status).json({ error: 'upstream-error', details: body });
@@ -1308,7 +1323,11 @@ if (COOKBOOK_API_BASE) {
     try {
       const id = req.params.id;
       const upstream = buildCookbookUrl(`/api/recipes/${encodeURIComponent(id)}`);
-      const r = await fetch(upstream, { headers: { Accept: 'application/json' } });
+      if (isSameOrigin(upstream, req)) {
+        console.error('COOKBOOK_API_BASE misconfigured: points to same origin, would loop:', String(upstream));
+        return res.status(500).json({ error: 'proxy-misconfigured', message: 'COOKBOOK_API_BASE must point to external Cookbook API, not this site.' });
+      }
+      const r = await fetch(String(upstream), { headers: { Accept: 'application/json' } });
       const contentType = r.headers.get('content-type') || '';
       const body = contentType.includes('application/json') ? await r.json() : await r.text();
       if (!r.ok) return res.status(r.status).json({ error: 'upstream-error', details: body });
@@ -1319,7 +1338,133 @@ if (COOKBOOK_API_BASE) {
     }
   });
 } else {
-  console.warn('COOKBOOK_API_BASE not set — /api/search and /api/recipes proxy disabled.');
+  // No external host — serve Cookbook endpoints from local repo data.
+  console.warn('COOKBOOK_API_BASE not set — enabling internal Cookbook endpoints from local data.');
+
+  const COOKBOOK_DATA_DIR = process.env.COOKBOOK_DATA_DIR || path.resolve(__dirname, '../../cookbook/repo/data');
+
+  let cookbookIndex = null;
+  let cookbookById = null;
+  const buildCookbookIndex = async () => {
+    if (cookbookIndex && cookbookById) return;
+    const t0 = Date.now();
+    const index = [];
+    const byId = new Map();
+    function walk(dir) {
+      const entries = fs.readdirSync(dir, { withFileTypes: true });
+      for (const ent of entries) {
+        const full = path.join(dir, ent.name);
+        if (ent.isDirectory()) walk(full);
+        else if (ent.isFile() && ent.name.toLowerCase().endsWith('.json')) {
+          try {
+            const raw = fs.readFileSync(full, 'utf8');
+            const doc = JSON.parse(raw);
+            const id = String(doc.identifier || path.basename(full, path.extname(full)) || '').trim();
+            if (!id) continue;
+            const title = String(doc.title || doc.name || id);
+            const ingredients = Array.isArray(doc.ingredients) ? doc.ingredients : [];
+            const instructions = Array.isArray(doc.instructions) ? doc.instructions : [];
+            const source = doc.source || 'cookbook';
+            const item = {
+              id,
+              title,
+              ingredients,
+              instructions,
+              source,
+              _search: {
+                title: title.toLowerCase(),
+                ingredients: ingredients.join(' ').toLowerCase(),
+                instructions: instructions.join(' ').slice(0, 5000).toLowerCase(),
+              },
+              _path: full,
+            };
+            index.push(item);
+            if (!byId.has(id)) byId.set(id, item);
+          } catch (e) {
+            // skip malformed
+          }
+        }
+      }
+    }
+    try {
+      walk(COOKBOOK_DATA_DIR);
+    } catch (e) {
+      console.error('Failed to scan Cookbook data dir:', COOKBOOK_DATA_DIR, e?.message);
+    }
+    cookbookIndex = index;
+    cookbookById = byId;
+    console.info(`Cookbook index built (${index.length} docs) in ${Date.now() - t0}ms`);
+  };
+
+  app.get('/api/search', async (req, res) => {
+    try {
+      await buildCookbookIndex();
+      const q = String(req.query.q || '').trim().toLowerCase();
+      // If empty query, return first N results
+      const limit = Math.min(parseInt(req.query.limit, 10) || 20, 100);
+      if (!q) {
+        const results = cookbookIndex
+          .slice(0, limit)
+          .map((doc) => ({ id: doc.id, title: doc.title, ingredients: doc.ingredients, source: doc.source }));
+        return res.json({ results });
+      }
+      const terms = q.split(/\s+/).filter(Boolean);
+      const scored = [];
+      for (const doc of cookbookIndex) {
+        let score = 0;
+        for (const t of terms) {
+          if (doc._search.title.includes(t)) score += 5;
+          if (doc._search.ingredients.includes(t)) score += 3;
+          if (doc._search.instructions.includes(t)) score += 1;
+        }
+        if (score > 0) scored.push({ doc, score });
+      }
+      scored.sort((a, b) => b.score - a.score);
+      const results = scored.slice(0, limit).map(({ doc }) => {
+        const out = { id: doc.id, title: doc.title, ingredients: doc.ingredients, source: doc.source };
+        // simple highlight snippet from instructions
+        if (doc.instructions && doc.instructions.length) {
+          const joined = doc.instructions.join(' ');
+          const pos = Math.max(0, doc._search.instructions.indexOf(terms[0] || ''));
+          const start = Math.max(0, pos - 80);
+          out.snippet = joined.slice(start, start + 200).trim();
+        }
+        return out;
+      });
+      return res.json({ results });
+    } catch (err) {
+      console.error('Internal /api/search failed:', err);
+      return res.status(500).json({ error: 'internal-search-failed' });
+    }
+  });
+
+  app.get('/api/recipes/:id', async (req, res) => {
+    try {
+      await buildCookbookIndex();
+      const id = String(req.params.id || '').trim();
+      let item = cookbookById.get(id);
+      if (!item) {
+        // Attempt file basename fallback
+        const alt = path.basename(id, path.extname(id));
+        item = cookbookById.get(alt);
+      }
+      if (!item) return res.status(404).json({ error: 'not-found' });
+      // Load full JSON from disk for the recipe response
+      try {
+        const raw = fs.readFileSync(item._path, 'utf8');
+        const json = JSON.parse(raw);
+        // Ensure id/title fields
+        json.id = json.identifier || item.id;
+        json.title = json.title || item.title || json.id;
+        return res.json(json);
+      } catch (e) {
+        return res.json({ id: item.id, title: item.title, ingredients: item.ingredients, instructions: item.instructions, source: item.source });
+      }
+    } catch (err) {
+      console.error('Internal /api/recipes failed:', err);
+      return res.status(500).json({ error: 'internal-recipes-failed' });
+    }
+  });
 }
 
 // Start server when run directly
