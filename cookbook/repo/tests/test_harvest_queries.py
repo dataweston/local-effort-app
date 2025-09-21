@@ -1,4 +1,4 @@
-from harvest.ia_search import build_query as build_ia_query
+from harvest.ia_search import build_location_groups, build_query as build_ia_query
 from harvest.dpla_search import build_query_plan
 from harvest.terms import load_terms
 
@@ -11,6 +11,14 @@ def test_ia_query_uses_external_terms():
     for deny in terms["deny"]["keywords"]:
         assert deny.lower() in query.lower()
         assert "AND NOT" in query
+
+
+def test_ia_queries_chunk_locations():
+    groups = build_location_groups(chunk_size=5)
+    assert groups
+    for group in groups:
+        query = build_ia_query(location_terms=group)
+        assert len(query) < 6000
 
 
 def test_dpla_plan_includes_negative_and_spatial():

@@ -1,8 +1,8 @@
 """
 Internet Archive harvester.
 
-Queries `advancedsearch` for Minnesota/Wisconsin/Midwest content, paginates, fetches
-full metadata for each identifier, normalizes, and writes JSON to `./data/ia/{id}.json`.
+Queries dvancedsearch for Minnesota/Wisconsin/Midwest content, paginates, fetches
+full metadata for each identifier, normalizes, and writes JSON to ./data/ia/{id}.json.
 
 Usage (Git Bash on Windows):
   python -m harvest.ia_search --rows 100 --page 1 --max-pages 50
@@ -29,7 +29,30 @@ def ensure_dir(path: Path) -> None:
     path.mkdir(parents=True, exist_ok=True)
 
 
-def build_query() -> str:
+def build_location_groups(chunk_size: int = 10) -> List[List[str]]:
+    """Return grouped location terms so advancedsearch queries stay below size limits."""
+    terms = load_terms()
+    locations = terms.get("allow", {}).get("locations", {})
+    base = flatten_terms(locations.get("states", []), locations.get("state_abbreviations", []))
+    extras = flatten_terms(
+        locations.get("counties", []),
+        locations.get("cities", []),
+        locations.get("regions", []),
+    )
+    extras = [term for term in extras if term not in base]
+    if chunk_size < 1:
+        chunk_size = 10
+    groups: List[List[str]] = []
+    if not extras:
+        groups.append(list(dict.fromkeys(base)))
+        return groups
+    for idx in range(0, len(extras), chunk_size):
+        chunk = extras[idx : idx + chunk_size]
+        groups.append(list(dict.fromkeys(base + chunk)))
+    return groups
+
+
+def build_query(location_terms: Optional[List[str]] = None) -> str:
     terms = load_terms()
     allow = terms.get("allow", {})
     deny = terms.get("deny", {})
@@ -47,13 +70,16 @@ def build_query() -> str:
     cookbook_clause = "(" + " OR ".join(cookbook_parts) + ")"
 
     locations = allow.get("locations", {})
-    location_terms = flatten_terms(
-        locations.get("states", []),
-        locations.get("state_abbreviations", []),
-        locations.get("counties", []),
-        locations.get("cities", []),
-        locations.get("regions", []),
-    )
+    if location_terms is None:
+        location_terms = flatten_terms(
+            locations.get("states", []),
+            locations.get("state_abbreviations", []),
+            locations.get("counties", []),
+            locations.get("cities", []),
+            locations.get("regions", []),
+        )
+    else:
+        location_terms = list(dict.fromkeys(location_terms))
     location_fields = ["title", "description", "subject", "creator", "publisher", "coverage", "notes"]
     location_parts: List[str] = []
     for field in location_fields:
@@ -164,50 +190,64 @@ def normalize(record: Dict[str, Any], meta: Dict[str, Any]) -> Dict[str, Any]:
 def harvest(output_dir: Path, rows: int, start_page: int, max_pages: int) -> None:
     ensure_dir(output_dir)
     session = requests.Session()
-    query = build_query()
     harvest_filter = get_filter()
-    page = start_page
-    total: Optional[int] = None
-    fetched = 0
+    location_groups = build_location_groups()
+    total_written = 0
 
-    while page < start_page + max_pages:
-        logging.info("IA search page=%s rows=%s", page, rows)
-        data = ia_search(session, query, fields=["identifier", "title", "creator", "year", "subject", "description"], rows=rows, page=page)
-        resp = data.get("response", {})
-        if total is None:
-            total = resp.get("numFound")
-            logging.info("numFound=%s", total)
-        docs: Iterable[Dict[str, Any]] = resp.get("docs", [])
-        if not docs:
-            break
-        for doc in docs:
-            ident = doc.get("identifier")
-            if not ident:
-                continue
-            target = output_dir / f"{ident}.json"
-            if target.exists():
-                logging.debug("exists, skipping %s", ident)
-                continue
-            try:
-                meta = fetch_metadata(session, ident)
-                out = normalize(doc, meta)
-                result = harvest_filter.accepts(out)
-                if result.score < harvest_filter.min_score:
-                    logging.info(
-                        "Rejected %s score=%s reasons=%s",
-                        ident,
-                        result.score,
-                        result.details.get("reasons"),
-                    )
+    for group_index, location_terms in enumerate(location_groups, start=1):
+        query = build_query(location_terms=location_terms)
+        pages = range(start_page, start_page + max_pages)
+        group_written = 0
+        total: Optional[int] = None
+        for page in pages:
+            logging.info(
+                "IA search group=%s/%s page=%s rows=%s", group_index, len(location_groups), page, rows
+            )
+            data = ia_search(
+                session,
+                query,
+                fields=["identifier", "title", "creator", "year", "subject", "description"],
+                rows=rows,
+                page=page,
+            )
+            resp = data.get("response", {})
+            if total is None:
+                total = resp.get("numFound")
+                logging.info("group=%s numFound=%s", group_index, total)
+            docs: Iterable[Dict[str, Any]] = resp.get("docs", [])
+            if not docs:
+                break
+            for doc in docs:
+                ident = doc.get("identifier")
+                if not ident:
                     continue
-                apply_curation(out, result)
-                with open(target, "w", encoding="utf-8") as f:
-                    json.dump(out, f, ensure_ascii=False, indent=2)
-                fetched += 1
-            except Exception as e:
-                logging.warning("failed %s: %s", ident, e)
-        page += 1
-    logging.info("done. wrote=%s files", fetched)
+                target = output_dir / f"{ident}.json"
+                if target.exists():
+                    logging.debug("exists, skipping %s", ident)
+                    continue
+                try:
+                    meta = fetch_metadata(session, ident)
+                    out = normalize(doc, meta)
+                    result = harvest_filter.accepts(out)
+                    if result.score < harvest_filter.min_score:
+                        logging.info(
+                            "Rejected %s score=%s reasons=%s",
+                            ident,
+                            result.score,
+                            result.details.get("reasons"),
+                        )
+                        continue
+                    apply_curation(out, result)
+                    with open(target, "w", encoding="utf-8") as f:
+                        json.dump(out, f, ensure_ascii=False, indent=2)
+                    group_written += 1
+                    total_written += 1
+                except Exception as e:
+                    logging.warning("failed %s: %s", ident, e)
+        logging.info(
+            "Finished group %s/%s wrote=%s cumulative=%s", group_index, len(location_groups), group_written, total_written
+        )
+    logging.info("done. wrote=%s files", total_written)
 
 
 def main() -> None:
