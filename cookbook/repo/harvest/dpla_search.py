@@ -169,7 +169,7 @@ def _extract_iiif(item: Dict[str, Any]) -> Optional[str]:
     return candidates[0] if candidates else None
 
 
-def harvest(out_dir: Path, page_size: int, max_pages: int, api_key: Optional[str]) -> None:
+def harvest(out_dir: Path, page_size: int, max_pages: int, api_key: Optional[str], providers: Optional[List[str]] = None, spatial_override: Optional[List[str]] = None) -> None:
     ensure_dir(out_dir)
     plan = build_query_plan()
     harvest_filter = get_filter()
@@ -181,11 +181,16 @@ def harvest(out_dir: Path, page_size: int, max_pages: int, api_key: Optional[str
     }
     if plan.get("subject_filter"):
         base_params["sourceResource.subject.name"] = plan["subject_filter"]
+    if providers:
+        base_params["provider.name"] = "|".join(providers)
     if api_key:
         base_params["api_key"] = api_key
 
     total = 0
-    for spatial_term in plan.get("spatial_terms", []) or [None]:
+    spatial_terms = spatial_override if spatial_override else plan.get("spatial_terms", [])
+    if not spatial_terms:
+        spatial_terms = [None]
+    for spatial_term in spatial_terms:
         page = 1
         for _ in range(max_pages):
             params = dict(base_params)
@@ -226,11 +231,13 @@ def main() -> None:
     ap.add_argument("--page-size", type=int, default=50)
     ap.add_argument("--max-pages", type=int, default=20)
     ap.add_argument("--out", default="./data/dpla")
+    ap.add_argument("--provider", action="append", dest="providers", help="Filter by DPLA provider.name (repeatable)")
+    ap.add_argument("--spatial-term", action="append", dest="spatial_terms", help="Override spatial facets (repeatable)")
     ap.add_argument("--log", default="INFO")
     args = ap.parse_args()
     logging.basicConfig(level=getattr(logging, args.log.upper(), logging.INFO), format="%(asctime)s %(levelname)s %(message)s")
     api_key = os.getenv("DPLA_API_KEY")
-    harvest(Path(args.out), args.page_size, args.max_pages, api_key)
+    harvest(Path(args.out), args.page_size, args.max_pages, api_key, providers=args.providers, spatial_override=args.spatial_terms)
 
 
 if __name__ == "__main__":
