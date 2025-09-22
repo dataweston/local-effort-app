@@ -45,7 +45,7 @@ const PricingPage = () => {
             We tailor pricing closely to your needs. We try to stay competitive to an evening at a nice restaurant, (or to the price of takeout, depending on the request). Oftentimes, we're the much better deal.
           </p>
           <p className="text-lg text-gray-700 max-w-3xl mx-auto mt-4">
-            Below is a handy tool that can take some of the mystery out. We'll finalize the actual price together.
+            Below is a handy tool that can take some of the mystery out. We'll finalize the actual price <a href="/services#event-request" className="underline">together</a>.
           </p>
         </motion.div>
 

@@ -81,10 +81,10 @@ def search_loc(session: requests.Session, query: str, page: int, count: int) -> 
     }
     if LOC_API_KEY:
         params["api_key"] = LOC_API_KEY
-    for attempt in range(5):
+    for attempt in range(10):
         response = session.get(LOC_SEARCH_URL, params=params, timeout=60)
         if response.status_code == 429:
-            wait = min(60, 2 ** attempt)
+            wait = min(300, 30 * (attempt + 1))
             logging.warning("LoC rate limited, sleeping %s seconds", wait)
             time.sleep(wait)
             continue
@@ -177,6 +177,7 @@ def harvest(output_dir: Path, per_page: int, max_pages: int, chunk_size: int) ->
         logging.info("LoC search query=%s", query)
         for page in range(1, max_pages + 1):
             logging.debug("LoC request page=%s per_page=%s", page, per_page)
+            time.sleep(0.5)
             payload = search_loc(session, query=query, page=page, count=per_page)
             results = list(extract_results(payload))
             if not results:
@@ -221,4 +222,6 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+
+
 
