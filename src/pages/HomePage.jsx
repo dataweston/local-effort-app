@@ -380,7 +380,7 @@ const HomePage = () => {
         <title>Personal Chef in Minneapolis & Twin Cities | Local Effort</title>
         <meta
           name="description"
-          content="Personal chef in Minneapolis–St. Paul and the Twin Cities. In-home private dinners, weekly meal prep, and intimate event catering."
+          content="Minnesotan Food for your Functions. Personal chef in Minneapolis–St. Paul. Small event catering, In-home dinners, and weekly meal prep."
         />
         <link rel="canonical" href="https://localeffortfood.com/" />
         {/* Preload hero for faster LCP */}
