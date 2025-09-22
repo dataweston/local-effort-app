@@ -408,7 +408,7 @@
       "camera": "Sony Alpha-A6300 (Control)",
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
-      "date": "1996",
+      "date": "1996-01-01",
       "description": [
         "256 pages : 29 cm",
         "\"Recipes by Pat Alburey ...\"--Title page verso",
@@ -466,7 +466,10 @@
         "inlibrary",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "1996-01-01"
+      ]
     },
     "server": "ia802906.us.archive.org",
     "uniq": 2147100149,

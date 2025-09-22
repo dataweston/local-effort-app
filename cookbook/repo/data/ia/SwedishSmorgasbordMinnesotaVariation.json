@@ -171,7 +171,7 @@
         "additional_collections"
       ],
       "creator": "Hulda Lundquist",
-      "date": "1940",
+      "date": "1940-01-01",
       "description": "A description of the Swedish smorgasbord and related Scandinavian recipes. Focus is on smorgasbord recipes as served in traditional Minnesota settings.<br /><br />This book was originally stapled but scanned as found; at some point the binding deteriorated and holes were punched in the sides held together with rings. Otherwise complete.<br /><div><div></div></div>",
       "language": "eng",
       "licenseurl": "http://creativecommons.org/publicdomain/mark/1.0/",
@@ -196,6 +196,9 @@
       "collection_added": [
         "folkscanomy",
         "additional_collections"
+      ],
+      "normalized_dates": [
+        "1940-01-01"
       ]
     },
     "server": "ia600709.us.archive.org",

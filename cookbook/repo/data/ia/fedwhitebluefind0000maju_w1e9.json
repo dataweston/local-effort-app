@@ -412,7 +412,7 @@
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
       "creator": "Majumdar, Simon, author",
-      "date": "2016",
+      "date": "2016-01-01",
       "description": [
         "x, 308 pages : 21 cm",
         "Simon Majumdar is probably not your typical idea of an immigrant. As he says, \"I'm well rested, not particularly poor, and the only time I ever encounter 'huddled masses' is in line at Costco.\" But immigrate he did, and thanks to a Homeland Security agent who asked if he planned to make it official, the journey chronicled in \"Fed, White, and Blue\" was born. In it, Simon sets off on a trek across the United States to find out what it really means to become an American, using what he knows best: food. Simon stops in Plymouth, Massachusetts, to learn about what the pilgrims ate (and that playing Wampanoag football with large men is to be avoided); a Shabbat dinner in Kansas; Wisconsin to make cheese (and get sprayed with hot whey); and LA to cook at a Filipino restaurant in the hope of making his in-laws proud. Simon attacks with gusto the food cultures that make up America--brewing beer, farming, working at a food bank, and even finding himself at a tailgate. Full of heart, humor, history, and of course, food, \"Fed, White, and Blue\" is a warm, funny, and inspiring portrait of becoming American",
@@ -489,7 +489,10 @@
         "internetarchivebooks",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "2016-01-01"
+      ]
     },
     "server": "ia804609.us.archive.org",
     "uniq": 869076974,

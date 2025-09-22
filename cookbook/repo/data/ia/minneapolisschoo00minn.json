@@ -376,7 +376,7 @@
         "Compiled by the Minneapolis Schoolmasters Wives' Club. Cf. p. [1]"
       ],
       "publisher": "[Minnesota : s.n]",
-      "date": "1966",
+      "date": "1966-01-01",
       "language": "eng",
       "page-progression": "lr",
       "boxid": "IA109214",
@@ -431,6 +431,9 @@
         "americana",
         "inlibrary",
         "printdisabled"
+      ],
+      "normalized_dates": [
+        "1966-01-01"
       ]
     },
     "server": "ia601708.us.archive.org",

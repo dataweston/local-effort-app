@@ -434,7 +434,7 @@
       "title": "Christmas from the heart, volume 14",
       "creator": "Better Homes and Gardens",
       "publisher": "Des Moines, Iowa : Meredith",
-      "date": "2005",
+      "date": "2005-01-01",
       "external-identifier": [
         "urn:asin:0696221667",
         "urn:acs6:christmasfromhea00bett_4:pdf:4f22709f-66a4-4c20-9521-f6ab5db8e115",
@@ -535,7 +535,10 @@
         "inlibrary",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "2005-01-01"
+      ]
     },
     "server": "ia601607.us.archive.org",
     "simplelists": {

@@ -416,7 +416,7 @@
       "camera": "Sony Alpha-A6300 (Control)",
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
-      "date": "1994",
+      "date": "1994-01-01",
       "description": [
         "viii, 346 pages ; 23 cm",
         "\"Rochester, Minnesota.\"",
@@ -479,7 +479,10 @@
         "inlibrary",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "1994-01-01"
+      ]
     },
     "server": "ia801709.us.archive.org",
     "uniq": 1118597673,

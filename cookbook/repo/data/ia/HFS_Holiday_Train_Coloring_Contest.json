@@ -345,7 +345,10 @@
       "addeddate": "2017-12-17 21:54:01",
       "backup_location": "ia906603_13",
       "noarchivetorrent": "true",
-      "curation": "[curator]jscott@archive.org[/curator][date]20200223091959[/date][state]un-dark[/state]"
+      "curation": "[curator]jscott@archive.org[/curator][date]20200223091959[/date][state]un-dark[/state]",
+      "normalized_dates": [
+        "2017-12-12"
+      ]
     },
     "server": "ia802909.us.archive.org",
     "uniq": 1409042967,

@@ -245,7 +245,7 @@
       "identifier": "StoutUndergraduateBulletin1904_1905",
       "mediatype": "texts",
       "creator": "University of Wisconsin--Stout. University Relations.",
-      "date": "1904",
+      "date": "1904-01-01",
       "description": "Annual and biennial bulletins of the University of Wisconsin-Stout and its predecessor institutions. The bulletins provide descriptions of campus, lists of administrators and faculty, information on institutional objectives, courses offered, and curriculum.",
       "language": "eng",
       "licenseurl": "http://creativecommons.org/licenses/by-nc-nd/3.0/",
@@ -274,7 +274,10 @@
       "ocr_detected_lang": "en",
       "ocr_detected_lang_conf": "1.0000",
       "page_number_confidence": "89.80",
-      "pdf_module_version": "0.0.20"
+      "pdf_module_version": "0.0.20",
+      "normalized_dates": [
+        "1904-01-01"
+      ]
     },
     "server": "ia803209.us.archive.org",
     "uniq": 786263013,

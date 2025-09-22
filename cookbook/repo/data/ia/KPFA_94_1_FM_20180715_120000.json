@@ -210,7 +210,10 @@
       "language": "eng",
       "backup_location": "ia906709_1",
       "access-restricted-item": "true",
-      "bad_audio": "false"
+      "bad_audio": "false",
+      "normalized_dates": [
+        "2018-07-15"
+      ]
     },
     "server": "ia903101.us.archive.org",
     "speech_vs_music_asr": [

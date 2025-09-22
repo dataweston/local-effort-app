@@ -398,7 +398,7 @@
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
       "creator": "Fluke, Joanne, 1943-",
-      "date": "2006",
+      "date": "2006-01-01",
       "description": "viii, 342 p. ; 22 cm",
       "isbn": [
         "9780758202949",
@@ -463,7 +463,10 @@
         "inlibrary",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "2006-01-01"
+      ]
     },
     "server": "ia804505.us.archive.org",
     "simplelists": {

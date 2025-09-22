@@ -760,7 +760,10 @@
       "youtube-width": "1920",
       "uploader": "jhauser@pobox.com",
       "publicdate": "2023-07-11 14:50:10",
-      "addeddate": "2023-07-11 14:50:10"
+      "addeddate": "2023-07-11 14:50:10",
+      "normalized_dates": [
+        "2023-07-05"
+      ]
     },
     "server": "ia600300.us.archive.org",
     "uniq": 1018053669,

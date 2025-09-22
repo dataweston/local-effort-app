@@ -1023,7 +1023,10 @@
       "addeddate": "2019-03-24 20:21:10",
       "noarchivetorrent": "true",
       "curation": "[curator]jscott@archive.org[/curator][date]20200223091954[/date][state]un-dark[/state]",
-      "backup_location": "ia906809_34"
+      "backup_location": "ia906809_34",
+      "normalized_dates": [
+        "2019-02-27"
+      ]
     },
     "server": "ia800709.us.archive.org",
     "uniq": 1182621235,

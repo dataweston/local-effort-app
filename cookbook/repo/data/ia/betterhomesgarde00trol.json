@@ -392,7 +392,7 @@
       "subject": "Low-calorie diet",
       "description": "At head of title: Better homes and gardens",
       "publisher": "Des Moines, Iowa : Meredith",
-      "date": "1982",
+      "date": "1982-01-01",
       "language": "eng",
       "isbn": [
         "0696007452",
@@ -458,7 +458,10 @@
         "inlibrary",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "1982-01-01"
+      ]
     },
     "server": "ia801402.us.archive.org",
     "simplelists": {

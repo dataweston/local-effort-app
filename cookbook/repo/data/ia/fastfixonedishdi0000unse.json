@@ -406,7 +406,7 @@
       "contributor": "Internet Archive",
       "creator": "None",
       "creator-alt-script": "None",
-      "date": "2009",
+      "date": "2009-01-01",
       "description": [
         "383 pages : 24 cm",
         "Contains more than 350 comforting casseroles and one-pan recipes. 369 pages",
@@ -470,7 +470,10 @@
         "inlibrary",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "2009-01-01"
+      ]
     },
     "server": "ia800702.us.archive.org",
     "uniq": 1131606444,

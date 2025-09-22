@@ -434,7 +434,7 @@
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
       "creator": "Prinz, Deborah",
-      "date": "2013",
+      "date": "2013-01-01",
       "description": [
         "xxvi, 237 pages : 23 cm",
         "\"Explore the surprising Jewish and other religious connections to chocolate in this gastronomic and historical adventure through cultures, countries, centuries and convictions. Rabbi Deborah Prinz draws from her world travels on the trail of chocolate to enchant chocolate lovers of all backgrounds as she unravels religious connections in the early chocolate trade and shows how Jewish and other religious values infuse chocolate today. With mouth-watering recipes, a glossary of chocolaty terms, tips for buying luscious, ethically produced chocolate, a list of sweet chocolate museums around the world and more, this book unwraps tasty facts such as: Some people, including French (Bayonne) chocolate makers, believe that Jews brought chocolate making to France; The bishop of Chiapas, Mexico, was poisoned because he prohibited local women from drinking chocolate during Mass; Although Quakers do not observe Easter, it was a Quaker-owned chocolate company Frys that claimed to have created the first chocolate Easter egg in the United Kingdom; A born-again Christian businessman in the Midwest marketed his caramel chocolate bar as a Noshie, after the Yiddish word for snack; Chocolate Chanukah gelt may have developed from St. Nicholas customs; The Mayan 'Book of Counsel' taught that gods created humans from chocolate and maize.\"--Publisher description",
@@ -503,7 +503,10 @@
         "inlibrary",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "2013-01-01"
+      ]
     },
     "server": "ia601902.us.archive.org",
     "simplelists": {

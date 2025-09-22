@@ -198,7 +198,7 @@
     "metadata": {
       "identifier": "ERIC_ED424399",
       "creator": "ERIC",
-      "date": "1997-12",
+      "date": "1997-01-01",
       "description": "This proceedings includes the following papers and carousel presentations: \"Information Technology Related Career Development Needs of Secondary Vocational Teachers\" (Joe W. Kotrlik, Betty C. Harrison, Donna H. Redmann, Cindy S. Handley); \"Do Gender and Academic Risk Matter? Influences on Career Decision Making and Occupational Choice in Early Adolescence\" (Jay W. Rojewski, Roger B. Hill); \"Factors Perceived to Influence the Use of the Program of Activities\" (Robert M. Torres, Thomas J. Dormody); \"Sources of Influence on Students' Enrollment Decision in Post-secondary Vocational-Technical Education\" (Brian A. Sandford, Robert M. Torres); \"Linking the NCTM [National Council of Teachers of Mathematics] Standards to Emerging Vocationalism: A Promising Equation?\" (Victor M.  Hernandez-Gantes); \"Integrating Academic and Vocational Education: An Investigation of the Attitudes and Curricular Values of Administrators and Faculty in the Wisconsin Technical College System\" (Jerrilyn A. Brewer); \"Gatekeepers of Family and Consumer Sciences/Secondary Home Economics Programs\" (Susan K. Webber); \"The Role of Social Awareness in the Employment Success of Adolescents with Mild Mental Retardation\" (Rhonda S. Black, Jay W. Rojewski); \"Motivational Needs of Students Enrolled in Agricultural Education Programs in Georgia\" (Jeff Turner, Ray V. Herren); \"Impact of Environmental Variables on Community College Dental Assisting Students Who Are At Risk\" (Debra S. Daniels); \"Student Perceptions of the Affective Experiences Encountered in Distance Learning Courses\" (J.D.  Thomerson); \"Teacher Preparation for Workplace Skill Instruction\" (Marcia A. Anderson); \"Lessons Learned from an Analysis of Youth Apprenticeship Programs\" (Clifton L. Smith); \"Evaluating and Improving Tech Prep: The Minnesota Self-Assessment Model\" (David J. Pucel, James Brown); \"Teacher Characteristics and Activities that Contribute to Students' School-to-Work Transition\" (B. June Schmidt, Curtis R. Finch); \"Perceptions on Delivery of Biotechnology Instruction\" (Dan Brown, Mike Kemp); \"Linking the NCTM Standards and Career Curricula: Is Your School Ready?\" (Victor M. Hernandez-Gantes); \"Model Preservice Teacher Education Program for Agricultural Education\" (Kirk A. Swortzel); \"A Qualitative Evaluation of Temple University's Program VITAL, a Field-Based, Performance-Based Vocational  Teacher Education Program\" (Gloria Heberley); and \"A Longitudinal Study of Classroom Problems and Strategies\" (Betsy Orr, Cecelia Thompson, Dale Thompson). Many papers include substantial bibliographies. (MN)",
       "language": "english",
       "mediatype": "texts",
@@ -219,7 +219,10 @@
       "ocr": "ABBYY FineReader 11.0",
       "repub_state": "4",
       "foldoutcount": "0",
-      "backup_location": "ia905507_15"
+      "backup_location": "ia905507_15",
+      "normalized_dates": [
+        "1997-01-01"
+      ]
     },
     "server": "ia800208.us.archive.org",
     "uniq": 736080716,

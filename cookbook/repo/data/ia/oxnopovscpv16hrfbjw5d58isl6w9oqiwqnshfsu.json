@@ -112,7 +112,10 @@
       "publicdate": "2022-04-24 09:16:41",
       "addeddate": "2022-04-24 09:16:41",
       "curation": "[curator]validator@archive.org[/curator][date]20220424091728[/date][comment]checked for malware[/comment]",
-      "access-restricted-item": "true"
+      "access-restricted-item": "true",
+      "normalized_dates": [
+        "2022-03-03"
+      ]
     },
     "server": "ia601506.us.archive.org",
     "uniq": 1554040587,

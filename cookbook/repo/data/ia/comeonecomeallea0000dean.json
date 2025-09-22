@@ -396,7 +396,7 @@
       "contributor": "Internet Archive",
       "creator": "Dean, Lee Svitak, 1953-",
       "creator-alt-script": "None",
-      "date": "2009",
+      "date": "2009-01-01",
       "description": [
         "311 pages : 24 cm",
         "A collection of over 150 recipes taken from the Minneapolis Star Tribune Taste section",
@@ -468,6 +468,9 @@
         "internetarchivebooks",
         "inlibrary",
         "printdisabled"
+      ],
+      "normalized_dates": [
+        "2009-01-01"
       ]
     },
     "server": "ia600200.us.archive.org",

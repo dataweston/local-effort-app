@@ -190,7 +190,7 @@
     "metadata": {
       "identifier": "ERIC_ED041168",
       "creator": "ERIC",
-      "date": "1969",
+      "date": "1969-01-01",
       "description": "Prepared by an instructor and curriculum development specialist of the Minnesota Work Opportunity Center, this course is designed to aid the dropout and/or hard-core unemployed youth develop skills in clothing and interior decorating. The approach focuses on the individual and the goals he desires to accomplish. During the first interview, the instructor attempts to determine the student's concerns, motives, and feelings so that a program can be planned around these factors. To provide positive reinforcement and minimize frustration, content is broken down into small instructional units in the areas of management, interior decorating, wardrobe planning, clothing construction, fabric care, and job opportunities. An annotated bibliography of books, pamphlets, and audiovisual aids  is included, and brief descriptions of the Center's instructional areas, a listing of teaching techniques and motivational devices, and two case studies are appended. Related documents are available as VT 011 518-VT 011 533 in this issue. (SB)",
       "language": "english",
       "mediatype": "texts",
@@ -210,7 +210,10 @@
       "ppi": "600",
       "ocr": "ABBYY FineReader 11.0",
       "repub_state": "4",
-      "backup_location": "ia905504_28"
+      "backup_location": "ia905504_28",
+      "normalized_dates": [
+        "1969-01-01"
+      ]
     },
     "server": "ia600503.us.archive.org",
     "uniq": 1188909127,

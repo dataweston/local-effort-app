@@ -33,7 +33,8 @@ class HarvestFilter:
         self.state_abbr = list(dict.fromkeys(self.primary_state_abbr + self.secondary_state_abbr))
         self.counties = [t.lower() for t in flatten_terms(locations.get("counties", []))]
         self.cities = [t.lower() for t in flatten_terms(locations.get("cities", []))]
-        self.regions = [t.lower() for t in flatten_terms(locations.get("regions", []))]        community_terms = flatten_terms(allow.get("community", []), allow.get("institutions", []))
+        self.regions = [t.lower() for t in flatten_terms(locations.get("regions", []))]
+        community_terms = flatten_terms(allow.get("community", []), allow.get("institutions", []))
         self.community_terms = [t.lower() for t in community_terms]
         deny = terms.get("deny", {})
         self.negative_terms = [t.lower() for t in flatten_terms(deny.get("keywords", []))]
@@ -229,6 +230,8 @@ def build_curation_notes(result: FilterResult) -> str:
     if not parts:
         parts.append("Curator review recommended")
     return "; ".join(parts)
+
+
 
 
 

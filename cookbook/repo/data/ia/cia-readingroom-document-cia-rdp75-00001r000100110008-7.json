@@ -100,7 +100,10 @@
       "publicdate": "2023-10-14 21:27:28",
       "addeddate": "2023-10-14 21:27:28",
       "curation": "[curator]validator@archive.org[/curator][date]20231014213322[/date][comment]checked for malware[/comment]",
-      "access-restricted-item": "true"
+      "access-restricted-item": "true",
+      "normalized_dates": [
+        "1966-08-29"
+      ]
     },
     "server": "ia804500.us.archive.org",
     "servers_unavailable": true,

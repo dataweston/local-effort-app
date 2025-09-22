@@ -193,7 +193,10 @@
       "publicdate": "2022-11-11 21:30:26",
       "addeddate": "2022-11-11 21:30:26",
       "curation": "[curator]validator@archive.org[/curator][date]20221111213111[/date][comment]checked for malware[/comment]",
-      "access-restricted-item": "true"
+      "access-restricted-item": "true",
+      "normalized_dates": [
+        "2020-05-30"
+      ]
     },
     "server": "ia801505.us.archive.org",
     "uniq": 418569759,

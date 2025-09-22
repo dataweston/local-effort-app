@@ -392,7 +392,7 @@
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
       "creator": "Tuminelly, Nancy, 1952-",
-      "date": "2013",
+      "date": "2013-01-01",
       "description": [
         "pages cm",
         "8-12",
@@ -452,7 +452,10 @@
         "printdisabled"
       ],
       "page_number_confidence": "34",
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "2013-01-01"
+      ]
     },
     "server": "ia902804.us.archive.org",
     "simplelists": {

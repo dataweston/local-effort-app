@@ -419,7 +419,7 @@
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
       "creator": "Ventura, Marne, author",
-      "date": "2017",
+      "date": "2017-01-01",
       "description": [
         "32 pages : 26 cm",
         "\"Easy-to-follow instructions and cooking tips teach young readers how to cook a variety of gross looking, yet delicious recipes\"--",
@@ -489,7 +489,10 @@
         "printdisabled"
       ],
       "page_number_confidence": "0",
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "2017-01-01"
+      ]
     },
     "server": "ia904503.us.archive.org",
     "uniq": 2106988048,

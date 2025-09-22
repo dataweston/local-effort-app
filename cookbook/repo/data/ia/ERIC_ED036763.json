@@ -182,7 +182,7 @@
     "metadata": {
       "identifier": "ERIC_ED036763",
       "creator": "ERIC",
-      "date": "1970-02",
+      "date": "1970-01-01",
       "description": "A study was made of a noncredit home economics program presented by the University of Wisconsin Extension over the statewide Educational Telephone Network (ETN). The study was limited to the total population involved in one program (54) and their immediate reaction to that program. Methodology used was a combination of action research and field research. The instrument was developed around six factors: environment, content, program process, lecturer, moderator, and technical qualities of the ETN. Variables concerned with the various factors were interspersed and resulted in 48 items plus a 9-point scale for an overall assessment of the program. A four-point interval scale was used with each of the 48 variables. The instrument was open-ended, with provision for suggestions for  improvement. Subjective evaluative inference based on means and standard deviations indicated the overall program was somewhat better than a possible average but with room for improvement. A better approach to organization and a more careful analysis of the level of content could lead to increased effectiveness. The moderator should assume the role of group leader in an attempt to bring about more group interaction. (author/eb)",
       "language": "english",
       "mediatype": "texts",
@@ -202,7 +202,10 @@
       "ppi": "600",
       "ocr": "ABBYY FineReader 11.0",
       "repub_state": "4",
-      "backup_location": "ia905505_32"
+      "backup_location": "ia905505_32",
+      "normalized_dates": [
+        "1970-01-01"
+      ]
     },
     "server": "ia601208.us.archive.org",
     "uniq": 969512918,

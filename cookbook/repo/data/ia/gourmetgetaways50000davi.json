@@ -386,7 +386,7 @@
       "collection_set": "china",
       "contributor": "Internet Archive",
       "creator": "David, Joe",
-      "date": "2009",
+      "date": "2009-01-01",
       "isbn": [
         "9780762757893",
         "0762757892"
@@ -461,7 +461,10 @@
         "inlibrary",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "2009-01-01"
+      ]
     },
     "server": "ia803107.us.archive.org",
     "simplelists": {

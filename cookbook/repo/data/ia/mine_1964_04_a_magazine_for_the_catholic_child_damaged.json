@@ -264,7 +264,7 @@
         "deemphasize"
       ],
       "creator": "Youth Associates Company",
-      "date": "1964-04",
+      "date": "1964-01-01",
       "description": "Mine, A Magazine For The Catholic Child; April 1964. Publications For Catholic Youth; 25 Groveland Terrace, Minneapolis 5, Minnesota. Dimensions are: 220.0 millimeters width by 295.0 millimeters height by 1.0 millimeters thickness, weight 41.76 grams, and 14 pages. This Digital work was created by Gerard Arthus and is in the Public Domain under the Creative Commons License. Any questions regarding this item should be directed to <a href=\"mailto:garthus801@gmail.com\" rel=\"ugc nofollow\">garthus801@gmail.com</a> For more information Go to this site: <a href=\"http://openeducation.org\" rel=\"ugc nofollow\">http://OpenEducation.org</a> to find out more about the digitization of this item and the on-going attempt to help make 'Knowledge' and 'Information' available to everyone, anywhere, at any time, for no cost. There are many forces at work which are attempting to turn 'Public Domain' information into a commodity which some can milk for a profit. This parasitic use of information which should be freely available for all to access is an Intellectual Crime and should not be tolerated. Hi-resolution images included in the tar file.",
       "language": "English",
       "licenseurl": "https://creativecommons.org/publicdomain/zero/1.0/",
@@ -290,7 +290,10 @@
       "contributor": "Gerard Arthus",
       "publisher": "Gerard Arthus",
       "coverage": "United States",
-      "access-restricted-item": "true"
+      "access-restricted-item": "true",
+      "normalized_dates": [
+        "1964-01-01"
+      ]
     },
     "server": "ia600107.us.archive.org",
     "uniq": 2129241268,

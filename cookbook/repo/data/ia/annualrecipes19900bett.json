@@ -393,7 +393,7 @@
       "subject": "Cookery",
       "description": "At head of title: Better homes and gardens",
       "publisher": "Des Moines, Iowa : Better Homes and Gardens Books",
-      "date": "1997",
+      "date": "1997-01-01",
       "language": "eng",
       "isbn": [
         "0696207265",
@@ -458,6 +458,9 @@
         "internetarchivebooks",
         "printdisabled",
         "inlibrary"
+      ],
+      "normalized_dates": [
+        "1997-01-01"
       ]
     },
     "server": "ia800200.us.archive.org",

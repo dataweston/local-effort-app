@@ -413,7 +413,7 @@
       ],
       "description": "Fresh Herbs for Fresh Flavor -- Salads: A Refresher Course -- Garden Variety Soups -- Well-Bread Sandwiches -- The Dinner Bell -- Sensationally Seasoned Veggies -- Simply Sweet",
       "publisher": "Des Moines, Iowa : Meredith",
-      "date": "2004",
+      "date": "2004-01-01",
       "language": "eng",
       "isbn": [
         "0696221500",
@@ -481,7 +481,10 @@
         "printdisabled"
       ],
       "page_number_confidence": "0",
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "2004-01-01"
+      ]
     },
     "server": "ia601608.us.archive.org",
     "simplelists": {

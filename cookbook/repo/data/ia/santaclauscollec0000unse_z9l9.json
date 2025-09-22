@@ -402,7 +402,7 @@
       "camera": "Sony Alpha-A6300 (Control)",
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
-      "date": "2000",
+      "date": "2000-01-01",
       "description": [
         "160 pages : 29 cm",
         "Enter a special world created just for you--the magnificent, magical world of Santa Claus. Learn his history. Unearth rare collectibles. And meet the expert artisans and collectors who have dedicated themselves to creating and displaying his cheerful likeness"
@@ -470,7 +470,10 @@
         "inlibrary",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "2000-01-01"
+      ]
     },
     "server": "ia601706.us.archive.org",
     "uniq": 1367958515,

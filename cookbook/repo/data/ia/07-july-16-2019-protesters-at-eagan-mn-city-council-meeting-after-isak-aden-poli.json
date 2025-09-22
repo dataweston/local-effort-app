@@ -353,7 +353,10 @@
       "publicdate": "2024-07-09 17:22:17",
       "addeddate": "2024-07-09 17:22:17",
       "curation": "[curator]validator@archive.org[/curator][date]20240709174001[/date][comment]checked for malware[/comment]",
-      "collection_added": "newsandpublicaffairs"
+      "collection_added": "newsandpublicaffairs",
+      "normalized_dates": [
+        "2019-07-16"
+      ]
     },
     "server": "ia801707.us.archive.org",
     "uniq": 409946038,

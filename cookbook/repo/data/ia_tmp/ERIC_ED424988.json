@@ -166,7 +166,7 @@
     "metadata": {
       "identifier": "ERIC_ED424988",
       "creator": "ERIC",
-      "date": "1998-10",
+      "date": "1998-01-01",
       "description": "The goal of Minnesota's early childhood development and care programs is to ensure that families of young children have the opportunity to choose affordable, high quality child care and participate in developmental programs that promote the skills and behaviors necessary for children to succeed in school. This information brief describes and compares the early childhood education and care programs that receive Minnesota state appropriations and are established in state law. Tables delineate the characteristics, eligibility requirements, participation, and funding for each program. (KB)",
       "language": "english",
       "mediatype": "texts",
@@ -187,7 +187,10 @@
       "ocr": "ABBYY FineReader 11.0",
       "repub_state": "4",
       "foldoutcount": "0",
-      "backup_location": "ia905507_16"
+      "backup_location": "ia905507_16",
+      "normalized_dates": [
+        "1998-01-01"
+      ]
     },
     "server": "ia801304.us.archive.org",
     "uniq": 193603198,

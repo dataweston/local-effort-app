@@ -235,7 +235,10 @@
       "next": "KRFC_88_9_FM_20190326_060000",
       "access-restricted-item": "true",
       "bad_audio": "false",
-      "backup_location": "ia906900_3"
+      "backup_location": "ia906900_3",
+      "normalized_dates": [
+        "2019-03-26"
+      ]
     },
     "server": "ia800109.us.archive.org",
     "speech_vs_music_asr": [

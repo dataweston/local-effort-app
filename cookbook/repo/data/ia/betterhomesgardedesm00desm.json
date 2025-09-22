@@ -416,7 +416,7 @@
       "subject": "Cookery",
       "description": "Includes indexes",
       "publisher": "Des Moines, Iowa : Meredith Corp.",
-      "date": "1978",
+      "date": "1978-01-01",
       "language": "eng",
       "isbn": [
         "069600125X",
@@ -477,7 +477,10 @@
         "printdisabled"
       ],
       "page_number_confidence": "100",
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "1978-01-01"
+      ]
     },
     "reviews": [
       {

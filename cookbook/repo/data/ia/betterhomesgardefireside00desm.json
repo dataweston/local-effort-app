@@ -404,7 +404,7 @@
       ],
       "description": "Spine title: By the fireside Christmas at home",
       "publisher": "Des Moines, Iowa : Better Homes and Gardens Books",
-      "date": "1993",
+      "date": "1993-01-01",
       "language": "eng",
       "isbn": [
         "0696019833",
@@ -480,7 +480,10 @@
         "printdisabled"
       ],
       "page_number_confidence": "9",
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "1993-01-01"
+      ]
     },
     "server": "ia800208.us.archive.org",
     "uniq": 1702015824,

@@ -203,7 +203,10 @@
       "ppi": "600",
       "ocr": "ABBYY FineReader 9.0",
       "repub_state": "4",
-      "backup_location": "ia905906_2"
+      "backup_location": "ia905906_2",
+      "normalized_dates": [
+        "1992-11-30"
+      ]
     },
     "server": "ia801604.us.archive.org",
     "uniq": 454178033,

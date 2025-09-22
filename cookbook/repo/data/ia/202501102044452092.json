@@ -19837,7 +19837,7 @@
         "additional_collections"
       ],
       "creator": "Lizzie Black Kander",
-      "date": "1920",
+      "date": "1920-01-01",
       "description": "<div>Cookbook published in 1920 in Milwaukee, WI.</div><div><i><b><br /></b></i></div><div><i><b>The Settlement Cook Book</b></i> is a complete <a href=\"https://en.wikipedia.org/wiki/Cookbook\" title=\"Cookbook\" rel=\"ugc nofollow\">cookbook</a> and guide to running a household, compiled by <a href=\"https://en.wikipedia.org/wiki/Lizzie_Black_Kander\" title=\"Lizzie Black Kander\" rel=\"ugc nofollow\">Lizzie Black Kander</a>,\n first published in 1901. The compendium of recipes, cooking techniques,\n nutrition information, serving procedures and other useful information \nwas intended to support young women raising their families. The context \nfor the cookbook was the <a href=\"https://en.wikipedia.org/wiki/Settlement_House\" class=\"mw-redirect\" title=\"Settlement House\" rel=\"ugc nofollow\">Settlement House</a> of <a href=\"https://en.wikipedia.org/wiki/Milwaukee\" title=\"Milwaukee\" rel=\"ugc nofollow\">Milwaukee</a>, <a href=\"https://en.wikipedia.org/wiki/Wisconsin\" title=\"Wisconsin\" rel=\"ugc nofollow\">Wisconsin</a>, which served the needs of recent immigrants including many Jewish families arriving from Europe.</div><div><br /></div><div>The table of contents was broken from the book and placed at the end of the scan series.<br />\n</div>",
       "language": "eng",
       "licenseurl": "https://creativecommons.org/publicdomain/mark/1.0/",
@@ -19859,6 +19859,9 @@
         "folkscanomy_culinary",
         "folkscanomy",
         "additional_collections"
+      ],
+      "normalized_dates": [
+        "1920-01-01"
       ]
     },
     "server": "ia800604.us.archive.org",

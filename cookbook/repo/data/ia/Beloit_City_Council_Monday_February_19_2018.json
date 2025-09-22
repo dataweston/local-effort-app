@@ -1391,7 +1391,10 @@
       "addeddate": "2018-02-25 16:10:47",
       "backup_location": "ia906609_21",
       "noarchivetorrent": "true",
-      "curation": "[curator]jscott@archive.org[/curator][date]20200223081945[/date][state]un-dark[/state]"
+      "curation": "[curator]jscott@archive.org[/curator][date]20200223081945[/date][state]un-dark[/state]",
+      "normalized_dates": [
+        "2018-02-19"
+      ]
     },
     "server": "ia803109.us.archive.org",
     "uniq": 631947568,

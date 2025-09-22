@@ -177,7 +177,7 @@
     "metadata": {
       "identifier": "ERIC_ED041202",
       "creator": "ERIC",
-      "date": "1970",
+      "date": "1970-01-01",
       "description": "A study was conducted in Minnesota on attitudes of county leaders (commissioners, auditors, and appointed Extension committee members) on ways of expanding Extension programs. In each county data were gathered by questionnaire from at least two thirds of the leaders. Questions were asked about expansion (1) through working with other organizations, (2) through cooperation with federally sponsored programs, (3) through appointment of area agents, (4) through the exchange of work, (5) through new areas of specialization, and (6) through public affairs programs. Most responses to (1) were neutral, with the exception of a 46.4% favorable vote for working with industrial development groups. Response to (2) was varied, with a heavy majority of favorable responses to soil conservation  programs and those in watershed development. There was little opposition to (3) and to the exchange of work (4) throughout the state, with less opposition to agricultural than to home programs. To (5) greatest support was given to help for law enforcement agencies and citizens with legal problems. Attitudes toward (6) varied greatly; most favored subjects were domestic agricultural policies and federal programs; opposition was shown to programs on foreign agricultural policies and international relations. (Appendixes provide tabulation of data by county.) (EB)",
       "language": "english",
       "mediatype": "texts",
@@ -197,7 +197,10 @@
       "ppi": "600",
       "ocr": "ABBYY FineReader 11.0",
       "repub_state": "4",
-      "backup_location": "ia905504_28"
+      "backup_location": "ia905504_28",
+      "normalized_dates": [
+        "1970-01-01"
+      ]
     },
     "server": "ia601203.us.archive.org",
     "uniq": 687375292,

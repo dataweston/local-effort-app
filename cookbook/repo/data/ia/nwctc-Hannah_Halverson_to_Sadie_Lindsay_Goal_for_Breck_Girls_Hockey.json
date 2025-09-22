@@ -261,7 +261,10 @@
       "addeddate": "2020-01-13 03:13:11",
       "noarchivetorrent": "true",
       "curation": "[curator]jscott@archive.org[/curator][date]20200223180543[/date][state]un-dark[/state]",
-      "backup_location": "ia907101_22"
+      "backup_location": "ia907101_22",
+      "normalized_dates": [
+        "2020-01-06"
+      ]
     },
     "server": "ia803102.us.archive.org",
     "uniq": 2037942780,

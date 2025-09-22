@@ -415,7 +415,7 @@
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
       "creator": "Willard, Pat",
-      "date": "2008",
+      "date": "2008-01-01",
       "description": [
         "ix, 305 p. : 25 cm",
         "Willard takes readers on a journey into the regional nooks and crannies of American cuisine where WPA writers--including Eudora Welty, Saul Bellow, Ralph Ellison, Nelson Algren, and others--were dispatched in 1935 to document the roots of this diverse culinary cuisine. She visits a booyah cook-off in Minnesota, a political feast in Mississippi, a watermelon festival in Oklahoma, and a sheepherders ball in Idaho, to name a few. Featuring recipes and never-before-seen photos, including those from the WPA by Dorothea Lange, Ben Shahn, and Marion Post Wolcott, America Eats! is a glowing celebration of American food, past and present",
@@ -481,6 +481,9 @@
       "collection": [
         "internetarchivebooks",
         "printdisabled"
+      ],
+      "normalized_dates": [
+        "2008-01-01"
       ]
     },
     "server": "ia903402.us.archive.org",

@@ -391,7 +391,7 @@
         "Includes index"
       ],
       "publisher": "Madison : Wisconsin Tales and Trails",
-      "date": "1974",
+      "date": "1974-01-01",
       "language": "eng",
       "isbn": [
         "0915024020",
@@ -451,7 +451,10 @@
       ],
       "page_number_module_version": "1.0.5",
       "pdf_degraded": "invalid-jp2-headers",
-      "pdf_module_version": "0.0.25"
+      "pdf_module_version": "0.0.25",
+      "normalized_dates": [
+        "1974-01-01"
+      ]
     },
     "server": "ia600209.us.archive.org",
     "uniq": 1137738061,

@@ -76,7 +76,10 @@
       "publicdate": "2021-07-02 04:58:26",
       "addeddate": "2021-07-02 04:58:26",
       "curation": "[curator]validator@archive.org[/curator][date]20210702050333[/date][comment]checked for malware[/comment]",
-      "access-restricted-item": "true"
+      "access-restricted-item": "true",
+      "normalized_dates": [
+        "2020-01-07"
+      ]
     },
     "server": "ia904509.us.archive.org",
     "uniq": 658249521,

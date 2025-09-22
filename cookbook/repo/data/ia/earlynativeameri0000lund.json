@@ -441,7 +441,7 @@
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
       "creator": "Lund, Duane R. (Duane Richard), 1926-",
-      "date": "1989",
+      "date": "1989-01-01",
       "description": "83 pages : 16 cm",
       "isbn": [
         "0934860572",
@@ -506,7 +506,10 @@
         "inlibrary",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "1989-01-01"
+      ]
     },
     "server": "ia801805.us.archive.org",
     "uniq": 841900780,

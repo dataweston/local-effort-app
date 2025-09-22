@@ -411,7 +411,7 @@
       "camera": "Sony Alpha-A6300 (Control)",
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
-      "date": "2002",
+      "date": "2002-01-01",
       "description": [
         "574 pages : 26 cm",
         "Features more than one thousand kitchen-tested recipes, menu suggestions, nutrition facts, recipes for crockery cookers, and cooking tips",
@@ -479,7 +479,10 @@
         "inlibrary",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "2002-01-01"
+      ]
     },
     "server": "ia902306.us.archive.org",
     "uniq": 1218593269,

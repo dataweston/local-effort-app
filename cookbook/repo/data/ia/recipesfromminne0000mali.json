@@ -463,7 +463,7 @@
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
       "creator": "Malisow, Betty",
-      "date": "1985",
+      "date": "1985-01-01",
       "description": [
         "199 pages : 21 cm",
         "Reprint. Originally published: Deephaven, Minn. : Young Creations, ©1981",
@@ -536,7 +536,10 @@
         "inlibrary",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "1985-01-01"
+      ]
     },
     "server": "ia601409.us.archive.org",
     "uniq": 2027801373,

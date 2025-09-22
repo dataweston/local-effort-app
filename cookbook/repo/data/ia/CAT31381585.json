@@ -376,7 +376,7 @@
       "scanningcenter": "beltsville",
       "sponsor": "U.S. Department of Agriculture, National Agricultural Library",
       "contributor": "U.S. Department of Agriculture, National Agricultural Library",
-      "date": "1948",
+      "date": "1948-01-01",
       "subject": [
         "Nursery stock Wisconsin Baraboo Catalogs",
         "Herb gardening Equipment and supplies Catalogs",
@@ -443,7 +443,10 @@
       "openlibrary_edition": "OL37758625M",
       "curation": "[curator]rich@archive.org[/curator][date]2022051111111[/date][state]approved[/state][comment]invoice202204[/comment]",
       "sponsordate": "20220430",
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "1948-01-01"
+      ]
     },
     "page_numbers": {
       "identifier": "CAT31381585",

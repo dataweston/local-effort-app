@@ -481,7 +481,7 @@
       "donor": "allen_county",
       "creator": "Gwynn, Mary, 1957-",
       "publisher": "Des Moines, Iowa : Meredith Press",
-      "date": "1995",
+      "date": "1995-01-01",
       "subject": [
         "Vegetarian cooking",
         "Quick and easy cooking",
@@ -541,7 +541,10 @@
         "inlibrary",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "1995-01-01"
+      ]
     },
     "server": "ia600205.us.archive.org",
     "simplelists": {

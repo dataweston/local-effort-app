@@ -396,7 +396,7 @@
       "collection_set": "china",
       "contributor": "Internet Archive",
       "creator": "Berry, Vern, 1906-2004;Heckert, Connie K",
-      "date": "1995",
+      "date": "1995-01-01",
       "isbn": [
         "1565540417",
         "9781565540415"
@@ -469,7 +469,10 @@
         "inlibrary",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "1995-01-01"
+      ]
     },
     "server": "ia802809.us.archive.org",
     "simplelists": {

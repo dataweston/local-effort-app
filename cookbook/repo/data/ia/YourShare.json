@@ -178,7 +178,7 @@
         "opensource",
         "community"
       ],
-      "date": "1943",
+      "date": "1943-01-01",
       "description": "Your Share. How to prepare appetizing, healthful meals .. with foods available today. Betty Crocker. 1943, General Mills, Inc. Minneapolis, Minnesota.<div>World War II era recipe booklet.</div>",
       "language": "eng",
       "scanner": "Internet Archive HTML5 Uploader 1.6.4",
@@ -198,7 +198,10 @@
       "ppi": "600",
       "ocr": "ABBYY FineReader 11.0 (Extended OCR)",
       "year": "1943",
-      "backup_location": "ia906903_19"
+      "backup_location": "ia906903_19",
+      "normalized_dates": [
+        "1943-01-01"
+      ]
     },
     "server": "ia601805.us.archive.org",
     "uniq": 624928330,

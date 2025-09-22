@@ -415,7 +415,7 @@
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
       "creator": "Thompson, Darlene Overbeek, author",
-      "date": "2004",
+      "date": "2004-01-01",
       "description": "xii, 233 pages : 26 cm",
       "isbn": [
         "0975418009",
@@ -483,7 +483,10 @@
         "inlibrary",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "2004-01-01"
+      ]
     },
     "server": "ia802300.us.archive.org",
     "uniq": 1393739991,

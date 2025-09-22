@@ -433,7 +433,7 @@
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
       "creator": "Richardson, Lou, 1894-",
-      "date": "1962",
+      "date": "1962-01-01",
       "description": [
         "201 pages 23 cm",
         "Originally published in 1949 under title: How to write for homemakers"
@@ -503,6 +503,9 @@
         "internetarchivebooks",
         "inlibrary",
         "printdisabled"
+      ],
+      "normalized_dates": [
+        "1962-01-01"
       ]
     },
     "server": "ia802809.us.archive.org",

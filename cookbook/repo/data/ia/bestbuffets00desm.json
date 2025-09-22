@@ -419,7 +419,7 @@
       ],
       "description": "Includes index",
       "publisher": "[Des Moines? Iowa] : Meredith Press",
-      "date": "1963",
+      "date": "1963-01-01",
       "language": "eng",
       "page-progression": "lr",
       "boxid": "IA107709",
@@ -481,6 +481,9 @@
         "americana",
         "inlibrary",
         "printdisabled"
+      ],
+      "normalized_dates": [
+        "1963-01-01"
       ]
     },
     "server": "ia801304.us.archive.org",

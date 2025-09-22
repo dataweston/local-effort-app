@@ -432,7 +432,7 @@
       "camera": "USB PTP Class Camera",
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
-      "date": "2010",
+      "date": "2010-01-01",
       "description": [
         "304 pages : 26 cm",
         "Choose 3 meals plus 2 snacks to equal 1,500 calories or less",
@@ -499,7 +499,10 @@
         "inlibrary",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "2010-01-01"
+      ]
     },
     "server": "ia803208.us.archive.org",
     "uniq": 1625704152,

@@ -246,7 +246,7 @@
       ],
       "contributor": "University of Pennsylvania Libraries",
       "creator": "Keen, Hannah M.",
-      "date": "1854",
+      "date": "1854-01-01",
       "description": "Kislak Center for Special Collections, Rare Books and Manuscripts, Ms Codex 633. Hannah M. Keen lived at 3312 Race Street in West Philadelphia. Most recipes in this manuscript cookbook are for breads, puddings, pies, and cakes, including a \"West Phila. Cake\" and \"Railroad Cake.\" The source for a number of the recipes is \"Widdifield's,\" presumably Widdifield's new cook book: or, Practical receipts for the housewife by Hannah Widdifield published in Philadelphia in 1856. Other recipes are attributed to relatives, for example, Lucy H. Keen, and to Mary McIlvain and R. B. McIlvain. A section of recipes, \"Preparations for the Sick,\" includes \"Chicken Broth,\" \"Cocoa,\" \"Tapioca Jelly,\" \"Egg and Milk,\" \"Egg and Wine,\" \"Carrageen or Irish Moss Jelly,\" and \"Wine Whey.\" Also three leaves of newspaper clippings of household remedies and recipes pasted in and a printed broadsheet for \"Wisconsin and Gem Graham Cakes,\" in an advertisement for Truman & Shaw hardware dealers of Philadelpia. The final recipe is \"An Excellent Cement for seams in the roofs of houses.\"\n<p>Penn Libraries Catalog: <a href=\"https://franklin.library.upenn.edu/catalog/FRANKLIN_9923631383503681\" rel=\"nofollow\">go to Franklin</a></p>",
       "language": "eng",
       "licenseurl": "http://creativecommons.org/publicdomain/mark/1.0/",
@@ -275,7 +275,10 @@
       "ocr_detected_lang_conf": "1.0000",
       "page_number_confidence": "0",
       "page_number_module_version": "1.0.5",
-      "pdf_module_version": "0.0.23"
+      "pdf_module_version": "0.0.23",
+      "normalized_dates": [
+        "1854-01-01"
+      ]
     },
     "server": "ia600207.us.archive.org",
     "uniq": 1957075860,

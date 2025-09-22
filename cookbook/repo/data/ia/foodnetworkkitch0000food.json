@@ -383,7 +383,7 @@
       "collection_set": "china",
       "contributor": "Internet Archive",
       "creator": "Food Network (Firm)",
-      "date": "2005",
+      "date": "2005-01-01",
       "isbn": [
         "0696222132",
         "9780696222139"
@@ -444,7 +444,10 @@
       "ocr_converted": "abbyy-to-hocr 1.1.20",
       "page_number_confidence": "100",
       "filesxml": "Wed Apr 3 2:47:47 UTC 2024",
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "2005-01-01"
+      ]
     },
     "server": "ia600903.us.archive.org",
     "simplelists": {

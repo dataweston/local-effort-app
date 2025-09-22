@@ -448,7 +448,7 @@
       "invoice": "1652",
       "creator": "Callahan, Genevieve A. (Genevieve Anne), 1897-",
       "publisher": "Ames, Iowa State University Press",
-      "date": "1966",
+      "date": "1966-01-01",
       "subject": [
         "Home economics -- Study and teaching",
         "Économie domestique -- Étude et enseignement",
@@ -470,7 +470,10 @@
         "inlibrary",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "1966-01-01"
+      ]
     },
     "server": "ia902806.us.archive.org",
     "uniq": 1608625076,

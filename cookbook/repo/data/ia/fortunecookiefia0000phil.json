@@ -426,7 +426,7 @@
       "contributor": "Internet Archive",
       "creator": "Phillips, Ruby Ann, author",
       "creator-alt-script": "None",
-      "date": "2015",
+      "date": "2015-01-01",
       "description": [
         "102 pages : 20 cm",
         "It is time for the school bake-off, with a trip to the Bronx Zoo as a prize, and fourth-grade psychic Krystal Ball and her best friends are making fortune cookies--but when the class bully ruins their contribution, Krystal must use her talents to save the day",
@@ -527,7 +527,10 @@
         "inlibrary",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "2015-01-01"
+      ]
     },
     "server": "ia902806.us.archive.org",
     "simplelists": {

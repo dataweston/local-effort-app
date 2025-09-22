@@ -189,7 +189,7 @@
     "metadata": {
       "identifier": "ERIC_ED360700",
       "creator": "ERIC",
-      "date": "1992-10",
+      "date": "1992-01-01",
       "description": "Although American society may never have adequately educated the majority of its immigrants and their children, many who lacked a good education in an earlier era could support families through factory, agricultural, or construction work. Today's jobs require more education. Those with limited English proficiency and literacy skills will be only marginally employable. Focusing on Hmong Laotian refugees in St. Paul, Minnesota, schools, this paper argues that the prevailing mainstreaming or assimilation model of education does not fit many refugees' or immigrants' needs; as a result, schools are undereducating a substantial number of young people. Information is presented regarding Hmong background and culture and the particular difficulties confronting students at home and at  school. Besides reviewing major language research, this paper presents new data--a compilation of SRA (Science Research Associates) test statistics for Hmong 10th-graders at a St. Paul high school falling into particular \"time-in-country\" categories. These statistics highlight instructional and programming dilemmas faced by secondary-level students and teachers. St. Paul schools' programs are also reviewed in terms of their capacity to meet Hmong students' needs. Alternative programs are suggested, including bilingual classes, \"sheltered\" content-area classes, partnerships with outside organizations, vocational education, and classes in native language literacy and culture. (Contains 34 references.) (MLH)",
       "language": "english",
       "mediatype": "texts",
@@ -209,7 +209,10 @@
       "ppi": "600",
       "ocr": "ABBYY FineReader 9.0",
       "repub_state": "4",
-      "backup_location": "ia905905_26"
+      "backup_location": "ia905905_26",
+      "normalized_dates": [
+        "1992-01-01"
+      ]
     },
     "server": "ia801701.us.archive.org",
     "uniq": 2036858319,

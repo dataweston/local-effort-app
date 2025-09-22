@@ -422,7 +422,7 @@
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
       "creator": "Rice, Kathy, 1951-",
-      "date": "2013",
+      "date": "2013-01-01",
       "description": [
         "vii, 181 pages : 26 cm",
         "Includes index"
@@ -486,6 +486,9 @@
         "internetarchivebooks",
         "inlibrary",
         "printdisabled"
+      ],
+      "normalized_dates": [
+        "2013-01-01"
       ]
     },
     "server": "ia800506.us.archive.org",

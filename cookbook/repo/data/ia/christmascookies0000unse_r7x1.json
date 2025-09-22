@@ -419,7 +419,7 @@
       "camera": "USB PTP Class Camera",
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
-      "date": "2003",
+      "date": "2003-01-01",
       "description": [
         "240 pages : 25 cm",
         "Offers recipes for an assortment of Christmas cookies derived from different holiday traditions and using a variety of baking techniques",
@@ -486,7 +486,10 @@
         "inlibrary",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "2003-01-01"
+      ]
     },
     "server": "ia802907.us.archive.org",
     "simplelists": {

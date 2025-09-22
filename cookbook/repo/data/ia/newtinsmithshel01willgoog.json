@@ -213,7 +213,7 @@
       "possible-copyright-status": "NOT_IN_COPYRIGHT",
       "identifier-access": "http://www.archive.org/details/newtinsmithshel01willgoog",
       "year": "1920",
-      "date": "1922",
+      "date": "1922-01-01",
       "contributor": "University of Wisconsin - Madison",
       "oclc-id": "06510450",
       "scandate": "20071128",
@@ -233,7 +233,10 @@
       "backup_location": "ia903603_13",
       "openlibrary_edition": "OL6651811M",
       "openlibrary_work": "OL206392W",
-      "addeddate": "2009-07-05 02:47:37"
+      "addeddate": "2009-07-05 02:47:37",
+      "normalized_dates": [
+        "1922-01-01"
+      ]
     },
     "server": "ia601306.us.archive.org",
     "uniq": 1165040721,

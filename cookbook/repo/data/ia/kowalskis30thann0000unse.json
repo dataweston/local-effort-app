@@ -402,7 +402,7 @@
       "camera": "USB PTP Class Camera",
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
-      "date": "2013",
+      "date": "2013-01-01",
       "description": [
         "375 pages, [64] pages of plates : 23 cm",
         "The first Kowalski's store opened in 1983 and has since grown to nine locations in the St. Paul, Minneapolis Twin Cities area. This celebratory collection contains more than 300 of their best and often-requested recipes, a history of Kowalski's growth, and food and cooking tips and secrets",
@@ -470,6 +470,9 @@
         "internetarchivebooks",
         "inlibrary",
         "printdisabled"
+      ],
+      "normalized_dates": [
+        "2013-01-01"
       ]
     },
     "server": "ia804503.us.archive.org",

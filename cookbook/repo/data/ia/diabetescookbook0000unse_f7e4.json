@@ -430,7 +430,7 @@
       "camera": "Sony Alpha-A6300 (Control)",
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
-      "date": "2004",
+      "date": "2004-01-01",
       "description": [
         "143 pages : 24 cm",
         "\"Cookbooks for healthy living\"--Cover",
@@ -507,7 +507,10 @@
         "inlibrary",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "2004-01-01"
+      ]
     },
     "server": "ia601800.us.archive.org",
     "uniq": 921005395,

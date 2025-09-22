@@ -415,7 +415,7 @@
       ],
       "description": "Includes index",
       "publisher": "[Des Moines, Iowa] : Sedgewood Press ; [New York] : Distributed by Van Nostrand Reinhold",
-      "date": "1983",
+      "date": "1983-01-01",
       "language": "eng",
       "isbn": [
         "0442281013",
@@ -481,7 +481,10 @@
       ],
       "page_number_module_version": "1.0.5",
       "pdf_degraded": "invalid-jp2-headers",
-      "pdf_module_version": "0.0.25"
+      "pdf_module_version": "0.0.25",
+      "normalized_dates": [
+        "1983-01-01"
+      ]
     },
     "server": "ia800206.us.archive.org",
     "simplelists": {

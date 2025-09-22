@@ -449,7 +449,7 @@
       "boxid_2": "CH110801",
       "donor": "alibris",
       "sponsordate": "not to be invoiced-past billing period",
-      "date": "1999",
+      "date": "1999-01-01",
       "description": [
         "At head of title: Better homes and gardens",
         "100s of up-to-date recipes & tips! Plus every recipe from 1999"
@@ -486,7 +486,10 @@
         "printdisabled",
         "inlibrary"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "1999-01-01"
+      ]
     },
     "server": "ia800205.us.archive.org",
     "uniq": 1721609659,

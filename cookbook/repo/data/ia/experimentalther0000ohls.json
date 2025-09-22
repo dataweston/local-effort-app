@@ -459,7 +459,7 @@
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
       "creator": "Ohlson, Margaret Alexander, 1901-",
-      "date": "1972",
+      "date": "1972-01-01",
       "description": [
         "x, 156 pages 28 cm",
         "Originally published in 1962 under title: Handbook of experimental and therapeutic diets, prepared by the staff of the Nutrition Dept., University Hospitals, University of Iowa",
@@ -555,7 +555,10 @@
         "inlibrary",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "1972-01-01"
+      ]
     },
     "server": "ia800500.us.archive.org",
     "simplelists": {

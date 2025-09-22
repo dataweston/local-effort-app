@@ -300,7 +300,10 @@
       "ocr_detected_script": "Japanese",
       "ocr_detected_script_conf": "1.0000",
       "ocr_detected_lang": "en",
-      "ocr_detected_lang_conf": "1.0000"
+      "ocr_detected_lang_conf": "1.0000",
+      "normalized_dates": [
+        "1945-11-02"
+      ]
     },
     "server": "ia800308.us.archive.org",
     "uniq": 1155771333,

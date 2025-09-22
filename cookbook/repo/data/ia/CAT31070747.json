@@ -299,7 +299,7 @@
       "scanningcenter": "beltsville",
       "sponsor": "U.S. Department of Agriculture, National Agricultural Library",
       "contributor": "U.S. Department of Agriculture, National Agricultural Library",
-      "date": "1944",
+      "date": "1944-01-01",
       "subject": "Cooking (Eggs)",
       "title": "Quantity methods for serving eggs",
       "creator": "United States. War Food Administration. Office of Distribution",
@@ -351,7 +351,10 @@
       "ocr_module_version": "0.0.21",
       "ocr_converted": "abbyy-to-hocr 1.1.37",
       "page_number_confidence": "0",
-      "page_number_module_version": "1.0.3"
+      "page_number_module_version": "1.0.3",
+      "normalized_dates": [
+        "1944-01-01"
+      ]
     },
     "page_numbers": {
       "identifier": "CAT31070747",

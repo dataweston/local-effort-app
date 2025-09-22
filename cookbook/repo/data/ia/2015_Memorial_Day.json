@@ -247,7 +247,10 @@
       "publicdate": "2017-02-11 19:34:29",
       "uploader": "jhauser@pobox.com",
       "addeddate": "2017-02-11 19:34:29",
-      "backup_location": "ia906307_8"
+      "backup_location": "ia906307_8",
+      "normalized_dates": [
+        "2015-09-23"
+      ]
     },
     "server": "ia800408.us.archive.org",
     "uniq": 345915424,

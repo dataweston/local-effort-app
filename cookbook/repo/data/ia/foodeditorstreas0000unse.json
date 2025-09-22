@@ -404,7 +404,7 @@
       "contributor": "Internet Archive",
       "creator": "None",
       "creator-alt-script": "None",
-      "date": "1991",
+      "date": "1991-01-01",
       "description": [
         "144 pages : 26 cm",
         "Contains recipes from the food editors of Meredith Corp. publications, such as: Better Homes and Gardens, Country America, Country Home, Ladies' Home Journal, Midwest Living, Traditional Home and Metropolitan Home",
@@ -464,7 +464,10 @@
         "inlibrary",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "1991-01-01"
+      ]
     },
     "server": "ia601508.us.archive.org",
     "uniq": 880357356,

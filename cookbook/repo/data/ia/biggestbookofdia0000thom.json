@@ -425,7 +425,7 @@
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
       "creator": "Thomas, Kristi M",
-      "date": "2006",
+      "date": "2006-01-01",
       "description": [
         "415 p. : 24 cm",
         "At head of title: Better Homes and Gardens",
@@ -480,7 +480,10 @@
         "printdisabled",
         "inlibrary"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "2006-01-01"
+      ]
     },
     "server": "ia601701.us.archive.org",
     "uniq": 2123767830,

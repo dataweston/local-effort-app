@@ -506,7 +506,7 @@
         "Cookery -- Iowa -- Madison County",
         "Madison County (Iowa) -- Social life and customs"
       ],
-      "date": "1995",
+      "date": "1995-01-01",
       "external-identifier": [
         "urn:asin:0806517336",
         "urn:acs6:madisoncountycoo00stjo:pdf:7b241550-8c8b-4520-aa66-45f93514189e",
@@ -571,6 +571,9 @@
         "internetarchivebooks",
         "inlibrary",
         "printdisabled"
+      ],
+      "normalized_dates": [
+        "1995-01-01"
       ]
     },
     "server": "ia904509.us.archive.org",

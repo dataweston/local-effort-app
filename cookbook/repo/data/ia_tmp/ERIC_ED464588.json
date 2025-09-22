@@ -179,7 +179,7 @@
     "metadata": {
       "identifier": "ERIC_ED464588",
       "creator": "ERIC",
-      "date": "2001-06",
+      "date": "2001-01-01",
       "description": "Maintaining a high service rate (defined as the proportion of high school graduates enrolling at a University of Wisconsin (UW) System institution for the following fall term) for Wisconsin high school graduates is one of the goals identified in the second phase of accountability reporting by the UW System. The population of 1999 Wisconsin high school graduates who took the American College Testing program assessment (ACT) was used to examine application and enrollment patterns by family income, race, and gender. Of the almost 64,000 Wisconsin high school graduates in 1999, approximately 42,000 (66%) took the ACT examination, and 87% of this group answered the question about family income. Slightly more than one-third of Wisconsin ACT takers come from families with incomes of  $60,000 and over, and 46% come from families with incomes between $30,000 and $60,000. Application rates (application to Wisconsin institutions) increase as income increases. In the lowest income group, application rates of students of color and whites are similar, but at middle and higher income ranges, white students have higher application rates. Admission rates for applicants from the lowest income group are only slightly lower than those for applicants from other income ranges, and this pattern holds true for race and gender across income groups. Findings show family income to be a key variable in determining who applies to and enrolls in a UW institution. Six appendixes contain tables of study data. (Contains 18 tables, 9 figures, and 6 endnotes.) (SLD)",
       "language": "english",
       "mediatype": "texts",
@@ -199,7 +199,10 @@
       "ppi": "600",
       "ocr": "ABBYY FineReader 11.0",
       "repub_state": "4",
-      "backup_location": "ia905508_9"
+      "backup_location": "ia905508_9",
+      "normalized_dates": [
+        "2001-01-01"
+      ]
     },
     "server": "ia801203.us.archive.org",
     "uniq": 1865086089,

@@ -394,7 +394,7 @@
       "contributor": "Internet Archive",
       "creator": "None",
       "creator-alt-script": "None",
-      "date": "2000",
+      "date": "2000-01-01",
       "description": [
         "336 pages : 28 cm",
         "350 plus fabulous recipes for every day and entertaining",
@@ -456,6 +456,9 @@
         "internetarchivebooks",
         "inlibrary",
         "printdisabled"
+      ],
+      "normalized_dates": [
+        "2000-01-01"
       ]
     },
     "server": "ia800809.us.archive.org",

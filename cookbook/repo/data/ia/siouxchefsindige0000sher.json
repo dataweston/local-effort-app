@@ -449,7 +449,7 @@
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
       "creator": "Sherman, Sean, 1974- author",
-      "date": "2017",
+      "date": "2017-01-01",
       "description": [
         "225 pages : 26 cm",
         "Locally sourced, seasonal, \"clean\" ingredients and nose-to-tail cooking are nothing new to Sean Sherman, the Oglala Lakota chef and founder of The Sioux Chef. In his first cookbook, Sherman shares his approach to creating boldly-seasoned foods that are vibrant, healthful, at once elegant and easy. Sherman dispels outdated notions of Native American fare -- no fry bread or Indian tacos here -- and no European staples such as wheat flour, dairy products, sugar, and domestic pork and beef. The Sioux Chef's healthful plates embrace venison and rabbit, river and lake trout, duck and quail, wild turkey, blueberries, sage, sumac, timpsula or wild turnip, plums, purslane, and abundant wildflowers. Contemporary and authentic, his dishes feature cedar braised bison, griddled wild rice cakes, amaranth crackers with smoked white bean paste, three sisters salad, deviled duck eggs, smoked turkey soup, dried meats, roasted corn sorbet, and hazelnut-maple bites. The work is a delectable introduction to modern indigenous cuisine of the Dakota and Minnesota territories, with a vision and approach to food that travels well beyond those borders",
@@ -528,7 +528,10 @@
         "internetarchivebooks",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "2017-01-01"
+      ]
     },
     "server": "ia601409.us.archive.org",
     "uniq": 709470654,

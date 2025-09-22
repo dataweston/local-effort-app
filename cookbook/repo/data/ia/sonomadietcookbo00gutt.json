@@ -403,7 +403,7 @@
         "Companion cookbook to The Sonoma diet book inspired by the Mediterranean way of eating and touched by the global flavors of Asia and Latin America"
       ],
       "publisher": "Des Moines, Iowa : Meredith Books",
-      "date": "2006",
+      "date": "2006-01-01",
       "language": "eng",
       "isbn": [
         "0696231859",
@@ -474,7 +474,10 @@
       ],
       "page_number_module_version": "1.0.5",
       "pdf_degraded": "invalid-jp2-headers",
-      "pdf_module_version": "0.0.25"
+      "pdf_module_version": "0.0.25",
+      "normalized_dates": [
+        "2006-01-01"
+      ]
     },
     "server": "ia601605.us.archive.org",
     "simplelists": {

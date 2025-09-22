@@ -177,7 +177,10 @@
       "publicdate": "2022-04-16 17:20:25",
       "addeddate": "2022-04-16 17:20:25",
       "curation": "[curator]validator@archive.org[/curator][date]20220416172120[/date][comment]checked for malware[/comment]",
-      "access-restricted-item": "true"
+      "access-restricted-item": "true",
+      "normalized_dates": [
+        "2022-03-11"
+      ]
     },
     "server": "ia801400.us.archive.org",
     "uniq": 992824459,

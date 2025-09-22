@@ -412,7 +412,7 @@
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
       "creator": "Kander, Simon, Mrs",
-      "date": "1984",
+      "date": "1984-01-01",
       "description": [
         "xi, 182 pages, 26 unnumbered pages of plates : 25 cm",
         "Abstract: Basic food preparation techniques and recipes for a wide of variety of foods are presented in this facsimile edition of the original cookbook, the \"Settlement\", published in 1903. A chapter on household rules explains how to set, wait on, and clear the table as well as how to wash dishes, build a fire, and dust a room. The \"relative value\" of foods is outlined; measures are provided for the water, muscle making, and heat and fat making content of several foods. The average adult requirements for proteid, starch, fat, salt, and water are presented. Recipes and \"cooking lessons\" are provided in the following categories: 1) beverages (e.g. cold drinks, fruit syrups), 2) bread, 3) kuchen, 4) baking powder mixtures, 5) fried cakes, 6) cereals, 7) eggs and omelets, 8) soups, 9) fish and sauces, 10) meat, 11) vegetables and sauces, 12) salads and salad dressings, 13) entrees, 14) custards, puddings, and pudding sauces, 15) ice cream and frozen puddings, 16) pastry, 17) cakes, 18) tortes, 19) frostings and fillings, 20) cookies, kisses, 21) confections, and 22) luncheon and picnic dainties. Basic instructions are given for cooking, preserving, and canning fruit, for preparing jelly and preserves, and for pickling foods. A unique feature of the cookbook is the advertising for local restaurants, bakeries, caterers, groceries, pharmacies, and other businesses included in the front and back pages. (aj)",
@@ -488,7 +488,10 @@
         "inlibrary",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "1984-01-01"
+      ]
     },
     "server": "ia804608.us.archive.org",
     "uniq": 497420252,

@@ -405,7 +405,7 @@
         "Wisconsin Arts Board",
         "University of Wisconsin Press"
       ],
-      "date": "September 1998",
+      "date": "1998-01-01",
       "metasource_catalog": "openlibrary",
       "boxid": "IA41108014",
       "old_pallet": "IA-OL-2000024",
@@ -455,6 +455,9 @@
         "internetarchivebooks",
         "inlibrary",
         "printdisabled"
+      ],
+      "normalized_dates": [
+        "1998-01-01"
       ]
     },
     "server": "ia600509.us.archive.org",

@@ -394,7 +394,7 @@
       "contributor": "Internet Archive",
       "creator": "Deen, Jamie",
       "creator-alt-script": "None",
-      "date": "2007",
+      "date": "2007-01-01",
       "description": [
         "223 pages : 24 cm",
         "A collection of more than one hundred regional American culinary specialties, including Tennessee whiskey fruit and nut bars, southern stuffed loaf, marinated chicken gyro wraps, and Texas margaritas",
@@ -474,7 +474,10 @@
         "inlibrary",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "2007-01-01"
+      ]
     },
     "server": "ia801306.us.archive.org",
     "simplelists": {

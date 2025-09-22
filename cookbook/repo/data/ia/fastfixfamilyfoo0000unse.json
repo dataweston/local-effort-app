@@ -377,7 +377,7 @@
       "contributor": "Internet Archive",
       "creator": "None",
       "creator-alt-script": "None",
-      "date": "2008",
+      "date": "2008-01-01",
       "description": [
         "479 pages : 24 cm",
         "Lets face it - between Monday night soccer practice and Wednesday night music lessons, family life can be hectic. Who has time to prepare home-cooked meals and snacks everyday of the week? With Fast Fix Family Foods, even the most time-crunched families will be able to prepare lip-smacking recipes that are guaranteed to be both kid-friendly and quick to prepare",
@@ -441,7 +441,10 @@
         "inlibrary",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "2008-01-01"
+      ]
     },
     "server": "ia601808.us.archive.org",
     "uniq": 612232360,

@@ -403,7 +403,7 @@
       "camera": "Sony Alpha-A6300 (Control)",
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
-      "date": "2008",
+      "date": "2008-01-01",
       "description": [
         "414 pages : 24 cm",
         "Presents recipes for simple, delicious home-cooked meals using just what you have on hand",
@@ -468,6 +468,9 @@
         "internetarchivebooks",
         "printdisabled",
         "inlibrary"
+      ],
+      "normalized_dates": [
+        "2008-01-01"
       ]
     },
     "server": "ia801808.us.archive.org",

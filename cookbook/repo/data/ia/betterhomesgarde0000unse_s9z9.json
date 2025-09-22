@@ -425,7 +425,7 @@
       "camera": "USB PTP Class Camera",
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
-      "date": "2008",
+      "date": "2008-01-01",
       "description": [
         "191 p. : 28 cm",
         "\"203 sensational recipes\"--Cover",
@@ -484,7 +484,10 @@
         "printdisabled",
         "inlibrary"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "2008-01-01"
+      ]
     },
     "server": "ia601909.us.archive.org",
     "uniq": 1257724097,

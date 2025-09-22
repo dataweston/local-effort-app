@@ -388,7 +388,7 @@
       "camera": "Sony Alpha-A6300 (Control)",
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
-      "date": "1995",
+      "date": "1995-01-01",
       "description": [
         "x, 141 p. ; 27 cm",
         "6th ed. cataloged under the heading of Roberts",
@@ -455,7 +455,10 @@
         "internetarchivebooks",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "1995-01-01"
+      ]
     },
     "server": "ia801803.us.archive.org",
     "simplelists": {

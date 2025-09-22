@@ -425,7 +425,7 @@
       "camera": "Sony Alpha-A6300 (Control)",
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
-      "date": "2008",
+      "date": "2008-01-01",
       "description": [
         "415 pages : 24 cm",
         "Statement of responsibility from title page verso",
@@ -482,7 +482,10 @@
         "inlibrary",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "2008-01-01"
+      ]
     },
     "server": "ia601905.us.archive.org",
     "uniq": 947957363,

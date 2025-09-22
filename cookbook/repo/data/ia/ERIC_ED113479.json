@@ -167,7 +167,7 @@
     "metadata": {
       "identifier": "ERIC_ED113479",
       "creator": "ERIC",
-      "date": "1974",
+      "date": "1974-01-01",
       "description": "The study was made to obtain curriculum development data for food service education programs below the baccalaureate level. Tasks related to the job functions of service, production, sanitation/safety, menu planning, procurement, supervision, and management were studied for five job categories of full-time personnel: middle-level service, upper-level service, middle-level production, upper-level production, and manager. Questionnaires, personal interviews, and a task list were used to obtain information from managers and employees in 32 restaurants, 20 hospitals, 14 nursing homes, 23 colleges/universities, and 21 schools in Iowa which met the selection criteria. Data from 339 of a possible 525 tasks lists are analyzed in detail and are also presented in tabular form for each job  category, classified by establishment type, to show the percent of personnel performing the tasks, relation of task patterns to job category and establishment type, and frequency of performance. A detailed summary presents specific conclusions supporting three general outcomes: Tasks for the job categories and establishments were identified, commonality and uniqueness in their performance was demonstrated, and probable changes in task combinations were shown. A three-page reference list and appended data collection materials and tables of data are included. (MS)",
       "language": "english",
       "mediatype": "texts",
@@ -187,7 +187,10 @@
       "ppi": "600",
       "ocr": "ABBYY FineReader 9.0",
       "repub_state": "4",
-      "backup_location": "ia905305_25"
+      "backup_location": "ia905305_25",
+      "normalized_dates": [
+        "1974-01-01"
+      ]
     },
     "server": "ia800205.us.archive.org",
     "uniq": 837320901,

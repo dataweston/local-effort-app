@@ -1816,7 +1816,10 @@
       "publicdate": "2016-08-03 15:58:51",
       "uploader": "jhauser@pobox.com",
       "addeddate": "2016-08-03 15:58:51",
-      "backup_location": "ia906203_16"
+      "backup_location": "ia906203_16",
+      "normalized_dates": [
+        "2014-06-21"
+      ]
     },
     "server": "ia800509.us.archive.org",
     "uniq": 1106036602,

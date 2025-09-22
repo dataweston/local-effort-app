@@ -417,7 +417,7 @@
         "Cookery (Wine)"
       ],
       "publisher": "[Des Moines, Iowa] Creative Home Library",
-      "date": "1973",
+      "date": "1973-01-01",
       "language": "eng",
       "isbn": [
         "0696247003",
@@ -483,6 +483,9 @@
         "americana",
         "inlibrary",
         "printdisabled"
+      ],
+      "normalized_dates": [
+        "1973-01-01"
       ]
     },
     "server": "ia601906.us.archive.org",

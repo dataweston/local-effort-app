@@ -415,7 +415,7 @@
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
       "creator": "Berriedale-Johnson, Michelle",
-      "date": "2003",
+      "date": "2003-01-01",
       "description": [
         "128 pages : 22 cm",
         "Includes bibliographical references and index"
@@ -484,7 +484,10 @@
         "inlibrary",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "2003-01-01"
+      ]
     },
     "server": "ia902301.us.archive.org",
     "simplelists": {

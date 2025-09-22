@@ -449,7 +449,7 @@
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
       "creator": "Cooney, Jeanne, author",
-      "date": "2016",
+      "date": "2016-01-01",
       "description": [
         "270 pages ; 23 cm",
         "Reporter Emerald Malloy has come back to the Hot Dish Heaven Café and the small town in the Red River Valley for a wedding. The happy event is clouded by a murder, and she and her friends, while trying to take in the colorful experiences of the farm community, learn that the homicide may be linked to a fraud scheme involving a number of townspeople. As the reporter instincts in her dig deeper into the case, Emerald and her dog may be getting too close to the killer and find themselves in danger",
@@ -525,7 +525,10 @@
       ],
       "page_number_module_version": "1.0.5",
       "curation": "[date]20250212103507[/date][comment]inlibrary removal 3[/comment]",
-      "source": "removed"
+      "source": "removed",
+      "normalized_dates": [
+        "2016-01-01"
+      ]
     },
     "server": "ia801408.us.archive.org",
     "uniq": 1069087190,

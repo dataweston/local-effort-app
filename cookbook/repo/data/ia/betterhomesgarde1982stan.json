@@ -385,7 +385,7 @@
       "subject": "Microwave cooking",
       "description": "Includes index",
       "publisher": "Des Moines, Iowa : Meredith Corp.",
-      "date": "1982",
+      "date": "1982-01-01",
       "language": "eng",
       "isbn": [
         "0696008459",
@@ -444,6 +444,9 @@
         "internetarchivebooks",
         "printdisabled",
         "inlibrary"
+      ],
+      "normalized_dates": [
+        "1982-01-01"
       ]
     },
     "server": "ia800204.us.archive.org",

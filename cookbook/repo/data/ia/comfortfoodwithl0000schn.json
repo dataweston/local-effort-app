@@ -391,7 +391,7 @@
       "collection_set": "china",
       "contributor": "Internet Archive",
       "creator": "Schneckloth, Mary,Iowa Machine Shed (Restaurant)",
-      "date": "2000",
+      "date": "2000-01-01",
       "isbn": [
         "1571661891",
         "9781571661890"
@@ -452,7 +452,10 @@
         "inlibrary",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "2000-01-01"
+      ]
     },
     "server": "ia803105.us.archive.org",
     "uniq": 1857601202,

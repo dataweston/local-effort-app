@@ -436,7 +436,7 @@
       "title": "Hometown favorites : more than 120 delicious, down-home recipes",
       "creator": "Thomas, Kristi M",
       "publisher": "Des Moines, Iowa : Meredith Books",
-      "date": "2009",
+      "date": "2009-01-01",
       "external-identifier": [
         "urn:asin:0696242265",
         "urn:acs6:hometownfavorite00bett:pdf:d5cfc80c-7f15-4a8c-bd57-2b42e086b485",
@@ -503,7 +503,10 @@
         "inlibrary",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "2009-01-01"
+      ]
     },
     "server": "ia600607.us.archive.org",
     "simplelists": {

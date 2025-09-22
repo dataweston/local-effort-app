@@ -427,7 +427,7 @@
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
       "creator": "Porter, Marie, 1979-",
-      "date": "2013",
+      "date": "2013-01-01",
       "description": [
         "136 pages : 24 cm",
         "Includes index",
@@ -490,7 +490,10 @@
         "inlibrary",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "2013-01-01"
+      ]
     },
     "server": "ia801400.us.archive.org",
     "uniq": 1123794872,

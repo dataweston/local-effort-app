@@ -281,7 +281,7 @@
       "scanningcenter": "il",
       "sponsor": "University of Illinois Urbana-Champaign Alternates",
       "contributor": "University of Illinois Urbana-Champaign",
-      "date": "1917",
+      "date": "1917-01-01",
       "subject": [
         "Iowa State College. Division of Home Economics",
         "Home economics"
@@ -331,7 +331,10 @@
       "ocr_module_version": "0.0.21",
       "ocr_converted": "abbyy-to-hocr 1.1.37",
       "page_number_confidence": "72",
-      "page_number_module_version": "1.0.3"
+      "page_number_module_version": "1.0.3",
+      "normalized_dates": [
+        "1917-01-01"
+      ]
     },
     "page_numbers": {
       "identifier": "educationinhomee00iowa_0",

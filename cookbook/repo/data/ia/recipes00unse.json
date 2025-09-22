@@ -333,7 +333,7 @@
       "scanningcenter": "chapelhill",
       "sponsor": "University of North Carolina at Chapel Hill",
       "contributor": "University Library, University of North Carolina at Chapel Hill",
-      "date": "1970",
+      "date": "1970-01-01",
       "subject": "Cooking -- North Carolina -- Greensboro",
       "title": "Recipes",
       "collection": [
@@ -387,7 +387,10 @@
       "sponsordate": "20210630",
       "external-identifier": "urn:oclc:record:1435137924",
       "page_number_confidence": "0",
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "1970-01-01"
+      ]
     },
     "page_numbers": {
       "identifier": "recipes00unse",

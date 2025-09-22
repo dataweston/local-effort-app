@@ -393,7 +393,7 @@
       "collection_set": "china",
       "contributor": "Internet Archive",
       "creator": "Ojakangas, Beatrice A",
-      "date": "2001",
+      "date": "2001-01-01",
       "isbn": [
         "0816638683",
         "9780816638680",
@@ -460,7 +460,10 @@
         "internetarchivebooks",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "2001-01-01"
+      ]
     },
     "server": "ia803105.us.archive.org",
     "simplelists": {

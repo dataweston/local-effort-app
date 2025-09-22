@@ -419,7 +419,7 @@
       "collection_set": "china",
       "contributor": "Internet Archive",
       "creator": "Kozlak, Jack, 1928-",
-      "date": "1996",
+      "date": "1996-01-01",
       "isbn": [
         "0965204413",
         "9780965204415"
@@ -497,7 +497,10 @@
         "inlibrary",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "1996-01-01"
+      ]
     },
     "server": "ia802802.us.archive.org",
     "uniq": 207852701,

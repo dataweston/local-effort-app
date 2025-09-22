@@ -312,7 +312,10 @@
         "radio",
         "radioprograms"
       ],
-      "bad_audio": "false"
+      "bad_audio": "false",
+      "normalized_dates": [
+        "2018-02-08"
+      ]
     },
     "server": "ia800404.us.archive.org",
     "speech_vs_music_asr": [

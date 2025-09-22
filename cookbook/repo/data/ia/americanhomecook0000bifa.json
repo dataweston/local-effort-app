@@ -421,7 +421,7 @@
       "contributor": "Internet Archive",
       "old_pallet": "IA16187",
       "camera": "Sony Alpha-A6300 (Control)",
-      "date": "1987",
+      "date": "1987-01-01",
       "operator": "associate-jessaflor-sancover@archive.org",
       "scanningcenter": "cebu",
       "associated-names": "Whyte, Miranda",
@@ -460,6 +460,9 @@
         "internetarchivebooks",
         "printdisabled",
         "inlibrary"
+      ],
+      "normalized_dates": [
+        "1987-01-01"
       ]
     },
     "server": "ia801400.us.archive.org",

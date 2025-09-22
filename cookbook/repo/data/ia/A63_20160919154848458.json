@@ -130,7 +130,7 @@
         "podcasts"
       ],
       "creator": "Jennifer O'Neill",
-      "date": "19-09-16",
+      "date": "2016-09-19",
       "description": "Top Monday headlines from the AP include the arrest of an Afghan immigrant wanted in connection with explosions in New York City and New Jersey and a warning from doctors about giving kids codeine for coughs and pain. The man sought for questioning in connection to the New York and New Jersey explosions is in custody after a shootout, according to a U.S law enforcement official.Authorities are investigating the stabbings of nine people at a Minnesota mall over the weekend as a potential act of terrorism.U.S. health officials say they are ending their strongest warning to pregnant women to stay out of Miami's Wynwood arts district.The biggest party supporting Russian President Vladimir Putin has scored an overwhelming victory in national parliament elections.The U.N. - meeting in New York - holds its first-ever summit on refugees and migrants.Republican presidential nominee Donald Trump says he won't be treated fairly at next week's debate.Two Samsung Galaxy Note 7 smartphones reportedly have caught fire in China.Doctors are advising against prescribing codeine for kids because of reports of deaths and risks of dangerous side effects.Confidence among U.S. homebuilders has surged to the highest level in nearly a year.Game of Thrones\" passes \"Frasier\" as the most decorated prime-time TV series ever at the Emmys.\"",
       "mediatype": "audio",
       "scanner": "Internet Archive Python library 5.4.0",
@@ -139,7 +139,10 @@
       "uploader": "prakash.sekar@rivet360.com",
       "collection_added": "podcasts",
       "publicdate": "2025-07-30 20:12:13",
-      "addeddate": "2025-07-30 20:12:13"
+      "addeddate": "2025-07-30 20:12:13",
+      "normalized_dates": [
+        "2016-09-19"
+      ]
     },
     "server": "ia601004.us.archive.org",
     "uniq": 387894295,

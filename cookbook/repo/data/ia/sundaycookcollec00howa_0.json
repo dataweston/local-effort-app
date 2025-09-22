@@ -446,7 +446,7 @@
       "donor": "friendsofthesanfranciscopubliclibrary",
       "sponsordate": "not to be invoiced-past billing period",
       "city": "Amherst, WI",
-      "date": "1993",
+      "date": "1993-01-01",
       "edition": "1st ed.",
       "oclc-id": "28284705",
       "lccn": "93070422",
@@ -473,7 +473,10 @@
         "inlibrary",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "1993-01-01"
+      ]
     },
     "server": "ia800604.us.archive.org",
     "uniq": 1244489814,

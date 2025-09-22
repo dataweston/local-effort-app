@@ -394,7 +394,7 @@
       "contributor": "Internet Archive",
       "creator": "None",
       "creator-alt-script": "None",
-      "date": "2010",
+      "date": "2010-01-01",
       "description": [
         "160 pages : 28 cm",
         "Includes index"
@@ -456,7 +456,10 @@
         "inlibrary",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "2010-01-01"
+      ]
     },
     "server": "ia601505.us.archive.org",
     "uniq": 1974579177,

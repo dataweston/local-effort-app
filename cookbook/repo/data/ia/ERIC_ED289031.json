@@ -191,7 +191,7 @@
     "metadata": {
       "identifier": "ERIC_ED289031",
       "creator": "ERIC",
-      "date": "1986",
+      "date": "1986-01-01",
       "description": "This report provides information about the status of male and female students and staff in Minnesota high school vocational courses during the 1984-85 school year. The information is intended to enhance equity efforts by measuring progress and indicating areas needing attention. Narrative and tables or charts illustrate vocational enrollment, enrollments by program type (traditional, nontraditional, segregated), enrollments by curriculum area (agriculture, distributive education, health occupations, home economics, office occupations, technical education, trade and industrial), high school follow-up for the class of 1984, and vocational staff patterns. Eleven additional tables depict enrollments by grade level and sex, race and sex, and minority status; number of programs by  type; enrollments by program type and sex; traditional and nontraditional enrollments; vocational enrollments by course (agriculture, distributive education, health occupations, home economics, business and office, technical occupations, trade and industrial); occupations of graduates, one year later; hourly wages of vocational graduates; and vocational staff by curriculum area. (YLB)",
       "language": "english",
       "mediatype": "texts",
@@ -211,7 +211,10 @@
       "ppi": "600",
       "ocr": "ABBYY FineReader 9.0",
       "repub_state": "4",
-      "backup_location": "ia905908_28"
+      "backup_location": "ia905908_28",
+      "normalized_dates": [
+        "1986-01-01"
+      ]
     },
     "server": "ia800409.us.archive.org",
     "uniq": 863865826,

@@ -226,7 +226,7 @@
       "contactinformation": "Scott County Library System 200 N 6th Ave Eldridge, Iowa 52748 www.scottcountylibrary.org, 563-285-4794",
       "contributor": "Scott County Library System",
       "creator": "Van Loon, Diane; Brus, Darlene; McClurg, Beverly",
-      "date": "Between 1959 and 1963",
+      "date": "1959-01-01",
       "description": "The 4-H scrapbook for the Blue Grass Merry Makers for the years 1959-60 and 1962-63, and the Buffalo Busy Bees for the years 1959-60. According to the Iowa State Extension website, it is the responsibility of the club's historian to maintain the scrapbook each year. It includes the club's membership, officers, newspaper clippings, programs from special events/meetings such as Rally Day and the Mother-Daughter Banquet, photos, story of years activities, ribbons, and correspondence. Also included are the Secretary and Treasurer's Record Book for the each year.",
       "digitalreproductioninformation": "Scanned on a CZUR ET16 scanner, December 2021",
       "filename": "blu_196X_001",
@@ -252,7 +252,10 @@
       "ocr_detected_script_conf": "0.9622",
       "ocr_detected_lang": "en",
       "ocr_detected_lang_conf": "1.0000",
-      "pdf_module_version": "0.0.17"
+      "pdf_module_version": "0.0.17",
+      "normalized_dates": [
+        "1959-01-01"
+      ]
     },
     "page_numbers": {
       "identifier": "/var/tmp/autoclean/derive/blu_196x_001/blu_196x_001",

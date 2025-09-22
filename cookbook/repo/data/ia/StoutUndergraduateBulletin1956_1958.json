@@ -231,7 +231,7 @@
       "identifier": "StoutUndergraduateBulletin1956_1958",
       "mediatype": "texts",
       "creator": "University of Wisconsin--Stout. University Relations.",
-      "date": "1956",
+      "date": "1956-01-01",
       "description": "<span style=\"font-family:Arial, Helvetica, sans-serif;font-size:13px;background-color:rgb(255,255,255);\">Annual and biennial bulletins of the University of Wisconsin-Stout and its predecessor institutions. The bulletins provide descriptions of campus, lists of administrators and faculty, information on institutional objectives, courses offered, and curriculum.</span>",
       "language": "eng",
       "licenseurl": "http://creativecommons.org/licenses/by-nc-nd/3.0/",
@@ -258,7 +258,10 @@
       "ocr_detected_script_conf": "0.8876",
       "ocr_detected_lang": "en",
       "ocr_detected_lang_conf": "1.0000",
-      "pdf_module_version": "0.0.20"
+      "pdf_module_version": "0.0.20",
+      "normalized_dates": [
+        "1956-01-01"
+      ]
     },
     "server": "ia801003.us.archive.org",
     "uniq": 560545481,

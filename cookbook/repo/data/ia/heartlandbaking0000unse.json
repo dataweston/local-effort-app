@@ -415,7 +415,7 @@
       "camera": "Sony Alpha-A6300 (Control)",
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
-      "date": "1997",
+      "date": "1997-01-01",
       "description": [
         "96 pages : 28 cm",
         "Learn the secrets of top Midwestern bakers and choose from more than 100 of their best-loved recipes",
@@ -480,7 +480,10 @@
         "inlibrary",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "1997-01-01"
+      ]
     },
     "server": "ia600905.us.archive.org",
     "simplelists": {

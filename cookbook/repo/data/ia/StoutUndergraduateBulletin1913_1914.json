@@ -219,7 +219,7 @@
       "identifier": "StoutUndergraduateBulletin1913_1914",
       "mediatype": "texts",
       "creator": "University of Wisconsin--Stout. University Relations.",
-      "date": "1913",
+      "date": "1913-01-01",
       "description": [
         "Annual and biennial bulletins of the University of Wisconsin-Stout and its predecessor institutions. The bulletins provide descriptions of campus, lists of administrators and faculty, information on institutional objectives, courses offered, and curriculum.",
         "Annual and biennial bulletins of the University of Wisconsin-Stout and its predecessor institutions. The bulletins provide descriptions of campus, lists of administrators and faculty, information on institutional objectives, courses offered, and curriculum."
@@ -250,7 +250,10 @@
       "ocr_detected_script_conf": "0.7409",
       "ocr_detected_lang": "en",
       "ocr_detected_lang_conf": "1.0000",
-      "page_number_confidence": "87.30"
+      "page_number_confidence": "87.30",
+      "normalized_dates": [
+        "1913-01-01"
+      ]
     },
     "server": "ia601400.us.archive.org",
     "uniq": 1574500459,

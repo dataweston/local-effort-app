@@ -320,7 +320,10 @@
       "addeddate": "2016-12-10 02:19:45",
       "backup_location": "ia906302_27",
       "noarchivetorrent": "true",
-      "curation": "[curator]jscott@archive.org[/curator][date]20200223091959[/date][state]un-dark[/state]"
+      "curation": "[curator]jscott@archive.org[/curator][date]20200223091959[/date][state]un-dark[/state]",
+      "normalized_dates": [
+        "2009-12-08"
+      ]
     },
     "server": "ia803204.us.archive.org",
     "uniq": 91662007,

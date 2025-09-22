@@ -175,7 +175,7 @@
     "metadata": {
       "identifier": "ERIC_ED113480",
       "creator": "ERIC",
-      "date": "1974",
+      "date": "1974-01-01",
       "description": "The study of task identification in family and community services presents statistical correlations of task frequencies obtained by questionnaire for the occupations of visiting homemaker or homemaker home/health aide, family planning health aide, counselor on alcoholism, management aide in low-income housing projects, deputy juvenile probation officer aide, and family management service aide. One-way matrices present, for each occupation, tasks arranged vertically in descending order of overall mean frequency of performance. A two-way matrix correlates task information for all six occupations, with occupations arranged horizontally and 16 tasks arranged vertically in descending order of commonality of performance as indicated by overall mean frequency scores. [The most  frequently performed tasks for each occupation are briefly summarized.] A three-page bibliography is included together with nine appendixes which provide letters of transmittal, the task checklist questionnaire for each occupation, tables showing age and educational level of the respondents for each occupation and showing the rank, mean, range, standard deviation, variance, and mean frequency for each task in each occupation, questionnaire and tabulated results from a thesis, descriptors used in an ERIC search, alternate job titles, a list of resource persons, an Iowa congressional map, and additional task lists. (MS)",
       "language": "english",
       "mediatype": "texts",
@@ -195,7 +195,10 @@
       "ppi": "600",
       "ocr": "ABBYY FineReader 9.0",
       "repub_state": "4",
-      "backup_location": "ia905305_25"
+      "backup_location": "ia905305_25",
+      "normalized_dates": [
+        "1974-01-01"
+      ]
     },
     "server": "ia601309.us.archive.org",
     "uniq": 1647639133,

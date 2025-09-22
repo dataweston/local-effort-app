@@ -229,7 +229,10 @@
       "publicdate": "2020-09-29 05:37:20",
       "addeddate": "2020-09-29 05:37:20",
       "curation": "[curator]validator@archive.org[/curator][date]20200929053859[/date][comment]checked for malware[/comment]",
-      "access-restricted-item": "true"
+      "access-restricted-item": "true",
+      "normalized_dates": [
+        "2019-12-10"
+      ]
     },
     "server": "ia801700.us.archive.org",
     "uniq": 486485871,

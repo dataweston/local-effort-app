@@ -416,7 +416,7 @@
       "camera": "Sony Alpha-A6300 (Control)",
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
-      "date": "2001",
+      "date": "2001-01-01",
       "description": [
         "240 p. : 26 cm",
         "At head of title: Better homes and gardens",
@@ -481,6 +481,9 @@
         "internetarchivebooks",
         "inlibrary",
         "printdisabled"
+      ],
+      "normalized_dates": [
+        "2001-01-01"
       ]
     },
     "server": "ia903109.us.archive.org",

@@ -1846,7 +1846,10 @@
       "addeddate": "2019-12-15 09:22:57",
       "noarchivetorrent": "true",
       "curation": "[curator]jscott@archive.org[/curator][date]20200223180536[/date][state]un-dark[/state]",
-      "backup_location": "ia907009_5"
+      "backup_location": "ia907009_5",
+      "normalized_dates": [
+        "2019-12-10"
+      ]
     },
     "server": "ia802806.us.archive.org",
     "uniq": 211324786,

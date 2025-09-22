@@ -143,7 +143,10 @@
       "uploader": "digitaltransportationarchive@gmail.com",
       "publicdate": "2021-02-27 02:29:15",
       "addeddate": "2021-02-27 02:29:15",
-      "curation": "[curator]validator@archive.org[/curator][date]20210227022935[/date][comment]checked for malware[/comment]"
+      "curation": "[curator]validator@archive.org[/curator][date]20210227022935[/date][comment]checked for malware[/comment]",
+      "normalized_dates": [
+        "1987-12-26"
+      ]
     },
     "server": "ia803408.us.archive.org",
     "uniq": 434283603,

@@ -454,7 +454,10 @@
       "addeddate": "2018-08-12 19:08:54",
       "noarchivetorrent": "true",
       "curation": "[curator]jscott@archive.org[/curator][date]20200223180546[/date][state]un-dark[/state]",
-      "backup_location": "ia906800_22"
+      "backup_location": "ia906800_22",
+      "normalized_dates": [
+        "2018-08-08"
+      ]
     },
     "server": "ia902809.us.archive.org",
     "uniq": 68160851,

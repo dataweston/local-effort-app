@@ -431,7 +431,7 @@
       "col_number": "COL-2833",
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
-      "date": "1978",
+      "date": "1978-01-01",
       "description": "ix, 418 p. ; 28 cm",
       "isbn": "0813809959",
       "language": "eng",
@@ -491,6 +491,9 @@
         "internetarchivebooks",
         "inlibrary",
         "printdisabled"
+      ],
+      "normalized_dates": [
+        "1978-01-01"
       ]
     },
     "server": "ia801406.us.archive.org",

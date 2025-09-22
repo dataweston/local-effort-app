@@ -412,7 +412,7 @@
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
       "creator": "Garvin, G. (Gerry)",
-      "date": "2008",
+      "date": "2008-01-01",
       "description": [
         "223 p. : 24 cm",
         "\"... chef and host of TV One's Turn up the heat with G. Garvin ...\"--Jacket",
@@ -471,7 +471,10 @@
         "inlibrary",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "2008-01-01"
+      ]
     },
     "server": "ia801703.us.archive.org",
     "simplelists": {

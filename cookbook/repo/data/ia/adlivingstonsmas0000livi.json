@@ -460,7 +460,7 @@
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
       "creator": "Livingston, A. D., 1932- author",
-      "date": "2011",
+      "date": "2011-01-01",
       "description": [
         "1 online resource",
         "Frying and sautéing steaks, fish, and other foods in a skillet may seem like a simple procedure, but with a careful eye to the different techniques, one can easily make a dish go from ordinary to extraordinary. In Mastering the Cast-Iron Skillet, A.D. Livingston demonstrates that if you enjoy good eating and take pleasure in your cooking, a skillet may be the only pan you need. Cast-iron pans are a favorite for Livingston and he shares all of his favorite cast-iron cooking recipes in this book. Livingston also goes into complete detail for seasoning and care for the world's perfect skillet. W",
@@ -538,6 +538,9 @@
         "internetarchivebooks",
         "printdisabled",
         "inlibrary"
+      ],
+      "normalized_dates": [
+        "2011-01-01"
       ]
     },
     "server": "ia801407.us.archive.org",

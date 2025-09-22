@@ -415,7 +415,7 @@
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
       "creator": "Lee, Sandra",
-      "date": "2006",
+      "date": "2006-01-01",
       "description": [
         "237 p. : 25 cm",
         "A quick and easy method of food preparation where nothing is made from scratch, but everything tastes homemade",
@@ -480,7 +480,10 @@
         "internetarchivebooks",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "2006-01-01"
+      ]
     },
     "server": "ia803209.us.archive.org",
     "simplelists": {

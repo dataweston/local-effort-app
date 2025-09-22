@@ -476,7 +476,7 @@
       ],
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
-      "date": "2002",
+      "date": "2002-01-01",
       "description": [
         "158 p. : 23 cm",
         "Rev. and expanded ed. of: Fantastically Finnish. c1985",
@@ -538,7 +538,10 @@
       "scanfee": "0;1.00;1.00",
       "invoice": "1652",
       "page_number_confidence": "0",
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "2002-01-01"
+      ]
     },
     "server": "ia800303.us.archive.org",
     "uniq": 39565460,

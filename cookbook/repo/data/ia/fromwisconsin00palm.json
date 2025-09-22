@@ -469,7 +469,7 @@
         "9780963135704"
       ],
       "language": "eng",
-      "date": "1991",
+      "date": "1991-01-01",
       "openlibrary": "OL8521959M",
       "mediatype": "texts",
       "page-progression": "lr",
@@ -535,7 +535,10 @@
         "inlibrary",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "1991-01-01"
+      ]
     },
     "server": "ia801205.us.archive.org",
     "simplelists": {

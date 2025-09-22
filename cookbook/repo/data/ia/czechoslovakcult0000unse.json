@@ -389,7 +389,7 @@
       "camera": "Sony Alpha-A6300 (Control)",
       "collection_set": "china",
       "contributor": "Internet Archive",
-      "date": "1989",
+      "date": "1989-01-01",
       "isbn": [
         "0941016617",
         "9780941016612"
@@ -466,7 +466,10 @@
         "inlibrary",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "1989-01-01"
+      ]
     },
     "server": "ia803107.us.archive.org",
     "uniq": 1706771119,

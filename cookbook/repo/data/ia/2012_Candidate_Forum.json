@@ -646,7 +646,10 @@
       "publicdate": "2016-12-01 18:56:09",
       "uploader": "jhauser@pobox.com",
       "addeddate": "2016-12-01 18:56:09",
-      "backup_location": "ia906302_4"
+      "backup_location": "ia906302_4",
+      "normalized_dates": [
+        "2012-10-05"
+      ]
     },
     "server": "ia803209.us.archive.org",
     "uniq": 614911651,

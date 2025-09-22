@@ -187,7 +187,7 @@
     "metadata": {
       "identifier": "ERIC_ED452373",
       "creator": "ERIC",
-      "date": "2000-10",
+      "date": "2000-01-01",
       "description": "This document reports on a 2-day symposium that brought together 180 representatives of Campus Alberta, which is a major initiative to make learning opportunities more flexible and responsive to learners' needs by focusing on such things as system coordination, course transferability, and ways to build on existing strengths and which now encompasses all partners, from educators in the basic and postsecondary systems to industry and community partners across the province. Part 1 presents a program overview of the 2-day symposium and brief summaries of the speaker presentations and panel discussions. Part 2 explains how the symposium organizers divided participants into 10 small groups based on geographical location and gave them lists of discussion questions designed to help them  identify ways of enhancing systems coordination and ensuring quality learning experiences. Part 3 contains subsections summarizing the groups' findings. The following are among the specific topics highlighted: challenges in collaboration; factors contributing to effective collaboration and coordination; factors in lifelong learning; gaps in Campus Alberta's ability to delivery quality learning experiences; aspects of the system that are working well; recommended actions; and the role of technology in enhancing systems coordination and ensuring quality learning experiences. A list of conference participants is appended. (MN)",
       "language": "english",
       "mediatype": "texts",
@@ -207,7 +207,10 @@
       "ppi": "600",
       "ocr": "ABBYY FineReader 11.0",
       "repub_state": "4",
-      "backup_location": "ia905507_35"
+      "backup_location": "ia905507_35",
+      "normalized_dates": [
+        "2000-01-01"
+      ]
     },
     "server": "ia801207.us.archive.org",
     "uniq": 457388732,

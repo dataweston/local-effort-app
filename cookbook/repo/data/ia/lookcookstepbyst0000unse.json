@@ -421,7 +421,7 @@
       "camera": "Sony Alpha-A6300 (Control)",
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
-      "date": "2016",
+      "date": "2016-01-01",
       "description": [
         "183, 24 pages : 26 cm",
         "Make meal preparation in your child care center easy and fun. Includes step-by-step instructions and photos for 160 recipes that all fit the USDA's Child and Adult Food Program guidelines, a four-week cycle menu for lunch, a two-week cycle menu for breakfasts and snacks, plus a seasonal menu",
@@ -495,6 +495,9 @@
         "internetarchivebooks",
         "inlibrary",
         "printdisabled"
+      ],
+      "normalized_dates": [
+        "2016-01-01"
       ]
     },
     "server": "ia804605.us.archive.org",

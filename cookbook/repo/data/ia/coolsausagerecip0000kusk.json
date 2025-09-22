@@ -431,7 +431,7 @@
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
       "creator": "Kuskowski, Alex, author",
-      "date": "2017",
+      "date": "2017-01-01",
       "description": [
         "32 pages : 21 cm",
         "Presents recipes for main dishes that feature sausage as the key ingredient, including pork sausage rolls, spicy sausage stir fry, and sausage and apple salad",
@@ -493,6 +493,9 @@
         "internetarchivebooks",
         "inlibrary",
         "printdisabled"
+      ],
+      "normalized_dates": [
+        "2017-01-01"
       ]
     },
     "server": "ia801903.us.archive.org",

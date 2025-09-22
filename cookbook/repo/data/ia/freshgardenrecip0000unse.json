@@ -413,7 +413,7 @@
       "camera": "Sony Alpha-A6300 (Control)",
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
-      "date": "1987",
+      "date": "1987-01-01",
       "description": [
         "47 p. : 28 cm",
         "At head of title: Better homes and gardens",
@@ -468,7 +468,10 @@
         "inlibrary",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "1987-01-01"
+      ]
     },
     "server": "ia803108.us.archive.org",
     "uniq": 156660046,

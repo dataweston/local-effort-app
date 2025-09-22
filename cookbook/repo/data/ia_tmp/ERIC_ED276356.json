@@ -176,7 +176,7 @@
     "metadata": {
       "identifier": "ERIC_ED276356",
       "creator": "ERIC",
-      "date": "1986",
+      "date": "1986-01-01",
       "description": "Methods developed by faculty to involve students in the classroom are described in 13 articles, based on the experience of University of Minnesota faculty in the Northwest Area Program on Active Learning. Each article considers: how to get started, sample applications of the method, challenges and how to deal with them, rewards, and where to get help. Article titles and authors are as follows: \"Using Primary Sources in the Classroom\" (Elaine Tyler May); \"Introducing Active Learning: Conceptual and Practical Problems\" (William R. Charlesworth); \"Cooperative Learning Groups\" (Karl A. Smith); \"Introducing Simulation and Role Play\" (Terrie M. Shannon); \"Structuring Controversy in the Classroom\" (Deborah Deemer); \"Using Active Learning in Large Classes\" (Thomas F. Brothen); \"Training  Teaching Assistants to Use Active Learning Strategies\" (Donald Ross); \"Teaching Problem-Solving Skills\" (Bert E. Fristedt); \"Organizing Community Studies\" (Peggy Sand); \"Teaching Cognitive Skills to Underprepared Students\" (Diane Chambers); \"Personal Computers in Education\" (Alan Wassyng, Karl Smith, Sam Sharp); \"Questions and Answers about Active Learning\" (Gloria Christopher); and \"Northwest Area Program on Active Learning: History and Projects\" (Russell Christensen). Four pages of references and a list of advisory committee members and staff for the program are included. (SW)",
       "language": "english",
       "mediatype": "texts",
@@ -196,7 +196,10 @@
       "ppi": "600",
       "ocr": "ABBYY FineReader 9.0",
       "repub_state": "4",
-      "backup_location": "ia905908_31"
+      "backup_location": "ia905908_31",
+      "normalized_dates": [
+        "1986-01-01"
+      ]
     },
     "server": "ia601501.us.archive.org",
     "uniq": 725633810,

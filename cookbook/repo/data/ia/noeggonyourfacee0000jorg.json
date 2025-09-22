@@ -408,7 +408,7 @@
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
       "creator": "Jorgensen, Katrina, author",
-      "date": "2017",
+      "date": "2017-01-01",
       "description": [
         "32 pages : 24 cm",
         "\"A fun cookbook with recipes that are safe for kids who are allergic to eggs\"--",
@@ -480,7 +480,10 @@
         "printdisabled"
       ],
       "page_number_confidence": "13",
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "2017-01-01"
+      ]
     },
     "server": "ia804501.us.archive.org",
     "uniq": 628856875,

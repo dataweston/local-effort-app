@@ -408,7 +408,7 @@
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
       "creator": "Cornell, Tricia",
-      "date": "2014",
+      "date": "2014-01-01",
       "description": [
         "192 pages : 26 cm",
         "\"Contains more than 80 recipes from local chefs, vendors, and other champions of local, seasonal eating, as well as profiles of market foods and suggestions on how to choose the best, plus maps and a directory of the state's markets\"--",
@@ -479,7 +479,10 @@
         "inlibrary",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "2014-01-01"
+      ]
     },
     "server": "ia800301.us.archive.org",
     "uniq": 572801599,

@@ -463,7 +463,7 @@
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
       "creator": "Millang, Theresa Nell",
-      "date": "1999",
+      "date": "1999-01-01",
       "description": [
         "ii, 228 pages ; 20 cm",
         "Shows that anyone can master the one-dish-complete-meal-system to simplify any mealtime situation. Includes recipes for classic, ethnic, and even gourmet hot dishes, hot dish recipes for different occasions (such as the \"Neighbor is Sick,\" \"Potluck,\" and \"Baby Shower\"), historical Scandinavian hot dish recipes from the early 1900s, international-version hot dishes, and more!",
@@ -537,7 +537,10 @@
         "inlibrary",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "1999-01-01"
+      ]
     },
     "server": "ia803201.us.archive.org",
     "uniq": 1666629592,

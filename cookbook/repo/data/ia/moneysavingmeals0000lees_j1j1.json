@@ -418,7 +418,7 @@
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
       "creator": "Lee, Sandra",
-      "date": "2008",
+      "date": "2008-01-01",
       "description": [
         "237 p. : 25 cm",
         "Television cook Sandra Lee presents three hundred cost-conscious recipes for semi-homemade meals based on seventy percent store-bought ingredients and thirty percent fresh foods, including such family favorite selections as curried bow tie salad, spaghetti with garlic meat sauce, beer brats and kraut, beef pot roast, and frozen English toffee cake",
@@ -489,6 +489,9 @@
       "collection": [
         "internetarchivebooks",
         "printdisabled"
+      ],
+      "normalized_dates": [
+        "2008-01-01"
       ]
     },
     "server": "ia904509.us.archive.org",

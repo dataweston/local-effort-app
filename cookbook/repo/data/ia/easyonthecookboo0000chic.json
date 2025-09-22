@@ -453,7 +453,7 @@
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
       "creator": "Chicago Home Economists in Business",
-      "date": "1960",
+      "date": "1960-01-01",
       "description": "192 p. 22 cm",
       "language": "eng",
       "lccn": "60016898",
@@ -515,6 +515,9 @@
         "internetarchivebooks",
         "inlibrary",
         "printdisabled"
+      ],
+      "normalized_dates": [
+        "1960-01-01"
       ]
     },
     "server": "ia800102.us.archive.org",

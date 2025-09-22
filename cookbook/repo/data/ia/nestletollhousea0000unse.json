@@ -425,7 +425,7 @@
       "camera": "USB PTP Class Camera",
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
-      "date": "2006",
+      "date": "2006-01-01",
       "description": [
         "240 pages : 29 cm",
         "\"173 luscious cookies & other fabulous baked goods\"--Cover",
@@ -492,7 +492,10 @@
         "inlibrary",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "2006-01-01"
+      ]
     },
     "server": "ia904507.us.archive.org",
     "uniq": 335039984,

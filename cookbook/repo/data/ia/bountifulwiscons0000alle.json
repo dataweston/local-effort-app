@@ -403,7 +403,7 @@
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
       "creator": "Allen, Terese",
-      "date": "2000",
+      "date": "2000-01-01",
       "description": [
         "viii, 143 pages : 23 cm",
         "\"Best use of Wisconsin products\"--Page 4 of cover",
@@ -471,7 +471,10 @@
         "printdisabled",
         "inlibrary"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "2000-01-01"
+      ]
     },
     "server": "ia601706.us.archive.org",
     "uniq": 1323994117,

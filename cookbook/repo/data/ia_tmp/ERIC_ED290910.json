@@ -187,7 +187,7 @@
     "metadata": {
       "identifier": "ERIC_ED290910",
       "creator": "ERIC",
-      "date": "1988",
+      "date": "1988-01-01",
       "description": "A telephone survey of 610 service delivery areas (SDAs) and a mail survey of a national sample of 983 postsecondary institutions were conducted to assess the status of local-level coordination between vocational education and Job Training Partnership Act (JTPA) programs. Ninety-seven percent of the SDAs were engaged in some type of collaborative effort with public vocational education institutions in the year ending June 1987. Ninety-one percent of the SDA administrators described their relationship with public vocational-technical programs as satisfactory or better. Almost 90 percent of the postsecondary institutions included in the study have some relationship with the JTPA, with 68 percent providing direct services and an additional 19 percent providing facilities or  instructors for JTPA programs they do not conduct themselves. A history of good relationships and shared goals were the two main factors cited by JTPA administrators as facilitating good coordination between vocational education and JTPA. The degree of coordination achieved within SDAs was not systematically associated with any of the economic and demographic characteristics of the SDAs that were analyzed. The JTPA administrators urged vocational educators to keep the SDA information about vocational programs, do more joint planning, be more responsive to labor market needs and more flexible concerning program lengths and entry and exit times, coordinate better within vocational education itself, and accept performance-based contracts. Appendices provide 11 data tables on the SDAs and the  two survey forms. (MN)",
       "language": "english",
       "mediatype": "texts",
@@ -207,7 +207,10 @@
       "ppi": "600",
       "ocr": "ABBYY FineReader 9.0",
       "repub_state": "4",
-      "backup_location": "ia905908_20"
+      "backup_location": "ia905908_20",
+      "normalized_dates": [
+        "1988-01-01"
+      ]
     },
     "server": "ia801605.us.archive.org",
     "uniq": 1302095196,

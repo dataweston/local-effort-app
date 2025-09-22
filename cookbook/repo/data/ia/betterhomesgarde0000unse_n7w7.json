@@ -417,7 +417,7 @@
       "camera": "USB PTP Class Camera",
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
-      "date": "2003",
+      "date": "2003-01-01",
       "description": [
         "288 p. : 29 cm",
         "Includes index"
@@ -477,6 +477,9 @@
         "internetarchivebooks",
         "printdisabled",
         "inlibrary"
+      ],
+      "normalized_dates": [
+        "2003-01-01"
       ]
     },
     "server": "ia802802.us.archive.org",

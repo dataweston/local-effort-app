@@ -367,7 +367,10 @@
       "addeddate": "2017-05-06 00:12:50",
       "backup_location": "ia906403_21",
       "noarchivetorrent": "true",
-      "curation": "[curator]jscott@archive.org[/curator][date]20200223092000[/date][state]un-dark[/state]"
+      "curation": "[curator]jscott@archive.org[/curator][date]20200223092000[/date][state]un-dark[/state]",
+      "normalized_dates": [
+        "2015-03-12"
+      ]
     },
     "server": "ia600802.us.archive.org",
     "uniq": 114402751,

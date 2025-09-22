@@ -1032,7 +1032,10 @@
       "publicdate": "2021-04-30 21:27:17",
       "addeddate": "2021-04-30 21:27:17",
       "curation": "[curator]kaplan@archive.org[/curator][date]20240717170450[/date][state]un-dark[/state][comment][/comment]",
-      "noarchivetorrent": "true"
+      "noarchivetorrent": "true",
+      "normalized_dates": [
+        "2021-03-21"
+      ]
     },
     "server": "ia803401.us.archive.org",
     "uniq": 116405801,

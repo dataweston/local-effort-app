@@ -172,7 +172,7 @@
     "metadata": {
       "identifier": "ERIC_ED113501",
       "creator": "ERIC",
-      "date": "1975-05",
+      "date": "1975-01-01",
       "description": "The conference report on competency based teacher education in Region 5 contains the full texts of 12 addresses by key conference participants: Personnel Development in Occupational Education in Illinois, Sherwood Dees; One State's (Illinois') Approach to Competency Based Teacher Education, William Reynolds; Planning for Personnel Development Within a State (Illinois), William K. Applegate; Vocational Educators and Competence Based Education, Joan R. McFadden; Pre-Service Occupational Program (POP), Franzie Loepp and Alan Johnson; Competency Based Industrial Teacher Education at University of Wisconsin--Stout, Neal Prichard; Competencies for Professional Education in Home Economics, Phyllis K. Lowe; Two-Year In-Service Teacher Preparation Program to Provide the Essential  Professional Competencies Necessary for Teachers of Agriculture, Wayne E. Asche; A Competency-Based Program for Preparing Vocational Teachers, Fred S. Cook and Rita C. Richey; Performance/Competency Based Teaching Methods, Minnesota Style, Roland L. Peterson; Administration By Competency (ABC), Charles Edwards and Wes Habley; and A Cautionary Appraisal of CBTE, H. S. Broudy. The report also contains State task force reports, the Region 5 conference survey results and three appendixes (the conference program, the participant survey, and a list of the participants, presenters, and staff). (JR)",
       "language": "english",
       "mediatype": "texts",
@@ -192,7 +192,10 @@
       "ppi": "600",
       "ocr": "ABBYY FineReader 9.0",
       "repub_state": "4",
-      "backup_location": "ia905305_25"
+      "backup_location": "ia905305_25",
+      "normalized_dates": [
+        "1975-01-01"
+      ]
     },
     "server": "ia600208.us.archive.org",
     "uniq": 1603102882,

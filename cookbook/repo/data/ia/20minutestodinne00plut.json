@@ -406,7 +406,7 @@
         "Includes index"
       ],
       "publisher": "Des Moines, Iowa : Meredith Corp.",
-      "date": "1987",
+      "date": "1987-01-01",
       "language": "eng",
       "isbn": [
         "0696024101",
@@ -476,6 +476,9 @@
         "americana",
         "inlibrary_dupes",
         "printdisabled"
+      ],
+      "normalized_dates": [
+        "1987-01-01"
       ]
     },
     "server": "ia601403.us.archive.org",

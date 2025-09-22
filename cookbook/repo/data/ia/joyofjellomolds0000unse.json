@@ -467,7 +467,7 @@
       "camera": "Sony Alpha-A6300 (Control)",
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
-      "date": "1998",
+      "date": "1998-01-01",
       "description": [
         "96 p. : 21 cm",
         "\"56 festive recipes from the classic to the contemporary\"--Cover",
@@ -533,6 +533,9 @@
         "internetarchivebooks",
         "inlibrary",
         "printdisabled"
+      ],
+      "normalized_dates": [
+        "1998-01-01"
       ]
     },
     "server": "ia902305.us.archive.org",

@@ -399,7 +399,7 @@
       "camera": "USB PTP Class Camera",
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
-      "date": "2006",
+      "date": "2006-01-01",
       "description": [
         "415 p. ; 23 cm",
         "At head of title: Better homes and gardens",
@@ -464,7 +464,10 @@
         "printdisabled",
         "inlibrary"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "2006-01-01"
+      ]
     },
     "server": "ia801800.us.archive.org",
     "uniq": 615188211,

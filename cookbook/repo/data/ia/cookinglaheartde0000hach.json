@@ -435,7 +435,7 @@
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
       "creator": "Hachfeld, Linda, author",
-      "date": "1988",
+      "date": "1988-01-01",
       "description": [
         "xv, 435 pages : 23 cm",
         "Includes bibliographical references (pages 415-420) and index"
@@ -503,7 +503,10 @@
         "inlibrary",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "1988-01-01"
+      ]
     },
     "server": "ia803109.us.archive.org",
     "uniq": 303970990,

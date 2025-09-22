@@ -172,7 +172,7 @@
     "metadata": {
       "identifier": "ERIC_ED029945",
       "creator": "ERIC",
-      "date": "1967",
+      "date": "1967-01-01",
       "description": "In a curriculum project designed to establish guidelines for teacher use in planning homemaking education, the choice of resource materials was based on the philosophy of home economics education, socioeconomic trends, and the developmental tasks of adolescence. A conceptual framework was formulated which served as a basis for the scope and sequence, and outlines of both are included in the document. Concepts were selected according to relevance to various grade levels and their value as fundamentals to build upon, and focused on problems of families and individuals in the area of family relations and child development. A wide variety of ideas and suggestions to aid in developing specific plans for teaching the identified concepts are included in the document. Resource materials  at each grade level are organized according to introductory statements, unit objectives, content, educational experiences, and evaluation ideas, with generalizations listed for each concept. Educational experiences are listed according to cognitive levels: knowledge, application, analysis, and evaluation. Major concepts are: (1) Nature of the family, (2) Effect of the family on the maturation of the individual, (3) Interaction of individuals with each other in a family, (4) Relevance of various activities of a family, and (5) Interaction of the family with the community. Texts and references are listed in the appendix. (FP)",
       "language": "english",
       "mediatype": "texts",
@@ -192,7 +192,10 @@
       "ppi": "600",
       "ocr": "ABBYY FineReader 11.0",
       "repub_state": "4",
-      "backup_location": "ia905506_5"
+      "backup_location": "ia905506_5",
+      "normalized_dates": [
+        "1967-01-01"
+      ]
     },
     "server": "ia601201.us.archive.org",
     "uniq": 1817570069,

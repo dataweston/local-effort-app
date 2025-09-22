@@ -141,7 +141,10 @@
       "collection_added": "podcasts_mirror",
       "publicdate": "2024-04-08 21:01:13",
       "addeddate": "2024-04-08 21:01:13",
-      "access-restricted-item": "true"
+      "access-restricted-item": "true",
+      "normalized_dates": [
+        "2024-02-26"
+      ]
     },
     "server": "ia800204.us.archive.org",
     "uniq": 1218090269,

@@ -441,7 +441,7 @@
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
       "creator": "Sutherland, Elisabeth",
-      "date": "1973",
+      "date": "1973-01-01",
       "description": [
         "xix, 292 p. :",
         "Bibliography: p. 284-285",
@@ -506,7 +506,10 @@
         "inlibrary",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "1973-01-01"
+      ]
     },
     "server": "ia801605.us.archive.org",
     "uniq": 1384852928,

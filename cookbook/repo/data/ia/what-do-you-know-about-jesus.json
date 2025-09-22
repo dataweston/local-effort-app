@@ -1017,7 +1017,10 @@
       "publicdate": "2020-09-28 20:24:09",
       "addeddate": "2020-09-28 20:24:09",
       "curation": "[curator]kaplan@archive.org[/curator][date]20240717170450[/date][state]un-dark[/state][comment][/comment]",
-      "noarchivetorrent": "true"
+      "noarchivetorrent": "true",
+      "normalized_dates": [
+        "2020-09-27"
+      ]
     },
     "server": "ia801701.us.archive.org",
     "uniq": 1671866476,

@@ -1627,7 +1627,10 @@
       "addeddate": "2021-09-12 21:58:35",
       "curation": "[curator]validator@archive.org[/curator][date]20210912215853[/date][comment]checked for malware[/comment]",
       "source": "torrent:urn:sha1:033ec93a826c5cd45863f2f85fad38107d1f4479",
-      "access-restricted-item": "true"
+      "access-restricted-item": "true",
+      "normalized_dates": [
+        "2021-09-10"
+      ]
     },
     "server": "ia802302.us.archive.org",
     "uniq": 1606593719,

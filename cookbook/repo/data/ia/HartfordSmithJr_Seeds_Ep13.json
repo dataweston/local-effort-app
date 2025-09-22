@@ -127,7 +127,7 @@
       "mediatype": "audio",
       "contact": "Wisconsin Center for Film and Theater Research, Wisconsin Historical Society, 816 State Street, Madison, WI 53704, telephone 608-264-6466. For reference inquiries or questions regarding specific titles in WCFTR's collection, please email our digital reference service at askmovies@wisconsinhistory.org ",
       "creator": "Smith, Hartford, Jr.",
-      "date": "1968",
+      "date": "1968-01-01",
       "description": "<span></span><p dir=\"ltr\" style=\"line-height:1.38;margin-top:0pt;margin-bottom:0pt;\"><span style=\"font-size:13pt;font-style:italic;vertical-align:baseline;white-space:pre-wrap;\">Seeds of Discontent</span><span style=\"font-size:13pt;vertical-align:baseline;white-space:pre-wrap;\"> was a 1968 radio documentary series that explored discontented social groups and organizations attempting to improve their conditions in American society. Created by Hartford Smith, Jr. and Wayne State University’s WDET in Detroit, the series addressed topics including race relations, civil rights, poverty, youth, and crime. Smith’s connections with the community as a social worker allowed him to record hours of interviews with people about their lives and their opinions on contemporary issues. This episode, the first of three focusing on African American members of the middle class, features interviews with a psychologist, a salesman, and a newspaper editor.</span></p><p dir=\"ltr\" style=\"line-height:1.38;margin-top:0pt;margin-bottom:0pt;\"><span style=\"font-size:13pt;vertical-align:baseline;white-space:pre-wrap;\"> </span></p><span style=\"font-size:13pt;vertical-align:baseline;white-space:pre-wrap;\">The series, distributed by the National Educational Radio Network, was made publicly available as part of the </span><span style=\"font-size:13pt;font-style:italic;vertical-align:baseline;white-space:pre-wrap;\">Unlocking the Airwaves</span><span style=\"font-size:13pt;vertical-align:baseline;white-space:pre-wrap;\"> project, a digital humanities initiative from University of Maryland and the University of Wisconsin-Madison launched in summer 2021. Learn more at <a href=\"https://www.unlockingtheairwaves.org/\" rel=\"nofollow\">https://www.unlockingtheairwaves.org/</a>.</span>",
       "digitizing-sponsor": "Stephen P. Jarchow",
       "language": "eng",
@@ -153,7 +153,10 @@
         "stream_only"
       ],
       "year": "1968",
-      "access-restricted-item": "true"
+      "access-restricted-item": "true",
+      "normalized_dates": [
+        "1968-01-01"
+      ]
     },
     "server": "ia804604.us.archive.org",
     "uniq": 1257300818,

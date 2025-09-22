@@ -458,7 +458,7 @@
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
       "creator": "Divock, Rosemary, 1941-",
-      "date": "1996",
+      "date": "1996-01-01",
       "description": [
         "vii, 240 p. : 26 cm",
         "Includes bibliographical references (p. 236) and index"
@@ -525,7 +525,10 @@
         "inlibrary",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "1996-01-01"
+      ]
     },
     "server": "ia601803.us.archive.org",
     "uniq": 118946345,

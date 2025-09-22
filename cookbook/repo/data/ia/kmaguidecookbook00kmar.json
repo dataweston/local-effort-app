@@ -382,7 +382,7 @@
       ],
       "description": "\"A new collection of KMA GUIDE prize winning recipes and other favorite recipes of midwest housewives!\"--Cover",
       "publisher": "Shenandoah, Iowa : KMA Guide, Radio Station KMA",
-      "date": "1950",
+      "date": "1950-01-01",
       "language": "und",
       "page-progression": "lr",
       "boxid": "IA104918",
@@ -442,6 +442,9 @@
         "americana",
         "inlibrary",
         "printdisabled"
+      ],
+      "normalized_dates": [
+        "1950-01-01"
       ]
     },
     "server": "ia600301.us.archive.org",

@@ -377,7 +377,7 @@
         "On cover: Compliments of West Bend"
       ],
       "publisher": "[Des Moines, Iowa?] : Meredith Corp.",
-      "date": "1983",
+      "date": "1983-01-01",
       "language": "eng",
       "page-progression": "lr",
       "boxid": "IA131323",
@@ -431,7 +431,10 @@
         "printdisabled",
         "inlibrary"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "1983-01-01"
+      ]
     },
     "server": "ia804509.us.archive.org",
     "uniq": 1517303964,

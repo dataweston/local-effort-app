@@ -414,7 +414,7 @@
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
       "creator": "Kuskowski, Alex, author",
-      "date": "2016",
+      "date": "2016-01-01",
       "description": [
         "pages cm",
         "No-bake quick cookies -- Cooking basics -- Measuring ingredients -- You know this = that? -- Cooking terms -- Kitchen utensils -- Super simple ingredients -- Oaty orbs -- Sweet cookie pops -- Delish cookie drizzles -- Noodle stack-ups -- Little chocolate nuggets -- Yummy s'more bites -- Peanut butter and jelly cookies"
@@ -478,7 +478,10 @@
         "printdisabled"
       ],
       "page_number_confidence": "0",
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "2016-01-01"
+      ]
     },
     "server": "ia904505.us.archive.org",
     "uniq": 1962069134,

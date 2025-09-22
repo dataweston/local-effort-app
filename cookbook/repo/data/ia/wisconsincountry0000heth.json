@@ -407,7 +407,7 @@
       "contributor": "Internet Archive",
       "creator": "Heth, Edward Harris",
       "creator-alt-script": "None",
-      "date": "1979",
+      "date": "1979-01-01",
       "description": [
         "238 pages : 23 cm",
         "Originally published in 1956 under title: The wonderful world of cooking",
@@ -468,7 +468,10 @@
         "inlibrary",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "1979-01-01"
+      ]
     },
     "server": "ia801906.us.archive.org",
     "uniq": 939265939,

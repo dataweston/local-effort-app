@@ -458,7 +458,7 @@
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
       "creator": "Breckenridge, Suzanne",
-      "date": "1996",
+      "date": "1996-01-01",
       "description": [
         "xi, 292 p. : 23 cm",
         "Includes index"
@@ -524,7 +524,10 @@
         "printdisabled"
       ],
       "page_number_confidence": "9",
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "1996-01-01"
+      ]
     },
     "server": "ia601407.us.archive.org",
     "uniq": 1707422559,

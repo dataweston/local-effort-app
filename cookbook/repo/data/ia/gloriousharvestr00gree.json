@@ -384,7 +384,7 @@
       ],
       "description": "Includes index",
       "publisher": "New York : Sedgewood Press ; Des Moines, Iowa : Distributed by Meredith Press",
-      "date": "1992",
+      "date": "1992-01-01",
       "language": "eng",
       "isbn": [
         "0696023660",
@@ -444,6 +444,9 @@
         "americana",
         "inlibrary",
         "printdisabled"
+      ],
+      "normalized_dates": [
+        "1992-01-01"
       ]
     },
     "server": "ia601300.us.archive.org",

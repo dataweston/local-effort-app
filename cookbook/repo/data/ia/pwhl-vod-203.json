@@ -2098,7 +2098,10 @@
       "mediatype": "data",
       "publicdate": "2025-05-12 16:20:57",
       "addeddate": "2025-05-12 16:20:57",
-      "curation": "[curator]validator@archive.org[/curator][date]20250512162657[/date][comment]checked for malware[/comment]"
+      "curation": "[curator]validator@archive.org[/curator][date]20250512162657[/date][comment]checked for malware[/comment]",
+      "normalized_dates": [
+        "2025-05-11"
+      ]
     },
     "server": "ia800306.us.archive.org",
     "uniq": 152775521,

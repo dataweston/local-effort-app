@@ -415,7 +415,7 @@
       "camera": "USB PTP Class Camera",
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
-      "date": "2013",
+      "date": "2013-01-01",
       "description": [
         "512 pages : 24 cm",
         "\"735 of the best reader recipes from across the nation\"--Cover",
@@ -488,7 +488,10 @@
         "inlibrary",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "2013-01-01"
+      ]
     },
     "server": "ia801009.us.archive.org",
     "uniq": 360678852,

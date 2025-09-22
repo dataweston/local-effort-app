@@ -430,7 +430,7 @@
       "title": "The heart smart, sugar wise cookbook : low-fat, low cholesterol sugar free and low sugar, over 400 recipes ",
       "creator": "Stangl, Mary Jean",
       "publisher": "Audubon, Iowa : Jumbo Jack's Cookbooks",
-      "date": "1992",
+      "date": "1992-01-01",
       "language": "eng",
       "isbn": "0963185411",
       "lccn": "92096978",
@@ -484,6 +484,9 @@
         "internetarchivebooks",
         "inlibrary",
         "printdisabled"
+      ],
+      "normalized_dates": [
+        "1992-01-01"
       ]
     },
     "server": "ia801800.us.archive.org",

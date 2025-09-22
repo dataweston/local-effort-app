@@ -406,7 +406,7 @@
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
       "creator": "Bauer, Bryce T",
-      "date": "2014",
+      "date": "2014-01-01",
       "description": [
         "282 pages : 24 cm",
         "\"During Prohibition, while Al Capone was rising to worldwide prominence as Public Enemy Number One, the townspeople of rural Templeton, Iowa--population just 418--were busy with a bootlegging empire of their own. Led by Joe Irlbeck, the whip-smart and gregarious son of a Bavarian immigrant, the outfit of farmers, small merchants, and even the church Monsignor worked together to create a whiskey so excellent it was ordered by name: Templeton Rye. Gentlemen Bootleggers tells a never-before-told tale of ingenuity, bootstrapping, and perseverance in one small town, showcasing a group of immigrants who embraced the American ideals of self-reliance, dynamism, and democratic justice. It relies on previously classified Prohibition Bureau investigation files, federal court case files, extensive newspaper archive research, and a recently disclosed interview with kingpin Joe Irlbeck. Unlike other Prohibition-era tales of big-city gangsters, it provides an important reminder that bootlegging wasn't only about glory and riches, but could be in the service of a higher goal: producing the best whiskey money could buy\"--",
@@ -475,7 +475,10 @@
         "inlibrary",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "2014-01-01"
+      ]
     },
     "server": "ia802302.us.archive.org",
     "simplelists": {

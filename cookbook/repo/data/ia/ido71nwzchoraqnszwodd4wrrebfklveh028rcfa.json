@@ -261,7 +261,10 @@
       "publicdate": "2022-12-10 18:33:54",
       "addeddate": "2022-12-10 18:33:54",
       "curation": "[curator]validator@archive.org[/curator][date]20221210183439[/date][comment]checked for malware[/comment]",
-      "access-restricted-item": "true"
+      "access-restricted-item": "true",
+      "normalized_dates": [
+        "2018-05-11"
+      ]
     },
     "server": "ia800601.us.archive.org",
     "uniq": 1456423314,

@@ -105,7 +105,10 @@
       "publicdate": "2022-08-07 13:32:33",
       "addeddate": "2022-08-07 13:32:33",
       "curation": "[curator]validator@archive.org[/curator][date]20220807133313[/date][comment]checked for malware[/comment]",
-      "access-restricted-item": "true"
+      "access-restricted-item": "true",
+      "normalized_dates": [
+        "2011-03-04"
+      ]
     },
     "server": "ia601401.us.archive.org",
     "uniq": 453218621,

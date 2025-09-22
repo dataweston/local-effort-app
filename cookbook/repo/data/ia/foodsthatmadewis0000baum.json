@@ -456,7 +456,7 @@
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
       "creator": "Baumann, Richard J",
-      "date": "1999",
+      "date": "1999-01-01",
       "description": [
         "vii, 208 p. ; 28 cm",
         "Includes bibliographical references and index"
@@ -521,7 +521,10 @@
         "inlibrary",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "1999-01-01"
+      ]
     },
     "server": "ia801605.us.archive.org",
     "uniq": 1360833448,

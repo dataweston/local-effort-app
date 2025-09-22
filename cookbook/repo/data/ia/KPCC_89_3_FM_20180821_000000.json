@@ -263,7 +263,10 @@
       "language": "eng",
       "access-restricted-item": "true",
       "bad_audio": "false",
-      "backup_location": "ia906800_34"
+      "backup_location": "ia906800_34",
+      "normalized_dates": [
+        "2018-08-21"
+      ]
     },
     "server": "ia902803.us.archive.org",
     "speech_vs_music_asr": [

@@ -169,7 +169,7 @@
     "metadata": {
       "identifier": "ERIC_ED438652",
       "creator": "ERIC",
-      "date": "1999",
+      "date": "1999-01-01",
       "description": "This training module focuses on early childhood and is part of a training series for paraprofessionals working with students who have disabilities. The module is comprised of two components, a facilitator's guide and a student guide. The facilitator's guide provides the full text of the student's edition as well as chapter goals to be accomplished by students, an outline of topics covered in each text section, materials necessary to teach each chapter (such as transparencies, handouts, and supplemental readings), discussion questions, suggested activities to be completed by students outside of class, and lists of resources (many in Minnesota). Individual chapters cover the following topics: (1) an introduction to early intervention and early education; (2) child development in  the early years; (3) individualized planning for children with disabilities; (4) the paraprofessional in the classroom; and (5) the paraprofessional's role in working with families and the community. Seven appendices provide: information on the Americans with Disabilities Act and child care providers; developmental milestones from birth to age 9; a sample Individualized Education Plan form; a sample Individualized Family Service Plan form; summaries of articles on behavior management; a family needs survey form; and information from the Minnesota Paraprofessional Consortium. (Contains 29 references.) (DB)",
       "language": "english",
       "mediatype": "texts",
@@ -190,7 +190,10 @@
       "ocr": "ABBYY FineReader 11.0",
       "repub_state": "4",
       "foldoutcount": "0",
-      "backup_location": "ia905507_26"
+      "backup_location": "ia905507_26",
+      "normalized_dates": [
+        "1999-01-01"
+      ]
     },
     "server": "ia801209.us.archive.org",
     "uniq": 816659585,

@@ -137,7 +137,10 @@
       "publicdate": "2024-01-18 02:05:06",
       "addeddate": "2024-01-18 02:05:06",
       "curation": "[curator]jscott@archive.org[/curator][date]20240118070620[/date][state][/state][comment]Moved automatically by CHARM Script Setting.[/comment]",
-      "access-restricted-item": "true"
+      "access-restricted-item": "true",
+      "normalized_dates": [
+        "2024-01-18"
+      ]
     },
     "server": "ia802804.us.archive.org",
     "uniq": 867439067,

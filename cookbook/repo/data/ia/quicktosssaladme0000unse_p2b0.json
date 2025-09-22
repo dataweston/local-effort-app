@@ -463,7 +463,7 @@
       "camera": "Sony Alpha-A6300 (Control)",
       "collection_set": "printdiscabled",
       "contributor": "Internet Archive",
-      "date": "1998",
+      "date": "1998-01-01",
       "description": [
         "96 p. : 25 cm",
         "Includes index"
@@ -528,7 +528,10 @@
         "inlibrary",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "1998-01-01"
+      ]
     },
     "server": "ia601608.us.archive.org",
     "uniq": 702017528,

@@ -322,7 +322,7 @@
         "periodicals"
       ],
       "contributor": "Internet Archive",
-      "date": "1952-02",
+      "date": "1952-01-01",
       "issn": "0021-0692",
       "issue": "112",
       "language": "English",
@@ -364,7 +364,10 @@
       "page_number_module_version": "1.0.5",
       "pdf_module_version": "0.0.26",
       "collection_added": "periodicals",
-      "addeddate": "2025-05-31 04:12:29"
+      "addeddate": "2025-05-31 04:12:29",
+      "normalized_dates": [
+        "1952-01-01"
+      ]
     },
     "page_numbers": {
       "identifier": "research-bulletin-experiment-station-isu_1952-02_112",

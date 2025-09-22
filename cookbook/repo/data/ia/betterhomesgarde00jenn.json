@@ -442,7 +442,7 @@
       "boxid_2": "CH120121108-BL1",
       "donor": "alibris",
       "sponsordate": "not to be invoiced-past billing period",
-      "date": "1996",
+      "date": "1996-01-01",
       "description": "At head of title: Better homes and gardens",
       "city": "Des Moines, Iowa",
       "oclc-id": "46543344",
@@ -470,6 +470,9 @@
         "internetarchivebooks",
         "printdisabled",
         "inlibrary"
+      ],
+      "normalized_dates": [
+        "1996-01-01"
       ]
     },
     "server": "ia601307.us.archive.org",

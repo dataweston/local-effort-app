@@ -647,7 +647,7 @@
         "additional_collections"
       ],
       "creator": "Times Publishing Co.",
-      "date": "1980",
+      "date": "1980-01-01",
       "description": "Country Cook'n<div>A church cookbook compiled by St. Rose Parishioners of Fredonia, Wis. and St. Mary's Parishioners of Little Kohler, Wis.</div><div>Published by Times Publishing Co., Inc. of 453 5th Street, Random Lake, Wis. Copyrighted 1980</div><div><br /></div><div>This is a lovely little church ladies' association fundraising cookbook from two small towns in Wisconsin.  Many of the recipes are attributed to the contributing women of the community.  It has lots of recipes with home tips, prayers, and bits of wisdom sprinkled throughout.  This is from the German settled area of WI and contains lots of German named and German origin dishes.</div>",
       "scanner": "Internet Archive HTML5 Uploader 1.7.0",
       "subject": [
@@ -691,6 +691,9 @@
         "urn:lcp:Country Cookn Church Cookbook archive:epub:d67aa023-e0d2-4319-b2ad-5f53df99ae07",
         "urn:lcp:Country Cookn Church Cookbook high:epub:b399d3a7-33a0-4059-bb0d-6397602daaf3",
         "urn:lcp:Country Cookn Church Cookbook low:epub:f635cb8d-de13-465d-b78f-3d02798dc095"
+      ],
+      "normalized_dates": [
+        "1980-01-01"
       ]
     },
     "reviews": [

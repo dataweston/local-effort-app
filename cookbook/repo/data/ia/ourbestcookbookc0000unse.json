@@ -392,7 +392,7 @@
       "contributor": "Internet Archive",
       "creator": "None",
       "creator-alt-script": "None",
-      "date": "1993",
+      "date": "1993-01-01",
       "description": [
         "xi, 107 pages : 26 cm",
         "Includes index"
@@ -455,7 +455,10 @@
         "inlibrary",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "1993-01-01"
+      ]
     },
     "server": "ia601708.us.archive.org",
     "uniq": 709255685,

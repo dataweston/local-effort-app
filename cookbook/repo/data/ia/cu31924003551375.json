@@ -226,7 +226,7 @@
       "ppi": "300",
       "creator": "Campbell, Helen, 1839-1918",
       "publisher": "New York [etc.] G. P. Putnam's sons",
-      "date": "1905",
+      "date": "1905-01-01",
       "subject": "Home economics",
       "language": "eng",
       "imagecount": "324",
@@ -244,7 +244,10 @@
       "backup_location": "ia903604_5",
       "openlibrary_edition": "OL24170468M",
       "openlibrary_work": "OL18097625W",
-      "oclc-id": "19423570"
+      "oclc-id": "19423570",
+      "normalized_dates": [
+        "1905-01-01"
+      ]
     },
     "server": "ia801305.us.archive.org",
     "uniq": 1905743762,

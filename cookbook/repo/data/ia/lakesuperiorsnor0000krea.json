@@ -443,7 +443,7 @@
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
       "creator": "Kreag, Judy",
-      "date": "1991",
+      "date": "1991-01-01",
       "description": "159 p. : 28 cm",
       "isbn": "0913383171",
       "language": "eng",
@@ -509,6 +509,9 @@
         "internetarchivebooks",
         "inlibrary",
         "printdisabled"
+      ],
+      "normalized_dates": [
+        "1991-01-01"
       ]
     },
     "server": "ia801506.us.archive.org",

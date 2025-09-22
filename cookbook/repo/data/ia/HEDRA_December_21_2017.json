@@ -818,7 +818,10 @@
       "addeddate": "2017-12-24 22:06:37",
       "backup_location": "ia906604_5",
       "noarchivetorrent": "true",
-      "curation": "[curator]jscott@archive.org[/curator][date]20200223091959[/date][state]un-dark[/state]"
+      "curation": "[curator]jscott@archive.org[/curator][date]20200223091959[/date][state]un-dark[/state]",
+      "normalized_dates": [
+        "2017-12-21"
+      ]
     },
     "server": "ia801205.us.archive.org",
     "uniq": 2108270094,

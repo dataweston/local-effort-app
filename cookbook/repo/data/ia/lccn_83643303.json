@@ -381,7 +381,7 @@
       "sponsordate": "not to be invoiced-past billing period",
       "backup_location": "ia903800_34",
       "publisher": "Des Moines, Iowa : Meredith Corp.",
-      "date": "1983",
+      "date": "1983-01-01",
       "subject": "Cooking -- Periodicals",
       "description": [
         "1 v. : 29 cm",
@@ -404,6 +404,9 @@
         "internetarchivebooks",
         "inlibrary",
         "printdisabled"
+      ],
+      "normalized_dates": [
+        "1983-01-01"
       ]
     },
     "server": "ia800202.us.archive.org",

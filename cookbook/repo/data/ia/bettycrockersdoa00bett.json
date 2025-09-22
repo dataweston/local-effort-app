@@ -404,7 +404,7 @@
         "Ancona, George"
       ],
       "publisher": "Racine, Wisconsin : Golden Press",
-      "date": "1978",
+      "date": "1978-01-01",
       "external-identifier": [
         "urn:asin:0307099148",
         "urn:acs6:bettycrockersdoa00bett:pdf:b6c61923-efa2-4844-9c2b-ed6cd4ead992",
@@ -467,7 +467,10 @@
         "printdisabled",
         "inlibrary"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "1978-01-01"
+      ]
     },
     "server": "ia800201.us.archive.org",
     "uniq": 1958912498,

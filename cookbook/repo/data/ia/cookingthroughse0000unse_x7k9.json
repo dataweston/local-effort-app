@@ -400,7 +400,7 @@
       "camera": "USB PTP Class Camera",
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
-      "date": "2010",
+      "date": "2010-01-01",
       "description": [
         "400 p. : 26 cm",
         "Organized around the four seasons, this cookbook takes readers on a culinary journey throughout the year, beginning with spring's first Strawberry Shortcake to fall's family-favorite holiday casserole",
@@ -468,7 +468,10 @@
         "inlibrary",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "2010-01-01"
+      ]
     },
     "server": "ia600205.us.archive.org",
     "simplelists": {

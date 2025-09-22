@@ -219,7 +219,7 @@
       "possible-copyright-status": "NOT_IN_COPYRIGHT",
       "identifier-access": "http://www.archive.org/details/onchafingdishaw00bailgoog",
       "year": "1899",
-      "date": "1890",
+      "date": "1890-01-01",
       "oclc-id": "528398",
       "scandate": "20070822000000",
       "copyright-region": "US",
@@ -245,7 +245,10 @@
       "backup_location": "ia903601_26",
       "openlibrary_edition": "OL6989656M",
       "openlibrary_work": "OL7860785W",
-      "addeddate": "2008-03-09 18:57:10"
+      "addeddate": "2008-03-09 18:57:10",
+      "normalized_dates": [
+        "1890-01-01"
+      ]
     },
     "server": "ia800201.us.archive.org",
     "uniq": 724156508,

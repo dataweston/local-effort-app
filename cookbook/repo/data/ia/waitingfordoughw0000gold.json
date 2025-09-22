@@ -452,7 +452,7 @@
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
       "creator": "Goldin, Phyllis",
-      "date": "1997",
+      "date": "1997-01-01",
       "description": [
         "vii, 114 pages : 26 cm",
         "Writings by Wanda Brown and Phyllis Goldin ; cover art, book art, and recipes by Phyllis Goldin ; edited by Carol Masters",
@@ -527,7 +527,10 @@
         "printdisabled"
       ],
       "page_number_confidence": "0",
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "1997-01-01"
+      ]
     },
     "server": "ia902308.us.archive.org",
     "uniq": 811196764,

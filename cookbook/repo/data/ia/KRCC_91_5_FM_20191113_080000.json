@@ -328,7 +328,10 @@
       "access-restricted-item": "true",
       "next": "KRCC_91_5_FM_20191113_090000",
       "bad_audio": "false",
-      "backup_location": "ia907006_9"
+      "backup_location": "ia907006_9",
+      "normalized_dates": [
+        "2019-11-13"
+      ]
     },
     "server": "ia803100.us.archive.org",
     "speech_vs_music_asr": [

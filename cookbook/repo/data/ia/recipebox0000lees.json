@@ -420,7 +420,7 @@
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
       "creator": "Lee, Sandra, 1966- author",
-      "date": "2013",
+      "date": "2013-01-01",
       "description": [
         "257 pages ; 21 cm",
         "Grace Holm-D'Angelo is at her wit's end, trying to create a new life from broken pieces. Newly divorced, she is navigating suddenly becoming a single mother to her fourteen-year-old daughter. Emma, resentful about being uprooted from Chicago to LA and still reeling from the divorce, is generally giving her mother a hard time. Then Grace's best friend, Leeza, succumbs to breast cancer after a long battle, and Grace realizes that you don't get a second chance at life. She returns to her hometown of New London, Wisconsin, to try to reconcile with her own mother, Lorraine, with whom she's been estranged for longer than she cares to remember. Over the course of the summer, Grace rediscovers the healing powers of cooking, coming to terms with your past, and friendship, and learns you can go home again, and sometimes that's exactly where you belong. Includes recipes"
@@ -487,7 +487,10 @@
       ],
       "page_number_module_version": "1.0.5",
       "pdf_degraded": "invalid-jp2-headers",
-      "pdf_module_version": "0.0.25"
+      "pdf_module_version": "0.0.25",
+      "normalized_dates": [
+        "2013-01-01"
+      ]
     },
     "server": "ia903100.us.archive.org",
     "simplelists": {

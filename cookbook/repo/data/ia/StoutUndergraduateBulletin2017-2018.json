@@ -231,7 +231,7 @@
       "identifier": "StoutUndergraduateBulletin2017-2018",
       "mediatype": "texts",
       "creator": "University of Wisconsin--Stout. University Relations.",
-      "date": "2017",
+      "date": "2017-01-01",
       "description": "Annual and biennial bulletins of the University of Wisconsin-Stout and its predecessor institutions. The bulletins provide descriptions of campus, lists of administrators and faculty, information on institutional objectives, courses offered, and curriculum.<br />",
       "language": "eng",
       "licenseurl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
@@ -264,6 +264,9 @@
         "stoutbulletins",
         "universityofwisconsinstoutarchives",
         "americana"
+      ],
+      "normalized_dates": [
+        "2017-01-01"
       ]
     },
     "server": "ia801608.us.archive.org",

@@ -437,7 +437,7 @@
       "camera": "USB PTP Class Camera",
       "contributor": "Internet Archive",
       "creator": "Swanson, Bonnie Jean",
-      "date": "1999",
+      "date": "1999-01-01",
       "description": [
         "128 p. : 28 cm",
         "Includes index"
@@ -505,6 +505,9 @@
         "internetarchivebooks",
         "inlibrary",
         "printdisabled"
+      ],
+      "normalized_dates": [
+        "1999-01-01"
       ]
     },
     "server": "ia800400.us.archive.org",

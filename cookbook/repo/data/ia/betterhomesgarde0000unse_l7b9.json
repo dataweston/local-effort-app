@@ -415,7 +415,7 @@
       "camera": "USB PTP Class Camera",
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
-      "date": "1999",
+      "date": "1999-01-01",
       "description": [
         "320 pages : 29 cm",
         "A book of unforgettable Christmas gifts you can create",
@@ -484,6 +484,9 @@
         "internetarchivebooks",
         "printdisabled",
         "inlibrary"
+      ],
+      "normalized_dates": [
+        "1999-01-01"
       ]
     },
     "server": "ia802903.us.archive.org",

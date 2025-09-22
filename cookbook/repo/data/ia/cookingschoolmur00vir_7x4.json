@@ -450,7 +450,7 @@
       "title": "The cooking school murders",
       "creator": "Rich, Virginia",
       "publisher": "New York : Dutton",
-      "date": "1982",
+      "date": "1982-01-01",
       "language": "eng",
       "sponsor": "Internet Archive",
       "contributor": "Internet Archive",
@@ -529,6 +529,9 @@
         "americana",
         "printdisabled",
         "inlibrary"
+      ],
+      "normalized_dates": [
+        "1982-01-01"
       ]
     },
     "server": "ia801504.us.archive.org",

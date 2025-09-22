@@ -333,7 +333,7 @@
       "scanningcenter": "beltsville",
       "sponsor": "U.S. Department of Agriculture, National Agricultural Library",
       "contributor": "U.S. Department of Agriculture, National Agricultural Library",
-      "date": "1991",
+      "date": "1991-01-01",
       "subject": [
         "Low-fat diet",
         "African American cooking"
@@ -391,7 +391,10 @@
       "openlibrary_edition": "OL49357428M",
       "openlibrary_work": "OL36517706W",
       "sponsordate": "20230930",
-      "curation": "[curator]rich@archive.org[/curator][date]2023093000001[/date][state]approved[/state][comment]invoice202309[/comment]"
+      "curation": "[curator]rich@archive.org[/curator][date]2023093000001[/date][state]approved[/state][comment]invoice202309[/comment]",
+      "normalized_dates": [
+        "1991-01-01"
+      ]
     },
     "page_numbers": {
       "identifier": "CAT10693963",

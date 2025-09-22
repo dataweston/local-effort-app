@@ -466,7 +466,7 @@
       "title": "Better Homes and Gardens all-time favorites",
       "publisher": "Des Moines, Iowa : Better Homes and Gardens Books",
       "creator": "Better Homes and Gardens Editors",
-      "date": "1999",
+      "date": "1999-01-01",
       "donor": "alibris",
       "sponsordate": "not to be invoiced-past billing period",
       "external-identifier": [
@@ -515,7 +515,10 @@
       ],
       "page_number_module_version": "1.0.5",
       "pdf_degraded": "invalid-jp2-headers",
-      "pdf_module_version": "0.0.25"
+      "pdf_module_version": "0.0.25",
+      "normalized_dates": [
+        "1999-01-01"
+      ]
     },
     "server": "ia803106.us.archive.org",
     "simplelists": {

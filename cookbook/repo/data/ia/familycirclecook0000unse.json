@@ -435,7 +435,7 @@
       "camera": "USB PTP Class Camera",
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
-      "date": "2007",
+      "date": "2007-01-01",
       "description": [
         "371 p. : 26 cm",
         "Includes index and bonus meal planner"
@@ -493,7 +493,10 @@
         "inlibrary",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "2007-01-01"
+      ]
     },
     "server": "ia601809.us.archive.org",
     "uniq": 757417099,

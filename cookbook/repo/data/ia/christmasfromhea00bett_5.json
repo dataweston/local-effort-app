@@ -432,7 +432,7 @@
       "title": "Holiday magic",
       "creator": "Better Homes",
       "publisher": "Des Moines, Iowa : Better Homes and Gardens Books",
-      "date": "1997",
+      "date": "1997-01-01",
       "external-identifier": [
         "urn:asin:0696206536",
         "urn:acs6:christmasfromhea00bett_5:pdf:4c0da0da-c407-48e0-b5a8-3aff4a3c3cd1",
@@ -501,7 +501,10 @@
         "printdisabled"
       ],
       "page_number_confidence": "0",
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "1997-01-01"
+      ]
     },
     "server": "ia800708.us.archive.org",
     "simplelists": {

@@ -424,7 +424,7 @@
         "From Book's Back Cover: Kids are crazy about snacks. Give your kids the best with the help of Kid's Snack. Taste-tested by kids themselves, all of these between meal pick-me-ups are delicious, nutritious, easy to make, and fun to eat"
       ],
       "publisher": "Des Moines, Iowa : Meredith Corp.",
-      "date": "1985",
+      "date": "1985-01-01",
       "language": "eng",
       "isbn": [
         "0696014807",
@@ -501,6 +501,9 @@
         "americana",
         "inlibrary",
         "printdisabled"
+      ],
+      "normalized_dates": [
+        "1985-01-01"
       ]
     },
     "server": "ia601207.us.archive.org",

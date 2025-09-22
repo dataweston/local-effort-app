@@ -271,7 +271,10 @@
         "radio",
         "radioprograms"
       ],
-      "backup_location": "ia907005_1"
+      "backup_location": "ia907005_1",
+      "normalized_dates": [
+        "2019-10-30"
+      ]
     },
     "server": "ia601601.us.archive.org",
     "speech_vs_music_asr": [

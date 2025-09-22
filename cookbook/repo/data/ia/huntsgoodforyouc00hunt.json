@@ -432,7 +432,7 @@
         "Quick and easy cooking"
       ],
       "publisher": "Des Moines, Iowa : Meredith Books",
-      "date": "1997",
+      "date": "1997-01-01",
       "language": "eng",
       "isbn": [
         "0696208881",
@@ -494,7 +494,10 @@
         "inlibrary",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "1997-01-01"
+      ]
     },
     "server": "ia600403.us.archive.org",
     "uniq": 1939862299,

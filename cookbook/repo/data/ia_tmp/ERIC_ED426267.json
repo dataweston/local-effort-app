@@ -209,7 +209,10 @@
       "ocr": "ABBYY FineReader 11.0",
       "repub_state": "4",
       "foldoutcount": "0",
-      "backup_location": "ia905507_17"
+      "backup_location": "ia905507_17",
+      "normalized_dates": [
+        "1995-06-26"
+      ]
     },
     "server": "ia801300.us.archive.org",
     "uniq": 305361971,

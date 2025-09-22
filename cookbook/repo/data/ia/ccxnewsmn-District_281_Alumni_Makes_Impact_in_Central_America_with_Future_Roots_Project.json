@@ -380,7 +380,10 @@
       "addeddate": "2020-01-10 00:00:20",
       "noarchivetorrent": "true",
       "curation": "[curator]jscott@archive.org[/curator][date]20200223180547[/date][state]un-dark[/state]",
-      "backup_location": "ia907101_12"
+      "backup_location": "ia907101_12",
+      "normalized_dates": [
+        "2019-11-26"
+      ]
     },
     "server": "ia802801.us.archive.org",
     "uniq": 1922340748,

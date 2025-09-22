@@ -369,7 +369,7 @@
         "Microwave cookery"
       ],
       "publisher": "Minnesota, Minn. : Publication Arts",
-      "date": "1982",
+      "date": "1982-01-01",
       "language": "eng",
       "page-progression": "lr",
       "boxid": "IA104906",
@@ -423,6 +423,9 @@
         "americana",
         "inlibrary",
         "printdisabled"
+      ],
+      "normalized_dates": [
+        "1982-01-01"
       ]
     },
     "server": "ia801702.us.archive.org",

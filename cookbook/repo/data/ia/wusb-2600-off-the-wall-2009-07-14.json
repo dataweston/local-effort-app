@@ -209,7 +209,10 @@
       "addeddate": "2016-05-04 21:07:25",
       "backup_location": "ia906107_28",
       "external_metadata_update": "2019-03-26T03:37:25Z",
-      "collection_added": "podcasts_mirror_godane"
+      "collection_added": "podcasts_mirror_godane",
+      "normalized_dates": [
+        "2009-07-14"
+      ]
     },
     "server": "ia800307.us.archive.org",
     "uniq": 492964540,

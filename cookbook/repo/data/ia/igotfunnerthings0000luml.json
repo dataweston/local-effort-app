@@ -397,7 +397,7 @@
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
       "creator": "Lum, Louise Anderson",
-      "date": "1992",
+      "date": "1992-01-01",
       "description": "215 p. : 22 cm",
       "isbn": "1878488694",
       "language": "eng",
@@ -456,7 +456,10 @@
         "inlibrary",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "1992-01-01"
+      ]
     },
     "server": "ia801706.us.archive.org",
     "uniq": 1956815271,

@@ -104,7 +104,7 @@
         "podcasts"
       ],
       "creator": "Bob Kessler",
-      "date": "10-03-15",
+      "date": "2015-03-10",
       "description": "<p>http://www.foxsports.com/wisconsin/story/bryan-bulaga-elects-to-re-sign-with-green-bay-packers-at-hometown-discount-031015</p>\n<p>The Green Bay Packers've reached a deal with offensive lineman Bryan Bulaga.</p>\n<p>Bulaga'll sign a five-year deal worth just under 7 MILLION dollars per season, according to FOX Sports. It looks to be for a total of 34 MILLION, with about 11 MILLION guaranteed.</p>\n<p>It's widely regarded that Bulaga could've gotten much more from other teams.</p>\n<p>With some career backups like Jeremy Parnell signing a similar contract in Jacksonville, that seems to be true.</p>\n<p>Parnell is 28, and has just seven regular season starts to his name -- whereas Bulaga is 25 and has started in 48 NFL games.</p>\n<p>Last season, Bulaga was rated by ProFootballFocus as the NFL's second-best pass-blocking right tackle. Overall among right tackles, he was rated fourth at his position.</p>",
       "scanner": "Internet Archive Python library 5.4.0",
       "subject": "Bulaga re-signs with Packers at hometown discount",
@@ -115,7 +115,10 @@
       "publicdate": "2025-06-27 11:53:09",
       "addeddate": "2025-06-27 11:53:09",
       "noarchivetorrent": "true",
-      "curation": "[curator]kaplan@archive.org[/curator][date]20250714210840[/date][state]un-dark[/state][comment][/comment]"
+      "curation": "[curator]kaplan@archive.org[/curator][date]20250714210840[/date][state]un-dark[/state][comment][/comment]",
+      "normalized_dates": [
+        "2015-03-10"
+      ]
     },
     "server": "ia600906.us.archive.org",
     "uniq": 1523420463,

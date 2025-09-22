@@ -222,7 +222,7 @@
       "mediatype": "texts",
       "possible-copyright-status": "NOT_IN_COPYRIGHT",
       "year": "1895",
-      "date": "1895",
+      "date": "1895-01-01",
       "scandate": "20070523000000",
       "copyright-region": "US",
       "description": [
@@ -253,7 +253,10 @@
       "backup_location": "ia903603_8",
       "openlibrary_edition": "OL20593025M",
       "openlibrary_work": "OL13112768W",
-      "addeddate": "2009-06-15 00:27:30"
+      "addeddate": "2009-06-15 00:27:30",
+      "normalized_dates": [
+        "1895-01-01"
+      ]
     },
     "server": "ia601601.us.archive.org",
     "uniq": 266689427,

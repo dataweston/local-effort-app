@@ -373,7 +373,7 @@
       "subject": "Barbecue cookery",
       "description": "Includes index",
       "publisher": "Des Moines, Iowa : Meredith Corp.",
-      "date": "1985",
+      "date": "1985-01-01",
       "language": "eng",
       "isbn": [
         "9780696014673",
@@ -452,6 +452,9 @@
         "internetarchivebooks",
         "printdisabled",
         "inlibrary"
+      ],
+      "normalized_dates": [
+        "1985-01-01"
       ]
     },
     "server": "ia801606.us.archive.org",

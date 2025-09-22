@@ -388,7 +388,7 @@
       "contributor": "Internet Archive",
       "creator": "None",
       "creator-alt-script": "None",
-      "date": "1984",
+      "date": "1984-01-01",
       "description": [
         "96 pages : 28 cm",
         "Includes index"
@@ -447,6 +447,9 @@
         "internetarchivebooks",
         "printdisabled",
         "inlibrary"
+      ],
+      "normalized_dates": [
+        "1984-01-01"
       ]
     },
     "server": "ia601800.us.archive.org",

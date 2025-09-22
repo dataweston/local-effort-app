@@ -473,7 +473,7 @@
       "scanfee": "0;1.00;1.00",
       "invoice": "1652",
       "sponsordate": "20221031",
-      "date": "1978",
+      "date": "1978-01-01",
       "addeddate": "2023-03-12 01:33:52",
       "page_number_module_version": "1.0.5",
       "collection": [
@@ -482,7 +482,10 @@
         "inlibrary"
       ],
       "openlibrary_edition": "OL58529135M",
-      "openlibrary_work": "OL42958126W"
+      "openlibrary_work": "OL42958126W",
+      "normalized_dates": [
+        "1978-01-01"
+      ]
     },
     "reviews": [
       {

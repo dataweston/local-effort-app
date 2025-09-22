@@ -402,7 +402,7 @@
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
       "creator": "Lee, Sandra, 1966-",
-      "date": "2006",
+      "date": "2006-01-01",
       "description": [
         "142 p. : 26 cm",
         "Introduces a selection of super-simple, kid-friendly recipes for young chefs, featuring tasty dishes for breakfast, lunch, dinner, after-school snacks, drinks, and desserts, accompanied by lists of essential equipment and utensils for each recipe, tips on recipes that require an adult helper, and instruction in cooking techniques",
@@ -470,7 +470,10 @@
         "internetarchivebooks",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "2006-01-01"
+      ]
     },
     "server": "ia902307.us.archive.org",
     "simplelists": {

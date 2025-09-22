@@ -209,7 +209,10 @@
       "ppi": "600",
       "ocr": "ABBYY FineReader 9.0",
       "repub_state": "4",
-      "backup_location": "ia905300_32"
+      "backup_location": "ia905300_32",
+      "normalized_dates": [
+        "1980-07-31"
+      ]
     },
     "server": "ia804602.us.archive.org",
     "uniq": 909442714,

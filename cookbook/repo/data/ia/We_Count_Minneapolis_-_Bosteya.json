@@ -320,7 +320,10 @@
       "addeddate": "2020-02-02 18:33:25",
       "noarchivetorrent": "true",
       "curation": "[curator]jscott@archive.org[/curator][date]20200223180543[/date][state]un-dark[/state]",
-      "backup_location": "ia907103_26"
+      "backup_location": "ia907103_26",
+      "normalized_dates": [
+        "2020-01-30"
+      ]
     },
     "server": "ia802803.us.archive.org",
     "uniq": 1819414338,

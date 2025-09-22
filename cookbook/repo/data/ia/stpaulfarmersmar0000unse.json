@@ -467,7 +467,7 @@
       "camera": "USB PTP Class Camera",
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
-      "date": "1999",
+      "date": "1999-01-01",
       "description": [
         "366 p. : 23 cm",
         "Includes index"
@@ -532,7 +532,10 @@
         "inlibrary",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "1999-01-01"
+      ]
     },
     "server": "ia801607.us.archive.org",
     "uniq": 1839780999,

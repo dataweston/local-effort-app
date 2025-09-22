@@ -203,7 +203,7 @@
     "metadata": {
       "identifier": "ERIC_ED263301",
       "creator": "ERIC",
-      "date": "1983",
+      "date": "1983-01-01",
       "description": "In 1982, females constituted 41.1 percent of those students enrolled in postsecondary area vocational-technical institutions (AVTIs) in Minnesota; thus, the AVTI system has a lower percentage of female students than all other public postsecondary systems in the state. If vocational programs are defined as being either segregated or integrated on the basis of whether fewer or more than 80 percent of the students enrolled in them belong to one sex, then, in 1982, more than three-fourths of Minnesota's AVTI programs were segregated. The 3 years prior to 1981-1982 were not marked by very much change in enrollment patterns with respect to traditional, nontraditional, and segregated vocational education programs. Approximately two-thirds of female students were enrolled in health or  business programs, whereas more than three-fourths of male students were enrolled in technical or trade and industrial programs. Segregation also existed within program areas. Of the total budget for AVTI students, 35.8 percent was spent on female students and 64.2 percent was spent on male students. One-year followup data on graduates of postsecondary AVTI programs revealed significant differences between the occupations and earnings patterns of males and females. (This report contains 14 tables.) (MN)",
       "language": "english",
       "mediatype": "texts",
@@ -223,7 +223,10 @@
       "ppi": "600",
       "ocr": "ABBYY FineReader 9.0",
       "repub_state": "4",
-      "backup_location": "ia905908_34"
+      "backup_location": "ia905908_34",
+      "normalized_dates": [
+        "1983-01-01"
+      ]
     },
     "server": "ia800305.us.archive.org",
     "uniq": 1191749212,

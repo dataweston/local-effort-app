@@ -240,7 +240,7 @@
         "additional_collections"
       ],
       "creator": "Woolverton Printing & Publishing Co.",
-      "date": "1900",
+      "date": "1900-01-01",
       "description": "<i>Dainty Luncheons : How to Prepare Them</i>. Osage, Iowa: Woolverton Printing &amp; Publishing Co. ca.  1900.",
       "language": "eng",
       "licenseurl": "https://creativecommons.org/publicdomain/mark/1.0/",
@@ -266,6 +266,9 @@
       "collection_added": [
         "folkscanomy",
         "additional_collections"
+      ],
+      "normalized_dates": [
+        "1900-01-01"
       ]
     },
     "server": "ia801501.us.archive.org",

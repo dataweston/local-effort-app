@@ -181,7 +181,10 @@
       "publicdate": "2025-06-04 13:20:12",
       "addeddate": "2025-06-04 13:20:12",
       "curation": "[curator]jscott@archive.org[/curator][date]20250604140146[/date][state][/state][comment]Moved automatically by CHARM Script Setting.[/comment]",
-      "collection_added": "podcasts"
+      "collection_added": "podcasts",
+      "normalized_dates": [
+        "2016-09-15"
+      ]
     },
     "server": "ia600305.us.archive.org",
     "uniq": 1394330141,

@@ -290,7 +290,10 @@
       "backup_location": "ia906400_1",
       "language": "eng",
       "access-restricted-item": "true",
-      "bad_audio": "false"
+      "bad_audio": "false",
+      "normalized_dates": [
+        "2017-03-15"
+      ]
     },
     "server": "ia601409.us.archive.org",
     "speech_vs_music_asr": [

@@ -435,7 +435,7 @@
       "access-restricted-item": "true",
       "title": "One-dish meals",
       "publisher": "Des Moines, Iowa : Better Homes and Gardens Books",
-      "date": "2000",
+      "date": "2000-01-01",
       "language": "eng",
       "isbn": "1929930046",
       "lccn": "00702279",
@@ -496,6 +496,9 @@
         "internetarchivebooks",
         "inlibrary",
         "printdisabled"
+      ],
+      "normalized_dates": [
+        "2000-01-01"
       ]
     },
     "server": "ia800509.us.archive.org",

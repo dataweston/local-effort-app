@@ -236,7 +236,7 @@
         "Mode of access: Internet"
       ],
       "uploader": "tpb",
-      "date": "1898",
+      "date": "1898-01-01",
       "subject": [
         "Home",
         "Home economics",
@@ -254,7 +254,10 @@
       "backup_location": "ia903604_16",
       "openlibrary_edition": "OL24363686M",
       "openlibrary_work": "OL15378708W",
-      "addeddate": "2009-11-30 18:28:17"
+      "addeddate": "2009-11-30 18:28:17",
+      "normalized_dates": [
+        "1898-01-01"
+      ]
     },
     "server": "ia601301.us.archive.org",
     "uniq": 1858772100,

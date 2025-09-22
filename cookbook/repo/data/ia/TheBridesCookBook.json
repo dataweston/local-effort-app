@@ -167,7 +167,7 @@
         "americana"
       ],
       "creator": "Department of Household Arts of The Stout Institute",
-      "date": "1925",
+      "date": "1925-01-01",
       "description": "For all the receipts and other material published in this book full credit is given, except where here-after mentioned, to the Department of Household Arts of The Stout Institute.<div><img src=\"//web.archive.org/web/2im_/https://upload.wikimedia.org/wikipedia/commons/thumb/3/39/Cc-public_domain_mark_white.svg/150px-Cc-public_domain_mark_white.svg.png\" alt=\"150px-Cc-public_domain_mark_white.svg.png\" /><br /></div>",
       "language": "eng",
       "scanner": "Internet Archive HTML5 Uploader 1.5.2",
@@ -191,6 +191,9 @@
       "year": [
         "1925",
         "1894"
+      ],
+      "normalized_dates": [
+        "1925-01-01"
       ]
     },
     "server": "ia803400.us.archive.org",

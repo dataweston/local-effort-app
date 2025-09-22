@@ -141,7 +141,10 @@
       "uploader": "slaxemulator@gmail.com",
       "addeddate": "2014-08-31 11:16:18",
       "boxid": "OL100020401",
-      "backup_location": "ia905903_16"
+      "backup_location": "ia905903_16",
+      "normalized_dates": [
+        "2000-11-02"
+      ]
     },
     "server": "ia902902.us.archive.org",
     "uniq": 1938229592,

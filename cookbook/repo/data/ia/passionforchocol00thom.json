@@ -407,7 +407,7 @@
       ],
       "description": "Includes index",
       "publisher": "Des Moines, Iowa : Meredith Books",
-      "date": "2000",
+      "date": "2000-01-01",
       "language": "eng",
       "isbn": [
         "0696211742",
@@ -467,6 +467,9 @@
         "americana",
         "inlibrary",
         "printdisabled"
+      ],
+      "normalized_dates": [
+        "2000-01-01"
       ]
     },
     "server": "ia801302.us.archive.org",

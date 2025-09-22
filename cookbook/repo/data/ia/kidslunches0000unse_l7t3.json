@@ -456,7 +456,7 @@
       "camera": "USB PTP Class Camera",
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
-      "date": "1986",
+      "date": "1986-01-01",
       "description": [
         "80 p. : 28 cm",
         "\"Better homes and gardens books\"--T.p. verso",
@@ -522,6 +522,9 @@
         "internetarchivebooks",
         "inlibrary",
         "printdisabled"
+      ],
+      "normalized_dates": [
+        "1986-01-01"
       ]
     },
     "server": "ia800809.us.archive.org",

@@ -413,7 +413,7 @@
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
       "creator": "Hein, Peg",
-      "date": "1993",
+      "date": "1993-01-01",
       "description": "122 pages : 18 cm",
       "isbn": [
         "0961388129",
@@ -472,7 +472,10 @@
         "inlibrary",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "1993-01-01"
+      ]
     },
     "server": "ia903102.us.archive.org",
     "uniq": 1199393041,

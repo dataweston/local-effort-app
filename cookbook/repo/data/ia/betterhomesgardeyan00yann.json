@@ -392,7 +392,7 @@
       "subject": "Toaster oven cookery",
       "description": "Includes index",
       "publisher": "Des Moines, Iowa : Meredith Corp.",
-      "date": "1982",
+      "date": "1982-01-01",
       "language": "eng",
       "isbn": "0696007851",
       "page-progression": "lr",
@@ -466,6 +466,9 @@
         "americana",
         "inlibrary",
         "printdisabled"
+      ],
+      "normalized_dates": [
+        "1982-01-01"
       ]
     },
     "server": "ia600208.us.archive.org",

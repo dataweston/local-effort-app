@@ -390,7 +390,7 @@
       "contributor": "Internet Archive",
       "creator": "None",
       "creator-alt-script": "None",
-      "date": "1994",
+      "date": "1994-01-01",
       "description": [
         "144 pages ; 22 cm",
         "At head of title: Better homes and gardens",
@@ -452,7 +452,10 @@
         "inlibrary",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "1994-01-01"
+      ]
     },
     "server": "ia601506.us.archive.org",
     "simplelists": {

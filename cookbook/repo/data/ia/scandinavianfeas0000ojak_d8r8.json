@@ -410,7 +410,7 @@
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
       "creator": "Ojakangas, Beatrice A",
-      "date": "2001",
+      "date": "2001-01-01",
       "description": [
         "p. cm",
         "Includes index"
@@ -471,7 +471,10 @@
         "internetarchivebooks",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "2001-01-01"
+      ]
     },
     "server": "ia804509.us.archive.org",
     "simplelists": {

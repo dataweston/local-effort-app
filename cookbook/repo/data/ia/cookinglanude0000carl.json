@@ -447,7 +447,7 @@
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
       "creator": "Carlson, Bruce, 1934-",
-      "date": "1995",
+      "date": "1995-01-01",
       "description": "152 p. : 22 cm",
       "isbn": "1571660240",
       "language": "eng",
@@ -506,7 +506,10 @@
         "inlibrary",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "1995-01-01"
+      ]
     },
     "server": "ia601604.us.archive.org",
     "uniq": 1414182465,

@@ -211,7 +211,10 @@
       "publicdate": "2022-10-17 19:28:12",
       "addeddate": "2022-10-17 19:28:12",
       "curation": "[curator]validator@archive.org[/curator][date]20221017192901[/date][comment]checked for malware[/comment]",
-      "access-restricted-item": "true"
+      "access-restricted-item": "true",
+      "normalized_dates": [
+        "2019-09-05"
+      ]
     },
     "server": "ia601404.us.archive.org",
     "uniq": 234690356,

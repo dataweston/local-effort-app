@@ -425,7 +425,7 @@
         "The author of the classic \"Diet for a Small Planet\" and her daughter travel the world, discovering practical visionaries who are making a difference in world hunger, sometimes one village at a time"
       ],
       "publisher": "New York : Jeremy P. Tarcher/Putnam",
-      "date": "2002",
+      "date": "2002-01-01",
       "language": "eng",
       "isbn": [
         "1585421499",
@@ -511,7 +511,10 @@
         "printdisabled",
         "inlibrary"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "2002-01-01"
+      ]
     },
     "server": "ia800907.us.archive.org",
     "simplelists": {

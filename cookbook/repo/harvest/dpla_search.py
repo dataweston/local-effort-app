@@ -10,6 +10,7 @@ import argparse
 import json
 import logging
 import os
+import re
 from pathlib import Path
 from datetime import datetime
 from typing import Any, Dict, Iterable, List, Optional
@@ -197,16 +198,26 @@ def _coerce_iso_date(value: Any) -> Optional[str]:
         return None
     value = value.replace('\u2013', '-').replace('\u2014', '-')
     value = value.strip(" .;?,")
-    try:
-        datetime.strptime(value, '%Y-%m-%d')
-        return value
-    except ValueError:
-        pass
-    try:
-        datetime.strptime(value, '%Y-%m')
-        return f'{value}-01'
-    except ValueError:
-        pass
+
+    known_formats = [
+        '%Y-%m-%d',
+        '%Y/%m/%d',
+        '%d-%m-%Y',
+        '%d/%m/%Y',
+        '%m/%d/%Y',
+        '%m-%d-%Y',
+        '%d-%m-%y',
+        '%d/%m/%y',
+        '%m/%d/%y',
+        '%m-%d-%y',
+    ]
+    for fmt in known_formats:
+        try:
+            dt = datetime.strptime(value, fmt)
+            return dt.strftime('%Y-%m-%d')
+        except ValueError:
+            continue
+
     if value.isdigit() and len(value) == 4:
         return f'{value}-01-01'
     lowered = value.lower()
@@ -370,3 +381,4 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+

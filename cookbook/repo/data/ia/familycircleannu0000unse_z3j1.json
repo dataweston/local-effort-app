@@ -399,7 +399,7 @@
       "camera": "Sony Alpha-A6300 (Control)",
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
-      "date": "2012",
+      "date": "2012-01-01",
       "description": [
         "336 pages : 28 cm",
         "\"Inside you'll find: hundreds of recipes for weeknight dinners and special occasions; at-a-glance preparation and cook times; healthful and kid-friendly dinner and snack options; nutrition information for smart meal planning; a color photograph with every recipe.\"--Back cover",
@@ -462,7 +462,10 @@
         "inlibrary",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "2012-01-01"
+      ]
     },
     "server": "ia904509.us.archive.org",
     "uniq": 337170909,

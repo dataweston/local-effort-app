@@ -402,7 +402,7 @@
       "contributor": "Internet Archive",
       "creator": "None",
       "creator-alt-script": "None",
-      "date": "2001",
+      "date": "2001-01-01",
       "description": [
         "255 pages : 27 cm",
         "Includes index"
@@ -460,7 +460,10 @@
         "inlibrary",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "2001-01-01"
+      ]
     },
     "server": "ia801307.us.archive.org",
     "uniq": 266334873,

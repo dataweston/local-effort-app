@@ -416,7 +416,7 @@
       "title": "Our best recipes",
       "creator": "Lois White",
       "publisher": "Des Moines, Iowa : Meredith Books",
-      "date": "2007",
+      "date": "2007-01-01",
       "sponsor": "Internet Archive",
       "contributor": "Internet Archive",
       "scanningcenter": "shenzhen",
@@ -483,7 +483,10 @@
         "inlibrary",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "2007-01-01"
+      ]
     },
     "server": "ia800602.us.archive.org",
     "uniq": 206675433,

@@ -233,7 +233,7 @@
         "opensource",
         "community"
       ],
-      "date": "1952",
+      "date": "1952-01-01",
       "description": "100 Prize Winning Recipes from Pillsbury's 3rd Grand National $100,000 Recipe and Baking Contest. Pillsbury Mills, Inc. Minneapolis 2, Minnesota. 1952.",
       "language": "eng",
       "scanner": "Internet Archive HTML5 Uploader 1.6.4",
@@ -256,7 +256,10 @@
       "ocr_converted": "abbyy-to-hocr 1.1.37",
       "page_number_confidence": "100",
       "page_number_module_version": "1.0.5",
-      "pdf_module_version": "0.0.23"
+      "pdf_module_version": "0.0.23",
+      "normalized_dates": [
+        "1952-01-01"
+      ]
     },
     "server": "ia600706.us.archive.org",
     "uniq": 1655803372,

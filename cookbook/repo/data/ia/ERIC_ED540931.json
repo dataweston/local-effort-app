@@ -183,7 +183,7 @@
     "metadata": {
       "identifier": "ERIC_ED540931",
       "creator": "ERIC",
-      "date": "1918",
+      "date": "1918-01-01",
       "description": "This list is based on the Minnesota school library list, Books for High Schools, 1913-14. The number of titles has been materially increased to include the suggestions of many high-school teachers, specialists in the Bureau of Education, high-school librarians, public librarians, and commission workers. The effort has been to provide a thoroughly standard list of tested books for a foundation library, to include as much fresh material as possible, and to suggest books of interest and value to pupils of the high-school age. The following topic areas are covered: (1) Library economy; (2) Psychology; (3) Conduct of life, ethics; (4) Mythology; (5) Politics and government; (6) Economics; (7) Education; (8) Commerce, commercial geography; (9) Folklore, legends; (10) Science (general), nature study; (11) Vocational guidance; (12) Physiology, hygiene, and physical training; (13) Engineering; (14) Agriculture (general); (15) Home economics; (16) Business, communications, transportation; (17) Manual training and shopwork; (18) Fine arts (general), photography; (19) Literature (general); (20) Fiction; (21) Travel; (22) Biography; (23) Ancient history; (24) Modern history (general European); (25) Indian life and history; and (26) American history. A directory of publishers and an index are included. [Best copy available has been provided.]",
       "language": "english",
       "mediatype": "texts",
@@ -203,7 +203,10 @@
       "ppi": "600",
       "ocr": "ABBYY FineReader 11.0",
       "repub_state": "4",
-      "backup_location": "ia906102_35"
+      "backup_location": "ia906102_35",
+      "normalized_dates": [
+        "1918-01-01"
+      ]
     },
     "server": "ia801306.us.archive.org",
     "uniq": 1954119520,

@@ -398,7 +398,7 @@
         "Includes index"
       ],
       "publisher": "Des Moines, Iowa : Better Homes and Gardens Books",
-      "date": "1993",
+      "date": "1993-01-01",
       "language": "eng",
       "isbn": [
         "0696019965",
@@ -471,7 +471,10 @@
       ],
       "page_number_module_version": "1.0.5",
       "pdf_degraded": "invalid-jp2-headers",
-      "pdf_module_version": "0.0.25"
+      "pdf_module_version": "0.0.25",
+      "normalized_dates": [
+        "1993-01-01"
+      ]
     },
     "server": "ia601508.us.archive.org",
     "simplelists": {

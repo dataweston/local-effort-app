@@ -410,7 +410,7 @@
         "Includes index"
       ],
       "publisher": "[Des Moines, Iowa : Better Homes and Gardens Books] : distributed by Meredith Corporation",
-      "date": "1994",
+      "date": "1994-01-01",
       "language": "eng",
       "isbn": [
         "0696025655",
@@ -479,7 +479,10 @@
         "printdisabled"
       ],
       "page_number_confidence": "9",
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "1994-01-01"
+      ]
     },
     "server": "ia600509.us.archive.org",
     "uniq": 430405230,

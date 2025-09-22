@@ -446,7 +446,10 @@
       "addeddate": "2020-01-18 21:30:59",
       "noarchivetorrent": "true",
       "curation": "[curator]jscott@archive.org[/curator][date]20200223180534[/date][state]un-dark[/state]",
-      "backup_location": "ia907102_11"
+      "backup_location": "ia907102_11",
+      "normalized_dates": [
+        "2020-01-16"
+      ]
     },
     "server": "ia802903.us.archive.org",
     "uniq": 1390459754,

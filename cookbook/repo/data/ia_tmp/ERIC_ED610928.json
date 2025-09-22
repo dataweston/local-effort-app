@@ -231,7 +231,7 @@
         "additional_collections"
       ],
       "creator": "ERIC",
-      "date": "2017",
+      "date": "2017-01-01",
       "description": "The purpose of this paper is to showcase new research that seeks to provide guidance on the heterogeneity of treatment effects by utilizing the variance of demographic differences in state assessments. This study is focused on a simple randomized block design where students are nested within schools, and within each school students are randomized into treatment or control conditions. The data utilized come from several states: Arizona, Arkansas, Colorado, Illinois, Kentucky, Louisiana, Massachusetts, Minnesota, North Carolina, West Virginia, and Wisconsin. From these states, the authors examined the difference between demographic groups in grades 3-8 in both math and reading scores. While the online resource will include all these grades and subjects, the authors present tables for 4th and 8th grade only for brevity. [SREE documents are structured abstracts of SREE conference symposium, panel, and paper or poster submissions.]",
       "language": "english",
       "mediatype": "texts",
@@ -251,7 +251,10 @@
       "ocr_detected_script": "Latin",
       "ocr_detected_script_conf": "1.0000",
       "ocr_detected_lang": "en",
-      "ocr_detected_lang_conf": "1.0000"
+      "ocr_detected_lang_conf": "1.0000",
+      "normalized_dates": [
+        "2017-01-01"
+      ]
     },
     "server": "ia800409.us.archive.org",
     "uniq": 977477750,

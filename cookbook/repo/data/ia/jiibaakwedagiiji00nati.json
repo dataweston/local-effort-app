@@ -386,7 +386,7 @@
         "Includes index"
       ],
       "publisher": "Kearney, NE : Morris Press Cookbooks",
-      "date": "2003",
+      "date": "2003-01-01",
       "language": [
         "eng",
         "oji"
@@ -443,7 +443,10 @@
       ],
       "page_number_module_version": "1.0.5",
       "pdf_degraded": "invalid-jp2-headers",
-      "pdf_module_version": "0.0.25"
+      "pdf_module_version": "0.0.25",
+      "normalized_dates": [
+        "2003-01-01"
+      ]
     },
     "server": "ia801603.us.archive.org",
     "uniq": 164837560,

@@ -432,7 +432,7 @@
       "camera": "Sony Alpha-A6300 (Control)",
       "contributor": "Internet Archive",
       "creator": "Algren, Nelson, 1909-1981",
-      "date": "1992",
+      "date": "1992-01-01",
       "description": "xix, 123 p. : 24 cm",
       "isbn": "0877453616",
       "language": "eng",
@@ -491,6 +491,9 @@
         "internetarchivebooks",
         "inlibrary",
         "printdisabled"
+      ],
+      "normalized_dates": [
+        "1992-01-01"
       ]
     },
     "server": "ia800506.us.archive.org",

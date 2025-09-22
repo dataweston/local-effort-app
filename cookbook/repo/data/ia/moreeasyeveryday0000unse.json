@@ -412,7 +412,7 @@
       "camera": "USB PTP Class Camera",
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
-      "date": "2003",
+      "date": "2003-01-01",
       "description": [
         "288 pages : 25 cm",
         "When Better Homes and Gardens Easy Everyday Cooking debuted, readers responded, \"Encore! Encore!\" The editors headed for the test kitchen to develop the follow-up, More Easy Everyday Cooking. Inspired by more than 200 recipes and 144 colorful photographs, you will banish boring meals from your kitchen forever. Even Horseradish-Dill Beef Stroganoff, Swiss, Chicken Bundles, or Sweet Pepper Salsa Fish will be a cinch to make on the busiest weeknight. This volume promises a variety of flavors as well as types of recipes, ranging from appetizers, snacks, salads, soups, and stews to beef, pork, fish, seafood, and meatless main dishes. Sweet finales such as Fruit Chip Cookies, Deep Chocolate Cake with Malt Topping, and Peach and Almond Crispwill prove irresistible and earn rave reviews from everyone in the family",
@@ -472,6 +472,9 @@
         "internetarchivebooks",
         "inlibrary",
         "printdisabled"
+      ],
+      "normalized_dates": [
+        "2003-01-01"
       ]
     },
     "server": "ia803105.us.archive.org",

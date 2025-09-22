@@ -389,7 +389,7 @@
       "contributor": "Internet Archive",
       "creator": "None",
       "creator-alt-script": "None",
-      "date": "2004",
+      "date": "2004-01-01",
       "description": [
         "336 pages : 28 cm",
         "Busy lives and breakneck speeds mean sometimes the best intentions, such a clipping and cooking a delicious-looking recipe from our magazine, go uncompleted. If you missed trying a receipe or two during the past year, here it is and a whole lot more too!",
@@ -451,6 +451,9 @@
         "internetarchivebooks",
         "printdisabled",
         "inlibrary"
+      ],
+      "normalized_dates": [
+        "2004-01-01"
       ]
     },
     "server": "ia600507.us.archive.org",

@@ -254,7 +254,10 @@
       "ocr_detected_script_conf": "0.9869",
       "ocr_detected_lang": "en",
       "ocr_detected_lang_conf": "1.0000",
-      "page_number_confidence": "95.58"
+      "page_number_confidence": "95.58",
+      "normalized_dates": [
+        "1974-01-01"
+      ]
     },
     "server": "ia902302.us.archive.org",
     "uniq": 781183114,

@@ -397,7 +397,7 @@
       "camera": "Sony Alpha-A6300 (Control)",
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
-      "date": "2002",
+      "date": "2002-01-01",
       "description": [
         "336 pages : 28 cm",
         "Includes index",
@@ -464,6 +464,9 @@
         "internetarchivebooks",
         "printdisabled",
         "inlibrary"
+      ],
+      "normalized_dates": [
+        "2002-01-01"
       ]
     },
     "server": "ia801808.us.archive.org",

@@ -274,6 +274,9 @@
       "collection_added": [
         "usgovernmentmirrors",
         "government-documents"
+      ],
+      "normalized_dates": [
+        "1965-01-01"
       ]
     },
     "page_numbers": {

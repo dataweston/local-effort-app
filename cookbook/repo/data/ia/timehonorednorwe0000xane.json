@@ -386,7 +386,7 @@
       "collection_set": "china",
       "contributor": "Internet Archive",
       "creator": "Xan, Erna Oleson, 1898-;Marstrander, Sigrid;Zug, John (John D.)",
-      "date": "1990",
+      "date": "1990-01-01",
       "isbn": [
         "0941016765",
         "9780941016766"
@@ -452,7 +452,10 @@
         "inlibrary",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "1990-01-01"
+      ]
     },
     "server": "ia802800.us.archive.org",
     "simplelists": {

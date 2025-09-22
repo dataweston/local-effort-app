@@ -239,7 +239,10 @@
       "addeddate": "2018-07-30 15:15:58",
       "noarchivetorrent": "true",
       "curation": "[curator]jscott@archive.org[/curator][date]20200223180553[/date][state]un-dark[/state]",
-      "backup_location": "ia906800_1"
+      "backup_location": "ia906800_1",
+      "normalized_dates": [
+        "2018-06-27"
+      ]
     },
     "server": "ia802804.us.archive.org",
     "uniq": 1499823380,

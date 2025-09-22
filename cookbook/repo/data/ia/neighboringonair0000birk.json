@@ -371,7 +371,7 @@
       "collection_set": "china",
       "contributor": "Internet Archive",
       "creator": "Birkby, Evelyn",
-      "date": "1991",
+      "date": "1991-01-01",
       "isbn": [
         "1587290154",
         "9781587290152"
@@ -454,7 +454,10 @@
       "ocr_detected_lang": "en",
       "ocr_detected_lang_conf": "1.0000",
       "pdf_degraded": "invalid-jp2-headers",
-      "pdf_module_version": "0.0.25"
+      "pdf_module_version": "0.0.25",
+      "normalized_dates": [
+        "1991-01-01"
+      ]
     },
     "server": "ia802805.us.archive.org",
     "uniq": 2089270235,

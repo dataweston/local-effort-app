@@ -185,7 +185,7 @@
     "metadata": {
       "identifier": "ERIC_ED109410",
       "creator": "ERIC",
-      "date": "1974",
+      "date": "1974-01-01",
       "description": "The study of task identification in clothing, apparel, and textile services presents statistical correlations of task frequencies obtained by questionnaire in six task clusters for the occupations of fabric specialist, tailor, alternation specialist, dry cleaner, launderer, and clothing apparel and textile service occupations. One-way matrices present, for each occupation, task clusters and tasks within each cluster arranged vertically in descending order of overall mean frequency of performance. A two-way matrix correlates task information for all six occupations, with occupations arranged horizontally and task clusters and individual tasks within each cluster arranged vertically in descending order of commonality of performance as indicated by overall mean frequency scores. A  four-page bibliography is included together with eight appendixes which provide letters of transmittal, the task checklist questionnaire for each occupation, tables on schooling and training levels for each occupation and on the rank, mean range, standard deviation, and variance for each cluster in each occupation, descriptors used in an ERIC search, job opportunities in clothing apparel and textile services, an Iowa congressional map, a list of resource people, and additional task lists. (JR)",
       "language": "english",
       "mediatype": "texts",
@@ -205,7 +205,10 @@
       "ppi": "600",
       "ocr": "ABBYY FineReader 9.0",
       "repub_state": "4",
-      "backup_location": "ia905306_2"
+      "backup_location": "ia905306_2",
+      "normalized_dates": [
+        "1974-01-01"
+      ]
     },
     "server": "ia801406.us.archive.org",
     "uniq": 1892020486,

@@ -282,7 +282,10 @@
       "next": "BBC_Radio_Derby_20191008_160000",
       "description": "<p><img src=\"https://web.archive.org/web/20191008151417id_/https://ichef.bbci.co.uk/images/ic/160x90/p06ld07b.jpg\" align=\"right\" height=\"90\" alt=\"p06ld07b.jpg\" /><b>  03:00:00PM-06:00:00PM BST — <font size=\"+1\">Steve Jordan</font><br />21/10/2019</b><br />Join Steve for showbiz and TV conversation, as well as a round-up of the day's news.<br /></p>",
       "bad_audio": "false",
-      "backup_location": "ia907003_8"
+      "backup_location": "ia907003_8",
+      "normalized_dates": [
+        "2019-10-08"
+      ]
     },
     "programming": {
       "software_version": "20191015.01",

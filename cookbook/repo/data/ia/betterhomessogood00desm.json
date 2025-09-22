@@ -385,7 +385,7 @@
       "subject": "Cookery",
       "description": "Includes index",
       "publisher": "[Des Moines, Iowa] : Meredith Press",
-      "date": "1963",
+      "date": "1963-01-01",
       "language": "eng",
       "page-progression": "lr",
       "boxid": "IA104119",
@@ -438,7 +438,10 @@
         "printdisabled",
         "inlibrary"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "1963-01-01"
+      ]
     },
     "server": "ia801302.us.archive.org",
     "uniq": 1287883260,

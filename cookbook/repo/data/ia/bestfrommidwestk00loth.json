@@ -371,7 +371,7 @@
       ],
       "subject": "Cookery, American",
       "publisher": "New York, M.S. Mill",
-      "date": "1946",
+      "date": "1946-01-01",
       "language": "eng",
       "page-progression": "lr",
       "boxid": "IA111615",
@@ -426,6 +426,9 @@
         "americana",
         "inlibrary",
         "printdisabled"
+      ],
+      "normalized_dates": [
+        "1946-01-01"
       ]
     },
     "server": "ia801606.us.archive.org",

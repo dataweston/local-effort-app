@@ -405,7 +405,7 @@
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
       "creator": "Erdrich, Heid E. (Heid Ellen)",
-      "date": "2013",
+      "date": "2013-01-01",
       "description": [
         "264 pages : 23 cm",
         "\" Local foods have garnered much attention in recent years, but the concept is hardly new: indigenous peoples have always made the most of nature's gifts. Their menus were truly the \"original local,\" celebrated here in sixty home-tested recipes paired with profiles of tribal activists, food researchers, families, and chefs. A chapter on wild rice makes clear the crucial role manoomin plays in cultural and economic survival. A look at freshwater fish is concerned with shifts in climate and threats to water purity as it reveals the deep relationship between Ojibwe people and indigenous fish species such as Ginoozhii, the Muskie, Ogaa, the Walleye, and Adikamig, Whitefish. Health concerns have encouraged Ojibwe, Dakota, and Lakota cooks to return to, and revise, recipes for bison, venison, and wild game. Sections on vegetables and beans, herbs and tea, and maple and berries offer insight from a broad representation of regional tribes, including Ho-Chunk, Menominee, Potawatomi, and Mandan gardeners and harvesters. The innovative recipes collected here--from Ramp Kimchi to Three Sisters Salsa, from Manoomin Lasagna to Venison Mole Chili--will inspire home cooks not only to make better use of the foods all around them but also to honor the storied heritage they represent. Heid E. Erdrich, author of five books of poetry and coeditor of Sister Nations: Native American Women Writers on Community, teaches writing, performs her work broadly, and gives lectures on American Indian art, language, and literature\"--",
@@ -479,7 +479,10 @@
       ],
       "page_number_module_version": "1.0.5",
       "curation": "[date]20250212000736[/date][comment]inlibrary removal 3[/comment]",
-      "source": "removed"
+      "source": "removed",
+      "normalized_dates": [
+        "2013-01-01"
+      ]
     },
     "server": "ia802301.us.archive.org",
     "simplelists": {

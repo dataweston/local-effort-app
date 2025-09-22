@@ -168,7 +168,7 @@
         "community"
       ],
       "creator": "Cindy Koshen",
-      "date": "1999",
+      "date": "1999-01-01",
       "description": "Milton House Wisconsin 1999 Household Hints Recipes and Notions Pamphlet",
       "language": "eng",
       "scanner": "Internet Archive HTML5 Uploader 1.6.4",
@@ -190,7 +190,10 @@
       "ppi": "600",
       "ocr": "ABBYY FineReader 11.0 (Extended OCR)",
       "coverleaf": "0",
-      "backup_location": "ia906905_12"
+      "backup_location": "ia906905_12",
+      "normalized_dates": [
+        "1999-01-01"
+      ]
     },
     "server": "ia801305.us.archive.org",
     "uniq": 2124942020,

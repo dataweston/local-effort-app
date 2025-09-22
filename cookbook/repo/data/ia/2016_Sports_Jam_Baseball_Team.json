@@ -338,7 +338,10 @@
       "publicdate": "2016-08-09 01:56:14",
       "uploader": "jhauser@pobox.com",
       "addeddate": "2016-08-09 01:56:14",
-      "backup_location": "ia906203_30"
+      "backup_location": "ia906203_30",
+      "normalized_dates": [
+        "2016-06-21"
+      ]
     },
     "server": "ia800504.us.archive.org",
     "uniq": 235363429,

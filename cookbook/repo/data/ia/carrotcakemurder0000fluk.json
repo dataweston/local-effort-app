@@ -401,7 +401,7 @@
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
       "creator": "Fluke, Joanne, 1943-",
-      "date": "2008",
+      "date": "2008-01-01",
       "description": "501 p. ; 23 cm",
       "isbn": [
         "9781410404855",
@@ -467,7 +467,10 @@
         "printdisabled",
         "inlibrary"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "2008-01-01"
+      ]
     },
     "server": "ia801706.us.archive.org",
     "simplelists": {

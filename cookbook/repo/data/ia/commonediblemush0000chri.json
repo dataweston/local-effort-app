@@ -428,7 +428,7 @@
       "collection_set": "trent",
       "contributor": "Internet Archive",
       "creator": "Christensen, Clyde Martin, 1905-",
-      "date": "1943",
+      "date": "1943-01-01",
       "description": [
         "x, 124 p., [4] leaves of plates : 22 cm",
         "Includes index",
@@ -488,6 +488,9 @@
         "internetarchivebooks",
         "inlibrary",
         "printdisabled"
+      ],
+      "normalized_dates": [
+        "1943-01-01"
       ]
     },
     "server": "ia601806.us.archive.org",

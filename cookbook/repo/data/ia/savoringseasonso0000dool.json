@@ -416,7 +416,7 @@
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
       "creator": "Dooley, Beth",
-      "date": "2004",
+      "date": "2004-01-01",
       "description": [
         "xvi, 391 p. : 25 cm",
         "Originally published: New York : Knopf, 1994",
@@ -485,7 +485,10 @@
         "internetarchivebooks",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "2004-01-01"
+      ]
     },
     "server": "ia904508.us.archive.org",
     "simplelists": {

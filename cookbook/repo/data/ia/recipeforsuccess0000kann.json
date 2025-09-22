@@ -414,7 +414,7 @@
       "contributor": "Internet Archive",
       "creator": "Kann, Bob",
       "creator-alt-script": "None",
-      "date": "2007",
+      "date": "2007-01-01",
       "description": [
         "1 online resource (xiv, 127 pages) :",
         "Profiles the life and success of Lizzie Kander, who, in 1901, created a cookbook to help young Jewish immigrant girls in Milwaukee learn to cook American food, and her influence in establishing a community center for immigrants to adjust to living in America",
@@ -490,7 +490,10 @@
         "inlibrary",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "2007-01-01"
+      ]
     },
     "server": "ia801701.us.archive.org",
     "simplelists": {

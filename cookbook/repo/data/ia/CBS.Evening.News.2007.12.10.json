@@ -377,7 +377,10 @@
       "publicdate": "2014-07-04 09:11:05",
       "uploader": "slaxemulator@gmail.com",
       "addeddate": "2014-07-04 09:11:05",
-      "backup_location": "ia905900_0"
+      "backup_location": "ia905900_0",
+      "normalized_dates": [
+        "2007-12-10"
+      ]
     },
     "server": "ia601406.us.archive.org",
     "uniq": 781351898,

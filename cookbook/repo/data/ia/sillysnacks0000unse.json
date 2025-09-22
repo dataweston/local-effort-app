@@ -397,7 +397,7 @@
       "contributor": "Internet Archive",
       "creator": "None",
       "creator-alt-script": "None",
-      "date": "1998",
+      "date": "1998-01-01",
       "description": [
         "112 pages : 26 cm",
         "With fifty-two fun, yummy snacks, this kid-friendly cookbook is divided into chapters with such themes as magic, outer space, and the wild west. Every recipe has been kid tasted, tested and approved. Fifty full-color photos",
@@ -470,7 +470,10 @@
         "printdisabled"
       ],
       "page_number_confidence": "16",
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "1998-01-01"
+      ]
     },
     "server": "ia902307.us.archive.org",
     "simplelists": {

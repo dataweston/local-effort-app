@@ -456,7 +456,7 @@
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
       "creator": "Cooney, Jeanne",
-      "date": "2014",
+      "date": "2014-01-01",
       "description": [
         "268 pages ; 23 cm",
         "Reporter Emerald Malloy returns to Minnesota's Red River Valley to gather more recipes for an encore feature the Minneapolis newspaper plans to run on rural cooking. Her plans are interrupted by the murder of a farmhand. When someone close to Margie is arrested for the murder, Emerald must investigate to discover the real killer.\"--Page 4 of cover"
@@ -527,7 +527,10 @@
         "inlibrary",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "2014-01-01"
+      ]
     },
     "server": "ia801503.us.archive.org",
     "uniq": 1761869779,

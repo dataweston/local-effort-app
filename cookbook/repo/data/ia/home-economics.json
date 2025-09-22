@@ -240,7 +240,7 @@
         "community"
       ],
       "creator": "R. K. Bliss",
-      "date": "1917",
+      "date": "1917-01-01",
       "description": "<div>Iowa State College of Agriculture and Mechanic Arts</div><div>Agricultural Extension Department</div><div>Home Economics</div><div>Short Course Class Notes, No. 21 (Revised, 1917-1918)</div><div>R. K. Bliss, Director, Ames, Iowa.<br /></div>",
       "language": "eng",
       "licenseurl": "http://creativecommons.org/publicdomain/mark/1.0/",
@@ -263,7 +263,10 @@
       "ocr_detected_script_conf": "1.0000",
       "ocr_detected_lang": "en",
       "ocr_detected_lang_conf": "1.0000",
-      "pdf_module_version": "0.0.18"
+      "pdf_module_version": "0.0.18",
+      "normalized_dates": [
+        "1917-01-01"
+      ]
     },
     "server": "ia801506.us.archive.org",
     "uniq": 1785381499,

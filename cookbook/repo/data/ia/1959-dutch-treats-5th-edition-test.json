@@ -229,7 +229,7 @@
       "mediatype": "texts",
       "collection": "opensource",
       "creator": "Women's Auxiliary of Central College",
-      "date": "1959",
+      "date": "1959-01-01",
       "description": "Originally published in 1959 as a fundraiser for the Women's Auxiliary of Central College in Pella, Iowa. What follows are recipes contributed by the local community that reflect that tastes and preferences of the time. This is the fifth edition of this cook book.",
       "language": "eng",
       "scanner": "Internet Archive HTML5 Uploader 1.7.0",
@@ -254,7 +254,10 @@
       "ocr_detected_lang": "en",
       "ocr_detected_lang_conf": "1.0000",
       "page_number_confidence": "95",
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "1959-01-01"
+      ]
     },
     "server": "ia800407.us.archive.org",
     "uniq": 978971125,

@@ -2541,6 +2541,9 @@
       "collection": [
         "opensource_movies",
         "community"
+      ],
+      "normalized_dates": [
+        "2015-10-17"
       ]
     },
     "reviews": [],

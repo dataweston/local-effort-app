@@ -411,7 +411,7 @@
       "camera": "USB PTP Class Camera",
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
-      "date": "2014",
+      "date": "2014-01-01",
       "description": [
         "336 pages : 28 cm",
         "An invitation with more than 250 recipes, this cookbook promises intriguing flavors and fresh ingredients--for casual gatherings, holiday celebrations, and busy weeknights. -- page 4 of the cover",
@@ -470,6 +470,9 @@
         "internetarchivebooks",
         "printdisabled",
         "inlibrary"
+      ],
+      "normalized_dates": [
+        "2014-01-01"
       ]
     },
     "server": "ia801905.us.archive.org",

@@ -421,7 +421,7 @@
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
       "creator": "Seaton, Maureen, 1947-",
-      "date": "1996",
+      "date": "1996-01-01",
       "description": "76 p. ; 21 cm",
       "isbn": "0877455414",
       "language": "eng",
@@ -478,7 +478,10 @@
         "inlibrary",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "1996-01-01"
+      ]
     },
     "server": "ia802804.us.archive.org",
     "simplelists": {

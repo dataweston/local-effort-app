@@ -409,7 +409,7 @@
       "contributor": "Internet Archive",
       "creator": "Kingsley, Lisa",
       "creator-alt-script": "None",
-      "date": "2003",
+      "date": "2003-01-01",
       "description": [
         "288 pages : 29 cm",
         "Focuses on seven of the most popular ethnic cuisines in America. Includes easy directions and step-by-step photos to help you learn key techniques for each style of cooking",
@@ -477,6 +477,9 @@
         "internetarchivebooks",
         "printdisabled",
         "inlibrary"
+      ],
+      "normalized_dates": [
+        "2003-01-01"
       ]
     },
     "server": "ia600300.us.archive.org",

@@ -230,7 +230,10 @@
       "publicdate": "2019-01-01 12:33:57",
       "access-restricted-item": "true",
       "backup_location": "ia906806_1",
-      "bad_audio": "false"
+      "bad_audio": "false",
+      "normalized_dates": [
+        "2019-01-01"
+      ]
     },
     "server": "ia600605.us.archive.org",
     "speech_vs_music_asr": [

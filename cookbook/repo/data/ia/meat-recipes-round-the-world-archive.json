@@ -523,7 +523,7 @@
         "additional_collections"
       ],
       "creator": "National Live Stock and Meat Board Home Economics Department",
-      "date": "1955",
+      "date": "1955-01-01",
       "description": "Meat Recipes 'Round-the-World<div>Recipes from here and there,</div><div>Recipes from everywhere,</div><div>Some are old and some are new,</div><div>Gathered in this book for you.</div><div>Compliments of Piggly Wiggly</div><div>Your Friendly Store</div><div>LaCrosse and Richland Center<br /><br />This is an advertising cookbook from a grocery store in Wisconsin.  Published by National Live Stock and Meat Board Home Economics Department, 407 S Dearborn, Chicago 5, Ill.</div>",
       "language": "eng",
       "scanner": "Internet Archive HTML5 Uploader 1.7.0",
@@ -556,6 +556,9 @@
       "collection_added": [
         "folkscanomy",
         "additional_collections"
+      ],
+      "normalized_dates": [
+        "1955-01-01"
       ]
     },
     "server": "ia800307.us.archive.org",

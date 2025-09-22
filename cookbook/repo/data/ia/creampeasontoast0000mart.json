@@ -425,7 +425,7 @@
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
       "creator": "Martin, Janet Letnes",
-      "date": "1994",
+      "date": "1994-01-01",
       "description": "173 p. : 21 cm",
       "isbn": "0961343796",
       "language": "eng",
@@ -480,7 +480,10 @@
         "inlibrary",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "1994-01-01"
+      ]
     },
     "server": "ia903104.us.archive.org",
     "uniq": 529701172,

@@ -435,7 +435,7 @@
         "When Hannah Swensen hears that the Cinnamon Roll Six jazz band will be playing at a festival in Lake Eden, Minnesota, she bakes up a supply of their namesake confections to welcome them. But tragedy strikes when their tour bus overturns on its way into town. And keyboard player Buddy Neiman's minor injuries turn deadly serious when someone plunges surgical scissors into his chest"
       ],
       "publisher": "New York : Kensington Books",
-      "date": "2012",
+      "date": "2012-01-01",
       "language": "eng",
       "isbn": [
         "9780758234933",
@@ -501,7 +501,10 @@
         "inlibrary",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "2012-01-01"
+      ]
     },
     "server": "ia600706.us.archive.org",
     "simplelists": {

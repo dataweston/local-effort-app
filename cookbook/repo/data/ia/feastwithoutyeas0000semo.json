@@ -428,7 +428,7 @@
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
       "creator": "Semon, Bruce",
-      "date": "1999",
+      "date": "1999-01-01",
       "description": [
         "385 p. : 23 cm",
         "Includes bibliographical references (p. 365-366) and index"
@@ -487,7 +487,10 @@
       ],
       "page_number_module_version": "1.0.5",
       "source": "removed",
-      "curation": "[date]20250206140610[/date][comment]inlibrary removal 3[/comment]"
+      "curation": "[date]20250206140610[/date][comment]inlibrary removal 3[/comment]",
+      "normalized_dates": [
+        "1999-01-01"
+      ]
     },
     "server": "ia903205.us.archive.org",
     "uniq": 2009163417,

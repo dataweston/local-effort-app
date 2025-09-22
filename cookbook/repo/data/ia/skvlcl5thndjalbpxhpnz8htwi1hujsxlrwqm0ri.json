@@ -209,7 +209,10 @@
       "publicdate": "2022-03-29 07:22:38",
       "addeddate": "2022-03-29 07:22:38",
       "curation": "[curator]validator@archive.org[/curator][date]20220329072325[/date][comment]checked for malware[/comment]",
-      "access-restricted-item": "true"
+      "access-restricted-item": "true",
+      "normalized_dates": [
+        "2018-12-07"
+      ]
     },
     "server": "ia800900.us.archive.org",
     "uniq": 1202169779,

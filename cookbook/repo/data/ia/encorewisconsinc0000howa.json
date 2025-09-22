@@ -388,7 +388,7 @@
       "collection_set": "china",
       "contributor": "Internet Archive",
       "creator": "Howaniec, Grace",
-      "date": "1992",
+      "date": "1992-01-01",
       "isbn": [
         "0942495187",
         "9780942495188"
@@ -447,7 +447,10 @@
         "inlibrary",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "1992-01-01"
+      ]
     },
     "server": "ia800308.us.archive.org",
     "uniq": 1018201707,

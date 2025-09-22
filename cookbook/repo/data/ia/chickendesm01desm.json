@@ -424,7 +424,7 @@
         "Includes index"
       ],
       "publisher": "Des Moines, Iowa : Better Homes and Gardens Books",
-      "date": "2000",
+      "date": "2000-01-01",
       "language": "eng",
       "page-progression": "lr",
       "boxid": "IA100618",
@@ -490,7 +490,10 @@
         "inlibrary",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "2000-01-01"
+      ]
     },
     "server": "ia601308.us.archive.org",
     "uniq": 1338818242,

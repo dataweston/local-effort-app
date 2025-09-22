@@ -395,7 +395,7 @@
       "contributor": "Internet Archive",
       "creator": "None",
       "creator-alt-script": "None",
-      "date": "1987",
+      "date": "1987-01-01",
       "description": [
         "223 pages : 26 cm",
         "Includes index"
@@ -458,7 +458,10 @@
         "printdisabled",
         "inlibrary"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "1987-01-01"
+      ]
     },
     "server": "ia800109.us.archive.org",
     "simplelists": {

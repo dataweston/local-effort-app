@@ -381,7 +381,7 @@
       "subject": "Cookery (Beef)",
       "description": "Includes index",
       "publisher": "Des Moines, Iowa : Meredith Corp.",
-      "date": "1977",
+      "date": "1977-01-01",
       "language": "eng",
       "isbn": [
         "0696001055",
@@ -448,6 +448,9 @@
         "americana",
         "inlibrary",
         "printdisabled"
+      ],
+      "normalized_dates": [
+        "1977-01-01"
       ]
     },
     "server": "ia802304.us.archive.org",

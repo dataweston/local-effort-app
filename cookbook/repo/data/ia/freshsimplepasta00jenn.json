@@ -481,7 +481,7 @@
       "title": "Pasta pronto",
       "creator": "Darling, Jennifer, 1953-",
       "publisher": "Des Moines, Iowa : Meredith Books",
-      "date": "2004",
+      "date": "2004-01-01",
       "external-identifier": [
         "urn:asin:0760760225",
         "urn:acs6:freshsimplepasta00jenn:epub:9ecfd7ab-bdf3-4978-9774-624c8918413d",
@@ -550,7 +550,10 @@
         "inlibrary",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "2004-01-01"
+      ]
     },
     "server": "ia800903.us.archive.org",
     "uniq": 730253785,

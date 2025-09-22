@@ -402,7 +402,7 @@
       "camera": "USB PTP Class Camera",
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
-      "date": "2011",
+      "date": "2011-01-01",
       "description": [
         "320 pages : 29 cm",
         "\"270+ great-tasting & healthy recipes\"--Cover",
@@ -467,7 +467,10 @@
         "inlibrary",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "2011-01-01"
+      ]
     },
     "server": "ia802307.us.archive.org",
     "uniq": 2130844947,

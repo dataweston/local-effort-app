@@ -419,7 +419,7 @@
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
       "creator": "Renewing the Countryside (Organization)",
-      "date": "2008",
+      "date": "2008-01-01",
       "description": [
         "160 p. : 29 cm",
         "Includes index",
@@ -483,6 +483,9 @@
         "internetarchivebooks",
         "inlibrary",
         "printdisabled"
+      ],
+      "normalized_dates": [
+        "2008-01-01"
       ]
     },
     "server": "ia903100.us.archive.org",

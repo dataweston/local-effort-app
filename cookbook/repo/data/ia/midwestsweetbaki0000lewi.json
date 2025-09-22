@@ -457,7 +457,7 @@
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
       "creator": "Lewis, Jenny",
-      "date": "2011",
+      "date": "2011-01-01",
       "description": [
         "199 p. : 23 cm",
         "Includes bibliographical references and indexes"
@@ -527,6 +527,9 @@
         "internetarchivebooks",
         "inlibrary",
         "printdisabled"
+      ],
+      "normalized_dates": [
+        "2011-01-01"
       ]
     },
     "server": "ia800800.us.archive.org",

@@ -174,7 +174,7 @@
     "metadata": {
       "identifier": "ERIC_ED541244",
       "creator": "ERIC",
-      "date": "1927",
+      "date": "1927-01-01",
       "description": "The purpose of this bulletin on child care and parenthood education is to show the present trends of parental education as reported by the home economics departments of the various elementary and secondary schools and institutions of higher education located in different sections of the United States. The policies and practices described are those reported by the schools and institutions herein named. The selected  materials on this subject are described as adequately as space would permit. The bulletin is arranged into five chapters. Each chapter is prefaced by a brief introduction explaining the basis for including the specific example cited therein. These examples were selected from a mass of material sent to the Bureau of Education at the request of the United States Commissioner of Education, who addressed circular letters concerning this matter to 48 State departments of public instruction and the District of Columbia, to 1,100 public and private institutions of higher education. Summary of the conference on child training on children in home-management houses held at the University of Minnesota, Minneapolis, Minnesota, is appended. [Best copy available has been provided.]",
       "language": "english",
       "mediatype": "texts",
@@ -194,7 +194,10 @@
       "ppi": "600",
       "ocr": "ABBYY FineReader 11.0",
       "repub_state": "4",
-      "backup_location": "ia906103_0"
+      "backup_location": "ia906103_0",
+      "normalized_dates": [
+        "1927-01-01"
+      ]
     },
     "server": "ia801301.us.archive.org",
     "uniq": 1400250623,

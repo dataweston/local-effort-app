@@ -403,7 +403,7 @@
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
       "creator": "Pasternak, Harley",
-      "date": "2006",
+      "date": "2006-01-01",
       "description": [
         "256 p. : 24 cm",
         "\"Hollywood's hottest eating plan\"--Cover",
@@ -471,6 +471,9 @@
         "internetarchivebooks",
         "printdisabled",
         "inlibrary"
+      ],
+      "normalized_dates": [
+        "2006-01-01"
       ]
     },
     "server": "ia802309.us.archive.org",

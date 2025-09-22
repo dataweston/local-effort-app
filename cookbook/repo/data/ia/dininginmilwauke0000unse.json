@@ -434,7 +434,7 @@
       "contributor": "Internet Archive",
       "creator": "None",
       "creator-alt-script": "None",
-      "date": "1981",
+      "date": "1981-01-01",
       "description": [
         "v, 221 pages : 23 cm",
         "Includes index"
@@ -500,7 +500,10 @@
         "inlibrary",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "1981-01-01"
+      ]
     },
     "server": "ia800406.us.archive.org",
     "uniq": 1524996199,

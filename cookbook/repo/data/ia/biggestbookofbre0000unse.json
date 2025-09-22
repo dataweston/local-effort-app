@@ -456,7 +456,7 @@
       "camera": "USB PTP Class Camera",
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
-      "date": "2003",
+      "date": "2003-01-01",
       "description": [
         "416 p. : 23 cm",
         "Make the most of your bread machine with over 400 recipes to choose from, including recipes for 1 1/2 to 2 pound bread loaves plus bonus chapters on soups and sandwiches",
@@ -524,7 +524,10 @@
         "inlibrary"
       ],
       "page_number_module_version": "1.0.5",
-      "isbn": "9780696218538"
+      "isbn": "9780696218538",
+      "normalized_dates": [
+        "2003-01-01"
+      ]
     },
     "server": "ia801401.us.archive.org",
     "uniq": 269845426,

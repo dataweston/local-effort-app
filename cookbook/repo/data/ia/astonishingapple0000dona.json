@@ -440,7 +440,7 @@
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
       "creator": "Donatelle, Joan",
-      "date": "2015",
+      "date": "2015-01-01",
       "description": [
         "pages cm",
         "Includes index"
@@ -502,7 +502,10 @@
         "printdisabled"
       ],
       "curation": "[date]20250204011151[/date][comment]inlibrary removal 3[/comment]",
-      "source": "removed"
+      "source": "removed",
+      "normalized_dates": [
+        "2015-01-01"
+      ]
     },
     "server": "ia601500.us.archive.org",
     "uniq": 1571339582,

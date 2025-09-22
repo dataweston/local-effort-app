@@ -264,7 +264,10 @@
       "publicdate": "2019-05-27 17:47:12",
       "access-restricted-item": "true",
       "bad_audio": "false",
-      "backup_location": "ia906904_24"
+      "backup_location": "ia906904_24",
+      "normalized_dates": [
+        "2019-05-25"
+      ]
     },
     "server": "ia801704.us.archive.org",
     "speech_vs_music_asr": [

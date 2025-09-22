@@ -399,7 +399,7 @@
       "collection_set": "china",
       "contributor": "Internet Archive",
       "creator": "Ojakangas, Beatrice, 1934-",
-      "date": "2003",
+      "date": "2003-01-01",
       "isbn": [
         "9780816695287",
         "0816695288",
@@ -489,7 +489,10 @@
         "internetarchivebooks",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "2003-01-01"
+      ]
     },
     "server": "ia801401.us.archive.org",
     "simplelists": {

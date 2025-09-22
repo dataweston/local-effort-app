@@ -406,7 +406,7 @@
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
       "creator": "Dahlstrom, Carol Field",
-      "date": "2005",
+      "date": "2005-01-01",
       "description": [
         "160 pages : 28 cm",
         "Make Christmas the best ever with easy to make crafts, food, and decorating ideas. Create a cookie tree, a door decoration, a handmade gift and still have time to enjoy the season together. Craft, Share, Bake, Decorate, Give Celebrate! Welcome Them Home- Give them a wonderful holiday welcome with easy decorating ideas both inside and out. Frosty-white snowball door decorations or traditional red wreaths make your front door a welcome site. Inside your house, find house-shaped cookies and candy fireplaces that will bring smiles to everyone who comes to call. Cleaver Christmas gift ideas that you can make and give to anyone on your holiday gift list. Everyone will want to help decorate the tree with these fun to make Christmas ornaments and fun to make Christmas tree trimmings. Lots of Christmas recipes for toffee, raspberry cream jelly rolls and more ... Surprise your family and friends with handmade Christmas cards, jewelry, scarves and hats ..",
@@ -469,7 +469,10 @@
         "inlibrary",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "2005-01-01"
+      ]
     },
     "server": "ia803100.us.archive.org",
     "uniq": 1550796344,

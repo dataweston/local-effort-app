@@ -457,7 +457,7 @@
       "sponsordate": "20191031",
       "creator": "Lee, Sandra, 1966-",
       "publisher": "New York : Hyperion",
-      "date": "2013",
+      "date": "2013-01-01",
       "subject": [
         "Self-realization in women -- Fiction",
         "Cooking -- Fiction",
@@ -493,7 +493,10 @@
         "internetarchivebooks",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "2013-01-01"
+      ]
     },
     "server": "ia903106.us.archive.org",
     "uniq": 1485905123,

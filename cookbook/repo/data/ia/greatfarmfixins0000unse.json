@@ -350,7 +350,7 @@
       "boxid": "IA1948703",
       "camera": "USB PTP Class Camera",
       "contributor": "Internet Archive",
-      "date": "1998",
+      "date": "1998-01-01",
       "description": [
         "178 pages ; 23 cm",
         "Cover title: The Machine Shed Great farm fixins'"
@@ -400,7 +400,10 @@
       "page_number_module_version": "1.0.3",
       "collection": "internetarchivebooks",
       "addeddate": "2025-08-16 00:34:26",
-      "openlibrary_work": "OL31915385W"
+      "openlibrary_work": "OL31915385W",
+      "normalized_dates": [
+        "1998-01-01"
+      ]
     },
     "page_numbers": {
       "identifier": "greatfarmfixins0000unse",

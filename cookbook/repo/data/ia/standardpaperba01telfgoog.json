@@ -202,7 +202,7 @@
       "possible-copyright-status": "NOT_IN_COPYRIGHT",
       "identifier-access": "http://www.archive.org/details/standardpaperba01telfgoog",
       "year": "1912",
-      "date": "1912",
+      "date": "1912-01-01",
       "oclc-id": "3261889",
       "scandate": "20070821",
       "copyright-region": "US",
@@ -223,7 +223,10 @@
       "repub_state": "4",
       "collection": "europeanlibraries",
       "backup_location": "ia903601_24",
-      "addeddate": "2008-02-19 13:30:17"
+      "addeddate": "2008-02-19 13:30:17",
+      "normalized_dates": [
+        "1912-01-01"
+      ]
     },
     "server": "ia801308.us.archive.org",
     "uniq": 283983078,

@@ -409,7 +409,7 @@
       "contributor": "Internet Archive",
       "creator": "None",
       "creator-alt-script": "None",
-      "date": "2001",
+      "date": "2001-01-01",
       "description": [
         "160 pages : 29 cm",
         "\"For generations, Santa Claus has inspired smiles, wishes, and wonderment. Now he inspires this collection of heartwarming stories and creative traditions. From the people who helped form Santa's image to the collectors and artisans who cherish and shape his likeness today, you'll understand why Santa is so special.\"--Page 4 of cover"
@@ -471,7 +471,10 @@
         "inlibrary",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "2001-01-01"
+      ]
     },
     "server": "ia800201.us.archive.org",
     "uniq": 2094209410,

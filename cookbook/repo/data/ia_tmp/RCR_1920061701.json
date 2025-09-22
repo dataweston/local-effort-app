@@ -296,7 +296,10 @@
       "ocr_detected_lang": "en",
       "ocr_detected_lang_conf": "1.0000",
       "pdf_module_version": "0.0.19",
-      "subject": "Redcliff review [1910]"
+      "subject": "Redcliff review [1910]",
+      "normalized_dates": [
+        "1920-06-17"
+      ]
     },
     "page_numbers": {
       "identifier": "/var/tmp/autoclean/derive/rcr_1920061701/rcr_1920061701",

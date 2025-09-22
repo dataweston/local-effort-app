@@ -425,7 +425,7 @@
       "camera": "Sony Alpha-A6300 (Control)",
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
-      "date": "2015",
+      "date": "2015-01-01",
       "description": [
         "238 pages : 29 cm",
         "A companion cookbook to the Emmy Award-nominated series collects seventy-five top-selected recipes from some of America's most innovative chefs, food artisans, and rising culinary stars in scenic and lesser-known locations",
@@ -485,6 +485,9 @@
         "internetarchivebooks",
         "inlibrary",
         "printdisabled"
+      ],
+      "normalized_dates": [
+        "2015-01-01"
       ]
     },
     "server": "ia601701.us.archive.org",

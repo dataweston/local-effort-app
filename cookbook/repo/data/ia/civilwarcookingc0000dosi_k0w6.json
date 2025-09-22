@@ -410,7 +410,7 @@
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
       "creator": "Dosier, Susan, author",
-      "date": "2017",
+      "date": "2017-01-01",
       "description": [
         "32 pages : 23 cm",
         "\"Discusses the everyday life, cooking methods, foods, and celebration of Confederate soldiers during the Civil War. Includes recipes and sidebars\"--",
@@ -485,7 +485,10 @@
         "inlibrary",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "2017-01-01"
+      ]
     },
     "server": "ia804606.us.archive.org",
     "uniq": 1447884564,

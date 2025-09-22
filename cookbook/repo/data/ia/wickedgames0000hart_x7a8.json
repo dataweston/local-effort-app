@@ -387,7 +387,7 @@
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
       "creator": "Hart, Ellen",
-      "date": "1998",
+      "date": "1998-01-01",
       "description": "357 p. ; 22 cm",
       "isbn": "0312186800",
       "language": "eng",
@@ -452,7 +452,10 @@
         "inlibrary",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "1998-01-01"
+      ]
     },
     "server": "ia802308.us.archive.org",
     "uniq": 954101833,

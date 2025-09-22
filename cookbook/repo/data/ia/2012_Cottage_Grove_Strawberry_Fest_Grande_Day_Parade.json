@@ -993,7 +993,10 @@
       "publicdate": "2017-01-05 02:37:38",
       "uploader": "jhauser@pobox.com",
       "addeddate": "2017-01-05 02:37:38",
-      "backup_location": "ia906303_26"
+      "backup_location": "ia906303_26",
+      "normalized_dates": [
+        "2012-06-19"
+      ]
     },
     "server": "ia802908.us.archive.org",
     "uniq": 800930252,

@@ -400,7 +400,7 @@
       "openlibrary": "OL2744159M",
       "subject": "Microwave cooking",
       "publisher": "Des Moines, Iowa : Meredith Corp.",
-      "date": "1987",
+      "date": "1987-01-01",
       "language": "eng",
       "isbn": "0696015005",
       "description": [
@@ -467,7 +467,10 @@
       ],
       "page_number_module_version": "1.0.5",
       "pdf_degraded": "invalid-jp2-headers",
-      "pdf_module_version": "0.0.25"
+      "pdf_module_version": "0.0.25",
+      "normalized_dates": [
+        "1987-01-01"
+      ]
     },
     "server": "ia600107.us.archive.org",
     "uniq": 511147719,

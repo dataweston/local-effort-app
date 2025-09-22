@@ -1412,7 +1412,10 @@
         "newsandpublicaffairs"
       ],
       "publicdate": "2025-05-29 00:13:58",
-      "addeddate": "2025-05-29 00:13:58"
+      "addeddate": "2025-05-29 00:13:58",
+      "normalized_dates": [
+        "2025-01-09"
+      ]
     },
     "server": "ia600300.us.archive.org",
     "uniq": 1409262711,

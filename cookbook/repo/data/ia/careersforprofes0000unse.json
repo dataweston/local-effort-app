@@ -441,7 +441,7 @@
       "camera": "Sony Alpha-A6300 (Control)",
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
-      "date": "1981",
+      "date": "1981-01-01",
       "description": [
         "vii, 205 p. : 23 cm",
         "Bibliography: p. 197-202",
@@ -503,7 +503,10 @@
         "printdisabled",
         "inlibrary"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "1981-01-01"
+      ]
     },
     "server": "ia601502.us.archive.org",
     "uniq": 665770288,

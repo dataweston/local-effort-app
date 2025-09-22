@@ -372,7 +372,7 @@
       ],
       "description": "A member of the cooking class given in Adult Continuing Education during the summer in Harrington, Iowa is murdered, and Mrs. Potter, who instigated the class, unwittingly discovers the culprit",
       "publisher": "New York : Dutton",
-      "date": "1982",
+      "date": "1982-01-01",
       "language": "eng",
       "isbn": [
         "0525241108",
@@ -438,7 +438,10 @@
         "printdisabled",
         "inlibrary"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "1982-01-01"
+      ]
     },
     "server": "ia801904.us.archive.org",
     "simplelists": {

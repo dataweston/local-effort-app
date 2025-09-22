@@ -1589,7 +1589,10 @@
       "publicdate": "2019-12-28 11:01:36",
       "noarchivetorrent": "true",
       "curation": "[curator]jscott@archive.org[/curator][date]20200223180547[/date][state]un-dark[/state]",
-      "backup_location": "ia907100_16"
+      "backup_location": "ia907100_16",
+      "normalized_dates": [
+        "2019-12-23"
+      ]
     },
     "server": "ia902809.us.archive.org",
     "uniq": 437338932,

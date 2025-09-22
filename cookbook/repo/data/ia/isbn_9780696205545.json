@@ -459,7 +459,7 @@
       ],
       "openlibrary": "OL21086469M",
       "publisher": "Des Moines, Iowa : Meredith Custom Pub.",
-      "date": "1995",
+      "date": "1995-01-01",
       "subject": [
         "Cookies",
         "Cooking (Chocolate)"
@@ -481,6 +481,9 @@
         "internetarchivebooks",
         "inlibrary",
         "printdisabled"
+      ],
+      "normalized_dates": [
+        "1995-01-01"
       ]
     },
     "server": "ia601709.us.archive.org",

@@ -133,7 +133,10 @@
       "uploader": "slaxemulator@gmail.com",
       "addeddate": "2014-05-26 23:04:38",
       "boxid": "OL100020505",
-      "backup_location": "ia905808_8"
+      "backup_location": "ia905808_8",
+      "normalized_dates": [
+        "2013-10-31"
+      ]
     },
     "server": "ia800207.us.archive.org",
     "uniq": 1313488845,

@@ -263,7 +263,7 @@
         "folkscanomy",
         "additional_collections"
       ],
-      "date": "1991",
+      "date": "1991-01-01",
       "description": "<div><div></div></div><div>A cookbook of recipes (both food and non-food) from the Mount Vernon, Iowa 4-H club.</div><div><br /></div><div>Non-food recipes include clown makeup.<br /></div>",
       "language": "eng",
       "scanner": "Internet Archive HTML5 Uploader 1.6.3",
@@ -291,6 +291,9 @@
         "folkscanomy",
         "additional_collections",
         "folkscanomy_culinary"
+      ],
+      "normalized_dates": [
+        "1991-01-01"
       ]
     },
     "server": "ia802809.us.archive.org",

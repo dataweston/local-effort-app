@@ -169,7 +169,7 @@
     "metadata": {
       "identifier": "ERIC_ED054077",
       "creator": "ERIC",
-      "date": "1969-07",
+      "date": "1969-01-01",
       "description": "This study found that following an educational philosophy course, attitudes of prospective teachers more closely resembled those of experienced teachers. The population used in the study consisted of 240 students taking the course \"Principles of Secondary Education\" at Stout State University and 84 experienced teachers who had attended the 1968 summer session at Stout. The majority of the prospective teachers were specializing in home economics or industrial arts. Attitudes were measured by an author-modified version of the Minnesota Teacher Attitude Inventory (MTAI). Analysis of results indicated that there was a significant difference in attitudes between beginning and ending Principles of Secondary Education students in three out of four categories of the MTAI. A significant  difference was found between beginning students and experienced teachers in all four MTAI categories; however, when comparing students completing the course and experienced teachers, a significant difference was found for only two out of four MTAI categories. (Appendixes include a copy of the modified MTAI and a breakdown of responses on each item by beginning students, ending students, and experienced teachers.) (RT)",
       "language": "english",
       "mediatype": "texts",
@@ -189,7 +189,10 @@
       "ppi": "600",
       "ocr": "ABBYY FineReader 11.0",
       "repub_state": "4",
-      "backup_location": "ia905504_21"
+      "backup_location": "ia905504_21",
+      "normalized_dates": [
+        "1969-01-01"
+      ]
     },
     "server": "ia601303.us.archive.org",
     "uniq": 514794854,

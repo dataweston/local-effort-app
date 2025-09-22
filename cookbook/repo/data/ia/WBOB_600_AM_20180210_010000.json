@@ -289,6 +289,9 @@
         "stream_only",
         "radio",
         "radioprograms"
+      ],
+      "normalized_dates": [
+        "2018-02-10"
       ]
     },
     "server": "ia800205.us.archive.org",

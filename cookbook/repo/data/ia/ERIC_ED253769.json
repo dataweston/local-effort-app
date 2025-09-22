@@ -180,7 +180,7 @@
     "metadata": {
       "identifier": "ERIC_ED253769",
       "creator": "ERIC",
-      "date": "1984-12",
+      "date": "1984-01-01",
       "description": "The objective of a research project was to describe how undergraduate home economics students perceive their work lives in the year 2000 according to age, race, gender, marital status, and geographic region of the country. A valid, field-tested survey instrument developed specifically for this project was administered to 324 volunteer undergraduate home economics students from New York, Ohio, Wisconsin, Kansas, and Texas. Results were analyzed using factor analysis, MANOVA, and ANOVA and seemed to point out perceptions representing both traditional and nontraditional lifestyles. Implications for vocational education, and particularly home economics, curriculum and instruction were deduced, namely that: (1) curriculum needs to be written to account for differences in perceptions  due to age, gender, and region within program areas; (2) curriculum needs to be written to aid students in sorting through preferences for traditional versus emerging societal patterns and values; (3) the changing relationship between work and family expectations needs to be stressed; and (4) students need to comprehend and learn to manage the stress that may result from a multidimensional lifestyle. The methodology was recommended for use in research with students in other vocational program areas to determine if similar perceptions of work and family roles exist. (YLB)",
       "language": "english",
       "mediatype": "texts",
@@ -200,7 +200,10 @@
       "ppi": "600",
       "ocr": "ABBYY FineReader 9.0",
       "repub_state": "4",
-      "backup_location": "ia905909_2"
+      "backup_location": "ia905909_2",
+      "normalized_dates": [
+        "1984-01-01"
+      ]
     },
     "server": "ia600803.us.archive.org",
     "uniq": 1965843365,

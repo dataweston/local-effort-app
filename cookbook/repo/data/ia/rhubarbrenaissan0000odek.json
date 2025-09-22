@@ -440,7 +440,7 @@
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
       "creator": "Ode, Kim, 1955-",
-      "date": "2012",
+      "date": "2012-01-01",
       "description": [
         "120 p. : 24 cm",
         "Includes index",
@@ -508,7 +508,10 @@
       ],
       "page_number_module_version": "1.0.5",
       "source": "removed",
-      "curation": "[date]20250213033747[/date][comment]inlibrary removal 3[/comment]"
+      "curation": "[date]20250213033747[/date][comment]inlibrary removal 3[/comment]",
+      "normalized_dates": [
+        "2012-01-01"
+      ]
     },
     "server": "ia800804.us.archive.org",
     "uniq": 958820738,

@@ -405,7 +405,7 @@
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
       "creator": "Berg, Ron, 1942-",
-      "date": "2000",
+      "date": "2000-01-01",
       "description": [
         "1 online resource (xxi, 251 pages)",
         "Includes index",
@@ -483,7 +483,10 @@
         "internetarchivebooks",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "2000-01-01"
+      ]
     },
     "server": "ia601801.us.archive.org",
     "uniq": 1102338382,

@@ -430,7 +430,7 @@
       "access-restricted-item": "true",
       "title": "Hot & spicy ",
       "publisher": "Des Moines, Iowa : Better Homes and Gardens Books",
-      "date": "1995",
+      "date": "1995-01-01",
       "language": "eng",
       "isbn": "0696202212",
       "lccn": "95075618",
@@ -493,6 +493,9 @@
         "internetarchivebooks",
         "inlibrary",
         "printdisabled"
+      ],
+      "normalized_dates": [
+        "1995-01-01"
       ]
     },
     "server": "ia600509.us.archive.org",

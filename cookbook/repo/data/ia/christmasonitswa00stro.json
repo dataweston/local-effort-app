@@ -414,7 +414,7 @@
         "Includes index"
       ],
       "publisher": "Des Moines, Iowa : Better Homes and Gardens Books",
-      "date": "1994",
+      "date": "1994-01-01",
       "language": "eng",
       "isbn": [
         "0696000474",
@@ -474,7 +474,10 @@
         "inlibrary",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "1994-01-01"
+      ]
     },
     "server": "ia802302.us.archive.org",
     "uniq": 1938316964,

@@ -363,7 +363,7 @@
       ],
       "description": "A compilation of French and family recipes from JoAnn and Kathy Fangman of La Petite Ecole in Clear Lake, Iowa",
       "publisher": "Thornton, Ia. : The Printing Office, Inc.",
-      "date": "1981",
+      "date": "1981-01-01",
       "language": "eng",
       "page-progression": "lr",
       "boxid": "IA131613",
@@ -418,6 +418,9 @@
         "internetarchivebooks",
         "inlibrary",
         "printdisabled"
+      ],
+      "normalized_dates": [
+        "1981-01-01"
       ]
     },
     "server": "ia600209.us.archive.org",

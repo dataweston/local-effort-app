@@ -392,7 +392,7 @@
       "title": "Good food & fitness",
       "creator": "No Author",
       "publisher": "[Des Moines, Iowa] : Meredith Corp.",
-      "date": "1982",
+      "date": "1982-01-01",
       "sponsor": "Internet Archive",
       "contributor": "Internet Archive",
       "scanningcenter": "shenzhen",
@@ -453,6 +453,9 @@
         "internetarchivebooks",
         "printdisabled",
         "inlibrary"
+      ],
+      "normalized_dates": [
+        "1982-01-01"
       ]
     },
     "server": "ia801903.us.archive.org",

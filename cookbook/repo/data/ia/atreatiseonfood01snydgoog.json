@@ -204,7 +204,7 @@
       "possible-copyright-status": "NOT_IN_COPYRIGHT",
       "identifier-access": "http://www.archive.org/details/atreatiseonfood01snydgoog",
       "year": "1913",
-      "date": "1913",
+      "date": "1913-01-01",
       "scandate": "20070712",
       "copyright-region": "US",
       "description": [
@@ -235,7 +235,10 @@
       "backup_location": "ia903601_24",
       "openlibrary_edition": "OL23382834M",
       "openlibrary_work": "OL4734154W",
-      "addeddate": "2008-02-23 18:05:47"
+      "addeddate": "2008-02-23 18:05:47",
+      "normalized_dates": [
+        "1913-01-01"
+      ]
     },
     "server": "ia803106.us.archive.org",
     "uniq": 707074597,

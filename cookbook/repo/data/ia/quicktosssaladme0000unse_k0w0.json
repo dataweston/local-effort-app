@@ -405,7 +405,7 @@
       "camera": "USB PTP Class Camera",
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
-      "date": "1998",
+      "date": "1998-01-01",
       "description": [
         "96 pages : 25 cm",
         "A collection of 66 easy to make salad recipes using a variety of ingredients",
@@ -471,7 +471,10 @@
         "printdisabled"
       ],
       "page_number_confidence": "76",
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "1998-01-01"
+      ]
     },
     "server": "ia803102.us.archive.org",
     "uniq": 159156051,

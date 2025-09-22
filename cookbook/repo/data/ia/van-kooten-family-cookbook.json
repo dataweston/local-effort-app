@@ -231,7 +231,7 @@
         "opensource",
         "community"
       ],
-      "date": "2010",
+      "date": "2010-01-01",
       "description": "A cookbook from the Van Kooten family descendants that came to America and settled in Iowa in 1910. The recipes are all contributions from different family members. There are also several memories and history of the family of their life in Holland and then later when they arrived near Pella, Iowa.",
       "language": "eng",
       "scanner": "Internet Archive HTML5 Uploader 1.7.0",
@@ -257,7 +257,10 @@
       "ocr_detected_script": "Latin",
       "ocr_detected_script_conf": "0.9616",
       "ocr_detected_lang": "en",
-      "ocr_detected_lang_conf": "1.0000"
+      "ocr_detected_lang_conf": "1.0000",
+      "normalized_dates": [
+        "2010-01-01"
+      ]
     },
     "server": "ia803200.us.archive.org",
     "uniq": 1802940652,

@@ -419,7 +419,7 @@
       "camera": "Sony Alpha-A6300 (Control)",
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
-      "date": "1985",
+      "date": "1985-01-01",
       "description": [
         "80 pages : 28 cm",
         "Presents recipes and menus for children's parties as well as tips for decorations and games",
@@ -487,6 +487,9 @@
         "internetarchivebooks",
         "inlibrary",
         "printdisabled"
+      ],
+      "normalized_dates": [
+        "1985-01-01"
       ]
     },
     "server": "ia803203.us.archive.org",

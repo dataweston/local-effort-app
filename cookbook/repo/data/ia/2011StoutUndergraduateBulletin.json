@@ -237,7 +237,7 @@
         "americana"
       ],
       "creator": "University of Wisconsin--Stout. University Relations.",
-      "date": "2011",
+      "date": "2011-01-01",
       "description": "<span style=\"font-family:Arial, Helvetica, sans-serif;font-size:13px;background-color:rgb(255,255,255);\">Annual\n and biennial bulletins of the University of Wisconsin-Stout and its \npredecessor institutions. The bulletins provide descriptions of campus, \nlists of administrators and faculty, information on institutional \nobjectives, courses offered, and curriculum.</span>",
       "language": "eng",
       "scanner": "Internet Archive HTML5 Uploader 1.7.0",
@@ -265,7 +265,10 @@
       "ocr_detected_script_conf": "1.0000",
       "ocr_detected_lang": "en",
       "ocr_detected_lang_conf": "1.0000",
-      "year": "2011"
+      "year": "2011",
+      "normalized_dates": [
+        "2011-01-01"
+      ]
     },
     "server": "ia801600.us.archive.org",
     "uniq": 383959242,

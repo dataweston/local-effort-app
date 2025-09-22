@@ -394,7 +394,7 @@
       "collection_set": "china",
       "contributor": "Internet Archive",
       "creator": "Berg, Ron, 1942-",
-      "date": "2000",
+      "date": "2000-01-01",
       "isbn": [
         "9780816691609",
         "0816691606"
@@ -466,7 +466,10 @@
         "internetarchivebooks",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "2000-01-01"
+      ]
     },
     "server": "ia802809.us.archive.org",
     "uniq": 788719231,

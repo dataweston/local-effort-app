@@ -396,7 +396,7 @@
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
       "creator": "Crowley, Ann M. author",
-      "date": "2007",
+      "date": "2007-01-01",
       "description": [
         "254 pages : 26 cm",
         "Includes index"
@@ -469,7 +469,10 @@
         "inlibrary",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "2007-01-01"
+      ]
     },
     "server": "ia801801.us.archive.org",
     "uniq": 471330450,

@@ -423,7 +423,7 @@
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
       "creator": "Fluke, Joanne, 1943-",
-      "date": "2012",
+      "date": "2012-01-01",
       "description": [
         "481 pages (large print) ; 23 cm",
         "When the keyboard player for the Cinnamon Roll Six jazz band is murdered after a tour bus accident on the way to Lake Eden, Minnesota, Hannah Swensen investigates and comes up with several local suspects"
@@ -497,7 +497,10 @@
         "inlibrary",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "2012-01-01"
+      ]
     },
     "server": "ia801707.us.archive.org",
     "simplelists": {

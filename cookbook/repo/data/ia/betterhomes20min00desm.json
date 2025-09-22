@@ -417,7 +417,7 @@
       "subject": "Cooking",
       "description": "Includes index",
       "publisher": "Des Moines, Iowa : Meredith Corp.",
-      "date": "1987",
+      "date": "1987-01-01",
       "language": "eng",
       "isbn": [
         "069601680X",
@@ -491,6 +491,9 @@
         "americana",
         "inlibrary",
         "printdisabled"
+      ],
+      "normalized_dates": [
+        "1987-01-01"
       ]
     },
     "server": "ia600208.us.archive.org",

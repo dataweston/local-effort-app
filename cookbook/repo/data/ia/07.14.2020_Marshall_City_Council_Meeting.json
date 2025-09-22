@@ -2074,7 +2074,10 @@
       "youtube-width": "1280",
       "uploader": "jhauser@pobox.com",
       "publicdate": "2020-07-21 03:41:20",
-      "addeddate": "2020-07-21 03:41:20"
+      "addeddate": "2020-07-21 03:41:20",
+      "normalized_dates": [
+        "2020-07-14"
+      ]
     },
     "server": "ia801706.us.archive.org",
     "uniq": 1635789400,

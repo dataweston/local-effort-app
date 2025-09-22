@@ -347,7 +347,7 @@
       "scanningcenter": "chapelhill",
       "sponsor": "University of North Carolina at Chapel Hill",
       "contributor": "University Library, University of North Carolina at Chapel Hill",
-      "date": "1965",
+      "date": "1965-01-01",
       "subject": "Cooking -- North Carolina -- Kernersville",
       "title": "Recipes",
       "collection": [
@@ -401,7 +401,10 @@
       "openlibrary_work": "OL24675256W",
       "sponsordate": "20210630",
       "external-identifier": "urn:oclc:record:1435138799",
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "1965-01-01"
+      ]
     },
     "page_numbers": {
       "identifier": "recipes00unse_0",

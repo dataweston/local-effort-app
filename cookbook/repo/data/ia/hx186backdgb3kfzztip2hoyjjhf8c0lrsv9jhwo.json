@@ -262,7 +262,10 @@
       "publicdate": "2021-08-16 21:25:53",
       "addeddate": "2021-08-16 21:25:53",
       "curation": "[curator]validator@archive.org[/curator][date]20210816212650[/date][comment]checked for malware[/comment]",
-      "access-restricted-item": "true"
+      "access-restricted-item": "true",
+      "normalized_dates": [
+        "2018-10-03"
+      ]
     },
     "server": "ia802301.us.archive.org",
     "uniq": 259400898,

@@ -180,7 +180,10 @@
       "uploader": "bobarchives123@gmail.com",
       "publicdate": "2023-11-07 06:39:21",
       "addeddate": "2023-11-07 06:39:21",
-      "access-restricted-item": "true"
+      "access-restricted-item": "true",
+      "normalized_dates": [
+        "2018-11-24"
+      ]
     },
     "server": "ia801202.us.archive.org",
     "uniq": 446896974,

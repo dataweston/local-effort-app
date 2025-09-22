@@ -396,7 +396,7 @@
       "contributor": "Internet Archive",
       "creator": "None",
       "creator-alt-script": "None",
-      "date": "1991",
+      "date": "1991-01-01",
       "description": [
         "152 pages : 22 cm",
         "At head of title: Restaurants International",
@@ -461,6 +461,9 @@
         "internetarchivebooks",
         "inlibrary",
         "printdisabled"
+      ],
+      "normalized_dates": [
+        "1991-01-01"
       ]
     },
     "server": "ia801706.us.archive.org",

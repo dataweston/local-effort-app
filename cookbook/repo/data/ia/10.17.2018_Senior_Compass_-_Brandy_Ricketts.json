@@ -521,7 +521,10 @@
       "publicdate": "2018-10-20 19:58:31",
       "uploader": "jhauser@pobox.com",
       "addeddate": "2018-10-20 19:58:31",
-      "backup_location": "ia906803_10"
+      "backup_location": "ia906803_10",
+      "normalized_dates": [
+        "2018-10-17"
+      ]
     },
     "server": "ia600402.us.archive.org",
     "uniq": 1169186575,

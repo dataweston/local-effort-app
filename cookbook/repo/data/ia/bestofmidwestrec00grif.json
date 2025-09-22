@@ -445,7 +445,7 @@
       "sponsordate": "not to be invoiced-past billing period",
       "extramarc": "University of Illinois Urbana-Champaign (PZ)",
       "city": "New York, N.Y., U.S.A.",
-      "date": "1990",
+      "date": "1990-01-01",
       "oclc-id": "20258849",
       "lccn": "89040381",
       "backup_location": "ia903706_4",
@@ -470,7 +470,10 @@
         "printdisabled",
         "inlibrary"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "1990-01-01"
+      ]
     },
     "server": "ia800101.us.archive.org",
     "simplelists": {

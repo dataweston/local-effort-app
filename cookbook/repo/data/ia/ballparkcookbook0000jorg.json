@@ -403,7 +403,7 @@
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
       "creator": "Jorgensen, Katrina, author",
-      "date": "2016",
+      "date": "2016-01-01",
       "description": [
         "pages cm",
         "\"Forget peanuts and Cracker Jacks! National League Ballparks now offer a dizzying array of edible options. These make-like stadium recipes give young chefs and sports fans a culinary road trip at home. From the famous fish tacos at the Giants's AT&T Park in San Francisco to brats and cheese curds at the Brewers's Tropicana Field, these diamond dishes are perfect for any seventh-inning stretch.\"--",
@@ -468,6 +468,9 @@
         "internetarchivebooks",
         "printdisabled",
         "inlibrary"
+      ],
+      "normalized_dates": [
+        "2016-01-01"
       ]
     },
     "server": "ia801701.us.archive.org",

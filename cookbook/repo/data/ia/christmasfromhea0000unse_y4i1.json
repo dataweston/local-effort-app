@@ -405,7 +405,7 @@
       "camera": "Sony Alpha-A6300 (Control)",
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
-      "date": "2013",
+      "date": "2013-01-01",
       "description": [
         "160 pages : 28 cm",
         "Bring the spirit of Christmas into your home by creating clever holiday crafts and decorations, making one-of-a-kind gifts, and stirring up festive goodies in the kitchen",
@@ -467,7 +467,10 @@
         "inlibrary",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "2013-01-01"
+      ]
     },
     "server": "ia902801.us.archive.org",
     "uniq": 2002995028,

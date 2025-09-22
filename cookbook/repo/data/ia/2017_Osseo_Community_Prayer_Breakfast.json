@@ -840,7 +840,10 @@
       "publicdate": "2017-11-14 20:34:51",
       "uploader": "jhauser@pobox.com",
       "addeddate": "2017-11-14 20:34:51",
-      "backup_location": "ia906600_18"
+      "backup_location": "ia906600_18",
+      "normalized_dates": [
+        "2017-10-05"
+      ]
     },
     "server": "ia600606.us.archive.org",
     "uniq": 401004034,

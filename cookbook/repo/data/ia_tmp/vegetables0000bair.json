@@ -388,7 +388,7 @@
       "collection_set": "china",
       "contributor": "Internet Archive",
       "creator": "Baird, Elizabeth, 1939-",
-      "date": "1995",
+      "date": "1995-01-01",
       "isbn": [
         "0345398041",
         "9780345398048"
@@ -447,7 +447,10 @@
         "inlibrary",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "1995-01-01"
+      ]
     },
     "server": "ia803106.us.archive.org",
     "uniq": 1816214703,

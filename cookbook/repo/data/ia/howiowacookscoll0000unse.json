@@ -464,7 +464,7 @@
       "camera": "USB PTP Class Camera",
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
-      "date": "1983",
+      "date": "1983-01-01",
       "description": [
         "266 p. ; 23 cm",
         "Includes index"
@@ -524,7 +524,10 @@
         "inlibrary",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "1983-01-01"
+      ]
     },
     "server": "ia800402.us.archive.org",
     "uniq": 1187633050,

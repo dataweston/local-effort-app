@@ -327,7 +327,7 @@
         "Pagination inconsistent; includes 32 added pages interleaved with text"
       ],
       "publisher": "[Waterloo, Iowa : G&R Pub. Co.]",
-      "date": "1975",
+      "date": "1975-01-01",
       "language": "eng",
       "page-progression": "lr",
       "possible-copyright-status": "Copyright status: The copyright status of this item has been reviewed and it has been determined that either: 1) the item is in the public domain; or 2) permission to digitize the item has been granted by the rights holder. If you believe you have additional information regarding the copyright in this material, please contact divlib@duke.edu.",
@@ -377,7 +377,10 @@
       "ocr_module_version": "0.0.21",
       "ocr_converted": "abbyy-to-hocr 1.1.37",
       "page_number_confidence": "62",
-      "page_number_module_version": "1.0.3"
+      "page_number_module_version": "1.0.3",
+      "normalized_dates": [
+        "1975-01-01"
+      ]
     },
     "page_numbers": {
       "identifier": "whatscooknatbilt00bilt",

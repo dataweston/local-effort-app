@@ -423,7 +423,7 @@
       "title": "Bistro pizza at home : 130 pizza & flatbread recipes ",
       "creator": "Sittser, Lloyd, author",
       "publisher": "Minocqua, Wisconsin : Willow Creek Press",
-      "date": "2010",
+      "date": "2010-01-01",
       "language": "eng",
       "isbn": [
         "160755268X",
@@ -483,6 +483,9 @@
         "internetarchivebooks",
         "inlibrary",
         "printdisabled"
+      ],
+      "normalized_dates": [
+        "2010-01-01"
       ]
     },
     "server": "ia800505.us.archive.org",

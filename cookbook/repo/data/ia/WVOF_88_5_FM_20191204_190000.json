@@ -286,7 +286,10 @@
       "access-restricted-item": "true",
       "next": "WVOF_88_5_FM_20191204_200000",
       "backup_location": "ia907008_4",
-      "bad_audio": "false"
+      "bad_audio": "false",
+      "normalized_dates": [
+        "2019-12-04"
+      ]
     },
     "server": "ia803102.us.archive.org",
     "speech_vs_music_asr": [

@@ -203,7 +203,7 @@
     "metadata": {
       "identifier": "ERIC_ED451364",
       "creator": "ERIC",
-      "date": "2001",
+      "date": "2001-01-01",
       "description": "The extent to which vocational education and training (VET) policy is nurturing lifelong learning in Sweden was examined through a review of recent policy documents issued by various Swedish government agencies and data from comparative studies compiled by the Organisation for Economic Cooperation and Development and the International Adult Literacy Survey. The review focused on the following items: (1) VET policy and the structural framework of Sweden's VET system; (2) support measures to promote participation and access, modes of delivery, and actors; and (3) curricular development, learning strategies, and methodology. The study established that Sweden is making a large public investment in VET, with VET and general education functioning as parts of an integrated system that  has been highly decentralized since 1991. Extensive examples of lifelong learning policy within Sweden's educational system were identified. Swedish policy was actively supporting a lifelong learning perspective for VET, and Sweden appeared to be moving toward a genuine system for lifelong learning. (Sixteen tables/figures are included. The following items are appended: list of social partners involved in the knowledge week; tables detailing integration of the Adult Education Initiative with upper-secondary education for adults between 1997 and 1999; and list of pertinent legal provisions. The bibliography contains 42 references.) (MN)",
       "language": "english",
       "mediatype": "texts",
@@ -223,7 +223,10 @@
       "ppi": "600",
       "ocr": "ABBYY FineReader 11.0",
       "repub_state": "4",
-      "backup_location": "ia905507_34"
+      "backup_location": "ia905507_34",
+      "normalized_dates": [
+        "2001-01-01"
+      ]
     },
     "server": "ia601908.us.archive.org",
     "uniq": 1883505686,

@@ -396,7 +396,7 @@
       ],
       "description": "At head of title: Better homes and gardens",
       "publisher": "Des Moines, Iowa : Meredith Corp.",
-      "date": "1989",
+      "date": "1989-01-01",
       "language": "eng",
       "isbn": [
         "0696018810",
@@ -469,7 +469,10 @@
       ],
       "page_number_module_version": "1.0.5",
       "pdf_degraded": "invalid-jp2-headers",
-      "pdf_module_version": "0.0.25"
+      "pdf_module_version": "0.0.25",
+      "normalized_dates": [
+        "1989-01-01"
+      ]
     },
     "server": "ia801301.us.archive.org",
     "simplelists": {

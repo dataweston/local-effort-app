@@ -387,7 +387,7 @@
       "contributor": "Internet Archive",
       "creator": "None",
       "creator-alt-script": "None",
-      "date": "1991",
+      "date": "1991-01-01",
       "description": [
         "32 pages : 29 cm",
         "Easy-to-make projects designed to spark your child's creativity and encourage imagination and curiosity. Projects that you and your child can do together including arts, crafts, cooking, science and nature",
@@ -459,6 +459,9 @@
         "americana",
         "inlibrary",
         "printdisabled"
+      ],
+      "normalized_dates": [
+        "1991-01-01"
       ]
     },
     "server": "ia802808.us.archive.org",

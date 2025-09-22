@@ -424,7 +424,7 @@
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
       "creator": "Jyl Steinback",
-      "date": "2005",
+      "date": "2005-01-01",
       "description": [
         "1 volume",
         "More that 320 recipes for main dishes, sides, and desserts, plus tips for using a slow cooker, hints on how to cut the fat, handy shopping lists for each recipe and complete nutrition information"
@@ -481,7 +481,10 @@
         "inlibrary",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "2005-01-01"
+      ]
     },
     "server": "ia801405.us.archive.org",
     "uniq": 434950805,

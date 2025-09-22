@@ -90,7 +90,10 @@
       "publicdate": "2022-03-04 09:06:31",
       "addeddate": "2022-03-04 09:06:31",
       "curation": "[curator]validator@archive.org[/curator][date]20220304090646[/date][comment]checked for malware[/comment]",
-      "access-restricted-item": "true"
+      "access-restricted-item": "true",
+      "normalized_dates": [
+        "2020-01-07"
+      ]
     },
     "server": "ia800407.us.archive.org",
     "uniq": 205317335,

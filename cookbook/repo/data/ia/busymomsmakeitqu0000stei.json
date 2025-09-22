@@ -391,7 +391,7 @@
       "contributor": "Internet Archive",
       "creator": "Steinback, Jyl",
       "creator-alt-script": "None",
-      "date": "2004",
+      "date": "2004-01-01",
       "description": [
         "384 pages : 21 cm",
         "Includes index"
@@ -451,7 +451,10 @@
         "inlibrary",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "2004-01-01"
+      ]
     },
     "server": "ia803406.us.archive.org",
     "uniq": 1723074353,

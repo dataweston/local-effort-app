@@ -413,7 +413,7 @@
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
       "creator": "Graubart, Cynthia Stevens",
-      "date": "2004",
+      "date": "2004-01-01",
       "description": [
         "xvii, 236 p. ; 24 cm",
         "\"Quick and easy recipes, smart meal plans, and savvy advice for new (and not-so-new) moms\"--Cover",
@@ -478,7 +478,10 @@
         "inlibrary",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "2004-01-01"
+      ]
     },
     "server": "ia903401.us.archive.org",
     "uniq": 1838647345,

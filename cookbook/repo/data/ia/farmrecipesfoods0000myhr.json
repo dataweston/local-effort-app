@@ -458,7 +458,7 @@
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
       "creator": "Myhre, Helen",
-      "date": "2001",
+      "date": "2001-01-01",
       "description": [
         "xv, 269 p. : 24 cm",
         "Includes index"
@@ -524,7 +524,10 @@
       "page_number_confidence": "0",
       "page_number_module_version": "1.0.5",
       "curation": "[date]20250206130544[/date][comment]inlibrary removal 3[/comment]",
-      "source": "removed"
+      "source": "removed",
+      "normalized_dates": [
+        "2001-01-01"
+      ]
     },
     "server": "ia800903.us.archive.org",
     "uniq": 1654436987,

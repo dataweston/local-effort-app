@@ -472,7 +472,7 @@
       "sponsordate": "20200131",
       "creator": "Cobb, Tanya Denckla, 1956-",
       "publisher": "North Adams, MA : Storey Pub.",
-      "date": "2011",
+      "date": "2011-01-01",
       "subject": [
         "Vegetable gardening -- United States",
         "Organic gardening -- United States",
@@ -517,7 +517,10 @@
         "americana",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "2011-01-01"
+      ]
     },
     "server": "ia802801.us.archive.org",
     "uniq": 351028606,

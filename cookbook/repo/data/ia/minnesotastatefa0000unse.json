@@ -388,7 +388,7 @@
       "camera": "USB PTP Class Camera",
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
-      "date": "1994",
+      "date": "1994-01-01",
       "description": [
         "96 pages : 26 cm",
         "Cover title",
@@ -456,6 +456,9 @@
         "internetarchivebooks",
         "inlibrary",
         "printdisabled"
+      ],
+      "normalized_dates": [
+        "1994-01-01"
       ]
     },
     "server": "ia803403.us.archive.org",

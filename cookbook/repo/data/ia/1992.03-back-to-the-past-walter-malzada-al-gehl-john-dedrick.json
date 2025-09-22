@@ -120,7 +120,7 @@
         "newsandpublicaffairs"
       ],
       "creator": "West Bend Community TV",
-      "date": "1992",
+      "date": "1992-01-01",
       "description": "On this episode of Back to the Past features Walter Malzada, Al Gehl John Dedrick. The men discuss the people who put West Bend on the map.",
       "scanner": "Internet Archive HTML5 Uploader 1.7.0",
       "subject": [
@@ -144,7 +144,10 @@
       "title": "Back To The Past: People of West Bend",
       "uploader": "westbendctv@gmail.com",
       "publicdate": "2023-03-03 20:34:43",
-      "addeddate": "2023-03-03 20:34:43"
+      "addeddate": "2023-03-03 20:34:43",
+      "normalized_dates": [
+        "1992-01-01"
+      ]
     },
     "server": "ia801505.us.archive.org",
     "uniq": 345033947,

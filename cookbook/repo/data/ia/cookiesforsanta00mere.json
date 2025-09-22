@@ -387,7 +387,7 @@
         "Christmas cooking"
       ],
       "publisher": "Des Moines, Iowa : Meredith",
-      "date": "1999",
+      "date": "1999-01-01",
       "language": "eng",
       "isbn": [
         "069621041X",
@@ -445,7 +445,10 @@
         "inlibrary",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "1999-01-01"
+      ]
     },
     "server": "ia800203.us.archive.org",
     "uniq": 502673125,

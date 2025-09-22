@@ -560,7 +560,7 @@
       ],
       "color": "black and white",
       "creator": "Wendy Clarke",
-      "date": "1988",
+      "date": "1988-01-01",
       "description": "<span style=\"color:rgb(44,44,44);font-family:'Helvetica Neue', Helvetica, Arial, sans-serif;font-size:14px;background-color:rgb(255,255,255);\">Participants face the camera and talk about their feelings, thoughts, and experiences </span><span style=\"color:rgb(44,44,44);font-family:'Helvetica Neue', Helvetica, Arial, sans-serif;font-size:14px;background-color:rgb(255,255,255);\">related to love for exactly three minutes. Part of video artist Wendy Clarke’s</span><i style=\"color:rgb(44,44,44);font-family:'Helvetica Neue', Helvetica, Arial, sans-serif;font-size:14px;background-color:rgb(255,255,255);\"> Love Tape</i><span style=\"color:rgb(44,44,44);font-family:'Helvetica Neue', Helvetica, Arial, sans-serif;font-size:14px;background-color:rgb(255,255,255);\"> </span><span style=\"color:rgb(44,44,44);font-family:'Helvetica Neue', Helvetica, Arial, sans-serif;font-size:14px;background-color:rgb(255,255,255);\">series. These videos were created at the Santa Monica Place Mall in California.</span>",
       "director": "Clarke, Wendy",
       "genre": "participatory video art",
@@ -603,7 +603,10 @@
       "uploader": "wcftr@commarts.wisc.edu",
       "publicdate": "2024-08-05 14:52:20",
       "addeddate": "2024-08-05 14:52:20",
-      "access-restricted-item": "true"
+      "access-restricted-item": "true",
+      "normalized_dates": [
+        "1988-01-01"
+      ]
     },
     "server": "ia601509.us.archive.org",
     "uniq": 816418463,

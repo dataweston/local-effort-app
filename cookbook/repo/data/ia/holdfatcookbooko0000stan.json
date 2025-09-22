@@ -398,7 +398,7 @@
       "contributor": "Internet Archive",
       "creator": "Stangl, Mary",
       "creator-alt-script": "None",
-      "date": "1992",
+      "date": "1992-01-01",
       "description": [
         "vi, 340 pages ; 22 cm",
         "\"A heart is a terrible thing to waste!\"",
@@ -463,7 +463,10 @@
         "inlibrary",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "1992-01-01"
+      ]
     },
     "server": "ia801603.us.archive.org",
     "uniq": 1780411770,

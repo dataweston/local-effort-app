@@ -1120,7 +1120,10 @@
       "publicdate": "2021-05-27 22:27:01",
       "addeddate": "2021-05-27 22:27:01",
       "curation": "[curator]kaplan@archive.org[/curator][date]20240717170450[/date][state]un-dark[/state][comment][/comment]",
-      "noarchivetorrent": "true"
+      "noarchivetorrent": "true",
+      "normalized_dates": [
+        "2021-05-16"
+      ]
     },
     "server": "ia803405.us.archive.org",
     "uniq": 380198124,

@@ -431,7 +431,7 @@
       "collection_set": "printdiscabled",
       "contributor": "Internet Archive",
       "creator": "Carey, Frank, 1949- author",
-      "date": "2016",
+      "date": "2016-01-01",
       "description": [
         "1 online resource (ix, 357 pages) :",
         "Nearly thirty years ago, cooking team Frank and Jayni Carey gave us The Kansas Cookbook: Recipes from the Heartland, a classic, much-loved volume chronicling the state's favorite recipes and food traditions. Now they're back with The New Kansas Cookbook: Rural Roots, Modern Table, a look at modern and innovative foodways straight from their kitchen in the heart of the Midwest. They combine fresh ingredients from farmer's markets with fresh ideas and Kansas know-how from across the state to create a dynamic new food scene. From modern makeovers of Midwestern mainstays like sloppy joes and sweet",
@@ -508,7 +508,10 @@
       ],
       "page_number_module_version": "1.0.5",
       "source": "removed",
-      "curation": "[date]20250211131940[/date][comment]inlibrary removal 3[/comment]"
+      "curation": "[date]20250211131940[/date][comment]inlibrary removal 3[/comment]",
+      "normalized_dates": [
+        "2016-01-01"
+      ]
     },
     "server": "ia804606.us.archive.org",
     "uniq": 316736322,

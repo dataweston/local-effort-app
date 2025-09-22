@@ -425,7 +425,7 @@
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
       "creator": "Eighmey, Rae Katherine",
-      "date": "2002",
+      "date": "2002-01-01",
       "description": [
         "244 pages : 26 cm",
         "\"Excerpts from Wallace's Farmer magazine\"--Cover",
@@ -502,7 +502,10 @@
       ],
       "page_number_module_version": "1.0.5",
       "curation": "[date]20250207133147[/date][comment]inlibrary removal 3[/comment]",
-      "source": "removed"
+      "source": "removed",
+      "normalized_dates": [
+        "2002-01-01"
+      ]
     },
     "server": "ia803404.us.archive.org",
     "uniq": 1488706386,

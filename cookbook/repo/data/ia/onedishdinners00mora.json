@@ -429,7 +429,7 @@
         "Presents a collection of easy-to-prepare recipes that emphasize one-pot cooking, accompanied by make-ahead and freezing directions for families on the go"
       ],
       "publisher": "Des Moines, Iowa : Better Homes and Gardens Books",
-      "date": "2000",
+      "date": "2000-01-01",
       "language": "eng",
       "isbn": [
         "0696209659",
@@ -494,7 +494,10 @@
         "inlibrary",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "2000-01-01"
+      ]
     },
     "server": "ia800206.us.archive.org",
     "simplelists": {

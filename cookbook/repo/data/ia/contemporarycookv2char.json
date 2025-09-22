@@ -379,7 +379,7 @@
         "Vol. 1. - cop. 1984. - 109 str. -- Vol. 2. - cop. 1984. - 109 str. -- Vol. 3. - cop. 1984. - 109 str. -- Vol. 4. - cop. 1984. - 109 str. -- Vol. 5. - cop. 1985. - 109 str. -- Vol. 6. - cop. 1985. - 109 str. -- Vol. 7. - cop. 1985. - 109 str. -- Vol. 8. - cop. 1985. - 109 str. -- Vol. 10. - 1985. - 109 str. -- Vol. 11. - cop. 1985. - 109 str. -- Vol. 12. - cop. 1985. - 109 str"
       ],
       "publisher": "[S. l.] : Minnesota mining and manufacturing company",
-      "date": "1984",
+      "date": "1984-01-01",
       "language": "eng",
       "isbn": [
         "0881590002",
@@ -476,6 +476,9 @@
         "americana",
         "inlibrary",
         "printdisabled"
+      ],
+      "normalized_dates": [
+        "1984-01-01"
       ]
     },
     "server": "ia800208.us.archive.org",

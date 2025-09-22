@@ -131,9 +131,12 @@
       "imagecount": "141",
       "firstfiledate": "20130510160746",
       "lastfiledate": "20130510161554",
-      "date": "2013",
+      "date": "2013-01-01",
       "backup_location": "ia905700_19",
-      "access-restricted-item": "true"
+      "access-restricted-item": "true",
+      "normalized_dates": [
+        "2013-01-01"
+      ]
     },
     "server": "ia801906.us.archive.org",
     "uniq": 1533819060,

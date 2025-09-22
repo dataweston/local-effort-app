@@ -305,7 +305,7 @@
       "publicdate": "2009-10-11 15:45:23",
       "backup_location": "ia903604_3",
       "addeddate": "2009-10-11 15:45:23",
-      "date": "1886",
+      "date": "1886-01-01",
       "subject": [
         "Home",
         "Home economics -- Handbooks, manuals, etc",
@@ -317,7 +317,10 @@
       "foldoutcount": "0",
       "ocr_module_version": "0.0.14",
       "ocr_converted": "abbyy-to-hocr 1.1.11",
-      "page_number_confidence": "91.99"
+      "page_number_confidence": "91.99",
+      "normalized_dates": [
+        "1886-01-01"
+      ]
     },
     "page_numbers": {
       "identifier": "/var/tmp/autoclean/derive/hearthstoneorli00hollgoog/hearthstoneorli00hollgoog",

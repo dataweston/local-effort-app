@@ -457,7 +457,7 @@
       "camera": "USB PTP Class Camera",
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
-      "date": "1996",
+      "date": "1996-01-01",
       "description": [
         "viii, 546 p. : 22 cm",
         "\"Special sesquicentennial edition\"--Cover"
@@ -521,7 +521,10 @@
         "inlibrary",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "1996-01-01"
+      ]
     },
     "server": "ia801409.us.archive.org",
     "uniq": 1029021955,

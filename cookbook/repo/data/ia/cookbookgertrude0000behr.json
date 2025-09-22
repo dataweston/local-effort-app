@@ -423,7 +423,7 @@
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
       "creator": "Behrens, Roy R., 1946- author",
-      "date": "2005",
+      "date": "2005-01-01",
       "description": [
         "95 pages : 18 cm",
         "\" ... a biographical sketch of one of Gertrude Stein's closest friends, a largely unknown artist named William Edwards Cook (1881-1959)\"--Jacket",
@@ -496,7 +496,10 @@
         "inlibrary",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "2005-01-01"
+      ]
     },
     "server": "ia601604.us.archive.org",
     "simplelists": {

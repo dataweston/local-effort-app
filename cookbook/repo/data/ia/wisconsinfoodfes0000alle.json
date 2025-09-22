@@ -436,7 +436,7 @@
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
       "creator": "Allen, Terese",
-      "date": "1995",
+      "date": "1995-01-01",
       "description": [
         "vi, 186 p. : 26 cm",
         "Includes bibliographical references (p. 179) and index"
@@ -499,6 +499,9 @@
         "internetarchivebooks",
         "inlibrary",
         "printdisabled"
+      ],
+      "normalized_dates": [
+        "1995-01-01"
       ]
     },
     "server": "ia801805.us.archive.org",

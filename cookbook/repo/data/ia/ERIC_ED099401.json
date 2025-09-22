@@ -170,7 +170,7 @@
     "metadata": {
       "identifier": "ERIC_ED099401",
       "creator": "ERIC",
-      "date": "1974-04",
+      "date": "1974-01-01",
       "description": "Improvements in teaching competencies, attitudes toward children, professional commitment, and philosophy of education of 31 vocational home economics teacher education students were measured through four self-evaluations during the last year in college and the first year of teaching. Comparison of mean scores was done by t-tests. Significant increases in teaching competencies were found both during the semester preceding student teaching and the student teaching block. Significant decreases in warmth of attitudes toward children (as measured by the Minnesota Teacher Attitude Inventory) occurred while in college and again on the job. Professional commitment rose only while in college. No change ocurred in educational philosophy. (Author)",
       "language": "english",
       "mediatype": "texts",
@@ -190,7 +190,10 @@
       "ppi": "600",
       "ocr": "ABBYY FineReader 9.0",
       "repub_state": "4",
-      "backup_location": "ia905306_14"
+      "backup_location": "ia905306_14",
+      "normalized_dates": [
+        "1974-01-01"
+      ]
     },
     "server": "ia601700.us.archive.org",
     "uniq": 244227334,

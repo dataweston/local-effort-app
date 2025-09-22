@@ -413,7 +413,7 @@
       "camera": "USB PTP Class Camera",
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
-      "date": "1990",
+      "date": "1990-01-01",
       "description": [
         "xi, 289 p. : 24 cm",
         "Cover title: The Woman's Club of Minneapolis presents 10,000 tastes of Minnesota"
@@ -470,6 +470,9 @@
         "internetarchivebooks",
         "printdisabled",
         "inlibrary"
+      ],
+      "normalized_dates": [
+        "1990-01-01"
       ]
     },
     "server": "ia801909.us.archive.org",

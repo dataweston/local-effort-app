@@ -408,7 +408,7 @@
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
       "creator": "Wagner, Lisa, 1958-",
-      "date": "2013",
+      "date": "2013-01-01",
       "description": [
         "144 pages : 22 cm",
         "Includes index"
@@ -473,7 +473,10 @@
         "inlibrary",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "2013-01-01"
+      ]
     },
     "server": "ia800308.us.archive.org",
     "simplelists": {

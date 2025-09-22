@@ -346,7 +346,7 @@
       ],
       "description": "Includes index",
       "publisher": "[Plymouth] : Sargento of Wisconsin",
-      "date": "1992",
+      "date": "1992-01-01",
       "language": "eng",
       "page-progression": "lr",
       "boxid": "IA123701",
@@ -402,7 +402,10 @@
       ],
       "page_number_module_version": "1.0.5",
       "pdf_degraded": "invalid-jp2-headers",
-      "pdf_module_version": "0.0.25"
+      "pdf_module_version": "0.0.25",
+      "normalized_dates": [
+        "1992-01-01"
+      ]
     },
     "server": "ia800208.us.archive.org",
     "uniq": 1748945609,

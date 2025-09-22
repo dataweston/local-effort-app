@@ -174,7 +174,7 @@
     "metadata": {
       "identifier": "ERIC_ED275888",
       "creator": "ERIC",
-      "date": "1986",
+      "date": "1986-01-01",
       "description": "Correctional education is a generic term describing a wide range of educational activities that take place in institutional and community settings. In 1986, 37 states and the District of Columbia provided correctional education to incarcerated adults directly through state departments of corrections. In addition, several states have created alternative administrative structures to address problems associated with traditional delivery of correctional education such as lack of funding, community resources, coordination with and support from other state agencies, adequately trained staff, and coordination with other educational institutions. During the past 15 years, extensive litigation in the U.S. correctional system has affected correctional education. This is particularly true  in the areas of inmates' rights to education and parity for female offenders. Although the prevalence of handicaps among incarcerated juvenile offenders has been studied extensively, little research has been done in the area of the extent of learning disabilities among adult offenders. Although it is a new area, a program combining special educational with appropriate transitional and aftercare services in the context of complex multiagency planning and service delivery gives evidence of substantially reducing habitual patterns of criminal behavior. Because it teaches skills that inmates can use to gain employment after release, vocational education is also important in reducing recidivism. Another new and promising area of service delivery is that of postsecondary correctional education.  (MN)",
       "language": "english",
       "mediatype": "texts",
@@ -194,7 +194,10 @@
       "ppi": "600",
       "ocr": "ABBYY FineReader 9.0",
       "repub_state": "4",
-      "backup_location": "ia905908_31"
+      "backup_location": "ia905908_31",
+      "normalized_dates": [
+        "1986-01-01"
+      ]
     },
     "server": "ia601604.us.archive.org",
     "uniq": 1328681065,

@@ -474,7 +474,7 @@
       "isbn": "0696005905",
       "openlibrary": "OL5332395M",
       "publisher": "Des Moines, Iowa, Meredith Corp.",
-      "date": "1972",
+      "date": "1972-01-01",
       "subject": [
         "Low-calorie diet -- Recipes",
         "Desserts"
@@ -489,6 +489,9 @@
         "americana",
         "inlibrary",
         "printdisabled"
+      ],
+      "normalized_dates": [
+        "1972-01-01"
       ]
     },
     "server": "ia802909.us.archive.org",

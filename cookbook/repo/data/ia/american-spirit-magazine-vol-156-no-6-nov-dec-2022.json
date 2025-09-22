@@ -251,7 +251,7 @@
         "magazine_rack"
       ],
       "creator": "Daughters of the American Revolution",
-      "date": "2022-12",
+      "date": "2022-01-01",
       "description": "<span class=\"ILfuVd\" lang=\"en\" xml:lang=\"en\"><span class=\"hgKElc\"><i>American Spirit </i>focuses on early American history, historic preservation, <br />genealogy, patriotism, civics education, women's' history and <br />biographies, historic travel and tourism. The primary historical focus <br />is on the North American colonial period. That is roughly the two <br />hundred years between the Jamestown colony and the 1820s.</span></span>",
       "language": "eng",
       "scanner": "Internet Archive HTML5 Uploader 1.7.0",
@@ -296,6 +296,9 @@
       "collection_added": [
         "historymagazines",
         "magazine_rack"
+      ],
+      "normalized_dates": [
+        "2022-01-01"
       ]
     },
     "server": "ia801306.us.archive.org",

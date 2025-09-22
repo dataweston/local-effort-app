@@ -209,7 +209,7 @@
       "possible-copyright-status": "NOT_IN_COPYRIGHT",
       "identifier-access": "http://www.archive.org/details/acookbookfornur00hillgoog",
       "year": "1911",
-      "date": "1911",
+      "date": "1911-01-01",
       "oclc-id": "5063422",
       "scandate": "20070712",
       "copyright-region": "US",
@@ -235,7 +235,10 @@
       "backup_location": "ia903601_22",
       "openlibrary_edition": "OL6527321M",
       "openlibrary_work": "OL7707425W",
-      "addeddate": "2008-02-01 13:17:19"
+      "addeddate": "2008-02-01 13:17:19",
+      "normalized_dates": [
+        "1911-01-01"
+      ]
     },
     "server": "ia801906.us.archive.org",
     "uniq": 1983988866,

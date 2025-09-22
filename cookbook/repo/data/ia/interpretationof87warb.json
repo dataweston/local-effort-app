@@ -338,7 +338,7 @@
       "repub_state": "4",
       "page-progression": "lr",
       "publicdate": "2013-07-16 10:38:05",
-      "date": "1928",
+      "date": "1928-01-01",
       "updatedate": "2013-07-16 11:51:00",
       "updater": "associate-adrianna-flores@archive.org",
       "identifier": "interpretationof87warb",
@@ -370,7 +370,10 @@
       "ocr_module_version": "0.0.21",
       "ocr_converted": "abbyy-to-hocr 1.1.37",
       "page_number_confidence": "0",
-      "page_number_module_version": "1.0.3"
+      "page_number_module_version": "1.0.3",
+      "normalized_dates": [
+        "1928-01-01"
+      ]
     },
     "page_numbers": {
       "identifier": "interpretationof87warb",

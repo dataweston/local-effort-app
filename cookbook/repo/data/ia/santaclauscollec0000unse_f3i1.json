@@ -461,7 +461,7 @@
       "camera": "Sony Alpha-A6300 (Control)",
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
-      "date": "2003",
+      "date": "2003-01-01",
       "description": [
         "158 pages : 29 cm",
         "\"For generations, Santa Claus has inspired smiles, wishes, and wonderment. Now he inspires this collection of heartwarming stories and creative traditions. From the people who helped form Santa's image to the collectors and artisans who cherish and shape his likeness today, you'll understand why Santa is so special.\"--Page 4 of cover"
@@ -535,7 +535,10 @@
         "inlibrary",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "2003-01-01"
+      ]
     },
     "server": "ia902908.us.archive.org",
     "uniq": 988865406,

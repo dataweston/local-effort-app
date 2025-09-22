@@ -155,7 +155,10 @@
       "publicdate": "2022-10-04 15:22:01",
       "addeddate": "2022-10-04 15:22:01",
       "curation": "[curator]validator@archive.org[/curator][date]20221004152312[/date][comment]checked for malware[/comment]",
-      "access-restricted-item": "true"
+      "access-restricted-item": "true",
+      "normalized_dates": [
+        "2021-05-06"
+      ]
     },
     "server": "ia601500.us.archive.org",
     "uniq": 982981545,

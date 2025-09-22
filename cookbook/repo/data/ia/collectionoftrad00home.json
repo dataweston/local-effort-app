@@ -368,7 +368,7 @@
       ],
       "description": "Cover title: Amana colony recipes",
       "publisher": "Homestead, Iowa : Homestead Welfare Club",
-      "date": "1976",
+      "date": "1976-01-01",
       "language": "eng",
       "page-progression": "lr",
       "boxid": "IA125715",
@@ -421,7 +421,10 @@
         "inlibrary",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "1976-01-01"
+      ]
     },
     "server": "ia902306.us.archive.org",
     "uniq": 743015091,

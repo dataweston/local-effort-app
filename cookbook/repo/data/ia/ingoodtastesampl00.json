@@ -462,7 +462,7 @@
       ],
       "title": "In good taste : a sampling of recipes from the best chefs of Wisconsin : to benefit the Muscular Dystrophy Association",
       "publisher": "Wauwatosa, Wis. : The Association",
-      "date": "1997",
+      "date": "1997-01-01",
       "external-identifier": [
         "urn:asin:0942495721",
         "urn:acs6:ingoodtastesampl00:pdf:dd9917b4-b75b-4dd5-9bfb-a214ed46b933",
@@ -525,7 +525,10 @@
         "inlibrary",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "1997-01-01"
+      ]
     },
     "server": "ia601902.us.archive.org",
     "uniq": 350568756,

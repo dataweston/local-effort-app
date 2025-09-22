@@ -98,7 +98,7 @@
       "contributor": "Internet Archive",
       "crawler": "Heritrix/3.3.0-SNAPSHOT-20140909-0106",
       "creator": "Archive-It",
-      "date": "2014",
+      "date": "2014-01-01",
       "description": "recurrence=NONE, maxDuration=86400, maxDocumentCount=null, isTestCrawl=false, isPatchCrawl=false, oneTimeSubtype=CRAWL_SELECTED_SEEDS, seedCount=1, accountId=478, accountType=SUBSCRIBER, organizationName=\"Wisconsin Historical Society\", collectionId=2159, collectionName=\"Wisconsin State Government \", collectionPublic=true",
       "mediatype": "web",
       "scandate": "20140918214753",
@@ -119,7 +119,10 @@
       "firstfiledate": "20140918214753",
       "lastfiledate": "20140918221920",
       "backup_location": "ia905904_11",
-      "access-restricted-item": "true"
+      "access-restricted-item": "true",
+      "normalized_dates": [
+        "2014-01-01"
+      ]
     },
     "server": "ia903108.us.archive.org",
     "uniq": 773910080,

@@ -393,7 +393,7 @@
       "contributor": "Internet Archive",
       "creator": "Swan-Kohler, Nina, 1952- author",
       "creator-alt-script": "None",
-      "date": "2003",
+      "date": "2003-01-01",
       "description": [
         "77 pages : 21 x 23 cm",
         "Includes index"
@@ -455,7 +455,10 @@
         "printdisabled"
       ],
       "page_number_confidence": "0",
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "2003-01-01"
+      ]
     },
     "server": "ia600502.us.archive.org",
     "uniq": 902852374,

@@ -415,7 +415,7 @@
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
       "creator": "Yerdon, Joe, author",
-      "date": "2016",
+      "date": "2016-01-01",
       "description": [
         "pages cm",
         "Includes index",
@@ -484,6 +484,9 @@
         "internetarchivebooks",
         "printdisabled",
         "inlibrary"
+      ],
+      "normalized_dates": [
+        "2016-01-01"
       ]
     },
     "server": "ia802302.us.archive.org",

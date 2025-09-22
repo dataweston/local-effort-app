@@ -434,7 +434,7 @@
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
       "creator": "Stradal, J. Ryan, author",
-      "date": "2016",
+      "date": "2016-01-01",
       "description": [
         "385 pages ; 20 cm",
         "First published in the USA by Pamela Dorman Books",
@@ -498,6 +498,9 @@
       "collection": [
         "internetarchivebooks",
         "printdisabled"
+      ],
+      "normalized_dates": [
+        "2016-01-01"
       ]
     },
     "server": "ia801908.us.archive.org",

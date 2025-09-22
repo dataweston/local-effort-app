@@ -240,7 +240,10 @@
         "radioprograms"
       ],
       "bad_audio": "false",
-      "backup_location": "ia906807_19"
+      "backup_location": "ia906807_19",
+      "normalized_dates": [
+        "2019-02-11"
+      ]
     },
     "server": "ia601708.us.archive.org",
     "speech_vs_music_asr": [

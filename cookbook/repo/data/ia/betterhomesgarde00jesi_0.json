@@ -419,7 +419,7 @@
       "title": "Christmas cooking from the heart : quick and easy holiday cooking",
       "creator": "Jesica Saari",
       "publisher": "Des Moines, Iowa : Meredith Books",
-      "date": "2005",
+      "date": "2005-01-01",
       "external-identifier": [
         "urn:asin:0696224054",
         "urn:acs6:betterhomesgarde00jesi_0:pdf:5a014b97-907c-4451-a6af-e603098f5fd1",
@@ -522,7 +522,10 @@
         "printdisabled",
         "inlibrary"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "2005-01-01"
+      ]
     },
     "server": "ia800303.us.archive.org",
     "simplelists": {

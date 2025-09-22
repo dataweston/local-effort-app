@@ -414,7 +414,7 @@
       "camera": "USB PTP Class Camera",
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
-      "date": "2015",
+      "date": "2015-01-01",
       "description": [
         "160 pages : 28 cm",
         "Make life even more spectacular with creative ideas for seasonal decor projects, recipes, party ideas, and super-fun gifts",
@@ -479,7 +479,10 @@
         "printdisabled",
         "inlibrary"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "2015-01-01"
+      ]
     },
     "server": "ia904502.us.archive.org",
     "uniq": 62009604,

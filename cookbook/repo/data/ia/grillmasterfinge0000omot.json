@@ -406,7 +406,7 @@
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
       "creator": "Omoth, Tyler, author",
-      "date": "2017",
+      "date": "2017-01-01",
       "description": [
         "32 pages : 27 cm",
         "\"Easy-to-follow instructions and cooking tips teach young readers how to cook a variety of amazing grilled recipes\"--",
@@ -476,7 +476,10 @@
         "inlibrary",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "2017-01-01"
+      ]
     },
     "server": "ia902308.us.archive.org",
     "uniq": 1139989690,

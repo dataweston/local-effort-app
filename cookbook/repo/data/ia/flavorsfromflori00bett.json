@@ -419,7 +419,7 @@
       "boxid_2": "CH111601",
       "donor": "alibris",
       "sponsordate": "not to be invoiced-past billing period",
-      "date": "1995",
+      "date": "1995-01-01",
       "lccn": "95157602",
       "description": "Includes index",
       "city": "Des Moines, Iowa",
@@ -453,7 +453,10 @@
       ],
       "page_number_module_version": "1.0.5",
       "pdf_degraded": "invalid-jp2-headers",
-      "pdf_module_version": "0.0.25"
+      "pdf_module_version": "0.0.25",
+      "normalized_dates": [
+        "1995-01-01"
+      ]
     },
     "server": "ia800800.us.archive.org",
     "uniq": 2132351082,

@@ -442,7 +442,7 @@
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
       "creator": "Hoffmann, Louise Mae, 1944-",
-      "date": "2006",
+      "date": "2006-01-01",
       "description": "279 p. ; 24 cm",
       "isbn": "0977731812",
       "language": "eng",
@@ -506,7 +506,10 @@
         "inlibrary",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "2006-01-01"
+      ]
     },
     "server": "ia801505.us.archive.org",
     "uniq": 2067846773,

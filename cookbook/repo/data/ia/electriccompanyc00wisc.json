@@ -418,7 +418,7 @@
         "Includes index"
       ],
       "publisher": "[Milwaukee?] : Wisconsin Electric Power Co.",
-      "date": "1962",
+      "date": "1962-01-01",
       "language": "eng",
       "page-progression": "lr",
       "boxid": "IA1914416",
@@ -472,6 +472,9 @@
         "internetarchivebooks",
         "inlibrary",
         "printdisabled"
+      ],
+      "normalized_dates": [
+        "1962-01-01"
       ]
     },
     "server": "ia600200.us.archive.org",

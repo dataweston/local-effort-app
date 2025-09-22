@@ -229,7 +229,7 @@
         "Ames-History-Archives",
         "additional_collections"
       ],
-      "date": "2003-08",
+      "date": "2003-01-01",
       "description": "Treasured Recipes First United Methodist Women Ames Iow",
       "scanner": "Internet Archive HTML5 Uploader 1.7.0",
       "subject": "Cookbooks",
@@ -250,7 +250,10 @@
       "ocr_detected_lang": "en",
       "ocr_detected_lang_conf": "1.0000",
       "page_number_confidence": "92",
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "2003-01-01"
+      ]
     },
     "server": "ia601804.us.archive.org",
     "uniq": 1288428325,

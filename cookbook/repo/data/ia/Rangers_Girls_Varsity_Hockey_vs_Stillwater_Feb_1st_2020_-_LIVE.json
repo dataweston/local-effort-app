@@ -1335,7 +1335,10 @@
       "addeddate": "2020-02-09 10:42:52",
       "noarchivetorrent": "true",
       "curation": "[curator]jscott@archive.org[/curator][date]20200223180534[/date][state]un-dark[/state]",
-      "backup_location": "ia907104_12"
+      "backup_location": "ia907104_12",
+      "normalized_dates": [
+        "2020-02-01"
+      ]
     },
     "server": "ia802808.us.archive.org",
     "uniq": 212567073,

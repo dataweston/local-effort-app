@@ -566,7 +566,10 @@
       "addeddate": "2018-05-06 18:17:10",
       "backup_location": "ia906704_22",
       "noarchivetorrent": "true",
-      "curation": "[curator]jscott@archive.org[/curator][date]20200223081841[/date][state]un-dark[/state]"
+      "curation": "[curator]jscott@archive.org[/curator][date]20200223081841[/date][state]un-dark[/state]",
+      "normalized_dates": [
+        "2018-05-01"
+      ]
     },
     "server": "ia803101.us.archive.org",
     "uniq": 94887316,

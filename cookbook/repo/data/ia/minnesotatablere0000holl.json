@@ -457,7 +457,7 @@
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
       "creator": "Holl, Shelley N. C",
-      "date": "2009",
+      "date": "2009-01-01",
       "description": "176 p. : 26 cm",
       "isbn": "9780760336267",
       "language": "eng",
@@ -520,6 +520,9 @@
         "internetarchivebooks",
         "inlibrary",
         "printdisabled"
+      ],
+      "normalized_dates": [
+        "2009-01-01"
       ]
     },
     "server": "ia801602.us.archive.org",

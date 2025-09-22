@@ -444,7 +444,7 @@
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
       "creator": "Blakely, Carol",
-      "date": "2006",
+      "date": "2006-01-01",
       "description": [
         "125 p. : 23 cm",
         "\"Recipes sizzling in Texas history, a cookbook war, and more\"--Cover"
@@ -509,7 +509,10 @@
         "printdisabled"
       ],
       "page_number_confidence": "0",
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "2006-01-01"
+      ]
     },
     "server": "ia601500.us.archive.org",
     "uniq": 1406009333,

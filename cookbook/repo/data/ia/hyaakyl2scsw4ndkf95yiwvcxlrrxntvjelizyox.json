@@ -168,7 +168,10 @@
       "publicdate": "2021-06-13 23:06:01",
       "addeddate": "2021-06-13 23:06:01",
       "curation": "[curator]validator@archive.org[/curator][date]20210613231158[/date][comment]checked for malware[/comment]",
-      "access-restricted-item": "true"
+      "access-restricted-item": "true",
+      "normalized_dates": [
+        "2013-10-24"
+      ]
     },
     "server": "ia804501.us.archive.org",
     "uniq": 456841971,

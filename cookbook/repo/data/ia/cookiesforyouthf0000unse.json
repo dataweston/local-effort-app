@@ -397,7 +397,7 @@
       "camera": "USB PTP Class Camera",
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
-      "date": "1993",
+      "date": "1993-01-01",
       "description": "139 pages ; 10 x 14 cm",
       "isbn": [
         "1563830086",
@@ -458,7 +458,10 @@
         "printdisabled"
       ],
       "page_number_confidence": "0",
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "1993-01-01"
+      ]
     },
     "server": "ia903407.us.archive.org",
     "uniq": 1504114247,

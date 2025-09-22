@@ -339,7 +339,7 @@
       "scanningcenter": "il",
       "sponsor": "University of Illinois Urbana-Champaign Alternates",
       "contributor": "University of Illinois Urbana-Champaign",
-      "date": "1922",
+      "date": "1922-01-01",
       "subject": "Home economics -- Vocational guidance -- Minnesota -- Minneapolis",
       "title": "Home economics positions in Minneapolis",
       "creator": "Wright, Barbara H",
@@ -399,7 +399,10 @@
       "sponsordate": "20220531",
       "external-identifier": "urn:oclc:record:1402337512",
       "page_number_confidence": "69",
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "1922-01-01"
+      ]
     },
     "page_numbers": {
       "identifier": "homeeconomicspos00wrig",

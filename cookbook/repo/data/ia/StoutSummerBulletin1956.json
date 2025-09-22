@@ -276,8 +276,11 @@
       "ocr_detected_lang_conf": "1.0000",
       "page_number_confidence": "96.55",
       "pdf_module_version": "0.0.20",
-      "date": "1956",
-      "year": "1956"
+      "date": "1956-01-01",
+      "year": "1956",
+      "normalized_dates": [
+        "1956-01-01"
+      ]
     },
     "server": "ia801606.us.archive.org",
     "uniq": 1058226219,

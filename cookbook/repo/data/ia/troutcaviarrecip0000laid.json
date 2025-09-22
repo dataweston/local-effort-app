@@ -407,7 +407,7 @@
       "collection_set": "china",
       "contributor": "Internet Archive",
       "creator": "Laidlaw, Brett",
-      "date": "2011",
+      "date": "2011-01-01",
       "isbn": [
         "9780873518192",
         "0873518195"
@@ -478,7 +478,10 @@
         "printdisabled"
       ],
       "page_number_module_version": "1.0.5",
-      "source": "removed"
+      "source": "removed",
+      "normalized_dates": [
+        "2011-01-01"
+      ]
     },
     "server": "ia801701.us.archive.org",
     "uniq": 1780677352,

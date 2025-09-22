@@ -439,7 +439,7 @@
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
       "creator": "Loichot, Valérie, 1968-",
-      "date": "2013",
+      "date": "2013-01-01",
       "description": [
         "xxxvii, 243 pages ; 23 cm",
         "Includes bibliographical references (pages 221-235) and index",
@@ -508,6 +508,9 @@
       "collection": [
         "internetarchivebooks",
         "printdisabled"
+      ],
+      "normalized_dates": [
+        "2013-01-01"
       ]
     },
     "server": "ia600809.us.archive.org",

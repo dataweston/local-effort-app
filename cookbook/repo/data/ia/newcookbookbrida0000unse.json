@@ -389,7 +389,7 @@
       "contributor": "Internet Archive",
       "creator": "None",
       "creator-alt-script": "None",
-      "date": "2005",
+      "date": "2005-01-01",
       "description": [
         "64, 576 pages : 24 cm",
         "Cover title",
@@ -450,7 +450,10 @@
         "printdisabled"
       ],
       "page_number_confidence": "0",
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "2005-01-01"
+      ]
     },
     "server": "ia600107.us.archive.org",
     "uniq": 1979367806,

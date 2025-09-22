@@ -415,7 +415,7 @@
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
       "creator": "Boone, Mary",
-      "date": "2012",
+      "date": "2012-01-01",
       "description": [
         "63 pages : 24 cm",
         "Introduces the traditional foods and eating habits of the Middle West, and offers recipes for such regional dishes as corn fritters, Chicago deep-dish pizza, horseshoe sandwiches, and Iowa chocolate cake",
@@ -478,6 +478,9 @@
         "internetarchivebooks",
         "inlibrary",
         "printdisabled"
+      ],
+      "normalized_dates": [
+        "2012-01-01"
       ]
     },
     "server": "ia903202.us.archive.org",

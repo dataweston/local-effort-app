@@ -399,7 +399,7 @@
       "contributor": "Internet Archive",
       "creator": "Bishop, Susan (Restaurateur), author",
       "creator-alt-script": "None",
-      "date": "1997",
+      "date": "1997-01-01",
       "description": [
         "128 pages : 21 cm",
         "\"Mpls St Paul magazine\"--Cover",
@@ -467,7 +467,10 @@
         "printdisabled",
         "inlibrary"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "1997-01-01"
+      ]
     },
     "server": "ia600806.us.archive.org",
     "uniq": 978736359,

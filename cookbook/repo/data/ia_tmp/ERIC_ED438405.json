@@ -201,7 +201,7 @@
     "metadata": {
       "identifier": "ERIC_ED438405",
       "creator": "ERIC",
-      "date": "1999",
+      "date": "1999-01-01",
       "description": "This document contains 21 papers and an introduction on work force preparation in a global context. The following papers are included: \"Introduction\" (Johanna Lasonen); \"Access of Girls and Women to Vocational Education: Implications for the Workplace in Swaziland\" (Comfort B. S. Mndebele); \"Intersectoral Approaches to Literacy and Vocational Education and Training: The Case of the Sudan\" (Sidiga A. Rahim Washi); \"Women's Education in the Sudan\" (Sidiga A. Rahim Washi); \"Research Development and Challenges of the 21st Century for Vocational Education and Training: Canadian Experience\" (Marcelle Hardy); \"The Business Incubation Concept: Global Possibilities for Vocational-Technical Education\" (Victor M. Hernandez-Gantes); \"Implementing Education and Training Policies in the United  States: A Case Study\" (Curtis R. Finch); \"A Study on the Development of Further Extensions in Vocational Education and Training in Taiwan, ROC (Republic of China)\" (Ming-chung Chiang, Dar-chin Rau); \"Networking between Business and Educational Institutes in Taiwan, ROC\" (Dar-chin Rau, T. T. Hwang); \"Knowledge-Based Cooperation in Vocational Education, University and Industry in Australia\" (Matt Ngui); \"Strategies for Promoting Parity of Esteem between Vocational and Academic Education\" (Johanna Lasonen); \"Qualifications with a Dual Orientation towards Employment and Higher Education--Innovative Schemes in Seven European Countries\" (Sabine Manning); \"'Bildung' through Vocational Education\" (Matti Vesa Volanen); \"Shaping the Work Life--A Future Oriented Way of Lifelong Learning\" (Gerald  Heidegger); \"Towards Understanding the Development of an Entrepreneurial Leadership-Identity among Finnish Female Entrepreneurs\" (Leena Avotie, Eija Pehu); \"Enterprises as Environments for Workplace Learning and Training\" (Johanna Lasonen); \"Review and Preview of Higher Vocational Education: Changes in Hong Kong and International Trends\" (Bradford W. Imrie); \"A Comparison of Occupational Programs in Comprehensive High Schools in the USA, Japan, and Taiwan\" (Lung-Sheng Lee); \"Challenges of the 21st Century for Technical-Vocational Education and Training from Global, Regional, and National Perspectives\" (C. K. Basu); \"Human Resource Development and Labour Market Policy Issues in the Asia Pacific: Opportunities for Collaborative Research with Europe\" (Matt Ngui); \"Vocational Education and  Training Projects in Developing Countries: Issues of Quality and Sustainability\" (Dennis R. Herschbach); and \"New Roles for Vocational Education and Training\" (Armoogum Parsuramen). Each paper contains references. (MN)",
       "language": "english",
       "mediatype": "texts",
@@ -222,7 +222,10 @@
       "ocr": "ABBYY FineReader 11.0",
       "repub_state": "4",
       "foldoutcount": "0",
-      "backup_location": "ia905507_26"
+      "backup_location": "ia905507_26",
+      "normalized_dates": [
+        "1999-01-01"
+      ]
     },
     "server": "ia801205.us.archive.org",
     "uniq": 1601637742,

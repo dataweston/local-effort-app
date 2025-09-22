@@ -166,7 +166,7 @@
         "americana"
       ],
       "creator": "Menomonie, Wis. : Stout State College Home Economics Club",
-      "date": "1958",
+      "date": "1958-01-01",
       "description": "This cookbook compiles recipes of faculty, staff, and students affiliated with Stout State College. It was compiled by the Stout State College Home Economics Club.",
       "language": "eng",
       "licenseurl": "http://creativecommons.org/licenses/by-nc-nd/3.0/",
@@ -187,7 +187,10 @@
       "ppi": "300",
       "ocr": "ABBYY FineReader 9.0",
       "repub_state": "4",
-      "backup_location": "ia905901_1"
+      "backup_location": "ia905901_1",
+      "normalized_dates": [
+        "1958-01-01"
+      ]
     },
     "server": "ia601702.us.archive.org",
     "uniq": 1582954843,

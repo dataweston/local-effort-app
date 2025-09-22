@@ -410,7 +410,7 @@
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
       "creator": "DiSpirito, Rocco",
-      "date": "2008",
+      "date": "2008-01-01",
       "description": [
         "227 pages : 24 cm",
         "A collection of quick and easy recipes features pasta and meat dishes, along with a section on healthy dishes for the holiday",
@@ -478,7 +478,10 @@
         "inlibrary",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "2008-01-01"
+      ]
     },
     "server": "ia801601.us.archive.org",
     "simplelists": {

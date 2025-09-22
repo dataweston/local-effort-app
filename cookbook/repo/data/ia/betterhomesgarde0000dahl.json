@@ -377,7 +377,7 @@
       "collection_set": "china",
       "contributor": "Internet Archive",
       "creator": "Dahlstrom, Carol Field",
-      "date": "2002",
+      "date": "2002-01-01",
       "isbn": [
         "0696214288",
         "9780696214288"
@@ -444,7 +444,10 @@
         "inlibrary"
       ],
       "page_number_confidence": "0",
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "2002-01-01"
+      ]
     },
     "server": "ia800203.us.archive.org",
     "uniq": 2043269400,

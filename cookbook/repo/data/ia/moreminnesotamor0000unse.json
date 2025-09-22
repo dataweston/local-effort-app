@@ -386,7 +386,7 @@
       "camera": "USB PTP Class Camera",
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
-      "date": "2005",
+      "date": "2005-01-01",
       "description": "139 pages : 26 cm",
       "isbn": [
         "1930596375",
@@ -450,7 +450,10 @@
         "inlibrary",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "2005-01-01"
+      ]
     },
     "server": "ia801806.us.archive.org",
     "uniq": 926919300,

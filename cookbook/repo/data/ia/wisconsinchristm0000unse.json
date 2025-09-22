@@ -375,7 +375,7 @@
       "camera": "Sony Alpha-A6300 (Control)",
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
-      "date": "1989",
+      "date": "1989-01-01",
       "description": [
         "152 pages : 23 cm",
         "\"Christmas stories, poems, letters, historical anecdotes, recipes, and tales to read aloud\"--Cover"
@@ -443,7 +443,10 @@
         "inlibrary",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "1989-01-01"
+      ]
     },
     "server": "ia601700.us.archive.org",
     "simplelists": {

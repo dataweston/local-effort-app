@@ -406,7 +406,7 @@
       "collection_set": "china",
       "contributor": "Internet Archive",
       "creator": "Tuminelly, Nancy, 1952-",
-      "date": "2013",
+      "date": "2013-01-01",
       "isbn": [
         "9781617835827",
         "161783582X"
@@ -480,7 +480,10 @@
         "printdisabled"
       ],
       "page_number_confidence": "16",
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "2013-01-01"
+      ]
     },
     "server": "ia802805.us.archive.org",
     "simplelists": {

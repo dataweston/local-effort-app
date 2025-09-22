@@ -448,7 +448,7 @@
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
       "creator": "Weso, T. F. Pecore (Thomas F. Pecore), author",
-      "date": "2016",
+      "date": "2016-01-01",
       "description": [
         "xi, 122 pages : 23 cm",
         "In this food memoir, named for the manoomin or wild rice that also gives the Menominee tribe its name, tribal member Thomas Pecore Weso takes readers on a cook's journey through Wisconsin's northern woods. He connects each food - beaver, trout, blackberry, wild rice, maple sugar, partridge - with colorful individuals who taught him indigenous values. Cooks will learn from his authentic recipes. Amateur and professional historians will appreciate firsthand stories about reservation life during the mid-twentieth century, when many elders, fluent in the Algonquian language, practiced the old ways. Weso's grandfather Moon was considered a medicine man, and his morning prayers were the foundation for all the day's meals. Weso's grandmother Jennie made fire each morning in a wood-burning stove, and oversaw huge breakfasts of wild game, fish, and fruit pies. As Weso grew up, his uncles taught him to hunt bear, deer, squirrels, raccoons, and even skunks for the daily larder. He remembers foods served at the Menominee fair and the excitement of sugar bush, maple sugar gatherings that included dances as well as hard work. Weso uses humor to tell his own story as a boy learning to thrive in a land of icy winters and summer swamps. With his rare perspective as a Native anthropologist and artist, he tells a poignant personal story in this unique book",
@@ -526,7 +526,10 @@
         "inlibrary",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "2016-01-01"
+      ]
     },
     "server": "ia601403.us.archive.org",
     "uniq": 1422781591,

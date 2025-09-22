@@ -440,7 +440,7 @@
         "Christmas decorations",
         "Christmas cooking"
       ],
-      "date": "1995",
+      "date": "1995-01-01",
       "external-identifier": [
         "urn:acs6:christmasfromhea00bett:epub:6ad9b6e0-8b5b-48ce-9026-9e4a0a83b0bd",
         "urn:oclc:record:1029285163",
@@ -509,7 +509,10 @@
         "inlibrary",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "1995-01-01"
+      ]
     },
     "server": "ia600204.us.archive.org",
     "simplelists": {

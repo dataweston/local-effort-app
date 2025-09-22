@@ -229,7 +229,10 @@
       "addeddate": "2015-12-31 01:28:32",
       "curation": "[curator]validator@archive.org[/curator][date]20151231012859[/date][comment]checked for malware[/comment]",
       "backup_location": "ia905507_22",
-      "external_metadata_update": "2019-02-20T01:19:21Z"
+      "external_metadata_update": "2019-02-20T01:19:21Z",
+      "normalized_dates": [
+        "2015-12-30"
+      ]
     },
     "server": "ia601203.us.archive.org",
     "uniq": 1772426452,

@@ -427,7 +427,7 @@
       "camera": "Sony Alpha-A6300 (Control)",
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
-      "date": "1996",
+      "date": "1996-01-01",
       "description": [
         "575 pages : 26 cm",
         "Features more than one thousand kitchen-tested recipes, menu suggestions, nutritional analyses, and step-by-step directions",
@@ -489,7 +489,10 @@
         "inlibrary",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "1996-01-01"
+      ]
     },
     "server": "ia801808.us.archive.org",
     "uniq": 1554892938,

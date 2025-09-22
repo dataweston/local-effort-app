@@ -458,7 +458,7 @@
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
       "creator": "Webb, Robyn",
-      "date": "1994",
+      "date": "1994-01-01",
       "description": [
         "xiv, 185, [1] p. ; 14 x 22 cm",
         "Includes bibliographical references (p. [186]) and index"
@@ -524,7 +524,10 @@
         "inlibrary",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "1994-01-01"
+      ]
     },
     "server": "ia804608.us.archive.org",
     "uniq": 945311889,

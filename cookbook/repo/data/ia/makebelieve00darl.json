@@ -433,7 +433,7 @@
         "Provides instructions for imaginative projects involving paper work, picture puzzles, or cooking"
       ],
       "publisher": "Des Moines, Iowa : Meredith Corp.",
-      "date": "1989",
+      "date": "1989-01-01",
       "language": "eng",
       "isbn": "0696018934",
       "page-progression": "lr",
@@ -502,6 +502,9 @@
         "americana",
         "inlibrary",
         "printdisabled"
+      ],
+      "normalized_dates": [
+        "1989-01-01"
       ]
     },
     "server": "ia800207.us.archive.org",

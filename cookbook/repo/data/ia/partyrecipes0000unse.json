@@ -391,7 +391,7 @@
       "contributor": "Internet Archive",
       "creator": "None",
       "creator-alt-script": "None",
-      "date": "1987",
+      "date": "1987-01-01",
       "description": [
         "47 pages : 28 cm",
         "At head of title: Better homes and gardens"
@@ -448,7 +448,10 @@
         "inlibrary",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "1987-01-01"
+      ]
     },
     "server": "ia601501.us.archive.org",
     "uniq": 2119542235,

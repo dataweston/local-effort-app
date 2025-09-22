@@ -130,7 +130,7 @@
         "podcasts"
       ],
       "creator": "Tracy McCray",
-      "date": "30-05-16",
+      "date": "2016-05-30",
       "description": "With thousands of experts from Mayo Clinic campuses in Minnesota, Florida, Arizona, and the Mayo Clinic Health System, Mayo Clinic Radio reaches listeners with an easy-to-understand, friendly approach. High interest topics include the latest news as well as information about exercise, nutrition, prevention and heart health.",
       "mediatype": "audio",
       "scanner": "Internet Archive Python library 5.4.0",
@@ -139,7 +139,10 @@
       "uploader": "prakash.sekar@rivet360.com",
       "collection_added": "podcasts",
       "publicdate": "2025-07-25 13:12:43",
-      "addeddate": "2025-07-25 13:12:43"
+      "addeddate": "2025-07-25 13:12:43",
+      "normalized_dates": [
+        "2016-05-30"
+      ]
     },
     "server": "ia601407.us.archive.org",
     "uniq": 2092947654,

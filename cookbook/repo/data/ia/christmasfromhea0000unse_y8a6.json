@@ -428,7 +428,7 @@
       "camera": "Sony Alpha-A6300 (Control)",
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
-      "date": "1999",
+      "date": "1999-01-01",
       "description": [
         "160 pages : 28 cm",
         "Crafts and painting to delight your family and friends. Red and white delights easy to make. Jam jar tags and many more",
@@ -490,7 +490,10 @@
         "inlibrary",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "1999-01-01"
+      ]
     },
     "server": "ia800508.us.archive.org",
     "uniq": 22997061,

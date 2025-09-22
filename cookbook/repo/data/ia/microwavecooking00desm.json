@@ -411,7 +411,7 @@
         "Recipes for breakfast, lunch, supper, snacks, drinks, and desserts, all of which are made with a microwave oven"
       ],
       "publisher": "Des Moines, Iowa : Meredith Corp.",
-      "date": "1984",
+      "date": "1984-01-01",
       "language": "eng",
       "isbn": [
         "0696014254",
@@ -473,6 +473,9 @@
         "americana",
         "inlibrary",
         "printdisabled"
+      ],
+      "normalized_dates": [
+        "1984-01-01"
       ]
     },
     "server": "ia802308.us.archive.org",

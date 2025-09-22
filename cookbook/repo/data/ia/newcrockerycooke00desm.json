@@ -441,7 +441,7 @@
     "metadata": {
       "title": "New crockery cooker cook book",
       "publisher": "Des Moines, Iowa : Meredith",
-      "date": "1987",
+      "date": "1987-01-01",
       "language": "eng",
       "isbn": [
         "0696017415",
@@ -525,6 +525,9 @@
         "americana",
         "inlibrary",
         "printdisabled"
+      ],
+      "normalized_dates": [
+        "1987-01-01"
       ]
     },
     "server": "ia601205.us.archive.org",

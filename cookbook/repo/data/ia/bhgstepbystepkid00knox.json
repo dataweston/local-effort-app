@@ -411,7 +411,7 @@
         "Provides illustrated directions for making simple beverages, desserts, main dishes, and salads, for planning menus, and for using kitchen equipment"
       ],
       "publisher": "Des Moines, Iowa : Meredith Corp.",
-      "date": "1984",
+      "date": "1984-01-01",
       "language": "eng",
       "isbn": "0696013258",
       "page-progression": "lr",
@@ -491,7 +491,10 @@
         "printdisabled",
         "inlibrary"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "1984-01-01"
+      ]
     },
     "server": "ia800208.us.archive.org",
     "simplelists": {

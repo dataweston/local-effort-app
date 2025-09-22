@@ -382,7 +382,7 @@
       ],
       "mediatype": "texts",
       "description": "Includes indexes",
-      "date": "1986",
+      "date": "1986-01-01",
       "year": "1986",
       "subject": [
         "Cookery",
@@ -454,7 +454,10 @@
       ],
       "page_number_module_version": "1.0.5",
       "pdf_degraded": "invalid-jp2-headers",
-      "pdf_module_version": "0.0.25"
+      "pdf_module_version": "0.0.25",
+      "normalized_dates": [
+        "1986-01-01"
+      ]
     },
     "server": "ia801605.us.archive.org",
     "uniq": 726476337,

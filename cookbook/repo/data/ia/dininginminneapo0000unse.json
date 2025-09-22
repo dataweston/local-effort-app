@@ -426,7 +426,7 @@
       "collection": "internetarchivebooks",
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
-      "date": "1982",
+      "date": "1982-01-01",
       "description": "v. <2 > : 23 cm",
       "isbn": "0897161203",
       "language": "English",
@@ -486,7 +486,10 @@
       "addeddate": "2023-02-05 00:00:59",
       "sponsordate": "20230131",
       "creator": "Carla Waldemar",
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "1982-01-01"
+      ]
     },
     "page_numbers": {
       "identifier": "dininginminneapo0000unse",

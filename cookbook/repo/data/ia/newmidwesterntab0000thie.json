@@ -438,7 +438,7 @@
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
       "creator": "Thielen, Amy",
-      "date": "2013",
+      "date": "2013-01-01",
       "description": [
         "399 pages : 25 cm",
         "\"Thielen applies her professionally honed cooking skills to the classic Midwestern dishes she grew up with in northern Minnesota while also unearthing local gems across the region. In a warm, impassioned voice, she reveals how the Midwest is responsible for much of what we consider our American food heritage. The cuisine is generous, thrifty, intuitive, seasonal, and intimate: \"Each cook here is a pioneer of sorts, hitched to a food history of plain talk and salted butter. \"Living here tastes pretty good,\" says Thielen, and by following her sure and steady lead home cooks can fall in love with America's captivating, local flavors\"--",
@@ -505,7 +505,10 @@
         "internetarchivebooks",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "2013-01-01"
+      ]
     },
     "server": "ia801006.us.archive.org",
     "uniq": 2022791876,

@@ -378,7 +378,7 @@
         "Includes index"
       ],
       "publisher": "Des Moines, Iowa : Better Homes and Gardens Books",
-      "date": "2000",
+      "date": "2000-01-01",
       "language": "eng",
       "isbn": [
         "1929930011",
@@ -446,6 +446,9 @@
         "internetarchivebooks",
         "inlibrary",
         "printdisabled"
+      ],
+      "normalized_dates": [
+        "2000-01-01"
       ]
     },
     "server": "ia800301.us.archive.org",

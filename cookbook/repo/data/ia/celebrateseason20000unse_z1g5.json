@@ -404,7 +404,7 @@
       "camera": "USB PTP Class Camera",
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
-      "date": "2007",
+      "date": "2007-01-01",
       "description": [
         "1 volume (unpaged) : 28 cm",
         "For the holidays--4 sections-- (1)setting the stage(decorating ideas)-- (2)gathering together(recipes)-- (3)giving from the heart(gift ideas)-- (4)just for kids(creative projects for kids.) Contains decorations for fall and the holiday season, ornaments, party foods, and gifts to make",
@@ -467,7 +467,10 @@
         "printdisabled",
         "inlibrary"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "2007-01-01"
+      ]
     },
     "server": "ia803100.us.archive.org",
     "uniq": 23001606,

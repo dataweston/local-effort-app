@@ -175,7 +175,7 @@
     "metadata": {
       "identifier": "ERIC_ED026484",
       "creator": "ERIC",
-      "date": "1967",
+      "date": "1967-01-01",
       "description": "The purposes of the study were: (1) to identify the tasks performed by the employees in homemaker/home health aide, hotel/motel housekeeping aide, and nursing home housekeeping aide occupations, (2) to determine the frequencies of task performance by the worker, (3) to determine tasks common and unique to the three occupations, and (4) to develop occupational clusters. Questionnaires were administered to 87 randomly selected employees chosen from 6 different locations in Iowa. The responses were analyzed to determine common tasks. The three occupations were found to be predominantly women, 36 years of age or over, married, and working part-time. A core of 11 items related to household maintenance were found to be common to the three occupations. Homemaker/home health aide  performed the greatest number of unique tasks. Six clusters of tasks in relation to their function were formed. Tasks most frequently performed by the homemaker/health aides were those related to food production; those performed most frequently by hotel/motel and nursing home housekeeping aides were household maintenance. It was recommended that common and unique knowledges and competencies be determined in order to suggest training programs. Initial training in the common core was recommended with a specialized training for homemaker/home health aides. Training programs should be available to both high school age and adult students. (FP)",
       "language": "english",
       "mediatype": "texts",
@@ -195,7 +195,10 @@
       "ppi": "600",
       "ocr": "ABBYY FineReader 11.0",
       "repub_state": "4",
-      "backup_location": "ia905506_4"
+      "backup_location": "ia905506_4",
+      "normalized_dates": [
+        "1967-01-01"
+      ]
     },
     "server": "ia801302.us.archive.org",
     "uniq": 620972672,

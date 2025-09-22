@@ -326,7 +326,10 @@
         "newsandpublicaffairs"
       ],
       "publicdate": "2025-06-10 18:36:02",
-      "addeddate": "2025-06-10 18:36:02"
+      "addeddate": "2025-06-10 18:36:02",
+      "normalized_dates": [
+        "2025-04-22"
+      ]
     },
     "server": "ia800909.us.archive.org",
     "uniq": 835797223,

@@ -408,7 +408,7 @@
       "contributor": "Internet Archive",
       "creator": "None",
       "creator-alt-script": "None",
-      "date": "2007",
+      "date": "2007-01-01",
       "description": [
         "255 pages : 24 cm",
         "At head of title: Better homes and gardens",
@@ -474,6 +474,9 @@
         "internetarchivebooks",
         "printdisabled",
         "inlibrary"
+      ],
+      "normalized_dates": [
+        "2007-01-01"
       ]
     },
     "server": "ia801905.us.archive.org",

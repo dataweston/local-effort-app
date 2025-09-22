@@ -419,7 +419,7 @@
         "9780696210563"
       ],
       "language": "eng",
-      "date": "1999",
+      "date": "1999-01-01",
       "openlibrary": "OL7760731M",
       "mediatype": "texts",
       "page-progression": "lr",
@@ -484,6 +484,9 @@
         "americana",
         "inlibrary",
         "printdisabled"
+      ],
+      "normalized_dates": [
+        "1999-01-01"
       ]
     },
     "server": "ia800306.us.archive.org",

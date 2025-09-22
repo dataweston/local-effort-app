@@ -133,7 +133,10 @@
       "addeddate": "2014-05-26 17:24:17",
       "boxid": "OL100020505",
       "backup_location": "ia905808_8",
-      "collection_added": "podcasts_mirror_godane"
+      "collection_added": "podcasts_mirror_godane",
+      "normalized_dates": [
+        "2007-03-19"
+      ]
     },
     "server": "ia600208.us.archive.org",
     "uniq": 594828537,

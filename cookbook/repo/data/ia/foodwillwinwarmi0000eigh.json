@@ -415,7 +415,7 @@
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
       "creator": "Eighmey, Rae Katherine",
-      "date": "2010",
+      "date": "2010-01-01",
       "description": [
         "xii, 260 p. : 23 cm",
         "Includes bibliographical references and indexes"
@@ -478,7 +478,10 @@
       ],
       "page_number_module_version": "1.0.5",
       "source": "removed",
-      "curation": "[date]20250206190339[/date][comment]inlibrary removal 3[/comment]"
+      "curation": "[date]20250206190339[/date][comment]inlibrary removal 3[/comment]",
+      "normalized_dates": [
+        "2010-01-01"
+      ]
     },
     "server": "ia801709.us.archive.org",
     "simplelists": {

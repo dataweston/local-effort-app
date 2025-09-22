@@ -428,7 +428,7 @@
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
       "creator": "Andrus, Aubre",
-      "date": "2017",
+      "date": "2017-01-01",
       "description": [
         "159 p. : 26 cm",
         "Soak, scrub, and soothe your way to relaxation with simple homemade spa recipes from award-winning author Aubre Andrus. Using some of nature s best ingredients, such as beeswax, sugar, coconut oil, shea butter, avocado, sea salt, essential oils, and more, craft everything from a Cooling Peppermint Hand Cream to a Vanilla Honey Body Scrub. Make practical products, like your own all-natural Bugs-Be-Gone Insect Repellent, Minty Homemade Toothpaste, and Natural Shaving Cream. Or pamper yourself after a long day with a Re-energizing Tub Tea, Lovely Lavender Bath Salts, and a Deep Conditioning Treatment. Nourish your body from head to toe with these organic, handmade recipes and crafts, or package them as a gift to share a fresh, fun spa experience",
@@ -489,6 +489,9 @@
         "internetarchivebooks",
         "printdisabled",
         "inlibrary"
+      ],
+      "normalized_dates": [
+        "2017-01-01"
       ]
     },
     "server": "ia803203.us.archive.org",

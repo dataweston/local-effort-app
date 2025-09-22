@@ -444,7 +444,7 @@
       "camera": "USB PTP Class Camera",
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
-      "date": "2013",
+      "date": "2013-01-01",
       "description": [
         "272 pages : 29 cm",
         "Includes index",
@@ -514,7 +514,10 @@
         "inlibrary",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "2013-01-01"
+      ]
     },
     "server": "ia803103.us.archive.org",
     "uniq": 1856009187,

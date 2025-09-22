@@ -449,7 +449,7 @@
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
       "creator": "Lewis, Sondra K",
-      "date": "2005",
+      "date": "2005-01-01",
       "description": [
         "274 pages : 26 cm",
         "\"Over 375 allergy-free recipes that correspond to a 4-day rotational food plan. Resources for understanding and implementing plans for healing for those with yeast overgrowth health issues including candida-related complex, fibromyalgia, chronic fatigue syndrome, endometriosis, inflammatory bowel diseases (IBS), ADD, food allergies, vaginitis, prostatitis, headaches, sinusitis, and more\"--Provided by publisher",
@@ -524,7 +524,10 @@
         "printdisabled"
       ],
       "curation": "[date]20250203132444[/date][comment]inlibrary removal 3[/comment]",
-      "source": "removed"
+      "source": "removed",
+      "normalized_dates": [
+        "2005-01-01"
+      ]
     },
     "server": "ia800402.us.archive.org",
     "uniq": 192967124,

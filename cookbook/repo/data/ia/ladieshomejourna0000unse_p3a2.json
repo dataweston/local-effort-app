@@ -453,7 +453,7 @@
       "camera": "USB PTP Class Camera",
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
-      "date": "2012",
+      "date": "2012-01-01",
       "description": [
         "264 pages : 26 cm",
         "Includes index"
@@ -517,6 +517,9 @@
         "internetarchivebooks",
         "inlibrary",
         "printdisabled"
+      ],
+      "normalized_dates": [
+        "2012-01-01"
       ]
     },
     "server": "ia801507.us.archive.org",

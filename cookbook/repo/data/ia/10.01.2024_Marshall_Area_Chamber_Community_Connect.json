@@ -379,7 +379,10 @@
         "newsandpublicaffairs"
       ],
       "publicdate": "2024-10-03 19:27:47",
-      "addeddate": "2024-10-03 19:27:47"
+      "addeddate": "2024-10-03 19:27:47",
+      "normalized_dates": [
+        "2024-10-01"
+      ]
     },
     "server": "ia804500.us.archive.org",
     "servers_unavailable": true,

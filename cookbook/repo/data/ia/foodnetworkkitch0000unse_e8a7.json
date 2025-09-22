@@ -426,7 +426,7 @@
       "camera": "USB PTP Class Camera",
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
-      "date": "2008",
+      "date": "2008-01-01",
       "description": [
         "407 pages : 25 cm",
         "Every page contains top picks for recipes and tips that will make your home cooking as fun and fabulous as what you see on the Food Network",
@@ -488,7 +488,10 @@
         "inlibrary",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "2008-01-01"
+      ]
     },
     "server": "ia803200.us.archive.org",
     "simplelists": {

@@ -442,7 +442,7 @@
         "0696301571"
       ],
       "publisher": "Des Moines, Iowa : Meredith Corporation",
-      "date": "2013",
+      "date": "2013-01-01",
       "subject": [
         "Diabetes -- Diet therapy -- Recipes",
         "Holiday cooking -- Recipes",
@@ -462,7 +462,10 @@
         "inlibrary",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "2013-01-01"
+      ]
     },
     "server": "ia801805.us.archive.org",
     "uniq": 2130034964,

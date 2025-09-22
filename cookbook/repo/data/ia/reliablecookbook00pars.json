@@ -326,7 +326,7 @@
         "cbk"
       ],
       "publisher": "[Cedar Rapids, Iowa, Commercial art printing company]",
-      "date": "1913",
+      "date": "1913-01-01",
       "language": "eng",
       "page-progression": "lr",
       "sponsor": "Sloan Foundation",
@@ -369,7 +369,10 @@
       "ocr_module_version": "0.0.21",
       "ocr_converted": "abbyy-to-hocr 1.1.37",
       "page_number_confidence": "97",
-      "page_number_module_version": "1.0.3"
+      "page_number_module_version": "1.0.3",
+      "normalized_dates": [
+        "1913-01-01"
+      ]
     },
     "page_numbers": {
       "identifier": "reliablecookbook00pars",

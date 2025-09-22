@@ -442,7 +442,7 @@
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
       "creator": "Ralph, LeAnn R",
-      "date": "2003",
+      "date": "2003-01-01",
       "description": "153 pages ; 22 cm",
       "isbn": [
         "1591133661",
@@ -510,7 +510,10 @@
       ],
       "page_number_module_version": "1.0.5",
       "curation": "[date]20250205002914[/date][comment]inlibrary removal 3[/comment]",
-      "source": "removed"
+      "source": "removed",
+      "normalized_dates": [
+        "2003-01-01"
+      ]
     },
     "server": "ia801406.us.archive.org",
     "uniq": 1330799474,

@@ -183,7 +183,7 @@
         "additional_collections"
       ],
       "creator": "Lehn & Fink Products",
-      "date": "1943",
+      "date": "1943-01-01",
       "description": "<div><div></div></div><div>A promotional cookbook from Lysol. This includes tips for disinfecting. The focus of the cookbook is cooking with the limitations of WWII ration books.</div><div><br /></div><div>This particular cookbook was given away/stamped by Roush Brothers Druggists of Chariton, Iowa.</div><div><br /></div><div>Includes photos from other magazines.<br /></div>",
       "language": "eng",
       "scanner": "Internet Archive HTML5 Uploader 1.6.3",
@@ -208,6 +208,9 @@
       "collection_added": [
         "folkscanomy",
         "additional_collections"
+      ],
+      "normalized_dates": [
+        "1943-01-01"
       ]
     },
     "server": "ia802806.us.archive.org",

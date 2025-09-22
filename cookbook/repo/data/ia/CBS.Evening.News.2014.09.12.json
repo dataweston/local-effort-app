@@ -341,7 +341,10 @@
       "publicdate": "2015-02-15 16:33:33",
       "uploader": "slaxemulator@gmail.com",
       "addeddate": "2015-02-15 16:33:33",
-      "backup_location": "ia905301_6"
+      "backup_location": "ia905301_6",
+      "normalized_dates": [
+        "2014-09-12"
+      ]
     },
     "server": "ia800201.us.archive.org",
     "uniq": 1234236868,

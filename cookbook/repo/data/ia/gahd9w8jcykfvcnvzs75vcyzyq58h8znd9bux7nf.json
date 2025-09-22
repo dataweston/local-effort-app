@@ -144,7 +144,10 @@
       "uploader": "bobarchives123@gmail.com",
       "publicdate": "2023-11-07 07:06:27",
       "addeddate": "2023-11-07 07:06:27",
-      "access-restricted-item": "true"
+      "access-restricted-item": "true",
+      "normalized_dates": [
+        "2016-02-27"
+      ]
     },
     "server": "ia601203.us.archive.org",
     "uniq": 1258351365,

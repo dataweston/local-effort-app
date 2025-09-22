@@ -410,7 +410,7 @@
         "Menus"
       ],
       "publisher": "Des Moines, Iowa : Meredith Corp.",
-      "date": "1981",
+      "date": "1981-01-01",
       "language": "eng",
       "description": "Includes index",
       "mediatype": "texts",
@@ -486,7 +486,10 @@
         "printdisabled",
         "inlibrary"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "1981-01-01"
+      ]
     },
     "server": "ia800804.us.archive.org",
     "uniq": 2031419395,

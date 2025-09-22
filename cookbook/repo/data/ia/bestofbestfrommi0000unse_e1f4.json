@@ -469,7 +469,7 @@
       "col_number": "COL-2494",
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
-      "date": "2009",
+      "date": "2009-01-01",
       "description": [
         "286 p. : 26 cm",
         "Includes bibliographical references and index",
@@ -537,7 +537,10 @@
         "inlibrary",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "2009-01-01"
+      ]
     },
     "server": "ia903408.us.archive.org",
     "uniq": 1043609995,

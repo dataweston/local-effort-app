@@ -399,7 +399,7 @@
       ],
       "description": "Includes index",
       "publisher": "Des Moines, Iowa : Meredith Corp.",
-      "date": "1983",
+      "date": "1983-01-01",
       "language": "eng",
       "isbn": [
         "0696008351",
@@ -469,6 +469,9 @@
         "internetarchivebooks",
         "inlibrary_dupes",
         "printdisabled"
+      ],
+      "normalized_dates": [
+        "1983-01-01"
       ]
     },
     "server": "ia800206.us.archive.org",

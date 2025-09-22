@@ -266,7 +266,10 @@
       ],
       "bad_audio": "false",
       "backup_location": "ia906807_31",
-      "collection_added": "radio_asr"
+      "collection_added": "radio_asr",
+      "normalized_dates": [
+        "2019-02-18"
+      ]
     },
     "server": "ia600808.us.archive.org",
     "speech_vs_music_asr": [

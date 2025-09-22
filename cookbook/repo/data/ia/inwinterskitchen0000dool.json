@@ -430,7 +430,7 @@
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
       "creator": "Dooley, Beth, author",
-      "date": "2015",
+      "date": "2015-01-01",
       "description": [
         "pages cm",
         "Includes bibliographical references"
@@ -496,7 +496,10 @@
         "inlibrary",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "2015-01-01"
+      ]
     },
     "server": "ia600306.us.archive.org",
     "uniq": 1552255251,

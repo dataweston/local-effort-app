@@ -172,7 +172,7 @@
     "metadata": {
       "identifier": "ERIC_ED480936",
       "creator": "ERIC",
-      "date": "2003-01",
+      "date": "2003-01-01",
       "description": "This report describes a study aimed to help education advocates protect public schools and services from the effects of certain types of economic development subsidies. These subsidies include cutting companies' property taxes and granting long-term diversions of certain districts' property taxes to corporations making investment in those districts. The study examined subsidies in all 50 states and the District of Columbia by researching statutes, news reports, and other studies and by interviewing leaders and staff of state school board associations, tax departments, and development agencies. The report examines the extent and cost of these tax subsidies nationwide and details conditions and policies in Ohio, Florida, Minnesota, Montana, and Texas. The study's detailed  examinations of these five states reveal a mixture of success and problems in coping with the effects of abatements on education. Overall, the report casts doubt on whether such subsidies promote balanced economic development. The report shows how these subsidies can harm public education by diverting funding that local schools need to sustain their educational mission. The study suggests that today's development subsidies may be enriching corporations at the cost of the education of tomorrow's work force. Appended are: Research Methodology and Scope; State Funding Formulas and Local Property Tax Subsidies; Organizations Surveyed; Roles of School Boards in Awarding Property Tax Abatements; Roles of School Boards in Tax Increment Financing; School Board Opposition to Abatements, TIF; Can  School Boards Negotiate a Payment in Lieu of Tax (PILOT)?; State Reimbursement for Abatements, TIF; and States in Which School Board Association Engaged in Subsidy Debate. (Contains 69 references, 19 tables, and 4 figures.) (WFA)",
       "language": "english",
       "mediatype": "texts",
@@ -192,7 +192,10 @@
       "ppi": "600",
       "ocr": "ABBYY FineReader 11.0",
       "repub_state": "4",
-      "backup_location": "ia905508_23"
+      "backup_location": "ia905508_23",
+      "normalized_dates": [
+        "2003-01-01"
+      ]
     },
     "server": "ia801308.us.archive.org",
     "uniq": 173964359,

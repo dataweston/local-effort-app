@@ -165,7 +165,10 @@
       "publicdate": "2021-05-11 01:26:50",
       "addeddate": "2021-05-11 01:26:50",
       "curation": "[curator]validator@archive.org[/curator][date]20210511013923[/date][comment]checked for malware[/comment]",
-      "access-restricted-item": "true"
+      "access-restricted-item": "true",
+      "normalized_dates": [
+        "2021-05-10"
+      ]
     },
     "server": "ia904508.us.archive.org",
     "uniq": 1281485322,

@@ -1080,7 +1080,7 @@
       "contact": "Department of Special Collections and University Archives, California State University, Sacramento\n2000 State University Drive\nSacramento, CA 95819-6039\nUnited States, (916) 278-5240, http://library.csus.edu/scua",
       "coverage": "Sacramento (Calif.)",
       "creator": "Florin Japanese American Citizens League",
-      "date": "[1988,1994-08-24,1995-02-27,1995-04]",
+      "date": "1988-01-01",
       "description": [
         "<b>Please visit the California Revealed website to see the most complete and up-to-date version of this object: <a href=\"https://californiarevealed.org/node/321549\" rel=\"nofollow\">https://californiarevealed.org/node/321549</a>.</b>",
         "The Florin Japanese American Citizens League oral histories chronicle the story of Japanese Americans in the once thriving community of Florin, Sacramento from 1869 through post World War II. The oral histories focus on immigration and settlement, the World War II internment period, redress and reparations. This is a transcript of the audio recording digitized in 2016 by the California Audiovisual Preservation Project. Tomoye Eda Kasai Tsukamoto, Nisei female, was born 01/10/1907 in Berkeley, California to parents who were domestic workers. She attended the University of California, Berkeley and married a fellow student, Walter Tsukamoto in 1930. They eloped to Oregon as Tomoye's father did not approve of attorneys, Walter graduated from Boalt Law School and had a practice in Sacramento. Walter was active in the Japanese American Citizens League (JACL) at local and national levels by the time war began on 12/07/41. Tomoye was thirty-five and very fearful for her family of five children when in the spring of 1942 they were sent first to Walerga Assembly Center, then to Tule Lake, California. Walter's leadership in camp and pro-America views were countered by opposition groups with threats to his life. The U.S. government intervened to protect him from physical harm and he was secretly taken from camp and sent to Chicago, then Cincinnati. Walter, denied enlistment into the military, won his appeal and was assigned to Camp Savage, Minnesota as a Captain. The Tsukamoto's moved 13 times to various posts where Walter worked as attorney and judge. They eventually went to Heidelberg, Germany where he died suddenly in January 1961. Tomoye as busy wife, mother, homemaker, found time to continue her talents in music, ice skating and dancing. See Appendix for interview with grand daughter about Walter and internment issues."
@@ -1117,7 +1117,10 @@
       "ocr_detected_lang": "en",
       "ocr_detected_lang_conf": "1.0000",
       "page_number_confidence": "0",
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "1988-01-01"
+      ]
     },
     "server": "ia800209.us.archive.org",
     "uniq": 1612934241,

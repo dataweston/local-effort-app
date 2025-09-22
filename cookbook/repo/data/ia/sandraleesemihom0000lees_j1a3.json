@@ -417,7 +417,7 @@
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
       "creator": "Lee, Sandra",
-      "date": "2007",
+      "date": "2007-01-01",
       "description": [
         "237 pages : 25 cm",
         "Provides recipes for using a mixture of store-bought and homemade ingredients to make ethnic foods, including Italian, Mexican, French, Pan-Asian, and soul and comfort foods as well as gourmet dishes and cocktails",
@@ -483,7 +483,10 @@
         "internetarchivebooks",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "2007-01-01"
+      ]
     },
     "server": "ia903104.us.archive.org",
     "simplelists": {

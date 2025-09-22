@@ -415,7 +415,7 @@
       "camera": "Sony Alpha-A6300 (Control)",
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
-      "date": "2011",
+      "date": "2011-01-01",
       "description": [
         "160 pages : 28 cm",
         "Create your own comfort and joy this holiday season with handmade gifts, one-of-a-kind decorations, and delicious goodies from the kitchen. You'll bring smiles to your family and friends and hold the spirit of Christmas in your heart",
@@ -479,7 +479,10 @@
         "inlibrary",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "2011-01-01"
+      ]
     },
     "server": "ia902802.us.archive.org",
     "simplelists": {

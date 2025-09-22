@@ -193,7 +193,7 @@
     "metadata": {
       "identifier": "ERIC_ED455426",
       "creator": "ERIC",
-      "date": "1999-04",
+      "date": "1999-01-01",
       "description": "The vocational education and training (VET) reforms currently under way in Central and Eastern Europe and the New Independent States are distinguished by the breadth, range, depth, and speed of the reforms proposed or already initiated. The European Union has assisted the reform process through its Phare and Tacis programs. The following have been among the areas affected by vocational reforms in Central and Eastern Europe and the New Independent States: the VET model; legislation and distribution of students; funding; role of companies and human resources planning; VET qualifications and examination; and teaching staff. The reform processes in Central and Eastern European countries on the one hand and the New Independent States and Mongolia on the other hand have developed in  very different directions. In all of these countries, however, it has become clear that training can no longer be reserved for the young. Among other things, VET policies must be designed to achieve the following goals: maintain macroeconomic stability; contain costs and mobilize additional financial resources; promote educational choices for young people and adults; regulate labor markets by maintaining qualification standards; ensure access to education and training for all; and strengthen institutional capacity to implement the reforms. (MN)",
       "language": "english",
       "mediatype": "texts",
@@ -213,7 +213,10 @@
       "ppi": "600",
       "ocr": "ABBYY FineReader 11.0",
       "repub_state": "4",
-      "backup_location": "ia905508_2"
+      "backup_location": "ia905508_2",
+      "normalized_dates": [
+        "1999-01-01"
+      ]
     },
     "server": "ia801206.us.archive.org",
     "uniq": 1498959635,

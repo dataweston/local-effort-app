@@ -488,7 +488,7 @@
         "Electric cookery, Slow",
         "Electric cooking, Slow"
       ],
-      "date": "1998",
+      "date": "1998-01-01",
       "external-identifier": [
         "urn:asin:0696208555",
         "urn:acs6:newflavorsfromyo00bett_0:epub:e14243c0-1da6-46e8-828b-34d213a8e780",
@@ -557,7 +557,10 @@
         "inlibrary",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "1998-01-01"
+      ]
     },
     "server": "ia804509.us.archive.org",
     "simplelists": {

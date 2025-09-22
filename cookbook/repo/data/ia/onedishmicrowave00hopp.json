@@ -407,7 +407,7 @@
         "Includes index"
       ],
       "publisher": "Des Moines, Iowa : Meredith Corp.",
-      "date": "1985",
+      "date": "1985-01-01",
       "language": "eng",
       "isbn": "0696015404",
       "page-progression": "lr",
@@ -472,7 +472,10 @@
         "inlibrary",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "1985-01-01"
+      ]
     },
     "server": "ia800104.us.archive.org",
     "uniq": 899134522,

@@ -405,7 +405,7 @@
       "camera": "Sony Alpha-A6300 (Control)",
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
-      "date": "2005",
+      "date": "2005-01-01",
       "description": [
         "454 pages : 26 cm",
         "Offers advice on grilling techniques and presents recipes for beef, pork, poultry, fish and shellfish, game, condiments, and side dishes",
@@ -472,7 +472,10 @@
         "inlibrary",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "2005-01-01"
+      ]
     },
     "server": "ia802806.us.archive.org",
     "uniq": 1975476184,

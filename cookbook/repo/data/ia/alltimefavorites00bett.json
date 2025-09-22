@@ -395,7 +395,7 @@
       "creator": "Better Homes and Gardens",
       "subject": "Salads",
       "publisher": "Des Moines, Iowa Better Homes and Gardens",
-      "date": "1978",
+      "date": "1978-01-01",
       "language": "eng",
       "isbn": [
         "0696003058",
@@ -469,6 +469,9 @@
         "americana",
         "inlibrary",
         "printdisabled"
+      ],
+      "normalized_dates": [
+        "1978-01-01"
       ]
     },
     "server": "ia600200.us.archive.org",

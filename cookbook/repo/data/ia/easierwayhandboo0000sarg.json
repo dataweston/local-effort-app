@@ -399,7 +399,7 @@
       "contributor": "Internet Archive",
       "creator": "Sargent, Jean Vieth",
       "creator-alt-script": "None",
-      "date": "1982",
+      "date": "1982-01-01",
       "description": [
         "218 pages : 24 cm",
         "Reprint. Originally published: Ames, Iowa : Iowa State University Press, 1981",
@@ -469,7 +469,10 @@
         "inlibrary",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "1982-01-01"
+      ]
     },
     "server": "ia902900.us.archive.org",
     "simplelists": {

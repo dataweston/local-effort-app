@@ -349,7 +349,10 @@
       "uploader": "thebirn@brilesradio.com",
       "addeddate": "2018-10-11 15:04:46",
       "curation": "[curator]validator@archive.org[/curator][date]20181011150625[/date][comment]checked for malware[/comment]",
-      "backup_location": "ia906802_35"
+      "backup_location": "ia906802_35",
+      "normalized_dates": [
+        "2018-10-11"
+      ]
     },
     "server": "ia902809.us.archive.org",
     "uniq": 1498094936,

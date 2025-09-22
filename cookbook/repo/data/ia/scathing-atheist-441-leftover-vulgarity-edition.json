@@ -169,7 +169,10 @@
       "curation": "[curator]validator@archive.org[/curator][date]20210729202710[/date][comment]checked for malware[/comment]",
       "year": "2021",
       "show_hosts": "Noah Lugeons, Eli Bosnick, Heath Enwright, Lucinda Lugeons",
-      "access-restricted-item": "true"
+      "access-restricted-item": "true",
+      "normalized_dates": [
+        "2021-07-29"
+      ]
     },
     "server": "ia804506.us.archive.org",
     "uniq": 242463368,

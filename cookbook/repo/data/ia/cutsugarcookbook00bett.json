@@ -393,7 +393,7 @@
       "subject": "Sugar-free diet-",
       "description": "At head of title: Better Homes and Gardens",
       "publisher": "Des Moines, Iowa : Meredith Books",
-      "date": "2005",
+      "date": "2005-01-01",
       "language": "eng",
       "isbn": [
         "0696224402",
@@ -461,7 +461,10 @@
         "printdisabled"
       ],
       "page_number_confidence": "14",
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "2005-01-01"
+      ]
     },
     "server": "ia902305.us.archive.org",
     "simplelists": {

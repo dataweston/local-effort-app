@@ -167,7 +167,7 @@
     "metadata": {
       "identifier": "ERIC_ED311607",
       "creator": "ERIC",
-      "date": "1989-10",
+      "date": "1989-01-01",
       "description": "American schools, despite recent education reform measures, still fail to provide many of our nation's children with the education that they need and deserve. In conjunction with the other changes, programs of choice can play a central and critical role in improving America's schools. This booklet, divided into two sections, reports on the proceedings at the White House Workshop on Choice in Education on January 10, 1989. The workshop, held in Washington, D.C., was hosted jointly by the White House and the United States Department of Education. The report outlines the benefits--discussed by educators, policymakers, and student--that can be won when programs of choice are carefully planned, developed, and monitored. Section 1 provides the reasons for conducting a workshop on  choice, introduces the two dominant themes that emerged during the workshop, and details eight programs of choice already in operation around the nation. Section 2 explores the benefits of school choice through an examination of the themes of school improvement and parental empowerment discussed during the workshop. At the conclusion of this document are remarks by President Ronald Reagan, President-elect George Bush, United States Secretary of Education Lauro F. Cavazos, Minnesota Governor Rudy Perpich, and Wisconsin Governor Thommy G. Thompson. (24 references) (KM)",
       "language": "english",
       "mediatype": "texts",
@@ -187,7 +187,10 @@
       "ppi": "600",
       "ocr": "ABBYY FineReader 9.0",
       "repub_state": "4",
-      "backup_location": "ia905907_5"
+      "backup_location": "ia905907_5",
+      "normalized_dates": [
+        "1989-01-01"
+      ]
     },
     "server": "ia601500.us.archive.org",
     "uniq": 65601169,

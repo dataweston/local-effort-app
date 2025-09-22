@@ -383,7 +383,7 @@
       "camera": "Sony Alpha-A6300 (Control)",
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
-      "date": "2007",
+      "date": "2007-01-01",
       "description": [
         "128 pages : 21 cm",
         "Cover title",
@@ -445,7 +445,10 @@
         "inlibrary",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "2007-01-01"
+      ]
     },
     "server": "ia801807.us.archive.org",
     "uniq": 1950971625,

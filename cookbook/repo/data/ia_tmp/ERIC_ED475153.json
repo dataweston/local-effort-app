@@ -211,7 +211,10 @@
       "ppi": "600",
       "ocr": "ABBYY FineReader 11.0",
       "repub_state": "4",
-      "backup_location": "ia905508_16"
+      "backup_location": "ia905508_16",
+      "normalized_dates": [
+        "2002-11-19"
+      ]
     },
     "server": "ia800309.us.archive.org",
     "uniq": 1527578256,

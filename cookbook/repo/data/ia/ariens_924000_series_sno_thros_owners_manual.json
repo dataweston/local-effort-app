@@ -167,7 +167,7 @@
       "ppi": "600",
       "ocr": "ABBYY FineReader 11.0",
       "repub_state": "4",
-      "date": "1978",
+      "date": "1978-01-01",
       "year": "1978",
       "rights": "Public Domain.",
       "contributor": "Gerard Arthus",
@@ -182,7 +182,10 @@
         "deemphasize"
       ],
       "backup_location": "ia906408_26",
-      "access-restricted-item": "true"
+      "access-restricted-item": "true",
+      "normalized_dates": [
+        "1978-01-01"
+      ]
     },
     "server": "ia800401.us.archive.org",
     "uniq": 1668019450,

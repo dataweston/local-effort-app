@@ -255,7 +255,10 @@
       "publicdate": "2017-02-18 23:28:42",
       "uploader": "jhauser@pobox.com",
       "addeddate": "2017-02-18 23:28:42",
-      "backup_location": "ia906307_29"
+      "backup_location": "ia906307_29",
+      "normalized_dates": [
+        "2014-09-20"
+      ]
     },
     "server": "ia600801.us.archive.org",
     "uniq": 499664158,

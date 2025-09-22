@@ -741,7 +741,10 @@
       "youtube-width": "1920",
       "uploader": "jhauser@pobox.com",
       "publicdate": "2023-10-12 03:53:01",
-      "addeddate": "2023-10-12 03:53:01"
+      "addeddate": "2023-10-12 03:53:01",
+      "normalized_dates": [
+        "2023-10-10"
+      ]
     },
     "server": "ia800507.us.archive.org",
     "uniq": 1041938964,

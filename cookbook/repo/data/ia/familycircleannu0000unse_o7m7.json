@@ -461,7 +461,7 @@
       "camera": "USB PTP Class Camera",
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
-      "date": "2014",
+      "date": "2014-01-01",
       "description": [
         "336 pages : 28 cm",
         "Inside you'll find: hundreds of recipes for weeknight dinners and special occasions; preparation and cook times for smart meal planning; healthful and kid-friendly dinner and treats; nutrition information for planning a balanced diet; a color photograph with every recipe",
@@ -532,7 +532,10 @@
         "inlibrary",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "2014-01-01"
+      ]
     },
     "server": "ia800407.us.archive.org",
     "uniq": 1360591559,

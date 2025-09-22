@@ -439,7 +439,7 @@
         "Quick and easy best sellers -- Playtime dolls and toys -- Fashion boutique -- Gifts for babies and toddlers -- Christmas crafts -- Bake sale favorites"
       ],
       "publisher": "Des Moines, Iowa : Meredith Corp.",
-      "date": "1981",
+      "date": "1981-01-01",
       "language": "eng",
       "isbn": [
         "0696006650",
@@ -514,7 +514,10 @@
         "inlibrary",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "1981-01-01"
+      ]
     },
     "server": "ia601305.us.archive.org",
     "uniq": 1302119874,

@@ -451,7 +451,7 @@
         "Halloween decorations",
         "Halloween cooking"
       ],
-      "date": "2001",
+      "date": "2001-01-01",
       "external-identifier": [
         "urn:asin:0696213885",
         "urn:acs6:halloweenfun00bett:pdf:339b98a7-621d-455b-86a8-e3083bcfe907",
@@ -527,7 +527,10 @@
       "page_number_confidence": "15",
       "page_number_module_version": "1.0.5",
       "pdf_degraded": "invalid-jp2-headers",
-      "pdf_module_version": "0.0.25"
+      "pdf_module_version": "0.0.25",
+      "normalized_dates": [
+        "2001-01-01"
+      ]
     },
     "server": "ia800206.us.archive.org",
     "simplelists": {

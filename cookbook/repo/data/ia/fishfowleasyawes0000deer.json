@@ -410,7 +410,7 @@
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
       "creator": "Deering, Alison, author",
-      "date": "2017",
+      "date": "2017-01-01",
       "description": [
         "48 pages : 26 cm",
         "Anyone can make a great sandwich that's the beauty of America's favorite food. And thanks to this fully illustrated cookbook, kids who don't eat red meat can easily assemble and eat a variety of delicous sandwiches at any time of the day. With fun factoids and sandwich trivia, plus regional specialties, this truly is the ultimate guide to what takes place between the bread",
@@ -485,7 +485,10 @@
         "printdisabled"
       ],
       "page_number_confidence": "32",
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "2017-01-01"
+      ]
     },
     "server": "ia804500.us.archive.org",
     "uniq": 793620420,

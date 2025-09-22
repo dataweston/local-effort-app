@@ -172,7 +172,7 @@
     "metadata": {
       "identifier": "ERIC_ED284062",
       "creator": "ERIC",
-      "date": "1987",
+      "date": "1987-01-01",
       "description": "A study examined the relationship between students' vocational and nonvocational experiences while in high school and their decision to drop out. The study was based on data from the sophomore cohort of the High School and Beyond database (a longitudinal, nationally representative sample of approximately 27,000 students who were sophomores in 1980 and seniors in 1982) and information obtained from interviews with representatives of nine dropout prevention programs that were identified as exemplary by their respective state departments of education. It was concluded that dropout prevention programs should have a committed staff, use a variety of integrated strategies, be individualized in a nontraditional environment, share a strong vocational job-related emphasis, and have a  strong counseling component. They should also have an early warning and follow through system to be able to identify potential dropouts and ensure that they remain in school. Care must be taken to expend resources on those students who would actually become dropouts if no intervention were to occur. The school environment should be kept as free as possible of absenteeism, robbery, and substance abuse; however, excessive preoccupation with such concerns is commonly associated with high dropout rates. Dropout-prone students need extensive career exploration experiences and should be encouraged to participate in vocational programs in a meaningful way. Parents should be better informed about vocational offerings, and existing rules governing entry into vocational education should be reviewed  and evaluated on an individual basis. It is especially important that work study programs have logical or operational ties with students' overall goals. (MN)",
       "language": "english",
       "mediatype": "texts",
@@ -192,7 +192,10 @@
       "ppi": "600",
       "ocr": "ABBYY FineReader 9.0",
       "repub_state": "4",
-      "backup_location": "ia905908_26"
+      "backup_location": "ia905908_26",
+      "normalized_dates": [
+        "1987-01-01"
+      ]
     },
     "server": "ia801609.us.archive.org",
     "uniq": 1289150400,

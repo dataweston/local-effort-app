@@ -299,7 +299,10 @@
       "addeddate": "2017-01-15 20:09:10",
       "backup_location": "ia906304_22",
       "noarchivetorrent": "true",
-      "curation": "[curator]jscott@archive.org[/curator][date]20200223091954[/date][state]un-dark[/state]"
+      "curation": "[curator]jscott@archive.org[/curator][date]20200223091954[/date][state]un-dark[/state]",
+      "normalized_dates": [
+        "2017-01-10"
+      ]
     },
     "server": "ia800609.us.archive.org",
     "uniq": 127369343,

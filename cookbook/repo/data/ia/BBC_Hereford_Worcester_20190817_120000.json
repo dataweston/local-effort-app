@@ -256,7 +256,10 @@
         "radioprograms"
       ],
       "bad_audio": "false",
-      "backup_location": "ia906909_18"
+      "backup_location": "ia906909_18",
+      "normalized_dates": [
+        "2019-08-17"
+      ]
     },
     "server": "ia600108.us.archive.org",
     "speech_vs_music_asr": [

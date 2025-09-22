@@ -390,7 +390,7 @@
       "title": "All-time favourite barbecue recipes",
       "creator": "Morton, Nancy",
       "publisher": "Iowa : Meredith Corporation",
-      "date": "1984",
+      "date": "1984-01-01",
       "language": "eng",
       "isbn": [
         "069601100X",
@@ -465,6 +465,9 @@
         "internetarchivebooks",
         "printdisabled",
         "inlibrary"
+      ],
+      "normalized_dates": [
+        "1984-01-01"
       ]
     },
     "server": "ia801906.us.archive.org",

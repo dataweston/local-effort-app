@@ -421,7 +421,7 @@
       "collection_set": "china",
       "contributor": "Internet Archive",
       "creator": "Maddox, Jake, author",
-      "date": "2015",
+      "date": "2015-01-01",
       "isbn": [
         "9781434291561",
         "1434291561",
@@ -514,6 +514,9 @@
         "internetarchivebooks",
         "printdisabled",
         "inlibrary"
+      ],
+      "normalized_dates": [
+        "2015-01-01"
       ]
     },
     "server": "ia903108.us.archive.org",

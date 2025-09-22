@@ -402,7 +402,7 @@
       "camera": "Sony Alpha-A6300 (Control)",
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
-      "date": "2006",
+      "date": "2006-01-01",
       "description": [
         "160 pages : 28 cm",
         "Make this Christmas merry by creating you own handmade crafts, clever gifts, festive decorations, and delightful kitchen goodies",
@@ -470,7 +470,10 @@
         "inlibrary",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "2006-01-01"
+      ]
     },
     "server": "ia801802.us.archive.org",
     "uniq": 1786817079,

@@ -404,7 +404,7 @@
       "camera": "USB PTP Class Camera",
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
-      "date": "2005",
+      "date": "2005-01-01",
       "description": [
         "168 pages : 9 x 14 cm",
         "Recipes are taken from the earlier book, German-American life : recipes and traditions, 1991",
@@ -472,7 +472,10 @@
         "printdisabled"
       ],
       "page_number_confidence": "0",
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "2005-01-01"
+      ]
     },
     "server": "ia903108.us.archive.org",
     "uniq": 759031453,

@@ -221,7 +221,7 @@
       "possible-copyright-status": "NOT_IN_COPYRIGHT",
       "identifier-access": "http://www.archive.org/details/orangerecipesan00lanegoog",
       "year": "1909",
-      "date": "1909",
+      "date": "1909-01-01",
       "oclc-id": "2634974",
       "scandate": "20070821",
       "copyright-region": "US",
@@ -249,7 +249,10 @@
       "backup_location": "ia903601_28",
       "openlibrary_edition": "OL7012392M",
       "openlibrary_work": "OL239037W",
-      "addeddate": "2008-03-30 19:35:10"
+      "addeddate": "2008-03-30 19:35:10",
+      "normalized_dates": [
+        "1909-01-01"
+      ]
     },
     "server": "ia800205.us.archive.org",
     "uniq": 1334424401,

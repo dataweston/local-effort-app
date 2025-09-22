@@ -412,7 +412,7 @@
       "contributor": "Internet Archive",
       "creator": "None",
       "creator-alt-script": "None",
-      "date": "1991",
+      "date": "1991-01-01",
       "description": [
         "32 pages : 29 cm",
         "Fun projects for kids to do",
@@ -485,7 +485,10 @@
         "inlibrary",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "1991-01-01"
+      ]
     },
     "server": "ia600105.us.archive.org",
     "simplelists": {

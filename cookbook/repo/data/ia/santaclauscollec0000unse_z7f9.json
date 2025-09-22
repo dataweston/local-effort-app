@@ -434,7 +434,7 @@
       "contributor": "Internet Archive",
       "old_pallet": "IA16104",
       "camera": "Sony Alpha-A6300 (Control)",
-      "date": "1999",
+      "date": "1999-01-01",
       "operator": "associate-allain-wagas@archive.org",
       "scanningcenter": "cebu",
       "associated-names": "Better Homes and Gardens Books (Firm)",
@@ -479,7 +479,10 @@
         "inlibrary",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "1999-01-01"
+      ]
     },
     "server": "ia800709.us.archive.org",
     "uniq": 179927212,

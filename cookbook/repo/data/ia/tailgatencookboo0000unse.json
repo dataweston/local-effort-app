@@ -407,7 +407,7 @@
       "camera": "Sony Alpha-A6300 (Control)",
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
-      "date": "1997",
+      "date": "1997-01-01",
       "description": [
         "96 pages : 28 cm",
         "\"The original cookbook of the Packer fans\"--Cover",
@@ -479,7 +479,10 @@
         "inlibrary",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "1997-01-01"
+      ]
     },
     "server": "ia801807.us.archive.org",
     "uniq": 581183151,

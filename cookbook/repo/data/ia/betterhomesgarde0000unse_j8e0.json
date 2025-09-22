@@ -450,7 +450,7 @@
       "camera": "USB PTP Class Camera",
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
-      "date": "1995",
+      "date": "1995-01-01",
       "description": "320 pages",
       "isbn": [
         "9780696204593",
@@ -511,6 +511,9 @@
         "internetarchivebooks",
         "printdisabled",
         "inlibrary"
+      ],
+      "normalized_dates": [
+        "1995-01-01"
       ]
     },
     "server": "ia801507.us.archive.org",

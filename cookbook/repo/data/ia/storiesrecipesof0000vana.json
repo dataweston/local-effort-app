@@ -465,7 +465,7 @@
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
       "creator": "Van Amber, Rita",
-      "date": "2001",
+      "date": "2001-01-01",
       "description": [
         "vi, 310 pages ; 22 cm",
         "\" ... My strong childhood impression of the Great Depression gave me a desire to document for all time the courage and grit displayed by families such as ours through collecting their own personal stories and memories. And, of course, it had to be a cookbook, because feeding the family was the harshest challenge they faced, and their creativity in meeting this challenge resulted in our most treasured 'comfort food' recipes today ...\"",
@@ -537,7 +537,10 @@
         "inlibrary",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "2001-01-01"
+      ]
     },
     "server": "ia801501.us.archive.org",
     "uniq": 359095005,

@@ -264,7 +264,10 @@
         "radioprograms"
       ],
       "bad_audio": "false",
-      "backup_location": "ia907000_15"
+      "backup_location": "ia907000_15",
+      "normalized_dates": [
+        "2019-09-05"
+      ]
     },
     "server": "ia803109.us.archive.org",
     "speech_vs_music_asr": [

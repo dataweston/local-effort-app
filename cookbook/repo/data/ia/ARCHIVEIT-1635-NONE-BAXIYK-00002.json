@@ -2187,9 +2187,12 @@
       "imagecount": "1391",
       "firstfiledate": "20110321071511",
       "lastfiledate": "20110325023549",
-      "date": "2011",
+      "date": "2011-01-01",
       "backup_location": "ia905805_2",
-      "access-restricted-item": "true"
+      "access-restricted-item": "true",
+      "normalized_dates": [
+        "2011-01-01"
+      ]
     },
     "server": "ia802809.us.archive.org",
     "uniq": 759827130,

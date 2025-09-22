@@ -404,7 +404,7 @@
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
       "creator": "Aidells, Bruce",
-      "date": "1995",
+      "date": "1995-01-01",
       "description": [
         "354 pages : 26 cm",
         "Includes bibliographical references (pages 334-336) and index",
@@ -473,7 +473,10 @@
         "printdisabled",
         "inlibrary"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "1995-01-01"
+      ]
     },
     "server": "ia804503.us.archive.org",
     "uniq": 1913690009,

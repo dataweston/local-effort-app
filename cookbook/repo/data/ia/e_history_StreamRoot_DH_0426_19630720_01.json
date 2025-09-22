@@ -387,7 +387,10 @@
       "addeddate": "2015-05-07 02:08:06",
       "sound": "sound",
       "color": "color",
-      "backup_location": "ia905305_10"
+      "backup_location": "ia905305_10",
+      "normalized_dates": [
+        "1963-07-20"
+      ]
     },
     "server": "ia800608.us.archive.org",
     "uniq": 156267561,

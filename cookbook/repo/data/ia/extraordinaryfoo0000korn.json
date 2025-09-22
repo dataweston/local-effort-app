@@ -434,7 +434,7 @@
       "camera": "Sony Alpha-A6300 (Control)",
       "contributor": "Internet Archive",
       "creator": "Kornblum, Lori",
-      "date": "2003",
+      "date": "2003-01-01",
       "description": [
         "222 p. : 23 cm",
         "Includes index"
@@ -499,7 +499,10 @@
         "printdisabled"
       ],
       "curation": "[date]20250206111720[/date][comment]inlibrary removal 3[/comment]",
-      "source": "removed"
+      "source": "removed",
+      "normalized_dates": [
+        "2003-01-01"
+      ]
     },
     "server": "ia600503.us.archive.org",
     "uniq": 1946732277,

@@ -411,7 +411,7 @@
       "camera": "USB PTP Class Camera",
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
-      "date": "1988",
+      "date": "1988-01-01",
       "description": [
         "46 p. : 28 cm",
         "At head of title: Better homes and gardens",
@@ -466,7 +466,10 @@
         "inlibrary",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "1988-01-01"
+      ]
     },
     "server": "ia803103.us.archive.org",
     "uniq": 36313666,

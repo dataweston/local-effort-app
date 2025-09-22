@@ -330,7 +330,10 @@
       "addeddate": "2019-12-05 20:15:57",
       "noarchivetorrent": "true",
       "curation": "[curator]jscott@archive.org[/curator][date]20200223103135[/date][state]un-dark[/state]",
-      "backup_location": "ia907008_7"
+      "backup_location": "ia907008_7",
+      "normalized_dates": [
+        "2019-12-02"
+      ]
     },
     "server": "ia803100.us.archive.org",
     "uniq": 1365344430,

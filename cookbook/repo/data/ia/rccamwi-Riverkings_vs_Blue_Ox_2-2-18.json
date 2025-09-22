@@ -1293,7 +1293,10 @@
       "addeddate": "2018-02-14 18:41:17",
       "backup_location": "ia906608_23",
       "noarchivetorrent": "true",
-      "curation": "[curator]jscott@archive.org[/curator][date]20200223092003[/date][state]un-dark[/state]"
+      "curation": "[curator]jscott@archive.org[/curator][date]20200223092003[/date][state]un-dark[/state]",
+      "normalized_dates": [
+        "2018-02-05"
+      ]
     },
     "server": "ia600706.us.archive.org",
     "uniq": 2104312410,

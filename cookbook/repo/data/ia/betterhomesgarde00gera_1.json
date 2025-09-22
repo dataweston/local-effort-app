@@ -457,7 +457,7 @@
         "Woolever, Elizabeth"
       ],
       "publisher": "Des Moines, Iowa : Meredith Corp.",
-      "date": "1980",
+      "date": "1980-01-01",
       "external-identifier": [
         "urn:acs6:betterhomesgarde00gera_1:epub:516db5a2-acd9-4218-9a27-f7d0b331a9e6",
         "urn:oclc:record:1028729547",
@@ -531,7 +531,10 @@
         "printdisabled",
         "inlibrary"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "1980-01-01"
+      ]
     },
     "server": "ia800209.us.archive.org",
     "simplelists": {

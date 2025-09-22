@@ -449,7 +449,7 @@
         "Knorr",
         "Better Homes and Gardens"
       ],
-      "date": "1995",
+      "date": "1995-01-01",
       "isbn": "0696205076",
       "language": "eng",
       "mediatype": "texts",
@@ -511,7 +511,10 @@
         "96 p. : 22 cm",
         "Includes index"
       ],
-      "associated-names": "Knorr, Inc"
+      "associated-names": "Knorr, Inc",
+      "normalized_dates": [
+        "1995-01-01"
+      ]
     },
     "server": "ia801406.us.archive.org",
     "uniq": 1350597205,

@@ -392,7 +392,7 @@
       "contributor": "Internet Archive",
       "creator": "Tjernagel, Kelsi Turner",
       "creator-alt-script": "None",
-      "date": "2013",
+      "date": "2013-01-01",
       "description": [
         "32 pages : 24 cm",
         "\"Details fun, gross recipes in instructional format\"--",
@@ -463,7 +463,10 @@
         "printdisabled"
       ],
       "page_number_confidence": "0",
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "2013-01-01"
+      ]
     },
     "server": "ia600201.us.archive.org",
     "simplelists": {

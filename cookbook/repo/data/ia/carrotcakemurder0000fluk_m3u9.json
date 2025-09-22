@@ -403,7 +403,7 @@
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
       "creator": "Fluke, Joanne, 1943-",
-      "date": "2008",
+      "date": "2008-01-01",
       "description": [
         "501 pages (large print) : 23 cm",
         "Hannah Swenson investigates the murder of a family reunion attendee whose murderer could be a man suffering from Alzheimer's"
@@ -477,7 +477,10 @@
         "printdisabled",
         "inlibrary"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "2008-01-01"
+      ]
     },
     "server": "ia903407.us.archive.org",
     "simplelists": {

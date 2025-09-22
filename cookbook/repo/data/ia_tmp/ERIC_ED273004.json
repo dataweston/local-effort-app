@@ -168,7 +168,7 @@
     "metadata": {
       "identifier": "ERIC_ED273004",
       "creator": "ERIC",
-      "date": "1986",
+      "date": "1986-01-01",
       "description": "Neil Devins, in part 1 of this chapter, discusses state regulation of home instruction. A different perspective on this subject is presented by Perry A. Zirkel in part 2. Parents have claimed that state regulations deprive them of their right, protected by the due process clause of the Fourteenth Amendment, to direct their children's upbringing. States claim that children must be ensured of education and of socialization; however, the \"Duro v. District Attorney\" decision too strongly emphasized the state's interest. The decision represents a shift from \"Wisconsin v. Yoder,\" which sought to balance the religious liberty interest of the Amish community and that of the state. The line separating permissible from intrusive state regulations is unclear. The extent of parental  authority must be discerned through an entanglement of state court decisions. Zirkel argues that lower courts' decisions have been relatively consistent in rejecting constitutional amendment rights for parents. Contrary to Devins' contention, courts have narrowly interpreted the \"Wisconsin v. Yoder\" ruling to reject parents' free exercise challenges against state statutes. Many court decisions have rejected parental nonreligious constitutional challenges. Without constitutional mandates, the issues of regulatory standards are a slippery but central concern. (CJH)",
       "language": "english",
       "mediatype": "texts",
@@ -188,7 +188,10 @@
       "ppi": "600",
       "ocr": "ABBYY FineReader 9.0",
       "repub_state": "4",
-      "backup_location": "ia905908_29"
+      "backup_location": "ia905908_29",
+      "normalized_dates": [
+        "1986-01-01"
+      ]
     },
     "server": "ia800302.us.archive.org",
     "uniq": 849751705,

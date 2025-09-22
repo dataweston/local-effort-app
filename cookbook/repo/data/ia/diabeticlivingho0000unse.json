@@ -403,7 +403,7 @@
       "camera": "Sony Alpha-A6300 (Control)",
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
-      "date": "2017",
+      "date": "2017-01-01",
       "description": [
         "160 pages : 28 cm",
         "Holidays are meant to be celebrated. And with great celebrations come special foods. Make this fetive collection you go-to for recipes this season. Each recipe is light, fresh, and perfect for a diabetes-friendly meal plan. When you cook right, you eat right. That's the best reason to celebrate! -- page [4] of cover",
@@ -470,7 +470,10 @@
         "inlibrary",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "2017-01-01"
+      ]
     },
     "server": "ia601803.us.archive.org",
     "uniq": 781743244,

@@ -385,7 +385,7 @@
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
       "creator": "Henderson, Helene",
-      "date": "2005",
+      "date": "2005-01-01",
       "description": [
         "xxvi, 187 p. : 24 cm",
         "Includes index"
@@ -450,7 +450,10 @@
         "internetarchivebooks",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "2005-01-01"
+      ]
     },
     "server": "ia904605.us.archive.org",
     "simplelists": {

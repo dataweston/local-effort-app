@@ -405,7 +405,7 @@
       "camera": "Sony Alpha-A6300 (Control)",
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
-      "date": "2010",
+      "date": "2010-01-01",
       "description": [
         "320 pages : 29 cm",
         "\"270+ great-tasting & healthy recipes\"--Cover",
@@ -468,7 +468,10 @@
         "inlibrary",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "2010-01-01"
+      ]
     },
     "server": "ia903104.us.archive.org",
     "simplelists": {

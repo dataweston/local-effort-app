@@ -378,7 +378,7 @@
       "subject": "Cookery (Beef)",
       "description": "Includes index",
       "publisher": "Des Moines, Iowa : Meredith Corp.",
-      "date": "1983",
+      "date": "1983-01-01",
       "language": "eng",
       "isbn": [
         "0696012251",
@@ -447,6 +447,9 @@
         "internetarchivebooks",
         "printdisabled",
         "inlibrary"
+      ],
+      "normalized_dates": [
+        "1983-01-01"
       ]
     },
     "server": "ia800501.us.archive.org",

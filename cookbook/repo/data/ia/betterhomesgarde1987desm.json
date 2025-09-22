@@ -379,7 +379,7 @@
       "creator": "Better Homes and Gardens",
       "subject": "Cookery",
       "publisher": "Des Moines, Iowa : Better Homes and Gardens",
-      "date": "1987",
+      "date": "1987-01-01",
       "language": "eng",
       "isbn": [
         "069601727X",
@@ -449,6 +449,9 @@
         "internetarchivebooks",
         "printdisabled",
         "inlibrary"
+      ],
+      "normalized_dates": [
+        "1987-01-01"
       ]
     },
     "server": "ia600202.us.archive.org",

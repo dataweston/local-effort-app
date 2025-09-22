@@ -416,7 +416,7 @@
       "camera": "Sony Alpha-A6300 (Control)",
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
-      "date": "2014",
+      "date": "2014-01-01",
       "description": [
         "160 pages : 28 cm",
         "\"Whether you're putting on a full-fledged feast, inviting friends over for a casual soup supper, or firing up the oven for holiday baking and sweets-making, you'll find exactly what you're looking for in this recipe-packed volume\"--Page [4] cover",
@@ -478,7 +478,10 @@
         "inlibrary",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "2014-01-01"
+      ]
     },
     "server": "ia801700.us.archive.org",
     "uniq": 1950034494,

@@ -357,7 +357,7 @@
       "scanningcenter": "il",
       "sponsor": "University of Illinois Urbana-Champaign Alternates",
       "contributor": "University of Illinois Urbana-Champaign",
-      "date": "1950",
+      "date": "1950-01-01",
       "subject": [
         "Cooking, American -- Midwestern style",
         "Menus",
@@ -423,7 +423,10 @@
       "invoice": "1112",
       "sponsordate": "20240930",
       "openlibrary_edition": "OL58781822M",
-      "openlibrary_work": "OL43160266W"
+      "openlibrary_work": "OL43160266W",
+      "normalized_dates": [
+        "1950-01-01"
+      ]
     },
     "page_numbers": {
       "identifier": "coolmealsforwarm00mead",

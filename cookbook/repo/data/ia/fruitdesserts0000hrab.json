@@ -427,7 +427,7 @@
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
       "creator": "Hrabak, DeAnne",
-      "date": "1996",
+      "date": "1996-01-01",
       "description": [
         "144 pages : 21 cm",
         "Includes index"
@@ -488,7 +488,10 @@
         "inlibrary",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "1996-01-01"
+      ]
     },
     "server": "ia601803.us.archive.org",
     "uniq": 1953043852,

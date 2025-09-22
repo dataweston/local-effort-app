@@ -178,7 +178,7 @@
         "community"
       ],
       "creator": "Iowa State University",
-      "date": "1964",
+      "date": "1964-01-01",
       "description": "Iowa State University Pamphlet about Cornmeal &amp; Grits in Everyday Meals",
       "language": "eng",
       "scanner": "Internet Archive HTML5 Uploader 1.6.4",
@@ -197,7 +197,10 @@
       "identifier-ark": "ark:/13960/t0wq8w561",
       "ppi": "600",
       "ocr": "ABBYY FineReader 11.0 (Extended OCR)",
-      "page_number_confidence": "100.00"
+      "page_number_confidence": "100.00",
+      "normalized_dates": [
+        "1964-01-01"
+      ]
     },
     "server": "ia601908.us.archive.org",
     "uniq": 544937376,

@@ -447,7 +447,7 @@
       "col_number": "COL-2513",
       "collection_set": "internetarchivebooks",
       "contributor": "Internet Archive",
-      "date": "2003",
+      "date": "2003-01-01",
       "description": [
         "xvi, 206 p. : 25 cm",
         "Includes bibliographical references (p. [183]-188) and index",
@@ -516,6 +516,9 @@
         "internetarchivebooks",
         "inlibrary",
         "printdisabled"
+      ],
+      "normalized_dates": [
+        "2003-01-01"
       ]
     },
     "server": "ia802305.us.archive.org",

@@ -1244,7 +1244,10 @@
       "uploader": "slaxemulator@gmail.com",
       "addeddate": "2017-03-22 07:10:05",
       "backup_location": "ia906400_22",
-      "external_metadata_update": "2019-04-16T05:55:11Z"
+      "external_metadata_update": "2019-04-16T05:55:11Z",
+      "normalized_dates": [
+        "2012-06-06"
+      ]
     },
     "server": "ia601509.us.archive.org",
     "uniq": 1496756165,

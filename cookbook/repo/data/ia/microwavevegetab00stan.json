@@ -421,7 +421,7 @@
         "Includes index"
       ],
       "publisher": "Des Moines, Iowa : Meredith Corp.",
-      "date": "1986",
+      "date": "1986-01-01",
       "language": "eng",
       "isbn": [
         "0696016656",
@@ -484,6 +484,9 @@
         "internetarchivebooks",
         "inlibrary",
         "printdisabled"
+      ],
+      "normalized_dates": [
+        "1986-01-01"
       ]
     },
     "server": "ia800204.us.archive.org",

@@ -394,7 +394,7 @@
         "\"Borders exclusive\"--Cover"
       ],
       "publisher": "Des Moines, Iowa : Meredith Corp.",
-      "date": "2005",
+      "date": "2005-01-01",
       "language": "eng",
       "isbn": [
         "0696227444",
@@ -455,7 +455,10 @@
       ],
       "page_number_module_version": "1.0.5",
       "pdf_degraded": "invalid-jp2-headers",
-      "pdf_module_version": "0.0.25"
+      "pdf_module_version": "0.0.25",
+      "normalized_dates": [
+        "2005-01-01"
+      ]
     },
     "server": "ia601300.us.archive.org",
     "uniq": 289368798,

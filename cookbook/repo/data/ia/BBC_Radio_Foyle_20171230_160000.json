@@ -269,7 +269,10 @@
         "radio",
         "radioprograms"
       ],
-      "bad_audio": "false"
+      "bad_audio": "false",
+      "normalized_dates": [
+        "2017-12-30"
+      ]
     },
     "server": "ia801206.us.archive.org",
     "speech_vs_music_asr": [

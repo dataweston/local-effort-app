@@ -415,7 +415,7 @@
       "contributor": "Internet Archive",
       "creator": "Peterson, Joan (Joan B.), author",
       "creator-alt-script": "None",
-      "date": "1996",
+      "date": "1996-01-01",
       "description": [
         "xiv, 140 pages, 8 unnumbered pages of plates : 22 cm",
         "Includes bibliographical references (pages 135-136) and index",
@@ -488,7 +488,10 @@
         "inlibrary",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "1996-01-01"
+      ]
     },
     "server": "ia600107.us.archive.org",
     "simplelists": {

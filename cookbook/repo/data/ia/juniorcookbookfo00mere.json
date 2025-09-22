@@ -400,7 +400,7 @@
         "Includes index"
       ],
       "publisher": "Des Moines, Iowa : Meredith Pub. Co.",
-      "date": "1972",
+      "date": "1972-01-01",
       "language": "eng",
       "isbn": "0696000709",
       "page-progression": "lr",
@@ -461,6 +461,9 @@
         "internetarchivebooks",
         "inlibrary",
         "printdisabled"
+      ],
+      "normalized_dates": [
+        "1972-01-01"
       ]
     },
     "server": "ia803401.us.archive.org",

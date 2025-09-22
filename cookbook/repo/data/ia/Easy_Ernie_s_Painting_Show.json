@@ -508,7 +508,10 @@
       "addeddate": "2016-12-12 03:30:00",
       "backup_location": "ia906302_34",
       "noarchivetorrent": "true",
-      "curation": "[curator]jscott@archive.org[/curator][date]20200223091959[/date][state]un-dark[/state]"
+      "curation": "[curator]jscott@archive.org[/curator][date]20200223091959[/date][state]un-dark[/state]",
+      "normalized_dates": [
+        "2013-04-24"
+      ]
     },
     "server": "ia801903.us.archive.org",
     "uniq": 1968672354,

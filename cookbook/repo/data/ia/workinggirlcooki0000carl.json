@@ -395,7 +395,7 @@
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
       "creator": "Carlson, Bruce",
-      "date": "1994",
+      "date": "1994-01-01",
       "description": "158 pages : 13 cm",
       "isbn": [
         "1571660100",
@@ -454,7 +454,10 @@
         "printdisabled"
       ],
       "page_number_confidence": "11",
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "1994-01-01"
+      ]
     },
     "server": "ia804603.us.archive.org",
     "uniq": 490056438,

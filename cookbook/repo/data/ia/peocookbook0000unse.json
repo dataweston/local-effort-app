@@ -440,7 +440,7 @@
       "camera": "USB PTP Class Camera",
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
-      "date": "1992",
+      "date": "1992-01-01",
       "description": [
         "vii, 175 p. : 23 cm",
         "\"Originally published in 1908 by Curtis & Gilson, Knoxville, Iowa\"--T.p. verso",
@@ -503,7 +503,10 @@
         "printdisabled"
       ],
       "page_number_confidence": "85",
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "1992-01-01"
+      ]
     },
     "server": "ia600404.us.archive.org",
     "uniq": 719928580,

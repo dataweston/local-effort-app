@@ -413,7 +413,7 @@
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
       "creator": "Kreidberg, Marjorie",
-      "date": "1975",
+      "date": "1975-01-01",
       "description": [
         "vii, 313 p. : 20 cm",
         "Includes bibliographical references and indexes"
@@ -480,7 +480,10 @@
       ],
       "page_number_module_version": "1.0.5",
       "curation": "[date]20250206190014[/date][comment]inlibrary removal 3[/comment]",
-      "source": "removed"
+      "source": "removed",
+      "normalized_dates": [
+        "1975-01-01"
+      ]
     },
     "server": "ia803209.us.archive.org",
     "simplelists": {

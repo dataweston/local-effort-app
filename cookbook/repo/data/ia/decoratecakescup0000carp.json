@@ -438,7 +438,7 @@
       "title": "Decorate cakes, cupcakes, and cookies with kids : techniques, projects, and party plans for teaching kids, teens, and tots ",
       "creator": "Carpenter, Autumn, author",
       "publisher": "Mankato, Minnesota : Creative",
-      "date": "2013",
+      "date": "2013-01-01",
       "language": "eng",
       "isbn": [
         "9781610588744",
@@ -507,6 +507,9 @@
         "internetarchivebooks",
         "inlibrary",
         "printdisabled"
+      ],
+      "normalized_dates": [
+        "2013-01-01"
       ]
     },
     "server": "ia600509.us.archive.org",

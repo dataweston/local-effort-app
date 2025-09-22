@@ -414,7 +414,7 @@
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
       "creator": "Ojakangas, Beatrice A",
-      "date": "1999",
+      "date": "1999-01-01",
       "description": [
         "p. cm",
         "\"Originally published: Boston : Little, Brown, 1988",
@@ -479,7 +479,10 @@
         "internetarchivebooks",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "1999-01-01"
+      ]
     },
     "server": "ia802306.us.archive.org",
     "uniq": 1260162779,

@@ -277,7 +277,10 @@
         "radio_asr"
       ],
       "bad_audio": "false",
-      "collection_added": "radio_asr"
+      "collection_added": "radio_asr",
+      "normalized_dates": [
+        "2017-11-16"
+      ]
     },
     "server": "ia902303.us.archive.org",
     "speech_vs_music_asr": [

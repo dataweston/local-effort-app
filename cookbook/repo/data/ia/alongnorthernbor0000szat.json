@@ -401,7 +401,7 @@
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
       "creator": "Szathmáry, Louis, comp",
-      "date": "1973",
+      "date": "1973-01-01",
       "description": [
         "xxi, 120, 110, 127 p. 23 cm",
         "Reprint of Choice recipes by Moscow women, compiled by the Hospitality Committee of the Presbyterian Ladies' Aid of Moscow, Idaho, first published 1931; of Library Ann's cook book, compiled by the Minneapolis Public Library Staff Association, first published 1928; and of the 4th ed. of the Y.M.C.A. cook book, Grand Forks, N.D., first published 1924"
@@ -465,6 +465,9 @@
         "internetarchivebooks",
         "printdisabled",
         "inlibrary"
+      ],
+      "normalized_dates": [
+        "1973-01-01"
       ]
     },
     "server": "ia903402.us.archive.org",

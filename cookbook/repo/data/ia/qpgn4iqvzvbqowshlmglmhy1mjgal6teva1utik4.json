@@ -139,7 +139,10 @@
       "uploader": "bobarchives123@gmail.com",
       "publicdate": "2022-12-22 03:22:42",
       "addeddate": "2022-12-22 03:22:42",
-      "access-restricted-item": "true"
+      "access-restricted-item": "true",
+      "normalized_dates": [
+        "2022-11-04"
+      ]
     },
     "server": "ia801505.us.archive.org",
     "uniq": 1424959071,

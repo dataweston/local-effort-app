@@ -255,7 +255,10 @@
       "addeddate": "2016-12-09 20:13:45",
       "backup_location": "ia906302_26",
       "noarchivetorrent": "true",
-      "curation": "[curator]jscott@archive.org[/curator][date]20200223081945[/date][state]un-dark[/state]"
+      "curation": "[curator]jscott@archive.org[/curator][date]20200223081945[/date][state]un-dark[/state]",
+      "normalized_dates": [
+        "2013-02-14"
+      ]
     },
     "server": "ia803209.us.archive.org",
     "uniq": 1539216222,

@@ -424,7 +424,7 @@
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
       "creator": "Tuminelly, Nancy, 1952-",
-      "date": "2012",
+      "date": "2012-01-01",
       "description": "p. cm",
       "isbn": "9781617834233",
       "language": "eng",
@@ -478,6 +478,9 @@
         "internetarchivebooks",
         "inlibrary",
         "printdisabled"
+      ],
+      "normalized_dates": [
+        "2012-01-01"
       ]
     },
     "server": "ia903205.us.archive.org",

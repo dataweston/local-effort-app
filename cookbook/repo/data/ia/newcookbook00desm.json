@@ -398,7 +398,7 @@
         "Includes index"
       ],
       "publisher": "Des Moines, Iowa : Meredith Corp.",
-      "date": "1982",
+      "date": "1982-01-01",
       "language": "eng",
       "isbn": [
         "0696008904",
@@ -494,7 +494,10 @@
         "inlibrary",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "1982-01-01"
+      ]
     },
     "server": "ia801504.us.archive.org",
     "simplelists": {

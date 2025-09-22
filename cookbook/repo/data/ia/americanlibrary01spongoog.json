@@ -305,7 +305,7 @@
       "possible-copyright-status": "NOT_IN_COPYRIGHT",
       "identifier-access": "http://www.archive.org/details/americanlibrary01spongoog",
       "year": "1903",
-      "date": "1903",
+      "date": "1903-01-01",
       "oclc-id": "3741892",
       "scandate": "20070409",
       "copyright-region": "US",
@@ -354,7 +354,10 @@
       "ocr_converted": "abbyy-to-hocr 1.1.7",
       "page_number_confidence": "100",
       "page_number_module_version": "1.0.5",
-      "pdf_module_version": "0.0.25"
+      "pdf_module_version": "0.0.25",
+      "normalized_dates": [
+        "1903-01-01"
+      ]
     },
     "page_numbers": {
       "identifier": "americanlibrary01spongoog",

@@ -349,7 +349,7 @@
       "creator": "Better Homes and Gardens",
       "subject": "Cookery (Cranberries)",
       "publisher": "Des Moines, Iowa, Better Homes and Gardens, Meredith Pub. Services",
-      "date": "1971",
+      "date": "1971-01-01",
       "language": "eng",
       "page-progression": "lr",
       "boxid": "IA112510",
@@ -408,7 +408,10 @@
       ],
       "page_number_module_version": "1.0.5",
       "pdf_degraded": "invalid-jp2-headers",
-      "pdf_module_version": "0.0.25"
+      "pdf_module_version": "0.0.25",
+      "normalized_dates": [
+        "1971-01-01"
+      ]
     },
     "server": "ia902809.us.archive.org",
     "uniq": 360878977,

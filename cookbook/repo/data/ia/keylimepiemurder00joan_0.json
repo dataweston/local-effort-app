@@ -602,7 +602,7 @@
         "Women detectives",
         "Large type books"
       ],
-      "date": "2007",
+      "date": "2007-01-01",
       "external-identifier": [
         "urn:asin:0786295414",
         "urn:acs6:keylimepiemurder00joan_0:pdf:4633d46c-31c2-4913-b4af-3af56011d6cd",
@@ -707,6 +707,9 @@
         "internetarchivebooks",
         "inlibrary",
         "printdisabled"
+      ],
+      "normalized_dates": [
+        "2007-01-01"
       ]
     },
     "server": "ia601209.us.archive.org",

@@ -932,7 +932,10 @@
       "notes": "This material may be protected by copyright law (Title 17 U.S. Code).",
       "backup_location": "ia906501_0",
       "addeddate": "2017-08-02 06:29:00",
-      "access-restricted-item": "true"
+      "access-restricted-item": "true",
+      "normalized_dates": [
+        "2017-08-02"
+      ]
     },
     "server": "ia601408.us.archive.org",
     "uniq": 973853843,

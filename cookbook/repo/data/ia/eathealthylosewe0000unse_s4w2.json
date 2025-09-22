@@ -403,7 +403,7 @@
       "camera": "USB PTP Class Camera",
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
-      "date": "2009",
+      "date": "2009-01-01",
       "description": [
         "320 pages : 29 cm",
         "Eat Healthy, Lose Weight includes mor thatn 270 recipes for low-calorie versions of favorite foods such as burgers, lasagna, pizza and cookies. Deloped by registered dietitians, these recipes are packed with good-for-you ingredients such as whole grains, fruits, and vegetables. All of the recipes were tested in the Better Homes and Gardens test kitchen so you can feel confident that they work well and taste great",
@@ -471,7 +471,10 @@
         "inlibrary",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "2009-01-01"
+      ]
     },
     "server": "ia904501.us.archive.org",
     "uniq": 1885727721,

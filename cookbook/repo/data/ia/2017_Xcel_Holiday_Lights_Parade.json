@@ -932,7 +932,10 @@
       "publicdate": "2017-11-26 21:15:04",
       "uploader": "jhauser@pobox.com",
       "addeddate": "2017-11-26 21:15:04",
-      "backup_location": "ia906601_16"
+      "backup_location": "ia906601_16",
+      "normalized_dates": [
+        "2017-11-22"
+      ]
     },
     "server": "ia600507.us.archive.org",
     "uniq": 1629276052,

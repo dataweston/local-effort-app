@@ -203,7 +203,7 @@
     "metadata": {
       "identifier": "ERIC_ED471616",
       "creator": "ERIC",
-      "date": "2002-12",
+      "date": "2002-01-01",
       "description": "Local Learning and Employment Networks (LLENs) are incorporated organizations and groups whose mission is to facilitate local partnerships for the purpose of improving young people's education and training outcomes in Australia. LLENs are supported by grants from Australia's Department of Education and Training. Of the 31 LLENs currently existing throughout the state of Victoria, 15 were established in early 2001 and 16 were established in late 2001. In its first 18 months, the Maribyrnong and Moonee Valley LLEN (M&MV LLEN) established a strong network of education and training providers, community organizations, employment agencies, and employer groups that are working together to create an improved learning environment for young people of postcompulsory school age. The M&MV  LLEN's strategic plan is underpinned by current research on the following topics: youth at risk; employment opportunities; destination and transition data; retention rates; and alternative programs to Victorian Certificate of Education. One area of particular concern to the M&MV LLEN has been the learning pathways of refugee and migrant youth. The M&MV LLEN aspires to effecting change that will address shortcomings in education and training, provide young people with a range of programs that establish a pathway to a fulfilling adult life, and assist employers to respond to the emerging trends in their industries. (MN)",
       "language": "english",
       "mediatype": "texts",
@@ -223,7 +223,10 @@
       "ppi": "600",
       "ocr": "ABBYY FineReader 11.0",
       "repub_state": "4",
-      "backup_location": "ia905508_13"
+      "backup_location": "ia905508_13",
+      "normalized_dates": [
+        "2002-01-01"
+      ]
     },
     "server": "ia801304.us.archive.org",
     "uniq": 1019480489,

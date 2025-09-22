@@ -427,7 +427,7 @@
       "title": "Christmas from the heart",
       "creator": "Better Homes and Gardens",
       "publisher": "Des Moines, Iowa : Meredith",
-      "date": "2009",
+      "date": "2009-01-01",
       "language": "eng",
       "sponsor": "Internet Archive",
       "contributor": "Internet Archive",
@@ -494,6 +494,9 @@
         "internetarchivebooks",
         "inlibrary",
         "printdisabled"
+      ],
+      "normalized_dates": [
+        "2009-01-01"
       ]
     },
     "server": "ia600109.us.archive.org",

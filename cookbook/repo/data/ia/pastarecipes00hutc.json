@@ -402,7 +402,7 @@
         "\"Better homes and gardens test kitchen.\""
       ],
       "publisher": "Des Moines, Iowa : Meredith Corp.",
-      "date": "1989",
+      "date": "1989-01-01",
       "language": "eng",
       "isbn": "0696018616",
       "page-progression": "lr",
@@ -460,7 +460,10 @@
         "inlibrary",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "1989-01-01"
+      ]
     },
     "server": "ia800206.us.archive.org",
     "simplelists": {

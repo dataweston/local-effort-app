@@ -370,7 +370,7 @@
       "subject": "Holiday cookery",
       "description": "At head of title: Better homes and gardens",
       "publisher": "Des Moines, Iowa : Better Homes and Gardens Books",
-      "date": "2000",
+      "date": "2000-01-01",
       "language": "eng",
       "isbn": [
         "0696211378",
@@ -434,7 +434,10 @@
         "inlibrary"
       ],
       "page_number_confidence": "0",
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "2000-01-01"
+      ]
     },
     "server": "ia801506.us.archive.org",
     "uniq": 167281813,

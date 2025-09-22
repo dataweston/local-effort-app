@@ -416,7 +416,7 @@
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
       "creator": "Thielen, Amy, author",
-      "date": "2017",
+      "date": "2017-01-01",
       "description": [
         "311 pages ; 22 cm",
         "\"A beautifully written memoir that follows one woman from her childhood in a dysfunctional Midwestern family to becoming a chef in New York City and finally her triumphant return home to reclaim and redeem Midwestern cooking. Amy Thielen, author of the James Beard Award-winning cookbook The New Midwestern Table, traces her journey from Park Rapids, Minnesota, to cooking professionally under some of New York City's finest chefs--including David Bouley, Daniel Boulud, and Jean-Georges Vongerichten--and then back home again. A love of food and an overwhelming desire to get the hell out of small-town America drive Thielen to New York to seek out its intense culinary world, which she embraces enthusiastically, while her boyfriend finds success in its fickle art world. After years of living in the city, with frequent trips back home in the summertime, the couple eventually chooses life deep in the woods in a cabin Thielen's husband built by hand. There Aaron can practice his craft while Amy takes the skills she learned cooking professionally and turns them to undoing years of processed foods to uncover true Midwestern cooking, which begins simply with humble workhorse ingredients such as potatoes and onions. Give a Girl a Knife offers a fresh look into New York's fine dining scene while also acknowledging a universal nostalgia for home--and a yearning to remake that home so it's even better than you remember.\"--",
@@ -484,7 +484,10 @@
         "internetarchivebooks",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "2017-01-01"
+      ]
     },
     "server": "ia802308.us.archive.org",
     "uniq": 948465513,

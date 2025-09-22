@@ -283,7 +283,10 @@
       "ocr_detected_script_conf": "1.0000",
       "ocr_detected_lang": "en",
       "ocr_detected_lang_conf": "1.0000",
-      "year": "1993"
+      "year": "1993",
+      "normalized_dates": [
+        "1993-03-01"
+      ]
     },
     "server": "ia804609.us.archive.org",
     "uniq": 1014559086,

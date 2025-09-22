@@ -167,7 +167,7 @@
         "audio_religion"
       ],
       "creator": "David Kent",
-      "date": "2009",
+      "date": "2009-01-01",
       "description": "<div>2009 Audio Sermon from</div><div>Christian Life Center</div><div>8025 Medicine Lake Rd</div><div>Golden Valley, MN 55427</div><div><br /></div><div>www.clcministries.org</div>",
       "scanner": "Internet Archive HTML5 Uploader 1.6.3",
       "subject": [
@@ -195,7 +195,10 @@
       "curation": "[curator]kaplan@archive.org[/curator][date]20240717170450[/date][state]un-dark[/state][comment][/comment]",
       "backup_location": "ia906100_14",
       "external_metadata_update": "2019-03-27T09:48:22Z",
-      "noarchivetorrent": "true"
+      "noarchivetorrent": "true",
+      "normalized_dates": [
+        "2009-01-01"
+      ]
     },
     "server": "ia601306.us.archive.org",
     "uniq": 18592473,

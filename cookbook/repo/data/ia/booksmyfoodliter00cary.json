@@ -451,7 +451,7 @@
         "Food -- Quotations, maxims, etc",
         "Quotations"
       ],
-      "date": "1997",
+      "date": "1997-01-01",
       "external-identifier": [
         "urn:acs6:booksmyfoodliter00cary:epub:7da623ed-56f4-46c0-9ebd-653f3d66d00d",
         "urn:oclc:record:44960081",
@@ -508,7 +508,10 @@
         "printdisabled",
         "inlibrary"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "1997-01-01"
+      ]
     },
     "server": "ia800202.us.archive.org",
     "simplelists": {

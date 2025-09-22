@@ -183,7 +183,7 @@
       "possible-copyright-status": "NOT_IN_COPYRIGHT",
       "identifier-access": "http://www.archive.org/details/foodandcookeryf03farmgoog",
       "year": "1912",
-      "date": "1912",
+      "date": "1912-01-01",
       "oclc-id": "1610865",
       "scandate": "20070712",
       "copyright-region": "US",
@@ -202,7 +202,10 @@
       "backup_location": "ia903601_19",
       "openlibrary_edition": "OL20552528M",
       "openlibrary_work": "OL13140489W",
-      "addeddate": "2008-01-15 05:47:07"
+      "addeddate": "2008-01-15 05:47:07",
+      "normalized_dates": [
+        "1912-01-01"
+      ]
     },
     "server": "ia801305.us.archive.org",
     "uniq": 1091835065,

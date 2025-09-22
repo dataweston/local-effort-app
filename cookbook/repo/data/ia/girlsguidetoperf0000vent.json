@@ -395,7 +395,7 @@
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
       "creator": "Ventura, Marne, author",
-      "date": "2017",
+      "date": "2017-01-01",
       "description": [
         "32 pages : 26 cm",
         "Provides a list of supplies and easy-to-follow, step-by-step instructions for memorable sleepover projects, from spa-like activities to breakfast recipes",
@@ -467,7 +467,10 @@
         "printdisabled"
       ],
       "page_number_confidence": "23",
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "2017-01-01"
+      ]
     },
     "server": "ia801808.us.archive.org",
     "uniq": 582481587,

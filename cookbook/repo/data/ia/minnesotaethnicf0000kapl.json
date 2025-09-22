@@ -417,7 +417,7 @@
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
       "creator": "Kaplan, Anne R., 1951-",
-      "date": "1986",
+      "date": "1986-01-01",
       "description": [
         "xii, 449 p. : 27 cm",
         "Includes indexes"
@@ -478,7 +478,10 @@
         "printdisabled"
       ],
       "curation": "[date]20250210203953[/date][comment]inlibrary removal 3[/comment]",
-      "source": "removed"
+      "source": "removed",
+      "normalized_dates": [
+        "1986-01-01"
+      ]
     },
     "server": "ia902805.us.archive.org",
     "simplelists": {

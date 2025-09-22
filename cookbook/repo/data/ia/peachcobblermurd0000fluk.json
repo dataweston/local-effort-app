@@ -427,7 +427,7 @@
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
       "creator": "Fluke, Joanne, 1943-",
-      "date": "2005",
+      "date": "2005-01-01",
       "description": [
         "294 p. ; 22 cm",
         "Includes index of recipes"
@@ -489,7 +489,10 @@
         "inlibrary",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "2005-01-01"
+      ]
     },
     "server": "ia601909.us.archive.org",
     "simplelists": {

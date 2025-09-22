@@ -413,7 +413,7 @@
         "Includes bibliographies and index"
       ],
       "publisher": "Ames : Iowa State University Press",
-      "date": "1975",
+      "date": "1975-01-01",
       "language": "eng",
       "isbn": "0813808200",
       "lccn": "74023479",
@@ -470,7 +470,10 @@
         "inlibrary",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "1975-01-01"
+      ]
     },
     "server": "ia802901.us.archive.org",
     "simplelists": {

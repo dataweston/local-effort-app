@@ -427,7 +427,7 @@
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
       "creator": "Turner, Lawrence E",
-      "date": "1994",
+      "date": "1994-01-01",
       "description": [
         "xxvii, 608 pages ; 23 cm",
         "Includes index"
@@ -488,7 +488,10 @@
         "inlibrary",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "1994-01-01"
+      ]
     },
     "server": "ia801801.us.archive.org",
     "simplelists": {

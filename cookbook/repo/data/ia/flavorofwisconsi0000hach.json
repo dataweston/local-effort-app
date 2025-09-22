@@ -429,7 +429,7 @@
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
       "creator": "Hachten, Harva",
-      "date": "1981",
+      "date": "1981-01-01",
       "description": [
         "viii, 363 p. : 24 cm",
         "Bibliography: p. 333-336",
@@ -489,7 +489,10 @@
         "inlibrary",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "1981-01-01"
+      ]
     },
     "server": "ia601909.us.archive.org",
     "simplelists": {

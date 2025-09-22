@@ -166,7 +166,7 @@
     "metadata": {
       "identifier": "ERIC_ED442490",
       "creator": "ERIC",
-      "date": "1998",
+      "date": "1998-01-01",
       "description": "This report presents the annual headcount statistics on students transferring from the University of Wisconsin (UW) to the Wisconsin Technical College System (WTCS) during 1997-98. This report includes: (1) a summary narrative description, with changes from the 1996-97 data; (2) technical colleges accepting UW credits; (3) demographic characteristics of transfer students; and (4) information on the total transfer of students into the WTCS from 1993-94 through 1997-98. This report presents data on the following topics: enrollment by technical college, age characteristics, gender characteristics, ethnicity characteristics, disability characteristics, and highest grade characteristics. The UW System transfers are the most numerous by far of students transferring into the technical  colleges. From 1991-92 through 1997-98, the UW transfers were almost 48% of the seven-year total and more than twice as large as the next largest group (transfers among the technical colleges) that were 22%. The third largest were out-of-state transfers with 19% for the seven years; next-to-last were transfers from \"other Wisconsin institutions\" at 6%, and last were transfers from the Wisconsin Association of Independent Colleges and Universities with 5% of the total. (VWC)",
       "language": "english",
       "mediatype": "texts",
@@ -187,7 +187,10 @@
       "ocr": "ABBYY FineReader 11.0",
       "repub_state": "4",
       "foldoutcount": "0",
-      "backup_location": "ia905507_29"
+      "backup_location": "ia905507_29",
+      "normalized_dates": [
+        "1998-01-01"
+      ]
     },
     "server": "ia601205.us.archive.org",
     "uniq": 1899586039,

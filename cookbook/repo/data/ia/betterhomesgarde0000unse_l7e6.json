@@ -375,7 +375,7 @@
       "contributor": "Internet Archive",
       "creator": "None",
       "creator-alt-script": "None",
-      "date": "1994",
+      "date": "1994-01-01",
       "description": "32 pages : 26 cm",
       "isbn": [
         "0696200031",
@@ -435,6 +435,9 @@
         "internetarchivebooks",
         "printdisabled",
         "inlibrary"
+      ],
+      "normalized_dates": [
+        "1994-01-01"
       ]
     },
     "server": "ia800109.us.archive.org",

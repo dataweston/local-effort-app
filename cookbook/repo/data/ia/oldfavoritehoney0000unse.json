@@ -466,7 +466,7 @@
       "camera": "Sony Alpha-A6300 (Control)",
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
-      "date": "2010",
+      "date": "2010-01-01",
       "description": [
         "138 p. : 23 cm",
         "Previously published: Glenwood, Ill. : Meyerbooks, under title: American Honey Institute's old favorite honey recipes and the Honey recipes book of the Iowa Honey Producers Association, 1988",
@@ -532,7 +532,10 @@
         "inlibrary",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "2010-01-01"
+      ]
     },
     "server": "ia801605.us.archive.org",
     "uniq": 715640364,

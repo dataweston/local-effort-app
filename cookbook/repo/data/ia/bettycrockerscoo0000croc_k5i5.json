@@ -409,7 +409,7 @@
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
       "creator": "Crocker, Betty",
-      "date": "1985",
+      "date": "1985-01-01",
       "description": [
         "400 pages : 27 cm",
         "Thirteenth printing",
@@ -479,7 +479,10 @@
         "printdisabled",
         "inlibrary"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "1985-01-01"
+      ]
     },
     "server": "ia904606.us.archive.org",
     "simplelists": {

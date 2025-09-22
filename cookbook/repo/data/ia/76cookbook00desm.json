@@ -352,7 +352,7 @@
         "cbk"
       ],
       "publisher": "Des Moines, Iowa, Mills & co.",
-      "date": "1876",
+      "date": "1876-01-01",
       "language": "eng",
       "possible-copyright-status": "NOT_IN_COPYRIGHT",
       "sponsor": "Sloan Foundation",
@@ -397,7 +397,10 @@
       "ocr_module_version": "0.0.21",
       "ocr_converted": "abbyy-to-hocr 1.1.37",
       "page_number_confidence": "97",
-      "page_number_module_version": "1.0.3"
+      "page_number_module_version": "1.0.3",
+      "normalized_dates": [
+        "1876-01-01"
+      ]
     },
     "page_numbers": {
       "identifier": "76cookbook00desm",

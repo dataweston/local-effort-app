@@ -495,7 +495,7 @@
         "Greene House Country Inn (Whitewater, Wis.)",
         "Cookery, American"
       ],
-      "date": "1996",
+      "date": "1996-01-01",
       "external-identifier": [
         "urn:asin:1566261430",
         "urn:acs6:recipesfromwisco00gree:pdf:a17ee120-1665-48b3-8720-c5dbc04c5622",
@@ -548,7 +548,10 @@
         "inlibrary",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "1996-01-01"
+      ]
     },
     "server": "ia600609.us.archive.org",
     "uniq": 1564865736,

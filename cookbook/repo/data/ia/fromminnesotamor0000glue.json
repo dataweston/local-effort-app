@@ -416,7 +416,7 @@
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
       "creator": "Gluesing, Laurie",
-      "date": "1992",
+      "date": "1992-01-01",
       "description": [
         "260 pages : 21 cm",
         "Includes indexes"
@@ -479,7 +479,10 @@
         "inlibrary",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "1992-01-01"
+      ]
     },
     "server": "ia802803.us.archive.org",
     "uniq": 2026001848,

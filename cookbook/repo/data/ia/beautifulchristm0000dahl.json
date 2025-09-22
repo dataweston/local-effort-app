@@ -468,7 +468,7 @@
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
       "creator": "Dahlstrom, Carol Field",
-      "date": "2004",
+      "date": "2004-01-01",
       "description": [
         "160 p. : 29 cm",
         "Includes index"
@@ -534,7 +534,10 @@
         "printdisabled"
       ],
       "page_number_confidence": "0",
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "2004-01-01"
+      ]
     },
     "server": "ia600401.us.archive.org",
     "uniq": 296666030,

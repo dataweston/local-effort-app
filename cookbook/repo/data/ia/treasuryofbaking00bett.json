@@ -403,7 +403,7 @@
       ],
       "description": "Includes indexes",
       "publisher": "Des Moines, Iowa : Meredith Corp.",
-      "date": "1978",
+      "date": "1978-01-01",
       "language": "eng",
       "isbn": [
         "0696020416",
@@ -468,7 +468,10 @@
       ],
       "page_number_module_version": "1.0.5",
       "pdf_degraded": "invalid-jp2-headers",
-      "pdf_module_version": "0.0.25"
+      "pdf_module_version": "0.0.25",
+      "normalized_dates": [
+        "1978-01-01"
+      ]
     },
     "server": "ia804602.us.archive.org",
     "uniq": 1150770727,

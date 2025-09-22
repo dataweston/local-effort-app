@@ -391,7 +391,7 @@
       "creator": "Meredith",
       "subject": "Food processor cookery",
       "publisher": "Des Moines, Iowa : Meredith",
-      "date": "1979",
+      "date": "1979-01-01",
       "language": "eng",
       "isbn": [
         "0696003554",
@@ -461,6 +461,9 @@
         "americana",
         "inlibrary",
         "printdisabled"
+      ],
+      "normalized_dates": [
+        "1979-01-01"
       ]
     },
     "server": "ia801808.us.archive.org",

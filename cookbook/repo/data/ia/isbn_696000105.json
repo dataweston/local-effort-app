@@ -431,7 +431,7 @@
       "camera": "USB PTP Class Camera",
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
-      "date": "1976",
+      "date": "1976-01-01",
       "description": [
         "435 p. : 26 cm",
         "First published in 1930 under title: My Better homes & gardens cook book; in 1931: My Better homes & gardens lifetime cook book; in 1937: My new Better homes & gardens cook book; in 1939: My Better homes & gardens cook book; in 1941: Better homes & gardens cook book; in 1953: Better homes and gardens new cook book",
@@ -490,6 +490,9 @@
         "internetarchivebooks",
         "inlibrary",
         "printdisabled"
+      ],
+      "normalized_dates": [
+        "1976-01-01"
       ]
     },
     "server": "ia800500.us.archive.org",

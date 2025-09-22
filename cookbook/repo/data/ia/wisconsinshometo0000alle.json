@@ -409,7 +409,7 @@
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
       "creator": "Allen, Terese",
-      "date": "2003",
+      "date": "2003-01-01",
       "description": [
         "xx, 250 pages : 23 cm",
         "Includes bibliographical references (pages 235-237) and index"
@@ -486,7 +486,10 @@
         "inlibrary",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "2003-01-01"
+      ]
     },
     "server": "ia903409.us.archive.org",
     "uniq": 1494011833,

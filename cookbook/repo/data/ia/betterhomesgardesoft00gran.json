@@ -381,7 +381,7 @@
       "subject": "Cookery, American",
       "description": "Includes index",
       "publisher": "Des Moines, Iowa : Meredith Corporation",
-      "date": "1984",
+      "date": "1984-01-01",
       "language": "eng",
       "isbn": [
         "0696008254",
@@ -479,6 +479,9 @@
         "internetarchivebooks",
         "printdisabled",
         "inlibrary"
+      ],
+      "normalized_dates": [
+        "1984-01-01"
       ]
     },
     "server": "ia801608.us.archive.org",

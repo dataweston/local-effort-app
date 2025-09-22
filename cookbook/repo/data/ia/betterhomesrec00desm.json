@@ -392,7 +392,7 @@
       "subject": "Cookery",
       "description": "Includes index",
       "publisher": "Des Moines, Iowa : Meredith Corp.",
-      "date": "1980",
+      "date": "1980-01-01",
       "language": "eng",
       "isbn": [
         "0696005255",
@@ -462,6 +462,9 @@
         "americana",
         "printdisabled",
         "inlibrary"
+      ],
+      "normalized_dates": [
+        "1980-01-01"
       ]
     },
     "server": "ia801300.us.archive.org",

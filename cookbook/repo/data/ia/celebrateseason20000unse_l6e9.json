@@ -420,7 +420,7 @@
       "camera": "USB PTP Class Camera",
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
-      "date": "2017",
+      "date": "2017-01-01",
       "description": [
         "160 pages : 28 cm",
         "From Thanksgiving through New Year's, whip up some holiday bliss as you serve delectable foods from your kitchen; create a wonderland of festive decorations; present super fun handcrafted gifts; encourage kids' creative undertakings. From planning menus to trimming the house, or wrapping handmade gifts, you will find fresh ideas and tested recipes for your holiday season",
@@ -489,7 +489,10 @@
         "printdisabled",
         "inlibrary"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "2017-01-01"
+      ]
     },
     "server": "ia904507.us.archive.org",
     "uniq": 1181034934,

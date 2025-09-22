@@ -439,7 +439,7 @@
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
       "creator": "Gunderson, Mary, author",
-      "date": "2017",
+      "date": "2017-01-01",
       "description": [
         "32 pages : 24 cm",
         "\"Discusses the everyday life, family roles, cooking methods, and common foods of pioneers who settled in the Midwest during the last 1800s and early 1900s. Includes recipes\"--",
@@ -508,6 +508,9 @@
         "internetarchivebooks",
         "inlibrary",
         "printdisabled"
+      ],
+      "normalized_dates": [
+        "2017-01-01"
       ]
     },
     "server": "ia801606.us.archive.org",

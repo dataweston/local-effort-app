@@ -431,7 +431,7 @@
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
       "creator": "Martin, Janet Letnes",
-      "date": "1984",
+      "date": "1984-01-01",
       "description": [
         "124 pages : 22 cm",
         "A humorous description of Norwegian American customs in Minnesota. Includes recipes",
@@ -498,7 +498,10 @@
         "inlibrary",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "1984-01-01"
+      ]
     },
     "server": "ia803105.us.archive.org",
     "uniq": 747790983,

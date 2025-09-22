@@ -243,7 +243,7 @@
       "contactinformation": "Scott County Library System 200 N 6th Ave Eldridge, Iowa 52748 www.scottcountylibrary.org, 563-285-4794",
       "contributor": "Miller, Penne",
       "creator": "Brockhouse, Joyce Graaf",
-      "date": "1948 to 1951",
+      "date": "1948-01-01",
       "description": "Joyce (Graaff) Brockhouse's 4-H scrapbook that documents the story of her experiences as part of the Princeton Livewires 4-H club. It includes Record Books for food preservation and nutrition, home furnishing, and clothing. There are booklets of the club's yearly membership and activities. There are newspaper clippings and photos of awards and special events. Joyce and Dorla Jean (Dannatt) Schroder won the state championship in 1949 at the Waterloo Dairy Congress for their demonstration, \"A Bit of Cheese Will Always Please\". They were then invited to present it at the state 4-H convention in Ames. Also included in the scrapbook are programs for the Scott County Farm Youth Banquet and Mother-Daughter Teas, and correspondence that Joyce received concerning her 4-H activities.  In 1912, Iowa became the first state in the U.S. to embrace the 4-H movement. Indiana joined Iowa a month later and other states soon joined. It didn't become a fully national organization until the Smith-Lever Act in 1914, which created the National Extension Service. According to the website, iowa4hfoundation.org, 4-H started in Scott County between 1910 and 1920. ",
       "digitalreproductioninformation": "Scanned on an Epson V370 Scanner or CZUR ET16 scanner , January 2022",
       "filename": "pri_1948_001",
@@ -272,7 +272,10 @@
       "ocr_detected_script_conf": "0.9583",
       "ocr_detected_lang": "en",
       "ocr_detected_lang_conf": "1.0000",
-      "pdf_module_version": "0.0.18"
+      "pdf_module_version": "0.0.18",
+      "normalized_dates": [
+        "1948-01-01"
+      ]
     },
     "page_numbers": {
       "identifier": "/var/tmp/autoclean/derive/pri_1948_001/pri_1948_001",

@@ -232,7 +232,7 @@
       "mediatype": "texts",
       "collection": "opensource",
       "creator": "Cookbook Committee of the Peoria Christian School",
-      "date": "1979",
+      "date": "1979-01-01",
       "description": "A recipe book that was created as a fundraiser to support the Peoria Christian School in Peoria, Iowa. Developed by the Cookbook Committee of the Peoria Christian School in 1979. Printed by General Publishing and Binding in Iowa Falls, Iowa. The contents are sorted by Appetizers and Beverages, Bars and Cookies, Bread and Coffee Cakes, Cakes and Frostings, Candies and Sauces, Canning and Freezing, Deserts and Pies, Main Dishes, Salads, Snacks and Sandwiches, Vegetables, and Miscellaneous. Included also are poems and hand drawn illustrations.",
       "language": "eng",
       "scanner": "Internet Archive HTML5 Uploader 1.7.0",
@@ -260,7 +260,10 @@
       "ocr_detected_lang": "en",
       "ocr_detected_lang_conf": "1.0000",
       "page_number_confidence": "87",
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "1979-01-01"
+      ]
     },
     "server": "ia800700.us.archive.org",
     "uniq": 1983505802,

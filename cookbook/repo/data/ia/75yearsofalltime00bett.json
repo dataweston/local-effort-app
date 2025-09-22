@@ -459,7 +459,7 @@
         "Cookery, American",
         "Cooking, American"
       ],
-      "date": "1997",
+      "date": "1997-01-01",
       "external-identifier": [
         "urn:acs6:75yearsofalltime00bett:epub:96339a85-55a2-4831-b28d-e3c52f563008",
         "urn:oclc:record:1023750329",
@@ -527,6 +527,9 @@
         "internetarchivebooks",
         "printdisabled",
         "inlibrary"
+      ],
+      "normalized_dates": [
+        "1997-01-01"
       ]
     },
     "reviews": [

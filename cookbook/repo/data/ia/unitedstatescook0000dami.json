@@ -387,7 +387,7 @@
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
       "creator": "D'Amico, Joan, 1957-",
-      "date": "2000",
+      "date": "2000-01-01",
       "description": [
         "vi, 186 p. : 24 cm",
         "Provides information about the fifty states along with a recipe native to each of them, such as Boston baked beans from Massachusetts, crab cakes from Maryland, Key lime pie from Florida, corn dogs from Iowa, and taco soup from New Mexico",
@@ -453,7 +453,10 @@
         "internetarchivebooks",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "2000-01-01"
+      ]
     },
     "server": "ia903408.us.archive.org",
     "simplelists": {

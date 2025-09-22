@@ -411,7 +411,7 @@
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
       "creator": "Hachfeld, Linda",
-      "date": "1992",
+      "date": "1992-01-01",
       "description": [
         "455 pages : 23 cm",
         "Includes bibliographical references ([433]-438) and indexes"
@@ -488,7 +488,10 @@
         "inlibrary",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "1992-01-01"
+      ]
     },
     "server": "ia601706.us.archive.org",
     "simplelists": {

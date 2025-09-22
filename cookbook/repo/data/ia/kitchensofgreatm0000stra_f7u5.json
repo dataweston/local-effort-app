@@ -423,7 +423,7 @@
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
       "creator": "Stradal, J. Ryan, author",
-      "date": "2015",
+      "date": "2015-01-01",
       "description": [
         "312 pages ; 24 cm",
         "When Lars Thorvald's wife, Cynthia, falls in love with wine -- and a dashing sommelier -- he's left to raise their baby, Eva, on his own. He's determined to pass on his love of food to his daughter -- starting with puréed pork shoulder. As Eva grows, she finds her solace and salvation in the flavors of her native Minnesota. From Scandinavian lutefisk to hydroponic chocolate habaneros, each ingredient represents one part of Eva's journey as she becomes the star chef behind a legendary and secretive pop-up supper club, culminating in an opulent and emotional feast that's a testament to her spirit and resilience. Each chapter in J. Ryan Stradal's debut tells the story of a single dish and character, at once capturing the zeitgeist of the Midwest, the rise of foodie culture, and delving into the ways food creates community and a sense of identity. Kitchens of the Great Midwest is also an unexpected mother-daughter story about the bittersweet nature of life -- its missed opportunities and its joyful surprises",
@@ -499,6 +499,9 @@
       "collection": [
         "internetarchivebooks",
         "printdisabled"
+      ],
+      "normalized_dates": [
+        "2015-01-01"
       ]
     },
     "server": "ia803400.us.archive.org",

@@ -429,7 +429,7 @@
         "Includes index"
       ],
       "publisher": "Des Moines, Iowa : Meredith Corp.",
-      "date": "1980",
+      "date": "1980-01-01",
       "language": "eng",
       "isbn": [
         "0696012200",
@@ -503,6 +503,9 @@
         "internetarchivebooks",
         "printdisabled",
         "inlibrary"
+      ],
+      "normalized_dates": [
+        "1980-01-01"
       ]
     },
     "server": "ia600608.us.archive.org",

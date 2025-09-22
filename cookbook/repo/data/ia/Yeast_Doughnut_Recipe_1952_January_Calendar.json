@@ -205,7 +205,7 @@
       "creator": "T.D.M Company, Red Oak, Iowa",
       "licenseurl": "http://creativecommons.org/publicdomain/zero/1.0/",
       "publicdate": "2014-11-11 06:31:50",
-      "date": "1952-01",
+      "date": "1952-01-01",
       "year": "1952",
       "contributor": "Gerard Arthus",
       "publisher": "Gerard Arthus",
@@ -226,7 +226,10 @@
       ],
       "backup_location": "ia905906_21",
       "rights": "Public Domain.",
-      "access-restricted-item": "true"
+      "access-restricted-item": "true",
+      "normalized_dates": [
+        "1952-01-01"
+      ]
     },
     "server": "ia601307.us.archive.org",
     "uniq": 1533274764,

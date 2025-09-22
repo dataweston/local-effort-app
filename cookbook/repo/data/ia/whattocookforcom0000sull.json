@@ -445,7 +445,7 @@
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
       "creator": "Sullivan, Lenore, 1900-",
-      "date": "1952",
+      "date": "1952-01-01",
       "description": "512 p. 22 cm",
       "language": "eng",
       "lccn": "52011248",
@@ -506,6 +506,9 @@
         "internetarchivebooks",
         "inlibrary",
         "printdisabled"
+      ],
+      "normalized_dates": [
+        "1952-01-01"
       ]
     },
     "server": "ia601606.us.archive.org",

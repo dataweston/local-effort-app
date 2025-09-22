@@ -414,7 +414,7 @@
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
       "creator": "Civitello, Linda, author",
-      "date": "2017",
+      "date": "2017-01-01",
       "description": [
         "xi, 252 pages : 23 cm",
         "Includes bibliographical references and index",
@@ -482,6 +482,9 @@
         "internetarchivebooks",
         "printdisabled",
         "inlibrary"
+      ],
+      "normalized_dates": [
+        "2017-01-01"
       ]
     },
     "server": "ia804508.us.archive.org",

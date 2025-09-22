@@ -391,7 +391,7 @@
       "contributor": "Internet Archive",
       "creator": "None",
       "creator-alt-script": "None",
-      "date": "2010",
+      "date": "2010-01-01",
       "description": [
         "288 pages : 23 cm",
         "Includes index"
@@ -455,6 +455,9 @@
         "internetarchivebooks",
         "printdisabled",
         "inlibrary"
+      ],
+      "normalized_dates": [
+        "2010-01-01"
       ]
     },
     "server": "ia903103.us.archive.org",

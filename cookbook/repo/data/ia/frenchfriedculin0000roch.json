@@ -397,7 +397,7 @@
       "contributor": "Internet Archive",
       "creator": "Rochefort, Harriet Welty",
       "creator-alt-script": "None",
-      "date": "2001",
+      "date": "2001-01-01",
       "description": [
         "xii, 292 pages ; 22 cm",
         "The author, born in Shenandoah, Iowa, moved to France and eventually had to learn to cook \"à la française.\" She shares her adventures and misadventures and many recipes",
@@ -469,7 +469,10 @@
         "inlibrary",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "2001-01-01"
+      ]
     },
     "server": "ia800608.us.archive.org",
     "simplelists": {

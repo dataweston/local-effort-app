@@ -430,7 +430,7 @@
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
       "creator": "Lee, Sandra",
-      "date": "2007",
+      "date": "2007-01-01",
       "description": [
         "237 pages : 25 cm",
         "Provides simple recipes for food that can be prepared in twenty minutes or less, including appetizers, snacks, desserts, and entrees featuring beef, pork, lamb, chicken, turkey, and fish",
@@ -503,7 +503,10 @@
         "internetarchivebooks",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "2007-01-01"
+      ]
     },
     "server": "ia803107.us.archive.org",
     "simplelists": {

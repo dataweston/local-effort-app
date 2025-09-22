@@ -523,7 +523,7 @@
         "Home economics",
         "Ohio"
       ],
-      "date": "2001",
+      "date": "2001-01-01",
       "external-identifier": [
         "urn:asin:089732420X",
         "urn:acs6:keepinghearthhom00caro:pdf:f8549a35-cfd1-4408-9459-7871d36a12c8",
@@ -590,6 +590,9 @@
         "internetarchivebooks",
         "inlibrary",
         "printdisabled"
+      ],
+      "normalized_dates": [
+        "2001-01-01"
       ]
     },
     "server": "ia800500.us.archive.org",

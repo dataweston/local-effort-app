@@ -378,7 +378,7 @@
         "Includes index"
       ],
       "publisher": "Des Moines, Iowa : Meredith Corporation",
-      "date": "1988",
+      "date": "1988-01-01",
       "language": "eng",
       "isbn": [
         "0696017504",
@@ -442,7 +442,10 @@
       ],
       "page_number_module_version": "1.0.5",
       "pdf_degraded": "invalid-jp2-headers",
-      "pdf_module_version": "0.0.25"
+      "pdf_module_version": "0.0.25",
+      "normalized_dates": [
+        "1988-01-01"
+      ]
     },
     "server": "ia800208.us.archive.org",
     "simplelists": {

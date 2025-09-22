@@ -427,7 +427,7 @@
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
       "creator": "Birkby, Evelyn",
-      "date": "1993",
+      "date": "1993-01-01",
       "description": [
         "xvii, 254 p. : 25 cm",
         "Includes index"
@@ -484,7 +484,10 @@
         "inlibrary",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "1993-01-01"
+      ]
     },
     "server": "ia601708.us.archive.org",
     "uniq": 581339739,

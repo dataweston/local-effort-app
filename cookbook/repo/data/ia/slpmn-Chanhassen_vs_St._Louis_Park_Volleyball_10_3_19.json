@@ -956,7 +956,10 @@
       "addeddate": "2019-10-13 12:24:54",
       "noarchivetorrent": "true",
       "curation": "[curator]jscott@archive.org[/curator][date]20200223082116[/date][state]un-dark[/state]",
-      "backup_location": "ia907003_22"
+      "backup_location": "ia907003_22",
+      "normalized_dates": [
+        "2019-10-07"
+      ]
     },
     "server": "ia800709.us.archive.org",
     "uniq": 2121013093,

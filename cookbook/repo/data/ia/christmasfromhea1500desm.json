@@ -393,7 +393,7 @@
       ],
       "description": "Includes index",
       "publisher": "Des Moines, Iowa : Meredith",
-      "date": "2006",
+      "date": "2006-01-01",
       "language": "eng",
       "isbn": [
         "0696224089",
@@ -456,6 +456,9 @@
         "americana",
         "inlibrary",
         "printdisabled"
+      ],
+      "normalized_dates": [
+        "2006-01-01"
       ]
     },
     "server": "ia801405.us.archive.org",

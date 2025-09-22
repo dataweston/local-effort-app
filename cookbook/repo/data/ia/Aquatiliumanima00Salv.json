@@ -349,7 +349,7 @@
         "Harry, Robert R. (Robert Rees), 1926- , former owner. DSI"
       ],
       "curation": "[curator]biodiversitylibrary.org[/curator][date]20140428021838[/date][state]approved[/state]",
-      "date": "1554",
+      "date": "1554-01-01",
       "identifier-bib": "39088017216821",
       "language": [
         "lat",
@@ -424,7 +424,10 @@
       "ocr_detected_script_conf": "0.9219",
       "ocr_detected_lang": "la",
       "ocr_detected_lang_conf": "1.0000",
-      "pdf_module_version": "0.0.18"
+      "pdf_module_version": "0.0.18",
+      "normalized_dates": [
+        "1554-01-01"
+      ]
     },
     "page_numbers": {
       "identifier": "/var/tmp/autoclean/derive/aquatiliumanima00salv/aquatiliumanima00salv",

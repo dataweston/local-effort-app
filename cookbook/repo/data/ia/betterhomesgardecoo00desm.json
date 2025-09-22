@@ -452,7 +452,7 @@
       "subject": "Cookies",
       "description": "Includes index",
       "publisher": "Des Moines, Iowa : Meredith Corp.",
-      "date": "1984",
+      "date": "1984-01-01",
       "language": "eng",
       "isbn": [
         "0696011409",
@@ -533,6 +533,9 @@
         "internetarchivebooks",
         "printdisabled",
         "inlibrary"
+      ],
+      "normalized_dates": [
+        "1984-01-01"
       ]
     },
     "server": "ia800205.us.archive.org",

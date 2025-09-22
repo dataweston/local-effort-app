@@ -206,7 +206,7 @@
     "metadata": {
       "identifier": "ERIC_ED380671",
       "creator": "ERIC",
-      "date": "1994",
+      "date": "1994-01-01",
       "description": "This reports summarizes 1993-1994 program year developments in Iowa's vocational and applied technology programs funded under the 1990 Perkins Act. The following topics are covered in the report's 12 chapters: progress made in developing performance standards and actual performance standards/core measures developed; secondary, postsecondary, and adult occupational preparation programs; programs for single parents, displaced homemakers, and single pregnant women; sex equity programs/activities; programs for criminal offenders in corrections institutions; programs for special populations (individuals with disabilities, students with limited English proficiency, and disadvantaged students); state leadership and professional development; community-based organizations; consumer and  home economics education; tech prep; activities undertaken to achieve integration of academics into vocational education; and career guidance and counseling. Each chapter includes information about some or all of the following: new programs, dropped programs, number of students/clients served, enrollment patterns, program goals and degree of their attainment, program activities/services, program funding, program outcomes, special delivery methods, success stories, and services most needed. Twenty-one tables are included. (MN)",
       "language": "english",
       "mediatype": "texts",
@@ -226,7 +226,10 @@
       "ppi": "300",
       "ocr": "ABBYY FineReader 9.0",
       "repub_state": "4",
-      "backup_location": "ia905905_12"
+      "backup_location": "ia905905_12",
+      "normalized_dates": [
+        "1994-01-01"
+      ]
     },
     "server": "ia601605.us.archive.org",
     "uniq": 1935784394,

@@ -415,7 +415,7 @@
       "camera": "USB PTP Class Camera",
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
-      "date": "2012",
+      "date": "2012-01-01",
       "description": [
         "240 pages : 26 cm",
         "Compiled by the editors of Midwest Living magazine, this contains more than 275 favorite recipes for every occasion-from special breakfasts and brunches to simple dinners and sumptuous desserts, all with the distinct flavor of the Heartland",
@@ -476,6 +476,9 @@
         "internetarchivebooks",
         "inlibrary",
         "printdisabled"
+      ],
+      "normalized_dates": [
+        "2012-01-01"
       ]
     },
     "server": "ia801702.us.archive.org",

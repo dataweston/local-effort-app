@@ -396,7 +396,7 @@
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
       "creator": "Brown, Ellen",
-      "date": "2008",
+      "date": "2008-01-01",
       "description": "xii, 132 p. : 28 cm",
       "isbn": "9781599214818",
       "language": "eng",
@@ -456,7 +456,10 @@
         "inlibrary",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "2008-01-01"
+      ]
     },
     "server": "ia801008.us.archive.org",
     "uniq": 60404598,

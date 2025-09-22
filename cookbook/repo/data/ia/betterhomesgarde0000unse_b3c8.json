@@ -412,7 +412,7 @@
       "camera": "Sony Alpha-A6300 (Control)",
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
-      "date": "2006",
+      "date": "2006-01-01",
       "description": [
         "574, 96 p. : 24 cm",
         "In loose-leaf binder",
@@ -474,6 +474,9 @@
         "internetarchivebooks",
         "printdisabled",
         "inlibrary"
+      ],
+      "normalized_dates": [
+        "2006-01-01"
       ]
     },
     "server": "ia801708.us.archive.org",

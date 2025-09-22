@@ -396,7 +396,7 @@
         "Meredith Books",
         "Better Homes and Gardens Books (Firm)"
       ],
-      "date": "2008",
+      "date": "2008-01-01",
       "isbn": [
         "9780696242045",
         "0696242044"
@@ -462,7 +462,10 @@
         "inlibrary",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "2008-01-01"
+      ]
     },
     "server": "ia803109.us.archive.org",
     "uniq": 443786358,

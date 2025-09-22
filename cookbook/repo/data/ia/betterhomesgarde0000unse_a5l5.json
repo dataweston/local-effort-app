@@ -413,7 +413,7 @@
       "camera": "USB PTP Class Camera",
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
-      "date": "1992",
+      "date": "1992-01-01",
       "description": [
         "160 P. : 28 cm",
         "Spine title: Christmas at home"
@@ -472,6 +472,9 @@
         "internetarchivebooks",
         "printdisabled",
         "inlibrary"
+      ],
+      "normalized_dates": [
+        "1992-01-01"
       ]
     },
     "server": "ia801707.us.archive.org",

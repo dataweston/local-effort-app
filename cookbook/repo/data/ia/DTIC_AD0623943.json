@@ -267,7 +267,10 @@
       "ocr_module_version": "0.0.21",
       "ocr_converted": "abbyy-to-hocr 1.1.37",
       "page_number_confidence": "50",
-      "page_number_module_version": "1.0.3"
+      "page_number_module_version": "1.0.3",
+      "normalized_dates": [
+        "1965-01-01"
+      ]
     },
     "page_numbers": {
       "identifier": "DTIC_AD0623943",

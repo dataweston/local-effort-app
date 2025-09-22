@@ -231,7 +231,7 @@
       "identifier": "2014StoutGraduateBulletin",
       "mediatype": "texts",
       "creator": "University of Wisconsin--Stout. University Relations.",
-      "date": "2014",
+      "date": "2014-01-01",
       "description": "<span style=\"font-family:Arial, Helvetica, sans-serif;font-size:13px;background-color:rgb(255,255,255);\">Annual and biennial bulletins of the University of Wisconsin-Stout and its <br />predecessor institutions. The bulletins provide descriptions of campus, <br />lists of administrators and faculty, information on institutional <br />objectives, courses offered, and curriculum.</span>",
       "language": "eng",
       "licenseurl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
@@ -264,6 +264,9 @@
         "stoutbulletins",
         "universityofwisconsinstoutarchives",
         "americana"
+      ],
+      "normalized_dates": [
+        "2014-01-01"
       ]
     },
     "server": "ia801601.us.archive.org",

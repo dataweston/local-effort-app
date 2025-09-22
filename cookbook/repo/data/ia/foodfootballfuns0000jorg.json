@@ -391,7 +391,7 @@
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
       "creator": "Jorgensen, Katrina, author",
-      "date": "2015",
+      "date": "2015-01-01",
       "description": [
         "144 pages : 26 cm",
         "\"A football cookbook with recipe ideas for a football party, tailgating, and fueling up for game day\"--",
@@ -458,7 +458,10 @@
         "printdisabled"
       ],
       "page_number_confidence": "0",
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "2015-01-01"
+      ]
     },
     "server": "ia903401.us.archive.org",
     "uniq": 774208841,

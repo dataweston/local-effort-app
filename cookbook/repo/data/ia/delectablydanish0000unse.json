@@ -442,7 +442,7 @@
       "col_number": "COL-2494",
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
-      "date": "1982",
+      "date": "1982-01-01",
       "description": "64 p. : 23 cm",
       "isbn": "0941016048",
       "language": "eng",
@@ -503,7 +503,10 @@
         "inlibrary",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "1982-01-01"
+      ]
     },
     "server": "ia800109.us.archive.org",
     "uniq": 1900299154,

@@ -430,7 +430,7 @@
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
       "creator": "Lee, Sandra",
-      "date": "2008",
+      "date": "2008-01-01",
       "description": [
         "237 pages : 25 cm",
         "Simple scrumptiously delicious desserts that taste like they're made from scratch Dozens of helpful hints for perfectly frosted favorites along with glorious goodies and gifts More than 125 satisfying shortcut sweets from creative cakes and confections to cookies New \"quick-scratch\" receipts for so-easy cupcakes, crisps, cobblers, pies, and pastries",
@@ -494,7 +494,10 @@
         "internetarchivebooks",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "2008-01-01"
+      ]
     },
     "server": "ia903106.us.archive.org",
     "simplelists": {

@@ -420,7 +420,7 @@
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
       "creator": "Better Homes and Gardens",
-      "date": "1992",
+      "date": "1992-01-01",
       "description": [
         "240 pages : 25 cm",
         "A selection of traditional recipes that have been made lighter"
@@ -490,7 +490,10 @@
         "printdisabled",
         "inlibrary"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "1992-01-01"
+      ]
     },
     "server": "ia600506.us.archive.org",
     "uniq": 46585194,

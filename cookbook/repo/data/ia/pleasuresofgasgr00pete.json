@@ -344,7 +344,7 @@
       ],
       "description": "Includes index",
       "publisher": "Des Moines, Iowa : Meredith Pub. Services",
-      "date": "1980",
+      "date": "1980-01-01",
       "language": "eng",
       "page-progression": "lr",
       "boxid": "IA110209",
@@ -397,7 +397,10 @@
         "inlibrary",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "1980-01-01"
+      ]
     },
     "server": "ia801300.us.archive.org",
     "uniq": 1903185394,

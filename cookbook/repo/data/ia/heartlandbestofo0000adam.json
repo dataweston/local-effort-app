@@ -400,7 +400,7 @@
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
       "creator": "Adams, Marcia",
-      "date": "2005",
+      "date": "2005-01-01",
       "description": [
         "xiii, 258 pages : 26 cm",
         "Includes bibliographical references (page 253) and index"
@@ -458,7 +458,10 @@
       ],
       "page_number_module_version": "1.0.5",
       "pdf_degraded": "invalid-jp2-headers",
-      "pdf_module_version": "0.0.25"
+      "pdf_module_version": "0.0.25",
+      "normalized_dates": [
+        "2005-01-01"
+      ]
     },
     "server": "ia801803.us.archive.org",
     "uniq": 167191986,

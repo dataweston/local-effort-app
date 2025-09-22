@@ -465,7 +465,7 @@
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
       "creator": "Eighmey, Rae Katherine",
-      "date": "2008",
+      "date": "2008-01-01",
       "description": [
         "xv, 168 p. : 23 cm",
         "Includes index"
@@ -530,7 +530,10 @@
       "page_number_confidence": "0",
       "page_number_module_version": "1.0.5",
       "source": "removed",
-      "curation": "[date]20250212103514[/date][comment]inlibrary removal 3[/comment]"
+      "curation": "[date]20250212103514[/date][comment]inlibrary removal 3[/comment]",
+      "normalized_dates": [
+        "2008-01-01"
+      ]
     },
     "server": "ia600305.us.archive.org",
     "uniq": 1571192264,

@@ -328,7 +328,10 @@
       "addeddate": "2019-09-01 08:30:52",
       "noarchivetorrent": "true",
       "curation": "[curator]jscott@archive.org[/curator][date]20200223092003[/date][state]un-dark[/state]",
-      "backup_location": "ia907000_4"
+      "backup_location": "ia907000_4",
+      "normalized_dates": [
+        "2019-08-28"
+      ]
     },
     "server": "ia903103.us.archive.org",
     "uniq": 480831149,

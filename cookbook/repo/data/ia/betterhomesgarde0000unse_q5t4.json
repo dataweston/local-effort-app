@@ -431,7 +431,7 @@
       "camera": "USB PTP Class Camera",
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
-      "date": "2008",
+      "date": "2008-01-01",
       "description": [
         "64, 656 p. : 25 cm",
         "Featuring more than 1,400 tested recipes that reflect current lifestyles and eating habits, a special bridal edition of the best-selling cookbook includes a bonus chapter for newlywed couples, dishes with an ethnic flare and vegetarian appeal, nutrition facts, expanded cooking tips, quick-reference symbols, and cooking times.--",
@@ -496,6 +496,9 @@
         "internetarchivebooks",
         "printdisabled",
         "inlibrary"
+      ],
+      "normalized_dates": [
+        "2008-01-01"
       ]
     },
     "server": "ia801803.us.archive.org",

@@ -218,7 +218,7 @@
       "possible-copyright-status": "NOT_IN_COPYRIGHT",
       "identifier-access": "http://www.archive.org/details/saladssandwiche00neilgoog",
       "year": "1916",
-      "date": "1916",
+      "date": "1916-01-01",
       "oclc-id": "1817960",
       "scandate": "20070821000000",
       "copyright-region": "US",
@@ -243,7 +243,10 @@
       "backup_location": "ia903601_19",
       "openlibrary_edition": "OL6588608M",
       "openlibrary_work": "OL1472914W",
-      "addeddate": "2008-01-13 23:28:09"
+      "addeddate": "2008-01-13 23:28:09",
+      "normalized_dates": [
+        "1916-01-01"
+      ]
     },
     "server": "ia801404.us.archive.org",
     "uniq": 1207459762,

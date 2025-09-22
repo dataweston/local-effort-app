@@ -389,7 +389,7 @@
         "Includes index"
       ],
       "publisher": "Des Moines, Iowa (Locust at 17th, Des Moines 50336) : Meredith Pub. Services",
-      "date": "1986",
+      "date": "1986-01-01",
       "language": "eng",
       "page-progression": "lr",
       "boxid": "IA125410",
@@ -445,7 +445,10 @@
       ],
       "page_number_module_version": "1.0.5",
       "pdf_degraded": "invalid-jp2-headers",
-      "pdf_module_version": "0.0.25"
+      "pdf_module_version": "0.0.25",
+      "normalized_dates": [
+        "1986-01-01"
+      ]
     },
     "server": "ia601305.us.archive.org",
     "uniq": 1848526915,

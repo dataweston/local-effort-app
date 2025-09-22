@@ -423,7 +423,7 @@
         "Includes index"
       ],
       "publisher": "Des Moines, Iowa : Meredith Corp.",
-      "date": "1989",
+      "date": "1989-01-01",
       "language": "eng",
       "isbn": [
         "0696021986",
@@ -492,7 +492,10 @@
         "inlibrary",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "1989-01-01"
+      ]
     },
     "server": "ia800209.us.archive.org",
     "uniq": 1392134327,

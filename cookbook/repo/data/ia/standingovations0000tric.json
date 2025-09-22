@@ -425,7 +425,7 @@
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
       "creator": "Tri-City Symphony Orchestra Association (Davenport, Iowa). Junior Board",
-      "date": "1982",
+      "date": "1982-01-01",
       "description": [
         "308 pages : 22 cm",
         "\"...Fourth printing: 25,000 copies July 1982. Printed by: Bawden Printing Inc.\" --Title page verso",
@@ -502,7 +502,10 @@
         "inlibrary",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "1982-01-01"
+      ]
     },
     "server": "ia804506.us.archive.org",
     "uniq": 1645611060,

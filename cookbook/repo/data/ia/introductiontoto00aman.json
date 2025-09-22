@@ -346,7 +346,7 @@
         "Includes index"
       ],
       "publisher": "Amana, Iowa : Amana Refrigeration, inc.",
-      "date": "1978",
+      "date": "1978-01-01",
       "language": "eng",
       "page-progression": "lr",
       "boxid": "IA125209",
@@ -401,7 +401,10 @@
       ],
       "page_number_module_version": "1.0.5",
       "pdf_degraded": "invalid-jp2-headers",
-      "pdf_module_version": "0.0.25"
+      "pdf_module_version": "0.0.25",
+      "normalized_dates": [
+        "1978-01-01"
+      ]
     },
     "server": "ia601309.us.archive.org",
     "uniq": 772616897,

@@ -442,7 +442,7 @@
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
       "creator": "Martin, Judy, 1950-",
-      "date": "2001",
+      "date": "2001-01-01",
       "description": "80 p. : 28 cm",
       "isbn": "0929589084",
       "language": "eng",
@@ -507,7 +507,10 @@
         "printdisabled"
       ],
       "page_number_confidence": "0",
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "2001-01-01"
+      ]
     },
     "server": "ia801808.us.archive.org",
     "uniq": 646000262,

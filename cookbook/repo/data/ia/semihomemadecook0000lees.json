@@ -410,7 +410,7 @@
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
       "creator": "Lee, Sandra, 1966-",
-      "date": "2006",
+      "date": "2006-01-01",
       "description": [
         "237 p. : 25 cm",
         "Includes index"
@@ -468,7 +468,10 @@
         "internetarchivebooks",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "2006-01-01"
+      ]
     },
     "server": "ia801704.us.archive.org",
     "uniq": 418889879,

@@ -405,7 +405,7 @@
       "subject": "Cookery, Asian",
       "description": "Includes index",
       "publisher": "Des Moines, Iowa : Meredith",
-      "date": "1982",
+      "date": "1982-01-01",
       "language": "eng",
       "isbn": [
         "0696010453",
@@ -479,7 +479,10 @@
         "printdisabled",
         "inlibrary"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "1982-01-01"
+      ]
     },
     "server": "ia800407.us.archive.org",
     "uniq": 2017054412,

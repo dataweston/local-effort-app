@@ -400,7 +400,7 @@
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
       "creator": "Bolte, Mari, author",
-      "date": "2015",
+      "date": "2015-01-01",
       "description": [
         "32 pages : 27 cm",
         "\"Step-by-step instructions teach readers how to create a variety of recipes, from beverages to desserts.\"--",
@@ -463,6 +463,9 @@
         "internetarchivebooks",
         "printdisabled",
         "inlibrary"
+      ],
+      "normalized_dates": [
+        "2015-01-01"
       ]
     },
     "server": "ia800309.us.archive.org",

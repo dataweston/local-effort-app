@@ -422,7 +422,7 @@
       "page_number_module_version": "1.0.5",
       "title": "Halloween : 101 frightfully fun ideas",
       "publisher": "Des Moines, Iowa : Better Homes and Gardens Books",
-      "date": "2000",
+      "date": "2000-01-01",
       "subject": [
         "Halloween decorations",
         "Halloween cooking"
@@ -453,7 +453,10 @@
         "urn:oclc:record:1035140564"
       ],
       "pdf_degraded": "invalid-jp2-headers",
-      "pdf_module_version": "0.0.25"
+      "pdf_module_version": "0.0.25",
+      "normalized_dates": [
+        "2000-01-01"
+      ]
     },
     "server": "ia601501.us.archive.org",
     "uniq": 1107341283,

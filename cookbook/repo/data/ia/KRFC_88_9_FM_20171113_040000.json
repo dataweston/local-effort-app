@@ -243,7 +243,10 @@
       "language": "eng",
       "backup_location": "ia906600_14",
       "access-restricted-item": "true",
-      "bad_audio": "false"
+      "bad_audio": "false",
+      "normalized_dates": [
+        "2017-11-13"
+      ]
     },
     "server": "ia804605.us.archive.org",
     "speech_vs_music_asr": [

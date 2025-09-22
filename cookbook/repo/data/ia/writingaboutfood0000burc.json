@@ -390,7 +390,7 @@
       "contributor": "Internet Archive",
       "creator": "Burckhardt, Ann, 1933-",
       "creator-alt-script": "None",
-      "date": "1984",
+      "date": "1984-01-01",
       "description": [
         "x, 126 pages ; 21 cm",
         "Includes bibliographical references and index"
@@ -460,7 +460,10 @@
         "inlibrary",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "1984-01-01"
+      ]
     },
     "server": "ia902804.us.archive.org",
     "simplelists": {

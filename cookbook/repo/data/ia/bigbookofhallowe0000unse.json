@@ -392,7 +392,7 @@
       "camera": "Sony Alpha-A6300 (Control)",
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
-      "date": "2003",
+      "date": "2003-01-01",
       "description": [
         "288 pages : 28 cm",
         "Offers ideas and instructions for creative decorations, treats, and costumes, and includes tips for planning a Halloween party",
@@ -463,7 +463,10 @@
         "inlibrary"
       ],
       "page_number_confidence": "0",
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "2003-01-01"
+      ]
     },
     "server": "ia801800.us.archive.org",
     "uniq": 1683083560,

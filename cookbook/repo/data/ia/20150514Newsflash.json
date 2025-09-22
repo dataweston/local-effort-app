@@ -266,7 +266,10 @@
       "uploader": "skolhatkar@kpfk.org",
       "addeddate": "2015-05-14 17:02:39",
       "curation": "[curator]validator@archive.org[/curator][date]20150514170306[/date][comment]checked for malware[/comment]",
-      "backup_location": "ia905305_22"
+      "backup_location": "ia905305_22",
+      "normalized_dates": [
+        "2015-05-14"
+      ]
     },
     "server": "ia600205.us.archive.org",
     "uniq": 1516054869,

@@ -443,7 +443,7 @@
       "camera": "Sony Alpha-A6300 (Control)",
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
-      "date": "1996",
+      "date": "1996-01-01",
       "description": [
         "3 volumes (24 pages each) : 28 cm +",
         "[no. 1] Who put the pepper in the pot? / by Joanna Cole ; Teacher's resource [to Who put the pepper in the pot?] -- [no. 2] Kate Shelley and the midnight express / by Margaret K. Wetterer ; Teacher's resource [to Kate Shelley and the midnight express] -- [no. 3] Will and Orv / by Walter A. Schulz ; Teacher's resource [to Will and Orv]"
@@ -535,7 +535,10 @@
         "inlibrary",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "1996-01-01"
+      ]
     },
     "server": "ia803107.us.archive.org",
     "simplelists": {

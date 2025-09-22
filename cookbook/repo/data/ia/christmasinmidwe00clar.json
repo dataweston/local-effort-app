@@ -512,7 +512,7 @@
         "Middle West",
         "Christmas cooking"
       ],
-      "date": "1994",
+      "date": "1994-01-01",
       "external-identifier": [
         "urn:acs6:christmasinmidwe00clar:epub:0e1962c3-39b9-4c91-b622-9918b88bd8ca",
         "urn:oclc:record:1029277153",
@@ -579,7 +579,10 @@
         "inlibrary",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "1994-01-01"
+      ]
     },
     "server": "ia800705.us.archive.org",
     "uniq": 182533826,

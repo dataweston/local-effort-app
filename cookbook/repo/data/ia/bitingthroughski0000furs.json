@@ -419,7 +419,7 @@
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
       "creator": "Furstenau, Nina",
-      "date": "2013",
+      "date": "2013-01-01",
       "description": [
         "xviii, 168 pages ; 23 cm",
         "Transformation -- Two brides -- Little India -- Journey -- Table grace -- Small things satisfied -- Indian breads -- Grand Lake menu for a guru -- An Indian kitchen in Kansas -- Attic fans and flying typewriters -- Mother tongue -- On the road with Amiya and Rani -- All our Tupperware is stained with turmeric -- Strength of a nation -- Street foods -- Six recipe cards, a wing and a prayer, circa 1984 -- Bishshwayya -- A (not so) funny thing happened on the way to Didu's house -- Pop culture India"
@@ -493,7 +493,10 @@
         "printdisabled",
         "inlibrary"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "2013-01-01"
+      ]
     },
     "server": "ia601008.us.archive.org",
     "uniq": 1385712106,

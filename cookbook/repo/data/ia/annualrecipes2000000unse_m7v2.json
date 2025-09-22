@@ -388,7 +388,7 @@
       "camera": "USB PTP Class Camera",
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
-      "date": "2001",
+      "date": "2001-01-01",
       "description": [
         "336 pages : 29 cm",
         "Help, photos, tips and how-to techniques to make you the best cook possible. Also each chapter is a special feature of the month, starting with January's winter-warming Casserole Classics and ending with December's magical Classic Candies",
@@ -446,6 +446,9 @@
         "internetarchivebooks",
         "printdisabled",
         "inlibrary"
+      ],
+      "normalized_dates": [
+        "2001-01-01"
       ]
     },
     "server": "ia802806.us.archive.org",

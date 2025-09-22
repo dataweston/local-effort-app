@@ -169,7 +169,7 @@
       "possible-copyright-status": "NOT_IN_COPYRIGHT",
       "identifier-access": "http://www.archive.org/details/cookeryforinval00murrgoog",
       "year": "1887",
-      "date": "1887",
+      "date": "1887-01-01",
       "oclc-id": "7857730",
       "scandate": "20070716",
       "copyright-region": "US",
@@ -187,7 +187,10 @@
       "backup_location": "ia903601_32",
       "openlibrary_edition": "OL23534280M",
       "openlibrary_work": "OL250692W",
-      "addeddate": "2008-04-25 15:25:52"
+      "addeddate": "2008-04-25 15:25:52",
+      "normalized_dates": [
+        "1887-01-01"
+      ]
     },
     "server": "ia600305.us.archive.org",
     "uniq": 234676316,

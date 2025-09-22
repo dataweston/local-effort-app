@@ -399,7 +399,7 @@
       "contributor": "Internet Archive",
       "creator": "None",
       "creator-alt-script": "None",
-      "date": "1991",
+      "date": "1991-01-01",
       "description": [
         "32 pages : 29 cm",
         "Provides instructions for projects involving paper work, picture puzzles, and cookery, relating to exploring the outdoors",
@@ -471,6 +471,9 @@
         "internetarchivebooks",
         "inlibrary",
         "printdisabled"
+      ],
+      "normalized_dates": [
+        "1991-01-01"
       ]
     },
     "server": "ia903407.us.archive.org",

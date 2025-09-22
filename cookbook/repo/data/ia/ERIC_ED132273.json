@@ -177,7 +177,7 @@
     "metadata": {
       "identifier": "ERIC_ED132273",
       "creator": "ERIC",
-      "date": "1976",
+      "date": "1976-01-01",
       "description": "This bibliography, part of the Vocational Education Resource Materials system, is designed to: (1) Encourage and support curriculum development and instructional activities in vocational education and career development through collection and dissemination of appropriate materials, (2) supplement and complement efforts of the (Wisconsin) State Educational Agency staff and School District personnel by identifying needed resources for use in instructional workshops and with other developmental activities, and (3) encourage use of resource materials and services in all appropriate programs of teacher education and staff development (pre-service as well as in-service), and in classroom implementation. Each entry includes a call number, title, series note (not always used), edition  statement (not always used), author(s), publisher's name, publisher's address (for ordering purposes), date of publication, pagination, price, grade level (when applicable), and an annotation. Information about the Vocational Education Resource Materials system, and a materials index are included. (SH)",
       "language": "english",
       "mediatype": "texts",
@@ -197,7 +197,10 @@
       "ppi": "600",
       "ocr": "ABBYY FineReader 9.0",
       "repub_state": "4",
-      "backup_location": "ia905304_32"
+      "backup_location": "ia905304_32",
+      "normalized_dates": [
+        "1976-01-01"
+      ]
     },
     "server": "ia601308.us.archive.org",
     "uniq": 1485894984,

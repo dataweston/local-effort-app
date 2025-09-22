@@ -413,7 +413,7 @@
       ],
       "description": "Includes nutritional questions and answers, calorie charts, and \"14 days of planned menus.\"",
       "publisher": "Des Moines, Iowa : B.H.G",
-      "date": "1989",
+      "date": "1989-01-01",
       "language": "eng",
       "isbn": [
         "0696017350",
@@ -482,7 +482,10 @@
       ],
       "page_number_module_version": "1.0.5",
       "pdf_degraded": "invalid-jp2-headers",
-      "pdf_module_version": "0.0.25"
+      "pdf_module_version": "0.0.25",
+      "normalized_dates": [
+        "1989-01-01"
+      ]
     },
     "server": "ia800209.us.archive.org",
     "simplelists": {

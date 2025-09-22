@@ -202,7 +202,7 @@
       "possible-copyright-status": "NOT_IN_COPYRIGHT",
       "identifier-access": "http://www.archive.org/details/receiptsandreme00flemgoog",
       "year": "1908",
-      "date": "1908",
+      "date": "1908-01-01",
       "oclc-id": "12099289",
       "scandate": "20070821000000",
       "copyright-region": "US",
@@ -225,7 +225,10 @@
       "backup_location": "ia903601_29",
       "openlibrary_edition": "OL6997013M",
       "openlibrary_work": "OL7730072W",
-      "addeddate": "2008-03-31 11:20:04"
+      "addeddate": "2008-03-31 11:20:04",
+      "normalized_dates": [
+        "1908-01-01"
+      ]
     },
     "server": "ia902805.us.archive.org",
     "uniq": 682253474,

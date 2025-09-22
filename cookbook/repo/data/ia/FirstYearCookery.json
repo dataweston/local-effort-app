@@ -181,7 +181,7 @@
         "americana"
       ],
       "creator": "Menomonie, Wis. : Stout Institute",
-      "date": "1913",
+      "date": "1913-01-01",
       "description": "Course materials for the First Year Cookery class taught at The Stout Institute in Menomonie, Wisconsin. The recipes and information included were compiled by instructor D. A. Kugel.<div><img src=\"//web.archive.org/web/2im_/https://upload.wikimedia.org/wikipedia/commons/thumb/3/39/Cc-public_domain_mark_white.svg/150px-Cc-public_domain_mark_white.svg.png\" alt=\"150px-Cc-public_domain_mark_white.svg.png\" /><br /></div>",
       "language": "eng",
       "scanner": "Internet Archive HTML5 Uploader 1.5.2",
@@ -202,7 +202,10 @@
       "ocr": "ABBYY FineReader 9.0",
       "repub_state": "4",
       "backup_location": "ia905901_1",
-      "year": "1913"
+      "year": "1913",
+      "normalized_dates": [
+        "1913-01-01"
+      ]
     },
     "server": "ia803400.us.archive.org",
     "uniq": 1497006280,

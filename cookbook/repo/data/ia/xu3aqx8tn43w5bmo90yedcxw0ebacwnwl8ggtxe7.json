@@ -177,7 +177,10 @@
       "collection_added": "podcasts_mirror",
       "publicdate": "2024-04-08 21:06:15",
       "addeddate": "2024-04-08 21:06:15",
-      "access-restricted-item": "true"
+      "access-restricted-item": "true",
+      "normalized_dates": [
+        "2024-02-21"
+      ]
     },
     "server": "ia800302.us.archive.org",
     "uniq": 77870371,

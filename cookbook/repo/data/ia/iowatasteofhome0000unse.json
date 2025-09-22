@@ -417,7 +417,7 @@
       "camera": "Sony Alpha-A6300 (Control)",
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
-      "date": "1997",
+      "date": "1997-01-01",
       "description": [
         "175 p. : 23 cm",
         "\"More favorite recipes from 4-H families and friends\"--Cover",
@@ -476,7 +476,10 @@
         "inlibrary",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "1997-01-01"
+      ]
     },
     "server": "ia803109.us.archive.org",
     "uniq": 1301442274,

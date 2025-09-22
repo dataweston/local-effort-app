@@ -398,7 +398,7 @@
       "contributor": "Internet Archive",
       "creator": "Levin, Karen A., author",
       "creator-alt-script": "None",
-      "date": "2005",
+      "date": "2005-01-01",
       "description": [
         "143 pages : 24 cm",
         "\"Delicious recipes for healthy living\"--Cover",
@@ -470,6 +470,9 @@
         "internetarchivebooks",
         "inlibrary",
         "printdisabled"
+      ],
+      "normalized_dates": [
+        "2005-01-01"
       ]
     },
     "server": "ia801603.us.archive.org",

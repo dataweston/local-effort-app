@@ -401,7 +401,7 @@
       "camera": "Sony Alpha-A6300 (Control)",
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
-      "date": "2001",
+      "date": "2001-01-01",
       "description": [
         "96 p. : 27 cm",
         "\"Editor: Chuck Smothermon\"--T.p. verso",
@@ -465,7 +465,10 @@
         "inlibrary",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "2001-01-01"
+      ]
     },
     "server": "ia803404.us.archive.org",
     "uniq": 1336243668,

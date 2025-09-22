@@ -495,7 +495,7 @@
         "Game and game-birds"
       ],
       "publisher": "Ames : Iowa State University Press",
-      "date": "1989",
+      "date": "1989-01-01",
       "language": "eng",
       "lccn": "88025053",
       "description": [
@@ -568,7 +568,10 @@
         "inlibrary",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "1989-01-01"
+      ]
     },
     "server": "ia803406.us.archive.org",
     "uniq": 937180807,

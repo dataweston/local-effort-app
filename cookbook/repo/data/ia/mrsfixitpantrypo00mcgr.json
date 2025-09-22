@@ -402,7 +402,7 @@
         "Why I Wrote This Book, Acknowledgement -- Alternative Uses Introduction -- Alternative Uses Chart -- Alternative Uses Alphabetical Listings -- Repurposing Projects Introduction -- Repurposing Projects Alphabetical Listings -- Tools Introduction -- Tools Alphabetical Listings"
       ],
       "publisher": "Des Moines, Iowa : Meredith",
-      "date": "2005",
+      "date": "2005-01-01",
       "language": "eng",
       "isbn": [
         "0696224097",
@@ -470,7 +470,10 @@
         "inlibrary",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "2005-01-01"
+      ]
     },
     "server": "ia600200.us.archive.org",
     "simplelists": {

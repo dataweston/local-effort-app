@@ -286,7 +286,10 @@
       "publicdate": "2016-12-10 01:50:40",
       "uploader": "jhauser@pobox.com",
       "addeddate": "2016-12-10 01:50:40",
-      "backup_location": "ia906302_27"
+      "backup_location": "ia906302_27",
+      "normalized_dates": [
+        "2016-02-16"
+      ]
     },
     "server": "ia601903.us.archive.org",
     "uniq": 928022283,

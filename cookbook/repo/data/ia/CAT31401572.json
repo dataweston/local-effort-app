@@ -399,7 +399,7 @@
       "scanningcenter": "beltsville",
       "sponsor": "U.S. Department of Agriculture, National Agricultural Library",
       "contributor": "U.S. Department of Agriculture, National Agricultural Library",
-      "date": "1953",
+      "date": "1953-01-01",
       "subject": [
         "Nursery stock Wisconsin Baraboo Catalogs",
         "Herbs Varieties Catalogs",
@@ -466,7 +466,10 @@
       "sponsordate": "20230531",
       "curation": "[curator]rich@archive.org[/curator][date]2023053100001[/date][state]approved[/state][comment]invoice202305[/comment]",
       "page_number_confidence": "0",
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "1953-01-01"
+      ]
     },
     "page_numbers": {
       "identifier": "CAT31401572",

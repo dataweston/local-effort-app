@@ -403,7 +403,7 @@
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
       "creator": "Johnston, Patricia Condon",
-      "date": "1985",
+      "date": "1985-01-01",
       "description": [
         "94 pages : 31 cm",
         "Dear Alex. -Gloria in excelsis deo. At the organ: Louis Sonnen. John Schumacher cooks Christmas Eve supper. -Toys, dolls, and more dolls. Mary Ann Scroggins's Afto Toy Shop. Delight's dolls. Antie Clare's doll hospital. -Speaking of books. A bookman's holiday. The Red Balloon Bookshop. -God bless us, every one!"
@@ -471,6 +471,9 @@
         "internetarchivebooks",
         "inlibrary",
         "printdisabled"
+      ],
+      "normalized_dates": [
+        "1985-01-01"
       ]
     },
     "server": "ia801702.us.archive.org",

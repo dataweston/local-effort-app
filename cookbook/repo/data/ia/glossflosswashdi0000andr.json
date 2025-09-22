@@ -460,7 +460,7 @@
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
       "creator": "Andrus, Aubre, author",
-      "date": "2017",
+      "date": "2017-01-01",
       "description": [
         "48 pages : 27 cm",
         "Age 9-13",
@@ -530,7 +530,10 @@
         "inlibrary",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "2017-01-01"
+      ]
     },
     "server": "ia803400.us.archive.org",
     "uniq": 318121126,

@@ -255,7 +255,10 @@
       "publicdate": "2016-12-22 00:50:46",
       "uploader": "marykoshuba@gmail.com",
       "addeddate": "2016-12-22 00:50:46",
-      "curation": "[curator]validator@archive.org[/curator][date]20161222005140[/date][comment]checked for malware[/comment]"
+      "curation": "[curator]validator@archive.org[/curator][date]20161222005140[/date][comment]checked for malware[/comment]",
+      "normalized_dates": [
+        "2016-12-21"
+      ]
     },
     "server": "ia803208.us.archive.org",
     "uniq": 1589407416,

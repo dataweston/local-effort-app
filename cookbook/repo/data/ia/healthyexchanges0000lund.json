@@ -416,7 +416,7 @@
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
       "creator": "Lund, JoAnna M",
-      "date": "1994",
+      "date": "1994-01-01",
       "description": [
         "186 pages : 22 cm",
         "Includes index"
@@ -483,7 +483,10 @@
         "inlibrary",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "1994-01-01"
+      ]
     },
     "server": "ia903403.us.archive.org",
     "uniq": 371263352,

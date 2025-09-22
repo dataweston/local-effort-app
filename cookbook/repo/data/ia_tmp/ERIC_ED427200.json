@@ -188,7 +188,7 @@
     "metadata": {
       "identifier": "ERIC_ED427200",
       "creator": "ERIC",
-      "date": "1998-11",
+      "date": "1998-01-01",
       "description": "In spring 1998, the Arizona Department of Commerce's Office of Workforce Development Policy commissioned a statewide opinion poll to assess public attitudes toward the state's plan for economic development, as it is being implemented through the Governor's Strategic Partnership for Economic Development (GSPED). More than 2,000 Arizonans participated in the poll, including 600 parents, 600 businesses, 500 teachers, and 500 school administrators. \"Brand name\" recognition of GSPED was low. Levels of awareness of GSPED among the groups surveyed were as follows: school administrators, 23%; businesses, 14%; teachers, 13%; and parents, 7%. Although respondents who were aware of GSPED were significantly more likely to support it, 43% of \"aware\" businesses and 33% of \"unaware\" businesses  indicated that GSPED smacks of government interference. It was concluded that the state should recruit increased private sector involvement in continuing efforts to link economic and work force development. Survey data were also analyzed by location (1,566 urban and 624 rural residents). Residency alone was not statistically significant; however, residency of specific constituent groups mattered. For example, rural parents expressed support for issues more frequently than urban parents, and urban educators took a stand, whereas rural educators more frequently responded \"not sure.\" (MN)",
       "language": "english",
       "mediatype": "texts",
@@ -209,7 +209,10 @@
       "ocr": "ABBYY FineReader 11.0",
       "repub_state": "4",
       "foldoutcount": "0",
-      "backup_location": "ia905507_17"
+      "backup_location": "ia905507_17",
+      "normalized_dates": [
+        "1998-01-01"
+      ]
     },
     "server": "ia801209.us.archive.org",
     "uniq": 2045736669,

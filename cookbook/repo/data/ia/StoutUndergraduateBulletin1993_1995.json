@@ -167,7 +167,7 @@
       "identifier": "StoutUndergraduateBulletin1993_1995",
       "mediatype": "texts",
       "creator": "University of Wisconsin--Stout. University Relations.",
-      "date": "1993",
+      "date": "1993-01-01",
       "description": "<span style=\"font-family:Arial, Helvetica, sans-serif;font-size:13px;background-color:rgb(255,255,255);\">Annual and biennial bulletins of the University of Wisconsin-Stout and its predecessor institutions. The bulletins provide descriptions of campus, lists of administrators and faculty, information on institutional objectives, courses offered, and curriculum.</span>",
       "language": "eng",
       "licenseurl": "http://creativecommons.org/licenses/by-nc-nd/3.0/",
@@ -187,7 +187,10 @@
         "universityofwisconsinstoutarchives",
         "americana"
       ],
-      "backup_location": "ia905900_24"
+      "backup_location": "ia905900_24",
+      "normalized_dates": [
+        "1993-01-01"
+      ]
     },
     "server": "ia800404.us.archive.org",
     "uniq": 1075415804,

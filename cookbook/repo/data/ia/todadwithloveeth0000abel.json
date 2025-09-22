@@ -403,7 +403,7 @@
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
       "creator": "Abel, Mona Meittunen",
-      "date": "2005",
+      "date": "2005-01-01",
       "description": [
         "185 pages : 21 cm",
         "Includes bibliographical references and indexes"
@@ -471,7 +471,10 @@
         "inlibrary",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "2005-01-01"
+      ]
     },
     "server": "ia804502.us.archive.org",
     "uniq": 498762202,

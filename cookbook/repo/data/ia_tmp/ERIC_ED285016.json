@@ -181,7 +181,7 @@
     "metadata": {
       "identifier": "ERIC_ED285016",
       "creator": "ERIC",
-      "date": "1987-08",
+      "date": "1987-01-01",
       "description": "An open-entry/open-exit competency-based nursing career ladder model was developed to demonstrate the articulation process from high school through licensed vocational nursing (LVN), associate degree nursing (ADN), and baccalaureate degree-level nursing (BSN) programs. The model was based on data obtained from a review of the literature on (1) demographic and other characteristics of students currently enrolled in the health programs at the various educational levels and (2) professional socialization. The model that was eventually developed was based on the premises that nursing education is a linear process that can begin and end at specified educational points, that the nursing process is an example of a problem-solving process, and that nursing is a human service that focuses  on the interactions and relationships between the person and the environment in relation to health and nursing. The proposed model calls for 10 health careers prenursing courses at the high school level (in addition to requirements for a high school diploma), 21 general education and 26 nursing semester hours for LVN programs, 60 semester hours of general education requirements for ADN and BSN programs, and 34 nursing semester hour requirements each for ADN and BSN programs. (Overviews of each of the proposed required courses and a selected bibliography are also provided in this document.) (MN)",
       "language": "english",
       "mediatype": "texts",
@@ -201,7 +201,10 @@
       "ppi": "600",
       "ocr": "ABBYY FineReader 9.0",
       "repub_state": "4",
-      "backup_location": "ia905908_26"
+      "backup_location": "ia905908_26",
+      "normalized_dates": [
+        "1987-01-01"
+      ]
     },
     "server": "ia903100.us.archive.org",
     "uniq": 1792471963,

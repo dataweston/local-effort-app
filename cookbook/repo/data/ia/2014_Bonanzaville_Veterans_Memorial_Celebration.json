@@ -1059,7 +1059,10 @@
       "publicdate": "2016-12-11 22:28:57",
       "uploader": "jhauser@pobox.com",
       "addeddate": "2016-12-11 22:28:57",
-      "backup_location": "ia906302_33"
+      "backup_location": "ia906302_33",
+      "normalized_dates": [
+        "2014-07-10"
+      ]
     },
     "server": "ia903206.us.archive.org",
     "uniq": 1410918389,

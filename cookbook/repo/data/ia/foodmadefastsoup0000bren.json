@@ -429,7 +429,7 @@
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
       "creator": "Brennan, Georgeanne, 1943-",
-      "date": "2006",
+      "date": "2006-01-01",
       "description": [
         "111 pages : 25 cm",
         "Award-winning cookbook author Georgeanne Brennan presents dozens of recipes for simple and delicious soups--all designed with the busy cook in mind. From spicy black bean soup to creamy clam chowder to hearty Mexican meatball soup, each recipe offers maximum flavor with little effort",
@@ -498,7 +498,10 @@
         "inlibrary",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "2006-01-01"
+      ]
     },
     "server": "ia802809.us.archive.org",
     "simplelists": {

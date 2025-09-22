@@ -443,7 +443,7 @@
         "Grimaldi, Michael"
       ],
       "publisher": "New York : Stewart, Tabori & Chang : Distributed in the U.S. by Workman Pub.",
-      "date": "1992",
+      "date": "1992-01-01",
       "external-identifier": [
         "urn:asin:1556701799",
         "urn:acs6:scandinavianfeas00beat:pdf:8f226c73-8bf3-47cd-972f-b6db5a1bb8b8",
@@ -514,6 +514,9 @@
       "collection": [
         "internetarchivebooks",
         "printdisabled"
+      ],
+      "normalized_dates": [
+        "1992-01-01"
       ]
     },
     "server": "ia601300.us.archive.org",

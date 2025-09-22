@@ -285,7 +285,10 @@
       "publicdate": "2019-03-04 15:11:38",
       "access-restricted-item": "true",
       "bad_audio": "false",
-      "backup_location": "ia906808_17"
+      "backup_location": "ia906808_17",
+      "normalized_dates": [
+        "2019-03-04"
+      ]
     },
     "server": "ia600709.us.archive.org",
     "speech_vs_music_asr": [

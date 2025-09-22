@@ -406,7 +406,7 @@
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
       "creator": "Dahlstrom, Carol Field",
-      "date": "2007",
+      "date": "2007-01-01",
       "description": [
         "159 p. : 29 cm",
         "Includes index",
@@ -471,6 +471,9 @@
         "internetarchivebooks",
         "inlibrary",
         "printdisabled"
+      ],
+      "normalized_dates": [
+        "2007-01-01"
       ]
     },
     "server": "ia902809.us.archive.org",

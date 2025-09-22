@@ -398,7 +398,7 @@
       "contributor": "Internet Archive",
       "creator": "None",
       "creator-alt-script": "None",
-      "date": "2010",
+      "date": "2010-01-01",
       "description": [
         "64 pages : 19 cm",
         "Deliver a little shock value with these disgustingly delicious recipes. These recipes are easy to make and a riot to serve - but, best of all, they taste great!--",
@@ -465,7 +465,10 @@
         "printdisabled"
       ],
       "page_number_confidence": "50",
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "2010-01-01"
+      ]
     },
     "server": "ia902809.us.archive.org",
     "uniq": 678555826,

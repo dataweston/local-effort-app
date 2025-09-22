@@ -418,7 +418,7 @@
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
       "creator": "Detlefsen, Lisl H. author",
-      "date": "2015",
+      "date": "2015-01-01",
       "description": [
         "1 volume (unpaged) : 27 cm",
         "Sam is finally old enough to help his parents harvest cranberries on their family farm‌ in Wisconsin, from flooding the field to prepare the vines for the picking machine to delivering the fruit to receiving station. Includes recipes for cranberry sauce and cranberry pie, author's note, and glossary"
@@ -486,7 +486,10 @@
         "printdisabled"
       ],
       "page_number_confidence": "13",
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "2015-01-01"
+      ]
     },
     "server": "ia802304.us.archive.org",
     "simplelists": {

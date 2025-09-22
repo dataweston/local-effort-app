@@ -420,7 +420,7 @@
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
       "creator": "Toney, Christine R",
-      "date": "2000",
+      "date": "2000-01-01",
       "description": [
         "293 pages : 21 cm",
         "Cover title"
@@ -491,6 +491,9 @@
         "internetarchivebooks",
         "inlibrary",
         "printdisabled"
+      ],
+      "normalized_dates": [
+        "2000-01-01"
       ]
     },
     "server": "ia804600.us.archive.org",

@@ -413,7 +413,7 @@
       ],
       "description": "Includes index",
       "publisher": "[S.l.] : Kraft Foods ; Des Moines, Iowa : Meredith Corp.",
-      "date": "1995",
+      "date": "1995-01-01",
       "language": "eng",
       "isbn": [
         "069620763X",
@@ -477,6 +477,9 @@
         "internetarchivebooks",
         "inlibrary",
         "printdisabled"
+      ],
+      "normalized_dates": [
+        "1995-01-01"
       ]
     },
     "server": "ia800203.us.archive.org",

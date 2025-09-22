@@ -426,7 +426,7 @@
       "access-restricted-item": "true",
       "title": "Taste of the seasons",
       "publisher": "Des Moines, Iowa : Meredith Corp.",
-      "date": "2014",
+      "date": "2014-01-01",
       "language": "eng",
       "isbn": [
         "9780696301919",
@@ -489,6 +489,9 @@
         "internetarchivebooks",
         "inlibrary",
         "printdisabled"
+      ],
+      "normalized_dates": [
+        "2014-01-01"
       ]
     },
     "server": "ia600509.us.archive.org",

@@ -335,7 +335,7 @@
       "scanningcenter": "beltsville",
       "sponsor": "U.S. Department of Agriculture, National Agricultural Library",
       "contributor": "U.S. Department of Agriculture, National Agricultural Library",
-      "date": "1920",
+      "date": "1920-01-01",
       "subject": [
         "Clothing and dress Exhibitions",
         "Home economics extension work United States"
@@ -391,7 +391,10 @@
       "ocr_module_version": "0.0.21",
       "ocr_converted": "abbyy-to-hocr 1.1.37",
       "page_number_confidence": "0",
-      "page_number_module_version": "1.0.3"
+      "page_number_module_version": "1.0.3",
+      "normalized_dates": [
+        "1920-01-01"
+      ]
     },
     "page_numbers": {
       "identifier": "CAT31411689",

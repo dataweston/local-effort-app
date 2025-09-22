@@ -169,7 +169,7 @@
     "metadata": {
       "identifier": "ERIC_ED026482",
       "creator": "ERIC",
-      "date": "1967",
+      "date": "1967-01-01",
       "description": "The purpose of the study was to identify the problems of single girls of Iowa on entering the world of work and to study the relationships between the kinds of problems and home town population, present residence, home economics education, living arrangements, and occupation. The 491 female participants indicated the degree of difficulty experienced on a one to nine rank scale. Six clusters of items found to be intercorrelated were: employment, clothing, social adjustment, money, food management, and food preparation. Results showed: (1) Girls living with parents considered parental acceptance of them as adults to be their greatest problem, and (2) Girls away from home reported budgeting, housing, housekeeping, and finding compatible roommates as problems. Interpersonal  relationships on a social basis were of greater concern than those on the job. Nutrition created more difficulty than food preparation. Decision making about jobs created more difficulty than keeping jobs and getting along at work. As the population of the home town increased, problems in employment and food management decreased. As semesters of home economics completed increased, the problems in clothing and food preparation decreased. Clerical workers had the fewest problems with employment. Instruments, letters, statistics in graphic and tabular form and a reference list are included in this document. (FP)",
       "language": "english",
       "mediatype": "texts",
@@ -189,7 +189,10 @@
       "ppi": "600",
       "ocr": "ABBYY FineReader 11.0",
       "repub_state": "4",
-      "backup_location": "ia905506_4"
+      "backup_location": "ia905506_4",
+      "normalized_dates": [
+        "1967-01-01"
+      ]
     },
     "server": "ia800500.us.archive.org",
     "uniq": 1425265623,

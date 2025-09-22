@@ -440,7 +440,7 @@
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
       "creator": "Rutland, Julia Dowling, author, illustrator",
-      "date": "2019",
+      "date": "2019-01-01",
       "description": "72 pages : 14 cm",
       "isbn": [
         "159193821X",
@@ -506,7 +506,10 @@
       "page_number_confidence": "20",
       "page_number_module_version": "1.0.5",
       "curation": "[date]20250517221341[/date][comment]inlibrary removal 3[/comment]",
-      "source": "removed"
+      "source": "removed",
+      "normalized_dates": [
+        "2019-01-01"
+      ]
     },
     "server": "ia904606.us.archive.org",
     "uniq": 571117108,

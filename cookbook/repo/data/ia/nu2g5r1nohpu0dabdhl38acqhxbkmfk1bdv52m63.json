@@ -172,7 +172,10 @@
       "publicdate": "2020-12-05 15:28:36",
       "addeddate": "2020-12-05 15:28:36",
       "curation": "[curator]validator@archive.org[/curator][date]20201205153120[/date][comment]checked for malware[/comment]",
-      "access-restricted-item": "true"
+      "access-restricted-item": "true",
+      "normalized_dates": [
+        "2020-03-02"
+      ]
     },
     "server": "ia801708.us.archive.org",
     "uniq": 1788652856,

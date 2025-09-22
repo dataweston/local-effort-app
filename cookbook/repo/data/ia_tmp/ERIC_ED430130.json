@@ -174,7 +174,7 @@
     "metadata": {
       "identifier": "ERIC_ED430130",
       "creator": "ERIC",
-      "date": "1997",
+      "date": "1997-01-01",
       "description": "This booklet is a guide to establishing youth service learning councils. The booklet begins with a discussion of what youth service learning councils are and why they are a good idea. The following aspects of initiating the process of forming a youth service learning council are explained: facilitating a youth service learning council; identifying host organizations (school systems, nonprofit organizations, businesses and for-profit organizations); and raising funds (Learn and Serve America funds from the Corporation for National Service, other federal programs, foundations, local business and government, local service organizations, council member fund-raising, school-based entrepreneurial projects). The steps in forming the council are briefly described. Provided in a section  on the process of training the council is an annotated sample agenda for an all-day training program for youth service learning council members. Council activities, including council decision making and the process of review of council membership applications and selection of council members, are discussed along with strategies for ensuring quality and service learning in mini-grants. A sample youth service learning council timetable concludes the booklet. Appended are a sample youth service learning council mini-grant application template and application form and a sample youth service learning council mini-grant review form. (MN)",
       "language": "english",
       "mediatype": "texts",
@@ -195,7 +195,10 @@
       "ocr": "ABBYY FineReader 11.0",
       "repub_state": "4",
       "foldoutcount": "0",
-      "backup_location": "ia905507_19"
+      "backup_location": "ia905507_19",
+      "normalized_dates": [
+        "1997-01-01"
+      ]
     },
     "server": "ia601208.us.archive.org",
     "uniq": 138126253,

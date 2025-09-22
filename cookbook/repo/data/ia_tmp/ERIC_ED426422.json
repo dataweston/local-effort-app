@@ -180,7 +180,7 @@
     "metadata": {
       "identifier": "ERIC_ED426422",
       "creator": "ERIC",
-      "date": "1998-11",
+      "date": "1998-01-01",
       "description": "David Pearce Snyder has predicted that \"if a significant number of major mainstream institutions do not undertake publicly acknowledged initiatives to dramatically improve the relevance of their curriculums, the rigor of their standards, and the productivity of their operations...the marketplace will have begun to make available so many effective alternatives for acquiring formal higher-order skills that traditional colleges and universities will quickly come to be regarded as the old-fashioned, outdated, expensive source of postsecondary schooling.\" This paper discusses a program in Conflict and Mediation Studies within the School of Speech Communication at James Madison University in Virginia, which was initiated in response to the perception that the university is undergoing a  radical change in the way teaching and learning are understood. The paper describes the methodology of how the program proceeded: relevant faculty was assembled and a consensus reached; outcome objective statements were written for each of the four courses being changed; instruments and activities concerned with these outcome statements will be created; and the development of instructional materials will be in direct response to specific outcome objective statements. According to the paper, this program of curriculum revision dramatically improves the relevance of the curriculum, increases the rigor of performance standards, and will contribute to the ability to clearly and precisely articulate the knowledge, skills, and competencies defining the learning environment. Appended are goal  statements and outcome objective statements for the four courses. (Contains 10 references.) (NKA)",
       "language": "english",
       "mediatype": "texts",
@@ -201,7 +201,10 @@
       "ocr": "ABBYY FineReader 11.0",
       "repub_state": "4",
       "foldoutcount": "0",
-      "backup_location": "ia905507_17"
+      "backup_location": "ia905507_17",
+      "normalized_dates": [
+        "1998-01-01"
+      ]
     },
     "server": "ia801208.us.archive.org",
     "uniq": 447833997,

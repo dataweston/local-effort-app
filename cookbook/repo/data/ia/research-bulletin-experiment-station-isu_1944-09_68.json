@@ -322,7 +322,7 @@
         "periodicals"
       ],
       "contributor": "Internet Archive",
-      "date": "1944-09",
+      "date": "1944-01-01",
       "issn": "0021-0692",
       "issue": "68",
       "language": "English",
@@ -365,7 +365,10 @@
       "page_number_module_version": "1.0.5",
       "pdf_module_version": "0.0.26",
       "collection_added": "periodicals",
-      "addeddate": "2025-05-31 04:12:58"
+      "addeddate": "2025-05-31 04:12:58",
+      "normalized_dates": [
+        "1944-01-01"
+      ]
     },
     "page_numbers": {
       "identifier": "research-bulletin-experiment-station-isu_1944-09_68",

@@ -380,7 +380,7 @@
       "title": "All-time favorite : hamburger and ground meats recipes",
       "creator": "Autry, James A",
       "publisher": "Iowa : Meredith Co",
-      "date": "1980",
+      "date": "1980-01-01",
       "language": "eng",
       "isbn": [
         "0696012251",
@@ -451,6 +451,9 @@
         "americana",
         "inlibrary",
         "printdisabled"
+      ],
+      "normalized_dates": [
+        "1980-01-01"
       ]
     },
     "server": "ia601800.us.archive.org",

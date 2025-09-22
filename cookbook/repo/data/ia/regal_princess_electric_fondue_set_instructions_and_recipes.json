@@ -247,7 +247,7 @@
         "deemphasize"
       ],
       "creator": "Regal Ware Incorporated",
-      "date": "1974",
+      "date": "1974-01-01",
       "description": "Princess by Regal Electric Fondue Set, Instructions and Recipes; Regal Ware Incorporated, Kewaskum, Wisconsin, 53040; SPL 905. The dimensions are; 215.0 millimeters width by 140.0 millimeters height by 2.0 millimeters thickness and 36 pages, weight 37.0 grams. No Copyright notice for date 1973; and no registration or renewal ever filed; Public Domain as per Rule 7 United States Copyright Statutes. Etext created by Gerard Arthus.  E-text created by Gerard Arthus. <a href=\"http://openeducation.org\" rel=\"nofollow\">http://OpenEducation.org </a>Go to the above site to find out more about the digitization of this item and the on-going attempt to help make 'Knowledge' and 'Information' available to everyone, anywhere, at any time, for no cost. There are many forces at work which are attempting to turn 'Public Domain' information into a commodity which some can milk for a profit. This parasitic use of information which should be freely available for all to access is an Intellectual Crime and should not be tolerated. For information about this item please contact <a href=\"mailto:garthus801@gmail.com\" rel=\"nofollow\">garthus801@gmail.com</a>.",
       "licenseurl": "http://creativecommons.org/publicdomain/zero/1.0/",
       "scanner": "Internet Archive HTML5 Uploader 1.6.4",
@@ -274,7 +274,10 @@
       "publisher": "Gerard Arthus",
       "language": "English",
       "coverage": "United States",
-      "access-restricted-item": "true"
+      "access-restricted-item": "true",
+      "normalized_dates": [
+        "1974-01-01"
+      ]
     },
     "server": "ia801800.us.archive.org",
     "uniq": 1387811623,

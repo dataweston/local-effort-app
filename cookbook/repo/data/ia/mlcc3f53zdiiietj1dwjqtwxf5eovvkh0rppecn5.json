@@ -160,7 +160,10 @@
       "publicdate": "2020-12-27 09:40:19",
       "addeddate": "2020-12-27 09:40:19",
       "curation": "[curator]validator@archive.org[/curator][date]20201227094059[/date][comment]checked for malware[/comment]",
-      "access-restricted-item": "true"
+      "access-restricted-item": "true",
+      "normalized_dates": [
+        "2016-11-17"
+      ]
     },
     "server": "ia601807.us.archive.org",
     "uniq": 299367162,

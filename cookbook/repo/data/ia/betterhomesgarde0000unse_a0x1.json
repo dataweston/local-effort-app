@@ -424,7 +424,7 @@
       "camera": "Sony Alpha-A6300 (Control)",
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
-      "date": "2006",
+      "date": "2006-01-01",
       "description": [
         "656 pages (loose-leaf) : 26 cm",
         "The newest edition of the classic, famous cookbook",
@@ -488,6 +488,9 @@
         "internetarchivebooks",
         "printdisabled",
         "inlibrary"
+      ],
+      "normalized_dates": [
+        "2006-01-01"
       ]
     },
     "server": "ia801704.us.archive.org",

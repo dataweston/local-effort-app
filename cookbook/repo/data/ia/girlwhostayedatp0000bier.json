@@ -462,7 +462,7 @@
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
       "creator": "Biersdorf, Marian, author",
-      "date": "2009",
+      "date": "2009-01-01",
       "description": [
         "224 pages : 29 cm",
         "A memoir that includes family recipes and Marian Biersdorf's family tree",
@@ -539,7 +539,10 @@
         "inlibrary",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "2009-01-01"
+      ]
     },
     "server": "ia903404.us.archive.org",
     "uniq": 2051445625,

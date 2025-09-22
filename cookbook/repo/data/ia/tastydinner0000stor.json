@@ -392,7 +392,7 @@
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
       "creator": "Storey, Rita",
-      "date": "2015",
+      "date": "2015-01-01",
       "description": [
         "32 pages : 28 cm",
         "Teaches kids to create their own delicious dinners using basic techniques and building on a healthy diet",
@@ -465,7 +465,10 @@
         "printdisabled"
       ],
       "page_number_confidence": "41",
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "2015-01-01"
+      ]
     },
     "server": "ia601700.us.archive.org",
     "uniq": 2058182772,

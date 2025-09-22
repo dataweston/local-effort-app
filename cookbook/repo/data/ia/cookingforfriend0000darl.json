@@ -414,7 +414,7 @@
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
       "creator": "Darling, Jennifer",
-      "date": "2004",
+      "date": "2004-01-01",
       "description": [
         "96 pages : 26 cm",
         "Published for Barnes and Noble, Inc"
@@ -473,7 +473,10 @@
         "printdisabled"
       ],
       "page_number_confidence": "27",
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "2004-01-01"
+      ]
     },
     "server": "ia600703.us.archive.org",
     "uniq": 1768013759,

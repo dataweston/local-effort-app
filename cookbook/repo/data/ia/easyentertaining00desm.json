@@ -402,7 +402,7 @@
       ],
       "description": "Includes index",
       "publisher": "Des Moines, Iowa : Meredith Integrated Marketing",
-      "date": "1998",
+      "date": "1998-01-01",
       "language": "eng",
       "isbn": [
         "0696209500",
@@ -463,7 +463,10 @@
         "inlibrary",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "1998-01-01"
+      ]
     },
     "server": "ia801303.us.archive.org",
     "uniq": 437730872,

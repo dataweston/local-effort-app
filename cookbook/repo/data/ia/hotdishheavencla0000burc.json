@@ -430,7 +430,7 @@
       "collection_set": "printdisabled",
       "contributor": "Internet Archive",
       "creator": "Burckhardt, Ann, 1933-",
-      "date": "2006",
+      "date": "2006-01-01",
       "description": [
         "174 p. : 23 cm",
         "Includes index"
@@ -500,7 +500,10 @@
       ],
       "page_number_module_version": "1.0.5",
       "source": "removed",
-      "curation": "[date]20250207194335[/date][comment]inlibrary removal 3[/comment]"
+      "curation": "[date]20250207194335[/date][comment]inlibrary removal 3[/comment]",
+      "normalized_dates": [
+        "2006-01-01"
+      ]
     },
     "server": "ia804607.us.archive.org",
     "simplelists": {

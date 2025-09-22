@@ -399,7 +399,7 @@
         "0696212927",
         "9780696212925"
       ],
-      "date": "2002",
+      "date": "2002-01-01",
       "creator": "Beverly Rivers",
       "title": "Celebrate the season 2002",
       "mediatype": "texts",
@@ -475,6 +475,9 @@
         "internetarchivebooks",
         "printdisabled",
         "inlibrary"
+      ],
+      "normalized_dates": [
+        "2002-01-01"
       ]
     },
     "server": "ia601704.us.archive.org",

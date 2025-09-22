@@ -382,7 +382,7 @@
       "subject": "Cookery, Mexican",
       "description": "Includes index",
       "publisher": "Des Moines, Iowa : Meredith",
-      "date": "1983",
+      "date": "1983-01-01",
       "language": "eng",
       "isbn": [
         "0696010305",
@@ -456,6 +456,9 @@
         "americana",
         "inlibrary",
         "printdisabled"
+      ],
+      "normalized_dates": [
+        "1983-01-01"
       ]
     },
     "server": "ia800209.us.archive.org",

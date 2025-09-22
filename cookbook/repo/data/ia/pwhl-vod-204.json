@@ -2420,7 +2420,10 @@
       "mediatype": "data",
       "publicdate": "2025-05-16 13:37:19",
       "addeddate": "2025-05-16 13:37:19",
-      "curation": "[curator]validator@archive.org[/curator][date]20250516134335[/date][comment]checked for malware[/comment]"
+      "curation": "[curator]validator@archive.org[/curator][date]20250516134335[/date][comment]checked for malware[/comment]",
+      "normalized_dates": [
+        "2025-05-14"
+      ]
     },
     "server": "ia601305.us.archive.org",
     "uniq": 36522635,

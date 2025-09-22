@@ -457,7 +457,7 @@
       "title": "The Wisconsin almanac : being a loosely-organized compendium of facts, history, lore, remembrances, puzzles, recipes, and both household and gardening advice with which to offer elucidation, assistance, and occasional amusement to the conscientious reader",
       "creator": "Minnich, Jerry",
       "publisher": "Madison, Wis. : North Country Press",
-      "date": "1989",
+      "date": "1989-01-01",
       "lccn": "89039590",
       "mediatype": "texts",
       "updatedate": "2015-06-16 17:51:03",
@@ -510,7 +510,10 @@
         "inlibrary",
         "printdisabled"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "1989-01-01"
+      ]
     },
     "server": "ia800608.us.archive.org",
     "uniq": 254648026,

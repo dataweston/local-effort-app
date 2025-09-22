@@ -456,14 +456,17 @@
       "scanfee": "0;1.00;200",
       "invoice": "1652",
       "sponsordate": "20220531",
-      "date": "1971",
+      "date": "1971-01-01",
       "addeddate": "2023-03-11 23:05:14",
       "collection": [
         "internetarchivebooks",
         "printdisabled",
         "inlibrary"
       ],
-      "page_number_module_version": "1.0.5"
+      "page_number_module_version": "1.0.5",
+      "normalized_dates": [
+        "1971-01-01"
+      ]
     },
     "reviews": [
       {

@@ -260,7 +260,10 @@
       "addeddate": "2016-12-09 19:25:46",
       "backup_location": "ia906302_26",
       "noarchivetorrent": "true",
-      "curation": "[curator]jscott@archive.org[/curator][date]20200223081807[/date][state]un-dark[/state]"
+      "curation": "[curator]jscott@archive.org[/curator][date]20200223081807[/date][state]un-dark[/state]",
+      "normalized_dates": [
+        "2015-08-28"
+      ]
     },
     "server": "ia601904.us.archive.org",
     "uniq": 1809015210,

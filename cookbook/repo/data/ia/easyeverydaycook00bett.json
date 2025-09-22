@@ -430,7 +430,7 @@
       "title": "Easy everyday cooking",
       "creator": "Mills, Carrie Holcomb",
       "publisher": "Des Moines, Iowa : Better Homes and Gardens Books",
-      "date": "2001",
+      "date": "2001-01-01",
       "external-identifier": [
         "urn:asin:0696213761",
         "urn:acs6:easyeverydaycook00bett:pdf:b65d9da1-afd0-45bd-967c-97ea36c9c80f",
@@ -506,6 +506,9 @@
         "internetarchivebooks",
         "inlibrary",
         "printdisabled"
+      ],
+      "normalized_dates": [
+        "2001-01-01"
       ]
     },
     "server": "ia801405.us.archive.org",

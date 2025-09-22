@@ -479,7 +479,7 @@
         "Philip Lief Group"
       ],
       "publisher": "Des Moines, Iowa : Meredith Books",
-      "date": "2007",
+      "date": "2007-01-01",
       "external-identifier": [
         "urn:acs6:allicookbook00caro_0:epub:9ca9fbae-abe7-46fa-9841-5f7447c3cddc",
         "urn:oclc:record:1024175365",
@@ -562,6 +562,9 @@
         "internetarchivebooks",
         "printdisabled",
         "inlibrary"
+      ],
+      "normalized_dates": [
+        "2007-01-01"
       ]
     },
     "server": "ia600609.us.archive.org",

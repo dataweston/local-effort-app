@@ -384,7 +384,7 @@
       "contributor": "Internet Archive",
       "creator": "None",
       "creator-alt-script": "None",
-      "date": "1995",
+      "date": "1995-01-01",
       "description": [
         "136 pages : 26 cm",
         "Includes index"
@@ -452,6 +452,9 @@
         "internetarchivebooks",
         "inlibrary",
         "printdisabled"
+      ],
+      "normalized_dates": [
+        "1995-01-01"
       ]
     },
     "server": "ia600601.us.archive.org",

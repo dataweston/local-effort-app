@@ -225,7 +225,10 @@
       "addeddate": "2017-02-21 20:53:32",
       "curation": "[curator]validator@archive.org[/curator][date]20170221205358[/date][comment]checked for malware[/comment]",
       "backup_location": "ia906308_1",
-      "access-restricted-item": "true"
+      "access-restricted-item": "true",
+      "normalized_dates": [
+        "2017-02-18"
+      ]
     },
     "server": "ia902907.us.archive.org",
     "simplelists": {
