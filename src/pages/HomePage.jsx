@@ -405,7 +405,7 @@ const HomePage = () => {
             image: imageJsonLd.contentUrl,
             areaServed: Array.isArray(src.serviceArea) && src.serviceArea.length ? src.serviceArea : ['Minneapolis','St. Paul','Twin Cities','Roseville','Minnesota','Western Wisconsin'],
             address: { '@type': 'PostalAddress', addressLocality: 'Roseville', addressRegion: 'MN', addressCountry: 'US' },
-            sameAs: Array.isArray(src.sameAs) ? src.sameAs : ['https://www.instagram.com/localeffortfood','https://www.facebook.com/localeffortfood'],
+            sameAs: Array.isArray(src.sameAs) ? src.sameAs : ['https://www.instagram.com/localeffortfood','https://www.facebook.com/localeffortfood','https://www.tiktok.com/@localeffort'],
             telephone: src.telephone || undefined
           };
           const reviewList = (Array.isArray(reviews) ? reviews.slice(0, 12) : []).map(r => ({
@@ -548,10 +548,7 @@ const HomePage = () => {
           <div className="max-w-6xl mx-auto px-4 md:px-6 lg:px-8">
             <SectionHeader overline="Community" title="Our Partners" />
           </div>
-          <p className="text-center text-sm text-gray-600 max-w-2xl mx-auto mt-2 mb-6">
-            Proud partners who help make this project possible. Support local — shop and
-            collaborate with them.
-          </p>
+          
 
           <PartnerGrid />
         </section>

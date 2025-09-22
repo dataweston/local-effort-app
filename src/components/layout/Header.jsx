@@ -4,7 +4,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 const logo = '/gallery/logo.png?text=Local+Effort&font=mono';
 
 const links = [
-  { path: '/sale', name: 'SALE', sale: true },
   { path: '/services', name: 'Services', children: [
     { path: '/services#event-request', name: 'Submit an event request' },
   ] },

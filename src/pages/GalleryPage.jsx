@@ -221,7 +221,7 @@ const GalleryPage = () => {
             url: 'https://local-effort-app.vercel.app/gallery',
             image: images.slice(0,8).map(i => i.large_url || i.thumbnail_url).filter(Boolean),
             servesCuisine: ['American','Local','Seasonal'],
-            sameAs: []
+            sameAs: ['https://www.instagram.com/localeffortfood','https://www.facebook.com/localeffortfood','https://www.tiktok.com/@localeffort']
           })}</script>
           {images.slice(0, 12).map((img, idx) => (
             <script key={`imgld-${idx}`} type="application/ld+json">{JSON.stringify({
