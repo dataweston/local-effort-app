@@ -33,13 +33,14 @@ def load_local_recipes() -> list[dict]:
     path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data", "recipes.jsonl")
     try:
         items: list[dict] = []
+        import json
         with open(path, "r", encoding="utf-8") as f:
             for line in f:
                 line = line.strip()
                 if not line:
                     continue
                 try:
-                    obj = __import__("json").loads(line)
+                    obj = json.loads(line)
                     obj = obj or {}
                     obj.setdefault("id", obj.get("identifier") or obj.get("id"))
                     items.append(obj)
@@ -50,6 +51,78 @@ def load_local_recipes() -> list[dict]:
         return []
 
 LOCAL_RECIPES = load_local_recipes()
+
+
+@app.get("/api/stats")
+async def get_stats(index: str = "recipes"):
+    client = get_client()
+    if client is not None:
+        try:
+            base_query = {"query": {"match_all": {}}}
+            total = client.count(index=index, body=base_query).get("count", 0)
+            agg_body = {
+                "size": 0,
+                "query": {"match_all": {}},
+                "aggs": {
+                    "sources": {"terms": {"field": "source", "size": 20}},
+                    "with_recipe": {
+                        "filter": {
+                            "bool": {
+                                "should": [
+                                    {"exists": {"field": "ingredients"}},
+                                    {"exists": {"field": "instructions"}},
+                                ],
+                                "minimum_should_match": 1,
+                            }
+                        }
+                    },
+                    "with_scans": {
+                        "filter": {
+                            "bool": {
+                                "should": [
+                                    {"exists": {"field": "iiif_manifest"}},
+                                    {"exists": {"field": "pdf_url"}},
+                                    {"term": {"curation.has_digital_assets": True}},
+                                ],
+                                "minimum_should_match": 1,
+                            }
+                        }
+                    },
+                },
+            }
+            agg_res = client.search(index=index, body=agg_body)
+            sources = [bucket["key"] for bucket in agg_res.get("aggregations", {}).get("sources", {}).get("buckets", [])]
+            recipe_count = agg_res.get("aggregations", {}).get("with_recipe", {}).get("doc_count", 0)
+            scan_count = agg_res.get("aggregations", {}).get("with_scans", {}).get("doc_count", 0)
+            return {
+                "documents": total,
+                "recipes": recipe_count,
+                "digital_items": scan_count,
+                "sources": sources,
+            }
+        except Exception:
+            pass
+
+    if not LOCAL_RECIPES:
+        return {"documents": 0, "recipes": 0, "digital_items": 0, "sources": []}
+    documents = len(LOCAL_RECIPES)
+    recipe_count = sum(
+        1
+        for r in LOCAL_RECIPES
+        if (r.get("ingredients") or r.get("instructions"))
+    )
+    digital_count = sum(
+        1
+        for r in LOCAL_RECIPES
+        if r.get("iiif_manifest") or r.get("pdf_url") or r.get("curation", {}).get("has_digital_assets")
+    )
+    sources = sorted({r.get("source") for r in LOCAL_RECIPES if r.get("source")})
+    return {
+        "documents": documents,
+        "recipes": recipe_count,
+        "digital_items": digital_count,
+        "sources": sources,
+    }
 
 
 @app.get("/api/recipes/{doc_id}")
@@ -190,4 +263,3 @@ async def search(
     }
 
     return {"results": limited, "total": {"value": len(matched_docs)}, "facets": facets}
-

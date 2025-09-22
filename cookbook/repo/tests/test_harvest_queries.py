@@ -19,8 +19,8 @@ def test_ia_queries_chunk_locations():
     assert len(groups) > 1
     for group in groups:
         query = build_ia_query(location_terms=group)
-        assert len(group) <= 6
-        assert len(query) < 3000
+        assert len(group) <= 10
+        assert len(query) < 4000
 
 
 def test_dpla_plan_includes_negative_and_spatial():

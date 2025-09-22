@@ -1,9 +1,9 @@
-"""
+""
 DPLA harvester for Midwest content.
 
 Uses DPLA_API_KEY from env. Queries q=midwest with spatial filters for
 Minnesota/Wisconsin, normalizes, and writes JSON files to ./data/dpla/{id}.json.
-"""
+""
 from __future__ import annotations
 
 import argparse
@@ -11,6 +11,7 @@ import json
 import logging
 import os
 from pathlib import Path
+from datetime import datetime
 from typing import Any, Dict, Iterable, List, Optional
 
 import requests
@@ -47,6 +48,7 @@ def build_query_plan() -> Dict[str, Any]:
     spatial_terms = flatten_terms(
         locations.get("counties", []),
         locations.get("states", []),
+        locations.get("states_tier2", []),
         locations.get("cities", []),
     )
     spatial_terms = list(dict.fromkeys(spatial_terms))
@@ -96,6 +98,20 @@ def normalize(item: Dict[str, Any]) -> Dict[str, Any]:
         "provider": provider,
         "institution": provider_name,
     }
+    metadata_wrapper: Dict[str, Any] = {}
+    if source_resource:
+        metadata_wrapper['sourceResource'] = source_resource
+    date_info = _extract_date_info(source_resource.get('date'))
+    if date_info:
+        metadata_wrapper.setdefault('metadata', {}).update(date_info)
+        date_value = date_info.get('date')
+        if date_value and 'year' not in norm:
+            try:
+                norm['year'] = int(date_value[:4])
+            except ValueError:
+                pass
+    if metadata_wrapper:
+        norm['metadata'] = metadata_wrapper
     if raw_links:
         norm["data"] = raw_links
     iiif = _extract_iiif(item)
@@ -168,6 +184,116 @@ def _extract_iiif(item: Dict[str, Any]) -> Optional[str]:
         candidates.append(object_url)
     return candidates[0] if candidates else None
 
+YEAR_PATTERN = re.compile(r'(1[6-9]\d{2}|20\d{2})')
+
+
+def _coerce_iso_date(value: Any) -> Optional[str]:
+    if value is None:
+        return None
+    if isinstance(value, (int, float)):
+        value = str(int(value))
+    value = str(value).strip()
+    if not value:
+        return None
+    try:
+        datetime.strptime(value, '%Y-%m-%d')
+        return value
+    except ValueError:
+        pass
+    try:
+        datetime.strptime(value, '%Y-%m')
+        return f'{value}-01'
+    except ValueError:
+        pass
+    if value.isdigit() and len(value) == 4:
+        return f'{value}-01-01'
+    lowered = value.lower()
+    for prefix in ('circa', 'ca.', 'c.', 'ca ', 'c ', 'around', 'about', 'approx', 'approx.'):
+        if lowered.startswith(prefix):
+            stripped = value[len(prefix):].strip(' .')
+            iso = _coerce_iso_date(stripped)
+            if iso:
+                return iso
+    for sep in (' - ', ' – ', ' — ', '-', '–', '—', '/', ' to '):
+        if sep in value:
+            first = value.split(sep)[0].strip()
+            if first and first != value:
+                iso = _coerce_iso_date(first)
+                if iso:
+                    return iso
+    match = YEAR_PATTERN.search(value)
+    if match:
+        year = match.group(1)
+        return f'{year}-01-01'
+    return None
+
+
+def _extract_date_info(date_field: Any) -> Optional[Dict[str, Any]]:
+    raw_dates: List[str] = []
+    normalized_dates: List[str] = []
+    begins: List[str] = []
+    ends: List[str] = []
+
+    def collect(value: Any) -> None:
+        if value is None:
+            return
+        if isinstance(value, list):
+            for item in value:
+                collect(item)
+            return
+        if isinstance(value, dict):
+            display = value.get('displayDate') or value.get('label') or value.get('value')
+            if isinstance(display, str) and display.strip():
+                text = display.strip()
+                raw_dates.append(text)
+                iso_display = _coerce_iso_date(text)
+                if iso_display:
+                    normalized_dates.append(iso_display)
+            for key in ('date', '@value'):
+                if key in value:
+                    collect(value[key])
+            begin = value.get('begin') or value.get('start') or value.get('from')
+            end = value.get('end') or value.get('stop') or value.get('to')
+            iso_begin = _coerce_iso_date(begin)
+            iso_end = _coerce_iso_date(end)
+            if iso_begin:
+                begins.append(iso_begin)
+                normalized_dates.append(iso_begin)
+            if iso_end:
+                ends.append(iso_end)
+                normalized_dates.append(iso_end)
+            return
+        if isinstance(value, (int, float)):
+            value = str(int(value))
+        if isinstance(value, str):
+            text = value.strip()
+            if text:
+                raw_dates.append(text)
+                iso = _coerce_iso_date(text)
+                if iso:
+                    normalized_dates.append(iso)
+
+    collect(date_field)
+    raw_dates = list(dict.fromkeys(raw_dates))
+    normalized_dates = list(dict.fromkeys([d for d in normalized_dates if d]))
+    begins = list(dict.fromkeys([b for b in begins if b]))
+    ends = list(dict.fromkeys([e for e in ends if e]))
+    if not (raw_dates or normalized_dates or begins or ends):
+        return None
+    info: Dict[str, Any] = {}
+    if normalized_dates:
+        info['date'] = normalized_dates[0]
+        info['normalized_dates'] = normalized_dates
+    if raw_dates:
+        info['raw_dates'] = raw_dates
+    date_range: Dict[str, Optional[str]] = {}
+    if begins:
+        date_range['begin'] = begins[0]
+    if ends:
+        date_range['end'] = ends[0]
+    if date_range:
+        info['date_range'] = date_range
+    return info
 
 def harvest(out_dir: Path, page_size: int, max_pages: int, api_key: Optional[str], providers: Optional[List[str]] = None, spatial_override: Optional[List[str]] = None) -> None:
     ensure_dir(out_dir)
@@ -196,7 +322,7 @@ def harvest(out_dir: Path, page_size: int, max_pages: int, api_key: Optional[str
             params = dict(base_params)
             if spatial_term:
                 params["sourceResource.spatial.name"] = spatial_term
-            logging.info("DPLA spatial=%s page=%s size=%s", spatial_term or "", page, page_size)
+            logging.info("DPLA spatial=%s page=%s size=%s", spatial_term or ", page, page_size)
             data = _get(DPLA_API_BASE, page=page, **params)
             docs: Iterable[Dict[str, Any]] = data.get("docs", [])
             if not docs:
@@ -242,3 +368,8 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+
+
+
+
+

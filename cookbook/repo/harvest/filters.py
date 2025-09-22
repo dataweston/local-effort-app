@@ -20,12 +20,20 @@ class HarvestFilter:
         terms = load_terms()
         allow = terms.get("allow", {})
         locations = allow.get("locations", {})
-        self.states = [t.lower() for t in flatten_terms(locations.get("states", []))]
-        self.state_abbr = [t.lower() for t in flatten_terms(locations.get("state_abbreviations", []))]
+        primary_states = flatten_terms(locations.get("states", []))
+        secondary_states = flatten_terms(locations.get("states_tier2", []))
+        primary_state_abbr = flatten_terms(locations.get("state_abbreviations", []))
+        secondary_state_abbr = flatten_terms(locations.get("state_abbreviations_tier2", []))
+
+        self.primary_states = [t.lower() for t in primary_states]
+        self.secondary_states = [t.lower() for t in secondary_states]
+        self.primary_state_abbr = [t.lower() for t in primary_state_abbr]
+        self.secondary_state_abbr = [t.lower() for t in secondary_state_abbr]
+        self.states = list(dict.fromkeys(self.primary_states + self.secondary_states))
+        self.state_abbr = list(dict.fromkeys(self.primary_state_abbr + self.secondary_state_abbr))
         self.counties = [t.lower() for t in flatten_terms(locations.get("counties", []))]
         self.cities = [t.lower() for t in flatten_terms(locations.get("cities", []))]
-        self.regions = [t.lower() for t in flatten_terms(locations.get("regions", []))]
-        community_terms = flatten_terms(allow.get("community", []), allow.get("institutions", []))
+        self.regions = [t.lower() for t in flatten_terms(locations.get("regions", []))]        community_terms = flatten_terms(allow.get("community", []), allow.get("institutions", []))
         self.community_terms = [t.lower() for t in community_terms]
         deny = terms.get("deny", {})
         self.negative_terms = [t.lower() for t in flatten_terms(deny.get("keywords", []))]
@@ -35,8 +43,12 @@ class HarvestFilter:
         texts = self._extract_text(record)
         text_blob = " \n ".join(texts).lower()
 
-        matched_states = self._match_terms(text_blob, self.states)
-        matched_state_abbr = self._match_terms(text_blob, self.state_abbr)
+        matched_states_primary = self._match_terms(text_blob, self.primary_states)
+        matched_states_secondary = self._match_terms(text_blob, self.secondary_states)
+        matched_state_abbr_primary = self._match_terms(text_blob, self.primary_state_abbr)
+        matched_state_abbr_secondary = self._match_terms(text_blob, self.secondary_state_abbr)
+        matched_states = list(dict.fromkeys(matched_states_primary + matched_states_secondary))
+        matched_state_abbr = list(dict.fromkeys(matched_state_abbr_primary + matched_state_abbr_secondary))
         matched_counties = self._match_terms(text_blob, self.counties)
         matched_cities = self._match_terms(text_blob, self.cities)
         matched_regions = self._match_terms(text_blob, self.regions)
@@ -46,8 +58,10 @@ class HarvestFilter:
         has_digital_assets = self._has_digital_assets(record)
 
         score = 0
-        if matched_states or matched_state_abbr:
+        if matched_states_primary or matched_state_abbr_primary:
             score += 2
+        if matched_states_secondary or matched_state_abbr_secondary:
+            score += 1
         if matched_counties:
             score += 3
         if matched_cities:
@@ -60,7 +74,6 @@ class HarvestFilter:
             score += 2
         if negatives:
             score -= 2
-
         reasons: List[str] = []
         if negatives:
             reasons.append("contains_excluded_terms")
@@ -72,7 +85,11 @@ class HarvestFilter:
         details = {
             "matched_locations": {
                 "states": matched_states,
+                "states_primary": matched_states_primary,
+                "states_secondary": matched_states_secondary,
                 "state_abbreviations": matched_state_abbr,
+                "state_abbreviations_primary": matched_state_abbr_primary,
+                "state_abbreviations_secondary": matched_state_abbr_secondary,
                 "counties": matched_counties,
                 "cities": matched_cities,
                 "regions": matched_regions,
@@ -212,3 +229,6 @@ def build_curation_notes(result: FilterResult) -> str:
     if not parts:
         parts.append("Curator review recommended")
     return "; ".join(parts)
+
+
+

@@ -10,14 +10,10 @@ from __future__ import annotations
 import argparse
 import json
 import logging
+import os
 import time
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional
-
-import os
-
-import time
-
 
 import requests
 
@@ -33,11 +29,16 @@ def ensure_dir(path: Path) -> None:
     path.mkdir(parents=True, exist_ok=True)
 
 
-def build_location_groups(chunk_size: int = 2) -> List[List[str]]:
+def build_location_groups(chunk_size: int = 1) -> List[List[str]]:
     """Reuse the allowlist to generate manageable location combinations."""
     terms = load_terms()
     locations = terms.get("allow", {}).get("locations", {})
-    base = flatten_terms(locations.get("states", []), locations.get("state_abbreviations", []))
+    base = flatten_terms(
+        locations.get("states", []),
+        locations.get("states_tier2", []),
+        locations.get("state_abbreviations", []),
+        locations.get("state_abbreviations_tier2", []),
+    )
     extras = flatten_terms(
         locations.get("counties", []),
         locations.get("cities", []),
@@ -54,36 +55,37 @@ def build_location_groups(chunk_size: int = 2) -> List[List[str]]:
     return groups
 
 
-def build_queries(chunk_size: int = 2) -> List[str]:
+def build_queries(chunk_size: int = 1, max_cookbook_terms: int = 12) -> List[str]:
     terms = load_terms()
     allow = terms.get("allow", {})
-    cookbook_terms = flatten_terms(
-        allow.get("cookbook", []),
-        allow.get("community", []),
-        allow.get("institutions", []),
-    )
+    cookbook_terms = flatten_terms(allow.get("cookbook", []))[:max_cookbook_terms]
     cookbook_clause = "(" + " OR ".join(quote_term(term) for term in cookbook_terms) + ")"
     queries: List[str] = []
     for group in build_location_groups(chunk_size):
-        location_clause = "(" + " OR ".join(quote_term(term) for term in group) + ")"
+        location_terms = [quote_term(term) for term in group]
+        if len(location_terms) == 1:
+            location_clause = location_terms[0]
+        else:
+            location_clause = "(" + " OR ".join(location_terms) + ")"
         queries.append(f"{cookbook_clause} {location_clause}")
     return queries
 
 
 def search_loc(session: requests.Session, query: str, page: int, count: int) -> Dict[str, Any]:
     params: Dict[str, Any] = {
-        "api_key": LOC_API_KEY,
         "q": query,
         "fo": "json",
         "c": min(count, MAX_RESULTS_PER_PAGE),
         "sp": page,
         "fa": ["original-format:book", "digitized:true"],
     }
+    if LOC_API_KEY:
+        params["api_key"] = LOC_API_KEY
     for attempt in range(5):
         response = session.get(LOC_SEARCH_URL, params=params, timeout=60)
         if response.status_code == 429:
-            wait = 2 ** attempt
-            logging.warning('LoC rate limited, sleeping %s seconds', wait)
+            wait = min(60, 2 ** attempt)
+            logging.warning("LoC rate limited, sleeping %s seconds", wait)
             time.sleep(wait)
             continue
         response.raise_for_status()
@@ -171,7 +173,7 @@ def harvest(output_dir: Path, per_page: int, max_pages: int, chunk_size: int) ->
     harvest_filter = get_filter()
     written = 0
 
-    for query in build_queries(chunk_size):
+    for query in build_queries(chunk_size=chunk_size):
         logging.info("LoC search query=%s", query)
         for page in range(1, max_pages + 1):
             logging.debug("LoC request page=%s per_page=%s", page, per_page)
@@ -208,9 +210,9 @@ def harvest(output_dir: Path, per_page: int, max_pages: int, chunk_size: int) ->
 def main() -> None:
     ap = argparse.ArgumentParser(description="Library of Congress cookbook harvester")
     ap.add_argument("--out", default="./data/loc")
-    ap.add_argument("--per-page", type=int, default=50)
-    ap.add_argument("--max-pages", type=int, default=3)
-    ap.add_argument("--chunk-size", type=int, default=2)
+    ap.add_argument("--per-page", type=int, default=25)
+    ap.add_argument("--max-pages", type=int, default=2)
+    ap.add_argument("--chunk-size", type=int, default=1)
     ap.add_argument("--log", default="INFO")
     args = ap.parse_args()
     logging.basicConfig(level=getattr(logging, args.log.upper(), logging.INFO), format="%(asctime)s %(levelname)s %(message)s")
@@ -219,3 +221,4 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+

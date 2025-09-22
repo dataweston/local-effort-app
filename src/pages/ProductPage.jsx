@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import client from '../sanityClient';
 
@@ -36,7 +36,7 @@ export default function ProductPage() {
           <meta name="description" content={product.shortDescription || ''} />
         )}
       </Helmet>
-      <div className="mb-4 text-sm text-neutral-600"><Link to="/sale" className="underline">Back to Sale</Link></div>
+      
       {loading ? (
         <div>Loading…</div>
       ) : !product ? (
