@@ -18,15 +18,27 @@ from typing import Any, Dict, Iterable, List, Optional
 import requests
 from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type
 
-IA_SEARCH_URL = "https://archive.org/advancedsearch.php"
-IA_METADATA_URL = "https://archive.org/metadata/{identifier}"
-
 from .filters import apply_curation, get_filter
 from .terms import flatten_terms, load_terms, quote_term
+
+IA_SEARCH_URL = "https://archive.org/advancedsearch.php"
+IA_METADATA_URL = "https://archive.org/metadata/{identifier}"
 
 
 def ensure_dir(path: Path) -> None:
     path.mkdir(parents=True, exist_ok=True)
+
+
+def _sanitize_term(term: str) -> str:
+    return term.replace("'", "")
+
+def _field_clause(field: str, terms: Iterable[str]) -> str:
+    cleaned_terms = [_sanitize_term(term) for term in terms if term]
+    cleaned = [quote_term(term) for term in cleaned_terms if term]
+    if not cleaned:
+        return ""
+    inner = " OR ".join(cleaned)
+    return f"{field}:(" + inner + ")"
 
 
 def build_location_groups(chunk_size: int = 2) -> List[List[str]]:
@@ -39,21 +51,10 @@ def build_location_groups(chunk_size: int = 2) -> List[List[str]]:
         locations.get("state_abbreviations", []),
         locations.get("state_abbreviations_tier2", []),
     )
-    extras = flatten_terms(
-        locations.get("counties", []),
-        locations.get("cities", []),
-        locations.get("regions", []),
-    )
-    extras = [term for term in extras if term not in base]
     if chunk_size < 1:
         chunk_size = 10
     groups: List[List[str]] = []
-    if not extras:
-        groups.append(list(dict.fromkeys(base)))
-        return groups
-    for idx in range(0, len(extras), chunk_size):
-        chunk = extras[idx : idx + chunk_size]
-        groups.append(list(dict.fromkeys(base + chunk)))
+    groups.append(list(dict.fromkeys(base)))
     return groups
 
 
@@ -62,11 +63,13 @@ def build_query(location_terms: Optional[List[str]] = None) -> str:
     allow = terms.get("allow", {})
     deny = terms.get("deny", {})
 
-    cookbook_terms = flatten_terms(allow.get("cookbook", []))
-    community_terms = flatten_terms(allow.get("community", []))[:12]
-    institution_terms = flatten_terms(allow.get("institutions", []))[:8]
-    search_terms = cookbook_terms + community_terms + institution_terms
-    cookbook_clause = "(" + " OR ".join(quote_term(term) for term in search_terms) + ")"
+    primary_cookbook_terms = list(dict.fromkeys(flatten_terms(allow.get("cookbook", []))))[:6]
+    cookbook_fields = ["title", "description", "subject"]
+    cookbook_clauses = [clause for field in cookbook_fields if (clause := _field_clause(field, primary_cookbook_terms))]
+    if cookbook_clauses:
+        cookbook_clause = "(" + " OR ".join(cookbook_clauses) + ")"
+    else:
+        cookbook_clause = "(" + " OR ".join(quote_term(_sanitize_term(term)) for term in primary_cookbook_terms) + ")"
 
     locations = allow.get("locations", {})
     if location_terms is None:
@@ -81,27 +84,205 @@ def build_query(location_terms: Optional[List[str]] = None) -> str:
         )
     else:
         location_terms = list(dict.fromkeys(location_terms))
-    location_fields = ["title", "description", "subject", "creator", "publisher", "coverage", "notes"]
-    location_parts: List[str] = []
-    for field in location_fields:
-        field_terms = " OR ".join(f"{field}:{quote_term(term)}" for term in location_terms)
-        location_parts.append(f"({field_terms})")
-    location_clause = "(" + " OR ".join(location_parts) + ")"
+    location_fields = [
+        "title",
+        "description",
+        "subject",
+        "creator",
+        "publisher",
+        "coverage",
+        "notes",
+    ]
+    location_clauses = [clause for field in location_fields if (clause := _field_clause(field, location_terms))]
+    location_clause = "(" + " OR ".join(location_clauses) + ")"
 
     negative_terms = flatten_terms(deny.get("keywords", []))
     negative_clause = ""
     if negative_terms:
         negative_fields = ["title", "description", "subject", "publisher"]
-        neg_parts: List[str] = []
-        for field in negative_fields:
-            field_terms = " OR ".join(f"{field}:{quote_term(term)}" for term in negative_terms)
-            neg_parts.append(f"({field_terms})")
-        negative_clause = " AND NOT (" + " OR ".join(neg_parts) + ")"
+        neg_clauses = [clause for field in negative_fields if (clause := _field_clause(field, negative_terms))]
+        if neg_clauses:
+            negative_clause = " AND NOT (" + " OR ".join(neg_clauses) + ")"
 
     availability_clause = "(mediatype:texts AND (format:pdf OR format:\"Text PDF\" OR has_fulltext:true))"
 
     return f"{availability_clause} AND {cookbook_clause} AND {location_clause}{negative_clause}"
 
-...
+
+@retry(wait=wait_exponential(multiplier=1, min=1, max=10),
+       stop=stop_after_attempt(5),
+       retry=retry_if_exception_type(requests.RequestException))
+def _get(session: requests.Session, url: str, **kwargs) -> requests.Response:
+    resp = session.get(url, timeout=30, **kwargs)
+    resp.raise_for_status()
+    return resp
+
+
+def ia_search(session: requests.Session, query: str, fields: Optional[List[str]], rows: int, page: int) -> Dict[str, Any]:
+    params: Dict[str, Any] = {"q": query, "output": "json", "rows": rows, "page": page}
+    if fields:
+        params["fl[]"] = fields
+    r = _get(session, IA_SEARCH_URL, params=params)
+    return r.json()
+
+
+def fetch_metadata(session: requests.Session, identifier: str) -> Dict[str, Any]:
+    r = _get(session, IA_METADATA_URL.format(identifier=identifier))
+    return r.json()
+
+
+def _find_iiif_manifest(meta: Dict[str, Any]) -> Optional[str]:
+    def _walk(value: Any) -> Optional[str]:
+        if isinstance(value, str):
+            lowered = value.lower()
+            if "iiif" in lowered and "manifest" in lowered:
+                return value
+            return None
+        if isinstance(value, dict):
+            for v in value.values():
+                found = _walk(v)
+                if found:
+                    return found
+        elif isinstance(value, list):
+            for item in value:
+                found = _walk(item)
+                if found:
+                    return found
+        return None
+
+    return _walk(meta)
+
+
+def _find_pdf(record: Dict[str, Any], meta: Dict[str, Any]) -> Optional[str]:
+    files = meta.get("files") if isinstance(meta, dict) else None
+    identifier = record.get("identifier") or meta.get("identifier")
+    if isinstance(files, list):
+        for file in files:
+            if not isinstance(file, dict):
+                continue
+            name = str(file.get("name", ""))
+            if name.lower().endswith(".pdf") and identifier:
+                return f"https://archive.org/download/{identifier}/{name}"
+            fmt = str(file.get("format", "")).lower()
+            source = file.get("source")
+            if "pdf" in fmt and isinstance(source, str):
+                return source
+    return None
+
+
+def normalize(record: Dict[str, Any], meta: Dict[str, Any]) -> Dict[str, Any]:
+    if isinstance(meta, dict) and "events" in meta:
+        meta = dict(meta)
+        meta.pop("events", None)
+    creator = record.get("creator")
+    if isinstance(creator, list):
+        creator = next((c for c in creator if isinstance(c, str)), None)
+    normalized: Dict[str, Any] = {
+        "source": "internet_archive",
+        "identifier": record.get("identifier"),
+        "title": record.get("title"),
+        "creator": creator,
+        "year": record.get("year"),
+        "subject": record.get("subject"),
+        "description": record.get("description"),
+        "metadata": meta,
+    }
+    if isinstance(creator, str):
+        normalized["institution"] = creator
+    iiif_url = _find_iiif_manifest(meta)
+    if iiif_url:
+        normalized["iiif_manifest"] = iiif_url
+    pdf_url = _find_pdf(record, meta)
+    if pdf_url:
+        normalized["pdf_url"] = pdf_url
+    return normalized
+
+
+def harvest(output_dir: Path, rows: int, start_page: int, max_pages: int) -> None:
+    ensure_dir(output_dir)
+    session = requests.Session()
+    harvest_filter = get_filter()
+    location_groups = build_location_groups()
+    total_written = 0
+
+    for group_index, location_terms in enumerate(location_groups, start=1):
+        query = build_query(location_terms=location_terms)
+        pages = range(start_page, start_page + max_pages)
+        group_written = 0
+        total: Optional[int] = None
+        for page in pages:
+            logging.info(
+                "IA search group=%s/%s page=%s rows=%s", group_index, len(location_groups), page, rows
+            )
+            data = ia_search(
+                session,
+                query,
+                fields=["identifier", "title", "creator", "year", "subject", "description"],
+                rows=rows,
+                page=page,
+            )
+            if "error" in data:
+                logging.warning("IA query error group=%s page=%s error=%s", group_index, page, data["error"])
+                break
+            resp = data.get("response", {})
+            if total is None:
+                total = resp.get("numFound")
+                logging.info("group=%s numFound=%s", group_index, total)
+            docs: Iterable[Dict[str, Any]] = resp.get("docs", [])
+            if not docs:
+                break
+            for doc in docs:
+                ident = doc.get("identifier")
+                if not ident:
+                    continue
+                target = output_dir / f"{ident}.json"
+                if target.exists():
+                    logging.debug("exists, skipping %s", ident)
+                    continue
+                try:
+                    meta = fetch_metadata(session, ident)
+                    out = normalize(doc, meta)
+                    result = harvest_filter.accepts(out)
+                    if result.score < harvest_filter.min_score:
+                        logging.info(
+                            "Rejected %s score=%s reasons=%s",
+                            ident,
+                            result.score,
+                            result.details.get("reasons"),
+                        )
+                        continue
+                    apply_curation(out, result)
+                    with open(target, "w", encoding="utf-8") as f:
+                        json.dump(out, f, ensure_ascii=False, indent=2)
+                    group_written += 1
+                    total_written += 1
+                except Exception as e:
+                    logging.warning("failed %s: %s", ident, e)
+        logging.info(
+            "Finished group %s/%s wrote=%s cumulative=%s", group_index, len(location_groups), group_written, total_written
+        )
+    logging.info("done. wrote=%s files", total_written)
+
+
+def main() -> None:
+    ap = argparse.ArgumentParser(description="Internet Archive harvester for Minnesota/Wisconsin/Midwest")
+    ap.add_argument("--rows", type=int, default=100)
+    ap.add_argument("--page", type=int, default=1)
+    ap.add_argument("--max-pages", type=int, default=10)
+    ap.add_argument("--out", default="./data/ia")
+    ap.add_argument("--log", default="INFO")
+    args = ap.parse_args()
+    logging.basicConfig(level=getattr(logging, args.log.upper(), logging.INFO), format="%(asctime)s %(levelname)s %(message)s")
+    harvest(Path(args.out), rows=args.rows, start_page=args.page, max_pages=args.max_pages)
+
+
+if __name__ == "__main__":
+    main()
+
+
+
+
+
+
 
 
