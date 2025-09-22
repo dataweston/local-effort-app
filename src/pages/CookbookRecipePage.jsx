@@ -3,7 +3,7 @@ import { Link, useParams } from 'react-router-dom';
 
 function toList(value) {
   if (Array.isArray(value)) return value.filter(Boolean);
-  if (typeof value === 'string') return value.split(/\r?\n|\u2022|·/).map((x) => x.trim()).filter(Boolean);
+  if (typeof value === 'string') return value.split(/\r?\n|\u2022|ï¿½/).map((x) => x.trim()).filter(Boolean);
   return [];
 }
 
@@ -60,7 +60,7 @@ export default function CookbookRecipePage() {
   if (loading) {
     return (
       <div className="container mx-auto max-w-4xl px-4 py-16">
-        <p className="text-sm text-gray-500">Loading recipe…</p>
+        <p className="text-sm text-gray-500">Loading recipeï¿½</p>
       </div>
     );
   }
