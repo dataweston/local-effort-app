@@ -55,12 +55,12 @@ const AboutUsPage = () => {
         />
         <meta property="og:title" content="About | Local Effort" />
   <meta property="og:description" content="Obsessively local since 2022 — because it’s healthier, tastier, and better for Minnesota." />
-        <meta property="og:type" content="website" />
-  <meta property="og:image" content="https://www.localeffortfood.com/gallery/5Z0A5729-Edit.jpg" />
+    <meta property="og:type" content="website" />
+  <meta property="og:image" content="https://res.cloudinary.com/dokyhfvyd/image/upload/v1758464124/jo9pxtjng8zpt4yo4rcz.jpg" />
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content="About | Local Effort" />
   <meta name="twitter:description" content="Obsessively local since 2022 — because it’s healthier, tastier, and better for Minnesota." />
-  <meta name="twitter:image" content="https://www.localeffortfood.com/gallery/5Z0A5729-Edit.jpg" />
+  <meta name="twitter:image" content="https://res.cloudinary.com/dokyhfvyd/image/upload/v1758464124/jo9pxtjng8zpt4yo4rcz.jpg" />
       </Helmet>
 
       <main id="main" className="container-page">
@@ -80,7 +80,7 @@ const AboutUsPage = () => {
               <div className="w-full">
                 <AspectRatio ratio={4/3} className="rounded-xl shadow-sm ring-1 ring-neutral-200 max-h-[480px] bg-neutral-100">
                   <img
-                    src="/gallery/5Z0A5729-Edit.jpg"
+                    src="https://res.cloudinary.com/dokyhfvyd/image/upload/v1758464124/jo9pxtjng8zpt4yo4rcz.jpg"
                     alt="Local Effort chefs cooking"
                     width={1600}
                     height={1200}
