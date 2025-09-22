@@ -10,11 +10,26 @@ const PricingPage = () => {
   return (
     <>
       <Helmet>
-        <title>Pricing | Local Effort</title>
+        <title>How Much Does a Personal Chef Cost? | Minneapolis Personal Chef Pricing — Local Effort</title>
         <meta
           name="description"
-          content="Find pricing information for Local Effort's personal chef services."
+          content="How much does a personal chef cost? See Minneapolis–St. Paul price ranges for in-home dinners, weekly meal prep, and small events. Use our estimator for a quick ballpark."
         />
+        <link rel="canonical" href="https://localeffortfood.com/pricing" />
+        <meta name="robots" content="index,follow" />
+        <meta
+          name="keywords"
+          content="how much does a personal chef cost, personal chef cost Minneapolis, private chef cost, personal chef pricing, cost of personal chef per person, weekly meal prep cost, private chef Minneapolis pricing"
+        />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://localeffortfood.com/pricing" />
+        <meta property="og:title" content="How Much Does a Personal Chef Cost? Minneapolis Personal Chef Pricing — Local Effort" />
+        <meta property="og:description" content="See typical costs for personal chefs in Minneapolis–St. Paul: in-home dinners, weekly meal prep, and small events. Try the estimator for a quick ballpark." />
+        <meta property="og:image" content="/gallery/logo.png?text=Local+Effort&font=mono" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="How Much Does a Personal Chef Cost? Minneapolis Personal Chef Pricing — Local Effort" />
+        <meta name="twitter:description" content="See typical personal chef costs in Minneapolis–St. Paul and use our estimator to get a quick ballpark for your event or weekly meals." />
+        <meta name="twitter:image" content="/gallery/logo.png?text=Local+Effort&font=mono" />
       </Helmet>
 
       <div className="space-y-16 max-w-5xl mx-auto px-4 py-12">
