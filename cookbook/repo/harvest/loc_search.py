@@ -14,12 +14,18 @@ import time
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional
 
+import os
+
+import time
+
+
 import requests
 
 from .filters import apply_curation, get_filter
 from .terms import flatten_terms, load_terms, quote_term
 
 LOC_SEARCH_URL = "https://www.loc.gov/search/"
+LOC_API_KEY = os.getenv("LOC_API_KEY")
 MAX_RESULTS_PER_PAGE = 100
 
 
@@ -66,6 +72,7 @@ def build_queries(chunk_size: int = 2) -> List[str]:
 
 def search_loc(session: requests.Session, query: str, page: int, count: int) -> Dict[str, Any]:
     params: Dict[str, Any] = {
+        "api_key": LOC_API_KEY,
         "q": query,
         "fo": "json",
         "c": min(count, MAX_RESULTS_PER_PAGE),

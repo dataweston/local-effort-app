@@ -453,7 +453,7 @@ const HomePage = () => {
               animate="animate"
               className="text-4xl md:text-6xl font-bold tracking-[-0.02em] leading-[1.02]"
             >
-              Personal Chef in Minneapolis & the Twin Cities
+              Minnesotan Food for your Functions.
             </motion.h1>
             <motion.h2
               variants={fadeInLeft}
@@ -462,7 +462,7 @@ const HomePage = () => {
               transition={{ delay: 0.05 }}
               className="text-3xl md:text-5xl font-bold text-neutral-600 tracking-[-0.02em] leading-[1.0] -mt-2 md:-mt-4"
             >
-              In-home dinners • Meal prep • Event catering
+              Personal Chef in Minneapolis–St. Paul
             </motion.h2>
             <motion.p
               variants={fadeInUp}

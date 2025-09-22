@@ -60,7 +60,7 @@ export default function CookbookRecipePage() {
   if (loading) {
     return (
       <div className="container mx-auto max-w-4xl px-4 py-16">
-        <p className="text-sm text-gray-500">Loading recipe�</p>
+  <p className="text-sm text-gray-500">Loading recipe…</p>
       </div>
     );
   }

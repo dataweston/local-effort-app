@@ -25,7 +25,7 @@ function pickHighlight(result) {
   for (const field of fields) {
     const value = highlight[field];
     if (Array.isArray(value) && value.length) {
-      return value.join(' … ');
+      return value.join(' â€¦ ');
     }
   }
   return null;
@@ -106,7 +106,7 @@ export default function CookbookSearchPage() {
 
   const totalResults = results.length;
   const heroSubtitle = debouncedQ
-    ? `Showing ${loading ? 'matching' : totalResults ? `${totalResults} matching` : 'no matching'} recipes for “${debouncedQ}”.`
+    ? `Showing ${loading ? 'matching' : totalResults ? `${totalResults} matching` : 'no matching'} recipes for "${debouncedQ}".`
     : 'Browse the Midwestern community cookbook archive by ingredient, title, community group, or contributor.';
 
   return (
@@ -120,11 +120,11 @@ export default function CookbookSearchPage() {
         <div className="grid gap-4 md:grid-cols-3">
           <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
             <p className="text-sm text-gray-500">Indexed titles</p>
-            <p className="mt-1 text-2xl font-semibold text-gray-900">{stats?.documents ?? '—'}</p>
+            <p className="mt-1 text-2xl font-semibold text-gray-900">{stats?.documents ?? 'â€”'}</p>
           </div>
           <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
             <p className="text-sm text-gray-500">Parsed recipes</p>
-            <p className="mt-1 text-2xl font-semibold text-gray-900">{stats?.recipes ?? '—'}</p>
+            <p className="mt-1 text-2xl font-semibold text-gray-900">{stats?.recipes ?? 'â€”'}</p>
           </div>
           <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
             <p className="text-sm text-gray-500">Sources indexed</p>
@@ -150,7 +150,7 @@ export default function CookbookSearchPage() {
             type="submit"
             className="inline-flex items-center justify-center rounded-lg bg-blue-600 px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-200"
           >
-            {loading ? 'Searching…' : 'Search'}
+            {loading ? 'Searchingâ€¦' : 'Search'}
           </button>
         </form>
 
@@ -162,16 +162,16 @@ export default function CookbookSearchPage() {
 
         <div className="mt-6 space-y-4">
           {loading && totalResults === 0 ? (
-            <p className="text-sm text-gray-500">Loading results…</p>
+            <p className="text-sm text-gray-500">Loading resultsâ€¦</p>
           ) : totalResults === 0 ? (
             <div className="rounded-lg border border-dashed border-gray-300 bg-gray-50 p-6 text-center text-sm text-gray-500">
-              Try searching for an ingredient ("cardamom"), a community group ("church ladies"), or a location (“Milwaukee”).
+              Try searching for an ingredient ("cardamom"), a community group ("church ladies"), or a location ("Milwaukee").
             </div>
           ) : (
             <ul className="space-y-3">
               {results.map((r) => {
                 const authors = getAuthors(r);
-                const snippet = pickHighlight(r) || (Array.isArray(r.ingredients) && r.ingredients.length ? r.ingredients.slice(0, 3).join(' • ') : null);
+                const snippet = pickHighlight(r) || (Array.isArray(r.ingredients) && r.ingredients.length ? r.ingredients.slice(0, 3).join(' â€¢ ') : null);
                 const institution = r.institution || r.community || r.source;
                 return (
                   <li key={r.id} className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm transition hover:border-blue-200 hover:shadow-md">

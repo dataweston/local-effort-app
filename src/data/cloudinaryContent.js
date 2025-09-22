@@ -6,7 +6,7 @@ export const cloudinaryConfig = {
 };
 
 // Home hero image public_id
-export const heroPublicId = 'site/hero/home-hero-1'; // update to your hero image id
+export const heroPublicId = 'vjuesai2mxfavpq9d2df'; // Cloudinary hero image public_id
 export const heroFallbackSrc = '/gallery/IMG_3145.jpg'; // local fallback image
 
 // Partner logo public_ids (add/remove as needed)
