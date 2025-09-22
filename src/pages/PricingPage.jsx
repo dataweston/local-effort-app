@@ -27,10 +27,10 @@ const PricingPage = () => {
           <h2 className="text-4xl font-extrabold uppercase mb-4">Pricing</h2>
           <h3 className="text-2xl font-semibold mb-2">It’s not as expensive as you think.</h3>
           <p className="text-lg text-gray-700 max-w-3xl mx-auto">
-            If you’re picturing a white tablecloth dinner with a dozen staff at $200 per person, that’s not us. Most of our work is done by one to three people, with pricing and menus that reflect that. We’re customized and flexible for a reason — so that we can deliver a great experience without a lot of fuss or cost.
+            We tailor pricing closely to your needs. We try to stay competitive to an evening at a nice restaurant, (or to the price of takeout, depending on the request). Oftentimes, we're the much better deal.
           </p>
           <p className="text-lg text-gray-700 max-w-3xl mx-auto mt-4">
-            As a general rule, assume you’ll pay about 20–30% more than a restaurant equivalent with the same ingredient quality, depending on event complexity and your needs. If you want an exact quote, reach out with the details of your event and we’ll get back with a simple, transparent price.
+            Below is a handy tool that can take some of the mystery out. We'll finalize the actual price together.
           </p>
         </motion.div>
 
