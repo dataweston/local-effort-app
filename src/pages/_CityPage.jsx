@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Helmet } from 'react-helmet-async';
 
 const CityPage = ({ city, h1, description, canonical, images, faq }) => {
@@ -13,19 +13,36 @@ const CityPage = ({ city, h1, description, canonical, images, faq }) => {
     description: img.caption || img.alt,
     copyrightHolder: "Local Effort Food Co."
   }));
-  const serviceLd = {
+  const serviceLd = useMemo(() => ({
     "@context": "https://schema.org",
     "@type": "ProfessionalService",
     name: "Local Effort Food Co.",
     url: canonical,
     description: metaDesc,
     areaServed: ["Minneapolis", "St. Paul", "Roseville", "Twin Cities"],
+    priceRange: "$$",
     service: {
       "@type": "Service",
       name: "Personal Chef (In-home)",
       description: "Private chef dinners, meal prep, and event catering in the Twin Cities metro."
     }
-  };
+  }), [canonical, metaDesc]);
+
+  const businessLd = useMemo(() => ({
+    "@context": "https://schema.org",
+    "@type": "ProfessionalService",
+    name: "Local Effort Food Co.",
+    url: canonical,
+    description: metaDesc,
+    address: {
+      "@type": "PostalAddress",
+      "addressLocality": "Minneapolis",
+      "addressRegion": "MN",
+      "addressCountry": "US"
+    },
+    areaServed: ["Minneapolis", "St. Paul", "Roseville", "Twin Cities"],
+    priceRange: "$$"
+  }), [canonical, metaDesc]);
   const faqLd = faq ? ({
     "@context": "https://schema.org",
     "@type": "FAQPage",
@@ -45,7 +62,8 @@ const CityPage = ({ city, h1, description, canonical, images, faq }) => {
         {imageJsonLd.map((obj, i) => (
           <script key={`img-${i}`} type="application/ld+json">{JSON.stringify(obj)}</script>
         ))}
-        <script type="application/ld+json">{JSON.stringify(serviceLd)}</script>
+  <script type="application/ld+json">{JSON.stringify(serviceLd)}</script>
+  <script type="application/ld+json">{JSON.stringify(businessLd)}</script>
         {faqLd && <script type="application/ld+json">{JSON.stringify(faqLd)}</script>}
       </Helmet>
 

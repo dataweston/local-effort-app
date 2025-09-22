@@ -20,8 +20,17 @@ app.add_middleware(
 
 def get_client() -> OpenSearch | None:
     host = os.getenv("OS_HOST", "http://localhost:9200")
+    username = os.getenv("OS_USERNAME")
+    password = os.getenv("OS_PASSWORD")
+    kwargs = {
+        "hosts": [host],
+        "use_ssl": host.startswith("https"),
+        "verify_certs": False,
+    }
+    if username and password:
+        kwargs["http_auth"] = (username, password)
     try:
-        client = OpenSearch(hosts=[host], use_ssl=host.startswith("https"), verify_certs=False)
+        client = OpenSearch(**kwargs)
         # Probe server quickly
         client.info()
         return client
@@ -263,3 +272,4 @@ async def search(
     }
 
     return {"results": limited, "total": {"value": len(matched_docs)}, "facets": facets}
+

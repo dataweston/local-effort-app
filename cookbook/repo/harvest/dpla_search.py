@@ -1,9 +1,9 @@
-""
+"""
 DPLA harvester for Midwest content.
 
 Uses DPLA_API_KEY from env. Queries q=midwest with spatial filters for
 Minnesota/Wisconsin, normalizes, and writes JSON files to ./data/dpla/{id}.json.
-""
+"""
 from __future__ import annotations
 
 import argparse
@@ -100,18 +100,18 @@ def normalize(item: Dict[str, Any]) -> Dict[str, Any]:
     }
     metadata_wrapper: Dict[str, Any] = {}
     if source_resource:
-        metadata_wrapper['sourceResource'] = source_resource
-    date_info = _extract_date_info(source_resource.get('date'))
+        metadata_wrapper["sourceResource"] = source_resource
+    date_info = _extract_date_info(source_resource.get("date"))
     if date_info:
-        metadata_wrapper.setdefault('metadata', {}).update(date_info)
-        date_value = date_info.get('date')
-        if date_value and 'year' not in norm:
+        metadata_wrapper.setdefault("metadata", {}).update(date_info)
+        date_value = date_info.get("date")
+        if date_value and "year" not in norm:
             try:
-                norm['year'] = int(date_value[:4])
+                norm["year"] = int(date_value[:4])
             except ValueError:
                 pass
     if metadata_wrapper:
-        norm['metadata'] = metadata_wrapper
+        norm["metadata"] = metadata_wrapper
     if raw_links:
         norm["data"] = raw_links
     iiif = _extract_iiif(item)
@@ -195,6 +195,8 @@ def _coerce_iso_date(value: Any) -> Optional[str]:
     value = str(value).strip()
     if not value:
         return None
+    value = value.replace('\u2013', '-').replace('\u2014', '-')
+    value = value.strip(" .;?,")
     try:
         datetime.strptime(value, '%Y-%m-%d')
         return value
@@ -214,7 +216,7 @@ def _coerce_iso_date(value: Any) -> Optional[str]:
             iso = _coerce_iso_date(stripped)
             if iso:
                 return iso
-    for sep in (' - ', ' – ', ' — ', '-', '–', '—', '/', ' to '):
+    for sep in (' - ', '-', '/', ' to '):
         if sep in value:
             first = value.split(sep)[0].strip()
             if first and first != value:
@@ -322,7 +324,7 @@ def harvest(out_dir: Path, page_size: int, max_pages: int, api_key: Optional[str
             params = dict(base_params)
             if spatial_term:
                 params["sourceResource.spatial.name"] = spatial_term
-            logging.info("DPLA spatial=%s page=%s size=%s", spatial_term or ", page, page_size)
+            logging.info("DPLA spatial=%s page=%s size=%s", spatial_term or "", page, page_size)
             data = _get(DPLA_API_BASE, page=page, **params)
             docs: Iterable[Dict[str, Any]] = data.get("docs", [])
             if not docs:
@@ -368,8 +370,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-
-
-
-
-

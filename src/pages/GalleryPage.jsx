@@ -10,6 +10,23 @@ const GalleryPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selected, setSelected] = useState(null);
+  const staticFallback = [
+    {
+      src: '/gallery/5Z0A5729-Edit.jpg',
+      alt: 'Private chef plated dish — Local Effort Personal Chef — Minneapolis',
+      caption: 'Private chef plated dish — Local Effort, Minneapolis in-home chef.'
+    },
+    {
+      src: '/gallery/5Z0A5665-Edit.jpg',
+      alt: 'Seasonal menu — Local Effort Personal Chef — Twin Cities',
+      caption: 'Seasonal menu — Local Effort, Twin Cities personal chef.'
+    },
+    {
+      src: '/gallery/IMG_3145.jpg',
+      alt: 'Private dinner service — Local Effort Personal Chef — St. Paul',
+      caption: 'Private dinner service — Local Effort, St. Paul personal chef.'
+    }
+  ];
   const fallbackLoadedRef = useRef(false);
   // Track which URLs we've already prefetched to avoid duplicates
   const prefetched = useRef(new Set());
@@ -247,7 +264,24 @@ const GalleryPage = () => {
         />
 
   {loading ? (
-          <p>Loading...</p>
+          <>
+            <div className="columns-2 md:columns-3 lg:columns-4 gap-4 [column-fill:_balance]">
+              {staticFallback.map((img, idx) => (
+                <figure key={`fallback-${idx}`} className="mb-4 w-full break-inside-avoid border p-2 bg-white rounded-lg overflow-hidden">
+                  <img
+                    src={img.src}
+                    alt={img.alt}
+                    className="rounded-lg w-full h-auto"
+                    width={1200}
+                    height={800}
+                    loading="lazy"
+                    decoding="async"
+                  />
+                  <figcaption className="text-xs text-neutral-600 mt-2">{img.caption}</figcaption>
+                </figure>
+              ))}
+            </div>
+          </>
         ) : error ? (
           <div className="text-red-600 bg-red-50 p-4 rounded">
             <h3 className="font-bold">Error Details:</h3>
@@ -308,9 +342,18 @@ const GalleryPage = () => {
             </div>
             <noscript>
               <div>
-                <img src="/gallery/5Z0A5729-Edit.jpg" alt="Local Effort personal chef — Minneapolis" />
-                <img src="/gallery/5Z0A5665-Edit.jpg" alt="Seasonal menu — Twin Cities" />
-                <img src="/gallery/IMG_3145.jpg" alt="Private dinner — St. Paul" />
+                <figure className="gallery-item">
+                  <img src="/gallery/5Z0A5729-Edit.jpg" width="1200" height="800" alt="Private chef plated dish — Local Effort Personal Chef — Minneapolis" />
+                  <figcaption>Private chef plated dish — Local Effort, Minneapolis in-home chef.</figcaption>
+                </figure>
+                <figure className="gallery-item">
+                  <img src="/gallery/5Z0A5665-Edit.jpg" width="1200" height="800" alt="Seasonal menu — Local Effort Personal Chef — Twin Cities" />
+                  <figcaption>Seasonal menu — Local Effort, Twin Cities personal chef.</figcaption>
+                </figure>
+                <figure className="gallery-item">
+                  <img src="/gallery/IMG_3145.jpg" width="1200" height="800" alt="Private dinner service — Local Effort Personal Chef — St. Paul" />
+                  <figcaption>Private dinner service — Local Effort, St. Paul personal chef.</figcaption>
+                </figure>
               </div>
             </noscript>
             {nextCursor && (
