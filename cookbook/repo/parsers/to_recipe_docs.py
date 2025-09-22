@@ -1,4 +1,4 @@
-﻿from __future__ import annotations
+from __future__ import annotations
 
 import json
 import logging
@@ -221,6 +221,7 @@ def _texts_generic(obj: Dict[str, Any]) -> List[str]:
 def _build_docs(obj: Dict[str, Any], path: Path, recipes: List[Dict[str, Any]]) -> Iterator[Dict[str, Any]]:
     identifier = ensure_str(obj.get("identifier") or obj.get("id")) or path.stem
     source = ensure_str(obj.get("source")) or "unknown"
+    cookbook_title = ensure_str(obj.get("title"))
     description = _join_description(obj.get("description"))
     subjects = _collect_subjects(obj)
     creators = _collect_creators(obj)
@@ -234,6 +235,8 @@ def _build_docs(obj: Dict[str, Any], path: Path, recipes: List[Dict[str, Any]]) 
     digital_url = digital_urls[0] if digital_urls else ensure_str(obj.get("digital_url"))
     image_preview = _collect_image(obj)
     metadata = _base_metadata(obj, path)
+    if cookbook_title:
+        metadata.setdefault('cookbook_title', cookbook_title)
 
     for idx, recipe in enumerate(recipes, start=1):
         title = ensure_str(recipe.get("title")) or ensure_str(obj.get("title")) or identifier
@@ -249,6 +252,7 @@ def _build_docs(obj: Dict[str, Any], path: Path, recipes: List[Dict[str, Any]]) 
             id=f"{identifier}#recipe-{idx}",
             source=source,
             title=title,
+            cookbook_title=cookbook_title,
             ingredients=ingredients,
             instructions=instructions,
             description=description,

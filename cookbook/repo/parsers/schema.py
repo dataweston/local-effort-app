@@ -1,4 +1,4 @@
-﻿from __future__ import annotations
+from __future__ import annotations
 
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional
@@ -11,6 +11,7 @@ class RecipeDoc:
     id: str
     source: str
     title: str
+    cookbook_title: Optional[str] = None
     ingredients: List[str] = field(default_factory=list)
     instructions: List[str] = field(default_factory=list)
     description: Optional[str] = None
@@ -37,9 +38,9 @@ class RecipeDoc:
             "instructions": [v for v in self.instructions if v],
         }
         optional: Dict[str, Any] = {
+            "cookbook_title": self.cookbook_title,
             "description": self.description,
             "subjects": [v for v in self.subjects if v],
-            "digital_url": self.digital_url,
             "creators": [v for v in self.creators if v],
             "publisher": self.publisher,
             "date": self.date,
@@ -71,7 +72,3 @@ def ensure_str(value: Any) -> Optional[str]:
         return None
     text = str(value).strip()
     return text or None
-
-
-
-

@@ -23,6 +23,7 @@ from .terms import flatten_terms, load_terms, quote_term
 LOC_SEARCH_URL = "https://www.loc.gov/search/"
 LOC_API_KEY = os.getenv("LOC_API_KEY")
 MAX_RESULTS_PER_PAGE = 100
+REQUEST_INTERVAL_SECONDS = float(os.getenv('LOC_REQUEST_INTERVAL', '3.5'))
 
 
 def ensure_dir(path: Path) -> None:
@@ -175,10 +176,15 @@ def harvest(output_dir: Path, per_page: int, max_pages: int, chunk_size: int) ->
 
     for query in build_queries(chunk_size=chunk_size):
         logging.info("LoC search query=%s", query)
+        last_request_ts = 0.0
         for page in range(1, max_pages + 1):
             logging.debug("LoC request page=%s per_page=%s", page, per_page)
-            time.sleep(0.5)
+            elapsed = time.time() - last_request_ts
+            wait_for = max(0.0, REQUEST_INTERVAL_SECONDS - elapsed)
+            if wait_for > 0:
+                time.sleep(wait_for)
             payload = search_loc(session, query=query, page=page, count=per_page)
+            last_request_ts = time.time()
             results = list(extract_results(payload))
             if not results:
                 break
