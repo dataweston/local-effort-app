@@ -41,11 +41,11 @@ module.exports = async (req, res) => {
         const { v2: cld } = require('cloudinary');
         cld.config({ cloud_name: cloudName, api_key: apiKey, api_secret: apiSecret, secure: true });
         // Pull a small, recent set to keep response light
-        const result = await cld.search.expression('resource_type:image').sort_by('created_at','desc').max_results(20).with_field('context').execute();
-        imageEntries = (result.resources || []).slice(0, 12).map((r) => {
+        const result = await cld.search.expression('resource_type:image AND -folder:"private/*"').sort_by('created_at','desc').max_results(50).with_field('context').execute();
+        imageEntries = (result.resources || []).slice(0, 24).map((r) => {
           const publicId = r.public_id;
           const large = cld.url(publicId, { width: 1200, crop: 'limit', quality: 'auto', fetch_format: 'auto' });
-          const caption = (r.context && (r.context.caption || r.context.alt)) || 'Local Effort gallery image';
+          const caption = (r.context && (r.context.caption || r.context.alt)) || 'Private chef plated dish — Local Effort Personal Chef — Minneapolis';
           const title = caption && caption.length > 80 ? caption.slice(0, 80) : caption;
           return {
             pageLoc: `${site}/gallery`,

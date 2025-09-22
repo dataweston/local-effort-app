@@ -377,10 +377,10 @@ const HomePage = () => {
   return (
     <>
       <Helmet>
-        <title>Personal Chef in Minneapolis & Twin Cities | Local Effort</title>
+        <title>Personal Chef Minneapolis — Local Effort | In-home Chef • Event Catering</title>
         <meta
           name="description"
-          content="Minnesotan Food for your Functions. Personal chef in Minneapolis–St. Paul. Small event catering, In-home dinners, and weekly meal prep."
+          content="Local Effort — Personal chef & event catering serving Minneapolis, St. Paul, and the Twin Cities. Private in-home dinners, weekly meal prep, and small event catering."
         />
         <link rel="canonical" href="https://localeffortfood.com/" />
         {/* Preload hero for faster LCP */}
@@ -397,17 +397,35 @@ const HomePage = () => {
         {/* Consolidated ProfessionalService schema with reviews and services (pulls base details from /business.json) */}
         <script type="application/ld+json">{JSON.stringify((() => {
           const src = business || {};
+          const address = {
+            '@type': 'PostalAddress',
+            addressLocality: (src.address && src.address.addressLocality) || 'Roseville',
+            addressRegion: (src.address && src.address.addressRegion) || 'MN',
+            addressCountry: (src.address && src.address.addressCountry) || 'US',
+            streetAddress: src.address && src.address.streetAddress ? src.address.streetAddress : undefined,
+            postalCode: src.address && src.address.postalCode ? src.address.postalCode : undefined,
+          };
           const biz = {
             '@context': 'https://schema.org',
             '@type': 'ProfessionalService',
-            name: src.name || 'Local Effort',
+            name: src.name || 'Local Effort Food Co.',
             url: src.url || 'https://localeffortfood.com/',
+            description: src.description || 'Personal chef & event catering serving Minneapolis, St. Paul, and the Twin Cities.',
             image: imageJsonLd.contentUrl,
             areaServed: Array.isArray(src.serviceArea) && src.serviceArea.length ? src.serviceArea : ['Minneapolis','St. Paul','Twin Cities','Roseville','Minnesota','Western Wisconsin'],
-            address: { '@type': 'PostalAddress', addressLocality: 'Roseville', addressRegion: 'MN', addressCountry: 'US' },
+            address,
             sameAs: Array.isArray(src.sameAs) ? src.sameAs : ['https://www.instagram.com/localeffortfood','https://www.facebook.com/localeffortfood','https://www.tiktok.com/@localeffort'],
-            telephone: src.telephone || undefined
+            telephone: src.telephone || undefined,
+            priceRange: '$$',
+            service: {
+              '@type': 'Service',
+              name: 'Personal Chef (In-home)',
+              description: 'Private chef dinners, meal prep, and event catering in the Twin Cities metro.'
+            }
           };
+          if (src.geo && typeof src.geo === 'object' && Number.isFinite(src.geo.latitude) && Number.isFinite(src.geo.longitude)) {
+            biz.geo = { '@type': 'GeoCoordinates', latitude: src.geo.latitude, longitude: src.geo.longitude };
+          }
           const reviewList = (Array.isArray(reviews) ? reviews.slice(0, 12) : []).map(r => ({
             '@type': 'Review',
             reviewBody: r.quote,
