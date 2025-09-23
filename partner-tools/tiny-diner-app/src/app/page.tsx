@@ -1,5 +1,6 @@
-"use client";
+﻿"use client";
 
+import Image from "next/image";
 import { useMemo, useState } from "react";
 import {
   addMonths,
@@ -190,7 +191,7 @@ const PREFERRED_VENDORS = [
   },
 ];
 
-const allowedEventWeekdays = new Set([4, 5, 6]); // Thursday–Saturday
+const allowedEventWeekdays = new Set([4, 5, 6]); // ThursdayÃ¢â‚¬â€œSaturday
 
 const bookedDateSet = new Set<string>([
   "2024-11-09",
@@ -264,9 +265,9 @@ const contactSchema = z.object({
 
 const customSchema = z.object({
   guestCount: z
-    .number()
-    .min(10, "Minimum 10 guests")
-    .max(120, "Tiny Diner max 120"),
+    .string()
+    .transform((value) => Number(value))
+    .pipe(z.number().min(10, "Minimum 10 guests").max(120, "Tiny Diner max 120")),
   foodStyle: z.enum(["buffet", "plated", "appetizers"]),
   beverage: z.enum(["wine", "cocktails", "na"]),
   cake: z.enum(["need", "bring"]),
@@ -891,11 +892,16 @@ function HeaderSection({ booking }: { booking: BookingState }) {
   return (
     <header className="flex flex-col gap-3 border-b border-slate-200/60 pb-6 text-slate-700">
       <div className="flex flex-wrap items-center justify-between gap-4">
-        <div>
-          <p className="text-xs uppercase tracking-[0.25em] text-slate-500">Tiny Diner</p>
-          <h1 className="text-3xl font-semibold text-slate-900 md:text-4xl">
-            Wedding Onboarding & Booking Portal
-          </h1>
+        <div className="flex items-center gap-4">
+          <span className="flex h-20 w-36 items-center justify-center rounded-xl border border-rose-100 bg-white/80 p-2 shadow-sm">
+            <Image src="/tiny-diner-logo.svg" alt="Tiny Diner logo" width={208} height={96} priority />
+          </span>
+          <div>
+            <p className="text-xs uppercase tracking-[0.25em] text-slate-500">Tiny Diner</p>
+            <h1 className="text-3xl font-semibold text-slate-900 md:text-4xl">
+              Wedding Onboarding & Booking Portal
+            </h1>
+          </div>
         </div>
         <Badge className={cn(
           "rounded-full px-6 py-2 text-sm",
@@ -905,7 +911,7 @@ function HeaderSection({ booking }: { booking: BookingState }) {
         </Badge>
       </div>
       <p className="max-w-2xl text-sm text-slate-600">
-        Welcome to the Tiny Diner wedding experience. Reserve your date, capture intake details, and stay aligned with your coordinator—all synced with HoneyBook and ready for secure Square payments.
+        Welcome to the Tiny Diner wedding experience. Reserve your date, capture intake details, and stay aligned with your coordinatorâ€”all synced with HoneyBook and ready for secure Square payments.
       </p>
     </header>
   );
@@ -1037,7 +1043,7 @@ function ReviewDashboard({
           <div>
             <div className="flex items-center gap-2 text-xs uppercase tracking-[0.25em] text-slate-500">
               <CalendarDays className="h-4 w-4 text-rose-500" />
-              {format(booking.eventDate!, "MMM d, yyyy")} · Tiny Diner
+              {format(booking.eventDate!, "MMM d, yyyy")} Ã‚Â· Tiny Diner
             </div>
             <CardTitle className="text-3xl text-slate-900">Shared wedding dashboard</CardTitle>
             <CardDescription>
@@ -1092,7 +1098,7 @@ function ReviewDashboard({
                     <p className="text-xs text-emerald-700/70">
                       {booking.planType === "streamlined"
                         ? `${STREAMLINED_PACKAGE.inclusions.length} curated inclusions`
-                        : `${booking.customSelections.guestCount} guests · ${readableFood(booking.customSelections.foodStyle)} dining`}
+                        : `${booking.customSelections.guestCount} guests Ã‚Â· ${readableFood(booking.customSelections.foodStyle)} dining`}
                     </p>
                   </div>
                 </div>
@@ -1142,7 +1148,7 @@ function ReviewDashboard({
                 <div>
                   <p className="text-xs uppercase text-slate-500">Deposit due to reserve</p>
                   <p className="text-2xl font-semibold text-rose-600">${depositDue.toLocaleString()}</p>
-                  <p className="text-xs text-rose-500">ACH encouraged • Card adds 3% processing</p>
+                  <p className="text-xs text-rose-500">ACH encouraged Ã¢â‚¬Â¢ Card adds 3% processing</p>
                 </div>
                 <div>
                   <p className="text-xs uppercase text-slate-500">Status</p>
@@ -1215,7 +1221,7 @@ function ReviewDashboard({
                     <div key={message.id} className="rounded-lg border border-slate-200 bg-white/90 p-3 text-sm shadow-sm">
                       <div className="flex items-center justify-between text-xs text-slate-400">
                         <span>{message.sender}</span>
-                        <span>{format(message.timestamp, "MMM d · h:mm a")}</span>
+                        <span>{format(message.timestamp, "MMM d Ã‚Â· h:mm a")}</span>
                       </div>
                       <p className="mt-1 text-slate-700">{message.body}</p>
                     </div>
@@ -1501,6 +1507,11 @@ function buildAvailabilityMap() {
   });
   return map;
 }
+
+
+
+
+
 
 
 
