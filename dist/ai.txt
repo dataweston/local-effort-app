@@ -1,19 +1,22 @@
 # AI crawling hints for Local Effort
 # Purpose: Provide basic, JS-free summaries and key endpoints for LLMs and machine readers.
 
-site: https://local-effort-app.vercel.app/
+site: https://localeffortfood.com/
 
 primary-nav:
-- /#/services  Services overview and Event Request form
-- /#/pricing   Pricing overview and estimator
-- /#/menu      Weekly Meal Prep menus
-- /#/about     About the chef and philosophy
-- /#/gallery   Image gallery
-- /#/crowdfunding Crowdfund status and tiers
+- /services       Services overview and Event Request form
+- /pricing        Pricing overview and estimator
+- /menu           Weekly Meal Prep menus
+- /about          About the chef and philosophy
+- /gallery        Image gallery
+- /happy-monday   Weekly post/newsletter
+- /crowdfunding   Crowdfund status and tiers
 
 support:
 - API: GET /api/support/search?q=QUERY  Returns JSON results from our knowledge base
 - Email: POST /api/messages/submit  Accepts JSON {name,email,subject,message}
+- Events: POST /api/events/request    Accepts JSON {firstName,lastName,phone,email,eventDate,city,state,zip,eventType,guestCount,notes,sendCopy}
+- Images: GET /api/search-images?query=TAG&per_page=N  Returns Cloudinary image results
 
 public-json:
 - GET /api/public/site            Summary of routes and endpoints
@@ -24,5 +27,9 @@ kb:
 - Content sources are indexed in Supabase (content_sources/content_chunks)
 - Public FAQ and pages are semantically searchable via the support API
 
+Sitemaps:
+- GET /sitemap.xml         Static pages
+- GET /api/sitemap.xml     Dynamic sitemap (includes image entries)
+
 legal:
-- Contact: /#/about
+- Contact: /about

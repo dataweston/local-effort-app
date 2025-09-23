@@ -196,9 +196,7 @@ export default function CookbookRecipePage() {
   const recipeTitle = recipe?.title || recipe?.recipeTitle || cookbookTitle || id;
   const description =
     recipe?.description ||
-    (Array.isArray(recipe?.descriptions) ? recipe.descriptions.filter(Boolean).join('
-
-') : '') ||
+    (Array.isArray(recipe?.descriptions) ? recipe.descriptions.filter(Boolean).join('\n\n') : '') ||
     '';
   const ingredients = toList(recipe?.ingredients);
   const instructions = toList(recipe?.instructions);
@@ -260,29 +258,30 @@ export default function CookbookRecipePage() {
         </Link>
 
         {isHidden ? (
-        <div className="mt-4 flex justify-end">
-          <button
-            type="button"
-            onClick={() => setModeratorMode((prev) => !prev)}
-            className={`rounded-md border px-3 py-2 text-xs font-medium ${moderatorMode ? 'border-amber-400 bg-amber-100 text-amber-900' : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300'}`}
-          >
-            {moderatorMode ? 'Exit moderator mode' : 'Moderator tools'}
-          </button>
-        </div>
-
-
-          <div className="mt-4 rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
-            This recipe is hidden in moderator tools.
-            <div className="mt-2 flex gap-3">
+          <>
+            <div className="mt-4 flex justify-end">
               <button
                 type="button"
-                className="rounded-md border border-amber-300 bg-white px-3 py-1 text-xs font-medium text-amber-900 hover:border-amber-400"
-                onClick={handleUnhide}
+                onClick={() => setModeratorMode((prev) => !prev)}
+                className={`rounded-md border px-3 py-2 text-xs font-medium ${moderatorMode ? 'border-amber-400 bg-amber-100 text-amber-900' : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300'}`}
               >
-                Unhide for this browser
+                {moderatorMode ? 'Exit moderator mode' : 'Moderator tools'}
               </button>
             </div>
-          </div>
+
+            <div className="mt-4 rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
+              This recipe is hidden in moderator tools.
+              <div className="mt-2 flex gap-3">
+                <button
+                  type="button"
+                  className="rounded-md border border-amber-300 bg-white px-3 py-1 text-xs font-medium text-amber-900 hover:border-amber-400"
+                  onClick={handleUnhide}
+                >
+                  Unhide for this browser
+                </button>
+              </div>
+            </div>
+          </>
         ) : null}
 
         {useStatic ? (

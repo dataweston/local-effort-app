@@ -965,7 +965,6 @@ var import_framer_motion = require("framer-motion");
 var import_jsx_runtime = require("react/jsx-runtime");
 var logo = "/gallery/logo.png?text=Local+Effort&font=mono";
 var links = [
-  { path: "/sale", name: "SALE", sale: true },
   { path: "/services", name: "Services", children: [
     { path: "/services#event-request", name: "Submit an event request" }
   ] },
@@ -1165,9 +1164,38 @@ var Footer = () => {
         (/* @__PURE__ */ new Date()).getFullYear(),
         " Local Effort"
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("p", { className: "text-neutral-500", children: "Roseville, MN \xB7 Midwest" })
+      /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("p", { className: "text-neutral-500", children: "Roseville, MN \xB7 Midwest" }),
+      /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("p", { className: "mt-2 text-neutral-600", children: [
+        "Service Areas:",
+        " ",
+        /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("a", { href: "/personal-chef-minneapolis", className: "underline underline-offset-4 hover:opacity-80", children: "Minneapolis" }),
+        " ",
+        "|",
+        " ",
+        /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("a", { href: "/personal-chef-st-paul", className: "underline underline-offset-4 hover:opacity-80", children: "St. Paul" }),
+        " ",
+        "|",
+        " ",
+        /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("a", { href: "/personal-chef-twin-cities", className: "underline underline-offset-4 hover:opacity-80", children: "Twin Cities" }),
+        " ",
+        "|",
+        " ",
+        /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("a", { href: "/personal-chef-minnesota", className: "underline underline-offset-4 hover:opacity-80", children: "Minnesota" }),
+        " ",
+        "|",
+        " ",
+        /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("a", { href: "/personal-chef-wisconsin", className: "underline underline-offset-4 hover:opacity-80", children: "Wisconsin" })
+      ] })
     ] }),
     /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "flex gap-4", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(
+        "a",
+        {
+          href: "https://www.tiktok.com/@localeffort",
+          className: "underline underline-offset-4 hover:opacity-80",
+          children: "TikTok (@localeffort)"
+        }
+      ),
       /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(
         "a",
         {
@@ -1397,7 +1425,7 @@ var import_meta2 = {};
 var cloudinaryConfig = {
   cloudName: typeof import_meta2 !== "undefined" && import_meta2.env?.VITE_CLOUDINARY_CLOUD_NAME || "dokyhfvyd"
 };
-var heroPublicId = "site/hero/home-hero-1";
+var heroPublicId = "vjuesai2mxfavpq9d2df";
 var heroFallbackSrc = "/gallery/IMG_3145.jpg";
 
 // src/components/common/TestimonialsCarousel.jsx
@@ -3190,6 +3218,43 @@ function chunk(arr, size) {
   return out;
 }
 function TestimonialsCarousel({ items = [], title = "Testimonials", headingExtra = null, maxLines = 5 }) {
+  const [business, setBusiness] = (0, import_react9.useState)(null);
+  (0, import_react9.useEffect)(() => {
+    let mounted = true;
+    fetch("/business.json").then((r) => r.ok ? r.json() : null).then((data) => {
+      if (mounted) setBusiness(data || null);
+    }).catch(() => {
+    });
+    return () => {
+      mounted = false;
+    };
+  }, []);
+  function parseDateFromContext(ctx) {
+    if (!ctx) return void 0;
+    const m = String(ctx).match(/[A-Za-z]{3,9} \d{1,2}, \d{4}/);
+    if (!m) return void 0;
+    const d = new Date(m[0]);
+    if (isNaN(d)) return void 0;
+    return d.toISOString().slice(0, 10);
+  }
+  const reviewsJsonLd = (0, import_react9.useMemo)(() => {
+    if (!items || !items.length) return null;
+    const subj = {
+      "@type": "ProfessionalService",
+      name: business && business.name || "Local Effort",
+      url: business && business.url || "https://localeffortfood.com/"
+    };
+    const graph = items.slice(0, 20).map((t) => ({
+      "@type": "Review",
+      reviewBody: String(t.quote || "").trim(),
+      author: { "@type": "Person", name: t.author || "Customer" },
+      reviewRating: /5★/.test(String(t.context || "")) ? { "@type": "Rating", ratingValue: 5, bestRating: 5 } : void 0,
+      publisher: t.context ? { "@type": "Organization", name: String(t.context).split("\xB7")[0].trim() } : void 0,
+      datePublished: parseDateFromContext(t.context),
+      itemReviewed: subj
+    }));
+    return { "@context": "https://schema.org", "@graph": graph };
+  }, [items, business]);
   const slides = (0, import_react9.useMemo)(() => {
     if (!items.length) return [];
     const randomized = shuffle(items);
@@ -3201,6 +3266,7 @@ function TestimonialsCarousel({ items = [], title = "Testimonials", headingExtra
   }, [items]);
   if (!slides.length) return null;
   return /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("section", { className: "mx-auto max-w-6xl px-4 md:px-6 lg:px-8", children: [
+    reviewsJsonLd && /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("script", { type: "application/ld+json", children: JSON.stringify(reviewsJsonLd) }),
     /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("div", { className: "mb-6 border-b border-neutral-300 pb-3 flex items-end justify-between gap-3", children: [
       /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("h3", { className: "text-heading uppercase", children: title }),
       headingExtra
@@ -3315,6 +3381,17 @@ var HomePage = () => {
   const [reviews, setReviews] = (0, import_react12.useState)([]);
   const [events, setEvents] = (0, import_react12.useState)([]);
   const [eventModal, setEventModal] = (0, import_react12.useState)(null);
+  const [business, setBusiness] = (0, import_react12.useState)(null);
+  (0, import_react13.useEffect)(() => {
+    let mounted = true;
+    fetch("/business.json").then((r) => r.ok ? r.json() : null).then((data) => {
+      if (mounted) setBusiness(data || null);
+    }).catch(() => {
+    });
+    return () => {
+      mounted = false;
+    };
+  }, []);
   (0, import_react13.useEffect)(() => {
     let mounted = true;
     fetch("/reviews/thumbtack.json").then((r) => r.ok ? r.json() : null).then((ext) => {
@@ -3408,6 +3485,27 @@ var HomePage = () => {
       "@type": "Organization",
       name: "Local Effort"
     }
+  };
+  const homeFaqJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: [
+      {
+        "@type": "Question",
+        name: "Do you serve Minneapolis and St. Paul?",
+        acceptedAnswer: { "@type": "Answer", text: "Yes. We regularly serve Minneapolis, St. Paul, Roseville, and the Twin Cities metro." }
+      },
+      {
+        "@type": "Question",
+        name: "What types of services do you offer?",
+        acceptedAnswer: { "@type": "Answer", text: "Personal chef dinners, weekly meal prep, and small event catering up to about 50 guests." }
+      },
+      {
+        "@type": "Question",
+        name: "Do you handle dietary restrictions?",
+        acceptedAnswer: { "@type": "Answer", text: "Absolutely. We can accommodate common restrictions and preferences with advance notice." }
+      }
+    ]
   };
   const partnersJsonLd = partners && partners.length ? {
     "@context": "https://schema.org",
@@ -3582,39 +3680,86 @@ var HomePage = () => {
   }
   return /* @__PURE__ */ (0, import_jsx_runtime9.jsxs)(import_jsx_runtime9.Fragment, { children: [
     /* @__PURE__ */ (0, import_jsx_runtime9.jsxs)(import_react_helmet_async.Helmet, { children: [
-      /* @__PURE__ */ (0, import_jsx_runtime9.jsx)("title", { children: "Local Effort | Personal Chef & Event Catering in Roseville, MN" }),
+      /* @__PURE__ */ (0, import_jsx_runtime9.jsx)("title", { children: "Personal Chef Minneapolis \u2014 Local Effort | In-home Chef \u2022 Event Catering" }),
       /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(
         "meta",
         {
           name: "description",
-          content: "Local Effort offers personal chef services, event catering, and weekly meal plans in Roseville, MN."
+          content: "Local Effort \u2014 Personal chef & event catering serving Minneapolis, St. Paul, and the Twin Cities. Private in-home dinners, weekly meal prep, and small event catering."
         }
       ),
       /* @__PURE__ */ (0, import_jsx_runtime9.jsx)("link", { rel: "canonical", href: "https://localeffortfood.com/" }),
+      /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(
+        "link",
+        {
+          rel: "preload",
+          as: "image",
+          href: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/f_auto,q_auto,w_1200/${heroImage.publicId}`,
+          imageSrcSet: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/f_auto,q_auto,w_600/${heroImage.publicId} 600w, https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/f_auto,q_auto,w_1200/${heroImage.publicId} 1200w, https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/f_auto,q_auto,w_1800/${heroImage.publicId} 1800w`,
+          imageSizes: "(min-width: 1024px) 50vw, 100vw"
+        }
+      ),
       /* @__PURE__ */ (0, import_jsx_runtime9.jsx)("script", { type: "application/ld+json", children: JSON.stringify(imageJsonLd) }),
       partnersJsonLd && /* @__PURE__ */ (0, import_jsx_runtime9.jsx)("script", { type: "application/ld+json", children: JSON.stringify(partnersJsonLd) }),
-      /* @__PURE__ */ (0, import_jsx_runtime9.jsx)("script", { type: "application/ld+json", children: JSON.stringify({
-        "@context": "https://schema.org",
-        "@type": ["Restaurant", "Caterer"],
-        name: "Local Effort",
-        url: "https://local-effort-app.vercel.app/",
-        address: { "@type": "PostalAddress", addressLocality: "Roseville", addressRegion: "MN", addressCountry: "US" },
-        servesCuisine: ["American", "Local", "Farm to Table", "Seasonal"],
-        priceRange: "$$"
-      }) }),
-      /* @__PURE__ */ (0, import_jsx_runtime9.jsx)("script", { type: "application/ld+json", children: JSON.stringify({
-        "@context": "https://schema.org",
-        "@type": "LocalBusiness",
-        name: "Local Effort",
-        url: "https://localeffortfood.com/",
-        image: imageJsonLd.contentUrl,
-        address: { "@type": "PostalAddress", addressLocality: "Roseville", addressRegion: "MN", addressCountry: "US" },
-        areaServed: "Twin Cities, MN",
-        sameAs: [
-          "https://www.instagram.com/localeffortfood",
-          "https://www.facebook.com/localeffortfood"
-        ]
-      }) })
+      /* @__PURE__ */ (0, import_jsx_runtime9.jsx)("script", { type: "application/ld+json", children: JSON.stringify((() => {
+        const src = business || {};
+        const address = {
+          "@type": "PostalAddress",
+          addressLocality: src.address && src.address.addressLocality || "Roseville",
+          addressRegion: src.address && src.address.addressRegion || "MN",
+          addressCountry: src.address && src.address.addressCountry || "US",
+          streetAddress: src.address && src.address.streetAddress ? src.address.streetAddress : void 0,
+          postalCode: src.address && src.address.postalCode ? src.address.postalCode : void 0
+        };
+        const biz = {
+          "@context": "https://schema.org",
+          "@type": "ProfessionalService",
+          name: src.name || "Local Effort Food Co.",
+          url: src.url || "https://localeffortfood.com/",
+          description: src.description || "Personal chef & event catering serving Minneapolis, St. Paul, and the Twin Cities.",
+          image: imageJsonLd.contentUrl,
+          areaServed: Array.isArray(src.serviceArea) && src.serviceArea.length ? src.serviceArea : ["Minneapolis", "St. Paul", "Twin Cities", "Roseville", "Minnesota", "Western Wisconsin"],
+          address,
+          sameAs: Array.isArray(src.sameAs) ? src.sameAs : ["https://www.instagram.com/localeffortfood", "https://www.facebook.com/localeffortfood", "https://www.tiktok.com/@localeffort"],
+          telephone: src.telephone || void 0,
+          priceRange: "$$",
+          service: {
+            "@type": "Service",
+            name: "Personal Chef (In-home)",
+            description: "Private chef dinners, meal prep, and event catering in the Twin Cities metro."
+          }
+        };
+        if (src.geo && typeof src.geo === "object" && Number.isFinite(src.geo.latitude) && Number.isFinite(src.geo.longitude)) {
+          biz.geo = { "@type": "GeoCoordinates", latitude: src.geo.latitude, longitude: src.geo.longitude };
+        }
+        const reviewList = (Array.isArray(reviews) ? reviews.slice(0, 12) : []).map((r) => ({
+          "@type": "Review",
+          reviewBody: r.quote,
+          author: { "@type": "Person", name: r.author || "Customer" },
+          reviewRating: r.context && /5★/.test(r.context) ? { "@type": "Rating", ratingValue: 5, bestRating: 5 } : void 0,
+          publisher: r.context ? { "@type": "Organization", name: r.context.split("\xB7")[0].trim() } : void 0
+        }));
+        const ratings = reviewList.map((r) => r.reviewRating && r.reviewRating.ratingValue || 0).filter(Boolean);
+        if (ratings.length) {
+          biz.aggregateRating = {
+            "@type": "AggregateRating",
+            ratingValue: (ratings.reduce((a, b) => a + b, 0) / ratings.length).toFixed(1),
+            reviewCount: ratings.length
+          };
+        }
+        biz.review = reviewList;
+        biz.hasOfferCatalog = {
+          "@type": "OfferCatalog",
+          name: "Services",
+          itemListElement: [
+            { "@type": "Service", name: "Personal Chef", areaServed: ["Twin Cities"] },
+            { "@type": "Service", name: "Weekly Meal Prep", areaServed: ["Twin Cities"] },
+            { "@type": "Service", name: "Event Catering", areaServed: ["Twin Cities"] }
+          ]
+        };
+        return biz;
+      })()) }),
+      /* @__PURE__ */ (0, import_jsx_runtime9.jsx)("script", { type: "application/ld+json", children: JSON.stringify(homeFaqJsonLd) })
     ] }),
     /* @__PURE__ */ (0, import_jsx_runtime9.jsxs)("div", { className: "space-y-24", children: [
       !cloudinaryConfig.cloudName && /* @__PURE__ */ (0, import_jsx_runtime9.jsx)("div", { className: "card bg-yellow-100 border-yellow-400 text-body", children: "Cloudinary not configured. Set VITE_CLOUDINARY_CLOUD_NAME in your environment." }),
@@ -3626,19 +3771,19 @@ var HomePage = () => {
               variants: fadeInLeft,
               initial: "initial",
               animate: "animate",
-              className: "text-4xl md:text-6xl font-bold uppercase tracking-[-0.02em] leading-[1.02]",
-              children: "Minnesotan Food"
+              className: "text-4xl md:text-6xl font-bold tracking-[-0.02em] leading-[1.02]",
+              children: "Minnesotan Food for your Functions."
             }
           ),
           /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(
-            import_framer_motion3.motion.h3,
+            import_framer_motion3.motion.h2,
             {
               variants: fadeInLeft,
               initial: "initial",
               animate: "animate",
               transition: { delay: 0.05 },
-              className: "text-4xl md:text-6xl font-bold uppercase text-neutral-400 tracking-[-0.02em] leading-[1.0] -mt-3 md:-mt-5 lg:-mt-6",
-              children: "For Your Functions."
+              className: "text-3xl md:text-5xl font-bold text-neutral-600 tracking-[-0.02em] leading-[1.0] -mt-2 md:-mt-4",
+              children: "Personal Chef in Minneapolis\u2013St. Paul"
             }
           ),
           /* @__PURE__ */ (0, import_jsx_runtime9.jsxs)(
@@ -3656,16 +3801,23 @@ var HomePage = () => {
               ]
             }
           ),
-          /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(
-            import_framer_motion3.motion.button,
-            {
-              whileHover: { scale: 1.03 },
-              whileTap: { scale: 0.98 },
-              onClick: () => navigate("/services#event-request"),
-              className: "btn btn-primary mt-8 text-lg",
-              children: "Book an event"
-            }
-          )
+          /* @__PURE__ */ (0, import_jsx_runtime9.jsxs)("div", { className: "mt-8 flex flex-wrap gap-3", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(
+              import_framer_motion3.motion.button,
+              {
+                whileHover: { scale: 1.03 },
+                whileTap: { scale: 0.98 },
+                onClick: () => navigate("/services#event-request"),
+                className: "btn btn-primary text-lg",
+                children: "Book an event"
+              }
+            ),
+            /* @__PURE__ */ (0, import_jsx_runtime9.jsxs)("span", { className: "sr-only", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime9.jsx)("a", { href: "/personal-chef-minneapolis", className: "btn", children: "Personal Chef Minneapolis" }),
+              /* @__PURE__ */ (0, import_jsx_runtime9.jsx)("a", { href: "/personal-chef-st-paul", className: "btn", children: "Personal Chef St. Paul" }),
+              /* @__PURE__ */ (0, import_jsx_runtime9.jsx)("a", { href: "/personal-chef-twin-cities", className: "btn", children: "Twin Cities Personal Chef" })
+            ] })
+          ] })
         ] }),
         /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(
           import_framer_motion3.motion.div,
@@ -3710,7 +3862,6 @@ var HomePage = () => {
       ] }) }),
       /* @__PURE__ */ (0, import_jsx_runtime9.jsxs)("section", { className: "py-12", children: [
         /* @__PURE__ */ (0, import_jsx_runtime9.jsx)("div", { className: "max-w-6xl mx-auto px-4 md:px-6 lg:px-8", children: /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(SectionHeader, { overline: "Community", title: "Our Partners" }) }),
-        /* @__PURE__ */ (0, import_jsx_runtime9.jsx)("p", { className: "text-center text-sm text-gray-600 max-w-2xl mx-auto mt-2 mb-6", children: "Proud partners who help make this project possible. Support local \u2014 shop and collaborate with them." }),
         /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(PartnerGrid, {})
       ] }),
       /* @__PURE__ */ (0, import_jsx_runtime9.jsxs)("section", { className: "mx-auto max-w-6xl px-4 md:px-6 lg:px-8", children: [
@@ -4037,11 +4188,11 @@ var AboutUsPage = () => {
       /* @__PURE__ */ (0, import_jsx_runtime14.jsx)("meta", { property: "og:title", content: "About | Local Effort" }),
       /* @__PURE__ */ (0, import_jsx_runtime14.jsx)("meta", { property: "og:description", content: "Obsessively local since 2022 \u2014 because it\u2019s healthier, tastier, and better for Minnesota." }),
       /* @__PURE__ */ (0, import_jsx_runtime14.jsx)("meta", { property: "og:type", content: "website" }),
-      /* @__PURE__ */ (0, import_jsx_runtime14.jsx)("meta", { property: "og:image", content: "https://www.localeffortfood.com/gallery/5Z0A5729-Edit.jpg" }),
+      /* @__PURE__ */ (0, import_jsx_runtime14.jsx)("meta", { property: "og:image", content: "https://res.cloudinary.com/dokyhfvyd/image/upload/v1758464124/jo9pxtjng8zpt4yo4rcz.jpg" }),
       /* @__PURE__ */ (0, import_jsx_runtime14.jsx)("meta", { name: "twitter:card", content: "summary_large_image" }),
       /* @__PURE__ */ (0, import_jsx_runtime14.jsx)("meta", { name: "twitter:title", content: "About | Local Effort" }),
       /* @__PURE__ */ (0, import_jsx_runtime14.jsx)("meta", { name: "twitter:description", content: "Obsessively local since 2022 \u2014 because it\u2019s healthier, tastier, and better for Minnesota." }),
-      /* @__PURE__ */ (0, import_jsx_runtime14.jsx)("meta", { name: "twitter:image", content: "https://www.localeffortfood.com/gallery/5Z0A5729-Edit.jpg" })
+      /* @__PURE__ */ (0, import_jsx_runtime14.jsx)("meta", { name: "twitter:image", content: "https://res.cloudinary.com/dokyhfvyd/image/upload/v1758464124/jo9pxtjng8zpt4yo4rcz.jpg" })
     ] }),
     /* @__PURE__ */ (0, import_jsx_runtime14.jsx)("main", { id: "main", className: "container-page", children: /* @__PURE__ */ (0, import_jsx_runtime14.jsxs)("article", { className: "space-y-16 md:space-y-24", "aria-labelledby": "about-hero-title", children: [
       /* @__PURE__ */ (0, import_jsx_runtime14.jsx)("header", { className: "relative overflow-hidden rounded-2xl ring-1 ring-neutral-200 bg-gradient-to-br from-neutral-50 to-white", children: /* @__PURE__ */ (0, import_jsx_runtime14.jsxs)("div", { className: "grid gap-10 md:grid-cols-2 md:items-center p-8 md:p-12 lg:p-16", children: [
@@ -4056,7 +4207,7 @@ var AboutUsPage = () => {
         /* @__PURE__ */ (0, import_jsx_runtime14.jsx)("div", { className: "w-full", children: /* @__PURE__ */ (0, import_jsx_runtime14.jsx)(AspectRatio, { ratio: 4 / 3, className: "rounded-xl shadow-sm ring-1 ring-neutral-200 max-h-[480px] bg-neutral-100", children: /* @__PURE__ */ (0, import_jsx_runtime14.jsx)(
           "img",
           {
-            src: "/gallery/5Z0A5729-Edit.jpg",
+            src: "https://res.cloudinary.com/dokyhfvyd/image/upload/v1758464124/jo9pxtjng8zpt4yo4rcz.jpg",
             alt: "Local Effort chefs cooking",
             width: 1600,
             height: 1200,
@@ -4212,6 +4363,7 @@ var ServicesPage = () => {
   const [submitting, setSubmitting] = (0, import_react20.useState)(false);
   const [result, setResult] = (0, import_react20.useState)(null);
   const [bookHero, setBookHero] = (0, import_react20.useState)(null);
+  const [business, setBusiness] = (0, import_react20.useState)(null);
   const required = (v) => String(v || "").trim().length > 0;
   const handleChange = (e) => {
     const { name, type, checked, value } = e.target;
@@ -4233,6 +4385,16 @@ var ServicesPage = () => {
     })();
     return () => {
       abort = true;
+    };
+  }, []);
+  (0, import_react20.useEffect)(() => {
+    let mounted = true;
+    fetch("/business.json").then((r) => r.ok ? r.json() : null).then((data) => {
+      if (mounted) setBusiness(data || null);
+    }).catch(() => {
+    });
+    return () => {
+      mounted = false;
     };
   }, []);
   const handleSubmit = async (e) => {
@@ -4281,7 +4443,37 @@ var ServicesPage = () => {
           name: "description",
           content: "Explore the personal chef and catering services offered by Local Effort."
         }
-      )
+      ),
+      /* @__PURE__ */ (0, import_jsx_runtime15.jsx)("script", { type: "application/ld+json", children: JSON.stringify((() => {
+        const src = business || {};
+        return {
+          "@context": "https://schema.org",
+          "@type": "ProfessionalService",
+          name: src.name || "Local Effort",
+          url: (src.url || "https://localeffortfood.com") + "/services",
+          areaServed: Array.isArray(src.serviceArea) && src.serviceArea.length ? src.serviceArea : ["Minneapolis", "St. Paul", "Twin Cities", "Roseville", "Minnesota", "Western Wisconsin"],
+          sameAs: Array.isArray(src.sameAs) ? src.sameAs : void 0,
+          telephone: src.telephone || void 0,
+          hasOfferCatalog: {
+            "@type": "OfferCatalog",
+            name: "Services",
+            itemListElement: [
+              { "@type": "Service", name: "Personal Chef", description: "In-home private dinners and small gatherings." },
+              { "@type": "Service", name: "Weekly Meal Prep", description: "Nutritious, locally-sourced weekly menus and plans." },
+              { "@type": "Service", name: "Event Catering", description: "Small event catering with seasonal, local ingredients." }
+            ]
+          }
+        };
+      })()) }),
+      /* @__PURE__ */ (0, import_jsx_runtime15.jsx)("script", { type: "application/ld+json", children: JSON.stringify({
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        mainEntity: [
+          { "@type": "Question", name: "How far in advance should I book?", acceptedAnswer: { "@type": "Answer", text: "As early as you can\u2014two to four weeks is helpful, but we can sometimes accommodate short notice." } },
+          { "@type": "Question", name: "What is the typical group size?", acceptedAnswer: { "@type": "Answer", text: "We specialize in intimate dinners and small events up to about 50 guests." } },
+          { "@type": "Question", name: "Can you customize the menu?", acceptedAnswer: { "@type": "Answer", text: "Yes. We tailor menus around your tastes, dietary needs, and seasonal local ingredients." } }
+        ]
+      }) })
     ] }),
     /* @__PURE__ */ (0, import_jsx_runtime15.jsxs)("div", { className: "space-y-16 mx-auto max-w-6xl px-4 md:px-6 lg:px-8", children: [
       /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(SectionHeader, { overline: "Capabilities", title: "Services" }),
@@ -4309,6 +4501,11 @@ var ServicesPage = () => {
           )
         ] })
       ] }),
+      /* @__PURE__ */ (0, import_jsx_runtime15.jsx)("div", { className: "text-center", children: /* @__PURE__ */ (0, import_jsx_runtime15.jsxs)("span", { className: "sr-only", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime15.jsx)("a", { href: "/personal-chef-minneapolis", className: "btn btn-ghost", children: "Personal Chef Minneapolis" }),
+        /* @__PURE__ */ (0, import_jsx_runtime15.jsx)("a", { href: "/personal-chef-st-paul", className: "btn btn-ghost", children: "Personal Chef St. Paul" }),
+        /* @__PURE__ */ (0, import_jsx_runtime15.jsx)("a", { href: "/personal-chef-twin-cities", className: "btn btn-ghost", children: "Twin Cities Personal Chef" })
+      ] }) }),
       /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(Separator, {}),
       /* @__PURE__ */ (0, import_jsx_runtime15.jsx)("section", { id: "event-request", className: "pt-10", children: /* @__PURE__ */ (0, import_jsx_runtime15.jsxs)("div", { className: "max-w-3xl mx-auto", children: [
         /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(SectionHeader, { overline: "Get Started", title: "Book an event" }),
@@ -4761,41 +4958,34 @@ var CostEstimator = () => {
 var import_framer_motion5 = require("framer-motion");
 var import_jsx_runtime17 = require("react/jsx-runtime");
 var PricingPage = () => {
-  const [openFaq, setOpenFaq] = (0, import_react22.useState)(null);
-  const faqRefs = (0, import_react22.useRef)([]);
-  const pricingFaqData = [
-    {
-      name: "How much does a weekly meal plan cost?",
-      answer: "Our weekly meal plans range from $13.50 for lighter breakfast options to $24 for full dinner meals."
-    },
-    {
-      name: "What is the cost for a small event or party?",
-      answer: "A simple food drop-off service starts as low as $25 per person. Full-service events can range up to $85 per person or more."
-    },
-    {
-      name: "How much does an intimate dinner at home cost?",
-      answer: "An intimate dinner at your home generally ranges from $65 to $125 per person."
-    },
-    {
-      name: "How much is a private pizza party?",
-      answer: "Our private pizza parties start at $300 for groups of up to 15 people."
-    }
-  ];
-  (0, import_react22.useEffect)(() => {
-    if (openFaq !== null && faqRefs.current[openFaq]) {
-      faqRefs.current[openFaq].scrollIntoView({ behavior: "smooth", block: "start" });
-    }
-  }, [openFaq]);
   return /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)(import_jsx_runtime17.Fragment, { children: [
     /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)(import_react_helmet_async4.Helmet, { children: [
-      /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("title", { children: "Pricing | Local Effort" }),
+      /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("title", { children: "How Much Does a Personal Chef Cost? | Minneapolis Personal Chef Pricing \u2014 Local Effort" }),
       /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(
         "meta",
         {
           name: "description",
-          content: "Find pricing information for Local Effort's personal chef services."
+          content: "How much does a personal chef cost? See Minneapolis\u2013St. Paul price ranges for in-home dinners, weekly meal prep, and small events. Use our estimator for a quick ballpark."
         }
-      )
+      ),
+      /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("link", { rel: "canonical", href: "https://localeffortfood.com/pricing" }),
+      /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("meta", { name: "robots", content: "index,follow" }),
+      /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(
+        "meta",
+        {
+          name: "keywords",
+          content: "how much does a personal chef cost, personal chef cost Minneapolis, private chef cost, personal chef pricing, cost of personal chef per person, weekly meal prep cost, private chef Minneapolis pricing"
+        }
+      ),
+      /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("meta", { property: "og:type", content: "website" }),
+      /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("meta", { property: "og:url", content: "https://localeffortfood.com/pricing" }),
+      /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("meta", { property: "og:title", content: "How Much Does a Personal Chef Cost? Minneapolis Personal Chef Pricing \u2014 Local Effort" }),
+      /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("meta", { property: "og:description", content: "See typical costs for personal chefs in Minneapolis\u2013St. Paul: in-home dinners, weekly meal prep, and small events. Try the estimator for a quick ballpark." }),
+      /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("meta", { property: "og:image", content: "/gallery/logo.png?text=Local+Effort&font=mono" }),
+      /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("meta", { name: "twitter:card", content: "summary_large_image" }),
+      /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("meta", { name: "twitter:title", content: "How Much Does a Personal Chef Cost? Minneapolis Personal Chef Pricing \u2014 Local Effort" }),
+      /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("meta", { name: "twitter:description", content: "See typical personal chef costs in Minneapolis\u2013St. Paul and use our estimator to get a quick ballpark for your event or weekly meals." }),
+      /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("meta", { name: "twitter:image", content: "/gallery/logo.png?text=Local+Effort&font=mono" })
     ] }),
     /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("div", { className: "space-y-16 max-w-5xl mx-auto px-4 py-12", children: [
       /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)(
@@ -4807,7 +4997,13 @@ var PricingPage = () => {
           className: "text-center",
           children: [
             /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("h2", { className: "text-4xl font-extrabold uppercase mb-4", children: "Pricing" }),
-            /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("p", { className: "text-lg text-gray-700 max-w-3xl mx-auto", children: "Use our estimator for a ballpark figure, or review our general pricing guidelines below." })
+            /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("h3", { className: "text-2xl font-semibold mb-2", children: "It\u2019s not as expensive as you think." }),
+            /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("p", { className: "text-lg text-gray-700 max-w-3xl mx-auto", children: "We tailor pricing closely to your needs. We try to stay competitive to an evening at a nice restaurant, (or to the price of takeout, depending on the request). Oftentimes, we're the much better deal." }),
+            /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("p", { className: "text-lg text-gray-700 max-w-3xl mx-auto mt-4", children: [
+              "Below is a handy tool that can take some of the mystery out. We'll finalize the actual price ",
+              /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("a", { href: "/services#event-request", className: "underline", children: "together" }),
+              "."
+            ] })
           ]
         }
       ),
@@ -4821,60 +5017,6 @@ var PricingPage = () => {
           children: [
             /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("h3", { className: "text-2xl font-bold uppercase mb-4", children: "Cost Estimator" }),
             /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(CostEstimator, {})
-          ]
-        }
-      ),
-      /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)(
-        import_framer_motion5.motion.section,
-        {
-          initial: { opacity: 0, y: 20 },
-          whileInView: { opacity: 1, y: 0 },
-          viewport: { once: true, amount: 0.2 },
-          transition: { duration: 0.5 },
-          children: [
-            /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("h3", { className: "text-2xl font-bold uppercase mb-4", children: "General Pricing FAQ" }),
-            /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("div", { className: "space-y-2", children: pricingFaqData.map((item, index) => {
-              const isOpen = openFaq === index;
-              return /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)(
-                "div",
-                {
-                  ref: (el) => faqRefs.current[index] = el,
-                  className: "bg-[#F5F5F5] border border-gray-300 rounded-lg overflow-hidden",
-                  children: [
-                    /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)(
-                      "button",
-                      {
-                        onClick: () => setOpenFaq(isOpen ? null : index),
-                        className: "w-full p-6 text-left flex justify-between items-center",
-                        children: [
-                          /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("h3", { className: "text-xl font-semibold", children: item.name }),
-                          /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(
-                            import_framer_motion5.motion.span,
-                            {
-                              animate: { rotate: isOpen ? 45 : 0 },
-                              transition: { type: "spring", stiffness: 300, damping: 20 },
-                              className: "text-3xl",
-                              children: "+"
-                            }
-                          )
-                        ]
-                      }
-                    ),
-                    /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(
-                      import_framer_motion5.motion.div,
-                      {
-                        initial: { height: 0, opacity: 0 },
-                        animate: { height: isOpen ? "auto" : 0, opacity: isOpen ? 1 : 0 },
-                        transition: { duration: 0.3 },
-                        className: "overflow-hidden px-6 pt-0 pb-6 border-t border-gray-300",
-                        children: /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("p", { className: "text-gray-700 text-base", children: item.answer })
-                      }
-                    )
-                  ]
-                },
-                index
-              );
-            }) })
           ]
         }
       )
@@ -6006,6 +6148,23 @@ var GalleryPage = () => {
   const [loading, setLoading] = (0, import_react30.useState)(true);
   const [error, setError] = (0, import_react30.useState)(null);
   const [selected, setSelected] = (0, import_react30.useState)(null);
+  const staticFallback = [
+    {
+      src: "/gallery/5Z0A5729-Edit.jpg",
+      alt: "Private chef plated dish \u2014 Local Effort Personal Chef \u2014 Minneapolis",
+      caption: "Private chef plated dish \u2014 Local Effort, Minneapolis in-home chef."
+    },
+    {
+      src: "/gallery/5Z0A5665-Edit.jpg",
+      alt: "Seasonal menu \u2014 Local Effort Personal Chef \u2014 Twin Cities",
+      caption: "Seasonal menu \u2014 Local Effort, Twin Cities personal chef."
+    },
+    {
+      src: "/gallery/IMG_3145.jpg",
+      alt: "Private dinner service \u2014 Local Effort Personal Chef \u2014 St. Paul",
+      caption: "Private dinner service \u2014 Local Effort, St. Paul personal chef."
+    }
+  ];
   const fallbackLoadedRef = (0, import_react30.useRef)(false);
   const prefetched = (0, import_react30.useRef)(/* @__PURE__ */ new Set());
   const tryLoadFallback = (0, import_react30.useCallback)(async () => {
@@ -6179,8 +6338,17 @@ var GalleryPage = () => {
         url: "https://local-effort-app.vercel.app/gallery",
         image: images.slice(0, 8).map((i) => i.large_url || i.thumbnail_url).filter(Boolean),
         servesCuisine: ["American", "Local", "Seasonal"],
-        sameAs: []
-      }) })
+        sameAs: ["https://www.instagram.com/localeffortfood", "https://www.facebook.com/localeffortfood", "https://www.tiktok.com/@localeffort"]
+      }) }),
+      images.slice(0, 12).map((img, idx) => /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("script", { type: "application/ld+json", children: JSON.stringify({
+        "@context": "https://schema.org",
+        "@type": "ImageObject",
+        contentUrl: img.large_url || img.thumbnail_url,
+        thumbnail: img.thumbnail_url || void 0,
+        name: img.context?.alt || "Local Effort gallery image",
+        description: img.context?.alt || void 0,
+        creator: { "@type": "Organization", name: "Local Effort Food Co." }
+      }) }, `imgld-${idx}`))
     ] }),
     /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { className: "container mx-auto px-4 py-8", children: [
       /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("h1", { className: "text-4xl font-bold mb-4 text-center", children: "pictures of food." }),
@@ -6194,7 +6362,21 @@ var GalleryPage = () => {
           className: "w-full max-w-md mx-auto block p-3 border rounded-md mb-8"
         }
       ),
-      loading ? /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("p", { children: "Loading..." }) : error ? /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { className: "text-red-600 bg-red-50 p-4 rounded", children: [
+      loading ? /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(import_jsx_runtime25.Fragment, { children: /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("div", { className: "columns-2 md:columns-3 lg:columns-4 gap-4 [column-fill:_balance]", children: staticFallback.map((img, idx) => /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("figure", { className: "mb-4 w-full break-inside-avoid border p-2 bg-white rounded-lg overflow-hidden", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(
+          "img",
+          {
+            src: img.src,
+            alt: img.alt,
+            className: "rounded-lg w-full h-auto",
+            width: 1200,
+            height: 800,
+            loading: "lazy",
+            decoding: "async"
+          }
+        ),
+        /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("figcaption", { className: "text-xs text-neutral-600 mt-2", children: img.caption })
+      ] }, `fallback-${idx}`)) }) }) : error ? /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { className: "text-red-600 bg-red-50 p-4 rounded", children: [
         /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("h3", { className: "font-bold", children: "Error Details:" }),
         /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("p", { children: error }),
         /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("p", { className: "mt-2 text-sm", children: "This usually means:" }),
@@ -6208,40 +6390,55 @@ var GalleryPage = () => {
         /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("p", { children: "No images found." }),
         /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("p", { className: "text-sm text-gray-600 mt-2", children: "Try removing search terms or check that you have images in your Cloudinary account." })
       ] }) : /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)(import_jsx_runtime25.Fragment, { children: [
-        /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("div", { className: "columns-2 md:columns-3 lg:columns-4 gap-4 [column-fill:_balance]", children: images.map((img, idx) => /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(
-          import_framer_motion12.motion.button,
-          {
-            type: "button",
-            onClick: () => openLightbox(img, idx),
-            onMouseEnter: () => img?.large_url && prefetchImage(img.large_url),
-            whileHover: { scale: 1.03 },
-            whileTap: { scale: 0.98 },
-            className: "mb-4 w-full break-inside-avoid border p-2 bg-white rounded-lg overflow-hidden",
-            "aria-label": img.context?.alt || `Gallery image ${idx + 1}`,
-            children: img.thumbnail_url ? /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(
-              "img",
-              {
-                src: img.thumbnail_url,
-                alt: img.context?.alt || "Gallery image",
-                className: "rounded-lg w-full h-auto",
-                width: img.width || void 0,
-                height: img.height || void 0,
-                style: img.width && img.height ? { aspectRatio: `${img.width} / ${img.height}` } : void 0,
-                loading: "lazy"
-              }
-            ) : /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(
-              cloudinaryImage_default,
-              {
-                publicId: img.public_id,
-                alt: img.context?.alt || "Gallery image",
-                width: 800,
-                className: "rounded-lg w-full h-auto",
-                containerStyle: img.width && img.height ? { aspectRatio: `${img.width} / ${img.height}` } : void 0
-              }
-            )
-          },
-          img.asset_id
-        )) }),
+        /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("div", { className: "columns-2 md:columns-3 lg:columns-4 gap-4 [column-fill:_balance]", children: images.map((img, idx) => /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("figure", { className: "mb-4 w-full break-inside-avoid border p-2 bg-white rounded-lg overflow-hidden", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(
+            "button",
+            {
+              type: "button",
+              onClick: () => openLightbox(img, idx),
+              onMouseEnter: () => img?.large_url && prefetchImage(img.large_url),
+              "aria-label": img.context?.alt || `Gallery image ${idx + 1}`,
+              className: "block",
+              children: img.thumbnail_url ? /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(
+                "img",
+                {
+                  src: img.thumbnail_url,
+                  alt: img.context?.alt || "Private chef plated dish \u2014 Local Effort Personal Chef \u2014 Minneapolis / St. Paul",
+                  className: "rounded-lg w-full h-auto",
+                  width: img.width || void 0,
+                  height: img.height || void 0,
+                  style: img.width && img.height ? { aspectRatio: `${img.width} / ${img.height}` } : void 0,
+                  loading: "lazy",
+                  decoding: "async"
+                }
+              ) : /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(
+                cloudinaryImage_default,
+                {
+                  publicId: img.public_id,
+                  alt: img.context?.alt || "Private chef plated dish \u2014 Local Effort Personal Chef \u2014 Minneapolis / St. Paul",
+                  width: 800,
+                  className: "rounded-lg w-full h-auto",
+                  containerStyle: img.width && img.height ? { aspectRatio: `${img.width} / ${img.height}` } : void 0
+                }
+              )
+            }
+          ),
+          /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("figcaption", { className: "text-xs text-neutral-600 mt-2", children: img.context?.alt || "Private chef plated seared trout \u2014 Local Effort Personal Chef \u2014 Minneapolis" })
+        ] }, img.asset_id)) }),
+        /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("noscript", { children: /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { children: [
+          /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("figure", { className: "gallery-item", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("img", { src: "/gallery/5Z0A5729-Edit.jpg", width: "1200", height: "800", alt: "Private chef plated dish \u2014 Local Effort Personal Chef \u2014 Minneapolis" }),
+            /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("figcaption", { children: "Private chef plated dish \u2014 Local Effort, Minneapolis in-home chef." })
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("figure", { className: "gallery-item", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("img", { src: "/gallery/5Z0A5665-Edit.jpg", width: "1200", height: "800", alt: "Seasonal menu \u2014 Local Effort Personal Chef \u2014 Twin Cities" }),
+            /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("figcaption", { children: "Seasonal menu \u2014 Local Effort, Twin Cities personal chef." })
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("figure", { className: "gallery-item", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("img", { src: "/gallery/IMG_3145.jpg", width: "1200", height: "800", alt: "Private dinner service \u2014 Local Effort Personal Chef \u2014 St. Paul" }),
+            /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("figcaption", { children: "Private dinner service \u2014 Local Effort, St. Paul personal chef." })
+          ] })
+        ] }) }),
         nextCursor && /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("div", { className: "mt-6 text-center", children: /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(
           "button",
           {
