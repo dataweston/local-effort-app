@@ -1,4 +1,4 @@
-﻿import React, { useEffect, Suspense, lazy } from 'react';
+import React, { useEffect, Suspense, lazy } from 'react';
 import { HelmetProvider } from 'react-helmet-async';
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
 import { AnimatePresence } from 'framer-motion';
@@ -39,6 +39,7 @@ const AuthPage = lazy(() => import('./pages/AuthPage'));
 const ZafaEmbeddedApp = lazy(() => import('./partners/zafa'));
 const GallantEmbeddedApp = lazy(() => import('./partners/gallant'));
 const HMEmbeddedApp = lazy(() => import('./partners/happymonday'));
+const PlacemakerEmbeddedApp = lazy(() => import('./partners/placemaker'));
 const TinyDinerEmbeddedApp = lazy(() => import('./partners/tiny-diner'));
 const CookbookSearchPage = lazy(() => import('./pages/CookbookSearchPage'));
 const CookbookRecipePage = lazy(() => import('./pages/CookbookRecipePage'));
@@ -273,6 +274,14 @@ const AppContent = () => {
                   element={
                     <AnimatedPage>
                       <HMEmbeddedApp />
+                    </AnimatedPage>
+                  }
+                />
+                <Route
+                  path="/partners/placemaker"
+                  element={
+                    <AnimatedPage>
+                      <PlacemakerEmbeddedApp />
                     </AnimatedPage>
                   }
                 />

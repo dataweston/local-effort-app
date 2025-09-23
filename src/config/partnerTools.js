@@ -49,6 +49,15 @@ export const PARTNER_TOOLS = [
   // Embedded directly via component import
   },
   {
+    key: 'placemaker',
+    name: 'Placemaker Workspace',
+    description: 'Masonry board with costing tile + shared notepad.',
+    type: 'internal',
+    route: '/partners/placemaker',
+    icon: 'PenSquare',
+    public: true,
+  },
+  {
     key: 'tinydiner',
     name: 'Tiny Diner Weddings',
     description: 'Booking & intake portal for Tiny Diner weddings.',
