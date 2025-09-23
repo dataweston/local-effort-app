@@ -9,7 +9,7 @@ function formatTitleFromContent(content) {
   const now = new Date();
   const stamp = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
   const snippet = (content || '').trim().split(/\s+/).slice(0, 6).join(' ');
-  return snippet ? `${stamp} · ${snippet}` : `${stamp} · Note`;
+  return snippet ? `${stamp} Â· ${snippet}` : `${stamp} Â· Note`;
 }
 
 const NotepadTile = forwardRef(function NotepadTile(_, ref) {
@@ -98,7 +98,7 @@ const NotepadTile = forwardRef(function NotepadTile(_, ref) {
     if (!db) return;
     try {
       const now = new Date();
-      const title = `${now.toLocaleDateString()} · New note`;
+      const title = `${now.toLocaleDateString()} Â· New note`;
       const newDoc = await addDoc(collection(db, COLLECTION_KEY), {
         title,
         content: '',
@@ -112,7 +112,11 @@ const NotepadTile = forwardRef(function NotepadTile(_, ref) {
     }
   };
 
-  useEffect(() => {\r\n    activeIdRef.current = activeId;\r\n  }, [activeId]);\r\n\r\n  useEffect(() => {
+  useEffect(() => {
+    activeIdRef.current = activeId;
+  }, [activeId]);
+
+  useEffect(() => {
     if (!db) return;
     if (loadingList) return;
     if (bootstrappedRef.current) return;
@@ -137,7 +141,7 @@ const NotepadTile = forwardRef(function NotepadTile(_, ref) {
       if (!targetId) {
         try {
           const now = new Date();
-          const title = `${now.toLocaleDateString()} · Snapshot`;
+          const title = `${now.toLocaleDateString()} Â· Snapshot`;
           const newDoc = await addDoc(collection(db, COLLECTION_KEY), {
             title,
             content: '',
@@ -204,7 +208,7 @@ const NotepadTile = forwardRef(function NotepadTile(_, ref) {
           value={activeId || ''}
           onChange={(e) => setActiveId(e.target.value || null)}
         >
-          <option value="">Choose a note…</option>
+          <option value="">Choose a noteâ€¦</option>
           {notes.map((note) => (
             <option key={note.id} value={note.id}>
               {note.title || 'Untitled'}
@@ -222,7 +226,7 @@ const NotepadTile = forwardRef(function NotepadTile(_, ref) {
           value={draft}
           onChange={(e) => handleContentChange(e.target.value)}
           className="min-h-[240px] w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm focus:border-slate-900 focus:outline-none focus:ring-1 focus:ring-slate-900/20"
-          placeholder="Start typing…"
+          placeholder="Start typingâ€¦"
         />
       )}
 
@@ -236,6 +240,8 @@ const NotepadTile = forwardRef(function NotepadTile(_, ref) {
 });
 
 export default NotepadTile;
+
+
 
 
 
