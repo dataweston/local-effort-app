@@ -168,7 +168,8 @@ export default function CostingTool({ user, allowedEmails = [] }) {
       (docSnap) => {
         if (docSnap.exists()) {
           const data = coerceFromDoc(docSnap.data());
-          setSheet(data);`r`n        } else {
+          setSheet(data);
+        } else {
           setSheet({ ...DEFAULT_SHEET });
         }
         setLoadingSheet(false);
