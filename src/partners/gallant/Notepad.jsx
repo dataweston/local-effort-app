@@ -1,7 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { db, auth } from '../../firebaseConfig';
+import { db } from '../../firebaseConfig';
 import { collection, addDoc, updateDoc, onSnapshot, doc, serverTimestamp } from 'firebase/firestore';
-import { onAuthStateChanged } from 'firebase/auth';
 
 function formatTitleFromContent(text) {
   const ts = new Date();
@@ -17,39 +16,10 @@ export default function Notepad() {
   const [activeId, setActiveId] = useState(null);
   const [saving, setSaving] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
-  const [authReady, setAuthReady] = useState(false);
-  const [user, setUser] = useState(null);
   const saveTimer = useRef(null);
-
-  // Keep ALLOWED in sync with Gallant App.jsx
-  const ALLOWED = useMemo(() => new Set(['dataweston@gmail.com', 'colsen03@gmail.com']), []);
-
-  const getAuthHeaders = async () => {
-    try {
-      const token = await auth?.currentUser?.getIdToken?.();
-      return token ? { Authorization: `Bearer ${token}` } : {};
-    } catch {
-      return {};
-    }
-  };
-
-  // Track auth state locally to gate reads/writes
-  useEffect(() => {
-    const unsub = onAuthStateChanged(auth, (u) => {
-      setUser(u);
-      setAuthReady(true);
-    });
-    return () => unsub();
-  }, []);
 
   useEffect(() => {
     if (db) {
-      if (!authReady) return;
-      const email = (user?.email || '').toLowerCase();
-      if (!user || !ALLOWED.has(email)) {
-        setErrorMsg(user ? 'Not authorized for notes' : 'Not signed in');
-        return;
-      }
       const unsub = onSnapshot(
         collection(db, 'notes'),
         (snap) => {
@@ -69,8 +39,7 @@ export default function Notepad() {
       // Fallback to server-side list
       (async () => {
         try {
-          const authHeaders = await getAuthHeaders();
-          const res = await fetch('/api/notes', { headers: { ...authHeaders } });
+          const res = await fetch('/api/notes');
           const data = await res.json();
           const list = (data.items || []).sort((a, b) => (b.updatedAt?.seconds || 0) - (a.updatedAt?.seconds || 0));
           setNotes(list);
@@ -81,34 +50,27 @@ export default function Notepad() {
         } catch (_) { /* ignore */ }
       })();
     }
-  }, [db, authReady, user]);
+  }, [db]);
 
   const activeNote = useMemo(() => notes.find((n) => n.id === activeId) || null, [notes, activeId]);
 
-  const ensureAllowed = useCallback(() => {
-    if (!auth?.currentUser) { setErrorMsg('Not signed in'); return false; }
-    const email = (auth.currentUser.email || '').toLowerCase();
-    if (!ALLOWED.has(email)) { setErrorMsg('Not authorized'); return false; }
-    return true;
-  }, [ALLOWED]);
+  const ensureAllowed = useCallback(() => true, []);
 
   const createNote = useCallback(async () => {
     if (db) {
-      if (!ensureAllowed()) return;
       const init = { title: `Note ${new Date().toLocaleString()}`, content: '', createdAt: serverTimestamp(), updatedAt: serverTimestamp() };
       const ref = await addDoc(collection(db, 'notes'), init);
       setOpenIds((ids) => [...ids, ref.id]);
       setActiveId(ref.id);
     } else {
       try {
-        const authHeaders = await getAuthHeaders();
-        const res = await fetch('/api/notes', { method: 'POST', headers: { 'content-type': 'application/json', ...authHeaders }, body: JSON.stringify({ title: `Note ${new Date().toLocaleString()}`, content: '' }) });
+        const res = await fetch('/api/notes', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ title: `Note ${new Date().toLocaleString()}`, content: '' }) });
         const data = await res.json();
         if (data.id) {
           setOpenIds((ids) => [...ids, data.id]);
           setActiveId(data.id);
           // Soft refresh notes
-          const listRes = await fetch('/api/notes', { headers: { ...authHeaders } });
+          const listRes = await fetch('/api/notes');
           const listData = await listRes.json();
           setNotes(listData.items || []);
         }
@@ -125,12 +87,10 @@ export default function Notepad() {
       try {
         const nextTitle = next.title?.trim() || formatTitleFromContent(next.content || '');
         if (db) {
-          if (!ensureAllowed()) return;
           await updateDoc(doc(db, 'notes', id), { ...next, title: nextTitle, updatedAt: serverTimestamp() });
         } else {
-          const authHeaders = await getAuthHeaders();
           await fetch(`/api/notes/${id}`, {
-            method: 'PUT', headers: { 'content-type': 'application/json', ...authHeaders }, body: JSON.stringify({ title: nextTitle, content: next.content })
+            method: 'PUT', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ title: nextTitle, content: next.content })
           });
         }
       } catch (e) {
@@ -169,12 +129,10 @@ export default function Notepad() {
     if (!window.confirm('Delete this note? This cannot be undone.')) return;
     try {
       if (db) {
-        if (!ensureAllowed()) return;
         await updateDoc(doc(db, 'notes', noteId), { _deleted: true, updatedAt: serverTimestamp() });
         // If rules require actual delete, swap to deleteDoc; using soft delete here to avoid rules surprises
       } else {
-        const authHeaders = await getAuthHeaders();
-        await fetch(`/api/notes/${noteId}`, { method: 'DELETE', headers: { ...authHeaders } });
+        await fetch(`/api/notes/${noteId}`, { method: 'DELETE' });
       }
       setNotes((arr) => arr.filter((n) => n.id !== noteId));
       setOpenIds((ids) => ids.filter((x) => x !== noteId));
@@ -182,7 +140,7 @@ export default function Notepad() {
     } catch (e) {
       setErrorMsg(e?.message || String(e));
     }
-  }, [ensureAllowed, getAuthHeaders, db]);
+  }, [ensureAllowed, db]);
 
   const saveNow = useCallback(async () => {
     const n = activeNote;
@@ -190,11 +148,9 @@ export default function Notepad() {
     try {
       const nextTitle = n.title?.trim() || formatTitleFromContent(n.content || '');
       if (db) {
-        if (!ensureAllowed()) return;
         await updateDoc(doc(db, 'notes', n.id), { title: nextTitle, content: n.content || '', updatedAt: serverTimestamp() });
       } else {
-        const authHeaders = await getAuthHeaders();
-        await fetch(`/api/notes/${n.id}`, { method: 'PUT', headers: { 'content-type': 'application/json', ...authHeaders }, body: JSON.stringify({ title: nextTitle, content: n.content || '' }) });
+        await fetch(`/api/notes/${n.id}`, { method: 'PUT', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ title: nextTitle, content: n.content || '' }) });
       }
     } catch (e) {
       setErrorMsg(e?.message || String(e));

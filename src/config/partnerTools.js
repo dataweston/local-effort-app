@@ -1,4 +1,4 @@
-// Registry of partner tools exposed via the Partner Portal.
+﻿// Registry of partner tools exposed via the Partner Portal.
 // key: used for access control (e.g., stored on userProfiles.roles array)
 // type: 'internal' uses a React page, 'iframe' embeds external or static URL
 
@@ -47,6 +47,14 @@ export const PARTNER_TOOLS = [
   icon: 'LayoutDashboard',
   public: true,
   // Embedded directly via component import
+  },
+  {
+    key: 'tinydiner',
+    name: 'Tiny Diner Weddings',
+    description: 'Booking & intake portal for Tiny Diner weddings.',
+    type: 'internal',
+    route: '/partners/tiny-diner',
+    icon: 'CalendarHeart',
   },
 ];
 
@@ -106,3 +114,4 @@ export function isAdminEmail(email) {
   }
   return false;
 }
+

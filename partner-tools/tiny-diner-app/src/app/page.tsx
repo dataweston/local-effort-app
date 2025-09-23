@@ -124,7 +124,7 @@ const PREFERRED_VENDORS = [
       },
       {
         name: "North Loop Planning Co.",
-        cost: "starting at `$1,500",
+        cost: "starting at $1,500",
         contact: "hello@northloopplanning.co",
         phone: "612-555-0190",
         notes: "Full-service planning & design partners",
@@ -136,14 +136,14 @@ const PREFERRED_VENDORS = [
     vendors: [
       {
         name: "Tiny Diner Kitchen",
-        cost: "2–8 per guest",
+        cost: "$62�$88 per guest",
         contact: "chef@tinydiner.com",
         phone: "612-555-0105",
         notes: "Seasonal menus with vegetarian & vegan highlights",
       },
       {
         name: "Tattersall Spirits",
-        cost: "cocktail partnership `$34 per guest",
+        cost: "cocktail partnership $34 per guest",
         contact: "events@tattersall.com",
         phone: "952-555-0113",
         notes: "Signature cocktail program + bartender team",
@@ -155,7 +155,7 @@ const PREFERRED_VENDORS = [
     vendors: [
       {
         name: "Studio Emme",
-        cost: "centerpieces from `$780",
+        cost: "centerpieces from $780",
         contact: "flora@studioemme.com",
         phone: "612-555-0172",
         notes: "Seasonal floral design, candles, tablescapes",
@@ -174,14 +174,14 @@ const PREFERRED_VENDORS = [
     vendors: [
       {
         name: "Tiny Diner Officiant Collective",
-        cost: "`$450 flat",
+        cost: "$450 flat",
         contact: "officiant@tinydiner.com",
         phone: "612-555-0164",
         notes: "Inclusive officiants aligned with Tiny Diner values",
       },
       {
         name: "Love In The Cities",
-        cost: "custom scripts from `$375",
+        cost: "custom scripts from $375",
         contact: "sayhello@loveinthecities.com",
         phone: "651-555-0147",
         notes: "Personalized ceremony writing + rehearsal support",
@@ -205,7 +205,6 @@ const holdDateSet = new Set<string>([
   "2025-02-08",
 ]);
 
-const availabilityLookup = buildAvailabilityMap();
 
 type AvailabilityStatus = "available" | "hold" | "booked" | "unavailable" | "past";
 
@@ -309,7 +308,7 @@ export default function TinyDinerApp() {
     {
       id: "welcome-note",
       sender: "Tiny Diner",
-      body: "We’re so glad you’re here. Once you enter your details, our team will confirm availability, push everything to HoneyBook, and keep you in the loop inside this shared dashboard.",
+      body: "We're so glad you're here. Once you enter your details, our team will confirm availability, push everything to HoneyBook, and keep you in the loop inside this shared dashboard.",
       timestamp: new Date(),
     },
   ]);
@@ -464,7 +463,7 @@ export default function TinyDinerApp() {
       {
         id: `auto-${Date.now()}`,
         sender: "Tiny Diner",
-        body: "Thanks! A coordinator will reply shortly and we’ll log this thread inside HoneyBook as well.",
+        body: "Thanks! A coordinator will reply shortly and we'll log this thread inside HoneyBook as well.",
         timestamp: new Date(),
       },
     ]);
@@ -472,13 +471,39 @@ export default function TinyDinerApp() {
 
   const handleStartPayment = async (method: "ach" | "card") => {
     if (!booking.eventDate) return;
+    const amount =
+      booking.planType === "streamlined"
+        ? booking.streamlinedSummary?.deposit ?? 0
+        : booking.customEstimate?.deposit ?? 0;
     setIsProcessingPayment(true);
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1200));
+      const response = await fetch("/api/payments/deposit", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          method,
+          amount,
+          bookingReference: {
+            date: booking.eventDate,
+            planType: booking.planType,
+            client: booking.client,
+          },
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Payment intent failed");
+      }
+
+      const result = await response.json();
+      console.info("[TinyDiner] Square stub response", result);
+
       setBooking((prev) => ({
         ...prev,
-        paymentStatus: method === "ach" ? "deposit_processing" : prev.paymentStatus,
+        paymentStatus: "deposit_processing",
       }));
+    } catch (error) {
+      console.error(error);
     } finally {
       setIsProcessingPayment(false);
     }
@@ -550,7 +575,7 @@ export default function TinyDinerApp() {
               <Card className="border-dashed border-slate-200 bg-white/60">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2 text-lg">
-                    <Sparkles className="h-5 w-5 text-rose-500" /> Let’s begin with your date
+                    <Sparkles className="h-5 w-5 text-rose-500" /> Let's begin with your date
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -567,7 +592,7 @@ export default function TinyDinerApp() {
                     <Users className="h-5 w-5 text-sky-500" /> Tell us about the couple
                   </CardTitle>
                   <CardDescription>
-                    We’ll link these details with your HoneyBook profile and coordinator workspace.
+                    We'll link these details with your HoneyBook profile and coordinator workspace.
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -677,7 +702,7 @@ export default function TinyDinerApp() {
                   <CardHeader>
                     <CardTitle className="text-xl">Custom build-out</CardTitle>
                     <CardDescription>
-                      Design your celebration with mix-and-match services. We’ll prepare a bespoke estimate and coordinator brief.
+                      Design your celebration with mix-and-match services. We'll prepare a bespoke estimate and coordinator brief.
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-3">
@@ -700,7 +725,7 @@ export default function TinyDinerApp() {
                 <CardHeader>
                   <CardTitle className="text-2xl">Customize your celebration</CardTitle>
                   <CardDescription>
-                    We’ll translate these answers into a working estimate and HoneyBook project board.
+                    We'll translate these answers into a working estimate and HoneyBook project board.
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -765,7 +790,7 @@ export default function TinyDinerApp() {
                               <FormLabel>Cake or dessert</FormLabel>
                               <RadioGroup className="grid gap-3" onValueChange={field.onChange} value={field.value}>
                                 <OptionCard value="need" title="We need Tiny Diner to provide" subtitle="Layered buttercream cakes & dessert table" />
-                                <OptionCard value="bring" title="We’ll bring our own" subtitle="Storage & service support included" />
+                                <OptionCard value="bring" title="We'll bring our own" subtitle="Storage & service support included" />
                               </RadioGroup>
                               <FormMessage />
                             </FormItem>
@@ -780,7 +805,7 @@ export default function TinyDinerApp() {
                               <FormLabel>Floral & decor</FormLabel>
                               <RadioGroup className="grid gap-3" onValueChange={field.onChange} value={field.value}>
                                 <OptionCard value="inHouse" title="Curated by Tiny Diner" subtitle="Partner florists with signature palette" />
-                                <OptionCard value="bring" title="We’ll collaborate with our florist" subtitle="Space walk-through included" />
+                                <OptionCard value="bring" title="We'll collaborate with our florist" subtitle="Space walk-through included" />
                               </RadioGroup>
                               <FormMessage />
                             </FormItem>
@@ -798,7 +823,7 @@ export default function TinyDinerApp() {
                               <RadioGroup className="grid gap-3" onValueChange={field.onChange} value={field.value}>
                                 <OptionCard value="fullPlanning" title="Planning in advance" subtitle="12-week planning partnership" />
                                 <OptionCard value="dayOf" title="Day-of lead" subtitle="Timeline, vendors, and onsite management" />
-                                <OptionCard value="none" title="We have our own" subtitle="We’ll still provide Tiny Diner host" />
+                                <OptionCard value="none" title="We have our own" subtitle="We'll still provide Tiny Diner host" />
                               </RadioGroup>
                               <FormMessage />
                             </FormItem>
@@ -813,7 +838,7 @@ export default function TinyDinerApp() {
                               <FormLabel>Officiant</FormLabel>
                               <RadioGroup className="grid gap-3" onValueChange={field.onChange} value={field.value}>
                                 <OptionCard value="provide" title="Tiny Diner officiant" subtitle="Inclusive ceremony scripts + rehearsal" />
-                                <OptionCard value="bring" title="We’ll bring our own" subtitle="We’ll coordinate timeline + mic" />
+                                <OptionCard value="bring" title="We'll bring our own" subtitle="We'll coordinate timeline + mic" />
                               </RadioGroup>
                               <FormMessage />
                             </FormItem>
@@ -1158,7 +1183,7 @@ function ReviewDashboard({
                 <div>
                   <p className="text-sm text-slate-700">
                     {booking.syncedToHoneybook
-                      ? "Synced! We’ll keep this dashboard in lockstep with your HoneyBook project."
+                      ? "Synced! We'll keep this dashboard in lockstep with your HoneyBook project."
                       : "One click creates or updates the HoneyBook project with this intake, timeline, and message history."}
                   </p>
                 </div>
@@ -1181,7 +1206,7 @@ function ReviewDashboard({
                   <MessageCircle className="h-5 w-5 text-rose-500" /> Shared message log
                 </CardTitle>
                 <CardDescription>
-                  Notes stay in sync for you, your partner, and your coordinator. We’ll push everything to HoneyBook too.
+                  Notes stay in sync for you, your partner, and your coordinator. We'll push everything to HoneyBook too.
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -1289,7 +1314,7 @@ function VendorSection({
                     <DialogTitle>Message {vendor.name}</DialogTitle>
                   </DialogHeader>
                   <p className="text-sm text-slate-600">
-                    Compose a note to {vendor.name}. We’ll relay through HoneyBook while keeping this thread updated.
+                    Compose a note to {vendor.name}. We'll relay through HoneyBook while keeping this thread updated.
                   </p>
                   <Textarea rows={5} placeholder={`Write a message to ${vendor.name}`} />
                   <Button>Send via Tiny Diner concierge</Button>
@@ -1475,3 +1500,14 @@ function buildAvailabilityMap() {
   });
   return map;
 }
+
+
+
+
+
+
+
+
+
+
+

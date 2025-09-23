@@ -3,8 +3,7 @@ import { Calendar, Plus, DollarSign, TrendingUp, ShoppingCart, Save, X, ChevronL
 import { db, firebaseProjectId } from '../../firebaseConfig';
 import Notepad from './Notepad';
 import CostingTool from './CostingTool';
-import { auth, signInWithGoogle, signOutUser } from '../../firebaseConfig';
-import { onAuthStateChanged } from 'firebase/auth';
+// Auth removed: tools are now public-access
 
 function toDateSafe(v) {
   if (!v) return new Date();
@@ -15,23 +14,7 @@ function toDateSafe(v) {
 import { collection, onSnapshot, addDoc, updateDoc, deleteDoc, doc } from 'firebase/firestore';
 
 const CateringSalesApp = () => {
-  const ALLOWED = new Set(['dataweston@gmail.com', 'colsen03@gmail.com']);
-  const [user, setUser] = useState(null);
-  const [authReady, setAuthReady] = useState(false);
-  useEffect(() => {
-    if (!auth) { setAuthReady(true); return; }
-    const unsub = onAuthStateChanged(auth, (u) => { setUser(u); setAuthReady(true); });
-    return () => unsub();
-  }, []);
-
-  const getAuthHeaders = async () => {
-    try {
-      const token = await auth?.currentUser?.getIdToken?.();
-      return token ? { Authorization: `Bearer ${token}` } : {};
-    } catch {
-      return {};
-    }
-  };
+  // Removed all auth/allowlist logic — components are publicly available
   // The state will now start empty and be populated from Firestore
   const [events, setEvents] = useState([]);
   const [receipts, setReceipts] = useState([]);
@@ -56,10 +39,6 @@ const CateringSalesApp = () => {
       setErrorMsg('Not connected to Firebase (missing VITE_* config).');
       return;
     }
-    if (!authReady) return;
-    const email = (user?.email || '').toLowerCase();
-    if (!user || !ALLOWED.has(email)) return;
-
     const unsubscribe = onSnapshot(
       collection(db, 'events'),
       (snapshot) => {
@@ -76,14 +55,10 @@ const CateringSalesApp = () => {
       }
     );
     return () => unsubscribe();
-  }, [db, authReady, user]);
+  }, [db]);
 
   useEffect(() => {
     if (!db) return;
-    if (!authReady) return;
-    const email = (user?.email || '').toLowerCase();
-    if (!user || !ALLOWED.has(email)) return;
-
     const unsubscribe = onSnapshot(
       collection(db, 'receipts'),
       (snapshot) => {
@@ -99,7 +74,7 @@ const CateringSalesApp = () => {
       }
     );
     return () => unsubscribe();
-  }, [db, authReady, user]);
+  }, [db]);
 
   const [newEvent, setNewEvent] = useState({
     title: '',
@@ -144,16 +119,8 @@ const CateringSalesApp = () => {
   };
 
   // --- DATA MODIFICATION with FIRESTORE ---
-  const ensureAllowed = () => {
-    if (!auth?.currentUser) { setErrorMsg('auth: not signed in'); return false; }
-    const email = (auth.currentUser.email || '').toLowerCase();
-    if (!ALLOWED.has(email)) { setErrorMsg('auth: not authorized'); return false; }
-    return true;
-  };
-
   const handleSaveEvent = async () => {
     if (!db) return;
-    if (!ensureAllowed()) return;
     const eventData = {
       ...newEvent,
       estimatedRevenue: parseFloat(newEvent.estimatedRevenue) || 0,
@@ -190,7 +157,6 @@ const CateringSalesApp = () => {
 
   const handleDeleteEvent = async (eventId) => {
     if (!db) return;
-    if (!ensureAllowed()) return;
     if (window.confirm('Are you sure you want to delete this event?')) {
       const eventDoc = doc(db, 'events', eventId);
       await deleteDoc(eventDoc);
@@ -201,7 +167,6 @@ const CateringSalesApp = () => {
 
   const handleSaveReceipt = async () => {
     if (!db) return;
-    if (!ensureAllowed()) return;
     const receiptData = { ...newReceipt, total: parseFloat(newReceipt.total) || 0, date: new Date(newReceipt.date) };
     await addDoc(collection(db, 'receipts'), receiptData);
     setShowReceiptModal(false);
@@ -241,10 +206,9 @@ const CateringSalesApp = () => {
         location: newEvent.location || undefined,
         visibility: confirmVisibility,
       };
-      const authHeaders = await getAuthHeaders();
       const resp = await fetch('/api/events/confirm', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', ...authHeaders },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
       if (!resp.ok) throw new Error(`Confirm failed: ${resp.status}`);
@@ -530,31 +494,7 @@ const CateringSalesApp = () => {
     )
   }
 
-  if (!authReady) {
-    return <div className="p-6">Loading…</div>;
-  }
-  if (!user) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 p-6">
-        <div className="bg-white border rounded-lg shadow-sm p-6 max-w-md w-full text-center">
-          <h2 className="text-xl font-semibold mb-2">Gallant Hawking</h2>
-          <p className="text-sm text-gray-600 mb-4">Sign in with Google to access tools.</p>
-          <button onClick={() => signInWithGoogle()} className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Sign in with Google</button>
-        </div>
-      </div>
-    );
-  }
-  if (!ALLOWED.has(user.email || '')) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 p-6">
-        <div className="bg-white border rounded-lg shadow-sm p-6 max-w-md w-full text-center">
-          <h2 className="text-xl font-semibold mb-2">Access Denied</h2>
-          <p className="text-sm text-gray-600 mb-4">Your account is not authorized for Gallant tools.</p>
-          <button onClick={() => signOutUser()} className="px-4 py-2 bg-gray-100 rounded hover:bg-gray-200">Sign out</button>
-        </div>
-      </div>
-    );
-  }
+  // Auth gating removed: render app for all users
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -571,7 +511,7 @@ const CateringSalesApp = () => {
                 <Plus className="w-4 h-4" />
                 <span>New Event</span>
               </button>
-              <button onClick={() => signOutUser()} className="px-3 py-2 text-sm bg-gray-100 rounded hover:bg-gray-200">Sign out</button>
+              {/* Sign out removed: public access */}
             </div>
           </div>
           <nav className="mt-4">
@@ -611,8 +551,8 @@ const CateringSalesApp = () => {
     ? (calendarView === 'monthly' ? renderCalendar() : calendarView === '3month' ? renderThreeMonthView() : renderAnnualView())
     : activeView === 'financials'
     ? renderFinancials()
-    : activeView === 'costing'
-    ? <CostingTool user={user} allowedEmails={[...ALLOWED]} />
+  : activeView === 'costing'
+  ? <CostingTool />
     : <Notepad />}
       </main>
 
