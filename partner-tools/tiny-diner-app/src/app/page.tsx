@@ -264,9 +264,9 @@ const contactSchema = z.object({
 
 const customSchema = z.object({
   guestCount: z
-    .string()
-    .transform((value) => Number(value))
-    .pipe(z.number().min(10, "Minimum 10 guests").max(120, "Tiny Diner max 120")),
+    .number()
+    .min(10, "Minimum 10 guests")
+    .max(120, "Tiny Diner max 120"),
   foodStyle: z.enum(["buffet", "plated", "appetizers"]),
   beverage: z.enum(["wine", "cocktails", "na"]),
   cake: z.enum(["need", "bring"]),
@@ -327,7 +327,7 @@ export default function TinyDinerApp() {
   const customForm = useForm<z.infer<typeof customSchema>>({
     resolver: zodResolver(customSchema),
     defaultValues: {
-      guestCount: initialCustomSelections.guestCount.toString(),
+      guestCount: initialCustomSelections.guestCount,
       foodStyle: initialCustomSelections.foodStyle,
       beverage: initialCustomSelections.beverage,
       cake: initialCustomSelections.cake,
@@ -1363,23 +1363,24 @@ function PaymentMilestone({
 }
 
 function StatusPill({ status }: { status: BookingState["paymentStatus"] }) {
-  const label =
-    status === "deposit_paid"
-      ? "Deposit paid"
-      : status === "deposit_processing"
-        ? "Processing"
-        : "Pending";
-
-  return (
-    <Badge className={cn(
-      "rounded-full px-3 py-1",
-      status === "deposit_paid" && "bg-emerald-500",
-      status === "deposit_processing" && "bg-sky-500",
-      status === "unpaid" && "bg-amber-500"
-    ))}>
-      {label}
-    </Badge>
+  let label: string;
+  switch (status) {
+    case "deposit_paid":
+      label = "Deposit paid";
+      break;
+    case "deposit_processing":
+      label = "Processing";
+      break;
+    default:
+      label = "Pending";
+  }
+  const badgeClass = cn(
+    "rounded-full px-3 py-1",
+    status === "deposit_paid" && "bg-emerald-500",
+    status === "deposit_processing" && "bg-sky-500",
+    status === "unpaid" && "bg-amber-500"
   );
+  return <Badge className={badgeClass}>{label}</Badge>;
 }
 
 function SendIcon() {
