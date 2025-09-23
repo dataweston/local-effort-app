@@ -174,14 +174,14 @@ const PREFERRED_VENDORS = [
     vendors: [
       {
         name: "Tiny Diner Officiant Collective",
-        cost: "50 flat",
+        cost: "`$450 flat",
         contact: "officiant@tinydiner.com",
         phone: "612-555-0164",
         notes: "Inclusive officiants aligned with Tiny Diner values",
       },
       {
         name: "Love In The Cities",
-        cost: "custom scripts from 75",
+        cost: "custom scripts from `$375",
         contact: "sayhello@loveinthecities.com",
         phone: "651-555-0147",
         notes: "Personalized ceremony writing + rehearsal support",
@@ -1474,3 +1474,4 @@ function buildAvailabilityMap() {
     map.set(format(date, "yyyy-MM-dd"), getAvailabilityStatus(date));
   });
   return map;
+}
