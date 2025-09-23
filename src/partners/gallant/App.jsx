@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Calendar, Plus, DollarSign, TrendingUp, ShoppingCart, Save, X, ChevronLeft, ChevronRight, Trash2, FileText, Calculator } from 'lucide-react';
+import { Calendar, Plus, DollarSign, TrendingUp, ShoppingCart, Save, X, ChevronLeft, ChevronRight, Trash2, FileText } from 'lucide-react';
 import { db, firebaseProjectId } from '../../firebaseConfig';
 import Notepad from './Notepad';
-import CostingTool from './CostingTool';
 // Auth removed: tools are now public-access
 
 function toDateSafe(v) {
@@ -27,7 +26,7 @@ const CateringSalesApp = () => {
   const [showEventModal, setShowEventModal] = useState(false);
   const [showReceiptModal, setShowReceiptModal] = useState(false);
   const [editingEvent, setEditingEvent] = useState(null);
-  const [activeView, setActiveView] = useState('calendar'); // 'calendar' | 'financials' | 'costing' | 'notepad'
+  const [activeView, setActiveView] = useState('calendar'); // 'calendar' | 'financials' | 'notepad'
   const [calendarView, setCalendarView] = useState('monthly'); // monthly, 3month, annual
   const [selectedMonthForSpending, setSelectedMonthForSpending] = useState(new Date());
   const [errorMsg, setErrorMsg] = useState('');
@@ -714,6 +713,7 @@ const CateringSalesApp = () => {
 };
 
 export default CateringSalesApp;
+
 
 
 
