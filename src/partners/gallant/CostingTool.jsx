@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Loader2, Plus, Trash2 } from 'lucide-react';
 import {
   addDoc,
@@ -28,7 +28,7 @@ const DEFAULT_SHEET = {
   notes: '',
 };
 
-const FALLBACK_ALLOWED = ['dataweston@gmail.com', 'colsen03@gmail.com'];
+// Public tool: no auth allowlist needed
 
 function formatCurrency(amount) {
   const value = Number.isFinite(amount) ? amount : 0;
@@ -88,14 +88,7 @@ function formatTimestamp(ts) {
   return '';
 }
 
-export default function CostingTool({ user, allowedEmails = [] }) {
-  const allowedSet = useMemo(() => {
-    const list = Array.isArray(allowedEmails) && allowedEmails.length ? allowedEmails : FALLBACK_ALLOWED;
-    return new Set(list.map((email) => String(email || '').toLowerCase()));
-  }, [allowedEmails]);
-
-  const email = (user?.email || '').toLowerCase();
-  const isAuthorized = !!email && allowedSet.has(email);
+export default function CostingTool() {
 
   const [sessions, setSessions] = useState([]); // { id, name, updatedAt }
   const [activeId, setActiveId] = useState(null);
@@ -108,7 +101,7 @@ export default function CostingTool({ user, allowedEmails = [] }) {
   const saveTimer = useRef(null);
 
   useEffect(() => {
-    if (!db || !isAuthorized) {
+    if (!db) {
       setSessions([]);
       setActiveId(null);
       setSheet({ ...DEFAULT_SHEET });
@@ -153,10 +146,10 @@ export default function CostingTool({ user, allowedEmails = [] }) {
     return () => {
       unsub();
     };
-  }, [db, isAuthorized, activeId]);
+  }, [db, activeId]);
 
   useEffect(() => {
-    if (!db || !isAuthorized || !activeId) {
+    if (!db || !activeId) {
       setSheet({ ...DEFAULT_SHEET });
       setLoadingSheet(false);
       return () => {};
@@ -182,14 +175,14 @@ export default function CostingTool({ user, allowedEmails = [] }) {
     return () => {
       unsub();
     };
-  }, [db, activeId, isAuthorized]);
+  }, [db, activeId]);
 
   useEffect(() => () => {
     if (saveTimer.current) clearTimeout(saveTimer.current);
   }, []);
 
   const scheduleSave = (nextSheet) => {
-    if (!db || !isAuthorized || !activeId) return;
+  if (!db || !activeId) return;
     if (saveTimer.current) clearTimeout(saveTimer.current);
     saveTimer.current = setTimeout(async () => {
       try {
@@ -214,17 +207,7 @@ export default function CostingTool({ user, allowedEmails = [] }) {
     });
   };
 
-  const ensureAuthorized = () => {
-    if (!db) {
-      setError('Firebase is not configured for this environment.');
-      return false;
-    }
-    if (!isAuthorized) {
-      setError('You do not have access to edit this tool.');
-      return false;
-    }
-    return true;
-  };
+  const ensureAuthorized = () => !!db;
 
   const createSession = async () => {
     if (!ensureAuthorized()) return;
@@ -235,7 +218,7 @@ export default function CostingTool({ user, allowedEmails = [] }) {
         ...sanitizeSheet({ ...DEFAULT_SHEET, name }),
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
-        createdBy: email || '',
+        createdBy: 'public',
       };
       const docRef = await addDoc(collection(db, COLLECTION_KEY), payload);
       setActiveId(docRef.id);
@@ -337,14 +320,7 @@ export default function CostingTool({ user, allowedEmails = [] }) {
     );
   }
 
-  if (!isAuthorized) {
-    return (
-      <div className="bg-white border rounded-lg shadow-sm p-6">
-        <h3 className="text-lg font-semibold mb-2">Costing Tool</h3>
-        <p className="text-sm text-gray-600">Sign in with an authorized account to access the costing tool.</p>
-      </div>
-    );
-  }
+  // Public access: no auth gating
 
   return (
     <div className="bg-white border rounded-lg shadow-sm">
