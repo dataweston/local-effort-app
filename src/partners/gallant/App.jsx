@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Calendar, Plus, DollarSign, TrendingUp, ShoppingCart, Save, X, ChevronLeft, ChevronRight, Trash2, FileText } from 'lucide-react';
+import { Calendar, Plus, DollarSign, TrendingUp, ShoppingCart, Save, X, ChevronLeft, ChevronRight, Trash2, FileText, Calculator } from 'lucide-react';
 import { db, firebaseProjectId } from '../../firebaseConfig';
 import Notepad from './Notepad';
+import CostingTool from './CostingTool';
 import { auth, signInWithGoogle, signOutUser } from '../../firebaseConfig';
 import { onAuthStateChanged } from 'firebase/auth';
 
@@ -43,7 +44,7 @@ const CateringSalesApp = () => {
   const [showEventModal, setShowEventModal] = useState(false);
   const [showReceiptModal, setShowReceiptModal] = useState(false);
   const [editingEvent, setEditingEvent] = useState(null);
-  const [activeView, setActiveView] = useState('calendar'); // 'calendar' | 'financials' | 'notepad'
+  const [activeView, setActiveView] = useState('calendar'); // 'calendar' | 'financials' | 'costing' | 'notepad'
   const [calendarView, setCalendarView] = useState('monthly'); // monthly, 3month, annual
   const [selectedMonthForSpending, setSelectedMonthForSpending] = useState(new Date());
   const [errorMsg, setErrorMsg] = useState('');
@@ -584,6 +585,10 @@ const CateringSalesApp = () => {
                   <DollarSign className="w-4 h-4 inline mr-2" />
                   Financials
                 </button>
+                <button onClick={() => setActiveView('costing')} className={`pb-2 border-b-2 font-medium text-sm transition-colors ${activeView === 'costing' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>
+                  <Calculator className="w-4 h-4 inline mr-2" />
+                  Costing
+                </button>
                 <button onClick={() => setActiveView('notepad')} className={`pb-2 border-b-2 font-medium text-sm transition-colors ${activeView === 'notepad' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>
                   <FileText className="w-4 h-4 inline mr-2" />
                   Notepad
@@ -600,10 +605,16 @@ const CateringSalesApp = () => {
           </nav>
         </div>
       </header>
-      <main className="max-w-7xl mx-auto px-4 py-8">
-  {renderStatus()}
-  {activeView === 'calendar' ? (calendarView === 'monthly' ? renderCalendar() : calendarView === '3month' ? renderThreeMonthView() : renderAnnualView()) : activeView === 'financials' ? renderFinancials() : <Notepad />}
+      <main className="max-w-7xl mx-auto px-4 py-8">`r`n    {renderStatus()}
+  {activeView === 'calendar'
+    ? (calendarView === 'monthly' ? renderCalendar() : calendarView === '3month' ? renderThreeMonthView() : renderAnnualView())
+    : activeView === 'financials'
+    ? renderFinancials()
+    : activeView === 'costing'
+    ? <CostingTool user={user} allowedEmails={[...ALLOWED]} />
+    : <Notepad />}
       </main>
+
       {/* Event Modal */}
       {showEventModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
@@ -762,3 +773,13 @@ const CateringSalesApp = () => {
 };
 
 export default CateringSalesApp;
+
+
+
+
+
+
+
+
+
+
