@@ -605,7 +605,8 @@ const CateringSalesApp = () => {
           </nav>
         </div>
       </header>
-      <main className="max-w-7xl mx-auto px-4 py-8">`r`n    {renderStatus()}
+      <main className="max-w-7xl mx-auto px-4 py-8">
+        {renderStatus()}
   {activeView === 'calendar'
     ? (calendarView === 'monthly' ? renderCalendar() : calendarView === '3month' ? renderThreeMonthView() : renderAnnualView())
     : activeView === 'financials'
