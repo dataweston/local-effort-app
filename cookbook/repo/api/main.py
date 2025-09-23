@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+import json
 from collections import Counter
 from typing import List, Optional
 
@@ -38,26 +39,75 @@ def get_client() -> OpenSearch | None:
         return None
 
 # Local fallback: load ./data/recipes.jsonl if present
+
+
+def _ensure_list(value):
+    if not value:
+        return []
+    if isinstance(value, list):
+        return [str(v).strip() for v in value if str(v).strip()]
+    return [str(value).strip()]
+
+
+def _normalize_local_record(obj: dict) -> dict:
+    record = obj or {}
+    identifier = record.get("identifier") or record.get("id")
+    record.setdefault("id", identifier)
+    metadata = record.get("metadata") or {}
+    if not isinstance(metadata, dict):
+        metadata = {}
+    cookbook_title = (
+        record.get("cookbook_title")
+        or record.get("cookbookTitle")
+        or metadata.get("cookbook_title")
+        or metadata.get("source_identifier")
+    )
+    if cookbook_title:
+        record["cookbook_title"] = cookbook_title
+    digital_urls = record.get("digital_urls")
+    if not isinstance(digital_urls, list):
+        digital_urls = _ensure_list(digital_urls)
+    else:
+        digital_urls = [str(url).strip() for url in digital_urls if str(url).strip()]
+    primary_digital = record.get("digital_url")
+    if primary_digital:
+        primary_digital = str(primary_digital).strip()
+    if primary_digital and primary_digital not in digital_urls:
+        digital_urls.insert(0, primary_digital)
+    if not primary_digital and digital_urls:
+        primary_digital = digital_urls[0]
+    if primary_digital:
+        record["digital_url"] = primary_digital
+    record["digital_urls"] = digital_urls
+    location = record.get("location")
+    if isinstance(location, dict):
+        record["location"] = {k: v for k, v in location.items() if v}
+    record["has_digital_assets"] = bool(
+        primary_digital
+        or record.get("iiif_manifest")
+        or record.get("pdf_url")
+        or (record.get("curation") or {}).get("has_digital_assets")
+    )
+    return record
 def load_local_recipes() -> list[dict]:
-    path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data", "recipes.jsonl")
+    data_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data", "recipes.jsonl")
+    records: list[dict] = []
     try:
-        items: list[dict] = []
-        import json
-        with open(path, "r", encoding="utf-8") as f:
-            for line in f:
+        with open(data_path, "r", encoding="utf-8") as handle:
+            for line in handle:
                 line = line.strip()
                 if not line:
                     continue
                 try:
-                    obj = json.loads(line)
-                    obj = obj or {}
-                    obj.setdefault("id", obj.get("identifier") or obj.get("id"))
-                    items.append(obj)
+                    raw = json.loads(line)
                 except Exception:
                     continue
-        return items
+                record = _normalize_local_record(raw or {})
+                if record.get("id"):
+                    records.append(record)
     except FileNotFoundError:
         return []
+    return records
 
 LOCAL_RECIPES = load_local_recipes()
 
@@ -73,7 +123,9 @@ async def get_stats(index: str = "recipes"):
                 "size": 0,
                 "query": {"match_all": {}},
                 "aggs": {
-                    "sources": {"terms": {"field": "source", "size": 20}},
+                    "sources": {"terms": {"field": "source", "size": 25}},
+                    "states": {"terms": {"field": "location.state", "size": 50}},
+                    "institutions": {"terms": {"field": "institution", "size": 50}},
                     "with_recipe": {
                         "filter": {
                             "bool": {
@@ -100,37 +152,42 @@ async def get_stats(index: str = "recipes"):
                 },
             }
             agg_res = client.search(index=index, body=agg_body)
-            sources = [bucket["key"] for bucket in agg_res.get("aggregations", {}).get("sources", {}).get("buckets", [])]
-            recipe_count = agg_res.get("aggregations", {}).get("with_recipe", {}).get("doc_count", 0)
-            scan_count = agg_res.get("aggregations", {}).get("with_scans", {}).get("doc_count", 0)
+            aggs = agg_res.get("aggregations", {})
+            sources = [bucket["key"] for bucket in aggs.get("sources", {}).get("buckets", [])]
+            states = [bucket["key"] for bucket in aggs.get("states", {}).get("buckets", [])]
+            institutions = [bucket["key"] for bucket in aggs.get("institutions", {}).get("buckets", [])]
+            recipe_count = aggs.get("with_recipe", {}).get("doc_count", 0)
+            scan_count = aggs.get("with_scans", {}).get("doc_count", 0)
             return {
                 "documents": total,
                 "recipes": recipe_count,
                 "digital_items": scan_count,
                 "sources": sources,
+                "states": states,
+                "institutions": institutions,
             }
         except Exception:
             pass
 
     if not LOCAL_RECIPES:
-        return {"documents": 0, "recipes": 0, "digital_items": 0, "sources": []}
+        return {"documents": 0, "recipes": 0, "digital_items": 0, "sources": [], "states": [], "institutions": []}
     documents = len(LOCAL_RECIPES)
     recipe_count = sum(
         1
         for r in LOCAL_RECIPES
         if (r.get("ingredients") or r.get("instructions"))
     )
-    digital_count = sum(
-        1
-        for r in LOCAL_RECIPES
-        if r.get("iiif_manifest") or r.get("pdf_url") or r.get("curation", {}).get("has_digital_assets")
-    )
+    digital_count = sum(1 for r in LOCAL_RECIPES if r.get("has_digital_assets"))
     sources = sorted({r.get("source") for r in LOCAL_RECIPES if r.get("source")})
+    states = sorted({(r.get("location") or {}).get("state") for r in LOCAL_RECIPES if (r.get("location") or {}).get("state")})
+    institutions = sorted({r.get("institution") for r in LOCAL_RECIPES if r.get("institution")})
     return {
         "documents": documents,
         "recipes": recipe_count,
         "digital_items": digital_count,
         "sources": sources,
+        "states": states,
+        "institutions": institutions,
     }
 
 
@@ -213,6 +270,9 @@ async def search(
         title = (doc.get("title") or "").lower()
         if ql in title:
             return True
+        cookbook_title = (doc.get("cookbook_title") or "").lower()
+        if ql in cookbook_title:
+            return True
         for arr_key in ("ingredients", "instructions"):
             arr = doc.get(arr_key) or []
             if isinstance(arr, list) and any(ql in str(x).lower() for x in arr):
@@ -228,7 +288,7 @@ async def search(
         if institution and doc.get("institution") != institution:
             return False
         if has_scans is True:
-            if not (doc.get("iiif_manifest") or doc.get("pdf_url") or doc.get("curation", {}).get("has_digital_assets")):
+            if not doc.get("has_digital_assets"):
                 return False
         return True
 
