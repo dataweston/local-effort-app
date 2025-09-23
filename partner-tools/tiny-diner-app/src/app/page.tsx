@@ -136,7 +136,7 @@ const PREFERRED_VENDORS = [
     vendors: [
       {
         name: "Tiny Diner Kitchen",
-        cost: "$62–$88 per guest",
+        cost: "$62-$88 per guest",
         contact: "chef@tinydiner.com",
         phone: "612-555-0105",
         notes: "Seasonal menus with vegetarian & vegan highlights",
@@ -1500,6 +1500,8 @@ function buildAvailabilityMap() {
   });
   return map;
 }
+
+
 
 
 

@@ -1,36 +1,37 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+﻿# Tiny Diner Weddings Portal
 
-## Getting Started
+Standalone Next.js + shadcn/ui microservice for Tiny Diner wedding intake, booking, and vendor coordination.
 
-First, run the development server:
+## Local development
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+cd partner-tools/tiny-diner-app
+npm install
+npm run dev -- --port 5410
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+The host app embeds the tool via `<iframe>` and defaults to `http://localhost:5410`. Override by setting `VITE_TINY_DINER_URL` in the main app (or deploy URL).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Feature map
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- Availability-first calendar with hold/booked status.
+- Streamlined booking path with preset $4k offer and instant deposit summary.
+- Custom intake path capturing guest count, dining style, beverage, dessert, floral, coordination, officiant, and freeform notes.
+- Estimate builder with dynamic line items, deposit calculation, and payment milestones.
+- Shared dashboard tabs for summary, preferred vendors, message log, and payment schedule.
+- Square payment stubs (`/api/payments/deposit`) prepared for ACH vs card collection.
+- HoneyBook sync stub (`/api/honeybook`) for pushing intakes into HoneyBook projects.
 
-## Learn More
+## Integration hooks
 
-To learn more about Next.js, take a look at the following resources:
+- Replace `POST /api/honeybook` with real HoneyBook API calls (use `booking` + `estimate` payload).
+- Replace `POST /api/payments/deposit` with Square ACH / card payment intent logic.
+- Extend messaging tab to persist to Supabase/Firestore if needed; currently local state mock.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Theming notes
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- Tailwind + shadcn tokens tuned for neutral base with rose accents. Update `STREAMLINED_PACKAGE`, vendor list, or color classes (`bg-rose-600`, `bg-emerald-600`) to match final Tiny Diner brand kit once provided.
 
-## Deploy on Vercel
+## Deployment
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Any standard Next.js workflow (Vercel, Netlify, SSR). Expose the app URL via `VITE_TINY_DINER_URL` in the host app so partners can access it from `/partners/tiny-diner`.
