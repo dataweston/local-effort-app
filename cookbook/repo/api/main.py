@@ -1,12 +1,15 @@
 from __future__ import annotations
 
-import os
 import json
+import logging
+import os
 from collections import Counter
+from pathlib import Path
 from typing import List, Optional
 
-from fastapi import FastAPI, HTTPException, Query
+from fastapi import Body, FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
 from opensearchpy import OpenSearch
 
 app = FastAPI(title="Cookbook API")
@@ -17,6 +20,11 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+logger = logging.getLogger(__name__)
+DATA_DIR = Path(os.path.dirname(os.path.dirname(__file__))) / "data"
+MODERATION_FILE = DATA_DIR / "moderation_hidden.json"
 
 
 def get_client() -> OpenSearch | None:
@@ -89,6 +97,8 @@ def _normalize_local_record(obj: dict) -> dict:
         or (record.get("curation") or {}).get("has_digital_assets")
     )
     return record
+
+
 def load_local_recipes() -> list[dict]:
     data_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data", "recipes.jsonl")
     records: list[dict] = []
@@ -110,6 +120,30 @@ def load_local_recipes() -> list[dict]:
     return records
 
 LOCAL_RECIPES = load_local_recipes()
+
+
+class HiddenList(BaseModel):
+    ids: List[str]
+
+
+def _load_hidden_ids() -> List[str]:
+    try:
+        data = json.loads(MODERATION_FILE.read_text(encoding='utf-8'))
+        ids = data.get('ids')
+        if isinstance(ids, list):
+            return sorted({str(item).strip() for item in ids if str(item).strip()})
+    except FileNotFoundError:
+        return []
+    except Exception:
+        logger.warning("Failed to read moderation file", exc_info=True)
+    return []
+
+
+def _write_hidden_ids(ids: List[str]) -> None:
+    MODERATION_FILE.parent.mkdir(parents=True, exist_ok=True)
+    payload = {"ids": sorted({str(item).strip() for item in ids if str(item).strip()})}
+    MODERATION_FILE.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding='utf-8')
+
 
 
 @app.get("/api/stats")
@@ -333,3 +367,31 @@ async def search(
 
     return {"results": limited, "total": {"value": len(matched_docs)}, "facets": facets}
 
+
+
+@app.get("/api/moderation/hidden")
+async def get_hidden_ids():
+    return {"ids": _load_hidden_ids()}
+
+
+@app.put("/api/moderation/hidden")
+async def replace_hidden_ids(payload: HiddenList):
+    ids = [item.strip() for item in payload.ids if item and item.strip()]
+    _write_hidden_ids(ids)
+    return {"ids": _load_hidden_ids()}
+
+
+@app.post("/api/moderation/hidden")
+async def add_hidden_ids(payload: HiddenList):
+    existing = set(_load_hidden_ids())
+    incoming = {item.strip() for item in payload.ids if item and item.strip()}
+    combined = sorted(existing.union(incoming))
+    _write_hidden_ids(combined)
+    return {"ids": combined}
+
+
+@app.delete("/api/moderation/hidden")
+async def remove_hidden_ids(payload: HiddenList):
+    remaining = [item for item in _load_hidden_ids() if item not in {entry.strip() for entry in payload.ids}]
+    _write_hidden_ids(remaining)
+    return {"ids": _load_hidden_ids()}

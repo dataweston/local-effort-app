@@ -11,6 +11,36 @@ from .schema import RecipeDoc, ensure_list, ensure_str
 logger = logging.getLogger(__name__)
 
 
+def _derive_cookbook_title(obj: Dict[str, Any]) -> Optional[str]:
+    candidates: List[str] = []
+    metadata = obj.get("metadata") or {}
+    inner_meta = metadata.get("metadata") if isinstance(metadata, dict) else {}
+    fields: List[Any] = [
+        obj.get("cookbook_title"),
+        obj.get("cookbookTitle"),
+        obj.get("title"),
+    ]
+    if isinstance(metadata, dict):
+        fields.extend([
+            metadata.get("cookbook_title"),
+            metadata.get("title"),
+            metadata.get("source_title"),
+        ])
+    if isinstance(inner_meta, dict):
+        fields.extend([
+            inner_meta.get("cookbook_title"),
+            inner_meta.get("title"),
+        ])
+    for value in fields:
+        text = ensure_str(value)
+        if text and text not in candidates:
+            candidates.append(text)
+    for candidate in candidates:
+        if candidate:
+            return candidate
+    return None
+
+
 def iter_harvested_files(root: Path) -> Iterator[Path]:
     for fp in root.rglob("*.json"):
         yield fp
@@ -204,10 +234,22 @@ def _texts_from_internet_archive(obj: Dict[str, Any]) -> List[str]:
 def _texts_from_loc(obj: Dict[str, Any]) -> List[str]:
     texts: List[str] = []
     texts.extend(ensure_list(obj.get("description")))
-    meta = obj.get("metadata")
+    meta = obj.get("metadata") or {}
     if isinstance(meta, dict):
-        for key in ["description", "notes"]:
+        for key in ["description", "notes", "transcription", "extract", "content"]:
             texts.extend(ensure_list(meta.get(key)))
+        resources = meta.get("resources")
+        if isinstance(resources, list):
+            for resource in resources:
+                if not isinstance(resource, dict):
+                    continue
+                for key in ["text", "description", "title", "transcription", "snippet"]:
+                    texts.extend(ensure_list(resource.get(key)))
+                files = resource.get("files")
+                if isinstance(files, list):
+                    for file_entry in files:
+                        if isinstance(file_entry, dict):
+                            texts.extend(ensure_list(file_entry.get("text")))
     return texts
 
 
@@ -221,7 +263,7 @@ def _texts_generic(obj: Dict[str, Any]) -> List[str]:
 def _build_docs(obj: Dict[str, Any], path: Path, recipes: List[Dict[str, Any]]) -> Iterator[Dict[str, Any]]:
     identifier = ensure_str(obj.get("identifier") or obj.get("id")) or path.stem
     source = ensure_str(obj.get("source")) or "unknown"
-    cookbook_title = ensure_str(obj.get("title"))
+    cookbook_title = _derive_cookbook_title(obj)
     description = _join_description(obj.get("description"))
     subjects = _collect_subjects(obj)
     creators = _collect_creators(obj)
@@ -232,7 +274,14 @@ def _build_docs(obj: Dict[str, Any], path: Path, recipes: List[Dict[str, Any]]) 
     institution = ensure_str(obj.get("institution"))
     iiif_manifest = ensure_str(obj.get("iiif_manifest"))
     digital_urls = _collect_digital_urls(obj)
-    digital_url = digital_urls[0] if digital_urls else ensure_str(obj.get("digital_url"))
+    primary_digital = ensure_str(obj.get("digital_url"))
+    if primary_digital:
+        ordered_urls = [primary_digital] + [url for url in digital_urls if url != primary_digital]
+    else:
+        ordered_urls = digital_urls
+        primary_digital = ordered_urls[0] if ordered_urls else None
+    digital_urls = ordered_urls
+    digital_url = primary_digital
     image_preview = _collect_image(obj)
     metadata = _base_metadata(obj, path)
     if cookbook_title:
