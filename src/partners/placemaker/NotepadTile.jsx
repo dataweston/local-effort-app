@@ -14,7 +14,8 @@ function formatTitleFromContent(content) {
 
 const NotepadTile = forwardRef(function NotepadTile(_, ref) {
   const [notes, setNotes] = useState([]);
-  const activeIdRef = useRef(null);\n  const activeIdRef = useRef(null);
+  const activeIdRef = useRef(null);
+  const bootstrappedRef = useRef(false);
   const [activeId, setActiveId] = useState(null);
   const [draft, setDraft] = useState('');
   const [loadingList, setLoadingList] = useState(true);
@@ -111,9 +112,15 @@ const NotepadTile = forwardRef(function NotepadTile(_, ref) {
     }
   };
 
-  useEffect(() => {\n    activeIdRef.current = activeId;\n  }, [activeId]);\n\n  useEffect(() => {
-    activeIdRef.current = activeId;
-  }, [activeId]);
+  useEffect(() => {\r\n    activeIdRef.current = activeId;\r\n  }, [activeId]);\r\n\r\n  useEffect(() => {
+    if (!db) return;
+    if (loadingList) return;
+    if (bootstrappedRef.current) return;
+    if (!notes.length) {
+      bootstrappedRef.current = true;
+      handleCreate();
+    }
+  }, [db, loadingList, notes.length]);
 
   const handleContentChange = (value) => {
     setDraft(value);
@@ -229,4 +236,7 @@ const NotepadTile = forwardRef(function NotepadTile(_, ref) {
 });
 
 export default NotepadTile;
+
+
+
 
