@@ -4,7 +4,7 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const admin = require('firebase-admin');
-const { createClient } = require('@sanity/client');
+const { getSanityClient } = require('./sanityClient');
 const fs = require('fs');
 const path = require('path');
 
@@ -18,27 +18,6 @@ if (!process.env.SQUARE_ACCESS_TOKEN || !process.env.BREVO_API_KEY) {
   }
 }
 
-// Lazily create Sanity client to avoid throwing during module load when
-// SANITY_PROJECT_ID is not provided in the environment (this prevents
-// serverless functions from failing with "Configuration must contain `projectId`").
-let sanityClient = null;
-function getSanityClient() {
-  if (sanityClient) return sanityClient;
-  const projectId = process.env.SANITY_PROJECT_ID;
-  if (!projectId) {
-    console.warn('SANITY_PROJECT_ID not set — Sanity client unavailable.');
-    return null;
-  }
-  const dataset = process.env.SANITY_DATASET || 'localeffort';
-  sanityClient = createClient({
-    projectId,
-    dataset,
-    useCdn: false, // `false` for write operations
-    token: process.env.SANITY_API_TOKEN, // A token with write access
-    apiVersion: '2024-01-01',
-  });
-  return sanityClient;
-}
 // Import Square Client (defensive: handle varying export shapes across versions)
 let Client, Environment;
 try {
