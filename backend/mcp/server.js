@@ -1,0 +1,222 @@
+const { McpServer, ResourceTemplate } = require('@modelcontextprotocol/sdk/server/mcp.js');
+const { StdioServerTransport } = require('@modelcontextprotocol/sdk/server/stdio.js');
+const { z } = require('zod');
+
+const { searchSupport, normalizeKey } = require('../api/utils/supportSearchService');
+const { getSupabase } = require('../api/supabaseClient');
+const { getSanityClient } = require('../api/sanityClient');
+
+function registerSupportResources(server) {
+  const chunkTemplate = new ResourceTemplate('support-chunk://{chunkId}', { list: undefined });
+  server.registerResource(
+    'support.chunk',
+    chunkTemplate,
+    {
+      title: 'Support knowledge chunk',
+      description: 'Fetch a single chunk from the Supabase knowledge base.',
+      mimeType: 'text/markdown',
+    },
+    async (uri, { chunkId }) => {
+      const supabase = getSupabase();
+      if (!supabase) throw new Error('supabase-not-configured');
+      const { data, error } = await supabase
+        .from('content_chunks')
+        .select('id, source_id, ord, heading, anchor, text, updated_at')
+        .eq('id', chunkId)
+        .maybeSingle();
+      if (error) throw new Error(`supabase-error: ${error.message || error}`);
+      if (!data) throw new Error('support-chunk-not-found');
+
+      const textLines = [];
+      if (data.heading) textLines.push(`# ${data.heading}`);
+      textLines.push(data.text);
+
+      return {
+        contents: [
+          {
+            uri: uri.href,
+            text: textLines.join('\n\n'),
+          },
+          {
+            uri: `${uri.href}#metadata`,
+            json: {
+              id: data.id,
+              sourceId: data.source_id,
+              ord: data.ord,
+              heading: data.heading,
+              anchor: data.anchor,
+              updatedAt: data.updated_at,
+            },
+          },
+        ],
+      };
+    }
+  );
+
+  const cacheTemplate = new ResourceTemplate('support-cache://{cacheKey}', { list: undefined });
+  server.registerResource(
+    'support.cache-entry',
+    cacheTemplate,
+    {
+      title: 'Cached support answer',
+      description: 'Look up a cached support answer by normalized cache key.',
+      mimeType: 'application/json',
+    },
+    async (uri, { cacheKey }) => {
+      const supabase = getSupabase();
+      if (!supabase) throw new Error('supabase-not-configured');
+      const normalized = normalizeKey(cacheKey);
+      const { data, error } = await supabase
+        .from('cached_answers')
+        .select('*')
+        .eq('cache_key', normalized)
+        .maybeSingle();
+      if (error) throw new Error(`supabase-error: ${error.message || error}`);
+      if (!data) throw new Error('support-cache-miss');
+      return {
+        contents: [
+          {
+            uri: uri.href,
+            json: data,
+          },
+        ],
+      };
+    }
+  );
+
+  const sourceTemplate = new ResourceTemplate('support-source://{sourceId}', { list: undefined });
+  server.registerResource(
+    'support.source',
+    sourceTemplate,
+    {
+      title: 'Support source document',
+      description: 'Retrieve metadata for a content source backing the support knowledge base.',
+      mimeType: 'application/json',
+    },
+    async (uri, { sourceId }) => {
+      const supabase = getSupabase();
+      if (!supabase) throw new Error('supabase-not-configured');
+      const { data, error } = await supabase
+        .from('content_sources')
+        .select('id, type, source_id, url, title, tags, published, updated_at')
+        .eq('id', sourceId)
+        .maybeSingle();
+      if (error) throw new Error(`supabase-error: ${error.message || error}`);
+      if (!data) throw new Error('support-source-not-found');
+      return {
+        contents: [
+          {
+            uri: uri.href,
+            json: data,
+          },
+        ],
+      };
+    }
+  );
+}
+
+function registerSupportTools(server) {
+  server.registerTool(
+    'support.search',
+    {
+      title: 'Search support knowledge base',
+      description: 'Hybrid semantic + keyword search over Supabase support chunks.',
+      inputSchema: z.object({
+        query: z.string().min(1, 'query is required'),
+        skipCache: z.boolean().optional(),
+      }),
+    },
+    async ({ query, skipCache }) => {
+      const payload = await searchSupport(query, { useCache: !skipCache });
+      return {
+        content: [
+          {
+            type: 'json',
+            json: payload,
+          },
+        ],
+      };
+    }
+  );
+}
+
+function registerSanityResources(server) {
+  const docTemplate = new ResourceTemplate('sanity-document://{docId}', { list: undefined });
+  server.registerResource(
+    'sanity.document',
+    docTemplate,
+    {
+      title: 'Sanity document',
+      description: 'Load a raw Sanity document by ID.',
+      mimeType: 'application/json',
+    },
+    async (uri, { docId }) => {
+      const sanity = getSanityClient();
+      if (!sanity) throw new Error('sanity-not-configured');
+      const doc = await sanity.getDocument(docId);
+      if (!doc) throw new Error('sanity-document-not-found');
+      return {
+        contents: [
+          {
+            uri: uri.href,
+            json: doc,
+          },
+        ],
+      };
+    }
+  );
+}
+
+function registerSanityTools(server) {
+  server.registerTool(
+    'sanity.query',
+    {
+      title: 'Run a GROQ query against Sanity',
+      description: 'Execute a read-only GROQ query with optional parameters.',
+      inputSchema: z.object({
+        query: z.string().min(1, 'query is required'),
+        params: z.record(z.any()).optional(),
+      }),
+    },
+    async ({ query, params }) => {
+      const sanity = getSanityClient();
+      if (!sanity) throw new Error('sanity-not-configured');
+      const data = await sanity.fetch(query, params);
+      return {
+        content: [
+          {
+            type: 'json',
+            json: { data },
+          },
+        ],
+      };
+    }
+  );
+}
+
+function createMcpServer({ name = 'local-effort-mcp', version = '0.1.0' } = {}) {
+  const server = new McpServer({ name, version });
+  registerSupportResources(server);
+  registerSupportTools(server);
+  registerSanityResources(server);
+  registerSanityTools(server);
+  return server;
+}
+
+async function startStdioServer() {
+  const server = createMcpServer();
+  const transport = new StdioServerTransport();
+  await server.connect(transport);
+}
+
+module.exports = {
+  createMcpServer,
+  startStdioServer,
+};
+
+if (require.main === module) {
+  startStdioServer().catch((err) => {
+    console.error('Failed to start MCP server', err);
+    process.exit(1);
+  });
+}
