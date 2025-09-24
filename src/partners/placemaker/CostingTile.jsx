@@ -5,6 +5,7 @@ import { db } from '../../firebaseConfig';
 
 const COLLECTION_KEY = 'placemakerCosting';
 const DEFAULT_DOC_ID = 'default';
+const LOCAL_STORAGE_KEY = 'placemaker-costing-local';
 
 const DEFAULT_SHEET = {
   title: '$4k wedding at Tiny Diner',
@@ -48,11 +49,33 @@ function sanitizeSheet(input) {
   }, {});
 }
 
+function readLocalSheet() {
+  try {
+    const raw = typeof window === 'undefined' ? null : window.localStorage.getItem(LOCAL_STORAGE_KEY);
+    if (!raw) return { ...DEFAULT_SHEET };
+    const parsed = JSON.parse(raw);
+    return sanitizeSheet(parsed);
+  } catch (error) {
+    console.warn('Placemaker costing local read failed', error);
+    return { ...DEFAULT_SHEET };
+  }
+}
+
+function writeLocalSheet(data) {
+  try {
+    if (typeof window === 'undefined') return;
+    window.localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(sanitizeSheet(data)));
+  } catch (error) {
+    console.warn('Placemaker costing local write failed', error);
+  }
+}
+
 export default function CostingTile({ onSnapshot }) {
   const [sheet, setSheet] = useState({ ...DEFAULT_SHEET });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
+  const [syncMode, setSyncMode] = useState(db ? 'firestore' : 'local');
 
   const saveTimer = useRef(null);
 
@@ -63,7 +86,8 @@ export default function CostingTile({ onSnapshot }) {
 
   useEffect(() => {
     if (!db) {
-      setError('Firebase is not configured; enable VITE_FIREBASE_* vars for real-time updates.');
+      setSheet(readLocalSheet());
+      setSyncMode('local');
       setLoading(false);
       return () => {};
     }
@@ -73,18 +97,30 @@ export default function CostingTile({ onSnapshot }) {
         if (snap.exists()) {
           const data = sanitizeSheet(snap.data());
           setSheet(data);
+          writeLocalSheet(data);
         } else {
           try {
             await setDoc(docRef, { ...DEFAULT_SHEET, createdAt: serverTimestamp(), updatedAt: serverTimestamp() });
             setSheet({ ...DEFAULT_SHEET });
-          } catch (e) {
-            setError(e?.message || 'Unable to seed default costing state.');
+            writeLocalSheet(DEFAULT_SHEET);
+          } catch (error) {
+            console.warn('Placemaker costing seed failed', error);
+            setSheet(readLocalSheet());
+            setSyncMode('local');
           }
         }
+        setSyncMode('firestore');
         setLoading(false);
       },
       (err) => {
-        setError(err?.message || 'Failed to load costing data.');
+        console.warn('Placemaker costing snapshot error', err);
+        setSheet(readLocalSheet());
+        setSyncMode('local');
+        if (err?.message && !/permission/i.test(err.message)) {
+          setError(err.message);
+        } else {
+          setError('');
+        }
         setLoading(false);
       }
     );
@@ -96,16 +132,18 @@ export default function CostingTile({ onSnapshot }) {
   }, []);
 
   const scheduleSave = (next) => {
-    if (!db || !docRef) return;
     if (saveTimer.current) clearTimeout(saveTimer.current);
     const payload = sanitizeSheet(next);
+    writeLocalSheet(payload);
+    if (!db || !docRef || syncMode !== 'firestore') return;
     saveTimer.current = setTimeout(async () => {
       try {
         setSaving(true);
         await updateDoc(docRef, { ...payload, updatedAt: serverTimestamp() });
         setError('');
-      } catch (e) {
-        setError(e?.message || 'Failed to save changes.');
+      } catch (error) {
+        setError(error?.message || 'Failed to save changes.');
+        setSyncMode('local');
       } finally {
         setSaving(false);
       }
@@ -180,20 +218,6 @@ export default function CostingTile({ onSnapshot }) {
     onSnapshot(lines.join('\n'));
   };
 
-  if (!db) {
-    return (
-      <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-        <div className="flex items-center gap-3 text-slate-600">
-          <Calculator className="h-5 w-5" />
-          <h2 className="text-lg font-semibold">$4k wedding at Tiny Diner</h2>
-        </div>
-        <p className="mt-4 text-sm text-slate-600">
-          Firebase is disabled in this build, so the costing tile will not sync in real time.
-        </p>
-      </div>
-    );
-  }
-
   return (
     <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
       <header className="mb-4 flex items-start justify-between gap-3">
@@ -201,9 +225,10 @@ export default function CostingTile({ onSnapshot }) {
           <p className="text-xs uppercase tracking-wide text-slate-500">Costing tool</p>
           <h2 className="text-xl font-semibold text-slate-900">{sheet.title}</h2>
         </div>
-        <div className="flex items-center gap-2 text-xs text-slate-500">
-          {saving && <span className="inline-flex items-center gap-1"><Loader2 className="h-3 w-3 animate-spin" /> Saving</span>}
+        <div className="flex items-center gap-3 text-xs text-slate-500">
           {loading && <span className="inline-flex items-center gap-1"><Loader2 className="h-3 w-3 animate-spin" /> Loading</span>}
+          {saving && <span className="inline-flex items-center gap-1"><Loader2 className="h-3 w-3 animate-spin" /> Saving</span>}
+          <span>{syncMode === 'firestore' ? 'Live sync' : 'Offline mode'}</span>
         </div>
       </header>
       {error && <div className="mb-3 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">{error}</div>}
