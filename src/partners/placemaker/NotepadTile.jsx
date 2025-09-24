@@ -4,44 +4,102 @@ import { addDoc, collection, doc, onSnapshot, serverTimestamp, updateDoc } from 
 import { db } from '../../firebaseConfig';
 
 const COLLECTION_KEY = 'placemakerNotes';
+const LOCAL_NOTES_KEY = 'placemaker-notes-local';
 
 function formatTitleFromContent(content) {
   const now = new Date();
   const stamp = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
   const snippet = (content || '').trim().split(/\s+/).slice(0, 6).join(' ');
-  return snippet ? `${stamp} Â· ${snippet}` : `${stamp} Â· Note`;
+  return snippet ? `${stamp} · ${snippet}` : `${stamp} · Note`;
+}
+
+function readLocalNotes() {
+  try {
+    if (typeof window === 'undefined') return [];
+    const raw = window.localStorage.getItem(LOCAL_NOTES_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return [];
+    return parsed.map((note) => ({
+      id: String(note.id || `local-${Date.now()}`),
+      title: String(note.title || 'Untitled'),
+      content: String(note.content || ''),
+      updatedAt: note.updatedAt || null,
+    }));
+  } catch (error) {
+    console.warn('Placemaker notes local read failed', error);
+    return [];
+  }
+}
+
+function writeLocalNotes(notes) {
+  try {
+    if (typeof window === 'undefined') return;
+    window.localStorage.setItem(LOCAL_NOTES_KEY, JSON.stringify(notes));
+  } catch (error) {
+    console.warn('Placemaker notes local write failed', error);
+  }
+}
+
+function upsertNote(list, id, payload) {
+  const next = [...list];
+  const index = next.findIndex((note) => note.id === id);
+  if (index >= 0) {
+    next[index] = { ...next[index], ...payload };
+  } else {
+    next.unshift({ id, ...payload });
+  }
+  return next;
 }
 
 const NotepadTile = forwardRef(function NotepadTile(_, ref) {
   const [notes, setNotes] = useState([]);
   const activeIdRef = useRef(null);
-  const bootstrappedRef = useRef(false);
   const [activeId, setActiveId] = useState(null);
   const [draft, setDraft] = useState('');
   const [loadingList, setLoadingList] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
+  const [syncMode, setSyncMode] = useState(db ? 'firestore' : 'local');
 
   const saveTimer = useRef(null);
   const localEditRef = useRef(false);
+  const bootstrappedRef = useRef(false);
 
   useEffect(() => {
     if (!db) {
+      const localNotes = readLocalNotes();
+      setNotes(localNotes);
+      if (localNotes.length) {
+        activeIdRef.current = localNotes[0].id;
+        setActiveId(localNotes[0].id);
+      }
+      setSyncMode('local');
       setLoadingList(false);
-      setError('Firebase is not configured; notes will not persist.');
       return () => {};
     }
+
     const colRef = collection(db, COLLECTION_KEY);
     const unsubscribe = onSnapshot(
       colRef,
-      (snap) => {
-        const items = snap.docs.map((d) => ({ id: d.id, ...(d.data() || {}) }));
+      (snapshot) => {
+        const items = snapshot.docs.map((docSnap) => {
+          const data = docSnap.data() || {};
+          return {
+            id: docSnap.id,
+            title: data.title || 'Untitled',
+            content: data.content || '',
+            updatedAt: data.updatedAt || null,
+          };
+        });
         items.sort((a, b) => {
           const aTime = a.updatedAt?.seconds || a.updatedAt?.toMillis?.() || 0;
           const bTime = b.updatedAt?.seconds || b.updatedAt?.toMillis?.() || 0;
           return bTime - aTime;
         });
         setNotes(items);
+        writeLocalNotes(items);
+        setSyncMode('firestore');
         setLoadingList(false);
         if (!items.length) {
           activeIdRef.current = null;
@@ -52,10 +110,23 @@ const NotepadTile = forwardRef(function NotepadTile(_, ref) {
         }
       },
       (err) => {
-        setError(err?.message || 'Failed to load notes.');
+        console.warn('Placemaker notes snapshot error', err);
+        const localNotes = readLocalNotes();
+        setNotes(localNotes);
+        if (localNotes.length) {
+          activeIdRef.current = localNotes[0].id;
+          setActiveId(localNotes[0].id);
+        }
+        setSyncMode('local');
         setLoadingList(false);
+        if (err?.message && !/permission/i.test(err.message)) {
+          setError(err.message);
+        } else {
+          setError('');
+        }
       }
     );
+
     return () => unsubscribe();
   }, []);
 
@@ -64,7 +135,7 @@ const NotepadTile = forwardRef(function NotepadTile(_, ref) {
   }, []);
 
   useEffect(() => {
-    const active = notes.find((n) => n.id === activeId);
+    const active = notes.find((note) => note.id === activeId);
     const nextContent = active?.content || '';
     if (localEditRef.current) {
       localEditRef.current = false;
@@ -73,10 +144,38 @@ const NotepadTile = forwardRef(function NotepadTile(_, ref) {
     setDraft(nextContent);
   }, [notes, activeId]);
 
+  useEffect(() => {
+    activeIdRef.current = activeId;
+  }, [activeId]);
+
+  useEffect(() => {
+    if (loadingList) return;
+    if (bootstrappedRef.current) return;
+    if (!notes.length) {
+      bootstrappedRef.current = true;
+      handleCreate();
+    }
+  }, [loadingList, notes.length]);
+
   const queueSave = (id, content) => {
-    if (!db || !id) return;
+    if (!id) return;
     if (saveTimer.current) clearTimeout(saveTimer.current);
     const title = formatTitleFromContent(content);
+    const updatedAt = { seconds: Math.floor(Date.now() / 1000) };
+
+    setNotes((prev) => {
+      const next = upsertNote(prev, id, { title, content, updatedAt });
+      writeLocalNotes(next);
+      return next;
+    });
+
+    if (!db || syncMode !== 'firestore') {
+      saveTimer.current = setTimeout(() => {
+        setSaving(false);
+      }, 120);
+      return;
+    }
+
     saveTimer.current = setTimeout(async () => {
       try {
         setSaving(true);
@@ -86,8 +185,10 @@ const NotepadTile = forwardRef(function NotepadTile(_, ref) {
           updatedAt: serverTimestamp(),
         });
         setError('');
-      } catch (e) {
-        setError(e?.message || 'Failed to save note.');
+      } catch (err) {
+        console.warn('Placemaker note save failed', err);
+        setError(err?.message || 'Failed to save note. Working offline.');
+        setSyncMode('local');
       } finally {
         setSaving(false);
       }
@@ -95,10 +196,23 @@ const NotepadTile = forwardRef(function NotepadTile(_, ref) {
   };
 
   const handleCreate = async () => {
-    if (!db) return;
+    const now = new Date();
+    const title = `${now.toLocaleDateString()} · New note`;
+
+    if (!db || syncMode !== 'firestore') {
+      const localId = `local-${Date.now()}`;
+      const updatedAt = { seconds: Math.floor(Date.now() / 1000) };
+      setNotes((prev) => {
+        const next = [{ id: localId, title, content: '', updatedAt }, ...prev];
+        writeLocalNotes(next);
+        return next;
+      });
+      setActiveId(localId);
+      setDraft('');
+      return;
+    }
+
     try {
-      const now = new Date();
-      const title = `${now.toLocaleDateString()} Â· New note`;
       const newDoc = await addDoc(collection(db, COLLECTION_KEY), {
         title,
         content: '',
@@ -107,24 +221,10 @@ const NotepadTile = forwardRef(function NotepadTile(_, ref) {
       });
       setActiveId(newDoc.id);
       setDraft('');
-    } catch (e) {
-      setError(e?.message || 'Failed to create note.');
+    } catch (err) {
+      setError(err?.message || 'Failed to create note.');
     }
   };
-
-  useEffect(() => {
-    activeIdRef.current = activeId;
-  }, [activeId]);
-
-  useEffect(() => {
-    if (!db) return;
-    if (loadingList) return;
-    if (bootstrappedRef.current) return;
-    if (!notes.length) {
-      bootstrappedRef.current = true;
-      handleCreate();
-    }
-  }, [db, loadingList, notes.length]);
 
   const handleContentChange = (value) => {
     setDraft(value);
@@ -134,32 +234,49 @@ const NotepadTile = forwardRef(function NotepadTile(_, ref) {
     }
   };
 
+  const handleSaveClick = () => {
+    if (!activeId) return;
+    queueSave(activeId, draft);
+  };
+
   useImperativeHandle(ref, () => ({
     appendToNote: async (text) => {
-      if (!db || !text) return;
-      let targetId = activeId;
+      if (!text) return;
+      let targetId = activeIdRef.current;
       if (!targetId) {
-        try {
-          const now = new Date();
-          const title = `${now.toLocaleDateString()} Â· Snapshot`;
-          const newDoc = await addDoc(collection(db, COLLECTION_KEY), {
-            title,
-            content: '',
-            createdAt: serverTimestamp(),
-            updatedAt: serverTimestamp(),
+        const now = new Date();
+        const title = `${now.toLocaleDateString()} · Snapshot`;
+        if (!db || syncMode !== 'firestore') {
+          targetId = `local-${Date.now()}`;
+          const updatedAt = { seconds: Math.floor(Date.now() / 1000) };
+          setNotes((prev) => {
+            const next = [{ id: targetId, title, content: '', updatedAt }, ...prev];
+            writeLocalNotes(next);
+            return next;
           });
-          targetId = newDoc.id;
-          setActiveId(newDoc.id);
-          activeIdRef.current = newDoc.id;
-        } catch (e) {
-          setError(e?.message || 'Unable to create note for snapshot.');
-          return;
+          setActiveId(targetId);
+          activeIdRef.current = targetId;
+        } else {
+          try {
+            const newDoc = await addDoc(collection(db, COLLECTION_KEY), {
+              title,
+              content: '',
+              createdAt: serverTimestamp(),
+              updatedAt: serverTimestamp(),
+            });
+            targetId = newDoc.id;
+            setActiveId(newDoc.id);
+            activeIdRef.current = newDoc.id;
+          } catch (err) {
+            setError(err?.message || 'Unable to create note for snapshot.');
+            return;
+          }
         }
       }
-      const existing = notes.find((n) => n.id === targetId)?.content || draft || '';
+
       const stamp = new Date().toLocaleString();
-      const decorated = `--- ${stamp} ---\n${text}\n\n`;
-      const combined = decorated + existing;
+      const existing = notes.find((n) => n.id === targetId)?.content || '';
+      const combined = `--- ${stamp} ---\n${text}\n\n${existing}`;
       setDraft(combined);
       localEditRef.current = true;
       queueSave(targetId, combined);
@@ -168,14 +285,16 @@ const NotepadTile = forwardRef(function NotepadTile(_, ref) {
 
   const activeNote = notes.find((n) => n.id === activeId) || null;
 
-  if (!db) {
+  if (!notes.length && loadingList) {
     return (
       <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
         <div className="flex items-center gap-3 text-slate-600">
           <NotebookPen className="h-5 w-5" />
           <h2 className="text-lg font-semibold">Shared Notepad</h2>
         </div>
-        <p className="mt-4 text-sm text-slate-600">Firebase is disabled in this build; notes will not sync.</p>
+        <div className="mt-6 flex justify-center text-slate-500">
+          <Loader2 className="h-5 w-5 animate-spin" />
+        </div>
       </div>
     );
   }
@@ -186,9 +305,17 @@ const NotepadTile = forwardRef(function NotepadTile(_, ref) {
         <div>
           <p className="text-xs uppercase tracking-wide text-slate-500">Realtime notes</p>
           <h2 className="text-xl font-semibold text-slate-900">Shared Notepad</h2>
+          <span className="text-[11px] text-slate-500">{syncMode === 'firestore' ? 'Live sync' : 'Offline mode'}</span>
         </div>
         <div className="flex items-center gap-2">
           {saving && <span className="inline-flex items-center gap-1 text-xs text-slate-500"><Loader2 className="h-3 w-3 animate-spin" /> Saving</span>}
+          <button
+            type="button"
+            onClick={handleSaveClick}
+            className="inline-flex items-center gap-2 rounded-md border border-slate-200 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 shadow-sm transition hover:bg-slate-50"
+          >
+            Save now
+          </button>
           <button
             type="button"
             onClick={handleCreate}
@@ -208,7 +335,7 @@ const NotepadTile = forwardRef(function NotepadTile(_, ref) {
           value={activeId || ''}
           onChange={(e) => setActiveId(e.target.value || null)}
         >
-          <option value="">Choose a noteâ€¦</option>
+          <option value="">Choose a note…</option>
           {notes.map((note) => (
             <option key={note.id} value={note.id}>
               {note.title || 'Untitled'}
@@ -226,13 +353,13 @@ const NotepadTile = forwardRef(function NotepadTile(_, ref) {
           value={draft}
           onChange={(e) => handleContentChange(e.target.value)}
           className="min-h-[240px] w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm focus:border-slate-900 focus:outline-none focus:ring-1 focus:ring-slate-900/20"
-          placeholder="Start typingâ€¦"
+          placeholder="Start typing…"
         />
       )}
 
       {activeNote?.updatedAt && (
         <p className="mt-2 text-xs text-slate-500">
-          Updated {new Date(activeNote.updatedAt.seconds * 1000).toLocaleString()}
+          Updated {new Date((activeNote.updatedAt.seconds || 0) * 1000).toLocaleString()}
         </p>
       )}
     </div>
@@ -240,9 +367,3 @@ const NotepadTile = forwardRef(function NotepadTile(_, ref) {
 });
 
 export default NotepadTile;
-
-
-
-
-
-
