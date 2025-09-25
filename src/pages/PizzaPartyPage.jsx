@@ -42,7 +42,7 @@ function useBooking() {
   return { bookingState, createLink };
 }
 
-export const PizzaPartyPage = () => {
+const PizzaPartyPage = () => {
   const [images, setImages] = useState([]);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -280,3 +280,5 @@ export const PizzaPartyPage = () => {
     </>
   );
 };
+
+export default PizzaPartyPage;
