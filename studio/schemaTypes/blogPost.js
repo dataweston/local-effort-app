@@ -21,7 +21,8 @@ export default defineType({
       of: [
         { type: 'block' },
         { type: 'image', options: { hotspot: true }, fields: [{ name: 'alt', type: 'string', title: 'Alt Text' }] },
-        { type: 'cloudinary.asset', title: 'Cloudinary Image' },
+        // Replaced direct cloudinary.asset with wrapper object type to avoid unknown type error
+        { type: 'cloudinaryImage', title: 'Cloudinary Image' },
       ],
     }),
     defineField({ name: 'emailOnPublish', type: 'boolean', initialValue: true }),
