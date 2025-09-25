@@ -32,9 +32,28 @@ function useBooking() {
       if (email) params.set('email', email);
       if (addOnGuests && addOnGuests > 0) params.set('addOnGuests', String(addOnGuests));
       const res = await fetch(`/api/store/pizza-party-link?${params.toString()}`);
-      const data = await res.json();
-      if (!res.ok || !data.url) throw new Error(data.error || 'Failed to create link');
-      window.location.href = data.url;
+      // Defensive: handle non-JSON (e.g., HTML error page) without throwing raw SyntaxError
+      const contentType = res.headers.get('content-type') || '';
+      let data = null;
+      if (contentType.includes('application/json')) {
+        try {
+          data = await res.json();
+        } catch (parseErr) {
+          throw new Error('Received invalid JSON from server');
+        }
+      } else {
+        // Attempt to read text to capture potential HTML error body
+        const text = await res.text();
+        const snippet = text.slice(0, 120);
+        throw new Error(res.ok ? 'Unexpected non-JSON response' : `Server error ${res.status}: ${snippet}`);
+      }
+      if (!res.ok) {
+        throw new Error((data && (data.error || data.message)) || `Request failed (${res.status})`);
+      }
+      if (!data || !data.url) {
+        throw new Error((data && data.error) || 'Failed to create link (missing url)');
+      }
+      window.location.href = data.url; // Redirect to hosted checkout link
     } catch (e) {
       setBookingState((s) => ({ ...s, [date]: { loading: false, error: e.message || 'Error' } }));
     }
