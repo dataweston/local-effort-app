@@ -23,6 +23,7 @@ import salePage from './salePage'
 import publicEvent from './publicEvent'
 import referralParticipant from './referralParticipant'
 import blogPost from './blogPost'
+import cloudinaryImage from './objects/cloudinaryImage'
 
 export const schemaTypes = [
 	page,
@@ -48,7 +49,8 @@ export const schemaTypes = [
 	salePage,
 	publicEvent,
 	referralParticipant,
-  blogPost,
+	blogPost,
+	cloudinaryImage,
 ]
 
 export default schemaTypes;
