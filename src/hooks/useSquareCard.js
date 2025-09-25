@@ -14,7 +14,15 @@ export function useSquareCard(containerId, enabled, deps = []) {
   const [error, setError] = useState('');
   const [loadingScript, setLoadingScript] = useState(false);
   const attachStartedRef = useRef(false);
-  const [envInfo, setEnvInfo] = useState({ appId: null, locationId: null, sdkUrl: null, sandbox: false, mismatch: false });
+  const [envInfo, setEnvInfo] = useState({
+    appId: null,
+    locationId: null,
+    sdkUrl: null,
+    sandbox: false,
+    mismatch: false,
+    environment: null,
+    attempts: 0,
+  });
 
   // Allow consumer to manually force a remount (e.g., when reopening a modal)
   const reset = useCallback(() => {
@@ -31,16 +39,26 @@ export function useSquareCard(containerId, enabled, deps = []) {
   // Inject script (once)
   useEffect(() => {
     if (!enabled) return;
-    // Detect desired mode
-    const rawEnv = (import.meta?.env?.VITE_SQUARE_ENV || window.__SQUARE_ENV__ || '').toLowerCase();
-    const hostname = typeof window !== 'undefined' ? window.location.hostname : '';
-    const prodHost = /localeffort\.(app|com)$/i.test(hostname);
-    // Use heuristics: sandbox app IDs start with 'sandbox-'
+    // Detect desired mode using explicit env first, then app-id heuristics, lastly localhost fallback.
     const runtimeAppId = (window?.__SQUARE_APP_ID__) || (import.meta?.env?.VITE_SQUARE_APP_ID) || window?.SQUARE_APPLICATION_ID || '';
-    const sandboxById = runtimeAppId.startsWith('sandbox-');
-    const explicitSandbox = rawEnv === 'sandbox' || rawEnv === 'dev' || rawEnv === 'development';
-    const forceProd = rawEnv === 'production' || rawEnv === 'prod';
-    const isSandbox = explicitSandbox || sandboxById || (!forceProd && !prodHost);
+    const envHint = (() => {
+      const raw = (window?.__SQUARE_ENV__ ?? import.meta?.env?.VITE_SQUARE_ENV ?? '').toString().trim().toLowerCase();
+      if (!raw) return '';
+      if (['sandbox', 'dev', 'development', 'test'].includes(raw)) return 'sandbox';
+      if (['production', 'prod', 'live'].includes(raw)) return 'production';
+      return raw;
+    })();
+    const hostname = typeof window !== 'undefined' ? window.location.hostname : '';
+    let isSandbox = false;
+    if (envHint === 'sandbox') {
+      isSandbox = true;
+    } else if (envHint === 'production') {
+      isSandbox = false;
+    } else if (runtimeAppId.startsWith('sandbox-')) {
+      isSandbox = true;
+    } else if (/localhost$/i.test(hostname) || hostname === '127.0.0.1') {
+      isSandbox = true;
+    }
     const sdkUrl = isSandbox ? 'https://sandbox.web.squarecdn.com/v1/square.js' : 'https://web.squarecdn.com/v1/square.js';
     const existing = document.querySelector('script[data-square-sdk]');
     if (!existing) {
@@ -48,6 +66,7 @@ export function useSquareCard(containerId, enabled, deps = []) {
       sc.src = sdkUrl;
       sc.async = true;
       sc.dataset.squareSdk = 'true';
+      sc.dataset.squareSdkEnv = isSandbox ? 'sandbox' : 'production';
       sc.onerror = () => setError('Failed to load payment script.');
       setLoadingScript(true);
       sc.onload = () => setLoadingScript(false);
@@ -59,6 +78,8 @@ export function useSquareCard(containerId, enabled, deps = []) {
         // Env mismatch: show warning but do not replace mid-flight.
         setError(prev => prev || 'Payment script environment mismatch (refresh may be required).');
         setEnvInfo(info => ({ ...info, mismatch: true }));
+      } else {
+        setEnvInfo(info => ({ ...info, mismatch: false }));
       }
     }
     setEnvInfo(info => ({
@@ -67,6 +88,7 @@ export function useSquareCard(containerId, enabled, deps = []) {
       locationId: (window?.__SQUARE_LOCATION_ID__) || (import.meta?.env?.VITE_SQUARE_LOCATION_ID) || window?.SQUARE_LOCATION_ID || null,
       sdkUrl,
       sandbox: isSandbox,
+      environment: isSandbox ? 'sandbox' : 'production',
     }));
   }, [enabled]);
 
@@ -134,6 +156,10 @@ export function useSquareCard(containerId, enabled, deps = []) {
     init();
     return () => { cancelled = true; };
   }, [enabled, attempts, containerId, reset, ...deps]);
+
+  useEffect(() => {
+    setEnvInfo(info => ({ ...info, attempts }));
+  }, [attempts]);
 
   const tokenize = async () => {
     if (!cardRef.current) throw new Error(error || 'Card form not ready');
