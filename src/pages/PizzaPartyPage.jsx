@@ -97,11 +97,13 @@ const PizzaPartyPage = () => {
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
   const [bookingState, setBookingState] = useState({}); // date => {loading,error,success,paymentId}
-  const { cardLoaded, error: cardError, loadingScript, tokenize } = useSquareCard('#pp-card-container', true, []);
-  const [bookedDate, setBookedDate] = useState(null);
-  const [justBooked, setJustBooked] = useState(false); // differentiate newly booked success for banner animation
+  // Only initialize Square when modal is open (reduces race with container not yet in DOM)
   const [showModal, setShowModal] = useState(false);
   const [selectedDate, setSelectedDate] = useState(null);
+  const squareEnabled = showModal; // we initialize after modal mounts
+  const { cardLoaded, error: cardError, loadingScript, tokenize } = useSquareCard('#pp-card-container', squareEnabled, [squareEnabled]);
+  const [bookedDate, setBookedDate] = useState(null);
+  const [justBooked, setJustBooked] = useState(false); // differentiate newly booked success for banner animation
   const [email, setEmail] = useState('');
   const [addOnEnabled, setAddOnEnabled] = useState(false);
   const [guestCount, setGuestCount] = useState(10);
@@ -131,8 +133,9 @@ const PizzaPartyPage = () => {
   }, []);
 
   const openModal = (date) => {
-    setSelectedDate(date);
+    // open first so container exists sooner, then set date
     setShowModal(true);
+    setSelectedDate(date);
   };
   const closeModal = () => {
     setShowModal(false);
