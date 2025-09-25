@@ -105,17 +105,14 @@ const PizzaPartyPage = () => {
             <span>Your reservation request for <strong>{bookedDate}</strong> was received. We\'ll follow up shortly to confirm details.</span>
           </div>
         )}
-        <h2 className="text-5xl md:text-7xl font-bold uppercase">Pizza Parties</h2>
-        <p className="font-mono text-lg max-w-3xl">
-          Our mobile wood-fired pizza oven is the perfect addition to any event.
-        </p>
+        {/* Removed original h2 and paragraph per request */}
       </div>
 
       <div className="mx-auto max-w-6xl px-4 py-10 space-y-14">
         {/* Intro */}
         <div className="text-center space-y-4">
-          <h1 className="font-display text-4xl md:text-5xl font-bold tracking-tight">Pizza Party Special</h1>
-          <p className="mt-2 text-lg text-neutral-600 max-w-2xl mx-auto">Host an unforgettable artisan pizza experience right in your home. We bring the dough, toppings, equipment & energy.</p>
+          {/* Removed static title; focus on new marketing paragraph */}
+          <p className="mt-2 text-xl md:text-2xl text-neutral-800 max-w-3xl mx-auto leading-relaxed">Host an unforgettable pizza experience right in your home. We bring the oven, the dough, and the vibes. We call it <strong>Local Pizza</strong>.</p>
         </div>
 
         {/* Offer Card */}
@@ -127,48 +124,46 @@ const PizzaPartyPage = () => {
                 <h2 className="text-2xl md:text-3xl font-bold">Pizza Party in Your Home</h2>
                 <ul className="list-disc list-inside text-neutral-700 text-sm md:text-base space-y-1">
                   <li>Up to 15 guests</li>
-                  <li>Hand-stretched artisan dough & seasonal toppings</li>
+                  <li>100% local midwest ingredients, slow-fermented sourdough crust</li>
                   <li>We handle setup, firing & service</li>
                   <li>Includes 2 hours of active pizza making/eating time</li>
                 </ul>
-                <p className="text-sm text-neutral-500">Travel outside core Twin Cities metro may include a small surcharge.</p>
               </div>
               <div className="flex flex-col items-center justify-center gap-4">
                 <div className="text-center">
                   <div className="text-5xl font-extrabold tracking-tight bg-gradient-to-r from-orange-500 to-rose-500 bg-clip-text text-transparent">$300</div>
                   <div className="mt-1 text-xs uppercase tracking-wider text-neutral-500">Flat event rate</div>
                 </div>
-                <a href="/services#event-request" className="inline-flex items-center rounded-md bg-orange-600 hover:bg-orange-700 text-white font-semibold px-6 py-3 shadow-sm transition-colors">Request Date</a>
+                <button type="button" onClick={() => openModal(null)} className="inline-flex items-center rounded-md bg-orange-600 hover:bg-orange-700 text-white font-semibold px-6 py-3 shadow-sm transition-colors">Request Date</button>
               </div>
             </div>
           </div>
         </section>
 
         {/* Available Dates */}
-        <section>
-          <h3 className="text-xl font-semibold mb-4 flex items-center gap-2">Available October Dates <span className="text-xs font-mono bg-neutral-200 rounded px-2 py-0.5">2025</span></h3>
-          <div className="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+        <section id="dates">
+          <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">Available October Dates <span className="text-[10px] font-mono bg-neutral-200 rounded px-1.5 py-0.5">2025</span></h3>
+          <ul className="divide-y border rounded-md bg-white">
             {DATES.map((d) => {
               const st = bookingState[d] || {};
               return (
-                <div key={d} className="p-4 rounded-xl border bg-white shadow-sm flex flex-col gap-3">
-                  <div className="flex items-center justify-between">
+                <li key={d} className="flex items-center justify-between px-4 py-2 text-sm">
+                  <div className="flex items-center gap-3">
                     <span className="font-medium text-neutral-800">{d}</span>
-                    {st.loading && <span className="text-xs text-orange-600 animate-pulse">Preparing...</span>}
+                    {st.loading && <span className="text-[10px] text-orange-600 animate-pulse">Preparing...</span>}
                   </div>
                   <button
                     type="button"
                     disabled={st.loading}
                     onClick={() => openModal(d)}
-                    className={`inline-flex justify-center items-center rounded-md px-3 py-2 text-sm font-semibold shadow-sm transition-colors border ${st.loading ? 'bg-neutral-200 text-neutral-500 cursor-not-allowed' : 'bg-orange-600 hover:bg-orange-700 text-white border-orange-600'}`}
+                    className={`inline-flex justify-center items-center rounded-md px-2.5 py-1.5 text-xs font-semibold shadow-sm transition-colors border ${st.loading ? 'bg-neutral-200 text-neutral-500 cursor-not-allowed' : 'bg-orange-600 hover:bg-orange-700 text-white border-orange-600'}`}
                   >
-                    {st.loading ? 'Loading…' : 'Book Now'}
+                    {st.loading ? '...' : 'Book'}
                   </button>
-                  {st.error && <p className="text-xs text-rose-600">{st.error}</p>}
-                </div>
+                </li>
               );
             })}
-          </div>
+          </ul>
         </section>
 
         {/* Image Grid */}
@@ -212,6 +207,10 @@ const PizzaPartyPage = () => {
               <h4 className="font-medium text-neutral-900">Does it include anything besides pizza?</h4>
               <p className="text-sm text-neutral-700 mt-1">This offer is just for pizza, but we can build a bigger package if you like. It's easy to add additional sides like salads and dessert.</p>
             </div>
+            <div>
+              <h4 className="font-medium text-neutral-900">What kind of pizza do you make?</h4>
+              <p className="text-sm text-neutral-700 mt-1">Minnesotan-style. It's sort of neapolitan, sort of New York. Puffy, crispy, chewy crusts. It's our own thing.</p>
+            </div>
           </div>
         </section>
       </div>
@@ -229,48 +228,67 @@ const PizzaPartyPage = () => {
             >
               <div className="flex items-start justify-between gap-4">
                 <div>
-                  <h3 className="text-lg font-semibold">Book {selectedDate}</h3>
-                  <p className="text-xs text-neutral-500 mt-0.5">Confirm your details below.</p>
+                  <h3 className="text-lg font-semibold">{selectedDate ? `Book ${selectedDate}` : 'Select a Date'}</h3>
+                  <p className="text-xs text-neutral-500 mt-0.5">{selectedDate ? 'Confirm your details below.' : 'Choose a date to continue.'}</p>
                 </div>
                 <button onClick={closeModal} className="text-neutral-400 hover:text-neutral-600" aria-label="Close">✕</button>
               </div>
-              <div className="space-y-4">
-                <label className="block text-sm font-medium">Email
-                  <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" className="mt-1 w-full rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500" />
-                </label>
-                <div className="space-y-2 border rounded-md p-3">
-                  <label className="flex items-center gap-2 text-sm font-medium">
-                    <input type="checkbox" checked={addOnEnabled} onChange={(e) => setAddOnEnabled(e.target.checked)} />
-                    <span>Add salads & dessert ($9 / guest)</span>
+              {!selectedDate && (
+                <div className="space-y-2">
+                  <ul className="max-h-48 overflow-auto border rounded-md divide-y">
+                    {DATES.map((d) => (
+                      <li key={d} className="flex items-center justify-between px-3 py-2 text-sm">
+                        <span>{d}</span>
+                        <button type="button" onClick={() => setSelectedDate(d)} className="text-xs font-semibold px-2 py-1 rounded-md bg-orange-600 hover:bg-orange-700 text-white">Select</button>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              {selectedDate && (
+                <div className="space-y-4">
+                  <label className="block text-sm font-medium">Email
+                    <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" className="mt-1 w-full rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500" />
                   </label>
-                  {addOnEnabled && (
-                    <div className="flex items-center gap-3 pl-6">
-                      <label className="text-xs font-medium uppercase tracking-wide">Guests
-                        <input
-                          type="number"
-                          min={1}
-                          max={50}
-                          value={guestCount}
-                          onChange={(e) => setGuestCount(Math.max(1, Math.min(50, Number(e.target.value))))}
-                          className="mt-1 ml-2 w-20 rounded-md border px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
-                        />
-                      </label>
-                      <span className="text-xs text-neutral-500">Add-on total: ${addOnTotal}</span>
-                    </div>
-                  )}
+                  <div className="space-y-2 border rounded-md p-3">
+                    <label className="flex items-center gap-2 text-sm font-medium">
+                      <input type="checkbox" checked={addOnEnabled} onChange={(e) => setAddOnEnabled(e.target.checked)} />
+                      <span>Add salads & dessert ($9 / guest)</span>
+                    </label>
+                    {addOnEnabled && (
+                      <div className="flex items-center gap-3 pl-6">
+                        <label className="text-xs font-medium uppercase tracking-wide">Guests
+                          <input
+                            type="number"
+                            min={1}
+                            max={50}
+                            value={guestCount}
+                            onChange={(e) => setGuestCount(Math.max(1, Math.min(50, Number(e.target.value))))}
+                            className="mt-1 ml-2 w-20 rounded-md border px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
+                          />
+                        </label>
+                        <span className="text-xs text-neutral-500">Add-on total: ${addOnTotal}</span>
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex items-center justify-between text-sm font-medium pt-2 border-t">
+                    <span>Total</span>
+                    <span>${grandTotal}</span>
+                  </div>
                 </div>
-                <div className="flex items-center justify-between text-sm font-medium pt-2 border-t">
-                  <span>Total</span>
-                  <span>${grandTotal}</span>
-                </div>
-              </div>
+              )}
               <div className="flex gap-3 pt-2">
                 <button onClick={closeModal} type="button" className="flex-1 rounded-md border px-4 py-2 text-sm font-medium hover:bg-neutral-50">Cancel</button>
-                <button onClick={submitBooking} type="button" className="flex-1 rounded-md bg-orange-600 hover:bg-orange-700 text-white text-sm font-semibold px-4 py-2 shadow disabled:opacity-60 disabled:cursor-not-allowed" disabled={bookingState[selectedDate]?.loading}>
-                  {bookingState[selectedDate]?.loading ? 'Redirecting…' : 'Proceed to Payment'}
+                <button
+                  onClick={selectedDate ? submitBooking : undefined}
+                  type="button"
+                  disabled={selectedDate ? bookingState[selectedDate]?.loading : false}
+                  className={`flex-1 rounded-md text-sm font-semibold px-4 py-2 shadow disabled:opacity-60 disabled:cursor-not-allowed ${selectedDate ? 'bg-orange-600 hover:bg-orange-700 text-white' : 'bg-neutral-200 text-neutral-500 cursor-not-allowed'}`}
+                >
+                  {selectedDate ? (bookingState[selectedDate]?.loading ? 'Redirecting…' : 'Proceed to Payment') : 'Select a Date'}
                 </button>
               </div>
-              {bookingState[selectedDate]?.error && (
+              {selectedDate && bookingState[selectedDate]?.error && (
                 <p className="text-xs text-rose-600 pt-2">{bookingState[selectedDate].error}</p>
               )}
             </motion.div>
