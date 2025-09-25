@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 
 // Fetch up to 8 images tagged 'pizza' using existing API (uses tag expansion logic)
 async function fetchPizzaImages(setter, setError, setLoading) {
@@ -25,31 +25,72 @@ const DATES = [
 
 function useBooking() {
   const [bookingState, setBookingState] = useState({}); // date => {loading, error}
-  const book = async (date) => {
+  const createLink = async ({ date, email, addOnGuests }) => {
     setBookingState((s) => ({ ...s, [date]: { loading: true } }));
     try {
-      const res = await fetch(`/api/store/pizza-party-link?date=${encodeURIComponent(date)}`);
+      const params = new URLSearchParams({ date });
+      if (email) params.set('email', email);
+      if (addOnGuests && addOnGuests > 0) params.set('addOnGuests', String(addOnGuests));
+      const res = await fetch(`/api/store/pizza-party-link?${params.toString()}`);
       const data = await res.json();
       if (!res.ok || !data.url) throw new Error(data.error || 'Failed to create link');
-      window.location.href = data.url; // redirect to Square link
+      window.location.href = data.url;
     } catch (e) {
       setBookingState((s) => ({ ...s, [date]: { loading: false, error: e.message || 'Error' } }));
     }
   };
-  return { bookingState, book };
+  return { bookingState, createLink };
 }
 
 export const PizzaPartyPage = () => {
   const [images, setImages] = useState([]);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
-  const { bookingState, book } = useBooking();
+  const { bookingState, createLink } = useBooking();
+  const [bookedDate, setBookedDate] = useState(null);
+  const [showModal, setShowModal] = useState(false);
+  const [selectedDate, setSelectedDate] = useState(null);
+  const [email, setEmail] = useState('');
+  const [addOnEnabled, setAddOnEnabled] = useState(false);
+  const [guestCount, setGuestCount] = useState(10);
+
+  const basePrice = 300;
+  const addOnTotal = addOnEnabled ? guestCount * 9 : 0;
+  const grandTotal = basePrice + addOnTotal;
 
   useEffect(() => {
     let active = true;
     fetchPizzaImages((imgs) => { if (active) setImages(imgs); }, (err) => active && setError(err), (val) => active && setLoading(val));
     return () => { active = false; };
   }, []);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const b = params.get('booked');
+    if (b) {
+      setBookedDate(b);
+      // remove query param without reload
+      params.delete('booked');
+      const newUrl = `${window.location.pathname}${params.toString() ? '?' + params.toString() : ''}`;
+      window.history.replaceState({}, '', newUrl);
+    }
+  }, []);
+
+  const openModal = (date) => {
+    setSelectedDate(date);
+    setShowModal(true);
+  };
+  const closeModal = () => {
+    setShowModal(false);
+    setSelectedDate(null);
+    setEmail('');
+    setAddOnEnabled(false);
+    setGuestCount(10);
+  };
+  const submitBooking = () => {
+    if (!selectedDate) return;
+    createLink({ date: selectedDate, email: email.trim(), addOnGuests: addOnEnabled ? guestCount : 0 });
+  };
 
   return (
     <>
@@ -58,6 +99,12 @@ export const PizzaPartyPage = () => {
         <meta name="description" content="Book a mobile wood-fired pizza party with Local Effort." />
       </Helmet>
       <div className="space-y-16">
+        {bookedDate && (
+          <div className="p-4 rounded-lg border border-green-300 bg-green-50 text-green-800 text-sm shadow-sm flex items-start gap-3">
+            <span className="font-semibold">Booked!</span>
+            <span>Your reservation request for <strong>{bookedDate}</strong> was received. We\'ll follow up shortly to confirm details.</span>
+          </div>
+        )}
         <h2 className="text-5xl md:text-7xl font-bold uppercase">Pizza Parties</h2>
         <p className="font-mono text-lg max-w-3xl">
           Our mobile wood-fired pizza oven is the perfect addition to any event.
@@ -112,7 +159,7 @@ export const PizzaPartyPage = () => {
                   <button
                     type="button"
                     disabled={st.loading}
-                    onClick={() => book(d)}
+                    onClick={() => openModal(d)}
                     className={`inline-flex justify-center items-center rounded-md px-3 py-2 text-sm font-semibold shadow-sm transition-colors border ${st.loading ? 'bg-neutral-200 text-neutral-500 cursor-not-allowed' : 'bg-orange-600 hover:bg-orange-700 text-white border-orange-600'}`}
                   >
                     {st.loading ? 'Loading…' : 'Book Now'}
@@ -168,6 +215,68 @@ export const PizzaPartyPage = () => {
           </div>
         </section>
       </div>
+
+      <AnimatePresence>
+        {showModal && (
+          <motion.div className="fixed inset-0 z-50 flex items-center justify-center p-4" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+            <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={closeModal} />
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              transition={{ type: 'spring', stiffness: 220, damping: 20 }}
+              className="relative w-full max-w-md rounded-xl bg-white shadow-lg border p-6 space-y-5"
+            >
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <h3 className="text-lg font-semibold">Book {selectedDate}</h3>
+                  <p className="text-xs text-neutral-500 mt-0.5">Confirm your details below.</p>
+                </div>
+                <button onClick={closeModal} className="text-neutral-400 hover:text-neutral-600" aria-label="Close">✕</button>
+              </div>
+              <div className="space-y-4">
+                <label className="block text-sm font-medium">Email
+                  <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" className="mt-1 w-full rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500" />
+                </label>
+                <div className="space-y-2 border rounded-md p-3">
+                  <label className="flex items-center gap-2 text-sm font-medium">
+                    <input type="checkbox" checked={addOnEnabled} onChange={(e) => setAddOnEnabled(e.target.checked)} />
+                    <span>Add salads & dessert ($9 / guest)</span>
+                  </label>
+                  {addOnEnabled && (
+                    <div className="flex items-center gap-3 pl-6">
+                      <label className="text-xs font-medium uppercase tracking-wide">Guests
+                        <input
+                          type="number"
+                          min={1}
+                          max={50}
+                          value={guestCount}
+                          onChange={(e) => setGuestCount(Math.max(1, Math.min(50, Number(e.target.value))))}
+                          className="mt-1 ml-2 w-20 rounded-md border px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
+                        />
+                      </label>
+                      <span className="text-xs text-neutral-500">Add-on total: ${addOnTotal}</span>
+                    </div>
+                  )}
+                </div>
+                <div className="flex items-center justify-between text-sm font-medium pt-2 border-t">
+                  <span>Total</span>
+                  <span>${grandTotal}</span>
+                </div>
+              </div>
+              <div className="flex gap-3 pt-2">
+                <button onClick={closeModal} type="button" className="flex-1 rounded-md border px-4 py-2 text-sm font-medium hover:bg-neutral-50">Cancel</button>
+                <button onClick={submitBooking} type="button" className="flex-1 rounded-md bg-orange-600 hover:bg-orange-700 text-white text-sm font-semibold px-4 py-2 shadow disabled:opacity-60 disabled:cursor-not-allowed" disabled={bookingState[selectedDate]?.loading}>
+                  {bookingState[selectedDate]?.loading ? 'Redirecting…' : 'Proceed to Payment'}
+                </button>
+              </div>
+              {bookingState[selectedDate]?.error && (
+                <p className="text-xs text-rose-600 pt-2">{bookingState[selectedDate].error}</p>
+              )}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </>
   );
 };

@@ -1,7 +1,6 @@
-// GET /api/store/pizza-party-link?date=Oct%202
+// GET /api/store/pizza-party-link?date=Oct%202&email=test@example.com&addOnGuests=10
 // Returns a Square payment link (or error) for the $300 Pizza Party event specifying the selected date in the note.
-// If Square Checkout API (payment links) is not desired, we could fall back to a simple intent creation.
-// For now we'll use Orders + CreatePaymentLink for clarity.
+// Optionally adds salads + dessert add-on at $9 per guest when addOnGuests provided (>0).
 
 const { Client, Environment } = require('square');
 
@@ -24,24 +23,36 @@ module.exports = async (req, res) => {
   if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' });
   if (!sq) return res.status(500).json({ error: 'Square not configured' });
 
-  const { date } = req.query || {};
+  const { date, email, addOnGuests } = req.query || {};
   if (!date) return res.status(400).json({ error: 'Missing date' });
 
   try {
     const idempotencyKey = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    const lineItems = [
+      {
+        name: 'In-Home Pizza Party (Up to 15 Guests)',
+        quantity: '1',
+        basePriceMoney: { amount: 30000, currency: 'USD' }, // $300
+        note: `Selected date: ${date}`,
+      },
+    ];
+
+    const guestsInt = parseInt(addOnGuests, 10);
+    if (!Number.isNaN(guestsInt) && guestsInt > 0) {
+      lineItems.push({
+        name: 'Salads & Dessert Add-On',
+        quantity: String(guestsInt),
+        basePriceMoney: { amount: 900, currency: 'USD' }, // $9 per person
+        note: `${guestsInt} guests`,
+      });
+    }
+
     const orderBody = {
       order: {
         locationId: LOCATION_ID,
-        lineItems: [
-          {
-            name: 'In-Home Pizza Party (Up to 15 Guests)',
-            quantity: '1',
-            basePriceMoney: { amount: 30000, currency: 'USD' }, // $300
-            note: `Selected date: ${date}`,
-          },
-        ],
+        lineItems,
         state: 'OPEN',
-        metadata: { pizza_party_date: date },
+        metadata: { pizza_party_date: date, add_on_guests: guestsInt || 0 },
         referenceId: `pizza-party-${date}`,
       },
       idempotencyKey,
@@ -59,7 +70,7 @@ module.exports = async (req, res) => {
         askForShippingAddress: false,
         redirectUrl: `${process.env.PUBLIC_BASE_URL || ''}/pizza-party?booked=${encodeURIComponent(date)}`,
         enableTipping: false,
-        // optional: prePopulateBuyerEmail
+        prePopulateBuyerEmail: email || undefined,
       },
     };
 
