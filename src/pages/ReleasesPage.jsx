@@ -74,6 +74,34 @@ const ReleasesPage = () => {
           content="Press releases and media resources from Local Effort Food Co., the Minneapolis-based personal chef and catering team."
         />
         <link rel="canonical" href="https://localeffortfood.com/releases" />
+        {/* Structured Data: Organization & NewsArticle */}
+        <script type="application/ld+json">{JSON.stringify({
+          '@context': 'https://schema.org',
+          '@graph': [
+            {
+              '@type': 'Organization',
+              name: 'Local Effort Food Co.',
+              url: 'https://localeffortfood.com',
+              foundingDate: '2022',
+              address: { '@type': 'PostalAddress', addressLocality: 'Roseville', addressRegion: 'MN', addressCountry: 'US' },
+              areaServed: ['Minneapolis','St. Paul','Twin Cities','Western Wisconsin'],
+              sameAs: [
+                'https://www.instagram.com/localeffortfood',
+                'https://www.tiktok.com/@localeffort'
+              ]
+            },
+            {
+              '@type': 'NewsArticle',
+              headline: 'Roseville-Based Local Effort Seeks Support to Craft 1,000 Fully Local Pizzas',
+              datePublished: '2024-05-30',
+              dateModified: '2024-05-30',
+              description: 'Local Effort Food Co. launches a community-backed effort to craft 1,000 pizzas using 100% Midwestern ingredients.',
+              author: { '@type': 'Organization', name: 'Local Effort Food Co.' },
+              publisher: { '@type': 'Organization', name: 'Local Effort Food Co.' },
+              mainEntityOfPage: { '@type': 'WebPage', '@id': 'https://localeffortfood.com/releases' }
+            }
+          ]
+        })}</script>
       </Helmet>
 
       <div className="bg-neutral-50 py-16">
@@ -212,6 +240,16 @@ const ReleasesPage = () => {
                       </span>
                     </a>
                   ))}
+                  {/* Added downloadable press kit */}
+                  <a
+                    href="/press/local-effort-press-kit.pdf"
+                    className="group flex flex-col justify-between rounded-xl border border-neutral-200 p-4 transition hover:border-neutral-400 hover:shadow"
+                  >
+                    <span className="text-xs uppercase tracking-[0.25em] text-neutral-500">Press Kit PDF</span>
+                    <span className="mt-2 text-base text-neutral-900 group-hover:underline group-hover:underline-offset-4">
+                      Download press kit (PDF)
+                    </span>
+                  </a>
                 </div>
               </div>
 
@@ -267,6 +305,26 @@ const ReleasesPage = () => {
                 </ul>
               </div>
             </div>
+          </section>
+
+          {/* Archived previous release */}
+          <section className="mt-24" aria-labelledby="archive-heading">
+            <h2 id="archive-heading" className="text-2xl font-semibold tracking-tight text-neutral-900 mb-6">Previous Release (Archived)</h2>
+            <details className="group bg-white rounded-2xl border border-neutral-200 shadow-sm">
+              <summary className="cursor-pointer list-none px-6 py-4 flex items-center justify-between">
+                <span className="font-medium text-neutral-800">Local Effort Launches Crowdfunding Campaign to Craft 1,000 Local Pizzas</span>
+                <span className="text-xs text-neutral-500 group-open:hidden">Expand</span>
+                <span className="text-xs text-neutral-500 hidden group-open:inline">Collapse</span>
+              </summary>
+              <div className="px-6 pb-8 space-y-5 text-neutral-800 text-[0.97rem] leading-relaxed">
+                <p>Minneapolis-based Local Effort Food Co. invites the community to back its most ambitious pizza initiative yet—building a thousand pies sourced entirely from Midwestern growers, millers, and makers.</p>
+                <p>The crowdfunding campaign energizes Local Effort&apos;s obsession with 100% regional sourcing. Every crust, sauce, and topping will trace back to Minnesota and Midwest farms, mills, creameries, and co-ops that the chef team has partnered with since 2022.</p>
+                <p>Backers will help finance upgraded cold storage and a mobile pizza rig, unlocking more neighborhood pop-ups, farmers market collaborations, and last-mile delivery runs throughout Minneapolis, St. Paul, and Western Wisconsin.</p>
+                <p>“Pizzas can tell the whole story of a foodshed,” said Weston Smith, chef and co-founder of Local Effort. “When we layer house-fermented dough with seasonal produce, heritage grains, and regional cheeses, we showcase the farms that feed us. This campaign invites people to invest in that community table.”</p>
+                <p>Supporters can choose from tiered rewards including limited pizza drops, family meal prep bundles, and exclusive seasonal toppings co-developed with local growers. Weekly progress bulletins and tasting events will keep the community connected as milestones are reached on the path to 1,000 pizzas.</p>
+                <p>Local Effort has grown from intimate in-home dinners to weekly meal prep and community events by doubling down on relationships with Minnesota farmers, grain cooperatives, and dairy makers. The pizza program translates that ethos into a handheld, shareable format that can reach more tables without compromising sourcing.</p>
+              </div>
+            </details>
           </section>
         </div>
       </div>
