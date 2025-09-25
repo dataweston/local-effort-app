@@ -187,15 +187,22 @@ const CrowdfundingPage = () => {
   );
 
   // Destructure frequently used fields from campaign data (safe even if null)
+  // Destructure raw values (null-safe post processing below)
   const {
     title: campaignTitle,
     description,
-    faq = [],
-    story = [],
-    backers = 0,
+    faq: faqRaw,
+    story: storyRaw,
+    backers: backersRaw,
     endDate,
-    piesSold = 0,
+    piesSold: piesSoldRaw,
   } = campaignData || {};
+  // Normalize numbers (treat null as 0)
+  const backers = typeof backersRaw === 'number' ? backersRaw : 0;
+  const piesSold = typeof piesSoldRaw === 'number' ? piesSoldRaw : 0;
+  // Normalize block arrays
+  const faq = Array.isArray(faqRaw) ? faqRaw : [];
+  const story = Array.isArray(storyRaw) ? storyRaw : [];
   const title = campaignTitle || 'Crowdfunding';
 
   // Initialize shared Square card (enabled only when a payable tier exists)
@@ -260,11 +267,11 @@ const CrowdfundingPage = () => {
     }
   };
 
-  const updates = campaignData?.updates || [];
+  const updates = Array.isArray(campaignData?.updates) ? campaignData.updates : [];
 
   // --- Pizza-specific values (prefer pizza fields, fallback to legacy money values) ---
-  const pizzasSold = (campaignData?.pizzasSold ?? campaignData?.raisedAmount) || 0;
-  const pizzaGoal = (campaignData?.pizzaGoal ?? campaignData?.goal) || 1000; // default goal to 1000 pizzas
+  const pizzasSold = (campaignData?.pizzasSold ?? campaignData?.raisedAmount ?? 0) || 0;
+  const pizzaGoal = (campaignData?.pizzaGoal ?? campaignData?.goal ?? 1000) || 1000; // default goal to 1000 pizzas
   const daysLeft = endDate
     ? Math.ceil((new Date(endDate) - new Date()) / (1000 * 60 * 60 * 24))
     : 0;
@@ -408,7 +415,7 @@ const CrowdfundingPage = () => {
               )}
               {activeTab === 'goals' && (
                 <div className="space-y-6">
-                  {campaignData.goals
+                  {campaignData?.goals
                     ? (
                         Array.isArray(campaignData.goals)
                           ? <PortableText value={campaignData.goals} />
