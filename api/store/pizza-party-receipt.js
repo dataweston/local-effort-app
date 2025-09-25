@@ -1,5 +1,5 @@
 // POST /api/store/pizza-party-receipt
-// Body: { paymentId, date, email, addOnGuests }
+// Body: { paymentId, date, email, addOnGuests, name, phone, address, mealTime, pizzaRequests }
 // Sends a confirmation/receipt email via Brevo (SendinBlue). Returns { ok: true } or { error }.
 
 const fetch = require('node-fetch');
@@ -16,7 +16,7 @@ module.exports = async (req, res) => {
     return res.status(204).end();
   }
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
-  const { paymentId, date, email, addOnGuests = 0 } = req.body || {};
+  const { paymentId, date, email, addOnGuests = 0, name, phone, address, mealTime, pizzaRequests } = req.body || {};
   if (!paymentId || !email || !date) return res.status(400).json({ error: 'Missing required fields' });
   if (!BREVO_API_KEY) {
     // Soft fail if no API key: log and return ok so frontend UX is smooth.
@@ -24,9 +24,17 @@ module.exports = async (req, res) => {
     return res.status(200).json({ ok: true, skipped: true });
   }
   try {
+    const addrHtml = address && address.line1 ? `<p><strong>Address</strong>: ${address.line1}${address.line2?(', '+address.line2):''}, ${address.city || ''} ${address.state || ''} ${address.postal || ''}</p>` : '';
+    const metaHtml = `
+      ${name ? `<p><strong>Name:</strong> ${name}</p>`:''}
+      ${phone ? `<p><strong>Phone:</strong> ${phone}</p>`:''}
+      ${mealTime ? `<p><strong>Preferred Mealtime:</strong> ${mealTime}</p>`:''}
+      ${pizzaRequests ? `<p><strong>Pizza Requests:</strong> ${pizzaRequests.replace(/</g,'&lt;')}</p>`:''}
+      ${addrHtml}
+    `;
     const html = `<p>Thanks for booking your <strong>Local Effort Pizza Party</strong> on <strong>${date}</strong>.</p>
 <p>Payment ID: <code>${paymentId}</code></p>
-<p>${addOnGuests > 0 ? `${addOnGuests} guest add-on(s) included.` : 'No add-on items selected.'}</p>
+<p>${addOnGuests > 0 ? `${addOnGuests} guest add-on(s) included.` : 'No add-on items selected.'}</p>${metaHtml}
 <p>We will follow up shortly to confirm logistics. Reply to this email with any questions.</p>`;
 
     const payload = {

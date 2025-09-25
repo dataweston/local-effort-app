@@ -105,10 +105,25 @@ const PizzaPartyPage = () => {
   const [bookedDate, setBookedDate] = useState(null);
   const [justBooked, setJustBooked] = useState(false); // differentiate newly booked success for banner animation
   const [email, setEmail] = useState('');
+  const [fullName, setFullName] = useState('');
+  const [phone, setPhone] = useState('');
+  const [address, setAddress] = useState({ line1: '', line2: '', city: '', state: 'MN', postal: '' });
+  const [mealTime, setMealTime] = useState('5:00 PM');
+  const [pizzaRequests, setPizzaRequests] = useState('');
   const [addOnEnabled, setAddOnEnabled] = useState(false);
   const [guestCount, setGuestCount] = useState(10);
   const [submitting, setSubmitting] = useState(false); // prevent rapid double submit
   const isValidEmail = (val) => /.+@.+\..+/.test(val.trim());
+  // Phone / postal formatting utilities
+  const formatPhone = (val) => {
+    const digits = val.replace(/\D/g, '').slice(0, 10);
+    if (digits.length < 4) return digits;
+    if (digits.length < 7) return `(${digits.slice(0,3)}) ${digits.slice(3)}`;
+    return `(${digits.slice(0,3)}) ${digits.slice(3,6)}-${digits.slice(6)}`;
+  };
+  const isValidPhone = (val) => val.replace(/\D/g,'').length === 10;
+  const formatPostal = (val) => val.replace(/[^0-9]/g,'').slice(0,5);
+  const isValidAddress = (a) => a.line1.trim().length > 3 && a.city.trim().length > 1 && a.postal.trim().length >= 5;
 
   const basePrice = 300;
   const addOnTotal = addOnEnabled ? guestCount * 9 : 0;
@@ -119,6 +134,45 @@ const PizzaPartyPage = () => {
     fetchPizzaImages((imgs) => { if (active) setImages(imgs); }, (err) => active && setError(err), (val) => active && setLoading(val));
     return () => { active = false; };
   }, []);
+
+  // Google Places Autocomplete (optional if key provided in global or env)
+  useEffect(() => {
+    if (!showModal) return; // only when modal open to reduce overhead
+    const apiKey = window.GOOGLE_PLACES_KEY || import.meta?.env?.VITE_GOOGLE_PLACES_KEY;
+    if (!apiKey) return; // silently skip
+    const existing = document.querySelector('script[data-gplaces]');
+    if (existing) return; // assume loaded
+    const s = document.createElement('script');
+    s.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places&callback=__lpPlacesInit`;
+    s.async = true;
+    s.dataset.gplaces = 'true';
+    window.__lpPlacesInit = () => {
+      try {
+        const input = document.querySelector('#pp-address-line1');
+        if (!input || !window.google || !window.google.maps) return;
+        const ac = new window.google.maps.places.Autocomplete(input, { types: ['address'], componentRestrictions: { country: 'us' } });
+        ac.addListener('place_changed', () => {
+          const place = ac.getPlace();
+          if (!place || !Array.isArray(place.address_components)) return;
+          const comp = (type) => place.address_components.find(c => c.types.includes(type))?.long_name || '';
+          const streetNumber = comp('street_number');
+          const route = comp('route');
+          const locality = comp('locality') || comp('sublocality') || '';
+            const admin = comp('administrative_area_level_1') || '';
+          const postal = comp('postal_code') || '';
+          setAddress(a => ({
+            ...a,
+            line1: [streetNumber, route].filter(Boolean).join(' ') || a.line1,
+            city: locality || a.city,
+            state: admin || a.state,
+            postal: postal || a.postal,
+          }));
+        });
+      } catch (_) { /* ignore */ }
+    };
+    document.head.appendChild(s);
+  return () => { try { delete window.__lpPlacesInit; } catch (_) { /* ignore cleanup */ } };
+  }, [showModal]);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -148,6 +202,11 @@ const PizzaPartyPage = () => {
   const submitBooking = async () => {
     if (!selectedDate) return;
     if (submitting) return; // guard
+    // basic validation
+    if (!fullName.trim() || !isValidEmail(email) || !isValidPhone(phone) || !isValidAddress(address)) {
+      setBookingState(s => ({ ...s, [selectedDate]: { ...(s[selectedDate]||{}), error: 'Please complete required contact & address fields.' } }));
+      return;
+    }
     setSubmitting(true);
     const date = selectedDate;
     // optimistic: mark loading
@@ -158,7 +217,19 @@ const PizzaPartyPage = () => {
       const res = await fetch('/api/store/pizza-party-checkout', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ date, email: email.trim(), addOnGuests: addOnEnabled ? guestCount : 0, token, basePriceCents: 30000, addOnPricePerGuestCents: 900 })
+        body: JSON.stringify({
+          date,
+          email: email.trim(),
+            name: fullName.trim(),
+            phone: phone.trim(),
+            address,
+            mealTime,
+            pizzaRequests,
+          addOnGuests: addOnEnabled ? guestCount : 0,
+          token,
+          basePriceCents: 30000,
+          addOnPricePerGuestCents: 900
+        })
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || 'Payment failed');
@@ -356,9 +427,44 @@ const PizzaPartyPage = () => {
               )}
               {selectedDate && (
                 <div className="space-y-4">
+                  <label className="block text-sm font-medium">Name
+                    <input type="text" value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder="Your full name" className="mt-1 w-full rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500" />
+                  </label>
                   <label className="block text-sm font-medium">Email
                     <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" className="mt-1 w-full rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500" />
                   </label>
+                  <label className="block text-sm font-medium">Phone
+                    <input type="tel" value={phone} onChange={(e) => setPhone(formatPhone(e.target.value))} placeholder="(555) 123-4567" className="mt-1 w-full rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500" />
+                  </label>
+                  <fieldset className="border rounded-md p-3 space-y-2">
+                    <legend className="text-xs font-semibold uppercase tracking-wide text-neutral-600">Address</legend>
+                    <div className="grid grid-cols-1 gap-2">
+                      <input id="pp-address-line1" value={address.line1} onChange={e=>setAddress(a=>({...a,line1:e.target.value}))} placeholder="Street address" className="rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500" />
+                      <input value={address.line2} onChange={e=>setAddress(a=>({...a,line2:e.target.value}))} placeholder="Apt / Suite (optional)" className="rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500" />
+                      <div className="grid grid-cols-6 gap-2">
+                        <input value={address.city} onChange={e=>setAddress(a=>({...a,city:e.target.value}))} placeholder="City" className="col-span-3 rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500" />
+                        <input value={address.state} onChange={e=>setAddress(a=>({...a,state:e.target.value}))} placeholder="State" className="col-span-1 rounded-md border px-2 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500" />
+                        <input value={address.postal} onChange={e=>setAddress(a=>({...a,postal:formatPostal(e.target.value)}))} placeholder="ZIP" className="col-span-2 rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500" />
+                      </div>
+                    </div>
+                  </fieldset>
+                  <div className="grid grid-cols-2 gap-4">
+                    <label className="block text-sm font-medium">Mealtime
+                      <select value={mealTime} onChange={e=>setMealTime(e.target.value)} className="mt-1 w-full rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500">
+                        {['4:00 PM','4:30 PM','5:00 PM','5:30 PM','6:00 PM','6:30 PM','7:00 PM'].map(t => <option key={t} value={t}>{t}</option>)}
+                      </select>
+                    </label>
+                    <label className="block text-sm font-medium">Guests
+                      <input
+                        type="number"
+                        min={1}
+                        max={50}
+                        value={guestCount}
+                        onChange={(e) => setGuestCount(Math.max(1, Math.min(50, Number(e.target.value))))}
+                        className="mt-1 w-full rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
+                      />
+                    </label>
+                  </div>
                   <div className="space-y-2 border rounded-md p-3">
                     <label className="flex items-center gap-2 text-sm font-medium">
                       <input type="checkbox" checked={addOnEnabled} onChange={(e) => setAddOnEnabled(e.target.checked)} />
@@ -366,20 +472,13 @@ const PizzaPartyPage = () => {
                     </label>
                     {addOnEnabled && (
                       <div className="flex items-center gap-3 pl-6">
-                        <label className="text-xs font-medium uppercase tracking-wide">Guests
-                          <input
-                            type="number"
-                            min={1}
-                            max={50}
-                            value={guestCount}
-                            onChange={(e) => setGuestCount(Math.max(1, Math.min(50, Number(e.target.value))))}
-                            className="mt-1 ml-2 w-20 rounded-md border px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
-                          />
-                        </label>
                         <span className="text-xs text-neutral-500">Add-on total: ${addOnTotal}</span>
                       </div>
                     )}
                   </div>
+                  <label className="block text-sm font-medium">Pizza Requests (optional)
+                    <textarea value={pizzaRequests} onChange={e=>setPizzaRequests(e.target.value)} placeholder="Favorite styles, dietary notes, special requests..." rows={3} className="mt-1 w-full rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500" />
+                  </label>
                   <div className="flex items-center justify-between text-sm font-medium pt-2 border-t">
                     <span>Total</span>
                     <span>${grandTotal}</span>
@@ -391,10 +490,13 @@ const PizzaPartyPage = () => {
                 <button
                   onClick={selectedDate ? submitBooking : undefined}
                   type="button"
-                  disabled={selectedDate ? (bookingState[selectedDate]?.loading || submitting || !cardLoaded || !!cardError || loadingScript || !isValidEmail(email)) : false}
+                  disabled={selectedDate ? (bookingState[selectedDate]?.loading || submitting || !cardLoaded || !!cardError || loadingScript || !isValidEmail(email) || !fullName.trim() || !isValidPhone(phone) || !isValidAddress(address)) : false}
                   className={`flex-1 rounded-md text-sm font-semibold px-4 py-2 shadow disabled:opacity-60 disabled:cursor-not-allowed ${selectedDate ? 'bg-orange-600 hover:bg-orange-700 text-white' : 'bg-neutral-200 text-neutral-500 cursor-not-allowed'}`}
                 >
-                  {selectedDate ? (bookingState[selectedDate]?.loading || submitting ? 'Charging…' : (isValidEmail(email) ? 'Pay Now' : 'Enter Email')) : 'Select a Date'}
+                  {selectedDate ? (
+                    bookingState[selectedDate]?.loading || submitting ? 'Charging…' :
+                      (!fullName.trim() ? 'Enter Name' : !isValidEmail(email) ? 'Enter Email' : !isValidPhone(phone) ? 'Phone Needed' : !isValidAddress(address) ? 'Address Needed' : 'Pay Now')
+                  ) : 'Select a Date'}
                 </button>
               </div>
               {selectedDate && bookingState[selectedDate]?.error && (
