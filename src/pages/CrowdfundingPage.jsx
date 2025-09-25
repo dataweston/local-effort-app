@@ -206,7 +206,7 @@ const CrowdfundingPage = () => {
   const title = campaignTitle || 'Crowdfunding';
 
   // Initialize shared Square card (enabled only when a payable tier exists)
-  const { cardLoaded, error: squareConfigError, tokenize } = useSquareCard('#cf-card-container', !!firstPayTier, [firstPayTier?.amount]);
+  const { cardLoaded, error: squareConfigError, tokenize, envInfo } = useSquareCard('#cf-card-container', !!firstPayTier, [firstPayTier?.amount]);
 
   // On return from Square (?payment=success), confirm and update counters
   useEffect(() => {
@@ -239,7 +239,12 @@ const CrowdfundingPage = () => {
     setPayError('');
     setPaying(true);
     try {
-      const token = await tokenize();
+      let token;
+      try {
+        token = await tokenize();
+      } catch (tokErr) {
+        throw new Error(tokErr?.message || 'Card not ready');
+      }
       const payload = {
         items: items.map(i => ({
           name: i.name,
@@ -258,7 +263,19 @@ const CrowdfundingPage = () => {
         body: JSON.stringify(payload),
       });
       const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(data.error || 'Checkout failed');
+      if (!res.ok) {
+        let msg = data.error || 'Checkout failed';
+        // Attempt to surface Square API JSON array string
+        if (typeof msg === 'string' && msg.startsWith('[')) {
+          try {
+            const parsed = JSON.parse(msg);
+            if (Array.isArray(parsed) && parsed[0]?.code) {
+              msg = `Square error: ${parsed[0].code}${parsed[0].detail ? ' - ' + parsed[0].detail : ''}`;
+            }
+          } catch (_) { /* ignore parse */ }
+        }
+        throw new Error(msg);
+      }
       setConfirmMsg('Thanks! Your contribution has been processed.');
     } catch (e) {
       setPayError(e?.message || 'Payment failed');
@@ -539,10 +556,10 @@ const CrowdfundingPage = () => {
                 </div>
                 <button
                   disabled={!firstPayTier || !cardLoaded || paying || !!squareConfigError}
-                  onClick={() => firstPayTier && contribute([{ name: firstPayTier.title || 'Pizza', price: firstPayTier.amount * 100, type: 'pizza', pizzaCount: pizzaQty, quantity: pizzaQty }])}
+                  onClick={() => firstPayTier && contribute([{ name: firstPayTier.title || 'Pizza', price: Math.round(firstPayTier.amount * 100), type: 'pizza', pizzaCount: pizzaQty, quantity: pizzaQty }])}
                   className="btn btn-primary w-full text-lg py-3 disabled:opacity-60"
                 >
-                  {paying ? 'Processing…' : 'i want pizza'}
+                  {paying ? 'Processing…' : cardLoaded ? 'i want pizza' : 'Loading payment form…'}
                 </button>
               </div>
             </div>
@@ -554,9 +571,21 @@ const CrowdfundingPage = () => {
                   key={tier?.title || Math.random()}
                   tier={tier}
                   busy={paying}
-                  onContribute={(item) => contribute([{ name: item.name || item.title || 'Pledge', price: (item.price || item.amount) * 100, type: 'pledge', quantity: 1 }])}
+                  onContribute={(item) => contribute([{ name: item.name || item.title || 'Pledge', price: Math.round((item.price || item.amount) * 100), type: 'pledge', quantity: 1 }])}
                 />
               ))}
+              {/* Dev diagnostics */}
+              {process.env.NODE_ENV !== 'production' && (
+                <div className="mt-8 p-4 border rounded text-xs space-y-1 bg-gray-50">
+                  <p className="font-semibold">Payment Diagnostics</p>
+                  <p>SDK URL: {envInfo?.sdkUrl}</p>
+                  <p>App ID present: {envInfo?.appId ? 'yes' : 'no'}</p>
+                  <p>Location ID present: {envInfo?.locationId ? 'yes' : 'no'}</p>
+                  <p>Sandbox mode: {envInfo?.sandbox ? 'true' : 'false'}</p>
+                  <p>Loaded: {cardLoaded ? 'true' : 'false'} | Attempts: {envInfo?.attempts ?? 'n/a'}</p>
+                  {squareConfigError && <p className="text-red-600">Error: {squareConfigError}</p>}
+                </div>
+              )}
             </div>
           </div>
         </div>
