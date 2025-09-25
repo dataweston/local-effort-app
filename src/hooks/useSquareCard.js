@@ -12,6 +12,8 @@ export function useSquareCard(containerId, enabled, deps = []) {
   const [cardLoaded, setCardLoaded] = useState(false);
   const [attempts, setAttempts] = useState(0);
   const [error, setError] = useState('');
+  const [loadingScript, setLoadingScript] = useState(false);
+  const attachStartedRef = useRef(false);
 
   // Inject script (once)
   useEffect(() => {
@@ -26,6 +28,8 @@ export function useSquareCard(containerId, enabled, deps = []) {
     sc.async = true;
     sc.dataset.squareSdk = 'true';
     sc.onerror = () => setError('Failed to load payment script.');
+    setLoadingScript(true);
+    sc.onload = () => setLoadingScript(false);
     document.head.appendChild(sc);
   }, [enabled]);
 
@@ -42,18 +46,25 @@ export function useSquareCard(containerId, enabled, deps = []) {
     const init = async () => {
       if (cancelled) return;
       if (!window.Square) {
-        if (attempts > 10) {
-          setError('Payment form failed to load.');
+        if (attempts > 20) { // extend retries
+          setError('Payment form failed to load (script not ready).');
           return;
         }
         setAttempts(a => a + 1);
-        setTimeout(init, 300);
+        setTimeout(init, 250);
         return;
       }
       try {
+        if (cardRef.current || attachStartedRef.current) return; // prevent duplicate attach
         const payments = window.Square.payments(appId, locationId);
         paymentsRef.current = payments;
         const card = await payments.card();
+        const container = typeof containerId === 'string' ? document.querySelector(containerId) : null;
+        if (!container) {
+          setError('Payment container not found.');
+          return;
+        }
+        attachStartedRef.current = true;
         await card.attach(containerId);
         if (!cancelled) {
           cardRef.current = card;
@@ -61,7 +72,15 @@ export function useSquareCard(containerId, enabled, deps = []) {
           setError('');
         }
       } catch (e) {
-        setError(e?.message || 'Payment initialization failed');
+        const msg = e?.message || 'Payment initialization failed';
+        // Surface more specific Square error codes if present
+        if (msg.includes('Invalid App ID')) {
+          setError('Invalid Square App ID.');
+        } else if (msg.includes('Unexpected token')) {
+          setError('Payment script parse error.');
+        } else {
+          setError(msg);
+        }
       }
     };
     init();
@@ -69,7 +88,7 @@ export function useSquareCard(containerId, enabled, deps = []) {
   }, [enabled, attempts, containerId, ...deps]);
 
   const tokenize = async () => {
-    if (!cardRef.current) throw new Error('Card form not ready');
+    if (!cardRef.current) throw new Error(error || 'Card form not ready');
     const result = await cardRef.current.tokenize();
     if (result.status !== 'OK') {
       throw new Error(result?.errors?.[0]?.message || result.status || 'Card details invalid');
@@ -77,5 +96,5 @@ export function useSquareCard(containerId, enabled, deps = []) {
     return result.token;
   };
 
-  return { cardLoaded, error, tokenize };
+  return { cardLoaded, error, loadingScript, tokenize };
 }

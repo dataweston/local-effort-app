@@ -1,6 +1,7 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useSquareCard } from '../hooks/useSquareCard';
 
 // Fetch up to 8 images tagged 'pizza' using existing API (uses tag expansion logic)
 async function fetchPizzaImages(setter, setError, setLoading) {
@@ -23,89 +24,7 @@ const DATES = [
   'Oct 16', 'Oct 17'
 ];
 
-// Embedded payment (Square) state hook for Pizza Party checkout
-function useEmbeddedPayment() {
-  const [state, setState] = useState({}); // date => {loading, error, success, paymentId}
-  const paymentsRef = useRef(null);
-  const cardRef = useRef(null);
-  const [cardLoaded, setCardLoaded] = useState(false);
-  const [initAttempts, setInitAttempts] = useState(0);
-  const [configError, setConfigError] = useState('');
-
-  // Inject Square script once
-  useEffect(() => {
-    const existing = document.querySelector('script[data-square-sdk]');
-    if (existing) return;
-    const mode = (import.meta?.env?.VITE_SQUARE_ENV || '').toLowerCase();
-    const isProd = mode === 'production' || mode === 'prod';
-    const src = isProd ? 'https://web.squarecdn.com/v1/square.js' : 'https://sandbox.web.squarecdn.com/v1/square.js';
-    const sc = document.createElement('script');
-    sc.src = src;
-    sc.async = true;
-    sc.dataset.squareSdk = 'true';
-    sc.onerror = () => setConfigError('Failed to load payment script');
-    document.head.appendChild(sc);
-  }, []);
-
-  // Initialize card form
-  useEffect(() => {
-    let cancelled = false;
-    const appId = (window?.__SQUARE_APP_ID__) || (import.meta?.env?.VITE_SQUARE_APP_ID) || window?.SQUARE_APPLICATION_ID;
-    const locationId = (window?.__SQUARE_LOCATION_ID__) || (import.meta?.env?.VITE_SQUARE_LOCATION_ID) || window?.SQUARE_LOCATION_ID;
-    if (!appId || !locationId) {
-      setConfigError('Missing payment configuration');
-      return;
-    }
-    const init = async () => {
-      if (cancelled) return;
-      if (!window.Square) {
-        if (initAttempts > 10) {
-          setConfigError('Payment form failed to load');
-          return;
-        }
-        setInitAttempts(a => a + 1);
-        setTimeout(init, 300);
-        return;
-      }
-      try {
-        const payments = window.Square.payments(appId, locationId);
-        paymentsRef.current = payments;
-        const card = await payments.card();
-        await card.attach('#pp-card-container');
-        if (!cancelled) {
-          cardRef.current = card;
-          setCardLoaded(true);
-        }
-      } catch (err) {
-        setConfigError(err?.message || 'Payment init failed');
-      }
-    };
-    init();
-    return () => { cancelled = true; };
-  }, [initAttempts]);
-
-  const checkout = async ({ date, email, addOnGuests }) => {
-    setState(s => ({ ...s, [date]: { loading: true } }));
-    try {
-      if (!cardRef.current) throw new Error('Card not ready');
-      const result = await cardRef.current.tokenize();
-      if (result.status !== 'OK') throw new Error(result?.errors?.[0]?.message || 'Card details invalid');
-      const token = result.token;
-      const res = await fetch('/api/store/pizza-party-checkout', {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ date, email, addOnGuests, token, basePriceCents: 30000, addOnPricePerGuestCents: 900 })
-      });
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(data.error || 'Payment failed');
-      setState(s => ({ ...s, [date]: { loading: false, success: true, paymentId: data.paymentId } }));
-    } catch (e) {
-      setState(s => ({ ...s, [date]: { loading: false, error: e.message || 'Error' } }));
-    }
-  };
-
-  return { state, checkout, cardLoaded, configError };
-}
+// NOTE: Replaced custom embedded payment logic with shared useSquareCard hook.
 
 const PizzaPartyPage = () => {
   // SEO canonical (update if production domain differs)
@@ -177,7 +96,8 @@ const PizzaPartyPage = () => {
   const [images, setImages] = useState([]);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
-  const { state: bookingState, checkout, cardLoaded, configError } = useEmbeddedPayment();
+  const [bookingState, setBookingState] = useState({}); // date => {loading,error,success,paymentId}
+  const { cardLoaded, error: cardError, loadingScript, tokenize } = useSquareCard('#pp-card-container', true, []);
   const [bookedDate, setBookedDate] = useState(null);
   const [justBooked, setJustBooked] = useState(false); // differentiate newly booked success for banner animation
   const [showModal, setShowModal] = useState(false);
@@ -226,28 +146,35 @@ const PizzaPartyPage = () => {
     if (submitting) return; // guard
     setSubmitting(true);
     const date = selectedDate;
-    await checkout({ date, email: email.trim(), addOnGuests: addOnEnabled ? guestCount : 0, totalCents: grandTotal * 100 });
-    // After checkout completes, if success mark banner and close modal
-  // bookingState is updated asynchronously; we add a short microtask to read the updated state
-    setTimeout(() => {
-      const latest = bookingState[date];
-      if (latest && latest.success) {
-        setBookedDate(date);
-        setJustBooked(true);
-        closeModal();
-        // Fire-and-forget receipt email (no UI dependency)
-        try {
-          fetch('/api/store/pizza-party-receipt', {
-            method: 'POST',
-            headers: { 'content-type': 'application/json' },
-            body: JSON.stringify({ paymentId: latest.paymentId, date, email: email.trim(), addOnGuests: addOnEnabled ? guestCount : 0 })
-          }).catch(() => {});
-        } catch (_) { /* ignore */ }
-        // remove highlight after a delay
-        setTimeout(() => setJustBooked(false), 6000);
-      }
+    // optimistic: mark loading
+    setBookingState(s => ({ ...s, [date]: { loading: true } }));
+    try {
+      const token = await tokenize();
+      const res = await fetch('/api/store/pizza-party-checkout', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ date, email: email.trim(), addOnGuests: addOnEnabled ? guestCount : 0, token, basePriceCents: 30000, addOnPricePerGuestCents: 900 })
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || 'Payment failed');
+      setBookingState(s => ({ ...s, [date]: { loading: false, success: true, paymentId: data.paymentId } }));
+      setBookedDate(date);
+      setJustBooked(true);
+      closeModal();
+      // Fire-and-forget receipt email
+      try {
+        fetch('/api/store/pizza-party-receipt', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ paymentId: data.paymentId, date, email: email.trim(), addOnGuests: addOnEnabled ? guestCount : 0 })
+        }).catch(() => {});
+      } catch (_) { /* ignore */ }
+      setTimeout(() => setJustBooked(false), 6000);
+    } catch (e) {
+      setBookingState(s => ({ ...s, [date]: { loading: false, error: e.message || 'Error' } }));
+    } finally {
       setSubmitting(false);
-    }, 50);
+    }
   };
 
   return (
@@ -459,7 +386,7 @@ const PizzaPartyPage = () => {
                 <button
                   onClick={selectedDate ? submitBooking : undefined}
                   type="button"
-                  disabled={selectedDate ? (bookingState[selectedDate]?.loading || submitting || !cardLoaded || !!configError || !isValidEmail(email)) : false}
+                  disabled={selectedDate ? (bookingState[selectedDate]?.loading || submitting || !cardLoaded || !!cardError || loadingScript || !isValidEmail(email)) : false}
                   className={`flex-1 rounded-md text-sm font-semibold px-4 py-2 shadow disabled:opacity-60 disabled:cursor-not-allowed ${selectedDate ? 'bg-orange-600 hover:bg-orange-700 text-white' : 'bg-neutral-200 text-neutral-500 cursor-not-allowed'}`}
                 >
                   {selectedDate ? (bookingState[selectedDate]?.loading || submitting ? 'Charging…' : (isValidEmail(email) ? 'Pay Now' : 'Enter Email')) : 'Select a Date'}
@@ -471,11 +398,11 @@ const PizzaPartyPage = () => {
               {selectedDate && bookingState[selectedDate]?.success && (
                 <p className="text-xs text-emerald-600 pt-2">Payment successful! We will confirm shortly.</p>
               )}
-              {configError && (
-                <p className="text-xs text-rose-600 pt-2">{configError}</p>
+              {cardError && (
+                <p className="text-xs text-rose-600 pt-2">{cardError}</p>
               )}
               <div id="pp-card-container" className="mt-4 border rounded-md p-4 bg-white min-h-[88px]" aria-label="Pizza party card form">
-                {!cardLoaded && !configError && <p className="text-xs text-neutral-500">Loading secure payment form…</p>}
+                {!cardLoaded && !cardError && <p className="text-xs text-neutral-500">{loadingScript ? 'Loading payment library…' : 'Initializing secure payment form…'}</p>}
               </div>
             </motion.div>
           </motion.div>
