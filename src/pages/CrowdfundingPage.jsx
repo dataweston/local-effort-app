@@ -81,10 +81,19 @@ const CrowdfundingPage = () => {
   const [paying, setPaying] = useState(false);
   const [payError, setPayError] = useState('');
   const [funderName, setFunderName] = useState('');
+  const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
+  const [notes, setNotes] = useState('');
+  const [notify, setNotify] = useState('none'); // 'none' | 'all' | 'important'
+  const [showForm, setShowForm] = useState(false);
   const [pizzaQty, setPizzaQty] = useState(1);
   const [confirmMsg, setConfirmMsg] = useState('');
   const [referralInput, setReferralInput] = useState('');
   const [referralState, setReferralState] = useState({ status: 'idle', valid: false, participant: null, code: '' });
+  // Simple client-side validators
+  const emailValid = useMemo(() => !email || /.+@.+\..+/.test(email), [email]);
+  const phoneDigits = useMemo(() => phone.replace(/\D/g, ''), [phone]);
+  const phoneValid = useMemo(() => !phone || phoneDigits.length >= 10, [phone, phoneDigits]);
 
   useEffect(() => {
     // 💡 IMPROVEMENT: Fetch a specific campaign by its slug for a more robust component.
@@ -254,6 +263,10 @@ const CrowdfundingPage = () => {
           pizzaCount: i.pizzaCount,
         })),
         funderName,
+        email: email.trim() || undefined,
+        phone: phone.trim() || undefined,
+        notes: notes || undefined,
+        notify,
         token,
         pizzaQty,
       };
@@ -485,83 +498,116 @@ const CrowdfundingPage = () => {
               </div>
               {confirmMsg && <p className="text-sm text-emerald-700">{confirmMsg}</p>}
               {payError && <p className="text-sm text-red-600">{payError}</p>}
-              <div className="flex flex-col gap-2">
-                {/* Name input without label */}
-                <input id="cf-name" className="input w-full" placeholder="Name" value={funderName} onChange={(e) => setFunderName(e.target.value)} />
-              </div>
-              {/* Referral code apply */}
-              <div className="flex items-center gap-2">
-                <input
-                  className="input flex-1"
-                  placeholder="Have a referral code?"
-                  value={referralInput}
-                  onChange={(e) => setReferralInput(e.target.value)}
-                />
+              {/* CTA button when form hidden */}
+              {!showForm && (
                 <button
                   type="button"
-                  className="btn btn-secondary"
-                  disabled={!referralInput || referralState.status === 'checking'}
-                  onClick={async () => {
-                    const code = (referralInput || '').trim();
-                    if (!code) return;
-                    setReferralState({ status: 'checking', valid: false, participant: null, code });
-                    try {
-                      const resp = await fetch('/api/referrals/validate', {
-                        method: 'POST',
-                        headers: { 'content-type': 'application/json' },
-                        body: JSON.stringify({ code }),
-                      });
-                      const data = await resp.json().catch(() => ({}));
-                      if (resp.ok && data && data.valid) {
-                        setReferralState({ status: 'ok', valid: true, participant: data.participant || null, code });
-                      } else {
-                        setReferralState({ status: 'ok', valid: false, participant: null, code });
-                      }
-                    } catch (_) {
-                      setReferralState({ status: 'error', valid: false, participant: null, code });
-                    }
-                  }}
+                  onClick={() => setShowForm(true)}
+                  className="btn btn-primary w-full text-lg py-3"
                 >
-                  {referralState.status === 'checking' ? 'Checking…' : 'Apply'}
+                  i want pizza
                 </button>
-              </div>
-              {referralState.status === 'ok' && referralState.valid && (
-                <p className="text-sm text-emerald-700">Code applied{referralState.participant?.name ? ` for ${referralState.participant.name}` : ''}.</p>
               )}
-              {referralState.status === 'ok' && !referralState.valid && (
-                <p className="text-sm text-red-600">That code is not valid.</p>
-              )}
-              {firstPayTier && (
-                <div className="flex items-center gap-3">
-                  <label htmlFor="pizza-qty" className="text-sm">Quantity</label>
-                  <input
-                    id="pizza-qty"
-                    type="number"
-                    min={1}
-                    max={50}
-                    value={pizzaQty}
-                    onChange={(e) => setPizzaQty(Math.max(1, Math.min(50, Number(e.target.value) || 1)))}
-                    className="input w-24"
-                  />
+              {showForm && (
+                <div className="space-y-4">
+                  <div className="grid grid-cols-1 gap-2">
+                    <input id="cf-name" className="input w-full" placeholder="Name" value={funderName} onChange={(e) => setFunderName(e.target.value)} />
+                    <input className="input w-full" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
+                    <input className="input w-full" placeholder="Phone" value={phone} onChange={(e) => setPhone(e.target.value)} />
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <input
+                      className="input flex-1"
+                      placeholder="Referral code (optional)"
+                      value={referralInput}
+                      onChange={(e) => setReferralInput(e.target.value)}
+                    />
+                    <button
+                      type="button"
+                      className="btn btn-secondary"
+                      disabled={!referralInput || referralState.status === 'checking'}
+                      onClick={async () => {
+                        const code = (referralInput || '').trim();
+                        if (!code) return;
+                        setReferralState({ status: 'checking', valid: false, participant: null, code });
+                        try {
+                          const resp = await fetch('/api/referrals/validate', {
+                            method: 'POST',
+                            headers: { 'content-type': 'application/json' },
+                            body: JSON.stringify({ code }),
+                          });
+                          const data = await resp.json().catch(() => ({}));
+                          if (resp.ok && data && data.valid) {
+                            setReferralState({ status: 'ok', valid: true, participant: data.participant || null, code });
+                          } else {
+                            setReferralState({ status: 'ok', valid: false, participant: null, code });
+                          }
+                        } catch (_) {
+                          setReferralState({ status: 'error', valid: false, participant: null, code });
+                        }
+                      }}
+                    >
+                      {referralState.status === 'checking' ? 'Checking…' : 'Apply'}
+                    </button>
+                  </div>
+                  {referralState.status === 'ok' && referralState.valid && (
+                    <p className="text-sm text-emerald-700">Code applied{referralState.participant?.name ? ` for ${referralState.participant.name}` : ''}.</p>
+                  )}
+                  {referralState.status === 'ok' && !referralState.valid && (
+                    <p className="text-sm text-red-600">That code is not valid.</p>
+                  )}
+                  {firstPayTier && (
+                    <div className="flex items-center gap-3">
+                      <label htmlFor="pizza-qty" className="text-sm">Quantity</label>
+                      <input
+                        id="pizza-qty"
+                        type="number"
+                        min={1}
+                        max={50}
+                        value={pizzaQty}
+                        onChange={(e) => setPizzaQty(Math.max(1, Math.min(50, Number(e.target.value) || 1)))}
+                        className="input w-24"
+                      />
+                    </div>
+                  )}
+                  <div>
+                    <textarea
+                      className="input w-full min-h-[80px]"
+                      placeholder="Any notes for us (optional)"
+                      value={notes}
+                      onChange={(e) => setNotes(e.target.value)}
+                    />
+                  </div>
+                  <fieldset className="space-y-1 text-sm">
+                    <legend className="font-medium mb-1">Campaign Updates</legend>
+                    <label className="flex items-center gap-2"><input type="radio" name="cf-updates" value="none" checked={notify==='none'} onChange={()=>setNotify('none')} /> <span>No emails</span></label>
+                    <label className="flex items-center gap-2"><input type="radio" name="cf-updates" value="important" checked={notify==='important'} onChange={()=>setNotify('important')} /> <span>Important milestones</span></label>
+                    <label className="flex items-center gap-2"><input type="radio" name="cf-updates" value="all" checked={notify==='all'} onChange={()=>setNotify('all')} /> <span>All updates</span></label>
+                  </fieldset>
+                  <div id="cf-card-container" className="border rounded-md p-4 bg-white min-h-[88px]" aria-label="Card payment form">
+                    {!cardLoaded && !squareConfigError && (
+                      <p className="text-sm text-gray-500">Loading secure payment form…</p>
+                    )}
+                    {squareConfigError && (
+                      <p className="text-sm text-red-600">{squareConfigError}</p>
+                    )}
+                  </div>
+                  {/* Inline validation hints */}
+                  {email && !emailValid && (
+                    <p className="text-xs text-red-600 mt-1">Please enter a valid email.</p>
+                  )}
+                  {phone && !phoneValid && (
+                    <p className="text-xs text-red-600 mt-1">Phone should have at least 10 digits.</p>
+                  )}
+                  <button
+                    disabled={!firstPayTier || !cardLoaded || paying || !!squareConfigError || !emailValid || !phoneValid}
+                    onClick={() => firstPayTier && contribute([{ name: firstPayTier.title || 'Pizza', price: Math.round(firstPayTier.amount * 100), type: 'pizza', pizzaCount: pizzaQty, quantity: pizzaQty }])}
+                    className="btn btn-primary w-full text-lg py-3 disabled:opacity-60"
+                  >
+                    {paying ? 'Processing…' : 'Buy Now'}
+                  </button>
                 </div>
               )}
-              <div className="space-y-3">
-                <div id="cf-card-container" className="border rounded-md p-4 bg-white min-h-[88px]" aria-label="Card payment form">
-                  {!cardLoaded && !squareConfigError && (
-                    <p className="text-sm text-gray-500">Loading secure payment form…</p>
-                  )}
-                  {squareConfigError && (
-                    <p className="text-sm text-red-600">{squareConfigError}</p>
-                  )}
-                </div>
-                <button
-                  disabled={!firstPayTier || !cardLoaded || paying || !!squareConfigError}
-                  onClick={() => firstPayTier && contribute([{ name: firstPayTier.title || 'Pizza', price: Math.round(firstPayTier.amount * 100), type: 'pizza', pizzaCount: pizzaQty, quantity: pizzaQty }])}
-                  className="btn btn-primary w-full text-lg py-3 disabled:opacity-60"
-                >
-                  {paying ? 'Processing…' : cardLoaded ? 'i want pizza' : 'Loading payment form…'}
-                </button>
-              </div>
             </div>
 
             <div className="space-y-4">
