@@ -34,9 +34,6 @@ export default function TinyDinerProxy() {
         className="flex-1 rounded-xl border border-neutral-200 bg-white shadow-sm"
         allow="payment"
       />
-      <p className="text-sm text-neutral-500">
-        Embedded from <code>{targetUrl}</code>. Update <code>VITE_TINY_DINER_URL</code> to point to the deployed instance.
-      </p>
     </div>
   );
 }
