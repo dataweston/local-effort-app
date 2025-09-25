@@ -397,14 +397,14 @@ const PizzaPartyPage = () => {
 
       <AnimatePresence>
         {showModal && (
-          <motion.div className="fixed inset-0 z-50 flex items-center justify-center p-4" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+          <motion.div className="fixed inset-0 z-50 flex items-start justify-center p-4 overflow-y-auto" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
             <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={closeModal} />
             <motion.div
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
               transition={{ type: 'spring', stiffness: 220, damping: 20 }}
-              className="relative w-full max-w-md rounded-xl bg-white shadow-lg border p-6 space-y-5"
+              className="relative w-full max-w-md rounded-xl bg-white shadow-lg border p-6 space-y-5 mt-10 mb-10 max-h-[90vh] overflow-y-auto"
             >
               <div className="flex items-start justify-between gap-4">
                 <div>
