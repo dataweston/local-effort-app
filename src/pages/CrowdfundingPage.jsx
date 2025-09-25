@@ -1,17 +1,14 @@
 // ...existing code...
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import PropTypes from 'prop-types';
 import { Helmet } from 'react-helmet-async';
 import { PortableText } from '@portabletext/react';
-import imageUrlBuilder from '@sanity/image-url';
 import SectionHeader from '../components/ui/SectionHeader';
 import sanityClient from '../sanityClient.js';
 
-// --- Sanity Image URL Builder Setup ---
-const builder = imageUrlBuilder(sanityClient);
-function urlFor(source) {
-  return builder.image(source);
-}
+// --- Sanity Image URL Builder Setup (kept for future use if dynamic hero image restored) ---
+// const builder = imageUrlBuilder(sanityClient);
+// function urlFor(source) { return builder.image(source); }
 
 // --- Helper & Child Components (No changes needed here) ---
 const StatBox = ({ value, label }) => (
@@ -242,7 +239,7 @@ const CrowdfundingPage = () => {
     description = [],
     backers = 0,
     endDate = null,
-    heroImage = null,
+  // heroImage removed (static override in place)
   } = campaignData;
 
   // New pies sold count (optional field)
@@ -252,24 +249,90 @@ const CrowdfundingPage = () => {
   const story = campaignData.story || [];
   const faq = campaignData.faq || [];
 
+  // --- Embedded Checkout State (Square Web Payments SDK) ---
+  const paymentsRef = useRef(null);
+  const cardRef = useRef(null);
+  const [cardLoaded, setCardLoaded] = useState(false);
+
+  // Dynamically load the Square Web Payments SDK script (only once)
+  useEffect(() => {
+    const existing = document.querySelector('script[data-square-sdk]');
+    if (existing) return; // already loaded
+    const script = document.createElement('script');
+    script.src = 'https://sandbox.web.squarecdn.com/v1/square.js'; // TODO: switch to production cdn when ENV dictates
+    script.async = true;
+    script.dataset.squareSdk = 'true';
+    document.head.appendChild(script);
+  }, []);
+
+  // Initialize payments + card when we have at least one pay tier and sdk is available
+  useEffect(() => {
+    if (!firstPayTier) return;
+    let cancelled = false;
+    const appId = (window?.__SQUARE_APP_ID__) || (import.meta?.env?.VITE_SQUARE_APP_ID) || window?.SQUARE_APPLICATION_ID;
+    const locationId = (window?.__SQUARE_LOCATION_ID__) || (import.meta?.env?.VITE_SQUARE_LOCATION_ID) || window?.SQUARE_LOCATION_ID;
+    if (!appId || !locationId) return; // cannot init yet
+    const tryInit = async () => {
+      if (cancelled) return;
+      if (!window.Square) {
+        // wait a bit and retry
+        setTimeout(tryInit, 300);
+        return;
+      }
+      try {
+        const payments = window.Square.payments(appId, locationId);
+        paymentsRef.current = payments;
+        const card = await payments.card();
+        await card.attach('#cf-card-container');
+        if (!cancelled) {
+          cardRef.current = card;
+          setCardLoaded(true);
+        }
+      } catch (err) {
+        console.error('Square card init failed', err);
+      }
+    };
+    tryInit();
+    return () => { cancelled = true; };
+  }, [firstPayTier]);
+
   const contribute = async (items) => {
     setPayError('');
     setPaying(true);
     try {
-      // Persist items + name to confirm after redirect
-      try {
-        localStorage.setItem('cf_items', JSON.stringify(items));
-        localStorage.setItem('cf_name', funderName || '');
-  } catch (e) { /* ignore */ }
-      const res = await fetch('/api/crowdfund/contribute', {
-        method: 'POST', headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ items })
+      // Tokenize card if available
+      let token = null;
+      if (cardRef.current) {
+        const result = await cardRef.current.tokenize();
+        if (result.status !== 'OK') {
+          throw new Error(result?.errors?.[0]?.message || result.status || 'Card details invalid');
+        }
+        token = result.token;
+      } else {
+        throw new Error('Card form not ready');
+      }
+      const payload = {
+        items: items.map(i => ({
+          name: i.name,
+          price: i.price,
+          quantity: i.quantity || 1,
+          type: i.type,
+          pizzaCount: i.pizzaCount,
+        })),
+        funderName,
+        token,
+        pizzaQty,
+      };
+      const res = await fetch('/api/crowdfund/checkout', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify(payload),
       });
-      const data = await res.json();
-      if (!res.ok || !data?.url) throw new Error(data?.error || 'Failed to create checkout');
-      window.location.href = data.url;
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || 'Checkout failed');
+      setConfirmMsg('Thanks! Your contribution has been processed.');
     } catch (e) {
-      setPayError(e?.message || 'Payment link failed');
+      setPayError(e?.message || 'Payment failed');
     } finally {
       setPaying(false);
     }
@@ -332,6 +395,26 @@ const CrowdfundingPage = () => {
     ];
   };
 
+  // --- Utility: extract plain text from a single portable block (for optional tagline upgrade) ---
+  const blockText = (blk) => {
+    if (!blk) return '';
+    if (typeof blk === 'string') return blk;
+    if (Array.isArray(blk.children)) return blk.children.map(c => c.text || '').join('');
+    return '';
+  };
+
+  // Optional: promote first paragraph to h2 if it matches tagline phrase
+  let taglineBlock = null;
+  let remainingDescriptionBlocks = description;
+  if (Array.isArray(description) && description.length) {
+    const first = description[0];
+    const text = blockText(first).trim().toLowerCase();
+    if (text.startsWith('local effort is making local pizza')) {
+      taglineBlock = first;
+      remainingDescriptionBlocks = description.slice(1);
+    }
+  }
+
   return (
     <>
       <Helmet>
@@ -345,8 +428,13 @@ const CrowdfundingPage = () => {
                 <h1 className="text-4xl md:text-6xl font-bold uppercase tracking-[-0.02em] leading-[1.02]">{title}</h1>
                 {/* Short description rendered with Portable Text (supports paragraphs and formatting) */}
                 <div className="mt-6 md:mt-8 text-body max-w-2xl">
+                  {taglineBlock && (
+                    <h2 className="text-2xl md:text-3xl font-semibold leading-snug tracking-tight">
+                      {blockText(taglineBlock)}
+                    </h2>
+                  )}
                   {description && (Array.isArray(description) ? (
-                    <PortableText value={description} />
+                    <PortableText value={remainingDescriptionBlocks} />
                   ) : (
                     <PortableText value={toPortableBlocks(description)} />
                   ))}
@@ -357,13 +445,13 @@ const CrowdfundingPage = () => {
   <div className="grid grid-cols-1 lg:grid-cols-5 lg:gap-16">
           {/* --- Left Column (Media & Content Tabs) --- */}
           <div className="lg:col-span-3 space-y-8">
-            {heroImage && (
-              <img
-                src={urlFor(heroImage).width(1200).quality(80).url()}
-                alt={title}
-    className="w-full object-cover rounded-lg aspect-video bg-gray-100"
-              />
-            )}
+            {/* Override hero image per request */}
+            <img
+              src={"/gallery/5Z0A5718-Edit.jpg"}
+              alt={title}
+              className="w-full object-cover rounded-lg aspect-video bg-gray-100"
+              loading="lazy"
+            />
 
             <div className="border-b border-neutral-200">
               <nav className="tablist">
@@ -511,19 +599,27 @@ const CrowdfundingPage = () => {
                   />
                 </div>
               )}
-              <button
-                disabled={!firstPayTier}
-                onClick={() => firstPayTier && contribute([{ name: firstPayTier.title || 'Pizza', price: firstPayTier.amount, type: 'pizza', pizzaCount: pizzaQty, quantity: pizzaQty }])}
-                className="btn btn-primary w-full text-lg py-3 disabled:opacity-60"
-              >
-                {paying ? 'Preparing checkout…' : 'i want pizza'}
-              </button>
+              <div className="space-y-3">
+                <div id="cf-card-container" className="border rounded-md p-4 bg-white" aria-label="Card payment form" />
+                <button
+                  disabled={!firstPayTier || !cardLoaded || paying}
+                  onClick={() => firstPayTier && contribute([{ name: firstPayTier.title || 'Pizza', price: firstPayTier.amount * 100, type: 'pizza', pizzaCount: pizzaQty, quantity: pizzaQty }])}
+                  className="btn btn-primary w-full text-lg py-3 disabled:opacity-60"
+                >
+                  {paying ? 'Processing…' : 'i want pizza'}
+                </button>
+              </div>
             </div>
 
             <div className="space-y-4">
               <SectionHeader overline="Contribute" title="Support Us" />
               {visibleTiers.map((tier) => (
-                <RewardTierCard key={tier?.title || Math.random()} tier={tier} busy={paying} onContribute={(item) => contribute([item])} />
+                <RewardTierCard
+                  key={tier?.title || Math.random()}
+                  tier={tier}
+                  busy={paying}
+                  onContribute={(item) => contribute([{ name: item.name || item.title || 'Pledge', price: (item.price || item.amount) * 100, type: 'pledge', quantity: 1 }])}
+                />
               ))}
             </div>
           </div>
