@@ -101,7 +101,7 @@ const PizzaPartyPage = () => {
   const [showModal, setShowModal] = useState(false);
   const [selectedDate, setSelectedDate] = useState(null);
   const squareEnabled = showModal; // we initialize after modal mounts
-  const { cardLoaded, error: cardError, loadingScript, tokenize } = useSquareCard('#pp-card-container', squareEnabled, [squareEnabled]);
+  const { cardLoaded, error: cardError, loadingScript, tokenize, reset, envInfo } = useSquareCard('#pp-card-container', squareEnabled, [squareEnabled]);
   const [bookedDate, setBookedDate] = useState(null);
   const [justBooked, setJustBooked] = useState(false); // differentiate newly booked success for banner animation
   const [email, setEmail] = useState('');
@@ -133,7 +133,8 @@ const PizzaPartyPage = () => {
   }, []);
 
   const openModal = (date) => {
-    // open first so container exists sooner, then set date
+    // force a fresh mount each time modal opens
+    reset();
     setShowModal(true);
     setSelectedDate(date);
   };
@@ -152,7 +153,8 @@ const PizzaPartyPage = () => {
     // optimistic: mark loading
     setBookingState(s => ({ ...s, [date]: { loading: true } }));
     try {
-      const token = await tokenize();
+      let token;
+      try { token = await tokenize(); } catch (e) { throw new Error(e?.message || 'Card not ready'); }
       const res = await fetch('/api/store/pizza-party-checkout', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
@@ -405,14 +407,67 @@ const PizzaPartyPage = () => {
                 <p className="text-xs text-rose-600 pt-2">{cardError}</p>
               )}
               <div id="pp-card-container" className="mt-4 border rounded-md p-4 bg-white min-h-[88px]" aria-label="Pizza party card form">
-                {!cardLoaded && !cardError && <p className="text-xs text-neutral-500">{loadingScript ? 'Loading payment library…' : 'Initializing secure payment form…'}</p>}
+                {!cardLoaded && !cardError && (
+                  <p className="text-xs text-neutral-500">
+                    {loadingScript ? 'Loading payment library…' : 'Initializing secure payment form…'}
+                  </p>
+                )}
+                {cardError && (
+                  <div className="text-[10px] text-rose-600 space-y-1">
+                    <p>{cardError}</p>
+                    <FallbackLink date={selectedDate} email={email} addOnGuests={addOnEnabled ? guestCount : 0} />
+                  </div>
+                )}
               </div>
             </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
+      {process.env.NODE_ENV !== 'production' && (
+        <div className="mt-12 max-w-md text-xs p-3 border rounded bg-neutral-50 space-y-1">
+          <p className="font-semibold">Payment Diagnostics</p>
+          <p>SDK: {envInfo?.sdkUrl}</p>
+          <p>Sandbox: {String(envInfo?.sandbox)}</p>
+          <p>App ID present: {envInfo?.appId ? 'yes' : 'no'}</p>
+          <p>Location ID present: {envInfo?.locationId ? 'yes' : 'no'}</p>
+          <p>Card loaded: {cardLoaded ? 'true' : 'false'}</p>
+          {cardError && <p className="text-rose-600">Error: {cardError}</p>}
+        </div>
+      )}
     </>
   );
 };
+
+// Hosted payment link fallback component
+const FallbackLink = ({ date, email, addOnGuests }) => {
+  const [url, setUrl] = React.useState(null);
+  const [loading, setLoading] = React.useState(false);
+  const [err, setErr] = React.useState('');
+  const build = async () => {
+    if (loading) return;
+    setLoading(true); setErr('');
+    try {
+      const qs = new URLSearchParams();
+      if (date) qs.set('date', date);
+      if (email) qs.set('email', email);
+      if (addOnGuests) qs.set('addOnGuests', String(addOnGuests));
+      const res = await fetch(`/api/store/pizza-party-link?${qs.toString()}`);
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || 'Link creation failed');
+      setUrl(data.url);
+    } catch (e) {
+      setErr(e?.message || 'Failed to create link');
+    } finally { setLoading(false); }
+  };
+  return (
+    <div className="space-y-1">
+      {!url && <button type="button" onClick={build} className="underline text-[10px]">Get fallback hosted checkout</button>}
+      {loading && <p>Building link…</p>}
+      {err && <p className="text-rose-600">{err}</p>}
+      {url && <p><a href={url} className="text-orange-600 underline" target="_blank" rel="noopener noreferrer">Open hosted Square checkout</a></p>}
+    </div>
+  );
+};
+FallbackLink.propTypes = {};
 
 export default PizzaPartyPage;
