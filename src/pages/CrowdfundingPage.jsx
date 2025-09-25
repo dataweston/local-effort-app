@@ -253,15 +253,27 @@ const CrowdfundingPage = () => {
   const paymentsRef = useRef(null);
   const cardRef = useRef(null);
   const [cardLoaded, setCardLoaded] = useState(false);
+  const [cardInitAttempts, setCardInitAttempts] = useState(0);
+  const [squareConfigError, setSquareConfigError] = useState('');
 
   // Dynamically load the Square Web Payments SDK script (only once)
   useEffect(() => {
     const existing = document.querySelector('script[data-square-sdk]');
     if (existing) return; // already loaded
+    // Determine environment (fallback sandbox for safety unless explicitly production)
+    const mode = (import.meta?.env?.VITE_SQUARE_ENV || '').toLowerCase();
+    const isProd = mode === 'production' || mode === 'prod';
+    const squareSrc = isProd ? 'https://web.squarecdn.com/v1/square.js' : 'https://sandbox.web.squarecdn.com/v1/square.js';
     const script = document.createElement('script');
-    script.src = 'https://sandbox.web.squarecdn.com/v1/square.js'; // TODO: switch to production cdn when ENV dictates
+    script.src = squareSrc;
     script.async = true;
     script.dataset.squareSdk = 'true';
+    script.onload = () => {
+      // no-op; initialization handled in separate effect
+    };
+    script.onerror = () => {
+      setSquareConfigError('Failed to load payment script. Please refresh or try again later.');
+    };
     document.head.appendChild(script);
   }, []);
 
@@ -271,11 +283,18 @@ const CrowdfundingPage = () => {
     let cancelled = false;
     const appId = (window?.__SQUARE_APP_ID__) || (import.meta?.env?.VITE_SQUARE_APP_ID) || window?.SQUARE_APPLICATION_ID;
     const locationId = (window?.__SQUARE_LOCATION_ID__) || (import.meta?.env?.VITE_SQUARE_LOCATION_ID) || window?.SQUARE_LOCATION_ID;
-    if (!appId || !locationId) return; // cannot init yet
+    if (!appId || !locationId) {
+      setSquareConfigError('Payment not available: missing Square configuration.');
+      return;
+    }
     const tryInit = async () => {
       if (cancelled) return;
       if (!window.Square) {
-        // wait a bit and retry
+        if (cardInitAttempts > 10) {
+          setSquareConfigError('Payment form failed to load. Please retry later.');
+          return;
+        }
+        setCardInitAttempts(a => a + 1);
         setTimeout(tryInit, 300);
         return;
       }
@@ -287,14 +306,16 @@ const CrowdfundingPage = () => {
         if (!cancelled) {
           cardRef.current = card;
           setCardLoaded(true);
+          setSquareConfigError('');
         }
       } catch (err) {
         console.error('Square card init failed', err);
+        setSquareConfigError(err?.message || 'Payment initialization failed');
       }
     };
     tryInit();
     return () => { cancelled = true; };
-  }, [firstPayTier]);
+  }, [firstPayTier, cardInitAttempts]);
 
   const contribute = async (items) => {
     setPayError('');
@@ -600,9 +621,16 @@ const CrowdfundingPage = () => {
                 </div>
               )}
               <div className="space-y-3">
-                <div id="cf-card-container" className="border rounded-md p-4 bg-white" aria-label="Card payment form" />
+                <div id="cf-card-container" className="border rounded-md p-4 bg-white min-h-[88px]" aria-label="Card payment form">
+                  {!cardLoaded && !squareConfigError && (
+                    <p className="text-sm text-gray-500">Loading secure payment form…</p>
+                  )}
+                  {squareConfigError && (
+                    <p className="text-sm text-red-600">{squareConfigError}</p>
+                  )}
+                </div>
                 <button
-                  disabled={!firstPayTier || !cardLoaded || paying}
+                  disabled={!firstPayTier || !cardLoaded || paying || !!squareConfigError}
                   onClick={() => firstPayTier && contribute([{ name: firstPayTier.title || 'Pizza', price: firstPayTier.amount * 100, type: 'pizza', pizzaCount: pizzaQty, quantity: pizzaQty }])}
                   className="btn btn-primary w-full text-lg py-3 disabled:opacity-60"
                 >
