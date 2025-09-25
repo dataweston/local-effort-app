@@ -143,27 +143,29 @@ const PizzaPartyPage = () => {
         {/* Available Dates */}
         <section id="dates">
           <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">Available October Dates <span className="text-[10px] font-mono bg-neutral-200 rounded px-1.5 py-0.5">2025</span></h3>
-          <ul className="divide-y border rounded-md bg-white">
-            {DATES.map((d) => {
-              const st = bookingState[d] || {};
-              return (
-                <li key={d} className="flex items-center justify-between px-4 py-2 text-sm">
-                  <div className="flex items-center gap-3">
-                    <span className="font-medium text-neutral-800">{d}</span>
-                    {st.loading && <span className="text-[10px] text-orange-600 animate-pulse">Preparing...</span>}
-                  </div>
-                  <button
-                    type="button"
-                    disabled={st.loading}
-                    onClick={() => openModal(d)}
-                    className={`inline-flex justify-center items-center rounded-md px-2.5 py-1.5 text-xs font-semibold shadow-sm transition-colors border ${st.loading ? 'bg-neutral-200 text-neutral-500 cursor-not-allowed' : 'bg-orange-600 hover:bg-orange-700 text-white border-orange-600'}`}
-                  >
-                    {st.loading ? '...' : 'Book'}
-                  </button>
-                </li>
-              );
-            })}
-          </ul>
+          <div className="mx-auto max-w-md">
+            <ul className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              {DATES.map((d) => {
+                const st = bookingState[d] || {};
+                return (
+                  <li key={d} className="flex flex-col rounded-lg border bg-white/70 backdrop-blur-sm px-4 py-3 shadow-sm">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="font-medium text-neutral-800 text-sm">{d}</span>
+                      {st.loading && <span className="text-[10px] text-orange-600 animate-pulse">Preparing...</span>}
+                    </div>
+                    <button
+                      type="button"
+                      disabled={st.loading}
+                      onClick={() => openModal(d)}
+                      className={`inline-flex justify-center items-center rounded-md px-2.5 py-1.5 text-xs font-semibold shadow-sm transition-colors border self-start ${st.loading ? 'bg-neutral-200 text-neutral-500 cursor-not-allowed' : 'bg-orange-600 hover:bg-orange-700 text-white border-orange-600'}`}
+                    >
+                      {st.loading ? '...' : 'Book'}
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
         </section>
 
         {/* Image Grid */}
