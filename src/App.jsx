@@ -18,6 +18,7 @@ const AboutUsPage = lazy(() => import('./pages/AboutUsPage'));
 const ServicesPage = lazy(() => import('./pages/ServicesPage'));
 const PricingPage = lazy(() => import('./pages/PricingPage'));
 const CrowdfundingPage = lazy(() => import('./pages/CrowdfundingPage'));
+const ReleasesPage = lazy(() => import('./pages/ReleasesPage'));
 const MenuPage = lazy(() => import('./pages/MenuPage'));
 const HappyMondayPage = lazy(() => import('./pages/HappyMondayPage'));
 const EventsPage = lazy(() => import('./pages/EventsPage'));
@@ -105,6 +106,14 @@ const AppContent = () => {
                   element={
                     <AnimatedPage>
                       <CrowdfundingPage />
+                    </AnimatedPage>
+                  }
+                />
+                <Route
+                  path="/releases"
+                  element={
+                    <AnimatedPage>
+                      <ReleasesPage />
                     </AnimatedPage>
                   }
                 />
