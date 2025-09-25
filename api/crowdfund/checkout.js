@@ -35,7 +35,7 @@ module.exports = async (req, res) => {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
   try {
     if (!sq) return res.status(500).json({ error: 'Square not configured' });
-    const { items, funderName, token } = req.body || {};
+  const { items, funderName, token, email, phone, notes, notify } = req.body || {};
     if (!token) return res.status(400).json({ error: 'Missing payment token' });
     if (!Array.isArray(items) || !items.length) return res.status(400).json({ error: 'No items' });
 
@@ -45,12 +45,17 @@ module.exports = async (req, res) => {
 
     const idempotencyKey = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
 
+    const metaNoteParts = [funderName || 'Anonymous'];
+    if (email) metaNoteParts.push(email);
+    if (phone) metaNoteParts.push(phone);
+    if (notify && notify !== 'none') metaNoteParts.push(`notify:${notify}`);
+    const noteStr = metaNoteParts.join(' | ').slice(0, 500);
     const paymentBody = {
       sourceId: token,
       idempotencyKey,
       amountMoney: { amount: Math.round(lineTotal), currency: 'USD' },
       locationId: LOCATION_ID,
-      note: 'Crowdfunding contribution',
+      note: noteStr,
       autocomplete: true,
     };
 
@@ -70,7 +75,7 @@ module.exports = async (req, res) => {
             } else {
               const data = doc.data() || {};
               const funders = Array.isArray(data.funders) ? data.funders : [];
-              funders.push({ name: funderName, date: new Date().toISOString() });
+              funders.push({ name: funderName, date: new Date().toISOString(), email: email || null, phone: phone || null, notes: notes || null, notify: notify || 'none', pizzas: pizzasInCart });
               tx.update(docRef, { pizzasSold: (data.pizzasSold || 0) + pizzasInCart, funders });
             }
           });
