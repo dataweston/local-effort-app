@@ -5,9 +5,12 @@ export default {
   fields: [
     {
       name: 'asset',
-      type: 'cloudinary.asset', // This type is provided by the plugin
+      // Defaulting to 'image' to avoid Unknown type error if cloudinary plugin not installed.
+      // If you add the Sanity Cloudinary plugin, change this back to 'cloudinary.asset'.
+      type: 'image',
       title: 'Cloudinary Asset',
-      description: 'Select or upload an image from Cloudinary',
+      description: 'Upload an image (Cloudinary plugin not detected, using standard image type).',
+      options: { hotspot: true },
     },
     {
       name: 'alt',
