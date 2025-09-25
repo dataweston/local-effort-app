@@ -9,6 +9,7 @@ const links = [
   ] },
   { path: '/pricing', name: 'Pricing' },
   { path: '/menu', name: 'Menus' },
+  { path: '/pizza-party', name: 'Pizza Party' },
   { path: '/about', name: 'About' },
   // { path: '/happy-monday', name: 'Happy Monday' }, // temporarily hidden
   { path: '/gallery', name: 'Gallery' },
