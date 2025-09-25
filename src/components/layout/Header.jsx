@@ -12,6 +12,7 @@ const links = [
   { path: '/about', name: 'About' },
   // { path: '/happy-monday', name: 'Happy Monday' }, // temporarily hidden
   { path: '/gallery', name: 'Gallery' },
+  { path: '/releases', name: 'Releases' },
 ];
 
 // Toggle to show/hide fundraiser button in nav (routes still accessible directly)
