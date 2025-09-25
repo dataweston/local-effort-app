@@ -262,9 +262,9 @@ const ReleasesPage = () => {
                   Minneapolis, MN
                 </p>
                 <p className="mt-4 text-sm text-neutral-700">
-                  Phone:{' '}
-                  <a href="tel:+1612555XXXX" className="underline underline-offset-4 hover:opacity-80">
-                    +1&nbsp;612&nbsp;555&nbsp;XXXX
+                  Email:{' '}
+                  <a href="mailto:yum@localeffortfood.com" className="underline underline-offset-4 hover:opacity-80">
+                    yum@localeffortfood.com
                   </a>
                 </p>
                 <p className="mt-1 text-sm text-neutral-700">
