@@ -579,6 +579,7 @@ const CrowdfundingPage = () => {
                 <div className="mt-8 p-4 border rounded text-xs space-y-1 bg-gray-50">
                   <p className="font-semibold">Payment Diagnostics</p>
                   <p>SDK URL: {envInfo?.sdkUrl}</p>
+                  <p>Environment: {envInfo?.environment || 'unknown'}</p>
                   <p>App ID present: {envInfo?.appId ? 'yes' : 'no'}</p>
                   <p>Location ID present: {envInfo?.locationId ? 'yes' : 'no'}</p>
                   <p>Sandbox mode: {envInfo?.sandbox ? 'true' : 'false'}</p>

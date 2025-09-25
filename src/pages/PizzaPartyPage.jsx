@@ -427,6 +427,7 @@ const PizzaPartyPage = () => {
         <div className="mt-12 max-w-md text-xs p-3 border rounded bg-neutral-50 space-y-1">
           <p className="font-semibold">Payment Diagnostics</p>
           <p>SDK: {envInfo?.sdkUrl}</p>
+          <p>Environment: {envInfo?.environment || 'unknown'}</p>
           <p>Sandbox: {String(envInfo?.sandbox)}</p>
           <p>App ID present: {envInfo?.appId ? 'yes' : 'no'}</p>
           <p>Location ID present: {envInfo?.locationId ? 'yes' : 'no'}</p>
