@@ -4,10 +4,10 @@ const site = process.env.SITE_ORIGIN || 'https://localeffortfood.com';
 function getReleases() {
   return [
     {
-      id: '2025-05-30-pizza-campaign',
+      id: '2025-09-30-pizza-campaign',
       title: 'Local Effort Seeks Support to Craft 1,000 Fully Local Pizzas',
       url: `${site}/releases`,
-      date: '2025-05-30T09:00:00-05:00',
+      date: '2025-09-30T09:00:00-05:00',
       description: 'Community-backed push to produce 1,000 pizzas sourced entirely from Midwestern growers and producers.'
     }
   ];
