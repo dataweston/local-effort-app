@@ -23,10 +23,27 @@ const DATES = [
   'Oct 16', 'Oct 17'
 ];
 
+function useBooking() {
+  const [bookingState, setBookingState] = useState({}); // date => {loading, error}
+  const book = async (date) => {
+    setBookingState((s) => ({ ...s, [date]: { loading: true } }));
+    try {
+      const res = await fetch(`/api/store/pizza-party-link?date=${encodeURIComponent(date)}`);
+      const data = await res.json();
+      if (!res.ok || !data.url) throw new Error(data.error || 'Failed to create link');
+      window.location.href = data.url; // redirect to Square link
+    } catch (e) {
+      setBookingState((s) => ({ ...s, [date]: { loading: false, error: e.message || 'Error' } }));
+    }
+  };
+  return { bookingState, book };
+}
+
 export const PizzaPartyPage = () => {
   const [images, setImages] = useState([]);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
+  const { bookingState, book } = useBooking();
 
   useEffect(() => {
     let active = true;
@@ -83,18 +100,27 @@ export const PizzaPartyPage = () => {
         {/* Available Dates */}
         <section>
           <h3 className="text-xl font-semibold mb-4 flex items-center gap-2">Available October Dates <span className="text-xs font-mono bg-neutral-200 rounded px-2 py-0.5">2025</span></h3>
-          <div className="flex flex-wrap gap-3">
-            {DATES.map((d) => (
-              <motion.span
-                key={d}
-                initial={{ scale: 0.9, opacity: 0 }}
-                whileInView={{ scale: 1, opacity: 1 }}
-                viewport={{ once: true }}
-                className="px-4 py-2 rounded-full bg-neutral-100 hover:bg-neutral-200 text-sm font-medium text-neutral-800 shadow-sm"
-              >
-                {d}
-              </motion.span>
-            ))}
+          <div className="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            {DATES.map((d) => {
+              const st = bookingState[d] || {};
+              return (
+                <div key={d} className="p-4 rounded-xl border bg-white shadow-sm flex flex-col gap-3">
+                  <div className="flex items-center justify-between">
+                    <span className="font-medium text-neutral-800">{d}</span>
+                    {st.loading && <span className="text-xs text-orange-600 animate-pulse">Preparing...</span>}
+                  </div>
+                  <button
+                    type="button"
+                    disabled={st.loading}
+                    onClick={() => book(d)}
+                    className={`inline-flex justify-center items-center rounded-md px-3 py-2 text-sm font-semibold shadow-sm transition-colors border ${st.loading ? 'bg-neutral-200 text-neutral-500 cursor-not-allowed' : 'bg-orange-600 hover:bg-orange-700 text-white border-orange-600'}`}
+                  >
+                    {st.loading ? 'Loading…' : 'Book Now'}
+                  </button>
+                  {st.error && <p className="text-xs text-rose-600">{st.error}</p>}
+                </div>
+              );
+            })}
           </div>
         </section>
 
@@ -124,6 +150,21 @@ export const PizzaPartyPage = () => {
             {!loading && images.length === 0 && !error && (
               <p className="text-sm text-neutral-500">No images found yet. Tag some photos in Cloudinary with 'pizza'.</p>
             )}
+          </div>
+        </section>
+
+        {/* FAQ Section */}
+        <section>
+          <h3 className="text-xl font-semibold mt-24 mb-6">FAQ</h3>
+          <div className="space-y-6">
+            <div>
+              <h4 className="font-medium text-neutral-900">What pizzas does this include?</h4>
+              <p className="text-sm text-neutral-700 mt-1">We have some signature favorites, or we're happy to take requests.</p>
+            </div>
+            <div>
+              <h4 className="font-medium text-neutral-900">Does it include anything besides pizza?</h4>
+              <p className="text-sm text-neutral-700 mt-1">This offer is just for pizza, but we can build a bigger package if you like. It's easy to add additional sides like salads and dessert.</p>
+            </div>
           </div>
         </section>
       </div>
