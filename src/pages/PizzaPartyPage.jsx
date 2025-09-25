@@ -111,7 +111,7 @@ const PizzaPartyPage = () => {
       <div className="mx-auto max-w-6xl px-4 py-10 space-y-14">
         {/* Intro */}
         <div className="text-center space-y-4">
-          {/* Removed static title; focus on new marketing paragraph */}
+          <h1 className="font-display text-4xl md:text-5xl font-bold tracking-tight">Pizza Party Special</h1>
           <p className="mt-2 text-xl md:text-2xl text-neutral-800 max-w-3xl mx-auto leading-relaxed">Host an unforgettable pizza experience right in your home. We bring the oven, the dough, and the vibes. We call it <strong>Local Pizza</strong>.</p>
         </div>
 
