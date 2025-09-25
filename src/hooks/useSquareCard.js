@@ -20,8 +20,9 @@ export function useSquareCard(containerId, enabled, deps = []) {
     if (!enabled) return;
     const existing = document.querySelector('script[data-square-sdk]');
     if (existing) return;
-    const mode = (import.meta?.env?.VITE_SQUARE_ENV || '').toLowerCase();
-    const isProd = mode === 'production' || mode === 'prod';
+  const modeRaw = (import.meta?.env?.VITE_SQUARE_ENV || '').toLowerCase();
+  const inferredProd = (!modeRaw) && typeof window !== 'undefined' && /localeffort\.(app|com)$/i.test(window.location.hostname);
+  const isProd = modeRaw === 'production' || modeRaw === 'prod' || inferredProd;
     const src = isProd ? 'https://web.squarecdn.com/v1/square.js' : 'https://sandbox.web.squarecdn.com/v1/square.js';
     const sc = document.createElement('script');
     sc.src = src;
@@ -59,9 +60,15 @@ export function useSquareCard(containerId, enabled, deps = []) {
         const payments = window.Square.payments(appId, locationId);
         paymentsRef.current = payments;
         const card = await payments.card();
-        const container = typeof containerId === 'string' ? document.querySelector(containerId) : null;
+        // Retry container presence up to 20 * 150ms = ~3s before giving up
+        let container = null;
+        for (let i = 0; i < 20; i++) {
+          container = typeof containerId === 'string' ? document.querySelector(containerId) : null;
+          if (container) break;
+          await new Promise(r => setTimeout(r, 150));
+        }
         if (!container) {
-          setError('Payment container not found.');
+          setError('Payment container not found (timed out).');
           return;
         }
         attachStartedRef.current = true;
@@ -73,6 +80,10 @@ export function useSquareCard(containerId, enabled, deps = []) {
         }
       } catch (e) {
         const msg = e?.message || 'Payment initialization failed';
+        if (process.env.NODE_ENV !== 'production') {
+          // eslint-disable-next-line no-console
+          console.debug('[Square:init:error]', msg);
+        }
         // Surface more specific Square error codes if present
         if (msg.includes('Invalid App ID')) {
           setError('Invalid Square App ID.');
