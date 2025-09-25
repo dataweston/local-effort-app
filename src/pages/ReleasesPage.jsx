@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 
 const typewriterFonts = "'IBM Plex Mono', 'Courier Prime', 'Courier New', 'ui-monospace', 'SFMono-Regular', 'Menlo', 'monospace'";
 
-const releaseDate = 'May 30, 2024';
+const releaseDate = 'May 30, 2025';
 
 const pressFacts = [
   { label: 'Founded', value: '2022' },
@@ -93,8 +93,8 @@ const ReleasesPage = () => {
             {
               '@type': 'NewsArticle',
               headline: 'Roseville-Based Local Effort Seeks Support to Craft 1,000 Fully Local Pizzas',
-              datePublished: '2024-05-30',
-              dateModified: '2024-05-30',
+              datePublished: '2025-05-30',
+              dateModified: '2025-05-30',
               description: 'Local Effort Food Co. launches a community-backed effort to craft 1,000 pizzas using 100% Midwestern ingredients.',
               author: { '@type': 'Organization', name: 'Local Effort Food Co.' },
               publisher: { '@type': 'Organization', name: 'Local Effort Food Co.' },
