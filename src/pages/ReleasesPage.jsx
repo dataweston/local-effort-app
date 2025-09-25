@@ -36,8 +36,8 @@ const leadership = [
 
 const campaignHighlights = [
   'Goal: Handcraft and deliver 1,000 wood-fired pizzas made with 100% local Midwest ingredients.',
-  'Purpose: Fund expanded cold storage and mobile pizza equipment to grow community pop-ups.',
-  'Backer Rewards: Tiered pizza shares, behind-the-scenes kitchen tours, and limited-edition seasonal toppings.',
+  'Purpose: Fund expanded capacity and improve quality control, in the service of opening a pizza shop next year.',
+  'Backer Rewards: Pizzas, pies, events, and premium special offers like sockeye bottarga.',
   'Timeline: 30-day crowdfunding campaign with weekly progress updates and community tastings.',
 ];
 
@@ -92,16 +92,17 @@ const ReleasesPage = () => {
                 <div className="grid gap-3 md:grid-cols-[2fr,1fr] md:items-start">
                   <div className="space-y-3">
                     <h1 className="text-3xl md:text-4xl font-semibold text-neutral-900 leading-tight">
-                      Local Effort Launches Crowdfunding Campaign to Craft 1,000 Local Pizzas
+                      Roseville-Based Local Effort Seeks Support to Craft 1,000 Fully Local Pizzas
                     </h1>
                     <p className="text-base text-neutral-700 leading-relaxed">
-                      Minneapolis-based Local Effort Food Co. invites the community to back its most ambitious pizza initiative yet—building a thousand pies sourced entirely from Midwestern growers, millers, and makers.
+                      Roseville-based Local Effort Food Co. invites the community to back its most ambitious pizza initiative yet—building a thousand pies sourced entirely from Midwestern growers, millers, and producers.
                     </p>
                   </div>
                   <aside className="md:justify-self-end md:text-right text-sm text-neutral-700">
                     <p className="font-semibold text-neutral-900">Media Contact</p>
+                    <p>Weston Smith</p>
                     <p>Local Effort Food Co.</p>
-                    <p><a href="tel:+1612555XXXX" className="underline underline-offset-4 hover:opacity-80">+1&nbsp;612&nbsp;555&nbsp;XXXX</a></p>
+                    <p><a href="mailto:yum@localeffortfood.com" className="underline underline-offset-4 hover:opacity-80">yum@localeffortfood.com</a></p>
                     <p>
                       <a href="https://localeffortfood.com" className="underline underline-offset-4 hover:opacity-80">
                         localeffortfood.com
@@ -116,13 +117,13 @@ const ReleasesPage = () => {
                   The crowdfunding campaign energizes Local Effort&apos;s obsession with 100% regional sourcing. Every crust, sauce, and topping will trace back to Minnesota and Midwest farms, mills, creameries, and co-ops that the chef team has partnered with since 2022.
                 </p>
                 <p>
-                  Backers will help finance upgraded cold storage and a mobile pizza rig, unlocking more neighborhood pop-ups, farmers market collaborations, and last-mile delivery runs throughout Minneapolis, St. Paul, and Western Wisconsin.
+                  Backers will help finance upgraded capacity and purchasing power, unlocking more neighborhood pop-ups, farmers market collaborations, and last-mile delivery runs throughout Minneapolis, St. Paul, and Western Wisconsin. 
                 </p>
                 <p>
-                  “Pizzas can tell the whole story of a foodshed,” said Weston Smith, chef and co-founder of Local Effort. “When we layer house-fermented dough with seasonal produce, heritage grains, and regional cheeses, we showcase the farms that feed us. This campaign invites people to invest in that community table.”
+                  “This is truly Local Pizza,” said Weston Smith, chef and co-founder of Local Effort. “The grain, the cheese, the tomatoes all tell a story about producing food in the Midwest. If we sell a thousand pies, we&apos;ll focus on opening a shop.”
                 </p>
                 <p>
-                  Supporters can choose from tiered rewards including limited pizza drops, family meal prep bundles, and exclusive seasonal toppings co-developed with local growers. Weekly progress bulletins and tasting events will keep the community connected as milestones are reached on the path to 1,000 pizzas.
+                  Supporters can choose from tiered rewards including apple pies, special invite-only parties and events, premium home events, and exclusive seasonal toppings co-developed with local growers. Weekly progress bulletins and tasting events will keep the community connected as milestones are reached on the path to 1,000 pizzas.
                 </p>
               </div>
 
@@ -142,21 +143,21 @@ const ReleasesPage = () => {
 
               <div className="space-y-5 text-[1.02rem] leading-relaxed text-neutral-800">
                 <p>
-                  Local Effort has grown from intimate in-home dinners to weekly meal prep and private events by doubling down on relationships with Minnesota farmers, grain cooperatives, and dairy makers. The pizza program translates that ethos into a handheld, shareable format that can reach more tables without compromising sourcing.
+                  Local Effort has grown from intimate in-home dinners to weekly meal prep and private events by doubling down on local-first commitments. The pizza program translates that ethos into a universally beloved format.
                 </p>
                 <p>
                   The crowdfunding page is live now at{' '}
                   <Link to="/crowdfunding" className="underline underline-offset-4 font-semibold">
                     localeffortfood.com/crowdfunding
                   </Link>
-                  . Early backers will unlock surprise collaborations with partner farms and community organizations across the Twin Cities.
+                  . Early backers will unlock surprise collaborations with partner farms and organizations across the Twin Cities.
                 </p>
               </div>
 
               <footer className="pt-6 border-t border-dashed border-neutral-300">
                 <p className="uppercase tracking-[0.3em] text-xs text-neutral-600">About Local Effort</p>
                 <p className="mt-3 text-[1.02rem] leading-relaxed text-neutral-800">
-                  Local Effort Food Co. is a Minneapolis-based personal chef and catering team specializing in locally sourced cuisine. Since 2022, the team has designed in-home dinners, weekly meal prep, and community events that keep Midwestern ingredients at the center of every menu.
+                  Local Effort Food Co. is a Roseville-based personal chef and catering team specializing in locally sourced cuisine. Since 2022, the team has designed in-home dinners, weekly meal prep, and small events that keep Midwestern ingredients at the center of every menu.
                 </p>
               </footer>
             </div>
