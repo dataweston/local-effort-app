@@ -74,6 +74,8 @@ const ReleasesPage = () => {
           content="Press releases and media resources from Local Effort Food Co., the Minneapolis-based personal chef and catering team."
         />
         <link rel="canonical" href="https://localeffortfood.com/releases" />
+  <link rel="alternate" type="application/rss+xml" title="Local Effort Releases RSS" href="/api/feeds/releases.rss" />
+  <link rel="alternate" type="application/atom+xml" title="Local Effort Releases Atom" href="/api/feeds/releases.atom" />
         {/* Structured Data: Organization & NewsArticle */}
         <script type="application/ld+json">{JSON.stringify({
           '@context': 'https://schema.org',
