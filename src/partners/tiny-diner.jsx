@@ -1,10 +1,22 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 
 const DEV_FALLBACK = 'http://localhost:5410';
 
 export default function TinyDinerProxy() {
   const configuredUrl = import.meta.env.VITE_TINY_DINER_URL;
   const targetUrl = configuredUrl || (import.meta.env.DEV ? DEV_FALLBACK : '');
+  const [loaded, setLoaded] = useState(false);
+
+  // Fix mobile viewport height (iOS Safari / Android URL bar collapse)
+  useEffect(() => {
+    const setVh = () => {
+      const vh = window.innerHeight * 0.01;
+      document.documentElement.style.setProperty('--vh', `${vh}px`);
+    };
+    setVh();
+    window.addEventListener('resize', setVh);
+    return () => window.removeEventListener('resize', setVh);
+  }, []);
 
   if (!targetUrl) {
     return (
@@ -27,13 +39,21 @@ export default function TinyDinerProxy() {
   }
 
   return (
-    <div className="flex h-[80vh] flex-col gap-4">
-      <iframe
-        title="Tiny Diner Wedding Onboarding"
-        src={targetUrl}
-        className="flex-1 rounded-xl border border-neutral-200 bg-white shadow-sm"
-        allow="payment"
-      />
+    <div className="flex flex-col gap-4" style={{ minHeight: 'calc(var(--vh, 1vh) * 100)' }}>
+      <div className="relative flex-1 min-h-[420px] rounded-xl border border-neutral-200 bg-white shadow-sm overflow-hidden">
+        {!loaded && (
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-gradient-to-b from-neutral-50 to-neutral-100 text-neutral-600 text-sm">
+            <span className="animate-pulse">Loading Tiny Diner…</span>
+          </div>
+        )}
+        <iframe
+          title="Tiny Diner Wedding Onboarding"
+          src={targetUrl}
+          className="absolute inset-0 h-full w-full"
+          allow="payment"
+          onLoad={() => setLoaded(true)}
+        />
+      </div>
     </div>
   );
 }
