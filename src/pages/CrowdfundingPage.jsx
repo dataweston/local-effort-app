@@ -214,6 +214,13 @@ const CrowdfundingPage = () => {
     }
   }, []);
 
+  // --- Embedded Checkout State (Square Web Payments SDK) ---
+  const paymentsRef = useRef(null);
+  const cardRef = useRef(null);
+  const [cardLoaded, setCardLoaded] = useState(false);
+  const [cardInitAttempts, setCardInitAttempts] = useState(0);
+  const [squareConfigError, setSquareConfigError] = useState('');
+
   if (loading) {
     return <div className="text-center p-12">Loading campaign...</div>;
   }
@@ -248,13 +255,6 @@ const CrowdfundingPage = () => {
   // Specifically safeguard array types to prevent the .length error
   const story = campaignData.story || [];
   const faq = campaignData.faq || [];
-
-  // --- Embedded Checkout State (Square Web Payments SDK) ---
-  const paymentsRef = useRef(null);
-  const cardRef = useRef(null);
-  const [cardLoaded, setCardLoaded] = useState(false);
-  const [cardInitAttempts, setCardInitAttempts] = useState(0);
-  const [squareConfigError, setSquareConfigError] = useState('');
 
   // Dynamically load the Square Web Payments SDK script (only once)
   useEffect(() => {
