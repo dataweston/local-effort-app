@@ -1,10 +1,11 @@
 // ...existing code...
-import React, { useState, useEffect, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import PropTypes from 'prop-types';
 import { Helmet } from 'react-helmet-async';
 import { PortableText } from '@portabletext/react';
 import SectionHeader from '../components/ui/SectionHeader';
 import sanityClient from '../sanityClient.js';
+import { useSquareCard } from '../hooks/useSquareCard';
 
 // --- Sanity Image URL Builder Setup (kept for future use if dynamic hero image restored) ---
 // const builder = imageUrlBuilder(sanityClient);
@@ -76,8 +77,6 @@ RewardTierCard.propTypes = {
 // --- Main Page Component ---
 const CrowdfundingPage = () => {
   const [campaignData, setCampaignData] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null); // 💡 IMPROVEMENT: Add error state
   const [activeTab, setActiveTab] = useState('story');
   const [paying, setPaying] = useState(false);
   const [payError, setPayError] = useState('');
@@ -153,16 +152,16 @@ const CrowdfundingPage = () => {
           if (fbData) {
             console.warn('Loaded fallback campaign (first in dataset)');
             setCampaignData(fbData);
-            setError(null);
+            // previously cleared error state (removed unused state)
             return;
           }
         } catch (fbErr) {
           console.error('Fallback fetch also failed:', fbErr && (fbErr.message || fbErr));
         }
 
-        setError('Failed to load campaign data.'); // Set error state
+  console.warn('Failed to load campaign data.');
       } finally {
-        setLoading(false); // Ensure loading is always set to false
+  // loading state removed; no-op
       }
     };
 
@@ -186,6 +185,21 @@ const CrowdfundingPage = () => {
     () => visibleTiers.find(t => typeof t?.amount === 'number' && t.amount > 0) || null,
     [visibleTiers]
   );
+
+  // Destructure frequently used fields from campaign data (safe even if null)
+  const {
+    title: campaignTitle,
+    description,
+    faq = [],
+    story = [],
+    backers = 0,
+    endDate,
+    piesSold = 0,
+  } = campaignData || {};
+  const title = campaignTitle || 'Crowdfunding';
+
+  // Initialize shared Square card (enabled only when a payable tier exists)
+  const { cardLoaded, error: squareConfigError, tokenize } = useSquareCard('#cf-card-container', !!firstPayTier, [firstPayTier?.amount]);
 
   // On return from Square (?payment=success), confirm and update counters
   useEffect(() => {
@@ -214,124 +228,11 @@ const CrowdfundingPage = () => {
     }
   }, []);
 
-  // --- Embedded Checkout State (Square Web Payments SDK) ---
-  const paymentsRef = useRef(null);
-  const cardRef = useRef(null);
-  const [cardLoaded, setCardLoaded] = useState(false);
-  const [cardInitAttempts, setCardInitAttempts] = useState(0);
-  const [squareConfigError, setSquareConfigError] = useState('');
-
-  if (loading) {
-    return <div className="text-center p-12">Loading campaign...</div>;
-  }
-
-  if (error) {
-    // If error is an object with a message, surface it for easier debugging in the UI
-    const errorMessage = typeof error === 'string' ? error : (error && (error.message || JSON.stringify(error))) || 'Failed to load campaign data.';
-    return <div className="text-center p-12 text-red-600">{errorMessage}</div>;
-  }
-
-  if (!campaignData) {
-    return (
-      <div className="text-center p-12">
-        No campaign found. Have you created and published it in Sanity Studio?
-      </div>
-    );
-  }
-
-  // --- ✅ FIX: More robust default values ---
-  // This handles both `undefined` and `null` cases by using the `||` operator.
-  const {
-    title = 'Untitled Campaign',
-    description = [],
-    backers = 0,
-    endDate = null,
-  // heroImage removed (static override in place)
-  } = campaignData;
-
-  // New pies sold count (optional field)
-  const piesSold = campaignData.piesSold ?? 0;
-
-  // Specifically safeguard array types to prevent the .length error
-  const story = campaignData.story || [];
-  const faq = campaignData.faq || [];
-
-  // Dynamically load the Square Web Payments SDK script (only once)
-  useEffect(() => {
-    const existing = document.querySelector('script[data-square-sdk]');
-    if (existing) return; // already loaded
-    // Determine environment (fallback sandbox for safety unless explicitly production)
-    const mode = (import.meta?.env?.VITE_SQUARE_ENV || '').toLowerCase();
-    const isProd = mode === 'production' || mode === 'prod';
-    const squareSrc = isProd ? 'https://web.squarecdn.com/v1/square.js' : 'https://sandbox.web.squarecdn.com/v1/square.js';
-    const script = document.createElement('script');
-    script.src = squareSrc;
-    script.async = true;
-    script.dataset.squareSdk = 'true';
-    script.onload = () => {
-      // no-op; initialization handled in separate effect
-    };
-    script.onerror = () => {
-      setSquareConfigError('Failed to load payment script. Please refresh or try again later.');
-    };
-    document.head.appendChild(script);
-  }, []);
-
-  // Initialize payments + card when we have at least one pay tier and sdk is available
-  useEffect(() => {
-    if (!firstPayTier) return;
-    let cancelled = false;
-    const appId = (window?.__SQUARE_APP_ID__) || (import.meta?.env?.VITE_SQUARE_APP_ID) || window?.SQUARE_APPLICATION_ID;
-    const locationId = (window?.__SQUARE_LOCATION_ID__) || (import.meta?.env?.VITE_SQUARE_LOCATION_ID) || window?.SQUARE_LOCATION_ID;
-    if (!appId || !locationId) {
-      setSquareConfigError('Payment not available: missing Square configuration.');
-      return;
-    }
-    const tryInit = async () => {
-      if (cancelled) return;
-      if (!window.Square) {
-        if (cardInitAttempts > 10) {
-          setSquareConfigError('Payment form failed to load. Please retry later.');
-          return;
-        }
-        setCardInitAttempts(a => a + 1);
-        setTimeout(tryInit, 300);
-        return;
-      }
-      try {
-        const payments = window.Square.payments(appId, locationId);
-        paymentsRef.current = payments;
-        const card = await payments.card();
-        await card.attach('#cf-card-container');
-        if (!cancelled) {
-          cardRef.current = card;
-          setCardLoaded(true);
-          setSquareConfigError('');
-        }
-      } catch (err) {
-        console.error('Square card init failed', err);
-        setSquareConfigError(err?.message || 'Payment initialization failed');
-      }
-    };
-    tryInit();
-    return () => { cancelled = true; };
-  }, [firstPayTier, cardInitAttempts]);
-
   const contribute = async (items) => {
     setPayError('');
     setPaying(true);
     try {
-      // Tokenize card if available
-      let token = null;
-      if (cardRef.current) {
-        const result = await cardRef.current.tokenize();
-        if (result.status !== 'OK') {
-          throw new Error(result?.errors?.[0]?.message || result.status || 'Card details invalid');
-        }
-        token = result.token;
-      } else {
-        throw new Error('Card form not ready');
-      }
+      const token = await tokenize();
       const payload = {
         items: items.map(i => ({
           name: i.name,
@@ -359,11 +260,11 @@ const CrowdfundingPage = () => {
     }
   };
 
-  const updates = campaignData.updates || [];
+  const updates = campaignData?.updates || [];
 
   // --- Pizza-specific values (prefer pizza fields, fallback to legacy money values) ---
-  const pizzasSold = (campaignData.pizzasSold ?? campaignData.raisedAmount) || 0;
-  const pizzaGoal = (campaignData.pizzaGoal ?? campaignData.goal) || 1000; // default goal to 1000 pizzas
+  const pizzasSold = (campaignData?.pizzasSold ?? campaignData?.raisedAmount) || 0;
+  const pizzaGoal = (campaignData?.pizzaGoal ?? campaignData?.goal) || 1000; // default goal to 1000 pizzas
   const daysLeft = endDate
     ? Math.ceil((new Date(endDate) - new Date()) / (1000 * 60 * 60 * 24))
     : 0;

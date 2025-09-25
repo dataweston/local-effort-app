@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -23,42 +23,88 @@ const DATES = [
   'Oct 16', 'Oct 17'
 ];
 
-function useBooking() {
-  const [bookingState, setBookingState] = useState({}); // date => {loading, error}
-  const createLink = async ({ date, email, addOnGuests }) => {
-    setBookingState((s) => ({ ...s, [date]: { loading: true } }));
-    try {
-      const params = new URLSearchParams({ date });
-      if (email) params.set('email', email);
-      if (addOnGuests && addOnGuests > 0) params.set('addOnGuests', String(addOnGuests));
-      const res = await fetch(`/api/store/pizza-party-link?${params.toString()}`);
-      // Defensive: handle non-JSON (e.g., HTML error page) without throwing raw SyntaxError
-      const contentType = res.headers.get('content-type') || '';
-      let data = null;
-      if (contentType.includes('application/json')) {
-        try {
-          data = await res.json();
-        } catch (parseErr) {
-          throw new Error('Received invalid JSON from server');
+// Embedded payment (Square) state hook for Pizza Party checkout
+function useEmbeddedPayment() {
+  const [state, setState] = useState({}); // date => {loading, error, success, paymentId}
+  const paymentsRef = useRef(null);
+  const cardRef = useRef(null);
+  const [cardLoaded, setCardLoaded] = useState(false);
+  const [initAttempts, setInitAttempts] = useState(0);
+  const [configError, setConfigError] = useState('');
+
+  // Inject Square script once
+  useEffect(() => {
+    const existing = document.querySelector('script[data-square-sdk]');
+    if (existing) return;
+    const mode = (import.meta?.env?.VITE_SQUARE_ENV || '').toLowerCase();
+    const isProd = mode === 'production' || mode === 'prod';
+    const src = isProd ? 'https://web.squarecdn.com/v1/square.js' : 'https://sandbox.web.squarecdn.com/v1/square.js';
+    const sc = document.createElement('script');
+    sc.src = src;
+    sc.async = true;
+    sc.dataset.squareSdk = 'true';
+    sc.onerror = () => setConfigError('Failed to load payment script');
+    document.head.appendChild(sc);
+  }, []);
+
+  // Initialize card form
+  useEffect(() => {
+    let cancelled = false;
+    const appId = (window?.__SQUARE_APP_ID__) || (import.meta?.env?.VITE_SQUARE_APP_ID) || window?.SQUARE_APPLICATION_ID;
+    const locationId = (window?.__SQUARE_LOCATION_ID__) || (import.meta?.env?.VITE_SQUARE_LOCATION_ID) || window?.SQUARE_LOCATION_ID;
+    if (!appId || !locationId) {
+      setConfigError('Missing payment configuration');
+      return;
+    }
+    const init = async () => {
+      if (cancelled) return;
+      if (!window.Square) {
+        if (initAttempts > 10) {
+          setConfigError('Payment form failed to load');
+          return;
         }
-      } else {
-        // Attempt to read text to capture potential HTML error body
-        const text = await res.text();
-        const snippet = text.slice(0, 120);
-        throw new Error(res.ok ? 'Unexpected non-JSON response' : `Server error ${res.status}: ${snippet}`);
+        setInitAttempts(a => a + 1);
+        setTimeout(init, 300);
+        return;
       }
-      if (!res.ok) {
-        throw new Error((data && (data.error || data.message)) || `Request failed (${res.status})`);
+      try {
+        const payments = window.Square.payments(appId, locationId);
+        paymentsRef.current = payments;
+        const card = await payments.card();
+        await card.attach('#pp-card-container');
+        if (!cancelled) {
+          cardRef.current = card;
+          setCardLoaded(true);
+        }
+      } catch (err) {
+        setConfigError(err?.message || 'Payment init failed');
       }
-      if (!data || !data.url) {
-        throw new Error((data && data.error) || 'Failed to create link (missing url)');
-      }
-      window.location.href = data.url; // Redirect to hosted checkout link
+    };
+    init();
+    return () => { cancelled = true; };
+  }, [initAttempts]);
+
+  const checkout = async ({ date, email, addOnGuests }) => {
+    setState(s => ({ ...s, [date]: { loading: true } }));
+    try {
+      if (!cardRef.current) throw new Error('Card not ready');
+      const result = await cardRef.current.tokenize();
+      if (result.status !== 'OK') throw new Error(result?.errors?.[0]?.message || 'Card details invalid');
+      const token = result.token;
+      const res = await fetch('/api/store/pizza-party-checkout', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ date, email, addOnGuests, token, basePriceCents: 30000, addOnPricePerGuestCents: 900 })
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || 'Payment failed');
+      setState(s => ({ ...s, [date]: { loading: false, success: true, paymentId: data.paymentId } }));
     } catch (e) {
-      setBookingState((s) => ({ ...s, [date]: { loading: false, error: e.message || 'Error' } }));
+      setState(s => ({ ...s, [date]: { loading: false, error: e.message || 'Error' } }));
     }
   };
-  return { bookingState, createLink };
+
+  return { state, checkout, cardLoaded, configError };
 }
 
 const PizzaPartyPage = () => {
@@ -131,13 +177,16 @@ const PizzaPartyPage = () => {
   const [images, setImages] = useState([]);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
-  const { bookingState, createLink } = useBooking();
+  const { state: bookingState, checkout, cardLoaded, configError } = useEmbeddedPayment();
   const [bookedDate, setBookedDate] = useState(null);
+  const [justBooked, setJustBooked] = useState(false); // differentiate newly booked success for banner animation
   const [showModal, setShowModal] = useState(false);
   const [selectedDate, setSelectedDate] = useState(null);
   const [email, setEmail] = useState('');
   const [addOnEnabled, setAddOnEnabled] = useState(false);
   const [guestCount, setGuestCount] = useState(10);
+  const [submitting, setSubmitting] = useState(false); // prevent rapid double submit
+  const isValidEmail = (val) => /.+@.+\..+/.test(val.trim());
 
   const basePrice = 300;
   const addOnTotal = addOnEnabled ? guestCount * 9 : 0;
@@ -172,9 +221,33 @@ const PizzaPartyPage = () => {
     setAddOnEnabled(false);
     setGuestCount(10);
   };
-  const submitBooking = () => {
+  const submitBooking = async () => {
     if (!selectedDate) return;
-    createLink({ date: selectedDate, email: email.trim(), addOnGuests: addOnEnabled ? guestCount : 0 });
+    if (submitting) return; // guard
+    setSubmitting(true);
+    const date = selectedDate;
+    await checkout({ date, email: email.trim(), addOnGuests: addOnEnabled ? guestCount : 0, totalCents: grandTotal * 100 });
+    // After checkout completes, if success mark banner and close modal
+  // bookingState is updated asynchronously; we add a short microtask to read the updated state
+    setTimeout(() => {
+      const latest = bookingState[date];
+      if (latest && latest.success) {
+        setBookedDate(date);
+        setJustBooked(true);
+        closeModal();
+        // Fire-and-forget receipt email (no UI dependency)
+        try {
+          fetch('/api/store/pizza-party-receipt', {
+            method: 'POST',
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify({ paymentId: latest.paymentId, date, email: email.trim(), addOnGuests: addOnEnabled ? guestCount : 0 })
+          }).catch(() => {});
+        } catch (_) { /* ignore */ }
+        // remove highlight after a delay
+        setTimeout(() => setJustBooked(false), 6000);
+      }
+      setSubmitting(false);
+    }, 50);
   };
 
   return (
@@ -198,9 +271,9 @@ const PizzaPartyPage = () => {
       </Helmet>
       <div className="space-y-16">
         {bookedDate && (
-          <div className="p-4 rounded-lg border border-green-300 bg-green-50 text-green-800 text-sm shadow-sm flex items-start gap-3">
+          <div className={`p-4 rounded-lg border bg-green-50 text-green-800 text-sm shadow-sm flex items-start gap-3 transition-all ${justBooked ? 'border-green-400 ring-2 ring-green-300' : 'border-green-300'}`}>
             <span className="font-semibold">Booked!</span>
-            <span>Your reservation request for <strong>{bookedDate}</strong> was received. We\'ll follow up shortly to confirm details.</span>
+            <span>Your reservation for <strong>{bookedDate}</strong> was received. We\'ll follow up to confirm details.</span>
           </div>
         )}
         {/* Removed original h2 and paragraph per request */}
@@ -232,7 +305,7 @@ const PizzaPartyPage = () => {
                   <div className="text-5xl font-extrabold tracking-tight bg-gradient-to-r from-orange-500 to-rose-500 bg-clip-text text-transparent">$300</div>
                   <div className="mt-1 text-xs uppercase tracking-wider text-neutral-500">Flat event rate</div>
                 </div>
-                <button type="button" onClick={() => openModal(null)} className="inline-flex items-center rounded-md bg-orange-600 hover:bg-orange-700 text-white font-semibold px-6 py-3 shadow-sm transition-colors">Request Date</button>
+                <button type="button" onClick={() => openModal(null)} className="inline-flex items-center rounded-md bg-orange-600 hover:bg-orange-700 text-white font-semibold px-6 py-3 shadow-sm transition-colors">Book / Pay</button>
               </div>
             </div>
           </div>
@@ -258,7 +331,7 @@ const PizzaPartyPage = () => {
                       className={`mt-auto inline-flex justify-center items-center rounded-md px-2.5 py-1.5 text-xs font-semibold shadow-sm transition-colors border ${st.loading ? 'bg-neutral-200 text-neutral-500 cursor-not-allowed' : 'bg-orange-600 hover:bg-orange-700 text-white border-orange-600'}`}
                       aria-label={`Book pizza party on ${d}`}
                     >
-                      {st.loading ? 'Loading' : 'Book'}
+                      {st.loading ? 'Processing' : 'Book'}
                     </button>
                     <div className="pointer-events-none absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity bg-gradient-to-br from-orange-50/40 to-rose-50/40" />
                   </li>
@@ -386,15 +459,24 @@ const PizzaPartyPage = () => {
                 <button
                   onClick={selectedDate ? submitBooking : undefined}
                   type="button"
-                  disabled={selectedDate ? bookingState[selectedDate]?.loading : false}
+                  disabled={selectedDate ? (bookingState[selectedDate]?.loading || submitting || !cardLoaded || !!configError || !isValidEmail(email)) : false}
                   className={`flex-1 rounded-md text-sm font-semibold px-4 py-2 shadow disabled:opacity-60 disabled:cursor-not-allowed ${selectedDate ? 'bg-orange-600 hover:bg-orange-700 text-white' : 'bg-neutral-200 text-neutral-500 cursor-not-allowed'}`}
                 >
-                  {selectedDate ? (bookingState[selectedDate]?.loading ? 'Redirecting…' : 'Proceed to Payment') : 'Select a Date'}
+                  {selectedDate ? (bookingState[selectedDate]?.loading || submitting ? 'Charging…' : (isValidEmail(email) ? 'Pay Now' : 'Enter Email')) : 'Select a Date'}
                 </button>
               </div>
               {selectedDate && bookingState[selectedDate]?.error && (
                 <p className="text-xs text-rose-600 pt-2">{bookingState[selectedDate].error}</p>
               )}
+              {selectedDate && bookingState[selectedDate]?.success && (
+                <p className="text-xs text-emerald-600 pt-2">Payment successful! We will confirm shortly.</p>
+              )}
+              {configError && (
+                <p className="text-xs text-rose-600 pt-2">{configError}</p>
+              )}
+              <div id="pp-card-container" className="mt-4 border rounded-md p-4 bg-white min-h-[88px]" aria-label="Pizza party card form">
+                {!cardLoaded && !configError && <p className="text-xs text-neutral-500">Loading secure payment form…</p>}
+              </div>
             </motion.div>
           </motion.div>
         )}
