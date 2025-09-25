@@ -43,6 +43,72 @@ function useBooking() {
 }
 
 const PizzaPartyPage = () => {
+  // SEO canonical (update if production domain differs)
+  const canonical = 'https://localeffort.app/pizza-party';
+  const siteName = 'Local Effort';
+  const pageTitle = 'Mobile Wood-Fired Pizza Party | Local Effort';
+  const pageDescription = 'Book a mobile wood-fired pizza party (up to 15 guests) with Local Effort. We bring the oven, premium midwest ingredients, and sourdough crust to your home.';
+
+  // Build Event JSON-LD from date tokens (assuming 2025 & Central time). Adjust times as needed.
+  const monthMap = { Jan: '01', Feb: '02', Mar: '03', Apr: '04', May: '05', Jun: '06', Jul: '07', Aug: '08', Sep: '09', Oct: '10', Nov: '11', Dec: '12' };
+  const eventStartHour = '17:00:00'; // 5pm placeholder
+  const timezoneOffset = '-05:00'; // CDT (adjust for DST if needed)
+  const eventsSchema = DATES.map(d => {
+    const [mon, day] = d.split(' ');
+    const date = `2025-${monthMap[mon]}-${String(day).padStart(2,'0')}`;
+    return {
+      '@type': 'Event',
+      name: 'Private Mobile Pizza Party',
+      description: 'On-site artisanal wood-fired pizza experience (up to 15 guests).',
+      startDate: `${date}T${eventStartHour}${timezoneOffset}`,
+      eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
+      eventStatus: 'https://schema.org/EventScheduled',
+      location: {
+        '@type': 'Place',
+        name: 'Client Provided Location',
+        address: { '@type': 'PostalAddress', addressRegion: 'MN', addressCountry: 'US' }
+      },
+      organizer: { '@type': 'Organization', name: siteName, url: canonical.replace('/pizza-party','/') },
+      offers: {
+        '@type': 'Offer',
+        price: '300',
+        priceCurrency: 'USD',
+        availability: 'https://schema.org/LimitedAvailability',
+        url: canonical,
+        validFrom: '2025-01-01T00:00:00Z'
+      }
+    };
+  });
+
+  const serviceSchema = {
+    '@type': 'Service',
+    name: 'Mobile Wood-Fired Pizza Party',
+    description: pageDescription,
+    provider: {
+      '@type': 'LocalBusiness',
+      name: siteName,
+      areaServed: { '@type': 'Place', name: 'Minnesota' }
+    },
+    offers: {
+      '@type': 'Offer',
+      price: '300',
+      priceCurrency: 'USD',
+      description: 'Flat event rate for up to 15 guests.'
+    },
+    category: 'Catering',
+    additionalType: 'https://schema.org/FoodEstablishment'
+  };
+
+  const breadcrumbSchema = {
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Home', item: canonical.replace('/pizza-party','/') },
+      { '@type': 'ListItem', position: 2, name: 'Pizza Party', item: canonical }
+    ]
+  };
+
+  const jsonLd = [serviceSchema, ...eventsSchema, breadcrumbSchema];
+
   const [images, setImages] = useState([]);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -95,8 +161,21 @@ const PizzaPartyPage = () => {
   return (
     <>
       <Helmet>
-        <title>Mobile Pizza Parties | Local Effort</title>
-        <meta name="description" content="Book a mobile wood-fired pizza party with Local Effort." />
+        <title>{pageTitle}</title>
+        <meta name="description" content={pageDescription} />
+        <link rel="canonical" href={canonical} />
+        <meta property="og:title" content={pageTitle} />
+        <meta property="og:description" content={pageDescription} />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content={canonical} />
+        <meta property="og:site_name" content={siteName} />
+        <meta property="og:locale" content="en_US" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={pageTitle} />
+        <meta name="twitter:description" content={pageDescription} />
+        {/* Optional: supply a representative image if available */}
+        {/* <meta property="og:image" content="https://localeffort.app/og/pizza-party.jpg" /> */}
+        <script type="application/ld+json">{JSON.stringify(jsonLd)}</script>
       </Helmet>
       <div className="space-y-16">
         {bookedDate && (
@@ -181,13 +260,15 @@ const PizzaPartyPage = () => {
           )}
           <div className="columns-2 md:columns-3 lg:columns-4 gap-3 [column-fill:_balance]">
             {/* Masonry using CSS multi-columns */}
-            {images.map((img) => (
+            {images.map((img, idx) => (
               <motion.figure key={img.asset_id || img.public_id} className="mb-3 break-inside-avoid rounded-lg overflow-hidden shadow-sm bg-neutral-100" whileHover={{ scale: 1.02 }}>
                 <img
                   src={img.thumbnail_url}
-                  alt={img.public_id?.split('/')?.pop()?.replace(/[-_]/g,' ') || 'pizza'}
+                  alt={`Wood-fired pizza ${idx + 1}`}
                   loading="lazy"
                   className="w-full h-auto block"
+                  decoding="async"
+                  fetchPriority={idx < 2 ? 'high' : 'auto'}
                 />
               </motion.figure>
             ))}
