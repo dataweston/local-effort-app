@@ -970,9 +970,11 @@ var links = [
   ] },
   { path: "/pricing", name: "Pricing" },
   { path: "/menu", name: "Menus" },
+  { path: "/pizza-party", name: "Pizza Party" },
   { path: "/about", name: "About" },
   // { path: '/happy-monday', name: 'Happy Monday' }, // temporarily hidden
   { path: "/gallery", name: "Gallery" }
+  // { path: '/releases', name: 'Releases' }, // temporarily hidden
 ];
 var SHOW_FUNDRAISER = false;
 var Header = () => {
@@ -6878,6 +6880,23 @@ var PARTNER_TOOLS = [
     icon: "LayoutDashboard",
     public: true
     // Embedded directly via component import
+  },
+  {
+    key: "placemaker",
+    name: "Placemaker Workspace",
+    description: "Masonry board with costing tile + shared notepad.",
+    type: "internal",
+    route: "/partners/placemaker",
+    icon: "PenSquare",
+    public: true
+  },
+  {
+    key: "tinydiner",
+    name: "Tiny Diner Weddings",
+    description: "Booking & intake portal for Tiny Diner weddings.",
+    type: "internal",
+    route: "/partners/tiny-diner",
+    icon: "CalendarHeart"
   }
 ];
 
@@ -6919,12 +6938,8 @@ var import_react38 = __toESM(require("react"));
 var import_prop_types2 = __toESM(require_prop_types());
 var import_react_helmet_async11 = __toESM(require_lib());
 var import_react39 = require("@portabletext/react");
-var import_image_url = __toESM(require("@sanity/image-url"));
 var import_jsx_runtime33 = require("react/jsx-runtime");
-var builder = (0, import_image_url.default)(sanityClient_default);
-function urlFor(source) {
-  return builder.image(source);
-}
+var import_meta6 = {};
 var StatBox = ({ value, label }) => /* @__PURE__ */ (0, import_jsx_runtime33.jsxs)("div", { children: [
   /* @__PURE__ */ (0, import_jsx_runtime33.jsx)("p", { className: "text-3xl font-bold", children: value }),
   /* @__PURE__ */ (0, import_jsx_runtime33.jsx)("p", { className: "text-gray-600", children: label })
@@ -7115,31 +7130,110 @@ var CrowdfundingPage = () => {
     title = "Untitled Campaign",
     description = [],
     backers = 0,
-    endDate = null,
-    heroImage = null
+    endDate = null
+    // heroImage removed (static override in place)
   } = campaignData;
   const piesSold = campaignData.piesSold ?? 0;
   const story = campaignData.story || [];
   const faq = campaignData.faq || [];
+  const paymentsRef = (0, import_react38.useRef)(null);
+  const cardRef = (0, import_react38.useRef)(null);
+  const [cardLoaded, setCardLoaded] = (0, import_react38.useState)(false);
+  const [cardInitAttempts, setCardInitAttempts] = (0, import_react38.useState)(0);
+  const [squareConfigError, setSquareConfigError] = (0, import_react38.useState)("");
+  (0, import_react38.useEffect)(() => {
+    const existing = document.querySelector("script[data-square-sdk]");
+    if (existing) return;
+    const mode = (import_meta6?.env?.VITE_SQUARE_ENV || "").toLowerCase();
+    const isProd = mode === "production" || mode === "prod";
+    const squareSrc = isProd ? "https://web.squarecdn.com/v1/square.js" : "https://sandbox.web.squarecdn.com/v1/square.js";
+    const script = document.createElement("script");
+    script.src = squareSrc;
+    script.async = true;
+    script.dataset.squareSdk = "true";
+    script.onload = () => {
+    };
+    script.onerror = () => {
+      setSquareConfigError("Failed to load payment script. Please refresh or try again later.");
+    };
+    document.head.appendChild(script);
+  }, []);
+  (0, import_react38.useEffect)(() => {
+    if (!firstPayTier) return;
+    let cancelled = false;
+    const appId = window?.__SQUARE_APP_ID__ || import_meta6?.env?.VITE_SQUARE_APP_ID || window?.SQUARE_APPLICATION_ID;
+    const locationId = window?.__SQUARE_LOCATION_ID__ || import_meta6?.env?.VITE_SQUARE_LOCATION_ID || window?.SQUARE_LOCATION_ID;
+    if (!appId || !locationId) {
+      setSquareConfigError("Payment not available: missing Square configuration.");
+      return;
+    }
+    const tryInit = async () => {
+      if (cancelled) return;
+      if (!window.Square) {
+        if (cardInitAttempts > 10) {
+          setSquareConfigError("Payment form failed to load. Please retry later.");
+          return;
+        }
+        setCardInitAttempts((a) => a + 1);
+        setTimeout(tryInit, 300);
+        return;
+      }
+      try {
+        const payments = window.Square.payments(appId, locationId);
+        paymentsRef.current = payments;
+        const card = await payments.card();
+        await card.attach("#cf-card-container");
+        if (!cancelled) {
+          cardRef.current = card;
+          setCardLoaded(true);
+          setSquareConfigError("");
+        }
+      } catch (err) {
+        console.error("Square card init failed", err);
+        setSquareConfigError(err?.message || "Payment initialization failed");
+      }
+    };
+    tryInit();
+    return () => {
+      cancelled = true;
+    };
+  }, [firstPayTier, cardInitAttempts]);
   const contribute = async (items) => {
     setPayError("");
     setPaying(true);
     try {
-      try {
-        localStorage.setItem("cf_items", JSON.stringify(items));
-        localStorage.setItem("cf_name", funderName || "");
-      } catch (e) {
+      let token = null;
+      if (cardRef.current) {
+        const result = await cardRef.current.tokenize();
+        if (result.status !== "OK") {
+          throw new Error(result?.errors?.[0]?.message || result.status || "Card details invalid");
+        }
+        token = result.token;
+      } else {
+        throw new Error("Card form not ready");
       }
-      const res = await fetch("/api/crowdfund/contribute", {
+      const payload = {
+        items: items.map((i) => ({
+          name: i.name,
+          price: i.price,
+          quantity: i.quantity || 1,
+          type: i.type,
+          pizzaCount: i.pizzaCount
+        })),
+        funderName,
+        token,
+        pizzaQty
+      };
+      const res = await fetch("/api/crowdfund/checkout", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ items })
+        body: JSON.stringify(payload)
       });
-      const data = await res.json();
-      if (!res.ok || !data?.url) throw new Error(data?.error || "Failed to create checkout");
-      window.location.href = data.url;
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || "Checkout failed");
+      setConfirmMsg("Thanks! Your contribution has been processed.");
     } catch (e) {
-      setPayError(e?.message || "Payment link failed");
+      setPayError(e?.message || "Payment failed");
     } finally {
       setPaying(false);
     }
@@ -7186,6 +7280,22 @@ var CrowdfundingPage = () => {
       }
     ];
   };
+  const blockText = (blk) => {
+    if (!blk) return "";
+    if (typeof blk === "string") return blk;
+    if (Array.isArray(blk.children)) return blk.children.map((c) => c.text || "").join("");
+    return "";
+  };
+  let taglineBlock = null;
+  let remainingDescriptionBlocks = description;
+  if (Array.isArray(description) && description.length) {
+    const first = description[0];
+    const text = blockText(first).trim().toLowerCase();
+    if (text.startsWith("local effort is making local pizza")) {
+      taglineBlock = first;
+      remainingDescriptionBlocks = description.slice(1);
+    }
+  }
   return /* @__PURE__ */ (0, import_jsx_runtime33.jsxs)(import_jsx_runtime33.Fragment, { children: [
     /* @__PURE__ */ (0, import_jsx_runtime33.jsxs)(import_react_helmet_async11.Helmet, { children: [
       /* @__PURE__ */ (0, import_jsx_runtime33.jsx)("title", { children: `${title} | Crowdfunding Campaign` }),
@@ -7194,16 +7304,20 @@ var CrowdfundingPage = () => {
     /* @__PURE__ */ (0, import_jsx_runtime33.jsxs)("div", { className: "space-y-16 mx-auto max-w-6xl px-4 md:px-6 lg:px-8", children: [
       /* @__PURE__ */ (0, import_jsx_runtime33.jsxs)("div", { children: [
         /* @__PURE__ */ (0, import_jsx_runtime33.jsx)("h1", { className: "text-4xl md:text-6xl font-bold uppercase tracking-[-0.02em] leading-[1.02]", children: title }),
-        /* @__PURE__ */ (0, import_jsx_runtime33.jsx)("div", { className: "mt-6 md:mt-8 text-body max-w-2xl", children: description && (Array.isArray(description) ? /* @__PURE__ */ (0, import_jsx_runtime33.jsx)(import_react39.PortableText, { value: description }) : /* @__PURE__ */ (0, import_jsx_runtime33.jsx)(import_react39.PortableText, { value: toPortableBlocks(description) })) })
+        /* @__PURE__ */ (0, import_jsx_runtime33.jsxs)("div", { className: "mt-6 md:mt-8 text-body max-w-2xl", children: [
+          taglineBlock && /* @__PURE__ */ (0, import_jsx_runtime33.jsx)("h2", { className: "text-2xl md:text-3xl font-semibold leading-snug tracking-tight", children: blockText(taglineBlock) }),
+          description && (Array.isArray(description) ? /* @__PURE__ */ (0, import_jsx_runtime33.jsx)(import_react39.PortableText, { value: remainingDescriptionBlocks }) : /* @__PURE__ */ (0, import_jsx_runtime33.jsx)(import_react39.PortableText, { value: toPortableBlocks(description) }))
+        ] })
       ] }),
       /* @__PURE__ */ (0, import_jsx_runtime33.jsxs)("div", { className: "grid grid-cols-1 lg:grid-cols-5 lg:gap-16", children: [
         /* @__PURE__ */ (0, import_jsx_runtime33.jsxs)("div", { className: "lg:col-span-3 space-y-8", children: [
-          heroImage && /* @__PURE__ */ (0, import_jsx_runtime33.jsx)(
+          /* @__PURE__ */ (0, import_jsx_runtime33.jsx)(
             "img",
             {
-              src: urlFor(heroImage).width(1200).quality(80).url(),
+              src: "/gallery/5Z0A5718-Edit.jpg",
               alt: title,
-              className: "w-full object-cover rounded-lg aspect-video bg-gray-100"
+              className: "w-full object-cover rounded-lg aspect-video bg-gray-100",
+              loading: "lazy"
             }
           ),
           /* @__PURE__ */ (0, import_jsx_runtime33.jsx)("div", { className: "border-b border-neutral-200", children: /* @__PURE__ */ (0, import_jsx_runtime33.jsxs)("nav", { className: "tablist", children: [
@@ -7329,19 +7443,33 @@ var CrowdfundingPage = () => {
                 }
               )
             ] }),
-            /* @__PURE__ */ (0, import_jsx_runtime33.jsx)(
-              "button",
-              {
-                disabled: !firstPayTier,
-                onClick: () => firstPayTier && contribute([{ name: firstPayTier.title || "Pizza", price: firstPayTier.amount, type: "pizza", pizzaCount: pizzaQty, quantity: pizzaQty }]),
-                className: "btn btn-primary w-full text-lg py-3 disabled:opacity-60",
-                children: paying ? "Preparing checkout\u2026" : "i want pizza"
-              }
-            )
+            /* @__PURE__ */ (0, import_jsx_runtime33.jsxs)("div", { className: "space-y-3", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime33.jsxs)("div", { id: "cf-card-container", className: "border rounded-md p-4 bg-white min-h-[88px]", "aria-label": "Card payment form", children: [
+                !cardLoaded && !squareConfigError && /* @__PURE__ */ (0, import_jsx_runtime33.jsx)("p", { className: "text-sm text-gray-500", children: "Loading secure payment form\u2026" }),
+                squareConfigError && /* @__PURE__ */ (0, import_jsx_runtime33.jsx)("p", { className: "text-sm text-red-600", children: squareConfigError })
+              ] }),
+              /* @__PURE__ */ (0, import_jsx_runtime33.jsx)(
+                "button",
+                {
+                  disabled: !firstPayTier || !cardLoaded || paying || !!squareConfigError,
+                  onClick: () => firstPayTier && contribute([{ name: firstPayTier.title || "Pizza", price: firstPayTier.amount * 100, type: "pizza", pizzaCount: pizzaQty, quantity: pizzaQty }]),
+                  className: "btn btn-primary w-full text-lg py-3 disabled:opacity-60",
+                  children: paying ? "Processing\u2026" : "i want pizza"
+                }
+              )
+            ] })
           ] }),
           /* @__PURE__ */ (0, import_jsx_runtime33.jsxs)("div", { className: "space-y-4", children: [
             /* @__PURE__ */ (0, import_jsx_runtime33.jsx)(SectionHeader, { overline: "Contribute", title: "Support Us" }),
-            visibleTiers.map((tier) => /* @__PURE__ */ (0, import_jsx_runtime33.jsx)(RewardTierCard, { tier, busy: paying, onContribute: (item) => contribute([item]) }, tier?.title || Math.random()))
+            visibleTiers.map((tier) => /* @__PURE__ */ (0, import_jsx_runtime33.jsx)(
+              RewardTierCard,
+              {
+                tier,
+                busy: paying,
+                onContribute: (item) => contribute([{ name: item.name || item.title || "Pledge", price: (item.price || item.amount) * 100, type: "pledge", quantity: 1 }])
+              },
+              tier?.title || Math.random()
+            ))
           ] })
         ] })
       ] })
