@@ -1,0 +1,129 @@
+{
+  "site": "https://localeffortfood.com",
+  "name": "Local Effort Food Co.",
+  "updated": "2024-11-24T00:00:00Z",
+  "description": "Twin Cities personal chef and farm-to-table catering team with public pricing, meal prep Minneapolis details, meal plan Minneapolis options, and weekly updates.",
+  "mcpServers": [
+    {
+      "name": "local-effort-mcp",
+      "description": "Streamable HTTP MCP server exposing support search and read-only Sanity resources.",
+      "url": "https://localeffortfood.com/.well-known/mcp",
+      "transport": {
+        "type": "streamable-http",
+        "methods": ["GET", "POST", "DELETE"],
+        "sse": "https://localeffortfood.com/.well-known/mcp"
+      },
+      "capabilities": {
+        "tools": ["support.search", "sanity.query"],
+        "resources": [
+          "support-chunk://{chunkId}",
+          "support-cache://{cacheKey}",
+          "support-source://{sourceId}",
+          "sanity-document://{docId}"
+        ]
+      },
+      "notes": [
+        "Send POST requests with application/json JSON-RPC payloads; keep a GET connection open with Accept: text/event-stream for streaming responses.",
+        "Session identifiers are issued automatically and must be echoed via the Mcp-Session-Id header on follow-up requests.",
+        "Server enforces optional host/origin allowlists via MCP_ALLOWED_HOSTS/MCP_ALLOWED_ORIGINS environment variables."
+      ]
+    }
+  ],
+  "llmNotes": [
+    "Core routes are rendered without authentication and hydrate client-side; HTML contains primary content for crawlers.",
+    "Use /api/support/search?q=QUERY for semantic answers sourced from Supabase content chunks and public FAQs.",
+    "Static JSON exports at /api/public/* provide pricing FAQs, estimator guidance, and machine-readable site metadata.",
+    "Image library is accessible via Cloudinary-backed /api/search-images with descriptive context metadata.",
+    "Weekly updates live under /happy-monday (index) and /weekly/:slug for machine-readable long-form posts."
+  ],
+  "navigation": [
+    { "path": "/", "title": "Home", "summary": "Overview of services, testimonials, event highlights, and partner logos." },
+    { "path": "/services", "title": "Services", "summary": "Personal chef, weekly meal prep, and small-event catering breakdown with pricing CTA." },
+    { "path": "/pricing", "title": "Pricing", "summary": "Interactive estimator answering how much a personal chef costs plus service tiers and FAQ entries with JSON mirrors." },
+    { "path": "/menu", "title": "Menu", "summary": "Weekly meal prep menus and seasonal offerings." },
+    { "path": "/meal-prep", "title": "Meal Prep", "summary": "Meal prep Minneapolis and meal plan Minneapolis overview with workflow, deliverables, and FAQs." },
+    { "path": "/about", "title": "About", "summary": "Team bios, sourcing philosophy, and Minnesota roots." },
+    { "path": "/gallery", "title": "Gallery", "summary": "Curated event photography with alt text and partner context." },
+    { "path": "/happy-monday", "title": "Happy Monday", "summary": "Newsletter archive with weekly business updates and offers." },
+    { "path": "/crowdfunding", "title": "Crowdfunding", "summary": "Current campaign tiers, stretch goals, and supporter perks." }
+  ],
+  "apis": [
+    {
+      "method": "GET",
+      "path": "/api/support/search",
+      "description": "Semantic search API across public content chunks.",
+      "query": { "q": "search query string" },
+      "example": "https://localeffortfood.com/api/support/search?q=meal%20prep",
+      "response": "application/json"
+    },
+    {
+      "method": "POST",
+      "path": "/api/messages/submit",
+      "description": "General contact endpoint for lead capture.",
+      "body": { "name": "string", "email": "string", "subject": "string", "message": "string" },
+      "response": "application/json"
+    },
+    {
+      "method": "POST",
+      "path": "/api/events/request",
+      "description": "Event request intake form submission.",
+      "body": {
+        "firstName": "string",
+        "lastName": "string",
+        "phone": "string",
+        "email": "string",
+        "eventDate": "ISO-8601",
+        "city": "string",
+        "state": "string",
+        "zip": "string",
+        "eventType": "string",
+        "guestCount": "number",
+        "notes": "string",
+        "sendCopy": "boolean"
+      },
+      "response": "application/json"
+    },
+    {
+      "method": "GET",
+      "path": "/api/search-images",
+      "description": "Cloudinary-backed image search filtered by tag query.",
+      "query": { "query": "tag expression", "per_page": "int (optional)" },
+      "example": "https://localeffortfood.com/api/search-images?query=gallery&per_page=12",
+      "response": "application/json"
+    },
+    {
+      "method": "GET",
+      "path": "/api/public/pricing-faq",
+      "description": "Machine-readable pricing FAQs mirrored from UI copy.",
+      "response": "application/json"
+    },
+    {
+      "method": "GET",
+      "path": "/api/public/estimator-help",
+      "description": "Tooltips and helper text used in the pricing estimator.",
+      "response": "application/json"
+    }
+  ],
+  "feeds": [
+    { "type": "sitemap", "url": "https://localeffortfood.com/sitemap.xml" },
+    { "type": "sitemap", "url": "https://localeffortfood.com/api/sitemap.xml" },
+    { "type": "text", "url": "https://localeffortfood.com/ai.txt" }
+  ],
+  "support": {
+    "email": "yum@localeffortfood.com",
+    "eventRequest": "https://localeffortfood.com/services#event-request",
+    "press": "https://localeffortfood.com/about"
+  },
+  "organization": {
+    "legalName": "Local Effort Food Co.",
+    "description": "Locally sourced personal chef, meal prep, and intimate event catering in Minneapolis–St. Paul.",
+    "hq": "Roseville, Minnesota",
+    "serviceArea": ["Minneapolis", "St. Paul", "Twin Cities", "Minnesota", "Western Wisconsin"],
+    "founded": "2022",
+    "social": [
+      "https://www.instagram.com/localeffortfood",
+      "https://www.facebook.com/localeffortfood",
+      "https://www.tiktok.com/@localeffort"
+    ]
+  }
+}
