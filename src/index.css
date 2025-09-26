@@ -44,20 +44,128 @@ h4,
 h5,
 h6 {
   font-family: var(--font-display);
-  font-weight: 600;
-  line-height: 1.2;
+  font-weight: 650;
+  line-height: 1.08;
   margin-bottom: 0.5em;
+  color: #0f172a;
+  text-wrap: balance;
+  letter-spacing: -0.01em;
+}
+
+h1 {
+  font-size: clamp(2.65rem, 6vw, 4.5rem);
+  letter-spacing: -0.04em;
+  line-height: 1.05;
+}
+
+h2 {
+  font-size: clamp(2rem, 4vw, 3rem);
+  letter-spacing: -0.025em;
+}
+
+.heading-display {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(2.85rem, 6vw, 4.85rem);
+  line-height: 1.04;
+  letter-spacing: -0.045em;
+  color: #0b1220;
+  text-wrap: balance;
+}
+
+.heading-xl {
+  font-family: var(--font-display);
+  font-weight: 680;
+  font-size: clamp(2.1rem, 4.5vw, 3.25rem);
+  line-height: 1.08;
+  letter-spacing: -0.03em;
+  color: #111827;
+  text-wrap: balance;
+}
+
+.heading-lg {
+  font-family: var(--font-display);
+  font-weight: 650;
+  font-size: clamp(1.65rem, 3vw, 2.5rem);
+  line-height: 1.12;
+  letter-spacing: -0.02em;
+  color: #111827;
+  text-wrap: balance;
+}
+
+.heading-subtitle {
+  font-family: var(--font-display);
+  font-weight: 520;
+  font-size: clamp(1.2rem, 2.5vw, 1.75rem);
+  line-height: 1.45;
+  letter-spacing: -0.01em;
+  color: #475569;
+  text-wrap: pretty;
+}
+
+.heading-overline {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.65rem;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.38em;
+  color: #f97316;
+}
+
+.heading-overline::before {
+  content: '';
+  display: inline-block;
+  width: 3rem;
+  height: 2px;
+  border-radius: 999px;
+  background: currentColor;
+  opacity: 0.45;
+}
+
+.heading-accent {
+  background: linear-gradient(110deg, #f97316 0%, #ef4444 45%, #8b5cf6 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.heading-balance {
+  text-wrap: balance;
+}
+
+.heading-underline {
+  position: relative;
+  display: inline-block;
+  padding-bottom: 0.5rem;
+}
+
+.heading-underline::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 3.5rem;
+  height: 3px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #f97316 0%, rgba(249, 115, 22, 0));
 }
 
 .text-hero {
   font-size: clamp(3rem, 6vw, 4.5rem);
   font-weight: 700;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.03em;
   line-height: 1.05;
 }
 
 .text-heading {
   font-size: clamp(1.75rem, 3vw, 2.5rem);
+  font-family: var(--font-display);
+  font-weight: 650;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
 }
 
 .text-body {

@@ -404,11 +404,11 @@ const CrowdfundingPage = () => {
   <div className="space-y-16 mx-auto max-w-6xl px-4 md:px-6 lg:px-8">
         {/* --- Page Header --- */}
         <div>
-                <h1 className="text-4xl md:text-6xl font-bold uppercase tracking-[-0.02em] leading-[1.02]">{title}</h1>
+                <h1 className="heading-display heading-balance">{title}</h1>
                 {/* Short description rendered with Portable Text (supports paragraphs and formatting) */}
                 <div className="mt-6 md:mt-8 text-body max-w-2xl">
                   {taglineBlock && (
-                    <h2 className="text-2xl md:text-3xl font-semibold leading-snug tracking-tight">
+                    <h2 className="heading-lg text-neutral-600">
                       {blockText(taglineBlock)}
                     </h2>
                   )}

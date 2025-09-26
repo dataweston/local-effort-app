@@ -145,9 +145,9 @@ export const MealPrepPage = () => {
       </Helmet>
       <div className="space-y-16 mx-auto max-w-6xl px-4 md:px-6 lg:px-8">
         <header className="flex items-center justify-between">
-          <h2 className="text-4xl md:text-6xl font-bold uppercase tracking-[-0.02em] leading-[1.02]">
-            Weekly Meal Prep
-          </h2>
+          <h1 className="heading-display heading-balance">
+            Weekly meal prep
+          </h1>
           <div className="flex items-center gap-3">{/* Public access — no sign-in required */}</div>
         </header>
 

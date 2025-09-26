@@ -369,8 +369,8 @@ export default function CookbookSearchPage() {
     <div className="container mx-auto max-w-5xl px-4 py-12">
       <header className="space-y-4 pb-10">
         <div className="space-y-2">
-          <p className="text-sm font-semibold uppercase tracking-wide text-blue-600">Cookbook Archive</p>
-          <h1 className="text-4xl font-bold tracking-tight text-gray-900">Find recipes from community cookbooks</h1>
+          <p className="heading-overline text-blue-600">Cookbook archive</p>
+          <h1 className="heading-xl heading-balance">Find recipes from community cookbooks</h1>
           <p className="text-base text-gray-600">{heroSubtitle}</p>
         </div>
         <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
@@ -561,7 +561,7 @@ export default function CookbookSearchPage() {
 
       <section className="mt-12 rounded-2xl border border-gray-200 bg-gradient-to-br from-blue-50 via-white to-purple-50 p-8 shadow-sm">
         <div className="space-y-3">
-          <h2 className="text-2xl font-semibold text-gray-900">Help us expand the archive</h2>
+          <h2 className="heading-lg heading-balance">Help us expand the archive</h2>
           <p className="text-base text-gray-600">
             We are indexing community cookbooks from Minnesota, Wisconsin, and neighboring states. Have a scan or lead we should include?
           </p>

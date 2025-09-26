@@ -121,7 +121,7 @@ const ReleasesPage = () => {
                 </div>
                 <div className="grid gap-3 md:grid-cols-[2fr,1fr] md:items-start">
                   <div className="space-y-3">
-                    <h1 className="text-3xl md:text-4xl font-semibold text-neutral-900 leading-tight">
+                    <h1 className="heading-xl heading-balance">
                       Roseville-Based Local Effort Seeks Support to Craft 1,000 Fully Local Pizzas
                     </h1>
                     <p className="text-base text-neutral-700 leading-relaxed">
@@ -158,7 +158,7 @@ const ReleasesPage = () => {
               </div>
 
               <section aria-labelledby="campaign-highlights" className="space-y-3">
-                <h2 id="campaign-highlights" className="text-sm uppercase tracking-[0.3em] text-neutral-600">
+                <h2 id="campaign-highlights" className="heading-overline text-neutral-600">
                   Campaign Snapshot
                 </h2>
                 <ul className="space-y-3 text-neutral-800">
@@ -195,7 +195,7 @@ const ReleasesPage = () => {
 
           <section className="mt-16 space-y-8">
             <div className="space-y-3">
-              <h2 className="text-3xl font-semibold tracking-tight text-neutral-900">Press Kit</h2>
+              <h2 className="heading-xl heading-balance">Press kit</h2>
               <p className="text-neutral-600 max-w-3xl">
                 Download-ready facts, leadership bios, and campaign details to support coverage of Local Effort&apos;s 1,000 pizza crowdfunding initiative.
               </p>
@@ -311,7 +311,7 @@ const ReleasesPage = () => {
 
           {/* Archived previous release */}
           <section className="mt-24" aria-labelledby="archive-heading">
-            <h2 id="archive-heading" className="text-2xl font-semibold tracking-tight text-neutral-900 mb-6">Previous Release (Archived)</h2>
+            <h2 id="archive-heading" className="heading-lg heading-balance mb-6">Previous release (archived)</h2>
             <details className="group bg-white rounded-2xl border border-neutral-200 shadow-sm">
               <summary className="cursor-pointer list-none px-6 py-4 flex items-center justify-between">
                 <span className="font-medium text-neutral-800">Local Effort Launches Crowdfunding Campaign to Craft 1,000 Local Pizzas</span>

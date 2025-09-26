@@ -58,7 +58,7 @@ export default function AuthPage() {
 
   return (
     <div className="mx-auto max-w-md p-6 text-center">
-      <h1 className="text-2xl font-semibold mb-4">Sign in</h1>
+      <h1 className="heading-lg mb-4">Sign in</h1>
       {error && (
         <div className="mb-4 p-3 rounded bg-red-50 text-red-700 text-sm text-left">
           {error}

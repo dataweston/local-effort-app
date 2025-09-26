@@ -2,12 +2,12 @@ import React from 'react';
 
 export default function SectionHeader({ overline, title, className = '' }) {
   return (
-    <div className={["space-y-1", className].filter(Boolean).join(' ')}>
+    <div className={["space-y-2", className].filter(Boolean).join(' ')}>
       {overline ? (
-        <div className="text-xs font-semibold uppercase tracking-wider text-neutral-500">{overline}</div>
+        <span className="heading-overline">{overline}</span>
       ) : null}
       {title ? (
-        <h2 className="text-heading">{title}</h2>
+        <h2 className="heading-xl heading-balance">{title}</h2>
       ) : null}
     </div>
   );
