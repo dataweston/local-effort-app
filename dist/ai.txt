@@ -5,8 +5,9 @@ site: https://localeffortfood.com/
 
 primary-nav:
 - /services       Services overview and Event Request form
-- /pricing        Pricing overview and estimator
-- /menu           Weekly Meal Prep menus
+- /pricing        Pricing overview, estimator, and answers to "how much does a personal chef cost"
+- /menu           Weekly seasonal menus
+- /meal-prep      Meal prep Minneapolis menus and meal plan Minneapolis details
 - /about          About the chef and philosophy
 - /gallery        Image gallery
 - /happy-monday   Weekly post/newsletter

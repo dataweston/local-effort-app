@@ -1,0 +1,51 @@
+{
+  "version": "2024-11-24",
+  "servers": [
+    {
+      "name": "local-effort-mcp",
+      "description": "Streamable HTTP MCP server for Local Effort Food Co. exposing support search and Sanity read-only access.",
+      "url": "https://localeffortfood.com/.well-known/mcp",
+      "transport": {
+        "type": "streamable-http",
+        "endpoint": "https://localeffortfood.com/.well-known/mcp",
+        "methods": ["GET", "POST", "DELETE"],
+        "sse": {
+          "accept": "text/event-stream",
+          "url": "https://localeffortfood.com/.well-known/mcp"
+        }
+      },
+      "tools": [
+        {
+          "name": "support.search",
+          "description": "Hybrid semantic + keyword search over Supabase support chunks.",
+          "input": {
+            "query": "string",
+            "skipCache": "boolean (optional)"
+          }
+        },
+        {
+          "name": "sanity.query",
+          "description": "Execute read-only GROQ queries against the Sanity dataset.",
+          "input": {
+            "query": "string",
+            "params": "object (optional)"
+          }
+        }
+      ],
+      "resources": [
+        "support-chunk://{chunkId}",
+        "support-cache://{cacheKey}",
+        "support-source://{sourceId}",
+        "sanity-document://{docId}"
+      ],
+      "auth": {
+        "type": "none"
+      },
+      "notes": [
+        "Initialize via POST /.well-known/mcp with JSON-RPC 2.0 payloads and keep a GET connection open for streaming responses.",
+        "Echo the Mcp-Session-Id header value returned by the server on subsequent requests to resume the session.",
+        "Optional allowlists can be configured via MCP_ALLOWED_HOSTS and MCP_ALLOWED_ORIGINS environment variables."
+      ]
+    }
+  ]
+}

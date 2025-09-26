@@ -24,3 +24,14 @@ npm run mcp:stdio
 ```
 
 The server expects the same environment variables as the Express API for Supabase, Sanity and optional OpenAI access.
+
+### Streamable HTTP deployment
+
+The production Express API now mounts the MCP server at `https://localeffortfood.com/.well-known/mcp` using the Streamable HTTP transport.
+Clients should:
+
+- POST JSON-RPC 2.0 requests to `/.well-known/mcp`
+- Open a GET request with `Accept: text/event-stream` to the same path for streamed responses
+- Echo any `Mcp-Session-Id` response header in subsequent requests to resume sessions
+
+Metadata for discovery is published at `https://localeffortfood.com/.well-known/mcp.json` and mirrored inside `/public/ai/manifest.json`.
