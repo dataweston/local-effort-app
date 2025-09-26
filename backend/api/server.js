@@ -7,6 +7,10 @@ const admin = require('firebase-admin');
 const { getSanityClient } = require('./sanityClient');
 const fs = require('fs');
 const path = require('path');
+const { StreamableHTTPServerTransport } = require('@modelcontextprotocol/sdk/server/streamableHttp.js');
+const { createMcpServer } = require('../mcp/server');
+
+const AI_MANIFEST_PATH = path.resolve(__dirname, '../../public/ai/manifest.json');
 
 // Fallback: if critical vars are missing, also try loading project root .env
 if (!process.env.SQUARE_ACCESS_TOKEN || !process.env.BREVO_API_KEY) {
@@ -69,6 +73,15 @@ const GALLANT_ALLOWED = new Set([
     .filter(Boolean),
 ]);
 
+const parseCsvEnv = (value) =>
+  (value || '')
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean);
+
+const MCP_ALLOWED_ORIGINS = parseCsvEnv(process.env.MCP_ALLOWED_ORIGINS);
+const MCP_ALLOWED_HOSTS = parseCsvEnv(process.env.MCP_ALLOWED_HOSTS);
+
 async function requireAllowedUser(req, res, next) {
   try {
     const authHeader = req.headers.authorization || '';
@@ -111,6 +124,30 @@ if (Client) {
 
 const app = express();
 
+// --- MODEL CONTEXT PROTOCOL (Streamable HTTP) ---
+const mcpServer = createMcpServer({
+  name: 'local-effort-mcp',
+  version: '0.2.0',
+});
+
+const mcpTransport = new StreamableHTTPServerTransport({
+  sessionIdGenerator: () => uuidv4(),
+  enableJsonResponse: true,
+  allowedHosts: MCP_ALLOWED_HOSTS.length ? MCP_ALLOWED_HOSTS : undefined,
+  allowedOrigins: MCP_ALLOWED_ORIGINS.length ? MCP_ALLOWED_ORIGINS : undefined,
+  enableDnsRebindingProtection: MCP_ALLOWED_HOSTS.length > 0 || MCP_ALLOWED_ORIGINS.length > 0,
+});
+
+const mcpReady = (async () => {
+  await mcpServer.connect(mcpTransport);
+  await mcpTransport.start();
+  console.log('MCP Streamable HTTP transport ready at /.well-known/mcp');
+})();
+
+mcpReady.catch((err) => {
+  console.error('Failed to initialize MCP Streamable HTTP transport:', err);
+});
+
 // --- CORS CONFIGURATION ---
 const allowedOrigins = [
   'https://local-effort-app.vercel.app',
@@ -120,6 +157,36 @@ const allowedOrigins = [
 const corsOptions = { origin: allowedOrigins };
 app.use(cors(corsOptions));
 app.use(express.json());
+
+app.all('/.well-known/mcp', async (req, res) => {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Mcp-Session-Id, Authorization');
+  res.setHeader('Access-Control-Allow-Methods', 'GET,POST,DELETE,OPTIONS');
+  if (req.method === 'OPTIONS') {
+    res.status(204).end();
+    return;
+  }
+  try {
+    await mcpReady;
+    const parsedBody = req.method === 'POST' ? req.body : undefined;
+    await mcpTransport.handleRequest(req, res, parsedBody);
+  } catch (err) {
+    console.error('MCP handler error:', err);
+    if (!res.headersSent) {
+      res.status(500).json({
+        jsonrpc: '2.0',
+        error: { code: -32000, message: 'mcp-server-error' },
+        id: null,
+      });
+    } else {
+      try {
+        res.end();
+      } catch (endErr) {
+        console.error('Failed to terminate MCP response cleanly:', endErr);
+      }
+    }
+  }
+});
 
 // --- API ENDPOINTS ---
 
@@ -1061,31 +1128,48 @@ app.post('/api/push/notify', async (req, res) => {
 // Lightweight, JS-free data for crawlers/LLMs and integrations.
 app.get('/api/public/site', (req, res) => {
   try {
-    const url = process.env.PUBLIC_URL || 'https://local-effort-app.vercel.app/';
-    const routes = [
-      '/',
-      '/#/services',
-      '/#/pricing',
-      '/#/menu',
-      '/#/about',
-      '/#/gallery',
-      '/#/crowdfunding',
-    ];
-    const endpoints = [
-      { path: '/api/support/search', method: 'GET', query: 'q' },
-      { path: '/api/messages/submit', method: 'POST' },
-      { path: '/api/subscribe', method: 'POST' },
-      { path: '/api/public/pricing-faq', method: 'GET' },
-      { path: '/api/public/estimator-help', method: 'GET' },
-    ];
+    let manifest = null;
+    if (fs.existsSync(AI_MANIFEST_PATH)) {
+      try {
+        const raw = fs.readFileSync(AI_MANIFEST_PATH, 'utf8');
+        manifest = JSON.parse(raw);
+      } catch (parseErr) {
+        console.warn('Failed to parse AI manifest JSON:', parseErr.message);
+      }
+    }
+
+    const siteUrl = (manifest && manifest.site) || process.env.PUBLIC_URL || 'https://localeffortfood.com';
+    const trimmedSite = siteUrl.replace(/\/$/, '');
+    const navigation = Array.isArray(manifest?.navigation) ? manifest.navigation : [];
+    const mcp = Array.isArray(manifest?.mcpServers) ? manifest.mcpServers : [];
+    const apis = Array.isArray(manifest?.apis)
+      ? manifest.apis
+      : [
+          { path: '/api/support/search', method: 'GET', query: { q: 'query string' } },
+          { path: '/api/messages/submit', method: 'POST' },
+          { path: '/api/events/request', method: 'POST' },
+          { path: '/api/public/pricing-faq', method: 'GET' },
+          { path: '/api/public/estimator-help', method: 'GET' },
+        ];
+    const feeds = Array.isArray(manifest?.feeds)
+      ? manifest.feeds
+      : [
+          { type: 'sitemap', url: `${trimmedSite}/sitemap.xml` },
+          { type: 'sitemap', url: `${trimmedSite}/api/sitemap.xml` },
+        ];
+
     return res.json({
-      name: 'Local Effort',
-      url,
-      routes,
-      endpoints,
-      sitemap: url.replace(/\/$/, '') + '/sitemap.xml',
-      aiTxt: url.replace(/\/$/, '') + '/ai.txt',
-      updatedAt: new Date().toISOString(),
+      name: manifest?.name || 'Local Effort',
+      url: siteUrl,
+      navigation,
+      endpoints: apis,
+      feeds,
+      support: manifest?.support || { email: 'yum@localeffortfood.com' },
+      mcp,
+      sitemap: `${trimmedSite}/sitemap.xml`,
+      aiTxt: `${trimmedSite}/ai.txt`,
+      manifest: `${trimmedSite}/ai/manifest.json`,
+      updatedAt: manifest?.updated || new Date().toISOString(),
     });
   } catch (err) {
     console.error('public/site error', err);
