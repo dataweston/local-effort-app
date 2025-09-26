@@ -61,9 +61,7 @@ const PricingPage = () => {
           <p className="text-lg text-gray-700 max-w-3xl mx-auto">
             We tailor pricing closely to your needs. We try to stay competitive to an evening at a nice restaurant, (or to the price of takeout, depending on the request). Oftentimes, we're the much better deal.
           </p>
-          <p className="text-lg text-gray-700 max-w-3xl mx-auto mt-4">
-            Minneapolis personal chef pricing typically ranges from $95 to $135 per guest for intimate dinners. Weekly meal prep Minneapolis plans start near $325 for 12 meals, while custom meal plan Minneapolis subscriptions scale with portions, delivery cadence, and dietary requests.
-          </p>
+          {/* Removed original market rate paragraph per request */}
           <p className="text-lg text-gray-700 max-w-3xl mx-auto mt-4">
             Below is a handy tool that can take some of the mystery out. We'll finalize the actual price <a href="/services#event-request" className="underline">together</a>.
           </p>
@@ -89,8 +87,9 @@ const PricingPage = () => {
         >
           <h2 className="heading-xl heading-underline">Personal chef pricing FAQ</h2>
           <p className="text-gray-700">
-            Wondering how much a personal chef costs in Minneapolis? These quick answers summarize what most households and event planners invest for chef-prepared menus, staffing, and meal prep support.
+            Weekly meal prep plans begin around $275 per person per week for 15 meals. This is a median price based on typical variables. Pricing is always calculated for each client's actual needs, with discounts for couples, families, and longer-term billing.
           </p>
+          <h3 className="text-lg font-semibold mt-4">How much does a personal chef cost in Minneapolis?</h3>
           <div className="space-y-6">
             {pricingFaq.map((item) => (
               <div key={item.name} className="border border-gray-200 rounded-lg p-6">
