@@ -2,6 +2,7 @@ import React, { useMemo } from 'react';
 import { Helmet } from 'react-helmet-async';
 
 const CityPage = ({ city, h1, description, canonical, images, faq }) => {
+  const isMinneapolis = city?.toLowerCase() === 'minneapolis';
   const title = `${city} Personal Chef — Local Effort Food Co. | In-home Chef • Event Catering`;
   const metaDesc = description;
   const imageJsonLd = images.map((img) => ({
@@ -62,8 +63,8 @@ const CityPage = ({ city, h1, description, canonical, images, faq }) => {
         {imageJsonLd.map((obj, i) => (
           <script key={`img-${i}`} type="application/ld+json">{JSON.stringify(obj)}</script>
         ))}
-  <script type="application/ld+json">{JSON.stringify(serviceLd)}</script>
-  <script type="application/ld+json">{JSON.stringify(businessLd)}</script>
+        <script type="application/ld+json">{JSON.stringify(serviceLd)}</script>
+        <script type="application/ld+json">{JSON.stringify(businessLd)}</script>
         {faqLd && <script type="application/ld+json">{JSON.stringify(faqLd)}</script>}
       </Helmet>
 
@@ -77,11 +78,25 @@ const CityPage = ({ city, h1, description, canonical, images, faq }) => {
           meal prep, our menus highlight Minnesota farms and producers. We regularly serve {city} neighborhoods
           and the broader Twin Cities area.
         </p>
+        {isMinneapolis && (
+          <p>
+            Searching for a personal chef Minneapolis team that can also handle weekly cooking? Local Effort delivers
+            multi-course dinners, tasting menus, and chef-led activations throughout the city while coordinating pantry
+            stocking, cocktail pairings, and staffing when needed.
+          </p>
+        )}
         <ul>
           <li>Farm-to-table menus tailored to your tastes</li>
           <li>Dietary accommodations (GF, DF, vegetarian, etc.)</li>
           <li>Shopping, on-site prep, service, and cleanup included</li>
         </ul>
+        {isMinneapolis && (
+          <p>
+            Need meal prep Minneapolis support between events? Ask about our Foundation Plan or a custom meal plan
+            Minneapolis subscription—both provide reheatable dishes, labeled storage, and nutrition notes that keep your
+            week organized.
+          </p>
+        )}
         <p>
           Recent work in {city}: chef’s tasting dinners, milestone birthdays, small weddings, and cabin weekends.
           Ask about seasonal ingredients like walleye, Lake Superior trout, wild rice, and Midwestern produce.
