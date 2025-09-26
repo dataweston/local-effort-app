@@ -32,7 +32,7 @@ export default function InboxPage() {
 
   return (
     <div className="mx-auto max-w-5xl p-4">
-      <h1 className="text-2xl font-semibold mb-4">Inbox</h1>
+      <h1 className="heading-lg mb-4">Inbox</h1>
       {loading && <p>Loading…</p>}
       {error && (
         <div className="p-4 border border-red-200 bg-red-50 rounded mb-4">

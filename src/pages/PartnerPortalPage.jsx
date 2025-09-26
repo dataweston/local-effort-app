@@ -13,7 +13,7 @@ const PartnerPortalPage = () => {
         <meta name="description" content="Tools and resources for Local Effort partners." />
       </Helmet>
       <div className="space-y-6">
-        <h2 className="text-5xl md:text-7xl font-bold uppercase">Partner Portal</h2>
+        <h1 className="heading-display heading-balance">Partner portal</h1>
         <p className="text-body max-w-2xl">Public tools and links for partners. No sign-in required.</p>
 
         <ToolGrid />

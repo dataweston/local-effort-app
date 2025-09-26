@@ -50,10 +50,14 @@ const PricingPage = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="text-center"
+          className="text-center space-y-4"
         >
-          <h2 className="text-4xl font-extrabold uppercase mb-4">Pricing</h2>
-          <h3 className="text-2xl font-semibold mb-2">It’s not as expensive as you think.</h3>
+          <h1 className="heading-display heading-balance">
+            Personal chef pricing, simplified.
+          </h1>
+          <p className="heading-subtitle text-neutral-600 max-w-3xl mx-auto">
+            It’s not as expensive as you think.
+          </p>
           <p className="text-lg text-gray-700 max-w-3xl mx-auto">
             We tailor pricing closely to your needs. We try to stay competitive to an evening at a nice restaurant, (or to the price of takeout, depending on the request). Oftentimes, we're the much better deal.
           </p>
@@ -71,7 +75,7 @@ const PricingPage = () => {
           viewport={{ once: true, amount: 0.2 }}
           transition={{ duration: 0.5 }}
         >
-          <h3 className="text-2xl font-bold uppercase mb-4">Cost Estimator</h3>
+          <h2 className="heading-xl heading-underline">Cost estimator</h2>
           <CostEstimator />
         </motion.section>
 
@@ -83,7 +87,7 @@ const PricingPage = () => {
           transition={{ duration: 0.5 }}
           className="space-y-4"
         >
-          <h3 className="text-2xl font-bold uppercase">Personal Chef Pricing FAQ</h3>
+          <h2 className="heading-xl heading-underline">Personal chef pricing FAQ</h2>
           <p className="text-gray-700">
             Wondering how much a personal chef costs in Minneapolis? These quick answers summarize what most households and event planners invest for chef-prepared menus, staffing, and meal prep support.
           </p>
