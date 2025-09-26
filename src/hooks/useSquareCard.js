@@ -67,7 +67,10 @@ export function useSquareCard(containerId, enabled, deps = []) {
       sc.async = true;
       sc.dataset.squareSdk = 'true';
       sc.dataset.squareSdkEnv = isSandbox ? 'sandbox' : 'production';
-      sc.onerror = () => setError('Failed to load payment script.');
+      sc.onerror = () => {
+        setError('Failed to load payment script.');
+        setLoadingScript(false);
+      };
       setLoadingScript(true);
       sc.onload = () => setLoadingScript(false);
       document.head.appendChild(sc);
@@ -95,67 +98,150 @@ export function useSquareCard(containerId, enabled, deps = []) {
   // Initialize card
   useEffect(() => {
     if (!enabled) return;
-    let cancelled = false;
+    const abortController = new AbortController();
+    const { signal } = abortController;
     const appId = (window?.__SQUARE_APP_ID__) || (import.meta?.env?.VITE_SQUARE_APP_ID) || window?.SQUARE_APPLICATION_ID;
     const locationId = (window?.__SQUARE_LOCATION_ID__) || (import.meta?.env?.VITE_SQUARE_LOCATION_ID) || window?.SQUARE_LOCATION_ID;
     if (!appId || !locationId) {
       setError('Payment not available: missing Square configuration.');
-      return;
+      return () => abortController.abort();
     }
-    const init = async () => {
-      if (cancelled) return;
-      if (!window.Square) {
-        if (attempts > 30) { // ~7.5s
-          setError('Payment form failed to load (script not ready).');
+
+    const waitForSquare = async () => {
+      if (window.Square) return;
+      const start = Date.now();
+      while (!signal.aborted) {
+        if (window.Square) return;
+        if (Date.now() - start > 20000) {
+          throw new Error('Payment form failed to load (script not ready).');
+        }
+        await new Promise((resolve) => setTimeout(resolve, 200));
+      }
+      throw new DOMException('Aborted', 'AbortError');
+    };
+
+    const waitForContainer = () => new Promise((resolve, reject) => {
+      let observer;
+      let interval;
+      let timeout;
+
+      const resolveWith = (node) => {
+        if (signal.aborted) {
+          reject(new DOMException('Aborted', 'AbortError'));
           return;
         }
-        setAttempts(a => a + 1);
-        setTimeout(init, 250);
-        return;
-      }
+        resolve(node);
+      };
+      const rejectWith = (err) => {
+        if (signal.aborted) {
+          reject(new DOMException('Aborted', 'AbortError'));
+        } else {
+          reject(err);
+        }
+      };
+
+      const cleanup = () => {
+        if (observer) observer.disconnect();
+        if (interval) clearInterval(interval);
+        if (timeout) clearTimeout(timeout);
+        if (signal) signal.removeEventListener('abort', onAbort);
+      };
+
+      const lookup = () => {
+        if (signal.aborted) {
+          cleanup();
+          reject(new DOMException('Aborted', 'AbortError'));
+          return true;
+        }
+        const node = typeof containerId === 'string' ? document.querySelector(containerId) : containerId;
+        if (node) {
+          cleanup();
+          resolveWith(node);
+          return true;
+        }
+        return false;
+      };
+
+      const onAbort = () => {
+        cleanup();
+        reject(new DOMException('Aborted', 'AbortError'));
+      };
+
+      if (lookup()) return;
+
+      const observerRoot = document.body || document.documentElement;
       try {
-        if (cardRef.current || attachStartedRef.current) return; // prevent duplicate attach
+        observer = new MutationObserver(() => {
+          lookup();
+        });
+        observer.observe(observerRoot, { childList: true, subtree: true });
+      } catch (_) {
+        observer = undefined;
+      }
+      interval = setInterval(() => {
+        lookup();
+      }, 150);
+      signal.addEventListener('abort', onAbort, { once: true });
+      timeout = setTimeout(() => {
+        cleanup();
+        rejectWith(new Error('Payment container not found (timed out).'));
+      }, 120000);
+    });
+
+    const init = async () => {
+      try {
+        if (cardRef.current || attachStartedRef.current) return;
+        setAttempts((a) => a + 1);
+        await waitForSquare();
+        if (signal.aborted) return;
         const payments = window.Square.payments(appId, locationId);
         paymentsRef.current = payments;
         const card = await payments.card();
-        // Retry container presence up to 40 * 125ms = 5s
-        let container = null;
-        for (let i = 0; i < 40; i++) {
-          container = typeof containerId === 'string' ? document.querySelector(containerId) : null;
-          if (container) break;
-          await new Promise(r => setTimeout(r, 125));
-        }
-        if (!container) {
-          setError('Payment container not found (timed out).');
-          return;
-        }
+        const container = await waitForContainer();
+        if (signal.aborted) return;
         attachStartedRef.current = true;
-        await card.attach(containerId);
-        if (!cancelled) {
+        await card.attach(container);
+        if (!signal.aborted) {
           cardRef.current = card;
           setCardLoaded(true);
           setError('');
         }
       } catch (e) {
-        const msg = e?.message || 'Payment initialization failed';
+        if (signal.aborted) return;
         if (process.env.NODE_ENV !== 'production') {
           // eslint-disable-next-line no-console
           console.debug('[Square:init:error]', e);
         }
+        const msg = e?.message || 'Payment initialization failed';
+        attachStartedRef.current = false;
         if (msg.includes('Invalid App ID')) {
           setError('Invalid Square App ID.');
         } else if (msg.includes('Unexpected token')) {
           setError('Payment script parse error.');
         } else if (msg.includes('network')) {
           setError('Network error initializing payment form.');
+        } else if (msg === 'Payment container not found (timed out).') {
+          // Keep waiting for the form to render; retry automatically when it appears.
+          attachStartedRef.current = false;
+          setTimeout(() => {
+            if (!signal.aborted) init();
+          }, 300);
+        } else if (msg === 'Payment form failed to load (script not ready).') {
+          setError(msg);
+          setTimeout(() => {
+            if (!signal.aborted) init();
+          }, 500);
         } else {
           setError(msg);
         }
       }
     };
+
     init();
-    return () => { cancelled = true; };
-  }, [enabled, attempts, containerId, reset, ...deps]);
+    return () => {
+      abortController.abort();
+    };
+  }, [enabled, containerId, ...deps]);
 
   useEffect(() => {
     setEnvInfo(info => ({ ...info, attempts }));
