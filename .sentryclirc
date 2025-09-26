@@ -1,0 +1,10 @@
+[auth]
+# Set your token in env: SENTRY_AUTH_TOKEN=... (avoid committing real token)
+# scopes needed: project:releases org:read
+
+[defaults]
+org=YOUR_SENTRY_ORG_SLUG
+project=YOUR_SENTRY_FRONTEND_PROJECT_SLUG
+
+[http]
+# Optional: proxy settings

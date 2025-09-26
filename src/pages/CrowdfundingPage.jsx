@@ -100,14 +100,30 @@ const CrowdfundingPage = () => {
     if (activeTab === 'gallery' && !galleryLoadedRef.current) {
       galleryLoadedRef.current = true;
       setGalleryLoading(true);
-      // Query both pizza and pie tags by searching for "pizza pie" (search endpoint expands tokens OR-wise per token internally)
-      fetch(`/api/search-images?query=pizza,pie&per_page=60`).then(async (r) => {
-        const data = await r.json().catch(() => ({}));
-        if (!r.ok) throw new Error(data.error || 'Failed to load images');
-        setGalleryImages(Array.isArray(data.images) ? data.images : []);
-      }).catch((e) => {
-        setGalleryError(e.message || 'Error loading gallery');
-      }).finally(() => setGalleryLoading(false));
+      // Fetch pizza and pie separately then merge unique results to ensure OR semantics across Cloudinary search API
+      const endpoints = ['/api/search-images?query=pizza&per_page=50', '/api/search-images?query=pie&per_page=50'];
+      Promise.all(endpoints.map((u) => fetch(u).then(r => r.json().catch(()=>({})).then(data => ({ ok: r.ok, data })))))
+        .then((results) => {
+          const all = [];
+          results.forEach(({ ok, data }) => {
+            if (ok && data && Array.isArray(data.images)) all.push(...data.images);
+          });
+          // De-duplicate by asset_id or public_id
+          const seen = new Set();
+          const merged = [];
+          for (const img of all) {
+            const id = img.asset_id || img.public_id;
+            if (!id || seen.has(id)) continue;
+            seen.add(id);
+            merged.push(img);
+          }
+          if (merged.length === 0) {
+            setGalleryError('No images found yet.');
+          }
+          setGalleryImages(merged);
+        })
+        .catch((e) => setGalleryError(e.message || 'Error loading gallery'))
+        .finally(() => setGalleryLoading(false));
     }
   }, [activeTab]);
   // Simple client-side validators
@@ -394,6 +410,26 @@ const CrowdfundingPage = () => {
     }
   }
 
+  // PortableText custom components to style links (underline + accent color)
+  const portableComponents = {
+    marks: {
+      link: ({ children, value }) => {
+        const href = value?.href || '#';
+        const isExternal = /^https?:/i.test(href);
+        return (
+          <a
+            href={href}
+            target={isExternal ? '_blank' : undefined}
+            rel={isExternal ? 'noopener noreferrer' : undefined}
+            className="underline decoration-[var(--color-accent)] underline-offset-4 text-[var(--color-accent)] hover:opacity-80 transition-colors"
+          >
+            {children}
+          </a>
+        );
+      }
+    }
+  };
+
   return (
     <>
       <Helmet>
@@ -413,9 +449,9 @@ const CrowdfundingPage = () => {
                     </h2>
                   )}
                   {description && (Array.isArray(description) ? (
-                    <PortableText value={remainingDescriptionBlocks} />
+                    <PortableText value={remainingDescriptionBlocks} components={portableComponents} />
                   ) : (
-                    <PortableText value={toPortableBlocks(description)} />
+                    <PortableText value={toPortableBlocks(description)} components={portableComponents} />
                   ))}
                 </div>
               </div>
@@ -423,7 +459,7 @@ const CrowdfundingPage = () => {
         {/* --- Main Content Grid --- */}
   <div className="grid grid-cols-1 lg:grid-cols-5 lg:gap-16">
           {/* --- Left Column (Media & Content Tabs) --- */}
-          <div className="lg:col-span-3 space-y-8">
+    <div className="lg:col-span-3 space-y-8 order-2 lg:order-1">
             {/* Override hero image per request */}
             <img
               src={"/gallery/5Z0A5718-Edit.jpg"}
@@ -517,7 +553,7 @@ const CrowdfundingPage = () => {
           </div>
 
           {/* --- Right Column (Stats & Rewards) --- */}
-          <div className="lg:col-span-2 space-y-8 mt-12 lg:mt-0">
+          <div className="lg:col-span-2 space-y-8 mt-12 lg:mt-0 order-1 lg:order-2">
             <div className="card p-6 space-y-4 ring-1 ring-neutral-200">
               <div className="w-full bg-gray-200 rounded-full h-2.5">
                 <div
