@@ -2,7 +2,7 @@ const sanity = require('@sanity/client');
 
 const projectId = process.env.VITE_APP_SANITY_PROJECT_ID || process.env.VITE_SANITY_PROJECT_ID || process.env.SANITY_PROJECT_ID;
 const dataset = process.env.VITE_APP_SANITY_DATASET || process.env.VITE_SANITY_DATASET || process.env.SANITY_DATASET;
-const site = process.env.SITE_ORIGIN || 'https://local-effort-app.vercel.app';
+const site = process.env.SITE_ORIGIN || 'https://localeffortfood.com';
 const client = projectId && dataset ? sanity.createClient({ projectId, dataset, useCdn: true, apiVersion: '2023-05-03' }) : null;
 
 const staticPaths = [

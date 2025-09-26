@@ -235,7 +235,7 @@ const GalleryPage = () => {
             '@context': 'https://schema.org',
             '@type': 'Restaurant',
             name: 'Local Effort',
-            url: 'https://local-effort-app.vercel.app/gallery',
+            url: 'https://localeffortfood.com/gallery',
             image: images.slice(0,8).map(i => i.large_url || i.thumbnail_url).filter(Boolean),
             servesCuisine: ['American','Local','Seasonal'],
             sameAs: ['https://www.instagram.com/localeffortfood','https://www.facebook.com/localeffortfood','https://www.tiktok.com/@localeffort']
