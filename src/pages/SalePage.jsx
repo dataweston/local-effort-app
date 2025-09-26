@@ -76,7 +76,7 @@ const SalePage = () => {
 
       <div className="flex items-start justify-between mb-4 gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Sale</h1>
+          <h1 className="heading-xl heading-balance">Sale</h1>
           {saleIntro.subheading && (
             <p className="mt-1 text-neutral-700">{saleIntro.subheading}</p>
           )}
