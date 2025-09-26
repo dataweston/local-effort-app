@@ -25,6 +25,7 @@ const admin = require('firebase-admin');
 const { getSanityClient } = require('./sanityClient');
 const fs = require('fs');
 const path = require('path');
+// Structured logger (pino wrapper)
 const { logger } = require('./logger');
 
 // Fallback: if critical vars are missing, also try loading project root .env
@@ -88,6 +89,11 @@ const GALLANT_ALLOWED = new Set([
     .filter(Boolean),
 ]);
 
+// (MCP allowlists removed from this process — handled by dedicated MCP server if needed)
+
+// AI manifest path (machine-readable site schema) used by /api/public/site
+const AI_MANIFEST_PATH = path.resolve(__dirname, '../../public/ai/manifest.json');
+
 async function requireAllowedUser(req, res, next) {
   try {
     const authHeader = req.headers.authorization || '';
@@ -129,24 +135,16 @@ if (Client) {
 }
 
 const app = express();
+
+// Attach Sentry request + tracing handlers early (before other middleware) if enabled
 if (sentryEnabled) {
-  app.use(Sentry.Handlers.requestHandler());
-  app.use(Sentry.Handlers.tracingHandler ? Sentry.Handlers.tracingHandler() : (req,res,next)=>next());
+  try {
+    app.use(Sentry.Handlers.requestHandler());
+    app.use(Sentry.Handlers.tracingHandler());
+  } catch (e) {
+    logger.warn({ err: e && e.message }, 'failed to register sentry handlers');
+  }
 }
-
-// Request logging
-app.use((req, res, next) => {
-  const start = Date.now();
-  res.on('finish', () => {
-    logger.info({ method: req.method, url: req.originalUrl, status: res.statusCode, ms: Date.now() - start }, 'req');
-  });
-  next();
-});
-
-// Lightweight health endpoint for UptimeRobot (fast, no external deps)
-app.get('/health', (req, res) => {
-  res.status(200).json({ ok: true, ts: Date.now() });
-});
 
 // --- CORS CONFIGURATION ---
 const allowedOrigins = [
@@ -157,6 +155,144 @@ const allowedOrigins = [
 const corsOptions = { origin: allowedOrigins };
 app.use(cors(corsOptions));
 app.use(express.json());
+
+// MCP HTTP bridge removed (mcpTransport not initialized in this process). If needed, reintroduce with proper import.
+// --- MCP STREAMABLE HTTP BRIDGE ---
+// Provides a lightweight HTTP/SSE surface for the MCP server that normally runs via stdio.
+// This allows tools/resources to be accessed over the web for LLM agents or internal tooling.
+try {
+  const { createMcpServer } = require('../mcp/server');
+  const { randomUUID } = require('crypto');
+  const mcpServer = createMcpServer();
+  // In-memory session map (ephemeral). Could be replaced with Redis if needed.
+  const sessions = new Map();
+  const SESSION_TTL_MS = 1000 * 60 * 30; // 30 minutes inactivity
+
+  const issueSession = () => {
+    const id = randomUUID();
+    sessions.set(id, { id, last: Date.now() });
+    return id;
+  };
+  const touchSession = (id) => {
+    const entry = sessions.get(id);
+    if (entry) entry.last = Date.now();
+  };
+  setInterval(() => {
+    const now = Date.now();
+    for (const [id, s] of sessions.entries()) {
+      if (now - s.last > SESSION_TTL_MS) sessions.delete(id);
+    }
+  }, 60000).unref();
+
+  const allowOrigins = (process.env.MCP_ALLOWED_ORIGINS || '').split(',').map(s=>s.trim()).filter(Boolean);
+  const allowHosts = (process.env.MCP_ALLOWED_HOSTS || '').split(',').map(s=>s.trim()).filter(Boolean);
+
+  const checkAllowed = (req) => {
+    if (allowOrigins.length) {
+      const origin = req.headers.origin || '';
+      if (origin && !allowOrigins.includes(origin)) return false;
+    }
+    if (allowHosts.length) {
+      const host = (req.headers['x-forwarded-host'] || req.headers.host || '').toLowerCase();
+      if (host && !allowHosts.includes(host)) return false;
+    }
+    return true;
+  };
+
+  const mcpHeaders = (res) => {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Mcp-Session-Id, Authorization');
+    res.setHeader('Access-Control-Allow-Methods', 'GET,POST,DELETE,OPTIONS');
+  };
+
+  app.options('/.well-known/mcp', (req, res) => { mcpHeaders(res); return res.status(204).end(); });
+  app.get('/.well-known/mcp.json', (req, res) => {
+    mcpHeaders(res);
+    res.json({
+      name: 'local-effort-mcp',
+      transport: 'streamable-http',
+      endpoints: { primary: '/.well-known/mcp' },
+      tools: ['support.search','sanity.query'],
+      resources: [
+        'support-chunk://{chunkId}',
+        'support-cache://{cacheKey}',
+        'support-source://{sourceId}',
+        'sanity-document://{docId}'
+      ],
+    });
+  });
+
+  // GET provides SSE stream. If no session id, one is issued.
+  app.get('/.well-known/mcp', async (req, res) => {
+    mcpHeaders(res);
+    if (!checkAllowed(req)) return res.status(403).json({ error: 'mcp-forbidden' });
+    res.setHeader('Content-Type', 'text/event-stream');
+    res.setHeader('Cache-Control', 'no-cache, no-transform');
+    res.setHeader('Connection', 'keep-alive');
+
+    let sessionId = req.headers['mcp-session-id'];
+    if (!sessionId || !sessions.has(sessionId)) {
+      sessionId = issueSession();
+      res.write(`event: session\n`);
+      res.write(`data: {"sessionId":"${sessionId}"}\n\n`);
+    } else {
+      touchSession(sessionId);
+    }
+
+    // Provide a simple heartbeat
+    const interval = setInterval(() => {
+      res.write('event: ping\n');
+      res.write('data: {}\n\n');
+    }, 25000);
+    interval.unref();
+
+    req.on('close', () => {
+      clearInterval(interval);
+    });
+  });
+
+  // POST processes JSON-RPC-like envelopes { id, method, params }
+  app.post('/.well-known/mcp', express.json(), async (req, res) => {
+    mcpHeaders(res);
+    if (!checkAllowed(req)) return res.status(403).json({ error: 'mcp-forbidden' });
+    let sessionId = req.headers['mcp-session-id'];
+    if (!sessionId || !sessions.has(sessionId)) {
+      sessionId = issueSession();
+      res.setHeader('Mcp-Session-Id', sessionId);
+    } else {
+      touchSession(sessionId);
+    }
+    const { id, method, params } = req.body || {};
+    if (!method) return res.status(400).json({ error: 'missing-method' });
+    try {
+      // Map JSON-RPC method names to MCP server methods
+      if (method === 'tool.call') {
+        const toolName = params?.name;
+        const toolParams = params?.arguments || {};
+        const tool = mcpServer.tools.get(toolName);
+        if (!tool) return res.status(404).json({ error: 'tool-not-found' });
+        const result = await tool.invoke(toolParams);
+        return res.json({ id, result });
+      }
+      if (method === 'resource.get') {
+        const uri = params?.uri;
+        if (!uri) return res.status(400).json({ error: 'missing-uri' });
+        const resource = await mcpServer.getResource(uri);
+        return res.json({ id, resource });
+      }
+      if (method === 'ping') {
+        return res.json({ id, result: { pong: true, ts: Date.now() } });
+      }
+      return res.status(400).json({ error: 'unknown-method' });
+    } catch (err) {
+      logger.error({ err }, 'mcp method error');
+      return res.status(500).json({ error: 'mcp-internal-error' });
+    }
+  });
+  logger.info('MCP HTTP bridge active');
+} catch (e) {
+  logger.warn({ err: e && e.message }, 'mcp bridge init failed');
+}
 
 // --- API ENDPOINTS ---
 
@@ -1098,31 +1234,48 @@ app.post('/api/push/notify', async (req, res) => {
 // Lightweight, JS-free data for crawlers/LLMs and integrations.
 app.get('/api/public/site', (req, res) => {
   try {
-    const url = process.env.PUBLIC_URL || 'https://local-effort-app.vercel.app/';
-    const routes = [
-      '/',
-      '/#/services',
-      '/#/pricing',
-      '/#/menu',
-      '/#/about',
-      '/#/gallery',
-      '/#/crowdfunding',
-    ];
-    const endpoints = [
-      { path: '/api/support/search', method: 'GET', query: 'q' },
-      { path: '/api/messages/submit', method: 'POST' },
-      { path: '/api/subscribe', method: 'POST' },
-      { path: '/api/public/pricing-faq', method: 'GET' },
-      { path: '/api/public/estimator-help', method: 'GET' },
-    ];
+    let manifest = null;
+    if (fs.existsSync(AI_MANIFEST_PATH)) {
+      try {
+        const raw = fs.readFileSync(AI_MANIFEST_PATH, 'utf8');
+        manifest = JSON.parse(raw);
+      } catch (parseErr) {
+        console.warn('Failed to parse AI manifest JSON:', parseErr.message);
+      }
+    }
+
+    const siteUrl = (manifest && manifest.site) || process.env.PUBLIC_URL || 'https://localeffortfood.com';
+    const trimmedSite = siteUrl.replace(/\/$/, '');
+    const navigation = Array.isArray(manifest?.navigation) ? manifest.navigation : [];
+    const mcp = Array.isArray(manifest?.mcpServers) ? manifest.mcpServers : [];
+    const apis = Array.isArray(manifest?.apis)
+      ? manifest.apis
+      : [
+          { path: '/api/support/search', method: 'GET', query: { q: 'query string' } },
+          { path: '/api/messages/submit', method: 'POST' },
+          { path: '/api/events/request', method: 'POST' },
+          { path: '/api/public/pricing-faq', method: 'GET' },
+          { path: '/api/public/estimator-help', method: 'GET' },
+        ];
+    const feeds = Array.isArray(manifest?.feeds)
+      ? manifest.feeds
+      : [
+          { type: 'sitemap', url: `${trimmedSite}/sitemap.xml` },
+          { type: 'sitemap', url: `${trimmedSite}/api/sitemap.xml` },
+        ];
+
     return res.json({
-      name: 'Local Effort',
-      url,
-      routes,
-      endpoints,
-      sitemap: url.replace(/\/$/, '') + '/sitemap.xml',
-      aiTxt: url.replace(/\/$/, '') + '/ai.txt',
-      updatedAt: new Date().toISOString(),
+      name: manifest?.name || 'Local Effort',
+      url: siteUrl,
+      navigation,
+      endpoints: apis,
+      feeds,
+      support: manifest?.support || { email: 'yum@localeffortfood.com' },
+      mcp,
+      sitemap: `${trimmedSite}/sitemap.xml`,
+      aiTxt: `${trimmedSite}/ai.txt`,
+      manifest: `${trimmedSite}/ai/manifest.json`,
+      updatedAt: manifest?.updated || new Date().toISOString(),
     });
   } catch (err) {
   logger.error({ err }, 'public site error');
