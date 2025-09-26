@@ -1,4 +1,5 @@
 import React, { useEffect, Suspense, lazy } from 'react';
+import { SpeedInsights } from '@vercel/speed-insights/react';
 import { HelmetProvider } from 'react-helmet-async';
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
 import { AnimatePresence } from 'framer-motion';
@@ -335,6 +336,8 @@ const AppContent = () => {
           </main>
           <Footer />
           <SupportWidget />
+          {/* Vercel Speed Insights */}
+          <SpeedInsights />
         </div>
         </ToastProvider>
       </CartProvider>
