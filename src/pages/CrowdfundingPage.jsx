@@ -90,6 +90,26 @@ const CrowdfundingPage = () => {
   const [confirmMsg, setConfirmMsg] = useState('');
   const [referralInput, setReferralInput] = useState('');
   const [referralState, setReferralState] = useState({ status: 'idle', valid: false, participant: null, code: '' });
+  // Gallery state (lazy-loaded when tab activated)
+  const [galleryImages, setGalleryImages] = useState([]);
+  const [galleryLoading, setGalleryLoading] = useState(false);
+  const [galleryError, setGalleryError] = useState('');
+  const galleryLoadedRef = React.useRef(false);
+
+  useEffect(() => {
+    if (activeTab === 'gallery' && !galleryLoadedRef.current) {
+      galleryLoadedRef.current = true;
+      setGalleryLoading(true);
+      // Query both pizza and pie tags by searching for "pizza pie" (search endpoint expands tokens OR-wise per token internally)
+      fetch(`/api/search-images?query=pizza,pie&per_page=60`).then(async (r) => {
+        const data = await r.json().catch(() => ({}));
+        if (!r.ok) throw new Error(data.error || 'Failed to load images');
+        setGalleryImages(Array.isArray(data.images) ? data.images : []);
+      }).catch((e) => {
+        setGalleryError(e.message || 'Error loading gallery');
+      }).finally(() => setGalleryLoading(false));
+    }
+  }, [activeTab]);
   // Simple client-side validators
   const emailValid = useMemo(() => !email || /.+@.+\..+/.test(email), [email]);
   const phoneDigits = useMemo(() => phone.replace(/\D/g, ''), [phone]);
@@ -420,6 +440,7 @@ const CrowdfundingPage = () => {
                 )}
                 <TabButton tabName="goals" label="Goals" />
                 {faq.length > 0 && <TabButton tabName="faq" label="FAQ" />}
+                <TabButton tabName="gallery" label="Gallery" />
               </nav>
             </div>
             <div className="prose max-w-none text-body">
@@ -464,6 +485,32 @@ const CrowdfundingPage = () => {
                       <p className="mt-0">{item.answer}</p>
                     </div>
                   ))}
+                </div>
+              )}
+              {activeTab === 'gallery' && (
+                <div className="mt-4">
+                  {galleryLoading && (
+                    <p className="text-sm text-gray-500 animate-pulse">Loading images…</p>
+                  )}
+                  {galleryError && (
+                    <p className="text-sm text-red-600">{galleryError}</p>
+                  )}
+                  {!galleryLoading && !galleryError && galleryImages.length === 0 && (
+                    <p className="text-sm text-gray-500">No images found yet. Tag Cloudinary images with 'pizza' or 'pie'.</p>
+                  )}
+                  <div className="mt-4 columns-2 md:columns-3 lg:columns-4 gap-3 [column-fill:_balance]">
+                    {galleryImages.map((img) => (
+                      <figure key={img.asset_id || img.public_id} className="mb-3 break-inside-avoid rounded-lg overflow-hidden shadow-sm bg-neutral-100">
+                        <img
+                          src={img.thumbnail_url}
+                          alt={img.public_id}
+                          loading="lazy"
+                          decoding="async"
+                          className="w-full h-auto block transition-transform duration-300 hover:scale-[1.03]"
+                        />
+                      </figure>
+                    ))}
+                  </div>
                 </div>
               )}
             </div>
