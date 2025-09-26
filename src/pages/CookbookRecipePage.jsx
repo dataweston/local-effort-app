@@ -293,7 +293,7 @@ export default function CookbookRecipePage() {
         <header className="mt-6 space-y-5">
           <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
             <div className="space-y-2">
-              <h1 className="text-3xl font-bold tracking-tight text-gray-900">{recipeTitle}</h1>
+              <h1 className="heading-xl heading-balance">{recipeTitle}</h1>
               {cookbookTitle ? (
                 <p className="text-lg font-medium text-gray-700">{cookbookTitle}</p>
               ) : null}
@@ -358,7 +358,7 @@ export default function CookbookRecipePage() {
 
         <main className="mt-10 grid gap-8 lg:grid-cols-[2fr,1fr]">
           <section className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-            <h2 className="text-xl font-semibold text-gray-900">Recipe</h2>
+            <h2 className="heading-lg">Recipe</h2>
             {ingredientsPresent ? (
               <div className="mt-4">
                 <h3 className="text-sm font-semibold uppercase tracking-wide text-gray-500">Ingredients</h3>
@@ -388,7 +388,7 @@ export default function CookbookRecipePage() {
 
           <aside className="space-y-6">
             <section className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-              <h2 className="text-lg font-semibold text-gray-900">Metadata</h2>
+              <h2 className="heading-subtitle text-neutral-700">Metadata</h2>
               <dl className="mt-4 space-y-3 text-sm text-gray-700">
                 {creators.length ? (
                   <div>
@@ -431,7 +431,7 @@ export default function CookbookRecipePage() {
 
             {iiifManifest ? (
               <section className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-                <h2 className="text-lg font-semibold text-gray-900">Page viewer</h2>
+                <h2 className="heading-subtitle text-neutral-700">Page viewer</h2>
                 <iframe
                   title="IIIF Viewer"
                   src={`https://uv-v4.netlify.app/#?manifest=${encodeURIComponent(iiifManifest)}`}

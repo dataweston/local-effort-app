@@ -68,8 +68,8 @@ const CityPage = ({ city, h1, description, canonical, images, faq }) => {
         {faqLd && <script type="application/ld+json">{JSON.stringify(faqLd)}</script>}
       </Helmet>
 
-      <h1 className="text-3xl md:text-4xl font-bold tracking-tight mb-4">{h1}</h1>
-      <h2 className="text-xl text-neutral-700 mb-6">In-home private chef dinners • Weekly meal prep • Small event catering</h2>
+      <h1 className="heading-xl heading-balance mb-4">{h1}</h1>
+      <h2 className="heading-subtitle text-neutral-600 mb-6">In-home private chef dinners • Weekly meal prep • Small event catering</h2>
 
       <div className="prose prose-neutral max-w-none">
         <p>{metaDesc}</p>

@@ -68,7 +68,7 @@ const AboutUsPage = () => {
           <header className="relative overflow-hidden rounded-2xl ring-1 ring-neutral-200 bg-gradient-to-br from-neutral-50 to-white">
             <div className="grid gap-10 md:grid-cols-2 md:items-center p-8 md:p-12 lg:p-16">
               <div>
-                <h1 id="about-hero-title" className="text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight">Local Effort</h1>
+                <h1 id="about-hero-title" className="heading-display heading-balance">Local Effort</h1>
                 <p className="mt-4 text-lg text-neutral-700 max-w-xl">
                   Obsessively local since 2022 — because it’s healthier, tastier, and better for Minnesota.
                 </p>

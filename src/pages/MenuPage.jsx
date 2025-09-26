@@ -65,7 +65,7 @@ export default function MenuPage() {
         <link rel="canonical" href="https://localeffortfood.com/menu" />
         <script type="application/ld+json">{JSON.stringify(menuJsonLd)}</script>
       </Helmet>
-      <h1 className="text-4xl font-bold mb-4 text-center">Past Menu Examples.</h1>
+      <h1 className="heading-xl heading-balance text-center">Past menu examples.</h1>
       <div className="prose-lite max-w-3xl mx-auto text-center mb-8">
         <p>
           these are all real menus from events in the past couple years, just to show how wide the options are. We love to &quot;make it local.&quot;

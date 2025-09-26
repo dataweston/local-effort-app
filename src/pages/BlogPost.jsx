@@ -32,7 +32,7 @@ const BlogPost = () => {
         <title>{post?.title ? `${post.title} | Blog` : 'Blog'} | Local Effort</title>
       </Helmet>
       <Link to="/blog" className="text-sm underline">← Back to blog</Link>
-      <h1 className="text-4xl font-bold mt-2">{post.title}</h1>
+      <h1 className="heading-xl heading-balance mt-4">{post.title}</h1>
       <div className="text-sm text-gray-500 mt-1">{post.publishedAt ? new Date(post.publishedAt).toLocaleDateString() : ''}</div>
       <article className="prose max-w-none mt-6">
         <PortableText value={post.body} />

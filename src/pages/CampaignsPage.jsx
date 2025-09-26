@@ -21,7 +21,7 @@ export default function CampaignsPage() {
 
   return (
     <div className="mx-auto max-w-5xl p-4">
-      <h1 className="text-2xl font-semibold mb-4">Campaigns</h1>
+      <h1 className="heading-lg mb-4">Campaigns</h1>
       <div className="space-y-3">
         <input className="border p-2 w-full" value={name} onChange={(e) => setName(e.target.value)} />
         <textarea className="border p-2 w-full h-64" value={html} onChange={(e) => setHtml(e.target.value)} />

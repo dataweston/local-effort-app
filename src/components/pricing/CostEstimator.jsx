@@ -161,7 +161,7 @@ export const CostEstimator = () => {
   if (showResults) {
     return (
       <div className="border border-gray-900 p-8 text-center">
-        <h3 className="text-2xl font-bold">All-Inclusive Ballpark Estimate</h3>
+        <h3 className="heading-lg heading-balance">All-inclusive ballpark estimate</h3>
         <p className="text-6xl font-bold my-4">${finalCost.toFixed(2)}</p>
         <div className="bg-gray-200 p-4 text-left mb-6 font-mono text-sm">
           {[`- Based on your selections for a ${userAnswers.serviceType} service.`].map(
@@ -180,7 +180,7 @@ export const CostEstimator = () => {
   const currentQData = questions[currentQuestionKey];
   return (
     <div className="relative w-full border border-gray-900 p-8 min-h-[400px]">
-      <h2 className="text-3xl font-bold mb-6">{currentQData.title}</h2>
+      <h2 className="heading-lg heading-balance mb-6">{currentQData.title}</h2>
       {currentQData.type === 'options' && (
         <div className="space-y-3 font-mono">
           {currentQData.options.map((opt) => (
