@@ -23,7 +23,7 @@ export function RequireAuth({ children }) {
   if (!auth || !user) {
     return (
       <div className="mx-auto max-w-xl p-6 text-center">
-        <h2 className="text-xl font-semibold mb-2">Sign in required</h2>
+        <h2 className="heading-lg mb-2">Sign in required</h2>
         <p className="mb-4 text-gray-600">Please sign in to access this area.</p>
         <Link className="inline-block px-4 py-2 rounded bg-black text-white" to="/auth">Go to Sign In</Link>
       </div>

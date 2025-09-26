@@ -253,7 +253,7 @@ const GalleryPage = () => {
           ))}
       </Helmet>
       <div className="container mx-auto px-4 py-8">
-        <h1 className="text-4xl font-bold mb-4 text-center">pictures of food.</h1>
+        <h1 className="heading-xl heading-balance text-center">Pictures of food.</h1>
 
         <input
           type="text"

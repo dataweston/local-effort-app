@@ -60,7 +60,7 @@ export default function ProductPage() {
             )}
           </div>
           <div>
-            <h1 className="text-2xl font-bold">{product.title}</h1>
+            <h1 className="heading-lg">{product.title}</h1>
             {product.shortDescription && (
               <p className="mt-2 text-neutral-700">{product.shortDescription}</p>
             )}
