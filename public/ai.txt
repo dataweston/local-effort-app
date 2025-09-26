@@ -2,11 +2,14 @@
 # Purpose: Provide basic, JS-free summaries and key endpoints for LLMs and machine readers.
 
 site: https://localeffortfood.com/
+manifest: https://localeffortfood.com/ai/manifest.json
+last-updated: 2024-11-24
 
 primary-nav:
 - /services       Services overview and Event Request form
-- /pricing        Pricing overview and estimator
-- /menu           Weekly Meal Prep menus
+- /pricing        Pricing overview, estimator, and answers to "how much does a personal chef cost"
+- /menu           Weekly seasonal menus
+- /meal-prep      Meal prep Minneapolis menus and meal plan Minneapolis details
 - /about          About the chef and philosophy
 - /gallery        Image gallery
 - /happy-monday   Weekly post/newsletter
@@ -17,6 +20,11 @@ support:
 - Email: POST /api/messages/submit  Accepts JSON {name,email,subject,message}
 - Events: POST /api/events/request    Accepts JSON {firstName,lastName,phone,email,eventDate,city,state,zip,eventType,guestCount,notes,sendCopy}
 - Images: GET /api/search-images?query=TAG&per_page=N  Returns Cloudinary image results
+
+mcp:
+- streamable-http endpoint: https://localeffortfood.com/.well-known/mcp  (GET for SSE, POST for JSON-RPC requests)
+- metadata: https://localeffortfood.com/.well-known/mcp.json
+- tools: support.search, sanity.query (read-only)
 
 public-json:
 - GET /api/public/site            Summary of routes and endpoints
@@ -30,6 +38,7 @@ kb:
 Sitemaps:
 - GET /sitemap.xml         Static pages
 - GET /api/sitemap.xml     Dynamic sitemap (includes image entries)
+- GET /ai/manifest.json    Machine-readable navigation & API summary
 
 legal:
 - Contact: /about
