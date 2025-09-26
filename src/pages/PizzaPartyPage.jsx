@@ -285,7 +285,7 @@ const PizzaPartyPage = () => {
       <div className="mx-auto max-w-6xl px-4 py-10 space-y-14">
         {/* Intro */}
         <div className="text-center space-y-4">
-          <h1 className="font-display text-4xl md:text-5xl font-bold tracking-tight">Pizza Party Special</h1>
+          <h1 className="heading-display heading-balance">Pizza party special</h1>
           <p className="mt-2 text-xl md:text-2xl text-neutral-800 max-w-3xl mx-auto leading-relaxed">Host an unforgettable pizza experience right in your home. We bring the oven, the dough, and the vibes. We call it <strong>Local Pizza</strong>.</p>
         </div>
 
@@ -295,7 +295,7 @@ const PizzaPartyPage = () => {
             <div className="absolute inset-0 pointer-events-none opacity-[0.15]" style={{backgroundImage:'radial-gradient(circle at 30% 30%, #fb923c, transparent 60%)'}} />
             <div className="relative grid md:grid-cols-3 gap-8 items-center">
               <div className="md:col-span-2 space-y-4">
-                <h2 className="text-2xl md:text-3xl font-bold">Pizza Party in Your Home</h2>
+                <h2 className="heading-lg heading-balance">Pizza party in your home</h2>
                 <ul className="list-disc list-inside text-neutral-700 text-sm md:text-base space-y-1">
                   <li>Up to 15 guests</li>
                   <li>100% local midwest ingredients, slow-fermented sourdough crust</li>

@@ -12,7 +12,7 @@ const EventsPage = () => (
       />
     </Helmet>
     <div className="space-y-16">
-      <h2 className="text-5xl md:text-7xl font-bold uppercase">Dinners & Events</h2>
+      <h1 className="heading-display heading-balance">Dinners & events</h1>
       <p className="font-mono text-lg max-w-3xl">
         We bring our passion for food and hospitality to your home or venue. We specialize in
         cooking for parties from 2 to 50 people.

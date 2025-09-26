@@ -25,7 +25,7 @@ const WeeklyList = () => {
       <Helmet>
         <title>Weekly Meal Prep Journal | Local Effort</title>
       </Helmet>
-      <h1 className="text-4xl font-bold mb-6">Weekly Meal Prep Journal</h1>
+      <h1 className="heading-xl heading-balance mb-6">Weekly meal prep journal</h1>
       {error && <div className="text-red-700 bg-red-50 border border-red-200 p-3 rounded mb-4">{error}</div>}
       <ul className="space-y-4">
         {posts.map((p) => (

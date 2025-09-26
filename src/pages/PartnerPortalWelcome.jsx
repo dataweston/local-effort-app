@@ -16,7 +16,7 @@ export default function PartnerPortalWelcome() {
         <meta name="description" content="Local Effort partner tools and resources." />
       </Helmet>
       <div className="space-y-6">
-        <h2 className="text-5xl md:text-7xl font-bold uppercase">Partner Portal</h2>
+        <h1 className="heading-display heading-balance">Partner portal</h1>
         <p className="text-body max-w-2xl">Welcome! Access tools and resources for partners. Sign in to see your tools.</p>
 
         <div className="p-6 border rounded-md max-w-xl bg-neutral-50">

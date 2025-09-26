@@ -39,7 +39,7 @@ export function RequirePartnerAccess({ toolKey, children }) {
   if (!user) {
     return (
       <div className="mx-auto max-w-xl p-6 text-center">
-        <h2 className="text-xl font-semibold mb-2">Sign in required</h2>
+        <h2 className="heading-lg mb-2">Sign in required</h2>
         <p className="mb-4 text-gray-600">Please sign in to access partner tools.</p>
         <Link className="inline-block px-4 py-2 rounded bg-black text-white" to="/auth">Go to Sign In</Link>
       </div>
@@ -48,7 +48,7 @@ export function RequirePartnerAccess({ toolKey, children }) {
   if (!allowed) {
     return (
       <div className="mx-auto max-w-xl p-6 text-center">
-        <h2 className="text-xl font-semibold mb-2">Access denied</h2>
+        <h2 className="heading-lg mb-2">Access denied</h2>
         <p className="mb-4 text-gray-600">Your account is not assigned to this tool.</p>
         <Link className="inline-block px-4 py-2 rounded border" to="/partner-portal">Back to Portal</Link>
       </div>
