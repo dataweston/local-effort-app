@@ -1,12 +1,31 @@
 // backend/api/server.js
 /* eslint-disable no-console */
 require('dotenv').config();
+// Sentry (full backend)
+let Sentry; let sentryEnabled = false;
+try {
+  Sentry = require('@sentry/node');
+  const { nodeProfilingIntegration } = require('@sentry/profiling-node');
+  if (process.env.SENTRY_DSN) {
+    Sentry.init({
+      dsn: process.env.SENTRY_DSN,
+      environment: process.env.SENTRY_ENV || process.env.NODE_ENV || 'development',
+      integrations: [nodeProfilingIntegration()],
+      tracesSampleRate: Number(process.env.SENTRY_TRACES_SAMPLE_RATE || 0.1),
+      profilesSampleRate: Number(process.env.SENTRY_PROFILES_SAMPLE_RATE || 0.0),
+    });
+    sentryEnabled = true;
+  }
+} catch (e) {
+  // ignore if not installed yet
+}
 const express = require('express');
 const cors = require('cors');
 const admin = require('firebase-admin');
 const { getSanityClient } = require('./sanityClient');
 const fs = require('fs');
 const path = require('path');
+const { logger } = require('./logger');
 
 // Fallback: if critical vars are missing, also try loading project root .env
 if (!process.env.SQUARE_ACCESS_TOKEN || !process.env.BREVO_API_KEY) {
@@ -104,12 +123,30 @@ if (Client) {
     environment: resolvedEnv,
     accessToken: process.env.SQUARE_ACCESS_TOKEN,
   });
-  console.log('Square client initialized:', { env: envName, hasToken: !!process.env.SQUARE_ACCESS_TOKEN });
+  logger.info({ env: envName, hasToken: !!process.env.SQUARE_ACCESS_TOKEN }, 'square client initialized');
 } else {
-  console.warn('Square client not initialized because SDK is missing. /api/crowdfund endpoints that use Square will return errors.');
+  logger.warn('square client missing; crowdfund endpoints will error');
 }
 
 const app = express();
+if (sentryEnabled) {
+  app.use(Sentry.Handlers.requestHandler());
+  app.use(Sentry.Handlers.tracingHandler ? Sentry.Handlers.tracingHandler() : (req,res,next)=>next());
+}
+
+// Request logging
+app.use((req, res, next) => {
+  const start = Date.now();
+  res.on('finish', () => {
+    logger.info({ method: req.method, url: req.originalUrl, status: res.statusCode, ms: Date.now() - start }, 'req');
+  });
+  next();
+});
+
+// Lightweight health endpoint for UptimeRobot (fast, no external deps)
+app.get('/health', (req, res) => {
+  res.status(200).json({ ok: true, ts: Date.now() });
+});
 
 // --- CORS CONFIGURATION ---
 const allowedOrigins = [
@@ -153,7 +190,7 @@ app.get('/api/_diag', async (req, res) => {
     }
     res.json(result);
   } catch (err) {
-    console.error('Diag endpoint error:', err);
+  logger.error({ err }, 'diag endpoint error');
     res.status(500).json({ ok: false, error: 'diag-failed' });
   }
 });
@@ -180,7 +217,7 @@ try {
     });
   }
 } catch (err) {
-  console.warn('search-images handler not available:', err.message);
+  logger.warn({ err: err.message }, 'search-images handler not available');
 }
 
 // --- Proxy About page data from Sanity (to avoid client-side CORS) ---
@@ -195,7 +232,7 @@ app.get('/api/about', async (req, res) => {
     const data = await sanity.fetch(query);
     return res.json(data || {});
   } catch (err) {
-    console.error('About proxy error:', err);
+  logger.error({ err }, 'about proxy error');
     return res.status(500).json({ error: 'about-fetch-failed' });
   }
 });
@@ -205,7 +242,7 @@ try {
   const { registerSupportSearch } = require('./supportSearch');
   if (registerSupportSearch) registerSupportSearch(app);
 } catch (err) {
-  console.warn('support search not available:', err?.message);
+  logger.warn({ err: err?.message }, 'support search not available');
 }
 
 // Mount support ingestion endpoints (manual sync + webhook)
@@ -213,7 +250,7 @@ try {
   const { registerSupportIngest } = require('./supportIngest');
   if (registerSupportIngest) registerSupportIngest(app);
 } catch (err) {
-  console.warn('support ingest not available:', err?.message);
+  logger.warn({ err: err?.message }, 'support ingest not available');
 }
 
 // (removed legacy lightweight messages/submit — unified below with Brevo-enabled version)
@@ -236,7 +273,7 @@ app.get('/api/crowdfund/status', async (req, res) => {
     }
     res.json(doc.data());
   } catch (error) {
-    console.error("Error fetching status:", error);
+  logger.error({ err: error }, 'crowdfund status error');
     res.status(500).json({ error: 'Failed to read database.' });
   }
 });
@@ -285,7 +322,7 @@ app.post('/api/crowdfund/contribute', async (req, res) => {
     });
 
   } catch (error) {
-    console.error("Square API Error:", error);
+  logger.error({ err: error }, 'square create payment link error');
     res.status(500).json({ error: 'Failed to create payment link.' });
   }
 });
@@ -324,7 +361,7 @@ app.post('/api/crowdfund/confirm-payment', async (req, res) => {
   res.json({ success: true, newTotal: updatedTotal });
 
   } catch (error) {
-    console.error("Error confirming payment:", error);
+  logger.error({ err: error }, 'confirm payment error');
     res.status(500).json({ error: 'Failed to update database after payment.' });
   }
 });
@@ -457,7 +494,7 @@ app.post('/api/messages/submit', async (req, res) => {
 
     return res.json({ ok: true, id: msgDoc?._id || null });
   } catch (err) {
-    console.error('messages/submit error', err);
+  logger.error({ err }, 'messages submit error');
     return res.status(500).json({ error: 'submit-failed' });
   }
 });
@@ -470,7 +507,7 @@ app.post('/api/subscribe', async (req, res) => {
     await upsertContact({ email, firstName, lastName, phone });
     return res.json({ ok: true });
   } catch (err) {
-    console.error('subscribe error', err);
+  logger.error({ err }, 'subscribe error');
     return res.status(500).json({ error: 'subscribe-failed' });
   }
 });
@@ -669,7 +706,7 @@ app.post('/api/events/request', async (req, res) => {
 
     return res.json({ ok: true, eventId, sanityMessageId: msgDoc?._id || null });
   } catch (err) {
-    console.error('events/request error', err);
+  logger.error({ err }, 'events request error');
     return res.status(500).json({ error: 'event-request-failed' });
   }
 });
@@ -750,7 +787,7 @@ app.post('/api/events/confirm', requireAllowedUser, async (req, res) => {
 
     return res.json({ ok: true, eventId, isPublic: visibility === 'public', publicEventId });
   } catch (err) {
-    console.error('events/confirm error', err);
+  logger.error({ err }, 'events confirm error');
     return res.status(500).json({ error: 'event-confirm-failed' });
   }
 });
@@ -810,7 +847,7 @@ app.post('/api/blog/publish', async (req, res) => {
 
     return res.json({ ok: true, id: doc._id, slug: doc.slug?.current, emailed });
   } catch (err) {
-    console.error('blog/publish error', err);
+  logger.error({ err }, 'blog publish error');
     return res.status(500).json({ error: 'publish-failed' });
   }
 });
@@ -856,7 +893,7 @@ app.post('/api/webhooks/sanity/blog', async (req, res) => {
     }
     return res.json({ ok: true, recipients: recipients.length });
   } catch (err) {
-    console.error('sanity blog webhook error', err);
+  logger.error({ err }, 'sanity blog webhook error');
     return res.status(500).json({ error: 'webhook-failed' });
   }
 });
@@ -870,7 +907,7 @@ app.get('/api/notes', requireAllowedUser, async (req, res) => {
     const items = snap.docs.map(d => ({ id: d.id, ...d.data() }));
     return res.json({ items });
   } catch (err) {
-    console.error('notes:list error', err);
+  logger.error({ err }, 'notes list error');
     return res.status(500).json({ error: 'notes-list-failed' });
   }
 });
@@ -884,7 +921,7 @@ app.post('/api/notes', requireAllowedUser, async (req, res) => {
     const ref = await db.collection('notes').add({ title: title || 'Untitled', content: content || '', createdAt: now, updatedAt: now });
     return res.json({ ok: true, id: ref.id });
   } catch (err) {
-    console.error('notes:create error', err);
+  logger.error({ err }, 'notes create error');
     return res.status(500).json({ error: 'notes-create-failed' });
   }
 });
@@ -901,7 +938,7 @@ app.put('/api/notes/:id', requireAllowedUser, async (req, res) => {
     await db.collection('notes').doc(id).update(patch);
     return res.json({ ok: true });
   } catch (err) {
-    console.error('notes:update error', err);
+  logger.error({ err }, 'notes update error');
     return res.status(500).json({ error: 'notes-update-failed' });
   }
 });
@@ -916,7 +953,7 @@ app.post('/api/campaigns/save', async (req, res) => {
     const doc = await sc.create({ _type: 'campaign', name, status: 'draft', html, createdAt: new Date().toISOString() });
     return res.json({ ok: true, id: doc._id });
   } catch (err) {
-    console.error('campaigns/save error', err);
+  logger.error({ err }, 'campaign save error');
     return res.status(500).json({ error: 'save-failed' });
   }
 });
@@ -975,7 +1012,7 @@ app.post('/api/messages/send', async (req, res) => {
     }
     return res.json({ ok: true, id: msgDoc?._id || null });
   } catch (err) {
-    console.error('messages/send error', err);
+  logger.error({ err }, 'messages send error');
     return res.status(500).json({ error: 'send-failed' });
   }
 });
@@ -993,7 +1030,7 @@ app.get('/api/inbox', async (req, res) => {
     const docs = await sc.fetch(query, { status, lim });
     return res.json({ items: docs });
   } catch (err) {
-    console.error('inbox error', err);
+  logger.error({ err }, 'inbox error');
     return res.status(500).json({ error: 'inbox-failed' });
   }
 });
@@ -1025,7 +1062,7 @@ app.post('/api/push/subscribe', async (req, res) => {
     });
     return res.json({ ok: true, id: doc._id });
   } catch (err) {
-    console.error('push subscribe error', err);
+  logger.error({ err }, 'push subscribe error');
     return res.status(500).json({ error: 'subscribe-failed' });
   }
 });
@@ -1052,7 +1089,7 @@ app.post('/api/push/notify', async (req, res) => {
     }
     return res.json({ ok: true, sent: results.length, results });
   } catch (err) {
-    console.error('push notify error', err);
+  logger.error({ err }, 'push notify error');
     return res.status(500).json({ error: 'notify-failed' });
   }
 });
@@ -1088,7 +1125,7 @@ app.get('/api/public/site', (req, res) => {
       updatedAt: new Date().toISOString(),
     });
   } catch (err) {
-    console.error('public/site error', err);
+  logger.error({ err }, 'public site error');
     return res.status(500).json({ error: 'public-site-failed' });
   }
 });
@@ -1115,7 +1152,7 @@ app.get('/api/public/pricing-faq', (req, res) => {
     }
     return res.json({ items, updatedAt });
   } catch (err) {
-    console.error('public/pricing-faq error', err);
+  logger.error({ err }, 'public pricing faq error');
     return res.status(500).json({ error: 'public-pricing-faq-failed' });
   }
 });
@@ -1133,7 +1170,7 @@ app.get('/api/public/estimator-help', (req, res) => {
     }
     return res.json({ items, updatedAt });
   } catch (err) {
-    console.error('public/estimator-help error', err);
+  logger.error({ err }, 'public estimator help error');
     return res.status(500).json({ error: 'public-estimator-help-failed' });
   }
 });
@@ -1152,7 +1189,7 @@ app.post('/api/referrals/validate', async (req, res) => {
     if (!doc) return res.json({ ok: false, valid: false });
     return res.json({ ok: true, valid: true, participant: { id: doc._id, name: doc.name || null, email: doc.email || null, code: doc.code } });
   } catch (err) {
-    console.error('referrals/validate error', err);
+  logger.error({ err }, 'referrals validate error');
     return res.status(500).json({ ok: false, error: 'validate-failed' });
   }
 });
@@ -1175,7 +1212,7 @@ app.get('/api/square/customers', async (req, res) => {
     }));
     return res.json({ items: customers, cursor: result.result.cursor || null });
   } catch (err) {
-    console.error('square/customers list error:', err && err.message);
+  logger.error({ err }, 'square customers list error');
     return res.status(500).json({ error: 'square-list-failed' });
   }
 });
@@ -1250,7 +1287,7 @@ app.post('/api/square/customers/import', async (req, res) => {
     }
     return res.json(out);
   } catch (err) {
-    console.error('square/customers import error:', err && err.message);
+  logger.error({ err }, 'square customers import error');
     return res.status(500).json({ error: 'square-import-failed' });
   }
 });
@@ -1284,7 +1321,7 @@ if (COOKBOOK_API_BASE) {
     try {
       const upstream = buildCookbookUrl('/api/search', { q: req.query.q || '' });
       if (isSameOrigin(upstream, req)) {
-        console.error('COOKBOOK_API_BASE misconfigured: points to same origin, would loop:', String(upstream));
+    logger.error({ upstream: String(upstream) }, 'cookbook api base misconfigured search');
         return res.status(500).json({ error: 'proxy-misconfigured', message: 'COOKBOOK_API_BASE must point to external Cookbook API, not this site.' });
       }
       const r = await fetch(String(upstream), { headers: { Accept: 'application/json' } });
@@ -1293,7 +1330,7 @@ if (COOKBOOK_API_BASE) {
       if (!r.ok) return res.status(r.status).json({ error: 'upstream-error', details: body });
       return res.status(200).json(body);
     } catch (err) {
-      console.error('Cookbook proxy /api/search failed:', err);
+  logger.error({ err }, 'cookbook proxy search failed');
       return res.status(502).json({ error: 'cookbook-proxy-failed' });
     }
   });
@@ -1303,7 +1340,7 @@ if (COOKBOOK_API_BASE) {
       const id = req.params.id;
       const upstream = buildCookbookUrl(`/api/recipes/${encodeURIComponent(id)}`);
       if (isSameOrigin(upstream, req)) {
-        console.error('COOKBOOK_API_BASE misconfigured: points to same origin, would loop:', String(upstream));
+    logger.error({ upstream: String(upstream) }, 'cookbook api base misconfigured recipe');
         return res.status(500).json({ error: 'proxy-misconfigured', message: 'COOKBOOK_API_BASE must point to external Cookbook API, not this site.' });
       }
       const r = await fetch(String(upstream), { headers: { Accept: 'application/json' } });
@@ -1312,7 +1349,7 @@ if (COOKBOOK_API_BASE) {
       if (!r.ok) return res.status(r.status).json({ error: 'upstream-error', details: body });
       return res.status(200).json(body);
     } catch (err) {
-      console.error('Cookbook proxy /api/recipes failed:', err);
+  logger.error({ err }, 'cookbook proxy recipe failed');
       return res.status(502).json({ error: 'cookbook-proxy-failed' });
     }
   });
@@ -1412,7 +1449,7 @@ if (COOKBOOK_API_BASE) {
       });
       return res.json({ results });
     } catch (err) {
-      console.error('Internal /api/search failed:', err);
+      logger.error({ err }, 'internal search failed');
       return res.status(500).json({ error: 'internal-search-failed' });
     }
   });
@@ -1440,7 +1477,7 @@ if (COOKBOOK_API_BASE) {
         return res.json({ id: item.id, title: item.title, ingredients: item.ingredients, instructions: item.instructions, source: item.source });
       }
     } catch (err) {
-      console.error('Internal /api/recipes failed:', err);
+      logger.error({ err }, 'internal recipes failed');
       return res.status(500).json({ error: 'internal-recipes-failed' });
     }
   });
@@ -1451,8 +1488,13 @@ const PORT = process.env.PORT || 3001;
 if (require.main === module) {
   if (!db) console.warn('Firestore not initialized — some endpoints will fail without FIREBASE_SERVICE_ACCOUNT_JSON');
   app.listen(PORT, () => {
-    console.log(`Backend server listening on http://localhost:${PORT}`);
+  logger.info({ port: PORT }, 'backend server listening');
   });
+}
+
+// Sentry error handler should be before any custom error handlers (none at bottom yet)
+if (sentryEnabled) {
+  app.use(Sentry.Handlers.errorHandler());
 }
 
 module.exports = app;

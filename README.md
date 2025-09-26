@@ -23,21 +23,33 @@ This app now includes a basic messaging/email foundation:
 
 Set these in your hosting provider (do NOT prefix with VITE_):
 
-- `BREVO_API_KEY` — required for email sending
-- `SENDER_EMAIL` — default from address (also set a Brevo sender)
-- `SUPPORT_INBOX_EMAIL` — team inbox to receive new inquiries
-- `SANITY_PROJECT_ID` — your Sanity project id (matches studio)
-- `SANITY_DATASET` — dataset (default `localeffort`)
-- `SANITY_API_TOKEN` — token with write access (to create docs)
-- `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET` — for image search and future media
-- `FIREBASE_SERVICE_ACCOUNT_JSON` — JSON for admin SDK (for future features; optional)
-- `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT` — for web push
 
 Client-side env vars remain under `VITE_*` and should not include secrets.
 
 ### Notes
 
-- Ensure Vercel `vercel.json` routes include the catch-all to `backend/api/server.js` (already present).
-- Sanity schemas added: `contact`, `message`, `campaign`, `pushSubscription`. Run `sanity deploy` in `studio/` to apply.
-- Replace the `/campaigns` page editor with EmailBuilder.js when ready.
+
+## Observability & Monitoring
+
+See `docs/observability.md` for full setup. Key points:
+* Sentry integrated (frontend + backend). Provide `VITE_SENTRY_DSN` and `SENTRY_DSN`.
+* Health endpoints: `/api/_ping` (serverless) and `/health` (backend API) for UptimeRobot.
+* PM2 process file: `ecosystem.config.cjs` (`pm2 start ecosystem.config.cjs --env production`).
+* Example environment variables in `.env.example`.
+
+### Sentry Release Workflow (Summary)
+Automated source map upload + release creation uses `sentry-cli` and scripts in `package.json`.
+
+Typical flow:
+```
+export SENTRY_AUTH_TOKEN=***   # scopes: project:releases, org:read
+export SENTRY_ORG=your-org
+export SENTRY_PROJECT=local-effort-frontend
+export SENTRY_RELEASE=$(git rev-parse --short HEAD)
+npm run build:release
+```
+Scripts available:
+`release:new` `release:files` `release:commits` `release:finalize` `release:all` `build:release`.
+Omit Sentry env vars to build without uploading.
+
 
