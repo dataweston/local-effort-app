@@ -255,17 +255,20 @@ export const MealPrepPage = () => {
           </div>
         </section>
 
-        <section className="space-y-4" id="meal-prep-faq">
-          <h3 className="text-2xl font-bold">Meal Prep Minneapolis FAQ</h3>
-          <div className="space-y-6">
-            {mealPrepFaq.map((item) => (
-              <div key={item.question} className="border border-gray-200 rounded-lg p-6">
-                <h4 className="text-xl font-semibold">{item.question}</h4>
-                <p className="text-gray-700 mt-2">{item.answer}</p>
-              </div>
-            ))}
-          </div>
-        </section>
+        {/* FAQ visually hidden per request (keeping JSON-LD in <Helmet> for SEO). Restore by setting condition to true. */}
+        {false && (
+          <section className="space-y-4" id="meal-prep-faq">
+            <h3 className="text-2xl font-bold">Meal Prep Minneapolis FAQ</h3>
+            <div className="space-y-6">
+              {mealPrepFaq.map((item) => (
+                <div key={item.question} className="border border-gray-200 rounded-lg p-6">
+                  <h4 className="text-xl font-semibold">{item.question}</h4>
+                  <p className="text-gray-700 mt-2">{item.answer}</p>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
 
         <section className="mt-10">
           <WeeklyJournalEmbeds />
