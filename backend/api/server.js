@@ -148,9 +148,8 @@ if (sentryEnabled) {
 
 // --- CORS CONFIGURATION ---
 const allowedOrigins = [
-  'https://local-effort-app.vercel.app',
-  'https://www.localeffortfood.com',
-  'https://localeffortfood.com'
+  'https://localeffortfood.com',
+  'https://www.localeffortfood.com'
 ];
 const corsOptions = { origin: allowedOrigins };
 app.use(cors(corsOptions));
@@ -446,7 +445,7 @@ app.post('/api/crowdfund/contribute', async (req, res) => {
       },
       checkoutOptions: {
         // Redirect the user back to your fundraiser page after payment
-        redirectUrl: 'https://local-effort-app.vercel.app/#/crowdfunding?payment=success',
+        redirectUrl: 'https://localeffortfood.com/#/crowdfunding?payment=success',
         // Optional: Ask for shipping address if you need to mail items
         askForShippingAddress: true, 
       },
@@ -965,7 +964,7 @@ app.post('/api/blog/publish', async (req, res) => {
           ? emailTo
           : (process.env.BLOG_ANNOUNCE_TO || '').split(',').map(s => s.trim()).filter(Boolean);
         if (recipients.length) {
-          const base = (process.env.PUBLIC_URL || 'https://local-effort-app.vercel.app');
+          const base = (process.env.PUBLIC_URL || 'https://localeffortfood.com');
           const url = base.replace(/\/$/, '') + '/weekly/' + doc.slug.current;
           const snippet = (text || JSON.stringify(blocks)).slice(0, 400);
           const payload = {
@@ -1016,7 +1015,7 @@ app.post('/api/webhooks/sanity/blog', async (req, res) => {
       htmlContent: `
         <h2>${doc?.title || title || 'Local Effort Blog'}</h2>
         <p>${snippet}…</p>
-        <p><a href="${(process.env.PUBLIC_URL || 'https://local-effort-app.vercel.app').replace(/\/$/, '')}/weekly/${slug?.current || slug}">Read on the site</a></p>
+        <p><a href="${(process.env.PUBLIC_URL || 'https://localeffortfood.com').replace(/\/$/, '')}/weekly/${slug?.current || slug}">Read on the site</a></p>
       `,
       tags: ['blog', 'auto'],
     };
