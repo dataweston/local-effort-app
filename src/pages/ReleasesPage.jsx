@@ -88,7 +88,7 @@ const ReleasesPage = () => {
               address: { '@type': 'PostalAddress', addressLocality: 'Roseville', addressRegion: 'MN', addressCountry: 'US' },
               areaServed: ['Minneapolis','St. Paul','Twin Cities','Western Wisconsin'],
               sameAs: [
-                'https://www.instagram.com/localeffortfood',
+                'https://www.instagram.com/localeffort',
                 'https://www.tiktok.com/@localeffort'
               ]
             },
@@ -269,8 +269,8 @@ const ReleasesPage = () => {
                 </p>
                 <p className="mt-1 text-sm text-neutral-700">
                   Instagram:{' '}
-                  <a href="https://www.instagram.com/localeffortfood" className="underline underline-offset-4 hover:opacity-80">
-                    @localeffortfood
+                  <a href="https://www.instagram.com/localeffort" className="underline underline-offset-4 hover:opacity-80">
+                    @localeffort
                   </a>
                 </p>
                 <p className="mt-1 text-sm text-neutral-700">
