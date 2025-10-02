@@ -2,13 +2,14 @@ import React, { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { useParams, Link } from 'react-router-dom';
 import { PortableText } from '@portabletext/react';
+import { createPortableTextComponents } from '../utils/portableTextComponents';
 import sanityClient from '../sanityClient';
 import imageUrlBuilder from '@sanity/image-url';
 
 const builder = imageUrlBuilder(sanityClient);
 const urlFor = (source) => builder.image(source);
 
-const components = {
+const portableComponents = createPortableTextComponents({
   types: {
     image: ({ value }) => {
       const src = value?.asset?._ref ? urlFor(value).width(1200).quality(80).url() : '';
@@ -17,7 +18,7 @@ const components = {
       return <img src={src} alt={alt} className="rounded-md my-4" loading="lazy" />;
     },
   },
-};
+});
 
 const WeeklyPost = () => {
   const { slug } = useParams();
@@ -55,7 +56,7 @@ const WeeklyPost = () => {
         </div>
       )}
       <article className="prose max-w-none mt-6">
-        <PortableText value={post.body} components={components} />
+        <PortableText value={post.body} components={portableComponents} />
       </article>
     </div>
   );
