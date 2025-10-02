@@ -317,6 +317,9 @@ export function useSquareCard(containerId, enabled, deps = []) {
         const container = await waitForContainer();
         if (signal.aborted) return;
         attachStartedRef.current = true;
+        if (container && container.childNodes && container.childNodes.length > 0) {
+          container.innerHTML = '';
+        }
         await card.attach(container);
         if (!signal.aborted) {
           cardRef.current = card;

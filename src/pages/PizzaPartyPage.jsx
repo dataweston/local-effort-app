@@ -18,11 +18,33 @@ async function fetchPizzaImages(setter, setError, setLoading) {
   }
 }
 
-const DATES = [
-  'Oct 2', 'Oct 3', 'Oct 4',
-  'Oct 9', 'Oct 10', 'Oct 11',
-  'Oct 16', 'Oct 17'
+const PIZZA_PARTY_DATES = [
+  { label: 'Oct 2', isoDate: '2024-10-02' },
+  { label: 'Oct 3', isoDate: '2024-10-03' },
+  { label: 'Oct 4', isoDate: '2024-10-04' },
+  { label: 'Oct 9', isoDate: '2024-10-09' },
+  { label: 'Oct 10', isoDate: '2024-10-10' },
+  { label: 'Oct 11', isoDate: '2024-10-11' },
+  { label: 'Oct 16', isoDate: '2024-10-16' },
+  { label: 'Oct 17', isoDate: '2024-10-17' }
 ];
+
+const SOLD_OUT_OVERRIDES = ['Oct 2', 'Oct 3', 'Oct 4'];
+const MONTH_NAMES = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+const toLocalDate = (isoDate) => {
+  if (!isoDate) return null;
+  const parts = isoDate.split('-').map((part) => parseInt(part, 10));
+  if (parts.length !== 3 || parts.some((val) => Number.isNaN(val))) return null;
+  const [year, month, day] = parts;
+  return new Date(year, month - 1, day, 0, 0, 0, 0);
+};
+
+const formatDateLabel = (isoDate, fallbackLabel) => {
+  const dateObj = toLocalDate(isoDate);
+  if (!dateObj) return fallbackLabel || isoDate;
+  return `${MONTH_NAMES[dateObj.getMonth()]} ${dateObj.getDate()}`;
+};
 
 // NOTE: Replaced custom embedded payment logic with shared useSquareCard hook.
 
@@ -33,36 +55,54 @@ const PizzaPartyPage = () => {
   const pageTitle = 'Mobile Wood-Fired Pizza Party | Local Effort';
   const pageDescription = 'Book a mobile wood-fired pizza party (up to 15 guests) with Local Effort. We bring the oven, premium midwest ingredients, and sourdough crust to your home.';
 
-  // Build Event JSON-LD from date tokens (assuming 2025 & Central time). Adjust times as needed.
-  const monthMap = { Jan: '01', Feb: '02', Mar: '03', Apr: '04', May: '05', Jun: '06', Jul: '07', Aug: '08', Sep: '09', Oct: '10', Nov: '11', Dec: '12' };
+  // Build Event JSON-LD from scheduled dates (Central time).
+  const startOfToday = (() => {
+    const d = new Date();
+    d.setHours(0, 0, 0, 0);
+    return d;
+  })();
+
+  const upcomingDates = PIZZA_PARTY_DATES
+    .map((entry) => {
+      const dateObj = toLocalDate(entry.isoDate);
+      return {
+        ...entry,
+        label: entry.label || formatDateLabel(entry.isoDate, entry.label),
+        dateObj,
+        weekday: dateObj ? dateObj.toLocaleDateString('en-US', { weekday: 'short' }) : ''
+      };
+    })
+    .filter((entry) => entry.dateObj && entry.dateObj >= startOfToday)
+    .sort((a, b) => (a.dateObj && b.dateObj ? a.dateObj - b.dateObj : 0));
+
+  const availabilityYears = Array.from(new Set(upcomingDates.map((entry) => entry.dateObj?.getFullYear()).filter(Boolean)));
+  const availabilityMonthLabel = upcomingDates.length ? upcomingDates[0].dateObj.toLocaleString('en-US', { month: 'long' }) : 'Upcoming';
+  const availabilityYearLabel = availabilityYears.length === 0 ? String(new Date().getFullYear()) : availabilityYears.join(' / ');
+
   const eventStartHour = '17:00:00'; // 5pm placeholder
   const timezoneOffset = '-05:00'; // CDT (adjust for DST if needed)
-  const eventsSchema = DATES.map(d => {
-    const [mon, day] = d.split(' ');
-    const date = `2025-${monthMap[mon]}-${String(day).padStart(2,'0')}`;
-    return {
-      '@type': 'Event',
-      name: 'Private Mobile Pizza Party',
-      description: 'On-site artisanal wood-fired pizza experience (up to 15 guests).',
-      startDate: `${date}T${eventStartHour}${timezoneOffset}`,
-      eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
-      eventStatus: 'https://schema.org/EventScheduled',
-      location: {
-        '@type': 'Place',
-        name: 'Client Provided Location',
-        address: { '@type': 'PostalAddress', addressRegion: 'MN', addressCountry: 'US' }
-      },
-      organizer: { '@type': 'Organization', name: siteName, url: canonical.replace('/pizza-party','/') },
-      offers: {
-        '@type': 'Offer',
-        price: '300',
-        priceCurrency: 'USD',
-        availability: 'https://schema.org/LimitedAvailability',
-        url: canonical,
-        validFrom: '2025-01-01T00:00:00Z'
-      }
-    };
-  });
+  const eventsSchema = upcomingDates.map(({ isoDate }) => ({
+    '@type': 'Event',
+    name: 'Private Mobile Pizza Party',
+    description: 'On-site artisanal wood-fired pizza experience (up to 15 guests).',
+    startDate: `${isoDate}T${eventStartHour}${timezoneOffset}`,
+    eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
+    eventStatus: 'https://schema.org/EventScheduled',
+    location: {
+      '@type': 'Place',
+      name: 'Client Provided Location',
+      address: { '@type': 'PostalAddress', addressRegion: 'MN', addressCountry: 'US' }
+    },
+    organizer: { '@type': 'Organization', name: siteName, url: canonical.replace('/pizza-party','/') },
+    offers: {
+      '@type': 'Offer',
+      price: '300',
+      priceCurrency: 'USD',
+      availability: 'https://schema.org/LimitedAvailability',
+      url: canonical,
+      validFrom: new Date().toISOString()
+    }
+  }));
 
   const serviceSchema = {
     '@type': 'Service',
@@ -135,7 +175,39 @@ const PizzaPartyPage = () => {
     return () => { active = false; };
   }, []);
 
-  // Google Places Autocomplete (optional if key provided in global or env)
+
+  useEffect(() => {
+    let mounted = true;
+    const loadAvailability = async () => {
+      try {
+        const res = await fetch('/api/store/pizza-party-status');
+        if (!res.ok) return;
+        const data = await res.json().catch(() => ({}));
+        if (!mounted || !data?.soldOutDates) return;
+        setSoldOutDates((prev) => {
+          const next = new Set(prev);
+          data.soldOutDates.filter(Boolean).forEach((label) => next.add(label));
+          return next;
+        });
+      } catch (err) {
+        if (process.env.NODE_ENV !== 'production') {
+          console.warn('[pizza-party] availability load failed', err);
+        }
+      }
+    };
+    loadAvailability();
+    const timer = setInterval(loadAvailability, 5 * 60 * 1000);
+    return () => {
+      mounted = false;
+      clearInterval(timer);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (selectedDate && soldOutDates.has(selectedDate)) {
+      setSelectedDate(null);
+    }
+  }, [selectedDate, soldOutDates]);\r\n\r\n  // Google Places Autocomplete (optional if key provided in global or env)
   useEffect(() => {
     if (!showModal) return; // only when modal open to reduce overhead
     const apiKey = window.GOOGLE_PLACES_KEY || import.meta?.env?.VITE_GOOGLE_PLACES_KEY;
@@ -316,31 +388,47 @@ const PizzaPartyPage = () => {
 
         {/* Available Dates */}
         <section id="dates">
-          <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">Available October Dates <span className="text-[10px] font-mono bg-neutral-200 rounded px-1.5 py-0.5">2025</span></h3>
+          <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+            Available {availabilityMonthLabel} Dates
+            <span className="text-[10px] font-mono bg-neutral-200 rounded px-1.5 py-0.5">{availabilityYearLabel}</span>
+          </h3>
           <div className="mx-auto max-w-4xl">
-            <ul className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-              {DATES.map((d) => {
-                const st = bookingState[d] || {};
-                return (
-                  <li key={d} className="relative group rounded-xl border bg-white/80 backdrop-blur-sm shadow-sm px-3 py-3 flex flex-col items-start justify-between h-28 overflow-hidden">
-                    <div className="w-full flex items-center justify-between">
-                      <span className="font-semibold text-neutral-800 text-sm tracking-tight">{d}</span>
-                      {st.loading && <span className="text-[10px] text-orange-600 animate-pulse">...</span>}
-                    </div>
-                    <button
-                      type="button"
-                      disabled={st.loading}
-                      onClick={() => openModal(d)}
-                      className={`mt-auto inline-flex justify-center items-center rounded-md px-2.5 py-1.5 text-xs font-semibold shadow-sm transition-colors border ${st.loading ? 'bg-neutral-200 text-neutral-500 cursor-not-allowed' : 'bg-orange-600 hover:bg-orange-700 text-white border-orange-600'}`}
-                      aria-label={`Book pizza party on ${d}`}
-                    >
-                      {st.loading ? 'Processing' : 'Book'}
-                    </button>
-                    <div className="pointer-events-none absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity bg-gradient-to-br from-orange-50/40 to-rose-50/40" />
-                  </li>
-                );
-              })}
-            </ul>
+            {upcomingDates.length === 0 ? (
+              <div className="rounded-xl border border-dashed border-neutral-300 bg-neutral-50 px-4 py-6 text-center text-sm text-neutral-600">
+                More pizza party dates are coming soon. Reach out if you need a custom date.
+              </div>
+            ) : (
+              <ul className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                {upcomingDates.map(({ label, weekday }) => {
+                  const st = bookingState[label] || {};
+                  const isSoldOut = soldOutDates.has(label);
+                  return (
+                    <li key={label} className={`relative group rounded-xl border bg-white/80 backdrop-blur-sm shadow-sm px-3 py-3 flex flex-col items-start justify-between h-28 overflow-hidden ${isSoldOut ? 'opacity-80' : ''}`}>
+                      <div className="w-full flex items-start justify-between gap-2">
+                        <div>
+                          {weekday && <span className="block text-[10px] uppercase tracking-wide text-neutral-500">{weekday}</span>}
+                          <span className="font-semibold text-neutral-800 text-sm tracking-tight">{label}</span>
+                        </div>
+                        {st.loading && <span className="text-[10px] text-orange-600 animate-pulse">...</span>}
+                      </div>
+                      <button
+                        type="button"
+                        disabled={st.loading || isSoldOut}
+                        onClick={() => openModal(label)}
+                        className={`mt-auto inline-flex justify-center items-center rounded-md px-2.5 py-1.5 text-xs font-semibold shadow-sm transition-colors border ${st.loading || isSoldOut ? 'bg-neutral-200 text-neutral-500 border-neutral-200 cursor-not-allowed' : 'bg-orange-600 hover:bg-orange-700 text-white border-orange-600'}`}
+                        aria-label={`Book pizza party on ${label}`}
+                      >
+                        {isSoldOut ? 'Sold out' : st.loading ? 'Processing' : 'Book'}
+                      </button>
+                      {isSoldOut && (
+                        <span className="absolute top-2 right-2 text-[10px] font-semibold uppercase tracking-wide bg-rose-100 text-rose-700 rounded px-2 py-0.5">Sold Out</span>
+                      )}
+                      <div className="pointer-events-none absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity bg-gradient-to-br from-orange-50/40 to-rose-50/40" />
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
           </div>
         </section>
 
@@ -416,12 +504,22 @@ const PizzaPartyPage = () => {
               {!selectedDate && (
                 <div className="space-y-2">
                   <ul className="max-h-48 overflow-auto border rounded-md divide-y">
-                    {DATES.map((d) => (
-                      <li key={d} className="flex items-center justify-between px-3 py-2 text-sm">
-                        <span>{d}</span>
-                        <button type="button" onClick={() => setSelectedDate(d)} className="text-xs font-semibold px-2 py-1 rounded-md bg-orange-600 hover:bg-orange-700 text-white">Select</button>
-                      </li>
-                    ))}
+                    {upcomingDates.map(({ label }) => {
+                      const isSoldOut = soldOutDates.has(label);
+                      return (
+                        <li key={label} className="flex items-center justify-between px-3 py-2 text-sm">
+                          <span>{label}</span>
+                          <button
+                            type="button"
+                            onClick={() => (!isSoldOut ? setSelectedDate(label) : null)}
+                            disabled={isSoldOut}
+                            className={`text-xs font-semibold px-2 py-1 rounded-md ${isSoldOut ? 'bg-neutral-200 text-neutral-500 cursor-not-allowed' : 'bg-orange-600 hover:bg-orange-700 text-white'}`}
+                          >
+                            {isSoldOut ? 'Sold out' : 'Select'}
+                          </button>
+                        </li>
+                      );
+                    })}
                   </ul>
                 </div>
               )}
@@ -574,3 +672,4 @@ const FallbackLink = ({ date, email, addOnGuests }) => {
 FallbackLink.propTypes = {};
 
 export default PizzaPartyPage;
+
