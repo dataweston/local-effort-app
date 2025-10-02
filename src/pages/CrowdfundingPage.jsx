@@ -847,20 +847,17 @@ const CrowdfundingPage = () => {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="cf-card-container">Payment details</Label>
-                    <div className="border rounded-md p-4 bg-white">
-                      <div
-                        id="cf-card-container"
-                        className="min-h-[88px]"
-                        aria-label="Card payment form"
-                      />
-                      <div aria-live="polite" className="mt-2 min-h-[1.25rem]">
-                        {!cardLoaded && !squareConfigError && (
-                          <p className="text-sm text-gray-500">Loading secure payment form...</p>
-                        )}
-                        {squareConfigError && (
-                          <p className="text-sm text-red-600">{squareConfigError}</p>
-                        )}
-                      </div>
+                    <div
+                      id="cf-card-container"
+                      className="border rounded-md p-4 bg-white min-h-[88px]"
+                      aria-label="Card payment form"
+                    >
+                      {!cardLoaded && !squareConfigError && (
+                        <p className="text-sm text-gray-500">Loading secure payment form...</p>
+                      )}
+                      {squareConfigError && (
+                        <p className="text-sm text-red-600">{squareConfigError}</p>
+                      )}
                     </div>
                   </div>
                   {email && !emailValid && (

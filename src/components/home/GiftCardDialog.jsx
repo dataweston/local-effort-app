@@ -1,8 +1,10 @@
 import React, { useEffect, useMemo, useState } from "react";
+import { Helmet } from "react-helmet-async";
 import { Gift, Loader2, Mail, MapPin, Sparkles } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "../ui/dialog";
 import { useSquareCard } from "../../hooks/useSquareCard";
 import { cn } from "../../lib/utils";
+import { heroFallbackSrc } from "../../data/cloudinaryContent";
 
 const presetAmounts = [100, 150, 200, 250, 350, 500];
 
@@ -37,6 +39,32 @@ const normalizeAmount = (amount, customValue) => {
 };
 
 const GiftCardDialog = ({ className = "" }) => {
+  const defaultSiteUrl = "https://localeffort.app";
+  const siteUrl = typeof window !== "undefined" ? window.location.origin : defaultSiteUrl;
+  const giftCardImage = heroFallbackSrc
+    ? (heroFallbackSrc.startsWith("http") ? heroFallbackSrc : `${siteUrl}${heroFallbackSrc}`)
+    : undefined;
+  const productSchema = useMemo(() => {
+    const schema = {
+      "@context": "https://schema.org",
+      "@type": "Product",
+      name: "Local Effort Gift Card",
+      description: "Local Effort gift cards cover private chef dinners, pizza parties, and hospitality across Minneapolis-St. Paul.",
+      brand: { "@type": "Organization", name: "Local Effort" },
+      offers: {
+        "@type": "AggregateOffer",
+        priceCurrency: "USD",
+        lowPrice: "50",
+        highPrice: "500",
+        availability: "https://schema.org/InStock",
+        url: `${siteUrl}/#gift-cards`,
+      },
+    };
+    if (giftCardImage) {
+      schema.image = [giftCardImage];
+    }
+    return schema;
+  }, [giftCardImage, siteUrl]);
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState(initialForm);
   const [status, setStatus] = useState("idle");
@@ -194,7 +222,11 @@ const GiftCardDialog = ({ className = "" }) => {
   );
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <>
+      <Helmet>
+        <script type="application/ld+json">{JSON.stringify(productSchema)}</script>
+      </Helmet>
+      <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <button className={cn("btn btn-primary flex items-center gap-2 shadow-sm", className)}>
           <Gift className="h-4 w-4" />
@@ -398,6 +430,28 @@ const GiftCardDialog = ({ className = "" }) => {
               />
             </section>
 
+            <section className="space-y-3">
+              <h4 className="text-sm font-semibold text-slate-700">Gift card FAQ</h4>
+              <details className="group rounded-xl border border-slate-200 bg-white p-4">
+                <summary className="flex cursor-pointer items-center justify-between text-sm font-semibold text-slate-700">
+                  <span>How much should I buy?</span>
+                  <span className="text-xl leading-none text-slate-400 transition group-open:rotate-45">+</span>
+                </summary>
+                <p className="mt-2 text-sm text-slate-600">
+                  A simple dinner family style is around $65/person. A super fancy coursed dinner with wine and scallops is $115/person plus a discretionary wine budget (an additional $50-$150/person recommended). Pizzas are usually around $15 and pies are around $30. That's the range.
+                </p>
+              </details>
+              <details className="group rounded-xl border border-slate-200 bg-white p-4">
+                <summary className="flex cursor-pointer items-center justify-between text-sm font-semibold text-slate-700">
+                  <span>Leather???</span>
+                  <span className="text-xl leading-none text-slate-400 transition group-open:rotate-45">+</span>
+                </summary>
+                <p className="mt-2 text-sm text-slate-600">
+                  We hand-letter a short note into leather from Tandy Leather. It's a souvenir that makes a big impact as a gift.
+                </p>
+              </details>
+            </section>
+
             <section className="space-y-2">
               <p className="text-sm font-semibold text-slate-700">Payment details</p>
               <div id="gift-card-card-container" className="min-h-[96px] rounded-lg border border-slate-200 bg-white p-3">
@@ -423,12 +477,9 @@ const GiftCardDialog = ({ className = "" }) => {
           </form>
         )}
       </DialogContent>
-    </Dialog>
+      </Dialog>
+    </>
   );
 };
 
-export default GiftCardDialog;
-
-
-
-
+export default GiftCardDialog;\n
