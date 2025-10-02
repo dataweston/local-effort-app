@@ -6,6 +6,10 @@ import { PortableText } from '@portabletext/react';
 import SectionHeader from '../components/ui/SectionHeader';
 import sanityClient from '../sanityClient.js';
 import { useSquareCard } from '../hooks/useSquareCard';
+import { Button } from '../components/ui/button';
+import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '../components/ui/card';
+import { createPortableTextComponents } from '../utils/portableTextComponents';
+import { cn } from '../lib/utils';
 
 // --- Sanity Image URL Builder Setup (kept for future use if dynamic hero image restored) ---
 // const builder = imageUrlBuilder(sanityClient);
@@ -24,53 +28,76 @@ StatBox.propTypes = {
   label: PropTypes.string.isRequired,
 };
 
-const RewardTierCard = ({ tier, onContribute, busy }) => {
-  // 💡 IMPROVEMENT: Handle cases where a referenced reward tier might have been deleted.
+const RewardTierCard = ({ tier, onSelect, busy, selected }) => {
   if (!tier) {
     return null;
   }
 
-  // Display pizza count when available, otherwise fall back to legacy dollar amount
   const pieCountLabel = tier.pieCount ? `${tier.pieCount.toLocaleString()} pies` : null;
   const pizzaCountLabel = tier.pizzaCount ? `${tier.pizzaCount.toLocaleString()} pizzas` : null;
   const moneyLabel = tier.amount ? `$${tier.amount.toLocaleString()}` : null;
+  const isAvailable = typeof tier.amount === 'number' && tier.amount > 0;
+
+  const headline = pieCountLabel
+    ? `${pieCountLabel} - ${tier.title}`
+    : pizzaCountLabel
+    ? `${pizzaCountLabel} - ${tier.title}`
+    : `Pledge ${moneyLabel || '$0'} or more`;
 
   return (
-    <div className="card p-6 border hover:border-[var(--color-accent)] transition-colors">
-      <p className="text-2xl font-bold">
-        {pieCountLabel
-          ? `${pieCountLabel} — ${tier.title}`
-          : pizzaCountLabel
-          ? `${pizzaCountLabel} — ${tier.title}`
-          : `Pledge ${moneyLabel || '$0'} or more`}
-      </p>
-      {!pizzaCountLabel && (
-        <h4 className="text-xl font-bold text-[var(--color-accent)] mt-1">{tier.title}</h4>
+    <Card
+      className={cn(
+        'card transition-colors border-slate-200 hover:border-[var(--color-accent)] focus-within:border-[var(--color-accent)]',
+        selected && 'border-[var(--color-accent)] shadow-lg'
       )}
-      <p className="text-body text-gray-600 my-3">{tier.description}</p>
-      {tier.limit && (
-        <p className="text-sm font-semibold text-gray-500 mb-3">LIMITED ({tier.limit} left)</p>
-      )}
-      <button
-        className="btn btn-secondary w-full disabled:opacity-60" disabled={busy || !(typeof tier.amount === 'number' && tier.amount > 0)}
-        onClick={() => {
-          if (typeof tier.amount === 'number' && tier.amount > 0) onContribute({ name: tier.title || 'Pledge', price: tier.amount });
-        }}
-      >
-        {typeof tier.amount === 'number' ? 'Select this reward' : 'Unavailable online'}
-      </button>
-    </div>
+    >
+      <CardHeader className="space-y-2 border-none px-5 pt-5 pb-0">
+        <CardTitle className="text-xl font-semibold text-slate-900">{headline}</CardTitle>
+        {!pizzaCountLabel && (
+          <p className="text-base font-semibold text-[var(--color-accent)]">{tier.title}</p>
+        )}
+      </CardHeader>
+      <CardContent className="space-y-3 px-5 pb-4 pt-4">
+        <p className="text-sm text-slate-600 leading-relaxed">{tier.description}</p>
+        {tier.limit && (
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
+            Limited - {tier.limit} left
+          </p>
+        )}
+      </CardContent>
+      <CardFooter className="flex items-center gap-3 px-5 pb-5 pt-0 border-none">
+        <Button
+          type="button"
+          variant={selected ? 'secondary' : 'default'}
+          className="flex-1"
+          disabled={!isAvailable || busy}
+          onClick={(event) => {
+            event.stopPropagation();
+            if (isAvailable && onSelect) onSelect(tier);
+          }}
+        >
+          {selected ? 'Reward selected' : isAvailable ? 'Select this reward' : 'Unavailable online'}
+        </Button>
+        {!isAvailable && (
+          <span className="text-xs text-slate-500">Contact us to claim.</span>
+        )}
+      </CardFooter>
+    </Card>
   );
+};
 };
 RewardTierCard.propTypes = {
   tier: PropTypes.shape({
-  pizzaCount: PropTypes.number,
-  pieCount: PropTypes.number,
+    pizzaCount: PropTypes.number,
+    pieCount: PropTypes.number,
     amount: PropTypes.number,
     title: PropTypes.string,
     description: PropTypes.string,
     limit: PropTypes.number,
   }),
+  onSelect: PropTypes.func,
+  busy: PropTypes.bool,
+  selected: PropTypes.bool,
 };
 // ...existing code...
 
@@ -132,7 +159,7 @@ const CrowdfundingPage = () => {
   const phoneValid = useMemo(() => !phone || phoneDigits.length >= 10, [phone, phoneDigits]);
 
   useEffect(() => {
-    // 💡 IMPROVEMENT: Fetch a specific campaign by its slug for a more robust component.
+    // ðŸ’¡ IMPROVEMENT: Fetch a specific campaign by its slug for a more robust component.
     // For this example, we'll hardcode a slug. In a real app, you'd get this from the URL.
     const slug = 'local-pizza-by-local-effort-let-s-make-1000-pizzas'; // Replace with a real slug from your Sanity data
   const query = `*[_type == "crowdfundingCampaign" && slug.current == $slug][0]{
@@ -410,13 +437,9 @@ const CrowdfundingPage = () => {
     }
   }
 
-  // PortableText custom components to style links (underline + accent color)
-  const portableComponents = {
-    marks: {
-      link: ({ children, value }) => {
-        const href = value?.href || '#';
-        const isExternal = /^https?:/i.test(href);
-        return (
+    const portableComponents = useMemo(() => createPortableTextComponents(), []);
+
+  return (
           <a
             href={href}
             target={isExternal ? '_blank' : undefined}
@@ -480,7 +503,7 @@ const CrowdfundingPage = () => {
               </nav>
             </div>
             <div className="prose max-w-none text-body">
-              {activeTab === 'story' && story.length > 0 && <PortableText value={story} />}
+              {activeTab === 'story' && story.length > 0 && <PortableText value={story} components={portableComponents} />}
               {activeTab === 'updates' && (
                 <div className="space-y-8">
                   {updates.map((update, index) => (
@@ -495,7 +518,7 @@ const CrowdfundingPage = () => {
                           day: 'numeric',
                         })}
                       </p>
-                      <PortableText value={update.body} />
+                      <PortableText value={update.body} components={portableComponents} />
                     </div>
                   ))}
                 </div>
@@ -505,8 +528,8 @@ const CrowdfundingPage = () => {
                   {campaignData?.goals
                     ? (
                         Array.isArray(campaignData.goals)
-                          ? <PortableText value={campaignData.goals} />
-                          : <PortableText value={toPortableBlocks(campaignData.goals)} />
+                          ? <PortableText value={campaignData.goals} components={portableComponents} />
+                          : <PortableText value={toPortableBlocks(campaignData.goals)} components={portableComponents} />
                       )
                     : (
                       <p className="text-gray-500">No goals content yet. Add content in the Goals field in Sanity Studio.</p>
@@ -526,7 +549,7 @@ const CrowdfundingPage = () => {
               {activeTab === 'gallery' && (
                 <div className="mt-4">
                   {galleryLoading && (
-                    <p className="text-sm text-gray-500 animate-pulse">Loading images…</p>
+                    <p className="text-sm text-gray-500 animate-pulse">Loading imagesâ€¦</p>
                   )}
                   {galleryError && (
                     <p className="text-sm text-red-600">{galleryError}</p>
@@ -630,7 +653,7 @@ const CrowdfundingPage = () => {
                         }
                       }}
                     >
-                      {referralState.status === 'checking' ? 'Checking…' : 'Apply'}
+                      {referralState.status === 'checking' ? 'Checkingâ€¦' : 'Apply'}
                     </button>
                   </div>
                   {referralState.status === 'ok' && referralState.valid && (
@@ -669,7 +692,7 @@ const CrowdfundingPage = () => {
                   </fieldset>
                   <div id="cf-card-container" className="border rounded-md p-4 bg-white min-h-[88px]" aria-label="Card payment form">
                     {!cardLoaded && !squareConfigError && (
-                      <p className="text-sm text-gray-500">Loading secure payment form…</p>
+                      <p className="text-sm text-gray-500">Loading secure payment formâ€¦</p>
                     )}
                     {squareConfigError && (
                       <p className="text-sm text-red-600">{squareConfigError}</p>
@@ -687,7 +710,7 @@ const CrowdfundingPage = () => {
                     onClick={() => firstPayTier && contribute([{ name: firstPayTier.title || 'Pizza', price: Math.round(firstPayTier.amount * 100), type: 'pizza', pizzaCount: pizzaQty, quantity: pizzaQty }])}
                     className="btn btn-primary w-full text-lg py-3 disabled:opacity-60"
                   >
-                    {paying ? 'Processing…' : 'Buy Now'}
+                    {paying ? 'Processingâ€¦' : 'Buy Now'}
                   </button>
                 </div>
               )}
@@ -700,7 +723,8 @@ const CrowdfundingPage = () => {
                   key={tier?.title || Math.random()}
                   tier={tier}
                   busy={paying}
-                  onContribute={(item) => contribute([{ name: item.name || item.title || 'Pledge', price: Math.round((item.price || item.amount) * 100), type: 'pledge', quantity: 1 }])}
+                  onSelect={(item) => contribute([{ name: item.name || item.title || 'Pledge', price: Math.round((item.price || item.amount) * 100), type: 'pledge', quantity: 1 }])}
+                  selected={false}
                 />
               ))}
               {/* Dev diagnostics */}

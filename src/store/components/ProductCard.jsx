@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { PortableText } from '@portabletext/react';
+import { portableTextComponents } from '../../utils/portableTextComponents';
 import { cn } from '../../lib/utils';
 import { useCart } from '../cart/CartContext';
 import { useToast } from '../../components/common/ToastProvider';
@@ -243,7 +244,7 @@ export default function ProductCard({ product }) {
                   )}
                   {Array.isArray(product.longDescriptionBlocks) && product.longDescriptionBlocks.length > 0 ? (
                     <div className="prose prose-sm mt-4 max-w-none">
-                      <PortableText value={product.longDescriptionBlocks} />
+                      <PortableText value={product.longDescriptionBlocks} components={portableTextComponents} />
                     </div>
                   ) : product.longDescription ? (
                     <p className="text-sm text-neutral-700 mt-4 whitespace-pre-wrap">{product.longDescription}</p>

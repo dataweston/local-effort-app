@@ -10,6 +10,7 @@ import { cloudinaryConfig, heroPublicId, heroFallbackSrc } from '../data/cloudin
 import TestimonialsCarousel from '../components/common/TestimonialsCarousel';
 import sanityClient from '../sanityClient';
 import { PortableText } from '@portabletext/react';
+import { portableTextComponents } from '../utils/portableTextComponents';
 import SectionHeader from '../components/ui/SectionHeader';
 import Separator from '../components/ui/Separator';
 import GiftCardDialog from '../components/home/GiftCardDialog';
@@ -357,7 +358,7 @@ const HomePage = () => {
               <p className="text-sm text-gray-600 mb-3">{eventModal.startDate}{eventModal.endDate && eventModal.endDate!==eventModal.startDate ? ` – ${eventModal.endDate}` : ''}</p>
               {eventModal.description && (
                 <div className="prose max-w-none">
-                  <PortableText value={eventModal.description} />
+                  <PortableText value={eventModal.description} components={portableTextComponents} />
                 </div>
               )}
               {eventModal.ticketsUrl && (
@@ -537,7 +538,7 @@ const HomePage = () => {
               <p className="text-sm text-gray-600 mb-3">{eventModal.startDate}{eventModal.endDate && eventModal.endDate!==eventModal.startDate ? ` – ${eventModal.endDate}` : ''}</p>
               {eventModal.description && (
                 <div className="prose max-w-none">
-                  <PortableText value={eventModal.description} />
+                  <PortableText value={eventModal.description} components={portableTextComponents} />
                 </div>
               )}
               {eventModal.ticketsUrl && (

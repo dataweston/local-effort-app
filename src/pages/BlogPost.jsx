@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { useParams, Link } from 'react-router-dom';
 import { PortableText } from '@portabletext/react';
+import { portableTextComponents } from '../utils/portableTextComponents';
 import sanityClient from '../sanityClient';
 
 const BlogPost = () => {
@@ -35,7 +36,7 @@ const BlogPost = () => {
       <h1 className="heading-xl heading-balance mt-4">{post.title}</h1>
       <div className="text-sm text-gray-500 mt-1">{post.publishedAt ? new Date(post.publishedAt).toLocaleDateString() : ''}</div>
       <article className="prose max-w-none mt-6">
-        <PortableText value={post.body} />
+        <PortableText value={post.body} components={portableTextComponents} />
       </article>
     </div>
   );

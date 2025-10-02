@@ -5,6 +5,7 @@ import { useCart } from '../store/cart/CartContext';
 import ProductCard from '../store/components/ProductCard';
 import CheckoutPanel from '../store/components/CheckoutPanel';
 import { PortableText } from '@portabletext/react';
+import { portableTextComponents } from '../utils/portableTextComponents';
 import sanityClient from '../sanityClient';
 
 const SalePage = () => {
@@ -82,7 +83,7 @@ const SalePage = () => {
           )}
           {Array.isArray(saleIntro.intro) && saleIntro.intro.length > 0 && (
             <div className="prose prose-neutral max-w-none mt-3">
-              <PortableText value={saleIntro.intro} />
+              <PortableText value={saleIntro.intro} components={portableTextComponents} />
             </div>
           )}
         </div>
