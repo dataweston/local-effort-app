@@ -634,6 +634,106 @@ app.post('/api/messages/submit', async (req, res) => {
   }
 });
 
+app.post('/api/food-truck/inquire', async (req, res) => {
+  try {
+    const { name, email, phone, eventDate, cuisine, location, notes } = req.body || {};
+    if (!name || !email || !phone || !eventDate || !location) {
+      return res.status(400).json({ error: 'missing-required-fields' });
+    }
+
+    const [firstName, ...rest] = String(name).trim().split(/\s+/);
+    await upsertContact({ email, firstName: firstName || undefined, lastName: rest.join(' '), phone });
+
+    const sc = getSanityClient();
+    let msgDoc = null;
+    const lines = [
+      `Name / Business: ${name}`,
+      `Email: ${email}`,
+      `Phone: ${phone}`,
+      `Event Date: ${eventDate}`,
+      cuisine ? `Cuisine: ${cuisine}` : null,
+      `Location: ${location}`,
+    ].filter(Boolean);
+
+    if (notes) {
+      lines.push('', `Notes: ${notes}`);
+    }
+
+    lines.push('', 'Minimum guarantee acknowledged: $1,200');
+    const textLines = lines.join('\n');
+
+    if (sc) {
+      try {
+        msgDoc = await sc.create({
+          _type: 'message',
+          direction: 'inbound',
+          status: 'open',
+          subject: 'Food truck inquiry',
+          bodyText: textLines,
+          fromEmail: email,
+          fromName: name,
+          phone,
+          channel: 'web',
+          inbox: 'sales',
+          messageType: 'food-truck',
+          createdAt: new Date().toISOString(),
+        });
+      } catch (err) {
+        console.warn('Failed to write food truck inquiry to Sanity:', err && err.message);
+      }
+    }
+
+    const headers = getBrevoHeaders();
+    if (!headers) return res.status(500).json({ error: 'Email service not configured' });
+    const teamEmail = process.env.SUPPORT_INBOX_EMAIL || process.env.TEAM_INBOX_EMAIL || process.env.SENDER_EMAIL;
+    const senderEmail = process.env.SENDER_EMAIL || teamEmail;
+    if (!teamEmail) return res.status(500).json({ error: 'No TEAM/SUPPORT inbox configured on server' });
+
+    const escapeHtml = (value) => String(value || '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
+
+    const htmlContent = `
+      <p><strong>New food truck inquiry received</strong></p>
+      <p><strong>Name / Business:</strong> ${escapeHtml(name)}</p>
+      <p><strong>Email:</strong> ${escapeHtml(email)}</p>
+      <p><strong>Phone:</strong> ${escapeHtml(phone)}</p>
+      <p><strong>Event Date:</strong> ${escapeHtml(eventDate)}</p>
+      ${cuisine ? `<p><strong>Cuisine:</strong> ${escapeHtml(cuisine)}</p>` : ''}
+      <p><strong>Location:</strong><br />${escapeHtml(location).replace(/\n/g, '<br />')}</p>
+      ${notes ? `<p><strong>Notes:</strong><br />${escapeHtml(notes).replace(/\n/g, '<br />')}</p>` : ''}
+      <p style="margin-top:16px;"><em>Client acknowledged the $1,200 minimum guarantee.</em></p>
+    `;
+
+    const payload = {
+      to: [{ email: teamEmail }],
+      sender: { email: senderEmail, name: 'Local Effort' },
+      subject: `Food Truck Inquiry${eventDate ? ` - ${eventDate}` : ''}`,
+      htmlContent,
+      replyTo: { email, name },
+      tags: ['inquiry', 'food-truck'],
+      headers: msgDoc?._id ? { 'X-Message-Id': msgDoc._id } : undefined,
+    };
+
+    const resp = await fetch('https://api.brevo.com/v3/smtp/email', {
+      method: 'POST',
+      headers,
+      body: JSON.stringify(payload),
+    });
+
+    if (!resp.ok) {
+      const text = await resp.text().catch(() => '');
+      return res.status(502).json({ error: 'Failed to send email', details: text });
+    }
+
+    return res.json({ ok: true, id: msgDoc?._id || null });
+  } catch (err) {
+  logger.error({ err }, 'food-truck inquiry error');
+    return res.status(500).json({ error: 'submit-failed' });
+  }
+});
+
 // Basic subscribe endpoint: accepts { email, firstName?, lastName?, phone? }
 app.post('/api/subscribe', async (req, res) => {
   try {

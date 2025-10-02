@@ -85,6 +85,7 @@ const routes = [
   '/pricing',
   '/menu',
   '/happy-monday',
+  '/food-truck',
   '/gallery',
   '/meal-prep',
   '/partner-portal',
