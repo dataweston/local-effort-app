@@ -8,6 +8,7 @@ const GalleryPage = () => {
   const [nextCursor, setNextCursor] = useState(null);
   const [query, setQuery] = useState('');
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState(null);
   const [selected, setSelected] = useState(null);
   const staticFallback = [
@@ -74,7 +75,12 @@ const GalleryPage = () => {
   }, []);
 
   const fetchImages = useCallback(async (opts = {}) => {
-    const { append = false, cursor = null, signal } = opts;
+    const { append = false, cursor = null, signal, mode = 'initial' } = opts;
+    if (mode === 'loadMore') {
+      setLoadingMore(true);
+    } else {
+      setLoading(true);
+    }
     const q = query ? `query=${encodeURIComponent(query)}&` : '';
     const c = cursor ? `next_cursor=${encodeURIComponent(cursor)}&` : '';
     const apiUrl = `/api/search-images?${q}${c}per_page=${PAGE_SIZE}`;
@@ -105,20 +111,28 @@ const GalleryPage = () => {
       } catch (err) {
         if (err.name === 'AbortError') return;
         console.error('Error fetching images:', err);
-        // Attempt a static fallback so the gallery still shows something
-        try {
-          const fallback = await tryLoadFallback();
-          if (fallback && fallback.length) {
-            setImages(shuffle(fallback));
-            setError('Showing fallback images while the gallery API is unavailable.');
-          } else {
+        if (mode === 'loadMore') {
+          setError(err.message || String(err));
+        } else {
+          // Attempt a static fallback so the gallery still shows something
+          try {
+            const fallback = await tryLoadFallback();
+            if (fallback && fallback.length) {
+              setImages(shuffle(fallback));
+              setError('Showing fallback images while the gallery API is unavailable.');
+            } else {
+              setError(err.message || String(err));
+            }
+          } catch (_) {
             setError(err.message || String(err));
           }
-        } catch (_) {
-          setError(err.message || String(err));
         }
       } finally {
-        setLoading(false);
+        if (mode === 'loadMore') {
+          setLoadingMore(false);
+        } else {
+          setLoading(false);
+        }
       }
   }, [query, shuffle, tryLoadFallback]);
 
@@ -165,10 +179,9 @@ const GalleryPage = () => {
   useEffect(() => {
     const controller = new AbortController();
     const handler = setTimeout(() => {
-      setLoading(true);
       setError(null);
       setNextCursor(null);
-      fetchImages({ append: false, cursor: null, signal: controller.signal });
+      fetchImages({ append: false, cursor: null, signal: controller.signal, mode: 'initial' });
     }, 300);
     return () => {
       clearTimeout(handler);
@@ -361,15 +374,14 @@ const GalleryPage = () => {
                 <button
                   type="button"
                   onClick={() => {
-                    if (loading) return; // prevent double clicks
-                    setLoading(true);
+                    if (loadingMore) return; // prevent double clicks
                     setError(null);
-                    fetchImages({ append: true, cursor: nextCursor });
+                    fetchImages({ append: true, cursor: nextCursor, mode: 'loadMore' });
                   }}
                   className="px-4 py-2 rounded bg-black text-white hover:bg-neutral-800 disabled:opacity-50"
-                  disabled={loading}
+                  disabled={loading || loadingMore}
                 >
-                  {loading ? 'Loading…' : 'Load more'}
+                  {loadingMore ? 'Loading…' : 'Load more'}
                 </button>
               </div>
             )}
