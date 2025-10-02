@@ -48,6 +48,13 @@ const HomePage = () => {
   const [eventModal, setEventModal] = useState(null);
   const [business, setBusiness] = useState(null);
 
+  const parseEventDate = (value) => {
+    if (!value) return null;
+    const iso = value.includes("T") ? value : `${value}T00:00:00`;
+    const date = new Date(iso);
+    return Number.isNaN(date.getTime()) ? null : date;
+  };
+
   // Load canonical business metadata
   useEffect(() => {
     let mounted = true;
@@ -88,9 +95,10 @@ const HomePage = () => {
         const items = await sanityClient.fetch(`*[_type == "publicEvent"]|order(startDate asc){ _id, location, startDate, endDate, foodType, ticketsUrl, description }`).catch(() => []);
         if (!mounted) return;
         const today = new Date(); today.setHours(0,0,0,0);
-        const upcoming = (items || []).filter(ev => {
-          const end = ev.endDate ? new Date(ev.endDate) : new Date(ev.startDate);
-          end.setHours(23,59,59,999);
+        const upcoming = (items || []).filter((ev) => {
+          const end = parseEventDate(ev.endDate) || parseEventDate(ev.startDate);
+          if (!end) return false;
+          end.setHours(23, 59, 59, 999);
           return end >= today;
         });
         setEvents(upcoming);
@@ -326,19 +334,57 @@ const HomePage = () => {
 
   function EventsWidget({ asCard = false }) {
     if (!events || events.length === 0) return null;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const currentYear = today.getFullYear();
+
+    const formatListDate = (event) => {
+      const start = parseEventDate(event.startDate);
+      const end = parseEventDate(event.endDate);
+      if (!start) return '';
+      const includeYear = start.getFullYear() > currentYear;
+      if (end && end.getTime() !== start.getTime()) {
+        const opts = { month: 'short', day: 'numeric' };
+        if (includeYear) opts.year = 'numeric';
+        return `starts ${new Intl.DateTimeFormat('en-US', opts).format(start)}`;
+      }
+      const opts = { weekday: 'short', month: 'short', day: 'numeric' };
+      if (includeYear) opts.year = 'numeric';
+      return new Intl.DateTimeFormat('en-US', opts).format(start);
+    };
+
+    const formatModalDate = (event) => {
+      const start = parseEventDate(event.startDate);
+      const end = parseEventDate(event.endDate);
+      if (!start) return '';
+      const includeYearStart = start.getFullYear() > currentYear || (end && end.getFullYear() !== start.getFullYear());
+      const baseOptions = { weekday: 'short', month: 'short', day: 'numeric' };
+      const startLabel = new Intl.DateTimeFormat('en-US', includeYearStart ? { ...baseOptions, year: 'numeric' } : baseOptions).format(start);
+      if (end && end.getTime() !== start.getTime()) {
+        const includeYearEnd = end.getFullYear() > currentYear || end.getFullYear() !== start.getFullYear();
+        const endLabel = new Intl.DateTimeFormat('en-US', includeYearEnd ? { ...baseOptions, year: 'numeric' } : baseOptions).format(end);
+        return `${startLabel} - ${endLabel}`;
+      }
+      return startLabel;
+    };
+
     const content = (
         <div className="border rounded-lg p-4 bg-white shadow-sm">
           <h3 className="text-lg font-semibold mb-2">upcoming public events.</h3>
           <ul className="divide-y">
             {events.map((ev) => {
-              const range = ev.endDate && ev.endDate !== ev.startDate ? `${ev.startDate}–${ev.endDate}` : ev.startDate;
+              const dateLabel = formatListDate(ev);
+              const detailLabel = [dateLabel, ev.foodType || 'Food'].filter(Boolean).join(' - ');
               return (
                 <li key={ev._id} className="py-2">
                   <button
                     className="text-left hover:underline"
                     onClick={() => setEventModal(ev)}
                   >
-                    {ev.location}, {range}, {ev.foodType || 'Food'}
+                    <span className="flex flex-col sm:flex-row sm:items-baseline sm:gap-2">
+                      <span className="font-semibold text-slate-800">{ev.location}</span>
+                      <span className="text-sm text-slate-600">{detailLabel}</span>
+                    </span>
                   </button>
                 </li>
               );
@@ -355,7 +401,7 @@ const HomePage = () => {
             <div className="bg-white rounded-lg shadow-xl max-w-lg w-full p-5 relative">
               <button className="absolute right-3 top-3 text-sm underline" onClick={() => setEventModal(null)}>Close</button>
               <h4 className="text-xl font-bold mb-1">{eventModal.location}</h4>
-              <p className="text-sm text-gray-600 mb-3">{eventModal.startDate}{eventModal.endDate && eventModal.endDate!==eventModal.startDate ? ` – ${eventModal.endDate}` : ''}</p>
+              <p className="text-sm text-gray-600 mb-3">{formatModalDate(eventModal)}</p>
               {eventModal.description && (
                 <div className="prose max-w-none">
                   <PortableText value={eventModal.description} components={portableTextComponents} />
@@ -521,9 +567,10 @@ const HomePage = () => {
             <CloudinaryImage
               publicId={heroImage.publicId}
               alt={heroImage.alt}
-              width={600}
-              height={600}
-              className="w-full h-full object-cover"
+              width={1200}
+              height={800}
+              containerClassName="w-full h-full"
+              imgClassName="w-full h-full object-cover object-center"
               fallbackSrc={heroFallbackSrc}
               sizes="(min-width: 1024px) 50vw, 100vw"
               eager
