@@ -11,6 +11,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter }
 import { Input } from '../components/ui/input';
 import { Textarea } from '../components/ui/textarea';
 import { Label } from '../components/ui/label';
+import PrioritiesPie from '../components/crowdfunding/PrioritiesPie.jsx';
 import { createPortableTextComponents } from '../utils/portableTextComponents';
 import { cn } from '../lib/utils';
 
@@ -47,10 +48,30 @@ const RewardTierCard = ({ tier, onSelect, busy, selected }) => {
     ? `${pizzaCountLabel} - ${tier.title}`
     : `Pledge ${moneyLabel || '$0'} or more`;
 
+  const handleSelect = () => {
+    if (!isAvailable || busy) return;
+    if (onSelect) onSelect(tier);
+  };
+
   return (
     <Card
+      role={isAvailable ? 'button' : undefined}
+      tabIndex={isAvailable ? 0 : undefined}
+      aria-pressed={selected ? 'true' : 'false'}
+      aria-disabled={!isAvailable || busy ? 'true' : 'false'}
+      onClick={handleSelect}
+      onKeyDown={(event) => {
+        if (!isAvailable || busy) return;
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          handleSelect();
+        }
+      }}
       className={cn(
         'card transition-colors border-slate-200 hover:border-[var(--color-accent)] focus-within:border-[var(--color-accent)]',
+        isAvailable
+          ? 'cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)]'
+          : 'cursor-not-allowed opacity-60',
         selected && 'border-[var(--color-accent)] shadow-lg'
       )}
     >
@@ -76,7 +97,7 @@ const RewardTierCard = ({ tier, onSelect, busy, selected }) => {
           disabled={!isAvailable || busy}
           onClick={(event) => {
             event.stopPropagation();
-            if (isAvailable && onSelect) onSelect(tier);
+            handleSelect();
           }}
         >
           {selected ? 'Reward selected' : isAvailable ? 'Select this reward' : 'Unavailable online'}
@@ -106,6 +127,12 @@ RewardTierCard.propTypes = {
 
 // --- Main Page Component ---
 const tierIdentifier = (tier) => (tier?._id || tier?.id || tier?.title || '').toString();
+
+const UPDATE_OPTIONS = [
+  { value: 'none', label: 'No emails' },
+  { value: 'important', label: 'Important milestones' },
+  { value: 'all', label: 'All updates' },
+];
 
 const CrowdfundingPage = () => {
   const [campaignData, setCampaignData] = useState(null);
@@ -574,6 +601,7 @@ const CrowdfundingPage = () => {
               )}
               {activeTab === 'goals' && (
                 <div className="space-y-6">
+                  <PrioritiesPie />
                   {campaignData?.goals
                     ? (
                         Array.isArray(campaignData.goals)
@@ -655,113 +683,201 @@ const CrowdfundingPage = () => {
               {payError && <p className="text-sm text-red-600">{payError}</p>}
               {/* CTA button when form hidden */}
               {!showForm && (
-                <button
+                <Button
                   type="button"
                   onClick={() => setShowForm(true)}
-                  className="btn btn-primary w-full text-lg py-3"
+                  className="w-full text-lg h-12"
                 >
-                  i want pizza
-                </button>
+                  I want pizza
+                </Button>
               )}
               {showForm && (
-                <div className="space-y-4">
-                  <div className="grid grid-cols-1 gap-2">
-                    <input id="cf-name" className="input w-full" placeholder="Name" value={funderName} onChange={(e) => setFunderName(e.target.value)} />
-                    <input className="input w-full" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
-                    <input className="input w-full" placeholder="Phone" value={phone} onChange={(e) => setPhone(e.target.value)} />
+                <form
+                  className="space-y-6"
+                  onSubmit={(event) => {
+                    event.preventDefault();
+                    if (!activeTier || typeof activeTier.amount !== 'number') return;
+                    contribute([
+                      {
+                        name: activeTier.title || 'Pizza',
+                        price: Math.round(activeTier.amount * 100),
+                        type: 'pizza',
+                        pizzaCount: pizzaQty,
+                        quantity: pizzaQty,
+                      },
+                    ]);
+                  }}
+                >
+                  <div className="grid grid-cols-1 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="cf-name">Name</Label>
+                      <Input
+                        id="cf-name"
+                        placeholder="Name"
+                        autoComplete="name"
+                        value={funderName}
+                        onChange={(e) => setFunderName(e.target.value)}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="cf-email">Email</Label>
+                      <Input
+                        id="cf-email"
+                        type="email"
+                        autoComplete="email"
+                        placeholder="you@example.com"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="cf-phone">Phone</Label>
+                      <Input
+                        id="cf-phone"
+                        type="tel"
+                        inputMode="tel"
+                        autoComplete="tel"
+                        placeholder="(555) 555-1234"
+                        value={phone}
+                        onChange={(e) => setPhone(e.target.value)}
+                      />
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <input
-                      className="input flex-1"
-                      placeholder="Referral code (optional)"
-                      value={referralInput}
-                      onChange={(e) => setReferralInput(e.target.value)}
-                    />
-                    <button
-                      type="button"
-                      className="btn btn-secondary"
-                      disabled={!referralInput || referralState.status === 'checking'}
-                      onClick={async () => {
-                        const code = (referralInput || '').trim();
-                        if (!code) return;
-                        setReferralState({ status: 'checking', valid: false, participant: null, code });
-                        try {
-                          const resp = await fetch('/api/referrals/validate', {
-                            method: 'POST',
-                            headers: { 'content-type': 'application/json' },
-                            body: JSON.stringify({ code }),
-                          });
-                          const data = await resp.json().catch(() => ({}));
-                          if (resp.ok && data && data.valid) {
-                            setReferralState({ status: 'ok', valid: true, participant: data.participant || null, code });
-                          } else {
-                            setReferralState({ status: 'ok', valid: false, participant: null, code });
+                  <div className="space-y-2">
+                    <Label htmlFor="cf-referral">Referral code (optional)</Label>
+                    <div className="flex flex-col gap-2 sm:flex-row">
+                      <Input
+                        id="cf-referral"
+                        placeholder="Referral code"
+                        value={referralInput}
+                        onChange={(e) => setReferralInput(e.target.value)}
+                        className="sm:flex-1"
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="sm:w-32"
+                        disabled={!referralInput || referralState.status === 'checking'}
+                        onClick={async () => {
+                          const code = (referralInput || '').trim();
+                          if (!code) return;
+                          setReferralState({ status: 'checking', valid: false, participant: null, code });
+                          try {
+                            const resp = await fetch('/api/referrals/validate', {
+                              method: 'POST',
+                              headers: { 'content-type': 'application/json' },
+                              body: JSON.stringify({ code }),
+                            });
+                            const data = await resp.json().catch(() => ({}));
+                            if (resp.ok && data && data.valid) {
+                              setReferralState({ status: 'ok', valid: true, participant: data.participant || null, code });
+                            } else {
+                              setReferralState({ status: 'ok', valid: false, participant: null, code });
+                            }
+                          } catch (_) {
+                            setReferralState({ status: 'error', valid: false, participant: null, code });
                           }
-                        } catch (_) {
-                          setReferralState({ status: 'error', valid: false, participant: null, code });
-                        }
-                      }}
-                    >
-                      {referralState.status === 'checking' ? 'Checking...' : 'Apply'}
-                    </button>
+                        }}
+                      >
+                        {referralState.status === 'checking' ? 'Checking...' : 'Apply'}
+                      </Button>
+                    </div>
                   </div>
                   {referralState.status === 'ok' && referralState.valid && (
-                    <p className="text-sm text-emerald-700">Code applied{referralState.participant?.name ? ` for ${referralState.participant.name}` : ''}.</p>
+                    <p className="text-sm text-emerald-700">
+                      Code applied
+                      {referralState.participant?.name ? ` for ${referralState.participant.name}` : ''}.
+                    </p>
                   )}
                   {referralState.status === 'ok' && !referralState.valid && (
                     <p className="text-sm text-red-600">That code is not valid.</p>
                   )}
+                  {referralState.status === 'error' && (
+                    <p className="text-sm text-red-600">Unable to validate that code right now.</p>
+                  )}
                   {activeTier && (
-                    <div className="flex items-center gap-3">
-                      <label htmlFor="pizza-qty" className="text-sm">Quantity</label>
-                      <input
-                        id="pizza-qty"
-                        type="number"
-                        min={1}
-                        max={50}
-                        value={pizzaQty}
-                        onChange={(e) => setPizzaQty(Math.max(1, Math.min(50, Number(e.target.value) || 1)))}
-                        className="input w-24"
-                      />
+                    <div className="flex flex-col gap-2 sm:flex-row sm:items-end">
+                      <div className="space-y-2">
+                        <Label htmlFor="pizza-qty">Quantity</Label>
+                        <Input
+                          id="pizza-qty"
+                          type="number"
+                          min={1}
+                          max={50}
+                          value={pizzaQty}
+                          onChange={(e) =>
+                            setPizzaQty(Math.max(1, Math.min(50, Number(e.target.value) || 1)))
+                          }
+                          className="w-28"
+                        />
+                      </div>
+                      {activeTierAmountLabel && (
+                        <p className="text-sm text-slate-600 sm:pb-2">
+                          Each pledge: {activeTierAmountLabel}
+                        </p>
+                      )}
                     </div>
                   )}
-                  <div>
-                    <textarea
-                      className="input w-full min-h-[80px]"
-                      placeholder="Any notes for us (optional)"
+                  <div className="space-y-2">
+                    <Label htmlFor="cf-notes">Notes (optional)</Label>
+                    <Textarea
+                      id="cf-notes"
+                      placeholder="Any notes for us"
                       value={notes}
                       onChange={(e) => setNotes(e.target.value)}
+                      className="min-h-[100px]"
                     />
                   </div>
-                  <fieldset className="space-y-1 text-sm">
-                    <legend className="font-medium mb-1">Campaign Updates</legend>
-                    <label className="flex items-center gap-2"><input type="radio" name="cf-updates" value="none" checked={notify==='none'} onChange={()=>setNotify('none')} /> <span>No emails</span></label>
-                    <label className="flex items-center gap-2"><input type="radio" name="cf-updates" value="important" checked={notify==='important'} onChange={()=>setNotify('important')} /> <span>Important milestones</span></label>
-                    <label className="flex items-center gap-2"><input type="radio" name="cf-updates" value="all" checked={notify==='all'} onChange={()=>setNotify('all')} /> <span>All updates</span></label>
-                  </fieldset>
-                  <div id="cf-card-container" className="border rounded-md p-4 bg-white min-h-[88px]" aria-label="Card payment form">
-                    {!cardLoaded && !squareConfigError && (
-                      <p className="text-sm text-gray-500">Loading secure payment form...</p>
-                    )}
-                    {squareConfigError && (
-                      <p className="text-sm text-red-600">{squareConfigError}</p>
-                    )}
+                  <div className="space-y-2">
+                    <span className="text-sm font-semibold text-slate-700">Campaign updates</span>
+                    <div className="grid gap-2 sm:grid-cols-3">
+                      {UPDATE_OPTIONS.map((option) => (
+                        <Button
+                          key={option.value}
+                          type="button"
+                          variant={notify === option.value ? 'secondary' : 'outline'}
+                          aria-pressed={notify === option.value}
+                          onClick={() => setNotify(option.value)}
+                          className="justify-center"
+                        >
+                          {option.label}
+                        </Button>
+                      ))}
+                    </div>
                   </div>
-                  {/* Inline validation hints */}
+                  <div className="space-y-2">
+                    <Label htmlFor="cf-card-container">Payment details</Label>
+                    <div
+                      id="cf-card-container"
+                      className="border rounded-md p-4 bg-white min-h-[88px]"
+                      aria-label="Card payment form"
+                    >
+                      {!cardLoaded && !squareConfigError && (
+                        <p className="text-sm text-gray-500">Loading secure payment form...</p>
+                      )}
+                      {squareConfigError && (
+                        <p className="text-sm text-red-600">{squareConfigError}</p>
+                      )}
+                    </div>
+                  </div>
                   {email && !emailValid && (
-                    <p className="text-xs text-red-600 mt-1">Please enter a valid email.</p>
+                    <p className="text-xs text-red-600">Please enter a valid email.</p>
                   )}
                   {phone && !phoneValid && (
-                    <p className="text-xs text-red-600 mt-1">Phone should have at least 10 digits.</p>
+                    <p className="text-xs text-red-600">Phone should have at least 10 digits.</p>
                   )}
-                  <button
+                  <Button
+                    type="submit"
                     disabled={!activeTier || !cardLoaded || paying || !!squareConfigError || !emailValid || !phoneValid}
-                    onClick={() => activeTier && contribute([{ name: activeTier.title || 'Pizza', price: Math.round(activeTier.amount * 100), type: 'pizza', pizzaCount: pizzaQty, quantity: pizzaQty }])}
-                    className="btn btn-primary w-full text-lg py-3 disabled:opacity-60"
+                    className="w-full text-lg h-12"
                   >
-                    {paying ? 'Processing...' : 'Buy Now'}
-                  </button>
-                </div>
+                    {paying
+                      ? 'Processing...'
+                      : activeTierAmountLabel
+                      ? `Buy ${activeTierAmountLabel}`
+                      : 'Buy now'}
+                  </Button>
+                </form>
               )}
             </div>
 
