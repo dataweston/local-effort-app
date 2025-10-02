@@ -14,6 +14,7 @@ const initialForm = {
   cardType: "digital",
   deliveryTarget: "recipient",
   shipTo: "recipient",
+  sendOn: "",
   buyerName: "",
   buyerEmail: "",
   buyerPhone: "",
@@ -92,6 +93,12 @@ const GiftCardDialog = ({ className = "" }) => {
     }
   }, [canChoosePhysical, form.cardType]);
 
+  useEffect(() => {
+    if (form.cardType !== "digital" || form.deliveryTarget !== "recipient") {
+      setForm((prev) => (prev.sendOn ? { ...prev, sendOn: "" } : prev));
+    }
+  }, [form.cardType, form.deliveryTarget]);
+
   const handleAmountClick = (value) => {
     setForm((prev) => ({ ...prev, amount: value, customAmount: "" }));
   };
@@ -111,7 +118,7 @@ const GiftCardDialog = ({ className = "" }) => {
       return;
     }
 
-    const { buyerName, buyerEmail, recipientEmail, cardType, deliveryTarget } = form;
+    const { buyerName, buyerEmail, recipientEmail, cardType, deliveryTarget, sendOn } = form;
     if (!buyerName.trim() || !buyerEmail.trim()) {
       setError("Buyer name and email are required.");
       return;
@@ -119,6 +126,26 @@ const GiftCardDialog = ({ className = "" }) => {
     if (deliveryTarget === "recipient" && !recipientEmail.trim()) {
       setError("Recipient email is required when sending directly to them.");
       return;
+    }
+    if (sendOn && cardType !== "digital") {
+      setError("Scheduled delivery is only available for digital gift cards.");
+      return;
+    }
+
+    let sendOnIso = null;
+    if (sendOn) {
+      const parsed = new Date(sendOn);
+      if (Number.isNaN(parsed.getTime())) {
+        setError("Please provide a valid send date.");
+        return;
+      }
+      const now = new Date();
+      const minAhead = 5 * 60 * 1000;
+      if (parsed.getTime() <= now.getTime() + minAhead) {
+        setError("Please choose a send time at least 5 minutes from now.");
+        return;
+      }
+      sendOnIso = parsed.toISOString();
     }
     if (cardType === "physical") {
       if (!form.shippingLine1.trim() || !form.shippingCity.trim() || !form.shippingState.trim() || !form.shippingPostal.trim()) {
@@ -147,6 +174,7 @@ const GiftCardDialog = ({ className = "" }) => {
           email: form.recipientEmail,
           phone: form.recipientPhone,
         },
+        sendOn: sendOnIso,
         shipping: cardType === "physical"
           ? {
               shipTo: form.shipTo,
@@ -177,6 +205,8 @@ const GiftCardDialog = ({ className = "" }) => {
         code: data.code,
         amount: data.amount,
         cardType: data.cardType,
+        deliveryTarget,
+        sendOn: data.sendOn || sendOnIso,
       });
       setStatus("success");
     } catch (err) {
@@ -187,39 +217,70 @@ const GiftCardDialog = ({ className = "" }) => {
 
   const amountLabel = useMemo(() => `$${amountValue.toFixed(2)}`, [amountValue]);
   const disableSubmit = !cardLoaded || status === "processing";
+  const minSendOn = useMemo(() => {
+    const base = new Date();
+    base.setMinutes(base.getMinutes() + 10);
+    return base.toISOString().slice(0, 16);
+  }, [open]);
 
-  const renderSuccess = () => (
-    <div className="space-y-6">
-      <div className="rounded-2xl border border-emerald-100 bg-emerald-50/80 p-6 text-center">
-        <Sparkles className="mx-auto h-10 w-10 text-emerald-500" />
-        <h3 className="mt-4 text-2xl font-semibold text-emerald-700">Gift card sent!</h3>
-        <p className="text-sm text-emerald-700">We just delivered the gift card email and a confirmation receipt. Save this code for your records.</p>
-        <div className="mt-4 rounded-xl border border-emerald-200 bg-white px-4 py-3">
-          <p className="text-xs font-semibold uppercase tracking-[0.32em] text-emerald-500">Gift card code</p>
-          <p className="mt-2 text-2xl font-mono font-bold tracking-widest text-slate-900">{success?.code || "Pending"}</p>
+  const formatDateTime = (isoString) => {
+    if (!isoString) return "";
+    try {
+      const date = new Date(isoString);
+      if (Number.isNaN(date.getTime())) return "";
+      return new Intl.DateTimeFormat(undefined, {
+        dateStyle: "medium",
+        timeStyle: "short",
+      }).format(date);
+    } catch (err) {
+      return "";
+    }
+  };
+
+  const renderSuccess = () => {
+    const scheduledCopy = success?.sendOn ? formatDateTime(success.sendOn) : "";
+    return (
+      <div className="space-y-6">
+        <div className="rounded-2xl border border-emerald-100 bg-emerald-50/80 p-6 text-center">
+          <Sparkles className="mx-auto h-10 w-10 text-emerald-500" />
+          <h3 className="mt-4 text-2xl font-semibold text-emerald-700">
+            {success?.sendOn ? "Gift card scheduled!" : "Gift card sent!"}
+          </h3>
+          <p className="text-sm text-emerald-700">
+            {success?.sendOn
+              ? `We'll deliver the gift card email to the ${success?.deliveryTarget === "recipient" ? "recipient" : "buyer"} on ${scheduledCopy}.`
+              : "We just delivered the gift card email and a confirmation receipt. Save this code for your records."}
+          </p>
+          <div className="mt-4 rounded-xl border border-emerald-200 bg-white px-4 py-3">
+            <p className="text-xs font-semibold uppercase tracking-[0.32em] text-emerald-500">Gift card code</p>
+            <p className="mt-2 text-2xl font-mono font-bold tracking-widest text-slate-900">{success?.code || "Pending"}</p>
+          </div>
+          <p className="mt-4 text-sm text-slate-600">Amount: <span className="font-semibold">{amountLabel}</span> - Type: {success?.cardType === "physical" ? "Leather physical card + digital code" : "Digital"}</p>
+          {success?.sendOn && (
+            <p className="text-xs text-slate-500">You'll also get a reminder email when it goes out.</p>
+          )}
+          <button
+            type="button"
+            className="mt-5 inline-flex items-center justify-center rounded-full border border-emerald-400 px-4 py-2 text-sm font-semibold text-emerald-600 transition hover:bg-emerald-100"
+            onClick={() => {
+              if (success?.code) navigator.clipboard?.writeText(success.code).catch(() => {});
+            }}
+          >
+            Copy code
+          </button>
         </div>
-        <p className="mt-4 text-sm text-slate-600">Amount: <span className="font-semibold">{amountLabel}</span> - Type: {success?.cardType === "physical" ? "Leather physical card + digital code" : "Digital"}</p>
-        <button
-          type="button"
-          className="mt-5 inline-flex items-center justify-center rounded-full border border-emerald-400 px-4 py-2 text-sm font-semibold text-emerald-600 transition hover:bg-emerald-100"
-          onClick={() => {
-            if (success?.code) navigator.clipboard?.writeText(success.code).catch(() => {});
-          }}
-        >
-          Copy code
-        </button>
+        <DialogFooter>
+          <button
+            type="button"
+            className="btn btn-primary"
+            onClick={() => setOpen(false)}
+          >
+            Close
+          </button>
+        </DialogFooter>
       </div>
-      <DialogFooter>
-        <button
-          type="button"
-          className="btn btn-primary"
-          onClick={() => setOpen(false)}
-        >
-          Close
-        </button>
-      </DialogFooter>
-    </div>
-  );
+    );
+  };
 
   return (
     <>
@@ -414,6 +475,22 @@ const GiftCardDialog = ({ className = "" }) => {
                   <label className="label" htmlFor="gift-recipient-email">Recipient email</label>
                   <input id="gift-recipient-email" className="input" type="email" value={form.recipientEmail} onChange={handleInputChange("recipientEmail")} placeholder="hello@friend.com" />
                 </div>
+                {form.cardType === "digital" && form.deliveryTarget === "recipient" && (
+                  <div>
+                    <label className="label" htmlFor="gift-send-on">Send on (optional)</label>
+                    <input
+                      id="gift-send-on"
+                      type="datetime-local"
+                      className="input"
+                      value={form.sendOn}
+                      onChange={handleInputChange("sendOn")}
+                      min={minSendOn}
+                    />
+                    <p className="mt-1 text-xs text-slate-500">
+                      Choose a future date and time (your local timezone) to deliver the email automatically. Leave blank to send it right away.
+                    </p>
+                  </div>
+                )}
                 <div>
                   <label className="label" htmlFor="gift-recipient-phone">Recipient phone (optional)</label>
                   <input id="gift-recipient-phone" className="input" value={form.recipientPhone} onChange={handleInputChange("recipientPhone")} />
