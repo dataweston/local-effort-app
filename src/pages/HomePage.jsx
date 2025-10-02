@@ -12,6 +12,7 @@ import sanityClient from '../sanityClient';
 import { PortableText } from '@portabletext/react';
 import SectionHeader from '../components/ui/SectionHeader';
 import Separator from '../components/ui/Separator';
+import GiftCardDialog from '../components/home/GiftCardDialog';
 
 const HomePage = () => {
   const navigate = useNavigate();
@@ -501,6 +502,7 @@ const HomePage = () => {
               >
                 Book an event
               </motion.button>
+              <GiftCardDialog className="text-lg px-5 py-3" />
               <span className="sr-only">
                 <a href="/personal-chef-minneapolis" className="btn">Personal Chef Minneapolis</a>
                 <a href="/personal-chef-st-paul" className="btn">Personal Chef St. Paul</a>
@@ -610,3 +612,5 @@ const HomePage = () => {
 };
 
 export default HomePage;
+
+
