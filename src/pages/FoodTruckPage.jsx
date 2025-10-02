@@ -82,7 +82,7 @@ const FoodTruckPage = () => {
                 <span className="font-medium text-neutral-900">Full-service crew:</span> chef, fire tender, and hospitality lead to coordinate guest flow and service.
               </li>
               <li>
-                <span className="font-medium text-neutral-900">Seasonal, wood-fired menus:</span> pizzas, tacos, flatbreads, veg-focused boards, or dessert pies – tailored to your event.
+                <span className="font-medium text-neutral-900">Seasonal, wood-fired menus:</span> pizzas, tacos, flatbreads, veg-focused boards, or dessert pies â€“ tailored to your event.
               </li>
               <li>
                 <span className="font-medium text-neutral-900">Self-contained setup:</span> all cooking happens on the truck. We just need a reasonably level spot (20' x 10') and access to power (15A) if service extends after dusk.
@@ -109,7 +109,7 @@ const FoodTruckPage = () => {
           <div className="space-y-4">
             <h3 className="text-lg font-semibold text-neutral-900">What the $1200 minimum covers</h3>
             <p className="text-neutral-700 text-sm leading-relaxed">
-              The minimum is a guarantee that covers the crew, prep time, and on-site service. Most events land between $1200–$2500 depending on menu depth and guest count. We build menus that match your crowd: casual pizza parties, elevated wood-fired dinners, late-night snacks, or paired beverage service.
+              The minimum is a guarantee that covers the crew, prep time, and on-site service. Most events land between $1200â€“$2500 depending on menu depth and guest count. We build menus that match your crowd: casual pizza parties, elevated wood-fired dinners, late-night snacks, or paired beverage service.
             </p>
             <p className="text-neutral-700 text-sm">Need bar service or dessert? We can layer those in or partner with one of our trusted vendors.</p>
           </div>

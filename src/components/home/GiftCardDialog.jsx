@@ -559,4 +559,4 @@ const GiftCardDialog = ({ className = "" }) => {
   );
 };
 
-export default GiftCardDialog;\n
+export default GiftCardDialog;
