@@ -207,7 +207,9 @@ const PizzaPartyPage = () => {
     if (selectedDate && soldOutDates.has(selectedDate)) {
       setSelectedDate(null);
     }
-  }, [selectedDate, soldOutDates]);\r\n\r\n  // Google Places Autocomplete (optional if key provided in global or env)
+  }, [selectedDate, soldOutDates]);
+
+  // Google Places Autocomplete (optional if key provided in global or env)
   useEffect(() => {
     if (!showModal) return; // only when modal open to reduce overhead
     const apiKey = window.GOOGLE_PLACES_KEY || import.meta?.env?.VITE_GOOGLE_PLACES_KEY;
