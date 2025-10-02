@@ -168,10 +168,10 @@ const CrowdfundingPage = () => {
   const phoneValid = useMemo(() => !phone || phoneDigits.length >= 10, [phone, phoneDigits]);
 
   useEffect(() => {
-    // ðŸ’¡ IMPROVEMENT: Fetch a specific campaign by its slug for a more robust component.
+    // 💡 IMPROVEMENT: Fetch a specific campaign by its slug for a more robust component.
     // For this example, we'll hardcode a slug. In a real app, you'd get this from the URL.
     const slug = 'local-pizza-by-local-effort-let-s-make-1000-pizzas'; // Replace with a real slug from your Sanity data
-  const query = `*[_type == "crowdfundingCampaign" && slug.current == $slug][0]{
+    const query = `*[_type == "crowdfundingCampaign" && slug.current == $slug][0]{
       title,
       // Short description: prefer new field name, fallback to legacy if present
       "description": coalesce(description, shortDescription),
@@ -187,7 +187,7 @@ const CrowdfundingPage = () => {
       story,
       goals,
       faq,
-  "rewardTiers": rewardTiers[]->{ amount, pizzaCount, pieCount, title, description, limit, referralOnly, referralCode } | order(amount asc),
+      "rewardTiers": rewardTiers[]->{ amount, pizzaCount, pieCount, title, description, limit, referralOnly, referralCode } | order(amount asc),
       "updates": updates[]->{ title, publishedAt, body } | order(publishedAt desc)
     }`;
 
@@ -240,11 +240,11 @@ const CrowdfundingPage = () => {
           console.error('Fallback fetch also failed:', fbErr && (fbErr.message || fbErr));
         }
 
-  console.warn('Failed to load campaign data.');
+        console.warn('Failed to load campaign data.');
       } finally {
-  // loading state removed; no-op
+        // loading state removed; no-op
       }
-
+    };
 
     doFetch();
   }, []);
@@ -500,21 +500,7 @@ const CrowdfundingPage = () => {
     }
   }
 
-    const portableComponents = useMemo(() => createPortableTextComponents(), []);
-
-  return (
-          <a
-            href={href}
-            target={isExternal ? '_blank' : undefined}
-            rel={isExternal ? 'noopener noreferrer' : undefined}
-            className="underline decoration-[var(--color-accent)] underline-offset-4 text-[var(--color-accent)] hover:opacity-80 transition-colors"
-          >
-            {children}
-          </a>
-        );
-      }
-    }
-  };
+  const portableComponents = useMemo(() => createPortableTextComponents(), []);
 
   return (
     <>
@@ -612,7 +598,7 @@ const CrowdfundingPage = () => {
               {activeTab === 'gallery' && (
                 <div className="mt-4">
                   {galleryLoading && (
-                    <p className="text-sm text-gray-500 animate-pulse">Loading imagesâ€¦</p>
+                    <p className="text-sm text-gray-500 animate-pulse">Loading images...</p>
                   )}
                   {galleryError && (
                     <p className="text-sm text-red-600">{galleryError}</p>
@@ -716,7 +702,7 @@ const CrowdfundingPage = () => {
                         }
                       }}
                     >
-                      {referralState.status === 'checking' ? 'Checkingâ€¦' : 'Apply'}
+                      {referralState.status === 'checking' ? 'Checking...' : 'Apply'}
                     </button>
                   </div>
                   {referralState.status === 'ok' && referralState.valid && (
@@ -755,7 +741,7 @@ const CrowdfundingPage = () => {
                   </fieldset>
                   <div id="cf-card-container" className="border rounded-md p-4 bg-white min-h-[88px]" aria-label="Card payment form">
                     {!cardLoaded && !squareConfigError && (
-                      <p className="text-sm text-gray-500">Loading secure payment formâ€¦</p>
+                      <p className="text-sm text-gray-500">Loading secure payment form...</p>
                     )}
                     {squareConfigError && (
                       <p className="text-sm text-red-600">{squareConfigError}</p>
@@ -773,7 +759,7 @@ const CrowdfundingPage = () => {
                     onClick={() => activeTier && contribute([{ name: activeTier.title || 'Pizza', price: Math.round(activeTier.amount * 100), type: 'pizza', pizzaCount: pizzaQty, quantity: pizzaQty }])}
                     className="btn btn-primary w-full text-lg py-3 disabled:opacity-60"
                   >
-                    {paying ? 'Processingâ€¦' : 'Buy Now'}
+                    {paying ? 'Processing...' : 'Buy Now'}
                   </button>
                 </div>
               )}
@@ -803,7 +789,7 @@ const CrowdfundingPage = () => {
                       <p className={subscribeStatus === 'success' ? 'text-sm text-emerald-600' : 'text-sm text-red-600'}>{subscribeMessage}</p>
                     )}
                     <Button type="submit" className="w-full" disabled={subscribeStatus === 'loading'}>
-                      {subscribeStatus === 'loading' ? 'Joining�' : 'Stay informed'}
+                      {subscribeStatus === 'loading' ? 'Joining' : 'Stay informed'}
                     </Button>
                   </form>
                 </CardContent>
