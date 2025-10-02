@@ -7,7 +7,10 @@ import SectionHeader from '../components/ui/SectionHeader';
 import sanityClient from '../sanityClient.js';
 import { useSquareCard } from '../hooks/useSquareCard';
 import { Button } from '../components/ui/button';
-import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '../components/ui/card';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '../components/ui/card';
+import { Input } from '../components/ui/input';
+import { Textarea } from '../components/ui/textarea';
+import { Label } from '../components/ui/label';
 import { createPortableTextComponents } from '../utils/portableTextComponents';
 import { cn } from '../lib/utils';
 
@@ -85,7 +88,7 @@ const RewardTierCard = ({ tier, onSelect, busy, selected }) => {
     </Card>
   );
 };
-};
+
 RewardTierCard.propTypes = {
   tier: PropTypes.shape({
     pizzaCount: PropTypes.number,
@@ -102,6 +105,8 @@ RewardTierCard.propTypes = {
 // ...existing code...
 
 // --- Main Page Component ---
+const tierIdentifier = (tier) => (tier?._id || tier?.id || tier?.title || '').toString();
+
 const CrowdfundingPage = () => {
   const [campaignData, setCampaignData] = useState(null);
   const [activeTab, setActiveTab] = useState('story');
@@ -117,6 +122,10 @@ const CrowdfundingPage = () => {
   const [confirmMsg, setConfirmMsg] = useState('');
   const [referralInput, setReferralInput] = useState('');
   const [referralState, setReferralState] = useState({ status: 'idle', valid: false, participant: null, code: '' });
+  const [selectedTierId, setSelectedTierId] = useState('');
+  const [subscribeEmail, setSubscribeEmail] = useState('');
+  const [subscribeStatus, setSubscribeStatus] = useState('idle'); // idle | loading | success | error
+  const [subscribeMessage, setSubscribeMessage] = useState('');
   // Gallery state (lazy-loaded when tab activated)
   const [galleryImages, setGalleryImages] = useState([]);
   const [galleryLoading, setGalleryLoading] = useState(false);
@@ -235,7 +244,7 @@ const CrowdfundingPage = () => {
       } finally {
   // loading state removed; no-op
       }
-    };
+
 
     doFetch();
   }, []);
@@ -258,6 +267,60 @@ const CrowdfundingPage = () => {
     [visibleTiers]
   );
 
+  useEffect(() => {
+    if (!selectedTierId) return;
+    const exists = visibleTiers.some((tier) => tierIdentifier(tier) === selectedTierId);
+    if (!exists) setSelectedTierId('');
+  }, [selectedTierId, visibleTiers]);
+
+  const activeTier = useMemo(() => {
+    if (selectedTierId) {
+      const matched = visibleTiers.find((tier) => tierIdentifier(tier) === selectedTierId);
+      if (matched) return matched;
+    }
+    return firstPayTier;
+  }, [selectedTierId, visibleTiers, firstPayTier]);
+
+  const activeTierId = useMemo(() => tierIdentifier(activeTier), [activeTier]);
+  const activeTierAmountLabel = useMemo(() => {
+    if (!activeTier || typeof activeTier.amount !== 'number') return '';
+    return `$${activeTier.amount.toLocaleString()}`;
+  }, [activeTier]);
+
+  const handleTierSelect = (tier) => {
+    setSelectedTierId(tierIdentifier(tier));
+    setShowForm(true);
+  };
+
+  const handleSubscribe = async (event) => {
+    event.preventDefault();
+    const emailValue = subscribeEmail.trim();
+    if (!emailValue) {
+      setSubscribeStatus('error');
+      setSubscribeMessage('Please enter an email address.');
+      return;
+    }
+    setSubscribeStatus('loading');
+    setSubscribeMessage('');
+    try {
+      const res = await fetch('/api/subscribe', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ email: emailValue }),
+      });
+      if (!res.ok) {
+        const text = await res.text().catch(() => '');
+        throw new Error(text || 'Subscription failed');
+      }
+      setSubscribeStatus('success');
+      setSubscribeMessage('Thanks! Check your inbox soon.');
+      setSubscribeEmail('');
+    } catch (err) {
+      setSubscribeStatus('error');
+      setSubscribeMessage(err.message || 'Something went wrong. Please try again.');
+    }
+  };
+
   // Destructure frequently used fields from campaign data (safe even if null)
   // Destructure raw values (null-safe post processing below)
   const {
@@ -278,7 +341,7 @@ const CrowdfundingPage = () => {
   const title = campaignTitle || 'Crowdfunding';
 
   // Initialize shared Square card (enabled only when a payable tier exists)
-  const { cardLoaded, error: squareConfigError, tokenize, envInfo } = useSquareCard('#cf-card-container', !!firstPayTier, [firstPayTier?.amount]);
+  const { cardLoaded, error: squareConfigError, tokenize, envInfo } = useSquareCard('#cf-card-container', !!activeTier, [activeTier?.amount]);
 
   // On return from Square (?payment=success), confirm and update counters
   useEffect(() => {
@@ -662,7 +725,7 @@ const CrowdfundingPage = () => {
                   {referralState.status === 'ok' && !referralState.valid && (
                     <p className="text-sm text-red-600">That code is not valid.</p>
                   )}
-                  {firstPayTier && (
+                  {activeTier && (
                     <div className="flex items-center gap-3">
                       <label htmlFor="pizza-qty" className="text-sm">Quantity</label>
                       <input
@@ -706,8 +769,8 @@ const CrowdfundingPage = () => {
                     <p className="text-xs text-red-600 mt-1">Phone should have at least 10 digits.</p>
                   )}
                   <button
-                    disabled={!firstPayTier || !cardLoaded || paying || !!squareConfigError || !emailValid || !phoneValid}
-                    onClick={() => firstPayTier && contribute([{ name: firstPayTier.title || 'Pizza', price: Math.round(firstPayTier.amount * 100), type: 'pizza', pizzaCount: pizzaQty, quantity: pizzaQty }])}
+                    disabled={!activeTier || !cardLoaded || paying || !!squareConfigError || !emailValid || !phoneValid}
+                    onClick={() => activeTier && contribute([{ name: activeTier.title || 'Pizza', price: Math.round(activeTier.amount * 100), type: 'pizza', pizzaCount: pizzaQty, quantity: pizzaQty }])}
                     className="btn btn-primary w-full text-lg py-3 disabled:opacity-60"
                   >
                     {paying ? 'Processingâ€¦' : 'Buy Now'}
@@ -717,16 +780,47 @@ const CrowdfundingPage = () => {
             </div>
 
             <div className="space-y-4">
+              <Card className="border-slate-200">
+                <CardHeader className="px-5 py-4">
+                  <CardTitle>Stay in the loop</CardTitle>
+                  <CardDescription className="text-sm text-slate-600">Get pizza updates, milestones, and openings first.</CardDescription>
+                </CardHeader>
+                <CardContent className="px-5 py-4">
+                  <form className="space-y-3" onSubmit={handleSubscribe}>
+                    <div className="space-y-2">
+                      <Label htmlFor="cf-subscribe-email">Email address</Label>
+                      <Input
+                        id="cf-subscribe-email"
+                        type="email"
+                        autoComplete="email"
+                        placeholder="you@example.com"
+                        value={subscribeEmail}
+                        onChange={(event) => setSubscribeEmail(event.target.value)}
+                        disabled={subscribeStatus === 'loading'}
+                      />
+                    </div>
+                    {subscribeMessage && (
+                      <p className={subscribeStatus === 'success' ? 'text-sm text-emerald-600' : 'text-sm text-red-600'}>{subscribeMessage}</p>
+                    )}
+                    <Button type="submit" className="w-full" disabled={subscribeStatus === 'loading'}>
+                      {subscribeStatus === 'loading' ? 'Joining�' : 'Stay informed'}
+                    </Button>
+                  </form>
+                </CardContent>
+              </Card>
               <SectionHeader overline="Contribute" title="Support Us" />
-              {visibleTiers.map((tier) => (
-                <RewardTierCard
-                  key={tier?.title || Math.random()}
-                  tier={tier}
-                  busy={paying}
-                  onSelect={(item) => contribute([{ name: item.name || item.title || 'Pledge', price: Math.round((item.price || item.amount) * 100), type: 'pledge', quantity: 1 }])}
-                  selected={false}
-                />
-              ))}
+              {visibleTiers.map((tier) => {
+                const tierId = tierIdentifier(tier);
+                return (
+                  <RewardTierCard
+                    key={tierId || tier?.title || tier?.amount || Math.random()}
+                    tier={tier}
+                    busy={paying}
+                    onSelect={handleTierSelect}
+                    selected={tierId === activeTierId}
+                  />
+                );
+              })}
               {/* Dev diagnostics */}
               {process.env.NODE_ENV !== 'production' && (
                 <div className="mt-8 p-4 border rounded text-xs space-y-1 bg-gray-50">
