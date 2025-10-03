@@ -440,9 +440,9 @@ const HomePage = () => {
         <link
           rel="preload"
           as="image"
-          href={`https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/f_auto,q_auto,w_1200${heroVersionSegment}/${heroImage.publicId}`}
-          imageSrcSet={`https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/f_auto,q_auto,w_600${heroVersionSegment}/${heroImage.publicId} 600w, https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/f_auto,q_auto,w_1200${heroVersionSegment}/${heroImage.publicId} 1200w, https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/f_auto,q_auto,w_1800${heroVersionSegment}/${heroImage.publicId} 1800w`}
-          imageSizes="(min-width: 1024px) 50vw, 100vw"
+          href={`https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/f_auto,q_auto,w_2400${heroVersionSegment}/${heroImage.publicId}`}
+          imageSrcSet={`https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/f_auto,q_auto,w_800${heroVersionSegment}/${heroImage.publicId} 800w, https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/f_auto,q_auto,w_1200${heroVersionSegment}/${heroImage.publicId} 1200w, https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/f_auto,q_auto,w_1800${heroVersionSegment}/${heroImage.publicId} 1800w, https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/f_auto,q_auto,w_2400${heroVersionSegment}/${heroImage.publicId} 2400w, https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/f_auto,q_auto,w_3200${heroVersionSegment}/${heroImage.publicId} 3200w`}
+          imageSizes="(min-width: 1536px) 768px, (min-width: 1280px) 688px, (min-width: 1024px) 50vw, 100vw"
         />
         {/* --- NEW: Inject the structured data into the page head --- */}
         <script type="application/ld+json">{JSON.stringify(imageJsonLd)}</script>
@@ -573,12 +573,11 @@ const HomePage = () => {
               publicId={heroImage.publicId}
               version={heroImage.version}
               alt={heroImage.alt}
-              width={1200}
-              height={800}
               containerClassName="w-full h-full"
               imgClassName="w-full h-full object-cover object-center"
               fallbackSrc={heroFallbackSrc}
-              sizes="(min-width: 1024px) 50vw, 100vw"
+              sizes="(min-width: 1536px) 768px, (min-width: 1280px) 688px, (min-width: 1024px) 50vw, 100vw"
+              responsiveSteps={[600, 900, 1200, 1600, 2000, 2600, 3200]}
               eager
             />
           </motion.div>

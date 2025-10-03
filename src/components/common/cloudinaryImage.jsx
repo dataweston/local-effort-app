@@ -36,7 +36,7 @@ const cld = new Cloudinary({
  */
 import { useState, useEffect, useRef } from 'react';
 
-const CloudinaryImage = ({ publicId, alt, width, height, className, containerClassName, imgClassName, containerStyle, disableLazy = false, fallbackSrc, resizeMode = 'fill', placeholderMode = 'blur', sizes, responsiveSteps = [480, 768, 1024, 1400], eager = false, version }) => {
+const CloudinaryImage = ({ publicId, alt, width, height, className, containerClassName, imgClassName, containerStyle, disableLazy = false, fallbackSrc, resizeMode = 'fill', placeholderMode = 'blur', sizes, responsiveSteps = [480, 768, 1024, 1400, 2000, 2600, 3200], eager = false, version }) => {
   const [loaded, setLoaded] = useState(false);
   const [error, setError] = useState(false);
   const imgRef = useRef(null);
