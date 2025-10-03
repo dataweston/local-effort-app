@@ -126,8 +126,8 @@ export const FoodTruckInquiryDialog = ({
         <DialogHeader>
           <DialogTitle>Book the Local Effort Food Truck</DialogTitle>
           <DialogDescription>
-            The minimum for a food truck service at your event is <strong>$1,200</strong>, either paid by you or guaranteed by you.
-            Fill out the details below and we&rsquo;ll confirm availability within 24 hours.
+            Our beta launch pricing sets the minimum for a food truck service at <strong>$1,000</strong>, either prepaid or guaranteed.
+            The first three bookings also receive an additional $200 discount. Fill out the details below and we&rsquo;ll confirm availability within 24 hours.
           </DialogDescription>
         </DialogHeader>
 
@@ -237,7 +237,7 @@ export const FoodTruckInquiryDialog = ({
 
             <div className="rounded-xl border border-amber-200 bg-amber-50/70 px-4 py-3 text-sm text-amber-700">
               <p className="font-semibold">Minimum guarantee</p>
-              <p>The minimum for a food truck service is $1,200. This can be prepaid or guaranteed to meet the minimum sales.</p>
+              <p>The beta launch minimum for a food truck service is $1,000. Cover it up front or guarantee sales — either way, the first three bookings unlock an extra $200 off.</p>
             </div>
 
             {status === 'error' && error && (
