@@ -1,11 +1,25 @@
-import React from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Helmet } from "react-helmet-async";
 import { motion } from "framer-motion";
 import FoodTruckDialog from "../components/home/FoodTruckDialog";
+import { Button } from "../components/ui/button";
+import { Input } from "../components/ui/input";
+import { Label } from "../components/ui/label";
+import { Textarea } from "../components/ui/textarea";
+import { useToast } from "../components/common/ToastProvider";
+import { useSquarePayments } from "../lib/useSquarePayments";
 
 const fade = {
   hidden: { opacity: 0, y: 16 },
   show: { opacity: 1, y: 0 }
+};
+
+const initialDepositForm = {
+  name: "",
+  email: "",
+  phone: "",
+  eventDate: "",
+  notes: ""
 };
 
 const FoodTruckPage = () => {
@@ -83,6 +97,255 @@ const FoodTruckPage = () => {
       }
     }))
   };
+
+  const { notify: notifyToast } = useToast();
+  const [depositForm, setDepositForm] = useState(() => ({ ...initialDepositForm }));
+  const [depositStatus, setDepositStatus] = useState("idle");
+  const [depositError, setDepositError] = useState("");
+  const depositAmount = 300;
+  const depositAmountLabel = useMemo(
+    () => new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(depositAmount),
+    [depositAmount]
+  );
+  const depositEmailValid = useMemo(
+    () => /.+@.+\..+/.test(depositForm.email.trim()),
+    [depositForm.email]
+  );
+  const depositPhoneDigits = useMemo(() => depositForm.phone.replace(/\D/g, ""), [depositForm.phone]);
+  const depositPhoneValid = useMemo(() => depositPhoneDigits.length >= 10, [depositPhoneDigits]);
+  const {
+    payments,
+    loading: paymentsLoading,
+    error: paymentsError,
+    environment: squareEnvironment,
+    sdkUrl: squareSdkUrl,
+    locationId: squareLocationId
+  } = useSquarePayments();
+  const cardContainerRef = useRef(null);
+  const cardInstanceRef = useRef(null);
+  const cardInitRef = useRef(false);
+  const [cardReady, setCardReady] = useState(false);
+  const [cardError, setCardError] = useState("");
+
+  const handleDepositChange = useCallback(
+    (field) => (event) => {
+      const { value } = event.target;
+      setDepositForm((prev) => ({ ...prev, [field]: value }));
+    },
+    []
+  );
+
+  const destroyCard = useCallback(() => {
+    const card = cardInstanceRef.current;
+    if (card) {
+      console.log("[square] [food-truck] destroying card instance");
+      cardInstanceRef.current = null;
+      try {
+        const maybe = card.destroy?.();
+        if (maybe && typeof maybe.then === "function") {
+          maybe.catch((err) => console.warn("[square] [food-truck] card destroy warning", err));
+        }
+      } catch (err) {
+        console.warn("[square] [food-truck] card destroy error", err);
+      }
+    }
+    if (cardContainerRef.current) {
+      cardContainerRef.current.innerHTML = "";
+    }
+    cardInitRef.current = false;
+    setCardReady(false);
+  }, []);
+
+  useEffect(() => {
+    if (paymentsError) {
+      notifyToast(paymentsError, { type: "error" });
+    }
+  }, [paymentsError, notifyToast]);
+
+  useEffect(() => {
+    if (!payments || cardReady) {
+      return;
+    }
+    const container = cardContainerRef.current;
+    if (!container) {
+      return;
+    }
+    if (cardInitRef.current) {
+      return;
+    }
+
+    let cancelled = false;
+    cardInitRef.current = true;
+    setCardError("");
+    console.log("[square] [food-truck] initializing card", {
+      environment: squareEnvironment,
+      locationId: squareLocationId,
+      sdkUrl: squareSdkUrl
+    });
+
+    payments
+      .card()
+      .then((card) => {
+        if (!card) {
+          throw new Error("Square card component unavailable.");
+        }
+        if (cancelled) {
+          try {
+            card.destroy?.();
+          } catch (_) {
+            // ignore
+          }
+          return null;
+        }
+        cardInstanceRef.current = card;
+        return card.attach(container);
+      })
+      .then((result) => {
+        if (cancelled || result === null) {
+          return;
+        }
+        console.log("[square] [food-truck] card attached");
+        setCardReady(true);
+      })
+      .catch((err) => {
+        if (cancelled) {
+          return;
+        }
+        console.error("[square] [food-truck] card init failed", err);
+        const message = err?.message || "Unable to load the payment form.";
+        setCardError(message);
+        notifyToast(message, { type: "error" });
+        destroyCard();
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [payments, cardReady, squareEnvironment, squareLocationId, squareSdkUrl, notifyToast, destroyCard]);
+
+  useEffect(() => () => {
+    console.log("[square] [food-truck] page unmount cleanup");
+    destroyCard();
+  }, [destroyCard]);
+
+  const tokenizeCard = useCallback(async () => {
+    const card = cardInstanceRef.current;
+    if (!card) {
+      const message = "Payment form is not ready yet.";
+      notifyToast(message, { type: "error" });
+      throw new Error(message);
+    }
+    const result = await card.tokenize();
+    console.log("[square] [food-truck] tokenize result", result);
+    if (result.status !== "OK" || !result.token) {
+      const message =
+        (Array.isArray(result.errors) && result.errors[0]?.message) ||
+        "Unable to verify card details.";
+      notifyToast(message, { type: "error" });
+      throw new Error(message);
+    }
+    return result.token;
+  }, [notifyToast]);
+
+  const handleDepositSubmit = useCallback(
+    async (event) => {
+      event.preventDefault();
+      if (depositStatus === "loading") return;
+
+      setDepositError("");
+
+      if (!cardReady) {
+        const message = "Payment form is not ready yet.";
+        setDepositError(message);
+        notifyToast(message, { type: "error" });
+        return;
+      }
+
+      const requiredComplete =
+        depositForm.name.trim() &&
+        depositForm.email.trim() &&
+        depositForm.phone.trim() &&
+        depositForm.eventDate;
+
+      if (!requiredComplete) {
+        const message = "Please complete all required fields.";
+        setDepositError(message);
+        notifyToast(message, { type: "error" });
+        return;
+      }
+
+      if (!depositEmailValid) {
+        const message = "Please provide a valid email.";
+        setDepositError(message);
+        notifyToast(message, { type: "error" });
+        return;
+      }
+
+      if (!depositPhoneValid) {
+        const message = "Please provide a 10-digit phone number.";
+        setDepositError(message);
+        notifyToast(message, { type: "error" });
+        return;
+      }
+
+      try {
+        setDepositStatus("loading");
+        const token = await tokenizeCard();
+        const payload = {
+          token,
+          amount: depositAmount,
+          name: depositForm.name.trim(),
+          email: depositForm.email.trim(),
+          phone: depositForm.phone.trim(),
+          eventDate: depositForm.eventDate,
+          notes: depositForm.notes.trim()
+        };
+        console.log("[square] [food-truck] submitting deposit payload", {
+          amount: depositAmount,
+          eventDate: payload.eventDate
+        });
+        const response = await fetch("/api/food-truck/deposit", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) {
+          const message = data?.error || "Unable to process deposit.";
+          throw new Error(message);
+        }
+        console.log("[square] [food-truck] deposit submission succeeded", data);
+        notifyToast("Deposit received! We'll confirm within 24 hours.", { type: "success" });
+        setDepositStatus("success");
+        setDepositForm({ ...initialDepositForm });
+        setDepositError("");
+        destroyCard();
+      } catch (err) {
+        console.error("[square] [food-truck] deposit submission failed", err);
+        const message = err?.message || "Unable to process payment.";
+        setDepositError(message);
+        setDepositStatus("error");
+        notifyToast(message, { type: "error" });
+      } finally {
+        setDepositStatus((prev) => (prev === "success" ? "success" : "idle"));
+      }
+    },
+    [
+      depositStatus,
+      cardReady,
+      depositForm.name,
+      depositForm.email,
+      depositForm.phone,
+      depositForm.eventDate,
+      depositForm.notes,
+      depositEmailValid,
+      depositPhoneValid,
+      depositAmount,
+      tokenizeCard,
+      notifyToast,
+      destroyCard
+    ]
+  );
 
   return (
     <>
@@ -226,6 +489,147 @@ const FoodTruckPage = () => {
             ))}
           </div>
         </motion.section>
+      </section>
+
+      <section className="border-t border-neutral-200 bg-neutral-50">
+        <div className="mx-auto max-w-6xl px-4 md:px-6 lg:px-8 py-16 grid gap-10 lg:grid-cols-[1.1fr_minmax(0,0.9fr)]">
+          <div className="space-y-5">
+            <h2 className="heading-lg">Secure your food truck date</h2>
+            <p className="text-neutral-700 text-sm md:text-base leading-relaxed">
+              Lock in your event with a {depositAmountLabel} deposit (30% of the beta minimum). Pay now to reserve the crew and
+              the truck; the remaining balance is due seven days before service.
+            </p>
+            <p className="text-neutral-600 text-sm">
+              Deposits are fully refundable up to 30 days before your event. Questions? Email{' '}
+              <a href="mailto:hello@localeffort.app" className="underline decoration-2 underline-offset-4">
+                hello@localeffort.app
+              </a>
+              .
+            </p>
+          </div>
+          <div className="rounded-2xl border border-neutral-200 bg-white shadow-sm p-6 space-y-5">
+            <div className="space-y-1">
+              <h3 className="text-base font-semibold text-neutral-900">Pay the deposit</h3>
+              <p className="text-sm text-neutral-600">
+                {depositAmountLabel} reserves your date. You can apply it toward service or transfer it to another event.
+              </p>
+            </div>
+            <form className="space-y-4" onSubmit={handleDepositSubmit} noValidate>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="ft-deposit-name">Name / Business*</Label>
+                  <Input
+                    id="ft-deposit-name"
+                    value={depositForm.name}
+                    onChange={handleDepositChange('name')}
+                    placeholder="Who should we contact?"
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="ft-deposit-email">Email*</Label>
+                  <Input
+                    id="ft-deposit-email"
+                    type="email"
+                    value={depositForm.email}
+                    onChange={handleDepositChange('email')}
+                    required
+                    placeholder="you@example.com"
+                  />
+                  {!depositEmailValid && depositForm.email && (
+                    <p className="text-xs text-red-600">Enter a valid email.</p>
+                  )}
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="ft-deposit-phone">Phone*</Label>
+                  <Input
+                    id="ft-deposit-phone"
+                    type="tel"
+                    value={depositForm.phone}
+                    onChange={handleDepositChange('phone')}
+                    required
+                    placeholder="(555) 123-4567"
+                  />
+                  {!depositPhoneValid && depositForm.phone && (
+                    <p className="text-xs text-red-600">Use a 10-digit phone number.</p>
+                  )}
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="ft-deposit-date">Event date*</Label>
+                  <Input
+                    id="ft-deposit-date"
+                    type="date"
+                    value={depositForm.eventDate}
+                    onChange={handleDepositChange('eventDate')}
+                    required
+                  />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="ft-deposit-notes">Notes</Label>
+                <Textarea
+                  id="ft-deposit-notes"
+                  rows={4}
+                  value={depositForm.notes}
+                  onChange={handleDepositChange('notes')}
+                  placeholder="Share venue address, guest count, or service notes."
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="food-truck-card-container">Payment details</Label>
+                <div
+                  id="food-truck-card-container"
+                  ref={cardContainerRef}
+                  className="min-h-[96px] rounded-md border border-neutral-200 bg-white px-4 py-5"
+                  aria-live="polite"
+                >
+                  {!cardReady && !cardError && !paymentsError && (
+                    <p className="text-sm text-neutral-500">
+                      {paymentsLoading ? 'Loading secure payment form…' : 'Preparing secure payment form…'}
+                    </p>
+                  )}
+                  {(cardError || paymentsError) && (
+                    <p className="text-sm text-red-600">{cardError || paymentsError}</p>
+                  )}
+                </div>
+              </div>
+              {depositError && <p className="text-sm text-red-600">{depositError}</p>}
+              {depositStatus === 'success' && !depositError && (
+                <p className="text-sm text-emerald-600">
+                  Thanks! We received your deposit and will confirm within 24 hours.
+                </p>
+              )}
+              <Button
+                type="submit"
+                className="w-full"
+                disabled={
+                  depositStatus === 'loading' ||
+                  !cardReady ||
+                  !!cardError ||
+                  !!paymentsError ||
+                  !depositEmailValid ||
+                  !depositPhoneValid
+                }
+              >
+                {depositStatus === 'loading' ? 'Processing…' : `Pay ${depositAmountLabel} deposit`}
+              </Button>
+              <p className="text-xs text-neutral-500">
+                Powered by Square • {squareEnvironment === 'sandbox' ? 'Sandbox mode' : 'Live mode'} •{' '}
+                {squareLocationId ? 'Location configured' : 'Location missing'}
+              </p>
+              {(import.meta?.env?.MODE || process.env.NODE_ENV) !== 'production' && (
+                <div className="rounded border border-dashed border-neutral-200 p-3 text-[0.7rem] text-neutral-500 space-y-1">
+                  <p className="font-semibold">Square diagnostics</p>
+                  <p>SDK URL: {squareSdkUrl}</p>
+                  <p>Environment: {squareEnvironment}</p>
+                  <p>Payments ready: {payments ? 'true' : 'false'} | Card ready: {cardReady ? 'true' : 'false'}</p>
+                  {cardError && <p className="text-red-600">Card error: {cardError}</p>}
+                  {paymentsError && <p className="text-red-600">Payments error: {paymentsError}</p>}
+                </div>
+              )}
+            </form>
+          </div>
+        </div>
       </section>
     </>
   );
