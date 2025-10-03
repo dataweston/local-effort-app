@@ -53,7 +53,6 @@ const PersonalChefTwinCitiesPage = lazy(() => import('./pages/PersonalChefTwinCi
 const PersonalChefMinnesotaPage = lazy(() => import('./pages/PersonalChefMinnesota'));
 const PersonalChefWisconsinPage = lazy(() => import('./pages/PersonalChefWisconsin'));
 const PizzaPartyPage = lazy(() => import('./pages/PizzaPartyPage'));
-const FoodTruckPage = lazy(() => import('./pages/FoodTruckPage'));
 
 const AppContent = () => {
   const location = useLocation();
@@ -239,14 +238,6 @@ const AppContent = () => {
                   element={
                     <AnimatedPage>
                       <PizzaPartyPage />
-                    </AnimatedPage>
-                  }
-                />
-                <Route
-                  path="/food-truck"
-                  element={
-                    <AnimatedPage>
-                      <FoodTruckPage />
                     </AnimatedPage>
                   }
                 />
