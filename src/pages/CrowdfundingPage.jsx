@@ -918,6 +918,11 @@ const CrowdfundingPage = () => {
                     )}
                     <Button type="submit" className="w-full" disabled={subscribeStatus === 'loading'}>
                       {subscribeStatus === 'loading' ? 'Joining' : 'Stay informed'}
+                  <p>Secure context: {envInfo?.secureContext ? 'true' : 'false'}</p>
+                  <p>Allowed for Square: {envInfo?.secureForSquare ? 'true' : 'false'}</p>
+                  <p>
+                    Host: {envInfo?.hostname || 'unknown'} ({envInfo?.protocol || 'n/a'})
+                  </p>
                     </Button>
                   </form>
                 </CardContent>
