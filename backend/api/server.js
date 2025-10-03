@@ -646,21 +646,18 @@ app.post('/api/food-truck/inquire', async (req, res) => {
 
     const sc = getSanityClient();
     let msgDoc = null;
-    const lines = [
+    const textLines = [
       `Name / Business: ${name}`,
       `Email: ${email}`,
       `Phone: ${phone}`,
       `Event Date: ${eventDate}`,
       cuisine ? `Cuisine: ${cuisine}` : null,
       `Location: ${location}`,
-    ].filter(Boolean);
-
-    if (notes) {
-      lines.push('', `Notes: ${notes}`);
-    }
-
-    lines.push('', 'Minimum guarantee acknowledged: $1,200');
-    const textLines = lines.join('\n');
+      notes ? '' : null,
+      notes ? `Notes: ${notes}` : null,
+      '',
+      'Minimum guarantee acknowledged: $1,200'
+    ].filter((line) => line !== null).join('\n');
 
     if (sc) {
       try {
