@@ -26,6 +26,7 @@ const HappyMondayPage = lazy(() => import('./pages/HappyMondayPage'));
 const EventsPage = lazy(() => import('./pages/EventsPage'));
 const WeeklyList = lazy(() => import('./pages/WeeklyList'));
 const WeeklyPost = lazy(() => import('./pages/WeeklyPost'));
+const FoodTruckPage = lazy(() => import('./pages/FoodTruckPage'));
 // --- NEW: Lazily import the GalleryPage ---
 const GalleryPage = lazy(() => import('./pages/GalleryPage'));
 // --- NEW: Lazily import the MealPrepPage ---
@@ -238,6 +239,14 @@ const AppContent = () => {
                   element={
                     <AnimatedPage>
                       <PizzaPartyPage />
+                    </AnimatedPage>
+                  }
+                />
+                <Route
+                  path="/book-food-truck"
+                  element={
+                    <AnimatedPage>
+                      <FoodTruckPage />
                     </AnimatedPage>
                   }
                 />
