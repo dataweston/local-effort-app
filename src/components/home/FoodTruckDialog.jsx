@@ -26,22 +26,22 @@ const FoodTruckDialog = ({ children, triggerClassName = "" }) => {
     "@context": "https://schema.org",
     "@type": "Service",
     name: "Book a Food Truck",
-    description: "Reserve the Local Effort food truck for private events in Minneapolis–St. Paul. Minimum food and beverage commitment of $1200.",
+    description: "Reserve the Local Effort food truck for private events in Minneapolis-St. Paul. Beta launch pricing starts at a $1000 minimum commitment with $200 off the first three bookings.",
     provider: {
       "@type": "Organization",
       name: "Local Effort"
     },
     areaServed: {
       "@type": "Place",
-      name: "Minneapolis – St. Paul"
+      name: "Minneapolis - St. Paul"
     },
     offers: {
       "@type": "Offer",
-      price: "1200",
+      price: "1000",
       priceCurrency: "USD",
       availability: "https://schema.org/InStock",
       url: typeof window !== "undefined" ? window.location.href : "https://localeffort.app/book-food-truck",
-      description: "Minimum $1200 food truck commitment per event."
+      description: "Beta launch $1000 minimum food truck commitment with $200 off the first three bookings."
     }
   }), []);
 
@@ -78,7 +78,7 @@ const FoodTruckDialog = ({ children, triggerClassName = "" }) => {
           email: form.email,
           phone: form.phone,
           subject: "Food Truck Inquiry",
-          message: `Food Truck Inquiry\n\n${lines}\n\nMinimum acknowledged: $1200`,
+          message: `Food Truck Inquiry\n\n${lines}\n\nMinimum acknowledged: $1000 (beta launch $200 off for first three bookings)`,
           type: "food_truck"
         })
       });
@@ -113,7 +113,7 @@ const FoodTruckDialog = ({ children, triggerClassName = "" }) => {
           <DialogHeader>
             <DialogTitle>Book the Local Effort Food Truck</DialogTitle>
             <DialogDescription>
-              The minimum commitment for food truck service is $1200, either pre-paid or guaranteed. Tell us about your event and we will reply within 24 hours.
+              Our beta launch pricing sets the minimum commitment at $1000, either pre-paid or guaranteed. The first three events to confirm receive an extra $200 off.
             </DialogDescription>
           </DialogHeader>
           <form className="space-y-4" onSubmit={handleSubmit}>
@@ -149,9 +149,9 @@ const FoodTruckDialog = ({ children, triggerClassName = "" }) => {
             </div>
             {error && <p className="text-sm text-red-600">{error}</p>}
             <DialogFooter className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-              <p className="text-xs text-slate-500">We will reply within 24 hours. Minimum commitment $1200.</p>
+              <p className="text-xs text-slate-500">We will reply within 24 hours. Beta launch minimum $1000 with $200 off the first three bookings.</p>
               <button type="submit" className="btn btn-primary" disabled={status === "sending"}>
-                {status === "sending" ? "Sending…" : status === "sent" ? "Thanks!" : "Send inquiry"}
+                {status === "sending" ? "Sendingâ€¦" : status === "sent" ? "Thanks!" : "Send inquiry"}
               </button>
             </DialogFooter>
           </form>
