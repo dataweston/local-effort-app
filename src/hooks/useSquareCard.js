@@ -188,19 +188,32 @@ export function useSquareCard(containerId, enabled, deps = []) {
 
   const destroyCardInstance = useCallback(() => {
     const card = cardRef.current;
-    if (!card) return;
     cardRef.current = null;
     attachStartedRef.current = false;
+
+    const finalize = () => {
+      cleanupContainer();
+      setCardLoaded(false);
+    };
+
+    if (!card) {
+      finalize();
+      return;
+    }
+
     try {
       const maybePromise = typeof card.destroy === 'function' ? card.destroy() : undefined;
       if (maybePromise && typeof maybePromise.then === 'function') {
-        maybePromise.catch(() => {});
+        maybePromise
+          .catch(() => {})
+          .finally(finalize);
+        return;
       }
     } catch (_) {
       // ignore destroy issues
     }
-    cleanupContainer();
-    setCardLoaded(false);
+
+    finalize();
   }, [cleanupContainer]);
 
   // Allow consumer to manually force a remount (e.g., when reopening a modal)

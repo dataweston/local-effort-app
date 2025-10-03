@@ -1,11 +1,11 @@
 // ...existing code...
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import { Helmet } from 'react-helmet-async';
 import { PortableText } from '@portabletext/react';
 import SectionHeader from '../components/ui/SectionHeader';
 import sanityClient from '../sanityClient.js';
-import { useSquareCard } from '../hooks/useSquareCard';
+import { useSquarePayments } from '../lib/useSquarePayments';
 import { Button } from '../components/ui/button';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '../components/ui/card';
 import { Input } from '../components/ui/input';
@@ -14,6 +14,7 @@ import { Label } from '../components/ui/label';
 import PrioritiesPie from '../components/crowdfunding/PrioritiesPie.jsx';
 import { createPortableTextComponents } from '../utils/portableTextComponents';
 import { cn } from '../lib/utils';
+import { useToast } from '../components/common/ToastProvider';
 
 // --- Sanity Image URL Builder Setup (kept for future use if dynamic hero image restored) ---
 // const builder = imageUrlBuilder(sanityClient);
@@ -147,6 +148,7 @@ const CrowdfundingPage = () => {
   const [showForm, setShowForm] = useState(false);
   const [pizzaQty, setPizzaQty] = useState(1);
   const [confirmMsg, setConfirmMsg] = useState('');
+  const [formNotice, setFormNotice] = useState('');
   const [referralInput, setReferralInput] = useState('');
   const [referralState, setReferralState] = useState({ status: 'idle', valid: false, participant: null, code: '' });
   const [selectedTierId, setSelectedTierId] = useState('');
@@ -289,6 +291,10 @@ const CrowdfundingPage = () => {
       return true;
     });
   }, [rewardTiers, referralState]);
+  const hasPayableTier = useMemo(
+    () => visibleTiers.some((t) => typeof t?.amount === 'number' && t.amount > 0),
+    [visibleTiers]
+  );
   const firstPayTier = useMemo(
     () => visibleTiers.find(t => typeof t?.amount === 'number' && t.amount > 0) || null,
     [visibleTiers]
@@ -314,8 +320,30 @@ const CrowdfundingPage = () => {
     return `$${activeTier.amount.toLocaleString()}`;
   }, [activeTier]);
 
+  useEffect(() => {
+    if (showForm && !activeTier) {
+      setShowForm(false);
+      setFormNotice(
+        hasPayableTier
+          ? 'That reward is no longer available. Please pick another tier to continue.'
+          : 'Online checkout is temporarily unavailable. Email hello@localeffortfood.com to pledge.'
+      );
+    }
+  }, [showForm, activeTier, hasPayableTier]);
+
+  useEffect(() => {
+    if (!showForm && hasPayableTier && activeTier) {
+      setFormNotice('');
+    }
+  }, [showForm, hasPayableTier, activeTier]);
+
   const handleTierSelect = (tier) => {
+    if (!tier || typeof tier.amount !== 'number' || tier.amount <= 0) {
+      setFormNotice('Online checkout is only available for paid rewards. Please choose another tier.');
+      return;
+    }
     setSelectedTierId(tierIdentifier(tier));
+    setFormNotice('');
     setShowForm(true);
   };
 
@@ -369,18 +397,122 @@ const CrowdfundingPage = () => {
 
   // Initialize shared Square card (enabled only when a payable tier exists)
   const {
-    cardLoaded,
-    error: squareConfigError,
-    tokenize,
-    envInfo,
-    reset: resetSquareCard,
-  } = useSquareCard('#cf-card-container', showForm && !!activeTier, [showForm, activeTier?.amount]);
+    payments,
+    loading: paymentsLoading,
+    error: paymentsError,
+    environment: squareEnvironment,
+    sdkUrl: squareSdkUrl,
+    appId: squareAppId,
+    locationId: squareLocationId,
+    isSandbox: squareIsSandbox,
+  } = useSquarePayments();
+  const cardContainerRef = useRef(null);
+  const cardInstanceRef = useRef(null);
+  const cardInitRef = useRef(false);
+  const [cardReady, setCardReady] = useState(false);
+  const [cardError, setCardError] = useState('');
+  const { notify: notifyToast } = useToast();
+
+  const destroyCard = useCallback(() => {
+    const card = cardInstanceRef.current;
+    if (card) {
+      console.log('[square] [crowdfunding] destroying card instance');
+      cardInstanceRef.current = null;
+      try {
+        const maybe = card.destroy?.();
+        if (maybe && typeof maybe.then === 'function') {
+          maybe.catch((err) => console.warn('[square] [crowdfunding] card destroy warning', err));
+        }
+      } catch (err) {
+        console.warn('[square] [crowdfunding] card destroy error', err);
+      }
+    }
+    if (cardContainerRef.current) {
+      cardContainerRef.current.innerHTML = '';
+    }
+    cardInitRef.current = false;
+    setCardReady(false);
+  }, []);
 
   useEffect(() => {
     if (!showForm) {
-      resetSquareCard();
+      destroyCard();
     }
-  }, [showForm, resetSquareCard]);
+  }, [showForm, destroyCard]);
+
+  useEffect(() => {
+    if (paymentsError) {
+      notifyToast(paymentsError, { type: 'error' });
+    }
+  }, [paymentsError, notifyToast]);
+
+  useEffect(() => {
+    if (!payments || !showForm || !activeTier) {
+      return;
+    }
+    const container = cardContainerRef.current;
+    if (!container) {
+      return;
+    }
+    if (cardInitRef.current) {
+      return;
+    }
+
+    let cancelled = false;
+    cardInitRef.current = true;
+    setCardError('');
+    setCardReady(false);
+    console.log('[square] [crowdfunding] initializing card', {
+      tier: activeTier?.title || null,
+      amount: activeTier?.amount || null,
+    });
+
+    payments
+      .card()
+      .then((card) => {
+        if (!card) {
+          throw new Error('Square card component unavailable.');
+        }
+        if (cancelled) {
+          try {
+            card.destroy?.();
+          } catch (_) {
+            // ignore
+          }
+          return null;
+        }
+        cardInstanceRef.current = card;
+        return card.attach(container);
+      })
+      .then((result) => {
+        if (cancelled || result === null) {
+          return;
+        }
+        setCardReady(true);
+        console.log('[square] [crowdfunding] card attached');
+      })
+      .catch((err) => {
+        if (cancelled) {
+          return;
+        }
+        console.error('[square] [crowdfunding] card init failed', err);
+        const message = err?.message || 'Unable to load the payment form.';
+        setCardError(message);
+        notifyToast(message, { type: 'error' });
+        destroyCard();
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [payments, showForm, activeTier, notifyToast, destroyCard]);
+
+  useEffect(() => {
+    return () => {
+      console.log('[square] [crowdfunding] page unmount cleanup');
+      destroyCard();
+    };
+  }, [destroyCard]);
 
   // On return from Square (?payment=success), confirm and update counters
   useEffect(() => {
@@ -409,13 +541,32 @@ const CrowdfundingPage = () => {
     }
   }, []);
 
+  const tokenizeCard = useCallback(async () => {
+    const card = cardInstanceRef.current;
+    if (!card) {
+      const message = 'Payment form is not ready yet.';
+      notifyToast(message, { type: 'error' });
+      throw new Error(message);
+    }
+    const result = await card.tokenize();
+    console.log('[square] [crowdfunding] tokenize result', result);
+    if (result.status !== 'OK' || !result.token) {
+      const message =
+        (Array.isArray(result.errors) && result.errors[0]?.message) ||
+        'Unable to verify card details.';
+      notifyToast(message, { type: 'error' });
+      throw new Error(message);
+    }
+    return result.token;
+  }, [notifyToast]);
+
   const contribute = async (items) => {
     setPayError('');
     setPaying(true);
     try {
       let token;
       try {
-        token = await tokenize();
+        token = await tokenizeCard();
       } catch (tokErr) {
         throw new Error(tokErr?.message || 'Card not ready');
       }
@@ -457,6 +608,7 @@ const CrowdfundingPage = () => {
       setConfirmMsg('Thanks! Your contribution has been processed.');
     } catch (e) {
       setPayError(e?.message || 'Payment failed');
+      notifyToast(e?.message || 'Payment failed', { type: 'error' });
     } finally {
       setPaying(false);
     }
@@ -697,13 +849,27 @@ const CrowdfundingPage = () => {
               {!showForm && (
                 <Button
                   type="button"
-                  onClick={() => setShowForm(true)}
+                  onClick={() => {
+                    if (!activeTier) {
+                      setFormNotice('Reward tiers are loading. Please try again in a moment.');
+                      return;
+                    }
+                    setSelectedTierId(tierIdentifier(activeTier));
+                    setFormNotice('');
+                    setShowForm(true);
+                  }}
                   className="w-full text-lg h-12"
+                  disabled={!hasPayableTier}
                 >
                   I want pizza
                 </Button>
               )}
-              {showForm && (
+              {(formNotice || (!hasPayableTier && !showForm)) && (
+                <p className="text-sm text-slate-600">
+                  {formNotice || 'Online checkout is temporarily unavailable. Email hello@localeffortfood.com to pledge.'}
+                </p>
+              )}
+              {showForm && activeTier && (
                 <form
                   className="space-y-6"
                   onSubmit={(event) => {
@@ -861,14 +1027,17 @@ const CrowdfundingPage = () => {
                     <Label htmlFor="cf-card-container">Payment details</Label>
                     <div
                       id="cf-card-container"
+                      ref={cardContainerRef}
                       className="border rounded-md p-4 bg-white min-h-[88px]"
                       aria-label="Card payment form"
                     >
-                      {!cardLoaded && !squareConfigError && (
-                        <p className="text-sm text-gray-500">Loading secure payment form...</p>
+                      {!cardReady && !cardError && !paymentsError && (
+                        <p className="text-sm text-gray-500">
+                          {paymentsLoading ? 'Loading secure payment form…' : 'Preparing secure payment form…'}
+                        </p>
                       )}
-                      {squareConfigError && (
-                        <p className="text-sm text-red-600">{squareConfigError}</p>
+                      {(cardError || paymentsError) && (
+                        <p className="text-sm text-red-600">{cardError || paymentsError}</p>
                       )}
                     </div>
                   </div>
@@ -880,7 +1049,15 @@ const CrowdfundingPage = () => {
                   )}
                   <Button
                     type="submit"
-                    disabled={!activeTier || !cardLoaded || paying || !!squareConfigError || !emailValid || !phoneValid}
+                    disabled={
+                      !activeTier ||
+                      !cardReady ||
+                      paying ||
+                      !!cardError ||
+                      !!paymentsError ||
+                      !emailValid ||
+                      !phoneValid
+                    }
                     className="w-full text-lg h-12"
                   >
                     {paying
@@ -914,21 +1091,33 @@ const CrowdfundingPage = () => {
                       />
                     </div>
                     {subscribeMessage && (
-                      <p className={subscribeStatus === 'success' ? 'text-sm text-emerald-600' : 'text-sm text-red-600'}>{subscribeMessage}</p>
+                      <p className={subscribeStatus === 'success' ? 'text-sm text-emerald-600' : 'text-sm text-red-600'}>
+                        {subscribeMessage}
+                      </p>
                     )}
                     <Button type="submit" className="w-full" disabled={subscribeStatus === 'loading'}>
-                      {subscribeStatus === 'loading' ? 'Joining' : 'Stay informed'}
-                  <p>Secure context: {envInfo?.secureContext ? 'true' : 'false'}</p>
-                  <p>Allowed for Square: {envInfo?.secureForSquare ? 'true' : 'false'}</p>
-                  <p>
-                    Host: {envInfo?.hostname || 'unknown'} ({envInfo?.protocol || 'n/a'})
-                  </p>
+                      {subscribeStatus === 'loading' ? 'Subscribing…' : 'Subscribe'}
                     </Button>
                   </form>
                 </CardContent>
               </Card>
-              <SectionHeader overline="Contribute" title="Support Us" />
-              {visibleTiers.map((tier) => {
+
+              {(import.meta?.env?.MODE || process.env.NODE_ENV) !== 'production' && (
+                <div className="mt-4 p-4 border rounded text-xs space-y-1 bg-gray-50">
+                  <p className="font-semibold">Square Diagnostics</p>
+                  <p>SDK URL: {squareSdkUrl}</p>
+                  <p>Environment: {squareEnvironment || 'unknown'}</p>
+                  <p>App ID present: {squareAppId ? 'yes' : 'no'}</p>
+                  <p>Location ID present: {squareLocationId ? 'yes' : 'no'}</p>
+                  <p>Sandbox mode: {squareIsSandbox ? 'true' : 'false'}</p>
+                  <p>Payments ready: {payments ? 'true' : 'false'} | Loading: {paymentsLoading ? 'true' : 'false'}</p>
+                  <p>Card ready: {cardReady ? 'true' : 'false'}</p>
+                  {cardError && <p className="text-red-600">Card error: {cardError}</p>}
+                  {paymentsError && <p className="text-red-600">Payments error: {paymentsError}</p>}
+                </div>
+              )}
+
+              {rewardTiers.map((tier) => {
                 const tierId = tierIdentifier(tier);
                 return (
                   <RewardTierCard
@@ -940,6 +1129,7 @@ const CrowdfundingPage = () => {
                   />
                 );
               })}
+
               {/* Dev diagnostics */}
               {process.env.NODE_ENV !== 'production' && (
                 <div className="mt-8 p-4 border rounded text-xs space-y-1 bg-gray-50">
