@@ -46,6 +46,23 @@ const formatDateLabel = (isoDate, fallbackLabel) => {
   return `${MONTH_NAMES[dateObj.getMonth()]} ${dateObj.getDate()}`;
 };
 
+const getNextScheduledDate = (isoDate, today) => {
+  const baseDate = toLocalDate(isoDate);
+  if (!baseDate) return null;
+  const anchor = new Date(today);
+  anchor.setHours(0, 0, 0, 0);
+  let candidate = new Date(baseDate);
+  let safety = 0;
+  while (candidate < anchor && safety < 10) {
+    candidate.setFullYear(candidate.getFullYear() + 1);
+    safety += 1;
+  }
+  if (candidate < anchor) {
+    return null;
+  }
+  return candidate;
+};
+
 // NOTE: Replaced custom embedded payment logic with shared useSquareCard hook.
 
 const PizzaPartyPage = () => {
@@ -64,15 +81,19 @@ const PizzaPartyPage = () => {
 
   const upcomingDates = PIZZA_PARTY_DATES
     .map((entry) => {
-      const dateObj = toLocalDate(entry.isoDate);
+      const nextDate = getNextScheduledDate(entry.isoDate, startOfToday);
+      if (!nextDate) return null;
+      const isoDate = nextDate.toISOString().slice(0, 10);
+      const label = entry.label || formatDateLabel(isoDate, entry.label);
       return {
         ...entry,
-        label: entry.label || formatDateLabel(entry.isoDate, entry.label),
-        dateObj,
-        weekday: dateObj ? dateObj.toLocaleDateString('en-US', { weekday: 'short' }) : ''
+        label,
+        isoDate,
+        dateObj: nextDate,
+        weekday: nextDate.toLocaleDateString('en-US', { weekday: 'short' })
       };
     })
-    .filter((entry) => entry.dateObj && entry.dateObj >= startOfToday)
+    .filter(Boolean)
     .sort((a, b) => (a.dateObj && b.dateObj ? a.dateObj - b.dateObj : 0));
 
   const availabilityYears = Array.from(new Set(upcomingDates.map((entry) => entry.dateObj?.getFullYear()).filter(Boolean)));
