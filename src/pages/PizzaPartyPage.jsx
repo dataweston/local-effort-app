@@ -137,6 +137,7 @@ const PizzaPartyPage = () => {
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
   const [bookingState, setBookingState] = useState({}); // date => {loading,error,success,paymentId}
+  const [soldOutDates, setSoldOutDates] = useState(() => new Set(SOLD_OUT_OVERRIDES));
   // Only initialize Square when modal is open (reduces race with container not yet in DOM)
   const [showModal, setShowModal] = useState(false);
   const [selectedDate, setSelectedDate] = useState(null);
@@ -633,6 +634,11 @@ const PizzaPartyPage = () => {
           <p>Sandbox: {String(envInfo?.sandbox)}</p>
           <p>App ID present: {envInfo?.appId ? 'yes' : 'no'}</p>
           <p>Location ID present: {envInfo?.locationId ? 'yes' : 'no'}</p>
+          <p>Secure context: {envInfo?.secureContext ? 'true' : 'false'}</p>
+          <p>Allowed for Square: {envInfo?.secureForSquare ? 'true' : 'false'}</p>
+          <p>
+            Host: {envInfo?.hostname || 'unknown'} ({envInfo?.protocol || 'n/a'})
+          </p>
           <p>Card loaded: {cardLoaded ? 'true' : 'false'}</p>
           {cardError && <p className="text-rose-600">Error: {cardError}</p>}
         </div>
