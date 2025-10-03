@@ -147,6 +147,7 @@ const CrowdfundingPage = () => {
   const [showForm, setShowForm] = useState(false);
   const [pizzaQty, setPizzaQty] = useState(1);
   const [confirmMsg, setConfirmMsg] = useState('');
+  const [formNotice, setFormNotice] = useState('');
   const [referralInput, setReferralInput] = useState('');
   const [referralState, setReferralState] = useState({ status: 'idle', valid: false, participant: null, code: '' });
   const [selectedTierId, setSelectedTierId] = useState('');
@@ -289,6 +290,10 @@ const CrowdfundingPage = () => {
       return true;
     });
   }, [rewardTiers, referralState]);
+  const hasPayableTier = useMemo(
+    () => visibleTiers.some((t) => typeof t?.amount === 'number' && t.amount > 0),
+    [visibleTiers]
+  );
   const firstPayTier = useMemo(
     () => visibleTiers.find(t => typeof t?.amount === 'number' && t.amount > 0) || null,
     [visibleTiers]
@@ -299,6 +304,23 @@ const CrowdfundingPage = () => {
     const exists = visibleTiers.some((tier) => tierIdentifier(tier) === selectedTierId);
     if (!exists) setSelectedTierId('');
   }, [selectedTierId, visibleTiers]);
+
+  useEffect(() => {
+    if (showForm && !activeTier) {
+      setShowForm(false);
+      setFormNotice(
+        hasPayableTier
+          ? 'That reward is no longer available. Please pick another tier to continue.'
+          : 'Online checkout is temporarily unavailable. Email hello@localeffortfood.com to pledge.'
+      );
+    }
+  }, [showForm, activeTier, hasPayableTier]);
+
+  useEffect(() => {
+    if (!showForm && hasPayableTier && activeTier) {
+      setFormNotice('');
+    }
+  }, [showForm, hasPayableTier, activeTier]);
 
   const activeTier = useMemo(() => {
     if (selectedTierId) {
@@ -315,7 +337,12 @@ const CrowdfundingPage = () => {
   }, [activeTier]);
 
   const handleTierSelect = (tier) => {
+    if (!tier || typeof tier.amount !== 'number' || tier.amount <= 0) {
+      setFormNotice('Online checkout is only available for paid rewards. Please choose another tier.');
+      return;
+    }
     setSelectedTierId(tierIdentifier(tier));
+    setFormNotice('');
     setShowForm(true);
   };
 
@@ -697,13 +724,27 @@ const CrowdfundingPage = () => {
               {!showForm && (
                 <Button
                   type="button"
-                  onClick={() => setShowForm(true)}
+                  onClick={() => {
+                    if (!activeTier) {
+                      setFormNotice('Reward tiers are loading. Please try again in a moment.');
+                      return;
+                    }
+                    setSelectedTierId(tierIdentifier(activeTier));
+                    setFormNotice('');
+                    setShowForm(true);
+                  }}
                   className="w-full text-lg h-12"
+                  disabled={!hasPayableTier}
                 >
                   I want pizza
                 </Button>
               )}
-              {showForm && (
+              {(formNotice || (!hasPayableTier && !showForm)) && (
+                <p className="text-sm text-slate-600">
+                  {formNotice || 'Online checkout is temporarily unavailable. Email hello@localeffortfood.com to pledge.'}
+                </p>
+              )}
+              {showForm && activeTier && (
                 <form
                   className="space-y-6"
                   onSubmit={(event) => {
