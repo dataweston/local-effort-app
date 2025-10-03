@@ -147,18 +147,48 @@ export function useSquareCard(containerId, enabled, deps = []) {
     attempts: 0,
   });
 
+  const cleanupContainer = useCallback(() => {
+    if (typeof document === 'undefined') return;
+    try {
+      const node =
+        typeof containerId === 'string' ? document.querySelector(containerId) : containerId;
+      if (node && node.childNodes && node.childNodes.length > 0) {
+        node.innerHTML = '';
+      }
+    } catch (_) {
+      // ignore cleanup issues
+    }
+  }, [containerId]);
+
+  const destroyCardInstance = useCallback(() => {
+    const card = cardRef.current;
+    if (!card) return;
+    cardRef.current = null;
+    attachStartedRef.current = false;
+    try {
+      const maybePromise = typeof card.destroy === 'function' ? card.destroy() : undefined;
+      if (maybePromise && typeof maybePromise.then === 'function') {
+        maybePromise.catch(() => {});
+      }
+    } catch (_) {
+      // ignore destroy issues
+    }
+    cleanupContainer();
+    setCardLoaded(false);
+  }, [cleanupContainer]);
+
   // Allow consumer to manually force a remount (e.g., when reopening a modal)
   const reset = useCallback(() => {
     try {
-      cardRef.current = null;
+      destroyCardInstance();
       paymentsRef.current = null;
-      attachStartedRef.current = false;
-      setCardLoaded(false);
       setError('');
       setAttempts(0);
       attemptsRef.current = 0;
-    } catch (_) { /* ignore */ }
-  }, []);
+    } catch (_) {
+      /* ignore */
+    }
+  }, [destroyCardInstance]);
 
   // Inject script (once)
   useEffect(() => {
@@ -317,9 +347,7 @@ export function useSquareCard(containerId, enabled, deps = []) {
         const container = await waitForContainer();
         if (signal.aborted) return;
         attachStartedRef.current = true;
-        if (container && container.childNodes && container.childNodes.length > 0) {
-          container.innerHTML = '';
-        }
+        cleanupContainer();
         await card.attach(container);
         if (!signal.aborted) {
           cardRef.current = card;
@@ -360,8 +388,10 @@ export function useSquareCard(containerId, enabled, deps = []) {
     init();
     return () => {
       abortController.abort();
+      destroyCardInstance();
+      paymentsRef.current = null;
     };
-  }, [enabled, containerId, ...deps]);
+  }, [enabled, containerId, destroyCardInstance, cleanupContainer, ...deps]);
 
   useEffect(() => {
     setEnvInfo(info => ({ ...info, attempts }));
