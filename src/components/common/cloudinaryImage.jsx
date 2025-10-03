@@ -36,7 +36,7 @@ const cld = new Cloudinary({
  */
 import { useState, useEffect, useRef } from 'react';
 
-const CloudinaryImage = ({ publicId, alt, width, height, className, containerClassName, imgClassName, containerStyle, disableLazy = false, fallbackSrc, resizeMode = 'fill', placeholderMode = 'blur', sizes, responsiveSteps = [480, 768, 1024, 1400], eager = false }) => {
+const CloudinaryImage = ({ publicId, alt, width, height, className, containerClassName, imgClassName, containerStyle, disableLazy = false, fallbackSrc, resizeMode = 'fill', placeholderMode = 'blur', sizes, responsiveSteps = [480, 768, 1024, 1400], eager = false, version }) => {
   const [loaded, setLoaded] = useState(false);
   const [error, setError] = useState(false);
   const imgRef = useRef(null);
@@ -53,11 +53,18 @@ const CloudinaryImage = ({ publicId, alt, width, height, className, containerCla
 
   // Use the public ID to get the image object from Cloudinary
   const myImage = cld.image(publicId);
+  if (version) {
+    myImage.setVersion(version);
+  }
 
   // Build a small blurred placeholder URL (low-res but not tiny so it looks better on slow networks)
   const phW = 80; // small preview width
   const phH = Math.max(20, Math.round((height || 80) * (phW / (width || 80))));
-  const placeholderImg = cld.image(publicId).resize(fill(phW, phH)).quality(20).format(formatAuto());
+  const placeholderImg = cld.image(publicId);
+  if (version) {
+    placeholderImg.setVersion(version);
+  }
+  placeholderImg.resize(fill(phW, phH)).quality(20).format(formatAuto());
   const placeholderUrl = placeholderImg.toURL();
 
   // Apply standard optimizations and transformations using the correctly imported functions
@@ -126,7 +133,7 @@ const CloudinaryImage = ({ publicId, alt, width, height, className, containerCla
       if (el && onLoad) el.removeEventListener('load', onLoad);
       if (el && onError) el.removeEventListener('error', onError);
     };
-  }, [publicId]);
+  }, [publicId, version]);
 
   if (error && fallbackSrc) {
     return (

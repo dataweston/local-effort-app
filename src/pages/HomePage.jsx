@@ -6,7 +6,7 @@ import { motion } from 'framer-motion';
 import { fadeInUp, fadeInLeft } from '../utils/animations';
 import CloudinaryImage from '../components/common/cloudinaryImage'; // Import the Cloudinary image component
 import { useEffect } from 'react';
-import { cloudinaryConfig, heroPublicId, heroFallbackSrc } from '../data/cloudinaryContent';
+import { cloudinaryConfig, heroPublicId, heroFallbackSrc, heroVersion } from '../data/cloudinaryContent';
 import TestimonialsCarousel from '../components/common/TestimonialsCarousel';
 import sanityClient from '../sanityClient';
 import { PortableText } from '@portabletext/react';
@@ -155,13 +155,18 @@ const HomePage = () => {
   };
 
   // --- NEW: Define image data for both the component and structured data ---
-  const heroImage = { publicId: heroPublicId, alt: 'Local Effort — hero' };
+  const heroImage = {
+    publicId: heroPublicId,
+    alt: 'Local Effort — hero',
+    version: heroVersion,
+  };
+  const heroVersionSegment = heroImage.version ? `/v${heroImage.version}` : '';
 
   // --- NEW: Define the JSON-LD structured data object for SEO ---
   const imageJsonLd = {
     '@context': 'https://schema.org',
     '@type': 'ImageObject',
-  contentUrl: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/f_auto,q_auto/${heroImage.publicId}`,
+    contentUrl: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/f_auto,q_auto${heroVersionSegment}/${heroImage.publicId}`,
     name: heroImage.alt,
     description: 'A sample of the professional in-home dining experience by Local Effort.',
     creator: {
@@ -435,8 +440,8 @@ const HomePage = () => {
         <link
           rel="preload"
           as="image"
-          href={`https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/f_auto,q_auto,w_1200/${heroImage.publicId}`}
-          imageSrcSet={`https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/f_auto,q_auto,w_600/${heroImage.publicId} 600w, https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/f_auto,q_auto,w_1200/${heroImage.publicId} 1200w, https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/f_auto,q_auto,w_1800/${heroImage.publicId} 1800w`}
+          href={`https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/f_auto,q_auto,w_1200${heroVersionSegment}/${heroImage.publicId}`}
+          imageSrcSet={`https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/f_auto,q_auto,w_600${heroVersionSegment}/${heroImage.publicId} 600w, https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/f_auto,q_auto,w_1200${heroVersionSegment}/${heroImage.publicId} 1200w, https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/f_auto,q_auto,w_1800${heroVersionSegment}/${heroImage.publicId} 1800w`}
           imageSizes="(min-width: 1024px) 50vw, 100vw"
         />
         {/* --- NEW: Inject the structured data into the page head --- */}
@@ -566,6 +571,7 @@ const HomePage = () => {
           >
             <CloudinaryImage
               publicId={heroImage.publicId}
+              version={heroImage.version}
               alt={heroImage.alt}
               width={1200}
               height={800}

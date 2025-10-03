@@ -10,12 +10,13 @@ import {
   SITE_URL,
   SOCIAL_LINKS,
 } from '../../config/siteMetadata';
-import { cloudinaryConfig, heroPublicId, heroFallbackSrc } from '../../data/cloudinaryContent';
+import { cloudinaryConfig, heroPublicId, heroFallbackSrc, heroVersion } from '../../data/cloudinaryContent';
 
 const buildOgImageUrl = () => {
   const cloudName = cloudinaryConfig?.cloudName;
   if (cloudName && heroPublicId) {
-    return `https://res.cloudinary.com/${cloudName}/image/upload/f_auto,q_auto,w_1200/${heroPublicId}.jpg`;
+    const versionSegment = heroVersion ? `/v${heroVersion}` : '';
+    return `https://res.cloudinary.com/${cloudName}/image/upload/f_auto,q_auto,w_1200${versionSegment}/${heroPublicId}.jpg`;
   }
   if (heroFallbackSrc) {
     return `${SITE_URL}${heroFallbackSrc}`;
