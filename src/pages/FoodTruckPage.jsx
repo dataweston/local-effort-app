@@ -194,7 +194,9 @@ const FoodTruckPage = () => {
               </p>
             </div>
             <p className="text-neutral-700 text-sm">
-              Most events land between $1200–$4000 depending on menu depth and guest count. Depending on the style of event, we can feed 75-150 people in a 2-3 hour period.
+              Most events land between $1200–$4000 depending on menu depth and guest count. Depending on the style of event,
+              we can feed 75-150 people in a 2-3 hour period.
+            </p>
           </div>
         </motion.div>
 
