@@ -12,7 +12,7 @@ const FoodTruckPage = () => {
   const canonical = "https://localeffort.app/book-food-truck";
   const title = "Book the Local Effort Food Truck";
   const description =
-    "Book a food truck in Minneapolis with Local Effort's personal chef team. Custom Midwest menus, wood-fired favorites, and a beta launch discount on our $1000 minimum commitment.";
+    "Book a food truck in Minneapolis with Local Effort's personal chef team. Custom Midwest menus, pizzas, and a beta launch discount on our $1000 minimum commitment.";
   const keywords = [
     "book a chef",
     "personal chef",
@@ -25,17 +25,12 @@ const FoodTruckPage = () => {
     {
       question: "How much does a food truck cost for a private event?",
       answer:
-        "Most Minneapolis food truck rentals with Local Effort range from $1,000 to $2,300. The first three beta bookings lock in a $200 discount on the $1,000 minimum, with pricing adjusted based on menu depth and guest count."
-    },
-    {
-      question: "Can I book a personal chef with the food truck?",
-      answer:
-        "Yes. Our personal chef team plans the menu, cooks on site, and hosts your guests. We handle dietary requests, staffing, and execution so you can focus on the event."
+        "Our price starts at $1200, with per person costs generally ranging from $20-$65 depending on format, menu depth, and guest count. The first three beta bookings lock in a $200 discount."
     },
     {
       question: "Do you travel outside Minneapolis for food truck service?",
       answer:
-        "We serve the Twin Cities metro, including Minneapolis and St. Paul, plus roughly a 60-mile radius. Let us know if you need the truck farther out and we will customize a travel plan."
+        "We serve the Twin Cities metro, including Minneapolis and St. Paul, plus roughly a 30-mile radius."
     },
     {
       question: "How do I book the Local Effort food truck?",
@@ -57,7 +52,7 @@ const FoodTruckPage = () => {
       name: "Local Effort",
       url: canonical.replace("/book-food-truck", "/"),
       sameAs: [
-        "https://www.instagram.com/local_effort",
+        "https://www.instagram.com/localeffort",
         "https://www.facebook.com/localeffort"
       ]
     },
@@ -123,13 +118,13 @@ const FoodTruckPage = () => {
                 Beta
               </span>
             </p>
-            <h1 className="heading-display heading-balance">Wood-fired food truck for private events</h1>
+            <h1 className="heading-display heading-balance">Local Effort on Wheels - a food truck for private events</h1>
             <div className="space-y-4 text-lg md:text-xl text-neutral-700 leading-relaxed">
               <p>
                 We're in beta launch mode and rolling out the Local Effort truck to a handful of events. The first three hosts to book lock in <span className="font-semibold text-rose-500">$200 off</span> their event.
               </p>
               <p>
-                We bring the oven, chefs, and hospitality team to your venue with menus grounded in Midwest ingredients, humble presentation, and nutrition-forward dishes. Expect pizza, sandwiches, salads, rice dishes, and seasonal farm-to-table touches.
+                We bring the chefs, the hospitality team, the local ingredients, and now the kitchen, to your venue with menus grounded in Midwest ingredients, humble presentation, and nutrition-forward dishes. Menu options include bbq, sourdough pizza, sandwiches, salads, rice dishes, and seasonal farm-to-table touches.
               </p>
             </div>
             <div className="flex flex-wrap gap-3 items-center">
@@ -150,13 +145,13 @@ const FoodTruckPage = () => {
             transition={{ duration: 0.5, delay: 0.1 }}
             className="rounded-2xl border border-orange-200 bg-white/70 backdrop-blur-sm shadow-xl p-6 space-y-4"
           >
-            <h2 className="text-lg font-semibold text-neutral-800">What you can expect</h2>
+            <h2 className="text-lg font-semibold text-neutral-800">What we offer</h2>
             <ul className="space-y-3 text-sm text-neutral-700">
               <li>
-                <span className="font-medium text-neutral-900">Full-service crew:</span> chef, fire tender, and hospitality lead to coordinate guest flow and service for kids parties, sports events, weddings, and corporate gatherings.
+                <span className="font-medium text-neutral-900">Full-service crew:</span> the chefs and our hospitality team coordinate guest flow and service for kids parties, sports events, weddings, and corporate gatherings.
               </li>
               <li>
-                <span className="font-medium text-neutral-900">Classic Local Effort flavor:</span> Midwest cuisine, local ingredients, humble presentation, and nutrition-forward plates.
+                <span className="font-medium text-neutral-900">Classic Local Effort options:</span> Midwest cuisine, local ingredients, humble presentation, and nutrition-forward plates.
               </li>
               <li>
                 <span className="font-medium text-neutral-900">Customizable menus:</span> pizzas fresh off the deck, hearty sandwiches, composed salads, rice dishes, and seasonal farm-to-table surprises.
@@ -165,81 +160,14 @@ const FoodTruckPage = () => {
                 <span className="font-medium text-neutral-900">Self-contained setup:</span> all cooking happens on the truck. We just need a reasonably level spot (20' x 10') and access to power (15A) if service extends after dusk.
               </li>
               <li>
-                <span className="font-medium text-neutral-900">Travel radius:</span> Twin Cities metro plus the surrounding 60 miles. Let us know if you need us farther out.
+                <span className="font-medium text-neutral-900">Travel radius:</span> Twin Cities metro plus the surrounding 30 miles.
               </li>
             </ul>
           </motion.div>
         </div>
       </section>
 
-      <section
-        id="food-truck-minneapolis"
-        className="bg-white py-16 md:py-20 border-b border-neutral-100"
-      >
-        <div className="mx-auto max-w-6xl px-4 md:px-6 lg:px-8 grid gap-12 lg:grid-cols-[1.2fr_1fr] items-start">
-          <motion.div
-            initial="hidden"
-            whileInView="show"
-            viewport={{ once: true, amount: 0.2 }}
-            variants={fade}
-            transition={{ duration: 0.45 }}
-            className="space-y-6 text-neutral-700 text-base leading-relaxed"
-          >
-            <h2 className="heading-lg">Food truck catering in Minneapolis and beyond</h2>
-            <p>
-              Local Effort pairs a wood-fired food truck with a <span className="font-semibold text-neutral-900">personal chef</span> team so you can <span className="font-semibold text-neutral-900">book a chef</span> and a mobile kitchen in one move. We design Midwest-forward menus, handle staffing, and make sure service runs smoothly for weddings, corporate retreats, block parties, and backyard celebrations across Minneapolis and St. Paul.
-            </p>
-            <p>
-              Whether you want Detroit-style pies, composed salads, or comfort staples like smoked pork sandwiches, the truck is outfitted for high-volume cooking with scratch-made ingredients. Tell us about your guests and we'll customize the service to match dietary needs, timing, and budget.
-            </p>
-            <p>
-              Curious about pricing? Most hosts ask, <em className="italic">how much does a food truck cost?</em> Our beta launch special locks in a $1,000 minimum with incentives for early bookings. From there, we scale portions, add dessert or bar partners, and manage on-site flow so your guests feel taken care of from the first slice to the last goodbye.
-            </p>
-          </motion.div>
-          <motion.div
-            initial="hidden"
-            whileInView="show"
-            viewport={{ once: true, amount: 0.2 }}
-            variants={fade}
-            transition={{ duration: 0.45, delay: 0.1 }}
-            className="rounded-2xl border border-neutral-200 bg-neutral-50 p-6 space-y-6"
-          >
-            <div className="space-y-2">
-              <h3 className="text-lg font-semibold text-neutral-900">Fast facts</h3>
-              <p className="text-sm text-neutral-600">
-                Download the essentials to <span className="font-medium text-neutral-900">book a food truck in Minneapolis</span> with confidence.
-              </p>
-            </div>
-            <dl className="space-y-4 text-sm text-neutral-700">
-              <div className="flex justify-between gap-3">
-                <dt className="font-medium text-neutral-900">Chef-led experience</dt>
-                <dd className="text-right">
-                  Personal chefs plan and execute your menu, including vegan, gluten-free, and kid-friendly options.
-                </dd>
-              </div>
-              <div className="flex justify-between gap-3">
-                <dt className="font-medium text-neutral-900">Service range</dt>
-                <dd className="text-right">
-                  Minneapolis, St. Paul, Twin Cities suburbs, and 60-mile radius—with custom quotes for longer travel.
-                </dd>
-              </div>
-              <div className="flex justify-between gap-3">
-                <dt className="font-medium text-neutral-900">Budget guide</dt>
-                <dd className="text-right">
-                  Most events fall between $1,000 and $2,300 depending on guest count and menu depth.
-                </dd>
-              </div>
-              <div className="flex justify-between gap-3">
-                <dt className="font-medium text-neutral-900">Ideal events</dt>
-                <dd className="text-right">
-                  Weddings, graduation parties, corporate lunches, sports banquets, festivals, and neighborhood nights.
-                </dd>
-              </div>
-            </dl>
-            <FoodTruckDialog triggerClassName="w-full justify-center py-3 text-base" />
-          </motion.div>
-        </div>
-      </section>
+
 
       <section className="mx-auto max-w-6xl px-4 md:px-6 lg:px-8 py-16 space-y-14">
         <motion.div initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.2 }} variants={fade} transition={{ duration: 0.4 }} className="grid md:grid-cols-2 gap-10">
@@ -253,7 +181,7 @@ const FoodTruckPage = () => {
             </ol>
           </div>
           <div className="space-y-4">
-            <h3 className="text-lg font-semibold text-neutral-900">Three ways to hit the $1000 minimum</h3>
+            <h3 className="text-lg font-semibold text-neutral-900">Three ways to hit the $1200 minimum</h3>
             <div className="space-y-3 text-neutral-700 text-sm leading-relaxed">
               <p>
                 <span className="font-semibold text-neutral-900">Cover the whole fee:</span> Guests eat free and you capture the full beta discount.
@@ -266,35 +194,11 @@ const FoodTruckPage = () => {
               </p>
             </div>
             <p className="text-neutral-700 text-sm">
-              Most events land between $1000–$2300 depending on menu depth and guest count. Need bar service or dessert? We can layer those in or partner with trusted vendors.
-            </p>
+              Most events land between $1200–$4000 depending on menu depth and guest count. Depending on the style of event, we can feed 75-150 people in a 2-3 hour period.
           </div>
         </motion.div>
 
-        <motion.div initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.2 }} variants={fade} transition={{ duration: 0.4, delay: 0.1 }} className="grid md:grid-cols-3 gap-6">
-          <FeatureCard
-            title="Custom menu planning"
-            body="Collaborative planning call to dial in pizza, sandwiches, salads, rice dishes, and seasonal touches for your crowd."
-          />
-          <FeatureCard
-            title="Hospitality-first experience"
-            body="We organize service windows to keep lines short, coordinate dietary accommodations, and make sure every guest feels cared for."
-          />
-          <FeatureCard
-            title="Simple wrap-up"
-            body="We clean and clear the service area, dispose of waste, and leave the space better than we found it."
-          />
-        </motion.div>
 
-        <motion.div initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.2 }} variants={fade} transition={{ duration: 0.4, delay: 0.15 }} className="rounded-2xl border border-neutral-200 bg-neutral-50 p-8 md:p-10 space-y-6">
-          <div className="max-w-2xl space-y-3">
-            <h2 className="heading-lg">Lets fire up the truck</h2>
-            <p className="text-neutral-700 text-sm md:text-base leading-relaxed">
-              Share a few details about your event and we'll get back within 24 hours with availability, menu ideas, and a quote. Mention the beta launch to claim the $200 discount if you're one of the first three bookings. We can also hop on a quick call if that's easier.
-            </p>
-          </div>
-          <FoodTruckDialog triggerClassName="px-6 py-3 text-base" />
-        </motion.div>
         <motion.section
           initial="hidden"
           whileInView="show"
