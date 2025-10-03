@@ -573,8 +573,6 @@ const HomePage = () => {
               publicId={heroImage.publicId}
               version={heroImage.version}
               alt={heroImage.alt}
-              width={1200}
-              height={800}
               containerClassName="w-full h-full"
               imgClassName="w-full h-full object-cover object-center"
               fallbackSrc={heroFallbackSrc}
