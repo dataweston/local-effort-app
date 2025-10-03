@@ -1091,10 +1091,20 @@ const CrowdfundingPage = () => {
                       />
                     </div>
                     {subscribeMessage && (
-                      <p className={subscribeStatus === 'success' ? 'text-sm text-emerald-600' : 'text-sm text-red-600'}>{subscribeMessage}</p>
+                      <p className={subscribeStatus === 'success' ? 'text-sm text-emerald-600' : 'text-sm text-red-600'}>
+                        {subscribeMessage}
+                      </p>
                     )}
                     <Button type="submit" className="w-full" disabled={subscribeStatus === 'loading'}>
+                      {subscribeStatus === 'loading' ? 'Subscribing…' : 'Subscribe'}
+                    </Button>
+                  </form>
+                </CardContent>
+              </Card>
+
               {(import.meta?.env?.MODE || process.env.NODE_ENV) !== 'production' && (
+                <div className="mt-4 p-4 border rounded text-xs space-y-1 bg-gray-50">
+                  <p className="font-semibold">Square Diagnostics</p>
                   <p>SDK URL: {squareSdkUrl}</p>
                   <p>Environment: {squareEnvironment || 'unknown'}</p>
                   <p>App ID present: {squareAppId ? 'yes' : 'no'}</p>
@@ -1104,6 +1114,10 @@ const CrowdfundingPage = () => {
                   <p>Card ready: {cardReady ? 'true' : 'false'}</p>
                   {cardError && <p className="text-red-600">Card error: {cardError}</p>}
                   {paymentsError && <p className="text-red-600">Payments error: {paymentsError}</p>}
+                </div>
+              )}
+
+              {rewardTiers.map((tier) => {
                 const tierId = tierIdentifier(tier);
                 return (
                   <RewardTierCard
@@ -1115,6 +1129,7 @@ const CrowdfundingPage = () => {
                   />
                 );
               })}
+
               {/* Dev diagnostics */}
               {process.env.NODE_ENV !== 'production' && (
                 <div className="mt-8 p-4 border rounded text-xs space-y-1 bg-gray-50">
