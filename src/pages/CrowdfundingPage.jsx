@@ -368,7 +368,19 @@ const CrowdfundingPage = () => {
   const title = campaignTitle || 'Crowdfunding';
 
   // Initialize shared Square card (enabled only when a payable tier exists)
-  const { cardLoaded, error: squareConfigError, tokenize, envInfo } = useSquareCard('#cf-card-container', !!activeTier, [activeTier?.amount]);
+  const {
+    cardLoaded,
+    error: squareConfigError,
+    tokenize,
+    envInfo,
+    reset: resetSquareCard,
+  } = useSquareCard('#cf-card-container', showForm && !!activeTier, [showForm, activeTier?.amount]);
+
+  useEffect(() => {
+    if (!showForm) {
+      resetSquareCard();
+    }
+  }, [showForm, resetSquareCard]);
 
   // On return from Square (?payment=success), confirm and update counters
   useEffect(() => {
