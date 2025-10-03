@@ -54,6 +54,27 @@ const readSquareRuntimeConfig = () => {
   };
 };
 
+const getSquareSecurityState = () => {
+  if (typeof window === 'undefined') {
+    return {
+      secureContext: false,
+      secureForSquare: false,
+      hostname: '',
+      protocol: '',
+    };
+  }
+  const { protocol = '', hostname = '' } = window.location || {};
+  const normalizedProtocol = protocol.toLowerCase();
+  const secureContext = typeof window.isSecureContext === 'boolean' ? window.isSecureContext : normalizedProtocol === 'https:';
+  const secureForSquare = normalizedProtocol === 'https:' || hostname === 'localhost';
+  return {
+    secureContext,
+    secureForSquare,
+    hostname,
+    protocol: normalizedProtocol,
+  };
+};
+
 const ensureSquareSdkScript = (sdkUrl, isSandbox) => {
   if (typeof window === 'undefined' || typeof document === 'undefined') {
     return Promise.reject(new Error('Square SDK requires a browser environment.'));
@@ -137,6 +158,7 @@ export function useSquareCard(containerId, enabled, deps = []) {
   const [error, setError] = useState('');
   const [loadingScript, setLoadingScript] = useState(false);
   const attachStartedRef = useRef(false);
+  const securityState = getSquareSecurityState();
   const [envInfo, setEnvInfo] = useState({
     appId: null,
     locationId: null,
@@ -145,6 +167,10 @@ export function useSquareCard(containerId, enabled, deps = []) {
     mismatch: false,
     environment: null,
     attempts: 0,
+    secureContext: securityState.secureContext,
+    secureForSquare: securityState.secureForSquare,
+    hostname: securityState.hostname,
+    protocol: securityState.protocol,
   });
 
   const cleanupContainer = useCallback(() => {
@@ -196,6 +222,7 @@ export function useSquareCard(containerId, enabled, deps = []) {
     let cancelled = false;
     const config = readSquareRuntimeConfig();
 
+    const security = getSquareSecurityState();
     setEnvInfo((info) => ({
       ...info,
       appId: config.appId,
@@ -204,7 +231,17 @@ export function useSquareCard(containerId, enabled, deps = []) {
       sandbox: config.isSandbox,
       environment: config.environment,
       mismatch: false,
+      secureContext: security.secureContext,
+      secureForSquare: security.secureForSquare,
+      hostname: security.hostname,
+      protocol: security.protocol,
     }));
+
+    if (!security.secureForSquare) {
+      setLoadingScript(false);
+      setError('Payments require HTTPS or running on http://localhost.');
+      return;
+    }
 
     setLoadingScript(true);
     ensureSquareSdkScript(config.sdkUrl, config.isSandbox)
@@ -230,6 +267,20 @@ export function useSquareCard(containerId, enabled, deps = []) {
     const abortController = new AbortController();
     const { signal } = abortController;
     const config = readSquareRuntimeConfig();
+    const security = getSquareSecurityState();
+
+    setEnvInfo((info) => ({
+      ...info,
+      secureContext: security.secureContext,
+      secureForSquare: security.secureForSquare,
+      hostname: security.hostname,
+      protocol: security.protocol,
+    }));
+
+    if (!security.secureForSquare) {
+      setError('Payments require HTTPS or running on http://localhost.');
+      return () => abortController.abort();
+    }
 
     if (!config.appId || !config.locationId) {
       setError('Payment not available: missing Square configuration.');
@@ -362,7 +413,9 @@ export function useSquareCard(containerId, enabled, deps = []) {
         }
         const msg = e?.message || 'Payment initialization failed';
         attachStartedRef.current = false;
-        if (msg.includes('Invalid App ID')) {
+        if (msg.includes('secure context')) {
+          setError('Payments require HTTPS or running on http://localhost.');
+        } else if (msg.includes('Invalid App ID')) {
           setError('Invalid Square App ID.');
         } else if (msg.includes('Unexpected token')) {
           setError('Payment script parse error.');
