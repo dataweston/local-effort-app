@@ -30,7 +30,6 @@ const WeeklyPost = lazy(() => import('./pages/WeeklyPost'));
 const GalleryPage = lazy(() => import('./pages/GalleryPage'));
 // --- NEW: Lazily import the MealPrepPage ---
 const MealPrepPage = lazy(() => import('./pages/MealPrepPage'));
-const FoodTruckPage = lazy(() => import('./pages/FoodTruckPage'));
 // --- NEW: Sale page ---
 const SalePage = lazy(() => import('./pages/SalePage'));
 const ProductPage = lazy(() => import('./pages/ProductPage'));
