@@ -1,0 +1,72 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "#/components/schemas/Invoice",
+  "type": "object",
+  "required": [
+    "id",
+    "orgId",
+    "period",
+    "periodStart",
+    "periodEnd",
+    "subtotal",
+    "total"
+  ],
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "orgId": {
+      "type": "string"
+    },
+    "period": {
+      "$ref": "#/components/schemas/InvoicePeriod"
+    },
+    "periodStart": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "periodEnd": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "subtotal": {
+      "type": "number",
+      "format": "float"
+    },
+    "deliveryTotal": {
+      "type": "number",
+      "format": "float"
+    },
+    "tipsTotal": {
+      "type": "number",
+      "format": "float"
+    },
+    "discountsTotal": {
+      "type": "number",
+      "format": "float"
+    },
+    "taxesTotal": {
+      "type": "number",
+      "format": "float"
+    },
+    "paymentFees": {
+      "type": "number",
+      "format": "float"
+    },
+    "total": {
+      "type": "number",
+      "format": "float"
+    },
+    "status": {
+      "type": "string"
+    },
+    "createdAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "updatedAt": {
+      "type": "string",
+      "format": "date-time"
+    }
+  }
+}

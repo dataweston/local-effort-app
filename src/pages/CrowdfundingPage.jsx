@@ -129,10 +129,11 @@ RewardTierCard.propTypes = {
 // --- Main Page Component ---
 const tierIdentifier = (tier) => (tier?._id || tier?.id || tier?.title || '').toString();
 
-const UPDATE_OPTIONS = [
-  { value: 'none', label: 'No emails' },
-  { value: 'important', label: 'Important milestones' },
-  { value: 'all', label: 'All updates' },
+const REWARD_PREFERENCE_OPTIONS = [
+  { value: 'public pizza party', label: 'Public pizza party' },
+  { value: 'deliver to my home', label: 'Deliver to my home' },
+  { value: 'make live at my home', label: 'Make live at my home' },
+  { value: "i'm open or im not sure", label: "I’m open or I’m not sure" },
 ];
 
 const CrowdfundingPage = () => {
@@ -144,7 +145,7 @@ const CrowdfundingPage = () => {
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [notes, setNotes] = useState('');
-  const [notify, setNotify] = useState('none'); // 'none' | 'all' | 'important'
+  const notify = 'none';
   const [showForm, setShowForm] = useState(false);
   const [pizzaQty, setPizzaQty] = useState(1);
   const [confirmMsg, setConfirmMsg] = useState('');
@@ -155,6 +156,7 @@ const CrowdfundingPage = () => {
   const [subscribeEmail, setSubscribeEmail] = useState('');
   const [subscribeStatus, setSubscribeStatus] = useState('idle'); // idle | loading | success | error
   const [subscribeMessage, setSubscribeMessage] = useState('');
+  const [rewardPreference, setRewardPreference] = useState(REWARD_PREFERENCE_OPTIONS[0].value);
   // Gallery state (lazy-loaded when tab activated)
   const [galleryImages, setGalleryImages] = useState([]);
   const [galleryLoading, setGalleryLoading] = useState(false);
@@ -315,10 +317,25 @@ const CrowdfundingPage = () => {
   }, [selectedTierId, visibleTiers, firstPayTier]);
 
   const activeTierId = useMemo(() => tierIdentifier(activeTier), [activeTier]);
+  const currencyFormatter = useMemo(
+    () =>
+      new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: 'USD',
+      }),
+    []
+  );
+
   const activeTierAmountLabel = useMemo(() => {
     if (!activeTier || typeof activeTier.amount !== 'number') return '';
-    return `$${activeTier.amount.toLocaleString()}`;
-  }, [activeTier]);
+    return currencyFormatter.format(activeTier.amount);
+  }, [activeTier, currencyFormatter]);
+
+  const activeTierTotalLabel = useMemo(() => {
+    if (!activeTier || typeof activeTier.amount !== 'number') return '';
+    const total = activeTier.amount * pizzaQty;
+    return currencyFormatter.format(total);
+  }, [activeTier, pizzaQty, currencyFormatter]);
 
   useEffect(() => {
     if (showForm && !activeTier) {
@@ -582,6 +599,7 @@ const CrowdfundingPage = () => {
         email: email.trim() || undefined,
         phone: phone.trim() || undefined,
         notes: notes || undefined,
+        rewardPreference,
         notify,
         token,
         pizzaQty,
@@ -1007,21 +1025,30 @@ const CrowdfundingPage = () => {
                     />
                   </div>
                   <div className="space-y-2">
-                    <span className="text-sm font-semibold text-slate-700">Campaign updates</span>
-                    <div className="grid gap-2 sm:grid-cols-3">
-                      {UPDATE_OPTIONS.map((option) => (
-                        <Button
+                    <span className="text-sm font-semibold text-slate-700">Preferred reward setting</span>
+                    <fieldset className="grid gap-2 sm:grid-cols-2" role="group" aria-label="Preferred reward setting">
+                      {REWARD_PREFERENCE_OPTIONS.map((option) => (
+                        <label
                           key={option.value}
-                          type="button"
-                          variant={notify === option.value ? 'secondary' : 'outline'}
-                          aria-pressed={notify === option.value}
-                          onClick={() => setNotify(option.value)}
-                          className="justify-center"
+                          className={cn(
+                            'flex items-center gap-2 rounded-md border border-slate-200 bg-white px-3 py-2 text-sm shadow-sm transition-colors',
+                            rewardPreference === option.value
+                              ? 'border-[var(--color-accent)] ring-1 ring-[var(--color-accent)]'
+                              : 'hover:border-[var(--color-accent)]'
+                          )}
                         >
-                          {option.label}
-                        </Button>
+                          <input
+                            type="radio"
+                            name="rewardPreference"
+                            value={option.value}
+                            checked={rewardPreference === option.value}
+                            onChange={(event) => setRewardPreference(event.target.value)}
+                            className="h-4 w-4 border-slate-300 text-[var(--color-accent)] focus:ring-[var(--color-accent)]"
+                          />
+                          <span className="text-slate-700">{option.label}</span>
+                        </label>
                       ))}
-                    </div>
+                    </fieldset>
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="cf-card-container">Payment details</Label>
@@ -1062,8 +1089,8 @@ const CrowdfundingPage = () => {
                   >
                     {paying
                       ? 'Processing...'
-                      : activeTierAmountLabel
-                      ? `Buy ${activeTierAmountLabel}`
+                      : activeTierTotalLabel
+                      ? `Buy ${activeTierTotalLabel}`
                       : 'Buy now'}
                   </Button>
                 </form>
@@ -1071,15 +1098,21 @@ const CrowdfundingPage = () => {
             </div>
 
             <div className="space-y-4">
-              <Card className="border-slate-200">
-                <CardHeader className="px-5 py-4">
-                  <CardTitle>Stay in the loop</CardTitle>
-                  <CardDescription className="text-sm text-slate-600">Get pizza updates, milestones, and openings first.</CardDescription>
+              <Card className="border-0 bg-slate-900 text-white shadow-xl">
+                <CardHeader className="px-5 py-4 space-y-1 border-none">
+                  <CardTitle className="text-lg font-semibold tracking-wide uppercase text-amber-300">
+                    Follow along as we raise
+                  </CardTitle>
+                  <CardDescription className="text-sm text-slate-200">
+                    Get pizza updates, milestones, and openings first.
+                  </CardDescription>
                 </CardHeader>
                 <CardContent className="px-5 py-4">
-                  <form className="space-y-3" onSubmit={handleSubscribe}>
+                  <form className="space-y-4" onSubmit={handleSubscribe}>
                     <div className="space-y-2">
-                      <Label htmlFor="cf-subscribe-email">Email address</Label>
+                      <Label htmlFor="cf-subscribe-email" className="text-sm font-medium text-white">
+                        Email address
+                      </Label>
                       <Input
                         id="cf-subscribe-email"
                         type="email"
@@ -1088,14 +1121,25 @@ const CrowdfundingPage = () => {
                         value={subscribeEmail}
                         onChange={(event) => setSubscribeEmail(event.target.value)}
                         disabled={subscribeStatus === 'loading'}
+                        className="border-slate-700 bg-slate-800 text-white placeholder:text-slate-400"
                       />
                     </div>
                     {subscribeMessage && (
-                      <p className={subscribeStatus === 'success' ? 'text-sm text-emerald-600' : 'text-sm text-red-600'}>
+                      <p
+                        className={
+                          subscribeStatus === 'success'
+                            ? 'text-sm text-emerald-300'
+                            : 'text-sm text-red-300'
+                        }
+                      >
                         {subscribeMessage}
                       </p>
                     )}
-                    <Button type="submit" className="w-full" disabled={subscribeStatus === 'loading'}>
+                    <Button
+                      type="submit"
+                      className="w-full bg-amber-400 text-slate-900 hover:bg-amber-300"
+                      disabled={subscribeStatus === 'loading'}
+                    >
                       {subscribeStatus === 'loading' ? 'Subscribing…' : 'Subscribe'}
                     </Button>
                   </form>

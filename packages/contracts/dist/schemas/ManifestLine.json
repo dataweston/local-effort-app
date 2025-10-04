@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "#/components/schemas/ManifestLine",
+  "type": "object",
+  "required": [
+    "orderId",
+    "skuId",
+    "name",
+    "quantity"
+  ],
+  "properties": {
+    "orderId": {
+      "type": "string"
+    },
+    "skuId": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "quantity": {
+      "type": "integer"
+    },
+    "allergens": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}

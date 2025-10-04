@@ -1,0 +1,71 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "#/components/schemas/Order",
+  "type": "object",
+  "required": [
+    "id",
+    "programSlotId",
+    "userId",
+    "status",
+    "subtotal",
+    "total",
+    "createdAt",
+    "updatedAt"
+  ],
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "programSlotId": {
+      "type": "string"
+    },
+    "userId": {
+      "type": "string"
+    },
+    "batchId": {
+      "type": "string",
+      "nullable": true
+    },
+    "status": {
+      "$ref": "#/components/schemas/OrderStatus"
+    },
+    "subtotal": {
+      "type": "number",
+      "format": "float"
+    },
+    "tip": {
+      "type": "number",
+      "format": "float"
+    },
+    "loyaltyDiscount": {
+      "type": "number",
+      "format": "float"
+    },
+    "referralCredit": {
+      "type": "number",
+      "format": "float"
+    },
+    "paymentFee": {
+      "type": "number",
+      "format": "float"
+    },
+    "total": {
+      "type": "number",
+      "format": "float"
+    },
+    "items": {
+      "type": "array",
+      "items": {
+        "$ref": "#/components/schemas/OrderItem"
+      }
+    },
+    "createdAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "updatedAt": {
+      "type": "string",
+      "format": "date-time"
+    }
+  }
+}

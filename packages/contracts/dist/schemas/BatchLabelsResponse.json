@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "#/components/schemas/BatchLabelsResponse",
+  "type": "object",
+  "required": [
+    "batchId",
+    "status",
+    "pdfUrl",
+    "zplUrl",
+    "labels"
+  ],
+  "properties": {
+    "batchId": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "ready"
+      ]
+    },
+    "pdfUrl": {
+      "type": "string",
+      "format": "uri",
+      "nullable": true
+    },
+    "zplUrl": {
+      "type": "string",
+      "format": "uri",
+      "nullable": true
+    },
+    "labels": {
+      "type": "array",
+      "items": {
+        "$ref": "#/components/schemas/Label"
+      }
+    }
+  }
+}
