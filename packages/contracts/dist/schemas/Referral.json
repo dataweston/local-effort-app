@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "#/components/schemas/Referral",
+  "type": "object",
+  "required": [
+    "id",
+    "code"
+  ],
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "code": {
+      "type": "string"
+    },
+    "referrerOrgId": {
+      "type": "string",
+      "nullable": true
+    },
+    "referrerAdminId": {
+      "type": "string",
+      "nullable": true
+    },
+    "referredOrgId": {
+      "type": "string",
+      "nullable": true
+    },
+    "creditIssued": {
+      "type": "boolean"
+    },
+    "createdAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "updatedAt": {
+      "type": "string",
+      "format": "date-time"
+    }
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "#/components/schemas/OrderItem",
+  "type": "object",
+  "required": [
+    "id",
+    "orderId",
+    "skuId",
+    "quantity"
+  ],
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "orderId": {
+      "type": "string"
+    },
+    "skuId": {
+      "type": "string"
+    },
+    "quantity": {
+      "type": "integer"
+    },
+    "modifiers": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "notes": {
+      "type": "string"
+    }
+  }
+}

@@ -72,10 +72,12 @@ describe('OrdersService.confirm', () => {
 
     const paymentResult = {
       id: 'square-payment-1',
-      status: 'APPROVED',
+      status: 'COMPLETED',
       amount: 30,
-      currency: 'USD'
-    };
+      currency: 'USD',
+      approvedAt: '2024-01-01T12:04:00Z',
+      rawResponse: { id: 'square-payment-1', status: 'COMPLETED' }
+    } as const;
 
     const paymentRecord = {
       id: 'payment-1',
@@ -85,7 +87,8 @@ describe('OrdersService.confirm', () => {
       amount: new Prisma.Decimal(30),
       feeAmount: baseOrder.paymentFee,
       status: paymentResult.status,
-      receivedAt: new Date('2024-01-01T12:05:00Z')
+      receivedAt: new Date('2024-01-01T12:05:00Z'),
+      rawResponse: paymentResult.rawResponse
     };
 
     prisma.order.findUnique.mock.mockImplementation(async () => baseOrder);
@@ -114,6 +117,7 @@ describe('OrdersService.confirm', () => {
     assert.equal(paymentArgs.data.feeAmount.toString(), baseOrder.paymentFee.toString());
     assert.equal(paymentArgs.data.status, paymentResult.status);
     assert.ok(paymentArgs.data.receivedAt instanceof Date);
+    assert.deepEqual(paymentArgs.data.rawResponse, paymentResult.rawResponse);
 
     assert.equal(batchLockProducer.enqueueLock.mock.callCount(), 1);
     assert.deepEqual(batchLockProducer.enqueueLock.mock.calls[0].arguments[0], {
