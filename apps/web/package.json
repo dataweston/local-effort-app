@@ -10,6 +10,7 @@
     "test:e2e": "playwright test -c playwright.config.ts"
   },
   "dependencies": {
+    "@local-effort/shared": "workspace:*",
     "@local-office/ui": "workspace:^",
     "clsx": "2.1.1",
     "date-fns": "4.1.0",
