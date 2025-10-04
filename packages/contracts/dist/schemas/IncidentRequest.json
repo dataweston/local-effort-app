@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "#/components/schemas/IncidentRequest",
+  "type": "object",
+  "required": [
+    "category",
+    "severity",
+    "description"
+  ],
+  "properties": {
+    "orderId": {
+      "type": "string"
+    },
+    "batchId": {
+      "type": "string"
+    },
+    "deliveryJobId": {
+      "type": "string"
+    },
+    "category": {
+      "$ref": "#/components/schemas/IncidentCategory"
+    },
+    "severity": {
+      "$ref": "#/components/schemas/IncidentSeverity"
+    },
+    "description": {
+      "type": "string"
+    },
+    "attachments": {
+      "type": "array",
+      "items": {
+        "$ref": "#/components/schemas/Attachment"
+      }
+    }
+  }
+}
