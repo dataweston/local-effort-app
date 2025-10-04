@@ -39,6 +39,10 @@ export const Prisma = {
   Decimal
 };
 
+export namespace Prisma {
+  export type InputJsonValue = unknown;
+}
+
 export class PrismaClient {}
 
 export const prisma = {} as unknown;

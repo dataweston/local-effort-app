@@ -1,6 +1,7 @@
 import type { Job } from 'bullmq';
 import type { PrismaClient } from '@local-office/db';
 import { BatchStatus, InvoicePeriod, Prisma } from '@local-office/db';
+import type { BillingService } from '@local-office/billing';
 
 export interface InvoiceJobData {
   orgId?: string;
@@ -42,9 +43,26 @@ function resolvePeriodRange(period: InvoicePeriod, start?: string, end?: string)
   return { start: startOfPrevWeek, end: endOfPrevWeek };
 }
 
-export function createInvoiceJob(prisma: PrismaClient) {
+function formatDateOnly(date: Date): string {
+  return date.toISOString().slice(0, 10);
+}
+
+function describePeriod(period: InvoicePeriod): string {
+  return period === InvoicePeriod.MONTH ? 'Monthly' : 'Weekly';
+}
+
+export function createInvoiceJob(prisma: PrismaClient, billing: BillingService) {
   async function processInvoice(orgId: string, period: InvoicePeriod, start: Date, end: Date): Promise<InvoiceSummary> {
     return prisma.$transaction(async (tx) => {
+      const billingConfig = await tx.orgBillingConfig.findUnique({
+        where: { orgId },
+        include: { org: true }
+      });
+
+      if (!billingConfig) {
+        throw new Error(`Missing billing configuration for org ${orgId}`);
+      }
+
       const batches = await tx.batch.findMany({
         where: {
           orgId,
@@ -112,10 +130,12 @@ export function createInvoiceJob(prisma: PrismaClient) {
               deliveryTotal: totals.deliveryTotal,
               tipsTotal: totals.tipsTotal,
               total: totals.total
-            }
-          });
+          }
+        });
 
       await tx.invoiceLine.deleteMany({ where: { invoiceId: invoice.id } });
+
+      const lineItems = [] as { name: string; quantity: number; amount: number }[];
 
       for (const batch of batches) {
         const orderTotal = batch.orders.reduce((acc, order) => acc.plus(order.total), ZERO);
@@ -133,9 +153,38 @@ export function createInvoiceJob(prisma: PrismaClient) {
             total: lineTotal
           }
         });
+
+        lineItems.push({ name: `Batch ${batch.id}`, quantity: 1, amount: Number(lineTotal.toString()) });
       }
 
-      return { orgId, invoiceId: invoice.id, batchCount: batches.length, total: invoice.total.toString() };
+      const dueDate = new Date(end);
+      dueDate.setUTCDate(dueDate.getUTCDate() + (billingConfig.netTermsDays ?? 0));
+
+      const invoiceResponse = await billing.createInvoice({
+        orgId,
+        locationId: billingConfig.squareLocationId,
+        customerId: billingConfig.squareCustomerId,
+        dueDate: formatDateOnly(dueDate),
+        currency: billingConfig.currency ?? 'USD',
+        lineItems,
+        title: `${describePeriod(period)} Invoice - ${billingConfig.org.name}`,
+        description: `Services rendered ${formatDateOnly(start)} to ${formatDateOnly(end)}`,
+        idempotencyKey: `invoice_${invoice.id}`,
+        period
+      });
+
+      const updatedInvoice = await tx.invoice.update({
+        where: { id: invoice.id },
+        data: {
+          externalId: invoiceResponse.id,
+          status: invoiceResponse.status,
+          total: invoiceResponse.totalAmount != null ? new Prisma.Decimal(invoiceResponse.totalAmount) : invoice.total,
+          externalUrl: invoiceResponse.publicUrl ?? undefined,
+          rawResponse: invoiceResponse.rawResponse as any
+        }
+      });
+
+      return { orgId, invoiceId: updatedInvoice.id, batchCount: batches.length, total: updatedInvoice.total.toString() };
     });
   }
 
