@@ -1,0 +1,61 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "#/components/schemas/Batch",
+  "type": "object",
+  "required": [
+    "id",
+    "programSlotId",
+    "siteId",
+    "providerId",
+    "orgId",
+    "status",
+    "deliveryFee"
+  ],
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "programSlotId": {
+      "type": "string"
+    },
+    "siteId": {
+      "type": "string"
+    },
+    "providerId": {
+      "type": "string"
+    },
+    "orgId": {
+      "type": "string"
+    },
+    "status": {
+      "$ref": "#/components/schemas/BatchStatus"
+    },
+    "deliveryFee": {
+      "type": "number",
+      "format": "float"
+    },
+    "gratuity": {
+      "type": "number",
+      "format": "float"
+    },
+    "manifestUrl": {
+      "type": "string",
+      "format": "uri",
+      "nullable": true
+    },
+    "labels": {
+      "type": "array",
+      "items": {
+        "$ref": "#/components/schemas/Label"
+      }
+    },
+    "createdAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "updatedAt": {
+      "type": "string",
+      "format": "date-time"
+    }
+  }
+}

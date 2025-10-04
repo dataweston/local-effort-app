@@ -22,6 +22,8 @@
       "next",
       "next/types/global",
       "next/image-types/global"
+      "next/image-types",
+      "next/navigation-types/compat"
     ],
     "plugins": [
       {

@@ -46,21 +46,17 @@ const formatDateLabel = (isoDate, fallbackLabel) => {
   return `${MONTH_NAMES[dateObj.getMonth()]} ${dateObj.getDate()}`;
 };
 
-const getNextScheduledDate = (isoDate, today) => {
+const DISPLAY_YEAR = 2025; // Limit the public schedule to the 2025 season.
+
+const projectDateToYear = (isoDate, targetYear) => {
   const baseDate = toLocalDate(isoDate);
   if (!baseDate) return null;
 
-  const candidate = new Date(baseDate);
-  candidate.setHours(0, 0, 0, 0);
+  const projected = new Date(baseDate);
+  projected.setHours(0, 0, 0, 0);
+  projected.setFullYear(targetYear);
 
-  const anchor = new Date(today);
-  anchor.setHours(0, 0, 0, 0);
-
-  if (candidate < anchor) {
-    return null;
-  }
-
-  return candidate;
+  return projected;
 };
 
 // NOTE: Replaced custom embedded payment logic with shared useSquareCard hook.
@@ -81,16 +77,16 @@ const PizzaPartyPage = () => {
 
   const upcomingDates = PIZZA_PARTY_DATES
     .map((entry) => {
-      const nextDate = getNextScheduledDate(entry.isoDate, startOfToday);
-      if (!nextDate) return null;
-      const isoDate = nextDate.toISOString().slice(0, 10);
+      const projectedDate = projectDateToYear(entry.isoDate, DISPLAY_YEAR);
+      if (!projectedDate || projectedDate < startOfToday) return null;
+      const isoDate = projectedDate.toISOString().slice(0, 10);
       const label = entry.label || formatDateLabel(isoDate, entry.label);
       return {
         ...entry,
         label,
         isoDate,
-        dateObj: nextDate,
-        weekday: nextDate.toLocaleDateString('en-US', { weekday: 'short' })
+        dateObj: projectedDate,
+        weekday: projectedDate.toLocaleDateString('en-US', { weekday: 'short' })
       };
     })
     .filter(Boolean)

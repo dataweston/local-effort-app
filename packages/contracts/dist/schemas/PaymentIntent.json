@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "#/components/schemas/PaymentIntent",
+  "type": "object",
+  "required": [
+    "provider",
+    "clientSecret",
+    "methodOptions"
+  ],
+  "properties": {
+    "provider": {
+      "type": "string",
+      "enum": [
+        "square"
+      ]
+    },
+    "clientSecret": {
+      "type": "string"
+    },
+    "methodOptions": {
+      "type": "object",
+      "additionalProperties": true
+    }
+  }
+}

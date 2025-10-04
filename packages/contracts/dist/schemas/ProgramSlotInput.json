@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "#/components/schemas/ProgramSlotInput",
+  "type": "object",
+  "required": [
+    "serviceDate",
+    "windowStart",
+    "windowEnd",
+    "providerId",
+    "cutoffAt"
+  ],
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "serviceDate": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "windowStart": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "windowEnd": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "cutoffAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "providerId": {
+      "type": "string"
+    }
+  }
+}
