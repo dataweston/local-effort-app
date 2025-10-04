@@ -3,16 +3,22 @@ import {
   Injectable,
   NotFoundException
 } from '@nestjs/common';
-import { OrderStatus, Prisma } from '@local-office/db';
+import { OrderStatus, PaymentMethod, Prisma } from '@local-office/db';
 import { assertBeforeCutoff, calculateOrderTotals, sumLineItems, toDecimal } from '@local-office/lib';
 
+import { BillingService } from '@local-office/billing';
 import { PrismaService } from '../prisma/prisma.service';
+import { BatchLockProducer } from '../batch-lock.producer';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { ConfirmOrderDto } from './dto/confirm-order.dto';
 
 @Injectable()
 export class OrdersService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly billing: BillingService,
+    private readonly batchLockProducer: BatchLockProducer
+  ) {}
 
   async create(dto: CreateOrderDto) {
     const totalQuantity = dto.items.reduce((acc, item) => acc + (item.quantity ?? 1), 0);
@@ -99,6 +105,7 @@ export class OrdersService {
     const order = await this.prisma.order.findUnique({
       where: { id },
       include: {
+        items: true,
         programSlot: true,
         payment: true
       }
@@ -109,7 +116,10 @@ export class OrdersService {
     }
 
     if (order.status !== OrderStatus.PENDING) {
-      return order;
+      return {
+        order,
+        payment: order.payment ?? undefined
+      };
     }
 
     assertBeforeCutoff(order.programSlot.cutoffAt);
@@ -129,10 +139,42 @@ export class OrdersService {
       }
     });
 
+    const paymentResult = await this.billing.createPayment({
+      amount: Number(total.total.toString()),
+      currency: 'USD',
+      customerId: order.userId,
+      sourceId: dto.paymentIntentId ?? `square_${id}`,
+      idempotencyKey: dto.idempotencyKey ?? `order_${id}`
+    });
+
+    const paymentMethod = (dto.paymentMethod ?? PaymentMethod.ACH) as PaymentMethod;
+
+    const payment = await this.prisma.payment.create({
+      data: {
+        orderId: id,
+        squarePaymentId: paymentResult.id,
+        method: paymentMethod,
+        amount: toDecimal(paymentResult.amount ?? total.total),
+        feeAmount: order.paymentFee,
+        status: paymentResult.status,
+        receivedAt: paymentResult.status === 'APPROVED' ? new Date() : null
+      }
+    });
+
+    await this.batchLockProducer.enqueueLock({
+      orderId: order.id,
+      programSlotId: order.programSlotId,
+      cutoffAt: order.programSlot.cutoffAt.toISOString(),
+      idempotencyKey: dto.idempotencyKey
+    });
+
     return {
-      order: updated,
-      paymentIntentId: dto.paymentIntentId ?? `square_${id}`,
-      paymentMethod: dto.paymentMethod ?? 'ACH'
+      order: {
+        ...updated,
+        programSlot: order.programSlot,
+        payment
+      },
+      payment
     };
   }
 }
