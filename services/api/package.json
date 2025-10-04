@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@local-office/billing": "workspace:^",
+    "@local-office/dispatcher": "workspace:^",
     "@local-office/db": "workspace:^",
     "@local-office/lib": "workspace:^",
     "@local-office/worker": "workspace:^",

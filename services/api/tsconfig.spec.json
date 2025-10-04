@@ -14,6 +14,9 @@
       "@local-office/worker/*": ["./test/stubs/local-office-worker.ts"],
       "@nestjs/common": ["./test/stubs/nestjs-common.ts"],
       "bullmq": ["./test/stubs/bullmq.ts"]
+      "@local-office/dispatcher": ["./test/stubs/@local-office/dispatcher.ts"],
+      "@local-office/dispatcher/*": ["./test/stubs/@local-office/dispatcher.ts"],
+      "@nestjs/common": ["./test/stubs/nestjs-common.ts"]
     }
   }
 }
