@@ -1,3 +1,5 @@
+/// <reference types="react" />
+
 'use client';
 
 import { useMemo, useState } from 'react';
@@ -166,7 +168,7 @@ export default function PaikkaPage() {
                     onClick={() => handleQuantityChange(item.sku, -1)}
                     disabled={qty === 0}
                   >
-                    −
+                    -
                   </Button>
                   <span className="w-10 text-center text-lg font-semibold text-slate-900">{qty}</span>
                   <Button type="button" onClick={() => handleQuantityChange(item.sku, 1)}>
@@ -259,7 +261,7 @@ export default function PaikkaPage() {
                   {summaryItems.map(({ item, qty }) => (
                     <li key={item.sku} className="flex justify-between">
                       <span>
-                        {item.title} × {qty}
+                        {item.title} x {qty}
                       </span>
                       <span>{formatCurrency(item.presalePriceCents * qty)}</span>
                     </li>
@@ -283,7 +285,7 @@ export default function PaikkaPage() {
             {error && <p className="text-sm text-red-600">{error}</p>}
 
             <Button type="submit" className="w-full" size="lg" disabled={!canSubmit}>
-              {isSubmitting ? 'Redirecting…' : 'Pay with Square'}
+              {isSubmitting ? 'Redirecting...' : 'Pay with Square'}
             </Button>
             {!hasItems && (
               <p className="text-xs text-slate-500">Select at least one sandwich to enable checkout.</p>

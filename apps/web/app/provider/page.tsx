@@ -2,6 +2,7 @@
 
 import { format, formatDistanceToNowStrict, parseISO } from 'date-fns';
 import { useEffect, useMemo, useState } from 'react';
+import type { FormEvent } from 'react';
 
 import { Badge, Button, Card, CardContent, CardDescription, CardHeader, CardTitle } from '@local-office/ui';
 
@@ -112,7 +113,7 @@ export default function ProviderPage() {
       setManifestState((state) => ({
         ...state,
         error: null,
-        message: response ? `Labels ready · PDF ${response.pdfUrl}` : 'Labels queued successfully.'
+        message: response ? `Labels ready - PDF ${response.pdfUrl}` : 'Labels queued successfully.'
       }));
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Unable to queue label job.';
@@ -120,7 +121,7 @@ export default function ProviderPage() {
     }
   };
 
-  const submitIncident = async (event: React.FormEvent<HTMLFormElement>) => {
+  const submitIncident = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setIncidentError(null);
     setIncidentFeedback(null);
@@ -186,7 +187,7 @@ export default function ProviderPage() {
           </CardHeader>
           <CardContent>
             {loading ? (
-              <p className="text-sm text-slate-500">Loading batches…</p>
+              <p className="text-sm text-slate-500">Loading batches...</p>
             ) : upcomingBatches.length === 0 ? (
               <p className="text-sm text-slate-500">No batches assigned. Program slots will appear within 48 hours of service.</p>
             ) : (
@@ -196,7 +197,7 @@ export default function ProviderPage() {
                     <div className="flex items-center justify-between">
                       <div>
                         <p className="font-medium text-slate-800">Batch {batch.id}</p>
-                        <p className="text-xs text-slate-500">Provider {batch.providerId} · Delivery ${batch.deliveryFee.toFixed(2)}</p>
+                        <p className="text-xs text-slate-500">Provider {batch.providerId} - Delivery ${batch.deliveryFee.toFixed(2)}</p>
                       </div>
                       <div className="flex items-center gap-2">
                         <Button size="sm" variant="outline" onClick={() => loadManifest(batch.id)}>
@@ -223,7 +224,7 @@ export default function ProviderPage() {
         <CardContent>
           {manifestState.message ? <p className="text-sm text-green-600">{manifestState.message}</p> : null}
           {manifestState.loading ? (
-            <p className="text-sm text-slate-500">Loading manifest…</p>
+            <p className="text-sm text-slate-500">Loading manifest...</p>
           ) : manifestState.error ? (
             <p className="text-sm text-red-600">{manifestState.error}</p>
           ) : manifestState.manifest ? (
@@ -231,7 +232,7 @@ export default function ProviderPage() {
                 <div>
                   <p className="font-medium text-slate-800">Batch {manifestState.manifest.batch.id}</p>
                   <p className="text-xs text-slate-500">
-                    {manifestState.manifest.items.length} line items · Manifest URL{' '}
+                    {manifestState.manifest.items.length} line items - Manifest URL{' '}
                     {manifestState.manifest.batch.manifestUrl ? (
                       <a className="text-brand-600" href={manifestState.manifest.batch.manifestUrl}>
                         Download
