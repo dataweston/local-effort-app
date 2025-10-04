@@ -7,7 +7,6 @@
     "build": "tsc -p tsconfig.build.json",
     "start": "node dist/main.js",
     "dev": "ts-node --swc src/main.ts",
-    "test": "NODE_OPTIONS=\"--require $(pwd)/register-paths.js\" TS_NODE_PROJECT=tsconfig.test.json TS_NODE_TRANSPILE_ONLY=1 node --require ts-node/register --test \"test/**/*.spec.ts\""
     "test": "node --test -r ./test/setup-ts-node.cjs \"src/**/*.spec.ts\""
   },
   "dependencies": {
