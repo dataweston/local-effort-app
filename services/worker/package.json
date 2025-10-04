@@ -11,6 +11,8 @@
   "dependencies": {
     "@local-office/db": "workspace:^",
     "@local-office/lib": "workspace:^",
+    "@local-office/labeler": "workspace:^",
+    "aws-sdk": "^2.1692.0",
     "bullmq": "5.29.0",
     "ioredis": "5.4.1",
     "pino": "9.4.0"

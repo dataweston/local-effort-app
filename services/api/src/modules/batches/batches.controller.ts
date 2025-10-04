@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Post } from '@nestjs/common';
+import { Controller, Get, HttpCode, HttpStatus, Param, Post } from '@nestjs/common';
 
 import { BatchesService } from './batches.service';
 
@@ -12,7 +12,13 @@ export class BatchesController {
   }
 
   @Post(':id/labels')
-  labels(@Param('id') id: string) {
-    return this.batchesService.labels(id);
+  @HttpCode(HttpStatus.ACCEPTED)
+  requestLabels(@Param('id') id: string) {
+    return this.batchesService.requestLabels(id);
+  }
+
+  @Get(':id/labels')
+  getLabels(@Param('id') id: string) {
+    return this.batchesService.getLabels(id);
   }
 }
