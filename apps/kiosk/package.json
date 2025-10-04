@@ -1,0 +1,35 @@
+{
+  "name": "@local-effort/kiosk",
+  "version": "0.1.0",
+  "private": true,
+  "main": "dist/main/electron-main.cjs",
+  "scripts": {
+    "clean": "rimraf dist",
+    "build": "pnpm run clean && pnpm run build:main && pnpm run build:renderer",
+    "build:main": "tsup --config tsup.config.ts",
+    "build:renderer": "vite build",
+    "dev": "concurrently -k \"pnpm run dev:main\" \"pnpm run dev:renderer\"",
+    "dev:main": "tsup --config tsup.config.ts --watch",
+    "dev:renderer": "vite dev --host 0.0.0.0 --port 5173",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@local-effort/shared": "workspace:*",
+    "better-sqlite3": "^9.4.0",
+    "electron": "^28.2.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.13",
+    "@types/node": "^20.11.30",
+    "@types/react": "^18.2.43",
+    "@types/react-dom": "^18.2.17",
+    "@vitejs/plugin-react": "^4.2.1",
+    "concurrently": "^8.2.1",
+    "rimraf": "^5.0.5",
+    "tsup": "^8.0.1",
+    "typescript": "^5.3.3",
+    "vite": "^5.0.12"
+  }
+}
