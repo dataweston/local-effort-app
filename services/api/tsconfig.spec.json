@@ -10,6 +10,8 @@
       "@local-office/billing/*": ["../billing/src/*"],
       "@local-office/worker": ["./test/stubs/local-office-worker.ts"],
       "@local-office/worker/*": ["./test/stubs/local-office-worker.ts"],
+      "@local-office/dispatcher": ["./test/stubs/@local-office/dispatcher.ts"],
+      "@local-office/dispatcher/*": ["./test/stubs/@local-office/dispatcher.ts"],
       "@nestjs/common": ["./test/stubs/nestjs-common.ts"]
     }
   }
