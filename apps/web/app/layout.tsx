@@ -1,10 +1,10 @@
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
-import { ThemeProvider } from 'next-themes';
 import type { ReactNode } from 'react';
 
 import './globals.css';
 import { SiteHeader } from '../components/site-header';
+import { Providers } from '../components/providers';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -18,12 +18,12 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={inter.className}>
-        <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
+        <Providers>
           <div className="min-h-screen bg-slate-50">
             <SiteHeader />
             <main className="mx-auto max-w-6xl px-4 pb-16 pt-12 sm:px-6 lg:px-8">{children}</main>
           </div>
-        </ThemeProvider>
+        </Providers>
       </body>
     </html>
   );

@@ -11,6 +11,6 @@
   "devDependencies": {
     "@redocly/cli": "1.28.2",
     "@stoplight/spectral-cli": "6.11.0",
-    "openapi-generator-cli": "2.11.0"
+    "openapi-generator-cli": "1.0.0"
   }
 }
