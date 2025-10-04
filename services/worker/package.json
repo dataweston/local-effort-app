@@ -1,0 +1,23 @@
+{
+  "name": "@local-office/worker",
+  "version": "0.1.0",
+  "private": true,
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "start": "node dist/index.js",
+    "dev": "ts-node --swc src/index.ts"
+  },
+  "dependencies": {
+    "@local-office/db": "workspace:^",
+    "@local-office/lib": "workspace:^",
+    "bullmq": "5.29.0",
+    "ioredis": "5.4.1",
+    "pino": "9.4.0"
+  },
+  "devDependencies": {
+    "@types/node": "20.16.10",
+    "ts-node": "10.9.2",
+    "typescript": "5.6.3"
+  }
+}
