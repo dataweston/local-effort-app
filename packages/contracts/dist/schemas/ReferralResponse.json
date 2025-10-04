@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "#/components/schemas/ReferralResponse",
+  "type": "object",
+  "required": [
+    "referral"
+  ],
+  "properties": {
+    "referral": {
+      "$ref": "#/components/schemas/Referral"
+    }
+  }
+}

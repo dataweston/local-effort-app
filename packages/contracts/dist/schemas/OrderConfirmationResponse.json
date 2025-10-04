@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "#/components/schemas/OrderConfirmationResponse",
+  "type": "object",
+  "required": [
+    "order",
+    "payment"
+  ],
+  "properties": {
+    "order": {
+      "$ref": "#/components/schemas/Order"
+    },
+    "payment": {
+      "$ref": "#/components/schemas/PaymentIntent"
+    }
+  }
+}

@@ -12,6 +12,17 @@ import { BatchLockProducer } from '../batch-lock.producer';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { ConfirmOrderDto } from './dto/confirm-order.dto';
 
+const SUCCESSFUL_PAYMENT_STATUSES = new Set(['APPROVED', 'COMPLETED']);
+
+function parseDate(value?: string | null): Date | null {
+  if (!value) {
+    return null;
+  }
+
+  const parsed = new Date(value);
+  return Number.isNaN(parsed.getTime()) ? null : parsed;
+}
+
 @Injectable()
 export class OrdersService {
   constructor(
@@ -149,6 +160,11 @@ export class OrdersService {
 
     const paymentMethod = (dto.paymentMethod ?? PaymentMethod.ACH) as PaymentMethod;
 
+    const paymentReceivedAt =
+      parseDate(paymentResult.completedAt) ??
+      parseDate(paymentResult.approvedAt) ??
+      (SUCCESSFUL_PAYMENT_STATUSES.has(paymentResult.status ?? '') ? new Date() : null);
+
     const payment = await this.prisma.payment.create({
       data: {
         orderId: id,
@@ -157,7 +173,8 @@ export class OrdersService {
         amount: toDecimal(paymentResult.amount ?? total.total),
         feeAmount: order.paymentFee,
         status: paymentResult.status,
-        receivedAt: paymentResult.status === 'APPROVED' ? new Date() : null
+        receivedAt: paymentReceivedAt,
+        rawResponse: paymentResult.rawResponse as Prisma.InputJsonValue
       }
     });
 
