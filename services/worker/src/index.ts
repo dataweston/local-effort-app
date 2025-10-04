@@ -2,6 +2,7 @@ import { Queue, Worker, QueueScheduler, type JobsOptions, type QueueOptions } fr
 import { prisma } from '@local-office/db';
 import { createIdempotencyKey } from '@local-office/lib';
 
+import { BillingService } from '@local-office/billing';
 import { createBatcherJob } from './jobs/batcher';
 import { createInvoiceJob } from './jobs/invoice';
 import { createLabelJob } from './jobs/labels';
@@ -128,6 +129,7 @@ void schedulers;
 
 const storage = createObjectStorage();
 const notifier = createDefaultNotificationClient();
+const billing = new BillingService();
 
 const workers = [
   new Worker(
@@ -147,7 +149,7 @@ const workers = [
   ),
   new Worker(
     queues.invoice.name,
-    withJobLogging('invoice', createInvoiceJob(prisma)),
+    withJobLogging('invoice', createInvoiceJob(prisma, billing)),
     { ...baseConnection, concurrency: queueConfigurations.invoice.concurrency }
   ),
   new Worker(
