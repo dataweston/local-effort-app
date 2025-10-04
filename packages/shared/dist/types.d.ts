@@ -1,0 +1,19 @@
+export declare type OrderStatus = "pending" | "redeemed" | "void";
+export declare type OrderItem = {
+    sku: string;
+    name: string;
+    qty: number;
+    unit: number;
+};
+export declare type Order = {
+    oid: string;
+    n: string;
+    email: string;
+    items: OrderItem[];
+    q: number;
+    event_id: string;
+    expires_at: string;
+    jti: string;
+    status: OrderStatus;
+    created_at: string;
+};

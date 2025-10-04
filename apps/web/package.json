@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@local-effort/shared": "workspace:*",
     "@local-office/ui": "workspace:^",
     "clsx": "2.1.1",
     "lucide-react": "0.451.0",
