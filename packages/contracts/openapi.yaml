@@ -132,6 +132,24 @@ paths:
                 format: binary
         '404': { $ref: '#/components/responses/NotFound' }
   /v1/batches/{id}/labels:
+    get:
+      tags: [Batches]
+      summary: Retrieve label status for a batch
+      operationId: getBatchLabels
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Current label status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BatchLabelsResponse'
+        '404': { $ref: '#/components/responses/NotFound' }
     post:
       tags: [Batches]
       summary: Generate labels for a batch
@@ -149,7 +167,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/LabelGenerationResponse'
+                $ref: '#/components/schemas/LabelJobAcceptedResponse'
         '404': { $ref: '#/components/responses/NotFound' }
   /v1/incidents:
     post:
@@ -596,21 +614,36 @@ components:
     BatchStatus:
       type: string
       enum: [PENDING, LOCKED, SENT, DELIVERED, CANCELED]
-    LabelGenerationResponse:
+    LabelJobAcceptedResponse:
       type: object
-      required: [batchId, pdfUrl, zplUrl]
+      required: [batchId, status]
       properties:
         batchId:
           type: string
+        status:
+          type: string
+          enum: [queued]
+    BatchLabelsResponse:
+      type: object
+      required: [batchId, status, pdfUrl, zplUrl, labels]
+      properties:
+        batchId:
+          type: string
+        status:
+          type: string
+          enum: [pending, ready]
         pdfUrl:
           type: string
           format: uri
+          nullable: true
         zplUrl:
           type: string
           format: uri
-        expiresAt:
-          type: string
-          format: date-time
+          nullable: true
+        labels:
+          type: array
+          items:
+            $ref: '#/components/schemas/Label'
     Label:
       type: object
       required: [id, orderId, name, item]
@@ -634,6 +667,14 @@ components:
         zplUrl:
           type: string
           format: uri
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+          nullable: true
+        updatedAt:
+          type: string
+          format: date-time
           nullable: true
     IncidentRequest:
       type: object

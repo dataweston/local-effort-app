@@ -1,5 +1,8 @@
 import { Queue, Worker, QueueScheduler, JobsOptions } from 'bullmq';
 import { createIdempotencyKey } from '@local-office/lib';
+import { prisma } from '@local-office/db';
+import { createLabelsProcessor } from './processors/labels';
+import { createObjectStorage } from './storage';
 import pino from 'pino';
 
 const connection = {
@@ -19,6 +22,9 @@ export const queues = {
 };
 
 Object.values(queues).forEach((queue) => new QueueScheduler(queue.name, connection));
+
+const objectStorage = createObjectStorage();
+const labelsProcessor = createLabelsProcessor({ prisma, storage: objectStorage });
 
 function withLogging<T>(name: string, handler: (job: any) => Promise<T>) {
   return async (job: any) => {
@@ -43,13 +49,7 @@ new Worker(
   connection
 );
 
-new Worker(
-  queues.labels.name,
-  withLogging('labels', async () => {
-    // Generate PDF + ZPL labels.
-  }),
-  connection
-);
+new Worker(queues.labels.name, withLogging('labels', labelsProcessor), connection);
 
 new Worker(
   queues.notify.name,
@@ -80,6 +80,19 @@ export async function enqueueBatchLock(data: Record<string, unknown>, opts?: Job
     jobId: data['idempotencyKey'] as string | undefined ?? createIdempotencyKey('batch-lock'),
     ...opts
   });
+}
+
+export async function enqueueBatchLabels(batchId: string, opts?: JobsOptions) {
+  return queues.labels.add(
+    'generate-batch-labels',
+    { batchId },
+    {
+      jobId: `batch-labels:${batchId}`,
+      removeOnComplete: true,
+      removeOnFail: true,
+      ...opts
+    }
+  );
 }
 
 logger.info('Worker bootstrapped');
