@@ -6,11 +6,13 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "test:e2e": "playwright test -c playwright.config.ts"
   },
   "dependencies": {
     "@local-office/ui": "workspace:^",
     "clsx": "2.1.1",
+    "date-fns": "4.1.0",
     "lucide-react": "0.451.0",
     "next": "14.2.14",
     "next-themes": "0.2.1",
@@ -18,6 +20,7 @@
     "react-dom": "18.2.0"
   },
   "devDependencies": {
+    "@playwright/test": "1.47.2",
     "@types/node": "20.16.10",
     "@types/react": "18.3.10",
     "@types/react-dom": "18.3.1",
