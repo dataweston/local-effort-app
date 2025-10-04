@@ -1,0 +1,1 @@
+function f(...o){const i=[],s=t=>{t&&i.push(String(t))},e=t=>{for(const n of t){const c=typeof n;if(n){if(c==="string"||c==="number"){s(n);continue}if(Array.isArray(n)){e(n);continue}if(c==="object")for(const r in n)Object.prototype.hasOwnProperty.call(n,r)&&n[r]&&s(r)}}};return e(o),i.join(" ")}function u(...o){return f(...o)}export{u as c};

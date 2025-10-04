@@ -2,6 +2,8 @@
 
 User-agent: *
 Allow: /
+Allow: /.well-known/mcp
+Allow: /.well-known/mcp.json
 
 # Explicitly allow common AI crawlers (optional; keep or adjust to your policy)
 User-agent: GPTBot
@@ -12,3 +14,5 @@ Allow: /
 
 Sitemap: https://localeffortfood.com/sitemap.xml
 Sitemap: https://localeffortfood.com/api/sitemap.xml
+# AI manifest advertised for machine readers
+# https://localeffortfood.com/ai/manifest.json
