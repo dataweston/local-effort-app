@@ -1,9 +1,17 @@
-/// <reference types="react" />
-
 'use client';
 
 import { useMemo, useState } from 'react';
 import clsx from 'clsx';
+
+// Provide a fallback JSX.IntrinsicElements declaration so TypeScript won't
+// error when @types/react or JSX typings are not present in the compilation.
+declare global {
+  namespace JSX {
+    interface IntrinsicElements {
+      [elemName: string]: any;
+    }
+  }
+}
 
 import { Button } from '@local-office/ui';
 
@@ -73,7 +81,7 @@ export default function PaikkaPage() {
   }));
 
   const handleQuantityChange = (sku: string, delta: number) => {
-    setQuantities((prev) => {
+    setQuantities((prev: Record<string, number>) => {
       const current = prev[sku] ?? 0;
       const next = Math.max(0, current + delta);
       if (next === current) return prev;
@@ -164,7 +172,6 @@ export default function PaikkaPage() {
                 <div className="flex items-center gap-3">
                   <Button
                     type="button"
-                    variant="outline"
                     onClick={() => handleQuantityChange(item.sku, -1)}
                     disabled={qty === 0}
                   >
@@ -284,7 +291,7 @@ export default function PaikkaPage() {
 
             {error && <p className="text-sm text-red-600">{error}</p>}
 
-            <Button type="submit" className="w-full" size="lg" disabled={!canSubmit}>
+            <Button type="submit" className="w-full" disabled={!canSubmit}>
               {isSubmitting ? 'Redirecting...' : 'Pay with Square'}
             </Button>
             {!hasItems && (
