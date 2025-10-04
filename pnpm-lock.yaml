@@ -465,6 +465,9 @@ importers:
       '@local-office/db':
         specifier: workspace:^
         version: link:../../packages/db
+      '@local-office/dispatcher':
+        specifier: workspace:^
+        version: link:../dispatcher
       '@local-office/lib':
         specifier: workspace:^
         version: link:../../packages/lib
@@ -604,6 +607,9 @@ importers:
 
   services/worker:
     dependencies:
+      '@local-office/billing':
+        specifier: workspace:^
+        version: link:../billing
       '@local-office/db':
         specifier: workspace:^
         version: link:../../packages/db
