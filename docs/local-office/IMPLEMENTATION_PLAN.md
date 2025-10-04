@@ -38,7 +38,12 @@ This document captures the high-level roadmap for delivering the Local Office pl
 ## 8. Compliance and security
 - Enforce role-based access control, JWT authentication, webhook signing, and idempotency across services.
 - Store only necessary payment identifiers, relying on Square for PCI scope.
+- [done] Initial HS256 bearer guard with role checks now protects every API controller (requires AUTH_JWT_SECRET and role-bearing tokens).
 
 ## 9. Next steps
 - Finalize service scaffolding with package managers and dependency setup.
 - Begin implementing the Prisma schema and automated tests for the critical flows above.
+
+
+
+
