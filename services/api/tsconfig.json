@@ -10,6 +10,16 @@
     "sourceMap": true,
     "outDir": "dist",
     "baseUrl": "./",
+    "paths": {
+      "@local-office/db": ["../../packages/db/src"],
+      "@local-office/db/*": ["../../packages/db/src/*"],
+      "@local-office/lib": ["../../packages/lib/src"],
+      "@local-office/lib/*": ["../../packages/lib/src/*"],
+      "@local-office/billing": ["../billing/src"],
+      "@local-office/billing/*": ["../billing/src/*"],
+      "@local-office/worker": ["../worker/src"],
+      "@local-office/worker/*": ["../worker/src/*"]
+    },
     "incremental": true,
     "strictNullChecks": true,
     "strictPropertyInitialization": false,
@@ -18,6 +28,6 @@
     "types": ["node"],
     "esModuleInterop": true
   },
-  "include": ["src/**/*"],
+  "include": ["src/**/*", "test/**/*"],
   "exclude": ["node_modules", "dist"]
 }
