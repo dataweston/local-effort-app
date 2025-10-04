@@ -10,6 +10,7 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "@local-office/billing": "workspace:^",
     "@local-office/db": "workspace:^",
     "@local-office/lib": "workspace:^",
     "@local-office/labeler": "workspace:^",
