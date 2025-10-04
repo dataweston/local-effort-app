@@ -8,6 +8,7 @@ import { BatchesModule } from './batches/batches.module';
 import { IncidentsModule } from './incidents/incidents.module';
 import { ReferralsModule } from './referrals/referrals.module';
 import { InvoicesModule } from './invoices/invoices.module';
+import { DeliveriesModule } from './deliveries/deliveries.module';
 
 @Module({
   imports: [
@@ -18,7 +19,8 @@ import { InvoicesModule } from './invoices/invoices.module';
     BatchesModule,
     IncidentsModule,
     ReferralsModule,
-    InvoicesModule
+    InvoicesModule,
+    DeliveriesModule
   ]
 })
 export class AppModule {}
