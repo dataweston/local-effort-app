@@ -1,16 +1,14 @@
-import { Queue, Worker, JobScheduler, type JobsOptions, type QueueOptions } from 'bullmq';
+import { Queue, Worker, QueueScheduler, type JobsOptions, type QueueOptions } from 'bullmq';
 import { prisma } from '@local-office/db';
 import { createIdempotencyKey } from '@local-office/lib';
-import { prisma } from '@local-office/db';
-import { createLabelsProcessor } from './processors/labels';
-import { createObjectStorage } from './storage';
-import pino from 'pino';
 
 import { createBatcherJob } from './jobs/batcher';
 import { createInvoiceJob } from './jobs/invoice';
 import { createLabelJob } from './jobs/labels';
+import { createDeliveryUpdateJob } from './jobs/delivery-update';
 import { createDefaultNotificationClient, createNotifyJob } from './jobs/notify';
 import { createWebhookJob } from './jobs/webhook-out';
+import { createObjectStorage } from './storage';
 import { getLogger, withJobLogging } from './utils/logging';
 
 const logger = getLogger();
@@ -25,18 +23,20 @@ function parseIntEnv(name: string, fallback: number): number {
 }
 
 const redisUrl = process.env.REDIS_URL ?? 'redis://localhost:6379';
-const baseConnection: QueueOptions = {
+const baseConnection = {
   connection: {
     url: redisUrl
   }
-};
+} satisfies QueueOptions;
+
+type QueueName = 'batcher' | 'labels' | 'notify' | 'invoice' | 'webhook-out' | 'delivery-updates';
 
 interface QueueConfiguration {
   concurrency: number;
   defaultJobOptions: JobsOptions;
 }
 
-const queueConfigurations: Record<string, QueueConfiguration> = {
+const queueConfigurations: Record<QueueName, QueueConfiguration> = {
   batcher: {
     concurrency: parseIntEnv('WORKER_BATCHER_CONCURRENCY', 4),
     defaultJobOptions: {
@@ -92,67 +92,26 @@ const queueConfigurations: Record<string, QueueConfiguration> = {
       removeOnComplete: 500,
       removeOnFail: false
     }
+  },
+  'delivery-updates': {
+    concurrency: parseIntEnv('WORKER_DELIVERY_UPDATES_CONCURRENCY', 5),
+    defaultJobOptions: {
+      attempts: parseIntEnv('WORKER_DELIVERY_UPDATES_ATTEMPTS', 5),
+      backoff: {
+        type: 'exponential',
+        delay: parseIntEnv('WORKER_DELIVERY_UPDATES_RETRY_DELAY_MS', 15_000)
+      },
+      removeOnComplete: 500,
+      removeOnFail: 1_000
+    }
   }
 };
 
-Object.values(queues).forEach((queue) => new QueueScheduler(queue.name, connection));
-
-const objectStorage = createObjectStorage();
-const labelsProcessor = createLabelsProcessor({ prisma, storage: objectStorage });
-
-function withLogging<T>(name: string, handler: (job: any) => Promise<T>) {
-  return async (job: any) => {
-    const start = Date.now();
-    logger.info({ queue: name, jobId: job.id, name: job.name }, 'job started');
-    try {
-      const result = await handler(job);
-      logger.info({ queue: name, jobId: job.id, durationMs: Date.now() - start }, 'job completed');
-      return result;
-    } catch (error) {
-      logger.error({ queue: name, jobId: job.id, error }, 'job failed');
-      throw error;
-    }
-  };
-}
-
-new Worker(
-  queues.batcher.name,
-  withLogging('batcher', async () => {
-    // Placeholder for cron-triggered batching logic.
-  }),
-  connection
-);
-
-new Worker(queues.labels.name, withLogging('labels', labelsProcessor), connection);
-
-new Worker(
-  queues.notify.name,
-  withLogging('notify', async () => {
-    // Send emails and SMS notifications.
-  }),
-  connection
-);
-
-new Worker(
-  queues.invoice.name,
-  withLogging('invoice', async () => {
-    // Aggregate weekly/monthly invoices.
-  }),
-  connection
-);
-
-new Worker(
-  queues.webhookOut.name,
-  withLogging('webhook-out', async () => {
-    // Deliver outbound webhooks with retries.
-  }),
-  connection
-);
-function queueOptions(name: keyof typeof queueConfigurations): QueueOptions {
+function queueOptions(name: QueueName): QueueOptions {
   return {
     ...baseConnection,
     defaultJobOptions: queueConfigurations[name].defaultJobOptions
-  };
+  } satisfies QueueOptions;
 }
 
 export const queues = {
@@ -160,12 +119,14 @@ export const queues = {
   labels: new Queue('labels', queueOptions('labels')),
   notify: new Queue('notify', queueOptions('notify')),
   invoice: new Queue('invoice', queueOptions('invoice')),
-  webhookOut: new Queue('webhook-out', queueOptions('webhook-out'))
+  webhookOut: new Queue('webhook-out', queueOptions('webhook-out')),
+  deliveryUpdates: new Queue('delivery-updates', queueOptions('delivery-updates'))
 };
 
-const schedulers = Object.values(queues).map((queue) => new JobScheduler(queue.name, baseConnection));
+const schedulers = Object.values(queues).map((queue) => new QueueScheduler(queue.name, baseConnection));
 void schedulers;
 
+const storage = createObjectStorage();
 const notifier = createDefaultNotificationClient();
 
 const workers = [
@@ -176,7 +137,7 @@ const workers = [
   ),
   new Worker(
     queues.labels.name,
-    withJobLogging('labels', createLabelJob(prisma)),
+    withJobLogging('labels', createLabelJob(prisma, { storage })),
     { ...baseConnection, concurrency: queueConfigurations.labels.concurrency }
   ),
   new Worker(
@@ -193,6 +154,11 @@ const workers = [
     queues.webhookOut.name,
     withJobLogging('webhook-out', createWebhookJob(prisma)),
     { ...baseConnection, concurrency: queueConfigurations['webhook-out'].concurrency }
+  ),
+  new Worker(
+    queues.deliveryUpdates.name,
+    withJobLogging('delivery-updates', createDeliveryUpdateJob(prisma)),
+    { ...baseConnection, concurrency: queueConfigurations['delivery-updates'].concurrency }
   )
 ];
 void workers;

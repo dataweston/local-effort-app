@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "#/components/schemas/ProgramUpsertRequest",
+  "type": "object",
+  "required": [
+    "orgId",
+    "siteId",
+    "name",
+    "cadence",
+    "orderingWindow",
+    "cutoffHours"
+  ],
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "orgId": {
+      "type": "string"
+    },
+    "siteId": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "cadence": {
+      "type": "string",
+      "description": "Human-readable cadence descriptor."
+    },
+    "orderingWindow": {
+      "type": "string"
+    },
+    "subsidyRules": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "cutoffHours": {
+      "type": "integer",
+      "default": 48
+    },
+    "loyaltyRequired": {
+      "type": "boolean",
+      "default": false
+    },
+    "slots": {
+      "type": "array",
+      "items": {
+        "$ref": "#/components/schemas/ProgramSlotInput"
+      }
+    }
+  }
+}

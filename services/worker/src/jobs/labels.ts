@@ -2,6 +2,7 @@ import type { Job } from 'bullmq';
 import type { PrismaClient } from '@local-office/db';
 import { BatchStatus } from '@local-office/db';
 import { generateBatchLabels, type LabelInput, type LabelRenderResult } from '@local-office/labeler';
+import { buildObjectKey, type ObjectStorageClient } from '../storage';
 
 export interface LabelJobData {
   batchId?: string;
@@ -15,11 +16,19 @@ export interface LabelJobResult {
 }
 
 export interface LabelJobDependencies {
+  storage: ObjectStorageClient;
+  now?: () => Date;
   renderLabels?: (batchId: string, labels: LabelInput[]) => Promise<LabelRenderResult>;
 }
 
-export function createLabelJob(prisma: PrismaClient, deps: LabelJobDependencies = {}) {
+export function createLabelJob(prisma: PrismaClient, deps: LabelJobDependencies) {
   const render = deps.renderLabels ?? generateBatchLabels;
+  const storage = deps.storage;
+  const now = deps.now ?? (() => new Date());
+
+  if (!storage) {
+    throw new Error('Object storage client is required to generate labels');
+  }
 
   async function generateForBatch(batchId: string): Promise<LabelJobResult> {
     const batch = await prisma.batch.findUnique({
@@ -68,24 +77,28 @@ export function createLabelJob(prisma: PrismaClient, deps: LabelJobDependencies 
     }
 
     const rendered = await render(batch.id, labels);
-    const pdfUrl = `data:application/pdf;base64,${rendered.pdf.toString('base64')}`;
-    const zplUrl = `data:application/zpl;base64,${Buffer.from(rendered.zpl, 'utf8').toString('base64')}`;
+
+    const pdfKey = buildObjectKey(batchId, 'pdf', now);
+    const zplKey = buildObjectKey(batchId, 'zpl', now);
+
+    const [pdfUrl, zplUrl] = await Promise.all([
+      storage.upload({ key: pdfKey, body: rendered.pdf, contentType: 'application/pdf' }),
+      storage.upload({ key: zplKey, body: Buffer.from(rendered.zpl, 'utf8'), contentType: 'application/zpl' })
+    ]);
 
     await prisma.$transaction(async (tx) => {
       await tx.label.deleteMany({ where: { batchId } });
-      for (const [index, label] of labels.entries()) {
-        await tx.label.create({
-          data: {
-            batchId,
-            orderId: label.orderId,
-            name: label.name,
-            item: label.item,
-            allergens: label.allergens,
-            pdfUrl: index === 0 ? pdfUrl : null,
-            zplUrl: index === 0 ? zplUrl : null
-          }
-        });
-      }
+      await tx.label.createMany({
+        data: labels.map((label) => ({
+          batchId,
+          orderId: label.orderId,
+          name: label.name,
+          item: label.item,
+          allergens: label.allergens,
+          pdfUrl,
+          zplUrl
+        }))
+      });
     });
 
     return { batchId, labelCount: labels.length, pdfUrl, zplUrl };
