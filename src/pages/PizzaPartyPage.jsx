@@ -49,17 +49,17 @@ const formatDateLabel = (isoDate, fallbackLabel) => {
 const getNextScheduledDate = (isoDate, today) => {
   const baseDate = toLocalDate(isoDate);
   if (!baseDate) return null;
+
+  const candidate = new Date(baseDate);
+  candidate.setHours(0, 0, 0, 0);
+
   const anchor = new Date(today);
   anchor.setHours(0, 0, 0, 0);
-  let candidate = new Date(baseDate);
-  let safety = 0;
-  while (candidate < anchor && safety < 10) {
-    candidate.setFullYear(candidate.getFullYear() + 1);
-    safety += 1;
-  }
+
   if (candidate < anchor) {
     return null;
   }
+
   return candidate;
 };
 
@@ -284,7 +284,15 @@ const PizzaPartyPage = () => {
 
   const openModal = (date) => {
     // force a fresh mount each time modal opens
-    reset();
+    try {
+      if (typeof reset === 'function') {
+        reset();
+      }
+    } catch (err) {
+      if (process.env.NODE_ENV !== 'production') {
+        console.error('[pizza-party] failed to reset payment form', err);
+      }
+    }
     setShowModal(true);
     setSelectedDate(date);
   };
