@@ -1,4 +1,4 @@
-﻿{
+{
   "compilerOptions": {
     "target": "ES2022",
     "lib": ["DOM", "DOM.Iterable", "ES2022"],
@@ -18,8 +18,8 @@
     "paths": {
       "@local-office/ui": ["../../packages/ui/src/index.ts"],
       "@local-office/ui/*": ["../../packages/ui/src/*"],
-      "@local-effort/shared": ["../../packages/shared/src/index.ts"],
-      "@local-effort/shared/*": ["../../packages/shared/src/*"]
+      "@local-effort/shared": ["../../../packages/shared/src/index.ts"],
+      "@local-effort/shared/*": ["../../../packages/shared/src/*"]
     }
   },
   "include": [
@@ -30,3 +30,4 @@
   ],
   "exclude": ["node_modules"]
 }
+

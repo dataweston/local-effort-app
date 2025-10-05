@@ -1,6 +1,7 @@
+import Link from 'next/link';
+import type { Metadata } from 'next';
 
 import type { Order } from '@local-effort/shared';
-import type { Metadata } from 'next';
 
 import { formatCurrency, MENU_LOOKUP } from '../menu';
 import { ResendEmailButton } from '../resend-email-button';
@@ -111,11 +112,12 @@ const computeTotals = (state: CheckoutState) => {
     total: subtotal + tip
   };
 };
+
 export const metadata: Metadata = {
   title: 'Paikka presale — success',
   description: 'Square checkout confirmation for the Paikka sandwich presale.'
 };
-};
+
 export default async function SuccessPage({ searchParams }: { searchParams: SearchParams }) {
   const stateParam = typeof searchParams.state === 'string' ? searchParams.state : undefined;
   const paymentReference = resolvePaymentReference(searchParams);
@@ -201,9 +203,9 @@ export default async function SuccessPage({ searchParams }: { searchParams: Sear
             <span>
               Need help? Email <a className="text-brand-700" href="mailto:hello@localoffice.co">hello@localoffice.co</a>.
             </span>
-            <a href="/paikka" className="text-brand-700 hover:underline">
+            <Link href="/paikka" className="text-brand-700 hover:underline">
               Back to presale
-            </a>
+            </Link>
           </div>
         </div>
       ) : (
@@ -214,9 +216,9 @@ export default async function SuccessPage({ searchParams }: { searchParams: Sear
             Reach out to <a className="text-brand-700" href="mailto:hello@localoffice.co">hello@localoffice.co</a> with your
             payment receipt and we&apos;ll get you squared away.
           </p>
-          <a href="/paikka" className="text-brand-700 hover:underline">
+          <Link href="/paikka" className="text-brand-700 hover:underline">
             Return to presale
-          </a>
+          </Link>
         </div>
       )}
     </div>
