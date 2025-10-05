@@ -155,7 +155,7 @@ importers:
         version: 5.0.4(vite@5.4.20(@types/node@24.6.2)(terser@5.44.0))
       autoprefixer:
         specifier: ^10.4.21
-        version: 10.4.21(postcss@8.4.47)
+        version: 10.4.21(postcss@8.4.49)
       compression-webpack-plugin:
         specifier: ^11.1.0
         version: 11.1.0(webpack@5.102.0(esbuild@0.23.1))
@@ -303,11 +303,11 @@ importers:
         specifier: ^5.0.12
         version: 5.4.20(@types/node@20.16.10)(terser@5.44.0)
 
-  apps/web:
+  local-office/apps/web:
     dependencies:
       '@local-effort/shared':
         specifier: workspace:*
-        version: link:../../packages/shared
+        version: link:../../../packages/shared
       '@local-office/ui':
         specifier: workspace:^
         version: link:../../packages/ui
@@ -364,7 +364,7 @@ importers:
         specifier: 5.6.3
         version: 5.6.3
 
-  packages/contracts:
+  local-office/packages/contracts:
     devDependencies:
       '@redocly/cli':
         specifier: 1.28.2
@@ -385,7 +385,7 @@ importers:
         specifier: ^2.6.0
         version: 2.8.1
 
-  packages/db:
+  local-office/packages/db:
     dependencies:
       '@prisma/client':
         specifier: 5.20.0
@@ -404,7 +404,7 @@ importers:
         specifier: 5.6.3
         version: 5.6.3
 
-  packages/lib:
+  local-office/packages/lib:
     dependencies:
       '@local-office/db':
         specifier: workspace:^
@@ -420,16 +420,7 @@ importers:
         specifier: 5.6.3
         version: 5.6.3
 
-  packages/shared:
-    dependencies:
-      '@noble/ed25519':
-        specifier: ^3.0.0
-        version: 3.0.0
-      jose:
-        specifier: ^6.1.0
-        version: 6.1.0
-
-  packages/ui:
+  local-office/packages/ui:
     dependencies:
       '@radix-ui/react-slot':
         specifier: 1.1.1
@@ -463,7 +454,7 @@ importers:
         specifier: 5.6.3
         version: 5.6.3
 
-  services/api:
+  local-office/services/api:
     dependencies:
       '@local-office/billing':
         specifier: workspace:^
@@ -527,7 +518,7 @@ importers:
         specifier: 5.6.3
         version: 5.6.3
 
-  services/billing:
+  local-office/services/billing:
     dependencies:
       '@local-office/db':
         specifier: workspace:^
@@ -552,7 +543,7 @@ importers:
         specifier: 5.6.3
         version: 5.6.3
 
-  services/dispatcher:
+  local-office/services/dispatcher:
     dependencies:
       '@local-office/lib':
         specifier: workspace:^
@@ -586,7 +577,7 @@ importers:
         specifier: 2.1.3
         version: 2.1.3(@types/node@20.16.10)(terser@5.44.0)
 
-  services/labeler:
+  local-office/services/labeler:
     dependencies:
       '@local-office/db':
         specifier: workspace:^
@@ -614,7 +605,7 @@ importers:
         specifier: 5.6.3
         version: 5.6.3
 
-  services/worker:
+  local-office/services/worker:
     dependencies:
       '@local-office/billing':
         specifier: workspace:^
@@ -656,6 +647,15 @@ importers:
       vitest:
         specifier: 2.1.4
         version: 2.1.4(@types/node@20.16.10)(terser@5.44.0)
+
+  packages/shared:
+    dependencies:
+      '@noble/ed25519':
+        specifier: ^3.0.0
+        version: 3.0.0
+      jose:
+        specifier: ^6.1.0
+        version: 6.1.0
 
 packages:
 
@@ -10586,14 +10586,14 @@ snapshots:
       postcss: 8.4.47
       postcss-value-parser: 4.2.0
 
-  autoprefixer@10.4.21(postcss@8.4.47):
+  autoprefixer@10.4.21(postcss@8.4.49):
     dependencies:
       browserslist: 4.26.3
       caniuse-lite: 1.0.30001747
       fraction.js: 4.3.7
       normalize-range: 0.1.2
       picocolors: 1.1.1
-      postcss: 8.4.47
+      postcss: 8.4.49
       postcss-value-parser: 4.2.0
 
   available-typed-arrays@1.0.7:
@@ -11618,8 +11618,8 @@ snapshots:
       '@typescript-eslint/parser': 5.62.0(eslint@8.57.1)(typescript@5.6.3)
       eslint: 8.57.1
       eslint-import-resolver-node: 0.3.9
-      eslint-import-resolver-typescript: 3.10.1(eslint-plugin-import@2.32.0(@typescript-eslint/parser@5.62.0(eslint@8.57.1)(typescript@5.6.3))(eslint@8.57.1))(eslint@8.57.1)
-      eslint-plugin-import: 2.32.0(@typescript-eslint/parser@5.62.0(eslint@8.57.1)(typescript@5.6.3))(eslint-import-resolver-typescript@3.10.1(eslint-plugin-import@2.32.0(@typescript-eslint/parser@5.62.0(eslint@8.57.1)(typescript@5.6.3))(eslint@8.57.1))(eslint@8.57.1))(eslint@8.57.1)
+      eslint-import-resolver-typescript: 3.10.1(eslint-plugin-import@2.32.0)(eslint@8.57.1)
+      eslint-plugin-import: 2.32.0(@typescript-eslint/parser@5.62.0(eslint@8.57.1)(typescript@5.6.3))(eslint-import-resolver-typescript@3.10.1)(eslint@8.57.1)
       eslint-plugin-jsx-a11y: 6.10.2(eslint@8.57.1)
       eslint-plugin-react: 7.37.5(eslint@8.57.1)
       eslint-plugin-react-hooks: 5.0.0-canary-7118f5dd7-20230705(eslint@8.57.1)
@@ -11642,7 +11642,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  eslint-import-resolver-typescript@3.10.1(eslint-plugin-import@2.32.0(@typescript-eslint/parser@5.62.0(eslint@8.57.1)(typescript@5.6.3))(eslint@8.57.1))(eslint@8.57.1):
+  eslint-import-resolver-typescript@3.10.1(eslint-plugin-import@2.32.0)(eslint@8.57.1):
     dependencies:
       '@nolyfill/is-core-module': 1.0.39
       debug: 4.4.3(supports-color@10.2.2)
@@ -11653,22 +11653,22 @@ snapshots:
       tinyglobby: 0.2.15
       unrs-resolver: 1.11.1
     optionalDependencies:
-      eslint-plugin-import: 2.32.0(@typescript-eslint/parser@5.62.0(eslint@8.57.1)(typescript@5.6.3))(eslint-import-resolver-typescript@3.10.1(eslint-plugin-import@2.32.0(@typescript-eslint/parser@5.62.0(eslint@8.57.1)(typescript@5.6.3))(eslint@8.57.1))(eslint@8.57.1))(eslint@8.57.1)
+      eslint-plugin-import: 2.32.0(@typescript-eslint/parser@5.62.0(eslint@8.57.1)(typescript@5.6.3))(eslint-import-resolver-typescript@3.10.1)(eslint@8.57.1)
     transitivePeerDependencies:
       - supports-color
 
-  eslint-module-utils@2.12.1(@typescript-eslint/parser@5.62.0(eslint@8.57.1)(typescript@5.6.3))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.10.1(eslint-plugin-import@2.32.0(@typescript-eslint/parser@5.62.0(eslint@8.57.1)(typescript@5.6.3))(eslint@8.57.1))(eslint@8.57.1))(eslint@8.57.1):
+  eslint-module-utils@2.12.1(@typescript-eslint/parser@5.62.0(eslint@8.57.1)(typescript@5.6.3))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.10.1)(eslint@8.57.1):
     dependencies:
       debug: 3.2.7
     optionalDependencies:
       '@typescript-eslint/parser': 5.62.0(eslint@8.57.1)(typescript@5.6.3)
       eslint: 8.57.1
       eslint-import-resolver-node: 0.3.9
-      eslint-import-resolver-typescript: 3.10.1(eslint-plugin-import@2.32.0(@typescript-eslint/parser@5.62.0(eslint@8.57.1)(typescript@5.6.3))(eslint@8.57.1))(eslint@8.57.1)
+      eslint-import-resolver-typescript: 3.10.1(eslint-plugin-import@2.32.0)(eslint@8.57.1)
     transitivePeerDependencies:
       - supports-color
 
-  eslint-plugin-import@2.32.0(@typescript-eslint/parser@5.62.0(eslint@8.57.1)(typescript@5.6.3))(eslint-import-resolver-typescript@3.10.1(eslint-plugin-import@2.32.0(@typescript-eslint/parser@5.62.0(eslint@8.57.1)(typescript@5.6.3))(eslint@8.57.1))(eslint@8.57.1))(eslint@8.57.1):
+  eslint-plugin-import@2.32.0(@typescript-eslint/parser@5.62.0(eslint@8.57.1)(typescript@5.6.3))(eslint-import-resolver-typescript@3.10.1)(eslint@8.57.1):
     dependencies:
       '@rtsao/scc': 1.1.0
       array-includes: 3.1.9
@@ -11679,7 +11679,7 @@ snapshots:
       doctrine: 2.1.0
       eslint: 8.57.1
       eslint-import-resolver-node: 0.3.9
-      eslint-module-utils: 2.12.1(@typescript-eslint/parser@5.62.0(eslint@8.57.1)(typescript@5.6.3))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.10.1(eslint-plugin-import@2.32.0(@typescript-eslint/parser@5.62.0(eslint@8.57.1)(typescript@5.6.3))(eslint@8.57.1))(eslint@8.57.1))(eslint@8.57.1)
+      eslint-module-utils: 2.12.1(@typescript-eslint/parser@5.62.0(eslint@8.57.1)(typescript@5.6.3))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.10.1)(eslint@8.57.1)
       hasown: 2.0.2
       is-core-module: 2.16.1
       is-glob: 4.0.3
@@ -14129,7 +14129,7 @@ snapshots:
   redoc@2.2.0(core-js@3.45.1)(enzyme@3.11.0)(mobx@6.15.0)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(styled-components@6.1.19(react-dom@18.2.0(react@18.2.0))(react@18.2.0)):
     dependencies:
       '@cfaester/enzyme-adapter-react-18': 0.8.0(enzyme@3.11.0)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
-      '@redocly/openapi-core': 1.28.2
+      '@redocly/openapi-core': 1.34.5(supports-color@10.2.2)
       classnames: 2.5.1
       core-js: 3.45.1
       decko: 1.2.0

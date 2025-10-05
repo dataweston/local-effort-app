@@ -14,7 +14,6 @@
     "@stoplight/spectral-cli": "6.11.0",
     "fs-extra": "^11.2.0",
     "openapi-generator-cli": "1.0.0",
-    "fs-extra": "^11.2.0",
     "openapi-typescript": "^7.4.3",
     "yaml": "^2.6.0"
   }
