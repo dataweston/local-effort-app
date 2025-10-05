@@ -4,7 +4,9 @@
     {
       "src": "package.json",
       "use": "@vercel/static-build",
-      "config": { "distDir": "dist" }
+      "config": {
+        "distDir": "dist"
+      }
     },
     {
       "src": "api/store/products.js",
@@ -60,16 +62,50 @@
       "src": "/api/(.*)",
       "dest": "/backend/api/server.js"
     },
-  { "src": "^/$", "dest": "/prerender/index.html" },
-  { "src": "^/about$", "dest": "/prerender/about/index.html" },
-  { "src": "^/services$", "dest": "/prerender/services/index.html" },
-  { "src": "^/pricing$", "dest": "/prerender/pricing/index.html" },
-  { "src": "^/menu$", "dest": "/prerender/menu/index.html" },
-  { "src": "^/happy-monday$", "dest": "/prerender/happy-monday/index.html" },
-  { "src": "^/gallery$", "dest": "/prerender/gallery/index.html" },
-  { "src": "^/meal-prep$", "dest": "/prerender/meal-prep/index.html" },
-  { "src": "^/partner-portal$", "dest": "/prerender/partner-portal/index.html" },
-  { "src": "^/crowdfunding$", "dest": "/prerender/crowdfunding/index.html" },
+    {
+      "src": "^/$",
+      "dest": "/prerender/index.html"
+    },
+    {
+      "src": "^/about$",
+      "dest": "/prerender/about/index.html"
+    },
+    {
+      "src": "^/services$",
+      "dest": "/prerender/services/index.html"
+    },
+    {
+      "src": "^/pricing$",
+      "dest": "/prerender/pricing/index.html"
+    },
+    {
+      "src": "^/menu$",
+      "dest": "/prerender/menu/index.html"
+    },
+    {
+      "src": "^/happy-monday$",
+      "dest": "/prerender/happy-monday/index.html"
+    },
+    {
+      "src": "^/gallery$",
+      "dest": "/prerender/gallery/index.html"
+    },
+    {
+      "src": "^/meal-prep$",
+      "dest": "/prerender/meal-prep/index.html"
+    },
+    {
+      "src": "^/partner-portal$",
+      "dest": "/prerender/partner-portal/index.html"
+    },
+    {
+      "src": "^/crowdfunding$",
+      "dest": "/prerender/crowdfunding/index.html"
+    },
+    {
+      "src": "^/paikka$",
+      "dest": "/prerender/paikka/index.html"
+    },
     {
       "src": "/((?!api|assets|.*\\.|_next).*)",
       "dest": "/index.html"
