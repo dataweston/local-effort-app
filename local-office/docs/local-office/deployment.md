@@ -1,15 +1,15 @@
-# Local Office deployment playbook
+﻿# Local Office deployment playbook
 
 This guide covers the minimum configuration required to run the Local Office stack outside of the legacy Local Effort deployment. It assumes you are provisioning each service in its own process or container.
 
 ## Components
-- **Next web app** (`apps/web`): hosts employee, admin, and provider UIs plus the Local Office demo flows.
-- **API** (`services/api`): NestJS gateway for programs, orders, batches, incidents, invoices, referrals, and delivery orchestration.
-- **Billing service** (`services/billing`): wraps Square payments and invoice APIs.
-- **Dispatcher service** (`services/dispatcher`): handles courier adapters (Dispatch, Uber Direct, Olo).
-- **Worker** (`services/worker`): BullMQ processors for batching, label generation, notifications, and webhooks.
-- **Labeler** (`services/labeler`): generates PDF/ZPL payloads referenced by worker jobs.
-- **Shared packages** (`packages/db`, `packages/lib`, `packages/contracts`, `packages/ui`): Prisma schema, utility helpers, generated SDKs, and UI kit.
+- **Next web app** (`local-office/apps/web`): hosts employee, admin, and provider UIs plus the Local Office demo flows.
+- **API** (`local-office/services/api`): NestJS gateway for programs, orders, batches, incidents, invoices, referrals, and delivery orchestration.
+- **Billing service** (`local-office/services/billing`): wraps Square payments and invoice APIs.
+- **Dispatcher service** (`local-office/services/dispatcher`): handles courier adapters (Dispatch, Uber Direct, Olo).
+- **Worker** (`local-office/services/worker`): BullMQ processors for batching, label generation, notifications, and webhooks.
+- **Labeler** (`local-office/services/labeler`): generates PDF/ZPL payloads referenced by worker jobs.
+- **Shared packages** (`local-office/packages/db`, `local-office/packages/lib`, `local-office/packages/contracts`, `local-office/packages/ui`): Prisma schema, utility helpers, generated SDKs, and UI kit.
 
 ## Prerequisites
 1. **Runtime**: Node.js 20.x with pnpm (enable via `corepack enable`).
@@ -82,9 +82,10 @@ Store the token in the Local Office UI with the header dropdown (top-right) or i
   - `pnpm install --filter @local-office/api... --filter @local-office/db...` etc.
 - Expose the API on a private network; require HTTPS termination at the gateway or load balancer. The API guard enforces Bearer tokens but does not handle SSL.
 - Configure health checks against `/v1/programs?org=ping` once you add a public health endpoint, or wire a dedicated controller.
-- Queue backoff and email/webhook retries run inside `services/worker`. Monitor queue depth via BullMQ dashboards or custom metrics (pending in `packages/infra`).
+- Queue backoff and email/webhook retries run inside `local-office/services/worker`. Monitor queue depth via BullMQ dashboards or custom metrics (pending in `local-office/packages/infra`).
 
 ## Next steps
 - Add Dockerfiles + Helm chart once infrastructure decisions are finalized (tracked in Implementation Plan section 7).
 - Layer structured logging/metrics exporters so each service reports to your observability stack.
 - Extend the auth guard to accept JWKS or asymmetric keys when integrating with an IdP.
+

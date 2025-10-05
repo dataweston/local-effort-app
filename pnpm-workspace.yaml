@@ -1,4 +1,7 @@
-packages:
+﻿packages:
   - "apps/*"
   - "services/*"
   - "packages/*"
+  - "local-office/apps/*"
+  - "local-office/services/*"
+  - "local-office/packages/*"
