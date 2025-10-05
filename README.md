@@ -2,6 +2,11 @@
 
 Created with CodeSandbox
 
+## Getting Started
+
+- Install dependencies with `pnpm install`. The repository now relies exclusively on `pnpm-lock.yaml`, so `package-lock.json` files have been removed.
+- Use `pnpm` for script execution (e.g., `pnpm start`, `pnpm run build:release`).
+
 ## Messaging/Email MVP
 
 This app now includes a basic messaging/email foundation:
@@ -46,7 +51,7 @@ export SENTRY_AUTH_TOKEN=***   # scopes: project:releases, org:read
 export SENTRY_ORG=your-org
 export SENTRY_PROJECT=local-effort-frontend
 export SENTRY_RELEASE=$(git rev-parse --short HEAD)
-npm run build:release
+pnpm run build:release
 ```
 Scripts available:
 `release:new` `release:files` `release:commits` `release:finalize` `release:all` `build:release`.

@@ -42,7 +42,7 @@ SENTRY_RELEASE=custom-release-id (optional; falls back to commit SHA)
 ```
 Build with release (example):
 ```
-SENTRY_RELEASE=$(git rev-parse --short HEAD) npm run build
+SENTRY_RELEASE=$(git rev-parse --short HEAD) pnpm run build
 ```
 Uploaded source maps live in the release artifacts in Sentry. Disable by unsetting org/project or DSN.
 
@@ -118,31 +118,31 @@ Files:
 
 Scripts:
 ```
-npm run test:e2e          # headless
-npm run test:e2e:headed   # visible browser
-npm run test:e2e:report   # open HTML report after run
+pnpm test:e2e          # headless
+pnpm test:e2e:headed   # visible browser
+pnpm test:e2e:report   # open HTML report after run
 ```
 Set `PLAYWRIGHT_BASE_URL` when running against a deployed preview.
 Example CI step:
 ```
-npm run build
-npx vite preview &
-PLAYWRIGHT_BASE_URL=http://localhost:4173 npm run test:e2e
+pnpm build
+pnpm exec vite preview &
+PLAYWRIGHT_BASE_URL=http://localhost:4173 pnpm test:e2e
 ```
 
 ## 6. Local Development
 Install packages after pulling changes:
 ```
-npm install
-(cd backend && npm install)
+pnpm install
+(cd backend && pnpm install)
 ```
 Run backend only:
 ```
-npm run backend:start
+pnpm run backend:start
 ```
 Run frontend dev (Vite):
 ```
-npm start
+pnpm start
 ```
 (Optional) run both via PM2 locally:
 ```
@@ -170,15 +170,15 @@ SENTRY_TRACES_SAMPLE_RATE=0.1
 SENTRY_PROFILES_SAMPLE_RATE=0.0
 ```
 
-### Provided npm scripts
+### Provided pnpm scripts
 ```
-npm run release:version   # prints current $SENTRY_RELEASE (debug)
-npm run release:new       # create release in Sentry
-npm run release:files     # upload sourcemaps from dist/
-npm run release:commits   # associate commits automatically (non-fatal if fails)
-npm run release:finalize  # finalize release (marks deploy-ready)
-npm run release:all       # convenience: new + files + commits + finalize
-npm run build:release     # build with release id (git short SHA if not set) then upload
+pnpm run release:version   # prints current $SENTRY_RELEASE (debug)
+pnpm run release:new       # create release in Sentry
+pnpm run release:files     # upload sourcemaps from dist/
+pnpm run release:commits   # associate commits automatically (non-fatal if fails)
+pnpm run release:finalize  # finalize release (marks deploy-ready)
+pnpm run release:all       # convenience: new + files + commits + finalize
+pnpm run build:release     # build with release id (git short SHA if not set) then upload
 ```
 
 ### Typical CI pipeline snippet
@@ -187,8 +187,8 @@ export SENTRY_AUTH_TOKEN=***
 export SENTRY_ORG=your-org
 export SENTRY_PROJECT=local-effort-frontend
 export SENTRY_RELEASE=$(git rev-parse --short HEAD)
-npm ci
-npm run build:release
+pnpm install
+pnpm run build:release
 ```
 
 If you want to skip Sentry on a given build (e.g. fork / local), simply omit `SENTRY_ORG` / `SENTRY_PROJECT` or the auth token; the plugin will be inert.
@@ -198,9 +198,9 @@ If you want to skip Sentry on a given build (e.g. fork / local), simply omit `SE
 SENTRY_ORG=your-org \
 SENTRY_PROJECT=local-effort-frontend \
 SENTRY_AUTH_TOKEN=**** \
-SENTRY_RELEASE=local-test $(npm bin)/sentry-cli releases list | head -n 5  # sanity (optional)
+SENTRY_RELEASE=local-test $(pnpm bin)/sentry-cli releases list | head -n 5  # sanity (optional)
 
-SENTRY_RELEASE=local-test npm run build:release
+SENTRY_RELEASE=local-test pnpm run build:release
 ```
 You should see upload logs and a finalized release in Sentry. Generate a test error in the app; confirm the issue shows the correct release.
 

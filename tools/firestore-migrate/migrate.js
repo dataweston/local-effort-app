@@ -38,7 +38,7 @@ function parseArgs() {
 }
 
 function usage() {
-  console.log(`Usage: npm run migrate:gallant [-- optional flags]\n\n` +
+  console.log(`Usage: pnpm run migrate:gallant [-- optional flags]\n\n` +
 `Defaults:\n` +
 `- Source cred: tools/firestore-migrate/source.json (or FS_MIGRATE_SOURCE env)\n` +
 `- Target cred: tools/firestore-migrate/target.json (or FS_MIGRATE_TARGET env)\n` +
