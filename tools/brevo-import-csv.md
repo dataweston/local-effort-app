@@ -5,7 +5,7 @@ Run a one-off import of contacts from a CSV file into Brevo (formerly Sendinblue
 Usage
 
 - Set `BREVO_API_KEY` in your environment. Optional: `BREVO_LIST_ID`.
-- Run: `npm run brevo:import -- path/to.csv --list 12`.
+- Run: `pnpm run brevo:import -- path/to.csv --list 12`.
 - Flags:
   - `--list <id>`: Add contacts to Brevo list ID
   - `--dry`: Dry-run; prints what would be upserted
@@ -21,8 +21,8 @@ Column mapping
 
 Examples
 
-- Dry run: `npm run brevo:import -- ./contacts.csv --dry`
-- With list: `npm run brevo:import -- ./contacts.csv --list 7`
+- Dry run: `pnpm run brevo:import -- ./contacts.csv --dry`
+- With list: `pnpm run brevo:import -- ./contacts.csv --list 7`
 
 Notes
 

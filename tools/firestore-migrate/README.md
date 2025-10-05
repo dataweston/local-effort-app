@@ -9,10 +9,10 @@ What you need
 
 How to run
 1) Dry run (shows what it would do):
-  npm run migrate:gallant:dry
+  pnpm run migrate:gallant:dry
 
 2) Do it for real:
-  npm run migrate:gallant
+  pnpm run migrate:gallant
 
 3) Point the app at the main project (after copy):
   - Update your `.env` to use the main Firebase config (VITE_* vars)
@@ -21,7 +21,7 @@ How to run
 Details
 - Defaults: copies `events` and `receipts`.
 - To pick different collections:
-  FS_MIGRATE_COLLECTIONS=col1,col2 npm run migrate:gallant
+  FS_MIGRATE_COLLECTIONS=col1,col2 pnpm run migrate:gallant
 - You can also pass files via flags:
   node tools/firestore-migrate/migrate.js --sourceCred ./SOURCE.json --targetCred ./TARGET.json
 
