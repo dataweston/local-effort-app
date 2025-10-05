@@ -1,4 +1,4 @@
-import { MENU_LOOKUP } from './menu';
+const { MENU_LOOKUP } = require('./menu');
 
 const TIP_OPTIONS = [
   { label: '0%', value: '0' },
@@ -9,7 +9,6 @@ const TIP_OPTIONS = [
 ];
 
 const isValidEmail = (value = '') => /.+@.+/.test(String(value).trim());
-
 const base64UrlEncode = (payload) => {
   const json = typeof payload === 'string' ? payload : JSON.stringify(payload);
   if (typeof Buffer !== 'undefined') {
@@ -55,7 +54,6 @@ const decodeCheckoutState = (value) => {
       qty: Number(item?.qty ?? 0),
     }))
     .filter((item) => MENU_LOOKUP.has(item.sku) && Number.isFinite(item.qty) && item.qty > 0);
-
   return {
     email: String(parsed.email ?? ''),
     firstName: String(parsed.firstName ?? ''),
