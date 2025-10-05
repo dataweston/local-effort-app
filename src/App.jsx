@@ -1,4 +1,4 @@
-import React, { useEffect, Suspense, lazy } from 'react';
+﻿import React, { useEffect, Suspense, lazy } from 'react';
 import { SpeedInsights } from '@vercel/speed-insights/react';
 import { HelmetProvider } from 'react-helmet-async';
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
@@ -54,6 +54,8 @@ const PersonalChefTwinCitiesPage = lazy(() => import('./pages/PersonalChefTwinCi
 const PersonalChefMinnesotaPage = lazy(() => import('./pages/PersonalChefMinnesota'));
 const PersonalChefWisconsinPage = lazy(() => import('./pages/PersonalChefWisconsin'));
 const PizzaPartyPage = lazy(() => import('./pages/PizzaPartyPage'));
+const PaikkaPage = lazy(() => import('./pages/PaikkaPage'));
+const PaikkaSuccessPage = lazy(() => import('./pages/PaikkaSuccessPage'));
 
 const AppContent = () => {
   const location = useLocation();
@@ -243,6 +245,22 @@ const AppContent = () => {
                   }
                 />
                 <Route
+                  path="/paikka"
+                  element={
+                    <AnimatedPage>
+                      <PaikkaPage />
+                    </AnimatedPage>
+                  }
+                />
+                <Route
+                  path="/paikka/success"
+                  element={
+                    <AnimatedPage>
+                      <PaikkaSuccessPage />
+                    </AnimatedPage>
+                  }
+                />
+                <Route
                   path="/book-food-truck"
                   element={
                     <AnimatedPage>
@@ -363,4 +381,7 @@ function App() {
 }
 
 export default App;
+
+
+
 

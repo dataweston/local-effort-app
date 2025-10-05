@@ -87,6 +87,7 @@ const routes = [
   '/happy-monday',
   '/gallery',
   '/meal-prep',
+  '/paikka',
   '/partner-portal',
   '/crowdfunding',
   '/personal-chef-minneapolis',
@@ -149,3 +150,5 @@ function ensureDir(p) { fs.mkdirSync(p, { recursive: true }); }
   fs.writeFileSync(pubPath, sitemap, 'utf8');
   process.stdout.write('Updated sitemap.xml\n');
 })();
+
+
