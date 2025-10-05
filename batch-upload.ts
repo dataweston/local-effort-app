@@ -8,11 +8,11 @@
 
   Usage:
     # install deps
-  npm install cloudinary
-    npm install -D ts-node typescript @types/node
+  pnpm add cloudinary
+    pnpm add -D ts-node typescript @types/node
 
     # run
-    npx ts-node batch-upload.ts
+    pnpm exec ts-node batch-upload.ts
 
   Environment variables (recommended to use a .env file or export in shell):
   CLOUD_NAME, CLOUD_API_KEY, CLOUD_API_SECRET

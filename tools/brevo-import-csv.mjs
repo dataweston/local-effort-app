@@ -15,7 +15,7 @@ async function ensureFetch() {
     const { default: fetchFn } = await import('node-fetch');
     globalThis.fetch = fetchFn;
   } catch (e) {
-    error('Global fetch not found. Use Node 18+ or install node-fetch (npm i node-fetch).');
+    error('Global fetch not found. Use Node 18+ or install node-fetch (pnpm add node-fetch).');
     process.exit(1);
   }
 }

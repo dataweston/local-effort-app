@@ -27,7 +27,7 @@ export default function TinyDinerProxy() {
           <code className="ml-2 rounded bg-neutral-100 px-2 py-1">partner-tools/tiny-diner-app</code>.
         </p>
         <ol className="list-decimal space-y-1 pl-6 text-sm text-neutral-700">
-          <li>Start the service with <code>npm run dev</code> inside that folder.</li>
+          <li>Start the service with <code>pnpm run dev</code> inside that folder.</li>
           <li>
             Set <code>VITE_TINY_DINER_URL</code> to the deployed URL (or use the dev port{' '}
             <code>{DEV_FALLBACK}</code>).

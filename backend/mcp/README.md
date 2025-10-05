@@ -20,7 +20,7 @@ Executes read-only GROQ queries against the Sanity dataset with optional paramet
 ## Running the server
 
 ```bash
-npm run mcp:stdio
+pnpm run mcp:stdio
 ```
 
 The server expects the same environment variables as the Express API for Supabase, Sanity and optional OpenAI access.
