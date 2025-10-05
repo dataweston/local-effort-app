@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Calendar, Plus, DollarSign, TrendingUp, ShoppingCart, Save, X, ChevronLeft, ChevronRight, Trash2, FileText } from 'lucide-react';
+import { Calendar, Plus, DollarSign, TrendingUp, ShoppingCart, Save, X, ChevronLeft, ChevronRight, Trash2, FileText, Calculator } from 'lucide-react';
 import { db, firebaseProjectId } from '../../firebaseConfig';
 import Notepad from './Notepad';
 // Auth removed: tools are now public-access
