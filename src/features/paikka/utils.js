@@ -1,4 +1,4 @@
-const { MENU_LOOKUP } = require('./menu');
+import { MENU_LOOKUP } from './menu';
 
 const TIP_OPTIONS = [
   { label: '0%', value: '0' },
