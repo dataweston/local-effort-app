@@ -53,8 +53,8 @@ docker compose up -d
 ### Web app (placeholder)
 ```bash
 cd web
-npm install
-npm run dev
+pnpm install
+pnpm run dev
 ```
 
 ### API (FastAPI)

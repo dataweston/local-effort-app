@@ -25,12 +25,12 @@ function ensureRelease() {
     try {
       const sha = execSync('git rev-parse --short HEAD').toString().trim();
       process.env.SENTRY_RELEASE = sha;
-  console.log('[sentry-release] Derived SENTRY_RELEASE =', sha);
+      console.log('[sentry-release] Derived SENTRY_RELEASE =', sha);
     } catch (e) {
       console.warn('[sentry-release] Could not derive git SHA; set SENTRY_RELEASE explicitly.');
     }
   } else {
-  console.log('[sentry-release] Using SENTRY_RELEASE =', process.env.SENTRY_RELEASE);
+    console.log('[sentry-release] Using SENTRY_RELEASE =', process.env.SENTRY_RELEASE);
   }
 }
 
@@ -46,10 +46,13 @@ if (step === 'version') {
 }
 
 const releaseSteps = {
-  new: () => run(`npx sentry-cli releases new ${process.env.SENTRY_RELEASE}`),
-  files: () => run(`npx sentry-cli releases files ${process.env.SENTRY_RELEASE} upload-sourcemaps dist --rewrite --url-prefix '~/dist'`),
-  commits: () => run(`npx sentry-cli releases set-commits --auto ${process.env.SENTRY_RELEASE}`),
-  finalize: () => run(`npx sentry-cli releases finalize ${process.env.SENTRY_RELEASE}`)
+  new: () => run(`pnpm exec sentry-cli releases new ${process.env.SENTRY_RELEASE}`),
+  files: () =>
+    run(
+      `pnpm exec sentry-cli releases files ${process.env.SENTRY_RELEASE} upload-sourcemaps dist --rewrite --url-prefix '~/dist'`
+    ),
+  commits: () => run(`pnpm exec sentry-cli releases set-commits --auto ${process.env.SENTRY_RELEASE}`),
+  finalize: () => run(`pnpm exec sentry-cli releases finalize ${process.env.SENTRY_RELEASE}`)
 };
 
 function doAll() {
@@ -62,7 +65,7 @@ function doAll() {
 switch (step) {
   case 'build':
     ensureRelease();
-    run('npm run build');
+    run('pnpm run build');
     doAll();
     break;
   case 'all':
