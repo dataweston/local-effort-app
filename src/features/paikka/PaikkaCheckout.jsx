@@ -18,6 +18,9 @@ const PaikkaCheckout = () => {
   const [customTip, setCustomTip] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState(null);
+  const [dairyFreeSelections, setDairyFreeSelections] = useState(() =>
+    Object.fromEntries(GROUPED_MENU.map((group) => [group.baseSku, false]))
+  );
 
   const subtotalCents = useMemo(
     () => MENU_ITEMS.reduce((sum, item) => sum + (quantities[item.sku] ?? 0) * item.presalePriceCents, 0),
@@ -61,6 +64,16 @@ const PaikkaCheckout = () => {
   const handleAddToCart = (sku) => {
     setError(null);
     handleQuantityChange(sku, 1);
+  };
+
+  const setGroupDairyFree = (baseSku, checked) => {
+    setDairyFreeSelections((prev) => {
+      const current = prev[baseSku] ?? false;
+      if (current === checked) {
+        return prev;
+      }
+      return { ...prev, [baseSku]: checked };
+    });
   };
 
   const buildCheckoutPayload = () => ({
@@ -161,6 +174,10 @@ const PaikkaCheckout = () => {
         <div className="space-y-6">
           {GROUPED_MENU.map((group) => {
             const hasDairyFree = group.variants.some((variant) => variant.isDairyFree);
+            const defaultVariant = group.variants.find((variant) => !variant.isDairyFree) ?? group.variants[0];
+            const dairyFreeVariant = group.variants.find((variant) => variant.isDairyFree);
+            const dairyFreeSelected = Boolean(dairyFreeVariant && dairyFreeSelections[group.baseSku]);
+            const activeVariant = dairyFreeSelected && dairyFreeVariant ? dairyFreeVariant : defaultVariant;
             return (
               <div key={group.baseSku} className="rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm">
                 <div className="space-y-4">
@@ -176,18 +193,29 @@ const PaikkaCheckout = () => {
                     </div>
                   </div>
 
-                  <div className="flex flex-wrap gap-3">
-                    {group.variants.map((variant) => (
-                      <Button
-                        key={variant.sku}
-                        type="button"
-                        onClick={() => handleAddToCart(variant.sku)}
-                        variant={variant.isDairyFree ? 'outline' : 'default'}
-                        className="flex-1 min-w-[10rem]"
+                  <div className="flex flex-wrap items-center gap-3">
+                    <Button
+                      type="button"
+                      onClick={() => activeVariant && handleAddToCart(activeVariant.sku)}
+                      className="flex-1 min-w-[10rem]"
+                    >
+                      {`Add to cart${dairyFreeSelected ? ' (dairy-free)' : ''}`}
+                    </Button>
+                    {dairyFreeVariant && (
+                      <label
+                        className="flex items-center gap-2 text-sm font-medium text-neutral-700"
+                        htmlFor={`dairy-free-${group.baseSku}`}
                       >
-                        {variant.isDairyFree ? 'Add dairy-free' : 'Add to cart'}
-                      </Button>
-                    ))}
+                        <input
+                          id={`dairy-free-${group.baseSku}`}
+                          type="checkbox"
+                          className="h-4 w-4 rounded border-neutral-300 text-accent focus:ring-accent"
+                          checked={dairyFreeSelected}
+                          onChange={(event) => setGroupDairyFree(group.baseSku, event.target.checked)}
+                        />
+                        Dairy free
+                      </label>
+                    )}
                   </div>
 
                   {hasDairyFree && (
