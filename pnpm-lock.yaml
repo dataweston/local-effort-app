@@ -155,7 +155,7 @@ importers:
         version: 5.0.4(vite@5.4.20(@types/node@24.6.2)(terser@5.44.0))
       autoprefixer:
         specifier: ^10.4.21
-        version: 10.4.21(postcss@8.4.47)
+        version: 10.4.21(postcss@8.4.49)
       compression-webpack-plugin:
         specifier: ^11.1.0
         version: 11.1.0(webpack@5.102.0(esbuild@0.23.1))
@@ -10844,14 +10844,14 @@ snapshots:
       postcss: 8.4.47
       postcss-value-parser: 4.2.0
 
-  autoprefixer@10.4.21(postcss@8.4.47):
+  autoprefixer@10.4.21(postcss@8.4.49):
     dependencies:
       browserslist: 4.26.3
       caniuse-lite: 1.0.30001747
       fraction.js: 4.3.7
       normalize-range: 0.1.2
       picocolors: 1.1.1
-      postcss: 8.4.47
+      postcss: 8.4.49
       postcss-value-parser: 4.2.0
 
   available-typed-arrays@1.0.7:
