@@ -473,7 +473,7 @@ app.post('/api/crowdfund/contribute', async (req, res) => {
 // For now, it will handle the client-side confirmation.
 app.post('/api/crowdfund/confirm-payment', async (req, res) => {
   const { items, funderName } = req.body;
-  
+
   try {
     const pizzasInCart = items.filter(p => p.type === 'pizza').reduce((sum, item) => sum + (item.pizzaCount || 1), 0);
     if (pizzasInCart === 0) {
@@ -505,6 +505,150 @@ app.post('/api/crowdfund/confirm-payment', async (req, res) => {
   } catch (error) {
   logger.error({ err: error }, 'confirm payment error');
     res.status(500).json({ error: 'Failed to update database after payment.' });
+  }
+});
+
+
+app.post('/api/food-truck/deposit', async (req, res) => {
+  try {
+    if (!squareClient) {
+      return res.status(500).json({ error: 'square-not-configured' });
+    }
+
+    const {
+      token,
+      amount,
+      name,
+      email,
+      phone,
+      eventDate,
+      notes,
+    } = req.body || {};
+
+    const trimmedName = String(name || '').trim();
+    const trimmedEmail = String(email || '').trim();
+    const trimmedPhone = String(phone || '').trim();
+    const trimmedEventDate = String(eventDate || '').trim();
+    if (!token) return res.status(400).json({ error: 'missing-token' });
+    if (!trimmedName) return res.status(400).json({ error: 'missing-name' });
+    if (!trimmedEmail) return res.status(400).json({ error: 'missing-email' });
+    if (!trimmedPhone) return res.status(400).json({ error: 'missing-phone' });
+    if (!trimmedEventDate) return res.status(400).json({ error: 'missing-event-date' });
+
+    const numericAmount = Number(amount);
+    if (!Number.isFinite(numericAmount) || numericAmount <= 0) {
+      return res.status(400).json({ error: 'invalid-amount' });
+    }
+    const amountCents = Math.round(numericAmount * 100);
+    if (!amountCents) {
+      return res.status(400).json({ error: 'invalid-amount' });
+    }
+
+    const locationId = process.env.SQUARE_LOCATION_ID;
+    if (!locationId) {
+      return res.status(500).json({ error: 'square-location-missing' });
+    }
+
+    const idempotencyKey = uuidv4();
+    const referenceId = `ft-${Date.now().toString(36)}-${idempotencyKey.slice(0, 8)}`.slice(0, 40);
+    const paymentBody = {
+      sourceId: token,
+      idempotencyKey,
+      locationId,
+      amountMoney: { amount: amountCents, currency: 'USD' },
+      autocomplete: true,
+      note: `Food truck deposit ${trimmedEventDate}`.slice(0, 500),
+      referenceId,
+      buyerEmailAddress: trimmedEmail,
+      buyerPhoneNumber: trimmedPhone,
+    };
+
+    logger.info({
+      email: trimmedEmail,
+      eventDate: trimmedEventDate,
+      amountCents,
+    }, 'food-truck deposit attempt');
+
+    const paymentResponse = await squareClient.paymentsApi.createPayment(paymentBody);
+    const payment = paymentResponse?.result?.payment || null;
+
+    const [firstName, ...restName] = trimmedName.split(/\s+/);
+    try {
+      await brevoService.upsertContact({
+        email: trimmedEmail,
+        firstName: firstName || undefined,
+        lastName: restName.join(' ') || undefined,
+        phone: trimmedPhone,
+      });
+    } catch (err) {
+      if (logger) logger.warn({ err }, 'food-truck deposit contact sync failed');
+    }
+
+    if (db) {
+      try {
+        await db.collection('foodTruckDeposits').add({
+          name: trimmedName,
+          email: trimmedEmail,
+          phone: trimmedPhone,
+          eventDate: trimmedEventDate,
+          notes: notes ? String(notes) : '',
+          amount: numericAmount,
+          amountCents,
+          paymentId: payment?.id || null,
+          paymentStatus: payment?.status || null,
+          referenceId,
+          locationId,
+          createdAt: admin.firestore.FieldValue.serverTimestamp(),
+        });
+      } catch (err) {
+        if (logger) logger.warn({ err }, 'food-truck deposit firestore write failed');
+      }
+    }
+
+    const teamEmail = process.env.SUPPORT_INBOX_EMAIL || process.env.TEAM_INBOX_EMAIL || process.env.SENDER_EMAIL;
+    const senderEmail = process.env.SENDER_EMAIL || teamEmail;
+    const escapeHtml = (value) => String(value || '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
+    if (teamEmail && senderEmail) {
+      const amountUsd = (amountCents / 100).toFixed(2);
+      const htmlContent = `
+        <p><strong>Food truck deposit received</strong></p>
+        <p><strong>Name:</strong> ${escapeHtml(trimmedName)}</p>
+        <p><strong>Email:</strong> ${escapeHtml(trimmedEmail)}</p>
+        <p><strong>Phone:</strong> ${escapeHtml(trimmedPhone)}</p>
+        <p><strong>Event Date:</strong> ${escapeHtml(trimmedEventDate)}</p>
+        <p><strong>Amount:</strong> $${escapeHtml(amountUsd)}</p>
+        ${notes ? `<p><strong>Notes:</strong><br/>${escapeHtml(String(notes)).replace(/\n/g, '<br />')}</p>` : ''}
+        <p><strong>Square Payment:</strong> ${escapeHtml(payment?.id || 'N/A')} (${escapeHtml(payment?.status || 'unknown')})</p>
+      `;
+      try {
+        await brevoService.sendEmail({
+          to: [{ email: teamEmail }],
+          sender: { email: senderEmail, name: 'Local Effort' },
+          subject: `Food truck deposit${trimmedEventDate ? ` - ${trimmedEventDate}` : ''}`,
+          htmlContent,
+          replyTo: { email: trimmedEmail, name: trimmedName },
+          tags: ['food-truck', 'deposit'],
+        });
+      } catch (err) {
+        if (logger) logger.warn({ err }, 'food-truck deposit email failed');
+      }
+    }
+
+    logger.info({ paymentId: payment?.id, status: payment?.status }, 'food-truck deposit processed');
+    return res.json({
+      ok: true,
+      paymentId: payment?.id || null,
+      status: payment?.status || null,
+    });
+  } catch (err) {
+    const details = Array.isArray(err?.errors)
+      ? err.errors.map((e) => e?.detail || e?.message).filter(Boolean).join('; ')
+      : err?.message;
+    logger.error({ err }, 'food-truck deposit error');
+    return res.status(500).json({ error: details || 'deposit-failed' });
   }
 });
 
