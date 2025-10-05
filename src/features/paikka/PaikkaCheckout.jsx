@@ -2,10 +2,12 @@ import React, { useMemo, useState } from 'react';
 import clsx from 'clsx';
 
 import { Button } from '../../components/ui/button';
-import { MENU_ITEMS, formatCurrency } from './menu';
-import { TIP_OPTIONS, isValidEmail } from './utils';
+import { GROUPED_MENU, MENU_ITEMS, formatCurrency } from './menu';
+import { TIP_OPTIONS, base64UrlEncode, isValidEmail } from './utils';
+import { useSquareCard } from '../../hooks/useSquareCard';
 
-const inputClassName = 'w-full rounded-md border border-neutral-300 px-3 py-2 text-sm shadow-sm focus:border-accent focus:outline-none focus:ring-2 focus:ring-orange-200';
+const inputClassName =
+  'w-full rounded-md border border-neutral-300 px-3 py-2 text-sm shadow-sm focus:border-accent focus:outline-none focus:ring-2 focus:ring-orange-200';
 
 const PaikkaCheckout = () => {
   const [quantities, setQuantities] = useState(() => Object.fromEntries(MENU_ITEMS.map((item) => [item.sku, 0])));
@@ -35,12 +37,17 @@ const PaikkaCheckout = () => {
   const hasItems = subtotalCents > 0;
   const emailValid = isValidEmail(email);
   const firstNameValid = firstName.trim().length > 0;
-  const canSubmit = hasItems && emailValid && firstNameValid && !isSubmitting;
 
-  const summaryItems = MENU_ITEMS.filter((item) => (quantities[item.sku] ?? 0) > 0).map((item) => ({
-    item,
-    qty: quantities[item.sku] ?? 0,
-  }));
+  const summaryItems = useMemo(
+    () =>
+      MENU_ITEMS.filter((item) => (quantities[item.sku] ?? 0) > 0).map((item) => ({
+        item,
+        qty: quantities[item.sku] ?? 0,
+      })),
+    [quantities]
+  );
+
+  const { cardLoaded, error: cardError, loadingScript, tokenize } = useSquareCard('#paikka-card-container', true, []);
 
   const handleQuantityChange = (sku, delta) => {
     setQuantities((prev) => {
@@ -51,7 +58,12 @@ const PaikkaCheckout = () => {
     });
   };
 
-  const buildPayload = () => ({
+  const handleAddToCart = (sku) => {
+    setError(null);
+    handleQuantityChange(sku, 1);
+  };
+
+  const buildCheckoutPayload = () => ({
     items: summaryItems.map(({ item, qty }) => ({ sku: item.sku, qty })),
     customer: {
       firstName: firstName.trim(),
@@ -61,9 +73,30 @@ const PaikkaCheckout = () => {
     tipCents,
   });
 
+  const buildEncodedState = () =>
+    base64UrlEncode({
+      email: email.trim(),
+      firstName: firstName.trim(),
+      lastName: lastName.trim() || undefined,
+      items: summaryItems.map(({ item, qty }) => ({ sku: item.sku, qty })),
+      tipCents,
+    });
+
   const handleCheckout = async () => {
-    if (!canSubmit) {
-      setError('Add at least one sandwich and enter your contact info.');
+    if (!hasItems) {
+      setError('Add at least one sandwich to your cart.');
+      return;
+    }
+    if (!firstNameValid) {
+      setError('Enter your first name so we can hold your order.');
+      return;
+    }
+    if (!emailValid) {
+      setError('Enter a valid email so we can send your QR code.');
+      return;
+    }
+    if (!cardLoaded) {
+      setError('Secure card entry is still loading. Please try again in a moment.');
       return;
     }
 
@@ -71,26 +104,48 @@ const PaikkaCheckout = () => {
     setError(null);
 
     try {
-      const response = await fetch('/api/paikka/checkout', {
+      let token;
+      try {
+        token = await tokenize();
+      } catch (tokenErr) {
+        throw new Error(tokenErr?.message || 'Unable to verify your card details.');
+      }
+
+      const response = await fetch('/api/paikka/pay', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(buildPayload()),
+        body: JSON.stringify({ ...buildCheckoutPayload(), token }),
       });
 
       const data = await response.json().catch(() => ({}));
       if (!response.ok) {
         throw new Error(data?.error || 'Checkout failed. Please try again.');
       }
-      if (!data?.checkoutUrl) {
-        throw new Error('Missing checkout URL in response.');
+
+      const paymentReference =
+        data?.paymentId ||
+        data?.payment_id ||
+        data?.transactionId ||
+        data?.transaction_id ||
+        data?.id;
+
+      if (!paymentReference) {
+        throw new Error('Missing payment reference from Square.');
       }
-      window.location.href = data.checkoutUrl;
+
+      const params = new URLSearchParams();
+      params.set('state', buildEncodedState());
+      params.set('paymentId', paymentReference);
+      window.location.href = `/paikka/success?${params.toString()}`;
     } catch (err) {
       console.error('Paikka checkout failed', err);
       setError(err instanceof Error ? err.message : 'Checkout failed. Please try again.');
       setIsSubmitting(false);
     }
   };
+
+  const canSubmit = hasItems && emailValid && firstNameValid && cardLoaded && !isSubmitting;
+  const showCustomTipInput = tipSelection === 'custom';
 
   return (
     <section className="mx-auto max-w-5xl space-y-10">
@@ -104,44 +159,42 @@ const PaikkaCheckout = () => {
 
       <div className="grid gap-8 lg:grid-cols-[2fr,1fr]">
         <div className="space-y-6">
-          {MENU_ITEMS.map((item) => {
-            const qty = quantities[item.sku] ?? 0;
+          {GROUPED_MENU.map((group) => {
+            const hasDairyFree = group.variants.some((variant) => variant.isDairyFree);
             return (
-              <div key={item.sku} className="rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm">
-                <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+              <div key={group.baseSku} className="rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm">
+                <div className="space-y-4">
                   <div className="space-y-2">
-                    <h2 className="text-xl font-semibold text-neutral-900">{item.title}</h2>
-                    <p className="text-sm text-neutral-600">{item.description}</p>
+                    <h2 className="text-xl font-semibold text-neutral-900">{group.title}</h2>
+                    <p className="text-sm text-neutral-600">{group.description}</p>
                     <div className="flex flex-wrap items-center gap-3 text-sm text-neutral-500">
-                      <span className="font-medium text-neutral-900">{formatCurrency(item.presalePriceCents)}</span>
+                      <span className="font-medium text-neutral-900">{formatCurrency(group.presalePriceCents)}</span>
                       <span className="opacity-80">Presale</span>
                       <span aria-hidden="true">·</span>
-                      <span className="line-through">{formatCurrency(item.regularPriceCents)}</span>
+                      <span className="line-through">{formatCurrency(group.regularPriceCents)}</span>
                       <span className="opacity-80">Door price</span>
                     </div>
                   </div>
-                  <div className="flex items-center gap-3 self-stretch sm:flex-col sm:items-end sm:justify-between">
-                    <div className="flex items-center rounded-full border border-neutral-300 bg-white shadow-sm">
-                      <button
+
+                  <div className="flex flex-wrap gap-3">
+                    {group.variants.map((variant) => (
+                      <Button
+                        key={variant.sku}
                         type="button"
-                        onClick={() => handleQuantityChange(item.sku, -1)}
-                        className="px-3 py-2 text-lg font-semibold text-neutral-700 hover:text-neutral-900"
-                        aria-label={`Remove one ${item.title}`}
+                        onClick={() => handleAddToCart(variant.sku)}
+                        variant={variant.isDairyFree ? 'outline' : 'default'}
+                        className="flex-1 min-w-[10rem]"
                       >
-                        -
-                      </button>
-                      <span className="min-w-[2rem] text-center text-base font-semibold text-neutral-900">{qty}</span>
-                      <button
-                        type="button"
-                        onClick={() => handleQuantityChange(item.sku, 1)}
-                        className="px-3 py-2 text-lg font-semibold text-neutral-700 hover:text-neutral-900"
-                        aria-label={`Add one ${item.title}`}
-                      >
-                        +
-                      </button>
-                    </div>
-                    <span className="text-sm text-neutral-500">Add to order</span>
+                        {variant.isDairyFree ? 'Add dairy-free' : 'Add to cart'}
+                      </Button>
+                    ))}
                   </div>
+
+                  {hasDairyFree && (
+                    <p className="text-xs text-neutral-500">
+                      Dairy-free sandwiches are prepared without cheese.
+                    </p>
+                  )}
                 </div>
               </div>
             );
@@ -199,48 +252,95 @@ const PaikkaCheckout = () => {
                     type="button"
                     onClick={() => setTipSelection(option.value)}
                     className={clsx(
-                      'rounded-full border px-4 py-2 text-sm font-medium transition',
+                      'rounded-full border px-4 py-2 text-sm font-medium transition-colors',
                       tipSelection === option.value
-                        ? 'border-accent bg-orange-50 text-orange-700 shadow-sm'
-                        : 'border-neutral-200 bg-white text-neutral-600 hover:border-orange-200'
+                        ? 'border-accent bg-accent/10 text-accent'
+                        : 'border-neutral-300 text-neutral-600 hover:border-neutral-400 hover:text-neutral-800'
                     )}
                   >
                     {option.label}
                   </button>
                 ))}
               </div>
-              {tipSelection === 'custom' && (
-                <input
-                  className={inputClassName}
-                  inputMode="decimal"
-                  placeholder="Tip amount in dollars"
-                  value={customTip}
-                  onChange={(event) => setCustomTip(event.target.value)}
-                />
+              {showCustomTipInput && (
+                <div className="flex items-center gap-3">
+                  <label className="text-sm text-neutral-600" htmlFor="custom-tip">
+                    Custom tip
+                  </label>
+                  <input
+                    id="custom-tip"
+                    type="text"
+                    inputMode="decimal"
+                    value={customTip}
+                    onChange={(event) => setCustomTip(event.target.value)}
+                    className="w-32 rounded-md border border-neutral-300 px-3 py-2 text-sm shadow-sm focus:border-accent focus:outline-none focus:ring-2 focus:ring-orange-200"
+                    placeholder="$5.00"
+                  />
+                </div>
               )}
             </div>
 
-            <div className="space-y-3 rounded-xl bg-neutral-50 p-4">
-              <h4 className="text-sm font-semibold text-neutral-700">Order summary</h4>
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <p className="text-sm font-medium text-neutral-700">Your order</p>
+                {hasItems && <span className="text-xs text-neutral-500">Tap +/- to adjust quantities</span>}
+              </div>
               {summaryItems.length === 0 ? (
-                <p className="text-sm text-neutral-500">Add a sandwich to see your total.</p>
+                <p className="text-sm text-neutral-500">Add sandwiches to your cart to continue.</p>
               ) : (
-                <ul className="space-y-2 text-sm text-neutral-600">
+                <ul className="space-y-3">
                   {summaryItems.map(({ item, qty }) => (
-                    <li key={item.sku} className="flex justify-between">
-                      <span>
-                        {item.title} x {qty}
-                      </span>
-                      <span>{formatCurrency(item.presalePriceCents * qty)}</span>
+                    <li key={item.sku} className="flex items-start justify-between gap-3">
+                      <div className="space-y-1">
+                        <p className="text-sm font-medium text-neutral-900">
+                          {item.summaryTitle || item.title}
+                        </p>
+                        <p className="text-xs text-neutral-500">
+                          {item.isDairyFree ? 'Dairy-free · prepared without cheese' : 'Contains dairy'}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => handleQuantityChange(item.sku, -1)}
+                          className="h-8 w-8 rounded-full border border-neutral-300 text-sm font-semibold text-neutral-600 hover:border-neutral-400 hover:text-neutral-900"
+                          aria-label={`Remove one ${item.summaryTitle || item.title}`}
+                        >
+                          −
+                        </button>
+                        <span className="min-w-[2rem] text-center text-base font-semibold text-neutral-900">{qty}</span>
+                        <button
+                          type="button"
+                          onClick={() => handleQuantityChange(item.sku, 1)}
+                          className="h-8 w-8 rounded-full border border-neutral-300 text-sm font-semibold text-neutral-600 hover:border-neutral-400 hover:text-neutral-900"
+                          aria-label={`Add one ${item.summaryTitle || item.title}`}
+                        >
+                          +
+                        </button>
+                      </div>
                     </li>
                   ))}
                 </ul>
               )}
-              <div className="flex justify-between text-sm text-neutral-600">
+            </div>
+
+            <div className="space-y-2">
+              <p className="text-sm font-medium text-neutral-700">Payment details</p>
+              <div className="rounded-lg border border-dashed border-neutral-300 p-3">
+                <div id="paikka-card-container" className="min-h-[56px]"></div>
+              </div>
+              {loadingScript && (
+                <p className="text-xs text-neutral-500">Loading secure Square card entry…</p>
+              )}
+              {cardError && <p className="text-xs text-red-600">{cardError}</p>}
+            </div>
+
+            <div className="space-y-1 text-sm text-neutral-600">
+              <div className="flex justify-between">
                 <span>Subtotal</span>
                 <span>{formatCurrency(subtotalCents)}</span>
               </div>
-              <div className="flex justify-between text-sm text-neutral-600">
+              <div className="flex justify-between">
                 <span>Gratuity</span>
                 <span>{formatCurrency(tipCents)}</span>
               </div>
@@ -250,20 +350,15 @@ const PaikkaCheckout = () => {
               </div>
             </div>
 
-            {error && <p className="text-sm text-rose-600">{error}</p>}
+            {error && <p className="rounded-md bg-red-50 p-3 text-sm text-red-700">{error}</p>}
 
             <Button type="submit" className="w-full" disabled={!canSubmit}>
-              {isSubmitting ? 'Redirecting...' : 'Pay with Square'}
+              {isSubmitting ? 'Processing payment…' : `Pay ${formatCurrency(totalCents)}`}
             </Button>
-            {!hasItems && <p className="text-xs text-neutral-500">Select at least one sandwich to enable checkout.</p>}
-            {!emailValid && email.length > 0 && (
-              <p className="text-xs text-rose-600">Enter a valid email address to receive your QR code.</p>
-            )}
+            <p className="text-xs text-neutral-500">
+              Your receipt and QR code will arrive by email within a few minutes after payment.
+            </p>
           </form>
-          <p className="text-xs text-neutral-500">
-            After payment we will email your QR code and backup code. Bring either to the Paikka pickup window during the
-            presale pickup time.
-          </p>
         </aside>
       </div>
     </section>
