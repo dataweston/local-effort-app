@@ -123,10 +123,15 @@ const PaikkaSuccessPage = () => {
                       const menu = MENU_LOOKUP.get(item.sku);
                       if (!menu) return null;
                       return (
-                        <li key={item.sku} className="flex justify-between">
-                          <span>
-                            {menu.title} x {item.qty}
-                          </span>
+                        <li key={item.sku} className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+                          <div className="space-y-0.5">
+                            <span className="font-medium text-neutral-900">
+                              {menu.summaryTitle || menu.title} × {item.qty}
+                            </span>
+                            {menu.isDairyFree && (
+                              <span className="text-xs uppercase tracking-[0.2em] text-orange-600">Dairy free</span>
+                            )}
+                          </div>
                           <span>{formatCurrency(menu.presalePriceCents * item.qty)}</span>
                         </li>
                       );
