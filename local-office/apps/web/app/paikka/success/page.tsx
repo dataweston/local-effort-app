@@ -4,6 +4,7 @@ import type { Metadata } from 'next';
 import type { Order } from '@local-effort/shared';
 
 import { formatCurrency, MENU_LOOKUP } from '../menu';
+import type { MenuItem } from '../menu';
 import { ResendEmailButton } from '../resend-email-button';
 
 type SearchParams = Record<string, string | string[] | undefined>;
@@ -12,7 +13,7 @@ type CheckoutState = {
   email: string;
   firstName: string;
   lastName?: string;
-  items: Array<{ sku: 'SMOKED_CHICKEN' | 'PUMPKIN_ROMESCO'; qty: number }>;
+  items: Array<{ sku: MenuItem['sku']; qty: number }>;
   tipCents?: number;
 };
 
@@ -43,7 +44,7 @@ const decodeState = (value: string): CheckoutState => {
         qty: Number(item.qty)
       }))
       .filter((item): item is { sku: CheckoutState['items'][number]['sku']; qty: number } =>
-        (item.sku === 'SMOKED_CHICKEN' || item.sku === 'PUMPKIN_ROMESCO') && Number.isFinite(item.qty) && item.qty > 0
+        MENU_LOOKUP.has(item.sku) && Number.isFinite(item.qty) && item.qty > 0
       ),
     tipCents: Number.isFinite(parsed.tipCents) && parsed.tipCents ? Number(parsed.tipCents) : 0
   };
@@ -173,10 +174,15 @@ export default async function SuccessPage({ searchParams }: { searchParams: Sear
                   const menu = MENU_LOOKUP.get(item.sku);
                   if (!menu) return null;
                   return (
-                    <li key={item.sku} className="flex justify-between">
-                      <span>
-                        {menu.title} × {item.qty}
-                      </span>
+                    <li key={item.sku} className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+                      <div className="space-y-0.5">
+                        <span className="font-medium text-slate-900">
+                          {menu.summaryTitle || menu.title} × {item.qty}
+                        </span>
+                        {menu.isDairyFree && (
+                          <span className="text-xs uppercase tracking-[0.2em] text-orange-600">Dairy free</span>
+                        )}
+                      </div>
                       <span>{formatCurrency(menu.presalePriceCents * item.qty)}</span>
                     </li>
                   );

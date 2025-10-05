@@ -6,12 +6,22 @@ import { getActiveKey, getKeyByKid } from "./keys.js";
 const itemsMap = {
   SMOKED_CHICKEN: {
     sku: "SMOKED_CHICKEN" as const,
-    name: "Smoked chicken on sourdough focaccia",
+    name: "Smoked chicken sandwich",
+    unit: 1400
+  },
+  SMOKED_CHICKEN_DF: {
+    sku: "SMOKED_CHICKEN_DF" as const,
+    name: "Smoked chicken sandwich (dairy free)",
     unit: 1400
   },
   PUMPKIN_ROMESCO: {
     sku: "PUMPKIN_ROMESCO" as const,
-    name: "Pumpkin & romesco on sourdough focaccia",
+    name: "Marinated squash sandwich",
+    unit: 1300
+  },
+  PUMPKIN_ROMESCO_DF: {
+    sku: "PUMPKIN_ROMESCO_DF" as const,
+    name: "Marinated squash sandwich (dairy free)",
     unit: 1300
   }
 };
