@@ -1,3 +1,5 @@
+const { MENU_LOOKUP } = require('./menu');
+
 const TIP_OPTIONS = [
   { label: '0%', value: '0' },
   { label: '10%', value: '10' },
@@ -52,7 +54,7 @@ const decodeCheckoutState = (value) => {
       sku: typeof item?.sku === 'string' ? item.sku : null,
       qty: Number(item?.qty ?? 0),
     }))
-    .filter((item) => (item.sku === 'SMOKED_CHICKEN' || item.sku === 'PUMPKIN_ROMESCO') && Number.isFinite(item.qty) && item.qty > 0);
+    .filter((item) => MENU_LOOKUP.has(item.sku) && Number.isFinite(item.qty) && item.qty > 0);
 
   return {
     email: String(parsed.email ?? ''),
@@ -98,7 +100,7 @@ const resolvePaymentReference = (params) => {
 
 const computeTotals = (state, menuLookup) => {
   if (!state) return { subtotal: 0, tip: 0, total: 0 };
-  const lookup = menuLookup ?? new Map();
+  const lookup = menuLookup ?? MENU_LOOKUP ?? new Map();
   const subtotal = state.items.reduce((sum, item) => {
     const menu = lookup.get(item.sku);
     if (!menu) return sum;

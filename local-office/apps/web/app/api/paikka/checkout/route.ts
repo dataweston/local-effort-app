@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 import { MENU_LOOKUP } from '../../../paikka/menu';
+import type { MenuItem } from '../../../paikka/menu';
 
 type CheckoutRequest = {
-  items: Array<{ sku: 'SMOKED_CHICKEN' | 'PUMPKIN_ROMESCO'; qty: number }>;
+  items: Array<{ sku: MenuItem['sku']; qty: number }>;
   customer: {
     firstName: string;
     lastName?: string;
