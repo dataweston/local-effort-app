@@ -405,7 +405,11 @@ export function useSquareCard(containerId, enabled, deps = []) {
         if (!window.Square || typeof window.Square.payments !== 'function') {
           throw new Error('Square payments API unavailable.');
         }
-        const payments = window.Square.payments(config.appId, config.locationId);
+        const envUpper = typeof config.environment === 'string' ? config.environment.toUpperCase() : '';
+        const isValidEnv = envUpper === 'SANDBOX' || envUpper === 'PRODUCTION';
+        const payments = isValidEnv
+          ? window.Square.payments(config.appId, config.locationId, { environment: envUpper })
+          : window.Square.payments(config.appId, config.locationId);
         paymentsRef.current = payments;
         const card = await payments.card();
         const container = await waitForContainer();
