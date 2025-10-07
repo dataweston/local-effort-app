@@ -4,6 +4,7 @@ require('dotenv').config({ path: path.resolve(__dirname, '.env') });
 const express = require('express');
 const cloudinary = require('cloudinary');
 const logger = require('./logger');
+const crowdfundCheckoutHandler = require('./api/crowdfund/checkout');
 // Sentry (backend light server)
 let Sentry;
 try {
@@ -23,6 +24,9 @@ try {
 }
 
 const app = express();
+
+// Parse JSON bodies for API routes
+app.use(express.json({ limit: '2mb' }));
 
 // Configure Cloudinary
 cloudinary.config({
@@ -51,7 +55,7 @@ app.use((req, res, next) => {
 // The API route with better error handling
 app.get('/api/search-images', async (req, res) => {
   logger.debug({ q: req.query.query }, 'search-images called');
-  
+
   try {
     // Test Cloudinary connection first
     const testResult = await cloudinary.v2.api.ping();
@@ -84,6 +88,16 @@ app.get('/api/search-images', async (req, res) => {
       details: error.message,
       stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
     });
+  }
+});
+
+// Crowdfund checkout proxy for local development
+app.all('/api/crowdfund/checkout', async (req, res, next) => {
+  try {
+    await crowdfundCheckoutHandler(req, res);
+  } catch (err) {
+    logger.error({ err, method: req.method }, 'crowdfund checkout handler failed');
+    next(err);
   }
 });
 
