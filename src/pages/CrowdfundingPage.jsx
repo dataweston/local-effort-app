@@ -353,68 +353,6 @@ const CrowdfundingPage = () => {
     return currencyFormatter.format(total);
   }, [activeTier, pizzaQty, currencyFormatter]);
 
-  const handlePaymentSuccess = useCallback(
-    ({
-      pizzasPurchased = 0,
-      totalCents,
-      paymentId,
-      newTotal,
-      funderName,
-      viaRedirect = false,
-    } = {}) => {
-      const pizzas = Number.isFinite(pizzasPurchased)
-        ? Math.max(0, Math.round(pizzasPurchased))
-        : 0;
-      const totalLabel =
-        typeof totalCents === 'number'
-          ? currencyFormatter.format(Math.max(totalCents, 0) / 100)
-          : null;
-
-      setPayError('');
-      setCheckoutResult({
-        pizzasPurchased: pizzas,
-        totalLabel,
-        paymentId: paymentId || null,
-        viaRedirect,
-        funderName: funderName || '',
-        timestamp: Date.now(),
-      });
-      setShowForm(false);
-      setFormNotice('');
-      setPizzaQty(1);
-      setSelectedTierId('');
-
-      if (typeof newTotal === 'number' || pizzas > 0) {
-        setCampaignData((prev) => {
-          if (!prev) return prev;
-          const next = { ...prev };
-          if (typeof newTotal === 'number' && Number.isFinite(newTotal)) {
-            next.pizzasSold = newTotal;
-          } else {
-            const current = typeof next.pizzasSold === 'number' ? next.pizzasSold : 0;
-            next.pizzasSold = current + pizzas;
-          }
-          return next;
-        });
-      }
-
-      destroyCard();
-      notifyToast('Thanks! Your contribution has been processed.', { type: 'success' });
-    },
-    [
-      currencyFormatter,
-      destroyCard,
-      notifyToast,
-      setCampaignData,
-      setCheckoutResult,
-      setFormNotice,
-      setPayError,
-      setPizzaQty,
-      setSelectedTierId,
-      setShowForm,
-    ]
-  );
-
   useEffect(() => {
     if (showForm && !activeTier) {
       setShowForm(false);
@@ -577,6 +515,68 @@ const CrowdfundingPage = () => {
     cardInitRef.current = false;
     setCardReady(false);
   }, []);
+
+  const handlePaymentSuccess = useCallback(
+    ({
+      pizzasPurchased = 0,
+      totalCents,
+      paymentId,
+      newTotal,
+      funderName,
+      viaRedirect = false,
+    } = {}) => {
+      const pizzas = Number.isFinite(pizzasPurchased)
+        ? Math.max(0, Math.round(pizzasPurchased))
+        : 0;
+      const totalLabel =
+        typeof totalCents === 'number'
+          ? currencyFormatter.format(Math.max(totalCents, 0) / 100)
+          : null;
+
+      setPayError('');
+      setCheckoutResult({
+        pizzasPurchased: pizzas,
+        totalLabel,
+        paymentId: paymentId || null,
+        viaRedirect,
+        funderName: funderName || '',
+        timestamp: Date.now(),
+      });
+      setShowForm(false);
+      setFormNotice('');
+      setPizzaQty(1);
+      setSelectedTierId('');
+
+      if (typeof newTotal === 'number' || pizzas > 0) {
+        setCampaignData((prev) => {
+          if (!prev) return prev;
+          const next = { ...prev };
+          if (typeof newTotal === 'number' && Number.isFinite(newTotal)) {
+            next.pizzasSold = newTotal;
+          } else {
+            const current = typeof next.pizzasSold === 'number' ? next.pizzasSold : 0;
+            next.pizzasSold = current + pizzas;
+          }
+          return next;
+        });
+      }
+
+      destroyCard();
+      notifyToast('Thanks! Your contribution has been processed.', { type: 'success' });
+    },
+    [
+      currencyFormatter,
+      destroyCard,
+      notifyToast,
+      setCampaignData,
+      setCheckoutResult,
+      setFormNotice,
+      setPayError,
+      setPizzaQty,
+      setSelectedTierId,
+      setShowForm,
+    ]
+  );
 
   useEffect(() => {
     if (!showForm) {
