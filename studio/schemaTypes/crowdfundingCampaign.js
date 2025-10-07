@@ -8,6 +8,7 @@ export default {
     { name: 'overview', title: 'Overview' },
     { name: 'story', title: 'Story' },
     { name: 'goals', title: 'Goals' },
+    { name: 'events', title: 'Events' },
     { name: 'rewards', title: 'Rewards' },
     { name: 'updates', title: 'Updates' },
     { name: 'faq', title: 'FAQ' },
@@ -136,6 +137,36 @@ export default {
       of: [{ type: 'block' }],
       description: 'Describe your campaign goals in a structured, rich text field.',
       group: 'goals',
+    },
+    {
+      name: 'events',
+      title: 'Campaign Events',
+      type: 'array',
+      of: [
+        {
+          name: 'campaignEvent',
+          title: 'Event',
+          type: 'object',
+          fields: [
+            { name: 'location', title: 'Location', type: 'string', validation: Rule => Rule.required() },
+            { name: 'startDate', title: 'Start Date', type: 'date', validation: Rule => Rule.required() },
+            { name: 'endDate', title: 'End Date (optional)', type: 'date' },
+            { name: 'foodType', title: 'Type of Food', type: 'string' },
+            { name: 'ticketsUrl', title: 'Tickets URL', type: 'url' },
+            { name: 'description', title: 'Description', type: 'array', of: [{ type: 'block' }] },
+          ],
+          preview: {
+            select: { title: 'location', start: 'startDate', end: 'endDate' },
+            prepare({ title, start, end }) {
+              const dates = end ? `${start}–${end}` : start;
+              return { title, subtitle: dates };
+            },
+          },
+        },
+      ],
+      options: { sortable: true },
+      description: 'Add upcoming pizza parties, pop-ups, and other campaign events to show on the crowdfunding page calendar.',
+      group: 'events',
     },
     {
       name: 'rewardTiers',
