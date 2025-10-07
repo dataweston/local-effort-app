@@ -46,4 +46,41 @@ describe('crowdfunding router', () => {
       })
     );
   });
+
+  it('creates the crowdfund status document if missing during confirm-payment', async () => {
+    let stored = null;
+    const docRef = {
+      get: vi.fn(async () => {
+        if (!stored) return { exists: false, data: () => ({}) };
+        return { exists: true, data: () => stored };
+      }),
+    };
+    const db = {
+      collection: () => ({
+        doc: () => docRef,
+      }),
+      runTransaction: async (fn) => {
+        await fn({
+          get: async () => (!stored ? { exists: false, data: () => ({}) } : { exists: true, data: () => stored }),
+          update: (_, data) => {
+            stored = { ...(stored || {}), ...data };
+          },
+          set: (_, data) => {
+            stored = data;
+          },
+        });
+      },
+    };
+
+    const app = createApp({ db });
+    const res = await request(app)
+      .post('/crowdfund/confirm-payment')
+      .send({ items: [{ type: 'pizza', pizzaCount: 2 }], funderName: 'Tester' });
+
+    expect(res.status).toBe(200);
+    expect(res.body).toEqual({ success: true, newTotal: 2 });
+    expect(stored?.pizzasSold).toBe(2);
+    expect(stored?.funders).toHaveLength(1);
+    expect(stored?.funders?.[0]?.name).toBe('Tester');
+  });
 });
