@@ -28,6 +28,12 @@ export const Footer = () => {
           </div>
           <div className="flex gap-4">
             <a
+              href="/releases"
+              className="underline underline-offset-4 hover:opacity-80"
+            >
+              Press
+            </a>
+            <a
               href="https://www.tiktok.com/@localeffort"
               className="underline underline-offset-4 hover:opacity-80"
             >

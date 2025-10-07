@@ -29,6 +29,7 @@ const path = require('path');
 const { logger } = require('./logger');
 const { createBrevoService } = require('./services/brevo');
 const { createCrowdfundingRouter } = require('./routes/crowdfunding');
+const crowdfundCheckoutHandler = require('../../api/crowdfund/checkout');
 const { createMessagesRouter } = require('./routes/messages');
 
 // Fallback: if critical vars are missing, also try loading project root .env
@@ -300,6 +301,14 @@ try {
 // --- API ENDPOINTS ---
 
 app.use('/api/crowdfund', createCrowdfundingRouter({ db, squareClient, logger }));
+app.all('/api/crowdfund/checkout', async (req, res, next) => {
+  try {
+    await crowdfundCheckoutHandler(req, res);
+  } catch (err) {
+    logger.error({ err, method: req.method }, 'crowdfund checkout handler failed');
+    next(err);
+  }
+});
 app.use('/api', createMessagesRouter({ logger, brevoService, getSanityClient, db }));
 
 // Diagnostic endpoint (safe): reports whether required env vars are present
@@ -401,112 +410,6 @@ try {
 // if (require.main === module) {
 //   console.info('Backend API starting (local)');
 // }
-
-// This endpoint remains the same
-app.get('/api/crowdfund/status', async (req, res) => {
-  // ... (No changes to this function)
-  try {
-    const docRef = db.collection('crowdfund').doc('status');
-    const doc = await docRef.get();
-    if (!doc.exists) {
-      const defaultData = { goal: 1000, pizzasSold: 0, funders: [] };
-      await db.collection('crowdfund').doc('status').set(defaultData);
-      return res.json(defaultData);
-    }
-    res.json(doc.data());
-  } catch (error) {
-  logger.error({ err: error }, 'crowdfund status error');
-    res.status(500).json({ error: 'Failed to read database.' });
-  }
-});
-
-// --- THIS ENDPOINT IS FULLY REBUILT ---
-app.post('/api/crowdfund/contribute', async (req, res) => {
-  const { items } = req.body;
-
-  if (!items || items.length === 0) {
-    return res.status(400).json({ error: 'Cart is empty.' });
-  }
-
-  try {
-    // Create line items for the Square Order from the cart
-    const lineItems = items.map(item => ({
-      name: item.name,
-      quantity: String(item.quantity && item.quantity > 0 ? item.quantity : (item.pizzaCount || 1)),
-      basePriceMoney: {
-        amount: item.price * 100, // Square expects amounts in cents
-        currency: 'USD',
-      },
-    }));
-
-    if (!squareClient) {
-      return res.status(500).json({ error: 'Payment provider not configured on this server.' });
-    }
-
-    // Create a payment link with Square
-    const response = await squareClient.checkoutApi.createPaymentLink({
-      idempotencyKey: uuidv4(), // Prevents accidental duplicate charges
-      order: {
-        locationId: process.env.SQUARE_LOCATION_ID,
-        lineItems: lineItems,
-      },
-      checkoutOptions: {
-        // Redirect the user back to your fundraiser page after payment
-        redirectUrl: 'https://localeffortfood.com/#/crowdfunding?payment=success',
-        // Optional: Ask for shipping address if you need to mail items
-        askForShippingAddress: true, 
-      },
-    });
-
-    // Send the URL of the payment link back to the frontend
-    res.json({
-      url: response.result.paymentLink.url,
-    });
-
-  } catch (error) {
-  logger.error({ err: error }, 'square create payment link error');
-    res.status(500).json({ error: 'Failed to create payment link.' });
-  }
-});
-
-// This endpoint is NEW. It will be used for webhooks in the future to confirm payments.
-// For now, it will handle the client-side confirmation.
-app.post('/api/crowdfund/confirm-payment', async (req, res) => {
-  const { items, funderName } = req.body;
-
-  try {
-    const pizzasInCart = items.filter(p => p.type === 'pizza').reduce((sum, item) => sum + (item.pizzaCount || 1), 0);
-    if (pizzasInCart === 0) {
-        return res.json({ success: true, message: "No pizza items to update." });
-    }
-
-  if (!db) return res.status(500).json({ error: 'Database not configured on this server.' });
-
-  const docRef = db.collection('crowdfund').doc('status');
-    await db.runTransaction(async (transaction) => {
-      const doc = await transaction.get(docRef);
-      if (!doc.exists) throw "Document does not exist!";
-      
-      const newPizzasSold = (doc.data().pizzasSold || 0) + pizzasInCart;
-      const newFunders = doc.data().funders || [];
-      newFunders.push({ name: funderName, date: new Date().toISOString() });
-      
-      transaction.update(docRef, { 
-        pizzasSold: newPizzasSold,
-        funders: newFunders
-      });
-    });
-
-  // Return the new total after successful transaction
-  const updatedDoc = await db.collection('crowdfund').doc('status').get();
-  const updatedTotal = updatedDoc.exists ? (updatedDoc.data().pizzasSold || 0) : null;
-  res.json({ success: true, newTotal: updatedTotal });
-
-  } catch (error) {
-  logger.error({ err: error }, 'confirm payment error');
-    res.status(500).json({ error: 'Failed to update database after payment.' });
-  }
-});
 
 
 app.post('/api/food-truck/deposit', async (req, res) => {

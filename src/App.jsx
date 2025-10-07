@@ -44,6 +44,7 @@ const ZafaEmbeddedApp = lazy(() => import('./partners/zafa'));
 const GallantEmbeddedApp = lazy(() => import('./partners/gallant'));
 const HMEmbeddedApp = lazy(() => import('./partners/happymonday'));
 const PlacemakerEmbeddedApp = lazy(() => import('./partners/placemaker'));
+const AACRMEmbeddedApp = lazy(() => import('./partners/aacrm'));
 const TinyDinerEmbeddedApp = lazy(() => import('./partners/tiny-diner'));
 const CookbookSearchPage = lazy(() => import('./pages/CookbookSearchPage'));
 const CookbookRecipePage = lazy(() => import('./pages/CookbookRecipePage'));
@@ -59,6 +60,7 @@ const PaikkaSuccessPage = lazy(() => import('./pages/PaikkaSuccessPage'));
 
 const AppContent = () => {
   const location = useLocation();
+  const hideHeader = location.pathname.startsWith('/partners/aacrm');
 
   useEffect(() => {
     document.fonts?.ready?.then(() => document.body.classList.add('fonts-loaded'));
@@ -70,7 +72,7 @@ const AppContent = () => {
       <CartProvider>
         <ToastProvider>
         <div className="min-h-screen flex flex-col bg-white">
-          <Header />
+          {!hideHeader && <Header />}
           <main className="flex-1">
           <Suspense fallback={<LoadingSpinner />}>
             <AnimatePresence mode="wait">
@@ -330,6 +332,14 @@ const AppContent = () => {
                   element={
                     <AnimatedPage>
                       <PlacemakerEmbeddedApp />
+                    </AnimatedPage>
+                  }
+                />
+                <Route
+                  path="/partners/aacrm"
+                  element={
+                    <AnimatedPage>
+                      <AACRMEmbeddedApp />
                     </AnimatedPage>
                   }
                 />
