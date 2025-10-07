@@ -1124,63 +1124,8 @@ const CrowdfundingPage = () => {
                 </div>
               </div>
 
-        {(hasCampaignEvents || hasFeaturedPublicEvents) && (
-          <div className="max-w-4xl space-y-6">
-            {hasCampaignEvents && (
-              <div className="border rounded-lg p-4 bg-white shadow-sm">
-                <h3 className="text-lg font-semibold mb-2">upcoming campaign events.</h3>
-                <ul className="divide-y">
-                  {upcomingEvents.map((ev) => {
-                    const dateLabel = formatListDate(ev);
-                    const detailLabel = [dateLabel, ev.foodType || 'Food'].filter(Boolean).join(' - ');
-                    return (
-                      <li key={ev._key} className="py-2">
-                        <button
-                          type="button"
-                          className="text-left hover:underline"
-                          onClick={() => setEventModal(ev)}
-                        >
-                          <span className="flex flex-col sm:flex-row sm:items-baseline sm:gap-2">
-                            <span className="font-semibold text-slate-800">{ev.location}</span>
-                            <span className="text-sm text-slate-600">{detailLabel}</span>
-                          </span>
-                        </button>
-                      </li>
-                    );
-                  })}
-                </ul>
-              </div>
-            )}
-            {hasFeaturedPublicEvents && (
-              <div className="border rounded-lg p-4 bg-white shadow-sm">
-                <h3 className="text-lg font-semibold mb-2">upcoming public events.</h3>
-                <ul className="divide-y">
-                  {featuredPublicEvents.map((ev) => {
-                    const dateLabel = formatListDate(ev);
-                    const detailLabel = [dateLabel, ev.foodType || 'Food'].filter(Boolean).join(' - ');
-                    return (
-                      <li key={ev._key} className="py-2">
-                        <button
-                          type="button"
-                          className="text-left hover:underline"
-                          onClick={() => setEventModal(ev)}
-                        >
-                          <span className="flex flex-col sm:flex-row sm:items-baseline sm:gap-2">
-                            <span className="font-semibold text-slate-800">{ev.location}</span>
-                            <span className="text-sm text-slate-600">{detailLabel}</span>
-                          </span>
-                        </button>
-                      </li>
-                    );
-                  })}
-                </ul>
-              </div>
-            )}
-          </div>
-        )}
-
         {/* --- Main Content Grid --- */}
-  <div className="grid grid-cols-1 lg:grid-cols-5 lg:gap-16">
+        <div className="grid grid-cols-1 lg:grid-cols-5 lg:gap-16">
           {/* --- Left Column (Media & Content Tabs) --- */}
     <div className="lg:col-span-3 space-y-8 order-2 lg:order-1">
             {/* Override hero image per request */}
@@ -1665,7 +1610,70 @@ const CrowdfundingPage = () => {
           </div>
         </div>
 
-        <section className="rounded-3xl border border-slate-200 bg-white p-6 md:p-10 shadow-sm">
+        {(hasCampaignEvents || hasFeaturedPublicEvents) && (
+          <section className="mx-auto mt-16 max-w-5xl px-4 md:px-6 lg:px-8">
+            <div className="space-y-6">
+              <h2 className="text-2xl font-semibold text-slate-900">Pizza reward pickup opportunities</h2>
+              <p className="text-sm text-slate-600 max-w-3xl">
+                Shows upcoming dates where supporters can grab their pizzas. Click a listing for the full details.
+              </p>
+              <div className="grid gap-6 md:grid-cols-2">
+                {hasCampaignEvents && (
+                  <div className="border rounded-lg p-4 bg-white shadow-sm">
+                    <h3 className="text-base font-semibold mb-2 text-slate-900">Scheduled reward pickups</h3>
+                    <ul className="divide-y">
+                      {upcomingEvents.map((ev) => {
+                        const dateLabel = formatListDate(ev);
+                        const detailLabel = [dateLabel, ev.foodType || 'Food'].filter(Boolean).join(' - ');
+                        return (
+                          <li key={ev._key} className="py-2">
+                            <button
+                              type="button"
+                              className="text-left hover:underline"
+                              onClick={() => setEventModal(ev)}
+                            >
+                              <span className="flex flex-col sm:flex-row sm:items-baseline sm:gap-2">
+                                <span className="font-semibold text-slate-800">{ev.location}</span>
+                                <span className="text-sm text-slate-600">{detailLabel}</span>
+                              </span>
+                            </button>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  </div>
+                )}
+                {hasFeaturedPublicEvents && (
+                  <div className="border rounded-lg p-4 bg-white shadow-sm">
+                    <h3 className="text-base font-semibold mb-2 text-slate-900">Public appearances</h3>
+                    <ul className="divide-y">
+                      {featuredPublicEvents.map((ev) => {
+                        const dateLabel = formatListDate(ev);
+                        const detailLabel = [dateLabel, ev.foodType || 'Food'].filter(Boolean).join(' - ');
+                        return (
+                          <li key={ev._key} className="py-2">
+                            <button
+                              type="button"
+                              className="text-left hover:underline"
+                              onClick={() => setEventModal(ev)}
+                            >
+                              <span className="flex flex-col sm:flex-row sm:items-baseline sm:gap-2">
+                                <span className="font-semibold text-slate-800">{ev.location}</span>
+                                <span className="text-sm text-slate-600">{detailLabel}</span>
+                              </span>
+                            </button>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  </div>
+                )}
+              </div>
+            </div>
+          </section>
+        )}
+
+        <section className="rounded-3xl border border-slate-200 bg-white p-6 md:p-10 shadow-sm mt-16">
           <div className="mx-auto flex max-w-4xl flex-col gap-10 md:flex-row">
             <div className="md:w-1/2 space-y-6">
               <SectionHeader overline="Share the pizza love" title="Pizza feedback" />

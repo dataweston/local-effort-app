@@ -155,7 +155,7 @@ export default {
     },
     {
       name: 'events',
-      title: 'Campaign Events',
+      title: 'Pizza Reward Pickup Opportunities',
       type: 'array',
       of: [
         {
