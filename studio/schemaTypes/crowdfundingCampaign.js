@@ -139,6 +139,21 @@ export default {
       group: 'goals',
     },
     {
+      name: 'featuredPublicEvents',
+      title: 'Featured Public Events',
+      type: 'array',
+      of: [
+        {
+          type: 'reference',
+          to: [{ type: 'publicEvent' }],
+          weak: true,
+        },
+      ],
+      options: { sortable: true },
+      description: 'Select existing public events to feature on the crowdfunding page alongside your story.',
+      group: 'story',
+    },
+    {
       name: 'events',
       title: 'Campaign Events',
       type: 'array',
