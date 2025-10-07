@@ -132,7 +132,7 @@ const tierIdentifier = (tier) => (tier?._id || tier?.id || tier?.title || '').to
 const REWARD_PREFERENCE_OPTIONS = [
   { value: 'public pizza party', label: 'Public pizza party' },
   { value: 'deliver to my home', label: 'Deliver to my home' },
-  { value: 'make live at my home', label: 'Make live at my home' },
+  { value: 'make live at my home', label: 'Chefs making pizza in my kitchen' },
   { value: "i'm open or im not sure", label: "I’m open or I’m not sure" },
 ];
 
@@ -1517,6 +1517,40 @@ const CrowdfundingPage = () => {
             </div>
 
             <div className="space-y-4">
+              <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm space-y-4">
+                <h3 className="text-lg font-semibold text-slate-900">How it works</h3>
+                <ol className="space-y-3 text-sm text-slate-700">
+                  <li>
+                    <span className="font-semibold text-slate-900">1.</span>{' '}
+                    Order a pizza, or 5 pizzas, or 10 pizzas, or 100 pizzas. Add on a pie or 2.
+                  </li>
+                  <li className="space-y-2">
+                    <div>
+                      <span className="font-semibold text-slate-900">2.</span>{' '}
+                      Select your pickup style.
+                    </div>
+                    <div className="pl-5 space-y-2">
+                      <p>
+                        <span className="font-semibold text-slate-900">2a.</span>{' '}
+                        Look at the list of pickup events. Each event will have its own menu. You can
+                        claim your pizzas at one of these events, or…
+                      </p>
+                      <p>
+                        <span className="font-semibold text-slate-900">2b.</span>{' '}
+                        You can have the pizzas delivered to your home. You can even have the pizzas
+                        made at your home or office: the chef, the oven, the dough, the whole thing.
+                        Minimum 5 pizzas for delivery and 15 for in-home parties.
+                      </p>
+                    </div>
+                  </li>
+                  <li>
+                    <span className="font-semibold text-slate-900">3.</span>{' '}
+                    Tell your friends about Local Pizza, the pizza made entirely from Midwestern produced
+                    ingredients.
+                  </li>
+                </ol>
+              </div>
+
               <Card className="border-0 bg-slate-900 text-white shadow-xl">
                 <CardHeader className="px-5 py-4 space-y-1 border-none">
                   <CardTitle className="text-lg font-semibold tracking-wide uppercase text-amber-300">
