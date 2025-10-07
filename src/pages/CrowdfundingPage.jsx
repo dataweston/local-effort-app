@@ -16,6 +16,23 @@ import { createPortableTextComponents } from '../utils/portableTextComponents';
 import { cn } from '../lib/utils';
 import { useToast } from '../components/common/ToastProvider';
 
+const HERO_MAIN_IMAGE = '/gallery/5Z0A5718-Edit.jpg';
+const DEFAULT_FEEDBACK_NAME = 'Anonymous pizza fan';
+
+const normalizeFeedbackEntry = (entry) => {
+  if (!entry || typeof entry !== 'object') return null;
+  const message = typeof entry.message === 'string' ? entry.message.trim() : '';
+  if (!message) return null;
+  const name = typeof entry.name === 'string' && entry.name.trim() ? entry.name.trim() : DEFAULT_FEEDBACK_NAME;
+  const createdAt = typeof entry.createdAt === 'string' && entry.createdAt ? entry.createdAt : null;
+  return {
+    id: entry.id || `feedback-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+    name,
+    message,
+    createdAt,
+  };
+};
+
 // --- Sanity Image URL Builder Setup (kept for future use if dynamic hero image restored) ---
 // const builder = imageUrlBuilder(sanityClient);
 // function urlFor(source) { return builder.image(source); }
@@ -166,14 +183,89 @@ const CrowdfundingPage = () => {
   const [feedbackName, setFeedbackName] = useState('');
   const [feedbackMessage, setFeedbackMessage] = useState('');
   const [feedbackNotice, setFeedbackNotice] = useState('');
-  const [feedbackStatus, setFeedbackStatus] = useState('idle'); // idle | error | success
+  const [feedbackStatus, setFeedbackStatus] = useState('idle'); // idle | loading | success | error
   const [feedbackEntries, setFeedbackEntries] = useState([]);
+  const [heroExtras, setHeroExtras] = useState([]);
+  const [heroError, setHeroError] = useState('');
+  const [heroLoading, setHeroLoading] = useState(false);
+  const [activeHeroIndex, setActiveHeroIndex] = useState(0);
   // Gallery state (lazy-loaded when tab activated)
   const [galleryImages, setGalleryImages] = useState([]);
   const [galleryLoading, setGalleryLoading] = useState(false);
   const [galleryError, setGalleryError] = useState('');
   const galleryLoadedRef = React.useRef(false);
   const [eventModal, setEventModal] = useState(null);
+
+  useEffect(() => {
+    setHeroLoading(true);
+    fetch('/api/search-images?query=pizza&per_page=30')
+      .then(async (response) => {
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) {
+          throw new Error(data?.error || 'Unable to load images');
+        }
+        if (!data || !Array.isArray(data.images)) {
+          return [];
+        }
+        const seen = new Set();
+        const extras = [];
+        for (const img of data.images) {
+          const id = img.asset_id || img.public_id;
+          if (!id || seen.has(id)) continue;
+          seen.add(id);
+          const src = img.secure_url || img.url || img.thumbnail_url;
+          if (!src) continue;
+          extras.push({
+            id,
+            src,
+            alt: img.context?.custom?.alt || img.alt || img.description || 'Pizza from our supporters',
+          });
+        }
+        return extras;
+      })
+      .then((extras) => {
+        setHeroExtras(extras);
+        setHeroError('');
+      })
+      .catch((error) => {
+        setHeroError(error.message || 'Problem loading additional images.');
+      })
+      .finally(() => {
+        setHeroLoading(false);
+      });
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    const loadFeedback = async () => {
+      try {
+        const response = await fetch('/api/crowdfund/feedback');
+        if (!response.ok) {
+          const text = await response.text().catch(() => '');
+          throw new Error(text || 'Failed to load feedback');
+        }
+        const payload = await response.json().catch(() => ({}));
+        if (cancelled) return;
+        const entries = Array.isArray(payload.entries)
+          ? payload.entries.map(normalizeFeedbackEntry).filter(Boolean)
+          : [];
+        if (entries.length > 0) {
+          setFeedbackEntries((prev) => {
+            if (prev.length > 0) return prev;
+            return entries.slice(0, 8);
+          });
+        }
+      } catch (err) {
+        if (!cancelled) {
+          console.warn('[crowdfunding] feedback load failed', err?.message || err);
+        }
+      }
+    };
+    loadFeedback();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   useEffect(() => {
     if (activeTab === 'gallery' && !galleryLoadedRef.current) {
@@ -410,7 +502,7 @@ const CrowdfundingPage = () => {
   };
 
   const handleFeedbackSubmit = useCallback(
-    (event) => {
+    async (event) => {
       event.preventDefault();
       const name = feedbackName.trim();
       const message = feedbackMessage.trim();
@@ -421,18 +513,40 @@ const CrowdfundingPage = () => {
         return;
       }
 
-      setFeedbackEntries((prev) => [
-        {
+      setFeedbackStatus('loading');
+      setFeedbackNotice('Saving your note...');
+      try {
+        const response = await fetch('/api/crowdfund/feedback', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ name, message }),
+        });
+        if (!response.ok) {
+          const text = await response.text().catch(() => '');
+          throw new Error(text || 'Could not save your note. Please try again.');
+        }
+        const payload = await response.json().catch(() => ({}));
+        const fallbackEntry = {
           id: `feedback-${Date.now()}`,
-          name: name || 'Anonymous pizza fan',
+          name: name || DEFAULT_FEEDBACK_NAME,
           message,
-        },
-        ...prev,
-      ].slice(0, 8));
-      setFeedbackName('');
-      setFeedbackMessage('');
-      setFeedbackStatus('success');
-      setFeedbackNotice('Thanks for spreading the pizza love!');
+          createdAt: new Date().toISOString(),
+        };
+        const entry = normalizeFeedbackEntry(payload.entry) || normalizeFeedbackEntry(fallbackEntry);
+        if (entry) {
+          setFeedbackEntries((prev) => {
+            const withoutDuplicate = entry.id ? prev.filter((item) => item.id !== entry.id) : prev;
+            return [entry, ...withoutDuplicate].slice(0, 8);
+          });
+        }
+        setFeedbackName('');
+        setFeedbackMessage('');
+        setFeedbackStatus('success');
+        setFeedbackNotice('Thanks for spreading the pizza love!');
+      } catch (err) {
+        setFeedbackStatus('error');
+        setFeedbackNotice(err?.message || 'Could not save your note. Please try again.');
+      }
     },
     [feedbackMessage, feedbackName]
   );
@@ -455,6 +569,43 @@ const CrowdfundingPage = () => {
   const faq = Array.isArray(faqRaw) ? faqRaw : [];
   const story = Array.isArray(storyRaw) ? storyRaw : [];
   const title = campaignTitle || 'Crowdfunding';
+
+  const heroSlides = useMemo(() => {
+    const slides = [
+      {
+        id: 'hero-main',
+        src: HERO_MAIN_IMAGE,
+        alt: title || 'Local Effort pizza celebration',
+      },
+    ];
+    heroExtras.forEach((img) => {
+      if (!img?.src) return;
+      if (img.src === HERO_MAIN_IMAGE) return;
+      slides.push({
+        id: img.id || img.src,
+        src: img.src,
+        alt: img.alt || title || 'Pizza photo from our community',
+      });
+    });
+    return slides;
+  }, [title, heroExtras]);
+  const totalHeroSlides = heroSlides.length;
+
+  useEffect(() => {
+    if (activeHeroIndex >= totalHeroSlides) {
+      setActiveHeroIndex(0);
+    }
+  }, [activeHeroIndex, totalHeroSlides]);
+
+  const handleHeroPrev = useCallback(() => {
+    if (totalHeroSlides <= 1) return;
+    setActiveHeroIndex((prev) => (prev - 1 + totalHeroSlides) % totalHeroSlides);
+  }, [totalHeroSlides]);
+
+  const handleHeroNext = useCallback(() => {
+    if (totalHeroSlides <= 1) return;
+    setActiveHeroIndex((prev) => (prev + 1) % totalHeroSlides);
+  }, [totalHeroSlides]);
 
   // Initialize shared Square card (enabled only when a payable tier exists)
   const {
@@ -1128,13 +1279,69 @@ const CrowdfundingPage = () => {
         <div className="grid grid-cols-1 lg:grid-cols-5 lg:gap-16">
           {/* --- Left Column (Media & Content Tabs) --- */}
     <div className="lg:col-span-3 space-y-8 order-2 lg:order-1">
-            {/* Override hero image per request */}
-            <img
-              src={"/gallery/5Z0A5718-Edit.jpg"}
-              alt={title}
-              className="w-full object-cover rounded-lg aspect-video bg-gray-100"
-              loading="lazy"
-            />
+            <div className="relative w-full overflow-hidden rounded-lg bg-gray-100 aspect-video">
+              {heroSlides.map((slide, index) => (
+                <img
+                  key={slide.id || `${slide.src}-${index}`}
+                  src={slide.src}
+                  alt={slide.alt || title}
+                  className={cn(
+                    'absolute inset-0 h-full w-full object-cover transition-opacity duration-500',
+                    index === activeHeroIndex ? 'opacity-100' : 'opacity-0 pointer-events-none'
+                  )}
+                  loading={index === 0 ? 'eager' : 'lazy'}
+                />
+              ))}
+              {heroLoading && (
+                <div className="absolute inset-0 flex items-center justify-center bg-black/20 backdrop-blur-sm">
+                  <span className="text-sm font-semibold text-white">Loading photos…</span>
+                </div>
+              )}
+              {heroError && (
+                <p className="absolute inset-x-0 bottom-3 mx-auto w-max rounded bg-black/70 px-3 py-1 text-xs text-white shadow">
+                  {heroError}
+                </p>
+              )}
+              {totalHeroSlides > 1 && !heroLoading && (
+                <>
+                  <button
+                    type="button"
+                    className="absolute left-3 top-1/2 -translate-y-1/2 rounded-full bg-white/85 p-2 text-slate-700 shadow transition hover:bg-white focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[var(--color-accent)]"
+                    onClick={handleHeroPrev}
+                    aria-label="View previous photo"
+                  >
+                    <span aria-hidden="true" className="text-xl leading-none">
+                      ‹
+                    </span>
+                  </button>
+                  <button
+                    type="button"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full bg-white/85 p-2 text-slate-700 shadow transition hover:bg-white focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[var(--color-accent)]"
+                    onClick={handleHeroNext}
+                    aria-label="View next photo"
+                  >
+                    <span aria-hidden="true" className="text-xl leading-none">
+                      ›
+                    </span>
+                  </button>
+                  <div className="absolute bottom-3 left-1/2 flex -translate-x-1/2 gap-2">
+                    {heroSlides.map((slide, index) => (
+                      <button
+                        key={slide.id || `${slide.src}-${index}`}
+                        type="button"
+                        className={cn(
+                          'h-2.5 w-2.5 rounded-full border border-white transition',
+                          index === activeHeroIndex ? 'bg-white' : 'bg-white/30 hover:bg-white/60'
+                        )}
+                        aria-label={`View photo ${index + 1}`}
+                        aria-pressed={index === activeHeroIndex}
+                        onClick={() => setActiveHeroIndex(index)}
+                      />
+                    ))}
+                  </div>
+                </>
+              )}
+            </div>
 
             <div className="border-b border-neutral-200">
               <nav className="tablist">
@@ -1613,6 +1820,14 @@ const CrowdfundingPage = () => {
                   {paymentsError && <p className="text-red-600">Payments error: {paymentsError}</p>}
                 </div>
               )}
+             
+              {rewardTiers.length > 0 && (
+                <SectionHeader
+                  overline="Rewards"
+                  title="Choose your thank-you tier"
+                  className="pt-2"
+                />
+              )}
 
               {rewardTiers.map((tier) => {
                 const tierId = tierIdentifier(tier);
@@ -1759,8 +1974,12 @@ const CrowdfundingPage = () => {
                     {feedbackNotice}
                   </p>
                 )}
-                <Button type="submit" className="w-full sm:w-auto">
-                  Share feedback
+                <Button
+                  type="submit"
+                  className="w-full sm:w-auto"
+                  disabled={feedbackStatus === 'loading'}
+                >
+                  {feedbackStatus === 'loading' ? 'Saving...' : 'Share feedback'}
                 </Button>
               </form>
             </div>
