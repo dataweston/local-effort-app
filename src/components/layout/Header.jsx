@@ -18,7 +18,7 @@ const links = [
 ];
 
 // Toggle to show/hide fundraiser button in nav (routes still accessible directly)
-const SHOW_FUNDRAISER = false;
+const SHOW_FUNDRAISER = true;
 
 export const Header = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -100,7 +100,7 @@ export const Header = () => {
                 whileTap={{ scale: 0.98 }}
                 className="inline-flex items-center rounded-md bg-[var(--color-accent)] px-3 py-1.5 font-semibold text-white shadow-sm"
               >
-                Fundraiser
+                Crowdfunding
               </motion.span>
             </NavLink>
           )}
@@ -222,7 +222,7 @@ export const Header = () => {
                     onClick={() => setIsOpen(false)}
                     className="text-2xl uppercase bg-[var(--color-accent)] text-white px-6 py-3 rounded font-semibold"
                   >
-                    Fundraiser
+                    Crowdfunding
                   </NavLink>
                 </motion.div>
               )}

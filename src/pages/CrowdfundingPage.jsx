@@ -136,6 +136,12 @@ const REWARD_PREFERENCE_OPTIONS = [
   { value: "i'm open or im not sure", label: "I’m open or I’m not sure" },
 ];
 
+const CAMPAIGN_EXTENSION_DATE_STRING = '2025-12-10T23:59:59-06:00';
+const CAMPAIGN_EXTENSION_DEADLINE = (() => {
+  const parsed = new Date(CAMPAIGN_EXTENSION_DATE_STRING);
+  return Number.isNaN(parsed.getTime()) ? null : parsed;
+})();
+
 const CrowdfundingPage = () => {
   const [campaignData, setCampaignData] = useState(null);
   const [activeTab, setActiveTab] = useState('story');
@@ -157,11 +163,17 @@ const CrowdfundingPage = () => {
   const [subscribeStatus, setSubscribeStatus] = useState('idle'); // idle | loading | success | error
   const [subscribeMessage, setSubscribeMessage] = useState('');
   const [rewardPreference, setRewardPreference] = useState(REWARD_PREFERENCE_OPTIONS[0].value);
+  const [feedbackName, setFeedbackName] = useState('');
+  const [feedbackMessage, setFeedbackMessage] = useState('');
+  const [feedbackNotice, setFeedbackNotice] = useState('');
+  const [feedbackStatus, setFeedbackStatus] = useState('idle'); // idle | error | success
+  const [feedbackEntries, setFeedbackEntries] = useState([]);
   // Gallery state (lazy-loaded when tab activated)
   const [galleryImages, setGalleryImages] = useState([]);
   const [galleryLoading, setGalleryLoading] = useState(false);
   const [galleryError, setGalleryError] = useState('');
   const galleryLoadedRef = React.useRef(false);
+  const [eventModal, setEventModal] = useState(null);
 
   useEffect(() => {
     if (activeTab === 'gallery' && !galleryLoadedRef.current) {
@@ -217,6 +229,7 @@ const CrowdfundingPage = () => {
       heroImage,
       story,
       goals,
+      events[]{ _key, location, startDate, endDate, foodType, ticketsUrl, description },
       faq,
       "rewardTiers": rewardTiers[]->{ amount, pizzaCount, pieCount, title, description, limit, referralOnly, referralCode } | order(amount asc),
       "updates": updates[]->{ title, publishedAt, body } | order(publishedAt desc)
@@ -256,6 +269,7 @@ const CrowdfundingPage = () => {
             heroImage,
             story,
             goals,
+            events[]{ _key, location, startDate, endDate, foodType, ticketsUrl, description },
             faq,
             "rewardTiers": rewardTiers[]->{ amount, pizzaCount, pieCount, title, description, limit, referralOnly, referralCode } | order(amount asc),
             "updates": updates[]->{ title, publishedAt, body } | order(publishedAt desc)
@@ -393,6 +407,34 @@ const CrowdfundingPage = () => {
     }
   };
 
+  const handleFeedbackSubmit = useCallback(
+    (event) => {
+      event.preventDefault();
+      const name = feedbackName.trim();
+      const message = feedbackMessage.trim();
+
+      if (!message) {
+        setFeedbackStatus('error');
+        setFeedbackNotice('Please share a quick note about the pizza.');
+        return;
+      }
+
+      setFeedbackEntries((prev) => [
+        {
+          id: `feedback-${Date.now()}`,
+          name: name || 'Anonymous pizza fan',
+          message,
+        },
+        ...prev,
+      ].slice(0, 8));
+      setFeedbackName('');
+      setFeedbackMessage('');
+      setFeedbackStatus('success');
+      setFeedbackNotice('Thanks for spreading the pizza love!');
+    },
+    [feedbackMessage, feedbackName]
+  );
+
   // Destructure frequently used fields from campaign data (safe even if null)
   // Destructure raw values (null-safe post processing below)
   const {
@@ -429,6 +471,27 @@ const CrowdfundingPage = () => {
   const [cardReady, setCardReady] = useState(false);
   const [cardError, setCardError] = useState('');
   const { notify: notifyToast } = useToast();
+  const rememberPendingContribution = useCallback((cartItems, name) => {
+    if (!Array.isArray(cartItems) || cartItems.length === 0) return;
+    try {
+      localStorage.setItem('cf_items', JSON.stringify(cartItems));
+      if (name) {
+        localStorage.setItem('cf_name', name);
+      } else {
+        localStorage.removeItem('cf_name');
+      }
+    } catch (err) {
+      console.warn('[square] [crowdfunding] failed to persist pending contribution', err);
+    }
+  }, []);
+  const clearPendingContribution = useCallback(() => {
+    try {
+      localStorage.removeItem('cf_items');
+      localStorage.removeItem('cf_name');
+    } catch (err) {
+      console.warn('[square] [crowdfunding] failed to clear pending contribution', err);
+    }
+  }, []);
 
   const destroyCard = useCallback(() => {
     const card = cardInstanceRef.current;
@@ -552,11 +615,11 @@ const CrowdfundingPage = () => {
         } catch (_) {
           // ignore
         } finally {
-          try { localStorage.removeItem('cf_items'); localStorage.removeItem('cf_name'); } catch (e) { /* ignore */ }
+          clearPendingContribution();
         }
       })();
     }
-  }, []);
+  }, [clearPendingContribution]);
 
   const tokenizeCard = useCallback(async () => {
     const card = cardInstanceRef.current;
@@ -581,19 +644,65 @@ const CrowdfundingPage = () => {
     setPayError('');
     setPaying(true);
     try {
+      const normalizedItems = items.map((raw) => {
+        const priceCents = Math.max(0, Math.round(Number(raw.price) || 0));
+        const quantity = Math.max(1, Math.round(Number(raw.quantity) || 1));
+        return {
+          name: raw.name || 'Contribution',
+          priceCents,
+          quantity,
+          type: raw.type,
+          pizzaCount: raw.pizzaCount,
+        };
+      });
+
+      // Prefer redirecting customers to Square payment links when available.
+      try {
+        const linkItems = normalizedItems.map((item) => ({
+          name: item.name,
+          price: Number((item.priceCents / 100).toFixed(2)),
+          quantity: item.quantity,
+          type: item.type,
+          pizzaCount: item.pizzaCount,
+        }));
+        const linkRes = await fetch('/api/crowdfund/contribute', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ items: linkItems, funderName: funderName || undefined }),
+        });
+        if (linkRes.ok) {
+          const linkData = await linkRes.json().catch(() => ({}));
+          if (linkData?.url) {
+            const itemsForStorage = normalizedItems.map((item) => ({
+              name: item.name,
+              type: item.type,
+              pizzaCount: item.pizzaCount,
+              quantity: item.quantity,
+            }));
+            rememberPendingContribution(itemsForStorage, funderName?.trim() || '');
+            notifyToast('Redirecting to secure checkout…', { type: 'success' });
+            window.location.assign(linkData.url);
+            return;
+          }
+        }
+      } catch (linkErr) {
+        console.warn('[square] [crowdfunding] payment link attempt failed', linkErr);
+      }
+
       let token;
       try {
         token = await tokenizeCard();
       } catch (tokErr) {
         throw new Error(tokErr?.message || 'Card not ready');
       }
+
       const payload = {
-        items: items.map(i => ({
-          name: i.name,
-          price: i.price,
-          quantity: i.quantity || 1,
-          type: i.type,
-          pizzaCount: i.pizzaCount,
+        items: normalizedItems.map((item) => ({
+          name: item.name,
+          price: item.priceCents,
+          quantity: item.quantity,
+          type: item.type,
+          pizzaCount: item.pizzaCount,
         })),
         funderName,
         email: email.trim() || undefined,
@@ -634,12 +743,109 @@ const CrowdfundingPage = () => {
 
   const updates = Array.isArray(campaignData?.updates) ? campaignData.updates : [];
 
+  const parseEventDate = useCallback((value) => {
+    if (!value) return null;
+    const iso = value.includes('T') ? value : `${value}T00:00:00`;
+    const date = new Date(iso);
+    return Number.isNaN(date.getTime()) ? null : date;
+  }, []);
+
+  const upcomingEvents = useMemo(() => {
+    const rawEvents = Array.isArray(campaignData?.events) ? campaignData.events : [];
+    if (!rawEvents.length) return [];
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return rawEvents
+      .filter(Boolean)
+      .map((ev, index) => ({
+        ...ev,
+        _key: ev?._key || ev?._id || String(index),
+      }))
+      .filter((ev) => {
+        const start = parseEventDate(ev.startDate);
+        if (!start) return false;
+        const end = parseEventDate(ev.endDate) || start;
+        const boundary = new Date(end);
+        boundary.setHours(23, 59, 59, 999);
+        return boundary >= today;
+      })
+      .sort((a, b) => {
+        const aStart = parseEventDate(a.startDate);
+        const bStart = parseEventDate(b.startDate);
+        if (!aStart && !bStart) return 0;
+        if (!aStart) return 1;
+        if (!bStart) return -1;
+        return aStart - bStart;
+      });
+  }, [campaignData, parseEventDate]);
+
+  useEffect(() => {
+    if (!eventModal) return;
+    const stillExists = upcomingEvents.some((ev) => (ev._key || ev._id) === (eventModal._key || eventModal._id));
+    if (!stillExists) {
+      setEventModal(null);
+    }
+  }, [eventModal, upcomingEvents]);
+
+  const formatListDate = useCallback((event) => {
+    const start = parseEventDate(event?.startDate);
+    const end = parseEventDate(event?.endDate);
+    if (!start) return '';
+    const currentYear = new Date().getFullYear();
+    const includeYear = start.getFullYear() > currentYear;
+    if (end && end.getTime() !== start.getTime()) {
+      const opts = { month: 'short', day: 'numeric' };
+      if (includeYear) opts.year = 'numeric';
+      return `starts ${new Intl.DateTimeFormat('en-US', opts).format(start)}`;
+    }
+    const opts = { weekday: 'short', month: 'short', day: 'numeric' };
+    if (includeYear) opts.year = 'numeric';
+    return new Intl.DateTimeFormat('en-US', opts).format(start);
+  }, [parseEventDate]);
+
+  const formatModalDate = useCallback((event) => {
+    const start = parseEventDate(event?.startDate);
+    const end = parseEventDate(event?.endDate);
+    if (!start) return '';
+    const currentYear = new Date().getFullYear();
+    const baseOptions = { weekday: 'short', month: 'short', day: 'numeric' };
+    const includeYearStart = start.getFullYear() > currentYear || (end && end.getFullYear() !== start.getFullYear());
+    const startLabel = new Intl.DateTimeFormat('en-US', includeYearStart ? { ...baseOptions, year: 'numeric' } : baseOptions).format(start);
+    if (end && end.getTime() !== start.getTime()) {
+      const includeYearEnd = end.getFullYear() > currentYear || end.getFullYear() !== start.getFullYear();
+      const endLabel = new Intl.DateTimeFormat('en-US', includeYearEnd ? { ...baseOptions, year: 'numeric' } : baseOptions).format(end);
+      return `${startLabel} - ${endLabel}`;
+    }
+    return startLabel;
+  }, [parseEventDate]);
+
+  const hasEvents = upcomingEvents.length > 0;
+
   // --- Pizza-specific values (prefer pizza fields, fallback to legacy money values) ---
   const pizzasSold = (campaignData?.pizzasSold ?? campaignData?.raisedAmount ?? 0) || 0;
   const pizzaGoal = (campaignData?.pizzaGoal ?? campaignData?.goal ?? 1000) || 1000; // default goal to 1000 pizzas
-  const daysLeft = endDate
-    ? Math.ceil((new Date(endDate) - new Date()) / (1000 * 60 * 60 * 24))
-    : 0;
+  const effectiveEndDate = useMemo(() => {
+    const fallback = CAMPAIGN_EXTENSION_DEADLINE;
+    if (!endDate) return fallback;
+
+    const parsed = new Date(endDate);
+    if (Number.isNaN(parsed.getTime())) {
+      return fallback;
+    }
+
+    if (fallback && parsed < fallback) {
+      return fallback;
+    }
+
+    return parsed;
+  }, [endDate]);
+
+  const daysLeft = (() => {
+    if (!effectiveEndDate) return 0;
+    const diffMs = effectiveEndDate.getTime() - Date.now();
+    const days = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+    return Math.max(days, 0);
+  })();
   const progressPercentage = pizzaGoal > 0 ? Math.min((pizzasSold / pizzaGoal) * 100, 100) : 0;
 
   const TabButton = ({ tabName, label }) => (
@@ -736,6 +942,34 @@ const CrowdfundingPage = () => {
                   ))}
                 </div>
               </div>
+
+        {hasEvents && (
+          <div className="max-w-4xl">
+            <div className="border rounded-lg p-4 bg-white shadow-sm">
+              <h3 className="text-lg font-semibold mb-2">upcoming campaign events.</h3>
+              <ul className="divide-y">
+                {upcomingEvents.map((ev) => {
+                  const dateLabel = formatListDate(ev);
+                  const detailLabel = [dateLabel, ev.foodType || 'Food'].filter(Boolean).join(' - ');
+                  return (
+                    <li key={ev._key} className="py-2">
+                      <button
+                        type="button"
+                        className="text-left hover:underline"
+                        onClick={() => setEventModal(ev)}
+                      >
+                        <span className="flex flex-col sm:flex-row sm:items-baseline sm:gap-2">
+                          <span className="font-semibold text-slate-800">{ev.location}</span>
+                          <span className="text-sm text-slate-600">{detailLabel}</span>
+                        </span>
+                      </button>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+          </div>
+        )}
 
         {/* --- Main Content Grid --- */}
   <div className="grid grid-cols-1 lg:grid-cols-5 lg:gap-16">
@@ -1078,7 +1312,6 @@ const CrowdfundingPage = () => {
                     type="submit"
                     disabled={
                       !activeTier ||
-                      !cardReady ||
                       paying ||
                       !!cardError ||
                       !!paymentsError ||
@@ -1190,7 +1423,119 @@ const CrowdfundingPage = () => {
             </div>
           </div>
         </div>
+
+        <section className="rounded-3xl border border-slate-200 bg-white p-6 md:p-10 shadow-sm">
+          <div className="mx-auto flex max-w-4xl flex-col gap-10 md:flex-row">
+            <div className="md:w-1/2 space-y-6">
+              <SectionHeader overline="Share the pizza love" title="Pizza feedback" />
+              <p className="text-base text-slate-600">
+                Leave a quick note about what you enjoy most. Your kind words help us keep the pizza party going
+                for our neighbors.
+              </p>
+              <form className="space-y-4" onSubmit={handleFeedbackSubmit}>
+                <div className="space-y-2">
+                  <Label htmlFor="pizza-feedback-name">Name (optional)</Label>
+                  <Input
+                    id="pizza-feedback-name"
+                    value={feedbackName}
+                    onChange={(event) => {
+                      setFeedbackName(event.target.value);
+                      if (feedbackStatus !== 'idle') {
+                        setFeedbackStatus('idle');
+                        setFeedbackNotice('');
+                      }
+                    }}
+                    placeholder="Alex Pizza Fan"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="pizza-feedback-message">What made your pizza special?</Label>
+                  <Textarea
+                    id="pizza-feedback-message"
+                    value={feedbackMessage}
+                    onChange={(event) => {
+                      setFeedbackMessage(event.target.value);
+                      if (feedbackStatus !== 'idle') {
+                        setFeedbackStatus('idle');
+                        setFeedbackNotice('');
+                      }
+                    }}
+                    placeholder="The wood-fired char and fresh basil blew me away!"
+                    className="min-h-[120px]"
+                  />
+                </div>
+                {feedbackNotice && (
+                  <p
+                    className={
+                      feedbackStatus === 'error'
+                        ? 'text-sm text-red-600'
+                        : 'text-sm text-emerald-600'
+                    }
+                    aria-live="polite"
+                  >
+                    {feedbackNotice}
+                  </p>
+                )}
+                <Button type="submit" className="w-full sm:w-auto">
+                  Share feedback
+                </Button>
+              </form>
+            </div>
+            <div className="md:w-1/2 space-y-4">
+              <h3 className="text-lg font-semibold text-slate-900">Recent happy pizza thoughts</h3>
+              {feedbackEntries.length > 0 ? (
+                <ul className="space-y-4">
+                  {feedbackEntries.map((entry) => (
+                    <li
+                      key={entry.id}
+                      className="rounded-2xl border border-amber-100 bg-amber-50/70 p-4 shadow-sm"
+                    >
+                      <p className="text-sm text-amber-900">“{entry.message}”</p>
+                      <p className="mt-2 text-xs font-semibold uppercase tracking-wide text-amber-700">
+                        — {entry.name}
+                      </p>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="text-sm text-slate-500">
+                  No pizza notes yet—be the first to share your experience!
+                </p>
+              )}
+            </div>
+          </div>
+        </section>
       </div>
+      {eventModal && (
+        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-lg shadow-xl max-w-lg w-full p-5 relative">
+            <button
+              type="button"
+              className="absolute right-3 top-3 text-sm underline"
+              onClick={() => setEventModal(null)}
+            >
+              Close
+            </button>
+            <h4 className="text-xl font-bold mb-1">{eventModal.location}</h4>
+            <p className="text-sm text-gray-600 mb-3">{formatModalDate(eventModal)}</p>
+            {eventModal.description && (
+              <div className="prose max-w-none">
+                <PortableText value={eventModal.description} components={portableComponents} />
+              </div>
+            )}
+            {eventModal.ticketsUrl && (
+              <a
+                className="btn btn-primary mt-4 inline-block"
+                href={eventModal.ticketsUrl}
+                target="_blank"
+                rel="noreferrer"
+              >
+                Get tickets
+              </a>
+            )}
+          </div>
+        </div>
+      )}
     </>
   );
 };

@@ -6,15 +6,15 @@ test.describe('crowdfunding checkout', () => {
     await stubSquarePayments(page);
   });
 
-  test('checkout form calls missing /api/crowdfund/checkout endpoint', async ({ page }) => {
+  test('checkout form posts to /api/crowdfund/checkout', async ({ page }) => {
     const requests = [];
     await page.route('**/api/crowdfund/**', async (route) => {
       requests.push(route.request().url());
       if (route.request().url().endsWith('/checkout')) {
         await route.fulfill({
-          status: 404,
+          status: 200,
           contentType: 'application/json',
-          body: JSON.stringify({ error: 'Not Found' }),
+          body: JSON.stringify({ ok: true }),
         });
         return;
       }
@@ -36,8 +36,8 @@ test.describe('crowdfunding checkout', () => {
     await expect(buyButton).toBeEnabled();
     await buyButton.click();
 
-    await expect(page.getByText('Not Found')).toBeVisible();
     expect(requests.some((url) => url.endsWith('/checkout'))).toBe(true);
     expect(requests.some((url) => url.endsWith('/contribute'))).toBe(false);
+    await expect(page.getByText('Thanks! Your contribution has been processed.')).toBeVisible();
   });
 });

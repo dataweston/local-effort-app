@@ -58,6 +58,15 @@ export const PARTNER_TOOLS = [
     public: true,
   },
   {
+    key: 'aacrm',
+    name: 'AACRM Workspace',
+    description: 'Embedded AACRM Next.js partner tool.',
+    type: 'internal',
+    route: '/partners/aacrm',
+    icon: 'Briefcase',
+    public: true,
+  },
+  {
     key: 'tinydiner',
     name: 'Tiny Diner Weddings',
     description: 'Booking & intake portal for Tiny Diner weddings.',
