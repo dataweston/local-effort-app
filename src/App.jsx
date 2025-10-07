@@ -44,6 +44,7 @@ const ZafaEmbeddedApp = lazy(() => import('./partners/zafa'));
 const GallantEmbeddedApp = lazy(() => import('./partners/gallant'));
 const HMEmbeddedApp = lazy(() => import('./partners/happymonday'));
 const PlacemakerEmbeddedApp = lazy(() => import('./partners/placemaker'));
+const AACRMEmbeddedApp = lazy(() => import('./partners/aacrm'));
 const TinyDinerEmbeddedApp = lazy(() => import('./partners/tiny-diner'));
 const CookbookSearchPage = lazy(() => import('./pages/CookbookSearchPage'));
 const CookbookRecipePage = lazy(() => import('./pages/CookbookRecipePage'));
@@ -330,6 +331,14 @@ const AppContent = () => {
                   element={
                     <AnimatedPage>
                       <PlacemakerEmbeddedApp />
+                    </AnimatedPage>
+                  }
+                />
+                <Route
+                  path="/partners/aacrm"
+                  element={
+                    <AnimatedPage>
+                      <AACRMEmbeddedApp />
                     </AnimatedPage>
                   }
                 />
