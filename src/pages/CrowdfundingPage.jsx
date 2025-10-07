@@ -229,6 +229,7 @@ const CrowdfundingPage = () => {
       heroImage,
       story,
       goals,
+      "featuredPublicEvents": featuredPublicEvents[]->{ _id, location, startDate, endDate, foodType, ticketsUrl, description },
       events[]{ _key, location, startDate, endDate, foodType, ticketsUrl, description },
       faq,
       "rewardTiers": rewardTiers[]->{ amount, pizzaCount, pieCount, title, description, limit, referralOnly, referralCode } | order(amount asc),
@@ -269,6 +270,7 @@ const CrowdfundingPage = () => {
             heroImage,
             story,
             goals,
+            "featuredPublicEvents": featuredPublicEvents[]->{ _id, location, startDate, endDate, foodType, ticketsUrl, description },
             events[]{ _key, location, startDate, endDate, foodType, ticketsUrl, description },
             faq,
             "rewardTiers": rewardTiers[]->{ amount, pizzaCount, pieCount, title, description, limit, referralOnly, referralCode } | order(amount asc),
@@ -780,42 +782,60 @@ const CrowdfundingPage = () => {
     return Number.isNaN(date.getTime()) ? null : date;
   }, []);
 
-  const upcomingEvents = useMemo(() => {
-    const rawEvents = Array.isArray(campaignData?.events) ? campaignData.events : [];
-    if (!rawEvents.length) return [];
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    return rawEvents
-      .filter(Boolean)
-      .map((ev, index) => ({
-        ...ev,
-        _key: ev?._key || ev?._id || String(index),
-      }))
-      .filter((ev) => {
-        const start = parseEventDate(ev.startDate);
-        if (!start) return false;
-        const end = parseEventDate(ev.endDate) || start;
-        const boundary = new Date(end);
-        boundary.setHours(23, 59, 59, 999);
-        return boundary >= today;
-      })
-      .sort((a, b) => {
-        const aStart = parseEventDate(a.startDate);
-        const bStart = parseEventDate(b.startDate);
-        if (!aStart && !bStart) return 0;
-        if (!aStart) return 1;
-        if (!bStart) return -1;
-        return aStart - bStart;
-      });
-  }, [campaignData, parseEventDate]);
+  const normalizeEvents = useCallback(
+    (eventsSource, sourceLabel) => {
+      const items = Array.isArray(eventsSource) ? eventsSource : [];
+      if (!items.length) return [];
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      return items
+        .filter(Boolean)
+        .map((ev, index) => ({
+          ...ev,
+          _key: ev?._key || ev?._id || `${sourceLabel || 'event'}-${index}`,
+        }))
+        .filter((ev) => {
+          const start = parseEventDate(ev.startDate);
+          if (!start) return false;
+          const end = parseEventDate(ev.endDate) || start;
+          const boundary = new Date(end);
+          boundary.setHours(23, 59, 59, 999);
+          return boundary >= today;
+        })
+        .sort((a, b) => {
+          const aStart = parseEventDate(a.startDate);
+          const bStart = parseEventDate(b.startDate);
+          if (!aStart && !bStart) return 0;
+          if (!aStart) return 1;
+          if (!bStart) return -1;
+          return aStart - bStart;
+        });
+    },
+    [parseEventDate]
+  );
+
+  const campaignEvents = campaignData?.events;
+  const campaignFeaturedEvents = campaignData?.featuredPublicEvents;
+
+  const upcomingEvents = useMemo(
+    () => normalizeEvents(campaignEvents, 'campaign'),
+    [campaignEvents, normalizeEvents]
+  );
+
+  const featuredPublicEvents = useMemo(
+    () => normalizeEvents(campaignFeaturedEvents, 'public'),
+    [campaignFeaturedEvents, normalizeEvents]
+  );
 
   useEffect(() => {
     if (!eventModal) return;
-    const stillExists = upcomingEvents.some((ev) => (ev._key || ev._id) === (eventModal._key || eventModal._id));
+    const stillExists =
+      upcomingEvents.some((ev) => (ev._key || ev._id) === (eventModal._key || eventModal._id)) ||
+      featuredPublicEvents.some((ev) => (ev._key || ev._id) === (eventModal._key || eventModal._id));
     if (!stillExists) {
       setEventModal(null);
     }
-  }, [eventModal, upcomingEvents]);
+  }, [eventModal, upcomingEvents, featuredPublicEvents]);
 
   const formatListDate = useCallback((event) => {
     const start = parseEventDate(event?.startDate);
@@ -849,7 +869,8 @@ const CrowdfundingPage = () => {
     return startLabel;
   }, [parseEventDate]);
 
-  const hasEvents = upcomingEvents.length > 0;
+  const hasCampaignEvents = upcomingEvents.length > 0;
+  const hasFeaturedPublicEvents = featuredPublicEvents.length > 0;
 
   // --- Pizza-specific values (prefer pizza fields, fallback to legacy money values) ---
   const pizzasSold = (campaignData?.pizzasSold ?? campaignData?.raisedAmount ?? 0) || 0;
@@ -973,31 +994,58 @@ const CrowdfundingPage = () => {
                 </div>
               </div>
 
-        {hasEvents && (
-          <div className="max-w-4xl">
-            <div className="border rounded-lg p-4 bg-white shadow-sm">
-              <h3 className="text-lg font-semibold mb-2">upcoming campaign events.</h3>
-              <ul className="divide-y">
-                {upcomingEvents.map((ev) => {
-                  const dateLabel = formatListDate(ev);
-                  const detailLabel = [dateLabel, ev.foodType || 'Food'].filter(Boolean).join(' - ');
-                  return (
-                    <li key={ev._key} className="py-2">
-                      <button
-                        type="button"
-                        className="text-left hover:underline"
-                        onClick={() => setEventModal(ev)}
-                      >
-                        <span className="flex flex-col sm:flex-row sm:items-baseline sm:gap-2">
-                          <span className="font-semibold text-slate-800">{ev.location}</span>
-                          <span className="text-sm text-slate-600">{detailLabel}</span>
-                        </span>
-                      </button>
-                    </li>
-                  );
-                })}
-              </ul>
-            </div>
+        {(hasCampaignEvents || hasFeaturedPublicEvents) && (
+          <div className="max-w-4xl space-y-6">
+            {hasCampaignEvents && (
+              <div className="border rounded-lg p-4 bg-white shadow-sm">
+                <h3 className="text-lg font-semibold mb-2">upcoming campaign events.</h3>
+                <ul className="divide-y">
+                  {upcomingEvents.map((ev) => {
+                    const dateLabel = formatListDate(ev);
+                    const detailLabel = [dateLabel, ev.foodType || 'Food'].filter(Boolean).join(' - ');
+                    return (
+                      <li key={ev._key} className="py-2">
+                        <button
+                          type="button"
+                          className="text-left hover:underline"
+                          onClick={() => setEventModal(ev)}
+                        >
+                          <span className="flex flex-col sm:flex-row sm:items-baseline sm:gap-2">
+                            <span className="font-semibold text-slate-800">{ev.location}</span>
+                            <span className="text-sm text-slate-600">{detailLabel}</span>
+                          </span>
+                        </button>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
+            )}
+            {hasFeaturedPublicEvents && (
+              <div className="border rounded-lg p-4 bg-white shadow-sm">
+                <h3 className="text-lg font-semibold mb-2">upcoming public events.</h3>
+                <ul className="divide-y">
+                  {featuredPublicEvents.map((ev) => {
+                    const dateLabel = formatListDate(ev);
+                    const detailLabel = [dateLabel, ev.foodType || 'Food'].filter(Boolean).join(' - ');
+                    return (
+                      <li key={ev._key} className="py-2">
+                        <button
+                          type="button"
+                          className="text-left hover:underline"
+                          onClick={() => setEventModal(ev)}
+                        >
+                          <span className="flex flex-col sm:flex-row sm:items-baseline sm:gap-2">
+                            <span className="font-semibold text-slate-800">{ev.location}</span>
+                            <span className="text-sm text-slate-600">{detailLabel}</span>
+                          </span>
+                        </button>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
+            )}
           </div>
         )}
 
