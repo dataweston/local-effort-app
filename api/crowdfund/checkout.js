@@ -37,7 +37,17 @@ module.exports = async (req, res) => {
     if (!sq) return res.status(500).json({ error: 'Square not configured' });
     if (!LOCATION_ID) return res.status(500).json({ error: 'Square location missing' });
 
-    const { items, funderName, token, email, phone, notes, notify } = req.body || {};
+    const {
+      items,
+      funderName,
+      token,
+      email,
+      phone,
+      notes,
+      notify,
+      rewardPreference,
+      pizzaQty,
+    } = req.body || {};
     if (!token) return res.status(400).json({ error: 'Missing payment token' });
     if (!Array.isArray(items) || !items.length) return res.status(400).json({ error: 'No items' });
 
@@ -84,6 +94,105 @@ module.exports = async (req, res) => {
         }
       } catch (err) {
         console.warn('Failed to update crowdfund metrics after payment', err?.message);
+      }
+    }
+
+    // Notify team + supporter via Brevo (best-effort, non-blocking)
+    const BREVO_API_KEY = process.env.BREVO_API_KEY;
+    const TEAM_EMAIL = process.env.SUPPORT_INBOX_EMAIL || process.env.TEAM_INBOX_EMAIL || process.env.SENDER_EMAIL;
+    const SENDER_EMAIL = process.env.SENDER_EMAIL || TEAM_EMAIL || email || null;
+    if (BREVO_API_KEY && SENDER_EMAIL) {
+      const headers = {
+        'api-key': BREVO_API_KEY,
+        accept: 'application/json',
+        'content-type': 'application/json',
+      };
+      const formatCurrency = (cents) => `$${(Number(cents || 0) / 100).toFixed(2)}`;
+      const formatLine = (item) => {
+        const qty = Number(item.quantity || item.pizzaCount || 1);
+        const name = item.name || 'Contribution';
+        const total = (Number(item.price) || 0) * qty;
+        return `- ${qty} x ${name} (${formatCurrency(total)})`;
+      };
+      const itemLines = items.map(formatLine).join('\n');
+      const totalUsd = formatCurrency(lineTotal);
+      const pizzasPurchased = items
+        .filter((i) => i.type === 'pizza')
+        .reduce((sum, it) => sum + (Number(it.pizzaCount) || Number(it.quantity) || 0), 0);
+
+      if (TEAM_EMAIL) {
+        const teamLines = [
+          'Crowdfunding contribution received!',
+          '',
+          `Funder: ${funderName || 'Anonymous'}`,
+          email ? `Email: ${email}` : null,
+          phone ? `Phone: ${phone}` : null,
+          pizzasPurchased ? `Pizzas counted: ${pizzasPurchased}` : null,
+          pizzaQty ? `Requested quantity: ${pizzaQty}` : null,
+          notify && notify !== 'none' ? `Notify preference: ${notify}` : null,
+          rewardPreference ? `Reward preference: ${rewardPreference}` : null,
+          '',
+          'Items:',
+          itemLines || '(no items provided)',
+          '',
+          `Total captured: ${totalUsd}`,
+          paymentId ? `Square payment: ${paymentId}` : null,
+          notes ? `Notes:\n${notes}` : null,
+        ].filter(Boolean).join('\n');
+        try {
+          await fetch('https://api.brevo.com/v3/smtp/email', {
+            method: 'POST',
+            headers,
+            body: JSON.stringify({
+              to: [{ email: TEAM_EMAIL }],
+              sender: { email: SENDER_EMAIL, name: 'Local Effort' },
+              subject: 'New crowdfunding contribution',
+              textContent: teamLines,
+              replyTo: email ? { email, name: funderName || 'Supporter' } : undefined,
+              tags: ['crowdfund', 'supporter'],
+            }),
+          });
+        } catch (err) {
+          console.warn('[crowdfund.checkout] team email failed', err?.message || err);
+        }
+      }
+
+      if (email) {
+        const friendlyName = (funderName || '').split(' ')[0] || 'there';
+        const pizzasLine = pizzasPurchased
+          ? `You just funded ${pizzasPurchased} pizza${pizzasPurchased === 1 ? '' : 's'} for our neighbors.`
+          : null;
+        const supporterLines = [
+          `Hi ${friendlyName},`,
+          '',
+          "Thank you for backing Local Effort's 1,000 pizza campaign!",
+          pizzasLine,
+          '',
+          'Your contribution:',
+          itemLines || '(no items provided)',
+          '',
+          `Total: ${totalUsd}`,
+          rewardPreference ? `Reward preference noted: ${rewardPreference}` : null,
+          notes ? `Your note: ${notes}` : null,
+          '',
+          "We're so grateful for your support.",
+          '— The Local Effort team',
+        ].filter(Boolean).join('\n');
+        try {
+          await fetch('https://api.brevo.com/v3/smtp/email', {
+            method: 'POST',
+            headers,
+            body: JSON.stringify({
+              to: [{ email }],
+              sender: { email: SENDER_EMAIL, name: 'Local Effort' },
+              subject: 'Thanks for supporting Local Effort',
+              textContent: supporterLines,
+              tags: ['crowdfund', 'supporter'],
+            }),
+          });
+        } catch (err) {
+          console.warn('[crowdfund.checkout] supporter email failed', err?.message || err);
+        }
       }
     }
 

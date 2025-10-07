@@ -733,6 +733,36 @@ const CrowdfundingPage = () => {
         throw new Error(msg);
       }
       setConfirmMsg('Thanks! Your contribution has been processed.');
+      const pizzasPurchased = normalizedItems
+        .filter((item) => item.type === 'pizza')
+        .reduce((sum, item) => sum + (Number(item.pizzaCount) || Number(item.quantity) || 0), 0);
+      if (pizzasPurchased > 0) {
+        try {
+          await fetch('/api/crowdfund/confirm-payment', {
+            method: 'POST',
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify({
+              items: normalizedItems.map((item) => ({
+                name: item.name,
+                type: item.type,
+                pizzaCount: item.pizzaCount,
+                quantity: item.quantity,
+              })),
+              funderName: funderName?.trim() || undefined,
+            }),
+          });
+        } catch (confirmErr) {
+          console.warn('[square] [crowdfunding] confirm-payment update failed', confirmErr);
+        }
+        setCampaignData((prev) => {
+          if (!prev) return prev;
+          const next = { ...prev };
+          const current = typeof next.pizzasSold === 'number' ? next.pizzasSold : 0;
+          next.pizzasSold = current + pizzasPurchased;
+          return next;
+        });
+      }
+      clearPendingContribution();
     } catch (e) {
       setPayError(e?.message || 'Payment failed');
       notifyToast(e?.message || 'Payment failed', { type: 'error' });
