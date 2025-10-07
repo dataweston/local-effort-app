@@ -80,17 +80,27 @@ function createCrowdfundingRouter({ db, squareClient, logger }) {
       const docRef = db.collection('crowdfund').doc('status');
       await db.runTransaction(async (transaction) => {
         const doc = await transaction.get(docRef);
-        if (!doc.exists) throw new Error('Document does not exist');
+        const current = doc.exists ? (doc.data() || {}) : {};
 
-        const current = doc.data() || {};
         const newPizzasSold = (current.pizzasSold || 0) + pizzasInCart;
         const newFunders = Array.isArray(current.funders) ? current.funders.slice() : [];
-        newFunders.push({ name: funderName, date: new Date().toISOString() });
-
-        transaction.update(docRef, {
-          pizzasSold: newPizzasSold,
-          funders: newFunders,
+        newFunders.push({
+          name: (funderName && funderName.trim()) || 'Anonymous',
+          date: new Date().toISOString(),
         });
+
+        if (doc.exists) {
+          transaction.update(docRef, {
+            pizzasSold: newPizzasSold,
+            funders: newFunders,
+          });
+        } else {
+          transaction.set(docRef, {
+            goal: typeof current.goal === 'number' ? current.goal : 1000,
+            pizzasSold: newPizzasSold,
+            funders: newFunders,
+          });
+        }
       });
 
       const updatedDoc = await docRef.get();
