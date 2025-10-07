@@ -167,23 +167,7 @@ const CrowdfundingPage = () => {
   const [feedbackMessage, setFeedbackMessage] = useState('');
   const [feedbackNotice, setFeedbackNotice] = useState('');
   const [feedbackStatus, setFeedbackStatus] = useState('idle'); // idle | error | success
-  const [feedbackEntries, setFeedbackEntries] = useState([
-    {
-      id: 'feedback-1',
-      name: 'Jordan',
-      message: 'The crust has the perfect crunch without losing that soft center. I loved every slice!',
-    },
-    {
-      id: 'feedback-2',
-      name: 'Priya',
-      message: 'Loaded with farm-fresh toppings and so much flavor. Local Effort pizza is my new favorite.',
-    },
-    {
-      id: 'feedback-3',
-      name: 'Sam',
-      message: 'You can taste the care that goes into each pie. It feels like it was made just for me.',
-    },
-  ]);
+  const [feedbackEntries, setFeedbackEntries] = useState([]);
   // Gallery state (lazy-loaded when tab activated)
   const [galleryImages, setGalleryImages] = useState([]);
   const [galleryLoading, setGalleryLoading] = useState(false);
@@ -1499,19 +1483,25 @@ const CrowdfundingPage = () => {
             </div>
             <div className="md:w-1/2 space-y-4">
               <h3 className="text-lg font-semibold text-slate-900">Recent happy pizza thoughts</h3>
-              <ul className="space-y-4">
-                {feedbackEntries.map((entry) => (
-                  <li
-                    key={entry.id}
-                    className="rounded-2xl border border-amber-100 bg-amber-50/70 p-4 shadow-sm"
-                  >
-                    <p className="text-sm text-amber-900">“{entry.message}”</p>
-                    <p className="mt-2 text-xs font-semibold uppercase tracking-wide text-amber-700">
-                      — {entry.name}
-                    </p>
-                  </li>
-                ))}
-              </ul>
+              {feedbackEntries.length > 0 ? (
+                <ul className="space-y-4">
+                  {feedbackEntries.map((entry) => (
+                    <li
+                      key={entry.id}
+                      className="rounded-2xl border border-amber-100 bg-amber-50/70 p-4 shadow-sm"
+                    >
+                      <p className="text-sm text-amber-900">“{entry.message}”</p>
+                      <p className="mt-2 text-xs font-semibold uppercase tracking-wide text-amber-700">
+                        — {entry.name}
+                      </p>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="text-sm text-slate-500">
+                  No pizza notes yet—be the first to share your experience!
+                </p>
+              )}
             </div>
           </div>
         </section>
