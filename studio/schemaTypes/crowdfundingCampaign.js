@@ -154,6 +154,12 @@ export default {
             { name: 'foodType', title: 'Type of Food', type: 'string' },
             { name: 'ticketsUrl', title: 'Tickets URL', type: 'url' },
             { name: 'description', title: 'Description', type: 'array', of: [{ type: 'block' }] },
+            {
+              name: 'firestoreEventId',
+              title: 'Firestore Event ID',
+              type: 'string',
+              description: 'ID of the source Firestore event so we can sync copies.',
+            },
           ],
           preview: {
             select: { title: 'location', start: 'startDate', end: 'endDate' },
