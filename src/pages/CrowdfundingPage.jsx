@@ -136,6 +136,12 @@ const REWARD_PREFERENCE_OPTIONS = [
   { value: "i'm open or im not sure", label: "I’m open or I’m not sure" },
 ];
 
+const CAMPAIGN_EXTENSION_DATE_STRING = '2025-12-10T23:59:59-06:00';
+const CAMPAIGN_EXTENSION_DEADLINE = (() => {
+  const parsed = new Date(CAMPAIGN_EXTENSION_DATE_STRING);
+  return Number.isNaN(parsed.getTime()) ? null : parsed;
+})();
+
 const CrowdfundingPage = () => {
   const [campaignData, setCampaignData] = useState(null);
   const [activeTab, setActiveTab] = useState('story');
@@ -637,9 +643,28 @@ const CrowdfundingPage = () => {
   // --- Pizza-specific values (prefer pizza fields, fallback to legacy money values) ---
   const pizzasSold = (campaignData?.pizzasSold ?? campaignData?.raisedAmount ?? 0) || 0;
   const pizzaGoal = (campaignData?.pizzaGoal ?? campaignData?.goal ?? 1000) || 1000; // default goal to 1000 pizzas
-  const daysLeft = endDate
-    ? Math.ceil((new Date(endDate) - new Date()) / (1000 * 60 * 60 * 24))
-    : 0;
+  const effectiveEndDate = useMemo(() => {
+    const fallback = CAMPAIGN_EXTENSION_DEADLINE;
+    if (!endDate) return fallback;
+
+    const parsed = new Date(endDate);
+    if (Number.isNaN(parsed.getTime())) {
+      return fallback;
+    }
+
+    if (fallback && parsed < fallback) {
+      return fallback;
+    }
+
+    return parsed;
+  }, [endDate]);
+
+  const daysLeft = (() => {
+    if (!effectiveEndDate) return 0;
+    const diffMs = effectiveEndDate.getTime() - Date.now();
+    const days = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+    return Math.max(days, 0);
+  })();
   const progressPercentage = pizzaGoal > 0 ? Math.min((pizzasSold / pizzaGoal) * 100, 100) : 0;
 
   const TabButton = ({ tabName, label }) => (
