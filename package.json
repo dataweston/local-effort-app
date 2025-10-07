@@ -102,7 +102,7 @@
     "build": "vite build && node tools/static-export.js && pnpm run build:prerender:copy",
     "build:analyze": "SENTRY_AUTH_TOKEN=$SENTRY_AUTH_TOKEN vite build --mode production",
     "build:prerender:copy": "node tools/copy-prerender.js",
-    "test": "vite test",
+  "test": "vite test",
     "eject": "vite eject",
     "lint": "eslint \"src/**/*.{js,jsx}\" --max-warnings=0",
     "lint:fix": "eslint \"src/**/*.{js,jsx}\" --fix",
