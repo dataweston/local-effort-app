@@ -163,6 +163,27 @@ const CrowdfundingPage = () => {
   const [subscribeStatus, setSubscribeStatus] = useState('idle'); // idle | loading | success | error
   const [subscribeMessage, setSubscribeMessage] = useState('');
   const [rewardPreference, setRewardPreference] = useState(REWARD_PREFERENCE_OPTIONS[0].value);
+  const [feedbackName, setFeedbackName] = useState('');
+  const [feedbackMessage, setFeedbackMessage] = useState('');
+  const [feedbackNotice, setFeedbackNotice] = useState('');
+  const [feedbackStatus, setFeedbackStatus] = useState('idle'); // idle | error | success
+  const [feedbackEntries, setFeedbackEntries] = useState([
+    {
+      id: 'feedback-1',
+      name: 'Jordan',
+      message: 'The crust has the perfect crunch without losing that soft center. I loved every slice!',
+    },
+    {
+      id: 'feedback-2',
+      name: 'Priya',
+      message: 'Loaded with farm-fresh toppings and so much flavor. Local Effort pizza is my new favorite.',
+    },
+    {
+      id: 'feedback-3',
+      name: 'Sam',
+      message: 'You can taste the care that goes into each pie. It feels like it was made just for me.',
+    },
+  ]);
   // Gallery state (lazy-loaded when tab activated)
   const [galleryImages, setGalleryImages] = useState([]);
   const [galleryLoading, setGalleryLoading] = useState(false);
@@ -398,6 +419,34 @@ const CrowdfundingPage = () => {
       setSubscribeMessage(err.message || 'Something went wrong. Please try again.');
     }
   };
+
+  const handleFeedbackSubmit = useCallback(
+    (event) => {
+      event.preventDefault();
+      const name = feedbackName.trim();
+      const message = feedbackMessage.trim();
+
+      if (!message) {
+        setFeedbackStatus('error');
+        setFeedbackNotice('Please share a quick note about the pizza.');
+        return;
+      }
+
+      setFeedbackEntries((prev) => [
+        {
+          id: `feedback-${Date.now()}`,
+          name: name || 'Anonymous pizza fan',
+          message,
+        },
+        ...prev,
+      ].slice(0, 8));
+      setFeedbackName('');
+      setFeedbackMessage('');
+      setFeedbackStatus('success');
+      setFeedbackNotice('Thanks for spreading the pizza love!');
+    },
+    [feedbackMessage, feedbackName]
+  );
 
   // Destructure frequently used fields from campaign data (safe even if null)
   // Destructure raw values (null-safe post processing below)
@@ -1215,6 +1264,82 @@ const CrowdfundingPage = () => {
             </div>
           </div>
         </div>
+
+        <section className="rounded-3xl border border-slate-200 bg-white p-6 md:p-10 shadow-sm">
+          <div className="mx-auto flex max-w-4xl flex-col gap-10 md:flex-row">
+            <div className="md:w-1/2 space-y-6">
+              <SectionHeader overline="Share the pizza love" title="Pizza feedback" />
+              <p className="text-base text-slate-600">
+                Leave a quick note about what you enjoy most. Your kind words help us keep the pizza party going
+                for our neighbors.
+              </p>
+              <form className="space-y-4" onSubmit={handleFeedbackSubmit}>
+                <div className="space-y-2">
+                  <Label htmlFor="pizza-feedback-name">Name (optional)</Label>
+                  <Input
+                    id="pizza-feedback-name"
+                    value={feedbackName}
+                    onChange={(event) => {
+                      setFeedbackName(event.target.value);
+                      if (feedbackStatus !== 'idle') {
+                        setFeedbackStatus('idle');
+                        setFeedbackNotice('');
+                      }
+                    }}
+                    placeholder="Alex Pizza Fan"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="pizza-feedback-message">What made your pizza special?</Label>
+                  <Textarea
+                    id="pizza-feedback-message"
+                    value={feedbackMessage}
+                    onChange={(event) => {
+                      setFeedbackMessage(event.target.value);
+                      if (feedbackStatus !== 'idle') {
+                        setFeedbackStatus('idle');
+                        setFeedbackNotice('');
+                      }
+                    }}
+                    placeholder="The wood-fired char and fresh basil blew me away!"
+                    className="min-h-[120px]"
+                  />
+                </div>
+                {feedbackNotice && (
+                  <p
+                    className={
+                      feedbackStatus === 'error'
+                        ? 'text-sm text-red-600'
+                        : 'text-sm text-emerald-600'
+                    }
+                    aria-live="polite"
+                  >
+                    {feedbackNotice}
+                  </p>
+                )}
+                <Button type="submit" className="w-full sm:w-auto">
+                  Share feedback
+                </Button>
+              </form>
+            </div>
+            <div className="md:w-1/2 space-y-4">
+              <h3 className="text-lg font-semibold text-slate-900">Recent happy pizza thoughts</h3>
+              <ul className="space-y-4">
+                {feedbackEntries.map((entry) => (
+                  <li
+                    key={entry.id}
+                    className="rounded-2xl border border-amber-100 bg-amber-50/70 p-4 shadow-sm"
+                  >
+                    <p className="text-sm text-amber-900">“{entry.message}”</p>
+                    <p className="mt-2 text-xs font-semibold uppercase tracking-wide text-amber-700">
+                      — {entry.name}
+                    </p>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </section>
       </div>
     </>
   );
