@@ -35,7 +35,9 @@ module.exports = async (req, res) => {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
   try {
     if (!sq) return res.status(500).json({ error: 'Square not configured' });
-  const { items, funderName, token, email, phone, notes, notify } = req.body || {};
+    if (!LOCATION_ID) return res.status(500).json({ error: 'Square location missing' });
+
+    const { items, funderName, token, email, phone, notes, notify } = req.body || {};
     if (!token) return res.status(400).json({ error: 'Missing payment token' });
     if (!Array.isArray(items) || !items.length) return res.status(400).json({ error: 'No items' });
 
@@ -59,7 +61,7 @@ module.exports = async (req, res) => {
       autocomplete: true,
     };
 
-  const resp = await sq.paymentsApi.createPayment(paymentBody);
+    const resp = await sq.paymentsApi.createPayment(paymentBody);
     const paymentId = resp.result.payment?.id;
 
     // Update crowdfund totals (best-effort) — count pizzas from items where type === 'pizza'
