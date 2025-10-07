@@ -154,7 +154,7 @@ const CrowdfundingPage = () => {
   const notify = 'none';
   const [showForm, setShowForm] = useState(false);
   const [pizzaQty, setPizzaQty] = useState(1);
-  const [confirmMsg, setConfirmMsg] = useState('');
+  const [checkoutResult, setCheckoutResult] = useState(null);
   const [formNotice, setFormNotice] = useState('');
   const [referralInput, setReferralInput] = useState('');
   const [referralState, setReferralState] = useState({ status: 'idle', valid: false, participant: null, code: '' });
@@ -352,6 +352,68 @@ const CrowdfundingPage = () => {
     const total = activeTier.amount * pizzaQty;
     return currencyFormatter.format(total);
   }, [activeTier, pizzaQty, currencyFormatter]);
+
+  const handlePaymentSuccess = useCallback(
+    ({
+      pizzasPurchased = 0,
+      totalCents,
+      paymentId,
+      newTotal,
+      funderName,
+      viaRedirect = false,
+    } = {}) => {
+      const pizzas = Number.isFinite(pizzasPurchased)
+        ? Math.max(0, Math.round(pizzasPurchased))
+        : 0;
+      const totalLabel =
+        typeof totalCents === 'number'
+          ? currencyFormatter.format(Math.max(totalCents, 0) / 100)
+          : null;
+
+      setPayError('');
+      setCheckoutResult({
+        pizzasPurchased: pizzas,
+        totalLabel,
+        paymentId: paymentId || null,
+        viaRedirect,
+        funderName: funderName || '',
+        timestamp: Date.now(),
+      });
+      setShowForm(false);
+      setFormNotice('');
+      setPizzaQty(1);
+      setSelectedTierId('');
+
+      if (typeof newTotal === 'number' || pizzas > 0) {
+        setCampaignData((prev) => {
+          if (!prev) return prev;
+          const next = { ...prev };
+          if (typeof newTotal === 'number' && Number.isFinite(newTotal)) {
+            next.pizzasSold = newTotal;
+          } else {
+            const current = typeof next.pizzasSold === 'number' ? next.pizzasSold : 0;
+            next.pizzasSold = current + pizzas;
+          }
+          return next;
+        });
+      }
+
+      destroyCard();
+      notifyToast('Thanks! Your contribution has been processed.', { type: 'success' });
+    },
+    [
+      currencyFormatter,
+      destroyCard,
+      notifyToast,
+      setCampaignData,
+      setCheckoutResult,
+      setFormNotice,
+      setPayError,
+      setPizzaQty,
+      setSelectedTierId,
+      setShowForm,
+    ]
+  );
 
   useEffect(() => {
     if (showForm && !activeTier) {
@@ -601,27 +663,83 @@ const CrowdfundingPage = () => {
     const params = new URLSearchParams(window.location.search);
     if (params.get('payment') === 'success') {
       (async () => {
+        let confirmOk = false;
         try {
           const raw = localStorage.getItem('cf_items');
           const items = raw ? JSON.parse(raw) : [];
           const name = localStorage.getItem('cf_name') || undefined;
           if (Array.isArray(items) && items.length > 0) {
-            const res = await fetch('/api/crowdfund/confirm-payment', {
-              method: 'POST', headers: { 'content-type': 'application/json' },
-              body: JSON.stringify({ items, funderName: name })
-            });
-            if (res.ok) {
-              setConfirmMsg('Thanks! Your contribution has been recorded.');
+            let newTotal;
+            try {
+              const res = await fetch('/api/crowdfund/confirm-payment', {
+                method: 'POST',
+                headers: { 'content-type': 'application/json' },
+                body: JSON.stringify({ items, funderName: name }),
+              });
+              if (res.ok) {
+                confirmOk = true;
+                const resJson = await res.json().catch(() => ({}));
+                if (resJson && typeof resJson.newTotal === 'number') {
+                  newTotal = resJson.newTotal;
+                }
+              } else {
+                const body = await res.text().catch(() => '');
+                console.warn('[crowdfunding] confirm-payment failed after redirect', body);
+              }
+            } catch (err) {
+              console.warn('[crowdfunding] confirm-payment request errored', err);
             }
+
+            const pizzasPurchased = items
+              .filter((item) => item && item.type === 'pizza')
+              .reduce((sum, item) => {
+                const pizzaCount = Number(item?.pizzaCount);
+                const quantity = Number(item?.quantity);
+                if (Number.isFinite(pizzaCount) && pizzaCount > 0) return sum + pizzaCount;
+                if (Number.isFinite(quantity) && quantity > 0) return sum + quantity;
+                return sum + 1;
+              }, 0);
+
+            const totalCents = items.reduce((sum, item) => {
+              const price = Number(item?.priceCents);
+              const quantity = Number(item?.quantity);
+              const qty = Number.isFinite(quantity) && quantity > 0 ? quantity : 1;
+              if (!Number.isFinite(price) || price <= 0) return sum;
+              return sum + price * qty;
+            }, 0);
+
+            handlePaymentSuccess({
+              pizzasPurchased,
+              totalCents,
+              newTotal,
+              funderName: name,
+              viaRedirect: true,
+            });
+
+            if (!confirmOk) {
+              notifyToast(
+                'Payment succeeded, but updating our counter failed. We will reconcile shortly.',
+                { type: 'warning' }
+              );
+            }
+          } else {
+            handlePaymentSuccess({ pizzasPurchased: 0, viaRedirect: true });
           }
-        } catch (_) {
-          // ignore
+        } catch (err) {
+          console.warn('[crowdfunding] hosted checkout success handling failed', err);
         } finally {
           clearPendingContribution();
+          try {
+            const url = new URL(window.location.href);
+            url.searchParams.delete('payment');
+            window.history.replaceState({}, document.title, url.toString());
+          } catch (_) {
+            // noop if URL manipulation fails
+          }
         }
       })();
     }
-  }, [clearPendingContribution]);
+  }, [clearPendingContribution, handlePaymentSuccess, notifyToast]);
 
   const tokenizeCard = useCallback(async () => {
     const card = cardInstanceRef.current;
@@ -657,6 +775,10 @@ const CrowdfundingPage = () => {
           pizzaCount: raw.pizzaCount,
         };
       });
+      const totalCents = normalizedItems.reduce(
+        (sum, item) => sum + item.priceCents * item.quantity,
+        0
+      );
 
       // Prefer redirecting customers to Square payment links when available.
       try {
@@ -680,6 +802,7 @@ const CrowdfundingPage = () => {
               type: item.type,
               pizzaCount: item.pizzaCount,
               quantity: item.quantity,
+              priceCents: item.priceCents,
             }));
             rememberPendingContribution(itemsForStorage, funderName?.trim() || '');
             notifyToast('Redirecting to secure checkout…', { type: 'success' });
@@ -734,13 +857,13 @@ const CrowdfundingPage = () => {
         }
         throw new Error(msg);
       }
-      setConfirmMsg('Thanks! Your contribution has been processed.');
       const pizzasPurchased = normalizedItems
         .filter((item) => item.type === 'pizza')
         .reduce((sum, item) => sum + (Number(item.pizzaCount) || Number(item.quantity) || 0), 0);
+      let newTotal;
       if (pizzasPurchased > 0) {
         try {
-          await fetch('/api/crowdfund/confirm-payment', {
+          const confirmRes = await fetch('/api/crowdfund/confirm-payment', {
             method: 'POST',
             headers: { 'content-type': 'application/json' },
             body: JSON.stringify({
@@ -749,21 +872,28 @@ const CrowdfundingPage = () => {
                 type: item.type,
                 pizzaCount: item.pizzaCount,
                 quantity: item.quantity,
+                priceCents: item.priceCents,
               })),
               funderName: funderName?.trim() || undefined,
             }),
           });
+          if (confirmRes.ok) {
+            const confirmJson = await confirmRes.json().catch(() => ({}));
+            if (confirmJson && typeof confirmJson.newTotal === 'number') {
+              newTotal = confirmJson.newTotal;
+            }
+          }
         } catch (confirmErr) {
           console.warn('[square] [crowdfunding] confirm-payment update failed', confirmErr);
         }
-        setCampaignData((prev) => {
-          if (!prev) return prev;
-          const next = { ...prev };
-          const current = typeof next.pizzasSold === 'number' ? next.pizzasSold : 0;
-          next.pizzasSold = current + pizzasPurchased;
-          return next;
-        });
       }
+      handlePaymentSuccess({
+        pizzasPurchased,
+        totalCents,
+        paymentId: data?.paymentId,
+        newTotal,
+        funderName: funderName?.trim() || '',
+      });
       clearPendingContribution();
     } catch (e) {
       setPayError(e?.message || 'Payment failed');
@@ -1173,13 +1303,46 @@ const CrowdfundingPage = () => {
                   label={daysLeft > 0 ? 'days to go' : ''}
                 />
               </div>
-              {confirmMsg && <p className="text-sm text-emerald-700">{confirmMsg}</p>}
+              {checkoutResult && (
+                <div className="flex items-start gap-3 rounded-lg border border-emerald-200 bg-emerald-50 p-4">
+                  <span className="mt-0.5 text-lg leading-none text-emerald-600" aria-hidden="true">
+                    ✔
+                  </span>
+                  <div className="space-y-1 text-sm text-emerald-900">
+                    <p className="font-semibold">Payment successful!</p>
+                    <p>
+                      {checkoutResult.pizzasPurchased > 0
+                        ? `Thanks for funding ${checkoutResult.pizzasPurchased.toLocaleString()} pizza${
+                            checkoutResult.pizzasPurchased === 1 ? '' : 's'
+                          } for our neighbors.`
+                        : "Thanks for backing Local Effort! We're getting the ovens ready."}
+                    </p>
+                    {checkoutResult.totalLabel && (
+                      <p className="text-emerald-700">
+                        Total charged {checkoutResult.totalLabel}. A confirmation email is on its way.
+                      </p>
+                    )}
+                    {checkoutResult.paymentId && (
+                      <p className="text-xs text-emerald-600">
+                        Square reference #{checkoutResult.paymentId.slice(-8)}.
+                      </p>
+                    )}
+                    <p className="text-xs text-emerald-700">
+                      Ready for more? Choose “Make another pledge” when you want to contribute again.
+                    </p>
+                  </div>
+                </div>
+              )}
               {payError && <p className="text-sm text-red-600">{payError}</p>}
               {/* CTA button when form hidden */}
               {!showForm && (
                 <Button
                   type="button"
                   onClick={() => {
+                    if (checkoutResult) {
+                      setCheckoutResult(null);
+                      setPayError('');
+                    }
                     if (!activeTier) {
                       setFormNotice('Reward tiers are loading. Please try again in a moment.');
                       return;
@@ -1189,9 +1352,9 @@ const CrowdfundingPage = () => {
                     setShowForm(true);
                   }}
                   className="w-full text-lg h-12"
-                  disabled={!hasPayableTier}
+                  disabled={!hasPayableTier || paying}
                 >
-                  I want pizza
+                  {checkoutResult ? 'Make another pledge' : 'I want pizza'}
                 </Button>
               )}
               {(formNotice || (!hasPayableTier && !showForm)) && (

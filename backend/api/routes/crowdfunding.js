@@ -67,7 +67,17 @@ function createCrowdfundingRouter({ db, squareClient, logger }) {
     try {
       const pizzasInCart = items
         .filter((item) => item.type === 'pizza')
-        .reduce((sum, item) => sum + (item.pizzaCount || 1), 0);
+        .reduce((sum, item) => {
+          const pizzaCount = Number(item.pizzaCount);
+          const quantity = Number(item.quantity);
+          if (Number.isFinite(pizzaCount) && pizzaCount > 0) {
+            return sum + pizzaCount;
+          }
+          if (Number.isFinite(quantity) && quantity > 0) {
+            return sum + quantity;
+          }
+          return sum + 1;
+        }, 0);
 
       if (pizzasInCart === 0) {
         return res.json({ success: true, message: 'No pizza items to update.' });
