@@ -60,6 +60,7 @@ const PaikkaSuccessPage = lazy(() => import('./pages/PaikkaSuccessPage'));
 
 const AppContent = () => {
   const location = useLocation();
+  const hideHeader = location.pathname.startsWith('/partners/aacrm');
 
   useEffect(() => {
     document.fonts?.ready?.then(() => document.body.classList.add('fonts-loaded'));
@@ -71,7 +72,7 @@ const AppContent = () => {
       <CartProvider>
         <ToastProvider>
         <div className="min-h-screen flex flex-col bg-white">
-          <Header />
+          {!hideHeader && <Header />}
           <main className="flex-1">
           <Suspense fallback={<LoadingSpinner />}>
             <AnimatePresence mode="wait">
