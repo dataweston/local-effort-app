@@ -31,7 +31,7 @@ export const Footer = () => {
               href="/releases"
               className="underline underline-offset-4 hover:opacity-80"
             >
-              Releases
+              Press
             </a>
             <a
               href="https://www.tiktok.com/@localeffort"
