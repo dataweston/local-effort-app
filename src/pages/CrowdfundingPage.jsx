@@ -162,6 +162,7 @@ const CrowdfundingPage = () => {
   const [galleryLoading, setGalleryLoading] = useState(false);
   const [galleryError, setGalleryError] = useState('');
   const galleryLoadedRef = React.useRef(false);
+  const [eventModal, setEventModal] = useState(null);
 
   useEffect(() => {
     if (activeTab === 'gallery' && !galleryLoadedRef.current) {
@@ -217,6 +218,7 @@ const CrowdfundingPage = () => {
       heroImage,
       story,
       goals,
+      events[]{ _key, location, startDate, endDate, foodType, ticketsUrl, description },
       faq,
       "rewardTiers": rewardTiers[]->{ amount, pizzaCount, pieCount, title, description, limit, referralOnly, referralCode } | order(amount asc),
       "updates": updates[]->{ title, publishedAt, body } | order(publishedAt desc)
@@ -256,6 +258,7 @@ const CrowdfundingPage = () => {
             heroImage,
             story,
             goals,
+            events[]{ _key, location, startDate, endDate, foodType, ticketsUrl, description },
             faq,
             "rewardTiers": rewardTiers[]->{ amount, pizzaCount, pieCount, title, description, limit, referralOnly, referralCode } | order(amount asc),
             "updates": updates[]->{ title, publishedAt, body } | order(publishedAt desc)
@@ -634,6 +637,84 @@ const CrowdfundingPage = () => {
 
   const updates = Array.isArray(campaignData?.updates) ? campaignData.updates : [];
 
+  const parseEventDate = useCallback((value) => {
+    if (!value) return null;
+    const iso = value.includes('T') ? value : `${value}T00:00:00`;
+    const date = new Date(iso);
+    return Number.isNaN(date.getTime()) ? null : date;
+  }, []);
+
+  const upcomingEvents = useMemo(() => {
+    const rawEvents = Array.isArray(campaignData?.events) ? campaignData.events : [];
+    if (!rawEvents.length) return [];
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return rawEvents
+      .filter(Boolean)
+      .map((ev, index) => ({
+        ...ev,
+        _key: ev?._key || ev?._id || String(index),
+      }))
+      .filter((ev) => {
+        const start = parseEventDate(ev.startDate);
+        if (!start) return false;
+        const end = parseEventDate(ev.endDate) || start;
+        const boundary = new Date(end);
+        boundary.setHours(23, 59, 59, 999);
+        return boundary >= today;
+      })
+      .sort((a, b) => {
+        const aStart = parseEventDate(a.startDate);
+        const bStart = parseEventDate(b.startDate);
+        if (!aStart && !bStart) return 0;
+        if (!aStart) return 1;
+        if (!bStart) return -1;
+        return aStart - bStart;
+      });
+  }, [campaignData, parseEventDate]);
+
+  useEffect(() => {
+    if (!eventModal) return;
+    const stillExists = upcomingEvents.some((ev) => (ev._key || ev._id) === (eventModal._key || eventModal._id));
+    if (!stillExists) {
+      setEventModal(null);
+    }
+  }, [eventModal, upcomingEvents]);
+
+  const formatListDate = useCallback((event) => {
+    const start = parseEventDate(event?.startDate);
+    const end = parseEventDate(event?.endDate);
+    if (!start) return '';
+    const currentYear = new Date().getFullYear();
+    const includeYear = start.getFullYear() > currentYear;
+    if (end && end.getTime() !== start.getTime()) {
+      const opts = { month: 'short', day: 'numeric' };
+      if (includeYear) opts.year = 'numeric';
+      return `starts ${new Intl.DateTimeFormat('en-US', opts).format(start)}`;
+    }
+    const opts = { weekday: 'short', month: 'short', day: 'numeric' };
+    if (includeYear) opts.year = 'numeric';
+    return new Intl.DateTimeFormat('en-US', opts).format(start);
+  }, [parseEventDate]);
+
+  const formatModalDate = useCallback((event) => {
+    const start = parseEventDate(event?.startDate);
+    const end = parseEventDate(event?.endDate);
+    if (!start) return '';
+    const currentYear = new Date().getFullYear();
+    const baseOptions = { weekday: 'short', month: 'short', day: 'numeric' };
+    const includeYearStart = start.getFullYear() > currentYear || (end && end.getFullYear() !== start.getFullYear());
+    const startLabel = new Intl.DateTimeFormat('en-US', includeYearStart ? { ...baseOptions, year: 'numeric' } : baseOptions).format(start);
+    if (end && end.getTime() !== start.getTime()) {
+      const includeYearEnd = end.getFullYear() > currentYear || end.getFullYear() !== start.getFullYear();
+      const endLabel = new Intl.DateTimeFormat('en-US', includeYearEnd ? { ...baseOptions, year: 'numeric' } : baseOptions).format(end);
+      return `${startLabel} - ${endLabel}`;
+    }
+    return startLabel;
+  }, [parseEventDate]);
+
+  const hasEvents = upcomingEvents.length > 0;
+
   // --- Pizza-specific values (prefer pizza fields, fallback to legacy money values) ---
   const pizzasSold = (campaignData?.pizzasSold ?? campaignData?.raisedAmount ?? 0) || 0;
   const pizzaGoal = (campaignData?.pizzaGoal ?? campaignData?.goal ?? 1000) || 1000; // default goal to 1000 pizzas
@@ -736,6 +817,34 @@ const CrowdfundingPage = () => {
                   ))}
                 </div>
               </div>
+
+        {hasEvents && (
+          <div className="max-w-4xl">
+            <div className="border rounded-lg p-4 bg-white shadow-sm">
+              <h3 className="text-lg font-semibold mb-2">upcoming campaign events.</h3>
+              <ul className="divide-y">
+                {upcomingEvents.map((ev) => {
+                  const dateLabel = formatListDate(ev);
+                  const detailLabel = [dateLabel, ev.foodType || 'Food'].filter(Boolean).join(' - ');
+                  return (
+                    <li key={ev._key} className="py-2">
+                      <button
+                        type="button"
+                        className="text-left hover:underline"
+                        onClick={() => setEventModal(ev)}
+                      >
+                        <span className="flex flex-col sm:flex-row sm:items-baseline sm:gap-2">
+                          <span className="font-semibold text-slate-800">{ev.location}</span>
+                          <span className="text-sm text-slate-600">{detailLabel}</span>
+                        </span>
+                      </button>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+          </div>
+        )}
 
         {/* --- Main Content Grid --- */}
   <div className="grid grid-cols-1 lg:grid-cols-5 lg:gap-16">
@@ -1191,6 +1300,36 @@ const CrowdfundingPage = () => {
           </div>
         </div>
       </div>
+      {eventModal && (
+        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-lg shadow-xl max-w-lg w-full p-5 relative">
+            <button
+              type="button"
+              className="absolute right-3 top-3 text-sm underline"
+              onClick={() => setEventModal(null)}
+            >
+              Close
+            </button>
+            <h4 className="text-xl font-bold mb-1">{eventModal.location}</h4>
+            <p className="text-sm text-gray-600 mb-3">{formatModalDate(eventModal)}</p>
+            {eventModal.description && (
+              <div className="prose max-w-none">
+                <PortableText value={eventModal.description} components={portableComponents} />
+              </div>
+            )}
+            {eventModal.ticketsUrl && (
+              <a
+                className="btn btn-primary mt-4 inline-block"
+                href={eventModal.ticketsUrl}
+                target="_blank"
+                rel="noreferrer"
+              >
+                Get tickets
+              </a>
+            )}
+          </div>
+        </div>
+      )}
     </>
   );
 };
