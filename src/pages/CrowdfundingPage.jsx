@@ -429,6 +429,27 @@ const CrowdfundingPage = () => {
   const [cardReady, setCardReady] = useState(false);
   const [cardError, setCardError] = useState('');
   const { notify: notifyToast } = useToast();
+  const rememberPendingContribution = useCallback((cartItems, name) => {
+    if (!Array.isArray(cartItems) || cartItems.length === 0) return;
+    try {
+      localStorage.setItem('cf_items', JSON.stringify(cartItems));
+      if (name) {
+        localStorage.setItem('cf_name', name);
+      } else {
+        localStorage.removeItem('cf_name');
+      }
+    } catch (err) {
+      console.warn('[square] [crowdfunding] failed to persist pending contribution', err);
+    }
+  }, []);
+  const clearPendingContribution = useCallback(() => {
+    try {
+      localStorage.removeItem('cf_items');
+      localStorage.removeItem('cf_name');
+    } catch (err) {
+      console.warn('[square] [crowdfunding] failed to clear pending contribution', err);
+    }
+  }, []);
 
   const destroyCard = useCallback(() => {
     const card = cardInstanceRef.current;
@@ -552,11 +573,11 @@ const CrowdfundingPage = () => {
         } catch (_) {
           // ignore
         } finally {
-          try { localStorage.removeItem('cf_items'); localStorage.removeItem('cf_name'); } catch (e) { /* ignore */ }
+          clearPendingContribution();
         }
       })();
     }
-  }, []);
+  }, [clearPendingContribution]);
 
   const tokenizeCard = useCallback(async () => {
     const card = cardInstanceRef.current;
@@ -581,19 +602,65 @@ const CrowdfundingPage = () => {
     setPayError('');
     setPaying(true);
     try {
+      const normalizedItems = items.map((raw) => {
+        const priceCents = Math.max(0, Math.round(Number(raw.price) || 0));
+        const quantity = Math.max(1, Math.round(Number(raw.quantity) || 1));
+        return {
+          name: raw.name || 'Contribution',
+          priceCents,
+          quantity,
+          type: raw.type,
+          pizzaCount: raw.pizzaCount,
+        };
+      });
+
+      // Prefer redirecting customers to Square payment links when available.
+      try {
+        const linkItems = normalizedItems.map((item) => ({
+          name: item.name,
+          price: Number((item.priceCents / 100).toFixed(2)),
+          quantity: item.quantity,
+          type: item.type,
+          pizzaCount: item.pizzaCount,
+        }));
+        const linkRes = await fetch('/api/crowdfund/contribute', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ items: linkItems, funderName: funderName || undefined }),
+        });
+        if (linkRes.ok) {
+          const linkData = await linkRes.json().catch(() => ({}));
+          if (linkData?.url) {
+            const itemsForStorage = normalizedItems.map((item) => ({
+              name: item.name,
+              type: item.type,
+              pizzaCount: item.pizzaCount,
+              quantity: item.quantity,
+            }));
+            rememberPendingContribution(itemsForStorage, funderName?.trim() || '');
+            notifyToast('Redirecting to secure checkout…', { type: 'success' });
+            window.location.assign(linkData.url);
+            return;
+          }
+        }
+      } catch (linkErr) {
+        console.warn('[square] [crowdfunding] payment link attempt failed', linkErr);
+      }
+
       let token;
       try {
         token = await tokenizeCard();
       } catch (tokErr) {
         throw new Error(tokErr?.message || 'Card not ready');
       }
+
       const payload = {
-        items: items.map(i => ({
-          name: i.name,
-          price: i.price,
-          quantity: i.quantity || 1,
-          type: i.type,
-          pizzaCount: i.pizzaCount,
+        items: normalizedItems.map((item) => ({
+          name: item.name,
+          price: item.priceCents,
+          quantity: item.quantity,
+          type: item.type,
+          pizzaCount: item.pizzaCount,
         })),
         funderName,
         email: email.trim() || undefined,
@@ -1078,7 +1145,6 @@ const CrowdfundingPage = () => {
                     type="submit"
                     disabled={
                       !activeTier ||
-                      !cardReady ||
                       paying ||
                       !!cardError ||
                       !!paymentsError ||
