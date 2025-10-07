@@ -131,7 +131,7 @@ export const Header = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="md:hidden fixed inset-0 bg-neutral-50"
+            className="md:hidden fixed inset-0 bg-white"
           >
             <motion.nav
               initial="hidden"
