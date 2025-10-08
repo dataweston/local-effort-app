@@ -8,13 +8,29 @@ describe('crowdfunding router', () => {
     const router = createCrowdfundingRouter({
       db: overrides.db || null,
       squareClient: overrides.squareClient || null,
-      logger: overrides.logger || { error: vi.fn() },
+      logger: overrides.logger || { error: vi.fn(), warn: vi.fn() },
     });
     const app = express();
     app.use(express.json());
     app.use('/crowdfund', router);
     return app;
   };
+
+  it('returns fallback status when the database is unavailable', async () => {
+    const warn = vi.fn();
+    const app = createApp({ logger: { warn, error: vi.fn() } });
+
+    const res = await request(app).get('/crowdfund/status');
+
+    expect(res.status).toBe(200);
+    expect(res.body).toEqual({
+      goal: 1000,
+      pizzasSold: 0,
+      funders: [],
+      source: 'fallback',
+    });
+    expect(warn).toHaveBeenCalledTimes(1);
+  });
 
   it('rejects empty carts', async () => {
     const app = createApp();

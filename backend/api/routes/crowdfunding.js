@@ -32,11 +32,26 @@ function createCrowdfundingRouter({ db, squareClient, logger }) {
     };
   };
 
+  const fallbackStatus = () => ({
+    goal: 1000,
+    pizzasSold: 0,
+    funders: [],
+    source: 'fallback',
+  });
+
   router.get('/status', async (req, res) => {
-    try {
-      if (!db) {
-        return res.status(500).json({ error: 'Failed to read database.' });
+    const respondWithFallback = () => {
+      if (logger?.warn) {
+        logger.warn('crowdfund status requested but database unavailable; returning fallback data');
       }
+      return res.json(fallbackStatus());
+    };
+
+    if (!db) {
+      return respondWithFallback();
+    }
+
+    try {
       const docRef = db.collection('crowdfund').doc('status');
       const doc = await docRef.get();
       if (!doc.exists) {
@@ -47,7 +62,7 @@ function createCrowdfundingRouter({ db, squareClient, logger }) {
       return res.json(doc.data());
     } catch (error) {
       if (logger) logger.error({ err: error }, 'crowdfund status error');
-      return res.status(500).json({ error: 'Failed to read database.' });
+      return respondWithFallback();
     }
   });
 
