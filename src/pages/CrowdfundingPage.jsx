@@ -241,7 +241,7 @@ const CrowdfundingPage = () => {
 
     const loadStatus = async () => {
       try {
-        const response = await fetch('/api/crowdfunding/status');
+        const response = await fetch('/api/crowdfund/status');
         if (!response.ok) {
           throw new Error(`Status request failed with ${response.status}`);
         }
