@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import { Helmet } from 'react-helmet-async';
 
 const CityPage = ({ city, h1, description, canonical, images, faq }) => {
@@ -14,6 +14,21 @@ const CityPage = ({ city, h1, description, canonical, images, faq }) => {
     description: img.caption || img.alt,
     copyrightHolder: "Local Effort Food Co."
   }));
+  const handleImageError = useCallback((event, fallbackSrc) => {
+    if (!fallbackSrc) {
+      return;
+    }
+
+    const target = event.currentTarget;
+
+    if (target.dataset.fallbackApplied === 'true') {
+      return;
+    }
+
+    target.dataset.fallbackApplied = 'true';
+    target.src = fallbackSrc;
+    target.removeAttribute('srcset');
+  }, []);
   const serviceLd = useMemo(() => ({
     "@context": "https://schema.org",
     "@type": "ProfessionalService",
@@ -116,6 +131,7 @@ const CityPage = ({ city, h1, description, canonical, images, faq }) => {
               height="800"
               alt={img.alt}
               className="w-full h-auto rounded"
+              onError={(event) => handleImageError(event, img.fallbackSrc)}
             />
             <figcaption className="text-sm text-neutral-600 mt-2">{img.caption || img.alt}</figcaption>
           </figure>
@@ -124,7 +140,7 @@ const CityPage = ({ city, h1, description, canonical, images, faq }) => {
 
       <noscript>
         {images.map((img, idx) => (
-          <img key={`ns-${idx}`} src={img.src} alt={img.alt} />
+          <img key={`ns-${idx}`} src={img.fallbackSrc || img.src} alt={img.alt} />
         ))}
       </noscript>
 
