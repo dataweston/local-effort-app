@@ -353,7 +353,15 @@ const CrowdfundingPage = () => {
       events[]{ _key, location, startDate, endDate, foodType, ticketsUrl, description },
       faq,
       "rewardTiers": rewardTiers[]->{ amount, pizzaCount, pieCount, title, description, limit, referralOnly, referralCode } | order(amount asc),
-      "updates": updates[]->{ title, publishedAt, body } | order(publishedAt desc)
+      "updates": order(
+        updates[]->{
+          _id,
+          title,
+          publishedAt,
+          body
+        },
+        publishedAt desc
+      )
     }`;
 
     const params = { slug };
@@ -394,7 +402,15 @@ const CrowdfundingPage = () => {
             events[]{ _key, location, startDate, endDate, foodType, ticketsUrl, description },
             faq,
             "rewardTiers": rewardTiers[]->{ amount, pizzaCount, pieCount, title, description, limit, referralOnly, referralCode } | order(amount asc),
-            "updates": updates[]->{ title, publishedAt, body } | order(publishedAt desc)
+            "updates": order(
+              updates[]->{
+                _id,
+                title,
+                publishedAt,
+                body
+              },
+              publishedAt desc
+            )
           }`;
           const fbData = await sanityClient.fetch(fallback);
           if (fbData) {
@@ -1072,13 +1088,45 @@ const CrowdfundingPage = () => {
     }
   };
 
-  const updates = Array.isArray(campaignData?.updates) ? campaignData.updates : [];
+  const updates = useMemo(() => {
+    if (!Array.isArray(campaignData?.updates)) return [];
+    return campaignData.updates
+      .filter((update) => {
+        if (!update) return false;
+        const hasBodyArray = Array.isArray(update.body) && update.body.some(Boolean);
+        return Boolean(update.title) || hasBodyArray || Boolean(update.body);
+      })
+      .map((update, index) => {
+        const publishedAt = update.publishedAt || null;
+        const date = publishedAt ? new Date(publishedAt) : null;
+        const timestamp = date && !Number.isNaN(date.getTime()) ? date.getTime() : 0;
+        const normalized = {
+          ...update,
+          _id: update._id || `update-${index}`,
+          _publishedTimestamp: timestamp,
+        };
+        return normalized;
+      })
+      .sort((a, b) => b._publishedTimestamp - a._publishedTimestamp)
+      .map(({ _publishedTimestamp, ...rest }) => rest);
+  }, [campaignData?.updates]);
 
   const parseEventDate = useCallback((value) => {
     if (!value) return null;
     const iso = value.includes('T') ? value : `${value}T00:00:00`;
     const date = new Date(iso);
     return Number.isNaN(date.getTime()) ? null : date;
+  }, []);
+
+  const formatUpdateDate = useCallback((value) => {
+    if (!value) return '';
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return '';
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    });
   }, []);
 
   const normalizeEvents = useCallback(
@@ -1343,21 +1391,24 @@ const CrowdfundingPage = () => {
               {activeTab === 'story' && story.length > 0 && <PortableText value={story} components={portableComponents} />}
               {activeTab === 'updates' && (
                 <div className="space-y-8">
-                  {updates.map((update, index) => (
-                    <div key={index} className="p-4 border-l-4 border-gray-200">
-                      <div className="mt-0">
-                        <SectionHeader overline="Update" title={update.title} />
+                  {updates.map((update) => {
+                    const formattedDate = formatUpdateDate(update.publishedAt);
+                    const bodyBlocks = Array.isArray(update.body) ? update.body.filter(Boolean) : toPortableBlocks(update.body);
+                    const updateTitle = update.title || 'Campaign update';
+                    return (
+                      <div key={update._id} className="p-4 border-l-4 border-gray-200">
+                        <div className="mt-0">
+                          <SectionHeader overline="Update" title={updateTitle} />
+                        </div>
+                        {formattedDate && (
+                          <p className="text-sm text-gray-500 mb-2">{formattedDate}</p>
+                        )}
+                        {bodyBlocks.length > 0 && (
+                          <PortableText value={bodyBlocks} components={portableComponents} />
+                        )}
                       </div>
-                      <p className="text-sm text-gray-500 mb-2">
-                        {new Date(update.publishedAt).toLocaleDateString('en-US', {
-                          year: 'numeric',
-                          month: 'long',
-                          day: 'numeric',
-                        })}
-                      </p>
-                      <PortableText value={update.body} components={portableComponents} />
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
               {activeTab === 'goals' && (
