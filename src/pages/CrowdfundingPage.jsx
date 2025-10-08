@@ -185,6 +185,7 @@ const CrowdfundingPage = () => {
   const [feedbackNotice, setFeedbackNotice] = useState('');
   const [feedbackStatus, setFeedbackStatus] = useState('idle'); // idle | loading | success | error
   const [feedbackEntries, setFeedbackEntries] = useState([]);
+  const [statusData, setStatusData] = useState(null);
   const [heroExtras, setHeroExtras] = useState([]);
   const [heroError, setHeroError] = useState('');
   const [heroLoading, setHeroLoading] = useState(false);
@@ -233,6 +234,33 @@ const CrowdfundingPage = () => {
       .finally(() => {
         setHeroLoading(false);
       });
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const loadStatus = async () => {
+      try {
+        const response = await fetch('/api/crowdfunding/status');
+        if (!response.ok) {
+          throw new Error(`Status request failed with ${response.status}`);
+        }
+        const payload = await response.json();
+        if (!cancelled) {
+          setStatusData(payload);
+        }
+      } catch (error) {
+        if (!cancelled) {
+          console.warn('[crowdfunding] status load failed', error?.message || error);
+        }
+      }
+    };
+
+    loadStatus();
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   useEffect(() => {
@@ -596,16 +624,6 @@ const CrowdfundingPage = () => {
       setActiveHeroIndex(0);
     }
   }, [activeHeroIndex, totalHeroSlides]);
-
-  const handleHeroPrev = useCallback(() => {
-    if (totalHeroSlides <= 1) return;
-    setActiveHeroIndex((prev) => (prev - 1 + totalHeroSlides) % totalHeroSlides);
-  }, [totalHeroSlides]);
-
-  const handleHeroNext = useCallback(() => {
-    if (totalHeroSlides <= 1) return;
-    setActiveHeroIndex((prev) => (prev + 1) % totalHeroSlides);
-  }, [totalHeroSlides]);
 
   // Initialize shared Square card (enabled only when a payable tier exists)
   const {
@@ -1154,8 +1172,13 @@ const CrowdfundingPage = () => {
   const hasFeaturedPublicEvents = featuredPublicEvents.length > 0;
 
   // --- Pizza-specific values (prefer pizza fields, fallback to legacy money values) ---
-  const pizzasSold = (campaignData?.pizzasSold ?? campaignData?.raisedAmount ?? 0) || 0;
-  const pizzaGoal = (campaignData?.pizzaGoal ?? campaignData?.goal ?? 1000) || 1000; // default goal to 1000 pizzas
+  const statusPizzasSold =
+    Number.isFinite(statusData?.pizzasSold) ? statusData.pizzasSold : null;
+  const statusPizzaGoal = Number.isFinite(statusData?.goal) ? statusData.goal : null;
+  const pizzasSold =
+    (statusPizzasSold ?? campaignData?.pizzasSold ?? campaignData?.raisedAmount ?? 0) || 0;
+  const pizzaGoal =
+    (statusPizzaGoal ?? campaignData?.pizzaGoal ?? campaignData?.goal ?? 1000) || 1000; // default goal to 1000 pizzas
   const effectiveEndDate = useMemo(() => {
     const fallback = CAMPAIGN_EXTENSION_DEADLINE;
     if (!endDate) return fallback;
@@ -1278,7 +1301,7 @@ const CrowdfundingPage = () => {
         {/* --- Main Content Grid --- */}
         <div className="grid grid-cols-1 lg:grid-cols-5 lg:gap-16">
           {/* --- Left Column (Media & Content Tabs) --- */}
-    <div className="lg:col-span-3 space-y-8 order-2 lg:order-1">
+    <div className="lg:col-span-3 space-y-8 order-1 lg:order-1">
             <div className="relative w-full overflow-hidden rounded-lg bg-gray-100 aspect-video">
               {heroSlides.map((slide, index) => (
                 <img
@@ -1294,7 +1317,7 @@ const CrowdfundingPage = () => {
               ))}
               {heroLoading && (
                 <div className="absolute inset-0 flex items-center justify-center bg-black/20 backdrop-blur-sm">
-                  <span className="text-sm font-semibold text-white">Loading photos…</span>
+                  <span className="text-sm font-semibold text-white">Loading photos...</span>
                 </div>
               )}
               {heroError && (
@@ -1302,45 +1325,7 @@ const CrowdfundingPage = () => {
                   {heroError}
                 </p>
               )}
-              {totalHeroSlides > 1 && !heroLoading && (
-                <>
-                  <button
-                    type="button"
-                    className="absolute left-3 top-1/2 -translate-y-1/2 rounded-full bg-white/85 p-2 text-slate-700 shadow transition hover:bg-white focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[var(--color-accent)]"
-                    onClick={handleHeroPrev}
-                    aria-label="View previous photo"
-                  >
-                    <span aria-hidden="true" className="text-xl leading-none">
-                      ‹
-                    </span>
-                  </button>
-                  <button
-                    type="button"
-                    className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full bg-white/85 p-2 text-slate-700 shadow transition hover:bg-white focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[var(--color-accent)]"
-                    onClick={handleHeroNext}
-                    aria-label="View next photo"
-                  >
-                    <span aria-hidden="true" className="text-xl leading-none">
-                      ›
-                    </span>
-                  </button>
-                  <div className="absolute bottom-3 left-1/2 flex -translate-x-1/2 gap-2">
-                    {heroSlides.map((slide, index) => (
-                      <button
-                        key={slide.id || `${slide.src}-${index}`}
-                        type="button"
-                        className={cn(
-                          'h-2.5 w-2.5 rounded-full border border-white transition',
-                          index === activeHeroIndex ? 'bg-white' : 'bg-white/30 hover:bg-white/60'
-                        )}
-                        aria-label={`View photo ${index + 1}`}
-                        aria-pressed={index === activeHeroIndex}
-                        onClick={() => setActiveHeroIndex(index)}
-                      />
-                    ))}
-                  </div>
-                </>
-              )}
+              {/* Navigation controls removed per updated carousel design */}
             </div>
 
             <div className="border-b border-neutral-200">
@@ -1429,7 +1414,7 @@ const CrowdfundingPage = () => {
           </div>
 
           {/* --- Right Column (Stats & Rewards) --- */}
-          <div className="lg:col-span-2 space-y-8 mt-12 lg:mt-0 order-1 lg:order-2">
+          <div className="lg:col-span-2 space-y-8 mt-12 lg:mt-0 order-2 lg:order-2">
             <div className="card p-6 space-y-4 ring-1 ring-neutral-200">
               <div className="w-full bg-gray-200 rounded-full h-2.5">
                 <div
