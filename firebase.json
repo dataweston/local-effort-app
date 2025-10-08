@@ -1,0 +1,7 @@
+{
+  "emulators": {
+    "database": { "port": 9000 },
+    "firestore": { "port": 8080 },
+    "auth": { "port": 9099 }
+  }
+}
