@@ -1809,7 +1809,7 @@ const CrowdfundingPage = () => {
               {rewardTiers.length > 0 && (
                 <SectionHeader
                   overline="Rewards"
-                  title="Choose your thank-you tier"
+                  title="Ways to eat"
                   className="pt-2"
                 />
               )}
