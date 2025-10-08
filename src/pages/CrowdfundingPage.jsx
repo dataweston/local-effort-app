@@ -168,6 +168,9 @@ const CrowdfundingPage = () => {
   const [feedbackNotice, setFeedbackNotice] = useState('');
   const [feedbackStatus, setFeedbackStatus] = useState('idle'); // idle | error | success
   const [feedbackEntries, setFeedbackEntries] = useState([]);
+  const [feedbackSubmitting, setFeedbackSubmitting] = useState(false);
+  const [feedbackLoading, setFeedbackLoading] = useState(false);
+  const [feedbackFetchError, setFeedbackFetchError] = useState('');
   // Gallery state (lazy-loaded when tab activated)
   const [galleryImages, setGalleryImages] = useState([]);
   const [galleryLoading, setGalleryLoading] = useState(false);
@@ -207,6 +210,48 @@ const CrowdfundingPage = () => {
         .finally(() => setGalleryLoading(false));
     }
   }, [activeTab]);
+
+  useEffect(() => {
+    let cancelled = false;
+    setFeedbackLoading(true);
+    setFeedbackFetchError('');
+
+    const loadFeedback = async () => {
+      try {
+        const res = await fetch('/api/crowdfund/pizza-feedback?limit=8');
+        let data = null;
+        try {
+          data = await res.json();
+        } catch (_) {
+          data = null;
+        }
+        if (!res.ok) {
+          const message = (data && data.error) || 'Unable to reach the pizza feedback service right now.';
+          throw new Error(message);
+        }
+        const entries = Array.isArray(data?.entries)
+          ? data.entries.filter((entry) => entry && entry.message)
+          : [];
+        if (!cancelled) {
+          setFeedbackEntries(entries);
+        }
+      } catch (err) {
+        if (!cancelled) {
+          setFeedbackFetchError(err?.message || 'Unable to reach the pizza feedback service right now.');
+        }
+      } finally {
+        if (!cancelled) {
+          setFeedbackLoading(false);
+        }
+      }
+    };
+
+    loadFeedback();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
   // Simple client-side validators
   const emailValid = useMemo(() => !email || /.+@.+\..+/.test(email), [email]);
   const phoneDigits = useMemo(() => phone.replace(/\D/g, ''), [phone]);
@@ -459,8 +504,10 @@ const CrowdfundingPage = () => {
   };
 
   const handleFeedbackSubmit = useCallback(
-    (event) => {
+    async (event) => {
       event.preventDefault();
+      if (feedbackSubmitting) return;
+
       const name = feedbackName.trim();
       const message = feedbackMessage.trim();
 
@@ -470,20 +517,64 @@ const CrowdfundingPage = () => {
         return;
       }
 
-      setFeedbackEntries((prev) => [
-        {
-          id: `feedback-${Date.now()}`,
-          name: name || 'Anonymous pizza fan',
-          message,
-        },
-        ...prev,
-      ].slice(0, 8));
-      setFeedbackName('');
-      setFeedbackMessage('');
-      setFeedbackStatus('success');
-      setFeedbackNotice('Thanks for spreading the pizza love!');
+      setFeedbackStatus('idle');
+      setFeedbackNotice('');
+      setFeedbackSubmitting(true);
+
+      try {
+        const res = await fetch('/api/crowdfund/pizza-feedback', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ name, message }),
+        });
+
+        let data = null;
+        try {
+          data = await res.json();
+        } catch (_) {
+          data = null;
+        }
+
+        if (!res.ok) {
+          const messageText = (data && data.error) || 'We had trouble saving your pizza note. Please try again.';
+          throw new Error(messageText);
+        }
+
+        const entryFromServer =
+          data && data.entry && data.entry.message
+            ? {
+                id: data.entry.id || `feedback-${Date.now()}`,
+                name: data.entry.name || 'Anonymous pizza fan',
+                message: data.entry.message,
+              }
+            : null;
+
+        const nextEntry =
+          entryFromServer || {
+            id: `feedback-${Date.now()}`,
+            name: name || 'Anonymous pizza fan',
+            message,
+          };
+
+        setFeedbackEntries((prev) => {
+          const safePrev = Array.isArray(prev)
+            ? prev.filter((item) => item && item.id !== nextEntry.id)
+            : [];
+          return [nextEntry, ...safePrev].slice(0, 8);
+        });
+        setFeedbackFetchError('');
+        setFeedbackName('');
+        setFeedbackMessage('');
+        setFeedbackStatus('success');
+        setFeedbackNotice('Thanks for spreading the pizza love!');
+      } catch (err) {
+        setFeedbackStatus('error');
+        setFeedbackNotice(err?.message || 'We had trouble saving your pizza note. Please try again.');
+      } finally {
+        setFeedbackSubmitting(false);
+      }
     },
-    [feedbackMessage, feedbackName]
+    [feedbackMessage, feedbackName, feedbackSubmitting]
   );
 
   // Destructure frequently used fields from campaign data (safe even if null)
@@ -1557,14 +1648,16 @@ const CrowdfundingPage = () => {
                     {feedbackNotice}
                   </p>
                 )}
-                <Button type="submit" className="w-full sm:w-auto">
-                  Share feedback
+                <Button type="submit" className="w-full sm:w-auto" disabled={feedbackSubmitting}>
+                  {feedbackSubmitting ? 'Sharing pizza love…' : 'Share feedback'}
                 </Button>
               </form>
             </div>
             <div className="md:w-1/2 space-y-4">
               <h3 className="text-lg font-semibold text-slate-900">Recent happy pizza thoughts</h3>
-              {feedbackEntries.length > 0 ? (
+              {feedbackLoading ? (
+                <p className="text-sm text-slate-500">Loading pizza love…</p>
+              ) : feedbackEntries.length > 0 ? (
                 <ul className="space-y-4">
                   {feedbackEntries.map((entry) => (
                     <li
@@ -1573,15 +1666,20 @@ const CrowdfundingPage = () => {
                     >
                       <p className="text-sm text-amber-900">“{entry.message}”</p>
                       <p className="mt-2 text-xs font-semibold uppercase tracking-wide text-amber-700">
-                        — {entry.name}
+                        — {entry.name || 'Anonymous pizza fan'}
                       </p>
                     </li>
                   ))}
                 </ul>
               ) : (
                 <p className="text-sm text-slate-500">
-                  No pizza notes yet—be the first to share your experience!
+                  {feedbackFetchError
+                    ? 'We couldn’t load recent pizza notes. Share yours to kick things off!'
+                    : 'No pizza notes yet—be the first to share your experience!'}
                 </p>
+              )}
+              {feedbackFetchError && (
+                <p className="text-xs text-red-600">{feedbackFetchError}</p>
               )}
             </div>
           </div>
