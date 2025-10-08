@@ -17,7 +17,7 @@ module.exports = async (req, res) => {
     return res.status(500).json({ error: 'Square location missing' });
   }
 
-  const { items } = req.body || {};
+  const { items, discountCode } = req.body || {};
   if (!Array.isArray(items) || items.length === 0) {
     return res.status(400).json({ error: 'Cart is empty.' });
   }
@@ -42,12 +42,21 @@ module.exports = async (req, res) => {
     askForShippingAddress: true,
   };
 
+  const trimmedDiscount = typeof discountCode === 'string' ? discountCode.trim().slice(0, 60) : '';
+
   try {
     const response = await squareClient.checkoutApi.createPaymentLink({
       idempotencyKey: uuidv4(),
       order: {
         locationId,
         lineItems,
+        ...(trimmedDiscount
+          ? {
+              metadata: {
+                discountCode: trimmedDiscount,
+              },
+            }
+          : {}),
       },
       checkoutOptions,
     });
