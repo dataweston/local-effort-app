@@ -4,6 +4,34 @@ const { v4: uuidv4 } = require('uuid');
 function createCrowdfundingRouter({ db, squareClient, logger }) {
   const router = express.Router();
 
+  const FEEDBACK_COLLECTION = 'crowdfund_feedback';
+
+  const sanitizeName = (value) => {
+    const str = String(value || '').replace(/\s+/g, ' ').trim();
+    if (!str) return '';
+    return str.slice(0, 120);
+  };
+
+  const sanitizeMessage = (value) => {
+    const str = String(value || '').replace(/\r/g, '').trim();
+    if (!str) return '';
+    return str.slice(0, 600);
+  };
+
+  const mapFeedbackDoc = (doc) => {
+    if (!doc) return null;
+    const data = typeof doc.data === 'function' ? doc.data() : doc;
+    if (!data) return null;
+    const message = sanitizeMessage(data.message);
+    if (!message) return null;
+    return {
+      id: doc.id || data.id || `feedback-${Date.now()}`,
+      name: sanitizeName(data.name) || 'Anonymous pizza fan',
+      message,
+      createdAt: data.createdAt || null,
+    };
+  };
+
   router.get('/status', async (req, res) => {
     try {
       if (!db) {
@@ -109,6 +137,72 @@ function createCrowdfundingRouter({ db, squareClient, logger }) {
     } catch (error) {
       if (logger) logger.error({ err: error }, 'confirm payment error');
       return res.status(500).json({ error: 'Failed to update database after payment.' });
+    }
+  });
+
+  router.get('/pizza-feedback', async (req, res) => {
+    try {
+      if (!db) {
+        return res.status(503).json({ error: 'Feedback storage unavailable' });
+      }
+
+      let limit = parseInt(req.query.limit, 10);
+      if (!Number.isFinite(limit) || limit <= 0) limit = 8;
+      limit = Math.min(limit, 20);
+
+      const snapshot = await db
+        .collection(FEEDBACK_COLLECTION)
+        .orderBy('createdAtMs', 'desc')
+        .limit(limit)
+        .get();
+
+      const entries = Array.isArray(snapshot?.docs)
+        ? snapshot.docs
+            .map((doc) => mapFeedbackDoc({ id: doc.id, data: () => doc.data() }))
+            .filter(Boolean)
+        : [];
+
+      return res.json({ entries });
+    } catch (error) {
+      if (logger) logger.error({ err: error }, 'pizza feedback list error');
+      return res.status(500).json({ error: 'Failed to load pizza feedback.' });
+    }
+  });
+
+  router.post('/pizza-feedback', async (req, res) => {
+    try {
+      if (!db) {
+        return res.status(503).json({ error: 'Feedback storage unavailable' });
+      }
+
+      const name = sanitizeName(req.body?.name);
+      const message = sanitizeMessage(req.body?.message);
+
+      if (!message) {
+        return res.status(400).json({ error: 'Please share a quick note about the pizza.' });
+      }
+
+      const entry = {
+        name: name || 'Anonymous pizza fan',
+        message,
+        createdAt: new Date().toISOString(),
+        createdAtMs: Date.now(),
+        source: 'web',
+      };
+
+      let docId = null;
+      try {
+        const docRef = await db.collection(FEEDBACK_COLLECTION).add(entry);
+        docId = docRef?.id || null;
+      } catch (firestoreErr) {
+        if (logger) logger.warn({ err: firestoreErr }, 'pizza feedback write error');
+        return res.status(500).json({ error: 'Failed to save pizza feedback.' });
+      }
+
+      return res.json({ entry: { ...entry, id: docId || `feedback-${entry.createdAtMs}` } });
+    } catch (error) {
+      if (logger) logger.error({ err: error }, 'pizza feedback submit error');
+      return res.status(500).json({ error: 'Failed to save pizza feedback.' });
     }
   });
 
