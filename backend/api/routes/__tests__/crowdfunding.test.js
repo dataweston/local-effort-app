@@ -83,4 +83,84 @@ describe('crowdfunding router', () => {
     expect(stored?.funders).toHaveLength(1);
     expect(stored?.funders?.[0]?.name).toBe('Tester');
   });
+
+  it('stores and retrieves pizza feedback entries', async () => {
+    const stored = [];
+    const feedbackCollection = {
+      add: vi.fn(async (data) => {
+        const entry = { ...data, id: `doc-${stored.length + 1}` };
+        stored.push(entry);
+        return { id: entry.id };
+      }),
+      orderBy: vi.fn(() => ({
+        limit: (limitVal) => ({
+          get: async () => ({
+            docs: stored
+              .slice()
+              .sort((a, b) => (b.createdAtMs || 0) - (a.createdAtMs || 0))
+              .slice(0, limitVal)
+              .map((item) => ({ id: item.id, data: () => ({ ...item }) })),
+          }),
+        }),
+      })),
+    };
+
+    const db = {
+      collection: (name) => {
+        if (name === 'crowdfund_feedback') {
+          return feedbackCollection;
+        }
+        return {
+          doc: () => ({ get: async () => ({ exists: false, data: () => ({}) }) }),
+        };
+      },
+    };
+
+    const app = createApp({ db });
+
+    const postRes = await request(app)
+      .post('/crowdfund/pizza-feedback')
+      .send({ name: 'Casey', message: 'Loved the basil and char.' });
+
+    expect(postRes.status).toBe(200);
+    expect(postRes.body.entry).toMatchObject({
+      name: 'Casey',
+      message: 'Loved the basil and char.',
+    });
+    expect(feedbackCollection.add).toHaveBeenCalledTimes(1);
+
+    const getRes = await request(app).get('/crowdfund/pizza-feedback?limit=5');
+    expect(getRes.status).toBe(200);
+    expect(getRes.body.entries).toHaveLength(1);
+    expect(getRes.body.entries[0]).toMatchObject({
+      name: 'Casey',
+      message: 'Loved the basil and char.',
+    });
+    expect(feedbackCollection.orderBy).toHaveBeenCalledWith('createdAtMs', 'desc');
+  });
+
+  it('rejects pizza feedback submissions without a message', async () => {
+    const feedbackCollection = {
+      add: vi.fn(),
+      orderBy: vi.fn(() => ({
+        limit: () => ({ get: async () => ({ docs: [] }) }),
+      })),
+    };
+
+    const db = {
+      collection: (name) => {
+        if (name === 'crowdfund_feedback') return feedbackCollection;
+        return {
+          doc: () => ({ get: async () => ({ exists: false, data: () => ({}) }) }),
+        };
+      },
+    };
+
+    const app = createApp({ db });
+    const res = await request(app).post('/crowdfund/pizza-feedback').send({ name: 'Casey' });
+
+    expect(res.status).toBe(400);
+    expect(res.body.error).toBeDefined();
+    expect(feedbackCollection.add).not.toHaveBeenCalled();
+  });
 });
