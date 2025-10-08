@@ -136,12 +136,13 @@ describe('crowdfunding router', () => {
 
     const postRes = await request(app)
       .post('/crowdfund/pizza-feedback')
-      .send({ name: 'Casey', message: 'Loved the basil and char.' });
+      .send({ name: 'Casey', message: 'Loved the basil and char.', rating: 5 });
 
     expect(postRes.status).toBe(200);
     expect(postRes.body.entry).toMatchObject({
       name: 'Casey',
-      message: 'Loved the basil and char.',
+      comment: 'Loved the basil and char.',
+      rating: 5,
     });
     expect(feedbackCollection.add).toHaveBeenCalledTimes(1);
 
@@ -150,7 +151,7 @@ describe('crowdfunding router', () => {
     expect(getRes.body.entries).toHaveLength(1);
     expect(getRes.body.entries[0]).toMatchObject({
       name: 'Casey',
-      message: 'Loved the basil and char.',
+      comment: 'Loved the basil and char.',
     });
     expect(feedbackCollection.orderBy).toHaveBeenCalledWith('createdAtMs', 'desc');
   });
