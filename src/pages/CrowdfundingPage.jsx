@@ -174,6 +174,8 @@ const CrowdfundingPage = () => {
   const [galleryError, setGalleryError] = useState('');
   const galleryLoadedRef = React.useRef(false);
   const [eventModal, setEventModal] = useState(null);
+  const [liveStatus, setLiveStatus] = useState({ goal: null, pizzasSold: null, backers: null });
+  const [statusRefreshError, setStatusRefreshError] = useState(false);
 
   useEffect(() => {
     if (activeTab === 'gallery' && !galleryLoadedRef.current) {
@@ -292,6 +294,55 @@ const CrowdfundingPage = () => {
     };
 
     doFetch();
+  }, []);
+
+  useEffect(() => {
+    let ignore = false;
+
+    const fetchStatus = async () => {
+      try {
+        const response = await fetch('/api/crowdfund/status', {
+          headers: { Accept: 'application/json' },
+        });
+        if (!response.ok) {
+          throw new Error(`Request failed with status ${response.status}`);
+        }
+        const data = await response.json();
+        if (ignore) return;
+
+        const toNumber = (value) => {
+          if (typeof value === 'number' && Number.isFinite(value)) return value;
+          if (typeof value === 'string') {
+            const parsed = Number(value);
+            return Number.isFinite(parsed) ? parsed : null;
+          }
+          return null;
+        };
+
+        const goalValue = toNumber(data.goal);
+        const pizzasValue = toNumber(data.pizzasSold);
+        const backerCount = Array.isArray(data.funders)
+          ? data.funders.length
+          : toNumber(data.backers);
+
+        setLiveStatus({
+          goal: goalValue,
+          pizzasSold: pizzasValue,
+          backers: typeof backerCount === 'number' && backerCount >= 0 ? backerCount : null,
+        });
+        setStatusRefreshError(false);
+      } catch (error) {
+        if (ignore) return;
+        console.warn('[crowdfunding] failed to fetch live crowdfund status', error);
+        setStatusRefreshError(true);
+      }
+    };
+
+    fetchStatus();
+
+    return () => {
+      ignore = true;
+    };
   }, []);
 
   // Derive reward tiers safely for hooks below
@@ -447,7 +498,7 @@ const CrowdfundingPage = () => {
     piesSold: piesSoldRaw,
   } = campaignData || {};
   // Normalize numbers (treat null as 0)
-  const backers = typeof backersRaw === 'number' ? backersRaw : 0;
+  const baseBackers = typeof backersRaw === 'number' ? backersRaw : 0;
   const piesSold = typeof piesSoldRaw === 'number' ? piesSoldRaw : 0;
   // Normalize block arrays
   const faq = Array.isArray(faqRaw) ? faqRaw : [];
@@ -822,8 +873,33 @@ const CrowdfundingPage = () => {
   const hasEvents = upcomingEvents.length > 0;
 
   // --- Pizza-specific values (prefer pizza fields, fallback to legacy money values) ---
-  const pizzasSold = (campaignData?.pizzasSold ?? campaignData?.raisedAmount ?? 0) || 0;
-  const pizzaGoal = (campaignData?.pizzaGoal ?? campaignData?.goal ?? 1000) || 1000; // default goal to 1000 pizzas
+  const basePizzasSold = (() => {
+    if (typeof campaignData?.pizzasSold === 'number' && Number.isFinite(campaignData.pizzasSold)) {
+      return campaignData.pizzasSold;
+    }
+    if (typeof campaignData?.raisedAmount === 'number' && Number.isFinite(campaignData.raisedAmount)) {
+      return campaignData.raisedAmount;
+    }
+    return 0;
+  })();
+  const basePizzaGoal = (() => {
+    if (typeof campaignData?.pizzaGoal === 'number' && Number.isFinite(campaignData.pizzaGoal) && campaignData.pizzaGoal > 0) {
+      return campaignData.pizzaGoal;
+    }
+    if (typeof campaignData?.goal === 'number' && Number.isFinite(campaignData.goal) && campaignData.goal > 0) {
+      return campaignData.goal;
+    }
+    return 1000;
+  })();
+  const pizzasSold = Number.isFinite(liveStatus.pizzasSold) && liveStatus.pizzasSold >= 0
+    ? Math.max(liveStatus.pizzasSold, basePizzasSold)
+    : basePizzasSold;
+  const pizzaGoal = Number.isFinite(liveStatus.goal) && liveStatus.goal > 0
+    ? liveStatus.goal
+    : basePizzaGoal; // default goal to 1000 pizzas
+  const backers = Number.isFinite(liveStatus.backers) && liveStatus.backers >= 0
+    ? Math.max(liveStatus.backers, baseBackers)
+    : baseBackers;
   const effectiveEndDate = useMemo(() => {
     const fallback = CAMPAIGN_EXTENSION_DEADLINE;
     if (!endDate) return fallback;
@@ -1095,6 +1171,11 @@ const CrowdfundingPage = () => {
                   label={daysLeft > 0 ? 'days to go' : ''}
                 />
               </div>
+              {statusRefreshError && !Number.isFinite(liveStatus.pizzasSold) && (
+                <p className="text-xs text-amber-600">
+                  Live totals temporarily unavailable; showing published numbers for now.
+                </p>
+              )}
               {confirmMsg && <p className="text-sm text-emerald-700">{confirmMsg}</p>}
               {payError && <p className="text-sm text-red-600">{payError}</p>}
               {/* CTA button when form hidden */}
