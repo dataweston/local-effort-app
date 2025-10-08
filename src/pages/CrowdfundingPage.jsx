@@ -17,6 +17,194 @@ import { createPortableTextComponents } from '../utils/portableTextComponents';
 import { cn } from '../lib/utils';
 import { useToast } from '../components/common/ToastProvider';
 
+const REALTIME_DATABASE_URL = 'https://local-effort-default-rtdb.firebaseio.com/';
+const FIREBASE_DATABASE_PATTERN = /firebase database/gi;
+
+const createFirebaseDatabaseRegex = () => new RegExp(FIREBASE_DATABASE_PATTERN);
+
+function isPortableTextBlocks(value) {
+  return Array.isArray(value)
+    && value.some((item) => item && typeof item === 'object' && item._type === 'block' && Array.isArray(item.children));
+}
+
+function replaceFirebaseDatabaseInPortableBlocks(blocks) {
+  if (!isPortableTextBlocks(blocks)) {
+    return blocks;
+  }
+
+  let changed = false;
+  let markCounter = 0;
+
+  const processed = blocks.map((block, blockIndex) => {
+    if (!block || typeof block !== 'object' || !Array.isArray(block.children)) {
+      return block;
+    }
+
+    let blockChanged = false;
+    const newChildren = [];
+    let markDefs = Array.isArray(block.markDefs) ? [...block.markDefs] : [];
+    let linkMarkKey = null;
+
+    const ensureLinkMarkKey = () => {
+      if (linkMarkKey) {
+        return linkMarkKey;
+      }
+      const existing = markDefs.find(
+        (def) => def && def._type === 'link' && typeof def.href === 'string' && def.href === REALTIME_DATABASE_URL,
+      );
+      if (existing && existing._key) {
+        linkMarkKey = existing._key;
+        return linkMarkKey;
+      }
+      markCounter += 1;
+      linkMarkKey = `realtime-db-link-${blockIndex}-${markCounter}`;
+      markDefs = [
+        ...markDefs,
+        {
+          _key: linkMarkKey,
+          _type: 'link',
+          href: REALTIME_DATABASE_URL,
+        },
+      ];
+      return linkMarkKey;
+    };
+
+    block.children.forEach((child) => {
+      if (!child || child._type !== 'span' || typeof child.text !== 'string') {
+        newChildren.push(child);
+        return;
+      }
+
+      const text = child.text;
+      const regex = createFirebaseDatabaseRegex();
+      let match;
+      let lastIndex = 0;
+      let localChanged = false;
+      let segmentIndex = 0;
+
+      while ((match = regex.exec(text)) !== null) {
+        const start = match.index;
+        const end = regex.lastIndex;
+        if (start > lastIndex) {
+          const slice = text.slice(lastIndex, start);
+          if (slice) {
+            newChildren.push({
+              ...child,
+              _key: child._key ? `${child._key}-${segmentIndex++}` : undefined,
+              text: slice,
+              marks: Array.isArray(child.marks) ? [...child.marks] : [],
+            });
+          }
+        }
+
+        const markKey = ensureLinkMarkKey();
+        newChildren.push({
+          ...child,
+          _key: child._key ? `${child._key}-${segmentIndex++}` : undefined,
+          text: 'Realtime Database',
+          marks: [
+            ...(Array.isArray(child.marks) ? child.marks : []),
+            markKey,
+          ],
+        });
+
+        lastIndex = end;
+        localChanged = true;
+      }
+
+      if (!localChanged) {
+        newChildren.push(child);
+        return;
+      }
+
+      if (lastIndex < text.length) {
+        const tail = text.slice(lastIndex);
+        if (tail) {
+          newChildren.push({
+            ...child,
+            _key: child._key ? `${child._key}-${segmentIndex++}` : undefined,
+            text: tail,
+            marks: Array.isArray(child.marks) ? [...child.marks] : [],
+          });
+        }
+      }
+
+      blockChanged = true;
+    });
+
+    if (!blockChanged) {
+      return block;
+    }
+
+    changed = true;
+    return {
+      ...block,
+      children: newChildren,
+      markDefs,
+    };
+  });
+
+  return changed ? processed : blocks;
+}
+
+function replaceFirebaseDatabaseInValue(value) {
+  if (typeof value === 'string') {
+    return value.replace(FIREBASE_DATABASE_PATTERN, 'Realtime Database');
+  }
+  if (isPortableTextBlocks(value)) {
+    return replaceFirebaseDatabaseInPortableBlocks(value);
+  }
+  if (Array.isArray(value) && value.every((item) => typeof item === 'string')) {
+    const replaced = value.map((item) => item.replace(FIREBASE_DATABASE_PATTERN, 'Realtime Database'));
+    const changed = replaced.some((item, index) => item !== value[index]);
+    return changed ? replaced : value;
+  }
+  return value;
+}
+
+function replaceFirebaseDatabaseMentions(campaign) {
+  if (!campaign || typeof campaign !== 'object') {
+    return campaign;
+  }
+
+  const next = { ...campaign };
+
+  next.description = replaceFirebaseDatabaseInValue(next.description);
+  next.story = replaceFirebaseDatabaseInValue(next.story);
+  next.goals = replaceFirebaseDatabaseInValue(next.goals);
+
+  if (Array.isArray(next.faq)) {
+    next.faq = next.faq.map((item) => ({
+      ...item,
+      question: replaceFirebaseDatabaseInValue(item?.question),
+      answer: replaceFirebaseDatabaseInValue(item?.answer),
+    }));
+  }
+
+  if (Array.isArray(next.updates)) {
+    next.updates = next.updates.map((update) => ({
+      ...update,
+      body: replaceFirebaseDatabaseInValue(update?.body),
+    }));
+  }
+
+  if (Array.isArray(next.events)) {
+    next.events = next.events.map((event) => ({
+      ...event,
+      description: replaceFirebaseDatabaseInValue(event?.description),
+    }));
+  }
+
+  if (Array.isArray(next.rewardTiers)) {
+    next.rewardTiers = next.rewardTiers.map((tier) => ({
+      ...tier,
+      description: replaceFirebaseDatabaseInValue(tier?.description),
+    }));
+  }
+
+  return next;
+}
+
 const summaryFetcher = async (url) => {
   const response = await fetch(url, { headers: { Accept: 'application/json' } });
   if (!response.ok) {
@@ -321,7 +509,7 @@ const CrowdfundingPage = () => {
     const doFetch = async () => {
       try {
         const data = await sanityClient.fetch(query, params);
-        setCampaignData(data);
+        setCampaignData(replaceFirebaseDatabaseMentions(data));
       } catch (err) {
         // Provide richer logging so we can see the real failure in browser consoles
         try {
@@ -358,7 +546,7 @@ const CrowdfundingPage = () => {
           const fbData = await sanityClient.fetch(fallback);
           if (fbData) {
             console.warn('Loaded fallback campaign (first in dataset)');
-            setCampaignData(fbData);
+            setCampaignData(replaceFirebaseDatabaseMentions(fbData));
             // previously cleared error state (removed unused state)
             return;
           }
