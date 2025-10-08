@@ -1,6 +1,5 @@
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import { getCrowdfundingSummary } from '../../packages/lib/crowdfundingPipeline';
-import { db as defaultDb } from '../../packages/lib/firebaseAdmin';
 import { db } from '../../packages/lib/firebaseAdmin';
 
 type Req = IncomingMessage & { method?: string };
@@ -37,15 +36,9 @@ export default async function handler(request: Req, response: ServerResponse): P
   }
 
   try {
-    const data = await getCrowdfundingSummary({ db: defaultDb });
-    const snapshot = await db.collection('aggregates').doc('crowdfunding').get();
-    const data = snapshot.exists ? snapshot.data() ?? {} : {};
+    const data = await getCrowdfundingSummary({ db });
     res.setHeader('Cache-Control', 'no-store');
-    res.status(200).json({
-      pizzas: typeof data.pizzas === 'number' ? data.pizzas : 0,
-      backers: typeof data.backers === 'number' ? data.backers : 0,
-      updatedAt: data.updatedAt ?? null,
-    });
+    res.status(200).json(data);
   } catch (error) {
     console.error('[crowdfunding.summary] failed to load aggregate', error);
     res.status(500).json({ ok: false, error: 'internal-error' });
