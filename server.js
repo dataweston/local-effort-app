@@ -1,10 +1,24 @@
 const path = require('path');
+
+try {
+  require('ts-node/register/transpile-only');
+} catch (err) {
+  try {
+    require('ts-node/register');
+  } catch (innerErr) {
+    console.warn('[server] ts-node unavailable, TypeScript API routes may not load');
+  }
+}
+
 require('dotenv').config({ path: path.resolve(__dirname, '.env') });
 
 const express = require('express');
 const cloudinary = require('cloudinary');
 const logger = require('./logger');
 const crowdfundCheckoutHandler = require('./api/crowdfund/checkout');
+const squareWebhookHandler = require('./api/square/webhook').default;
+const crowdfundingSummaryHandler = require('./api/crowdfunding/summary').default;
+const feedbackHandler = require('./api/feedback/index').default;
 // Sentry (backend light server)
 let Sentry;
 try {
@@ -24,6 +38,16 @@ try {
 }
 
 const app = express();
+
+// Webhook needs the raw body for signature verification
+app.post('/api/square/webhook', express.raw({ type: '*/*', limit: '2mb' }), async (req, res, next) => {
+  try {
+    await squareWebhookHandler(req, res);
+  } catch (err) {
+    console.error('[server] square webhook error', err);
+    next(err);
+  }
+});
 
 // Parse JSON bodies for API routes
 app.use(express.json({ limit: '2mb' }));
@@ -97,6 +121,24 @@ app.all('/api/crowdfund/checkout', async (req, res, next) => {
     await crowdfundCheckoutHandler(req, res);
   } catch (err) {
     logger.error({ err, method: req.method }, 'crowdfund checkout handler failed');
+    next(err);
+  }
+});
+
+app.all('/api/crowdfunding/summary', async (req, res, next) => {
+  try {
+    await crowdfundingSummaryHandler(req, res);
+  } catch (err) {
+    console.error('[server] crowdfunding summary error', err);
+    next(err);
+  }
+});
+
+app.all('/api/feedback', async (req, res, next) => {
+  try {
+    await feedbackHandler(req, res);
+  } catch (err) {
+    console.error('[server] feedback handler error', err);
     next(err);
   }
 });

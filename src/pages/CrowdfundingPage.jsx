@@ -1,5 +1,6 @@
 // ...existing code...
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import useSWR from 'swr';
 import PropTypes from 'prop-types';
 import { Helmet } from 'react-helmet-async';
 import { PortableText } from '@portabletext/react';
@@ -15,6 +16,14 @@ import PrioritiesPie from '../components/crowdfunding/PrioritiesPie.jsx';
 import { createPortableTextComponents } from '../utils/portableTextComponents';
 import { cn } from '../lib/utils';
 import { useToast } from '../components/common/ToastProvider';
+
+const summaryFetcher = async (url) => {
+  const response = await fetch(url, { headers: { Accept: 'application/json' } });
+  if (!response.ok) {
+    throw new Error(`Request failed with status ${response.status}`);
+  }
+  return response.json();
+};
 
 // --- Sanity Image URL Builder Setup (kept for future use if dynamic hero image restored) ---
 // const builder = imageUrlBuilder(sanityClient);
@@ -163,7 +172,7 @@ const CrowdfundingPage = () => {
   const [subscribeStatus, setSubscribeStatus] = useState('idle'); // idle | loading | success | error
   const [subscribeMessage, setSubscribeMessage] = useState('');
   const [rewardPreference, setRewardPreference] = useState(REWARD_PREFERENCE_OPTIONS[0].value);
-  const [feedbackName, setFeedbackName] = useState('');
+  const [feedbackRating, setFeedbackRating] = useState(5);
   const [feedbackMessage, setFeedbackMessage] = useState('');
   const [feedbackNotice, setFeedbackNotice] = useState('');
   const [feedbackStatus, setFeedbackStatus] = useState('idle'); // idle | error | success
@@ -177,8 +186,18 @@ const CrowdfundingPage = () => {
   const [galleryError, setGalleryError] = useState('');
   const galleryLoadedRef = React.useRef(false);
   const [eventModal, setEventModal] = useState(null);
-  const [liveStatus, setLiveStatus] = useState({ goal: null, pizzasSold: null, backers: null });
-  const [statusRefreshError, setStatusRefreshError] = useState(false);
+
+  const {
+    data: summaryData,
+    error: summaryError,
+  } = useSWR('/api/crowdfunding/summary', summaryFetcher, {
+    refreshInterval: 30000,
+    revalidateOnFocus: true,
+  });
+  const summaryPizzas = Number(summaryData?.pizzas);
+  const summaryBackers = Number(summaryData?.backers);
+  const summaryGoal = Number(summaryData?.goal);
+  const statusRefreshError = Boolean(summaryError);
 
   useEffect(() => {
     if (activeTab === 'gallery' && !galleryLoadedRef.current) {
@@ -218,19 +237,25 @@ const CrowdfundingPage = () => {
 
     const loadFeedback = async () => {
       try {
-        const res = await fetch('/api/crowdfund/pizza-feedback?limit=8');
+        const res = await fetch('/api/feedback?limit=8', { headers: { Accept: 'application/json' } });
         let data = null;
         try {
           data = await res.json();
         } catch (_) {
           data = null;
         }
-        if (!res.ok) {
+        if (!res.ok || (data && data.ok === false)) {
           const message = (data && data.error) || 'Unable to reach the pizza feedback service right now.';
           throw new Error(message);
         }
-        const entries = Array.isArray(data?.entries)
-          ? data.entries.filter((entry) => entry && entry.message)
+        const entries = Array.isArray(data?.items)
+          ? data.items
+              .map((entry) => ({
+                id: entry.id || `feedback-${entry.createdAt || Date.now()}`,
+                rating: Number(entry.rating),
+                comment: typeof entry.comment === 'string' ? entry.comment.trim() : '',
+              }))
+              .filter((entry) => entry.comment)
           : [];
         if (!cancelled) {
           setFeedbackEntries(entries);
@@ -339,55 +364,6 @@ const CrowdfundingPage = () => {
     };
 
     doFetch();
-  }, []);
-
-  useEffect(() => {
-    let ignore = false;
-
-    const fetchStatus = async () => {
-      try {
-        const response = await fetch('/api/crowdfund/status', {
-          headers: { Accept: 'application/json' },
-        });
-        if (!response.ok) {
-          throw new Error(`Request failed with status ${response.status}`);
-        }
-        const data = await response.json();
-        if (ignore) return;
-
-        const toNumber = (value) => {
-          if (typeof value === 'number' && Number.isFinite(value)) return value;
-          if (typeof value === 'string') {
-            const parsed = Number(value);
-            return Number.isFinite(parsed) ? parsed : null;
-          }
-          return null;
-        };
-
-        const goalValue = toNumber(data.goal);
-        const pizzasValue = toNumber(data.pizzasSold);
-        const backerCount = Array.isArray(data.funders)
-          ? data.funders.length
-          : toNumber(data.backers);
-
-        setLiveStatus({
-          goal: goalValue,
-          pizzasSold: pizzasValue,
-          backers: typeof backerCount === 'number' && backerCount >= 0 ? backerCount : null,
-        });
-        setStatusRefreshError(false);
-      } catch (error) {
-        if (ignore) return;
-        console.warn('[crowdfunding] failed to fetch live crowdfund status', error);
-        setStatusRefreshError(true);
-      }
-    };
-
-    fetchStatus();
-
-    return () => {
-      ignore = true;
-    };
   }, []);
 
   // Derive reward tiers safely for hooks below
@@ -508,12 +484,18 @@ const CrowdfundingPage = () => {
       event.preventDefault();
       if (feedbackSubmitting) return;
 
-      const name = feedbackName.trim();
       const message = feedbackMessage.trim();
+      const ratingValue = Number(feedbackRating);
 
       if (!message) {
         setFeedbackStatus('error');
         setFeedbackNotice('Please share a quick note about the pizza.');
+        return;
+      }
+
+      if (!Number.isInteger(ratingValue) || ratingValue < 1 || ratingValue > 5) {
+        setFeedbackStatus('error');
+        setFeedbackNotice('Please choose how much you loved the pizza.');
         return;
       }
 
@@ -522,10 +504,10 @@ const CrowdfundingPage = () => {
       setFeedbackSubmitting(true);
 
       try {
-        const res = await fetch('/api/crowdfund/pizza-feedback', {
+        const res = await fetch('/api/feedback', {
           method: 'POST',
           headers: { 'content-type': 'application/json' },
-          body: JSON.stringify({ name, message }),
+          body: JSON.stringify({ rating: ratingValue, comment: message }),
         });
 
         let data = null;
@@ -535,26 +517,16 @@ const CrowdfundingPage = () => {
           data = null;
         }
 
-        if (!res.ok) {
+        if (!res.ok || (data && data.ok === false)) {
           const messageText = (data && data.error) || 'We had trouble saving your pizza note. Please try again.';
           throw new Error(messageText);
         }
 
-        const entryFromServer =
-          data && data.entry && data.entry.message
-            ? {
-                id: data.entry.id || `feedback-${Date.now()}`,
-                name: data.entry.name || 'Anonymous pizza fan',
-                message: data.entry.message,
-              }
-            : null;
-
-        const nextEntry =
-          entryFromServer || {
-            id: `feedback-${Date.now()}`,
-            name: name || 'Anonymous pizza fan',
-            message,
-          };
+        const nextEntry = {
+          id: (data && data.id) || `feedback-${Date.now()}`,
+          rating: ratingValue,
+          comment: message,
+        };
 
         setFeedbackEntries((prev) => {
           const safePrev = Array.isArray(prev)
@@ -563,8 +535,8 @@ const CrowdfundingPage = () => {
           return [nextEntry, ...safePrev].slice(0, 8);
         });
         setFeedbackFetchError('');
-        setFeedbackName('');
         setFeedbackMessage('');
+        setFeedbackRating(5);
         setFeedbackStatus('success');
         setFeedbackNotice('Thanks for spreading the pizza love!');
       } catch (err) {
@@ -574,7 +546,7 @@ const CrowdfundingPage = () => {
         setFeedbackSubmitting(false);
       }
     },
-    [feedbackMessage, feedbackName, feedbackSubmitting]
+    [feedbackMessage, feedbackRating, feedbackSubmitting]
   );
 
   // Destructure frequently used fields from campaign data (safe even if null)
@@ -982,14 +954,14 @@ const CrowdfundingPage = () => {
     }
     return 1000;
   })();
-  const pizzasSold = Number.isFinite(liveStatus.pizzasSold) && liveStatus.pizzasSold >= 0
-    ? Math.max(liveStatus.pizzasSold, basePizzasSold)
+  const pizzasSold = Number.isFinite(summaryPizzas) && summaryPizzas >= 0
+    ? Math.max(summaryPizzas, basePizzasSold)
     : basePizzasSold;
-  const pizzaGoal = Number.isFinite(liveStatus.goal) && liveStatus.goal > 0
-    ? liveStatus.goal
+  const pizzaGoal = Number.isFinite(summaryGoal) && summaryGoal > 0
+    ? summaryGoal
     : basePizzaGoal; // default goal to 1000 pizzas
-  const backers = Number.isFinite(liveStatus.backers) && liveStatus.backers >= 0
-    ? Math.max(liveStatus.backers, baseBackers)
+  const backers = Number.isFinite(summaryBackers) && summaryBackers >= 0
+    ? Math.max(summaryBackers, baseBackers)
     : baseBackers;
   const effectiveEndDate = useMemo(() => {
     const fallback = CAMPAIGN_EXTENSION_DEADLINE;
@@ -1262,7 +1234,7 @@ const CrowdfundingPage = () => {
                   label={daysLeft > 0 ? 'days to go' : ''}
                 />
               </div>
-              {statusRefreshError && !Number.isFinite(liveStatus.pizzasSold) && (
+              {statusRefreshError && !Number.isFinite(summaryPizzas) && (
                 <p className="text-xs text-amber-600">
                   Live totals temporarily unavailable; showing published numbers for now.
                 </p>
@@ -1606,19 +1578,24 @@ const CrowdfundingPage = () => {
               </p>
               <form className="space-y-4" onSubmit={handleFeedbackSubmit}>
                 <div className="space-y-2">
-                  <Label htmlFor="pizza-feedback-name">Name (optional)</Label>
-                  <Input
-                    id="pizza-feedback-name"
-                    value={feedbackName}
+                  <Label htmlFor="pizza-feedback-rating">How was your pizza?</Label>
+                  <select
+                    id="pizza-feedback-rating"
+                    value={feedbackRating}
                     onChange={(event) => {
-                      setFeedbackName(event.target.value);
+                      setFeedbackRating(Number(event.target.value));
                       if (feedbackStatus !== 'idle') {
                         setFeedbackStatus('idle');
                         setFeedbackNotice('');
                       }
                     }}
-                    placeholder="Alex Pizza Fan"
-                  />
+                    className="w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
+                  >
+                    {[5, 4, 3, 2, 1].map((value) => (
+                      <option key={value} value={value}>{`${value} / 5`}</option>
+                    ))}
+                  </select>
+                  <p className="text-xs text-slate-500">5 = legendary pizza party, 1 = needs another try.</p>
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="pizza-feedback-message">What made your pizza special?</Label>
@@ -1664,9 +1641,11 @@ const CrowdfundingPage = () => {
                       key={entry.id}
                       className="rounded-2xl border border-amber-100 bg-amber-50/70 p-4 shadow-sm"
                     >
-                      <p className="text-sm text-amber-900">“{entry.message}”</p>
+                      <p className="text-sm text-amber-900">“{entry.comment}”</p>
                       <p className="mt-2 text-xs font-semibold uppercase tracking-wide text-amber-700">
-                        — {entry.name || 'Anonymous pizza fan'}
+                        {Number.isFinite(entry.rating)
+                          ? `Rating: ${'⭐️'.repeat(Math.max(1, Math.min(5, entry.rating)))} (${entry.rating}/5)`
+                          : 'Rating: shared anonymously'}
                       </p>
                     </li>
                   ))}
