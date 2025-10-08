@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { Helmet } from "react-helmet-async";
 import { Gift, Loader2, Mail, MapPin, Sparkles } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "../ui/dialog";
@@ -77,15 +77,16 @@ const GiftCardDialog = ({ className = "" }) => {
 
   const { cardLoaded, error: squareError, tokenize, reset: resetSquare } = useSquareCard("#gift-card-card-container", open, [amountValue]);
 
-  useEffect(() => {
-    if (!open) {
+  const handleDialogOpenChange = useCallback((nextOpen) => {
+    if (!nextOpen) {
+      resetSquare();
       setForm(initialForm);
       setStatus("idle");
       setError("");
       setSuccess(null);
-      setTimeout(() => resetSquare(), 150);
     }
-  }, [open, resetSquare]);
+    setOpen(nextOpen);
+  }, [resetSquare]);
 
   useEffect(() => {
     if (!canChoosePhysical && form.cardType === "physical") {
@@ -273,7 +274,7 @@ const GiftCardDialog = ({ className = "" }) => {
           <button
             type="button"
             className="btn btn-primary"
-            onClick={() => setOpen(false)}
+            onClick={() => handleDialogOpenChange(false)}
           >
             Close
           </button>
@@ -287,7 +288,7 @@ const GiftCardDialog = ({ className = "" }) => {
       <Helmet>
         <script type="application/ld+json">{JSON.stringify(productSchema)}</script>
       </Helmet>
-      <Dialog open={open} onOpenChange={setOpen}>
+      <Dialog open={open} onOpenChange={handleDialogOpenChange}>
       <DialogTrigger asChild>
         <button className={cn("btn btn-primary flex items-center gap-2 shadow-sm", className)}>
           <Gift className="h-4 w-4" />
