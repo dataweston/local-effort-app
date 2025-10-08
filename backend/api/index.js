@@ -31,6 +31,13 @@ const { createBrevoService } = require('./services/brevo');
 const { createCrowdfundingRouter } = require('./routes/crowdfunding');
 const crowdfundCheckoutHandler = require('../../api/crowdfund/checkout');
 const { createMessagesRouter } = require('./routes/messages');
+const {
+  verifySquareSignature,
+  applyCompletedPayment,
+  getCrowdfundingSummary,
+  createFeedback,
+  listFeedback,
+} = require('../../packages/lib/crowdfundingPipeline');
 
 // Fallback: if critical vars are missing, also try loading project root .env
 if (!process.env.SQUARE_ACCESS_TOKEN || !process.env.BREVO_API_KEY) {
@@ -158,6 +165,46 @@ const allowedOrigins = [
 ];
 const corsOptions = { origin: allowedOrigins };
 app.use(cors(corsOptions));
+app.post('/api/square/webhook', express.raw({ type: '*/*', limit: '2mb' }), async (req, res) => {
+  try {
+    const signatureHeader = req.headers['x-square-hmacsha256-signature'];
+    const signature = Array.isArray(signatureHeader) ? signatureHeader[0] : signatureHeader;
+    if (!signature) {
+      return res.status(400).json({ ok: false, error: 'missing-signature' });
+    }
+
+    const rawBody = Buffer.isBuffer(req.body) ? req.body : Buffer.from(req.body || '');
+    if (!verifySquareSignature(rawBody, signature)) {
+      return res.status(400).json({ ok: false, error: 'invalid-signature' });
+    }
+
+    const payload = JSON.parse(rawBody.toString('utf8'));
+    const eventType = payload?.type ?? payload?.event_type;
+    if (!eventType || !String(eventType).includes('payment')) {
+      return res.status(200).json({ ok: true, ignored: true });
+    }
+
+    const payment = payload?.data?.object?.payment;
+    if (!payment || !payment.id) {
+      return res.status(200).json({ ok: true, ignored: true });
+    }
+
+    const status = String(payment.status || '').toUpperCase();
+    if (status !== 'COMPLETED') {
+      return res.status(200).json({ ok: true, ignored: true });
+    }
+
+    await applyCompletedPayment(payment, { db });
+    return res.status(200).json({ ok: true });
+  } catch (err) {
+    if (logger?.error) {
+      logger.error({ err }, 'square webhook handler error');
+    } else {
+      console.error('square webhook handler error', err);
+    }
+    return res.status(500).json({ ok: false, error: 'internal-error' });
+  }
+});
 app.use(express.json());
 
 // MCP HTTP bridge removed (mcpTransport not initialized in this process). If needed, reintroduce with proper import.
@@ -307,6 +354,47 @@ app.all('/api/crowdfund/checkout', async (req, res, next) => {
   } catch (err) {
     logger.error({ err, method: req.method }, 'crowdfund checkout handler failed');
     next(err);
+  }
+});
+app.get('/api/crowdfunding/summary', async (req, res) => {
+  try {
+    const data = await getCrowdfundingSummary({ db });
+    res.set('Cache-Control', 'no-store');
+    res.json({
+      pizzas: typeof data.pizzas === 'number' ? data.pizzas : Number(data.pizzas) || 0,
+      backers: typeof data.backers === 'number' ? data.backers : Number(data.backers) || 0,
+      updatedAt: data.updatedAt ?? null,
+    });
+  } catch (err) {
+    if (logger?.error) logger.error({ err }, 'crowdfunding summary error');
+    res.status(500).json({ ok: false, error: 'internal-error' });
+  }
+});
+app.get('/api/feedback', async (req, res) => {
+  try {
+    const sinceRaw = Array.isArray(req.query.since) ? req.query.since[0] : req.query.since;
+    const limitRaw = Array.isArray(req.query.limit) ? req.query.limit[0] : req.query.limit;
+    const items = await listFeedback({
+      since: sinceRaw ?? undefined,
+      limit: limitRaw ? Number(limitRaw) : undefined,
+    }, { db });
+    res.json({ ok: true, items });
+  } catch (err) {
+    if (logger?.error) logger.error({ err }, 'feedback list error');
+    res.status(500).json({ ok: false, error: 'internal-error' });
+  }
+});
+app.post('/api/feedback', async (req, res) => {
+  try {
+    const result = await createFeedback(req.body ?? {}, { db });
+    res.json({ ok: true, id: result.id });
+  } catch (err) {
+    const code = err && typeof err === 'object' ? err.code : null;
+    if (code === 'invalid-rating' || code === 'missing-comment') {
+      return res.status(400).json({ ok: false, error: code });
+    }
+    if (logger?.error) logger.error({ err }, 'feedback create error');
+    res.status(500).json({ ok: false, error: 'internal-error' });
   }
 });
 app.use('/api', createMessagesRouter({ logger, brevoService, getSanityClient, db }));
