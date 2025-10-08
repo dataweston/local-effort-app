@@ -1,5 +1,7 @@
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import { URL } from 'node:url';
+import { createFeedback, listFeedback } from '../../packages/lib/crowdfundingPipeline';
+import { db as defaultDb } from '../../packages/lib/firebaseAdmin';
 import { db } from '../../packages/lib/firebaseAdmin';
 
 type Req = IncomingMessage & { method?: string; body?: any; url?: string };
@@ -51,6 +53,17 @@ export default async function handler(request: Req, response: ServerResponse): P
   }
 
   if (req.method === 'POST') {
+    try {
+      const result = await createFeedback(req.body ?? {}, { db: defaultDb });
+      res.status(200).json({ ok: true, id: result.id });
+    } catch (error) {
+      if (error && typeof error === 'object' && 'code' in error) {
+        const code = (error as { code?: string }).code;
+        if (code === 'invalid-rating' || code === 'missing-comment') {
+          res.status(400).json({ ok: false, error: code });
+          return;
+        }
+      }
     const body = parseJsonBody(req) ?? {};
     const rating = Number(body.rating);
     const comment = sanitizeString(body.comment, MAX_COMMENT_LENGTH);
@@ -106,6 +119,13 @@ export default async function handler(request: Req, response: ServerResponse): P
         }
       })();
 
+      const items = await listFeedback(
+        {
+          since: sinceParam ?? undefined,
+          limit: limitParam ? Number(limitParam) : undefined,
+        },
+        { db: defaultDb },
+      );
       const since = sinceParam ? new Date(sinceParam) : new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
       const limitValue = limitParam ? Number(limitParam) : 200;
       const limit = Number.isFinite(limitValue) ? Math.min(Math.max(limitValue, 1), 500) : 200;
