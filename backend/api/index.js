@@ -31,6 +31,14 @@ const { createBrevoService } = require('./services/brevo');
 const { createCrowdfundingRouter } = require('./routes/crowdfunding');
 const crowdfundCheckoutHandler = require('../../api/crowdfund/checkout');
 const crowdfundFeedbackHandler = require('../../api/crowdfund/feedback');
+const storeCheckoutHandler = require('../../api/store/checkout');
+const giftCardCheckoutHandler = require('../../api/store/gift-card-checkout');
+const pizzaPartyCheckoutHandler = require('../../api/store/pizza-party-checkout');
+const pizzaPartyStatusHandler = require('../../api/store/pizza-party-status');
+const pizzaPartyReceiptHandler = require('../../api/store/pizza-party-receipt');
+const pizzaPartyLinkHandler = require('../../api/store/pizza-party-link');
+const pizzaPartyBookingsHandler = require('../../api/store/pizza-party-bookings');
+const storeProductsHandler = require('../../api/store/products');
 const { createMessagesRouter } = require('./routes/messages');
 
 // Fallback: if critical vars are missing, also try loading project root .env
@@ -315,6 +323,78 @@ app.all('/api/crowdfund/feedback', async (req, res, next) => {
     await crowdfundFeedbackHandler(req, res);
   } catch (err) {
     logger.error({ err, method: req.method }, 'crowdfund feedback handler failed');
+    next(err);
+  }
+});
+
+app.all('/api/store/checkout', async (req, res, next) => {
+  try {
+    await storeCheckoutHandler(req, res);
+  } catch (err) {
+    logger.error({ err, method: req.method }, 'store checkout handler failed');
+    next(err);
+  }
+});
+
+app.all('/api/store/gift-card-checkout', async (req, res, next) => {
+  try {
+    await giftCardCheckoutHandler(req, res);
+  } catch (err) {
+    logger.error({ err, method: req.method }, 'gift-card checkout handler failed');
+    next(err);
+  }
+});
+
+app.all('/api/store/pizza-party-checkout', async (req, res, next) => {
+  try {
+    await pizzaPartyCheckoutHandler(req, res);
+  } catch (err) {
+    logger.error({ err, method: req.method }, 'pizza-party checkout handler failed');
+    next(err);
+  }
+});
+
+app.all('/api/store/pizza-party-status', async (req, res, next) => {
+  try {
+    await pizzaPartyStatusHandler(req, res);
+  } catch (err) {
+    logger.error({ err, method: req.method }, 'pizza-party status handler failed');
+    next(err);
+  }
+});
+
+app.all('/api/store/pizza-party-receipt', async (req, res, next) => {
+  try {
+    await pizzaPartyReceiptHandler(req, res);
+  } catch (err) {
+    logger.error({ err, method: req.method }, 'pizza-party receipt handler failed');
+    next(err);
+  }
+});
+
+app.all('/api/store/pizza-party-link', async (req, res, next) => {
+  try {
+    await pizzaPartyLinkHandler(req, res);
+  } catch (err) {
+    logger.error({ err, method: req.method }, 'pizza-party link handler failed');
+    next(err);
+  }
+});
+
+app.all('/api/store/pizza-party-bookings', async (req, res, next) => {
+  try {
+    await pizzaPartyBookingsHandler(req, res);
+  } catch (err) {
+    logger.error({ err, method: req.method }, 'pizza-party bookings handler failed');
+    next(err);
+  }
+});
+
+app.all('/api/store/products', async (req, res, next) => {
+  try {
+    await storeProductsHandler(req, res);
+  } catch (err) {
+    logger.error({ err, method: req.method }, 'store products handler failed');
     next(err);
   }
 });

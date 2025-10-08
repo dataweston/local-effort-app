@@ -1,39 +1,33 @@
 import React from 'react';
 import CityPage from './_CityPage';
-
-const cloud = (pub) => ({
-  src: `https://res.cloudinary.com/${import.meta.env.VITE_CLOUDINARY_CLOUD_NAME || 'dokyhfvyd'}/image/upload/f_auto,q_auto,w_1200/${pub}`,
-  src400: `https://res.cloudinary.com/${import.meta.env.VITE_CLOUDINARY_CLOUD_NAME || 'dokyhfvyd'}/image/upload/f_auto,q_auto,w_400/${pub}`,
-  src800: `https://res.cloudinary.com/${import.meta.env.VITE_CLOUDINARY_CLOUD_NAME || 'dokyhfvyd'}/image/upload/f_auto,q_auto,w_800/${pub}`,
-  src1200: `https://res.cloudinary.com/${import.meta.env.VITE_CLOUDINARY_CLOUD_NAME || 'dokyhfvyd'}/image/upload/f_auto,q_auto,w_1200/${pub}`,
-});
+import { makeCityImage } from './cityImageUtils';
 
 export default function PersonalChefMinneapolisPage() {
   const canonical = 'https://localeffortfood.com/personal-chef-minneapolis';
   const description =
     'Personal Chef Minneapolis — Local Effort Food Co. cooks in-home dinners, meal prep Minneapolis services, and custom meal plan Minneapolis solutions across every neighborhood.';
-  const img1 = cloud('site/gallery/seared-trout');
-  const img2 = cloud('site/gallery/seasonal-salad');
-  const img3 = cloud('site/gallery/chef-table-minneapolis');
+  const img1 = {
+    ...makeCityImage('site/gallery/seared-trout', { fallback: '/gallery/5Z0A5665-Edit.jpg' }),
+    alt: 'Personal chef plated seared trout — Minneapolis',
+    caption: 'Private chef plated seared trout — Minneapolis personal chef for small events.',
+  };
+  const img2 = {
+    ...makeCityImage('site/gallery/seasonal-salad', { fallback: '/gallery/IMG_4390.jpg' }),
+    alt: 'Seasonal salad — Minneapolis personal chef meal prep',
+    caption: 'Seasonal salad with local produce — meal prep Minneapolis personal chef team.',
+  };
+  const img3 = {
+    ...makeCityImage('site/gallery/chef-table-minneapolis', { fallback: '/gallery/IMG_3185.jpg' }),
+    alt: 'Chef’s table in Minneapolis',
+    caption: 'Chef’s table dinner in Minneapolis — intimate, in-home dining with Local Effort.',
+  };
   const images = [
-    {
-      ...img1,
-      alt: 'Personal chef plated seared trout — Minneapolis',
-      caption: 'Private chef plated seared trout — Minneapolis personal chef for small events.',
-    },
-    {
-      ...img2,
-      alt: 'Seasonal salad — Minneapolis personal chef meal prep',
-      caption: 'Seasonal salad with local produce — meal prep Minneapolis personal chef team.',
-    },
-    {
-      ...img3,
-      alt: 'Chef’s table in Minneapolis',
-      caption: 'Chef’s table dinner in Minneapolis — intimate, in-home dining with Local Effort.',
-    },
-  ].map((i) => ({
-    ...i,
-    thumb: i.src400,
+    img1,
+    img2,
+    img3,
+  ].map((image) => ({
+    ...image,
+    thumb: image.thumb || image.src400 || image.fallback,
   }));
   const faq = [
     { q: 'Do you serve Minneapolis?', a: 'Yes — we serve all Minneapolis neighborhoods and the Twin Cities metro.' },
