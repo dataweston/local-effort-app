@@ -46,6 +46,7 @@ describe('crowdfunding summary api', () => {
     const updatedAt = new Date('2024-02-01T12:00:00Z');
     const aggRef = fakeDb.collection('aggregates').doc('crowdfunding');
     aggRef.set({ pizzas: 42, backers: 17, goal: 500, updatedAt });
+    aggRef.set({ pizzas: 42, backers: 17, updatedAt });
 
     const res = await request(app).get('/api/crowdfunding/summary');
 
@@ -86,6 +87,7 @@ describe('crowdfunding summary api', () => {
       goal: 900,
       updatedAt: '2024-02-10T16:00:00.000Z',
     });
+    expect(res.body).toEqual({ pizzas: 0, backers: 0, updatedAt: null });
   });
 
   it('rejects non-GET methods', async () => {
