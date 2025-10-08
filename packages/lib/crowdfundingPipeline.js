@@ -194,15 +194,77 @@ async function listFeedback(options = {}) {
   return snapshot.docs.map((doc) => ({ id: doc.id, ...(doc.data() || {}) }));
 }
 
+function coerceNumber(value, defaultValue = 0) {
+  if (typeof value === 'number' && Number.isFinite(value)) {
+    return value;
+  }
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : defaultValue;
+}
+
+function normalizeUpdatedAt(value) {
+  if (!value) return null;
+  if (value instanceof Date) return value;
+  const parsed = new Date(value);
+  return Number.isNaN(parsed.getTime()) ? null : parsed;
+}
+
+async function readAggregateTotals(firestore) {
+  try {
+    const snapshot = await firestore.collection('aggregates').doc('crowdfunding').get();
+    if (!snapshot.exists) return null;
+    const data = snapshot.data() || {};
+    const pizzas = coerceNumber(data.pizzas, 0);
+    const backers = coerceNumber(data.backers, 0);
+    const goal = coerceNumber(data.goal, 0) || null;
+    const updatedAt = normalizeUpdatedAt(data.updatedAt);
+    return { pizzas, backers, goal, updatedAt };
+  } catch (error) {
+    console.warn('[crowdfunding.pipeline] failed to read aggregates/crowdfunding', error && error.message);
+    return null;
+  }
+}
+
+async function readLegacyStatus(firestore) {
+  try {
+    const snapshot = await firestore.collection('crowdfund').doc('status').get();
+    if (!snapshot.exists) return null;
+    const data = snapshot.data() || {};
+    const pizzas = coerceNumber(data.pizzasSold, 0);
+    const backersArray = Array.isArray(data.funders) ? data.funders.filter(Boolean) : [];
+    const backers = backersArray.length || coerceNumber(data.backers, 0);
+    const goal = (() => {
+      const coerced = coerceNumber(data.goal, 0);
+      return coerced > 0 ? coerced : null;
+    })();
+
+    let updatedAt = normalizeUpdatedAt(data.updatedAt);
+    if (!updatedAt && backersArray.length) {
+      const lastEntry = backersArray[backersArray.length - 1];
+      updatedAt = normalizeUpdatedAt(lastEntry?.date);
+    }
+
+    return { pizzas, backers, goal, updatedAt };
+  } catch (error) {
+    console.warn('[crowdfunding.pipeline] failed to read crowdfund/status', error && error.message);
+    return null;
+  }
+}
+
 async function getCrowdfundingSummary(options = {}) {
   const firestore = ensureDb(options);
-  const snapshot = await firestore.collection('aggregates').doc('crowdfunding').get();
-  const data = snapshot.exists ? snapshot.data() || {} : {};
-  return {
-    pizzas: typeof data.pizzas === 'number' ? data.pizzas : Number(data.pizzas) || 0,
-    backers: typeof data.backers === 'number' ? data.backers : Number(data.backers) || 0,
-    updatedAt: data.updatedAt ?? null,
-  };
+
+  const aggregate = await readAggregateTotals(firestore);
+  if (aggregate && (aggregate.pizzas || aggregate.backers || aggregate.goal || aggregate.updatedAt)) {
+    return aggregate;
+  }
+
+  const legacy = await readLegacyStatus(firestore);
+  if (legacy) {
+    return legacy;
+  }
+
+  return { pizzas: 0, backers: 0, goal: null, updatedAt: null };
 }
 
 function verifySquareSignature(rawBody, signature, options = {}) {
