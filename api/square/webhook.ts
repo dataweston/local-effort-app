@@ -1,5 +1,6 @@
 import type { IncomingHttpHeaders, IncomingMessage, ServerResponse } from 'node:http';
 import { applyCompletedPayment, verifySquareSignature } from '../../packages/lib/crowdfundingPipeline';
+import crypto from 'node:crypto';
 import { db as defaultDb } from '../../packages/lib/firebaseAdmin';
 
 type Req = IncomingMessage & {
@@ -14,6 +15,8 @@ type Res = ServerResponse & {
   json: (body: unknown) => void;
   setHeader: (name: string, value: string) => void;
 };
+
+type FirestoreLike = FirebaseFirestore.Firestore;
 
 type PaymentObject = {
   id: string;
@@ -69,6 +72,116 @@ async function readRawBody(req: Req): Promise<Buffer> {
   return Buffer.concat(chunks);
 }
 
+function timingSafeEqual(a: Buffer, b: Buffer): boolean {
+  if (a.length !== b.length) {
+    return false;
+  }
+  return crypto.timingSafeEqual(a, b);
+}
+
+export function verifySquareSignature(rawBody: Buffer, signature: string): boolean {
+  const sigKey = process.env.SQUARE_WEBHOOK_SIGNATURE_KEY;
+  const notificationUrl = process.env.SQUARE_WEBHOOK_NOTIFICATION_URL;
+  if (!sigKey || !notificationUrl) {
+    console.error('[square.webhook] missing signature configuration');
+    return false;
+  }
+  const hmac = crypto.createHmac('sha256', sigKey);
+  hmac.update(notificationUrl + rawBody.toString('utf8'));
+  const digest = hmac.digest('base64');
+  const provided = Buffer.from(signature);
+  const expected = Buffer.from(digest);
+  return timingSafeEqual(provided, expected);
+}
+
+function parsePizzaQuantity(payment: PaymentObject): number {
+  const items = payment.order?.line_items ?? [];
+  return items
+    .filter((item) => {
+      const name = item.name ?? '';
+      const catalogId = item.catalog_object_id ?? '';
+      return /pizza/i.test(name) || /pizza/i.test(catalogId);
+    })
+    .reduce((sum, item) => {
+      const quantityRaw = item.quantity;
+      const quantity = typeof quantityRaw === 'string' ? Number(quantityRaw) : Number(quantityRaw ?? 0);
+      return sum + (Number.isFinite(quantity) ? quantity : 0);
+    }, 0);
+}
+
+export async function applyCompletedPayment(payment: PaymentObject, options: { db?: FirestoreLike } = {}): Promise<void> {
+  const firestore = options.db ?? defaultDb;
+  if (!firestore) {
+    throw new Error('Firestore unavailable');
+  }
+
+  const paymentId = payment.id;
+  const customerId = payment.customer_id ?? null;
+  const qty = parsePizzaQuantity(payment);
+  const amount = Number(payment.amount_money?.amount ?? 0);
+
+  await firestore.runTransaction(async (tx) => {
+    const ordersRef = firestore.collection('orders').doc(paymentId);
+    const existingOrder = await tx.get(ordersRef);
+    if (existingOrder.exists) {
+      return;
+    }
+
+    tx.set(ordersRef, {
+      createdAt: new Date(),
+      squarePaymentId: paymentId,
+      customerId,
+      item: 'pizza',
+      qty,
+      amount,
+      status: 'PAID',
+      source: 'square',
+    });
+
+    let backerIncrement = 0;
+    if (customerId) {
+      const backerRef = firestore.collection('backers').doc(customerId);
+      const backerSnap = await tx.get(backerRef);
+      if (!backerSnap.exists) {
+        backerIncrement = 1;
+        tx.set(backerRef, {
+          firstSeenAt: new Date(),
+          ordersCount: 1,
+          amountTotal: amount,
+        });
+      } else {
+        const data = backerSnap.data() ?? {};
+        tx.update(backerRef, {
+          ordersCount: Number(data.ordersCount ?? 0) + 1,
+          amountTotal: Number(data.amountTotal ?? 0) + amount,
+        });
+      }
+    }
+
+    const aggRef = firestore.collection('aggregates').doc('crowdfunding');
+    const aggSnap = await tx.get(aggRef);
+    const base = aggSnap.exists ? aggSnap.data() ?? {} : {};
+    const nextPizzas = Number(base.pizzas ?? 0) + qty;
+    const nextBackers = Number(base.backers ?? 0) + backerIncrement;
+    tx.set(
+      aggRef,
+      {
+        pizzas: nextPizzas,
+        backers: nextBackers,
+        updatedAt: new Date(),
+      },
+      { merge: true },
+    );
+  });
+
+  console.info('[square.webhook] processed payment', {
+    id: paymentId,
+    customerId,
+    qty,
+    amount,
+  });
+}
+
 export default async function handler(request: Req, response: ServerResponse): Promise<void> {
   const req = request;
   const res = withHelpers(response);
@@ -113,6 +226,7 @@ export default async function handler(request: Req, response: ServerResponse): P
     }
 
     await applyCompletedPayment(payment, { db: defaultDb });
+    await applyCompletedPayment(payment);
 
     res.status(200).json({ ok: true });
   } catch (error) {

@@ -1,6 +1,7 @@
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import { getCrowdfundingSummary } from '../../packages/lib/crowdfundingPipeline';
 import { db as defaultDb } from '../../packages/lib/firebaseAdmin';
+import { db } from '../../packages/lib/firebaseAdmin';
 
 type Req = IncomingMessage & { method?: string };
 type Res = ServerResponse & {
@@ -37,6 +38,8 @@ export default async function handler(request: Req, response: ServerResponse): P
 
   try {
     const data = await getCrowdfundingSummary({ db: defaultDb });
+    const snapshot = await db.collection('aggregates').doc('crowdfunding').get();
+    const data = snapshot.exists ? snapshot.data() ?? {} : {};
     res.setHeader('Cache-Control', 'no-store');
     res.status(200).json({
       pizzas: typeof data.pizzas === 'number' ? data.pizzas : 0,
