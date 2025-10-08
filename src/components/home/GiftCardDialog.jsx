@@ -531,9 +531,10 @@ const GiftCardDialog = ({ className = "" }) => {
 
             <section className="space-y-2">
               <p className="text-sm font-semibold text-slate-700">Payment details</p>
-              <div id="gift-card-card-container" className="min-h-[96px] rounded-lg border border-slate-200 bg-white p-3">
-                {!cardLoaded && !squareError && <p className="text-sm text-slate-500">Loading secure card entry...</p>}
-                {squareError && <p className="text-sm text-red-600">{squareError}</p>}
+              <div className="min-h-[96px] rounded-lg border border-slate-200 bg-white p-3">
+                <div id="gift-card-card-container" className="min-h-[64px]" />
+                {!cardLoaded && !squareError && <p className="mt-2 text-sm text-slate-500">Loading secure card entry...</p>}
+                {squareError && <p className="mt-2 text-sm text-red-600">{squareError}</p>}
               </div>
               <p className="text-xs text-slate-400">We use Square to process payments securely. The card is charged immediately and refunds are available on request within 14 days (if unused).</p>
             </section>
