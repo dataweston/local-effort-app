@@ -1301,7 +1301,7 @@ const CrowdfundingPage = () => {
         {/* --- Main Content Grid --- */}
         <div className="grid grid-cols-1 lg:grid-cols-5 lg:gap-16">
           {/* --- Left Column (Media & Content Tabs) --- */}
-    <div className="lg:col-span-3 space-y-8 order-1 lg:order-1">
+    <div className="lg:col-span-3 space-y-8 order-2 lg:order-1">
             <div className="relative w-full overflow-hidden rounded-lg bg-gray-100 aspect-video">
               {heroSlides.map((slide, index) => (
                 <img
@@ -1414,7 +1414,7 @@ const CrowdfundingPage = () => {
           </div>
 
           {/* --- Right Column (Stats & Rewards) --- */}
-          <div className="lg:col-span-2 space-y-8 mt-12 lg:mt-0 order-2 lg:order-2">
+          <div className="lg:col-span-2 space-y-8 mt-8 lg:mt-0 order-1 lg:order-2">
             <div className="card p-6 space-y-4 ring-1 ring-neutral-200">
               <div className="w-full bg-gray-200 rounded-full h-2.5">
                 <div
