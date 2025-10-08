@@ -634,14 +634,15 @@ const PizzaPartyPage = () => {
               {cardError && (
                 <p className="text-xs text-rose-600 pt-2">{cardError}</p>
               )}
-              <div id="pp-card-container" className="mt-4 border rounded-md p-4 bg-white min-h-[88px]" aria-label="Pizza party card form">
+              <div className="mt-4 border rounded-md p-4 bg-white" aria-label="Pizza party card form">
+                <div id="pp-card-container" className="min-h-[88px]" />
                 {!cardLoaded && !cardError && (
-                  <p className="text-xs text-neutral-500">
+                  <p className="mt-2 text-xs text-neutral-500">
                     {loadingScript ? 'Loading payment library…' : 'Initializing secure payment form…'}
                   </p>
                 )}
                 {cardError && (
-                  <div className="text-[10px] text-rose-600 space-y-1">
+                  <div className="mt-2 text-[10px] text-rose-600 space-y-1">
                     <p>{cardError}</p>
                     <FallbackLink date={selectedDate} email={email} addOnGuests={addOnEnabled ? guestCount : 0} />
                   </div>
