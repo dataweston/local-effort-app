@@ -1,4 +1,5 @@
 import type { IncomingHttpHeaders, IncomingMessage, ServerResponse } from 'node:http';
+import { applyCompletedPayment, verifySquareSignature } from '../../packages/lib/crowdfundingPipeline';
 import crypto from 'node:crypto';
 import { db as defaultDb } from '../../packages/lib/firebaseAdmin';
 
@@ -224,6 +225,7 @@ export default async function handler(request: Req, response: ServerResponse): P
       return;
     }
 
+    await applyCompletedPayment(payment, { db: defaultDb });
     await applyCompletedPayment(payment);
 
     res.status(200).json({ ok: true });
