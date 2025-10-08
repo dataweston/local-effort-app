@@ -15,9 +15,24 @@ export default function PersonalChefWisconsinPage() {
   const img2 = cloud('site/gallery/wisconsin-meal-prep');
   const img3 = cloud('site/gallery/wisconsin-event');
   const images = [
-    { ...img1, alt: 'Farm dinner — Western Wisconsin', caption: 'Farm dinner in Western Wisconsin — Local Effort.' },
-    { ...img2, alt: 'Weekly meal prep — Wisconsin', caption: 'Weekly meal prep services in Western Wisconsin.' },
-    { ...img3, alt: 'Intimate event catering — Wisconsin', caption: 'Small event catering in Western Wisconsin.' },
+    {
+      ...img1,
+      alt: 'Farm dinner — Western Wisconsin',
+      caption: 'Farm dinner in Western Wisconsin — Local Effort.',
+      fallbackSrc: '/gallery/5Z0A5637-Edit.jpg',
+    },
+    {
+      ...img2,
+      alt: 'Weekly meal prep — Wisconsin',
+      caption: 'Weekly meal prep services in Western Wisconsin.',
+      fallbackSrc: '/gallery/IMG_9262.jpg',
+    },
+    {
+      ...img3,
+      alt: 'Intimate event catering — Wisconsin',
+      caption: 'Small event catering in Western Wisconsin.',
+      fallbackSrc: '/gallery/5Z0A5724-Edit.jpg',
+    },
   ].map((i) => ({ ...i, thumb: i.src400 }));
   const faq = [
     { q: 'Do you serve the St. Croix Valley?', a: 'Yes — we regularly serve Hudson, River Falls, and nearby communities.' },
