@@ -18,7 +18,7 @@ module.exports = async (req, res) => {
     if (!squareClient) return res.status(500).json({ error: 'Square not configured' });
     if (!locationId) return res.status(500).json({ error: 'Square location missing' });
 
-    const { items, funderName, token, email, phone, notes, notify } = req.body || {};
+    const { items, funderName, token, email, phone, notes, notify, discountCode } = req.body || {};
     if (!token) return res.status(400).json({ error: 'Missing payment token' });
     if (!Array.isArray(items) || !items.length) return res.status(400).json({ error: 'No items' });
 
@@ -32,6 +32,8 @@ module.exports = async (req, res) => {
     if (email) metaNoteParts.push(email);
     if (phone) metaNoteParts.push(phone);
     if (notify && notify !== 'none') metaNoteParts.push(`notify:${notify}`);
+    const trimmedDiscount = typeof discountCode === 'string' ? discountCode.trim().slice(0, 60) : '';
+    if (trimmedDiscount) metaNoteParts.push(`discount:${trimmedDiscount}`);
     const noteStr = metaNoteParts.join(' | ').slice(0, 500);
     const paymentBody = {
       sourceId: token,
@@ -58,7 +60,16 @@ module.exports = async (req, res) => {
             } else {
               const data = doc.data() || {};
               const funders = Array.isArray(data.funders) ? data.funders : [];
-              funders.push({ name: funderName, date: new Date().toISOString(), email: email || null, phone: phone || null, notes: notes || null, notify: notify || 'none', pizzas: pizzasInCart });
+              funders.push({
+                name: funderName,
+                date: new Date().toISOString(),
+                email: email || null,
+                phone: phone || null,
+                notes: notes || null,
+                notify: notify || 'none',
+                pizzas: pizzasInCart,
+                discountCode: trimmedDiscount || null,
+              });
               tx.update(docRef, { pizzasSold: (data.pizzasSold || 0) + pizzasInCart, funders });
             }
           });
