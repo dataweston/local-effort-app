@@ -237,24 +237,33 @@ const CrowdfundingPage = () => {
 
     const loadFeedback = async () => {
       try {
-        const res = await fetch('/api/feedback?limit=8', { headers: { Accept: 'application/json' } });
+        const res = await fetch('/api/crowdfund/pizza-feedback?limit=8', { headers: { Accept: 'application/json' } });
         let data = null;
         try {
           data = await res.json();
         } catch (_) {
           data = null;
         }
-        if (!res.ok || (data && data.ok === false)) {
+        if (!res.ok) {
           const message = (data && data.error) || 'Unable to reach the pizza feedback service right now.';
           throw new Error(message);
         }
-        const entries = Array.isArray(data?.items)
-          ? data.items
-              .map((entry) => ({
-                id: entry.id || `feedback-${entry.createdAt || Date.now()}`,
-                rating: Number(entry.rating),
-                comment: typeof entry.comment === 'string' ? entry.comment.trim() : '',
-              }))
+        const entries = Array.isArray(data?.entries)
+          ? data.entries
+              .map((entry) => {
+                const rawRating = Number(entry.rating);
+                const normalizedRating = Number.isFinite(rawRating) && rawRating > 0 ? rawRating : null;
+                const comment = typeof entry.comment === 'string' && entry.comment.trim()
+                  ? entry.comment.trim()
+                  : typeof entry.message === 'string'
+                  ? entry.message.trim()
+                  : '';
+                return {
+                  id: entry.id || `feedback-${entry.createdAt || Date.now()}`,
+                  rating: normalizedRating,
+                  comment,
+                };
+              })
               .filter((entry) => entry.comment)
           : [];
         if (!cancelled) {
@@ -504,10 +513,10 @@ const CrowdfundingPage = () => {
       setFeedbackSubmitting(true);
 
       try {
-        const res = await fetch('/api/feedback', {
+        const res = await fetch('/api/crowdfund/pizza-feedback', {
           method: 'POST',
           headers: { 'content-type': 'application/json' },
-          body: JSON.stringify({ rating: ratingValue, comment: message }),
+          body: JSON.stringify({ rating: ratingValue, message }),
         });
 
         let data = null;
@@ -517,15 +526,20 @@ const CrowdfundingPage = () => {
           data = null;
         }
 
-        if (!res.ok || (data && data.ok === false)) {
+        if (!res.ok) {
           const messageText = (data && data.error) || 'We had trouble saving your pizza note. Please try again.';
           throw new Error(messageText);
         }
 
+        const payloadEntry = data?.entry;
         const nextEntry = {
-          id: (data && data.id) || `feedback-${Date.now()}`,
-          rating: ratingValue,
-          comment: message,
+          id: (payloadEntry && payloadEntry.id) || `feedback-${Date.now()}`,
+          rating: Number.isFinite(Number(payloadEntry?.rating)) ? Number(payloadEntry.rating) : ratingValue,
+          comment: typeof payloadEntry?.comment === 'string' && payloadEntry.comment.trim()
+            ? payloadEntry.comment.trim()
+            : typeof payloadEntry?.message === 'string' && payloadEntry.message.trim()
+            ? payloadEntry.message.trim()
+            : message,
         };
 
         setFeedbackEntries((prev) => {
@@ -936,14 +950,11 @@ const CrowdfundingPage = () => {
   const hasEvents = upcomingEvents.length > 0;
 
   // --- Pizza-specific values (prefer pizza fields, fallback to legacy money values) ---
-  const basePizzasSold = (() => {
+  const publishedPizzasSold = (() => {
     if (typeof campaignData?.pizzasSold === 'number' && Number.isFinite(campaignData.pizzasSold)) {
       return campaignData.pizzasSold;
     }
-    if (typeof campaignData?.raisedAmount === 'number' && Number.isFinite(campaignData.raisedAmount)) {
-      return campaignData.raisedAmount;
-    }
-    return 0;
+    return null;
   })();
   const basePizzaGoal = (() => {
     if (typeof campaignData?.pizzaGoal === 'number' && Number.isFinite(campaignData.pizzaGoal) && campaignData.pizzaGoal > 0) {
@@ -954,9 +965,18 @@ const CrowdfundingPage = () => {
     }
     return 1000;
   })();
-  const pizzasSold = Number.isFinite(summaryPizzas) && summaryPizzas >= 0
-    ? Math.max(summaryPizzas, basePizzasSold)
-    : basePizzasSold;
+  const fallbackPizzasSold = (() => {
+    if (Number.isFinite(summaryPizzas) && summaryPizzas >= 0) {
+      return summaryPizzas;
+    }
+    if (typeof campaignData?.raisedAmount === 'number' && Number.isFinite(campaignData.raisedAmount)) {
+      return campaignData.raisedAmount;
+    }
+    return 0;
+  })();
+  const pizzasSold = Number.isFinite(publishedPizzasSold)
+    ? publishedPizzasSold
+    : fallbackPizzasSold;
   const pizzaGoal = Number.isFinite(summaryGoal) && summaryGoal > 0
     ? summaryGoal
     : basePizzaGoal; // default goal to 1000 pizzas

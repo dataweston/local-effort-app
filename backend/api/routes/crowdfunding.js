@@ -18,16 +18,27 @@ function createCrowdfundingRouter({ db, squareClient, logger }) {
     return str.slice(0, 600);
   };
 
+  const sanitizeRating = (value) => {
+    const num = Number(value);
+    if (!Number.isFinite(num)) return null;
+    const int = Math.round(num);
+    if (int < 1 || int > 5) return null;
+    return int;
+  };
+
   const mapFeedbackDoc = (doc) => {
     if (!doc) return null;
     const data = typeof doc.data === 'function' ? doc.data() : doc;
     if (!data) return null;
-    const message = sanitizeMessage(data.message);
-    if (!message) return null;
+    const comment = sanitizeMessage(data.comment || data.message);
+    if (!comment) return null;
+    const rating = sanitizeRating(data.rating);
     return {
       id: doc.id || data.id || `feedback-${Date.now()}`,
       name: sanitizeName(data.name) || 'Anonymous pizza fan',
-      message,
+      comment,
+      message: comment,
+      rating: rating ?? null,
       createdAt: data.createdAt || null,
     };
   };
@@ -191,15 +202,22 @@ function createCrowdfundingRouter({ db, squareClient, logger }) {
       }
 
       const name = sanitizeName(req.body?.name);
-      const message = sanitizeMessage(req.body?.message);
+      const rating = sanitizeRating(req.body?.rating);
+      const comment = sanitizeMessage(req.body?.message ?? req.body?.comment);
 
-      if (!message) {
+      if (!comment) {
         return res.status(400).json({ error: 'Please share a quick note about the pizza.' });
+      }
+
+      if (!Number.isInteger(rating)) {
+        return res.status(400).json({ error: 'Please choose how much you loved the pizza.' });
       }
 
       const entry = {
         name: name || 'Anonymous pizza fan',
-        message,
+        comment,
+        message: comment,
+        rating,
         createdAt: new Date().toISOString(),
         createdAtMs: Date.now(),
         source: 'web',
@@ -214,7 +232,16 @@ function createCrowdfundingRouter({ db, squareClient, logger }) {
         return res.status(500).json({ error: 'Failed to save pizza feedback.' });
       }
 
-      return res.json({ entry: { ...entry, id: docId || `feedback-${entry.createdAtMs}` } });
+      const responseEntry = {
+        id: docId || `feedback-${entry.createdAtMs}`,
+        name: entry.name,
+        comment: entry.comment,
+        message: entry.comment,
+        rating: entry.rating,
+        createdAt: entry.createdAt,
+      };
+
+      return res.json({ entry: responseEntry });
     } catch (error) {
       if (logger) logger.error({ err: error }, 'pizza feedback submit error');
       return res.status(500).json({ error: 'Failed to save pizza feedback.' });
