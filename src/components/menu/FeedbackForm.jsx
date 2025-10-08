@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
-import { db } from '../../firebaseConfig';
+import { ref, push, serverTimestamp, set } from 'firebase/database';
+import { realtimeDb } from '../../firebaseConfig';
 
 const FeedbackForm = () => {
   const [formData, setFormData] = useState({
@@ -25,10 +25,19 @@ const FeedbackForm = () => {
       return;
     }
     setStatus({ type: 'loading', message: 'Submitting...' });
+    if (!realtimeDb) {
+      setStatus({ type: 'error', message: 'Feedback is unavailable right now. Please try again later.' });
+      return;
+    }
+
     try {
-      await addDoc(collection(db, 'feedback'), {
+      const feedbackCollectionRef = ref(realtimeDb, 'feedback');
+      const newFeedbackRef = push(feedbackCollectionRef);
+      const submittedAtMs = Date.now();
+      await set(newFeedbackRef, {
         ...formData,
         submittedAt: serverTimestamp(),
+        submittedAtMs,
       });
       setStatus({ type: 'success', message: 'Thank you! Your feedback has been sent.' });
       setFormData({ name: '', email: '', phone: '', category: 'requests', message: '' }); // Clear form
