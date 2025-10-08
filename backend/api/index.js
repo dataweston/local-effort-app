@@ -30,6 +30,7 @@ const { logger } = require('./logger');
 const { createBrevoService } = require('./services/brevo');
 const { createCrowdfundingRouter } = require('./routes/crowdfunding');
 const crowdfundCheckoutHandler = require('../../api/crowdfund/checkout');
+const crowdfundFeedbackHandler = require('../../api/crowdfund/feedback');
 const { createMessagesRouter } = require('./routes/messages');
 
 // Fallback: if critical vars are missing, also try loading project root .env
@@ -306,6 +307,14 @@ app.all('/api/crowdfund/checkout', async (req, res, next) => {
     await crowdfundCheckoutHandler(req, res);
   } catch (err) {
     logger.error({ err, method: req.method }, 'crowdfund checkout handler failed');
+    next(err);
+  }
+});
+app.all('/api/crowdfund/feedback', async (req, res, next) => {
+  try {
+    await crowdfundFeedbackHandler(req, res);
+  } catch (err) {
+    logger.error({ err, method: req.method }, 'crowdfund feedback handler failed');
     next(err);
   }
 });
@@ -1396,3 +1405,4 @@ if (sentryEnabled) {
 const createApiApp = () => app;
 
 module.exports = { createApiApp };
+
