@@ -100,9 +100,24 @@ const AboutUsPage = () => {
           <section aria-labelledby="our-story-title" className="space-y-4">
             <SectionHeader overline="Background" title="Our Story" />
             <div className="grid gap-6 md:grid-cols-3">
-              <p className="prose-lite md:col-span-2">
-                We began in Minneapolis in 2022 with one simple, stubborn idea: eat local first, no matter the cost. Local and seasonal eating is good for our health, good for our economy, and good for our community. That commitment shapes everything we do today.
-              </p>
+              <div className="prose-lite md:col-span-2 space-y-4">
+                <p>
+                  Weston is from all over, and Catherine is from Minneapolis. We're chefs and married parents, lifelong restaurant and hospitality professionals, home cooks from the heart.
+                </p>
+                <p>
+                  Weston did it like this:<br />
+                  coffee&gt; food runner&gt; wine&gt; management&gt; kitchen
+                  <br />
+                  Catherine did it like this:<br />
+                  coffee&gt; restaurant&gt; patisserie&gt; grocery&gt; mom&gt;&gt;&gt;
+                </p>
+                <p>
+                  We're a knockout team of widely experienced kitchen professionals. We love platters and cassoulets and juleps and celery and croque monsieur and white rice, we love vegetables and meats and grain and nuts and grapes and HAZELNUTS and ducks and lamb and the weird great awesome people who make them and keep making them. We love meeting our growers. We love living in an city where shopping locally is valued and not hard to do.
+                </p>
+                <p>
+                  We feel strongly about choosing food grown and produced closer to home. It's a duty, and a gift, and it's at the center of our practice and culture. We're the realest people make the localest food.
+                </p>
+              </div>
               <div className="space-y-2 text-sm text-neutral-700">
                 <h3 className="text-base font-semibold text-neutral-900">At a glance</h3>
                 <ul className="list-disc pl-5">

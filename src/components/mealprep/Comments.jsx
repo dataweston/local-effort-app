@@ -1,13 +1,15 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { db } from '../../firebaseConfig';
 import {
-  addDoc,
-  collection,
-  onSnapshot,
-  orderBy,
+  limitToLast,
+  onValue,
+  orderByChild,
+  push,
   query,
+  ref,
   serverTimestamp,
-} from 'firebase/firestore';
+  set,
+} from 'firebase/database';
+import { realtimeDb } from '../../firebaseConfig';
 
 export function Comments({ menuId, user }) {
   const [comments, setComments] = useState([]);
@@ -15,22 +17,30 @@ export function Comments({ menuId, user }) {
   const inputRef = useRef(null);
 
   useEffect(() => {
-  if (!menuId || !db) return;
-    const q = query(collection(db, 'mealprep_comments', menuId, 'comments'), orderBy('createdAt', 'desc'));
-    const unsub = onSnapshot(q, (snap) => {
-      setComments(snap.docs.map((d) => ({ id: d.id, ...d.data() })));
+    if (!menuId || !realtimeDb) return undefined;
+    const commentsRef = ref(realtimeDb, `mealprep_comments/${menuId}/comments`);
+    const commentsQuery = query(commentsRef, orderByChild('createdAtMs'), limitToLast(100));
+    const unsubscribe = onValue(commentsQuery, (snap) => {
+      const raw = snap.val() || {};
+      const items = Object.entries(raw).map(([id, value]) => ({ id, ...(value || {}) }));
+      items.sort((a, b) => Number(b.createdAtMs || 0) - Number(a.createdAtMs || 0));
+      setComments(items);
     });
-    return () => unsub();
-  }, [menuId]);
+    return () => unsubscribe();
+  }, [menuId, realtimeDb]);
 
   const submit = async (e) => {
     e.preventDefault();
     const body = text.trim();
     if (!body) return;
-  if (!db) return;
-  await addDoc(collection(db, 'mealprep_comments', menuId, 'comments'), {
+    if (!realtimeDb) return;
+    const commentsRef = ref(realtimeDb, `mealprep_comments/${menuId}/comments`);
+    const newCommentRef = push(commentsRef);
+    const createdAtMs = Date.now();
+    await set(newCommentRef, {
       body,
       createdAt: serverTimestamp(),
+      createdAtMs,
       uid: user?.uid || null,
       name: user?.displayName || 'Anonymous',
     });

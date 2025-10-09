@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import { Helmet } from 'react-helmet-async';
 
 const CityPage = ({ city, h1, description, canonical, images, faq }) => {
@@ -14,6 +14,21 @@ const CityPage = ({ city, h1, description, canonical, images, faq }) => {
     description: img.caption || img.alt,
     copyrightHolder: "Local Effort Food Co."
   }));
+  const handleImageError = useCallback((event, fallbackSrc) => {
+    if (!fallbackSrc) {
+      return;
+    }
+
+    const target = event.currentTarget;
+
+    if (target.dataset.fallbackApplied === 'true') {
+      return;
+    }
+
+    target.dataset.fallbackApplied = 'true';
+    target.src = fallbackSrc;
+    target.removeAttribute('srcset');
+  }, []);
   const serviceLd = useMemo(() => ({
     "@context": "https://schema.org",
     "@type": "ProfessionalService",
@@ -104,6 +119,7 @@ const CityPage = ({ city, h1, description, canonical, images, faq }) => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 my-8">
+<<<<<<< HEAD
         {images.map((img, idx) => {
           const src = img.src || img.fallback;
           const src400 = img.src400 || img.fallback;
@@ -136,11 +152,34 @@ const CityPage = ({ city, h1, description, canonical, images, faq }) => {
             </figure>
           );
         })}
+=======
+        {images.map((img, idx) => (
+          <figure key={idx} className="gallery-item">
+            <img
+              src={img.src}
+              srcSet={`${img.src400} 400w, ${img.src800} 800w, ${img.src1200} 1200w`}
+              sizes="(max-width:600px) 100vw, 33vw"
+              loading="lazy"
+              decoding="async"
+              width="1200"
+              height="800"
+              alt={img.alt}
+              className="w-full h-auto rounded"
+              onError={(event) => handleImageError(event, img.fallbackSrc)}
+            />
+            <figcaption className="text-sm text-neutral-600 mt-2">{img.caption || img.alt}</figcaption>
+          </figure>
+        ))}
+>>>>>>> a438e607553c514e1fe73e9395ebf456acce3e0b
       </div>
 
       <noscript>
         {images.map((img, idx) => (
+<<<<<<< HEAD
           <img key={`ns-${idx}`} src={img.src || img.fallback} alt={img.alt} />
+=======
+          <img key={`ns-${idx}`} src={img.fallbackSrc || img.src} alt={img.alt} />
+>>>>>>> a438e607553c514e1fe73e9395ebf456acce3e0b
         ))}
       </noscript>
 
