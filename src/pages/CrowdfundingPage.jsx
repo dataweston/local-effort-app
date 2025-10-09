@@ -1583,36 +1583,6 @@ const CrowdfundingPage = () => {
           </div>
         </div>
 
-        {hasEvents && (
-          <div className="max-w-4xl">
-            <div className="border rounded-lg p-4 bg-white shadow-sm">
-              <h3 className="text-lg font-semibold mb-2">upcoming campaign events.</h3>
-              <ul className="divide-y">
-                {upcomingEvents.map((ev) => {
-                  const dateLabel = formatListDate(ev);
-                  const detailLabel = [dateLabel, ev.foodType || 'Food']
-                    .filter(Boolean)
-                    .join(' - ');
-                  return (
-                    <li key={ev._key} className="py-2">
-                      <button
-                        type="button"
-                        className="text-left hover:underline"
-                        onClick={() => setEventModal(ev)}
-                      >
-                        <span className="flex flex-col sm:flex-row sm:items-baseline sm:gap-2">
-                          <span className="font-semibold text-slate-800">{ev.location}</span>
-                          <span className="text-sm text-slate-600">{detailLabel}</span>
-                        </span>
-                      </button>
-                    </li>
-                  );
-                })}
-              </ul>
-            </div>
-          </div>
-        )}
-
         {/* --- Main Content Grid --- */}
         <div className="grid grid-cols-1 lg:grid-cols-5 lg:gap-16">
           {/* --- Left Column (Media & Content Tabs) --- */}
@@ -1718,6 +1688,34 @@ const CrowdfundingPage = () => {
                 </div>
               )}
             </div>
+
+            {hasEvents && (
+              <div className="border rounded-lg p-4 bg-white shadow-sm">
+                <h3 className="text-lg font-semibold mb-2">upcoming campaign events.</h3>
+                <ul className="divide-y">
+                  {upcomingEvents.map((ev) => {
+                    const dateLabel = formatListDate(ev);
+                    const detailLabel = [dateLabel, ev.foodType || 'Food']
+                      .filter(Boolean)
+                      .join(' - ');
+                    return (
+                      <li key={ev._key} className="py-2">
+                        <button
+                          type="button"
+                          className="text-left hover:underline"
+                          onClick={() => setEventModal(ev)}
+                        >
+                          <span className="flex flex-col sm:flex-row sm:items-baseline sm:gap-2">
+                            <span className="font-semibold text-slate-800">{ev.location}</span>
+                            <span className="text-sm text-slate-600">{detailLabel}</span>
+                          </span>
+                        </button>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
+            )}
           </div>
 
           {/* --- Right Column (Stats & Rewards) --- */}
