@@ -103,6 +103,19 @@ module.exports = async (req, res) => {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
+<<<<<<< HEAD
+    const {
+      items,
+      funderName,
+      token,
+      email,
+      phone,
+      notes,
+      notify,
+      rewardPreference,
+      pizzaQty,
+    } = req.body || {};
+=======
   const { client: squareClient, locationId } = getSquareClient();
   const { firestore: db } = getFirebaseAdmin();
 

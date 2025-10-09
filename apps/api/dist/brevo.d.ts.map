@@ -1,0 +1,1 @@
+{"version":3,"file":"brevo.d.ts","sourceRoot":"","sources":["../src/brevo.ts"],"names":[],"mappings":"AACA,OAAO,EAAE,KAAK,EAAE,MAAM,sBAAsB,CAAC;AAI7C,KAAK,eAAe,GAAG;IACrB,KAAK,EAAE,KAAK,CAAC;IACb,GAAG,EAAE,MAAM,CAAC;IACZ,KAAK,EAAE,MAAM,CAAC;CACf,CAAC;AAEF,eAAO,MAAM,cAAc,0BAAiC,eAAe;;;;EAmC1E,CAAC"}

@@ -32,7 +32,7 @@ export const Header = () => {
   }, [isOpen]);
 
   return (
-    <header className="sticky top-0 z-40 bg-white/80 backdrop-blur supports-[backdrop-filter]:bg-white/60">
+    <header className="sticky top-0 z-40 bg-white backdrop-blur supports-[backdrop-filter]:bg-white/70 md:bg-white/80">
   <div className="mx-auto max-w-6xl px-2 md:px-5 lg:px-6 h-14 flex items-center justify-between">
         {/* Logo */}
         <NavLink to="/" onClick={() => setIsOpen(false)} className="flex items-center gap-2">
@@ -131,7 +131,7 @@ export const Header = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="md:hidden fixed inset-0 bg-neutral-50"
+            className="md:hidden fixed inset-0 bg-white"
           >
             <motion.nav
               initial="hidden"

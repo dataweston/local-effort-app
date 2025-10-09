@@ -8,7 +8,6 @@ import { useSquareCard } from '../../hooks/useSquareCard';
 
 const inputClassName =
   'w-full rounded-md border border-neutral-300 px-3 py-2 text-sm shadow-sm focus:border-accent focus:outline-none focus:ring-2 focus:ring-orange-200';
-
 const PaikkaCheckout = () => {
   const [quantities, setQuantities] = useState(() => Object.fromEntries(MENU_ITEMS.map((item) => [item.sku, 0])));
   const [firstName, setFirstName] = useState('');
@@ -18,9 +17,6 @@ const PaikkaCheckout = () => {
   const [customTip, setCustomTip] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState(null);
-  const [dairyFreeSelections, setDairyFreeSelections] = useState(() =>
-    Object.fromEntries(GROUPED_MENU.map((group) => [group.baseSku, false]))
-  );
 
   const subtotalCents = useMemo(
     () => MENU_ITEMS.reduce((sum, item) => sum + (quantities[item.sku] ?? 0) * item.presalePriceCents, 0),
@@ -51,7 +47,6 @@ const PaikkaCheckout = () => {
   );
 
   const { cardLoaded, error: cardError, loadingScript, tokenize } = useSquareCard('#paikka-card-container', true, []);
-
   const handleQuantityChange = (sku, delta) => {
     setQuantities((prev) => {
       const current = prev[sku] ?? 0;
@@ -64,16 +59,6 @@ const PaikkaCheckout = () => {
   const handleAddToCart = (sku) => {
     setError(null);
     handleQuantityChange(sku, 1);
-  };
-
-  const setGroupDairyFree = (baseSku, checked) => {
-    setDairyFreeSelections((prev) => {
-      const current = prev[baseSku] ?? false;
-      if (current === checked) {
-        return prev;
-      }
-      return { ...prev, [baseSku]: checked };
-    });
   };
 
   const buildCheckoutPayload = () => ({
@@ -165,19 +150,13 @@ const PaikkaCheckout = () => {
       <header className="space-y-3 text-center">
         <p className="text-sm uppercase tracking-[0.3em] text-neutral-500">Local Effort x Paikka</p>
         <h1 className="text-4xl font-semibold tracking-tight text-neutral-900">Paikka Sandwich Presale</h1>
-        <p className="mx-auto max-w-2xl text-base text-neutral-600">
-          Skip the line at Paikka. Reserve your sandwiches now and check in with the QR code we will email you.
-        </p>
+        <p className="mx-auto max-w-2xl text-base text-neutral-600">Skip the line at Paikka. Reserve your sandwiches now and check in with the QR code we will email you.</p>
       </header>
 
       <div className="grid gap-8 lg:grid-cols-[2fr,1fr]">
         <div className="space-y-6">
           {GROUPED_MENU.map((group) => {
             const hasDairyFree = group.variants.some((variant) => variant.isDairyFree);
-            const defaultVariant = group.variants.find((variant) => !variant.isDairyFree) ?? group.variants[0];
-            const dairyFreeVariant = group.variants.find((variant) => variant.isDairyFree);
-            const dairyFreeSelected = Boolean(dairyFreeVariant && dairyFreeSelections[group.baseSku]);
-            const activeVariant = dairyFreeSelected && dairyFreeVariant ? dairyFreeVariant : defaultVariant;
             return (
               <div key={group.baseSku} className="rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm">
                 <div className="space-y-4">
@@ -193,35 +172,22 @@ const PaikkaCheckout = () => {
                     </div>
                   </div>
 
-                  <div className="flex flex-wrap items-center gap-3">
-                    <Button
-                      type="button"
-                      onClick={() => activeVariant && handleAddToCart(activeVariant.sku)}
-                      className="flex-1 min-w-[10rem]"
-                    >
-                      {`Add to cart${dairyFreeSelected ? ' (dairy-free)' : ''}`}
-                    </Button>
-                    {dairyFreeVariant && (
-                      <label
-                        className="flex items-center gap-2 text-sm font-medium text-neutral-700"
-                        htmlFor={`dairy-free-${group.baseSku}`}
+                  <div className="flex flex-wrap gap-3">
+                    {group.variants.map((variant) => (
+                      <Button
+                        key={variant.sku}
+                        type="button"
+                        onClick={() => handleAddToCart(variant.sku)}
+                        variant={variant.isDairyFree ? 'outline' : 'default'}
+                        className="flex-1 min-w-[10rem]"
                       >
-                        <input
-                          id={`dairy-free-${group.baseSku}`}
-                          type="checkbox"
-                          className="h-4 w-4 rounded border-neutral-300 text-accent focus:ring-accent"
-                          checked={dairyFreeSelected}
-                          onChange={(event) => setGroupDairyFree(group.baseSku, event.target.checked)}
-                        />
-                        Dairy free
-                      </label>
-                    )}
+                        {variant.isDairyFree ? 'Add dairy-free' : 'Add to cart'}
+                      </Button>
+                    ))}
                   </div>
 
                   {hasDairyFree && (
-                    <p className="text-xs text-neutral-500">
-                      Dairy-free sandwiches are prepared without cheese.
-                    </p>
+                    <p className="text-xs text-neutral-500">Dairy-free sandwiches are prepared without cheese.</p>
                   )}
                 </div>
               </div>
@@ -320,12 +286,8 @@ const PaikkaCheckout = () => {
                   {summaryItems.map(({ item, qty }) => (
                     <li key={item.sku} className="flex items-start justify-between gap-3">
                       <div className="space-y-1">
-                        <p className="text-sm font-medium text-neutral-900">
-                          {item.summaryTitle || item.title}
-                        </p>
-                        <p className="text-xs text-neutral-500">
-                          {item.isDairyFree ? 'Dairy-free · prepared without cheese' : 'Contains dairy'}
-                        </p>
+                        <p className="text-sm font-medium text-neutral-900">{item.summaryTitle || item.title}</p>
+                        <p className="text-xs text-neutral-500">{item.isDairyFree ? 'Dairy-free · prepared without cheese' : 'Contains dairy'}</p>
                       </div>
                       <div className="flex items-center gap-2">
                         <button
@@ -379,13 +341,8 @@ const PaikkaCheckout = () => {
             </div>
 
             {error && <p className="rounded-md bg-red-50 p-3 text-sm text-red-700">{error}</p>}
-
-            <Button type="submit" className="w-full" disabled={!canSubmit}>
-              {isSubmitting ? 'Processing payment…' : `Pay ${formatCurrency(totalCents)}`}
-            </Button>
-            <p className="text-xs text-neutral-500">
-              Your receipt and QR code will arrive by email within a few minutes after payment.
-            </p>
+            <Button type="submit" className="w-full" disabled={!canSubmit}>{isSubmitting ? 'Processing payment…' : `Pay ${formatCurrency(totalCents)}`}</Button>
+            <p className="text-xs text-neutral-500">Your receipt and QR code will arrive by email within a few minutes after payment.</p>
           </form>
         </aside>
       </div>

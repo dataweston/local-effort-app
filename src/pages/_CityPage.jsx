@@ -119,6 +119,38 @@ const CityPage = ({ city, h1, description, canonical, images, faq }) => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 my-8">
+        {images.map((img, idx) => {
+          const src = img.src || img.fallback;
+          const src400 = img.src400 || img.fallback;
+          const src800 = img.src800 || img.fallback;
+          const src1200 = img.src1200 || img.fallback;
+          const handleError = (event) => {
+            if (!img.fallback) return;
+            const target = event.currentTarget;
+            if (target.dataset.fallbackApplied === 'true') return;
+            target.dataset.fallbackApplied = 'true';
+            target.src = img.fallback;
+            target.srcset = '';
+            target.sizes = '';
+          };
+          return (
+            <figure key={idx} className="gallery-item">
+              <img
+                src={src}
+                srcSet={`${src400} 400w, ${src800} 800w, ${src1200} 1200w`}
+                sizes="(max-width:600px) 100vw, 33vw"
+                loading="lazy"
+                decoding="async"
+                width="1200"
+                height="800"
+                alt={img.alt}
+                className="w-full h-auto rounded"
+                onError={handleError}
+              />
+              <figcaption className="text-sm text-neutral-600 mt-2">{img.caption || img.alt}</figcaption>
+            </figure>
+          );
+        })}
         {images.map((img, idx) => (
           <figure key={idx} className="gallery-item">
             <img
@@ -140,7 +172,10 @@ const CityPage = ({ city, h1, description, canonical, images, faq }) => {
 
       <noscript>
         {images.map((img, idx) => (
-          <img key={`ns-${idx}`} src={img.fallbackSrc || img.src} alt={img.alt} />
+          <React.Fragment key={`ns-${idx}`}>
+            <img src={img.src || img.fallback} alt={img.alt} />
+            <img src={img.fallbackSrc || img.src} alt={img.alt} />
+          </React.Fragment>
         ))}
       </noscript>
 
