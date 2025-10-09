@@ -394,7 +394,7 @@ const REWARD_PREFERENCE_OPTIONS = [
   { value: 'deliver to my home', label: 'Deliver to my home' },
   { value: 'make live at my home', label: 'Make live at my home' },
   { value: 'frozen pizza', label: 'Frozen pizza' },
-  { value: "i'm open or im not sure", label: 'IG��m open or IG��m not sure' },
+  { value: "i'm open or im not sure", label: "I'm open or I'm not sure" },
 ];
 
 const CAMPAIGN_EXTENSION_DATE_STRING = '2025-12-10T23:59:59-06:00';
