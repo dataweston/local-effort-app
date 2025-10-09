@@ -123,7 +123,7 @@ module.exports = async (req, res) => {
     lineTotal = Math.max(0, Math.round(lineTotal));
 
     const trimmedDiscount = typeof discountCode === 'string' ? discountCode.trim().slice(0, 60) : '';
-    const discountDetails = resolveCrowdfundDiscount(trimmedDiscount);
+    const discountDetails = await resolveCrowdfundDiscount(trimmedDiscount, { squareClient });
     if (lineTotal <= 0 && !discountDetails) {
       return res.status(400).json({ error: 'Invalid total' });
     }
