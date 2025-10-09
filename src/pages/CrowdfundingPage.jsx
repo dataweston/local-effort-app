@@ -426,34 +426,77 @@ const CrowdfundingPage = () => {
   const statusRefreshError = Boolean(summaryError);
 
   useEffect(() => {
-    if (activeTab === 'gallery' && !galleryLoadedRef.current) {
-      galleryLoadedRef.current = true;
-      setGalleryLoading(true);
-      // Fetch pizza and pie separately then merge unique results to ensure OR semantics across Cloudinary search API
-      const endpoints = ['/api/search-images?query=pizza&per_page=50', '/api/search-images?query=pie&per_page=50'];
-      Promise.all(endpoints.map((u) => fetch(u).then(r => r.json().catch(()=>({})).then(data => ({ ok: r.ok, data })))))
-        .then((results) => {
-          const all = [];
-          results.forEach(({ ok, data }) => {
-            if (ok && data && Array.isArray(data.images)) all.push(...data.images);
-          });
-          // De-duplicate by asset_id or public_id
-          const seen = new Set();
-          const merged = [];
-          for (const img of all) {
-            const id = img.asset_id || img.public_id;
-            if (!id || seen.has(id)) continue;
-            seen.add(id);
-            merged.push(img);
-          }
-          if (merged.length === 0) {
-            setGalleryError('No images found yet.');
-          }
-          setGalleryImages(merged);
-        })
-        .catch((e) => setGalleryError(e.message || 'Error loading gallery'))
-        .finally(() => setGalleryLoading(false));
+    if (activeTab !== 'gallery' || galleryLoadedRef.current) {
+      return undefined;
     }
+
+    galleryLoadedRef.current = true;
+    setGalleryLoading(true);
+    setGalleryError('');
+    // Fetch pizza and pie separately then merge unique results to ensure OR semantics across Cloudinary search API
+    const endpoints = ['/api/search-images?query=pizza&per_page=50', '/api/search-images?query=pie&per_page=50'];
+    let cancelled = false;
+
+    const fetchGalleryImages = async () => {
+      try {
+        const results = await Promise.all(
+          endpoints.map(async (endpoint) => {
+            try {
+              const response = await fetch(endpoint, { headers: { Accept: 'application/json' } });
+              let data = null;
+              try {
+                data = await response.json();
+              } catch (jsonError) {
+                data = null;
+              }
+              return { ok: response.ok, data };
+            } catch (networkError) {
+              return { ok: false, data: null, error: networkError };
+            }
+          })
+        );
+
+        if (cancelled) {
+          return;
+        }
+
+        const all = [];
+        let hadNetworkError = false;
+        results.forEach(({ ok, data, error }) => {
+          if (error) {
+            hadNetworkError = true;
+          }
+          if (ok && data && Array.isArray(data.images)) all.push(...data.images);
+        });
+        // De-duplicate by asset_id or public_id
+        const seen = new Set();
+        const merged = [];
+        for (const img of all) {
+          const id = img.asset_id || img.public_id;
+          if (!id || seen.has(id)) continue;
+          seen.add(id);
+          merged.push(img);
+        }
+        if (merged.length === 0) {
+          setGalleryError(hadNetworkError ? 'Unable to load gallery images right now.' : 'No images found yet.');
+        }
+        setGalleryImages(merged);
+      } catch (error) {
+        if (!cancelled) {
+          setGalleryError(error?.message || 'Error loading gallery');
+        }
+      } finally {
+        if (!cancelled) {
+          setGalleryLoading(false);
+        }
+      }
+    };
+
+    fetchGalleryImages();
+
+    return () => {
+      cancelled = true;
+    };
   }, [activeTab]);
 
   useEffect(() => {
@@ -2020,19 +2063,6 @@ const CrowdfundingPage = () => {
                 );
               })}
 
-              {/* Dev diagnostics */}
-              {process.env.NODE_ENV !== 'production' && (
-                <div className="mt-8 p-4 border rounded text-xs space-y-1 bg-gray-50">
-                  <p className="font-semibold">Payment Diagnostics</p>
-                  <p>SDK URL: {envInfo?.sdkUrl}</p>
-                  <p>Environment: {envInfo?.environment || 'unknown'}</p>
-                  <p>App ID present: {envInfo?.appId ? 'yes' : 'no'}</p>
-                  <p>Location ID present: {envInfo?.locationId ? 'yes' : 'no'}</p>
-                  <p>Sandbox mode: {envInfo?.sandbox ? 'true' : 'false'}</p>
-                  <p>Loaded: {cardLoaded ? 'true' : 'false'} | Attempts: {envInfo?.attempts ?? 'n/a'}</p>
-                  {squareConfigError && <p className="text-red-600">Error: {squareConfigError}</p>}
-                </div>
-              )}
             </div>
           </div>
         </div>
