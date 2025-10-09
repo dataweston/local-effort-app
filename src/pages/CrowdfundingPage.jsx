@@ -30,9 +30,6 @@ const FIREBASE_DATABASE_PATTERN = /firebase database/gi;
 
 const createFirebaseDatabaseRegex = () => new RegExp(FIREBASE_DATABASE_PATTERN);
 
-// Fallback hero image displayed when campaign data does not supply one explicitly.
-const HERO_MAIN_IMAGE = '/gallery/5Z0A5637-Edit.jpg';
-
 function isPortableTextBlocks(value) {
   return (
     Array.isArray(value) &&
@@ -382,7 +379,7 @@ const REWARD_PREFERENCE_OPTIONS = [
   { value: 'deliver to my home', label: 'Deliver to my home' },
   { value: 'make live at my home', label: 'Make live at my home' },
   { value: 'frozen pizza', label: 'Frozen pizza' },
-  { value: "i'm open or im not sure", label: 'I‚Äôm open or I‚Äôm not sure' },
+  { value: "i'm open or im not sure", label: 'IG«÷m open or IG«÷m not sure' },
 ];
 
 const CAMPAIGN_EXTENSION_DATE_STRING = '2025-12-10T23:59:59-06:00';
@@ -410,7 +407,7 @@ const CrowdfundingPage = () => {
   const notify = 'none';
   const [showForm, setShowForm] = useState(false);
   const [pizzaQty, setPizzaQty] = useState(1);
-  const [checkoutResult, setCheckoutResult] = useState(null);
+  const [confirmMsg, setConfirmMsg] = useState('');
   const [formNotice, setFormNotice] = useState('');
   const [referralInput, setReferralInput] = useState('');
   const [referralState, setReferralState] = useState({
@@ -427,13 +424,8 @@ const CrowdfundingPage = () => {
   const [feedbackRating, setFeedbackRating] = useState(5);
   const [feedbackMessage, setFeedbackMessage] = useState('');
   const [feedbackNotice, setFeedbackNotice] = useState('');
-  const [feedbackStatus, setFeedbackStatus] = useState('idle'); // idle | loading | success | error
+  const [feedbackStatus, setFeedbackStatus] = useState('idle'); // idle | error | success
   const [feedbackEntries, setFeedbackEntries] = useState([]);
-  const [statusData, setStatusData] = useState(null);
-  const [heroExtras, setHeroExtras] = useState([]);
-  const [heroError, setHeroError] = useState('');
-  const [heroLoading, setHeroLoading] = useState(false);
-  const [activeHeroIndex, setActiveHeroIndex] = useState(0);
   const [feedbackSubmitting, setFeedbackSubmitting] = useState(false);
   const [feedbackLoading, setFeedbackLoading] = useState(false);
   const [feedbackFetchError, setFeedbackFetchError] = useState('');
@@ -701,7 +693,7 @@ const CrowdfundingPage = () => {
   const phoneValid = useMemo(() => !phone || phoneDigits.length >= 10, [phone, phoneDigits]);
 
   useEffect(() => {
-    // üí° IMPROVEMENT: Fetch a specific campaign by its slug for a more robust component.
+    // =É∆Ì IMPROVEMENT: Fetch a specific campaign by its slug for a more robust component.
     // For this example, we'll hardcode a slug. In a real app, you'd get this from the URL.
     const slug = 'local-pizza-by-local-effort-let-s-make-1000-pizzas'; // Replace with a real slug from your Sanity data
     const query = `*[_type == "crowdfundingCampaign" && slug.current == $slug][0]{
@@ -719,19 +711,10 @@ const CrowdfundingPage = () => {
       heroImage,
       story,
       goals,
-      "featuredPublicEvents": featuredPublicEvents[]->{ _id, location, startDate, endDate, foodType, ticketsUrl, description },
       events[]{ _key, location, startDate, endDate, foodType, ticketsUrl, description },
       faq,
       "rewardTiers": rewardTiers[]->{ amount, pizzaCount, pieCount, title, description, limit, referralOnly, referralCode } | order(amount asc),
-      "updates": order(
-        updates[]->{
-          _id,
-          title,
-          publishedAt,
-          body
-        },
-        publishedAt desc
-      )
+      "updates": updates[]->{ title, publishedAt, body } | order(publishedAt desc)
     }`;
 
     const params = { slug };
@@ -768,19 +751,10 @@ const CrowdfundingPage = () => {
             heroImage,
             story,
             goals,
-            "featuredPublicEvents": featuredPublicEvents[]->{ _id, location, startDate, endDate, foodType, ticketsUrl, description },
             events[]{ _key, location, startDate, endDate, foodType, ticketsUrl, description },
             faq,
             "rewardTiers": rewardTiers[]->{ amount, pizzaCount, pieCount, title, description, limit, referralOnly, referralCode } | order(amount asc),
-            "updates": order(
-              updates[]->{
-                _id,
-                title,
-                publishedAt,
-                body
-              },
-              publishedAt desc
-            )
+            "updates": updates[]->{ title, publishedAt, body } | order(publishedAt desc)
           }`;
           const fbData = await sanityClient.fetch(fallback);
           if (fbData) {
@@ -955,39 +929,6 @@ const CrowdfundingPage = () => {
         return;
       }
 
-      setFeedbackStatus('loading');
-      setFeedbackNotice('Saving your note...');
-      try {
-        const response = await fetch('/api/crowdfund/feedback', {
-          method: 'POST',
-          headers: { 'content-type': 'application/json' },
-          body: JSON.stringify({ name, message }),
-        });
-        if (!response.ok) {
-          const text = await response.text().catch(() => '');
-          throw new Error(text || 'Could not save your note. Please try again.');
-        }
-        const payload = await response.json().catch(() => ({}));
-        const fallbackEntry = {
-          id: `feedback-${Date.now()}`,
-          name: name || DEFAULT_FEEDBACK_NAME,
-          message,
-          createdAt: new Date().toISOString(),
-        };
-        const entry = normalizeFeedbackEntry(payload.entry) || normalizeFeedbackEntry(fallbackEntry);
-        if (entry) {
-          setFeedbackEntries((prev) => {
-            const withoutDuplicate = entry.id ? prev.filter((item) => item.id !== entry.id) : prev;
-            return [entry, ...withoutDuplicate].slice(0, 8);
-          });
-        }
-        setFeedbackName('');
-        setFeedbackMessage('');
-      } catch (err) {
-        setFeedbackStatus('error');
-        setFeedbackNotice(err?.message || 'Could not save your note. Please try again.');
-      }
-
       if (!Number.isInteger(ratingValue) || ratingValue < 1 || ratingValue > 5) {
         setFeedbackStatus('error');
         setFeedbackNotice('Please choose how much you loved the pizza.');
@@ -1073,33 +1014,6 @@ const CrowdfundingPage = () => {
   const faq = Array.isArray(faqRaw) ? faqRaw : [];
   const story = Array.isArray(storyRaw) ? storyRaw : [];
   const title = campaignTitle || 'Crowdfunding';
-
-  const heroSlides = useMemo(() => {
-    const slides = [
-      {
-        id: 'hero-main',
-        src: HERO_MAIN_IMAGE,
-        alt: title || 'Local Effort pizza celebration',
-      },
-    ];
-    heroExtras.forEach((img) => {
-      if (!img?.src) return;
-      if (img.src === HERO_MAIN_IMAGE) return;
-      slides.push({
-        id: img.id || img.src,
-        src: img.src,
-        alt: img.alt || title || 'Pizza photo from our community',
-      });
-    });
-    return slides;
-  }, [title, heroExtras]);
-  const totalHeroSlides = heroSlides.length;
-
-  useEffect(() => {
-    if (activeHeroIndex >= totalHeroSlides) {
-      setActiveHeroIndex(0);
-    }
-  }, [activeHeroIndex, totalHeroSlides]);
 
   // Initialize shared Square card (enabled only when a payable tier exists)
   const {
@@ -1238,68 +1152,6 @@ const CrowdfundingPage = () => {
     setCardReady(false);
   }, []);
 
-  const handlePaymentSuccess = useCallback(
-    ({
-      pizzasPurchased = 0,
-      totalCents,
-      paymentId,
-      newTotal,
-      funderName,
-      viaRedirect = false,
-    } = {}) => {
-      const pizzas = Number.isFinite(pizzasPurchased)
-        ? Math.max(0, Math.round(pizzasPurchased))
-        : 0;
-      const totalLabel =
-        typeof totalCents === 'number'
-          ? currencyFormatter.format(Math.max(totalCents, 0) / 100)
-          : null;
-
-      setPayError('');
-      setCheckoutResult({
-        pizzasPurchased: pizzas,
-        totalLabel,
-        paymentId: paymentId || null,
-        viaRedirect,
-        funderName: funderName || '',
-        timestamp: Date.now(),
-      });
-      setShowForm(false);
-      setFormNotice('');
-      setPizzaQty(1);
-      setSelectedTierId('');
-
-      if (typeof newTotal === 'number' || pizzas > 0) {
-        setCampaignData((prev) => {
-          if (!prev) return prev;
-          const next = { ...prev };
-          if (typeof newTotal === 'number' && Number.isFinite(newTotal)) {
-            next.pizzasSold = newTotal;
-          } else {
-            const current = typeof next.pizzasSold === 'number' ? next.pizzasSold : 0;
-            next.pizzasSold = current + pizzas;
-          }
-          return next;
-        });
-      }
-
-      destroyCard();
-      notifyToast('Thanks! Your contribution has been processed.', { type: 'success' });
-    },
-    [
-      currencyFormatter,
-      destroyCard,
-      notifyToast,
-      setCampaignData,
-      setCheckoutResult,
-      setFormNotice,
-      setPayError,
-      setPizzaQty,
-      setSelectedTierId,
-      setShowForm,
-    ]
-  );
-
   useEffect(() => {
     if (!showForm) {
       destroyCard();
@@ -1389,7 +1241,6 @@ const CrowdfundingPage = () => {
     const params = new URLSearchParams(window.location.search);
     if (params.get('payment') === 'success') {
       (async () => {
-        let confirmOk = false;
         try {
           const raw = localStorage.getItem('cf_items');
           const items = raw ? JSON.parse(raw) : [];
@@ -1404,57 +1255,15 @@ const CrowdfundingPage = () => {
             if (res.ok) {
               setConfirmMsg('Thanks! Your contribution has been recorded.');
             }
-
-            const pizzasPurchased = items
-              .filter((item) => item && item.type === 'pizza')
-              .reduce((sum, item) => {
-                const pizzaCount = Number(item?.pizzaCount);
-                const quantity = Number(item?.quantity);
-                if (Number.isFinite(pizzaCount) && pizzaCount > 0) return sum + pizzaCount;
-                if (Number.isFinite(quantity) && quantity > 0) return sum + quantity;
-                return sum + 1;
-              }, 0);
-
-            const totalCents = items.reduce((sum, item) => {
-              const price = Number(item?.priceCents);
-              const quantity = Number(item?.quantity);
-              const qty = Number.isFinite(quantity) && quantity > 0 ? quantity : 1;
-              if (!Number.isFinite(price) || price <= 0) return sum;
-              return sum + price * qty;
-            }, 0);
-
-            handlePaymentSuccess({
-              pizzasPurchased,
-              totalCents,
-              newTotal,
-              funderName: name,
-              viaRedirect: true,
-            });
-
-            if (!confirmOk) {
-              notifyToast(
-                'Payment succeeded, but updating our counter failed. We will reconcile shortly.',
-                { type: 'warning' }
-              );
-            }
-          } else {
-            handlePaymentSuccess({ pizzasPurchased: 0, viaRedirect: true });
           }
-        } catch (err) {
-          console.warn('[crowdfunding] hosted checkout success handling failed', err);
+        } catch (_) {
+          // ignore
         } finally {
           clearPendingContribution();
-          try {
-            const url = new URL(window.location.href);
-            url.searchParams.delete('payment');
-            window.history.replaceState({}, document.title, url.toString());
-          } catch (_) {
-            // noop if URL manipulation fails
-          }
         }
       })();
     }
-  }, [clearPendingContribution, handlePaymentSuccess, notifyToast]);
+  }, [clearPendingContribution]);
 
   const tokenizeCard = useCallback(async () => {
     const card = cardInstanceRef.current;
@@ -1570,14 +1379,13 @@ const CrowdfundingPage = () => {
               type: item.type,
               pizzaCount: item.pizzaCount,
               quantity: item.quantity,
-              priceCents: item.priceCents,
             }));
             rememberPendingContribution(
               itemsForStorage,
               funderName?.trim() || '',
               trimmedDiscount || ''
             );
-            notifyToast('Redirecting to secure checkout‚Ä¶', { type: 'success' });
+            notifyToast('Redirecting to secure checkoutG«™', { type: 'success' });
             window.location.assign(linkData.url);
             return;
           }
@@ -1641,28 +1449,7 @@ const CrowdfundingPage = () => {
     }
   };
 
-  const updates = useMemo(() => {
-    if (!Array.isArray(campaignData?.updates)) return [];
-    return campaignData.updates
-      .filter((update) => {
-        if (!update) return false;
-        const hasBodyArray = Array.isArray(update.body) && update.body.some(Boolean);
-        return Boolean(update.title) || hasBodyArray || Boolean(update.body);
-      })
-      .map((update, index) => {
-        const publishedAt = update.publishedAt || null;
-        const date = publishedAt ? new Date(publishedAt) : null;
-        const timestamp = date && !Number.isNaN(date.getTime()) ? date.getTime() : 0;
-        const normalized = {
-          ...update,
-          _id: update._id || `update-${index}`,
-          _publishedTimestamp: timestamp,
-        };
-        return normalized;
-      })
-      .sort((a, b) => b._publishedTimestamp - a._publishedTimestamp)
-      .map(({ _publishedTimestamp, ...rest }) => rest);
-  }, [campaignData?.updates]);
+  const updates = Array.isArray(campaignData?.updates) ? campaignData.updates : [];
 
   const parseEventDate = useCallback((value) => {
     if (!value) return null;
@@ -1671,61 +1458,34 @@ const CrowdfundingPage = () => {
     return Number.isNaN(date.getTime()) ? null : date;
   }, []);
 
-  const formatUpdateDate = useCallback((value) => {
-    if (!value) return '';
-    const date = new Date(value);
-    if (Number.isNaN(date.getTime())) return '';
-    return date.toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    });
-  }, []);
-
-  const normalizeEvents = useCallback(
-    (eventsSource, sourceLabel) => {
-      const items = Array.isArray(eventsSource) ? eventsSource : [];
-      if (!items.length) return [];
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      return items
-        .filter(Boolean)
-        .map((ev, index) => ({
-          ...ev,
-          _key: ev?._key || ev?._id || `${sourceLabel || 'event'}-${index}`,
-        }))
-        .filter((ev) => {
-          const start = parseEventDate(ev.startDate);
-          if (!start) return false;
-          const end = parseEventDate(ev.endDate) || start;
-          const boundary = new Date(end);
-          boundary.setHours(23, 59, 59, 999);
-          return boundary >= today;
-        })
-        .sort((a, b) => {
-          const aStart = parseEventDate(a.startDate);
-          const bStart = parseEventDate(b.startDate);
-          if (!aStart && !bStart) return 0;
-          if (!aStart) return 1;
-          if (!bStart) return -1;
-          return aStart - bStart;
-        });
-    },
-    [parseEventDate]
-  );
-
-  const campaignEvents = campaignData?.events;
-  const campaignFeaturedEvents = campaignData?.featuredPublicEvents;
-
-  const upcomingEvents = useMemo(
-    () => normalizeEvents(campaignEvents, 'campaign'),
-    [campaignEvents, normalizeEvents]
-  );
-
-  const featuredPublicEvents = useMemo(
-    () => normalizeEvents(campaignFeaturedEvents, 'public'),
-    [campaignFeaturedEvents, normalizeEvents]
-  );
+  const upcomingEvents = useMemo(() => {
+    const rawEvents = Array.isArray(campaignData?.events) ? campaignData.events : [];
+    if (!rawEvents.length) return [];
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return rawEvents
+      .filter(Boolean)
+      .map((ev, index) => ({
+        ...ev,
+        _key: ev?._key || ev?._id || String(index),
+      }))
+      .filter((ev) => {
+        const start = parseEventDate(ev.startDate);
+        if (!start) return false;
+        const end = parseEventDate(ev.endDate) || start;
+        const boundary = new Date(end);
+        boundary.setHours(23, 59, 59, 999);
+        return boundary >= today;
+      })
+      .sort((a, b) => {
+        const aStart = parseEventDate(a.startDate);
+        const bStart = parseEventDate(b.startDate);
+        if (!aStart && !bStart) return 0;
+        if (!aStart) return 1;
+        if (!bStart) return -1;
+        return aStart - bStart;
+      });
+  }, [campaignData, parseEventDate]);
 
   useEffect(() => {
     if (!eventModal) return;
@@ -1735,7 +1495,7 @@ const CrowdfundingPage = () => {
     if (!stillExists) {
       setEventModal(null);
     }
-  }, [eventModal, upcomingEvents, featuredPublicEvents]);
+  }, [eventModal, upcomingEvents]);
 
   const formatListDate = useCallback(
     (event) => {
@@ -1783,34 +1543,365 @@ const CrowdfundingPage = () => {
     [parseEventDate]
   );
 
-  const hasCampaignEvents = upcomingEvents.length > 0;
-  const hasFeaturedPublicEvents = featuredPublicEvents.length > 0;
+  const hasEvents = upcomingEvents.length > 0;
 
   // --- Pizza-specific values (prefer pizza fields, fallback to legacy money values) ---
-  const statusPizzasSold =
-    Number.isFinite(statusData?.pizzasSold) ? statusData.pizzasSold : null;
-  const statusPizzaGoal = Number.isFinite(statusData?.goal) ? statusData.goal : null;
-  const pizzasSold =
-    (statusPizzasSold ?? campaignData?.pizzasSold ?? campaignData?.raisedAmount ?? 0) || 0;
-  const pizzaGoal =
-    (statusPizzaGoal ?? campaignData?.pizzaGoal ?? campaignData?.goal ?? 1000) || 1000; // default goal to 1000 pizzas
+  const publishedPizzasSold = (() => {
+    if (typeof campaignData?.pizzasSold === 'number' && Number.isFinite(campaignData.pizzasSold)) {
+      return campaignData.pizzasSold;
+    }
+    return null;
+  })();
+  const basePizzaGoal = (() => {
+    if (
+      typeof campaignData?.pizzaGoal === 'number' &&
+      Number.isFinite(campaignData.pizzaGoal) &&
+      campaignData.pizzaGoal > 0
+    ) {
+      return campaignData.pizzaGoal;
+    }
+    if (
+      typeof campaignData?.goal === 'number' &&
+      Number.isFinite(campaignData.goal) &&
+      campaignData.goal > 0
+    ) {
+      return campaignData.goal;
+    }
+    return 1000;
+  })();
+  const fallbackPizzasBase = (() => {
+    if (
+      typeof campaignData?.raisedAmount === 'number' &&
+      Number.isFinite(campaignData.raisedAmount)
+    ) {
+      return campaignData.raisedAmount;
+    }
+    return 0;
+  })();
+
+  let pizzasSold = Number.isFinite(publishedPizzasSold)
+    ? publishedPizzasSold
+    : fallbackPizzasBase;
+  if (summaryTotalsAvailable) {
+    pizzasSold = summaryPizzas;
+  }
+  if (Number.isFinite(livePizzas)) {
+    pizzasSold = livePizzas;
+  }
+
+  const usingPublishedFallback =
+    !Number.isFinite(livePizzas) && !summaryTotalsAvailable && Number.isFinite(publishedPizzasSold);
+
+  const showLiveTotalsFallbackNotice = usingPublishedFallback;
+
+  const pizzaGoal = Number.isFinite(liveGoal) && liveGoal > 0
+    ? liveGoal
+    : Number.isFinite(summaryGoal) && summaryGoal > 0
+      ? summaryGoal
+      : basePizzaGoal; // default goal to 1000 pizzas
+
+  let backers = baseBackers;
+  if (summaryBackersAvailable) {
+    backers = Math.max(summaryBackers, baseBackers);
+  }
+  if (Number.isFinite(liveBackers)) {
+    backers = Math.max(liveBackers, baseBackers);
+  }
+  const effectiveEndDate = useMemo(() => {
+    const fallback = CAMPAIGN_EXTENSION_DEADLINE;
+    if (!endDate) return fallback;
+
+    const parsed = new Date(endDate);
+    if (Number.isNaN(parsed.getTime())) {
+      return fallback;
+    }
+
+    if (fallback && parsed < fallback) {
+      return fallback;
+    }
+
+    return parsed;
+  }, [endDate]);
+
+  const daysLeft = (() => {
+    if (!effectiveEndDate) return 0;
+    const diffMs = effectiveEndDate.getTime() - Date.now();
+    const days = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+    return Math.max(days, 0);
+  })();
+  const progressPercentage = pizzaGoal > 0 ? Math.min((pizzasSold / pizzaGoal) * 100, 100) : 0;
+
+  const TabButton = ({ tabName, label }) => (
+    <button
+      type="button"
+      onClick={() => setActiveTab(tabName)}
+      aria-pressed={activeTab === tabName}
+      className="tab"
+    >
+      {label}
+    </button>
+  );
+
+  TabButton.propTypes = {
+    tabName: PropTypes.string.isRequired,
+    label: PropTypes.string.isRequired,
+  };
+
+  // Helper to extract a plain-text excerpt from Portable Text arrays for meta description
+  const plainTextFromPortable = (blocks) => {
+    if (!blocks) return '';
+    if (typeof blocks === 'string') return blocks;
+    return (blocks || [])
+      .filter(Boolean)
+      .map((blk) => {
+        if (typeof blk === 'string') return blk;
+        if (blk.children && Array.isArray(blk.children)) {
+          return blk.children.map((c) => c.text || '').join('');
+        }
+        return '';
+      })
+      .join('\n')
+      .trim();
+  };
+
+  // Ensure PortableText always receives an array of blocks
+  const toPortableBlocks = (val) => {
+    if (Array.isArray(val)) return val;
+    if (!val) return [];
+    const text = typeof val === 'string' ? val : String(val);
+    return [
+      {
+        _type: 'block',
+        style: 'normal',
+        children: [{ _type: 'span', text }],
+      },
+    ];
+  };
+
+  // --- Utility: extract plain text from a single portable block (for optional tagline upgrade) ---
+  const blockText = (blk) => {
+    if (!blk) return '';
+    if (typeof blk === 'string') return blk;
+    if (Array.isArray(blk.children)) return blk.children.map((c) => c.text || '').join('');
+    return '';
+  };
+
+  // Optional: promote first paragraph to h2 if it matches tagline phrase
+  let taglineBlock = null;
+  let remainingDescriptionBlocks = description;
+  if (Array.isArray(description) && description.length) {
+    const first = description[0];
+    const text = blockText(first).trim().toLowerCase();
+    if (text.startsWith('local effort is making local pizza')) {
+      taglineBlock = first;
+      remainingDescriptionBlocks = description.slice(1);
+    }
+  }
+
+  const portableComponents = useMemo(() => createPortableTextComponents(), []);
 
   return (
     <>
-      <div className="space-y-16">
-        <div className="mx-auto w-full max-w-5xl px-4 py-10 lg:px-8">
-          <div className="grid gap-8 lg:grid-cols-[2fr_1fr] lg:items-start">
-            <div className="space-y-6">
+      <Helmet>
+        <title>{`${title} | Crowdfunding Campaign`}</title>
+        <meta name="description" content={plainTextFromPortable(description).slice(0, 160)} />
+      </Helmet>
+
+      <div className="space-y-16 mx-auto max-w-6xl px-4 md:px-6 lg:px-8">
+        {/* --- Page Header --- */}
+        <div>
+          <h1 className="heading-display heading-balance">{title}</h1>
+          {/* Short description rendered with Portable Text (supports paragraphs and formatting) */}
+          <div className="mt-6 md:mt-8 text-body max-w-2xl">
+            {taglineBlock && (
+              <h2 className="heading-lg text-neutral-600">{blockText(taglineBlock)}</h2>
+            )}
+            {description &&
+              (Array.isArray(description) ? (
+                <PortableText value={remainingDescriptionBlocks} components={portableComponents} />
+              ) : (
+                <PortableText
+                  value={toPortableBlocks(description)}
+                  components={portableComponents}
+                />
+              ))}
+          </div>
+        </div>
+
+        {/* --- Main Content Grid --- */}
+        <div className="grid grid-cols-1 lg:grid-cols-5 lg:gap-16">
+          {/* --- Left Column (Media & Content Tabs) --- */}
+          <div className="lg:col-span-3 space-y-8 order-2 lg:order-1">
+            {/* Override hero image per request */}
+            <img
+              src={'/gallery/5Z0A5718-Edit.jpg'}
+              alt={title}
+              className="w-full object-cover rounded-lg aspect-video bg-gray-100"
+              loading="lazy"
+            />
+
+            <div className="border-b border-neutral-200">
+              <nav className="tablist">
+                <TabButton tabName="story" label="Our Story" />
+                {updates.length > 0 && (
+                  <TabButton tabName="updates" label={`Updates (${updates.length})`} />
+                )}
+                <TabButton tabName="goals" label="Goals" />
+                {faq.length > 0 && <TabButton tabName="faq" label="FAQ" />}
+                <TabButton tabName="gallery" label="Gallery" />
+              </nav>
+            </div>
+            <div className="prose max-w-none text-body">
+              {activeTab === 'story' && story.length > 0 && (
+                <PortableText value={story} components={portableComponents} />
+              )}
+              {activeTab === 'updates' && (
+                <div className="space-y-8">
+                  {updates.map((update, index) => (
+                    <div key={index} className="p-4 border-l-4 border-gray-200">
+                      <div className="mt-0">
+                        <SectionHeader overline="Update" title={update.title} />
+                      </div>
+                      <p className="text-sm text-gray-500 mb-2">
+                        {new Date(update.publishedAt).toLocaleDateString('en-US', {
+                          year: 'numeric',
+                          month: 'long',
+                          day: 'numeric',
+                        })}
+                      </p>
+                      <PortableText value={update.body} components={portableComponents} />
+                    </div>
+                  ))}
+                </div>
+              )}
+              {activeTab === 'goals' && (
+                <div className="space-y-6">
+                  <PrioritiesPie />
+                  {campaignData?.goals ? (
+                    Array.isArray(campaignData.goals) ? (
+                      <PortableText value={campaignData.goals} components={portableComponents} />
+                    ) : (
+                      <PortableText
+                        value={toPortableBlocks(campaignData.goals)}
+                        components={portableComponents}
+                      />
+                    )
+                  ) : (
+                    <p className="text-gray-500">
+                      No goals content yet. Add content in the Goals field in Sanity Studio.
+                    </p>
+                  )}
+                </div>
+              )}
+              {activeTab === 'faq' && (
+                <div className="space-y-6">
+                  {faq.map((item, index) => (
+                    <div key={index}>
+                      <h4 className="font-bold text-lg mb-1">{item.question}</h4>
+                      <p className="mt-0">{item.answer}</p>
+                    </div>
+                  ))}
+                </div>
+              )}
+              {activeTab === 'gallery' && (
+                <div className="mt-4">
+                  {galleryLoading && (
+                    <p className="text-sm text-gray-500 animate-pulse">Loading images...</p>
+                  )}
+                  {galleryError && <p className="text-sm text-red-600">{galleryError}</p>}
+                  {!galleryLoading && !galleryError && galleryImages.length === 0 && (
+                    <p className="text-sm text-gray-500">
+                      No images found yet. Tag Cloudinary images with 'pizza' or 'pie'.
+                    </p>
+                  )}
+                  <div className="mt-4 columns-2 md:columns-3 lg:columns-4 gap-3 [column-fill:_balance]">
+                    {galleryImages.map((img) => (
+                      <figure
+                        key={img.asset_id || img.public_id}
+                        className="mb-3 break-inside-avoid rounded-lg overflow-hidden shadow-sm bg-neutral-100"
+                      >
+                        <img
+                          src={img.thumbnail_url}
+                          alt={img.public_id}
+                          loading="lazy"
+                          decoding="async"
+                          className="w-full h-auto block transition-transform duration-300 hover:scale-[1.03]"
+                        />
+                      </figure>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {hasEvents && (
+              <div className="border rounded-lg p-4 bg-white shadow-sm">
+                <h3 className="text-lg font-semibold mb-2">upcoming campaign events.</h3>
+                <ul className="divide-y">
+                  {upcomingEvents.map((ev) => {
+                    const dateLabel = formatListDate(ev);
+                    const detailLabel = [dateLabel, ev.foodType || 'Food']
+                      .filter(Boolean)
+                      .join(' - ');
+                    return (
+                      <li key={ev._key} className="py-2">
+                        <button
+                          type="button"
+                          className="text-left hover:underline"
+                          onClick={() => setEventModal(ev)}
+                        >
+                          <span className="flex flex-col sm:flex-row sm:items-baseline sm:gap-2">
+                            <span className="font-semibold text-slate-800">{ev.location}</span>
+                            <span className="text-sm text-slate-600">{detailLabel}</span>
+                          </span>
+                        </button>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
+            )}
+          </div>
+
+          {/* --- Right Column (Stats & Rewards) --- */}
+          <div className="lg:col-span-2 space-y-8 mt-12 lg:mt-0 order-1 lg:order-2">
+            <div className="card p-6 space-y-4 ring-1 ring-neutral-200">
+              <div className="w-full bg-gray-200 rounded-full h-2.5">
+                <div
+                  className="bg-[var(--color-accent)] h-2.5 rounded-full"
+                  style={{ width: `${progressPercentage}%` }}
+                ></div>
+              </div>
+              <div>
+                <p className="text-4xl font-bold text-[var(--color-accent)]">
+                  {pizzasSold.toLocaleString()} pizzas
+                </p>
+                <p className="text-body text-gray-600">
+                  sold of {pizzaGoal.toLocaleString()} pizzas goal
+                </p>
+                {/* Pies sold (no goal) */}
+                <p className="mt-2 text-2xl font-semibold">{piesSold.toLocaleString()} pies</p>
+                <p className="text-body text-gray-600">sold</p>
+              </div>
+              <div className="flex justify-between text-body text-center border-y py-3">
+                <StatBox value={backers.toLocaleString()} label="backers" />
+                <StatBox
+                  value={daysLeft > 0 ? daysLeft : 'Ended'}
+                  label={daysLeft > 0 ? 'days to go' : ''}
+                />
+              </div>
+              {showLiveTotalsFallbackNotice && (
+                <p className="text-xs text-amber-600">
+                  Live totals temporarily unavailable; showing published numbers for now.
+                </p>
+              )}
+              {confirmMsg && <p className="text-sm text-emerald-700">{confirmMsg}</p>}
               {payError && <p className="text-sm text-red-600">{payError}</p>}
               {/* CTA button when form hidden */}
               {!showForm && (
                 <Button
                   type="button"
                   onClick={() => {
-                    if (checkoutResult) {
-                      setCheckoutResult(null);
-                      setPayError('');
-                    }
                     if (!activeTier) {
                       setFormNotice('Reward tiers are loading. Please try again in a moment.');
                       return;
@@ -1820,9 +1911,9 @@ const CrowdfundingPage = () => {
                     setShowForm(true);
                   }}
                   className="w-full text-lg h-12"
-                  disabled={!hasPayableTier || paying}
+                  disabled={!hasPayableTier}
                 >
-                  {checkoutResult ? 'Make another pledge' : 'I want pizza'}
+                  I want pizza
                 </Button>
               )}
               {(formNotice || (!hasPayableTier && !showForm)) && (
@@ -1976,7 +2067,7 @@ const CrowdfundingPage = () => {
                         disabled={!trimmedDiscountCode || discountState.status === 'checking'}
                         onClick={handleDiscountApply}
                       >
-                        {discountState.status === 'checking' ? 'Checking‚Ä¶' : 'Apply'}
+                        {discountState.status === 'checking' ? 'CheckingG«™' : 'Apply'}
                       </Button>
                     </div>
                     <p className="text-xs text-slate-500">
@@ -1985,7 +2076,7 @@ const CrowdfundingPage = () => {
                     {discountState.status === 'applied' && (
                       <p className="text-sm text-emerald-700">
                         {discountState.discount?.label || DEFAULT_DISCOUNT_LABEL}
-                        {discountedTotalCents <= 0 ? ' ‚Äî no payment required.' : ' applied.'}
+                        {discountedTotalCents <= 0 ? ' G«ˆ no payment required.' : ' applied.'}
                       </p>
                     )}
                     {discountState.status === 'invalid' && (
@@ -2092,8 +2183,8 @@ const CrowdfundingPage = () => {
                           {!cardReady && !cardError && !paymentsError && (
                             <p className="text-sm text-gray-500">
                               {paymentsLoading
-                                ? 'Loading secure payment form‚Ä¶'
-                                : 'Preparing secure payment form‚Ä¶'}
+                                ? 'Loading secure payment formG«™'
+                                : 'Preparing secure payment formG«™'}
                             </p>
                           )}
                           {(cardError || paymentsError) && (
@@ -2135,40 +2226,6 @@ const CrowdfundingPage = () => {
             </div>
 
             <div className="space-y-4">
-              <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm space-y-4">
-                <h3 className="text-lg font-semibold text-slate-900">How it works</h3>
-                <ol className="space-y-3 text-sm text-slate-700">
-                  <li>
-                    <span className="font-semibold text-slate-900">1.</span>{' '}
-                    Order a pizza, or 5 pizzas, or 10 pizzas, or 100 pizzas. Add on a pie or 2.
-                  </li>
-                  <li className="space-y-2">
-                    <div>
-                      <span className="font-semibold text-slate-900">2.</span>{' '}
-                      Select your pickup style.
-                    </div>
-                    <div className="pl-5 space-y-2">
-                      <p>
-                        <span className="font-semibold text-slate-900">2a.</span>{' '}
-                        Look at the list of pickup events. Each event will have its own menu. You can
-                        claim your pizzas at one of these events, or‚Ä¶
-                      </p>
-                      <p>
-                        <span className="font-semibold text-slate-900">2b.</span>{' '}
-                        You can have the pizzas delivered to your home. You can even have the pizzas
-                        made at your home or office: the chef, the oven, the dough, the whole thing.
-                        Minimum 5 pizzas for delivery and 15 for in-home parties.
-                      </p>
-                    </div>
-                  </li>
-                  <li>
-                    <span className="font-semibold text-slate-900">3.</span>{' '}
-                    Tell your friends about Local Pizza, the pizza made entirely from Midwestern produced
-                    ingredients.
-                  </li>
-                </ol>
-              </div>
-
               <Card className="border-0 bg-slate-900 text-white shadow-xl">
                 <CardHeader className="px-5 py-4 space-y-1 border-none">
                   <CardTitle className="text-lg font-semibold tracking-wide uppercase text-amber-300">
@@ -2214,7 +2271,7 @@ const CrowdfundingPage = () => {
                       className="w-full bg-amber-400 text-slate-900 hover:bg-amber-300"
                       disabled={subscribeStatus === 'loading'}
                     >
-                      {subscribeStatus === 'loading' ? 'Subscribing‚Ä¶' : 'Subscribe'}
+                      {subscribeStatus === 'loading' ? 'SubscribingG«™' : 'Subscribe'}
                     </Button>
                   </form>
                 </CardContent>
@@ -2236,14 +2293,6 @@ const CrowdfundingPage = () => {
                   {cardError && <p className="text-red-600">Card error: {cardError}</p>}
                   {paymentsError && <p className="text-red-600">Payments error: {paymentsError}</p>}
                 </div>
-              )}
-             
-              {rewardTiers.length > 0 && (
-                <SectionHeader
-                  overline="Rewards"
-                  title="Ways to eat"
-                  className="pt-2"
-                />
               )}
 
               {rewardTiers.map((tier) => {
@@ -2322,19 +2371,15 @@ const CrowdfundingPage = () => {
                     {feedbackNotice}
                   </p>
                 )}
-                <Button
-                  type="submit"
-                  className="w-full sm:w-auto"
-                  disabled={feedbackStatus === 'loading'}
-                >
-                  {feedbackStatus === 'loading' ? 'Saving...' : 'Share feedback'}
+                <Button type="submit" className="w-full sm:w-auto" disabled={feedbackSubmitting}>
+                  {feedbackSubmitting ? 'Sharing pizza loveG«™' : 'Share feedback'}
                 </Button>
               </form>
             </div>
             <div className="md:w-1/2 space-y-4">
               <h3 className="text-lg font-semibold text-slate-900">Recent happy pizza thoughts</h3>
               {feedbackLoading ? (
-                <p className="text-sm text-slate-500">Loading pizza love‚Ä¶</p>
+                <p className="text-sm text-slate-500">Loading pizza loveG«™</p>
               ) : feedbackEntries.length > 0 ? (
                 <ul className="space-y-4">
                   {feedbackEntries.map((entry) => (
@@ -2342,10 +2387,10 @@ const CrowdfundingPage = () => {
                       key={entry.id}
                       className="rounded-2xl border border-amber-100 bg-amber-50/70 p-4 shadow-sm"
                     >
-                      <p className="text-sm text-amber-900">‚Äú{entry.comment}‚Äù</p>
+                      <p className="text-sm text-amber-900">G«£{entry.comment}G«•</p>
                       <p className="mt-2 text-xs font-semibold uppercase tracking-wide text-amber-700">
                         {Number.isFinite(entry.rating)
-                          ? `Rating: ${'‚≠êÔ∏è'.repeat(Math.max(1, Math.min(5, entry.rating)))} (${entry.rating}/5)`
+                          ? `Rating: ${'G°…n+≈'.repeat(Math.max(1, Math.min(5, entry.rating)))} (${entry.rating}/5)`
                           : 'Rating: shared anonymously'}
                       </p>
                     </li>
@@ -2354,8 +2399,8 @@ const CrowdfundingPage = () => {
               ) : (
                 <p className="text-sm text-slate-500">
                   {feedbackFetchError
-                    ? 'We couldn‚Äôt load recent pizza notes. Share yours to kick things off!'
-                    : 'No pizza notes yet‚Äîbe the first to share your experience!'}
+                    ? 'We couldnG«÷t load recent pizza notes. Share yours to kick things off!'
+                    : 'No pizza notes yetG«ˆbe the first to share your experience!'}
                 </p>
               )}
               {feedbackFetchError && <p className="text-xs text-red-600">{feedbackFetchError}</p>}
