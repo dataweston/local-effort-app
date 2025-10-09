@@ -29,27 +29,6 @@ const FIREBASE_DATABASE_PATTERN = /firebase database/gi;
 
 const createFirebaseDatabaseRegex = () => new RegExp(FIREBASE_DATABASE_PATTERN);
 
-const devConsole = {
-  log: (...args) => {
-    if (process.env.NODE_ENV !== 'production') {
-      // eslint-disable-next-line no-console
-      console.log(...args);
-    }
-  },
-  warn: (...args) => {
-    if (process.env.NODE_ENV !== 'production') {
-      // eslint-disable-next-line no-console
-      console.warn(...args);
-    }
-  },
-  error: (...args) => {
-    if (process.env.NODE_ENV !== 'production') {
-      // eslint-disable-next-line no-console
-      console.error(...args);
-    }
-  },
-};
-
 function isPortableTextBlocks(value) {
   return (
     Array.isArray(value) &&
