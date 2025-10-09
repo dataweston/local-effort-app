@@ -215,14 +215,14 @@ export const MealPrepPage = () => {
       </Helmet>
       {showInquiryForm && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4"
+          className="fixed inset-0 z-50 flex items-start justify-center bg-black/60 px-4 py-8 overflow-y-auto"
           role="dialog"
           aria-modal="true"
         >
-          <div className="form-card w-full max-w-2xl relative">
+          <div className="form-card w-full max-w-2xl max-h-[90vh] overflow-y-auto relative">
             <button
               type="button"
-              className="absolute right-4 top-4 text-sm underline"
+              className="absolute right-4 top-4 text-sm underline z-10"
               onClick={() => {
                 setShowInquiryForm(false);
                 setInquiryStatus('idle');
@@ -354,23 +354,21 @@ export const MealPrepPage = () => {
         </div>
       )}
       <div className="space-y-16 mx-auto max-w-6xl px-4 md:px-6 lg:px-8">
-        <header className="flex items-center justify-between">
+        <header className="flex items-center gap-4">
           <h1 className="heading-display heading-balance">
             Weekly meal prep
           </h1>
-          <div className="flex items-center gap-3">
-            <button
-              type="button"
-              className="btn btn-primary text-sm px-4 py-2"
-              onClick={() => {
-                resetInquiry();
-                setInquiryStatus('idle');
-                setShowInquiryForm(true);
-              }}
-            >
-              Ask the Chefs
-            </button>
-          </div>
+          <button
+            type="button"
+            className="btn btn-primary text-sm px-4 py-2"
+            onClick={() => {
+              resetInquiry();
+              setInquiryStatus('idle');
+              setShowInquiryForm(true);
+            }}
+          >
+            Ask the Chefs
+          </button>
         </header>
 
         <section className="space-y-4 max-w-3xl">
