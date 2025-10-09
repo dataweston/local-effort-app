@@ -39,6 +39,22 @@ describe('crowdfunding router', () => {
     expect(res.body).toEqual({ error: 'Cart is empty.' });
   });
 
+  it('validates discount codes defensively', async () => {
+    const warn = vi.fn();
+    const app = createApp({ logger: { warn, error: vi.fn() } });
+
+    const missing = await request(app).post('/crowdfund/discount-code').send({});
+    expect(missing.status).toBe(400);
+    expect(missing.body.error).toBe('missing-code');
+
+    const invalid = await request(app)
+      .post('/crowdfund/discount-code')
+      .send({ code: 'NOTREAL' });
+    expect(invalid.status).toBe(200);
+    expect(invalid.body).toEqual({ valid: false });
+    expect(warn).not.toHaveBeenCalled();
+  });
+
   it('creates a payment link via Square', async () => {
     const createPaymentLink = vi.fn().mockResolvedValue({
       result: { paymentLink: { url: 'https://square.test/link' } },
