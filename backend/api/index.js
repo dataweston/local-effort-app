@@ -587,6 +587,28 @@ app.get('/api/about', async (req, res) => {
   }
 });
 
+// --- Generic Sanity query proxy (to avoid client-side CORS) ---
+app.post('/api/sanity/query', async (req, res) => {
+  try {
+    const sanity = getSanityClient();
+    if (!sanity) {
+      logger.error('Sanity client not configured - check SANITY_PROJECT_ID env var');
+      return res.status(500).json({ error: 'sanity-not-configured' });
+    }
+    
+    const { query, params } = req.body;
+    if (!query) return res.status(400).json({ error: 'query-required' });
+    
+    logger.info({ query: query.substring(0, 100), params }, 'Proxying Sanity query');
+    const data = await sanity.fetch(query, params || {});
+    logger.info({ resultType: typeof data, hasData: !!data }, 'Sanity query result');
+    return res.json({ result: data });
+  } catch (err) {
+    logger.error({ err: err.message, stack: err.stack }, 'sanity query proxy error');
+    return res.status(500).json({ error: 'sanity-fetch-failed', message: err.message });
+  }
+});
+
 // Mount support search endpoint (Supabase-powered hybrid search)
 try {
   const { registerSupportSearch } = require('./supportSearch');

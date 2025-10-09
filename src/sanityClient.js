@@ -13,10 +13,42 @@ const env = { ...nodeEnv, ...rawBuildEnv, ...runtimeWindowEnv } || {};
 const projectId = env.VITE_APP_SANITY_PROJECT_ID || env.VITE_SANITY_PROJECT_ID || env.SANITY_PROJECT_ID || env.PROJECT_ID;
 const dataset = env.VITE_APP_SANITY_DATASET || env.VITE_SANITY_DATASET || env.SANITY_DATASET || env.DATASET;
 
+// Create a custom client wrapper that proxies requests through backend to avoid CORS
+const createProxyClient = () => {
+  return {
+    fetch: async (query, params = {}) => {
+      try {
+        const response = await fetch('/api/sanity/query', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ query, params }),
+        });
+        
+        if (!response.ok) {
+          const error = await response.json().catch(() => ({ error: 'fetch-failed' }));
+          throw new Error(error.message || error.error || 'Sanity query failed');
+        }
+        
+        const data = await response.json();
+        return data.result;
+      } catch (err) {
+        console.error('Sanity proxy fetch error:', err);
+        throw err;
+      }
+    },
+  };
+};
+
 let client = null;
 try {
   if (projectId && dataset) {
-    client = createClient({ projectId, dataset, useCdn: true, apiVersion: '2023-05-03' });
+    // In browser environment, use proxy client to avoid CORS
+    if (typeof window !== 'undefined') {
+      client = createProxyClient();
+    } else {
+      // In Node environment (SSR/tests), use direct client
+      client = createClient({ projectId, dataset, useCdn: true, apiVersion: '2023-05-03' });
+    }
   } else {
     // No env — export a stub to avoid crashing during import
     client = {
