@@ -14,6 +14,7 @@ module.exports = async (req, res) => {
     }
 
     const { client: squareClient } = getSquareClient();
+
     const discount = await resolveCrowdfundDiscount(code, { squareClient });
     if (!discount) {
       return res.json({ valid: false });
@@ -21,7 +22,11 @@ module.exports = async (req, res) => {
 
     return res.json({ valid: true, discount });
   } catch (err) {
-    console.warn('[crowdfund.discount-code] failed to validate code', err?.message);
-    return res.status(500).json({ error: 'unable-to-validate-discount' });
+    console.error('[crowdfund.discount-code] failed to validate code', {
+      message: err?.message,
+      stack: err?.stack,
+      name: err?.name
+    });
+    return res.status(500).json({ error: 'Unable to validate discount code. Please try again.' });
   }
 };
