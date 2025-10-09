@@ -129,8 +129,25 @@ export const CostEstimator = () => {
       default:
         totalCost = 0;
     }
+    const summary = [`Estimated cost for ${people} person(s): $${totalCost.toFixed(2)}`];
+    switch (answers.serviceType) {
+      case 'mealPlan':
+        summary.push('Includes weekly breakfasts, lunches, and dinners.');
+        break;
+      case 'smallEvent':
+        summary.push('Covers staffing, setup, and cleanup for your event.');
+        break;
+      case 'dinnerAtHome':
+        summary.push('Private chef experience with in-home service.');
+        break;
+      case 'pizzaParty':
+        summary.push('Wood-fired pizza service with optional add-ons.');
+        break;
+      default:
+        break;
+    }
     setFinalCost(totalCost);
-    setBreakdown([`Estimated cost for ${people} person(s): $${totalCost.toFixed(2)}`]);
+    setBreakdown(summary);
     setShowResults(true);
   };
 
@@ -163,13 +180,13 @@ export const CostEstimator = () => {
       <div className="border border-gray-900 p-8 text-center">
         <h3 className="heading-lg heading-balance">All-inclusive ballpark estimate</h3>
         <p className="text-6xl font-bold my-4">${finalCost.toFixed(2)}</p>
-        <div className="bg-gray-200 p-4 text-left mb-6 font-mono text-sm">
-          {[`- Based on your selections for a ${userAnswers.serviceType} service.`].map(
-            (item, i) => (
-              <p key={i}>{item}</p>
-            )
-          )}
-        </div>
+        {breakdown.length > 0 && (
+          <div className="bg-gray-200 p-4 text-left mb-6 font-mono text-sm">
+            {breakdown.map((item, index) => (
+              <p key={index}>{item}</p>
+            ))}
+          </div>
+        )}
         <button onClick={restart} className="mt-6 text-sm underline font-mono">
           Start Over
         </button>
