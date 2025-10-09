@@ -1,10 +1,6 @@
 {
   "version": 2,
   "installCommand": "pnpm install --filter local-effort-website... --frozen-lockfile",
-  "cache": [
-    "node_modules",
-    ".pnpm-store"
-  ],
   "builds": [
     {
       "src": "package.json",
