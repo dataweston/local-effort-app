@@ -22,13 +22,10 @@ import PrioritiesPie from '../components/crowdfunding/PrioritiesPie.jsx';
 import { createPortableTextComponents } from '../utils/portableTextComponents';
 import { cn } from '../lib/utils';
 import { useToast } from '../components/common/ToastProvider';
+
 import devConsole from '../lib/devConsole.js';
-import { watchCrowdfundingTotals, watchPizzaFeedback } from '../lib/firebaseCrowdfunding';
-
-const REALTIME_DATABASE_URL = 'https://local-effort-default-rtdb.firebaseio.com/';
-const FIREBASE_DATABASE_PATTERN = /firebase database/gi;
-
-const createFirebaseDatabaseRegex = () => new RegExp(FIREBASE_DATABASE_PATTERN);
+import { watchCrowdfundingTotals, watchPizzaFeedback, getFirebaseAppInstance } from '../lib/firebaseCrowdfunding';
+import { getFirestore, collection, addDoc, serverTimestamp } from 'firebase/firestore';
 
 function isPortableTextBlocks(value) {
   return (
@@ -46,45 +43,16 @@ function replaceFirebaseDatabaseInPortableBlocks(blocks) {
   }
 
   let changed = false;
-  let markCounter = 0;
+  // ...existing code...
 
-  const processed = blocks.map((block, blockIndex) => {
+  const processed = blocks.map((block) => {
     if (!block || typeof block !== 'object' || !Array.isArray(block.children)) {
       return block;
     }
 
-    let blockChanged = false;
+  // ...existing code...
     const newChildren = [];
-    let markDefs = Array.isArray(block.markDefs) ? [...block.markDefs] : [];
-    let linkMarkKey = null;
-
-    const ensureLinkMarkKey = () => {
-      if (linkMarkKey) {
-        return linkMarkKey;
-      }
-      const existing = markDefs.find(
-        (def) =>
-          def &&
-          def._type === 'link' &&
-          typeof def.href === 'string' &&
-          def.href === REALTIME_DATABASE_URL
-      );
-      if (existing && existing._key) {
-        linkMarkKey = existing._key;
-        return linkMarkKey;
-      }
-      markCounter += 1;
-      linkMarkKey = `realtime-db-link-${blockIndex}-${markCounter}`;
-      markDefs = [
-        ...markDefs,
-        {
-          _key: linkMarkKey,
-          _type: 'link',
-          href: REALTIME_DATABASE_URL,
-        },
-      ];
-      return linkMarkKey;
-    };
+    // ...existing code...
 
     block.children.forEach((child) => {
       if (!child || child._type !== 'span' || typeof child.text !== 'string') {
@@ -92,69 +60,12 @@ function replaceFirebaseDatabaseInPortableBlocks(blocks) {
         return;
       }
 
-      const text = child.text;
-      const regex = createFirebaseDatabaseRegex();
-      let match;
-      let lastIndex = 0;
-      let localChanged = false;
-      let segmentIndex = 0;
-
-      while ((match = regex.exec(text)) !== null) {
-        const start = match.index;
-        const end = regex.lastIndex;
-        if (start > lastIndex) {
-          const slice = text.slice(lastIndex, start);
-          if (slice) {
-            newChildren.push({
-              ...child,
-              _key: child._key ? `${child._key}-${segmentIndex++}` : undefined,
-              text: slice,
-              marks: Array.isArray(child.marks) ? [...child.marks] : [],
-            });
-          }
-        }
-
-        const markKey = ensureLinkMarkKey();
-        newChildren.push({
-          ...child,
-          _key: child._key ? `${child._key}-${segmentIndex++}` : undefined,
-          text: 'Realtime Database',
-          marks: [...(Array.isArray(child.marks) ? child.marks : []), markKey],
-        });
-
-        lastIndex = end;
-        localChanged = true;
-      }
-
-      if (!localChanged) {
-        newChildren.push(child);
-        return;
-      }
-
-      if (lastIndex < text.length) {
-        const tail = text.slice(lastIndex);
-        if (tail) {
-          newChildren.push({
-            ...child,
-            _key: child._key ? `${child._key}-${segmentIndex++}` : undefined,
-            text: tail,
-            marks: Array.isArray(child.marks) ? [...child.marks] : [],
-          });
-        }
-      }
-
-      blockChanged = true;
+      newChildren.push(child);
     });
 
-    if (!blockChanged) {
-      return block;
-    }
-
-    changed = true;
     return {
       ...block,
       children: newChildren,
-      markDefs,
     };
   });
 
@@ -163,14 +74,14 @@ function replaceFirebaseDatabaseInPortableBlocks(blocks) {
 
 function replaceFirebaseDatabaseInValue(value) {
   if (typeof value === 'string') {
-    return value.replace(FIREBASE_DATABASE_PATTERN, 'Realtime Database');
+  return value;
   }
   if (isPortableTextBlocks(value)) {
     return replaceFirebaseDatabaseInPortableBlocks(value);
   }
   if (Array.isArray(value) && value.every((item) => typeof item === 'string')) {
     const replaced = value.map((item) =>
-      item.replace(FIREBASE_DATABASE_PATTERN, 'Realtime Database')
+  item
     );
     const changed = replaced.some((item, index) => item !== value[index]);
     return changed ? replaced : value;
@@ -1026,39 +937,21 @@ const CrowdfundingPage = () => {
       setFeedbackSubmitting(true);
 
       try {
-        const res = await fetch('/api/crowdfund/pizza-feedback', {
-          method: 'POST',
-          headers: { 'content-type': 'application/json' },
-          body: JSON.stringify({ rating: ratingValue, message }),
+        const app = getFirebaseAppInstance();
+        if (!app) throw new Error('Firebase not initialized');
+        const db = getFirestore(app);
+        const feedbackRef = collection(db, 'crowdfund_feedback');
+        const docRef = await addDoc(feedbackRef, {
+          rating: ratingValue,
+          comment: message,
+          createdAt: serverTimestamp(),
+          createdAtMs: Date.now(),
         });
-
-        let data = null;
-        try {
-          data = await res.json();
-        } catch (_) {
-          data = null;
-        }
-
-        if (!res.ok) {
-          const messageText =
-            (data && data.error) || 'We had trouble saving your pizza note. Please try again.';
-          throw new Error(messageText);
-        }
-
-        const payloadEntry = data?.entry;
         const nextEntry = {
-          id: (payloadEntry && payloadEntry.id) || `feedback-${Date.now()}`,
-          rating: Number.isFinite(Number(payloadEntry?.rating))
-            ? Number(payloadEntry.rating)
-            : ratingValue,
-          comment:
-            typeof payloadEntry?.comment === 'string' && payloadEntry.comment.trim()
-              ? payloadEntry.comment.trim()
-              : typeof payloadEntry?.message === 'string' && payloadEntry.message.trim()
-                ? payloadEntry.message.trim()
-                : message,
+          id: docRef.id,
+          rating: ratingValue,
+          comment: message,
         };
-
         setFeedbackEntries((prev) => {
           const safePrev = Array.isArray(prev)
             ? prev.filter((item) => item && item.id !== nextEntry.id)
