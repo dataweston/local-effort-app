@@ -263,7 +263,6 @@ const summaryFetcher = async (url) => {
     throw new Error(`Request failed with status ${response.status}`);
   }
   return response.json();
->>>>>>> a438e607553c514e1fe73e9395ebf456acce3e0b
 };
 
 // --- Sanity Image URL Builder Setup (kept for future use if dynamic hero image restored) ---
@@ -427,13 +426,11 @@ const CrowdfundingPage = () => {
   const [feedbackNotice, setFeedbackNotice] = useState('');
   const [feedbackStatus, setFeedbackStatus] = useState('idle'); // idle | loading | success | error
   const [feedbackEntries, setFeedbackEntries] = useState([]);
-<<<<<<< HEAD
   const [statusData, setStatusData] = useState(null);
   const [heroExtras, setHeroExtras] = useState([]);
   const [heroError, setHeroError] = useState('');
   const [heroLoading, setHeroLoading] = useState(false);
   const [activeHeroIndex, setActiveHeroIndex] = useState(0);
-=======
   const [feedbackSubmitting, setFeedbackSubmitting] = useState(false);
   const [feedbackLoading, setFeedbackLoading] = useState(false);
   const [feedbackFetchError, setFeedbackFetchError] = useState('');
@@ -955,7 +952,6 @@ const CrowdfundingPage = () => {
         return;
       }
 
-<<<<<<< HEAD
       setFeedbackStatus('loading');
       setFeedbackNotice('Saving your note...');
       try {
@@ -984,7 +980,11 @@ const CrowdfundingPage = () => {
         }
         setFeedbackName('');
         setFeedbackMessage('');
-=======
+      } catch (err) {
+        setFeedbackStatus('error');
+        setFeedbackNotice(err?.message || 'Could not save your note. Please try again.');
+      }
+
       if (!Number.isInteger(ratingValue) || ratingValue < 1 || ratingValue > 5) {
         setFeedbackStatus('error');
         setFeedbackNotice('Please choose how much you loved the pizza.');
@@ -1038,7 +1038,6 @@ const CrowdfundingPage = () => {
         setFeedbackFetchError('');
         setFeedbackMessage('');
         setFeedbackRating(5);
->>>>>>> a438e607553c514e1fe73e9395ebf456acce3e0b
         setFeedbackStatus('success');
         setFeedbackNotice('Thanks for spreading the pizza love!');
       } catch (err) {
@@ -1048,7 +1047,6 @@ const CrowdfundingPage = () => {
         );
       } finally {
         setFeedbackSubmitting(false);
->>>>>>> a438e607553c514e1fe73e9395ebf456acce3e0b
       }
     },
     [feedbackMessage, feedbackRating, feedbackSubmitting]
@@ -1402,7 +1400,6 @@ const CrowdfundingPage = () => {
             });
             if (res.ok) {
               setConfirmMsg('Thanks! Your contribution has been recorded.');
->>>>>>> a438e607553c514e1fe73e9395ebf456acce3e0b
             }
 
             const pizzasPurchased = items
@@ -1787,7 +1784,6 @@ const CrowdfundingPage = () => {
   const hasFeaturedPublicEvents = featuredPublicEvents.length > 0;
 
   // --- Pizza-specific values (prefer pizza fields, fallback to legacy money values) ---
-<<<<<<< HEAD
   const statusPizzasSold =
     Number.isFinite(statusData?.pizzasSold) ? statusData.pizzasSold : null;
   const statusPizzaGoal = Number.isFinite(statusData?.goal) ? statusData.goal : null;
@@ -1795,361 +1791,13 @@ const CrowdfundingPage = () => {
     (statusPizzasSold ?? campaignData?.pizzasSold ?? campaignData?.raisedAmount ?? 0) || 0;
   const pizzaGoal =
     (statusPizzaGoal ?? campaignData?.pizzaGoal ?? campaignData?.goal ?? 1000) || 1000; // default goal to 1000 pizzas
-=======
-  const publishedPizzasSold = (() => {
-    if (typeof campaignData?.pizzasSold === 'number' && Number.isFinite(campaignData.pizzasSold)) {
-      return campaignData.pizzasSold;
-    }
-    return null;
-  })();
-  const basePizzaGoal = (() => {
-    if (
-      typeof campaignData?.pizzaGoal === 'number' &&
-      Number.isFinite(campaignData.pizzaGoal) &&
-      campaignData.pizzaGoal > 0
-    ) {
-      return campaignData.pizzaGoal;
-    }
-    if (
-      typeof campaignData?.goal === 'number' &&
-      Number.isFinite(campaignData.goal) &&
-      campaignData.goal > 0
-    ) {
-      return campaignData.goal;
-    }
-    return 1000;
-  })();
-  const fallbackPizzasBase = (() => {
-    if (
-      typeof campaignData?.raisedAmount === 'number' &&
-      Number.isFinite(campaignData.raisedAmount)
-    ) {
-      return campaignData.raisedAmount;
-    }
-    return 0;
-  })();
-
-  let pizzasSold = Number.isFinite(publishedPizzasSold)
-    ? publishedPizzasSold
-    : fallbackPizzasBase;
-  if (summaryTotalsAvailable) {
-    pizzasSold = summaryPizzas;
-  }
-  if (Number.isFinite(livePizzas)) {
-    pizzasSold = livePizzas;
-  }
-
-  const usingPublishedFallback =
-    !Number.isFinite(livePizzas) && !summaryTotalsAvailable && Number.isFinite(publishedPizzasSold);
-
-  const showLiveTotalsFallbackNotice = usingPublishedFallback;
-
-  const pizzaGoal = Number.isFinite(liveGoal) && liveGoal > 0
-    ? liveGoal
-    : Number.isFinite(summaryGoal) && summaryGoal > 0
-      ? summaryGoal
-      : basePizzaGoal; // default goal to 1000 pizzas
-
-  let backers = baseBackers;
-  if (summaryBackersAvailable) {
-    backers = Math.max(summaryBackers, baseBackers);
-  }
-  if (Number.isFinite(liveBackers)) {
-    backers = Math.max(liveBackers, baseBackers);
-  }
-  const effectiveEndDate = useMemo(() => {
-    const fallback = CAMPAIGN_EXTENSION_DEADLINE;
-    if (!endDate) return fallback;
-
-    const parsed = new Date(endDate);
-    if (Number.isNaN(parsed.getTime())) {
-      return fallback;
-    }
-
-    if (fallback && parsed < fallback) {
-      return fallback;
-    }
-
-    return parsed;
-  }, [endDate]);
-
-  const daysLeft = (() => {
-    if (!effectiveEndDate) return 0;
-    const diffMs = effectiveEndDate.getTime() - Date.now();
-    const days = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
-    return Math.max(days, 0);
-  })();
-  const progressPercentage = pizzaGoal > 0 ? Math.min((pizzasSold / pizzaGoal) * 100, 100) : 0;
-
-  const TabButton = ({ tabName, label }) => (
-    <button
-      type="button"
-      onClick={() => setActiveTab(tabName)}
-      aria-pressed={activeTab === tabName}
-      className="tab"
-    >
-      {label}
-    </button>
-  );
-
-  TabButton.propTypes = {
-    tabName: PropTypes.string.isRequired,
-    label: PropTypes.string.isRequired,
-  };
-
-  // Helper to extract a plain-text excerpt from Portable Text arrays for meta description
-  const plainTextFromPortable = (blocks) => {
-    if (!blocks) return '';
-    if (typeof blocks === 'string') return blocks;
-    return (blocks || [])
-      .filter(Boolean)
-      .map((blk) => {
-        if (typeof blk === 'string') return blk;
-        if (blk.children && Array.isArray(blk.children)) {
-          return blk.children.map((c) => c.text || '').join('');
-        }
-        return '';
-      })
-      .join('\n')
-      .trim();
-  };
-
-  // Ensure PortableText always receives an array of blocks
-  const toPortableBlocks = (val) => {
-    if (Array.isArray(val)) return val;
-    if (!val) return [];
-    const text = typeof val === 'string' ? val : String(val);
-    return [
-      {
-        _type: 'block',
-        style: 'normal',
-        children: [{ _type: 'span', text }],
-      },
-    ];
-  };
-
-  // --- Utility: extract plain text from a single portable block (for optional tagline upgrade) ---
-  const blockText = (blk) => {
-    if (!blk) return '';
-    if (typeof blk === 'string') return blk;
-    if (Array.isArray(blk.children)) return blk.children.map((c) => c.text || '').join('');
-    return '';
-  };
-
-  // Optional: promote first paragraph to h2 if it matches tagline phrase
-  let taglineBlock = null;
-  let remainingDescriptionBlocks = description;
-  if (Array.isArray(description) && description.length) {
-    const first = description[0];
-    const text = blockText(first).trim().toLowerCase();
-    if (text.startsWith('local effort is making local pizza')) {
-      taglineBlock = first;
-      remainingDescriptionBlocks = description.slice(1);
-    }
-  }
-
-  const portableComponents = useMemo(() => createPortableTextComponents(), []);
 
   return (
     <>
-      <Helmet>
-        <title>{`${title} | Crowdfunding Campaign`}</title>
-        <meta name="description" content={plainTextFromPortable(description).slice(0, 160)} />
-      </Helmet>
-
-      <div className="space-y-16 mx-auto max-w-6xl px-4 md:px-6 lg:px-8">
-        {/* --- Page Header --- */}
-        <div>
-          <h1 className="heading-display heading-balance">{title}</h1>
-          {/* Short description rendered with Portable Text (supports paragraphs and formatting) */}
-          <div className="mt-6 md:mt-8 text-body max-w-2xl">
-            {taglineBlock && (
-              <h2 className="heading-lg text-neutral-600">{blockText(taglineBlock)}</h2>
-            )}
-            {description &&
-              (Array.isArray(description) ? (
-                <PortableText value={remainingDescriptionBlocks} components={portableComponents} />
-              ) : (
-                <PortableText
-                  value={toPortableBlocks(description)}
-                  components={portableComponents}
-                />
-              ))}
-          </div>
-        </div>
-
-        {/* --- Main Content Grid --- */}
-        <div className="grid grid-cols-1 lg:grid-cols-5 lg:gap-16">
-          {/* --- Left Column (Media & Content Tabs) --- */}
-          <div className="lg:col-span-3 space-y-8 order-2 lg:order-1">
-            {/* Override hero image per request */}
-            <img
-              src={'/gallery/5Z0A5718-Edit.jpg'}
-              alt={title}
-              className="w-full object-cover rounded-lg aspect-video bg-gray-100"
-              loading="lazy"
-            />
-
-            <div className="border-b border-neutral-200">
-              <nav className="tablist">
-                <TabButton tabName="story" label="Our Story" />
-                {updates.length > 0 && (
-                  <TabButton tabName="updates" label={`Updates (${updates.length})`} />
-                )}
-                <TabButton tabName="goals" label="Goals" />
-                {faq.length > 0 && <TabButton tabName="faq" label="FAQ" />}
-                <TabButton tabName="gallery" label="Gallery" />
-              </nav>
-            </div>
-            <div className="prose max-w-none text-body">
-              {activeTab === 'story' && story.length > 0 && (
-                <PortableText value={story} components={portableComponents} />
-              )}
-              {activeTab === 'updates' && (
-                <div className="space-y-8">
-                  {updates.map((update) => {
-                    const formattedDate = formatUpdateDate(update.publishedAt);
-                    const bodyBlocks = Array.isArray(update.body) ? update.body.filter(Boolean) : toPortableBlocks(update.body);
-                    const updateTitle = update.title || 'Campaign update';
-                    return (
-                      <div key={update._id} className="p-4 border-l-4 border-gray-200">
-                        <div className="mt-0">
-                          <SectionHeader overline="Update" title={updateTitle} />
-                        </div>
-                        {formattedDate && (
-                          <p className="text-sm text-gray-500 mb-2">{formattedDate}</p>
-                        )}
-                        {bodyBlocks.length > 0 && (
-                          <PortableText value={bodyBlocks} components={portableComponents} />
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-              {activeTab === 'goals' && (
-                <div className="space-y-6">
-                  <PrioritiesPie />
-                  {campaignData?.goals ? (
-                    Array.isArray(campaignData.goals) ? (
-                      <PortableText value={campaignData.goals} components={portableComponents} />
-                    ) : (
-                      <PortableText
-                        value={toPortableBlocks(campaignData.goals)}
-                        components={portableComponents}
-                      />
-                    )
-                  ) : (
-                    <p className="text-gray-500">
-                      No goals content yet. Add content in the Goals field in Sanity Studio.
-                    </p>
-                  )}
-                </div>
-              )}
-              {activeTab === 'faq' && (
-                <div className="space-y-6">
-                  {faq.map((item, index) => (
-                    <div key={index}>
-                      <h4 className="font-bold text-lg mb-1">{item.question}</h4>
-                      <p className="mt-0">{item.answer}</p>
-                    </div>
-                  ))}
-                </div>
-              )}
-              {activeTab === 'gallery' && (
-                <div className="mt-4">
-                  {galleryLoading && (
-                    <p className="text-sm text-gray-500 animate-pulse">Loading images...</p>
-                  )}
-                  {galleryError && <p className="text-sm text-red-600">{galleryError}</p>}
-                  {!galleryLoading && !galleryError && galleryImages.length === 0 && (
-                    <p className="text-sm text-gray-500">
-                      No images found yet. Tag Cloudinary images with 'pizza' or 'pie'.
-                    </p>
-                  )}
-                  <div className="mt-4 columns-2 md:columns-3 lg:columns-4 gap-3 [column-fill:_balance]">
-                    {galleryImages.map((img) => (
-                      <figure
-                        key={img.asset_id || img.public_id}
-                        className="mb-3 break-inside-avoid rounded-lg overflow-hidden shadow-sm bg-neutral-100"
-                      >
-                        <img
-                          src={img.thumbnail_url}
-                          alt={img.public_id}
-                          loading="lazy"
-                          decoding="async"
-                          className="w-full h-auto block transition-transform duration-300 hover:scale-[1.03]"
-                        />
-                      </figure>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {hasEvents && (
-              <div className="border rounded-lg p-4 bg-white shadow-sm">
-                <h3 className="text-lg font-semibold mb-2">upcoming campaign events.</h3>
-                <ul className="divide-y">
-                  {upcomingEvents.map((ev) => {
-                    const dateLabel = formatListDate(ev);
-                    const detailLabel = [dateLabel, ev.foodType || 'Food']
-                      .filter(Boolean)
-                      .join(' - ');
-                    return (
-                      <li key={ev._key} className="py-2">
-                        <button
-                          type="button"
-                          className="text-left hover:underline"
-                          onClick={() => setEventModal(ev)}
-                        >
-                          <span className="flex flex-col sm:flex-row sm:items-baseline sm:gap-2">
-                            <span className="font-semibold text-slate-800">{ev.location}</span>
-                            <span className="text-sm text-slate-600">{detailLabel}</span>
-                          </span>
-                        </button>
-                      </li>
-                    );
-                  })}
-                </ul>
-              </div>
-            )}
-          </div>
-
-          {/* --- Right Column (Stats & Rewards) --- */}
-          <div className="lg:col-span-2 space-y-8 mt-8 lg:mt-0 order-1 lg:order-2">
-            <div className="card p-6 space-y-4 ring-1 ring-neutral-200">
-              <div className="w-full bg-gray-200 rounded-full h-2.5">
-                <div
-                  className="bg-[var(--color-accent)] h-2.5 rounded-full"
-                  style={{ width: `${progressPercentage}%` }}
-                ></div>
-              </div>
-              <div>
-                <p className="text-4xl font-bold text-[var(--color-accent)]">
-                  {pizzasSold.toLocaleString()} pizzas
-                </p>
-                <p className="text-body text-gray-600">
-                  sold of {pizzaGoal.toLocaleString()} pizzas goal
-                </p>
-                {/* Pies sold (no goal) */}
-                <p className="mt-2 text-2xl font-semibold">{piesSold.toLocaleString()} pies</p>
-                <p className="text-body text-gray-600">sold</p>
-              </div>
-              <div className="flex justify-between text-body text-center border-y py-3">
-                <StatBox value={backers.toLocaleString()} label="backers" />
-                <StatBox
-                  value={daysLeft > 0 ? daysLeft : 'Ended'}
-                  label={daysLeft > 0 ? 'days to go' : ''}
-                />
-              </div>
-              {showLiveTotalsFallbackNotice && (
-                <p className="text-xs text-amber-600">
-                  Live totals temporarily unavailable; showing published numbers for now.
-                </p>
-              )}
-              {confirmMsg && <p className="text-sm text-emerald-700">{confirmMsg}</p>}
->>>>>>> a438e607553c514e1fe73e9395ebf456acce3e0b
+      <div className="space-y-16">
+        <div className="mx-auto w-full max-w-5xl px-4 py-10 lg:px-8">
+          <div className="grid gap-8 lg:grid-cols-[2fr_1fr] lg:items-start">
+            <div className="space-y-6">
               {payError && <p className="text-sm text-red-600">{payError}</p>}
               {/* CTA button when form hidden */}
               {!showForm && (
@@ -2671,17 +2319,12 @@ const CrowdfundingPage = () => {
                     {feedbackNotice}
                   </p>
                 )}
-<<<<<<< HEAD
                 <Button
                   type="submit"
                   className="w-full sm:w-auto"
                   disabled={feedbackStatus === 'loading'}
                 >
                   {feedbackStatus === 'loading' ? 'Saving...' : 'Share feedback'}
-=======
-                <Button type="submit" className="w-full sm:w-auto" disabled={feedbackSubmitting}>
-                  {feedbackSubmitting ? 'Sharing pizza love…' : 'Share feedback'}
->>>>>>> a438e607553c514e1fe73e9395ebf456acce3e0b
                 </Button>
               </form>
             </div>

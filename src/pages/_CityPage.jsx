@@ -119,7 +119,6 @@ const CityPage = ({ city, h1, description, canonical, images, faq }) => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 my-8">
-<<<<<<< HEAD
         {images.map((img, idx) => {
           const src = img.src || img.fallback;
           const src400 = img.src400 || img.fallback;
@@ -152,7 +151,6 @@ const CityPage = ({ city, h1, description, canonical, images, faq }) => {
             </figure>
           );
         })}
-=======
         {images.map((img, idx) => (
           <figure key={idx} className="gallery-item">
             <img
@@ -170,16 +168,14 @@ const CityPage = ({ city, h1, description, canonical, images, faq }) => {
             <figcaption className="text-sm text-neutral-600 mt-2">{img.caption || img.alt}</figcaption>
           </figure>
         ))}
->>>>>>> a438e607553c514e1fe73e9395ebf456acce3e0b
       </div>
 
       <noscript>
         {images.map((img, idx) => (
-<<<<<<< HEAD
-          <img key={`ns-${idx}`} src={img.src || img.fallback} alt={img.alt} />
-=======
-          <img key={`ns-${idx}`} src={img.fallbackSrc || img.src} alt={img.alt} />
->>>>>>> a438e607553c514e1fe73e9395ebf456acce3e0b
+          <React.Fragment key={`ns-${idx}`}>
+            <img src={img.src || img.fallback} alt={img.alt} />
+            <img src={img.fallbackSrc || img.src} alt={img.alt} />
+          </React.Fragment>
         ))}
       </noscript>
 
