@@ -2,6 +2,7 @@
 // Accepts embedded card payment (Square) for crowdfunding pizzas / pledges.
 // Body: { items: [{ name, price (in cents), quantity, type, pizzaCount }], funderName, token, pizzaQty }
 
+const crypto = require('crypto');
 const { getSquareClient } = require('../_lib/squareClient');
 const { getFirebaseAdmin } = require('../_lib/firebaseAdmin');
 const { resolveCrowdfundDiscount, applyCrowdfundDiscount } = require('./_lib/discountCodes');
@@ -17,6 +18,13 @@ const countPizzasInItems = (items) => {
       const normalized = Number.isFinite(raw) ? Math.max(0, Math.round(raw)) : 0;
       return sum + normalized;
     }, 0);
+};
+
+const createIdempotencyKey = () => {
+  if (typeof crypto.randomUUID === 'function') {
+    return crypto.randomUUID();
+  }
+  return `${Date.now()}-${crypto.randomBytes(16).toString('hex')}`;
 };
 
 async function recordCrowdfundContribution({
@@ -144,9 +152,8 @@ module.exports = async (req, res) => {
     }
     const noteStr = metaNoteParts.join(' | ').slice(0, 500);
     const pizzasInCart = countPizzasInItems(items);
-
-    if (!requiresPayment) {
-      await recordCrowdfundContribution({
+    const persistContribution = () =>
+      recordCrowdfundContribution({
         db,
         pizzasInCart,
         funderName: safeFunderName,
@@ -156,8 +163,21 @@ module.exports = async (req, res) => {
         notify: safeNotify,
         trimmedDiscount,
       });
+
+    if (!requiresPayment) {
+      await persistContribution();
       return res.status(200).json({ ok: true, paymentId: null, comped: true, discount: discountDetails || null });
     }
+
+    const idempotencyKey = createIdempotencyKey();
+    const metaNoteParts = [funderName || 'Anonymous'];
+    if (email) metaNoteParts.push(email);
+    if (phone) metaNoteParts.push(phone);
+    if (notify && notify !== 'none') metaNoteParts.push(`notify:${notify}`);
+    if (trimmedDiscount) {
+      metaNoteParts.push(`discount:${trimmedDiscount}${discountDetails ? ':applied' : ''}`);
+    }
+    const noteStr = metaNoteParts.join(' | ').slice(0, 500);
 
     const paymentBody = {
       sourceId: sourceToken,
@@ -170,6 +190,8 @@ module.exports = async (req, res) => {
 
     const resp = await squareClient.paymentsApi.createPayment(paymentBody);
     const paymentId = resp.result.payment?.id;
+
+    await persistContribution();
 
     await recordCrowdfundContribution({
       db,
