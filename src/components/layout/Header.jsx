@@ -39,11 +39,7 @@ export const Header = () => {
           <motion.img
             src={logo}
             alt="Local Effort Logo"
-<<<<<<< HEAD
-            className="h-7 w-auto rounded-sm border border-black"
-=======
             className="h-7 w-auto rounded-md border border-black"
->>>>>>> a438e607553c514e1fe73e9395ebf456acce3e0b
             whileHover={{ scale: 1.03 }}
             transition={{ type: 'spring', stiffness: 300, damping: 20 }}
           />
