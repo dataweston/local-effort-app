@@ -1,5 +1,8 @@
 const express = require('express');
 const { v4: uuidv4 } = require('uuid');
+const {
+  resolveCrowdfundDiscount,
+} = require('../../../api/crowdfund/_lib/discountCodes');
 
 function createCrowdfundingRouter({ db, squareClient, logger }) {
   const router = express.Router();
@@ -113,6 +116,28 @@ function createCrowdfundingRouter({ db, squareClient, logger }) {
     } catch (error) {
       if (logger) logger.error({ err: error }, 'square create payment link error');
       return res.status(500).json({ error: 'Failed to create payment link.' });
+    }
+  });
+
+  router.post('/discount-code', async (req, res) => {
+    try {
+      const { code } = req.body || {};
+      if (!code || typeof code !== 'string' || !code.trim()) {
+        return res.status(400).json({ error: 'missing-code' });
+      }
+
+      const discount = await resolveCrowdfundDiscount(code, { squareClient, logger });
+      const discount = resolveCrowdfundDiscount(code);
+      if (!discount) {
+        return res.json({ valid: false });
+      }
+
+      return res.json({ valid: true, discount });
+    } catch (error) {
+      if (logger?.warn) {
+        logger.warn({ err: error }, 'crowdfund discount validation failed');
+      }
+      return res.status(500).json({ error: 'unable-to-validate-discount' });
     }
   });
 

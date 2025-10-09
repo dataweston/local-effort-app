@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Calendar, Plus, DollarSign, TrendingUp, ShoppingCart, Save, X, ChevronLeft, ChevronRight, Trash2, FileText, Calculator } from 'lucide-react';
+import { collection, onSnapshot, addDoc, updateDoc, deleteDoc, doc } from 'firebase/firestore';
 import { db, firebaseProjectId } from '../../firebaseConfig';
 import Notepad from './Notepad';
+import PlacemakerCostingTile from '../placemaker/CostingTile.jsx';
 // Auth removed: tools are now public-access
 
 function toDateSafe(v) {
@@ -10,7 +12,6 @@ function toDateSafe(v) {
   const d = new Date(v);
   return isNaN(d.getTime()) ? new Date() : d;
 }
-import { collection, onSnapshot, addDoc, updateDoc, deleteDoc, doc } from 'firebase/firestore';
 
 const CateringSalesApp = () => {
   // Removed all auth/allowlist logic — components are publicly available
@@ -546,13 +547,17 @@ const CateringSalesApp = () => {
       </header>
       <main className="max-w-7xl mx-auto px-4 py-8">
         {renderStatus()}
-  {activeView === 'calendar'
-    ? (calendarView === 'monthly' ? renderCalendar() : calendarView === '3month' ? renderThreeMonthView() : renderAnnualView())
-    : activeView === 'financials'
-    ? renderFinancials()
-  : activeView === 'costing'
-  ? <CostingTool />
-    : <Notepad />}
+        {activeView === 'calendar'
+          ? (calendarView === 'monthly'
+              ? renderCalendar()
+              : calendarView === '3month'
+              ? renderThreeMonthView()
+              : renderAnnualView())
+          : activeView === 'financials'
+          ? renderFinancials()
+          : activeView === 'costing'
+          ? <PlacemakerCostingTile />
+          : <Notepad />}
       </main>
 
       {/* Event Modal */}
