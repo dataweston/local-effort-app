@@ -19,6 +19,14 @@ const requireEnv = (key) => {
     return value;
 };
 const optionalEnv = (key) => process.env[key];
+const resolveSquareEnv = () => {
+    const raw = process.env.SQUARE_ENV ??
+        process.env.SQUARE_ENVIRONMENT ??
+        process.env.SQUARE_ENVIRONMENT_NAME ??
+        "sandbox";
+    const normalized = String(raw).trim().toLowerCase();
+    return normalized === "production" ? "production" : "sandbox";
+};
 export const env = {
     NODE_ENV: process.env.NODE_ENV ?? "development",
     PORT: coerceNumber(process.env.PORT, 4000),
@@ -31,7 +39,7 @@ export const env = {
     JWT_PUBLIC_KEY_BASE64: optionalEnv("JWT_PUBLIC_KEY_BASE64"),
     BREVO_API_KEY: optionalEnv("BREVO_API_KEY"),
     BREVO_TEMPLATE_ID: optionalEnv("BREVO_TEMPLATE_ID"),
-    SQUARE_ENV: process.env.SQUARE_ENV === "production" ? "production" : "sandbox",
+    SQUARE_ENV: resolveSquareEnv(),
     SQUARE_ACCESS_TOKEN: optionalEnv("SQUARE_ACCESS_TOKEN"),
     SQUARE_LOCATION_ID: optionalEnv("SQUARE_LOCATION_ID")
 };

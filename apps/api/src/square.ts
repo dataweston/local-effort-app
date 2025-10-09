@@ -9,6 +9,12 @@ export type CheckoutLineItem = {
   amountCents: number;
 };
 
+const toSquareAmount = (value: number) => {
+  const numeric = Number.isFinite(value) ? Number(value) : 0;
+  const rounded = Math.max(0, Math.round(numeric));
+  return BigInt(rounded);
+};
+
 export const createCheckout = async ({
   lineItems,
   tipCents,
@@ -33,7 +39,7 @@ export const createCheckout = async ({
       name: item.name,
       quantity: item.quantity.toString(),
       basePriceMoney: {
-        amount: BigInt(item.amountCents),
+        amount: toSquareAmount(item.amountCents),
         currency: "USD"
       },
       note: item.sku
@@ -43,7 +49,7 @@ export const createCheckout = async ({
           {
             name: "Gratuity",
             amountMoney: {
-              amount: BigInt(tipCents),
+              amount: toSquareAmount(tipCents),
               currency: "USD"
             }
           }

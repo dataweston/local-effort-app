@@ -1364,7 +1364,7 @@ const CrowdfundingPage = () => {
               funderName?.trim() || '',
               trimmedDiscount || ''
             );
-            notifyToast('Redirecting to secure checkoutGǪ', { type: 'success' });
+            notifyToast('Redirecting to secure checkout...', { type: 'success' });
             window.location.assign(linkData.url);
             return;
           }
@@ -2046,7 +2046,7 @@ const CrowdfundingPage = () => {
                         disabled={!trimmedDiscountCode || discountState.status === 'checking'}
                         onClick={handleDiscountApply}
                       >
-                        {discountState.status === 'checking' ? 'CheckingGǪ' : 'Apply'}
+                        {discountState.status === 'checking' ? 'Checking...' : 'Apply'}
                       </Button>
                     </div>
                     <p className="text-xs text-slate-500">
@@ -2055,7 +2055,7 @@ const CrowdfundingPage = () => {
                     {discountState.status === 'applied' && (
                       <p className="text-sm text-emerald-700">
                         {discountState.discount?.label || DEFAULT_DISCOUNT_LABEL}
-                        {discountedTotalCents <= 0 ? ' G�� no payment required.' : ' applied.'}
+                        {discountedTotalCents <= 0 ? ' — no payment required.' : ' applied.'}
                       </p>
                     )}
                     {discountState.status === 'invalid' && (
@@ -2162,8 +2162,8 @@ const CrowdfundingPage = () => {
                           {!cardReady && !cardError && !paymentsError && (
                             <p className="text-sm text-gray-500">
                               {paymentsLoading
-                                ? 'Loading secure payment formGǪ'
-                                : 'Preparing secure payment formGǪ'}
+                                ? 'Loading secure payment form...'
+                                : 'Preparing secure payment form...'}
                             </p>
                           )}
                           {(cardError || paymentsError) && (
@@ -2250,7 +2250,7 @@ const CrowdfundingPage = () => {
                       className="w-full bg-amber-400 text-slate-900 hover:bg-amber-300"
                       disabled={subscribeStatus === 'loading'}
                     >
-                      {subscribeStatus === 'loading' ? 'SubscribingGǪ' : 'Subscribe'}
+                      {subscribeStatus === 'loading' ? 'Subscribing...' : 'Subscribe'}
                     </Button>
                   </form>
                 </CardContent>
@@ -2351,14 +2351,14 @@ const CrowdfundingPage = () => {
                   </p>
                 )}
                 <Button type="submit" className="w-full sm:w-auto" disabled={feedbackSubmitting}>
-                  {feedbackSubmitting ? 'Sharing pizza loveGǪ' : 'Share feedback'}
+                      {feedbackSubmitting ? 'Sharing pizza love...' : 'Share feedback'}
                 </Button>
               </form>
             </div>
             <div className="md:w-1/2 space-y-4">
               <h3 className="text-lg font-semibold text-slate-900">Recent happy pizza thoughts</h3>
               {feedbackLoading ? (
-                <p className="text-sm text-slate-500">Loading pizza loveGǪ</p>
+                <p className="text-sm text-slate-500">Loading pizza love...</p>
               ) : feedbackEntries.length > 0 ? (
                 <ul className="space-y-4">
                   {feedbackEntries.map((entry) => (
@@ -2366,10 +2366,10 @@ const CrowdfundingPage = () => {
                       key={entry.id}
                       className="rounded-2xl border border-amber-100 bg-amber-50/70 p-4 shadow-sm"
                     >
-                      <p className="text-sm text-amber-900">Gǣ{entry.comment}Gǥ</p>
+                      <p className="text-sm text-amber-900">“{entry.comment}”</p>
                       <p className="mt-2 text-xs font-semibold uppercase tracking-wide text-amber-700">
                         {Number.isFinite(entry.rating)
-                          ? `Rating: ${'G��n+�'.repeat(Math.max(1, Math.min(5, entry.rating)))} (${entry.rating}/5)`
+                          ? `Rating: ${'⭐'.repeat(Math.max(1, Math.min(5, entry.rating)))} (${entry.rating}/5)`
                           : 'Rating: shared anonymously'}
                       </p>
                     </li>
@@ -2378,8 +2378,8 @@ const CrowdfundingPage = () => {
               ) : (
                 <p className="text-sm text-slate-500">
                   {feedbackFetchError
-                    ? 'We couldnG��t load recent pizza notes. Share yours to kick things off!'
-                    : 'No pizza notes yetG��be the first to share your experience!'}
+                    ? "We couldn't load recent pizza notes. Share yours to kick things off!"
+                    : 'No pizza notes yet—be the first to share your experience!'}
                 </p>
               )}
               {feedbackFetchError && <p className="text-xs text-red-600">{feedbackFetchError}</p>}

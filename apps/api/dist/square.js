@@ -1,6 +1,11 @@
 import { Client, Environment } from "square";
 import { env } from "./env.js";
 import { randomUUID } from "node:crypto";
+const toSquareAmount = (value) => {
+    const numeric = Number.isFinite(value) ? Number(value) : 0;
+    const rounded = Math.max(0, Math.round(numeric));
+    return BigInt(rounded);
+};
 export const createCheckout = async ({ lineItems, tipCents, redirectUrl }) => {
     if (!env.SQUARE_ACCESS_TOKEN || !env.SQUARE_LOCATION_ID) {
         throw new Error("Square configuration missing");
@@ -15,7 +20,7 @@ export const createCheckout = async ({ lineItems, tipCents, redirectUrl }) => {
             name: item.name,
             quantity: item.quantity.toString(),
             basePriceMoney: {
-                amount: BigInt(item.amountCents),
+                amount: toSquareAmount(item.amountCents),
                 currency: "USD"
             },
             note: item.sku
@@ -25,7 +30,7 @@ export const createCheckout = async ({ lineItems, tipCents, redirectUrl }) => {
                 {
                     name: "Gratuity",
                     amountMoney: {
-                        amount: BigInt(tipCents),
+                        amount: toSquareAmount(tipCents),
                         currency: "USD"
                     }
                 }
