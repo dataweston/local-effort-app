@@ -126,8 +126,7 @@ function createCrowdfundingRouter({ db, squareClient, logger }) {
         return res.status(400).json({ error: 'missing-code' });
       }
 
-      const discount = await resolveCrowdfundDiscount(code, { squareClient, logger });
-      const discount = resolveCrowdfundDiscount(code);
+  const discount = await resolveCrowdfundDiscount(code, { squareClient, logger });
       if (!discount) {
         return res.json({ valid: false });
       }
