@@ -655,20 +655,37 @@ app.get('/api/about', async (req, res) => {
 // --- Generic Sanity query proxy (to avoid client-side CORS) ---
 app.post('/api/sanity/query', async (req, res) => {
   try {
+    console.log('[sanity] Query request received');
+    console.log('[sanity] Environment check:', {
+      hasProjectId: !!process.env.SANITY_PROJECT_ID,
+      hasApiToken: !!process.env.SANITY_API_TOKEN,
+      dataset: process.env.SANITY_DATASET
+    });
+
     const sanity = getSanityClient();
+    console.log('[sanity] Client result:', !!sanity);
+
     if (!sanity) {
+      console.error('[sanity] Client not available');
       logger.error('Sanity client not configured - check SANITY_PROJECT_ID env var');
       return res.status(500).json({ error: 'sanity-not-configured' });
     }
-    
+
     const { query, params } = req.body;
+    console.log('[sanity] Query:', query?.substring(0, 100));
+    console.log('[sanity] Params:', params);
+
     if (!query) return res.status(400).json({ error: 'query-required' });
-    
+
     logger.info({ query: query.substring(0, 100), params }, 'Proxying Sanity query');
     const data = await sanity.fetch(query, params || {});
+    console.log('[sanity] Query successful, result type:', typeof data);
+
     logger.info({ resultType: typeof data, hasData: !!data }, 'Sanity query result');
     return res.json({ result: data });
   } catch (err) {
+    console.error('[sanity] Query error:', err.message);
+    console.error('[sanity] Stack:', err.stack);
     logger.error({ err: err.message, stack: err.stack }, 'sanity query proxy error');
     return res.status(500).json({ error: 'sanity-fetch-failed', message: err.message });
   }
