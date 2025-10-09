@@ -16,6 +16,7 @@ import PrioritiesPie from '../components/crowdfunding/PrioritiesPie.jsx';
 import { createPortableTextComponents } from '../utils/portableTextComponents';
 import { cn } from '../lib/utils';
 import { useToast } from '../components/common/ToastProvider';
+import devConsole from '../lib/devConsole.js';
 
 const REALTIME_DATABASE_URL = 'https://local-effort-default-rtdb.firebaseio.com/';
 const FIREBASE_DATABASE_PATTERN = /firebase database/gi;
@@ -552,13 +553,13 @@ const CrowdfundingPage = () => {
         // Provide richer logging so we can see the real failure in browser consoles
         try {
           const msg = err && err.message ? err.message : String(err);
-          console.error('Sanity fetch error message:', msg);
+          devConsole.error('Sanity fetch error message:', msg);
           if (err && err.response && typeof err.response.text === 'function') {
             const body = await err.response.text();
-            console.error('Sanity fetch response body:', body);
+            devConsole.error('Sanity fetch response body:', body);
           }
         } catch (logErr) {
-          console.error('Error while logging Sanity error:', logErr);
+          devConsole.error('Error while logging Sanity error:', logErr);
         }
 
         // Attempt a safe fallback: fetch the first crowdfundingCampaign available
@@ -583,16 +584,16 @@ const CrowdfundingPage = () => {
           }`;
           const fbData = await sanityClient.fetch(fallback);
           if (fbData) {
-            console.warn('Loaded fallback campaign (first in dataset)');
+            devConsole.warn('Loaded fallback campaign (first in dataset)');
             setCampaignData(replaceFirebaseDatabaseMentions(fbData));
             // previously cleared error state (removed unused state)
             return;
           }
         } catch (fbErr) {
-          console.error('Fallback fetch also failed:', fbErr && (fbErr.message || fbErr));
+          devConsole.error('Fallback fetch also failed:', fbErr && (fbErr.message || fbErr));
         }
 
-        console.warn('Failed to load campaign data.');
+        devConsole.warn('Failed to load campaign data.');
       } finally {
         // loading state removed; no-op
       }
@@ -927,7 +928,7 @@ const CrowdfundingPage = () => {
         localStorage.removeItem('cf_discount');
       }
     } catch (err) {
-      console.warn('[square] [crowdfunding] failed to persist pending contribution', err);
+      devConsole.warn('[square] [crowdfunding] failed to persist pending contribution', err);
     }
   }, []);
   const clearPendingContribution = useCallback(() => {
@@ -936,22 +937,22 @@ const CrowdfundingPage = () => {
       localStorage.removeItem('cf_name');
       localStorage.removeItem('cf_discount');
     } catch (err) {
-      console.warn('[square] [crowdfunding] failed to clear pending contribution', err);
+      devConsole.warn('[square] [crowdfunding] failed to clear pending contribution', err);
     }
   }, []);
 
   const destroyCard = useCallback(() => {
     const card = cardInstanceRef.current;
     if (card) {
-      console.log('[square] [crowdfunding] destroying card instance');
+      devConsole.log('[square] [crowdfunding] destroying card instance');
       cardInstanceRef.current = null;
       try {
         const maybe = card.destroy?.();
         if (maybe && typeof maybe.then === 'function') {
-          maybe.catch((err) => console.warn('[square] [crowdfunding] card destroy warning', err));
+          maybe.catch((err) => devConsole.warn('[square] [crowdfunding] card destroy warning', err));
         }
       } catch (err) {
-        console.warn('[square] [crowdfunding] card destroy error', err);
+        devConsole.warn('[square] [crowdfunding] card destroy error', err);
       }
     }
     if (cardContainerRef.current) {
@@ -993,7 +994,7 @@ const CrowdfundingPage = () => {
     cardInitRef.current = true;
     setCardError('');
     setCardReady(false);
-    console.log('[square] [crowdfunding] initializing card', {
+    devConsole.log('[square] [crowdfunding] initializing card', {
       tier: activeTier?.title || null,
       amount: activeTier?.amount || null,
     });
@@ -1020,13 +1021,13 @@ const CrowdfundingPage = () => {
           return;
         }
         setCardReady(true);
-        console.log('[square] [crowdfunding] card attached');
+        devConsole.log('[square] [crowdfunding] card attached');
       })
       .catch((err) => {
         if (cancelled) {
           return;
         }
-        console.error('[square] [crowdfunding] card init failed', err);
+        devConsole.error('[square] [crowdfunding] card init failed', err);
         const message = err?.message || 'Unable to load the payment form.';
         setCardError(message);
         notifyToast(message, { type: 'error' });
@@ -1040,7 +1041,7 @@ const CrowdfundingPage = () => {
 
   useEffect(() => {
     return () => {
-      console.log('[square] [crowdfunding] page unmount cleanup');
+      devConsole.log('[square] [crowdfunding] page unmount cleanup');
       destroyCard();
     };
   }, [destroyCard]);
@@ -1081,7 +1082,7 @@ const CrowdfundingPage = () => {
       throw new Error(message);
     }
     const result = await card.tokenize();
-    console.log('[square] [crowdfunding] tokenize result', result);
+    devConsole.log('[square] [crowdfunding] tokenize result', result);
     if (result.status !== 'OK' || !result.token) {
       const message =
         (Array.isArray(result.errors) && result.errors[0]?.message) ||
@@ -1199,7 +1200,7 @@ const CrowdfundingPage = () => {
           }
         }
       } catch (linkErr) {
-        console.warn('[square] [crowdfunding] payment link attempt failed', linkErr);
+        devConsole.warn('[square] [crowdfunding] payment link attempt failed', linkErr);
       }
 
       let token;
@@ -2020,19 +2021,6 @@ const CrowdfundingPage = () => {
                 );
               })}
 
-              {/* Dev diagnostics */}
-              {process.env.NODE_ENV !== 'production' && (
-                <div className="mt-8 p-4 border rounded text-xs space-y-1 bg-gray-50">
-                  <p className="font-semibold">Payment Diagnostics</p>
-                  <p>SDK URL: {envInfo?.sdkUrl}</p>
-                  <p>Environment: {envInfo?.environment || 'unknown'}</p>
-                  <p>App ID present: {envInfo?.appId ? 'yes' : 'no'}</p>
-                  <p>Location ID present: {envInfo?.locationId ? 'yes' : 'no'}</p>
-                  <p>Sandbox mode: {envInfo?.sandbox ? 'true' : 'false'}</p>
-                  <p>Loaded: {cardLoaded ? 'true' : 'false'} | Attempts: {envInfo?.attempts ?? 'n/a'}</p>
-                  {squareConfigError && <p className="text-red-600">Error: {squareConfigError}</p>}
-                </div>
-              )}
             </div>
           </div>
         </div>

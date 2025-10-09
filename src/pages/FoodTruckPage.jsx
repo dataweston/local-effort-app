@@ -8,6 +8,7 @@ import { Label } from "../components/ui/label";
 import { Textarea } from "../components/ui/textarea";
 import { useToast } from "../components/common/ToastProvider";
 import { useSquarePayments } from "../lib/useSquarePayments";
+import devConsole from "../lib/devConsole.js";
 
 const fade = {
   hidden: { opacity: 0, y: 16 },
@@ -138,15 +139,15 @@ const FoodTruckPage = () => {
   const destroyCard = useCallback(() => {
     const card = cardInstanceRef.current;
     if (card) {
-      console.log("[square] [food-truck] destroying card instance");
+      devConsole.log("[square] [food-truck] destroying card instance");
       cardInstanceRef.current = null;
       try {
         const maybe = card.destroy?.();
         if (maybe && typeof maybe.then === "function") {
-          maybe.catch((err) => console.warn("[square] [food-truck] card destroy warning", err));
+          maybe.catch((err) => devConsole.warn("[square] [food-truck] card destroy warning", err));
         }
       } catch (err) {
-        console.warn("[square] [food-truck] card destroy error", err);
+        devConsole.warn("[square] [food-truck] card destroy error", err);
       }
     }
     if (cardContainerRef.current) {
@@ -177,7 +178,7 @@ const FoodTruckPage = () => {
     let cancelled = false;
     cardInitRef.current = true;
     setCardError("");
-    console.log("[square] [food-truck] initializing card", {
+    devConsole.log("[square] [food-truck] initializing card", {
       environment: squareEnvironment,
       locationId: squareLocationId,
       sdkUrl: squareSdkUrl
@@ -204,14 +205,14 @@ const FoodTruckPage = () => {
         if (cancelled || result === null) {
           return;
         }
-        console.log("[square] [food-truck] card attached");
+        devConsole.log("[square] [food-truck] card attached");
         setCardReady(true);
       })
       .catch((err) => {
         if (cancelled) {
           return;
         }
-        console.error("[square] [food-truck] card init failed", err);
+        devConsole.error("[square] [food-truck] card init failed", err);
         const message = err?.message || "Unable to load the payment form.";
         setCardError(message);
         notifyToast(message, { type: "error" });
@@ -224,7 +225,7 @@ const FoodTruckPage = () => {
   }, [payments, cardReady, squareEnvironment, squareLocationId, squareSdkUrl, notifyToast, destroyCard]);
 
   useEffect(() => () => {
-    console.log("[square] [food-truck] page unmount cleanup");
+    devConsole.log("[square] [food-truck] page unmount cleanup");
     destroyCard();
   }, [destroyCard]);
 
@@ -236,7 +237,7 @@ const FoodTruckPage = () => {
       throw new Error(message);
     }
     const result = await card.tokenize();
-    console.log("[square] [food-truck] tokenize result", result);
+    devConsole.log("[square] [food-truck] tokenize result", result);
     if (result.status !== "OK" || !result.token) {
       const message =
         (Array.isArray(result.errors) && result.errors[0]?.message) ||
@@ -300,7 +301,7 @@ const FoodTruckPage = () => {
           eventDate: depositForm.eventDate,
           notes: depositForm.notes.trim()
         };
-        console.log("[square] [food-truck] submitting deposit payload", {
+        devConsole.log("[square] [food-truck] submitting deposit payload", {
           amount: depositAmount,
           eventDate: payload.eventDate
         });
@@ -314,14 +315,14 @@ const FoodTruckPage = () => {
           const message = data?.error || "Unable to process deposit.";
           throw new Error(message);
         }
-        console.log("[square] [food-truck] deposit submission succeeded", data);
+        devConsole.log("[square] [food-truck] deposit submission succeeded", data);
         notifyToast("Deposit received! We'll confirm within 24 hours.", { type: "success" });
         setDepositStatus("success");
         setDepositForm({ ...initialDepositForm });
         setDepositError("");
         destroyCard();
       } catch (err) {
-        console.error("[square] [food-truck] deposit submission failed", err);
+        devConsole.error("[square] [food-truck] deposit submission failed", err);
         const message = err?.message || "Unable to process payment.";
         setDepositError(message);
         setDepositStatus("error");
@@ -634,12 +635,5 @@ const FoodTruckPage = () => {
     </>
   );
 };
-
-const FeatureCard = ({ title, body }) => (
-  <div className="rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm">
-    <h3 className="text-base font-semibold text-neutral-900">{title}</h3>
-    <p className="mt-3 text-sm text-neutral-700 leading-relaxed">{body}</p>
-  </div>
-);
 
 export default FoodTruckPage;
