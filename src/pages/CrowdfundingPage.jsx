@@ -394,7 +394,7 @@ const REWARD_PREFERENCE_OPTIONS = [
   { value: 'deliver to my home', label: 'Deliver to my home' },
   { value: 'make live at my home', label: 'Make live at my home' },
   { value: 'frozen pizza', label: 'Frozen pizza' },
-  { value: "i'm open or im not sure", label: 'IGÇÖm open or IGÇÖm not sure' },
+  { value: "i'm open or im not sure", label: 'IGï¿½ï¿½m open or IGï¿½ï¿½m not sure' },
 ];
 
 const CAMPAIGN_EXTENSION_DATE_STRING = '2025-12-10T23:59:59-06:00';
@@ -523,6 +523,7 @@ const CrowdfundingPage = () => {
   useEffect(() => {
     if (activeTab !== 'gallery' || galleryLoadedRef.current) {
       return undefined;
+    }
     if (activeTab === 'gallery' && !galleryLoadedRef.current) {
       galleryLoadedRef.current = true;
       setGalleryLoading(true);
@@ -778,7 +779,7 @@ const CrowdfundingPage = () => {
   const phoneValid = useMemo(() => !phone || phoneDigits.length >= 10, [phone, phoneDigits]);
 
   useEffect(() => {
-    // =ƒÆí IMPROVEMENT: Fetch a specific campaign by its slug for a more robust component.
+    // =ï¿½ï¿½ï¿½ IMPROVEMENT: Fetch a specific campaign by its slug for a more robust component.
     // For this example, we'll hardcode a slug. In a real app, you'd get this from the URL.
     const slug = 'local-pizza-by-local-effort-let-s-make-1000-pizzas'; // Replace with a real slug from your Sanity data
     const query = `*[_type == "crowdfundingCampaign" && slug.current == $slug][0]{
@@ -2161,7 +2162,7 @@ const CrowdfundingPage = () => {
                     {discountState.status === 'applied' && (
                       <p className="text-sm text-emerald-700">
                         {discountState.discount?.label || DEFAULT_DISCOUNT_LABEL}
-                        {discountedTotalCents <= 0 ? ' GÇö no payment required.' : ' applied.'}
+                        {discountedTotalCents <= 0 ? ' Gï¿½ï¿½ no payment required.' : ' applied.'}
                       </p>
                     )}
                     {discountState.status === 'invalid' && (
@@ -2475,7 +2476,7 @@ const CrowdfundingPage = () => {
                       <p className="text-sm text-amber-900">GÇ£{entry.comment}GÇ¥</p>
                       <p className="mt-2 text-xs font-semibold uppercase tracking-wide text-amber-700">
                         {Number.isFinite(entry.rating)
-                          ? `Rating: ${'G¡Én+Å'.repeat(Math.max(1, Math.min(5, entry.rating)))} (${entry.rating}/5)`
+                          ? `Rating: ${'Gï¿½ï¿½n+ï¿½'.repeat(Math.max(1, Math.min(5, entry.rating)))} (${entry.rating}/5)`
                           : 'Rating: shared anonymously'}
                       </p>
                     </li>
@@ -2484,8 +2485,8 @@ const CrowdfundingPage = () => {
               ) : (
                 <p className="text-sm text-slate-500">
                   {feedbackFetchError
-                    ? 'We couldnGÇÖt load recent pizza notes. Share yours to kick things off!'
-                    : 'No pizza notes yetGÇöbe the first to share your experience!'}
+                    ? 'We couldnGï¿½ï¿½t load recent pizza notes. Share yours to kick things off!'
+                    : 'No pizza notes yetGï¿½ï¿½be the first to share your experience!'}
                 </p>
               )}
               {feedbackFetchError && <p className="text-xs text-red-600">{feedbackFetchError}</p>}
