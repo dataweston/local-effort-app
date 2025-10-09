@@ -16,20 +16,64 @@ import { getFirestore } from 'firebase/firestore';
 import { getDatabase } from 'firebase/database';
 import { getAuth, GoogleAuthProvider, signInWithPopup, signOut } from 'firebase/auth';
 
-// Your web app's Firebase configuration, read from Vite env (fallback to REACT_APP_*)
-const env = (typeof import.meta !== 'undefined' ? import.meta.env : {}) || {};
+const getEnv = () => {
+  const merged = {};
+  if (typeof import.meta !== 'undefined' && import.meta.env) {
+    Object.assign(merged, import.meta.env);
+  }
+  if (typeof process !== 'undefined' && process.env) {
+    Object.assign(merged, process.env);
+  }
+  if (typeof window !== 'undefined') {
+    if (window.__ENV__ && typeof window.__ENV__ === 'object') {
+      Object.assign(merged, window.__ENV__);
+    }
+    if (window.__APP_ENV__ && typeof window.__APP_ENV__ === 'object') {
+      Object.assign(merged, window.__APP_ENV__);
+    }
+    if (window.__APP_CONFIG__ && typeof window.__APP_CONFIG__ === 'object') {
+      Object.assign(merged, window.__APP_CONFIG__.firebase ?? {});
+    }
+    if (window.__FIREBASE_CONFIG__ && typeof window.__FIREBASE_CONFIG__ === 'object') {
+      Object.assign(merged, window.__FIREBASE_CONFIG__);
+    }
+    if (window.__firebaseConfig && typeof window.__firebaseConfig === 'object') {
+      Object.assign(merged, window.__firebaseConfig);
+    }
+  }
+  return merged;
+};
+
+const pickConfigValue = (env, suffix, fallbackKeys = []) => {
+  const potentialKeys = [
+    `VITE_${suffix}`,
+    `VITE_FIREBASE_${suffix}`,
+    `NEXT_PUBLIC_FIREBASE_${suffix}`,
+    `PUBLIC_FIREBASE_${suffix}`,
+    `REACT_APP_FIREBASE_${suffix}`,
+    `REACT_APP_${suffix}`,
+    `FIREBASE_${suffix}`,
+    `FIREBASE${suffix}`,
+    ...fallbackKeys,
+  ];
+  for (const key of potentialKeys) {
+    if (key in env && env[key]) {
+      return env[key];
+    }
+  }
+  return undefined;
+};
+
+const env = getEnv();
+
 const firebaseConfig = {
-  apiKey: env.VITE_API_KEY || env.VITE_FIREBASE_API_KEY || env.REACT_APP_API_KEY,
-  authDomain: env.VITE_AUTH_DOMAIN || env.VITE_FIREBASE_AUTH_DOMAIN || env.REACT_APP_AUTH_DOMAIN,
-  projectId: env.VITE_PROJECT_ID || env.VITE_FIREBASE_PROJECT_ID || env.REACT_APP_PROJECT_ID,
-  storageBucket: env.VITE_STORAGE_BUCKET || env.VITE_FIREBASE_STORAGE_BUCKET || env.REACT_APP_STORAGE_BUCKET,
-  messagingSenderId: env.VITE_MESSAGING_SENDER_ID || env.VITE_FIREBASE_MESSAGING_SENDER_ID || env.REACT_APP_MESSAGING_SENDER_ID,
-  appId: env.VITE_APP_ID || env.VITE_FIREBASE_APP_ID || env.REACT_APP_APP_ID,
-  databaseURL: env.VITE_DATABASE_URL
-    || env.VITE_FIREBASE_DATABASE_URL
-    || env.REACT_APP_DATABASE_URL
-    || env.REACT_APP_FIREBASE_DATABASE_URL
-    || undefined,
+  apiKey: pickConfigValue(env, 'API_KEY'),
+  authDomain: pickConfigValue(env, 'AUTH_DOMAIN'),
+  projectId: pickConfigValue(env, 'PROJECT_ID'),
+  storageBucket: pickConfigValue(env, 'STORAGE_BUCKET'),
+  messagingSenderId: pickConfigValue(env, 'MESSAGING_SENDER_ID'),
+  appId: pickConfigValue(env, 'APP_ID'),
+  databaseURL: pickConfigValue(env, 'DATABASE_URL', ['DATABASEURL']),
 };
 
 // Initialize Firebase
