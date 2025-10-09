@@ -1,7 +1,7 @@
 // GET, POST /api/crowdfund/feedback
 // Persists short pizza feedback entries for the crowdfunding page.
 
-require('dotenv').config({ path: '../../.env' });
+require('dotenv').config({ path: './.env' });
 
 let admin = null;
 let db = null;

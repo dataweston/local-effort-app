@@ -1,6 +1,6 @@
 // backend/api/server.js
 /* eslint-disable no-console */
-require('dotenv').config({ path: '../../.env' });
+require('dotenv').config({ path: './.env' });
 // Sentry (full backend)
 let Sentry; let sentryEnabled = false;
 try {
@@ -74,24 +74,89 @@ const { v4: uuidv4 } = require('uuid'); // Import UUID for idempotency
 
 // --- INITIALIZE FIREBASE ---
 let db;
-// Support either raw JSON in FIREBASE_SERVICE_ACCOUNT_JSON or a path to a JSON file in FIREBASE_SERVICE_ACCOUNT_PATH
-try {
-  let serviceAccount = null;
-  if (process.env.FIREBASE_SERVICE_ACCOUNT_JSON) {
-    serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_JSON);
-  } else if (process.env.FIREBASE_SERVICE_ACCOUNT_PATH) {
-    const path = process.env.FIREBASE_SERVICE_ACCOUNT_PATH;
-    if (fs.existsSync(path)) {
-      const raw = fs.readFileSync(path, 'utf8');
-      serviceAccount = JSON.parse(raw);
-    } else {
-      console.warn(`FIREBASE_SERVICE_ACCOUNT_PATH set but file does not exist: ${path}`);
+const normalizeServiceAccount = (raw) => {
+  if (!raw || typeof raw !== 'object') return null;
+  const projectId =
+    raw.projectId || raw.project_id || process.env.FIREBASE_PROJECT_ID || process.env.GCLOUD_PROJECT || '';
+  const clientEmail =
+    raw.clientEmail || raw.client_email || process.env.FIREBASE_CLIENT_EMAIL || process.env.GOOGLE_CLIENT_EMAIL || '';
+  let privateKey =
+    raw.privateKey || raw.private_key || process.env.FIREBASE_PRIVATE_KEY || process.env.GOOGLE_PRIVATE_KEY || '';
+  const databaseURL =
+    raw.databaseURL ||
+    raw.database_url ||
+    process.env.FIREBASE_DATABASE_URL ||
+    process.env.GOOGLE_CLOUD_FIREBASE_DATABASE_URL ||
+    undefined;
+
+  if (!projectId || !clientEmail || !privateKey) {
+    return null;
+  }
+
+  privateKey = privateKey.replace(/\\n/g, '\n');
+
+  return {
+    projectId,
+    clientEmail,
+    privateKey,
+    databaseURL,
+  };
+};
+
+const loadServiceAccount = () => {
+  try {
+    if (process.env.FIREBASE_SERVICE_ACCOUNT_JSON) {
+      const parsed = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_JSON);
+      const normalized = normalizeServiceAccount(parsed);
+      if (normalized) return normalized;
+    }
+  } catch (err) {
+    console.warn('[firebase-admin] failed to parse FIREBASE_SERVICE_ACCOUNT_JSON', err?.message);
+  }
+
+  try {
+    if (process.env.FIREBASE_SERVICE_ACCOUNT_BASE64) {
+      const decoded = Buffer.from(process.env.FIREBASE_SERVICE_ACCOUNT_BASE64, 'base64').toString('utf8');
+      const parsed = JSON.parse(decoded);
+      const normalized = normalizeServiceAccount(parsed);
+      if (normalized) return normalized;
+    }
+  } catch (err) {
+    console.warn('[firebase-admin] failed to parse FIREBASE_SERVICE_ACCOUNT_BASE64', err?.message);
+  }
+
+  if (process.env.FIREBASE_SERVICE_ACCOUNT_PATH) {
+    try {
+      const saPath = process.env.FIREBASE_SERVICE_ACCOUNT_PATH;
+      if (fs.existsSync(saPath)) {
+        const raw = fs.readFileSync(saPath, 'utf8');
+        const parsed = JSON.parse(raw);
+        const normalized = normalizeServiceAccount(parsed);
+        if (normalized) return normalized;
+      } else {
+        console.warn(`[firebase-admin] FIREBASE_SERVICE_ACCOUNT_PATH not found: ${saPath}`);
+      }
+    } catch (err) {
+      console.warn('[firebase-admin] failed to read FIREBASE_SERVICE_ACCOUNT_PATH', err?.message);
     }
   }
 
+  return normalizeServiceAccount({});
+};
+
+try {
+  const serviceAccount = loadServiceAccount();
   if (serviceAccount) {
     if (!admin.apps.length) {
-      admin.initializeApp({ credential: admin.credential.cert(serviceAccount) });
+      admin.initializeApp({
+        credential: admin.credential.cert({
+          projectId: serviceAccount.projectId,
+          clientEmail: serviceAccount.clientEmail,
+          privateKey: serviceAccount.privateKey,
+        }),
+        projectId: serviceAccount.projectId,
+        databaseURL: serviceAccount.databaseURL,
+      });
     }
     db = admin.firestore();
   } else {

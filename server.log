@@ -1,0 +1,2 @@
+[dotenv@17.2.2] injecting env (65) from .env -- tip: ⚙️  suppress all logs with { quiet: true }
+[pizza-party.checkout] Square client initialized { env: 'Production', locPresent: true, tokenTail: 'OswT' }

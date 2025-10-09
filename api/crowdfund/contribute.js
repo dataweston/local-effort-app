@@ -1,4 +1,4 @@
-require('dotenv').config({ path: '../../.env' });
+require('dotenv').config({ path: './.env' });
 
 const { v4: uuidv4 } = require('uuid');
 const { getSquareClient } = require('../_lib/squareClient');

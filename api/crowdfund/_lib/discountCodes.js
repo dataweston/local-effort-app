@@ -194,10 +194,7 @@ const loadSquareDiscountEntries = async (options = {}) => {
       const entries = [];
       let cursor = undefined;
       do {
-        const response = await client.catalogApi.listCatalog({
-          cursor: cursor,
-          types: 'DISCOUNT'
-        });
+        const response = await client.catalogApi.listCatalog(cursor, 'DISCOUNT');
         
         // Handle Square API response structure
         const result = response?.result || response;
