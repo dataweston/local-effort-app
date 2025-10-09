@@ -1173,6 +1173,7 @@ const CrowdfundingPage = () => {
             items: linkItems,
             funderName: funderName || undefined,
             discountCode: trimmedDiscount || undefined,
+            discountCode: squareDiscountCode.trim() || undefined,
           }),
         });
         if (linkRes.ok) {
@@ -1192,6 +1193,7 @@ const CrowdfundingPage = () => {
               itemsForStorage,
               funderName?.trim() || '',
               trimmedDiscount || ''
+              squareDiscountCode.trim()
             );
             notifyToast('Redirecting to secure checkout…', { type: 'success' });
             window.location.assign(linkData.url);
@@ -1220,6 +1222,7 @@ const CrowdfundingPage = () => {
         token,
         pizzaQty,
         discountCode: trimmedDiscount || undefined,
+        discountCode: squareDiscountCode.trim() || undefined,
       };
       const res = await fetch('/api/crowdfund/checkout', {
         method: 'POST',
@@ -1815,6 +1818,16 @@ const CrowdfundingPage = () => {
                         {discountState.message || 'Unable to validate that discount code right now.'}
                       </p>
                     )}
+                    <Input
+                      id="cf-square-discount"
+                      placeholder="Discount code"
+                      autoComplete="off"
+                      value={squareDiscountCode}
+                      onChange={(e) => setSquareDiscountCode(e.target.value)}
+                    />
+                    <p className="text-xs text-slate-500">
+                      We'll include this code with your secure Square checkout.
+                    </p>
                   </div>
                   {activeTier && (
                     <div className="flex flex-col gap-2 sm:flex-row sm:items-end">
