@@ -203,6 +203,7 @@ module.exports = async (req, res) => {
       notify: safeNotify,
       trimmedDiscount,
     });
+
     return res.status(200).json({ ok: true, paymentId, discount: discountDetails || null });
   } catch (e) {
     const squareErrors = e?.errors ? e.errors.map(er => ({ code: er.code, detail: er.detail })).slice(0,3) : null;
