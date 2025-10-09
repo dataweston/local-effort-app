@@ -22,6 +22,7 @@ import PrioritiesPie from '../components/crowdfunding/PrioritiesPie.jsx';
 import { createPortableTextComponents } from '../utils/portableTextComponents';
 import { cn } from '../lib/utils';
 import { useToast } from '../components/common/ToastProvider';
+import devConsole from '../lib/devConsole.js';
 
 const REALTIME_DATABASE_URL = 'https://local-effort-default-rtdb.firebaseio.com/';
 const FIREBASE_DATABASE_PATTERN = /firebase database/gi;
@@ -1032,6 +1033,7 @@ const CrowdfundingPage = () => {
           maybe.catch((err) =>
             devConsole.warn('[square] [crowdfunding] card destroy warning', err)
           );
+          maybe.catch((err) => devConsole.warn('[square] [crowdfunding] card destroy warning', err));
         }
       } catch (err) {
         devConsole.warn('[square] [crowdfunding] card destroy error', err);
@@ -2183,6 +2185,7 @@ const CrowdfundingPage = () => {
                   />
                 );
               })}
+
             </div>
           </div>
         </div>
