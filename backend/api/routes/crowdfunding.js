@@ -127,6 +127,7 @@ function createCrowdfundingRouter({ db, squareClient, logger }) {
       }
 
       const discount = await resolveCrowdfundDiscount(code, { squareClient, logger });
+      const discount = resolveCrowdfundDiscount(code);
       if (!discount) {
         return res.json({ valid: false });
       }
