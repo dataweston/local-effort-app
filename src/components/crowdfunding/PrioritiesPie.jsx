@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '../ui/card';
 import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import devConsole from '../../lib/devConsole.js';
 
 // ----- Raw items (edit these numbers to change the budget) -----
 const items = {
@@ -72,15 +73,15 @@ const PrioritiesPie = () => {
     [totals]
   );
 
-  if (process.env.NODE_ENV !== 'production') {
-    console.assert(totals.fulfillment === 1550, 'Fulfillment should total $1,550');
-    console.assert(totals.debt === 5100, 'Debt & Operations should total $5,100');
-    console.assert(totals.equipment === 2500, 'Equipment Upgrades should total $2,500');
-    console.assert(totals.marketing === 2600, 'Marketing should total $2,600');
-    console.assert(grandTotal === 11750, 'Grand total should be $11,750');
-    console.assert(PIZZAS_NEEDED === 1667, 'Pizzas needed should be 1,667 for a $25k goal at $15 each');
+  if ((import.meta?.env?.MODE || process.env.NODE_ENV) !== 'production') {
+    devConsole.assert(totals.fulfillment === 1550, 'Fulfillment should total $1,550');
+    devConsole.assert(totals.debt === 5100, 'Debt & Operations should total $5,100');
+    devConsole.assert(totals.equipment === 2500, 'Equipment Upgrades should total $2,500');
+    devConsole.assert(totals.marketing === 2600, 'Marketing should total $2,600');
+    devConsole.assert(grandTotal === 11750, 'Grand total should be $11,750');
+    devConsole.assert(PIZZAS_NEEDED === 1667, 'Pizzas needed should be 1,667 for a $25k goal at $15 each');
     const sumSlices = pieData.reduce((acc, slice) => acc + slice.value, 0);
-    console.assert(sumSlices === grandTotal, 'Pie slices should sum to the grand total');
+    devConsole.assert(sumSlices === grandTotal, 'Pie slices should sum to the grand total');
   }
 
   return (
