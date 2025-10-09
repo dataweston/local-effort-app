@@ -12,7 +12,7 @@ try {
 let cached = null;
 
 function resolveEnvironmentName() {
-  const raw = (process.env.SQUARE_ENVIRONMENT || 'production').toLowerCase();
+  const raw = (process.env.SQUARE_ENVIRONMENT || process.env.SQUARE_ENV || 'production').toLowerCase();
   if (raw === 'sandbox') return 'Sandbox';
   return 'Production';
 }
@@ -37,6 +37,12 @@ function getSquareClient() {
   try {
     const env = (Environment && Environment[environmentName]) || (Environment && Environment.Production) || environmentName;
     const client = new Client({ accessToken, environment: env });
+    
+    // Validate that the client has the required catalog API
+    if (!client.catalogApi || typeof client.catalogApi.listCatalog !== 'function') {
+      throw new Error('Square client missing catalogApi or listCatalog method');
+    }
+    
     cached = { client, locationId, environmentName };
     if (process.env.NODE_ENV !== 'production') {
       const tail = accessToken.slice(-4);

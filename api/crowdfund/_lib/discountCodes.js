@@ -194,19 +194,23 @@ const loadSquareDiscountEntries = async (options = {}) => {
       const entries = [];
       let cursor = undefined;
       do {
-        const response = await client.catalogApi.listCatalog(cursor, 'DISCOUNT');
-        const objects = Array.isArray(response?.result?.objects)
-          ? response.result.objects
-          : Array.isArray(response?.objects)
-            ? response.objects
-            : [];
+        const response = await client.catalogApi.listCatalog({
+          cursor: cursor,
+          types: 'DISCOUNT'
+        });
+        
+        // Handle Square API response structure
+        const result = response?.result || response;
+        const objects = Array.isArray(result?.objects) ? result.objects : [];
+        
         objects.forEach((object) => {
           const normalized = normalizeSquareDiscount(object);
           if (normalized) {
             entries.push(normalized);
           }
         });
-        cursor = response?.result?.cursor || response?.cursor || null;
+        
+        cursor = result?.cursor || null;
       } while (cursor);
 
       squareCache.entries = entries;
@@ -215,11 +219,20 @@ const loadSquareDiscountEntries = async (options = {}) => {
     } catch (error) {
       squareCache.entries = [];
       squareCache.expiresAt = Date.now() + Math.min(SQUARE_CACHE_MS, 60 * 1000);
+      
+      // Enhanced error logging for Square API issues
+      const errorDetails = {
+        message: error?.message || 'Unknown error',
+        statusCode: error?.statusCode || error?.status,
+        body: error?.body,
+        errors: error?.errors
+      };
+      
       if (options.logger && typeof options.logger.warn === 'function') {
-        options.logger.warn({ err: error }, 'square discount load failed');
+        options.logger.warn({ err: errorDetails }, 'square discount load failed');
       } else {
         // eslint-disable-next-line no-console
-        console.warn('[crowdfund.discount] failed to load square discounts', error && error.message);
+        console.warn('[crowdfund.discount] failed to load square discounts', errorDetails);
       }
       return [];
     } finally {
@@ -231,16 +244,18 @@ const loadSquareDiscountEntries = async (options = {}) => {
 };
 
 const resolveCrowdfundDiscount = async (rawCode, options = {}) => {
-  const manual = resolveManualDiscount(rawCode);
-  if (manual) {
-    return manual;
-  }
-
   const trimmed = typeof rawCode === 'string' ? rawCode.trim() : '';
   if (!trimmed) {
     return null;
   }
 
+  // First check for manual discount codes (from environment variables)
+  const manual = resolveManualDiscount(rawCode);
+  if (manual) {
+    return manual;
+  }
+
+  // Then try Square discount codes
   try {
     const squareEntries = await loadSquareDiscountEntries(options);
     if (!Array.isArray(squareEntries) || !squareEntries.length) {
@@ -255,6 +270,7 @@ const resolveCrowdfundDiscount = async (rawCode, options = {}) => {
       // eslint-disable-next-line no-console
       console.warn('[crowdfund.discount] failed to resolve discount', error && error.message);
     }
+    // Return null rather than throwing, so the user gets "invalid code" rather than "unable to validate"
     return null;
   }
 };
