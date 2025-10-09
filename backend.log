@@ -1,0 +1,32 @@
+[dotenv@17.2.2] injecting env (0) from ..\..\.env -- tip: 📡 auto-backup env with Radar: https://dotenvx.com/radar
+[dotenv@17.2.2] injecting env (65) from .env -- tip: ⚙️  write to custom object with { processEnv: myObject }
+{"level":40,"time":1760047493213,"service":"backend-api","hostname":"DESKTOP-EG5VJK8","pid":14936,"msg":"square client missing; crowdfund endpoints will error"}
+⚠️  Node.js 18 and below are deprecated and will no longer be supported in future versions of @supabase/supabase-js. Please upgrade to Node.js 20 or later. For more information, visit: https://github.com/orgs/supabase/discussions/37217
+COOKBOOK_API_BASE not set — enabling internal Cookbook endpoints from local data.
+{"level":30,"time":1760047503676,"service":"backend-api","hostname":"DESKTOP-EG5VJK8","pid":14936,"msg":"MCP HTTP bridge active"}
+node:events:495
+      throw er; // Unhandled 'error' event
+      ^
+
+Error: listen EADDRINUSE: address already in use :::3001
+    at Server.setupListenHandle [as _listen2] (node:net:1817:16)
+    at listenInCluster (node:net:1865:12)
+    at Server.listen (node:net:1953:7)
+    at Function.listen (C:\Users\user\local-effort-app\backend\node_modules\express\lib\application.js:635:24)
+    at Object.<anonymous> (C:\Users\user\local-effort-app\backend\api\server.js:7:7)
+    at Module._compile (node:internal/modules/cjs/loader:1356:14)
+    at Module._extensions..js (node:internal/modules/cjs/loader:1414:10)
+    at Module.load (node:internal/modules/cjs/loader:1197:32)
+    at Module._load (node:internal/modules/cjs/loader:1013:12)
+    at Function.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:128:12)
+Emitted 'error' event on Server instance at:
+    at emitErrorNT (node:net:1844:8)
+    at process.processTicksAndRejections (node:internal/process/task_queues:82:21) {
+  code: 'EADDRINUSE',
+  errno: -4091,
+  syscall: 'listen',
+  address: '::',
+  port: 3001
+}
+
+Node.js v18.19.0

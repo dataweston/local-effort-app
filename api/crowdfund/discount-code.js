@@ -1,4 +1,4 @@
-require('dotenv').config({ path: '../../.env' });
+require('dotenv').config({ path: './.env' });
 
 const { resolveCrowdfundDiscount } = require('./_lib/discountCodes');
 const { getSquareClient } = require('../_lib/squareClient');

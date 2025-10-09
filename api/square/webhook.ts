@@ -5,7 +5,7 @@ import crypto from 'node:crypto';
 import { db as defaultDb } from '../../packages/lib/firebaseAdmin';
 
 // Load environment variables
-dotenvConfig({ path: '../../.env' });
+dotenvConfig({ path: './.env' });
 
 type Req = IncomingMessage & {
   method?: string;

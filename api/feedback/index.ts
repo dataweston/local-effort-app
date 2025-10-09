@@ -5,7 +5,7 @@ import { createFeedback, listFeedback } from '../../packages/lib/crowdfundingPip
 import { db } from '../../packages/lib/firebaseAdmin';
 
 // Load environment variables
-config({ path: '../../.env' });
+config({ path: './.env' });
 
 type Req = IncomingMessage & { method?: string; body?: any; url?: string };
 type Res = ServerResponse & {

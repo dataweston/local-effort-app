@@ -14,10 +14,50 @@ let cachedApp = null;
 let initAttempted = false;
 
 const getEnv = () => {
+  const merged = {};
   if (typeof import.meta !== 'undefined' && import.meta.env) {
-    return import.meta.env;
+    Object.assign(merged, import.meta.env);
   }
-  return {};
+  if (typeof process !== 'undefined' && process.env) {
+    Object.assign(merged, process.env);
+  }
+  if (typeof window !== 'undefined') {
+    if (window.__ENV__ && typeof window.__ENV__ === 'object') {
+      Object.assign(merged, window.__ENV__);
+    }
+    if (window.__APP_ENV__ && typeof window.__APP_ENV__ === 'object') {
+      Object.assign(merged, window.__APP_ENV__);
+    }
+  }
+  return merged;
+};
+
+const FIREBASE_KEY_MAP = {
+  API_KEY: 'apiKey',
+  AUTH_DOMAIN: 'authDomain',
+  PROJECT_ID: 'projectId',
+  APP_ID: 'appId',
+  MESSAGING_SENDER_ID: 'messagingSenderId',
+  DATABASE_URL: 'databaseURL',
+};
+
+const getGlobalFirebaseConfig = () => {
+  if (typeof window === 'undefined') return null;
+  if (window.__FIREBASE_CONFIG__ && typeof window.__FIREBASE_CONFIG__ === 'object') {
+    return window.__FIREBASE_CONFIG__;
+  }
+  if (window.__firebaseConfig && typeof window.__firebaseConfig === 'object') {
+    return window.__firebaseConfig;
+  }
+  if (
+    window.__APP_CONFIG__ &&
+    typeof window.__APP_CONFIG__ === 'object' &&
+    window.__APP_CONFIG__.firebase &&
+    typeof window.__APP_CONFIG__.firebase === 'object'
+  ) {
+    return window.__APP_CONFIG__.firebase;
+  }
+  return null;
 };
 
 const readEnvValue = (suffix) => {
@@ -26,6 +66,33 @@ const readEnvValue = (suffix) => {
     env[`VITE_FIREBASE_${suffix}`] ||
     env[`NEXT_PUBLIC_FIREBASE_${suffix}`] ||
     env[`PUBLIC_FIREBASE_${suffix}`] ||
+    env[`REACT_APP_FIREBASE_${suffix}`] ||
+    env[`FIREBASE_${suffix}`] ||
+    env[`FIREBASE${suffix}`] ||
+    (() => {
+      const config = env.FIREBASE_CONFIG_JSON
+        ? (() => {
+            try {
+              return JSON.parse(env.FIREBASE_CONFIG_JSON);
+            } catch (error) {
+              devConsole.warn?.('[firebase] failed to parse FIREBASE_CONFIG_JSON', error);
+              return null;
+            }
+          })()
+        : null;
+      if (config && typeof config === 'object') {
+        const key = FIREBASE_KEY_MAP[suffix];
+        if (key && config[key]) return config[key];
+      }
+      return null;
+    })() ||
+    (() => {
+      const globalConfig = getGlobalFirebaseConfig();
+      if (!globalConfig) return null;
+      const key = FIREBASE_KEY_MAP[suffix];
+      if (!key) return null;
+      return globalConfig[key] || null;
+    })() ||
     null
   );
 };
@@ -65,16 +132,16 @@ export const getFirebaseAppInstance = () => {
   if (cachedApp) {
     return cachedApp;
   }
-  if (initAttempted) {
-    return null;
-  }
-  initAttempted = true;
-
   const config = buildFirebaseConfig();
   if (!config) {
     devConsole.warn?.('[firebase] missing client configuration for crowdfunding');
     return null;
   }
+
+  if (initAttempted) {
+    return null;
+  }
+  initAttempted = true;
 
   try {
     cachedApp = getApps()[0] ?? initializeApp(config);

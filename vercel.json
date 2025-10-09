@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "installCommand": "pnpm install --filter local-effort-website... --frozen-lockfile",
+  "installCommand": "pnpm install --frozen-lockfile",
   "builds": [
     {
       "src": "package.json",
