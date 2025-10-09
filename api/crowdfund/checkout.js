@@ -2,6 +2,7 @@
 // Accepts embedded card payment (Square) for crowdfunding pizzas / pledges.
 // Body: { items: [{ name, price (in cents), quantity, type, pizzaCount }], funderName, token, pizzaQty }
 
+const crypto = require('crypto');
 const { getSquareClient } = require('../_lib/squareClient');
 const { getFirebaseAdmin } = require('../_lib/firebaseAdmin');
 const { resolveCrowdfundDiscount, applyCrowdfundDiscount } = require('./_lib/discountCodes');
@@ -16,6 +17,13 @@ const countPizzasInItems = (items) => {
       const count = Number(item.pizzaCount || item.quantity || 0);
       return sum + (Number.isFinite(count) && count > 0 ? count : 0);
     }, 0);
+};
+
+const createIdempotencyKey = () => {
+  if (typeof crypto.randomUUID === 'function') {
+    return crypto.randomUUID();
+  }
+  return `${Date.now()}-${crypto.randomBytes(16).toString('hex')}`;
 };
 
 async function recordCrowdfundContribution({
@@ -93,7 +101,6 @@ module.exports = async (req, res) => {
     if (!locationId) return res.status(500).json({ error: 'Square location missing' });
 
     const { items, funderName, token, email, phone, notes, notify, discountCode } = req.body || {};
-    if (!token) return res.status(400).json({ error: 'Missing payment token' });
     if (!Array.isArray(items) || !items.length) return res.status(400).json({ error: 'No items' });
 
     let lineTotal = items.reduce(
@@ -114,21 +121,9 @@ module.exports = async (req, res) => {
       return res.status(400).json({ error: 'Missing payment token' });
     }
 
-    const idempotencyKey = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
-    const metaNoteParts = [funderName || 'Anonymous'];
-    if (email) metaNoteParts.push(email);
-    if (phone) metaNoteParts.push(phone);
-    if (notify && notify !== 'none') metaNoteParts.push(`notify:${notify}`);
-    if (trimmedDiscount) {
-      metaNoteParts.push(`discount:${trimmedDiscount}${discountDetails ? ':applied' : ''}`);
-    }
-    const trimmedDiscount = typeof discountCode === 'string' ? discountCode.trim().slice(0, 60) : '';
-    if (trimmedDiscount) metaNoteParts.push(`discount:${trimmedDiscount}`);
-    const noteStr = metaNoteParts.join(' | ').slice(0, 500);
     const pizzasInCart = countPizzasInItems(items);
-
-    if (!requiresPayment) {
-      await recordCrowdfundContribution({
+    const persistContribution = () =>
+      recordCrowdfundContribution({
         db,
         pizzasInCart,
         funderName,
@@ -138,8 +133,21 @@ module.exports = async (req, res) => {
         notify,
         trimmedDiscount,
       });
+
+    if (!requiresPayment) {
+      await persistContribution();
       return res.status(200).json({ ok: true, paymentId: null, comped: true, discount: discountDetails || null });
     }
+
+    const idempotencyKey = createIdempotencyKey();
+    const metaNoteParts = [funderName || 'Anonymous'];
+    if (email) metaNoteParts.push(email);
+    if (phone) metaNoteParts.push(phone);
+    if (notify && notify !== 'none') metaNoteParts.push(`notify:${notify}`);
+    if (trimmedDiscount) {
+      metaNoteParts.push(`discount:${trimmedDiscount}${discountDetails ? ':applied' : ''}`);
+    }
+    const noteStr = metaNoteParts.join(' | ').slice(0, 500);
 
     const paymentBody = {
       sourceId: token,
@@ -153,47 +161,7 @@ module.exports = async (req, res) => {
     const resp = await squareClient.paymentsApi.createPayment(paymentBody);
     const paymentId = resp.result.payment?.id;
 
-    await recordCrowdfundContribution({
-      db,
-      pizzasInCart,
-      funderName,
-      email,
-      phone,
-      notes,
-      notify,
-      trimmedDiscount,
-    });
-    // Update crowdfund totals (best-effort) — count pizzas from items where type === 'pizza'
-    if (db) {
-      try {
-        const pizzasInCart = items.filter(p => p.type === 'pizza').reduce((sum, it) => sum + (it.pizzaCount || it.quantity || 1), 0);
-        if (pizzasInCart > 0) {
-          const docRef = db.collection('crowdfund').doc('status');
-          await db.runTransaction(async (tx) => {
-            const doc = await tx.get(docRef);
-            if (!doc.exists) {
-              tx.set(docRef, { goal: 1000, pizzasSold: pizzasInCart, funders: [{ name: funderName, date: new Date().toISOString() }] });
-            } else {
-              const data = doc.data() || {};
-              const funders = Array.isArray(data.funders) ? data.funders : [];
-              funders.push({
-                name: funderName,
-                date: new Date().toISOString(),
-                email: email || null,
-                phone: phone || null,
-                notes: notes || null,
-                notify: notify || 'none',
-                pizzas: pizzasInCart,
-                discountCode: trimmedDiscount || null,
-              });
-              tx.update(docRef, { pizzasSold: (data.pizzasSold || 0) + pizzasInCart, funders });
-            }
-          });
-        }
-      } catch (err) {
-        console.warn('Failed to update crowdfund metrics after payment', err?.message);
-      }
-    }
+    await persistContribution();
 
     return res.status(200).json({ ok: true, paymentId, discount: discountDetails || null });
   } catch (e) {
