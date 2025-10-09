@@ -1,5 +1,6 @@
 const { v4: uuidv4 } = require('uuid');
 const { getSquareClient } = require('../_lib/squareClient');
+const { resolveCrowdfundDiscount, applyCrowdfundDiscount } = require('./_lib/discountCodes');
 
 const DEFAULT_SUCCESS_URL = 'https://localeffortfood.com/crowdfunding?payment=success';
 
@@ -22,11 +23,13 @@ module.exports = async (req, res) => {
     return res.status(400).json({ error: 'Cart is empty.' });
   }
 
+  let totalCents = 0;
   const lineItems = items.map((item) => {
     const quantity = Number(item?.quantity || item?.pizzaCount || 1);
     const normalizedQuantity = Number.isFinite(quantity) && quantity > 0 ? quantity : 1;
     const priceDollars = Number(item?.price || 0);
     const amount = Math.round(priceDollars * 100);
+    totalCents += amount * normalizedQuantity;
     return {
       name: item?.name || 'Contribution',
       quantity: String(normalizedQuantity),
@@ -43,6 +46,12 @@ module.exports = async (req, res) => {
   };
 
   const trimmedDiscount = typeof discountCode === 'string' ? discountCode.trim().slice(0, 60) : '';
+  const discountDetails = resolveCrowdfundDiscount(trimmedDiscount);
+  const discountedTotal = applyCrowdfundDiscount(totalCents, discountDetails);
+
+  if (discountedTotal <= 0) {
+    return res.status(200).json({ comped: true, discount: discountDetails || null });
+  }
 
   try {
     const response = await squareClient.checkoutApi.createPaymentLink({
