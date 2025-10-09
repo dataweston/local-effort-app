@@ -1,6 +1,10 @@
 import type { IncomingMessage, ServerResponse } from 'node:http';
+import { config } from 'dotenv';
 import { getCrowdfundingSummary } from '../../packages/lib/crowdfundingPipeline';
 import { db } from '../../packages/lib/firebaseAdmin';
+
+// Load environment variables
+config({ path: '../../.env' });
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const { loadPublishedCrowdfundingSummary } = require('../../packages/lib/crowdfundingFallbacks');

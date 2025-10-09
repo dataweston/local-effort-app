@@ -1,7 +1,11 @@
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import { URL } from 'node:url';
+import { config } from 'dotenv';
 import { createFeedback, listFeedback } from '../../packages/lib/crowdfundingPipeline';
 import { db } from '../../packages/lib/firebaseAdmin';
+
+// Load environment variables
+config({ path: '../../.env' });
 
 type Req = IncomingMessage & { method?: string; body?: any; url?: string };
 type Res = ServerResponse & {

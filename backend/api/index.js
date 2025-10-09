@@ -1,6 +1,6 @@
 // backend/api/server.js
 /* eslint-disable no-console */
-require('dotenv').config();
+require('dotenv').config({ path: '../../.env' });
 // Sentry (full backend)
 let Sentry; let sentryEnabled = false;
 try {
