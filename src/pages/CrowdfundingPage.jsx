@@ -1,4 +1,3 @@
-// ...existing code...
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import useSWR from 'swr';
 import PropTypes from 'prop-types';
@@ -8,7 +7,14 @@ import SectionHeader from '../components/ui/SectionHeader';
 import sanityClient from '../sanityClient.js';
 import { useSquarePayments } from '../lib/useSquarePayments';
 import { Button } from '../components/ui/button';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '../components/ui/card';
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+  CardFooter,
+} from '../components/ui/card';
 import { Input } from '../components/ui/input';
 import { Textarea } from '../components/ui/textarea';
 import { Label } from '../components/ui/label';
@@ -22,9 +28,35 @@ const FIREBASE_DATABASE_PATTERN = /firebase database/gi;
 
 const createFirebaseDatabaseRegex = () => new RegExp(FIREBASE_DATABASE_PATTERN);
 
+const devConsole = {
+  log: (...args) => {
+    if (process.env.NODE_ENV !== 'production') {
+      // eslint-disable-next-line no-console
+      console.log(...args);
+    }
+  },
+  warn: (...args) => {
+    if (process.env.NODE_ENV !== 'production') {
+      // eslint-disable-next-line no-console
+      console.warn(...args);
+    }
+  },
+  error: (...args) => {
+    if (process.env.NODE_ENV !== 'production') {
+      // eslint-disable-next-line no-console
+      console.error(...args);
+    }
+  },
+};
+
 function isPortableTextBlocks(value) {
-  return Array.isArray(value)
-    && value.some((item) => item && typeof item === 'object' && item._type === 'block' && Array.isArray(item.children));
+  return (
+    Array.isArray(value) &&
+    value.some(
+      (item) =>
+        item && typeof item === 'object' && item._type === 'block' && Array.isArray(item.children)
+    )
+  );
 }
 
 function replaceFirebaseDatabaseInPortableBlocks(blocks) {
@@ -50,7 +82,11 @@ function replaceFirebaseDatabaseInPortableBlocks(blocks) {
         return linkMarkKey;
       }
       const existing = markDefs.find(
-        (def) => def && def._type === 'link' && typeof def.href === 'string' && def.href === REALTIME_DATABASE_URL,
+        (def) =>
+          def &&
+          def._type === 'link' &&
+          typeof def.href === 'string' &&
+          def.href === REALTIME_DATABASE_URL
       );
       if (existing && existing._key) {
         linkMarkKey = existing._key;
@@ -102,10 +138,7 @@ function replaceFirebaseDatabaseInPortableBlocks(blocks) {
           ...child,
           _key: child._key ? `${child._key}-${segmentIndex++}` : undefined,
           text: 'Realtime Database',
-          marks: [
-            ...(Array.isArray(child.marks) ? child.marks : []),
-            markKey,
-          ],
+          marks: [...(Array.isArray(child.marks) ? child.marks : []), markKey],
         });
 
         lastIndex = end;
@@ -155,7 +188,9 @@ function replaceFirebaseDatabaseInValue(value) {
     return replaceFirebaseDatabaseInPortableBlocks(value);
   }
   if (Array.isArray(value) && value.every((item) => typeof item === 'string')) {
-    const replaced = value.map((item) => item.replace(FIREBASE_DATABASE_PATTERN, 'Realtime Database'));
+    const replaced = value.map((item) =>
+      item.replace(FIREBASE_DATABASE_PATTERN, 'Realtime Database')
+    );
     const changed = replaced.some((item, index) => item !== value[index]);
     return changed ? replaced : value;
   }
@@ -279,8 +314,8 @@ const RewardTierCard = ({ tier, onSelect, busy, selected }) => {
   const headline = pieCountLabel
     ? `${pieCountLabel} - ${tier.title}`
     : pizzaCountLabel
-    ? `${pizzaCountLabel} - ${tier.title}`
-    : `Pledge ${moneyLabel || '$0'} or more`;
+      ? `${pizzaCountLabel} - ${tier.title}`
+      : `Pledge ${moneyLabel || '$0'} or more`;
 
   const handleSelect = () => {
     if (!isAvailable || busy) return;
@@ -336,9 +371,7 @@ const RewardTierCard = ({ tier, onSelect, busy, selected }) => {
         >
           {selected ? 'Reward selected' : isAvailable ? 'Select this reward' : 'Unavailable online'}
         </Button>
-        {!isAvailable && (
-          <span className="text-xs text-slate-500">Contact us to claim.</span>
-        )}
+        {!isAvailable && <span className="text-xs text-slate-500">Contact us to claim.</span>}
       </CardFooter>
     </Card>
   );
@@ -357,8 +390,6 @@ RewardTierCard.propTypes = {
   busy: PropTypes.bool,
   selected: PropTypes.bool,
 };
-// ...existing code...
-
 // --- Main Page Component ---
 const tierIdentifier = (tier) => (tier?._id || tier?.id || tier?.title || '').toString();
 
@@ -366,7 +397,7 @@ const REWARD_PREFERENCE_OPTIONS = [
   { value: 'public pizza party', label: 'Public pizza party' },
   { value: 'deliver to my home', label: 'Deliver to my home' },
   { value: 'make live at my home', label: 'Make live at my home' },
-  { value: "i'm open or im not sure", label: "I’m open or I’m not sure" },
+  { value: "i'm open or im not sure", label: 'I’m open or I’m not sure' },
 ];
 
 const CAMPAIGN_EXTENSION_DATE_STRING = '2025-12-10T23:59:59-06:00';
@@ -385,14 +416,24 @@ const CrowdfundingPage = () => {
   const [phone, setPhone] = useState('');
   const [notes, setNotes] = useState('');
   const [squareDiscountCode, setSquareDiscountCode] = useState('');
-  const [discountState, setDiscountState] = useState({ status: 'idle', code: '', discount: null, message: '' });
+  const [discountState, setDiscountState] = useState({
+    status: 'idle',
+    code: '',
+    discount: null,
+    message: '',
+  });
   const notify = 'none';
   const [showForm, setShowForm] = useState(false);
   const [pizzaQty, setPizzaQty] = useState(1);
   const [confirmMsg, setConfirmMsg] = useState('');
   const [formNotice, setFormNotice] = useState('');
   const [referralInput, setReferralInput] = useState('');
-  const [referralState, setReferralState] = useState({ status: 'idle', valid: false, participant: null, code: '' });
+  const [referralState, setReferralState] = useState({
+    status: 'idle',
+    valid: false,
+    participant: null,
+    code: '',
+  });
   const [selectedTierId, setSelectedTierId] = useState('');
   const [subscribeEmail, setSubscribeEmail] = useState('');
   const [subscribeStatus, setSubscribeStatus] = useState('idle'); // idle | loading | success | error
@@ -410,16 +451,17 @@ const CrowdfundingPage = () => {
   const [galleryImages, setGalleryImages] = useState([]);
   const [galleryLoading, setGalleryLoading] = useState(false);
   const [galleryError, setGalleryError] = useState('');
-  const galleryLoadedRef = React.useRef(false);
+  const galleryLoadedRef = useRef(false);
   const [eventModal, setEventModal] = useState(null);
 
-  const {
-    data: summaryData,
-    error: summaryError,
-  } = useSWR('/api/crowdfunding/summary', summaryFetcher, {
-    refreshInterval: 30000,
-    revalidateOnFocus: true,
-  });
+  const { data: summaryData, error: summaryError } = useSWR(
+    '/api/crowdfunding/summary',
+    summaryFetcher,
+    {
+      refreshInterval: 30000,
+      revalidateOnFocus: true,
+    }
+  );
   const summaryPizzas = Number(summaryData?.pizzas);
   const summaryBackers = Number(summaryData?.backers);
   const summaryGoal = Number(summaryData?.goal);
@@ -430,28 +472,47 @@ const CrowdfundingPage = () => {
       galleryLoadedRef.current = true;
       setGalleryLoading(true);
       // Fetch pizza and pie separately then merge unique results to ensure OR semantics across Cloudinary search API
-      const endpoints = ['/api/search-images?query=pizza&per_page=50', '/api/search-images?query=pie&per_page=50'];
-      Promise.all(endpoints.map((u) => fetch(u).then(r => r.json().catch(()=>({})).then(data => ({ ok: r.ok, data })))))
-        .then((results) => {
-          const all = [];
-          results.forEach(({ ok, data }) => {
-            if (ok && data && Array.isArray(data.images)) all.push(...data.images);
-          });
-          // De-duplicate by asset_id or public_id
-          const seen = new Set();
-          const merged = [];
-          for (const img of all) {
-            const id = img.asset_id || img.public_id;
-            if (!id || seen.has(id)) continue;
-            seen.add(id);
-            merged.push(img);
+      const endpoints = [
+        '/api/search-images?query=pizza&per_page=50',
+        '/api/search-images?query=pie&per_page=50',
+      ];
+      Promise.all(
+        endpoints.map(async (url) => {
+          try {
+            const response = await fetch(url, { headers: { Accept: 'application/json' } });
+            const payload = await response.json().catch(() => ({}));
+            const images = Array.isArray(payload?.images) ? payload.images : [];
+            return { ok: response.ok, images };
+          } catch (error) {
+            devConsole.warn('[crowdfunding] gallery fetch failed', error);
+            return { ok: false, images: [] };
           }
+        })
+      )
+        .then((results) => {
+          const merged = [];
+          const seen = new Set();
+          results.forEach(({ ok, images }) => {
+            if (!ok || !images.length) {
+              return;
+            }
+            images.forEach((img) => {
+              const id = img?.asset_id || img?.public_id;
+              if (!id || seen.has(id)) {
+                return;
+              }
+              seen.add(id);
+              merged.push(img);
+            });
+          });
           if (merged.length === 0) {
             setGalleryError('No images found yet.');
           }
           setGalleryImages(merged);
         })
-        .catch((e) => setGalleryError(e.message || 'Error loading gallery'))
+        .catch((error) => {
+          setGalleryError(error?.message || 'Error loading gallery');
+        })
         .finally(() => setGalleryLoading(false));
     }
   }, [activeTab]);
@@ -463,7 +524,9 @@ const CrowdfundingPage = () => {
 
     const loadFeedback = async () => {
       try {
-        const res = await fetch('/api/crowdfund/pizza-feedback?limit=8', { headers: { Accept: 'application/json' } });
+        const res = await fetch('/api/crowdfund/pizza-feedback?limit=8', {
+          headers: { Accept: 'application/json' },
+        });
         let data = null;
         try {
           data = await res.json();
@@ -471,19 +534,22 @@ const CrowdfundingPage = () => {
           data = null;
         }
         if (!res.ok) {
-          const message = (data && data.error) || 'Unable to reach the pizza feedback service right now.';
+          const message =
+            (data && data.error) || 'Unable to reach the pizza feedback service right now.';
           throw new Error(message);
         }
         const entries = Array.isArray(data?.entries)
           ? data.entries
               .map((entry) => {
                 const rawRating = Number(entry.rating);
-                const normalizedRating = Number.isFinite(rawRating) && rawRating > 0 ? rawRating : null;
-                const comment = typeof entry.comment === 'string' && entry.comment.trim()
-                  ? entry.comment.trim()
-                  : typeof entry.message === 'string'
-                  ? entry.message.trim()
-                  : '';
+                const normalizedRating =
+                  Number.isFinite(rawRating) && rawRating > 0 ? rawRating : null;
+                const comment =
+                  typeof entry.comment === 'string' && entry.comment.trim()
+                    ? entry.comment.trim()
+                    : typeof entry.message === 'string'
+                      ? entry.message.trim()
+                      : '';
                 return {
                   id: entry.id || `feedback-${entry.createdAt || Date.now()}`,
                   rating: normalizedRating,
@@ -497,7 +563,9 @@ const CrowdfundingPage = () => {
         }
       } catch (err) {
         if (!cancelled) {
-          setFeedbackFetchError(err?.message || 'Unable to reach the pizza feedback service right now.');
+          setFeedbackFetchError(
+            err?.message || 'Unable to reach the pizza feedback service right now.'
+          );
         }
       } finally {
         if (!cancelled) {
@@ -552,13 +620,13 @@ const CrowdfundingPage = () => {
         // Provide richer logging so we can see the real failure in browser consoles
         try {
           const msg = err && err.message ? err.message : String(err);
-          console.error('Sanity fetch error message:', msg);
+          devConsole.error('Sanity fetch error message:', msg);
           if (err && err.response && typeof err.response.text === 'function') {
             const body = await err.response.text();
-            console.error('Sanity fetch response body:', body);
+            devConsole.error('Sanity fetch response body:', body);
           }
         } catch (logErr) {
-          console.error('Error while logging Sanity error:', logErr);
+          devConsole.error('Error while logging Sanity error:', logErr);
         }
 
         // Attempt a safe fallback: fetch the first crowdfundingCampaign available
@@ -583,16 +651,16 @@ const CrowdfundingPage = () => {
           }`;
           const fbData = await sanityClient.fetch(fallback);
           if (fbData) {
-            console.warn('Loaded fallback campaign (first in dataset)');
+            devConsole.warn('Loaded fallback campaign (first in dataset)');
             setCampaignData(replaceFirebaseDatabaseMentions(fbData));
             // previously cleared error state (removed unused state)
             return;
           }
         } catch (fbErr) {
-          console.error('Fallback fetch also failed:', fbErr && (fbErr.message || fbErr));
+          devConsole.error('Fallback fetch also failed:', fbErr && (fbErr.message || fbErr));
         }
 
-        console.warn('Failed to load campaign data.');
+        devConsole.warn('Failed to load campaign data.');
       } finally {
         // loading state removed; no-op
       }
@@ -602,7 +670,7 @@ const CrowdfundingPage = () => {
   }, []);
 
   // Derive reward tiers safely for hooks below
-  const rewardTiers = (campaignData?.rewardTiers) || [];
+  const rewardTiers = campaignData?.rewardTiers || [];
   const visibleTiers = useMemo(() => {
     const hasValid = referralState.valid && referralState.code;
     return rewardTiers.filter((t) => {
@@ -619,7 +687,7 @@ const CrowdfundingPage = () => {
     [visibleTiers]
   );
   const firstPayTier = useMemo(
-    () => visibleTiers.find(t => typeof t?.amount === 'number' && t.amount > 0) || null,
+    () => visibleTiers.find((t) => typeof t?.amount === 'number' && t.amount > 0) || null,
     [visibleTiers]
   );
 
@@ -701,7 +769,9 @@ const CrowdfundingPage = () => {
 
   const handleTierSelect = (tier) => {
     if (!tier || typeof tier.amount !== 'number' || tier.amount <= 0) {
-      setFormNotice('Online checkout is only available for paid rewards. Please choose another tier.');
+      setFormNotice(
+        'Online checkout is only available for paid rewards. Please choose another tier.'
+      );
       return;
     }
     setSelectedTierId(tierIdentifier(tier));
@@ -777,19 +847,23 @@ const CrowdfundingPage = () => {
         }
 
         if (!res.ok) {
-          const messageText = (data && data.error) || 'We had trouble saving your pizza note. Please try again.';
+          const messageText =
+            (data && data.error) || 'We had trouble saving your pizza note. Please try again.';
           throw new Error(messageText);
         }
 
         const payloadEntry = data?.entry;
         const nextEntry = {
           id: (payloadEntry && payloadEntry.id) || `feedback-${Date.now()}`,
-          rating: Number.isFinite(Number(payloadEntry?.rating)) ? Number(payloadEntry.rating) : ratingValue,
-          comment: typeof payloadEntry?.comment === 'string' && payloadEntry.comment.trim()
-            ? payloadEntry.comment.trim()
-            : typeof payloadEntry?.message === 'string' && payloadEntry.message.trim()
-            ? payloadEntry.message.trim()
-            : message,
+          rating: Number.isFinite(Number(payloadEntry?.rating))
+            ? Number(payloadEntry.rating)
+            : ratingValue,
+          comment:
+            typeof payloadEntry?.comment === 'string' && payloadEntry.comment.trim()
+              ? payloadEntry.comment.trim()
+              : typeof payloadEntry?.message === 'string' && payloadEntry.message.trim()
+                ? payloadEntry.message.trim()
+                : message,
         };
 
         setFeedbackEntries((prev) => {
@@ -805,7 +879,9 @@ const CrowdfundingPage = () => {
         setFeedbackNotice('Thanks for spreading the pizza love!');
       } catch (err) {
         setFeedbackStatus('error');
-        setFeedbackNotice(err?.message || 'We had trouble saving your pizza note. Please try again.');
+        setFeedbackNotice(
+          err?.message || 'We had trouble saving your pizza note. Please try again.'
+        );
       } finally {
         setFeedbackSubmitting(false);
       }
@@ -873,7 +949,12 @@ const CrowdfundingPage = () => {
       setDiscountState({ status: 'idle', code: '', discount: null, message: '' });
       return;
     }
-    setDiscountState({ status: 'checking', code: trimmedDiscountCode, discount: null, message: '' });
+    setDiscountState({
+      status: 'checking',
+      code: trimmedDiscountCode,
+      discount: null,
+      message: '',
+    });
     try {
       const res = await fetch('/api/crowdfund/discount-code', {
         method: 'POST',
@@ -927,7 +1008,7 @@ const CrowdfundingPage = () => {
         localStorage.removeItem('cf_discount');
       }
     } catch (err) {
-      console.warn('[square] [crowdfunding] failed to persist pending contribution', err);
+      devConsole.warn('[square] [crowdfunding] failed to persist pending contribution', err);
     }
   }, []);
   const clearPendingContribution = useCallback(() => {
@@ -936,22 +1017,24 @@ const CrowdfundingPage = () => {
       localStorage.removeItem('cf_name');
       localStorage.removeItem('cf_discount');
     } catch (err) {
-      console.warn('[square] [crowdfunding] failed to clear pending contribution', err);
+      devConsole.warn('[square] [crowdfunding] failed to clear pending contribution', err);
     }
   }, []);
 
   const destroyCard = useCallback(() => {
     const card = cardInstanceRef.current;
     if (card) {
-      console.log('[square] [crowdfunding] destroying card instance');
+      devConsole.log('[square] [crowdfunding] destroying card instance');
       cardInstanceRef.current = null;
       try {
         const maybe = card.destroy?.();
         if (maybe && typeof maybe.then === 'function') {
-          maybe.catch((err) => console.warn('[square] [crowdfunding] card destroy warning', err));
+          maybe.catch((err) =>
+            devConsole.warn('[square] [crowdfunding] card destroy warning', err)
+          );
         }
       } catch (err) {
-        console.warn('[square] [crowdfunding] card destroy error', err);
+        devConsole.warn('[square] [crowdfunding] card destroy error', err);
       }
     }
     if (cardContainerRef.current) {
@@ -993,7 +1076,7 @@ const CrowdfundingPage = () => {
     cardInitRef.current = true;
     setCardError('');
     setCardReady(false);
-    console.log('[square] [crowdfunding] initializing card', {
+    devConsole.log('[square] [crowdfunding] initializing card', {
       tier: activeTier?.title || null,
       amount: activeTier?.amount || null,
     });
@@ -1020,13 +1103,13 @@ const CrowdfundingPage = () => {
           return;
         }
         setCardReady(true);
-        console.log('[square] [crowdfunding] card attached');
+        devConsole.log('[square] [crowdfunding] card attached');
       })
       .catch((err) => {
         if (cancelled) {
           return;
         }
-        console.error('[square] [crowdfunding] card init failed', err);
+        devConsole.error('[square] [crowdfunding] card init failed', err);
         const message = err?.message || 'Unable to load the payment form.';
         setCardError(message);
         notifyToast(message, { type: 'error' });
@@ -1040,7 +1123,7 @@ const CrowdfundingPage = () => {
 
   useEffect(() => {
     return () => {
-      console.log('[square] [crowdfunding] page unmount cleanup');
+      devConsole.log('[square] [crowdfunding] page unmount cleanup');
       destroyCard();
     };
   }, [destroyCard]);
@@ -1057,8 +1140,9 @@ const CrowdfundingPage = () => {
           const discountCode = localStorage.getItem('cf_discount') || undefined;
           if (Array.isArray(items) && items.length > 0) {
             const res = await fetch('/api/crowdfund/confirm-payment', {
-              method: 'POST', headers: { 'content-type': 'application/json' },
-              body: JSON.stringify({ items, funderName: name, discountCode })
+              method: 'POST',
+              headers: { 'content-type': 'application/json' },
+              body: JSON.stringify({ items, funderName: name, discountCode }),
             });
             if (res.ok) {
               setConfirmMsg('Thanks! Your contribution has been recorded.');
@@ -1081,7 +1165,7 @@ const CrowdfundingPage = () => {
       throw new Error(message);
     }
     const result = await card.tokenize();
-    console.log('[square] [crowdfunding] tokenize result', result);
+    devConsole.log('[square] [crowdfunding] tokenize result', result);
     if (result.status !== 'OK' || !result.token) {
       const message =
         (Array.isArray(result.errors) && result.errors[0]?.message) ||
@@ -1118,7 +1202,7 @@ const CrowdfundingPage = () => {
 
       const totalCents = normalizedItems.reduce(
         (sum, item) => sum + item.priceCents * item.quantity,
-        0,
+        0
       );
       const trimmedDiscount = trimmedDiscountCode;
       const discountFromState = appliedDiscount;
@@ -1199,7 +1283,7 @@ const CrowdfundingPage = () => {
           }
         }
       } catch (linkErr) {
-        console.warn('[square] [crowdfunding] payment link attempt failed', linkErr);
+        devConsole.warn('[square] [crowdfunding] payment link attempt failed', linkErr);
       }
 
       let token;
@@ -1235,7 +1319,9 @@ const CrowdfundingPage = () => {
             if (Array.isArray(parsed) && parsed[0]?.code) {
               msg = `Square error: ${parsed[0].code}${parsed[0].detail ? ' - ' + parsed[0].detail : ''}`;
             }
-          } catch (_) { /* ignore parse */ }
+          } catch (_) {
+            /* ignore parse */
+          }
         }
         throw new Error(msg);
       }
@@ -1295,43 +1381,59 @@ const CrowdfundingPage = () => {
 
   useEffect(() => {
     if (!eventModal) return;
-    const stillExists = upcomingEvents.some((ev) => (ev._key || ev._id) === (eventModal._key || eventModal._id));
+    const stillExists = upcomingEvents.some(
+      (ev) => (ev._key || ev._id) === (eventModal._key || eventModal._id)
+    );
     if (!stillExists) {
       setEventModal(null);
     }
   }, [eventModal, upcomingEvents]);
 
-  const formatListDate = useCallback((event) => {
-    const start = parseEventDate(event?.startDate);
-    const end = parseEventDate(event?.endDate);
-    if (!start) return '';
-    const currentYear = new Date().getFullYear();
-    const includeYear = start.getFullYear() > currentYear;
-    if (end && end.getTime() !== start.getTime()) {
-      const opts = { month: 'short', day: 'numeric' };
+  const formatListDate = useCallback(
+    (event) => {
+      const start = parseEventDate(event?.startDate);
+      const end = parseEventDate(event?.endDate);
+      if (!start) return '';
+      const currentYear = new Date().getFullYear();
+      const includeYear = start.getFullYear() > currentYear;
+      if (end && end.getTime() !== start.getTime()) {
+        const opts = { month: 'short', day: 'numeric' };
+        if (includeYear) opts.year = 'numeric';
+        return `starts ${new Intl.DateTimeFormat('en-US', opts).format(start)}`;
+      }
+      const opts = { weekday: 'short', month: 'short', day: 'numeric' };
       if (includeYear) opts.year = 'numeric';
-      return `starts ${new Intl.DateTimeFormat('en-US', opts).format(start)}`;
-    }
-    const opts = { weekday: 'short', month: 'short', day: 'numeric' };
-    if (includeYear) opts.year = 'numeric';
-    return new Intl.DateTimeFormat('en-US', opts).format(start);
-  }, [parseEventDate]);
+      return new Intl.DateTimeFormat('en-US', opts).format(start);
+    },
+    [parseEventDate]
+  );
 
-  const formatModalDate = useCallback((event) => {
-    const start = parseEventDate(event?.startDate);
-    const end = parseEventDate(event?.endDate);
-    if (!start) return '';
-    const currentYear = new Date().getFullYear();
-    const baseOptions = { weekday: 'short', month: 'short', day: 'numeric' };
-    const includeYearStart = start.getFullYear() > currentYear || (end && end.getFullYear() !== start.getFullYear());
-    const startLabel = new Intl.DateTimeFormat('en-US', includeYearStart ? { ...baseOptions, year: 'numeric' } : baseOptions).format(start);
-    if (end && end.getTime() !== start.getTime()) {
-      const includeYearEnd = end.getFullYear() > currentYear || end.getFullYear() !== start.getFullYear();
-      const endLabel = new Intl.DateTimeFormat('en-US', includeYearEnd ? { ...baseOptions, year: 'numeric' } : baseOptions).format(end);
-      return `${startLabel} - ${endLabel}`;
-    }
-    return startLabel;
-  }, [parseEventDate]);
+  const formatModalDate = useCallback(
+    (event) => {
+      const start = parseEventDate(event?.startDate);
+      const end = parseEventDate(event?.endDate);
+      if (!start) return '';
+      const currentYear = new Date().getFullYear();
+      const baseOptions = { weekday: 'short', month: 'short', day: 'numeric' };
+      const includeYearStart =
+        start.getFullYear() > currentYear || (end && end.getFullYear() !== start.getFullYear());
+      const startLabel = new Intl.DateTimeFormat(
+        'en-US',
+        includeYearStart ? { ...baseOptions, year: 'numeric' } : baseOptions
+      ).format(start);
+      if (end && end.getTime() !== start.getTime()) {
+        const includeYearEnd =
+          end.getFullYear() > currentYear || end.getFullYear() !== start.getFullYear();
+        const endLabel = new Intl.DateTimeFormat(
+          'en-US',
+          includeYearEnd ? { ...baseOptions, year: 'numeric' } : baseOptions
+        ).format(end);
+        return `${startLabel} - ${endLabel}`;
+      }
+      return startLabel;
+    },
+    [parseEventDate]
+  );
 
   const hasEvents = upcomingEvents.length > 0;
 
@@ -1343,10 +1445,18 @@ const CrowdfundingPage = () => {
     return null;
   })();
   const basePizzaGoal = (() => {
-    if (typeof campaignData?.pizzaGoal === 'number' && Number.isFinite(campaignData.pizzaGoal) && campaignData.pizzaGoal > 0) {
+    if (
+      typeof campaignData?.pizzaGoal === 'number' &&
+      Number.isFinite(campaignData.pizzaGoal) &&
+      campaignData.pizzaGoal > 0
+    ) {
       return campaignData.pizzaGoal;
     }
-    if (typeof campaignData?.goal === 'number' && Number.isFinite(campaignData.goal) && campaignData.goal > 0) {
+    if (
+      typeof campaignData?.goal === 'number' &&
+      Number.isFinite(campaignData.goal) &&
+      campaignData.goal > 0
+    ) {
       return campaignData.goal;
     }
     return 1000;
@@ -1355,7 +1465,10 @@ const CrowdfundingPage = () => {
     if (Number.isFinite(summaryPizzas) && summaryPizzas >= 0) {
       return summaryPizzas;
     }
-    if (typeof campaignData?.raisedAmount === 'number' && Number.isFinite(campaignData.raisedAmount)) {
+    if (
+      typeof campaignData?.raisedAmount === 'number' &&
+      Number.isFinite(campaignData.raisedAmount)
+    ) {
       return campaignData.raisedAmount;
     }
     return 0;
@@ -1363,12 +1476,11 @@ const CrowdfundingPage = () => {
   const pizzasSold = Number.isFinite(publishedPizzasSold)
     ? publishedPizzasSold
     : fallbackPizzasSold;
-  const pizzaGoal = Number.isFinite(summaryGoal) && summaryGoal > 0
-    ? summaryGoal
-    : basePizzaGoal; // default goal to 1000 pizzas
-  const backers = Number.isFinite(summaryBackers) && summaryBackers >= 0
-    ? Math.max(summaryBackers, baseBackers)
-    : baseBackers;
+  const pizzaGoal = Number.isFinite(summaryGoal) && summaryGoal > 0 ? summaryGoal : basePizzaGoal; // default goal to 1000 pizzas
+  const backers =
+    Number.isFinite(summaryBackers) && summaryBackers >= 0
+      ? Math.max(summaryBackers, baseBackers)
+      : baseBackers;
   const effectiveEndDate = useMemo(() => {
     const fallback = CAMPAIGN_EXTENSION_DEADLINE;
     if (!endDate) return fallback;
@@ -1444,7 +1556,7 @@ const CrowdfundingPage = () => {
   const blockText = (blk) => {
     if (!blk) return '';
     if (typeof blk === 'string') return blk;
-    if (Array.isArray(blk.children)) return blk.children.map(c => c.text || '').join('');
+    if (Array.isArray(blk.children)) return blk.children.map((c) => c.text || '').join('');
     return '';
   };
 
@@ -1465,28 +1577,30 @@ const CrowdfundingPage = () => {
   return (
     <>
       <Helmet>
-    <title>{`${title} | Crowdfunding Campaign`}</title>
-  <meta name="description" content={plainTextFromPortable(description).slice(0,160)} />
+        <title>{`${title} | Crowdfunding Campaign`}</title>
+        <meta name="description" content={plainTextFromPortable(description).slice(0, 160)} />
       </Helmet>
 
-  <div className="space-y-16 mx-auto max-w-6xl px-4 md:px-6 lg:px-8">
+      <div className="space-y-16 mx-auto max-w-6xl px-4 md:px-6 lg:px-8">
         {/* --- Page Header --- */}
         <div>
-                <h1 className="heading-display heading-balance">{title}</h1>
-                {/* Short description rendered with Portable Text (supports paragraphs and formatting) */}
-                <div className="mt-6 md:mt-8 text-body max-w-2xl">
-                  {taglineBlock && (
-                    <h2 className="heading-lg text-neutral-600">
-                      {blockText(taglineBlock)}
-                    </h2>
-                  )}
-                  {description && (Array.isArray(description) ? (
-                    <PortableText value={remainingDescriptionBlocks} components={portableComponents} />
-                  ) : (
-                    <PortableText value={toPortableBlocks(description)} components={portableComponents} />
-                  ))}
-                </div>
-              </div>
+          <h1 className="heading-display heading-balance">{title}</h1>
+          {/* Short description rendered with Portable Text (supports paragraphs and formatting) */}
+          <div className="mt-6 md:mt-8 text-body max-w-2xl">
+            {taglineBlock && (
+              <h2 className="heading-lg text-neutral-600">{blockText(taglineBlock)}</h2>
+            )}
+            {description &&
+              (Array.isArray(description) ? (
+                <PortableText value={remainingDescriptionBlocks} components={portableComponents} />
+              ) : (
+                <PortableText
+                  value={toPortableBlocks(description)}
+                  components={portableComponents}
+                />
+              ))}
+          </div>
+        </div>
 
         {hasEvents && (
           <div className="max-w-4xl">
@@ -1495,7 +1609,9 @@ const CrowdfundingPage = () => {
               <ul className="divide-y">
                 {upcomingEvents.map((ev) => {
                   const dateLabel = formatListDate(ev);
-                  const detailLabel = [dateLabel, ev.foodType || 'Food'].filter(Boolean).join(' - ');
+                  const detailLabel = [dateLabel, ev.foodType || 'Food']
+                    .filter(Boolean)
+                    .join(' - ');
                   return (
                     <li key={ev._key} className="py-2">
                       <button
@@ -1517,12 +1633,12 @@ const CrowdfundingPage = () => {
         )}
 
         {/* --- Main Content Grid --- */}
-  <div className="grid grid-cols-1 lg:grid-cols-5 lg:gap-16">
+        <div className="grid grid-cols-1 lg:grid-cols-5 lg:gap-16">
           {/* --- Left Column (Media & Content Tabs) --- */}
-    <div className="lg:col-span-3 space-y-8 order-2 lg:order-1">
+          <div className="lg:col-span-3 space-y-8 order-2 lg:order-1">
             {/* Override hero image per request */}
             <img
-              src={"/gallery/5Z0A5718-Edit.jpg"}
+              src={'/gallery/5Z0A5718-Edit.jpg'}
               alt={title}
               className="w-full object-cover rounded-lg aspect-video bg-gray-100"
               loading="lazy"
@@ -1540,7 +1656,9 @@ const CrowdfundingPage = () => {
               </nav>
             </div>
             <div className="prose max-w-none text-body">
-              {activeTab === 'story' && story.length > 0 && <PortableText value={story} components={portableComponents} />}
+              {activeTab === 'story' && story.length > 0 && (
+                <PortableText value={story} components={portableComponents} />
+              )}
               {activeTab === 'updates' && (
                 <div className="space-y-8">
                   {updates.map((update, index) => (
@@ -1563,15 +1681,20 @@ const CrowdfundingPage = () => {
               {activeTab === 'goals' && (
                 <div className="space-y-6">
                   <PrioritiesPie />
-                  {campaignData?.goals
-                    ? (
-                        Array.isArray(campaignData.goals)
-                          ? <PortableText value={campaignData.goals} components={portableComponents} />
-                          : <PortableText value={toPortableBlocks(campaignData.goals)} components={portableComponents} />
-                      )
-                    : (
-                      <p className="text-gray-500">No goals content yet. Add content in the Goals field in Sanity Studio.</p>
-                    )}
+                  {campaignData?.goals ? (
+                    Array.isArray(campaignData.goals) ? (
+                      <PortableText value={campaignData.goals} components={portableComponents} />
+                    ) : (
+                      <PortableText
+                        value={toPortableBlocks(campaignData.goals)}
+                        components={portableComponents}
+                      />
+                    )
+                  ) : (
+                    <p className="text-gray-500">
+                      No goals content yet. Add content in the Goals field in Sanity Studio.
+                    </p>
+                  )}
                 </div>
               )}
               {activeTab === 'faq' && (
@@ -1589,15 +1712,18 @@ const CrowdfundingPage = () => {
                   {galleryLoading && (
                     <p className="text-sm text-gray-500 animate-pulse">Loading images...</p>
                   )}
-                  {galleryError && (
-                    <p className="text-sm text-red-600">{galleryError}</p>
-                  )}
+                  {galleryError && <p className="text-sm text-red-600">{galleryError}</p>}
                   {!galleryLoading && !galleryError && galleryImages.length === 0 && (
-                    <p className="text-sm text-gray-500">No images found yet. Tag Cloudinary images with 'pizza' or 'pie'.</p>
+                    <p className="text-sm text-gray-500">
+                      No images found yet. Tag Cloudinary images with 'pizza' or 'pie'.
+                    </p>
                   )}
                   <div className="mt-4 columns-2 md:columns-3 lg:columns-4 gap-3 [column-fill:_balance]">
                     {galleryImages.map((img) => (
-                      <figure key={img.asset_id || img.public_id} className="mb-3 break-inside-avoid rounded-lg overflow-hidden shadow-sm bg-neutral-100">
+                      <figure
+                        key={img.asset_id || img.public_id}
+                        className="mb-3 break-inside-avoid rounded-lg overflow-hidden shadow-sm bg-neutral-100"
+                      >
                         <img
                           src={img.thumbnail_url}
                           alt={img.public_id}
@@ -1668,7 +1794,8 @@ const CrowdfundingPage = () => {
               )}
               {(formNotice || (!hasPayableTier && !showForm)) && (
                 <p className="text-sm text-slate-600">
-                  {formNotice || 'Online checkout is temporarily unavailable. Email hello@localeffortfood.com to pledge.'}
+                  {formNotice ||
+                    'Online checkout is temporarily unavailable. Email hello@localeffortfood.com to pledge.'}
                 </p>
               )}
               {showForm && activeTier && (
@@ -1741,7 +1868,12 @@ const CrowdfundingPage = () => {
                         onClick={async () => {
                           const code = (referralInput || '').trim();
                           if (!code) return;
-                          setReferralState({ status: 'checking', valid: false, participant: null, code });
+                          setReferralState({
+                            status: 'checking',
+                            valid: false,
+                            participant: null,
+                            code,
+                          });
                           try {
                             const resp = await fetch('/api/referrals/validate', {
                               method: 'POST',
@@ -1750,12 +1882,27 @@ const CrowdfundingPage = () => {
                             });
                             const data = await resp.json().catch(() => ({}));
                             if (resp.ok && data && data.valid) {
-                              setReferralState({ status: 'ok', valid: true, participant: data.participant || null, code });
+                              setReferralState({
+                                status: 'ok',
+                                valid: true,
+                                participant: data.participant || null,
+                                code,
+                              });
                             } else {
-                              setReferralState({ status: 'ok', valid: false, participant: null, code });
+                              setReferralState({
+                                status: 'ok',
+                                valid: false,
+                                participant: null,
+                                code,
+                              });
                             }
                           } catch (_) {
-                            setReferralState({ status: 'error', valid: false, participant: null, code });
+                            setReferralState({
+                              status: 'error',
+                              valid: false,
+                              participant: null,
+                              code,
+                            });
                           }
                         }}
                       >
@@ -1766,7 +1913,10 @@ const CrowdfundingPage = () => {
                   {referralState.status === 'ok' && referralState.valid && (
                     <p className="text-sm text-emerald-700">
                       Code applied
-                      {referralState.participant?.name ? ` for ${referralState.participant.name}` : ''}.
+                      {referralState.participant?.name
+                        ? ` for ${referralState.participant.name}`
+                        : ''}
+                      .
                     </p>
                   )}
                   {referralState.status === 'ok' && !referralState.valid && (
@@ -1801,18 +1951,20 @@ const CrowdfundingPage = () => {
                     </p>
                     {discountState.status === 'applied' && (
                       <p className="text-sm text-emerald-700">
-                        {(discountState.discount?.label || DEFAULT_DISCOUNT_LABEL)}
+                        {discountState.discount?.label || DEFAULT_DISCOUNT_LABEL}
                         {discountedTotalCents <= 0 ? ' — no payment required.' : ' applied.'}
                       </p>
                     )}
                     {discountState.status === 'invalid' && (
                       <p className="text-sm text-red-600">
-                        {discountState.message || 'That code is not valid for this crowdfunding campaign.'}
+                        {discountState.message ||
+                          'That code is not valid for this crowdfunding campaign.'}
                       </p>
                     )}
                     {discountState.status === 'error' && (
                       <p className="text-sm text-red-600">
-                        {discountState.message || 'Unable to validate that discount code right now.'}
+                        {discountState.message ||
+                          'Unable to validate that discount code right now.'}
                       </p>
                     )}
                     <Input
@@ -1860,8 +2012,14 @@ const CrowdfundingPage = () => {
                     />
                   </div>
                   <div className="space-y-2">
-                    <span className="text-sm font-semibold text-slate-700">Preferred reward setting</span>
-                    <fieldset className="grid gap-2 sm:grid-cols-2" role="group" aria-label="Preferred reward setting">
+                    <span className="text-sm font-semibold text-slate-700">
+                      Preferred reward setting
+                    </span>
+                    <fieldset
+                      className="grid gap-2 sm:grid-cols-2"
+                      role="group"
+                      aria-label="Preferred reward setting"
+                    >
                       {REWARD_PREFERENCE_OPTIONS.map((option) => (
                         <label
                           key={option.value}
@@ -1936,8 +2094,8 @@ const CrowdfundingPage = () => {
                     {paying
                       ? 'Processing...'
                       : requiresPayment
-                      ? `Buy ${discountedTotalLabel}`
-                      : 'Complete contribution'}
+                        ? `Buy ${discountedTotalLabel}`
+                        : 'Complete contribution'}
                   </Button>
                 </form>
               )}
@@ -1956,7 +2114,10 @@ const CrowdfundingPage = () => {
                 <CardContent className="px-5 py-4">
                   <form className="space-y-4" onSubmit={handleSubscribe}>
                     <div className="space-y-2">
-                      <Label htmlFor="cf-subscribe-email" className="text-sm font-medium text-white">
+                      <Label
+                        htmlFor="cf-subscribe-email"
+                        className="text-sm font-medium text-white"
+                      >
                         Email address
                       </Label>
                       <Input
@@ -2000,7 +2161,10 @@ const CrowdfundingPage = () => {
                   <p>App ID present: {squareAppId ? 'yes' : 'no'}</p>
                   <p>Location ID present: {squareLocationId ? 'yes' : 'no'}</p>
                   <p>Sandbox mode: {squareIsSandbox ? 'true' : 'false'}</p>
-                  <p>Payments ready: {payments ? 'true' : 'false'} | Loading: {paymentsLoading ? 'true' : 'false'}</p>
+                  <p>
+                    Payments ready: {payments ? 'true' : 'false'} | Loading:{' '}
+                    {paymentsLoading ? 'true' : 'false'}
+                  </p>
                   <p>Card ready: {cardReady ? 'true' : 'false'}</p>
                   {cardError && <p className="text-red-600">Card error: {cardError}</p>}
                   {paymentsError && <p className="text-red-600">Payments error: {paymentsError}</p>}
@@ -2019,20 +2183,6 @@ const CrowdfundingPage = () => {
                   />
                 );
               })}
-
-              {/* Dev diagnostics */}
-              {process.env.NODE_ENV !== 'production' && (
-                <div className="mt-8 p-4 border rounded text-xs space-y-1 bg-gray-50">
-                  <p className="font-semibold">Payment Diagnostics</p>
-                  <p>SDK URL: {envInfo?.sdkUrl}</p>
-                  <p>Environment: {envInfo?.environment || 'unknown'}</p>
-                  <p>App ID present: {envInfo?.appId ? 'yes' : 'no'}</p>
-                  <p>Location ID present: {envInfo?.locationId ? 'yes' : 'no'}</p>
-                  <p>Sandbox mode: {envInfo?.sandbox ? 'true' : 'false'}</p>
-                  <p>Loaded: {cardLoaded ? 'true' : 'false'} | Attempts: {envInfo?.attempts ?? 'n/a'}</p>
-                  {squareConfigError && <p className="text-red-600">Error: {squareConfigError}</p>}
-                </div>
-              )}
             </div>
           </div>
         </div>
@@ -2042,8 +2192,8 @@ const CrowdfundingPage = () => {
             <div className="md:w-1/2 space-y-6">
               <SectionHeader overline="Share the pizza love" title="Pizza feedback" />
               <p className="text-base text-slate-600">
-                Leave a quick note about what you enjoy most. Your kind words help us keep the pizza party going
-                for our neighbors.
+                Leave a quick note about what you enjoy most. Your kind words help us keep the pizza
+                party going for our neighbors.
               </p>
               <form className="space-y-4" onSubmit={handleFeedbackSubmit}>
                 <div className="space-y-2">
@@ -2064,7 +2214,9 @@ const CrowdfundingPage = () => {
                       <option key={value} value={value}>{`${value} / 5`}</option>
                     ))}
                   </select>
-                  <p className="text-xs text-slate-500">5 = legendary pizza party, 1 = needs another try.</p>
+                  <p className="text-xs text-slate-500">
+                    5 = legendary pizza party, 1 = needs another try.
+                  </p>
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="pizza-feedback-message">What made your pizza special?</Label>
@@ -2126,9 +2278,7 @@ const CrowdfundingPage = () => {
                     : 'No pizza notes yet—be the first to share your experience!'}
                 </p>
               )}
-              {feedbackFetchError && (
-                <p className="text-xs text-red-600">{feedbackFetchError}</p>
-              )}
+              {feedbackFetchError && <p className="text-xs text-red-600">{feedbackFetchError}</p>}
             </div>
           </div>
         </section>
