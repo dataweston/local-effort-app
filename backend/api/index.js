@@ -368,7 +368,6 @@ app.all('/api/crowdfund/checkout', async (req, res, next) => {
     next(err);
   }
 });
-<<<<<<< HEAD
 app.all('/api/crowdfund/feedback', async (req, res, next) => {
   try {
     await crowdfundFeedbackHandler(req, res);
@@ -447,8 +446,10 @@ app.all('/api/store/products', async (req, res, next) => {
   } catch (err) {
     logger.error({ err, method: req.method }, 'store products handler failed');
     next(err);
-=======
-app.get('/api/crowdfunding/summary', async (req, res) => {
+  }
+});
+
+const handleCrowdfundingSummary = async (req, res) => {
   try {
     const data = await getCrowdfundingSummary({ db });
     res.set('Cache-Control', 'no-store');
@@ -470,21 +471,29 @@ app.get('/api/crowdfunding/summary', async (req, res) => {
     }
     return res.status(500).json({ ok: false, error: 'internal-error' });
   }
-});
+};
+
+app.get('/api/crowdfunding/summary', handleCrowdfundingSummary);
+app.get('/api/crowdfund/summary', handleCrowdfundingSummary);
+
 app.get('/api/feedback', async (req, res) => {
   try {
     const sinceRaw = Array.isArray(req.query.since) ? req.query.since[0] : req.query.since;
     const limitRaw = Array.isArray(req.query.limit) ? req.query.limit[0] : req.query.limit;
-    const items = await listFeedback({
-      since: sinceRaw ?? undefined,
-      limit: limitRaw ? Number(limitRaw) : undefined,
-    }, { db });
+    const items = await listFeedback(
+      {
+        since: sinceRaw ?? undefined,
+        limit: limitRaw ? Number(limitRaw) : undefined,
+      },
+      { db },
+    );
     res.json({ ok: true, items });
   } catch (err) {
     if (logger?.error) logger.error({ err }, 'feedback list error');
     res.status(500).json({ ok: false, error: 'internal-error' });
   }
 });
+
 app.post('/api/feedback', async (req, res) => {
   try {
     const result = await createFeedback(req.body ?? {}, { db });
@@ -496,9 +505,9 @@ app.post('/api/feedback', async (req, res) => {
     }
     if (logger?.error) logger.error({ err }, 'feedback create error');
     res.status(500).json({ ok: false, error: 'internal-error' });
->>>>>>> a438e607553c514e1fe73e9395ebf456acce3e0b
   }
 });
+
 app.use('/api', createMessagesRouter({ logger, brevoService, getSanityClient, db }));
 
 // Diagnostic endpoint (safe): reports whether required env vars are present

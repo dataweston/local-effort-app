@@ -257,12 +257,27 @@ function applyDiscountToCents(amountCents, discount) {
   return baseAmount;
 }
 
-const summaryFetcher = async (url) => {
-  const response = await fetch(url, { headers: { Accept: 'application/json' } });
-  if (!response.ok) {
-    throw new Error(`Request failed with status ${response.status}`);
+const SUMMARY_ENDPOINTS = ['/api/crowdfund/summary', '/api/crowdfunding/summary'];
+
+const summaryFetcher = async () => {
+  const errors = [];
+  for (const endpoint of SUMMARY_ENDPOINTS) {
+    try {
+      const response = await fetch(endpoint, { headers: { Accept: 'application/json' } });
+      if (!response.ok) {
+        errors.push(`${endpoint} responded with status ${response.status}`);
+        continue;
+      }
+      return await response.json();
+    } catch (error) {
+      errors.push(`${endpoint} failed: ${error?.message ?? 'unknown error'}`);
+    }
   }
-  return response.json();
+
+  const message = errors.length
+    ? `Unable to load crowdfunding summary (${errors.join('; ')})`
+    : 'Unable to load crowdfunding summary';
+  throw new Error(message);
 };
 
 // --- Sanity Image URL Builder Setup (kept for future use if dynamic hero image restored) ---
@@ -440,7 +455,7 @@ const CrowdfundingPage = () => {
   const [eventModal, setEventModal] = useState(null);
 
   const { data: summaryData, error: summaryError } = useSWR(
-    '/api/crowdfunding/summary',
+    'crowdfund-summary',
     summaryFetcher,
     {
       refreshInterval: 30000,
