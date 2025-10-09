@@ -13,8 +13,9 @@ const countPizzasInItems = (items) => {
   return items
     .filter((item) => item && item.type === 'pizza')
     .reduce((sum, item) => {
-      const count = Number(item.pizzaCount || item.quantity || 0);
-      return sum + (Number.isFinite(count) && count > 0 ? count : 0);
+      const raw = Number(item?.pizzaCount ?? item?.quantity ?? 0);
+      const normalized = Number.isFinite(raw) ? Math.max(0, Math.round(raw)) : 0;
+      return sum + normalized;
     }, 0);
 };
 
@@ -32,6 +33,15 @@ async function recordCrowdfundContribution({
     return;
   }
 
+  const safeName = typeof funderName === 'string' && funderName.trim()
+    ? funderName.trim().slice(0, 120)
+    : 'Anonymous';
+  const safeEmail = typeof email === 'string' && email.trim() ? email.trim().slice(0, 120) : null;
+  const safePhone = typeof phone === 'string' && phone.trim() ? phone.trim().slice(0, 30) : null;
+  const safeNotes = typeof notes === 'string' && notes.trim() ? notes.trim().slice(0, 500) : null;
+  const safeNotify = typeof notify === 'string' && notify.trim() ? notify.trim().slice(0, 60) : 'none';
+  const discountValue = trimmedDiscount || null;
+
   try {
     const docRef = db.collection('crowdfund').doc('status');
     await db.runTransaction(async (tx) => {
@@ -42,14 +52,14 @@ async function recordCrowdfundContribution({
           pizzasSold: pizzasInCart,
           funders: [
             {
-              name: funderName,
+              name: safeName,
               date: new Date().toISOString(),
-              email: email || null,
-              phone: phone || null,
-              notes: notes || null,
-              notify: notify || 'none',
+              email: safeEmail,
+              phone: safePhone,
+              notes: safeNotes,
+              notify: safeNotify,
               pizzas: pizzasInCart,
-              discountCode: trimmedDiscount || null,
+              discountCode: discountValue,
             },
           ],
         });
@@ -59,14 +69,14 @@ async function recordCrowdfundContribution({
       const data = doc.data() || {};
       const funders = Array.isArray(data.funders) ? data.funders.slice() : [];
       funders.push({
-        name: funderName,
+        name: safeName,
         date: new Date().toISOString(),
-        email: email || null,
-        phone: phone || null,
-        notes: notes || null,
-        notify: notify || 'none',
+        email: safeEmail,
+        phone: safePhone,
+        notes: safeNotes,
+        notify: safeNotify,
         pizzas: pizzasInCart,
-        discountCode: trimmedDiscount || null,
+        discountCode: discountValue,
       });
 
       tx.update(docRef, {
@@ -93,13 +103,15 @@ module.exports = async (req, res) => {
     if (!locationId) return res.status(500).json({ error: 'Square location missing' });
 
     const { items, funderName, token, email, phone, notes, notify, discountCode } = req.body || {};
-    if (!token) return res.status(400).json({ error: 'Missing payment token' });
     if (!Array.isArray(items) || !items.length) return res.status(400).json({ error: 'No items' });
 
-    let lineTotal = items.reduce(
-      (sum, item) => sum + (Number(item?.price) || 0) * (Number(item?.quantity) || 1),
-      0,
-    );
+    let lineTotal = items.reduce((sum, item) => {
+      const rawPrice = Number(item?.price);
+      const price = Number.isFinite(rawPrice) ? Math.max(0, Math.round(rawPrice)) : 0;
+      const rawQuantity = Number(item?.quantity);
+      const quantity = Number.isFinite(rawQuantity) ? Math.max(0, Math.round(rawQuantity)) : 1;
+      return sum + price * quantity;
+    }, 0);
     lineTotal = Math.max(0, Math.round(lineTotal));
 
     const trimmedDiscount = typeof discountCode === 'string' ? discountCode.trim().slice(0, 60) : '';
@@ -110,20 +122,26 @@ module.exports = async (req, res) => {
 
     const discountedTotal = applyCrowdfundDiscount(lineTotal, discountDetails);
     const requiresPayment = discountedTotal > 0;
-    if (requiresPayment && !token) {
+    const sourceToken = typeof token === 'string' ? token.trim() : token;
+    if (requiresPayment && !sourceToken) {
       return res.status(400).json({ error: 'Missing payment token' });
     }
 
+    const safeFunderName = typeof funderName === 'string' && funderName.trim()
+      ? funderName.trim().slice(0, 120)
+      : 'Anonymous';
+    const safeEmail = typeof email === 'string' && email.trim() ? email.trim().slice(0, 120) : '';
+    const safePhone = typeof phone === 'string' && phone.trim() ? phone.trim().slice(0, 30) : '';
+    const safeNotify = typeof notify === 'string' && notify.trim() ? notify.trim().slice(0, 60) : 'none';
+
     const idempotencyKey = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
-    const metaNoteParts = [funderName || 'Anonymous'];
-    if (email) metaNoteParts.push(email);
-    if (phone) metaNoteParts.push(phone);
-    if (notify && notify !== 'none') metaNoteParts.push(`notify:${notify}`);
+    const metaNoteParts = [safeFunderName];
+    if (safeEmail) metaNoteParts.push(safeEmail);
+    if (safePhone) metaNoteParts.push(safePhone);
+    if (safeNotify && safeNotify !== 'none') metaNoteParts.push(`notify:${safeNotify}`);
     if (trimmedDiscount) {
       metaNoteParts.push(`discount:${trimmedDiscount}${discountDetails ? ':applied' : ''}`);
     }
-    const trimmedDiscount = typeof discountCode === 'string' ? discountCode.trim().slice(0, 60) : '';
-    if (trimmedDiscount) metaNoteParts.push(`discount:${trimmedDiscount}`);
     const noteStr = metaNoteParts.join(' | ').slice(0, 500);
     const pizzasInCart = countPizzasInItems(items);
 
@@ -131,18 +149,18 @@ module.exports = async (req, res) => {
       await recordCrowdfundContribution({
         db,
         pizzasInCart,
-        funderName,
-        email,
-        phone,
+        funderName: safeFunderName,
+        email: safeEmail,
+        phone: safePhone,
         notes,
-        notify,
+        notify: safeNotify,
         trimmedDiscount,
       });
       return res.status(200).json({ ok: true, paymentId: null, comped: true, discount: discountDetails || null });
     }
 
     const paymentBody = {
-      sourceId: token,
+      sourceId: sourceToken,
       idempotencyKey,
       amountMoney: { amount: Math.round(discountedTotal), currency: 'USD' },
       locationId,
@@ -156,45 +174,13 @@ module.exports = async (req, res) => {
     await recordCrowdfundContribution({
       db,
       pizzasInCart,
-      funderName,
-      email,
-      phone,
+      funderName: safeFunderName,
+      email: safeEmail,
+      phone: safePhone,
       notes,
-      notify,
+      notify: safeNotify,
       trimmedDiscount,
     });
-    // Update crowdfund totals (best-effort) — count pizzas from items where type === 'pizza'
-    if (db) {
-      try {
-        const pizzasInCart = items.filter(p => p.type === 'pizza').reduce((sum, it) => sum + (it.pizzaCount || it.quantity || 1), 0);
-        if (pizzasInCart > 0) {
-          const docRef = db.collection('crowdfund').doc('status');
-          await db.runTransaction(async (tx) => {
-            const doc = await tx.get(docRef);
-            if (!doc.exists) {
-              tx.set(docRef, { goal: 1000, pizzasSold: pizzasInCart, funders: [{ name: funderName, date: new Date().toISOString() }] });
-            } else {
-              const data = doc.data() || {};
-              const funders = Array.isArray(data.funders) ? data.funders : [];
-              funders.push({
-                name: funderName,
-                date: new Date().toISOString(),
-                email: email || null,
-                phone: phone || null,
-                notes: notes || null,
-                notify: notify || 'none',
-                pizzas: pizzasInCart,
-                discountCode: trimmedDiscount || null,
-              });
-              tx.update(docRef, { pizzasSold: (data.pizzasSold || 0) + pizzasInCart, funders });
-            }
-          });
-        }
-      } catch (err) {
-        console.warn('Failed to update crowdfund metrics after payment', err?.message);
-      }
-    }
-
     return res.status(200).json({ ok: true, paymentId, discount: discountDetails || null });
   } catch (e) {
     const squareErrors = e?.errors ? e.errors.map(er => ({ code: er.code, detail: er.detail })).slice(0,3) : null;
