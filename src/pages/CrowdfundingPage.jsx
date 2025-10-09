@@ -30,6 +30,9 @@ const FIREBASE_DATABASE_PATTERN = /firebase database/gi;
 
 const createFirebaseDatabaseRegex = () => new RegExp(FIREBASE_DATABASE_PATTERN);
 
+// Fallback hero image displayed when campaign data does not supply one explicitly.
+const HERO_MAIN_IMAGE = '/gallery/5Z0A5637-Edit.jpg';
+
 function isPortableTextBlocks(value) {
   return (
     Array.isArray(value) &&
