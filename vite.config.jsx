@@ -36,13 +36,16 @@ export default defineConfig({
       { find: '@partners/happymonday', replacement: r('src/partners/happymonday.jsx') },
     ],
   },
-  server: {
-    proxy: {
-      '/api': {
-        target: 'http://localhost:3001',
-        changeOrigin: true,
-        secure: false,
-      },
-    },
+  build: {
+    reportCompressedSize: false, // Disable to speed up build
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          // Split vendor chunks for better caching
+          vendor: ['react', 'react-dom'],
+          firebase: ['firebase/app', 'firebase/firestore'],
+          ui: ['framer-motion', 'lucide-react'],
+        }
+      }
+    }
   },
-});

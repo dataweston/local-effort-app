@@ -1,7 +1,9 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, Suspense, lazy } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '../ui/card';
-import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import devConsole from '../../lib/devConsole.js';
+
+// Lazy load the entire chart component to reduce initial bundle size
+const PrioritiesChart = lazy(() => import('./PrioritiesChart'));
 
 // ----- Raw items (edit these numbers to change the budget) -----
 const items = {
@@ -36,13 +38,6 @@ const CATEGORY_LABEL = {
   debt: 'Debt & Operations',
   equipment: 'Equipment Upgrades',
   marketing: 'Marketing',
-};
-
-const COLORS = {
-  fulfillment: '#16a34a', // green
-  debt: '#ef4444', // red
-  equipment: '#6366f1', // indigo
-  marketing: '#f59e0b', // amber
 };
 
 const sum = (rows) => rows.reduce((total, row) => total + row.amount, 0);
@@ -92,17 +87,9 @@ const PrioritiesPie = () => {
         </CardHeader>
         <CardContent>
           <div className="h-80 w-full">
-            <ResponsiveContainer>
-              <PieChart>
-                <Pie dataKey="value" data={pieData} nameKey="name" outerRadius={120} label>
-                  {pieData.map((entry) => (
-                    <Cell key={entry.key} fill={COLORS[entry.key]} />
-                  ))}
-                </Pie>
-                <Tooltip formatter={tooltipFormatter} />
-                <Legend />
-              </PieChart>
-            </ResponsiveContainer>
+            <Suspense fallback={<div className="h-80 flex items-center justify-center">Loading chart...</div>}>
+              <PrioritiesChart pieData={pieData} tooltipFormatter={tooltipFormatter} />
+            </Suspense>
           </div>
         </CardContent>
       </Card>
