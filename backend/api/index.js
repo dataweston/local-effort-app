@@ -38,6 +38,9 @@ const {
   createFeedback,
   listFeedback,
 } = require('../../packages/lib/crowdfundingPipeline');
+const {
+  loadPublishedCrowdfundingSummary,
+} = require('../../packages/lib/crowdfundingFallbacks');
 
 // Fallback: if critical vars are missing, also try loading project root .env
 if (!process.env.SQUARE_ACCESS_TOKEN || !process.env.BREVO_API_KEY) {
@@ -360,14 +363,23 @@ app.get('/api/crowdfunding/summary', async (req, res) => {
   try {
     const data = await getCrowdfundingSummary({ db });
     res.set('Cache-Control', 'no-store');
-    res.json({
+    return res.json({
       pizzas: typeof data.pizzas === 'number' ? data.pizzas : Number(data.pizzas) || 0,
       backers: typeof data.backers === 'number' ? data.backers : Number(data.backers) || 0,
       updatedAt: data.updatedAt ?? null,
     });
   } catch (err) {
     if (logger?.error) logger.error({ err }, 'crowdfunding summary error');
-    res.status(500).json({ ok: false, error: 'internal-error' });
+    try {
+      const fallback = await loadPublishedCrowdfundingSummary({ sanityClient: getSanityClient });
+      if (fallback) {
+        res.set('Cache-Control', 'no-store');
+        return res.json(fallback);
+      }
+    } catch (fallbackErr) {
+      if (logger?.warn) logger.warn({ err: fallbackErr }, 'crowdfunding summary fallback error');
+    }
+    return res.status(500).json({ ok: false, error: 'internal-error' });
   }
 });
 app.get('/api/feedback', async (req, res) => {
