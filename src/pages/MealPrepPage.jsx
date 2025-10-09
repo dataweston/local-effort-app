@@ -21,6 +21,19 @@ export const MealPrepPage = () => {
   const [filterName] = useState('');
   const [assignedClient, setAssignedClient] = useState(null);
   const [openSection, setOpenSection] = useState(null); // 'foundation' | 'custom' | null
+  const [showInquiryForm, setShowInquiryForm] = useState(false);
+  const [inquiryStatus, setInquiryStatus] = useState('idle'); // 'idle' | 'sending' | 'success' | 'error'
+  const [inquiry, setInquiry] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    familySize: '',
+    children: '',
+    daysPerWeek: '',
+    mealsPerDay: '',
+    allergies: '',
+    questions: '',
+  });
 
   // Gallery carousel removed per request
 
@@ -128,6 +141,63 @@ export const MealPrepPage = () => {
     })),
   };
 
+  const resetInquiry = () =>
+    setInquiry({
+      name: '',
+      email: '',
+      phone: '',
+      familySize: '',
+      children: '',
+      daysPerWeek: '',
+      mealsPerDay: '',
+      allergies: '',
+      questions: '',
+    });
+
+  const handleInquiryChange = (field, value) => {
+    setInquiry((prev) => ({ ...prev, [field]: value }));
+    if (inquiryStatus !== 'idle') setInquiryStatus('idle');
+  };
+
+  const handleInquirySubmit = async (event) => {
+    event.preventDefault();
+    setInquiryStatus('sending');
+    try {
+      const lines = [
+        'Weekly Meal Prep inquiry via Ask the Chefs form',
+        `Name: ${inquiry.name}`,
+        `Email: ${inquiry.email}`,
+        `Phone: ${inquiry.phone || '(not provided)'}`,
+        `Family size: ${inquiry.familySize || '(not provided)'}`,
+        `Children & ages: ${inquiry.children || '(not provided)'}`,
+        `Days per week: ${inquiry.daysPerWeek || '(not provided)'}`,
+        `Meals per day: ${inquiry.mealsPerDay || '(not provided)'}`,
+        `Allergies or medical comments: ${inquiry.allergies || '(none noted)'}`,
+        '',
+        'Questions or notes:',
+        inquiry.questions || '(none provided)',
+      ];
+      const payload = {
+        name: inquiry.name,
+        email: inquiry.email,
+        phone: inquiry.phone,
+        subject: 'Weekly meal prep inquiry',
+        type: 'meal-prep',
+        message: lines.join('\n'),
+      };
+      const res = await fetch('/api/messages/submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) throw new Error(await res.text());
+      setInquiryStatus('success');
+      resetInquiry();
+    } catch (_error) {
+      setInquiryStatus('error');
+    }
+  };
+
   return (
     <>
       <Helmet>
@@ -143,12 +213,164 @@ export const MealPrepPage = () => {
         <link rel="canonical" href="https://localeffortfood.com/meal-prep" />
         <script type="application/ld+json">{JSON.stringify(faqJsonLd)}</script>
       </Helmet>
+      {showInquiryForm && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4"
+          role="dialog"
+          aria-modal="true"
+        >
+          <div className="form-card w-full max-w-2xl relative">
+            <button
+              type="button"
+              className="absolute right-4 top-4 text-sm underline"
+              onClick={() => {
+                setShowInquiryForm(false);
+                setInquiryStatus('idle');
+                resetInquiry();
+              }}
+            >
+              Close
+            </button>
+            <h2 className="text-2xl font-bold mb-2">Ask the Chefs</h2>
+            <p className="text-sm text-gray-600 mb-4">
+              Thank you for your interest in meal planning. Share a few details below and we&rsquo;ll map out a plan that fits your
+              household.
+            </p>
+            <form onSubmit={handleInquirySubmit} className="space-y-4">
+              <div>
+                <label className="label" htmlFor="ask-name">Name</label>
+                <input
+                  id="ask-name"
+                  className="input"
+                  value={inquiry.name}
+                  onChange={(e) => handleInquiryChange('name', e.target.value)}
+                  required
+                />
+              </div>
+              <div className="grid md:grid-cols-2 gap-4">
+                <div>
+                  <label className="label" htmlFor="ask-email">Email</label>
+                  <input
+                    id="ask-email"
+                    type="email"
+                    className="input"
+                    value={inquiry.email}
+                    onChange={(e) => handleInquiryChange('email', e.target.value)}
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="label" htmlFor="ask-phone">Phone number</label>
+                  <input
+                    id="ask-phone"
+                    className="input"
+                    value={inquiry.phone}
+                    onChange={(e) => handleInquiryChange('phone', e.target.value)}
+                    required
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="label" htmlFor="ask-family">Family size</label>
+                <input
+                  id="ask-family"
+                  className="input"
+                  placeholder="e.g. 2 adults, 2 kids"
+                  value={inquiry.familySize}
+                  onChange={(e) => handleInquiryChange('familySize', e.target.value)}
+                  required
+                />
+              </div>
+              <div>
+                <label className="label" htmlFor="ask-children">Children &amp; ages</label>
+                <textarea
+                  id="ask-children"
+                  className="textarea"
+                  rows={2}
+                  value={inquiry.children}
+                  onChange={(e) => handleInquiryChange('children', e.target.value)}
+                  placeholder="Tell us about school schedules, toddlers, or teens."
+                />
+              </div>
+              <div className="grid md:grid-cols-2 gap-4">
+                <div>
+                  <label className="label" htmlFor="ask-days">Days per week</label>
+                  <input
+                    id="ask-days"
+                    className="input"
+                    placeholder="How many days should we cover?"
+                    value={inquiry.daysPerWeek}
+                    onChange={(e) => handleInquiryChange('daysPerWeek', e.target.value)}
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="label" htmlFor="ask-meals">Meals per day</label>
+                  <input
+                    id="ask-meals"
+                    className="input"
+                    placeholder="Breakfast, lunch, dinner?"
+                    value={inquiry.mealsPerDay}
+                    onChange={(e) => handleInquiryChange('mealsPerDay', e.target.value)}
+                    required
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="label" htmlFor="ask-allergies">Allergies or medical comments</label>
+                <textarea
+                  id="ask-allergies"
+                  className="textarea"
+                  rows={3}
+                  value={inquiry.allergies}
+                  onChange={(e) => handleInquiryChange('allergies', e.target.value)}
+                  placeholder="Include any dietary restrictions, allergies, or doctor notes."
+                />
+              </div>
+              <div>
+                <label className="label" htmlFor="ask-questions">Questions for the team</label>
+                <textarea
+                  id="ask-questions"
+                  className="textarea"
+                  rows={3}
+                  value={inquiry.questions}
+                  onChange={(e) => handleInquiryChange('questions', e.target.value)}
+                  placeholder="Anything else we should know?"
+                />
+              </div>
+              <div className="flex flex-wrap items-center gap-3">
+                <button type="submit" className="btn btn-primary" disabled={inquiryStatus === 'sending'}>
+                  {inquiryStatus === 'sending' ? 'Sending...' : 'Send message'}
+                </button>
+                {inquiryStatus === 'success' && (
+                  <span className="text-green-700 text-sm">Thank you! Weston will get right back to you.</span>
+                )}
+                {inquiryStatus === 'error' && (
+                  <span className="text-red-700 text-sm">We couldn&rsquo;t send your note. Please try again.</span>
+                )}
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
       <div className="space-y-16 mx-auto max-w-6xl px-4 md:px-6 lg:px-8">
         <header className="flex items-center justify-between">
           <h1 className="heading-display heading-balance">
             Weekly meal prep
           </h1>
-          <div className="flex items-center gap-3">{/* Public access — no sign-in required */}</div>
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              className="btn btn-primary text-sm px-4 py-2"
+              onClick={() => {
+                resetInquiry();
+                setInquiryStatus('idle');
+                setShowInquiryForm(true);
+              }}
+            >
+              Ask the Chefs
+            </button>
+          </div>
         </header>
 
         <section className="space-y-4 max-w-3xl">
