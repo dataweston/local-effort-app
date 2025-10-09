@@ -377,6 +377,7 @@ const REWARD_PREFERENCE_OPTIONS = [
   { value: 'public pizza party', label: 'Public pizza party' },
   { value: 'deliver to my home', label: 'Deliver to my home' },
   { value: 'make live at my home', label: 'Make live at my home' },
+  { value: 'frozen pizza', label: 'Frozen pizza' },
   { value: "i'm open or im not sure", label: 'I’m open or I’m not sure' },
 ];
 
