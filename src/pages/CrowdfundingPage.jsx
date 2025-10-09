@@ -205,6 +205,42 @@ function replaceFirebaseDatabaseMentions(campaign) {
   return next;
 }
 
+const DEFAULT_DISCOUNT_LABEL = 'Complimentary contribution';
+
+function applyDiscountToCents(amountCents, discount) {
+  const baseAmount = Math.max(0, Math.round(Number(amountCents) || 0));
+  if (!discount || typeof discount !== 'object') {
+    return baseAmount;
+  }
+  if (discount.type === 'full') {
+    return 0;
+  }
+  const reduction = discount.reduction;
+  if (!reduction || typeof reduction !== 'object') {
+    return baseAmount;
+  }
+  const reductionType = reduction.type;
+  if (reductionType === 'percent') {
+    const percent = Number(reduction.value);
+    if (!Number.isFinite(percent) || percent <= 0) {
+      return baseAmount;
+    }
+    if (percent >= 100) {
+      return 0;
+    }
+    const multiplier = 1 - percent / 100;
+    return Math.max(0, Math.round(baseAmount * multiplier));
+  }
+  if (reductionType === 'fixed') {
+    const deduction = Math.max(0, Math.round(Number(reduction.value) || 0));
+    if (!deduction) {
+      return baseAmount;
+    }
+    return Math.max(0, baseAmount - deduction);
+  }
+  return baseAmount;
+}
+
 const summaryFetcher = async (url) => {
   const response = await fetch(url, { headers: { Accept: 'application/json' } });
   if (!response.ok) {
@@ -348,6 +384,8 @@ const CrowdfundingPage = () => {
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [notes, setNotes] = useState('');
+  const [squareDiscountCode, setSquareDiscountCode] = useState('');
+  const [discountState, setDiscountState] = useState({ status: 'idle', code: '', discount: null, message: '' });
   const notify = 'none';
   const [showForm, setShowForm] = useState(false);
   const [pizzaQty, setPizzaQty] = useState(1);
@@ -614,11 +652,35 @@ const CrowdfundingPage = () => {
     return currencyFormatter.format(activeTier.amount);
   }, [activeTier, currencyFormatter]);
 
-  const activeTierTotalLabel = useMemo(() => {
-    if (!activeTier || typeof activeTier.amount !== 'number') return '';
-    const total = activeTier.amount * pizzaQty;
-    return currencyFormatter.format(total);
-  }, [activeTier, pizzaQty, currencyFormatter]);
+  const trimmedDiscountCode = useMemo(() => squareDiscountCode.trim(), [squareDiscountCode]);
+
+  const appliedDiscount = useMemo(() => {
+    if (!trimmedDiscountCode) return null;
+    if (discountState.status !== 'applied') return null;
+    if (!discountState.code || !discountState.discount) return null;
+    if (discountState.code.toLowerCase() !== trimmedDiscountCode.toLowerCase()) return null;
+    return discountState.discount;
+  }, [trimmedDiscountCode, discountState]);
+
+  const baseCartTotalCents = useMemo(() => {
+    if (!activeTier || typeof activeTier.amount !== 'number') return 0;
+    const totalDollars = activeTier.amount * Math.max(1, pizzaQty);
+    return Math.max(0, Math.round(totalDollars * 100));
+  }, [activeTier, pizzaQty]);
+
+  const discountedTotalCents = useMemo(
+    () => applyDiscountToCents(baseCartTotalCents, appliedDiscount),
+    [baseCartTotalCents, appliedDiscount]
+  );
+
+  const requiresPayment = discountedTotalCents > 0;
+
+  const discountedTotalLabel = useMemo(() => {
+    if (discountedTotalCents <= 0) {
+      return 'Free';
+    }
+    return currencyFormatter.format(discountedTotalCents / 100);
+  }, [discountedTotalCents, currencyFormatter]);
 
   useEffect(() => {
     if (showForm && !activeTier) {
@@ -787,7 +849,69 @@ const CrowdfundingPage = () => {
   const [cardReady, setCardReady] = useState(false);
   const [cardError, setCardError] = useState('');
   const { notify: notifyToast } = useToast();
-  const rememberPendingContribution = useCallback((cartItems, name) => {
+
+  useEffect(() => {
+    setDiscountState((prev) => {
+      if (!trimmedDiscountCode) {
+        if (prev.status === 'idle' && !prev.code && !prev.discount && !prev.message) {
+          return prev;
+        }
+        return { status: 'idle', code: '', discount: null, message: '' };
+      }
+      if (!prev.code) {
+        return prev;
+      }
+      if (prev.code.toLowerCase() === trimmedDiscountCode.toLowerCase()) {
+        return prev;
+      }
+      return { status: 'idle', code: '', discount: null, message: '' };
+    });
+  }, [trimmedDiscountCode]);
+
+  const handleDiscountApply = useCallback(async () => {
+    if (!trimmedDiscountCode) {
+      setDiscountState({ status: 'idle', code: '', discount: null, message: '' });
+      return;
+    }
+    setDiscountState({ status: 'checking', code: trimmedDiscountCode, discount: null, message: '' });
+    try {
+      const res = await fetch('/api/crowdfund/discount-code', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ code: trimmedDiscountCode }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        throw new Error(data?.error || 'Unable to validate that discount code.');
+      }
+      if (!data?.valid) {
+        setDiscountState({
+          status: 'invalid',
+          code: trimmedDiscountCode,
+          discount: null,
+          message: 'That code is not valid for this crowdfunding campaign.',
+        });
+        return;
+      }
+      const discount = data.discount || null;
+      setDiscountState({
+        status: 'applied',
+        code: trimmedDiscountCode,
+        discount,
+        message: data.message || '',
+      });
+      notifyToast('Discount applied.', { type: 'success' });
+    } catch (err) {
+      setDiscountState({
+        status: 'error',
+        code: trimmedDiscountCode,
+        discount: null,
+        message: err?.message || 'Unable to validate that discount code.',
+      });
+    }
+  }, [trimmedDiscountCode, notifyToast]);
+
+  const rememberPendingContribution = useCallback((cartItems, name, discountCode) => {
     if (!Array.isArray(cartItems) || cartItems.length === 0) return;
     try {
       localStorage.setItem('cf_items', JSON.stringify(cartItems));
@@ -795,6 +919,12 @@ const CrowdfundingPage = () => {
         localStorage.setItem('cf_name', name);
       } else {
         localStorage.removeItem('cf_name');
+      }
+      const trimmedDiscount = typeof discountCode === 'string' ? discountCode.trim() : '';
+      if (trimmedDiscount) {
+        localStorage.setItem('cf_discount', trimmedDiscount);
+      } else {
+        localStorage.removeItem('cf_discount');
       }
     } catch (err) {
       console.warn('[square] [crowdfunding] failed to persist pending contribution', err);
@@ -804,6 +934,7 @@ const CrowdfundingPage = () => {
     try {
       localStorage.removeItem('cf_items');
       localStorage.removeItem('cf_name');
+      localStorage.removeItem('cf_discount');
     } catch (err) {
       console.warn('[square] [crowdfunding] failed to clear pending contribution', err);
     }
@@ -843,6 +974,10 @@ const CrowdfundingPage = () => {
   }, [paymentsError, notifyToast]);
 
   useEffect(() => {
+    if (!requiresPayment) {
+      destroyCard();
+      return;
+    }
     if (!payments || !showForm || !activeTier) {
       return;
     }
@@ -901,7 +1036,7 @@ const CrowdfundingPage = () => {
     return () => {
       cancelled = true;
     };
-  }, [payments, showForm, activeTier, notifyToast, destroyCard]);
+  }, [payments, showForm, activeTier, requiresPayment, notifyToast, destroyCard]);
 
   useEffect(() => {
     return () => {
@@ -919,10 +1054,11 @@ const CrowdfundingPage = () => {
           const raw = localStorage.getItem('cf_items');
           const items = raw ? JSON.parse(raw) : [];
           const name = localStorage.getItem('cf_name') || undefined;
+          const discountCode = localStorage.getItem('cf_discount') || undefined;
           if (Array.isArray(items) && items.length > 0) {
             const res = await fetch('/api/crowdfund/confirm-payment', {
               method: 'POST', headers: { 'content-type': 'application/json' },
-              body: JSON.stringify({ items, funderName: name })
+              body: JSON.stringify({ items, funderName: name, discountCode })
             });
             if (res.ok) {
               setConfirmMsg('Thanks! Your contribution has been recorded.');
@@ -972,7 +1108,56 @@ const CrowdfundingPage = () => {
         };
       });
 
-      // Prefer redirecting customers to Square payment links when available.
+      const checkoutItemsPayload = normalizedItems.map((item) => ({
+        name: item.name,
+        price: item.priceCents,
+        quantity: item.quantity,
+        type: item.type,
+        pizzaCount: item.pizzaCount,
+      }));
+
+      const totalCents = normalizedItems.reduce(
+        (sum, item) => sum + item.priceCents * item.quantity,
+        0,
+      );
+      const trimmedDiscount = trimmedDiscountCode;
+      const discountFromState = appliedDiscount;
+      const totalAfterLocalDiscount = applyDiscountToCents(totalCents, discountFromState);
+      const discountEliminatesPayment = totalAfterLocalDiscount <= 0;
+
+      const finalizeWithoutPayment = async (discountInfo) => {
+        const recordRes = await fetch('/api/crowdfund/confirm-payment', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({
+            items: checkoutItemsPayload,
+            funderName,
+            email: email.trim() || undefined,
+            phone: phone.trim() || undefined,
+            notes: notes || undefined,
+            notify,
+            discountCode: trimmedDiscount || undefined,
+          }),
+        });
+        const recordData = await recordRes.json().catch(() => ({}));
+        if (!recordRes.ok) {
+          throw new Error(recordData?.error || 'Failed to record contribution.');
+        }
+        const successMessage = discountInfo
+          ? `${discountInfo.label || DEFAULT_DISCOUNT_LABEL}. We've recorded your contribution.`
+          : 'Thanks! Your contribution has been recorded.';
+        setConfirmMsg(successMessage);
+        notifyToast(successMessage, { type: 'success' });
+        setSquareDiscountCode('');
+        setDiscountState({ status: 'idle', code: '', discount: null, message: '' });
+        clearPendingContribution();
+      };
+
+      if (discountEliminatesPayment) {
+        await finalizeWithoutPayment(discountFromState);
+        return;
+      }
+
       try {
         const linkItems = normalizedItems.map((item) => ({
           name: item.name,
@@ -984,10 +1169,18 @@ const CrowdfundingPage = () => {
         const linkRes = await fetch('/api/crowdfund/contribute', {
           method: 'POST',
           headers: { 'content-type': 'application/json' },
-          body: JSON.stringify({ items: linkItems, funderName: funderName || undefined }),
+          body: JSON.stringify({
+            items: linkItems,
+            funderName: funderName || undefined,
+            discountCode: trimmedDiscount || undefined,
+          }),
         });
         if (linkRes.ok) {
           const linkData = await linkRes.json().catch(() => ({}));
+          if (linkData?.comped) {
+            await finalizeWithoutPayment(linkData.discount || discountFromState);
+            return;
+          }
           if (linkData?.url) {
             const itemsForStorage = normalizedItems.map((item) => ({
               name: item.name,
@@ -995,7 +1188,11 @@ const CrowdfundingPage = () => {
               pizzaCount: item.pizzaCount,
               quantity: item.quantity,
             }));
-            rememberPendingContribution(itemsForStorage, funderName?.trim() || '');
+            rememberPendingContribution(
+              itemsForStorage,
+              funderName?.trim() || '',
+              trimmedDiscount || ''
+            );
             notifyToast('Redirecting to secure checkout…', { type: 'success' });
             window.location.assign(linkData.url);
             return;
@@ -1013,13 +1210,7 @@ const CrowdfundingPage = () => {
       }
 
       const payload = {
-        items: normalizedItems.map((item) => ({
-          name: item.name,
-          price: item.priceCents,
-          quantity: item.quantity,
-          type: item.type,
-          pizzaCount: item.pizzaCount,
-        })),
+        items: checkoutItemsPayload,
         funderName,
         email: email.trim() || undefined,
         phone: phone.trim() || undefined,
@@ -1028,6 +1219,7 @@ const CrowdfundingPage = () => {
         notify,
         token,
         pizzaQty,
+        discountCode: trimmedDiscount || undefined,
       };
       const res = await fetch('/api/crowdfund/checkout', {
         method: 'POST',
@@ -1037,7 +1229,6 @@ const CrowdfundingPage = () => {
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
         let msg = data.error || 'Checkout failed';
-        // Attempt to surface Square API JSON array string
         if (typeof msg === 'string' && msg.startsWith('[')) {
           try {
             const parsed = JSON.parse(msg);
@@ -1048,7 +1239,14 @@ const CrowdfundingPage = () => {
         }
         throw new Error(msg);
       }
+      if (data?.comped) {
+        await finalizeWithoutPayment(data.discount || discountFromState);
+        return;
+      }
       setConfirmMsg('Thanks! Your contribution has been processed.');
+      setSquareDiscountCode('');
+      setDiscountState({ status: 'idle', code: '', discount: null, message: '' });
+      notifyToast('Payment complete. Thanks for fueling pizza!', { type: 'success' });
     } catch (e) {
       setPayError(e?.message || 'Payment failed');
       notifyToast(e?.message || 'Payment failed', { type: 'error' });
@@ -1577,6 +1775,47 @@ const CrowdfundingPage = () => {
                   {referralState.status === 'error' && (
                     <p className="text-sm text-red-600">Unable to validate that code right now.</p>
                   )}
+                  <div className="space-y-2">
+                    <Label htmlFor="cf-square-discount">Square discount code (optional)</Label>
+                    <div className="flex flex-col gap-2 sm:flex-row">
+                      <Input
+                        id="cf-square-discount"
+                        placeholder="Discount code"
+                        autoComplete="off"
+                        value={squareDiscountCode}
+                        onChange={(e) => setSquareDiscountCode(e.target.value)}
+                        className="sm:flex-1"
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="sm:w-32"
+                        disabled={!trimmedDiscountCode || discountState.status === 'checking'}
+                        onClick={handleDiscountApply}
+                      >
+                        {discountState.status === 'checking' ? 'Checking…' : 'Apply'}
+                      </Button>
+                    </div>
+                    <p className="text-xs text-slate-500">
+                      Apply a complimentary or promo code before checking out.
+                    </p>
+                    {discountState.status === 'applied' && (
+                      <p className="text-sm text-emerald-700">
+                        {(discountState.discount?.label || DEFAULT_DISCOUNT_LABEL)}
+                        {discountedTotalCents <= 0 ? ' — no payment required.' : ' applied.'}
+                      </p>
+                    )}
+                    {discountState.status === 'invalid' && (
+                      <p className="text-sm text-red-600">
+                        {discountState.message || 'That code is not valid for this crowdfunding campaign.'}
+                      </p>
+                    )}
+                    {discountState.status === 'error' && (
+                      <p className="text-sm text-red-600">
+                        {discountState.message || 'Unable to validate that discount code right now.'}
+                      </p>
+                    )}
+                  </div>
                   {activeTier && (
                     <div className="flex flex-col gap-2 sm:flex-row sm:items-end">
                       <div className="space-y-2">
@@ -1641,16 +1880,29 @@ const CrowdfundingPage = () => {
                     <div
                       id="cf-card-container"
                       ref={cardContainerRef}
-                      className="border rounded-md p-4 bg-white min-h-[88px]"
+                      className={cn(
+                        'border rounded-md p-4 min-h-[88px]',
+                        requiresPayment ? 'bg-white' : 'border-dashed bg-slate-50 flex items-center'
+                      )}
                       aria-label="Card payment form"
                     >
-                      {!cardReady && !cardError && !paymentsError && (
-                        <p className="text-sm text-gray-500">
-                          {paymentsLoading ? 'Loading secure payment form…' : 'Preparing secure payment form…'}
+                      {requiresPayment ? (
+                        <>
+                          {!cardReady && !cardError && !paymentsError && (
+                            <p className="text-sm text-gray-500">
+                              {paymentsLoading
+                                ? 'Loading secure payment form…'
+                                : 'Preparing secure payment form…'}
+                            </p>
+                          )}
+                          {(cardError || paymentsError) && (
+                            <p className="text-sm text-red-600">{cardError || paymentsError}</p>
+                          )}
+                        </>
+                      ) : (
+                        <p className="text-sm text-slate-600">
+                          No payment required for this contribution.
                         </p>
-                      )}
-                      {(cardError || paymentsError) && (
-                        <p className="text-sm text-red-600">{cardError || paymentsError}</p>
                       )}
                     </div>
                   </div>
@@ -1665,8 +1917,7 @@ const CrowdfundingPage = () => {
                     disabled={
                       !activeTier ||
                       paying ||
-                      !!cardError ||
-                      !!paymentsError ||
+                      (requiresPayment && (!cardReady || !!cardError || !!paymentsError)) ||
                       !emailValid ||
                       !phoneValid
                     }
@@ -1674,9 +1925,9 @@ const CrowdfundingPage = () => {
                   >
                     {paying
                       ? 'Processing...'
-                      : activeTierTotalLabel
-                      ? `Buy ${activeTierTotalLabel}`
-                      : 'Buy now'}
+                      : requiresPayment
+                      ? `Buy ${discountedTotalLabel}`
+                      : 'Complete contribution'}
                   </Button>
                 </form>
               )}
