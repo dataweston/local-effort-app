@@ -2,7 +2,8 @@
 // Body: { paymentId, date, email, addOnGuests, name, phone, address, mealTime, pizzaRequests }
 // Sends a confirmation/receipt email via Brevo (SendinBlue). Returns { ok: true } or { error }.
 
-const fetch = require('node-fetch');
+// Node 18+ has fetch built-in, no need to require node-fetch
+const fetch = globalThis.fetch;
 
 const BREVO_API_KEY = process.env.BREVO_API_KEY || process.env.SENDINBLUE_API_KEY;
 const FROM_EMAIL = process.env.RECEIPTS_FROM_EMAIL || process.env.SUPPORT_INBOX_EMAIL || 'no-reply@localeffort.app';
