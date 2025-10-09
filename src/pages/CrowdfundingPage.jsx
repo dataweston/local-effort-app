@@ -709,6 +709,16 @@ const CrowdfundingPage = () => {
       story,
       goals,
       events[]{ _key, location, startDate, endDate, foodType, ticketsUrl, description },
+      "featuredPublicEvents": featuredPublicEvents[]->{ 
+        _id, 
+        location, 
+        description, 
+        startDate, 
+        endDate, 
+        foodType,
+        ticketsUrl,
+        heroImage
+      },
       faq,
       "rewardTiers": rewardTiers[]->{ amount, pizzaCount, pieCount, title, description, limit, referralOnly, referralCode } | order(amount asc),
       "updates": updates[]->{ title, publishedAt, body } | order(publishedAt desc)
@@ -749,6 +759,16 @@ const CrowdfundingPage = () => {
             story,
             goals,
             events[]{ _key, location, startDate, endDate, foodType, ticketsUrl, description },
+            "featuredPublicEvents": featuredPublicEvents[]->{ 
+              _id, 
+              location, 
+              description, 
+              startDate, 
+              endDate, 
+              foodType,
+              ticketsUrl,
+              heroImage
+            },
             faq,
             "rewardTiers": rewardTiers[]->{ amount, pizzaCount, pieCount, title, description, limit, referralOnly, referralCode } | order(amount asc),
             "updates": updates[]->{ title, publishedAt, body } | order(publishedAt desc)
@@ -1466,6 +1486,36 @@ const CrowdfundingPage = () => {
       });
   }, [campaignData, parseEventDate]);
 
+  // Featured public events (separate from campaign reward pickup events)
+  const featuredPublicEvents = useMemo(() => {
+    const rawFeatured = Array.isArray(campaignData?.featuredPublicEvents) ? campaignData.featuredPublicEvents : [];
+    if (!rawFeatured.length) return [];
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return rawFeatured
+      .filter(Boolean)
+      .map((ev, index) => ({
+        ...ev,
+        _key: ev?._key || ev?._id || String(index),
+      }))
+      .filter((ev) => {
+        const start = parseEventDate(ev.startDate);
+        if (!start) return false;
+        const end = parseEventDate(ev.endDate) || start;
+        const boundary = new Date(end);
+        boundary.setHours(23, 59, 59, 999);
+        return boundary >= today;
+      })
+      .sort((a, b) => {
+        const aStart = parseEventDate(a.startDate);
+        const bStart = parseEventDate(b.startDate);
+        if (!aStart && !bStart) return 0;
+        if (!aStart) return 1;
+        if (!bStart) return -1;
+        return aStart - bStart;
+      });
+  }, [campaignData, parseEventDate]);
+
   useEffect(() => {
     if (!eventModal) return;
     const stillExists = upcomingEvents.some(
@@ -1736,21 +1786,48 @@ const CrowdfundingPage = () => {
               )}
               {activeTab === 'updates' && (
                 <div className="space-y-8">
-                  {updates.map((update, index) => (
-                    <div key={index} className="p-4 border-l-4 border-gray-200">
-                      <div className="mt-0">
-                        <SectionHeader overline="Update" title={update.title} />
+                  {updates.map((update, index) => {
+                    // Fix: Handle publishedAt which might be a string, ISO date, or timestamp
+                    let publishDate;
+                    try {
+                      const rawDate = update.publishedAt;
+                      if (typeof rawDate === 'string') {
+                        // ISO string or date string
+                        publishDate = new Date(rawDate);
+                      } else if (typeof rawDate === 'number') {
+                        // Unix timestamp - could be in seconds or milliseconds
+                        // If it's a small number (less than year 2000 in ms), it's likely in seconds
+                        publishDate = rawDate < 946684800000 
+                          ? new Date(rawDate * 1000) 
+                          : new Date(rawDate);
+                      } else {
+                        publishDate = new Date();
+                      }
+                      
+                      // Sanity check: if date is before 2000, it's probably wrong
+                      if (publishDate.getFullYear() < 2000) {
+                        publishDate = new Date();
+                      }
+                    } catch (e) {
+                      publishDate = new Date();
+                    }
+
+                    return (
+                      <div key={index} className="p-4 border-l-4 border-gray-200">
+                        <div className="mt-0">
+                          <SectionHeader overline="Update" title={update.title} />
+                        </div>
+                        <p className="text-sm text-gray-500 mb-2">
+                          {publishDate.toLocaleDateString('en-US', {
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric',
+                          })}
+                        </p>
+                        <PortableText value={update.body} components={portableComponents} />
                       </div>
-                      <p className="text-sm text-gray-500 mb-2">
-                        {new Date(update.publishedAt).toLocaleDateString('en-US', {
-                          year: 'numeric',
-                          month: 'long',
-                          day: 'numeric',
-                        })}
-                      </p>
-                      <PortableText value={update.body} components={portableComponents} />
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
               {activeTab === 'goals' && (
@@ -1820,6 +1897,34 @@ const CrowdfundingPage = () => {
                   {upcomingEvents.map((ev) => {
                     const dateLabel = formatListDate(ev);
                     const detailLabel = [dateLabel, ev.foodType || 'Food']
+                      .filter(Boolean)
+                      .join(' - ');
+                    return (
+                      <li key={ev._key} className="py-2">
+                        <button
+                          type="button"
+                          className="text-left hover:underline"
+                          onClick={() => setEventModal(ev)}
+                        >
+                          <span className="flex flex-col sm:flex-row sm:items-baseline sm:gap-2">
+                            <span className="font-semibold text-slate-800">{ev.location}</span>
+                            <span className="text-sm text-slate-600">{detailLabel}</span>
+                          </span>
+                        </button>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
+            )}
+
+            {featuredPublicEvents.length > 0 && (
+              <div className="border rounded-lg p-4 bg-white shadow-sm">
+                <h3 className="text-lg font-semibold mb-2">featured public events.</h3>
+                <ul className="divide-y">
+                  {featuredPublicEvents.map((ev) => {
+                    const dateLabel = formatListDate(ev);
+                    const detailLabel = [dateLabel, ev.foodType || 'Event']
                       .filter(Boolean)
                       .join(' - ');
                     return (
