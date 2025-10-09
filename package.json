@@ -32,6 +32,7 @@
     "framer-motion": "^12.23.12",
     "jose": "^6.1.0",
     "lucide-react": "^0.451.0",
+    "node-fetch": "^3.3.2",
     "pino": "^9.4.0",
     "pino-http": "^10.1.0",
     "prop-types": "^15.8.1",
@@ -42,6 +43,7 @@
     "react-router-dom": "^6.25.1",
     "recharts": "^2.10.3",
     "square": "^37.0.0",
+    "swr": "^2.3.0",
     "tailwind-merge": "^2.5.2",
     "web-push": "^3.6.6"
   },

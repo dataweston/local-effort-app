@@ -2,41 +2,16 @@
 // Accepts embedded card payment (Square) for crowdfunding pizzas / pledges.
 // Body: { items: [{ name, price (in cents), quantity, type, pizzaCount }], funderName, token, pizzaQty }
 
-const { Client, Environment } = require('square');
-const ACCESS_TOKEN = process.env.SQUARE_ACCESS_TOKEN;
-const LOCATION_ID = process.env.SQUARE_LOCATION_ID;
-const ENV_NAME = ((process.env.SQUARE_ENVIRONMENT || 'production').toLowerCase() === 'sandbox') ? 'Sandbox' : 'Production';
-
-let sq = null;
-try {
-  if (ACCESS_TOKEN) {
-    const env = Environment[ENV_NAME] || Environment.Production;
-    sq = new Client({ accessToken: ACCESS_TOKEN, environment: env });
-    /* eslint-disable no-console */
-    if (process.env.NODE_ENV !== 'production') {
-      console.log('[crowdfund.checkout] Square client initialized', { env: ENV_NAME, locPresent: !!LOCATION_ID, tokenTail: ACCESS_TOKEN.slice(-4) });
-    }
-    /* eslint-enable no-console */
-  }
-} catch (_) { /* ignore init errors */ }
-
-// Firestore (for updating pizzasSold) — reuse backend server style if available
-let db = null;
-try {
-  const admin = require('firebase-admin');
-  if (!admin.apps.length) {
-    // Expect credentials to already be provisioned via GOOGLE_APPLICATION_CREDENTIALS or env vars.
-    admin.initializeApp();
-  }
-  db = admin.firestore();
-} catch (_) { /* ignore Firestore errors; endpoint will still process payment */ }
+const { getSquareClient } = require('../_lib/squareClient');
+const { getFirebaseAdmin } = require('../_lib/firebaseAdmin');
 
 module.exports = async (req, res) => {
-  if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
-  try {
-    if (!sq) return res.status(500).json({ error: 'Square not configured' });
-    if (!LOCATION_ID) return res.status(500).json({ error: 'Square location missing' });
+  if (req.method !== 'POST') {
+    res.setHeader('Allow', 'POST');
+    return res.status(405).json({ error: 'Method not allowed' });
+  }
 
+<<<<<<< HEAD
     const {
       items,
       funderName,
@@ -48,6 +23,16 @@ module.exports = async (req, res) => {
       rewardPreference,
       pizzaQty,
     } = req.body || {};
+=======
+  const { client: squareClient, locationId } = getSquareClient();
+  const { firestore: db } = getFirebaseAdmin();
+
+  try {
+    if (!squareClient) return res.status(500).json({ error: 'Square not configured' });
+    if (!locationId) return res.status(500).json({ error: 'Square location missing' });
+
+    const { items, funderName, token, email, phone, notes, notify, discountCode } = req.body || {};
+>>>>>>> a438e607553c514e1fe73e9395ebf456acce3e0b
     if (!token) return res.status(400).json({ error: 'Missing payment token' });
     if (!Array.isArray(items) || !items.length) return res.status(400).json({ error: 'No items' });
 
@@ -61,17 +46,19 @@ module.exports = async (req, res) => {
     if (email) metaNoteParts.push(email);
     if (phone) metaNoteParts.push(phone);
     if (notify && notify !== 'none') metaNoteParts.push(`notify:${notify}`);
+    const trimmedDiscount = typeof discountCode === 'string' ? discountCode.trim().slice(0, 60) : '';
+    if (trimmedDiscount) metaNoteParts.push(`discount:${trimmedDiscount}`);
     const noteStr = metaNoteParts.join(' | ').slice(0, 500);
     const paymentBody = {
       sourceId: token,
       idempotencyKey,
       amountMoney: { amount: Math.round(lineTotal), currency: 'USD' },
-      locationId: LOCATION_ID,
+      locationId,
       note: noteStr,
       autocomplete: true,
     };
 
-    const resp = await sq.paymentsApi.createPayment(paymentBody);
+    const resp = await squareClient.paymentsApi.createPayment(paymentBody);
     const paymentId = resp.result.payment?.id;
 
     // Update crowdfund totals (best-effort) — count pizzas from items where type === 'pizza'
@@ -87,7 +74,16 @@ module.exports = async (req, res) => {
             } else {
               const data = doc.data() || {};
               const funders = Array.isArray(data.funders) ? data.funders : [];
-              funders.push({ name: funderName, date: new Date().toISOString(), email: email || null, phone: phone || null, notes: notes || null, notify: notify || 'none', pizzas: pizzasInCart });
+              funders.push({
+                name: funderName,
+                date: new Date().toISOString(),
+                email: email || null,
+                phone: phone || null,
+                notes: notes || null,
+                notify: notify || 'none',
+                pizzas: pizzasInCart,
+                discountCode: trimmedDiscount || null,
+              });
               tx.update(docRef, { pizzasSold: (data.pizzasSold || 0) + pizzasInCart, funders });
             }
           });
