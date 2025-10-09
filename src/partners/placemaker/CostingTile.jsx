@@ -1,7 +1,8 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Calculator, ClipboardList, Loader2 } from 'lucide-react';
+import { ClipboardList, Loader2 } from 'lucide-react';
 import { doc, onSnapshot, serverTimestamp, setDoc, updateDoc } from 'firebase/firestore';
 import { db } from '../../firebaseConfig';
+import devConsole from '../../lib/devConsole.js';
 
 const COLLECTION_KEY = 'placemakerCosting';
 const DEFAULT_DOC_ID = 'default';
@@ -56,7 +57,7 @@ function readLocalSheet() {
     const parsed = JSON.parse(raw);
     return sanitizeSheet(parsed);
   } catch (error) {
-    console.warn('Placemaker costing local read failed', error);
+    devConsole.warn('Placemaker costing local read failed', error);
     return { ...DEFAULT_SHEET };
   }
 }
@@ -66,11 +67,11 @@ function writeLocalSheet(data) {
     if (typeof window === 'undefined') return;
     window.localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(sanitizeSheet(data)));
   } catch (error) {
-    console.warn('Placemaker costing local write failed', error);
+    devConsole.warn('Placemaker costing local write failed', error);
   }
 }
 
-export default function CostingTile({ onSnapshot }) {
+export default function CostingTile({ onExportSnapshot }) {
   const [sheet, setSheet] = useState({ ...DEFAULT_SHEET });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -104,7 +105,7 @@ export default function CostingTile({ onSnapshot }) {
             setSheet({ ...DEFAULT_SHEET });
             writeLocalSheet(DEFAULT_SHEET);
           } catch (error) {
-            console.warn('Placemaker costing seed failed', error);
+            devConsole.warn('Placemaker costing seed failed', error);
             setSheet(readLocalSheet());
             setSyncMode('local');
           }
@@ -113,7 +114,7 @@ export default function CostingTile({ onSnapshot }) {
         setLoading(false);
       },
       (err) => {
-        console.warn('Placemaker costing snapshot error', err);
+        devConsole.warn('Placemaker costing snapshot error', err);
         setSheet(readLocalSheet());
         setSyncMode('local');
         if (err?.message && !/permission/i.test(err.message)) {
@@ -200,10 +201,10 @@ export default function CostingTile({ onSnapshot }) {
   const perGuestRemainder = sheet.guestCount ? round2(remainingBudget / sheet.guestCount) : 0;
 
   const handleSnapshot = async () => {
-    if (typeof onSnapshot !== 'function') return;
+    if (typeof onExportSnapshot !== 'function') return;
     const stamp = new Date().toLocaleString();
     const lines = [
-      `Snapshot — ${stamp}`,
+      `Snapshot â€” ${stamp}`,
       `Guests: ${sheet.guestCount || 0}`,
       `Client total: ${formatCurrency(sheet.costToClient)}`,
       `Pre-gratuity: ${formatCurrency(round2(preGratuityTotal))}`,
@@ -215,7 +216,7 @@ export default function CostingTile({ onSnapshot }) {
       `Floral: ${formatCurrency(sheet.floralTotal)}`,
       `Remaining venue/staff budget: ${formatCurrency(remainingBudget)}${sheet.guestCount ? ` (${formatCurrency(perGuestRemainder)} per guest)` : ''}`,
     ];
-    onSnapshot(lines.join('\n'));
+    onExportSnapshot(lines.join('\n'));
   };
 
   return (
