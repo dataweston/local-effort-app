@@ -15,8 +15,9 @@ function getSanityClient() {
     dataset,
     useCdn: false,
     token: process.env.SANITY_API_TOKEN,
-    apiVersion: '2024-01-01',
+    apiVersion: '2023-05-03',
   });
+  console.log(`[sanity] Client initialized: project=${projectId}, dataset=${dataset}`);
   return sanityClient;
 }
 
