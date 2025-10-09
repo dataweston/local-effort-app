@@ -1,4 +1,5 @@
 const { resolveCrowdfundDiscount } = require('./_lib/discountCodes');
+const { getSquareClient } = require('../_lib/squareClient');
 
 module.exports = async (req, res) => {
   if (req.method !== 'POST') {
@@ -12,7 +13,8 @@ module.exports = async (req, res) => {
       return res.status(400).json({ error: 'missing-code' });
     }
 
-    const discount = resolveCrowdfundDiscount(code);
+    const { client: squareClient } = getSquareClient();
+    const discount = await resolveCrowdfundDiscount(code, { squareClient });
     if (!discount) {
       return res.json({ valid: false });
     }

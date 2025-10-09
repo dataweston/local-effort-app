@@ -46,7 +46,7 @@ module.exports = async (req, res) => {
   };
 
   const trimmedDiscount = typeof discountCode === 'string' ? discountCode.trim().slice(0, 60) : '';
-  const discountDetails = resolveCrowdfundDiscount(trimmedDiscount);
+  const discountDetails = await resolveCrowdfundDiscount(trimmedDiscount, { squareClient });
   const discountedTotal = applyCrowdfundDiscount(totalCents, discountDetails);
 
   if (discountedTotal <= 0) {
