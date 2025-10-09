@@ -45,6 +45,7 @@ describe('crowdfunding summary api', () => {
   it('returns the aggregate crowdfunding totals and disables caching', async () => {
     const updatedAt = new Date('2024-02-01T12:00:00Z');
     const aggRef = fakeDb.collection('aggregates').doc('crowdfunding');
+    aggRef.set({ pizzas: 42, backers: 17, goal: 500, updatedAt });
     aggRef.set({ pizzas: 42, backers: 17, updatedAt });
 
     const res = await request(app).get('/api/crowdfunding/summary');
@@ -54,6 +55,7 @@ describe('crowdfunding summary api', () => {
     expect(res.body).toEqual({
       pizzas: 42,
       backers: 17,
+      goal: 500,
       updatedAt: updatedAt.toISOString(),
     });
   });
@@ -62,6 +64,29 @@ describe('crowdfunding summary api', () => {
     const res = await request(app).get('/api/crowdfunding/summary');
 
     expect(res.status).toBe(200);
+    expect(res.body).toEqual({ pizzas: 0, backers: 0, goal: null, updatedAt: null });
+  });
+
+  it('falls back to the legacy crowdfund/status document when aggregates are missing', async () => {
+    const statusRef = fakeDb.collection('crowdfund').doc('status');
+    statusRef.set({
+      pizzasSold: 87,
+      goal: 900,
+      funders: [
+        { name: 'A', date: '2024-02-10T15:00:00Z' },
+        { name: 'B', date: '2024-02-10T16:00:00Z' },
+      ],
+    });
+
+    const res = await request(app).get('/api/crowdfunding/summary');
+
+    expect(res.status).toBe(200);
+    expect(res.body).toEqual({
+      pizzas: 87,
+      backers: 2,
+      goal: 900,
+      updatedAt: '2024-02-10T16:00:00.000Z',
+    });
     expect(res.body).toEqual({ pizzas: 0, backers: 0, updatedAt: null });
   });
 
