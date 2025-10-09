@@ -136,7 +136,7 @@ module.exports = async (req, res) => {
     lineTotal = Math.max(0, Math.round(lineTotal));
 
     const trimmedDiscount = typeof discountCode === 'string' ? discountCode.trim().slice(0, 60) : '';
-    const discountDetails = resolveCrowdfundDiscount(trimmedDiscount);
+    const discountDetails = await resolveCrowdfundDiscount(trimmedDiscount, { squareClient });
     if (lineTotal <= 0 && !discountDetails) {
       return res.status(400).json({ error: 'Invalid total' });
     }
@@ -216,6 +216,7 @@ module.exports = async (req, res) => {
       notify: safeNotify,
       trimmedDiscount,
     });
+
     return res.status(200).json({ ok: true, paymentId, discount: discountDetails || null });
   } catch (e) {
     const squareErrors = e?.errors ? e.errors.map(er => ({ code: er.code, detail: er.detail })).slice(0,3) : null;
