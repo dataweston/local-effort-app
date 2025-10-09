@@ -17,7 +17,7 @@ module.exports = async (req, res) => {
     return res.status(503).json({ error: 'Database not configured on this server.' });
   }
 
-  const { items = [], funderName, email, phone, notes, notify } = req.body || {};
+  const { items = [], funderName, email, phone, notes, notify, discountCode } = req.body || {};
   const pizzasInCart = Array.isArray(items)
     ? items
         .filter((item) => item && item.type === 'pizza')
@@ -40,6 +40,8 @@ module.exports = async (req, res) => {
       const pizzasSold = Number(current.pizzasSold) || 0;
       const funders = Array.isArray(current.funders) ? current.funders.slice() : [];
 
+      const trimmedDiscount = typeof discountCode === 'string' ? discountCode.trim().slice(0, 60) : '';
+
       funders.push({
         name: sanitizeName(funderName),
         date: new Date().toISOString(),
@@ -48,6 +50,7 @@ module.exports = async (req, res) => {
         notes: notes || null,
         notify: notify || 'none',
         pizzas: pizzasInCart,
+        discountCode: trimmedDiscount || null,
       });
 
       const payload = {
