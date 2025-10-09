@@ -521,6 +521,8 @@ const CrowdfundingPage = () => {
   }, []);
 
   useEffect(() => {
+    if (activeTab !== 'gallery' || galleryLoadedRef.current) {
+      return undefined;
     if (activeTab === 'gallery' && !galleryLoadedRef.current) {
       galleryLoadedRef.current = true;
       setGalleryLoading(true);
@@ -568,6 +570,74 @@ const CrowdfundingPage = () => {
         })
         .finally(() => setGalleryLoading(false));
     }
+
+    galleryLoadedRef.current = true;
+    setGalleryLoading(true);
+    setGalleryError('');
+    // Fetch pizza and pie separately then merge unique results to ensure OR semantics across Cloudinary search API
+    const endpoints = ['/api/search-images?query=pizza&per_page=50', '/api/search-images?query=pie&per_page=50'];
+    let cancelled = false;
+
+    const fetchGalleryImages = async () => {
+      try {
+        const results = await Promise.all(
+          endpoints.map(async (endpoint) => {
+            try {
+              const response = await fetch(endpoint, { headers: { Accept: 'application/json' } });
+              let data = null;
+              try {
+                data = await response.json();
+              } catch (jsonError) {
+                data = null;
+              }
+              return { ok: response.ok, data };
+            } catch (networkError) {
+              return { ok: false, data: null, error: networkError };
+            }
+          })
+        );
+
+        if (cancelled) {
+          return;
+        }
+
+        const all = [];
+        let hadNetworkError = false;
+        results.forEach(({ ok, data, error }) => {
+          if (error) {
+            hadNetworkError = true;
+          }
+          if (ok && data && Array.isArray(data.images)) all.push(...data.images);
+        });
+        // De-duplicate by asset_id or public_id
+        const seen = new Set();
+        const merged = [];
+        for (const img of all) {
+          const id = img.asset_id || img.public_id;
+          if (!id || seen.has(id)) continue;
+          seen.add(id);
+          merged.push(img);
+        }
+        if (merged.length === 0) {
+          setGalleryError(hadNetworkError ? 'Unable to load gallery images right now.' : 'No images found yet.');
+        }
+        setGalleryImages(merged);
+      } catch (error) {
+        if (!cancelled) {
+          setGalleryError(error?.message || 'Error loading gallery');
+        }
+      } finally {
+        if (!cancelled) {
+          setGalleryLoading(false);
+        }
+      }
+    };
+
+    fetchGalleryImages();
+
+    return () => {
+      cancelled = true;
+    };
   }, [activeTab]);
 
   useEffect(() => {
@@ -2267,7 +2337,7 @@ const CrowdfundingPage = () => {
                         value={subscribeEmail}
                         onChange={(event) => setSubscribeEmail(event.target.value)}
                         disabled={subscribeStatus === 'loading'}
-                        className="border-slate-700 bg-slate-800 text-white placeholder:text-slate-400"
+                        className="border-slate-300 bg-white text-slate-900 placeholder:text-slate-500"
                       />
                     </div>
                     {subscribeMessage && (

@@ -1,9 +1,14 @@
 import express from 'express';
 import request from 'supertest';
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { createCrowdfundingRouter } from '../crowdfunding';
+import { __dangerous__clearSquareDiscountCache } from '../../../../api/crowdfund/_lib/discountCodes';
 
 describe('crowdfunding router', () => {
+  beforeEach(() => {
+    __dangerous__clearSquareDiscountCache();
+  });
+
   const createApp = (overrides = {}) => {
     const router = createCrowdfundingRouter({
       db: overrides.db || null,
@@ -52,6 +57,41 @@ describe('crowdfunding router', () => {
       .send({ code: 'NOTREAL' });
     expect(invalid.status).toBe(200);
     expect(invalid.body).toEqual({ valid: false });
+    expect(warn).not.toHaveBeenCalled();
+  });
+
+  it('accepts discount codes returned by Square', async () => {
+    const warn = vi.fn();
+    const listCatalog = vi.fn()
+      .mockResolvedValueOnce({
+        result: {
+          objects: [
+            {
+              type: 'DISCOUNT',
+              id: 'DISC-123',
+              discountData: { name: 'TEACHERTHANKS', discountType: 'FIXED_PERCENTAGE', percentage: '50' },
+            },
+          ],
+          cursor: null,
+        },
+      });
+    const squareClient = { catalogApi: { listCatalog } };
+    const app = createApp({ squareClient, logger: { warn, error: vi.fn() } });
+
+    const res = await request(app)
+      .post('/crowdfund/discount-code')
+      .send({ code: 'TeacherThanks' });
+
+    expect(res.status).toBe(200);
+    expect(res.body.valid).toBe(true);
+    expect(res.body.discount).toMatchObject({
+      code: 'TEACHERTHANKS',
+      type: 'percent',
+      reduction: { type: 'percent', value: 50 },
+      source: 'square',
+      squareDiscountId: 'DISC-123',
+    });
+    expect(listCatalog).toHaveBeenCalledTimes(1);
     expect(warn).not.toHaveBeenCalled();
   });
 
