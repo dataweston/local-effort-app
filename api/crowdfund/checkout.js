@@ -103,19 +103,6 @@ module.exports = async (req, res) => {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-<<<<<<< HEAD
-    const {
-      items,
-      funderName,
-      token,
-      email,
-      phone,
-      notes,
-      notify,
-      rewardPreference,
-      pizzaQty,
-    } = req.body || {};
-=======
   const { client: squareClient, locationId } = getSquareClient();
   const { firestore: db } = getFirebaseAdmin();
 
@@ -123,7 +110,7 @@ module.exports = async (req, res) => {
     if (!squareClient) return res.status(500).json({ error: 'Square not configured' });
     if (!locationId) return res.status(500).json({ error: 'Square location missing' });
 
-    const { items, funderName, token, email, phone, notes, notify, discountCode } = req.body || {};
+    const { items, funderName, token, email, phone, notes, notify, discountCode, rewardPreference, pizzaQty } = req.body || {};
     if (!Array.isArray(items) || !items.length) return res.status(400).json({ error: 'No items' });
 
     let lineTotal = items.reduce((sum, item) => {
@@ -182,16 +169,6 @@ module.exports = async (req, res) => {
       return res.status(200).json({ ok: true, paymentId: null, comped: true, discount: discountDetails || null });
     }
 
-    const idempotencyKey = createIdempotencyKey();
-    const metaNoteParts = [funderName || 'Anonymous'];
-    if (email) metaNoteParts.push(email);
-    if (phone) metaNoteParts.push(phone);
-    if (notify && notify !== 'none') metaNoteParts.push(`notify:${notify}`);
-    if (trimmedDiscount) {
-      metaNoteParts.push(`discount:${trimmedDiscount}${discountDetails ? ':applied' : ''}`);
-    }
-    const noteStr = metaNoteParts.join(' | ').slice(0, 500);
-
     const paymentBody = {
       sourceId: sourceToken,
       idempotencyKey,
@@ -205,17 +182,6 @@ module.exports = async (req, res) => {
     const paymentId = resp.result.payment?.id;
 
     await persistContribution();
-
-    await recordCrowdfundContribution({
-      db,
-      pizzasInCart,
-      funderName: safeFunderName,
-      email: safeEmail,
-      phone: safePhone,
-      notes,
-      notify: safeNotify,
-      trimmedDiscount,
-    });
 
     return res.status(200).json({ ok: true, paymentId, discount: discountDetails || null });
   } catch (e) {
