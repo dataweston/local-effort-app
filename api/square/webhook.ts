@@ -1,7 +1,11 @@
 import type { IncomingHttpHeaders, IncomingMessage, ServerResponse } from 'node:http';
+import { config as dotenvConfig } from 'dotenv';
 import { applyCompletedPayment, verifySquareSignature } from '../../packages/lib/crowdfundingPipeline';
 import crypto from 'node:crypto';
 import { db as defaultDb } from '../../packages/lib/firebaseAdmin';
+
+// Load environment variables
+dotenvConfig({ path: '../../.env' });
 
 type Req = IncomingMessage & {
   method?: string;

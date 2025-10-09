@@ -1,3 +1,5 @@
+require('dotenv').config({ path: '../../.env' });
+
 const { getFirebaseAdmin } = require('../_lib/firebaseAdmin');
 
 const FEEDBACK_COLLECTION = 'crowdfund_feedback';

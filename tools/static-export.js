@@ -32,6 +32,7 @@ function buildSSRApp() {
     jsx: 'automatic',
     sourcemap: false,
     logLevel: 'silent',
+    minify: true,
     define: {
       'process.env.NODE_ENV': '"production"',
       'import.meta.env.SSR': 'true',
@@ -90,11 +91,12 @@ const routes = [
   '/paikka',
   '/partner-portal',
   '/crowdfunding',
-  '/personal-chef-minneapolis',
-  '/personal-chef-st-paul',
-  '/personal-chef-twin-cities',
-  '/personal-chef-minnesota',
-  '/personal-chef-wisconsin',
+  // Removed city-specific landing pages from prerendering to speed up build
+  // '/personal-chef-minneapolis',
+  // '/personal-chef-st-paul', 
+  // '/personal-chef-twin-cities',
+  // '/personal-chef-minnesota',
+  // '/personal-chef-wisconsin',
 ];
 
 function inject(html, body, head) {

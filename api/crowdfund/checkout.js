@@ -2,6 +2,8 @@
 // Accepts embedded card payment (Square) for crowdfunding pizzas / pledges.
 // Body: { items: [{ name, price (in cents), quantity, type, pizzaCount }], funderName, token, pizzaQty }
 
+require('dotenv').config({ path: '../../.env' });
+
 const crypto = require('crypto');
 const { getSquareClient } = require('../_lib/squareClient');
 const { getFirebaseAdmin } = require('../_lib/firebaseAdmin');
