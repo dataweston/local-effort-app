@@ -1,0 +1,1 @@
+var t={};const s=()=>{try{if(typeof import.meta<"u")return"production"}catch{}return typeof process<"u"&&t?"production":"development"},n=()=>s()!=="production",e=(o,r)=>{n()&&o in console&&console[o](...r)},c={log:(...o)=>e("log",o),warn:(...o)=>e("warn",o),error:(...o)=>e("error",o),info:(...o)=>e("info",o),assert:(o,...r)=>{n()&&console.assert(o,...r)}};export{c as d};

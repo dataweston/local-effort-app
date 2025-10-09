@@ -22,13 +22,10 @@ import PrioritiesPie from '../components/crowdfunding/PrioritiesPie.jsx';
 import { createPortableTextComponents } from '../utils/portableTextComponents';
 import { cn } from '../lib/utils';
 import { useToast } from '../components/common/ToastProvider';
+
 import devConsole from '../lib/devConsole.js';
-import { watchCrowdfundingTotals, watchPizzaFeedback } from '../lib/firebaseCrowdfunding';
-
-const REALTIME_DATABASE_URL = 'https://local-effort-default-rtdb.firebaseio.com/';
-const FIREBASE_DATABASE_PATTERN = /firebase database/gi;
-
-const createFirebaseDatabaseRegex = () => new RegExp(FIREBASE_DATABASE_PATTERN);
+import { watchCrowdfundingTotals, watchPizzaFeedback, getFirebaseAppInstance } from '../lib/firebaseCrowdfunding';
+import { getFirestore, collection, addDoc, serverTimestamp } from 'firebase/firestore';
 
 function isPortableTextBlocks(value) {
   return (
@@ -46,45 +43,16 @@ function replaceFirebaseDatabaseInPortableBlocks(blocks) {
   }
 
   let changed = false;
-  let markCounter = 0;
+  // ...existing code...
 
-  const processed = blocks.map((block, blockIndex) => {
+  const processed = blocks.map((block) => {
     if (!block || typeof block !== 'object' || !Array.isArray(block.children)) {
       return block;
     }
 
-    let blockChanged = false;
+  // ...existing code...
     const newChildren = [];
-    let markDefs = Array.isArray(block.markDefs) ? [...block.markDefs] : [];
-    let linkMarkKey = null;
-
-    const ensureLinkMarkKey = () => {
-      if (linkMarkKey) {
-        return linkMarkKey;
-      }
-      const existing = markDefs.find(
-        (def) =>
-          def &&
-          def._type === 'link' &&
-          typeof def.href === 'string' &&
-          def.href === REALTIME_DATABASE_URL
-      );
-      if (existing && existing._key) {
-        linkMarkKey = existing._key;
-        return linkMarkKey;
-      }
-      markCounter += 1;
-      linkMarkKey = `realtime-db-link-${blockIndex}-${markCounter}`;
-      markDefs = [
-        ...markDefs,
-        {
-          _key: linkMarkKey,
-          _type: 'link',
-          href: REALTIME_DATABASE_URL,
-        },
-      ];
-      return linkMarkKey;
-    };
+    // ...existing code...
 
     block.children.forEach((child) => {
       if (!child || child._type !== 'span' || typeof child.text !== 'string') {
@@ -92,69 +60,12 @@ function replaceFirebaseDatabaseInPortableBlocks(blocks) {
         return;
       }
 
-      const text = child.text;
-      const regex = createFirebaseDatabaseRegex();
-      let match;
-      let lastIndex = 0;
-      let localChanged = false;
-      let segmentIndex = 0;
-
-      while ((match = regex.exec(text)) !== null) {
-        const start = match.index;
-        const end = regex.lastIndex;
-        if (start > lastIndex) {
-          const slice = text.slice(lastIndex, start);
-          if (slice) {
-            newChildren.push({
-              ...child,
-              _key: child._key ? `${child._key}-${segmentIndex++}` : undefined,
-              text: slice,
-              marks: Array.isArray(child.marks) ? [...child.marks] : [],
-            });
-          }
-        }
-
-        const markKey = ensureLinkMarkKey();
-        newChildren.push({
-          ...child,
-          _key: child._key ? `${child._key}-${segmentIndex++}` : undefined,
-          text: 'Realtime Database',
-          marks: [...(Array.isArray(child.marks) ? child.marks : []), markKey],
-        });
-
-        lastIndex = end;
-        localChanged = true;
-      }
-
-      if (!localChanged) {
-        newChildren.push(child);
-        return;
-      }
-
-      if (lastIndex < text.length) {
-        const tail = text.slice(lastIndex);
-        if (tail) {
-          newChildren.push({
-            ...child,
-            _key: child._key ? `${child._key}-${segmentIndex++}` : undefined,
-            text: tail,
-            marks: Array.isArray(child.marks) ? [...child.marks] : [],
-          });
-        }
-      }
-
-      blockChanged = true;
+      newChildren.push(child);
     });
 
-    if (!blockChanged) {
-      return block;
-    }
-
-    changed = true;
     return {
       ...block,
       children: newChildren,
-      markDefs,
     };
   });
 
@@ -163,14 +74,14 @@ function replaceFirebaseDatabaseInPortableBlocks(blocks) {
 
 function replaceFirebaseDatabaseInValue(value) {
   if (typeof value === 'string') {
-    return value.replace(FIREBASE_DATABASE_PATTERN, 'Realtime Database');
+  return value;
   }
   if (isPortableTextBlocks(value)) {
     return replaceFirebaseDatabaseInPortableBlocks(value);
   }
   if (Array.isArray(value) && value.every((item) => typeof item === 'string')) {
     const replaced = value.map((item) =>
-      item.replace(FIREBASE_DATABASE_PATTERN, 'Realtime Database')
+  item
     );
     const changed = replaced.some((item, index) => item !== value[index]);
     return changed ? replaced : value;
@@ -257,12 +168,27 @@ function applyDiscountToCents(amountCents, discount) {
   return baseAmount;
 }
 
-const summaryFetcher = async (url) => {
-  const response = await fetch(url, { headers: { Accept: 'application/json' } });
-  if (!response.ok) {
-    throw new Error(`Request failed with status ${response.status}`);
+const SUMMARY_ENDPOINTS = ['/api/crowdfund/summary', '/api/crowdfunding/summary'];
+
+const summaryFetcher = async () => {
+  const errors = [];
+  for (const endpoint of SUMMARY_ENDPOINTS) {
+    try {
+      const response = await fetch(endpoint, { headers: { Accept: 'application/json' } });
+      if (!response.ok) {
+        errors.push(`${endpoint} responded with status ${response.status}`);
+        continue;
+      }
+      return await response.json();
+    } catch (error) {
+      errors.push(`${endpoint} failed: ${error?.message ?? 'unknown error'}`);
+    }
   }
-  return response.json();
+
+  const message = errors.length
+    ? `Unable to load crowdfunding summary (${errors.join('; ')})`
+    : 'Unable to load crowdfunding summary';
+  throw new Error(message);
 };
 
 // --- Sanity Image URL Builder Setup (kept for future use if dynamic hero image restored) ---
@@ -379,7 +305,7 @@ const REWARD_PREFERENCE_OPTIONS = [
   { value: 'deliver to my home', label: 'Deliver to my home' },
   { value: 'make live at my home', label: 'Make live at my home' },
   { value: 'frozen pizza', label: 'Frozen pizza' },
-  { value: "i'm open or im not sure", label: 'I’m open or I’m not sure' },
+  { value: "i'm open or im not sure", label: "I'm open or I'm not sure" },
 ];
 
 const CAMPAIGN_EXTENSION_DATE_STRING = '2025-12-10T23:59:59-06:00';
@@ -440,7 +366,7 @@ const CrowdfundingPage = () => {
   const [eventModal, setEventModal] = useState(null);
 
   const { data: summaryData, error: summaryError } = useSWR(
-    '/api/crowdfunding/summary',
+    'crowdfund-summary',
     summaryFetcher,
     {
       refreshInterval: 30000,
@@ -508,6 +434,7 @@ const CrowdfundingPage = () => {
   useEffect(() => {
     if (activeTab !== 'gallery' || galleryLoadedRef.current) {
       return undefined;
+    }
     if (activeTab === 'gallery' && !galleryLoadedRef.current) {
       galleryLoadedRef.current = true;
       setGalleryLoading(true);
@@ -763,7 +690,7 @@ const CrowdfundingPage = () => {
   const phoneValid = useMemo(() => !phone || phoneDigits.length >= 10, [phone, phoneDigits]);
 
   useEffect(() => {
-    // 💡 IMPROVEMENT: Fetch a specific campaign by its slug for a more robust component.
+    // =��� IMPROVEMENT: Fetch a specific campaign by its slug for a more robust component.
     // For this example, we'll hardcode a slug. In a real app, you'd get this from the URL.
     const slug = 'local-pizza-by-local-effort-let-s-make-1000-pizzas'; // Replace with a real slug from your Sanity data
     const query = `*[_type == "crowdfundingCampaign" && slug.current == $slug][0]{
@@ -1010,39 +937,21 @@ const CrowdfundingPage = () => {
       setFeedbackSubmitting(true);
 
       try {
-        const res = await fetch('/api/crowdfund/pizza-feedback', {
-          method: 'POST',
-          headers: { 'content-type': 'application/json' },
-          body: JSON.stringify({ rating: ratingValue, message }),
+        const app = getFirebaseAppInstance();
+        if (!app) throw new Error('Firebase not initialized');
+        const db = getFirestore(app);
+        const feedbackRef = collection(db, 'crowdfund_feedback');
+        const docRef = await addDoc(feedbackRef, {
+          rating: ratingValue,
+          comment: message,
+          createdAt: serverTimestamp(),
+          createdAtMs: Date.now(),
         });
-
-        let data = null;
-        try {
-          data = await res.json();
-        } catch (_) {
-          data = null;
-        }
-
-        if (!res.ok) {
-          const messageText =
-            (data && data.error) || 'We had trouble saving your pizza note. Please try again.';
-          throw new Error(messageText);
-        }
-
-        const payloadEntry = data?.entry;
         const nextEntry = {
-          id: (payloadEntry && payloadEntry.id) || `feedback-${Date.now()}`,
-          rating: Number.isFinite(Number(payloadEntry?.rating))
-            ? Number(payloadEntry.rating)
-            : ratingValue,
-          comment:
-            typeof payloadEntry?.comment === 'string' && payloadEntry.comment.trim()
-              ? payloadEntry.comment.trim()
-              : typeof payloadEntry?.message === 'string' && payloadEntry.message.trim()
-                ? payloadEntry.message.trim()
-                : message,
+          id: docRef.id,
+          rating: ratingValue,
+          comment: message,
         };
-
         setFeedbackEntries((prev) => {
           const safePrev = Array.isArray(prev)
             ? prev.filter((item) => item && item.id !== nextEntry.id)
@@ -1455,7 +1364,7 @@ const CrowdfundingPage = () => {
               funderName?.trim() || '',
               trimmedDiscount || ''
             );
-            notifyToast('Redirecting to secure checkout…', { type: 'success' });
+            notifyToast('Redirecting to secure checkout...', { type: 'success' });
             window.location.assign(linkData.url);
             return;
           }
@@ -2137,7 +2046,7 @@ const CrowdfundingPage = () => {
                         disabled={!trimmedDiscountCode || discountState.status === 'checking'}
                         onClick={handleDiscountApply}
                       >
-                        {discountState.status === 'checking' ? 'Checking…' : 'Apply'}
+                        {discountState.status === 'checking' ? 'Checking...' : 'Apply'}
                       </Button>
                     </div>
                     <p className="text-xs text-slate-500">
@@ -2253,8 +2162,8 @@ const CrowdfundingPage = () => {
                           {!cardReady && !cardError && !paymentsError && (
                             <p className="text-sm text-gray-500">
                               {paymentsLoading
-                                ? 'Loading secure payment form…'
-                                : 'Preparing secure payment form…'}
+                                ? 'Loading secure payment form...'
+                                : 'Preparing secure payment form...'}
                             </p>
                           )}
                           {(cardError || paymentsError) && (
@@ -2341,7 +2250,7 @@ const CrowdfundingPage = () => {
                       className="w-full bg-amber-400 text-slate-900 hover:bg-amber-300"
                       disabled={subscribeStatus === 'loading'}
                     >
-                      {subscribeStatus === 'loading' ? 'Subscribing…' : 'Subscribe'}
+                      {subscribeStatus === 'loading' ? 'Subscribing...' : 'Subscribe'}
                     </Button>
                   </form>
                 </CardContent>
@@ -2442,14 +2351,14 @@ const CrowdfundingPage = () => {
                   </p>
                 )}
                 <Button type="submit" className="w-full sm:w-auto" disabled={feedbackSubmitting}>
-                  {feedbackSubmitting ? 'Sharing pizza love…' : 'Share feedback'}
+                      {feedbackSubmitting ? 'Sharing pizza love...' : 'Share feedback'}
                 </Button>
               </form>
             </div>
             <div className="md:w-1/2 space-y-4">
               <h3 className="text-lg font-semibold text-slate-900">Recent happy pizza thoughts</h3>
               {feedbackLoading ? (
-                <p className="text-sm text-slate-500">Loading pizza love…</p>
+                <p className="text-sm text-slate-500">Loading pizza love...</p>
               ) : feedbackEntries.length > 0 ? (
                 <ul className="space-y-4">
                   {feedbackEntries.map((entry) => (
@@ -2460,7 +2369,7 @@ const CrowdfundingPage = () => {
                       <p className="text-sm text-amber-900">“{entry.comment}”</p>
                       <p className="mt-2 text-xs font-semibold uppercase tracking-wide text-amber-700">
                         {Number.isFinite(entry.rating)
-                          ? `Rating: ${'⭐️'.repeat(Math.max(1, Math.min(5, entry.rating)))} (${entry.rating}/5)`
+                          ? `Rating: ${'⭐'.repeat(Math.max(1, Math.min(5, entry.rating)))} (${entry.rating}/5)`
                           : 'Rating: shared anonymously'}
                       </p>
                     </li>
@@ -2469,7 +2378,7 @@ const CrowdfundingPage = () => {
               ) : (
                 <p className="text-sm text-slate-500">
                   {feedbackFetchError
-                    ? 'We couldn’t load recent pizza notes. Share yours to kick things off!'
+                    ? "We couldn't load recent pizza notes. Share yours to kick things off!"
                     : 'No pizza notes yet—be the first to share your experience!'}
                 </p>
               )}

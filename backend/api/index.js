@@ -30,6 +30,15 @@ const { logger } = require('./logger');
 const { createBrevoService } = require('./services/brevo');
 const { createCrowdfundingRouter } = require('./routes/crowdfunding');
 const crowdfundCheckoutHandler = require('../../api/crowdfund/checkout');
+const crowdfundFeedbackHandler = require('../../api/crowdfund/feedback');
+const storeCheckoutHandler = require('../../api/store/checkout');
+const giftCardCheckoutHandler = require('../../api/store/gift-card-checkout');
+const pizzaPartyCheckoutHandler = require('../../api/store/pizza-party-checkout');
+const pizzaPartyStatusHandler = require('../../api/store/pizza-party-status');
+const pizzaPartyReceiptHandler = require('../../api/store/pizza-party-receipt');
+const pizzaPartyLinkHandler = require('../../api/store/pizza-party-link');
+const pizzaPartyBookingsHandler = require('../../api/store/pizza-party-bookings');
+const storeProductsHandler = require('../../api/store/products');
 const { createMessagesRouter } = require('./routes/messages');
 const {
   verifySquareSignature,
@@ -359,7 +368,88 @@ app.all('/api/crowdfund/checkout', async (req, res, next) => {
     next(err);
   }
 });
-app.get('/api/crowdfunding/summary', async (req, res) => {
+app.all('/api/crowdfund/feedback', async (req, res, next) => {
+  try {
+    await crowdfundFeedbackHandler(req, res);
+  } catch (err) {
+    logger.error({ err, method: req.method }, 'crowdfund feedback handler failed');
+    next(err);
+  }
+});
+
+app.all('/api/store/checkout', async (req, res, next) => {
+  try {
+    await storeCheckoutHandler(req, res);
+  } catch (err) {
+    logger.error({ err, method: req.method }, 'store checkout handler failed');
+    next(err);
+  }
+});
+
+app.all('/api/store/gift-card-checkout', async (req, res, next) => {
+  try {
+    await giftCardCheckoutHandler(req, res);
+  } catch (err) {
+    logger.error({ err, method: req.method }, 'gift-card checkout handler failed');
+    next(err);
+  }
+});
+
+app.all('/api/store/pizza-party-checkout', async (req, res, next) => {
+  try {
+    await pizzaPartyCheckoutHandler(req, res);
+  } catch (err) {
+    logger.error({ err, method: req.method }, 'pizza-party checkout handler failed');
+    next(err);
+  }
+});
+
+app.all('/api/store/pizza-party-status', async (req, res, next) => {
+  try {
+    await pizzaPartyStatusHandler(req, res);
+  } catch (err) {
+    logger.error({ err, method: req.method }, 'pizza-party status handler failed');
+    next(err);
+  }
+});
+
+app.all('/api/store/pizza-party-receipt', async (req, res, next) => {
+  try {
+    await pizzaPartyReceiptHandler(req, res);
+  } catch (err) {
+    logger.error({ err, method: req.method }, 'pizza-party receipt handler failed');
+    next(err);
+  }
+});
+
+app.all('/api/store/pizza-party-link', async (req, res, next) => {
+  try {
+    await pizzaPartyLinkHandler(req, res);
+  } catch (err) {
+    logger.error({ err, method: req.method }, 'pizza-party link handler failed');
+    next(err);
+  }
+});
+
+app.all('/api/store/pizza-party-bookings', async (req, res, next) => {
+  try {
+    await pizzaPartyBookingsHandler(req, res);
+  } catch (err) {
+    logger.error({ err, method: req.method }, 'pizza-party bookings handler failed');
+    next(err);
+  }
+});
+
+app.all('/api/store/products', async (req, res, next) => {
+  try {
+    await storeProductsHandler(req, res);
+  } catch (err) {
+    logger.error({ err, method: req.method }, 'store products handler failed');
+    next(err);
+  }
+});
+
+const handleCrowdfundingSummary = async (req, res) => {
   try {
     const data = await getCrowdfundingSummary({ db });
     res.set('Cache-Control', 'no-store');
@@ -381,21 +471,29 @@ app.get('/api/crowdfunding/summary', async (req, res) => {
     }
     return res.status(500).json({ ok: false, error: 'internal-error' });
   }
-});
+};
+
+app.get('/api/crowdfunding/summary', handleCrowdfundingSummary);
+app.get('/api/crowdfund/summary', handleCrowdfundingSummary);
+
 app.get('/api/feedback', async (req, res) => {
   try {
     const sinceRaw = Array.isArray(req.query.since) ? req.query.since[0] : req.query.since;
     const limitRaw = Array.isArray(req.query.limit) ? req.query.limit[0] : req.query.limit;
-    const items = await listFeedback({
-      since: sinceRaw ?? undefined,
-      limit: limitRaw ? Number(limitRaw) : undefined,
-    }, { db });
+    const items = await listFeedback(
+      {
+        since: sinceRaw ?? undefined,
+        limit: limitRaw ? Number(limitRaw) : undefined,
+      },
+      { db },
+    );
     res.json({ ok: true, items });
   } catch (err) {
     if (logger?.error) logger.error({ err }, 'feedback list error');
     res.status(500).json({ ok: false, error: 'internal-error' });
   }
 });
+
 app.post('/api/feedback', async (req, res) => {
   try {
     const result = await createFeedback(req.body ?? {}, { db });
@@ -409,6 +507,7 @@ app.post('/api/feedback', async (req, res) => {
     res.status(500).json({ ok: false, error: 'internal-error' });
   }
 });
+
 app.use('/api', createMessagesRouter({ logger, brevoService, getSanityClient, db }));
 
 // Diagnostic endpoint (safe): reports whether required env vars are present
@@ -1496,3 +1595,4 @@ if (sentryEnabled) {
 const createApiApp = () => app;
 
 module.exports = { createApiApp };
+

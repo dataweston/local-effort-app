@@ -73,10 +73,11 @@ being recorded correctly.
   pizza count and distinct backer total, and setting a fresh `updatedAt`
   timestamp. 【F:api/square/webhook.ts†L120-L130】
 
-## Crowdfunding summary API (`/api/crowdfunding/summary`)
+## Crowdfunding summary API (`/api/crowdfund/summary`)
 
 * Returns the sanitized contents of `aggregates/crowdfunding`, falling back to
-  zero totals when the document is missing. 【F:api/crowdfunding/summary.ts†L1-L51】
+  zero totals when the document is missing. The React app now calls `/api/crowdfund/summary`
+  first, with `/api/crowdfunding/summary` kept as a read-only alias for older clients. 【F:api/crowdfunding/summary.ts†L1-L51】
 * Disables caching so the crowdfunding page always renders the most recent
   numbers. 【F:api/crowdfunding/summary.ts†L39-L45】
 
@@ -86,7 +87,8 @@ being recorded correctly.
   pizza count stored at `crowdfund/status`, appending the supporter name for the
   marquee ticker. 【F:backend/api/routes/crowdfunding.js†L88-L141】
 * The same document is surfaced through the serverless version at
-  `/api/crowdfund/status`. 【F:api/crowdfund/status.js†L1-L33】
+  `/api/crowdfund/status`.
+* These legacy endpoints are kept for the marquee ticker; aggregate totals shown on the crowdfunding page now come from `/api/crowdfund/summary`. 【F:api/crowdfund/status.js†L1-L33】
 
 Between these endpoints and documents you can trace every sale from the Square
 webhook all the way to the numbers displayed on the crowdfunding landing page.

@@ -1,0 +1,854 @@
+[2025-10-05T19:01:55.247960800+00:00] startup: base_url=https://chatgpt.com/backend-api path_style=wham
+[2025-10-05T19:01:55.249645500+00:00] auth: mode=ChatGPT account_id=87fcb38e-3ef1-4e7a-8446-5be80cd31baa
+[2025-10-05T19:01:55.250155700+00:00] auth: set ChatGPT-Account-Id header: 87fcb38e-3ef1-4e7a-8446-5be80cd31baa
+[2025-10-05T19:01:55.251922300+00:00] startup: wham_force_internal=false ua=codex_vscode/0.44.0 (Windows 10.0.26100; x86_64) unknown (codex_cloud_tasks_tui)
+[2025-10-05T19:01:55.338676200+00:00] env: parsed HTTP GitHub origin => dataweston/local-effort-app
+[2025-10-05T19:01:55.345137100+00:00] env: git origins: ["https://github.com/dataweston/local-effort-app.git", "https://github.com/dataweston/local-office.git"]
+[2025-10-05T19:01:55.349959300+00:00] env: parsed HTTP GitHub origin => dataweston/local-effort-app
+[2025-10-05T19:01:55.350531200+00:00] env: GET https://chatgpt.com/backend-api/wham/environments/by-repo/github/dataweston/local-effort-app
+[2025-10-05T19:01:56.056800600+00:00] http.list_tasks: env=<all> items=20
+[2025-10-05T19:01:56.057605100+00:00] refresh.apply: env=<all> count=5
+[2025-10-05T19:01:56.666233+00:00] env: status=200 OK content-type=application/json
+[2025-10-05T19:01:56.666797+00:00] env: by-repo returned 1 env(s) for dataweston/local-effort-app
+[2025-10-05T19:01:56.667320+00:00] env: parsed HTTP GitHub origin => dataweston/local-office
+[2025-10-05T19:01:56.667882300+00:00] env: GET https://chatgpt.com/backend-api/wham/environments/by-repo/github/dataweston/local-office
+[2025-10-05T19:01:56.748941+00:00] env: status=200 OK content-type=application/json
+[2025-10-05T19:01:56.749575900+00:00] env: parsed HTTP GitHub origin => dataweston/local-office
+[2025-10-05T19:01:57.535895600+00:00] env: status=200 OK content-type=application/json
+[2025-10-05T19:01:57.536610+00:00] env: by-repo returned 0 env(s) for dataweston/local-office
+[2025-10-05T19:01:57.537154500+00:00] env: single environment available; selecting it
+[2025-10-05T19:01:57.537757300+00:00] env.select: autodetected id=68d041a2e664819191052c7fd074f1e7 label=dataweston/local-effort-app
+[2025-10-05T19:01:57.613345900+00:00] env: parsed HTTP GitHub origin => dataweston/local-effort-app
+[2025-10-05T19:01:57.726733700+00:00] env: status=200 OK content-type=application/json
+[2025-10-05T19:01:58.075168500+00:00] http.list_tasks: env=68d041a2e664819191052c7fd074f1e7 items=20
+[2025-10-05T19:01:58.081273500+00:00] refresh.apply: env=68d041a2e664819191052c7fd074f1e7 count=5
+[2025-10-05T19:01:58.429246200+00:00] env: status=200 OK content-type=application/json
+[2025-10-05T19:01:58.442101700+00:00] env: status=200 OK content-type=application/json
+[2025-10-05T19:01:58.443728300+00:00] env: parsed HTTP GitHub origin => dataweston/local-office
+[2025-10-05T19:02:01.177465700+00:00] env: status=200 OK content-type=application/json
+[2025-10-05T19:02:02.004998400+00:00] env: status=200 OK content-type=application/json
+[2025-10-05T19:09:16.459666200+00:00] startup: base_url=https://chatgpt.com/backend-api path_style=wham
+[2025-10-05T19:09:16.460976200+00:00] auth: mode=ChatGPT account_id=87fcb38e-3ef1-4e7a-8446-5be80cd31baa
+[2025-10-05T19:09:16.462105900+00:00] auth: set ChatGPT-Account-Id header: 87fcb38e-3ef1-4e7a-8446-5be80cd31baa
+[2025-10-05T19:09:16.466252800+00:00] startup: wham_force_internal=false ua=codex_vscode/0.44.0 (Windows 10.0.26100; x86_64) unknown (codex_cloud_tasks_tui)
+[2025-10-05T19:09:16.574780700+00:00] env: git origins: ["https://github.com/dataweston/local-effort-app.git", "https://github.com/dataweston/local-office.git"]
+[2025-10-05T19:09:16.575348300+00:00] env: parsed HTTP GitHub origin => dataweston/local-effort-app
+[2025-10-05T19:09:16.575945100+00:00] env: GET https://chatgpt.com/backend-api/wham/environments/by-repo/github/dataweston/local-effort-app
+[2025-10-05T19:09:16.581008900+00:00] env: parsed HTTP GitHub origin => dataweston/local-effort-app
+[2025-10-05T19:09:21.471085600+00:00] refresh load_tasks failed: deadline has elapsed
+[2025-10-05T19:09:32.065805500+00:00] env: by-repo fetch failed for dataweston/local-effort-app: error sending request for url (https://chatgpt.com/backend-api/wham/environments/by-repo/github/dataweston/local-effort-app)
+[2025-10-05T19:09:32.066372500+00:00] env: parsed HTTP GitHub origin => dataweston/local-office
+[2025-10-05T19:09:32.066888800+00:00] env: GET https://chatgpt.com/backend-api/wham/environments/by-repo/github/dataweston/local-office
+[2025-10-05T19:09:32.073160300+00:00] env: parsed HTTP GitHub origin => dataweston/local-office
+[2025-10-05T19:09:51.400516200+00:00] env: by-repo fetch failed for dataweston/local-office: error sending request for url (https://chatgpt.com/backend-api/wham/environments/by-repo/github/dataweston/local-office)
+[2025-10-05T19:09:51.400967+00:00] env: GET https://chatgpt.com/backend-api/wham/environments
+[2025-10-05T19:10:10.771084300+00:00] env: status=200 OK content-type=application/json
+[2025-10-05T19:10:10.779509800+00:00] env: status=200 OK content-type=application/json
+[2025-10-05T19:10:10.781888800+00:00] env: /environments JSON (pretty):
+[
+  {
+    "id": "68e2a90b64788191b2196d1e91c9b345",
+    "machine_id": "wham-public/wham-universal",
+    "label": "dataweston/AACRM",
+    "is_pinned": false,
+    "description": "",
+    "workspace_dir": "/workspace",
+    "agent_network_access": {
+      "mode": "on",
+      "preset_allowlist": "codex",
+      "allowlist_domains": null,
+      "safe_methods_only": null
+    },
+    "repos": [
+      "github-1070309023"
+    ],
+    "setup": "",
+    "maintenance_setup": "",
+    "repo_map": {
+      "github-1070309023": {
+        "id": "1070309023",
+        "name": "AACRM",
+        "owner": {
+          "login": "dataweston",
+          "id": 98360199,
+          "type": "User",
+          "avatar_url": "https://avatars.githubusercontent.com/u/98360199?v=4",
+          "url": "https://api.github.com/users/dataweston"
+        },
+        "repository_full_name": "dataweston/AACRM",
+        "clone_url": "https://github.com/dataweston/AACRM.git",
+        "default_branch": "main",
+        "git_commits_url": "https://api.github.com/repos/dataweston/AACRM/git/commits{/sha}",
+        "git_refs_url": "https://api.github.com/repos/dataweston/AACRM/git/refs{/sha}",
+        "git_url": "git://github.com/dataweston/AACRM.git",
+        "visibility": "public",
+        "allow_auto_merge": false,
+        "allow_merge_commit": true,
+        "allow_rebase_merge": true,
+        "allow_squash_merge": true,
+        "allow_update_branch": false,
+        "language": null,
+        "size": 0,
+        "master_branch": null,
+        "permissions": {
+          "admin": true,
+          "push": true,
+          "pull": true
+        }
+      }
+    },
+    "env_vars": {
+      "CODEX_ENV_PYTHON_VERSION": "3.12",
+      "CODEX_ENV_NODE_VERSION": "20",
+      "CODEX_ENV_RUBY_VERSION": "3.4.4",
+      "CODEX_ENV_RUST_VERSION": "1.89.0",
+      "CODEX_ENV_GO_VERSION": "1.24.3",
+      "CODEX_ENV_BUN_VERSION": "1.2.14",
+      "CODEX_ENV_PHP_VERSION": "8.4",
+      "CODEX_ENV_JAVA_VERSION": "21",
+      "CODEX_ENV_SWIFT_VERSION": "6.1"
+    },
+    "secrets": {},
+    "task_count": 3,
+    "creator_id": "user-4vB85VVuNeTnGB4ecFuBGlxR",
+    "share_settings": "workspace",
+    "share_targets": [],
+    "permissions": {
+      "can_write": true,
+      "can_delete": true
+    },
+    "created_at": 1759684875.393214,
+    "auto_setup_settings": {
+      "use_auto_setup": true
+    },
+    "cache_settings": {
+      "post_setup_cache_enabled": true,
+      "cache_invalidation_key": ""
+    },
+    "etag": "\"ee0181f2-0000-0200-0000-68e2b7a30000\""
+  },
+  {
+    "id": "68d041a2e664819191052c7fd074f1e7",
+    "machine_id": "wham-public/wham-universal",
+    "label": "dataweston/local-effort-app",
+    "is_pinned": false,
+    "description": "",
+    "workspace_dir": "/workspace",
+    "agent_network_access": {
+      "mode": "on",
+      "preset_allowlist": "codex",
+      "allowlist_domains": "",
+      "safe_methods_only": null
+    },
+    "repos": [
+      "github-1037575619"
+    ],
+    "setup": "",
+    "maintenance_setup": "",
+    "repo_map": {
+      "github-1037575619": {
+        "id": "1037575619",
+        "name": "local-effort-app",
+        "owner": {
+          "login": "dataweston",
+          "id": 98360199,
+          "type": "User",
+          "avatar_url": "https://avatars.githubusercontent.com/u/98360199?v=4",
+          "url": "https://api.github.com/users/dataweston"
+        },
+        "repository_full_name": "dataweston/local-effort-app",
+        "clone_url": "https://github.com/dataweston/local-effort-app.git",
+        "default_branch": "main",
+        "git_commits_url": "https://api.github.com/repos/dataweston/local-effort-app/git/commits{/sha}",
+        "git_refs_url": "https://api.github.com/repos/dataweston/local-effort-app/git/refs{/sha}",
+        "git_url": "git://github.com/dataweston/local-effort-app.git",
+        "visibility": "public",
+        "allow_auto_merge": false,
+        "allow_merge_commit": true,
+        "allow_rebase_merge": true,
+        "allow_squash_merge": true,
+        "allow_update_branch": false,
+        "language": null,
+        "size": 252709,
+        "master_branch": null,
+        "permissions": {
+          "admin": true,
+          "push": true,
+          "pull": true
+        }
+      }
+    },
+    "env_vars": {},
+    "secrets": {},
+    "task_count": 171,
+    "creator_id": "user-4vB85VVuNeTnGB4ecFuBGlxR",
+    "share_settings": "workspace",
+    "share_targets": [],
+    "permissions": {
+      "can_write": true,
+      "can_delete": true
+    },
+    "created_at": 1758478754.900141,
+    "auto_setup_settings": {
+      "use_auto_setup": true
+    },
+    "cache_settings": {
+      "post_setup_cache_enabled": true,
+      "cache_invalidation_key": ""
+    },
+    "etag": "\"7c025094-0000-0200-0000-68e2b6370000\""
+  },
+  {
+    "id": "68db2725a2008191ad1cd51a238b3fc7",
+    "machine_id": "wham-public/wham-universal",
+    "label": "dataweston/nextjs-ai-chatbot-with-twilio-segment",
+    "is_pinned": false,
+    "description": "",
+    "workspace_dir": "/workspace",
+    "agent_network_access": {
+      "mode": "on",
+      "preset_allowlist": "codex",
+      "allowlist_domains": null,
+      "safe_methods_only": null
+    },
+    "repos": [
+      "github-1030552345"
+    ],
+    "setup": "",
+    "maintenance_setup": "",
+    "repo_map": {
+      "github-1030552345": {
+        "id": "1030552345",
+        "name": "nextjs-ai-chatbot-with-twilio-segment",
+        "owner": {
+          "login": "dataweston",
+          "id": 98360199,
+          "type": "User",
+          "avatar_url": "https://avatars.githubusercontent.com/u/98360199?v=4",
+          "url": "https://api.github.com/users/dataweston"
+        },
+        "repository_full_name": "dataweston/nextjs-ai-chatbot-with-twilio-segment",
+        "clone_url": "https://github.com/dataweston/nextjs-ai-chatbot-with-twilio-segment.git",
+        "default_branch": "main",
+        "git_commits_url": "https://api.github.com/repos/dataweston/nextjs-ai-chatbot-with-twilio-segment/git/commits{/sha}",
+        "git_refs_url": "https://api.github.com/repos/dataweston/nextjs-ai-chatbot-with-twilio-segment/git/refs{/sha}",
+        "git_url": "git://github.com/dataweston/nextjs-ai-chatbot-with-twilio-segment.git",
+        "visibility": "private",
+        "allow_auto_merge": false,
+        "allow_merge_commit": true,
+        "allow_rebase_merge": true,
+        "allow_squash_merge": true,
+        "allow_update_branch": false,
+        "language": null,
+        "size": 799,
+        "master_branch": null,
+        "permissions": {
+          "admin": true,
+          "push": true,
+          "pull": true
+        }
+      }
+    },
+    "env_vars": {
+      "CODEX_ENV_PYTHON_VERSION": "3.12",
+      "CODEX_ENV_NODE_VERSION": "20",
+      "CODEX_ENV_RUBY_VERSION": "3.4.4",
+      "CODEX_ENV_RUST_VERSION": "1.89.0",
+      "CODEX_ENV_GO_VERSION": "1.24.3",
+      "CODEX_ENV_BUN_VERSION": "1.2.14",
+      "CODEX_ENV_PHP_VERSION": "8.4",
+      "CODEX_ENV_JAVA_VERSION": "21",
+      "CODEX_ENV_SWIFT_VERSION": "6.1"
+    },
+    "secrets": {},
+    "task_count": 21,
+    "creator_id": "user-4vB85VVuNeTnGB4ecFuBGlxR",
+    "share_settings": "workspace",
+    "share_targets": [],
+    "permissions": {
+      "can_write": true,
+      "can_delete": true
+    },
+    "created_at": 1759192869.63348,
+    "auto_setup_settings": {
+      "use_auto_setup": true
+    },
+    "cache_settings": {
+      "post_setup_cache_enabled": true,
+      "cache_invalidation_key": ""
+    },
+    "etag": "\"390779d4-0000-0200-0000-68e2b6660000\""
+  },
+  {
+    "id": "68dd532155648191804e2d740f222753",
+    "machine_id": "wham-public/wham-universal",
+    "label": "dataweston/vercelmigration",
+    "is_pinned": false,
+    "description": "",
+    "workspace_dir": "/workspace",
+    "agent_network_access": {
+      "mode": "on",
+      "preset_allowlist": "codex",
+      "allowlist_domains": null,
+      "safe_methods_only": null
+    },
+    "repos": [
+      "github-1067948342"
+    ],
+    "setup": "",
+    "maintenance_setup": "",
+    "repo_map": {
+      "github-1067948342": {
+        "id": "1067948342",
+        "name": "vercelmigration",
+        "owner": {
+          "login": "dataweston",
+          "id": 98360199,
+          "type": "User",
+          "avatar_url": "https://avatars.githubusercontent.com/u/98360199?v=4",
+          "url": "https://api.github.com/users/dataweston"
+        },
+        "repository_full_name": "dataweston/vercelmigration",
+        "clone_url": "https://github.com/dataweston/vercelmigration.git",
+        "default_branch": "main",
+        "git_commits_url": "https://api.github.com/repos/dataweston/vercelmigration/git/commits{/sha}",
+        "git_refs_url": "https://api.github.com/repos/dataweston/vercelmigration/git/refs{/sha}",
+        "git_url": "git://github.com/dataweston/vercelmigration.git",
+        "visibility": "public",
+        "allow_auto_merge": false,
+        "allow_merge_commit": true,
+        "allow_rebase_merge": true,
+        "allow_squash_merge": true,
+        "allow_update_branch": false,
+        "language": null,
+        "size": 0,
+        "master_branch": null,
+        "permissions": {
+          "admin": true,
+          "push": true,
+          "pull": true
+        }
+      }
+    },
+    "env_vars": {
+      "CODEX_ENV_PYTHON_VERSION": "3.12",
+      "CODEX_ENV_NODE_VERSION": "20",
+      "CODEX_ENV_RUBY_VERSION": "3.4.4",
+      "CODEX_ENV_RUST_VERSION": "1.89.0",
+      "CODEX_ENV_GO_VERSION": "1.24.3",
+      "CODEX_ENV_BUN_VERSION": "1.2.14",
+      "CODEX_ENV_PHP_VERSION": "8.4",
+      "CODEX_ENV_JAVA_VERSION": "21",
+      "CODEX_ENV_SWIFT_VERSION": "6.1"
+    },
+    "secrets": {},
+    "task_count": 23,
+    "creator_id": "user-4vB85VVuNeTnGB4ecFuBGlxR",
+    "share_settings": "workspace",
+    "share_targets": [],
+    "permissions": {
+      "can_write": true,
+      "can_delete": true
+    },
+    "created_at": 1759335201.334392,
+    "auto_setup_settings": {
+      "use_auto_setup": true
+    },
+    "cache_settings": {
+      "post_setup_cache_enabled": true,
+      "cache_invalidation_key": ""
+    },
+    "etag": "\"2c019980-0000-0200-0000-68dee4680000\""
+  },
+  {
+    "id": "68dd6e63605c81919cda70a60b205a17",
+    "machine_id": "wham-public/wham-universal",
+    "label": "dataweston/le-macro",
+    "is_pinned": false,
+    "description": "",
+    "workspace_dir": "/workspace",
+    "agent_network_access": {
+      "mode": "on",
+      "preset_allowlist": "codex",
+      "allowlist_domains": null,
+      "safe_methods_only": null
+    },
+    "repos": [
+      "github-1068011217"
+    ],
+    "setup": "",
+    "maintenance_setup": "",
+    "repo_map": {
+      "github-1068011217": {
+        "id": "1068011217",
+        "name": "le-macro",
+        "owner": {
+          "login": "dataweston",
+          "id": 98360199,
+          "type": "User",
+          "avatar_url": "https://avatars.githubusercontent.com/u/98360199?v=4",
+          "url": "https://api.github.com/users/dataweston"
+        },
+        "repository_full_name": "dataweston/le-macro",
+        "clone_url": "https://github.com/dataweston/le-macro.git",
+        "default_branch": "main",
+        "git_commits_url": "https://api.github.com/repos/dataweston/le-macro/git/commits{/sha}",
+        "git_refs_url": "https://api.github.com/repos/dataweston/le-macro/git/refs{/sha}",
+        "git_url": "git://github.com/dataweston/le-macro.git",
+        "visibility": "public",
+        "allow_auto_merge": false,
+        "allow_merge_commit": true,
+        "allow_rebase_merge": true,
+        "allow_squash_merge": true,
+        "allow_update_branch": false,
+        "language": null,
+        "size": 0,
+        "master_branch": null,
+        "permissions": {
+          "admin": true,
+          "push": true,
+          "pull": true
+        }
+      }
+    },
+    "env_vars": {
+      "CODEX_ENV_PYTHON_VERSION": "3.12",
+      "CODEX_ENV_NODE_VERSION": "20",
+      "CODEX_ENV_RUBY_VERSION": "3.4.4",
+      "CODEX_ENV_RUST_VERSION": "1.89.0",
+      "CODEX_ENV_GO_VERSION": "1.24.3",
+      "CODEX_ENV_BUN_VERSION": "1.2.14",
+      "CODEX_ENV_PHP_VERSION": "8.4",
+      "CODEX_ENV_JAVA_VERSION": "21",
+      "CODEX_ENV_SWIFT_VERSION": "6.1"
+    },
+    "secrets": {},
+    "task_count": 3,
+    "creator_id": "user-4vB85VVuNeTnGB4ecFuBGlxR",
+    "share_settings": "workspace",
+    "share_targets": [],
+    "permissions": {
+      "can_write": true,
+      "can_delete": true
+    },
+    "created_at": 1759342179.376786,
+    "auto_setup_settings": {
+      "use_auto_setup": true
+    },
+    "cache_settings": {
+      "post_setup_cache_enabled": true,
+      "cache_invalidation_key": ""
+    },
+    "etag": "\"4901bded-0000-0200-0000-68de9a580000\""
+  },
+  {
+    "id": "68d4ad5b75e881919ab3f5f392872578",
+    "machine_id": "wham-public/wham-universal",
+    "label": "dataweston/tiny-weddings",
+    "is_pinned": false,
+    "description": "",
+    "workspace_dir": "/workspace",
+    "agent_network_access": {
+      "mode": "on",
+      "preset_allowlist": "codex",
+      "allowlist_domains": null,
+      "safe_methods_only": null
+    },
+    "repos": [
+      "github-1063637740"
+    ],
+    "setup": "",
+    "maintenance_setup": "",
+    "repo_map": {
+      "github-1063637740": {
+        "id": "1063637740",
+        "name": "tiny-weddings",
+        "owner": {
+          "login": "dataweston",
+          "id": 98360199,
+          "type": "User",
+          "avatar_url": "https://avatars.githubusercontent.com/u/98360199?v=4",
+          "url": "https://api.github.com/users/dataweston"
+        },
+        "repository_full_name": "dataweston/tiny-weddings",
+        "clone_url": "https://github.com/dataweston/tiny-weddings.git",
+        "default_branch": "main",
+        "git_commits_url": "https://api.github.com/repos/dataweston/tiny-weddings/git/commits{/sha}",
+        "git_refs_url": "https://api.github.com/repos/dataweston/tiny-weddings/git/refs{/sha}",
+        "git_url": "git://github.com/dataweston/tiny-weddings.git",
+        "visibility": "public",
+        "allow_auto_merge": false,
+        "allow_merge_commit": true,
+        "allow_rebase_merge": true,
+        "allow_squash_merge": true,
+        "allow_update_branch": false,
+        "language": null,
+        "size": 107,
+        "master_branch": null,
+        "permissions": {
+          "admin": true,
+          "push": true,
+          "pull": true
+        }
+      }
+    },
+    "env_vars": {
+      "CODEX_ENV_PYTHON_VERSION": "3.12",
+      "CODEX_ENV_NODE_VERSION": "20",
+      "CODEX_ENV_RUBY_VERSION": "3.4.4",
+      "CODEX_ENV_RUST_VERSION": "1.89.0",
+      "CODEX_ENV_GO_VERSION": "1.24.3",
+      "CODEX_ENV_BUN_VERSION": "1.2.14",
+      "CODEX_ENV_PHP_VERSION": "8.4",
+      "CODEX_ENV_JAVA_VERSION": "21",
+      "CODEX_ENV_SWIFT_VERSION": "6.1"
+    },
+    "secrets": {},
+    "task_count": 14,
+    "creator_id": "user-4vB85VVuNeTnGB4ecFuBGlxR",
+    "share_settings": "workspace",
+    "share_targets": [],
+    "permissions": {
+      "can_write": true,
+      "can_delete": true
+    },
+    "created_at": 1758768475.461451,
+    "auto_setup_settings": {
+      "use_auto_setup": true
+    },
+    "cache_settings": {
+      "post_setup_cache_enabled": true,
+      "cache_invalidation_key": ""
+    },
+    "etag": "\"67001701-0000-0200-0000-68dbe3340000\""
+  },
+  {
+    "id": "68dbe195225081918266825c7515eb92",
+    "machine_id": "wham-public/wham-universal",
+    "label": "dataweston/nft",
+    "is_pinned": false,
+    "description": "",
+    "workspace_dir": "/workspace",
+    "agent_network_access": {
+      "mode": "on",
+      "preset_allowlist": "codex",
+      "allowlist_domains": null,
+      "safe_methods_only": null
+    },
+    "repos": [
+      "github-1067174194"
+    ],
+    "setup": "",
+    "maintenance_setup": "",
+    "repo_map": {
+      "github-1067174194": {
+        "id": "1067174194",
+        "name": "nft",
+        "owner": {
+          "login": "dataweston",
+          "id": 98360199,
+          "type": "User",
+          "avatar_url": "https://avatars.githubusercontent.com/u/98360199?v=4",
+          "url": "https://api.github.com/users/dataweston"
+        },
+        "repository_full_name": "dataweston/nft",
+        "clone_url": "https://github.com/dataweston/nft.git",
+        "default_branch": "main",
+        "git_commits_url": "https://api.github.com/repos/dataweston/nft/git/commits{/sha}",
+        "git_refs_url": "https://api.github.com/repos/dataweston/nft/git/refs{/sha}",
+        "git_url": "git://github.com/dataweston/nft.git",
+        "visibility": "public",
+        "allow_auto_merge": false,
+        "allow_merge_commit": true,
+        "allow_rebase_merge": true,
+        "allow_squash_merge": true,
+        "allow_update_branch": false,
+        "language": null,
+        "size": 0,
+        "master_branch": null,
+        "permissions": {
+          "admin": true,
+          "push": true,
+          "pull": true
+        }
+      }
+    },
+    "env_vars": {
+      "CODEX_ENV_PYTHON_VERSION": "3.12",
+      "CODEX_ENV_NODE_VERSION": "20",
+      "CODEX_ENV_RUBY_VERSION": "3.4.4",
+      "CODEX_ENV_RUST_VERSION": "1.89.0",
+      "CODEX_ENV_GO_VERSION": "1.24.3",
+      "CODEX_ENV_BUN_VERSION": "1.2.14",
+      "CODEX_ENV_PHP_VERSION": "8.4",
+      "CODEX_ENV_JAVA_VERSION": "21",
+      "CODEX_ENV_SWIFT_VERSION": "6.1"
+    },
+    "secrets": {},
+    "task_count": 1,
+    "creator_id": "user-4vB85VVuNeTnGB4ecFuBGlxR",
+    "share_settings": "workspace",
+    "share_targets": [],
+    "permissions": {
+      "can_write": true,
+      "can_delete": true
+    },
+    "created_at": 1759240597.134455,
+    "auto_setup_settings": {
+      "use_auto_setup": true
+    },
+    "cache_settings": {
+      "post_setup_cache_enabled": true,
+      "cache_invalidation_key": ""
+    },
+    "etag": "\"84005f3b-0000-0200-0000-68dbe1ef0000\""
+  },
+  {
+    "id": "68db3c75a850819194b4ad1b04b27c91",
+    "machine_id": "wham-public/wham-universal",
+    "label": "dataweston/ai-sdk-rag",
+    "is_pinned": false,
+    "description": "",
+    "workspace_dir": "/workspace",
+    "agent_network_access": {
+      "mode": "on",
+      "preset_allowlist": "codex",
+      "allowlist_domains": null,
+      "safe_methods_only": null
+    },
+    "repos": [
+      "github-1030552038"
+    ],
+    "setup": "",
+    "maintenance_setup": "",
+    "repo_map": {
+      "github-1030552038": {
+        "id": "1030552038",
+        "name": "ai-sdk-rag",
+        "owner": {
+          "login": "dataweston",
+          "id": 98360199,
+          "type": "User",
+          "avatar_url": "https://avatars.githubusercontent.com/u/98360199?v=4",
+          "url": "https://api.github.com/users/dataweston"
+        },
+        "repository_full_name": "dataweston/ai-sdk-rag",
+        "clone_url": "https://github.com/dataweston/ai-sdk-rag.git",
+        "default_branch": "main",
+        "git_commits_url": "https://api.github.com/repos/dataweston/ai-sdk-rag/git/commits{/sha}",
+        "git_refs_url": "https://api.github.com/repos/dataweston/ai-sdk-rag/git/refs{/sha}",
+        "git_url": "git://github.com/dataweston/ai-sdk-rag.git",
+        "visibility": "private",
+        "allow_auto_merge": false,
+        "allow_merge_commit": true,
+        "allow_rebase_merge": true,
+        "allow_squash_merge": true,
+        "allow_update_branch": false,
+        "language": null,
+        "size": 184,
+        "master_branch": null,
+        "permissions": {
+          "admin": true,
+          "push": true,
+          "pull": true
+        }
+      }
+    },
+    "env_vars": {
+      "CODEX_ENV_PYTHON_VERSION": "3.12",
+      "CODEX_ENV_NODE_VERSION": "20",
+      "CODEX_ENV_RUBY_VERSION": "3.4.4",
+      "CODEX_ENV_RUST_VERSION": "1.89.0",
+      "CODEX_ENV_GO_VERSION": "1.24.3",
+      "CODEX_ENV_BUN_VERSION": "1.2.14",
+      "CODEX_ENV_PHP_VERSION": "8.4",
+      "CODEX_ENV_JAVA_VERSION": "21",
+      "CODEX_ENV_SWIFT_VERSION": "6.1"
+    },
+    "secrets": {},
+    "task_count": 7,
+    "creator_id": "user-4vB85VVuNeTnGB4ecFuBGlxR",
+    "share_settings": "workspace",
+    "share_targets": [],
+    "permissions": {
+      "can_write": true,
+      "can_delete": true
+    },
+    "created_at": 1759198325.658263,
+    "auto_setup_settings": {
+      "use_auto_setup": true
+    },
+    "cache_settings": {
+      "post_setup_cache_enabled": true,
+      "cache_invalidation_key": ""
+    },
+    "etag": "\"2701e64b-0000-0200-0000-68db765f0000\""
+  },
+  {
+    "id": "68d4a4193e9881919d5721d69bf9f5de",
+    "machine_id": "wham-public/wham-universal",
+    "label": "dataweston/tiny-wedding",
+    "is_pinned": false,
+    "description": "",
+    "workspace_dir": "/workspace",
+    "agent_network_access": {
+      "mode": "off",
+      "preset_allowlist": null,
+      "allowlist_domains": null,
+      "safe_methods_only": null
+    },
+    "repos": [
+      "github-1063630337"
+    ],
+    "setup": "",
+    "maintenance_setup": "",
+    "repo_map": {
+      "github-1063630337": {
+        "id": "1063630337",
+        "name": "tiny-wedding",
+        "owner": {
+          "login": "dataweston",
+          "id": 98360199,
+          "type": "User",
+          "avatar_url": "https://avatars.githubusercontent.com/u/98360199?v=4",
+          "url": "https://api.github.com/users/dataweston"
+        },
+        "repository_full_name": "dataweston/tiny-wedding",
+        "clone_url": "https://github.com/dataweston/tiny-wedding.git",
+        "default_branch": "main",
+        "git_commits_url": "https://api.github.com/repos/dataweston/tiny-wedding/git/commits{/sha}",
+        "git_refs_url": "https://api.github.com/repos/dataweston/tiny-wedding/git/refs{/sha}",
+        "git_url": "git://github.com/dataweston/tiny-wedding.git",
+        "visibility": "public",
+        "allow_auto_merge": false,
+        "allow_merge_commit": true,
+        "allow_rebase_merge": true,
+        "allow_squash_merge": true,
+        "allow_update_branch": false,
+        "language": null,
+        "size": 3,
+        "master_branch": null,
+        "permissions": {
+          "admin": true,
+          "push": true,
+          "pull": true
+        }
+      }
+    },
+    "env_vars": {
+      "CODEX_ENV_PYTHON_VERSION": "3.12",
+      "CODEX_ENV_NODE_VERSION": "20",
+      "CODEX_ENV_RUBY_VERSION": "3.4.4",
+      "CODEX_ENV_RUST_VERSION": "1.89.0",
+      "CODEX_ENV_GO_VERSION": "1.24.3",
+      "CODEX_ENV_BUN_VERSION": "1.2.14",
+      "CODEX_ENV_PHP_VERSION": "8.4",
+      "CODEX_ENV_JAVA_VERSION": "21",
+      "CODEX_ENV_SWIFT_VERSION": "6.1"
+    },
+    "secrets": {},
+    "task_count": 1,
+    "creator_id": "user-4vB85VVuNeTnGB4ecFuBGlxR",
+    "share_settings": "workspace",
+    "share_targets": [],
+    "permissions": {
+      "can_write": true,
+      "can_delete": true
+    },
+    "created_at": 1758766105.245223,
+    "auto_setup_settings": {
+      "use_auto_setup": true
+    },
+    "cache_settings": {
+      "post_setup_cache_enabled": true,
+      "cache_invalidation_key": ""
+    },
+    "etag": "\"d10164c2-0000-0200-0000-68d4a4200000\""
+  },
+  {
+    "id": "68d44344a3f48191a5d9581845148b7f",
+    "machine_id": "wham-public/wham-universal",
+    "label": "dataweston/tiny-diner-weddings",
+    "is_pinned": false,
+    "description": "",
+    "workspace_dir": "/workspace",
+    "agent_network_access": {
+      "mode": "on",
+      "preset_allowlist": "codex",
+      "allowlist_domains": null,
+      "safe_methods_only": null
+    },
+    "repos": [
+      "github-1062931964"
+    ],
+    "setup": "",
+    "maintenance_setup": "",
+    "repo_map": {
+      "github-1062931964": {
+        "id": "1062931964",
+        "name": "tiny-diner-weddings",
+        "owner": {
+          "login": "dataweston",
+          "id": 98360199,
+          "type": "User",
+          "avatar_url": "https://avatars.githubusercontent.com/u/98360199?v=4",
+          "url": "https://api.github.com/users/dataweston"
+        },
+        "repository_full_name": "dataweston/tiny-diner-weddings",
+        "clone_url": "https://github.com/dataweston/tiny-diner-weddings.git",
+        "default_branch": "main",
+        "git_commits_url": "https://api.github.com/repos/dataweston/tiny-diner-weddings/git/commits{/sha}",
+        "git_refs_url": "https://api.github.com/repos/dataweston/tiny-diner-weddings/git/refs{/sha}",
+        "git_url": "git://github.com/dataweston/tiny-diner-weddings.git",
+        "visibility": "public",
+        "allow_auto_merge": false,
+        "allow_merge_commit": true,
+        "allow_rebase_merge": true,
+        "allow_squash_merge": true,
+        "allow_update_branch": false,
+        "language": null,
+        "size": 123,
+        "master_branch": null,
+        "permissions": {
+          "admin": true,
+          "push": true,
+          "pull": true
+        }
+      }
+    },
+    "env_vars": {
+      "CODEX_ENV_PYTHON_VERSION": "3.12",
+      "CODEX_ENV_NODE_VERSION": "20",
+      "CODEX_ENV_RUBY_VERSION": "3.4.4",
+      "CODEX_ENV_RUST_VERSION": "1.89.0",
+      "CODEX_ENV_GO_VERSION": "1.24.3",
+      "CODEX_ENV_BUN_VERSION": "1.2.14",
+      "CODEX_ENV_PHP_VERSION": "8.4",
+      "CODEX_ENV_JAVA_VERSION": "21",
+      "CODEX_ENV_SWIFT_VERSION": "6.1"
+    },
+    "secrets": {},
+    "task_count": 4,
+    "creator_id": "user-4vB85VVuNeTnGB4ecFuBGlxR",
+    "share_settings": "workspace",
+    "share_targets": [],
+    "permissions": {
+      "can_write": true,
+      "can_delete": true
+    },
+    "created_at": 1758741316.640955,
+    "auto_setup_settings": {
+      "use_auto_setup": true
+    },
+    "cache_settings": {
+      "post_setup_cache_enabled": true,
+      "cache_invalidation_key": ""
+    },
+    "etag": "\"9e014908-0000-0200-0000-68d459240000\""
+  }
+]
+[2025-10-05T19:10:10.783651900+00:00] env: selecting by task_count/first: 68d041a2e664819191052c7fd074f1e7
+[2025-10-05T19:10:10.784657300+00:00] env.select: autodetected id=68d041a2e664819191052c7fd074f1e7 label=dataweston/local-effort-app
+[2025-10-05T19:10:10.945765200+00:00] env: parsed HTTP GitHub origin => dataweston/local-effort-app
+[2025-10-05T19:10:15.792085600+00:00] refresh load_tasks failed: deadline has elapsed
+[2025-10-05T19:10:30.740343600+00:00] env: parsed HTTP GitHub origin => dataweston/local-office
