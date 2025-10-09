@@ -23,6 +23,7 @@ import { createPortableTextComponents } from '../utils/portableTextComponents';
 import { cn } from '../lib/utils';
 import { useToast } from '../components/common/ToastProvider';
 import devConsole from '../lib/devConsole.js';
+import { watchCrowdfundingTotals, watchPizzaFeedback } from '../lib/firebaseCrowdfunding';
 
 const REALTIME_DATABASE_URL = 'https://local-effort-default-rtdb.firebaseio.com/';
 const FIREBASE_DATABASE_PATTERN = /firebase database/gi;
@@ -427,10 +428,13 @@ const CrowdfundingPage = () => {
   const [feedbackSubmitting, setFeedbackSubmitting] = useState(false);
   const [feedbackLoading, setFeedbackLoading] = useState(false);
   const [feedbackFetchError, setFeedbackFetchError] = useState('');
+  const [realtimeTotals, setRealtimeTotals] = useState(null);
+  const [feedbackRealtimeStatus, setFeedbackRealtimeStatus] = useState('idle'); // idle | connecting | ready | error | disabled
   // Gallery state (lazy-loaded when tab activated)
   const [galleryImages, setGalleryImages] = useState([]);
   const [galleryLoading, setGalleryLoading] = useState(false);
   const [galleryError, setGalleryError] = useState('');
+  const feedbackFallbackStatusRef = useRef(null);
   const galleryLoadedRef = useRef(false);
   const [eventModal, setEventModal] = useState(null);
 
@@ -445,7 +449,60 @@ const CrowdfundingPage = () => {
   const summaryPizzas = Number(summaryData?.pizzas);
   const summaryBackers = Number(summaryData?.backers);
   const summaryGoal = Number(summaryData?.goal);
-  const statusRefreshError = Boolean(summaryError);
+  const summaryTotalsAvailable =
+    !summaryError && Number.isFinite(summaryPizzas) && summaryPizzas >= 0;
+  const summaryBackersAvailable =
+    !summaryError && Number.isFinite(summaryBackers) && summaryBackers >= 0;
+  const livePizzas = Number.isFinite(Number(realtimeTotals?.pizzas))
+    ? Number(realtimeTotals.pizzas)
+    : null;
+  const liveBackers = Number.isFinite(Number(realtimeTotals?.backers))
+    ? Number(realtimeTotals.backers)
+    : null;
+  const liveGoal = Number.isFinite(Number(realtimeTotals?.goal))
+    ? Number(realtimeTotals.goal)
+    : null;
+
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return undefined;
+    }
+
+    let unsubscribe = null;
+    let active = true;
+
+    try {
+      const maybeUnsubscribe = watchCrowdfundingTotals({
+        onUpdate: (data) => {
+          if (!active) return;
+          setRealtimeTotals(data);
+        },
+        onError: (error) => {
+          if (!active) return;
+          if (error) {
+            devConsole.warn('[crowdfunding] realtime totals listener error', error);
+          }
+        },
+      });
+
+      if (typeof maybeUnsubscribe === 'function') {
+        unsubscribe = maybeUnsubscribe;
+      } else if (active) {
+        devConsole.warn('[crowdfunding] realtime totals disabled - missing client configuration?');
+      }
+    } catch (error) {
+      if (active) {
+        devConsole.warn('[crowdfunding] failed to start realtime totals listener', error);
+      }
+    }
+
+    return () => {
+      active = false;
+      if (typeof unsubscribe === 'function') {
+        unsubscribe();
+      }
+    };
+  }, []);
 
   useEffect(() => {
     if (activeTab === 'gallery' && !galleryLoadedRef.current) {
@@ -498,6 +555,75 @@ const CrowdfundingPage = () => {
   }, [activeTab]);
 
   useEffect(() => {
+    if (typeof window === 'undefined') {
+      return undefined;
+    }
+
+    let unsubscribe = null;
+    let active = true;
+
+    setFeedbackRealtimeStatus('connecting');
+    setFeedbackLoading(true);
+
+    try {
+      const maybeUnsubscribe = watchPizzaFeedback({
+        limit: 8,
+        onUpdate: (entries) => {
+          if (!active) return;
+          setFeedbackEntries(entries);
+          setFeedbackLoading(false);
+          setFeedbackFetchError('');
+          setFeedbackRealtimeStatus('ready');
+        },
+        onError: (error) => {
+          if (!active) return;
+          setFeedbackLoading(false);
+          setFeedbackRealtimeStatus('error');
+          if (error) {
+            devConsole.warn('[crowdfunding] realtime pizza feedback listener error', error);
+          }
+        },
+      });
+
+      if (typeof maybeUnsubscribe === 'function') {
+        unsubscribe = maybeUnsubscribe;
+      } else if (active) {
+        setFeedbackRealtimeStatus('disabled');
+        setFeedbackLoading(false);
+        devConsole.warn('[crowdfunding] realtime pizza feedback disabled - missing client configuration?');
+      }
+    } catch (error) {
+      if (active) {
+        setFeedbackRealtimeStatus('error');
+        setFeedbackLoading(false);
+        devConsole.warn('[crowdfunding] failed to start realtime pizza feedback listener', error);
+      }
+    }
+
+    return () => {
+      active = false;
+      if (typeof unsubscribe === 'function') {
+        unsubscribe();
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    if (feedbackRealtimeStatus === 'ready') {
+      feedbackFallbackStatusRef.current = null;
+      return undefined;
+    }
+
+    if (!['disabled', 'error'].includes(feedbackRealtimeStatus)) {
+      return undefined;
+    }
+
+    if (feedbackFallbackStatusRef.current === feedbackRealtimeStatus) {
+      return undefined;
+    }
+
+    feedbackFallbackStatusRef.current = feedbackRealtimeStatus;
+
     let cancelled = false;
     setFeedbackLoading(true);
     setFeedbackFetchError('');
@@ -559,7 +685,7 @@ const CrowdfundingPage = () => {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [feedbackRealtimeStatus]);
   // Simple client-side validators
   const emailValid = useMemo(() => !email || /.+@.+\..+/.test(email), [email]);
   const phoneDigits = useMemo(() => phone.replace(/\D/g, ''), [phone]);
@@ -1442,10 +1568,7 @@ const CrowdfundingPage = () => {
     }
     return 1000;
   })();
-  const fallbackPizzasSold = (() => {
-    if (Number.isFinite(summaryPizzas) && summaryPizzas >= 0) {
-      return summaryPizzas;
-    }
+  const fallbackPizzasBase = (() => {
     if (
       typeof campaignData?.raisedAmount === 'number' &&
       Number.isFinite(campaignData.raisedAmount)
@@ -1454,14 +1577,35 @@ const CrowdfundingPage = () => {
     }
     return 0;
   })();
-  const pizzasSold = Number.isFinite(publishedPizzasSold)
+
+  let pizzasSold = Number.isFinite(publishedPizzasSold)
     ? publishedPizzasSold
-    : fallbackPizzasSold;
-  const pizzaGoal = Number.isFinite(summaryGoal) && summaryGoal > 0 ? summaryGoal : basePizzaGoal; // default goal to 1000 pizzas
-  const backers =
-    Number.isFinite(summaryBackers) && summaryBackers >= 0
-      ? Math.max(summaryBackers, baseBackers)
-      : baseBackers;
+    : fallbackPizzasBase;
+  if (summaryTotalsAvailable) {
+    pizzasSold = summaryPizzas;
+  }
+  if (Number.isFinite(livePizzas)) {
+    pizzasSold = livePizzas;
+  }
+
+  const usingPublishedFallback =
+    !Number.isFinite(livePizzas) && !summaryTotalsAvailable && Number.isFinite(publishedPizzasSold);
+
+  const showLiveTotalsFallbackNotice = usingPublishedFallback;
+
+  const pizzaGoal = Number.isFinite(liveGoal) && liveGoal > 0
+    ? liveGoal
+    : Number.isFinite(summaryGoal) && summaryGoal > 0
+      ? summaryGoal
+      : basePizzaGoal; // default goal to 1000 pizzas
+
+  let backers = baseBackers;
+  if (summaryBackersAvailable) {
+    backers = Math.max(summaryBackers, baseBackers);
+  }
+  if (Number.isFinite(liveBackers)) {
+    backers = Math.max(liveBackers, baseBackers);
+  }
   const effectiveEndDate = useMemo(() => {
     const fallback = CAMPAIGN_EXTENSION_DEADLINE;
     if (!endDate) return fallback;
@@ -1747,7 +1891,7 @@ const CrowdfundingPage = () => {
                   label={daysLeft > 0 ? 'days to go' : ''}
                 />
               </div>
-              {statusRefreshError && !Number.isFinite(summaryPizzas) && (
+              {showLiveTotalsFallbackNotice && (
                 <p className="text-xs text-amber-600">
                   Live totals temporarily unavailable; showing published numbers for now.
                 </p>
