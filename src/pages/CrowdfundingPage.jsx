@@ -2322,7 +2322,7 @@ const CrowdfundingPage = () => {
                         value={subscribeEmail}
                         onChange={(event) => setSubscribeEmail(event.target.value)}
                         disabled={subscribeStatus === 'loading'}
-                        className="border-slate-700 bg-slate-800 text-white placeholder:text-slate-400"
+                        className="border-slate-300 bg-white text-slate-900 placeholder:text-slate-500"
                       />
                     </div>
                     {subscribeMessage && (
