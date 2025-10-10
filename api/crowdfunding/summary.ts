@@ -54,6 +54,7 @@ export default async function handler(request: Req, response: ServerResponse): P
     } catch (fallbackError) {
       console.warn('[crowdfunding.summary] fallback load failed', fallbackError);
     }
-    res.status(500).json({ ok: false, error: 'internal-error' });
+    res.setHeader('Cache-Control', 'no-store');
+    res.status(200).json({ pizzas: 0, backers: 0, goal: null, updatedAt: null, source: 'unavailable' });
   }
 }

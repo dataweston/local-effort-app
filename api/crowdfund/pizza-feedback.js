@@ -42,7 +42,7 @@ module.exports = async (req, res) => {
 
   if (req.method === 'GET') {
     if (!db) {
-      return res.status(503).json({ error: 'Feedback storage unavailable' });
+      return res.status(200).json({ entries: [], source: 'unavailable' });
     }
 
     let limit = parseInt(req.query?.limit, 10);
