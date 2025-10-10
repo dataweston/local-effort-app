@@ -8,6 +8,7 @@ function createCrowdfundingRouter({ db, squareClient, logger }) {
   const router = express.Router();
 
   const FEEDBACK_COLLECTION = 'crowdfund_feedback';
+  const fallbackFeedbackEntries = [];
 
   const sanitizeName = (value) => {
     const str = String(value || '').replace(/\s+/g, ' ').trim();
@@ -202,13 +203,14 @@ function createCrowdfundingRouter({ db, squareClient, logger }) {
 
   router.get('/pizza-feedback', async (req, res) => {
     try {
-      if (!db) {
-        return res.status(503).json({ error: 'Feedback storage unavailable' });
-      }
-
       let limit = parseInt(req.query.limit, 10);
       if (!Number.isFinite(limit) || limit <= 0) limit = 8;
       limit = Math.min(limit, 20);
+
+      if (!db) {
+        const fallbackEntries = fallbackFeedbackEntries.slice(0, limit);
+        return res.json({ entries: fallbackEntries });
+      }
 
       const snapshot = await db
         .collection(FEEDBACK_COLLECTION)
@@ -231,9 +233,6 @@ function createCrowdfundingRouter({ db, squareClient, logger }) {
 
   router.post('/pizza-feedback', async (req, res) => {
     try {
-      if (!db) {
-        return res.status(503).json({ error: 'Feedback storage unavailable' });
-      }
 
       const name = sanitizeName(req.body?.name);
       const rating = sanitizeRating(req.body?.rating);
@@ -256,6 +255,22 @@ function createCrowdfundingRouter({ db, squareClient, logger }) {
         createdAtMs: Date.now(),
         source: 'web',
       };
+
+      if (!db) {
+        const fallbackEntry = {
+          id: `feedback-${entry.createdAtMs}`,
+          name: entry.name,
+          comment: entry.comment,
+          message: entry.comment,
+          rating: entry.rating,
+          createdAt: entry.createdAt,
+        };
+        fallbackFeedbackEntries.unshift(fallbackEntry);
+        if (fallbackFeedbackEntries.length > 20) {
+          fallbackFeedbackEntries.length = 20;
+        }
+        return res.json({ entry: fallbackEntry, fallback: true });
+      }
 
       let docId = null;
       try {
