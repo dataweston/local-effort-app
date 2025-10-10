@@ -2,12 +2,12 @@ const fs = require('fs');
 
 let cached = null;
 
-const readJsonFromEnv = (value) => {
+const readJsonFromEnv = (value, label) => {
   if (!value) return null;
   try {
     return JSON.parse(value);
   } catch (error) {
-    console.warn('[firebase-admin] failed to parse FIREBASE_SERVICE_ACCOUNT_JSON', error.message);
+    console.warn(`[firebase-admin] failed to parse ${label}`, error.message);
     return null;
   }
 };
@@ -18,7 +18,7 @@ const readJsonFromBase64 = (value) => {
     const decoded = Buffer.from(value, 'base64').toString('utf8');
     return JSON.parse(decoded);
   } catch (error) {
-    console.warn('[firebase-admin] failed to parse FIREBASE_SERVICE_ACCOUNT_BASE64', error.message);
+    console.warn('[firebase-admin] failed to decode FIREBASE_SERVICE_ACCOUNT_BASE64', error.message);
     return null;
   }
 };
@@ -38,13 +38,60 @@ const readJsonFromPath = (filePath) => {
   }
 };
 
+const normalizePrivateKey = (value) => {
+  if (!value) return null;
+  const raw = String(value).trim();
+  if (!raw) return null;
+  const unescaped = raw.replace(/\\n/g, '\n');
+  if (unescaped.includes('-----BEGIN')) {
+    return unescaped;
+  }
+  try {
+    const decoded = Buffer.from(unescaped, 'base64').toString('utf8');
+    return decoded.includes('-----BEGIN') ? decoded : unescaped;
+  } catch (error) {
+    return unescaped;
+  }
+};
+
+function coerceServiceAccount(candidate) {
+  if (!candidate || typeof candidate !== 'object') return null;
+  const projectId = candidate.project_id || candidate.projectId || process.env.FIREBASE_PROJECT_ID;
+  const clientEmail = candidate.client_email || candidate.clientEmail || process.env.FIREBASE_CLIENT_EMAIL;
+  const privateKey = normalizePrivateKey(candidate.private_key || candidate.privateKey || process.env.FIREBASE_PRIVATE_KEY);
+
+  if (!projectId || !clientEmail || !privateKey) {
+    return null;
+  }
+
+  return {
+    projectId,
+    clientEmail,
+    privateKey,
+  };
+}
+
 function loadServiceAccount() {
-  return (
-    readJsonFromEnv(process.env.FIREBASE_SERVICE_ACCOUNT_JSON) ||
-    readJsonFromBase64(process.env.FIREBASE_SERVICE_ACCOUNT_BASE64) ||
-    readJsonFromPath(process.env.FIREBASE_SERVICE_ACCOUNT_PATH) ||
-    null
-  );
+  const fromJson = readJsonFromEnv(process.env.FIREBASE_SERVICE_ACCOUNT_JSON, 'FIREBASE_SERVICE_ACCOUNT_JSON');
+  const fromBase64 = readJsonFromBase64(process.env.FIREBASE_SERVICE_ACCOUNT_BASE64);
+  const fromPath = readJsonFromPath(process.env.FIREBASE_SERVICE_ACCOUNT_PATH);
+
+  const candidate = coerceServiceAccount(fromJson) || coerceServiceAccount(fromBase64) || coerceServiceAccount(fromPath);
+  if (candidate) {
+    return candidate;
+  }
+
+  const fallback = coerceServiceAccount({
+    projectId: process.env.FIREBASE_PROJECT_ID,
+    clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+    privateKey: process.env.FIREBASE_PRIVATE_KEY,
+  });
+
+  if (!fallback) {
+    console.warn('[firebase-admin] service account credentials missing; Firestore will be disabled.');
+  }
+
+  return fallback;
 }
 
 function getFirebaseAdmin() {
@@ -68,9 +115,19 @@ function getFirebaseAdmin() {
     if (!admin.apps.length) {
       const serviceAccount = loadServiceAccount();
       if (serviceAccount) {
-        admin.initializeApp({ credential: admin.credential.cert(serviceAccount) });
+        admin.initializeApp({
+          credential: admin.credential.cert({
+            projectId: serviceAccount.projectId,
+            clientEmail: serviceAccount.clientEmail,
+            privateKey: serviceAccount.privateKey,
+          }),
+          projectId: serviceAccount.projectId,
+          databaseURL: process.env.FIREBASE_DATABASE_URL || undefined,
+        });
+        console.warn('[firebase-admin] initialized with explicit service account credentials');
       } else {
         admin.initializeApp();
+        console.warn('[firebase-admin] initialized with default application credentials');
       }
     }
     firestore = typeof admin.firestore === 'function' ? admin.firestore() : null;
