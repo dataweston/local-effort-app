@@ -85,7 +85,7 @@ importers:
         specifier: ^4.19.2
         version: 4.21.2
       firebase:
-        specifier: ^12.1.0
+        specifier: ^12.3.0
         version: 12.3.0
       firebase-admin:
         specifier: ^12.5.0
@@ -6505,6 +6505,7 @@ packages:
     engines: {node: '>=0.6.0', teleport: '>=0.2.0'}
     deprecated: |-
       You or someone you depend on is using Q, the JavaScript Promise library that gave JavaScript developers strong feelings about promises. They can almost certainly migrate to the native JavaScript promise now. Thank you literally everyone for joining me in this bet against the odds. Be excellent to each other.
+
       (For a CapTP with native promises, see @endo/eventual-send and @endo/captp)
 
   qrcode@1.5.3:
