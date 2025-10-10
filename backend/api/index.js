@@ -469,7 +469,8 @@ const handleCrowdfundingSummary = async (req, res) => {
     } catch (fallbackErr) {
       if (logger?.warn) logger.warn({ err: fallbackErr }, 'crowdfunding summary fallback error');
     }
-    return res.status(500).json({ ok: false, error: 'internal-error' });
+    res.set('Cache-Control', 'no-store');
+    return res.json({ pizzas: 0, backers: 0, goal: null, updatedAt: null, source: 'unavailable' });
   }
 };
 
