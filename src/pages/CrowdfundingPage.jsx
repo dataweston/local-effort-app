@@ -314,6 +314,14 @@ const CAMPAIGN_EXTENSION_DEADLINE = (() => {
   return Number.isNaN(parsed.getTime()) ? null : parsed;
 })();
 
+const toNonNegativeNumber = (value) => {
+  const num = Number(value);
+  if (!Number.isFinite(num) || num < 0) {
+    return null;
+  }
+  return num;
+};
+
 const CrowdfundingPage = () => {
   const [campaignData, setCampaignData] = useState(null);
   const [activeTab, setActiveTab] = useState('story');
@@ -1007,8 +1015,8 @@ const CrowdfundingPage = () => {
     piesSold: piesSoldRaw,
   } = campaignData || {};
   // Normalize numbers (treat null as 0)
-  const baseBackers = typeof backersRaw === 'number' ? backersRaw : 0;
-  const piesSold = typeof piesSoldRaw === 'number' ? piesSoldRaw : 0;
+  const baseBackers = toNonNegativeNumber(backersRaw) ?? 0;
+  const piesSold = toNonNegativeNumber(piesSoldRaw) ?? 0;
   // Normalize block arrays
   const faq = Array.isArray(faqRaw) ? faqRaw : [];
   const story = Array.isArray(storyRaw) ? storyRaw : [];
@@ -1576,8 +1584,12 @@ const CrowdfundingPage = () => {
 
   // --- Pizza-specific values (prefer pizza fields, fallback to legacy money values) ---
   const publishedPizzasSold = (() => {
-    if (typeof campaignData?.pizzasSold === 'number' && Number.isFinite(campaignData.pizzasSold)) {
-      return campaignData.pizzasSold;
+    const candidates = [campaignData?.pizzasSold, campaignData?.piesSold];
+    for (const candidate of candidates) {
+      const parsed = toNonNegativeNumber(candidate);
+      if (parsed !== null) {
+        return parsed;
+      }
     }
     return null;
   })();
@@ -1598,19 +1610,9 @@ const CrowdfundingPage = () => {
     }
     return 1000;
   })();
-  const fallbackPizzasBase = (() => {
-    if (
-      typeof campaignData?.raisedAmount === 'number' &&
-      Number.isFinite(campaignData.raisedAmount)
-    ) {
-      return campaignData.raisedAmount;
-    }
-    return 0;
-  })();
+  const fallbackPizzasBase = toNonNegativeNumber(campaignData?.raisedAmount) ?? 0;
 
-  let pizzasSold = Number.isFinite(publishedPizzasSold)
-    ? publishedPizzasSold
-    : fallbackPizzasBase;
+  let pizzasSold = publishedPizzasSold ?? fallbackPizzasBase;
   if (summaryTotalsAvailable) {
     pizzasSold = summaryPizzas;
   }
