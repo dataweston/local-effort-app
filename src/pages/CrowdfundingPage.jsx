@@ -1576,8 +1576,11 @@ const CrowdfundingPage = () => {
 
   // --- Pizza-specific values (prefer pizza fields, fallback to legacy money values) ---
   const publishedPizzasSold = (() => {
-    if (typeof campaignData?.pizzasSold === 'number' && Number.isFinite(campaignData.pizzasSold)) {
-      return campaignData.pizzasSold;
+    const candidates = [campaignData?.pizzasSold, campaignData?.piesSold];
+    for (const candidate of candidates) {
+      if (typeof candidate === 'number' && Number.isFinite(candidate) && candidate >= 0) {
+        return candidate;
+      }
     }
     return null;
   })();
@@ -1608,9 +1611,7 @@ const CrowdfundingPage = () => {
     return 0;
   })();
 
-  let pizzasSold = Number.isFinite(publishedPizzasSold)
-    ? publishedPizzasSold
-    : fallbackPizzasBase;
+  let pizzasSold = publishedPizzasSold ?? fallbackPizzasBase;
   if (summaryTotalsAvailable) {
     pizzasSold = summaryPizzas;
   }
