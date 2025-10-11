@@ -30,8 +30,12 @@ const SALE_BY_SLUG_QUERY = `
     theme {
       backgroundColor,
       foregroundColor,
+      surfaceColor,
+      borderColor,
       accentColor,
+      mutedColor,
       cardStyle,
+      buttonVariant,
       heroVariant
     },
     tracking {
@@ -94,8 +98,12 @@ const SALE_SLUGS_QUERY = `*[_type == "sale" && defined(slug.current)].slug.curre
 const DEFAULT_THEME = {
   backgroundColor: '#0f172a',
   foregroundColor: '#f8fafc',
+  surfaceColor: 'rgba(148, 163, 184, 0.06)',
+  borderColor: 'rgba(148, 163, 184, 0.18)',
+  mutedColor: 'rgba(148, 163, 184, 0.75)',
   accentColor: '#f97316',
-  cardStyle: 'solid' as const
+  cardStyle: 'solid' as const,
+  buttonVariant: 'solid' as const
 };
 
 export type SaleLayoutVariant = 'standard' | 'paikka';
@@ -144,8 +152,12 @@ export type NormalizedSale = {
   theme: {
     backgroundColor?: string | null;
     foregroundColor?: string | null;
+    surfaceColor?: string | null;
+    borderColor?: string | null;
+    mutedColor?: string | null;
     accentColor?: string | null;
     cardStyle?: string | null;
+    buttonVariant?: string | null;
     heroVariant?: string | null;
   };
   products: NormalizedSaleProduct[];
@@ -214,7 +226,9 @@ function normalizeProduct(entry: RawSaleProduct): { product: NormalizedSaleProdu
 
   const priceDisplay = safeString(product?.priceDisplay);
   const checkoutUrl = safeString(product?.squareCheckoutLinkUrl);
-  const imageArray = Array.isArray(product?.images) ? (product?.images as Array<Record<string, unknown>>) : [];
+  const imageArray = Array.isArray(product?.images)
+    ? (product?.images as Array<{ asset?: { url?: unknown } | null }>)
+    : [];
   const firstImage = imageArray.find((img) => safeString(img?.asset?.url));
   const imageUrl = firstImage ? safeString(firstImage.asset?.url) : null;
 
@@ -270,8 +284,12 @@ function normalizeSale(raw: RawSale): NormalizedSale | null {
   const theme = {
     backgroundColor: safeString(raw?.theme?.backgroundColor) ?? DEFAULT_THEME.backgroundColor,
     foregroundColor: safeString(raw?.theme?.foregroundColor) ?? DEFAULT_THEME.foregroundColor,
+    surfaceColor: safeString(raw?.theme?.surfaceColor) ?? DEFAULT_THEME.surfaceColor,
+    borderColor: safeString(raw?.theme?.borderColor) ?? DEFAULT_THEME.borderColor,
+    mutedColor: safeString(raw?.theme?.mutedColor) ?? DEFAULT_THEME.mutedColor,
     accentColor: safeString(raw?.theme?.accentColor) ?? DEFAULT_THEME.accentColor,
     cardStyle: safeString(raw?.theme?.cardStyle) ?? DEFAULT_THEME.cardStyle,
+    buttonVariant: safeString(raw?.theme?.buttonVariant) ?? DEFAULT_THEME.buttonVariant,
     heroVariant: safeString(raw?.theme?.heroVariant)
   };
 
