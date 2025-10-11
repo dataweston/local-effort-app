@@ -183,14 +183,14 @@ SaleMetaPixel.tsx
 
 ## 8. Workstream Checklist
 
-1. **Schemas & Studio**: add `sale`, `saleProduct`, field upgrades, initial-value template, panel.
-2. **Next Route**: scaffold `[sale]`, GROQ fetch, renderer, components, metadata.
-3. **UI Extraction**: port shared elements from current sale/Paikka pages → new component library.
-4. **Supabase Migration**: add `orders` table + RLS policy, service key env wiring.
-5. **Square Integrations**: CLI script, webhook rewrite, optional inline checkout route.
-6. **Sanity Webhooks & ISR**: configure revalidate endpoint + tags.
-7. **Analytics & SEO**: ensure meta, pixel, JSON-LD coverage.
-8. **Docs & Tests**: update README, add E2E or integration tests (Vitest or Playwright) for sale rendering.
+- [ ] **Schemas & Studio**: add `sale`, `saleProduct`, field upgrades, initial-value template, panel.
+- [x] **Next Route**: scaffold `[sale]`, GROQ fetch, renderer, components, metadata.
+- [ ] **UI Extraction**: port shared elements from current sale/Paikka pages → new component library. *(In progress; theming + base components moved.)*
+- [ ] **Supabase Migration**: add `orders` table + RLS policy, service key env wiring.
+- [ ] **Square Integrations**: CLI script, webhook rewrite, optional inline checkout route.
+- [ ] **Sanity Webhooks & ISR**: configure revalidate endpoint + tags.
+- [ ] **Analytics & SEO**: ensure meta, pixel, JSON-LD coverage.
+- [ ] **Docs & Tests**: update README, add E2E or integration tests (Vitest or Playwright) for sale rendering.
 
 ## 9. Assumptions
 
