@@ -128,15 +128,5 @@
       "src": "/((?!api|assets|.*\\.|_next).*)",
       "dest": "/index.html"
     }
-  ],
-  "env": {
-    "VITE_SANITY_PROJECT_ID": "@VITE_SANITY_PROJECT_ID",
-    "VITE_SANITY_DATASET": "@VITE_SANITY_DATASET",
-    "VITE_FIREBASE_API_KEY": "@firebase_api_key_public",
-    "VITE_FIREBASE_AUTH_DOMAIN": "@firebase_auth_domain",
-    "VITE_FIREBASE_PROJECT_ID": "@firebase_project_id",
-    "VITE_FIREBASE_STORAGE_BUCKET": "@firebase_storage_bucket",
-    "VITE_FIREBASE_MESSAGING_SENDER_ID": "@firebase_messaging_sender_id",
-    "VITE_FIREBASE_APP_ID": "@firebase_app_id"
-  }
+  ]
 }
