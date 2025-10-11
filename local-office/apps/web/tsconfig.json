@@ -1,7 +1,11 @@
 {
   "compilerOptions": {
     "target": "ES2022",
-    "lib": ["DOM", "DOM.Iterable", "ES2022"],
+    "lib": [
+      "DOM",
+      "DOM.Iterable",
+      "ES2022"
+    ],
     "allowJs": false,
     "skipLibCheck": true,
     "strict": true,
@@ -16,11 +20,24 @@
     "incremental": true,
     "baseUrl": ".",
     "paths": {
-      "@local-office/ui": ["../../packages/ui/src/index.ts"],
-      "@local-office/ui/*": ["../../packages/ui/src/*"],
-      "@local-effort/shared": ["../../../packages/shared/src/index.ts"],
-      "@local-effort/shared/*": ["../../../packages/shared/src/*"]
-    }
+      "@local-office/ui": [
+        "../../packages/ui/src/index.ts"
+      ],
+      "@local-office/ui/*": [
+        "../../packages/ui/src/*"
+      ],
+      "@local-effort/shared": [
+        "../../../packages/shared/src/index.ts"
+      ],
+      "@local-effort/shared/*": [
+        "../../../packages/shared/src/*"
+      ]
+    },
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ]
   },
   "include": [
     "next-env.d.ts",
@@ -28,6 +45,7 @@
     "**/*.tsx",
     ".next/types/**/*.ts"
   ],
-  "exclude": ["node_modules"]
+  "exclude": [
+    "node_modules"
+  ]
 }
-

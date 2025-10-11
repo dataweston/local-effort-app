@@ -168,7 +168,7 @@ importers:
         version: 5.0.4(vite@5.4.20(@types/node@24.6.2)(terser@5.44.0))
       autoprefixer:
         specifier: ^10.4.21
-        version: 10.4.21(postcss@8.4.47)
+        version: 10.4.21(postcss@8.5.6)
       compression-webpack-plugin:
         specifier: ^11.1.0
         version: 11.1.0(webpack@5.102.0(esbuild@0.23.1))
@@ -222,7 +222,7 @@ importers:
         version: 5.4.20(@types/node@24.6.2)(terser@5.44.0)
       vitest:
         specifier: ^1.6.1
-        version: 1.6.1(@types/node@24.6.2)(jsdom@27.0.0(postcss@8.4.47))(terser@5.44.0)
+        version: 1.6.1(@types/node@24.6.2)(jsdom@27.0.0(postcss@8.5.6))(terser@5.44.0)
       webpack-bundle-analyzer:
         specifier: ^4.10.2
         version: 4.10.2
@@ -330,6 +330,9 @@ importers:
       '@local-office/ui':
         specifier: workspace:^
         version: link:../../packages/ui
+      '@sanity/client':
+        specifier: 7.9.0
+        version: 7.9.0
       clsx:
         specifier: 2.1.1
         version: 2.1.1
@@ -594,7 +597,7 @@ importers:
         version: 5.6.3
       vitest:
         specifier: 2.1.3
-        version: 2.1.3(@types/node@20.16.10)(jsdom@27.0.0(postcss@8.4.47))(terser@5.44.0)
+        version: 2.1.3(@types/node@20.16.10)(jsdom@27.0.0(postcss@8.5.6))(terser@5.44.0)
 
   local-office/services/labeler:
     dependencies:
@@ -665,7 +668,7 @@ importers:
         version: 5.6.3
       vitest:
         specifier: 2.1.4
-        version: 2.1.4(@types/node@20.16.10)(jsdom@27.0.0(postcss@8.4.47))(terser@5.44.0)
+        version: 2.1.4(@types/node@20.16.10)(jsdom@27.0.0(postcss@8.5.6))(terser@5.44.0)
 
   packages/shared:
     dependencies:
@@ -2417,6 +2420,10 @@ packages:
     resolution: {integrity: sha512-RIQ4JXOpLuc3UkUK34xxYA+n9z6m0RCEbsdloKEbS0areaHymM3144IkzeZGFcIokN1YlNenHfnBHNsMjf3TaQ==}
     engines: {node: '>=20'}
 
+  '@sanity/client@7.9.0':
+    resolution: {integrity: sha512-CTkelmFDylaIXw8M76GkkfJyYd/f9NFcsLwhuLU0NOqNcnwqlTqUWyy6MY7h5IJC9IJbDttZeRhMwnc/WGcLXg==}
+    engines: {node: '>=20'}
+
   '@sanity/eventsource@5.0.2':
     resolution: {integrity: sha512-/B9PMkUvAlUrpRq0y+NzXgRv5lYCLxZNsBJD2WXVnqZYOfByL9oQBV7KiTaARuObp5hcQYuPfOAVjgXe3hrixA==}
 
@@ -2849,9 +2856,6 @@ packages:
 
   '@types/node@24.6.2':
     resolution: {integrity: sha512-d2L25Y4j+W3ZlNAeMKcy7yDsK425ibcAOO2t7aPTz6gNMH0z2GThtwENCDc0d/Pw9wgyRqE5Px1wkV7naz8ang==}
-
-  '@types/node@24.7.0':
-    resolution: {integrity: sha512-IbKooQVqUBrlzWTi79E8Fw78l8k1RNtlDDNWsFZs7XonuQSJ8oNYfEeclhprUldXISRMLzBpILuKgPlIxm+/Yw==}
 
   '@types/prop-types@15.7.15':
     resolution: {integrity: sha512-F6bEyamV9jKGAFBEmlQnesRPGOQqS2+Uwi0Em15xenOxHaf2hv6L8YCVn3rPdPJOiJfPiCnLIRyvwVaqMY3MIw==}
@@ -7543,9 +7547,6 @@ packages:
   undici-types@7.13.0:
     resolution: {integrity: sha512-Ov2Rr9Sx+fRgagJ5AX0qvItZG/JKKoBRAVITs1zk7IqZGTJUwgUr7qoYBpWwakpWilTZFM98rG/AFRocu10iIQ==}
 
-  undici-types@7.14.0:
-    resolution: {integrity: sha512-QQiYxHuyZ9gQUIrmPo3IA+hUl4KYk8uSA7cHrcKd/l3p1OTpZcM0Tbp9x7FAtXdAYhlasd60ncPpgu6ihG6TOA==}
-
   undici@7.16.0:
     resolution: {integrity: sha512-QEg3HPMll0o3t2ourKwOeUAZ159Kn9mx5pnzHRQO8+Wixmh88YdZRiIwat0iNzNNXn0yoEtXJqFpyW7eM8BV7g==}
     engines: {node: '>=20.18.1'}
@@ -8316,9 +8317,9 @@ snapshots:
       '@csstools/css-tokenizer': 3.0.4
     optional: true
 
-  '@csstools/css-syntax-patches-for-csstree@1.0.14(postcss@8.4.47)':
+  '@csstools/css-syntax-patches-for-csstree@1.0.14(postcss@8.5.6)':
     dependencies:
-      postcss: 8.4.47
+      postcss: 8.5.6
     optional: true
 
   '@csstools/css-tokenizer@3.0.4':
@@ -9753,6 +9754,15 @@ snapshots:
     transitivePeerDependencies:
       - debug
 
+  '@sanity/client@7.9.0':
+    dependencies:
+      '@sanity/eventsource': 5.0.2
+      get-it: 8.6.10
+      nanoid: 3.3.11
+      rxjs: 7.8.1
+    transitivePeerDependencies:
+      - debug
+
   '@sanity/eventsource@5.0.2':
     dependencies:
       '@types/event-source-polyfill': 1.0.5
@@ -10309,7 +10319,7 @@ snapshots:
 
   '@types/follow-redirects@1.14.4':
     dependencies:
-      '@types/node': 24.7.0
+      '@types/node': 20.16.10
 
   '@types/http-cache-semantics@4.0.4': {}
 
@@ -10364,10 +10374,6 @@ snapshots:
   '@types/node@24.6.2':
     dependencies:
       undici-types: 7.13.0
-
-  '@types/node@24.7.0':
-    dependencies:
-      undici-types: 7.14.0
 
   '@types/prop-types@15.7.15': {}
 
@@ -11069,14 +11075,14 @@ snapshots:
       postcss: 8.4.47
       postcss-value-parser: 4.2.0
 
-  autoprefixer@10.4.21(postcss@8.4.47):
+  autoprefixer@10.4.21(postcss@8.5.6):
     dependencies:
       browserslist: 4.26.3
       caniuse-lite: 1.0.30001747
       fraction.js: 4.3.7
       normalize-range: 0.1.2
       picocolors: 1.1.1
-      postcss: 8.4.47
+      postcss: 8.5.6
       postcss-value-parser: 4.2.0
 
   available-typed-arrays@1.0.7:
@@ -11575,10 +11581,10 @@ snapshots:
 
   cssesc@3.0.0: {}
 
-  cssstyle@5.3.1(postcss@8.4.47):
+  cssstyle@5.3.1(postcss@8.5.6):
     dependencies:
       '@asamuzakjp/css-color': 4.0.5
-      '@csstools/css-syntax-patches-for-csstree': 1.0.14(postcss@8.4.47)
+      '@csstools/css-syntax-patches-for-csstree': 1.0.14(postcss@8.5.6)
       css-tree: 3.1.0
     transitivePeerDependencies:
       - postcss
@@ -13444,10 +13450,10 @@ snapshots:
     dependencies:
       argparse: 2.0.1
 
-  jsdom@27.0.0(postcss@8.4.47):
+  jsdom@27.0.0(postcss@8.5.6):
     dependencies:
       '@asamuzakjp/dom-selector': 6.6.1
-      cssstyle: 5.3.1(postcss@8.4.47)
+      cssstyle: 5.3.1(postcss@8.5.6)
       data-urls: 6.0.0
       decimal.js: 10.6.0
       html-encoding-sniffer: 4.0.0
@@ -14502,7 +14508,6 @@ snapshots:
       nanoid: 3.3.11
       picocolors: 1.1.1
       source-map-js: 1.2.1
-    optional: true
 
   prebuild-install@7.1.3:
     dependencies:
@@ -15921,8 +15926,6 @@ snapshots:
 
   undici-types@7.13.0: {}
 
-  undici-types@7.14.0: {}
-
   undici@7.16.0: {}
 
   unicode-properties@1.4.1:
@@ -16133,7 +16136,7 @@ snapshots:
       fsevents: 2.3.3
       terser: 5.44.0
 
-  vitest@1.6.1(@types/node@24.6.2)(jsdom@27.0.0(postcss@8.4.47))(terser@5.44.0):
+  vitest@1.6.1(@types/node@24.6.2)(jsdom@27.0.0(postcss@8.5.6))(terser@5.44.0):
     dependencies:
       '@vitest/expect': 1.6.1
       '@vitest/runner': 1.6.1
@@ -16157,7 +16160,7 @@ snapshots:
       why-is-node-running: 2.3.0
     optionalDependencies:
       '@types/node': 24.6.2
-      jsdom: 27.0.0(postcss@8.4.47)
+      jsdom: 27.0.0(postcss@8.5.6)
     transitivePeerDependencies:
       - less
       - lightningcss
@@ -16168,7 +16171,7 @@ snapshots:
       - supports-color
       - terser
 
-  vitest@2.1.3(@types/node@20.16.10)(jsdom@27.0.0(postcss@8.4.47))(terser@5.44.0):
+  vitest@2.1.3(@types/node@20.16.10)(jsdom@27.0.0(postcss@8.5.6))(terser@5.44.0):
     dependencies:
       '@vitest/expect': 2.1.3
       '@vitest/mocker': 2.1.3(@vitest/spy@2.1.3)(vite@5.4.20(@types/node@20.16.10)(terser@5.44.0))
@@ -16191,7 +16194,7 @@ snapshots:
       why-is-node-running: 2.3.0
     optionalDependencies:
       '@types/node': 20.16.10
-      jsdom: 27.0.0(postcss@8.4.47)
+      jsdom: 27.0.0(postcss@8.5.6)
     transitivePeerDependencies:
       - less
       - lightningcss
@@ -16203,7 +16206,7 @@ snapshots:
       - supports-color
       - terser
 
-  vitest@2.1.4(@types/node@20.16.10)(jsdom@27.0.0(postcss@8.4.47))(terser@5.44.0):
+  vitest@2.1.4(@types/node@20.16.10)(jsdom@27.0.0(postcss@8.5.6))(terser@5.44.0):
     dependencies:
       '@vitest/expect': 2.1.4
       '@vitest/mocker': 2.1.4(vite@5.4.20(@types/node@20.16.10)(terser@5.44.0))
@@ -16227,7 +16230,7 @@ snapshots:
       why-is-node-running: 2.3.0
     optionalDependencies:
       '@types/node': 20.16.10
-      jsdom: 27.0.0(postcss@8.4.47)
+      jsdom: 27.0.0(postcss@8.5.6)
     transitivePeerDependencies:
       - less
       - lightningcss
