@@ -13,9 +13,7 @@ import { CartProvider } from './store/cart/CartContext';
 import { ToastProvider } from './components/common/ToastProvider';
 import { DefaultSeo } from './components/seo/DefaultSeo';
 // Auth guards removed for public access to partner tools and partner portal
-// ...existing code...
-// Test deployment update - innocuous change
-// ...existing code...
+
 // Lazily import page components using the default export pattern
 const HomePage = lazy(() => import('./pages/HomePage'));
 const AboutUsPage = lazy(() => import('./pages/AboutUsPage'));
