@@ -208,7 +208,7 @@ const PizzaPartyPage = () => {
           return next;
         });
       } catch (err) {
-        if (process.env.NODE_ENV !== 'production') {
+        if (import.meta.env.DEV) {
           console.warn('[pizza-party] availability load failed', err);
         }
       }
@@ -285,7 +285,7 @@ const PizzaPartyPage = () => {
         reset();
       }
     } catch (err) {
-      if (process.env.NODE_ENV !== 'production') {
+      if (import.meta.env.DEV) {
         console.error('[pizza-party] failed to reset payment form', err);
       }
     }
@@ -652,7 +652,7 @@ const PizzaPartyPage = () => {
           </motion.div>
         )}
       </AnimatePresence>
-      {process.env.NODE_ENV !== 'production' && (
+      {import.meta.env.DEV && (
         <div className="mt-12 max-w-md text-xs p-3 border rounded bg-neutral-50 space-y-1">
           <p className="font-semibold">Payment Diagnostics</p>
           <p>SDK: {envInfo?.sdkUrl}</p>

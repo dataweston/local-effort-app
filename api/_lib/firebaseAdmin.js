@@ -133,6 +133,9 @@ function getFirebaseAdmin() {
     firestore = typeof admin.firestore === 'function' ? admin.firestore() : null;
   } catch (error) {
     console.warn('[firebase-admin] failed to initialize app', error.message);
+    if (process.env.FIREBASE_PRIVATE_KEY || process.env.FIREBASE_SERVICE_ACCOUNT_JSON) {
+      console.warn('[firebase-admin] env present but initialization still failed – check private key formatting and newline escapes.');
+    }
     firestore = null;
   }
 
