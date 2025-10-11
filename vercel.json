@@ -6,7 +6,8 @@
       "src": "package.json",
       "use": "@vercel/static-build",
       "config": {
-        "distDir": "dist"
+        "distDir": "dist",
+        "buildCommand": "pnpm vite build"
       }
     },
     {
@@ -26,6 +27,14 @@
       "use": "@vercel/node"
     },
     {
+      "src": "api/sanity-query.ts",
+      "use": "@vercel/node"
+    },
+    {
+      "src": "api/sanity-health.ts",
+      "use": "@vercel/node"
+    },
+    {
       "src": "api/_ping.js",
       "use": "@vercel/node"
     },
@@ -42,6 +51,14 @@
     {
       "src": "/api/search-images",
       "dest": "/api/search-images.js"
+    },
+    {
+      "src": "/api/sanity-query",
+      "dest": "/api/sanity-query.ts"
+    },
+    {
+      "src": "/api/sanity-health",
+      "dest": "/api/sanity-health.ts"
     },
     {
       "src": "/api/_ping",
@@ -111,5 +128,15 @@
       "src": "/((?!api|assets|.*\\.|_next).*)",
       "dest": "/index.html"
     }
-  ]
+  ],
+  "env": {
+    "VITE_SANITY_PROJECT_ID": "@sanity_project_id",
+    "VITE_SANITY_DATASET": "@sanity_dataset",
+    "VITE_FIREBASE_API_KEY": "@firebase_api_key_public",
+    "VITE_FIREBASE_AUTH_DOMAIN": "@firebase_auth_domain",
+    "VITE_FIREBASE_PROJECT_ID": "@firebase_project_id",
+    "VITE_FIREBASE_STORAGE_BUCKET": "@firebase_storage_bucket",
+    "VITE_FIREBASE_MESSAGING_SENDER_ID": "@firebase_messaging_sender_id",
+    "VITE_FIREBASE_APP_ID": "@firebase_app_id"
+  }
 }

@@ -4,7 +4,7 @@ import PropTypes from 'prop-types';
 import { Helmet } from 'react-helmet-async';
 import { PortableText } from '@portabletext/react';
 import SectionHeader from '../components/ui/SectionHeader';
-import sanityClient from '../sanityClient.js';
+import { groqFetch } from '../sanityClient.js';
 import { useSquarePayments } from '../lib/useSquarePayments';
 import { Button } from '../components/ui/button';
 import {
@@ -728,7 +728,7 @@ const CrowdfundingPage = () => {
 
     const doFetch = async () => {
       try {
-        const data = await sanityClient.fetch(query, params);
+        const data = await groqFetch(query, params);
         setCampaignData(replaceFirebaseDatabaseMentions(data));
       } catch (err) {
         // Provide richer logging so we can see the real failure in browser consoles
@@ -773,7 +773,7 @@ const CrowdfundingPage = () => {
             "rewardTiers": rewardTiers[]->{ amount, pizzaCount, pieCount, title, description, limit, referralOnly, referralCode } | order(amount asc),
             "updates": updates[]->{ title, publishedAt, body } | order(publishedAt desc)
           }`;
-          const fbData = await sanityClient.fetch(fallback);
+          const fbData = await groqFetch(fallback);
           if (fbData) {
             devConsole.warn('Loaded fallback campaign (first in dataset)');
             setCampaignData(replaceFirebaseDatabaseMentions(fbData));
@@ -2361,7 +2361,7 @@ const CrowdfundingPage = () => {
                 </CardContent>
               </Card>
 
-              {(import.meta?.env?.MODE || process.env.NODE_ENV) !== 'production' && (
+              {import.meta.env.DEV && (
                 <div className="mt-4 p-4 border rounded text-xs space-y-1 bg-gray-50">
                   <p className="font-semibold">Square Diagnostics</p>
                   <p>SDK URL: {squareSdkUrl}</p>
