@@ -2711,9 +2711,10 @@ var init_firebaseConfig = __esm({
     app = null;
     try {
       if (firebaseConfig.apiKey) {
-        app = (0, import_app.initializeApp)(firebaseConfig);
+        const existingApps = (0, import_app.getApps)();
+        app = existingApps.length ? (0, import_app.getApp)() : (0, import_app.initializeApp)(firebaseConfig);
         const siteKey = env2.VITE_APPCHECK_SITE_KEY || env2.VITE_RECAPTCHA_SITE_KEY;
-        if (siteKey) {
+        if (siteKey && typeof window !== "undefined") {
           loadAppCheck().then(() => {
             if (initializeAppCheck && ReCaptchaV3Provider) {
               try {
@@ -48672,15 +48673,14 @@ var import_client = require("@sanity/client");
 var import_meta4 = {};
 var rawBuildEnv = typeof import_meta4 !== "undefined" && import_meta4.env ? import_meta4.env : {};
 var runtimeWindowEnv = typeof window !== "undefined" && window.__SANITY_CONFIG__ ? window.__SANITY_CONFIG__ : {};
-var nodeEnv = typeof process !== "undefined" && process.env ? process.env : {};
-var env = { ...nodeEnv, ...rawBuildEnv, ...runtimeWindowEnv };
+var env = { ...rawBuildEnv, ...runtimeWindowEnv };
 var projectId = env.VITE_APP_SANITY_PROJECT_ID || env.VITE_SANITY_PROJECT_ID || env.SANITY_PROJECT_ID || env.PROJECT_ID;
 var dataset = env.VITE_APP_SANITY_DATASET || env.VITE_SANITY_DATASET || env.SANITY_DATASET || env.DATASET;
 var createProxyClient = () => {
   return {
     fetch: async (query3, params = {}) => {
       try {
-        const response = await fetch("/api/sanity/query", {
+        const response = await fetch("/api/sanity-query", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ query: query3, params })
@@ -48722,6 +48722,12 @@ try {
   };
 }
 var sanityClient_default = client;
+var groqFetch = async (query3, params = {}) => {
+  if (!client || typeof client.fetch !== "function") {
+    throw new Error("Sanity client unavailable");
+  }
+  return client.fetch(query3, params);
+};
 
 // src/pages/HomePage.jsx
 var import_react17 = require("@portabletext/react");
@@ -56295,9 +56301,17 @@ var getMode = () => {
     }
   } catch (error) {
   }
-  return typeof process !== "undefined" && process.env && "production" ? "production" : "development";
+  return "development";
 };
-var isDev = () => getMode() !== "production";
+var isDev = () => {
+  try {
+    if (typeof import_meta8 !== "undefined" && true) {
+      return Boolean(false);
+    }
+  } catch (error) {
+  }
+  return getMode() !== "production";
+};
 var callConsole = (method, args) => {
   if (!isDev()) return;
   if (!(method in console)) return;
@@ -56317,7 +56331,6 @@ var devConsole_default = devConsole;
 
 // src/components/crowdfunding/PrioritiesPie.jsx
 var import_jsx_runtime48 = require("react/jsx-runtime");
-var import_meta9 = {};
 var items = {
   fulfillment: [
     { name: "Cheese", amount: 900 },
@@ -56380,7 +56393,7 @@ var PrioritiesPie = () => {
     })),
     [totals]
   );
-  if ((import_meta9?.env?.MODE || "production") !== "production") {
+  if (false) {
     devConsole_default.assert(totals.fulfillment === 1550, "Fulfillment should total $1,550");
     devConsole_default.assert(totals.debt === 5100, "Debt & Operations should total $5,100");
     devConsole_default.assert(totals.equipment === 2500, "Equipment Upgrades should total $2,500");
@@ -56413,12 +56426,12 @@ function useToast() {
 // src/lib/firebaseCrowdfunding.js
 var import_app2 = require("firebase/app");
 var import_firestore3 = require("firebase/firestore");
-var import_meta10 = {};
+var import_meta9 = {};
 var cachedApp = null;
 var initAttempted = false;
 var getEnv = () => {
-  if (typeof import_meta10 !== "undefined" && import_meta10.env) {
-    return import_meta10.env;
+  if (typeof import_meta9 !== "undefined" && import_meta9.env) {
+    return import_meta9.env;
   }
   return {};
 };
@@ -56582,7 +56595,6 @@ var watchPizzaFeedback = ({ limit = 8, onUpdate, onError } = {}) => {
 // src/pages/CrowdfundingPage.jsx
 var import_firestore4 = require("firebase/firestore");
 var import_jsx_runtime50 = require("react/jsx-runtime");
-var import_meta11 = {};
 function isPortableTextBlocks(value) {
   return Array.isArray(value) && value.some(
     (item) => item && typeof item === "object" && item._type === "block" && Array.isArray(item.children)
@@ -57171,7 +57183,7 @@ var CrowdfundingPage = () => {
     const params = { slug };
     const doFetch = async () => {
       try {
-        const data = await sanityClient_default.fetch(query3, params);
+        const data = await groqFetch(query3, params);
         setCampaignData(replaceFirebaseDatabaseMentions(data));
       } catch (err) {
         try {
@@ -57213,7 +57225,7 @@ var CrowdfundingPage = () => {
             "rewardTiers": rewardTiers[]->{ amount, pizzaCount, pieCount, title, description, limit, referralOnly, referralCode } | order(amount asc),
             "updates": updates[]->{ title, publishedAt, body } | order(publishedAt desc)
           }`;
-          const fbData = await sanityClient_default.fetch(fallback);
+          const fbData = await groqFetch(fallback);
           if (fbData) {
             devConsole_default.warn("Loaded fallback campaign (first in dataset)");
             setCampaignData(replaceFirebaseDatabaseMentions(fbData));
@@ -58563,48 +58575,7 @@ var CrowdfundingPage = () => {
                 )
               ] }) })
             ] }),
-            (import_meta11?.env?.MODE || "production") !== "production" && /* @__PURE__ */ (0, import_jsx_runtime50.jsxs)("div", { className: "mt-4 p-4 border rounded text-xs space-y-1 bg-gray-50", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime50.jsx)("p", { className: "font-semibold", children: "Square Diagnostics" }),
-              /* @__PURE__ */ (0, import_jsx_runtime50.jsxs)("p", { children: [
-                "SDK URL: ",
-                squareSdkUrl
-              ] }),
-              /* @__PURE__ */ (0, import_jsx_runtime50.jsxs)("p", { children: [
-                "Environment: ",
-                squareEnvironment || "unknown"
-              ] }),
-              /* @__PURE__ */ (0, import_jsx_runtime50.jsxs)("p", { children: [
-                "App ID present: ",
-                squareAppId ? "yes" : "no"
-              ] }),
-              /* @__PURE__ */ (0, import_jsx_runtime50.jsxs)("p", { children: [
-                "Location ID present: ",
-                squareLocationId ? "yes" : "no"
-              ] }),
-              /* @__PURE__ */ (0, import_jsx_runtime50.jsxs)("p", { children: [
-                "Sandbox mode: ",
-                squareIsSandbox ? "true" : "false"
-              ] }),
-              /* @__PURE__ */ (0, import_jsx_runtime50.jsxs)("p", { children: [
-                "Payments ready: ",
-                payments ? "true" : "false",
-                " | Loading:",
-                " ",
-                paymentsLoading ? "true" : "false"
-              ] }),
-              /* @__PURE__ */ (0, import_jsx_runtime50.jsxs)("p", { children: [
-                "Card ready: ",
-                cardReady ? "true" : "false"
-              ] }),
-              cardError && /* @__PURE__ */ (0, import_jsx_runtime50.jsxs)("p", { className: "text-red-600", children: [
-                "Card error: ",
-                cardError
-              ] }),
-              paymentsError && /* @__PURE__ */ (0, import_jsx_runtime50.jsxs)("p", { className: "text-red-600", children: [
-                "Payments error: ",
-                paymentsError
-              ] })
-            ] }),
+            false,
             rewardTiers.map((tier) => {
               const tierId = tierIdentifier(tier);
               return /* @__PURE__ */ (0, import_jsx_runtime50.jsx)(

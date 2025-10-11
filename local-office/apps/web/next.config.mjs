@@ -5,7 +5,6 @@ const nextConfig = {
   eslint: {
     ignoreDuringBuilds: true
   }
-  transpilePackages: ['@local-office/ui']
 };
 
 export default nextConfig;
