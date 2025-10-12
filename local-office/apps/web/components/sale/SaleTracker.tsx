@@ -1,11 +1,12 @@
 import type { NormalizedSale } from '../../lib/sales';
+import { SaleTrackerClient } from './SaleTrackerClient';
 import type { SaleTheme } from './theme';
 
 export function SaleTracker({ sale, theme }: { sale: NormalizedSale; theme: SaleTheme }) {
-  const soldCount = sale.stats?.soldCount;
-  if (soldCount === null || soldCount === undefined) {
-    return null;
-  }
+  const initialCount = typeof sale.stats?.soldCount === 'number' && Number.isFinite(sale.stats.soldCount)
+    ? sale.stats.soldCount
+    : 0;
+  const showInitialHint = sale.stats?.soldCount === null || sale.stats?.soldCount === undefined;
 
   return (
     <section
@@ -16,13 +17,13 @@ export function SaleTracker({ sale, theme }: { sale: NormalizedSale; theme: Sale
         Live tracker
       </p>
       <p className="text-3xl font-semibold" style={{ color: theme.accent }}>
-        {soldCount}
+        <SaleTrackerClient saleSlug={sale.slug} initialCount={initialCount} />
       </p>
       <p className="text-xs" style={{ color: theme.muted }}>
         Orders placed so far
       </p>
       <p className="text-xs" style={{ color: theme.muted }}>
-        (Updates every webhook ping from Square)
+        {showInitialHint ? 'Syncs after the first payment clears.' : '(Updates every webhook ping from Square)'}
       </p>
     </section>
   );

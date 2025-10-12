@@ -105,7 +105,8 @@ SaleProductGrid.tsx
 SaleProductCard.tsx
 SaleCheckoutButton.tsx
 SaleInlineCheckout.tsx
-SaleTracker.tsx (Supabase SWR hook)
+SaleTracker.tsx (shell)
+SaleTrackerClient.tsx (Supabase polling)
 SaleFaq.tsx
 SaleMetaPixel.tsx
 SaleTrackingScripts.tsx
@@ -118,6 +119,7 @@ SaleStructuredData.tsx
   - Else if `sale.square.checkoutMode === 'inline'` → render inline flow (Tier B; toggled feature flag).
   - Else fallback disabled "Coming soon".
 - `SaleTracker` executes Supabase query `SELECT COALESCE(SUM(qty),0) AS sold FROM sales.orders WHERE sale_slug=$1`. Uses anon key on client, caches via SWR and revalidates on focus. Show skeleton while loading.
+- Current implementation: `/app/api/sales/[sale]/tracker` proxies Supabase using the service role key, while `SaleTrackerClient` polls this endpoint client-side with a 30s interval. Once Supabase RLS is finalized, this can be migrated to the anon-key flow described above.
 
 ## 4. Square Integrations
 
@@ -190,7 +192,7 @@ SaleStructuredData.tsx
 - [ ] **Schemas & Studio**: add `sale`, `saleProduct`, field upgrades, initial-value template, panel. *(In progress; sale + saleProduct schemas created, product document fields expanded, initial-value templates registered.)*
 - [x] **Next Route**: scaffold `[sale]`, GROQ fetch, renderer, components, metadata.
 - [ ] **UI Extraction**: port shared elements from current sale/Paikka pages → new component library. *(In progress; theming, structured data, inline checkout provider, and tracking scripts moved.)*
-- [ ] **Supabase Migration**: add `orders` table + RLS policy, service key env wiring.
+- [ ] **Supabase Migration**: add `orders` table + RLS policy, service key env wiring. *(In progress; tracker API endpoint and client polling scaffolded, awaiting table + RLS setup.)*
 - [ ] **Square Integrations**: CLI script, webhook rewrite, optional inline checkout route.
 - [ ] **Sanity Webhooks & ISR**: configure revalidate endpoint + tags.
 - [ ] **Analytics & SEO**: ensure meta, pixel, JSON-LD coverage.
