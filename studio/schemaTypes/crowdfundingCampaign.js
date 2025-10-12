@@ -164,10 +164,62 @@ export default {
           type: 'object',
           fields: [
             { name: 'location', title: 'Location', type: 'string', validation: Rule => Rule.required() },
+            {
+              name: 'tagline',
+              title: 'Tagline',
+              type: 'string',
+              description: 'Optional one-line highlight for the event card.',
+            },
+            {
+              name: 'summary',
+              title: 'Summary',
+              type: 'text',
+              rows: 3,
+              description: 'Short summary displayed before opening the event dialog.',
+            },
             { name: 'startDate', title: 'Start Date', type: 'date', validation: Rule => Rule.required() },
             { name: 'endDate', title: 'End Date (optional)', type: 'date' },
+            {
+              name: 'timingNote',
+              title: 'Timing Note',
+              type: 'string',
+              description: 'Optional time range or schedule details (e.g. "5:00-8:00 PM").',
+            },
             { name: 'foodType', title: 'Type of Food', type: 'string' },
+            {
+              name: 'status',
+              title: 'Status',
+              type: 'string',
+              options: {
+                list: [
+                  { title: 'Scheduled', value: 'scheduled' },
+                  { title: 'Sold out', value: 'soldOut' },
+                  { title: 'Postponed', value: 'postponed' },
+                  { title: 'Cancelled', value: 'cancelled' },
+                ],
+              },
+              initialValue: 'scheduled',
+            },
             { name: 'ticketsUrl', title: 'Tickets URL', type: 'url' },
+            {
+              name: 'ctaLabel',
+              title: 'CTA Label',
+              type: 'string',
+              description: 'Optional custom text for the tickets link.',
+            },
+            {
+              name: 'locationDetails',
+              title: 'Location Details',
+              type: 'string',
+              description: 'Optional address or pickup instructions shown inside the dialog.',
+            },
+            {
+              name: 'heroImage',
+              title: 'Hero Image',
+              type: 'image',
+              options: { hotspot: true },
+              description: 'Optional image displayed in the event preview and dialog.',
+            },
             { name: 'description', title: 'Description', type: 'array', of: [{ type: 'block' }] },
             {
               name: 'firestoreEventId',
