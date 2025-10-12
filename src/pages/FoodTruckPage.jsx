@@ -618,7 +618,7 @@ const FoodTruckPage = () => {
                 Powered by Square • {squareEnvironment === 'sandbox' ? 'Sandbox mode' : 'Live mode'} •{' '}
                 {squareLocationId ? 'Location configured' : 'Location missing'}
               </p>
-              {(import.meta?.env?.MODE || process.env.NODE_ENV) !== 'production' && (
+              {import.meta.env.DEV && (
                 <div className="rounded border border-dashed border-neutral-200 p-3 text-[0.7rem] text-neutral-500 space-y-1">
                   <p className="font-semibold">Square diagnostics</p>
                   <p>SDK URL: {squareSdkUrl}</p>

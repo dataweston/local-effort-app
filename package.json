@@ -20,6 +20,7 @@
     "aws-sdk": "^2.1692.0",
     "cloudinary": "^2.7.0",
     "clsx": "^2.1.1",
+    "cors": "^2.8.5",
     "csv-parse": "^5.5.6",
     "date-fns": "^4.1.0",
     "dotenv": "^16.4.5",
@@ -45,6 +46,7 @@
     "square": "^37.0.0",
     "swr": "^2.3.0",
     "tailwind-merge": "^2.5.2",
+    "uuid": "^8.3.2",
     "web-push": "^3.6.6"
   },
   "overrides": {
@@ -75,6 +77,7 @@
     "@types/node": "^24.3.0",
     "@types/react": "^19.2.0",
     "@typescript-eslint/parser": "^5.62.0",
+    "@vercel/node": "^5.3.26",
     "@vitejs/plugin-react": "^5.0.1",
     "autoprefixer": "^10.4.21",
     "compression-webpack-plugin": "^11.1.0",

@@ -1,0 +1,51 @@
+name: vercel-health
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-healthcheck:
+    runs-on: ubuntu-latest
+    env:
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: Enable corepack
+        run: corepack enable
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Pull Vercel environment
+        run: pnpm dlx vercel@latest pull --yes --environment=preview
+
+      - name: Vercel build
+        run: pnpm dlx vercel@latest build
+
+      - name: Start Vercel dev
+        run: |
+          pnpm dlx vercel@latest dev --listen 0.0.0.0:3000 --yes &
+          echo $! > vercel-dev.pid
+          pnpm dlx wait-on@latest http://127.0.0.1:3000 --timeout 60000
+
+      - name: Sanity health check
+        run: curl --fail --silent --show-error http://127.0.0.1:3000/api/sanity-health
+
+      - name: Stop Vercel dev
+        if: always()
+        run: |
+          if [ -f vercel-dev.pid ]; then
+            kill $(cat vercel-dev.pid) || true
+          fi

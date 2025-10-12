@@ -35,6 +35,8 @@ function buildSSRApp() {
     define: {
       'process.env.NODE_ENV': '"production"',
       'import.meta.env.SSR': 'true',
+      // Ensure import.meta.env.DEV (and similar flags) exist during the SSR build
+      'import.meta.env.DEV': 'false',
     },
     loader: {
       '.svg': 'dataurl',

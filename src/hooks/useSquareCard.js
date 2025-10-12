@@ -424,7 +424,7 @@ export function useSquareCard(containerId, enabled, deps = []) {
         }
       } catch (e) {
         if (signal.aborted) return;
-        if (process.env.NODE_ENV !== 'production') {
+        if (import.meta.env.DEV) {
           // eslint-disable-next-line no-console
           console.debug('[Square:init:error]', e);
         }

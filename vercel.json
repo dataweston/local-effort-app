@@ -6,7 +6,8 @@
       "src": "package.json",
       "use": "@vercel/static-build",
       "config": {
-        "distDir": "dist"
+        "distDir": "dist",
+        "buildCommand": "pnpm vite build"
       }
     },
     {
@@ -26,6 +27,14 @@
       "use": "@vercel/node"
     },
     {
+      "src": "api/sanity-query.ts",
+      "use": "@vercel/node"
+    },
+    {
+      "src": "api/sanity-health.ts",
+      "use": "@vercel/node"
+    },
+    {
       "src": "api/_ping.js",
       "use": "@vercel/node"
     },
@@ -42,6 +51,14 @@
     {
       "src": "/api/search-images",
       "dest": "/api/search-images.js"
+    },
+    {
+      "src": "/api/sanity-query",
+      "dest": "/api/sanity-query.ts"
+    },
+    {
+      "src": "/api/sanity-health",
+      "dest": "/api/sanity-health.ts"
     },
     {
       "src": "/api/_ping",
