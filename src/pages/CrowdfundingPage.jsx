@@ -1842,7 +1842,7 @@ const CrowdfundingPage = () => {
         funderName: funderName?.trim() || '',
         discountCode: trimmedDiscount || '',
         discountLabel:
-          (data?.discount && data.discount.label) || (discountDetails && discountDetails.label) || '',
+          (data?.discount && data.discount.label) || (discountFromState && discountFromState.label) || '',
       });
       setLastContributionTotal(Math.max(0, Math.round(totalAfterLocalDiscount)));
       setSquareDiscountCode('');
