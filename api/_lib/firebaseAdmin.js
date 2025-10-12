@@ -122,7 +122,19 @@ function loadServiceAccount() {
   });
 
   if (!fallback) {
-    console.warn('[firebase-admin] service account credentials missing; Firestore will be disabled.');
+    // Provide extra diagnostics (no secret values) to aid debugging in production (e.g., Vercel env scope issues)
+    try {
+      const vars = {
+        FIREBASE_SERVICE_ACCOUNT_JSON: process.env.FIREBASE_SERVICE_ACCOUNT_JSON ? String(process.env.FIREBASE_SERVICE_ACCOUNT_JSON).length : 0,
+        FIREBASE_SERVICE_ACCOUNT_BASE64: process.env.FIREBASE_SERVICE_ACCOUNT_BASE64 ? String(process.env.FIREBASE_SERVICE_ACCOUNT_BASE64).length : 0,
+        FIREBASE_SERVICE_ACCOUNT_PATH: process.env.FIREBASE_SERVICE_ACCOUNT_PATH ? String(process.env.FIREBASE_SERVICE_ACCOUNT_PATH).length : 0,
+        FIREBASE_PRIVATE_KEY: process.env.FIREBASE_PRIVATE_KEY ? String(process.env.FIREBASE_PRIVATE_KEY).length : 0,
+        FIREBASE_PROJECT_ID: process.env.FIREBASE_PROJECT_ID ? String(process.env.FIREBASE_PROJECT_ID) : '(not set)',
+      };
+      console.warn('[firebase-admin] service account credentials missing; Firestore will be disabled.', { envVarsSummary: vars, hint: 'Ensure FIREBASE_SERVICE_ACCOUNT_BASE64 (or JSON) is configured in your production environment (Vercel: Project > Settings > Environment Variables; set for Production runtime).' });
+    } catch (e) {
+      console.warn('[firebase-admin] service account credentials missing; Firestore will be disabled.');
+    }
   }
 
   return fallback;
