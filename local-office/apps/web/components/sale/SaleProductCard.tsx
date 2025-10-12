@@ -1,4 +1,5 @@
 import type { NormalizedSaleProduct, SaleCheckoutMode } from '../../lib/sales';
+import { SaleCheckoutButton } from './SaleCheckoutButton';
 import type { SaleTheme } from './theme';
 
 const USD_FORMATTER = new Intl.NumberFormat('en-US', {
@@ -22,9 +23,6 @@ export function SaleProductCard({
 }) {
   const priceLabel = product.priceDisplay ?? formatPrice(product.priceCents);
   const manualInventory = product.inventoryMode === 'manual' ? product.manualInventory : null;
-  const soldOut = typeof manualInventory === 'number' && manualInventory <= 0;
-  const isInlineCheckout = checkoutMode === 'inline';
-  const inlineDisabled = isInlineCheckout && !product.checkoutUrl; // placeholder until inline flow implemented
 
   return (
     <article
@@ -78,30 +76,7 @@ export function SaleProductCard({
         ) : null}
 
         <div className="mt-auto flex flex-col gap-2">
-          {!soldOut && product.checkoutUrl ? (
-            <a
-              href={product.checkoutUrl}
-              target="_blank"
-              rel="noreferrer noopener"
-              className="inline-flex items-center justify-center rounded-full px-4 py-2 text-sm font-semibold text-white transition hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/80"
-              style={{
-                backgroundColor: theme.buttonVariant === 'outline' ? 'transparent' : theme.accent,
-                color: theme.buttonVariant === 'outline' ? theme.accent : '#ffffff',
-                border: theme.buttonVariant === 'outline' ? `1px solid ${theme.accent}` : undefined
-              }}
-            >
-              Reserve via Square
-            </a>
-          ) : (
-            <button
-              type="button"
-              disabled
-              className="inline-flex items-center justify-center rounded-full px-4 py-2 text-sm font-semibold opacity-60"
-              style={{ border: `1px dashed ${theme.border}`, color: theme.muted }}
-            >
-              {soldOut ? 'Sold out' : inlineDisabled ? 'Inline checkout coming soon' : 'Unavailable'}
-            </button>
-          )}
+          <SaleCheckoutButton product={product} theme={theme} checkoutMode={checkoutMode} />
         </div>
       </div>
     </article>

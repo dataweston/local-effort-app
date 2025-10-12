@@ -47,6 +47,10 @@ const SALE_BY_SLUG_QUERY = `
       brevoTemplateId,
       senderName
     },
+    faqs[] {
+      question,
+      answer
+    },
     stats {
       soldCount
     },
@@ -170,6 +174,10 @@ export type NormalizedSale = {
     brevoTemplateId?: string | null;
     senderName?: string | null;
   };
+  faqs?: Array<{
+    question: string;
+    answer: string;
+  }>;
   stats?: {
     soldCount?: number | null;
   };
@@ -301,6 +309,19 @@ function normalizeSale(raw: RawSale): NormalizedSale | null {
 
   const layoutVariant = safeString(raw?.layoutVariant) === 'paikka' ? 'paikka' : 'standard';
 
+  const faqs = Array.isArray(raw?.faqs)
+    ? (raw.faqs as Array<{ question?: unknown; answer?: unknown }>)
+        .map((entry) => {
+          const question = safeString(entry?.question);
+          const answer = safeString(entry?.answer);
+          if (!question || !answer) {
+            return null;
+          }
+          return { question, answer };
+        })
+        .filter((value): value is { question: string; answer: string } => Boolean(value))
+    : [];
+
   return {
     id,
     slug,
@@ -328,6 +349,7 @@ function normalizeSale(raw: RawSale): NormalizedSale | null {
     },
     theme,
     products: normalizedProducts,
+    faqs: faqs.length > 0 ? faqs : undefined,
     tracking: {
       metaPixelId: safeString(raw?.tracking?.metaPixelId),
       gtagId: safeString(raw?.tracking?.gtagId),

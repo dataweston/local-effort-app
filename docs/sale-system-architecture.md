@@ -15,7 +15,7 @@ _Last updated: 2025-10-11_
 
 | Type | Purpose | Key fields |
 | --- | --- | --- |
-| `sale` | Represents a sale/presale, drives `/[slug]` | `title`, `slug`, `layoutVariant` (`"standard" | "paikka"`), `hero`, `tagline`, `pickupWindow` (start/end/timezone/info), `location` (address/notes), `theme` (color tokens, typography, button style), `products` (array of `saleProduct`), `tracking` (Meta Pixel, UTM source, GTM/GTAG), `email` (Brevo template, sender), `stats` (`soldCount` cache), `square` (locationId, `checkoutMode`, webhook tag), SEO/meta fields |
+| `sale` | Represents a sale/presale, drives `/[slug]` | `title`, `slug`, `layoutVariant` (`"standard" | "paikka"`), `hero`, `tagline`, `pickupWindow` (start/end/timezone/info), `location` (address/notes), `theme` (color tokens, typography, button style), `faqs` (array of QA), `products` (array of `saleProduct`), `tracking` (Meta Pixel, UTM source, GTM/GTAG), `email` (Brevo template, sender), `stats` (`soldCount` cache), `square` (locationId, `checkoutMode`, webhook tag), SEO/meta fields |
 | `product` | Catalog managed in Sanity, synced with Square | existing fields + `squareCheckoutLinkUrl`, `inventoryMode` (`"square" | "manual"`), `manualQty`, `priceDisplay`, `lastSyncedAt`, `squareItemId`, `squareVariationId` |
 
 ### Objects
@@ -106,6 +106,8 @@ SaleCheckoutButton.tsx
 SaleTracker.tsx (Supabase SWR hook)
 SaleFaq.tsx
 SaleMetaPixel.tsx
+SaleTrackingScripts.tsx
+SaleStructuredData.tsx
 ```
 
 - `SaleRenderer` takes `{ sale }` and chooses `StandardLayout` or `PaikkaLayout`. Layouts extend theme tokens (e.g., Standard = light background, Paikka = dark gradient).
@@ -173,7 +175,7 @@ SaleMetaPixel.tsx
 ## 6. Analytics & Meta
 
 - `generateMetadata` builds `<title>`, `<meta name="description">`, OG + Twitter tags using `sale.meta` fallback to defaults.
-- If `sale.tracking.metaPixelId` present, inject `<Script id="fb-pixel">`.
+- `SaleTrackingScripts` renders Meta Pixel + gtag snippets when configured; includes `<noscript>` pixel fallback.
 - Add JSON-LD `ProfessionalService` + `Sale` schema, referencing sale title, window, products.
 
 ## 7. Deployment & Routing
@@ -183,9 +185,9 @@ SaleMetaPixel.tsx
 
 ## 8. Workstream Checklist
 
-- [ ] **Schemas & Studio**: add `sale`, `saleProduct`, field upgrades, initial-value template, panel.
+- [ ] **Schemas & Studio**: add `sale`, `saleProduct`, field upgrades, initial-value template, panel. *(In progress; sale + saleProduct schemas created, product document fields expanded.)*
 - [x] **Next Route**: scaffold `[sale]`, GROQ fetch, renderer, components, metadata.
-- [ ] **UI Extraction**: port shared elements from current sale/Paikka pages → new component library. *(In progress; theming + base components moved.)*
+- [ ] **UI Extraction**: port shared elements from current sale/Paikka pages → new component library. *(In progress; theming, structured data, and checkout button abstraction moved.)*
 - [ ] **Supabase Migration**: add `orders` table + RLS policy, service key env wiring.
 - [ ] **Square Integrations**: CLI script, webhook rewrite, optional inline checkout route.
 - [ ] **Sanity Webhooks & ISR**: configure revalidate endpoint + tags.
