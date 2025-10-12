@@ -79,6 +79,13 @@ try {
   let serviceAccount = null;
   if (process.env.FIREBASE_SERVICE_ACCOUNT_JSON) {
     serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_JSON);
+  } else if (process.env.FIREBASE_SERVICE_ACCOUNT_BASE64) {
+    try {
+      const decoded = Buffer.from(process.env.FIREBASE_SERVICE_ACCOUNT_BASE64, 'base64').toString('utf8');
+      serviceAccount = JSON.parse(decoded);
+    } catch (err) {
+      console.warn('FIREBASE_SERVICE_ACCOUNT_BASE64 present but failed to decode/parse:', err?.message);
+    }
   } else if (process.env.FIREBASE_SERVICE_ACCOUNT_PATH) {
     const path = process.env.FIREBASE_SERVICE_ACCOUNT_PATH;
     if (fs.existsSync(path)) {
