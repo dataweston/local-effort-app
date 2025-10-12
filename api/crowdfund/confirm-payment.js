@@ -1,4 +1,5 @@
 const { getFirebaseAdmin } = require('../_lib/firebaseAdmin');
+const { sendCrowdfundReceipts } = require('./_lib/sendReceipt');
 
 const sanitizeName = (value) => {
   const str = String(value || '').trim();
@@ -17,7 +18,18 @@ module.exports = async (req, res) => {
     return res.status(503).json({ error: 'Database not configured on this server.' });
   }
 
-  const { items = [], funderName, email, phone, notes, notify, discountCode } = req.body || {};
+  const {
+    items = [],
+    funderName,
+    email,
+    phone,
+    notes,
+    notify,
+    discountCode,
+    rewardPreference,
+    totalCents,
+    discountLabel,
+  } = req.body || {};
   const pizzasInCart = Array.isArray(items)
     ? items
         .filter((item) => item && item.type === 'pizza')
@@ -26,6 +38,40 @@ module.exports = async (req, res) => {
           return sum + (Number.isFinite(count) && count > 0 ? count : 0);
         }, 0)
     : 0;
+
+  const sanitizedFunderName = sanitizeName(funderName);
+  const safeEmail = typeof email === 'string' && email.trim() ? email.trim().slice(0, 120) : '';
+  const safePhone = typeof phone === 'string' && phone.trim() ? phone.trim().slice(0, 30) : '';
+  const safeNotes = typeof notes === 'string' && notes.trim() ? notes.trim().slice(0, 500) : '';
+  const safeNotify = typeof notify === 'string' && notify.trim() ? notify.trim().slice(0, 60) : 'none';
+  const safeRewardPreference = typeof rewardPreference === 'string' && rewardPreference.trim()
+    ? rewardPreference.trim().slice(0, 120)
+    : '';
+  const safeDiscountLabel = typeof discountLabel === 'string' && discountLabel.trim()
+    ? discountLabel.trim().slice(0, 120)
+    : '';
+
+  const normalizedItems = Array.isArray(items)
+    ? items
+        .map((item) => {
+          if (!item) return null;
+          const name = typeof item.name === 'string' && item.name.trim()
+            ? item.name.trim().slice(0, 120)
+            : 'Contribution';
+          const rawQuantity = Number(item.quantity ?? item.pizzaCount ?? 0);
+          const quantity = Number.isFinite(rawQuantity) && rawQuantity > 0 ? Math.round(rawQuantity) : 1;
+          const rawPrice = Number(item.priceCents ?? item.price ?? 0);
+          const priceCents = Number.isFinite(rawPrice) ? Math.max(0, Math.round(rawPrice)) : 0;
+          return { name, quantity, priceCents };
+        })
+        .filter(Boolean)
+    : [];
+
+  const explicitTotal = Number(totalCents);
+  const itemsTotal = normalizedItems.reduce((sum, item) => sum + item.priceCents * item.quantity, 0);
+  const contributionTotal = Number.isFinite(explicitTotal) && explicitTotal >= 0
+    ? Math.round(explicitTotal)
+    : itemsTotal;
 
   if (!pizzasInCart) {
     return res.json({ success: true, message: 'No pizza items to update.' });
@@ -43,12 +89,12 @@ module.exports = async (req, res) => {
       const trimmedDiscount = typeof discountCode === 'string' ? discountCode.trim().slice(0, 60) : '';
 
       funders.push({
-        name: sanitizeName(funderName),
+        name: sanitizedFunderName,
         date: new Date().toISOString(),
-        email: email || null,
-        phone: phone || null,
-        notes: notes || null,
-        notify: notify || 'none',
+        email: safeEmail || null,
+        phone: safePhone || null,
+        notes: safeNotes || null,
+        notify: safeNotify || 'none',
         pizzas: pizzasInCart,
         discountCode: trimmedDiscount || null,
       });
@@ -66,11 +112,26 @@ module.exports = async (req, res) => {
       }
     });
 
-    const updatedDoc = await docRef.get();
-    const updatedTotal = updatedDoc.exists ? updatedDoc.data()?.pizzasSold || 0 : 0;
-    return res.json({ success: true, newTotal: updatedTotal });
-  } catch (error) {
-    console.warn('[crowdfund.confirm-payment] failed to persist pizzas', error.message);
-    return res.status(500).json({ error: 'Failed to update database after payment.' });
-  }
+      const updatedDoc = await docRef.get();
+      const updatedTotal = updatedDoc.exists ? updatedDoc.data()?.pizzasSold || 0 : 0;
+
+      await sendCrowdfundReceipts({
+        funderName: sanitizedFunderName,
+        email: safeEmail,
+        phone: safePhone,
+        totalCents: contributionTotal,
+        items: normalizedItems,
+        discountCode: trimmedDiscount,
+        discountLabel: safeDiscountLabel,
+        rewardPreference: safeRewardPreference,
+        notify: safeNotify,
+        notes: safeNotes,
+        isComplimentary: contributionTotal <= 0,
+      });
+
+      return res.json({ success: true, newTotal: updatedTotal });
+    } catch (error) {
+      console.warn('[crowdfund.confirm-payment] failed to persist pizzas', error.message);
+      return res.status(500).json({ error: 'Failed to update database after payment.' });
+    }
 };
