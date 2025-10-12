@@ -347,10 +347,15 @@ const EventDialog = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-3xl overflow-hidden p-0">
-        <div className={cn('grid gap-0', hasHeroImage ? 'md:grid-cols-[260px,1fr]' : '')}>
+      <DialogContent className="max-w-3xl overflow-hidden p-0 max-h-[calc(100vh-4rem)]">
+        <div
+          className={cn(
+            'flex h-full flex-col min-h-0',
+            hasHeroImage ? 'md:flex-row' : ''
+          )}
+        >
           {hasHeroImage && (
-            <div className="relative h-56 w-full overflow-hidden bg-slate-100 md:h-full">
+            <div className="relative h-56 w-full flex-shrink-0 overflow-hidden bg-slate-100 md:h-full md:w-64">
               <img
                 src={heroImage}
                 alt={heroAlt}
@@ -359,66 +364,68 @@ const EventDialog = ({
               />
             </div>
           )}
-          <div className="space-y-5 p-6">
-            <DialogHeader className="space-y-2 text-left">
-              <div className="space-y-1">
-                <DialogTitle className="text-2xl font-semibold text-slate-900">
-                  {event?.location}
-                </DialogTitle>
-                {dateLabel && (
-                  <DialogDescription className="text-sm font-medium text-slate-700">
-                    {dateLabel}
-                  </DialogDescription>
+          <div className="flex-1 overflow-y-auto p-6 min-h-0 md:max-h-full md:min-h-0">
+            <div className="space-y-5 pb-2">
+              <DialogHeader className="space-y-2 text-left">
+                <div className="space-y-1">
+                  <DialogTitle className="text-2xl font-semibold text-slate-900">
+                    {event?.location}
+                  </DialogTitle>
+                  {dateLabel && (
+                    <DialogDescription className="text-sm font-medium text-slate-700">
+                      {dateLabel}
+                    </DialogDescription>
+                  )}
+                </div>
+                {event?.timingNote && <p className="text-sm text-slate-600">{event.timingNote}</p>}
+                {event?.locationDetails && (
+                  <p className="text-sm text-slate-600">{event.locationDetails}</p>
                 )}
-              </div>
-              {event?.timingNote && <p className="text-sm text-slate-600">{event.timingNote}</p>}
-              {event?.locationDetails && (
-                <p className="text-sm text-slate-600">{event.locationDetails}</p>
+              </DialogHeader>
+
+              {(event?.foodType || (event?.status && event.status !== 'scheduled')) && (
+                <div className="flex flex-wrap gap-2">
+                  {event?.foodType && <EventBadge>{event.foodType}</EventBadge>}
+                  {event?.status && event.status !== 'scheduled' && (
+                    <EventBadge variant={statusVariant}>
+                      {EVENT_STATUS_LABELS[event.status] || event.status}
+                    </EventBadge>
+                  )}
+                </div>
               )}
-            </DialogHeader>
 
-            {(event?.foodType || (event?.status && event.status !== 'scheduled')) && (
-              <div className="flex flex-wrap gap-2">
-                {event?.foodType && <EventBadge>{event.foodType}</EventBadge>}
-                {event?.status && event.status !== 'scheduled' && (
-                  <EventBadge variant={statusVariant}>
-                    {EVENT_STATUS_LABELS[event.status] || event.status}
-                  </EventBadge>
-                )}
-              </div>
-            )}
+              {event?.tagline && (
+                <p className="text-lg font-medium text-slate-800">{event.tagline}</p>
+              )}
+              {summary && !event?.tagline && (
+                <p className="text-base text-slate-700">{summary}</p>
+              )}
 
-            {event?.tagline && (
-              <p className="text-lg font-medium text-slate-800">{event.tagline}</p>
-            )}
-            {summary && !event?.tagline && (
-              <p className="text-base text-slate-700">{summary}</p>
-            )}
+              <Separator className="bg-slate-200" />
 
-            <Separator className="bg-slate-200" />
+              {hasPortableDescription ? (
+                <div className="prose prose-slate max-w-none text-sm leading-relaxed">
+                  <PortableText value={event.description} components={portableComponents} />
+                </div>
+              ) : (
+                plainDescription && (
+                  <p className="text-sm leading-relaxed text-slate-600">{plainDescription}</p>
+                )
+              )}
 
-            {hasPortableDescription ? (
-              <div className="prose prose-slate max-w-none text-sm leading-relaxed">
-                <PortableText value={event.description} components={portableComponents} />
-              </div>
-            ) : (
-              plainDescription && (
-                <p className="text-sm leading-relaxed text-slate-600">{plainDescription}</p>
-              )
-            )}
-
-            {event?.ticketsUrl && (
-              <div className="pt-2">
-                <a
-                  href={event.ticketsUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="inline-flex items-center justify-center rounded-md bg-[var(--color-accent)] px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)] focus:ring-offset-2"
-                >
-                  {event?.ctaLabel || 'Get tickets'}
-                </a>
-              </div>
-            )}
+              {event?.ticketsUrl && (
+                <div className="pt-2">
+                  <a
+                    href={event.ticketsUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center justify-center rounded-md bg-[var(--color-accent)] px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)] focus:ring-offset-2"
+                  >
+                    {event?.ctaLabel || 'Get tickets'}
+                  </a>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </DialogContent>
