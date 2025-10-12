@@ -1,6 +1,7 @@
 import type { IncomingHttpHeaders, IncomingMessage, ServerResponse } from 'node:http';
-import { applyCompletedPayment, verifySquareSignature } from '../../packages/lib/crowdfundingPipeline';
-import crypto from 'node:crypto';
+import nodeFetch from 'node-fetch';
+import { createClient, type SupabaseClient } from '@supabase/supabase-js';
+import { applyCompletedPayment, verifySquareSignature as verifyLegacySquareSignature } from '../../packages/lib/crowdfundingPipeline';
 import { db as defaultDb } from '../../packages/lib/firebaseAdmin';
 
 type Req = IncomingMessage & {
@@ -16,25 +17,62 @@ type Res = ServerResponse & {
   setHeader: (name: string, value: string) => void;
 };
 
-type FirestoreLike = FirebaseFirestore.Firestore;
+type PaymentLineItem = {
+  name?: string | null;
+  catalog_object_id?: string | null;
+  quantity?: string | number | null;
+  metadata?: Record<string, unknown> | null;
+};
 
 type PaymentObject = {
   id: string;
   status?: string;
   customer_id?: string | null;
+  customer_details?: {
+    email_address?: string | null;
+  } | null;
+  buyer_email_address?: string | null;
+  receipt_email?: string | null;
+  metadata?: Record<string, unknown> | null;
+  note?: string | null;
   order?: {
-    line_items?: Array<{
-      name?: string | null;
-      catalog_object_id?: string | null;
-      quantity?: string | number | null;
-    }>;
-  };
+    location_id?: string | null;
+    metadata?: Record<string, unknown> | null;
+    line_items?: PaymentLineItem[] | null;
+  } | null;
   amount_money?: {
     amount?: number | string | null;
-  };
+  } | null;
+  total_money?: {
+    amount?: number | string | null;
+  } | null;
 };
 
-export const config = { api: { bodyParser: false } };
+type ExtractedSaleOrder = {
+  saleSlug: string;
+  productId: string | null;
+  qty: number;
+  amountCents: number;
+  customerEmail: string | null;
+  paymentId: string;
+  metadata: Record<string, unknown> | null;
+};
+
+type RecordedSaleOrder = ExtractedSaleOrder & {
+  inserted: boolean;
+};
+
+type SaleOrderProcessResult = {
+  saleSlug: string;
+  qty: number;
+  amountCents: number;
+  inserted: boolean;
+  revalidated: boolean;
+};
+
+const fetch = nodeFetch as unknown as typeof globalThis.fetch;
+
+let supabaseClient: SupabaseClient<any, 'sales', any> | null = null;
 
 function withHelpers(res: ServerResponse): Res {
   const enhanced = res as Res;
@@ -72,115 +110,238 @@ async function readRawBody(req: Req): Promise<Buffer> {
   return Buffer.concat(chunks);
 }
 
-function timingSafeEqual(a: Buffer, b: Buffer): boolean {
-  if (a.length !== b.length) {
-    return false;
-  }
-  return crypto.timingSafeEqual(a, b);
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return !!value && typeof value === 'object' && !Array.isArray(value);
 }
 
-export function verifySquareSignature(rawBody: Buffer, signature: string): boolean {
-  const sigKey = process.env.SQUARE_WEBHOOK_SIGNATURE_KEY;
-  const notificationUrl = process.env.SQUARE_WEBHOOK_NOTIFICATION_URL;
-  if (!sigKey || !notificationUrl) {
-    console.error('[square.webhook] missing signature configuration');
-    return false;
+function getSupabaseClient(): SupabaseClient<any, 'sales', any> {
+  if (supabaseClient) {
+    return supabaseClient;
   }
-  const hmac = crypto.createHmac('sha256', sigKey);
-  hmac.update(notificationUrl + rawBody.toString('utf8'));
-  const digest = hmac.digest('base64');
-  const provided = Buffer.from(signature);
-  const expected = Buffer.from(digest);
-  return timingSafeEqual(provided, expected);
+  const supabaseUrl = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!supabaseUrl || !serviceRoleKey) {
+    throw new Error('Supabase environment variables are not configured. Set SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY.');
+  }
+  supabaseClient = createClient(supabaseUrl, serviceRoleKey, {
+    auth: {
+      persistSession: false,
+      autoRefreshToken: false,
+    },
+    db: {
+      schema: 'sales',
+    },
+  });
+  return supabaseClient;
 }
 
-function parsePizzaQuantity(payment: PaymentObject): number {
-  const items = payment.order?.line_items ?? [];
-  return items
-    .filter((item) => {
-      const name = item.name ?? '';
-      const catalogId = item.catalog_object_id ?? '';
-      return /pizza/i.test(name) || /pizza/i.test(catalogId);
-    })
-    .reduce((sum, item) => {
-      const quantityRaw = item.quantity;
-      const quantity = typeof quantityRaw === 'string' ? Number(quantityRaw) : Number(quantityRaw ?? 0);
-      return sum + (Number.isFinite(quantity) ? quantity : 0);
-    }, 0);
-}
-
-export async function applyCompletedPayment(payment: PaymentObject, options: { db?: FirestoreLike } = {}): Promise<void> {
-  const firestore = options.db ?? defaultDb;
-  if (!firestore) {
-    throw new Error('Firestore unavailable');
+function collectMetadataSources(payment: PaymentObject): Record<string, unknown>[] {
+  const sources: Record<string, unknown>[] = [];
+  if (isRecord(payment.metadata)) {
+    sources.push(payment.metadata as Record<string, unknown>);
   }
-
-  const paymentId = payment.id;
-  const customerId = payment.customer_id ?? null;
-  const qty = parsePizzaQuantity(payment);
-  const amount = Number(payment.amount_money?.amount ?? 0);
-
-  await firestore.runTransaction(async (tx) => {
-    const ordersRef = firestore.collection('orders').doc(paymentId);
-    const existingOrder = await tx.get(ordersRef);
-    if (existingOrder.exists) {
-      return;
+  const orderMetadata = payment.order?.metadata;
+  if (isRecord(orderMetadata)) {
+    sources.push(orderMetadata as Record<string, unknown>);
+  }
+  for (const item of payment.order?.line_items ?? []) {
+    if (isRecord(item?.metadata)) {
+      sources.push(item.metadata as Record<string, unknown>);
     }
+  }
+  return sources;
+}
 
-    tx.set(ordersRef, {
-      createdAt: new Date(),
-      squarePaymentId: paymentId,
-      customerId,
-      item: 'pizza',
-      qty,
-      amount,
-      status: 'PAID',
-      source: 'square',
-    });
-
-    let backerIncrement = 0;
-    if (customerId) {
-      const backerRef = firestore.collection('backers').doc(customerId);
-      const backerSnap = await tx.get(backerRef);
-      if (!backerSnap.exists) {
-        backerIncrement = 1;
-        tx.set(backerRef, {
-          firstSeenAt: new Date(),
-          ordersCount: 1,
-          amountTotal: amount,
-        });
-      } else {
-        const data = backerSnap.data() ?? {};
-        tx.update(backerRef, {
-          ordersCount: Number(data.ordersCount ?? 0) + 1,
-          amountTotal: Number(data.amountTotal ?? 0) + amount,
-        });
+function lookupString(sources: Record<string, unknown>[], keys: string[]): string | null {
+  for (const source of sources) {
+    for (const [key, rawValue] of Object.entries(source)) {
+      const match = keys.find((candidate) => candidate.toLowerCase() === key.toLowerCase());
+      if (!match) continue;
+      if (typeof rawValue === 'string' && rawValue.trim()) {
+        return rawValue.trim();
+      }
+      if (typeof rawValue === 'number' && Number.isFinite(rawValue)) {
+        return String(rawValue);
       }
     }
-
-    const aggRef = firestore.collection('aggregates').doc('crowdfunding');
-    const aggSnap = await tx.get(aggRef);
-    const base = aggSnap.exists ? aggSnap.data() ?? {} : {};
-    const nextPizzas = Number(base.pizzas ?? 0) + qty;
-    const nextBackers = Number(base.backers ?? 0) + backerIncrement;
-    tx.set(
-      aggRef,
-      {
-        pizzas: nextPizzas,
-        backers: nextBackers,
-        updatedAt: new Date(),
-      },
-      { merge: true },
-    );
-  });
-
-  console.info('[square.webhook] processed payment', {
-    id: paymentId,
-    customerId,
-    qty,
-    amount,
-  });
+  }
+  return null;
 }
+
+function lookupNumber(sources: Record<string, unknown>[], keys: string[]): number | null {
+  for (const source of sources) {
+    for (const [key, rawValue] of Object.entries(source)) {
+      const match = keys.find((candidate) => candidate.toLowerCase() === key.toLowerCase());
+      if (!match) continue;
+      const value = typeof rawValue === 'string' ? Number(rawValue) : Number(rawValue ?? NaN);
+      if (Number.isFinite(value)) {
+        return value;
+      }
+    }
+  }
+  return null;
+}
+
+function sumLineItemQuantities(items?: PaymentLineItem[] | null): number {
+  if (!items?.length) {
+    return 0;
+  }
+  return items.reduce((total, item) => {
+    const raw = typeof item.quantity === 'string' ? Number(item.quantity) : Number(item.quantity ?? 0);
+    return total + (Number.isFinite(raw) ? raw : 0);
+  }, 0);
+}
+
+function extractSaleSlugFromNote(note: unknown): string | null {
+  if (typeof note !== 'string') {
+    return null;
+  }
+  const match = note.match(/sale[:=]\s*([a-z0-9-]+)/i);
+  return match ? match[1].toLowerCase() : null;
+}
+
+function extractSaleOrder(payment: PaymentObject): ExtractedSaleOrder | null {
+  const metadataSources = collectMetadataSources(payment);
+  const saleSlug =
+    lookupString(metadataSources, ['saleSlug', 'sale_slug', 'sale', 'slug']) ?? extractSaleSlugFromNote(payment.note);
+
+  if (!saleSlug) {
+    return null;
+  }
+
+  const productId =
+    lookupString(metadataSources, ['productId', 'product_id', 'product', 'item', 'catalogId']) ??
+    (payment.order?.line_items ?? [])
+      .map((item) => (typeof item.catalog_object_id === 'string' ? item.catalog_object_id.trim() : ''))
+      .find((value) => !!value) ??
+    null;
+
+  const quantityFromMeta = lookupNumber(metadataSources, ['quantity', 'qty', 'count']);
+  const lineItemQuantity = sumLineItemQuantities(payment.order?.line_items);
+  const qtyCandidate = typeof quantityFromMeta === 'number' ? quantityFromMeta : lineItemQuantity;
+  const qty = Math.max(1, Math.round(Number.isFinite(qtyCandidate) && qtyCandidate > 0 ? qtyCandidate : 1));
+
+  const amountRaw = payment.total_money?.amount ?? payment.amount_money?.amount ?? 0;
+  const amountNumeric = typeof amountRaw === 'string' ? Number(amountRaw) : Number(amountRaw ?? 0);
+  const amountCents = Number.isFinite(amountNumeric) && amountNumeric > 0 ? Math.round(amountNumeric) : 0;
+
+  const emailCandidates = [
+    payment.customer_details?.email_address,
+    payment.buyer_email_address,
+    payment.receipt_email,
+  ];
+  const customerEmail = emailCandidates
+    .map((value) => (typeof value === 'string' ? value.trim() : ''))
+    .find((value) => !!value) || null;
+
+  const metadataPayload: Record<string, unknown> = {};
+  if (isRecord(payment.metadata) && Object.keys(payment.metadata).length) {
+    metadataPayload.payment = payment.metadata as Record<string, unknown>;
+  }
+  const orderMeta = payment.order?.metadata;
+  if (isRecord(orderMeta) && Object.keys(orderMeta).length) {
+    metadataPayload.order = orderMeta as Record<string, unknown>;
+  }
+  const lineItemsMeta = (payment.order?.line_items ?? [])
+    .map((item, index) => {
+      if (!isRecord(item?.metadata)) {
+        return null;
+      }
+      const metadata = item.metadata as Record<string, unknown>;
+      return Object.keys(metadata).length ? { index, metadata } : null;
+    })
+    .filter((entry): entry is { index: number; metadata: Record<string, unknown> } => entry !== null);
+  if (lineItemsMeta.length) {
+    metadataPayload.lineItems = lineItemsMeta;
+  }
+
+  return {
+    saleSlug: saleSlug.toLowerCase(),
+    productId,
+    qty,
+    amountCents,
+    customerEmail,
+    paymentId: payment.id,
+    metadata: Object.keys(metadataPayload).length ? metadataPayload : null,
+  };
+}
+
+async function insertSaleOrder(payment: PaymentObject): Promise<RecordedSaleOrder | null> {
+  const extracted = extractSaleOrder(payment);
+  if (!extracted) {
+    return null;
+  }
+
+  const supabase = getSupabaseClient();
+  const payload = {
+    sale_slug: extracted.saleSlug,
+    product_id: extracted.productId,
+    qty: extracted.qty,
+    amount_cents: extracted.amountCents,
+    square_payment_id: extracted.paymentId,
+    customer_email: extracted.customerEmail,
+    metadata: extracted.metadata,
+  };
+
+  const response = await supabase.from('orders').insert(payload);
+  if (response.error) {
+    if (response.error.code === '23505') {
+      console.info('[square.webhook] duplicate payment skipped', { paymentId: extracted.paymentId });
+      return { ...extracted, inserted: false };
+    }
+    throw Object.assign(new Error('supabase-insert-failed'), { cause: response.error });
+  }
+
+  return { ...extracted, inserted: true };
+}
+
+async function triggerSaleRevalidate(saleSlug: string): Promise<boolean> {
+  const target = process.env.SALE_REVALIDATE_URL;
+  if (!target) {
+    return false;
+  }
+  try {
+    const url = new URL(target);
+    if (!url.searchParams.get('sale')) {
+      url.searchParams.set('sale', saleSlug);
+    }
+    const secret = process.env.SALE_REVALIDATE_SECRET;
+    if (secret && !url.searchParams.get('secret')) {
+      url.searchParams.set('secret', secret);
+    }
+    const response = await fetch(url.toString(), { method: 'POST' });
+    if (!response.ok) {
+      console.warn('[square.webhook] sale revalidate failed', { saleSlug, status: response.status });
+      return false;
+    }
+    return true;
+  } catch (error) {
+    console.warn('[square.webhook] sale revalidate threw', { saleSlug, error });
+    return false;
+  }
+}
+
+async function processSaleOrder(payment: PaymentObject): Promise<SaleOrderProcessResult | null> {
+  try {
+    const recorded = await insertSaleOrder(payment);
+    if (!recorded) {
+      return null;
+    }
+    const revalidated = await triggerSaleRevalidate(recorded.saleSlug);
+    return {
+      saleSlug: recorded.saleSlug,
+      qty: recorded.qty,
+      amountCents: recorded.amountCents,
+      inserted: recorded.inserted,
+      revalidated,
+    };
+  } catch (error) {
+    console.error('[square.webhook] failed to persist sale order', { paymentId: payment.id, error });
+    return null;
+  }
+}
+
+export const config = { api: { bodyParser: false } };
 
 export default async function handler(request: Req, response: ServerResponse): Promise<void> {
   const req = request;
@@ -201,7 +362,7 @@ export default async function handler(request: Req, response: ServerResponse): P
     }
 
     const rawBody = await readRawBody(req);
-    if (!verifySquareSignature(rawBody, signature)) {
+    if (!verifyLegacySquareSignature(rawBody, signature)) {
       res.status(400).json({ ok: false, error: 'invalid-signature' });
       return;
     }
@@ -223,6 +384,11 @@ export default async function handler(request: Req, response: ServerResponse): P
     if (status !== 'COMPLETED') {
       res.status(200).json({ ok: true, ignored: true });
       return;
+    }
+
+    const saleResult = await processSaleOrder(payment);
+    if (saleResult) {
+      console.info('[square.webhook] sale order recorded', saleResult);
     }
 
     await applyCompletedPayment(payment, { db: defaultDb });
