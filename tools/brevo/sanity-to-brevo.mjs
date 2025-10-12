@@ -18,14 +18,16 @@ const query = `
     "hero": heroImage.asset->url,
     goal, raised, pizzasSold, backers, endDate,
     updateTitle, updateDate, updateLede,
-    updateBody[]{ ..., children[]{text} }
+    updateBody[]{ ..., children[]{text} },
+    updates[]{ title, date, excerpt, body[]{ ..., children[]{text} } },
+    events[]{ title, date, venue, city, url }
   },
-  "updates": *[_type == "update"]|order(date desc)[0..2]{
+  "allEvents": *[_type=="event"]|order(date desc)[0..4]{
+    title, date, venue, city, "url": coalesce(url, rsvpUrl)
+  },
+  "allUpdates": *[_type == "update"]|order(date desc)[0..2]{
     title, date, excerpt,
     body[]{ ..., children[]{text} }
-  },
-  "events": *[_type=="event" && dateTime(date) >= now()]|order(date asc)[0..4]{
-    title, date, venue, city, "url": coalesce(url, rsvpUrl)
   }
 }
 `;
@@ -70,8 +72,9 @@ const tokens = {
   SECONDARY_CTA_URL: 'https://www.localeffortfood.com/releases?utm_source=email&utm_medium=brevo&utm_campaign=cf_update'
 };
 
-// events to EVn_*
-(result.events || []).slice(0,4).forEach((e,i) => {
+// events to EVn_* - prefer campaign events, fallback to all events
+const events = (c.events && c.events.length) ? c.events : (result.allEvents || []);
+events.slice(0,4).forEach((e,i) => {
   const n = i+1;
   tokens[`EV${n}_DATE`]  = (e.date||'').slice(0,10);
   tokens[`EV${n}_TITLE`] = e.title||'';
@@ -80,8 +83,9 @@ const tokens = {
   tokens[`EV${n}_URL`]   = e.url||tokens.UPDATES_URL;
 });
 
-// updates to UPn_*
-(result.updates || []).slice(0,2).forEach((u,i) => {
+// updates to UPn_* - prefer campaign updates, fallback to all updates
+const updates = (c.updates && c.updates.length) ? c.updates : (result.allUpdates || []);
+updates.slice(0,2).forEach((u,i) => {
   const n = i+1;
   tokens[`UP${n}_TITLE`] = u.title||'';
   tokens[`UP${n}_DATE`]  = (u.date||'').slice(0,10);
