@@ -1,5 +1,4 @@
 import type { IncomingHttpHeaders, IncomingMessage, ServerResponse } from 'node:http';
-import nodeFetch from 'node-fetch';
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import { applyCompletedPayment, verifySquareSignature as verifyLegacySquareSignature } from '../../packages/lib/crowdfundingPipeline';
 import { db as defaultDb } from '../../packages/lib/firebaseAdmin';
@@ -70,7 +69,11 @@ type SaleOrderProcessResult = {
   revalidated: boolean;
 };
 
-const fetch = nodeFetch as unknown as typeof globalThis.fetch;
+type MinimalFetch = (input: string, init?: { method?: string }) => Promise<{ ok: boolean; status: number }>;
+
+const fetchFn: MinimalFetch | null = typeof globalThis.fetch === 'function'
+  ? (globalThis.fetch as unknown as MinimalFetch)
+  : null;
 
 let supabaseClient: SupabaseClient<any, 'sales', any> | null = null;
 
@@ -309,7 +312,11 @@ async function triggerSaleRevalidate(saleSlug: string): Promise<boolean> {
     if (secret && !url.searchParams.get('secret')) {
       url.searchParams.set('secret', secret);
     }
-    const response = await fetch(url.toString(), { method: 'POST' });
+    if (!fetchFn) {
+      console.warn('[square.webhook] global fetch unavailable, skipping revalidate');
+      return false;
+    }
+    const response = await fetchFn(url.toString(), { method: 'POST' });
     if (!response.ok) {
       console.warn('[square.webhook] sale revalidate failed', { saleSlug, status: response.status });
       return false;

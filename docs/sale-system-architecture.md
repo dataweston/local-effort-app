@@ -141,9 +141,9 @@ SaleStructuredData.tsx
   - Signature verification with `SQUARE_WEBHOOK_SIGNATURE_KEY` & `SQUARE_WEBHOOK_NOTIFICATION_URL`.
   - Handle `payment.created` / `payment.updated` where status `COMPLETED`.
   - Compute `qty`, `amount`, `saleSlug` from payment metadata (e.g., `payment.note` or `order.metadata.saleSlug`).
-  - Upsert Supabase `sales.orders` table (service key via env). Reference `supabase/sales-orders.sql` for canonical structure and policies.
+  - Upsert Supabase `sales.orders` table (service key via env). Reference `supabase/sales-orders.sql` for canonical structure and policies. Current implementation lives in `api/square/webhook.ts` and relies on `@supabase/supabase-js`.
   - Update cached `stats.soldCount` in Sanity (via mutation) as optional step.
-  - Fire `await revalidateSale(saleSlug)` which `fetch`es `/api/revalidate?sale=${saleSlug}` with secret token.
+  - Fire `await revalidateSale(saleSlug)` which `fetch`es `/api/revalidate?sale=${saleSlug}` with secret token. Environment variables `SALE_REVALIDATE_URL` (and optional `SALE_REVALIDATE_SECRET`) control the target endpoint.
 
 ### Inline Checkout (Tier B)
 
@@ -181,7 +181,7 @@ SaleStructuredData.tsx
 - [x] **Next Route**: scaffold `[sale]`, GROQ fetch, renderer, components, metadata.
 - [ ] **UI Extraction**: port shared elements from current sale/Paikka pages → new component library. *(In progress; theming, structured data, inline checkout provider, and tracking scripts moved.)*
 - [x] **Supabase Migration**: add `orders` table + RLS policy, service key env wiring. *(Complete; `supabase/sales-orders.sql` applied to Supabase, `local-office/apps/web/.env.example` documents required env vars. Remaining follow-up: consider anon-key client access once RLS finalized.)*
-- [ ] **Square Integrations**: CLI script, webhook rewrite, optional inline checkout route.
+- [ ] **Square Integrations**: CLI script, webhook rewrite, optional inline checkout route. *(In progress; webhook now writes to Supabase and triggers ISR via `SALE_REVALIDATE_URL`, CLI + inline checkout still pending.)*
 - [ ] **Sanity Webhooks & ISR**: configure revalidate endpoint + tags.
 - [ ] **Analytics & SEO**: ensure meta, pixel, JSON-LD coverage.
 - [ ] **Docs & Tests**: update README, add E2E or integration tests (Vitest or Playwright) for sale rendering.

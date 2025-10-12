@@ -1,0 +1,15 @@
+{
+  "name": "brevo-tools",
+  "type": "module",
+  "version": "1.0.0",
+  "scripts": {
+    "sync": "node run.mjs",
+    "render": "node render.mjs",
+    "pull": "node sanity-to-brevo.mjs",
+    "upsert": "node upsert-brevo.mjs"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "node-fetch": "^3.3.2"
+  }
+}
