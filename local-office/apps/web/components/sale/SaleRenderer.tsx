@@ -2,6 +2,7 @@ import type { NormalizedSale } from '../../lib/sales';
 import { SaleHero } from './SaleHero';
 import { SalePickupDetails } from './SalePickupDetails';
 import { SaleFaq } from './SaleFaq';
+import { SaleInlineCheckoutProvider } from './SaleInlineCheckout';
 import { SaleProductList } from './SaleProductList';
 import { SaleStructuredData } from './SaleStructuredData';
 import { SaleTracker } from './SaleTracker';
@@ -29,7 +30,9 @@ export function SaleRenderer({ sale }: { sale: NormalizedSale }) {
           <SaleHero sale={sale} theme={theme} />
           <SaleTracker sale={sale} theme={theme} />
           <SalePickupDetails sale={sale} theme={theme} />
-          <SaleProductList sale={sale} theme={theme} />
+          <SaleInlineCheckoutProvider sale={sale} theme={theme}>
+            <SaleProductList sale={sale} theme={theme} />
+          </SaleInlineCheckoutProvider>
           <SaleFaq sale={sale} theme={theme} />
         </div>
       </div>

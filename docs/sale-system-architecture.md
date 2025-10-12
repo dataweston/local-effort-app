@@ -31,6 +31,7 @@ _Last updated: 2025-10-11_
 
 - Initial-value template "Create Sale" prompts for slug, layout, pickup window basics, theme preset (Standard/Paikka), optional Meta Pixel + Brevo template.
 - Custom panel: "Add products from Square Catalog" (serverless function fetches Square items, convert to `saleProduct` entries, writes checkout link URLs when available).
+- Current implementation: Sanity templates (`sale-default`, `sale-paikka`) prefill layout, timezone, and baseline theme tokens.
 
 ## 2. Rendering Flow (Next.js)
 
@@ -103,6 +104,7 @@ SalePickupBlock.tsx
 SaleProductGrid.tsx
 SaleProductCard.tsx
 SaleCheckoutButton.tsx
+SaleInlineCheckout.tsx
 SaleTracker.tsx (Supabase SWR hook)
 SaleFaq.tsx
 SaleMetaPixel.tsx
@@ -160,7 +162,7 @@ SaleStructuredData.tsx
   - Looks up sale & product to ensure inline checkout is allowed.
   - Creates Square order & payment via Payments API.
   - Returns success payload with redirect URL or confirmation data.
-- Frontend `SaleCheckoutButton` toggles a headless modal containing Square Web Payments SDK card component. Feature flagged per sale.
+- Frontend `SaleCheckoutButton` toggles `SaleInlineCheckout` provider, which currently displays a placeholder modal. Future work: embed Square Web Payments SDK inside this flow.
 
 ## 5. Revalidation & Cache Invalidation
 
@@ -185,9 +187,9 @@ SaleStructuredData.tsx
 
 ## 8. Workstream Checklist
 
-- [ ] **Schemas & Studio**: add `sale`, `saleProduct`, field upgrades, initial-value template, panel. *(In progress; sale + saleProduct schemas created, product document fields expanded.)*
+- [ ] **Schemas & Studio**: add `sale`, `saleProduct`, field upgrades, initial-value template, panel. *(In progress; sale + saleProduct schemas created, product document fields expanded, initial-value templates registered.)*
 - [x] **Next Route**: scaffold `[sale]`, GROQ fetch, renderer, components, metadata.
-- [ ] **UI Extraction**: port shared elements from current sale/Paikka pages → new component library. *(In progress; theming, structured data, and checkout button abstraction moved.)*
+- [ ] **UI Extraction**: port shared elements from current sale/Paikka pages → new component library. *(In progress; theming, structured data, inline checkout provider, and tracking scripts moved.)*
 - [ ] **Supabase Migration**: add `orders` table + RLS policy, service key env wiring.
 - [ ] **Square Integrations**: CLI script, webhook rewrite, optional inline checkout route.
 - [ ] **Sanity Webhooks & ISR**: configure revalidate endpoint + tags.
