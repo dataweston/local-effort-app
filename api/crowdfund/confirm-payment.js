@@ -79,14 +79,14 @@ module.exports = async (req, res) => {
 
   try {
     const docRef = db.collection('crowdfund').doc('status');
+    const trimmedDiscount = typeof discountCode === 'string' ? discountCode.trim().slice(0, 60) : '';
+
     await db.runTransaction(async (transaction) => {
       const doc = await transaction.get(docRef);
       const current = doc.exists ? doc.data() || {} : {};
       const goal = typeof current.goal === 'number' ? current.goal : 1000;
       const pizzasSold = Number(current.pizzasSold) || 0;
       const funders = Array.isArray(current.funders) ? current.funders.slice() : [];
-
-      const trimmedDiscount = typeof discountCode === 'string' ? discountCode.trim().slice(0, 60) : '';
 
       funders.push({
         name: sanitizedFunderName,
