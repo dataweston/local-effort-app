@@ -2396,6 +2396,149 @@ const CrowdfundingPage = () => {
                 </p>
               )}
               {showForm && activeTier && (
+                <form
+                  className="space-y-6"
+                  onSubmit={(event) => {
+                    event.preventDefault();
+                    if (!activeTier || typeof activeTier.amount !== 'number') return;
+                    contribute([
+                      {
+                        name: activeTier.title || 'Pizza',
+                        price: Math.round(activeTier.amount * 100),
+                        type: 'pizza',
+                        pizzaCount: pizzaQty,
+                        quantity: pizzaQty,
+                      },
+                    ]);
+                  }}
+                >
+                  <div className="grid grid-cols-1 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="cf-name">Name</Label>
+                      <Input
+                        id="cf-name"
+                        placeholder="Name"
+                        autoComplete="name"
+                        value={funderName}
+                        onChange={(e) => setFunderName(e.target.value)}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="cf-email">Email</Label>
+                      <Input
+                        id="cf-email"
+                        type="email"
+                        autoComplete="email"
+                        placeholder="you@example.com"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="cf-phone">Phone</Label>
+                      <Input
+                        id="cf-phone"
+                        type="tel"
+                        inputMode="tel"
+                        autoComplete="tel"
+                        placeholder="(555) 555-1234"
+                        value={phone}
+                        onChange={(e) => setPhone(e.target.value)}
+                      />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="cf-referral">Referral code (optional)</Label>
+                    <div className="flex flex-col gap-2 sm:flex-row">
+                      <Input
+                        id="cf-referral"
+                        placeholder="Referral code"
+                        value={referralInput}
+                        onChange={(e) => setReferralInput(e.target.value)}
+                        className="sm:flex-1"
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="sm:w-32"
+                        disabled={!referralInput || referralState.status === 'checking'}
+                        onClick={async () => {
+                          const code = (referralInput || '').trim();
+                          if (!code) return;
+                          setReferralState({
+                            status: 'checking',
+                            valid: false,
+                            participant: null,
+                            code,
+                          });
+                          try {
+                            const resp = await fetch('/api/referrals/validate', {
+                              method: 'POST',
+                              headers: { 'content-type': 'application/json' },
+                              body: JSON.stringify({ code }),
+                            });
+                            const data = await resp.json().catch(() => ({}));
+                            if (resp.ok && data && data.valid) {
+                              setReferralState({
+                                status: 'ok',
+                                valid: true,
+                                participant: data.participant || null,
+                                code,
+                              });
+                            } else {
+                              setReferralState({
+                                status: 'ok',
+                                valid: false,
+                                participant: null,
+                                code,
+                              });
+                            }
+                          } catch (_) {
+                            setReferralState({
+                              status: 'error',
+                              valid: false,
+                              participant: null,
+                              code,
+                            });
+                          }
+                        }}
+                      >
+                        {referralState.status === 'checking' ? 'Checking...' : 'Apply'}
+                      </Button>
+                    </div>
+                  </div>
+                  {referralState.status === 'ok' && referralState.valid && (
+                    <p className="text-sm text-emerald-700">
+                      Code applied
+                      {referralState.participant?.name
+                        ? ` for ${referralState.participant.name}`
+                        : ''}
+                      .
+                    </p>
+                  )}
+                  {referralState.status === 'ok' && !referralState.valid && (
+                    <p className="text-sm text-red-600">That code is not valid.</p>
+                  )}
+                  {referralState.status === 'error' && (
+                    <p className="text-sm text-red-600">Unable to validate that code right now.</p>
+                  )}
+                  <div className="space-y-2">
+                    <Label htmlFor="cf-square-discount">Square discount code (optional)</Label>
+                    <div className="flex flex-col gap-2 sm:flex-row">
+                      <Input
+                        id="cf-square-discount"
+                        placeholder="Discount code"
+                        autoComplete="off"
+                        value={squareDiscountCode}
+                        onChange={(e) => setSquareDiscountCode(e.target.value)}
+                        className="sm:flex-1"
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="sm:w-32"
+                        disabled={!trimmedDiscountCode || discountState.status === 'checking'}
+                        onClick={handleDiscountApply}
                 <div className="space-y-6">
                   <div className="relative">
                     {checkoutComplete ? (
@@ -2794,6 +2937,31 @@ const CrowdfundingPage = () => {
               )}
 
             </div>
+
+            <Card className="card space-y-4 p-6 ring-1 ring-neutral-200">
+              <CardHeader className="space-y-1 px-0 pt-0">
+                <CardTitle className="text-lg font-semibold text-slate-900">How it Works</CardTitle>
+              </CardHeader>
+              <CardContent className="px-0 pb-0">
+                <ol className="list-decimal space-y-3 pl-5 text-sm leading-relaxed text-slate-700">
+                  <li>Order a pizza, or 2, or 5, or 10, or 15.</li>
+                  <li>Select your preferred pizzas setting.</li>
+                  <li>
+                    You&apos;ll be able to pick up your pizzas at public events for the next 2-3 months.
+                    We&apos;ll send you updates on all the pizza party fun, including private/ticketed
+                    events only for supporters.
+                  </li>
+                  <li>
+                    For delivery, we ask for a minimum of 5 pizzas. We will reach out to schedule a
+                    delivery time.
+                  </li>
+                  <li>
+                    We will cook the pizzas at your home with a minimum order of 15 pizzas. We&apos;ll
+                    reach out to schedule a time.
+                  </li>
+                </ol>
+              </CardContent>
+            </Card>
 
             <div className="space-y-4">
               <Card className="border-0 bg-slate-900 text-white shadow-xl">
