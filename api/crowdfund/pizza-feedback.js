@@ -62,14 +62,8 @@ module.exports = async (req, res) => {
 
       return res.status(200).json({ entries });
     } catch (error) {
-      // Log the full error safely (avoid throwing if error is not an Error)
-      try {
-        console.warn('[crowdfund.pizza-feedback] list error', error && error.message ? error.message : error);
-      } catch (e) {
-        // ignore logging failures
-      }
-      // Return a safe, non-5xx response so clients and monitoring don't spike on transient storage errors
-      return res.status(200).json({ entries: [], error: 'Failed to load pizza feedback.' });
+      console.warn('[crowdfund.pizza-feedback] list error', error && error.message ? error.message : error);
+      return res.status(500).json({ error: 'Failed to load pizza feedback.' });
     }
   }
 
@@ -112,14 +106,8 @@ module.exports = async (req, res) => {
       };
       return res.status(200).json({ entry: responseEntry });
     } catch (error) {
-      // Log the full error safely
-      try {
-        console.warn('[crowdfund.pizza-feedback] write error', error && error.message ? error.message : error);
-      } catch (e) {
-        // ignore logging failures
-      }
-      // Return a safe JSON response. We avoid returning a raw 500 to reduce error noise.
-      return res.status(200).json({ entry: null, error: 'Failed to save pizza feedback.' });
+      console.warn('[crowdfund.pizza-feedback] write error', error && error.message ? error.message : error);
+      return res.status(500).json({ error: 'Failed to save pizza feedback.' });
     }
   }
 
