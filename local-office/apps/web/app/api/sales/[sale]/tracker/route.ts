@@ -13,19 +13,17 @@ export async function GET(_request: Request, { params }: { params: { sale?: stri
     const supabase = getSupabaseServiceRoleClient();
 
     const { data, error } = await supabase
-      .from('orders')
-      .select('qty')
-      .eq('sale_slug', saleSlug);
+      .from('sales.order_totals')
+      .select('sold_count')
+      .eq('sale_slug', saleSlug)
+      .maybeSingle();
 
     if (error) {
       console.error('[sale-tracker] Supabase query failed', { saleSlug, error });
       return NextResponse.json({ error: 'Failed to load tracker data' }, { status: 500 });
     }
 
-    const soldCount = (data ?? []).reduce((total, row) => {
-      const value = typeof row.qty === 'number' ? row.qty : Number(row.qty);
-      return total + (Number.isFinite(value) ? value : 0);
-    }, 0);
+    const soldCount = typeof data?.sold_count === 'number' && Number.isFinite(data.sold_count) ? data.sold_count : 0;
 
     return NextResponse.json(
       { saleSlug, soldCount },
