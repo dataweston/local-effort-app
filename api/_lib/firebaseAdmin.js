@@ -1,5 +1,14 @@
 const fs = require('fs');
 
+// Try loading local .env early so process.env is populated during local dev and scripts
+try {
+  // eslint-disable-next-line global-require
+  const dotenv = require('dotenv');
+  dotenv.config();
+} catch (e) {
+  // dotenv missing is fine in production
+}
+
 let cached = null;
 
 const readJsonFromEnv = (value, label) => {
@@ -14,13 +23,38 @@ const readJsonFromEnv = (value, label) => {
 
 const readJsonFromBase64 = (value) => {
   if (!value) return null;
-  try {
-    const decoded = Buffer.from(value, 'base64').toString('utf8');
-    return JSON.parse(decoded);
-  } catch (error) {
-    console.warn('[firebase-admin] failed to decode FIREBASE_SERVICE_ACCOUNT_BASE64', error.message);
-    return null;
+  const raw = String(value).trim();
+
+  // If the env contains JSON directly (not base64), try parsing directly
+  if (raw.startsWith('{') || raw.startsWith('\u007b')) {
+    try {
+      return JSON.parse(raw);
+    } catch (err) {
+      // fall through to base64 attempts
+    }
   }
+
+  // Try removing surrounding quotes
+  const unquoted = (raw.startsWith('"') && raw.endsWith('"')) || (raw.startsWith("'") && raw.endsWith("'"))
+    ? raw.slice(1, -1)
+    : raw;
+
+  // Try direct base64 decode, then URL safe variants
+  const candidates = [unquoted, unquoted.replace(/\s+/g, ''), unquoted.replace(/-/g, '+').replace(/_/g, '/')];
+  for (const cand of candidates) {
+    try {
+      const decoded = Buffer.from(cand, 'base64').toString('utf8');
+      // If decoded looks like JSON, parse it
+      if (decoded && (decoded.trim().startsWith('{') || decoded.includes('private_key'))) {
+        return JSON.parse(decoded);
+      }
+    } catch (err) {
+      // try next
+    }
+  }
+
+  console.warn('[firebase-admin] failed to decode FIREBASE_SERVICE_ACCOUNT_BASE64');
+  return null;
 };
 
 const readJsonFromPath = (filePath) => {
@@ -115,6 +149,13 @@ function getFirebaseAdmin() {
     if (!admin.apps.length) {
       const serviceAccount = loadServiceAccount();
       if (serviceAccount) {
+        // Ensure process.env has fallback values so firebase-admin can detect project id in different runtimes
+        try {
+          if (!process.env.FIREBASE_PROJECT_ID && serviceAccount.projectId) process.env.FIREBASE_PROJECT_ID = serviceAccount.projectId;
+          if (!process.env.FIREBASE_CLIENT_EMAIL && serviceAccount.clientEmail) process.env.FIREBASE_CLIENT_EMAIL = serviceAccount.clientEmail;
+        } catch (e) {
+          // ignore env set failures
+        }
         admin.initializeApp({
           credential: admin.credential.cert({
             projectId: serviceAccount.projectId,
