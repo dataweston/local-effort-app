@@ -25,6 +25,9 @@ alter table sales.orders enable row level security;
 create index if not exists orders_sale_slug_idx on sales.orders (sale_slug);
 create index if not exists orders_created_at_idx on sales.orders (created_at desc);
 
+drop policy if exists "service role full access" on sales.orders;
+drop policy if exists "read orders via anon" on sales.orders;
+
 create policy "service role full access" on sales.orders
   for all
   using (auth.role() = 'service_role')
@@ -34,7 +37,9 @@ create policy "read orders via anon" on sales.orders
   for select
   using (auth.role() in ('anon', 'authenticated'));
 
-create view if not exists sales.order_totals as
+drop view if exists sales.order_totals;
+
+create or replace view sales.order_totals as
 select
   sale_slug,
   coalesce(sum(qty), 0)::integer as sold_count,

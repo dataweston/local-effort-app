@@ -119,7 +119,7 @@ SaleStructuredData.tsx
   - Else if `sale.square.checkoutMode === 'inline'` → render inline flow (Tier B; toggled feature flag).
   - Else fallback disabled "Coming soon".
 - `SaleTracker` executes Supabase query `SELECT COALESCE(SUM(qty),0) AS sold FROM sales.orders WHERE sale_slug=$1`. Uses anon key on client, caches via SWR and revalidates on focus. Show skeleton while loading.
-- Current implementation: `/app/api/sales/[sale]/tracker` proxies Supabase using the service role key, while `SaleTrackerClient` polls this endpoint client-side with a 30s interval. Once Supabase RLS is finalized, this can be migrated to the anon-key flow described above. Supporting SQL lives in `supabase/sales-orders.sql` and creates the `sales.orders` table and aggregate view.
+- Current implementation: `/app/api/sales/[sale]/tracker` proxies Supabase using the service role key, while `SaleTrackerClient` polls this endpoint client-side with a 30s interval. Once Supabase RLS is finalized, this can be migrated to the anon-key flow described above. Supporting SQL lives in `supabase/sales-orders.sql` (applied against `qupwpcsbaidpykghqzxt` on 2025-10-11) and creates the `sales.orders` table plus `sales.order_totals` view.
 
 ## 4. Square Integrations
 
@@ -180,7 +180,7 @@ SaleStructuredData.tsx
 - [ ] **Schemas & Studio**: add `sale`, `saleProduct`, field upgrades, initial-value template, panel. *(In progress; sale + saleProduct schemas created, product document fields expanded, initial-value templates registered.)*
 - [x] **Next Route**: scaffold `[sale]`, GROQ fetch, renderer, components, metadata.
 - [ ] **UI Extraction**: port shared elements from current sale/Paikka pages → new component library. *(In progress; theming, structured data, inline checkout provider, and tracking scripts moved.)*
-- [ ] **Supabase Migration**: add `orders` table + RLS policy, service key env wiring. *(In progress; tracker API endpoint and client polling scaffolded, SQL migration `supabase/sales-orders.sql` added, env wiring still pending.)*
+- [x] **Supabase Migration**: add `orders` table + RLS policy, service key env wiring. *(Complete; `supabase/sales-orders.sql` applied to Supabase, `local-office/apps/web/.env.example` documents required env vars. Remaining follow-up: consider anon-key client access once RLS finalized.)*
 - [ ] **Square Integrations**: CLI script, webhook rewrite, optional inline checkout route.
 - [ ] **Sanity Webhooks & ISR**: configure revalidate endpoint + tags.
 - [ ] **Analytics & SEO**: ensure meta, pixel, JSON-LD coverage.

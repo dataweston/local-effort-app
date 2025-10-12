@@ -13,7 +13,7 @@ export async function GET(_request: Request, { params }: { params: { sale?: stri
     const supabase = getSupabaseServiceRoleClient();
 
     const { data, error } = await supabase
-      .from('sales.order_totals')
+      .from('order_totals')
       .select('sold_count')
       .eq('sale_slug', saleSlug)
       .maybeSingle();
