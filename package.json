@@ -14,7 +14,7 @@
     "@sanity/client": "^7.9.0",
     "@sanity/image-url": "^1.1.0",
     "@sentry/react": "^8.28.0",
-  "@supabase/supabase-js": "^2.45.3",
+    "@supabase/supabase-js": "^2.45.3",
     "@vercel/analytics": "^1.5.0",
     "@vercel/speed-insights": "^1.2.0",
     "animejs": "^3.2.2",
@@ -47,6 +47,7 @@
     "square": "^37.0.0",
     "swr": "^2.3.0",
     "tailwind-merge": "^2.5.2",
+    "ui-flat-colors": "^1.0.14",
     "uuid": "^8.3.2",
     "web-push": "^3.6.6"
   },

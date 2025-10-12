@@ -1028,6 +1028,7 @@ const CrowdfundingPage = () => {
   const cardContainerRef = useRef(null);
   const cardInstanceRef = useRef(null);
   const cardInitRef = useRef(false);
+  const modalCloseRef = useRef(null);
   const [cardReady, setCardReady] = useState(false);
   const [cardError, setCardError] = useState('');
   const { notify: notifyToast } = useToast();
@@ -1518,13 +1519,30 @@ const CrowdfundingPage = () => {
 
   useEffect(() => {
     if (!eventModal) return;
-    const stillExists = upcomingEvents.some(
+    // Keep the modal open if the selected event still exists in either
+    // the campaign's upcoming events or the featured public events list.
+    const stillExistsInUpcoming = upcomingEvents.some(
       (ev) => (ev._key || ev._id) === (eventModal._key || eventModal._id)
     );
-    if (!stillExists) {
+    const stillExistsInFeatured = featuredPublicEvents.some(
+      (ev) => (ev._key || ev._id) === (eventModal._key || eventModal._id)
+    );
+    if (!stillExistsInUpcoming && !stillExistsInFeatured) {
       setEventModal(null);
     }
-  }, [eventModal, upcomingEvents]);
+  }, [eventModal, upcomingEvents, featuredPublicEvents]);
+
+  // Focus the modal close button when an event modal opens for keyboard users
+  useEffect(() => {
+    if (!eventModal) return;
+    try {
+      if (modalCloseRef?.current && typeof modalCloseRef.current.focus === 'function') {
+        modalCloseRef.current.focus();
+      }
+    } catch (err) {
+      /* ignore focus errors */
+    }
+  }, [eventModal]);
 
   const formatListDate = useCallback(
     (event) => {
@@ -2493,32 +2511,49 @@ const CrowdfundingPage = () => {
         </section>
       </div>
       {eventModal && (
-        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-lg shadow-xl max-w-lg w-full p-5 relative">
+        <div
+          className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4"
+          role="dialog"
+          aria-modal="true"
+          aria-label={eventModal.location || 'Event details'}
+        >
+          <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full p-5 relative max-h-[90vh] overflow-hidden">
             <button
               type="button"
               className="absolute right-3 top-3 text-sm underline"
               onClick={() => setEventModal(null)}
+              ref={modalCloseRef}
             >
               Close
             </button>
-            <h4 className="text-xl font-bold mb-1">{eventModal.location}</h4>
-            <p className="text-sm text-gray-600 mb-3">{formatModalDate(eventModal)}</p>
-            {eventModal.description && (
-              <div className="prose max-w-none">
-                <PortableText value={eventModal.description} components={portableComponents} />
+            {eventModal.heroImage && (
+              <div className="mb-4 rounded-md overflow-hidden">
+                <img
+                  src={eventModal.heroImage}
+                  alt={eventModal.location || 'Event image'}
+                  className="w-full h-44 object-cover rounded-md"
+                />
               </div>
             )}
-            {eventModal.ticketsUrl && (
-              <a
-                className="btn btn-primary mt-4 inline-block"
-                href={eventModal.ticketsUrl}
-                target="_blank"
-                rel="noreferrer"
-              >
-                Get tickets
-              </a>
-            )}
+            <div className="overflow-auto p-1">
+              <h4 className="text-xl font-bold mb-1">{eventModal.location}</h4>
+              <p className="text-sm text-gray-600 mb-3">{formatModalDate(eventModal)}</p>
+              {eventModal.description && (
+                <div className="prose max-w-none">
+                  <PortableText value={eventModal.description} components={portableComponents} />
+                </div>
+              )}
+              {eventModal.ticketsUrl && (
+                <a
+                  className="btn btn-primary mt-4 inline-block"
+                  href={eventModal.ticketsUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  Get tickets
+                </a>
+              )}
+            </div>
           </div>
         </div>
       )}
