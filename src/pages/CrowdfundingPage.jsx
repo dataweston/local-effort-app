@@ -541,6 +541,7 @@ const CrowdfundingPage = () => {
   const [activeTab, setActiveTab] = useState('story');
   const [paying, setPaying] = useState(false);
   const [payError, setPayError] = useState('');
+  const [processingMessage, setProcessingMessage] = useState('');
   const [funderName, setFunderName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
@@ -556,6 +557,9 @@ const CrowdfundingPage = () => {
   const [showForm, setShowForm] = useState(false);
   const [pizzaQty, setPizzaQty] = useState(1);
   const [confirmMsg, setConfirmMsg] = useState('');
+  const [checkoutComplete, setCheckoutComplete] = useState(false);
+  const [receiptInfo, setReceiptInfo] = useState(null);
+  const [lastContributionTotal, setLastContributionTotal] = useState(null);
   const [formNotice, setFormNotice] = useState('');
   const [referralInput, setReferralInput] = useState('');
   const [referralState, setReferralState] = useState({
@@ -1142,6 +1146,14 @@ const CrowdfundingPage = () => {
     return currencyFormatter.format(discountedTotalCents / 100);
   }, [discountedTotalCents, currencyFormatter]);
 
+  const lastContributionLabel = useMemo(() => {
+    if (!Number.isFinite(lastContributionTotal)) {
+      return null;
+    }
+    const safeTotal = Math.max(0, Math.round(Number(lastContributionTotal) || 0));
+    return currencyFormatter.format(safeTotal / 100);
+  }, [lastContributionTotal, currencyFormatter]);
+
   useEffect(() => {
     if (showForm && !activeTier) {
       setShowForm(false);
@@ -1168,8 +1180,34 @@ const CrowdfundingPage = () => {
     }
     setSelectedTierId(tierIdentifier(tier));
     setFormNotice('');
+    setCheckoutComplete(false);
+    setProcessingMessage('');
+    setPayError('');
+    setReceiptInfo(null);
+    setLastContributionTotal(null);
     setShowForm(true);
   };
+
+  const handleStartNewContribution = useCallback(() => {
+    setCheckoutComplete(false);
+    setProcessingMessage('');
+    setPayError('');
+    setReceiptInfo(null);
+    setLastContributionTotal(null);
+    setPaying(false);
+    setShowForm(false);
+    setSelectedTierId('');
+    setPizzaQty(1);
+    setFunderName('');
+    setEmail('');
+    setPhone('');
+    setNotes('');
+    setSquareDiscountCode('');
+    setDiscountState({ status: 'idle', code: '', discount: null, message: '' });
+    setRewardPreference(REWARD_PREFERENCE_OPTIONS[0].value);
+    setReferralInput('');
+    setReferralState({ status: 'idle', valid: false, participant: null, code: '' });
+  }, []);
 
   const handleSubscribe = async (event) => {
     event.preventDefault();
@@ -1366,18 +1404,34 @@ const CrowdfundingPage = () => {
     }
   }, [trimmedDiscountCode, notifyToast]);
 
-  const rememberPendingContribution = useCallback((cartItems, name, discountCode) => {
+  const rememberPendingContribution = useCallback((cartItems, context = {}) => {
     if (!Array.isArray(cartItems) || cartItems.length === 0) return;
     try {
       localStorage.setItem('cf_items', JSON.stringify(cartItems));
-      if (name) {
-        localStorage.setItem('cf_name', name);
+      const normalizedContext = {
+        name: typeof context.name === 'string' ? context.name : '',
+        email: typeof context.email === 'string' ? context.email : '',
+        phone: typeof context.phone === 'string' ? context.phone : '',
+        notes: typeof context.notes === 'string' ? context.notes : '',
+        notify: typeof context.notify === 'string' ? context.notify : '',
+        rewardPreference:
+          typeof context.rewardPreference === 'string' ? context.rewardPreference : '',
+        discountCode:
+          typeof context.discountCode === 'string' ? context.discountCode : '',
+        discountLabel:
+          typeof context.discountLabel === 'string' ? context.discountLabel : '',
+        totalCents: Number.isFinite(Number(context.totalCents))
+          ? Math.max(0, Math.round(Number(context.totalCents)))
+          : null,
+      };
+      localStorage.setItem('cf_context', JSON.stringify(normalizedContext));
+      if (normalizedContext.name) {
+        localStorage.setItem('cf_name', normalizedContext.name);
       } else {
         localStorage.removeItem('cf_name');
       }
-      const trimmedDiscount = typeof discountCode === 'string' ? discountCode.trim() : '';
-      if (trimmedDiscount) {
-        localStorage.setItem('cf_discount', trimmedDiscount);
+      if (normalizedContext.discountCode) {
+        localStorage.setItem('cf_discount', normalizedContext.discountCode);
       } else {
         localStorage.removeItem('cf_discount');
       }
@@ -1390,6 +1444,7 @@ const CrowdfundingPage = () => {
       localStorage.removeItem('cf_items');
       localStorage.removeItem('cf_name');
       localStorage.removeItem('cf_discount');
+      localStorage.removeItem('cf_context');
     } catch (err) {
       devConsole.warn('[square] [crowdfunding] failed to clear pending contribution', err);
     }
@@ -1511,16 +1566,60 @@ const CrowdfundingPage = () => {
         try {
           const raw = localStorage.getItem('cf_items');
           const items = raw ? JSON.parse(raw) : [];
-          const name = localStorage.getItem('cf_name') || undefined;
-          const discountCode = localStorage.getItem('cf_discount') || undefined;
+          const contextRaw = localStorage.getItem('cf_context');
+          let context = {};
+          if (contextRaw) {
+            try {
+              context = JSON.parse(contextRaw) || {};
+            } catch (err) {
+              devConsole.warn('[square] [crowdfunding] failed to parse stored contribution context', err);
+            }
+          }
+          const name = context?.name || localStorage.getItem('cf_name') || undefined;
+          const discountCode = context?.discountCode || localStorage.getItem('cf_discount') || undefined;
+          const emailFromStorage = context?.email || undefined;
+          const phoneFromStorage = context?.phone || undefined;
+          const notesFromStorage = context?.notes || undefined;
+          const notifyFromStorage = context?.notify || undefined;
+          const rewardPreferenceFromStorage = context?.rewardPreference || undefined;
+          const discountLabelFromStorage = context?.discountLabel || undefined;
+          const totalFromStorage = Number(context?.totalCents);
           if (Array.isArray(items) && items.length > 0) {
+            const body = {
+              items,
+              funderName: name,
+              discountCode,
+              email: emailFromStorage,
+              phone: phoneFromStorage,
+              notes: notesFromStorage,
+              notify: notifyFromStorage,
+              rewardPreference: rewardPreferenceFromStorage,
+            };
+            if (Number.isFinite(totalFromStorage)) {
+              body.totalCents = Math.max(0, Math.round(totalFromStorage));
+            }
+            if (discountLabelFromStorage) {
+              body.discountLabel = discountLabelFromStorage;
+            }
             const res = await fetch('/api/crowdfund/confirm-payment', {
               method: 'POST',
               headers: { 'content-type': 'application/json' },
-              body: JSON.stringify({ items, funderName: name, discountCode }),
+              body: JSON.stringify(body),
             });
             if (res.ok) {
               setConfirmMsg('Thanks! Your contribution has been recorded.');
+              setCheckoutComplete(true);
+              setProcessingMessage('');
+              setPaying(false);
+              setReceiptInfo({
+                email: emailFromStorage || '',
+                funderName: name || '',
+                discountCode: discountCode || '',
+                discountLabel: discountLabelFromStorage || '',
+              });
+              if (Number.isFinite(totalFromStorage)) {
+                setLastContributionTotal(Math.max(0, Math.round(totalFromStorage)));
+              }
             }
           }
         } catch (_) {
@@ -1530,7 +1629,7 @@ const CrowdfundingPage = () => {
         }
       })();
     }
-  }, [clearPendingContribution]);
+  }, [clearPendingContribution, setCheckoutComplete, setReceiptInfo]);
 
   const tokenizeCard = useCallback(async () => {
     const card = cardInstanceRef.current;
@@ -1553,6 +1652,9 @@ const CrowdfundingPage = () => {
 
   const contribute = async (items) => {
     setPayError('');
+    setReceiptInfo(null);
+    setProcessingMessage('Processing your contribution. Please wait...');
+    setCheckoutComplete(false);
     setPaying(true);
     try {
       const normalizedItems = items.map((raw) => {
@@ -1596,6 +1698,9 @@ const CrowdfundingPage = () => {
             notes: notes || undefined,
             notify,
             discountCode: trimmedDiscount || undefined,
+            rewardPreference,
+            totalCents: Math.max(0, Math.round(totalAfterLocalDiscount)),
+            discountLabel: discountInfo?.label || undefined,
           }),
         });
         const recordData = await recordRes.json().catch(() => ({}));
@@ -1606,6 +1711,15 @@ const CrowdfundingPage = () => {
           ? `${discountInfo.label || DEFAULT_DISCOUNT_LABEL}. We've recorded your contribution.`
           : 'Thanks! Your contribution has been recorded.';
         setConfirmMsg(successMessage);
+        setCheckoutComplete(true);
+        setProcessingMessage('');
+        setReceiptInfo({
+          email: email.trim() || '',
+          funderName: funderName?.trim() || '',
+          discountCode: trimmedDiscount || '',
+          discountLabel: (discountInfo && discountInfo.label) || '',
+        });
+        setLastContributionTotal(Math.max(0, Math.round(totalAfterLocalDiscount)));
         notifyToast(successMessage, { type: 'success' });
         setSquareDiscountCode('');
         setDiscountState({ status: 'idle', code: '', discount: null, message: '' });
@@ -1613,6 +1727,7 @@ const CrowdfundingPage = () => {
       };
 
       if (discountEliminatesPayment) {
+        setProcessingMessage('Saving your complimentary contribution...');
         await finalizeWithoutPayment(discountFromState);
         return;
       }
@@ -1646,12 +1761,21 @@ const CrowdfundingPage = () => {
               type: item.type,
               pizzaCount: item.pizzaCount,
               quantity: item.quantity,
+              priceCents: item.priceCents,
             }));
-            rememberPendingContribution(
-              itemsForStorage,
-              funderName?.trim() || '',
-              trimmedDiscount || ''
-            );
+            rememberPendingContribution(itemsForStorage, {
+              name: funderName?.trim() || '',
+              email: email.trim() || '',
+              phone: phone.trim() || '',
+              notes: notes || '',
+              notify,
+              rewardPreference,
+              discountCode: trimmedDiscount || '',
+              discountLabel:
+                (discountFromState && discountFromState.label) || '',
+              totalCents: totalAfterLocalDiscount,
+            });
+            setProcessingMessage('Redirecting to secure checkout...');
             notifyToast('Redirecting to secure checkout...', { type: 'success' });
             window.location.assign(linkData.url);
             return;
@@ -1663,11 +1787,13 @@ const CrowdfundingPage = () => {
 
       let token;
       try {
+        setProcessingMessage('Securely verifying your card details...');
         token = await tokenizeCard();
       } catch (tokErr) {
         throw new Error(tokErr?.message || 'Card not ready');
       }
 
+      setProcessingMessage('Completing your payment...');
       const payload = {
         items: checkoutItemsPayload,
         funderName,
@@ -1679,6 +1805,7 @@ const CrowdfundingPage = () => {
         token,
         pizzaQty,
         discountCode: trimmedDiscount || undefined,
+        rewardPreference,
       };
       const res = await fetch('/api/crowdfund/checkout', {
         method: 'POST',
@@ -1705,12 +1832,26 @@ const CrowdfundingPage = () => {
         return;
       }
       setConfirmMsg('Thanks! Your contribution has been processed.');
+      setCheckoutComplete(true);
+      setProcessingMessage('');
+      setReceiptInfo({
+        email: email.trim() || '',
+        funderName: funderName?.trim() || '',
+        discountCode: trimmedDiscount || '',
+        discountLabel:
+          (data?.discount && data.discount.label) || (discountDetails && discountDetails.label) || '',
+      });
+      setLastContributionTotal(Math.max(0, Math.round(totalAfterLocalDiscount)));
       setSquareDiscountCode('');
       setDiscountState({ status: 'idle', code: '', discount: null, message: '' });
       notifyToast('Payment complete. Thanks for fueling pizza!', { type: 'success' });
     } catch (e) {
       setPayError(e?.message || 'Payment failed');
       notifyToast(e?.message || 'Payment failed', { type: 'error' });
+      setProcessingMessage('');
+      setCheckoutComplete(false);
+      setReceiptInfo(null);
+      setLastContributionTotal(null);
     } finally {
       setPaying(false);
     }
@@ -2398,163 +2539,403 @@ const CrowdfundingPage = () => {
                         className="sm:w-32"
                         disabled={!trimmedDiscountCode || discountState.status === 'checking'}
                         onClick={handleDiscountApply}
+                <div className="space-y-6">
+                  <div className="relative">
+                    {checkoutComplete ? (
+                      <div
+                        className="space-y-4 rounded-lg border border-emerald-200 bg-emerald-50 p-5 text-emerald-900"
+                        role="status"
+                        aria-live="polite"
                       >
-                        {discountState.status === 'checking' ? 'Checking...' : 'Apply'}
-                      </Button>
-                    </div>
-                    <p className="text-xs text-slate-500">
-                      Apply a complimentary or promo code before checking out.
-                    </p>
-                    {discountState.status === 'applied' && (
-                      <p className="text-sm text-emerald-700">
-                        {discountState.discount?.label || DEFAULT_DISCOUNT_LABEL}
-                        {discountedTotalCents <= 0 ? ' — no payment required.' : ' applied.'}
-                      </p>
-                    )}
-                    {discountState.status === 'invalid' && (
-                      <p className="text-sm text-red-600">
-                        {discountState.message ||
-                          'That code is not valid for this crowdfunding campaign.'}
-                      </p>
-                    )}
-                    {discountState.status === 'error' && (
-                      <p className="text-sm text-red-600">
-                        {discountState.message ||
-                          'Unable to validate that discount code right now.'}
-                      </p>
-                    )}
-                    <Input
-                      id="cf-square-discount"
-                      placeholder="Discount code"
-                      autoComplete="off"
-                      value={squareDiscountCode}
-                      onChange={(e) => setSquareDiscountCode(e.target.value)}
-                    />
-                    <p className="text-xs text-slate-500">
-                      We'll include this code with your secure Square checkout.
-                    </p>
-                  </div>
-                  {activeTier && (
-                    <div className="flex flex-col gap-2 sm:flex-row sm:items-end">
-                      <div className="space-y-2">
-                        <Label htmlFor="pizza-qty">Quantity</Label>
-                        <Input
-                          id="pizza-qty"
-                          type="number"
-                          min={1}
-                          max={50}
-                          value={pizzaQty}
-                          onChange={(e) =>
-                            setPizzaQty(Math.max(1, Math.min(50, Number(e.target.value) || 1)))
-                          }
-                          className="w-28"
-                        />
-                      </div>
-                      {activeTierAmountLabel && (
-                        <p className="text-sm text-slate-600 sm:pb-2">
-                          Each pledge: {activeTierAmountLabel}
-                        </p>
-                      )}
-                    </div>
-                  )}
-                  <div className="space-y-2">
-                    <Label htmlFor="cf-notes">Notes (optional)</Label>
-                    <Textarea
-                      id="cf-notes"
-                      placeholder="Any notes for us"
-                      value={notes}
-                      onChange={(e) => setNotes(e.target.value)}
-                      className="min-h-[100px]"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <span className="text-sm font-semibold text-slate-700">
-                      Preferred reward setting
-                    </span>
-                    <fieldset
-                      className="grid gap-2 sm:grid-cols-2"
-                      role="group"
-                      aria-label="Preferred reward setting"
-                    >
-                      {REWARD_PREFERENCE_OPTIONS.map((option) => (
-                        <label
-                          key={option.value}
-                          className={cn(
-                            'flex items-center gap-2 rounded-md border border-slate-200 bg-white px-3 py-2 text-sm shadow-sm transition-colors',
-                            rewardPreference === option.value
-                              ? 'border-[var(--color-accent)] ring-1 ring-[var(--color-accent)]'
-                              : 'hover:border-[var(--color-accent)]'
-                          )}
-                        >
-                          <input
-                            type="radio"
-                            name="rewardPreference"
-                            value={option.value}
-                            checked={rewardPreference === option.value}
-                            onChange={(event) => setRewardPreference(event.target.value)}
-                            className="h-4 w-4 border-slate-300 text-[var(--color-accent)] focus:ring-[var(--color-accent)]"
-                          />
-                          <span className="text-slate-700">{option.label}</span>
-                        </label>
-                      ))}
-                    </fieldset>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="cf-card-container">Payment details</Label>
-                    <div
-                      id="cf-card-container"
-                      ref={cardContainerRef}
-                      className={cn(
-                        'border rounded-md p-4 min-h-[88px]',
-                        requiresPayment ? 'bg-white' : 'border-dashed bg-slate-50 flex items-center'
-                      )}
-                      aria-label="Card payment form"
-                    >
-                      {requiresPayment ? (
-                        <>
-                          {!cardReady && !cardError && !paymentsError && (
-                            <p className="text-sm text-gray-500">
-                              {paymentsLoading
-                                ? 'Loading secure payment form...'
-                                : 'Preparing secure payment form...'}
+                        <div className="flex items-start gap-3">
+                          <div className="mt-1 flex h-9 w-9 items-center justify-center rounded-full bg-emerald-500 text-white">
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              viewBox="0 0 20 20"
+                              fill="currentColor"
+                              className="h-5 w-5"
+                              aria-hidden="true"
+                            >
+                              <path
+                                fillRule="evenodd"
+                                d="M16.704 5.29a1 1 0 0 1 0 1.42l-7.25 7.25a1 1 0 0 1-1.414 0l-3.044-3.045a1 1 0 0 1 1.414-1.414l2.337 2.336 6.543-6.542a1 1 0 0 1 1.414 0Z"
+                                clipRule="evenodd"
+                              />
+                            </svg>
+                          </div>
+                          <div className="space-y-2">
+                            <p className="text-base font-semibold">Contribution confirmed</p>
+                            <p className="text-sm">
+                              {confirmMsg || 'Thanks! Your contribution has been processed.'}
+                            </p>
+                          {lastContributionLabel && (
+                            <p className="text-sm font-medium">
+                              Total contributed: <span>{lastContributionLabel}</span>
                             </p>
                           )}
-                          {(cardError || paymentsError) && (
-                            <p className="text-sm text-red-600">{cardError || paymentsError}</p>
-                          )}
-                        </>
-                      ) : (
-                        <p className="text-sm text-slate-600">
-                          No payment required for this contribution.
-                        </p>
-                      )}
-                    </div>
+                          {receiptInfo?.discountLabel ? (
+                            <p className="text-sm">Discount applied: {receiptInfo.discountLabel}</p>
+                          ) : receiptInfo?.discountCode ? (
+                            <p className="text-sm">Discount code used: {receiptInfo.discountCode}</p>
+                          ) : null}
+                          {receiptInfo?.email ? (
+                            <p className="text-sm">
+                              A receipt was sent to <span className="font-medium">{receiptInfo.email}</span>. If it is
+                              not in your inbox, please check your spam folder.
+                            </p>
+                            ) : (
+                              <p className="text-sm">
+                                A confirmation email is on the way. Reach out to hello@localeffortfood.com if you need a
+                                hand.
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          className="w-full sm:w-auto"
+                          onClick={handleStartNewContribution}
+                        >
+                          Make another contribution
+                        </Button>
+                      </div>
+                    ) : (
+                      <>
+                        {paying && (
+                          <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-3 rounded-lg bg-white/85 backdrop-blur-sm">
+                            <div
+                              className="h-10 w-10 animate-spin rounded-full border-4 border-[var(--color-accent)] border-t-transparent"
+                              aria-hidden="true"
+                            />
+                            <p className="text-sm font-medium text-slate-700" role="status" aria-live="assertive">
+                              {processingMessage || 'Processing your contribution...'}
+                            </p>
+                            <p className="text-xs text-slate-500">Please stay on this page until we finish.</p>
+                          </div>
+                        )}
+                        <form
+                          className="space-y-6"
+                          onSubmit={(event) => {
+                            event.preventDefault();
+                            if (!activeTier || typeof activeTier.amount !== 'number') return;
+                            contribute([
+                              {
+                                name: activeTier.title || 'Pizza',
+                                price: Math.round(activeTier.amount * 100),
+                                type: 'pizza',
+                                pizzaCount: pizzaQty,
+                                quantity: pizzaQty,
+                              },
+                            ]);
+                          }}
+                          aria-busy={paying ? 'true' : 'false'}
+                        >
+                          <fieldset disabled={paying} className="space-y-6">
+                            <div className="grid grid-cols-1 gap-4">
+                              <div className="space-y-2">
+                                <Label htmlFor="cf-name">Name</Label>
+                                <Input
+                                  id="cf-name"
+                                  placeholder="Name"
+                                  autoComplete="name"
+                                  value={funderName}
+                                  onChange={(e) => setFunderName(e.target.value)}
+                                />
+                              </div>
+                              <div className="space-y-2">
+                                <Label htmlFor="cf-email">Email</Label>
+                                <Input
+                                  id="cf-email"
+                                  type="email"
+                                  autoComplete="email"
+                                  placeholder="you@example.com"
+                                  value={email}
+                                  onChange={(e) => setEmail(e.target.value)}
+                                />
+                              </div>
+                              <div className="space-y-2">
+                                <Label htmlFor="cf-phone">Phone</Label>
+                                <Input
+                                  id="cf-phone"
+                                  type="tel"
+                                  inputMode="tel"
+                                  autoComplete="tel"
+                                  placeholder="(555) 555-1234"
+                                  value={phone}
+                                  onChange={(e) => setPhone(e.target.value)}
+                                />
+                              </div>
+                            </div>
+                            <div className="space-y-2">
+                              <Label htmlFor="cf-referral">Referral code (optional)</Label>
+                              <div className="flex flex-col gap-2 sm:flex-row">
+                                <Input
+                                  id="cf-referral"
+                                  placeholder="Referral code"
+                                  value={referralInput}
+                                  onChange={(e) => setReferralInput(e.target.value)}
+                                  className="sm:flex-1"
+                                />
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  className="sm:w-32"
+                                  disabled={!referralInput || referralState.status === 'checking'}
+                                  onClick={async () => {
+                                    const code = (referralInput || '').trim();
+                                    if (!code) return;
+                                    setReferralState({
+                                      status: 'checking',
+                                      valid: false,
+                                      participant: null,
+                                      code,
+                                    });
+                                    try {
+                                      const resp = await fetch('/api/referrals/validate', {
+                                        method: 'POST',
+                                        headers: { 'content-type': 'application/json' },
+                                        body: JSON.stringify({ code }),
+                                      });
+                                      const data = await resp.json().catch(() => ({}));
+                                      if (resp.ok && data && data.valid) {
+                                        setReferralState({
+                                          status: 'ok',
+                                          valid: true,
+                                          participant: data.participant || null,
+                                          code,
+                                        });
+                                      } else {
+                                        setReferralState({
+                                          status: 'ok',
+                                          valid: false,
+                                          participant: null,
+                                          code,
+                                        });
+                                      }
+                                    } catch (_) {
+                                      setReferralState({
+                                        status: 'error',
+                                        valid: false,
+                                        participant: null,
+                                        code,
+                                      });
+                                    }
+                                  }}
+                                >
+                                  {referralState.status === 'checking' ? 'Checking...' : 'Apply'}
+                                </Button>
+                              </div>
+                            </div>
+                            {referralState.status === 'ok' && referralState.valid && (
+                              <p className="text-sm text-emerald-700">
+                                Code applied
+                                {referralState.participant?.name
+                                  ? ` for ${referralState.participant.name}`
+                                  : ''}
+                                .
+                              </p>
+                            )}
+                            {referralState.status === 'ok' && !referralState.valid && (
+                              <p className="text-sm text-red-600">That code is not valid.</p>
+                            )}
+                            {referralState.status === 'error' && (
+                              <p className="text-sm text-red-600">Unable to validate that code right now.</p>
+                            )}
+                            <div className="space-y-2">
+                              <Label htmlFor="cf-square-discount">Square discount code (optional)</Label>
+                              <div className="flex flex-col gap-2 sm:flex-row">
+                                <Input
+                                  id="cf-square-discount"
+                                  placeholder="Discount code"
+                                  autoComplete="off"
+                                  value={squareDiscountCode}
+                                  onChange={(e) => setSquareDiscountCode(e.target.value)}
+                                  className="sm:flex-1"
+                                />
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  className="sm:w-32"
+                                  disabled={!trimmedDiscountCode || discountState.status === 'checking'}
+                                  onClick={handleDiscountApply}
+                                >
+                                  {discountState.status === 'checking' ? 'Checking...' : 'Apply'}
+                                </Button>
+                              </div>
+                              <p className="text-xs text-slate-500">
+                                Apply a complimentary or promo code before checking out.
+                              </p>
+                              {discountState.status === 'applied' && (
+                                <p className="text-sm text-emerald-700">
+                                  {discountState.discount?.label || DEFAULT_DISCOUNT_LABEL}
+                                  {discountedTotalCents <= 0 ? ' — no payment required.' : ' applied.'}
+                                </p>
+                              )}
+                              {discountState.status === 'invalid' && (
+                                <p className="text-sm text-red-600">
+                                  {discountState.message ||
+                                    'That code is not valid for this crowdfunding campaign.'}
+                                </p>
+                              )}
+                              {discountState.status === 'error' && (
+                                <p className="text-sm text-red-600">
+                                  {discountState.message ||
+                                    'Unable to validate that discount code right now.'}
+                                </p>
+                              )}
+                              <p className="text-xs text-slate-500">
+                                We'll include this code with your secure Square checkout.
+                              </p>
+                            </div>
+                            {activeTier && (
+                              <div className="flex flex-col gap-2 sm:flex-row sm:items-end">
+                                <div className="space-y-2">
+                                  <Label htmlFor="pizza-qty">Quantity</Label>
+                                  <Input
+                                    id="pizza-qty"
+                                    type="number"
+                                    min={1}
+                                    max={50}
+                                    value={pizzaQty}
+                                    onChange={(e) =>
+                                      setPizzaQty(Math.max(1, Math.min(50, Number(e.target.value) || 1)))
+                                    }
+                                    className="w-28"
+                                  />
+                                </div>
+                                {activeTierAmountLabel && (
+                                  <p className="text-sm text-slate-600 sm:pb-2">
+                                    Each pledge: {activeTierAmountLabel}
+                                  </p>
+                                )}
+                              </div>
+                            )}
+                            <div className="space-y-2">
+                              <Label htmlFor="cf-notes">Notes (optional)</Label>
+                              <Textarea
+                                id="cf-notes"
+                                placeholder="Any notes for us"
+                                value={notes}
+                                onChange={(e) => setNotes(e.target.value)}
+                                className="min-h-[100px]"
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <span className="text-sm font-semibold text-slate-700">
+                                Preferred reward setting
+                              </span>
+                              <fieldset
+                                className="grid gap-2 sm:grid-cols-2"
+                                role="group"
+                                aria-label="Preferred reward setting"
+                              >
+                                {REWARD_PREFERENCE_OPTIONS.map((option) => (
+                                  <label
+                                    key={option.value}
+                                    className={cn(
+                                      'flex items-center gap-2 rounded-md border border-slate-200 bg-white px-3 py-2 text-sm shadow-sm transition-colors',
+                                      rewardPreference === option.value
+                                        ? 'border-[var(--color-accent)] ring-1 ring-[var(--color-accent)]'
+                                        : 'hover:border-[var(--color-accent)]'
+                                    )}
+                                  >
+                                    <input
+                                      type="radio"
+                                      name="rewardPreference"
+                                      value={option.value}
+                                      checked={rewardPreference === option.value}
+                                      onChange={(event) => setRewardPreference(event.target.value)}
+                                      className="h-4 w-4 border-slate-300 text-[var(--color-accent)] focus:ring-[var(--color-accent)]"
+                                    />
+                                    <span className="text-slate-700">{option.label}</span>
+                                  </label>
+                                ))}
+                              </fieldset>
+                            </div>
+                            <div className="space-y-2">
+                              <Label htmlFor="cf-card-container">Payment details</Label>
+                              <div
+                                id="cf-card-container"
+                                ref={cardContainerRef}
+                                className={cn(
+                                  'border rounded-md p-4 min-h-[88px]',
+                                  requiresPayment ? 'bg-white' : 'border-dashed bg-slate-50 flex items-center'
+                                )}
+                                aria-label="Card payment form"
+                              >
+                                {requiresPayment ? (
+                                  <>
+                                    {!cardReady && !cardError && !paymentsError && (
+                                      <p className="text-sm text-gray-500">
+                                        {paymentsLoading
+                                          ? 'Loading secure payment form...'
+                                          : 'Preparing secure payment form...'}
+                                      </p>
+                                    )}
+                                    {(cardError || paymentsError) && (
+                                      <p className="text-sm text-red-600">{cardError || paymentsError}</p>
+                                    )}
+                                  </>
+                                ) : (
+                                  <p className="text-sm text-slate-600">
+                                    No payment required for this contribution.
+                                  </p>
+                                )}
+                              </div>
+                            </div>
+                            {email && !emailValid && (
+                              <p className="text-xs text-red-600">Please enter a valid email.</p>
+                            )}
+                            {phone && !phoneValid && (
+                              <p className="text-xs text-red-600">Phone should have at least 10 digits.</p>
+                            )}
+                            <Button
+                              type="submit"
+                              disabled={
+                                !activeTier ||
+                                paying ||
+                                (requiresPayment && (!cardReady || !!cardError || !!paymentsError)) ||
+                                !emailValid ||
+                                !phoneValid
+                              }
+                              className="w-full text-lg h-12"
+                            >
+                              {paying
+                                ? 'Processing...'
+                                : requiresPayment
+                                  ? `Buy ${discountedTotalLabel}`
+                                  : 'Complete contribution'}
+                            </Button>
+                          </fieldset>
+                        </form>
+                      </>
+                    )}
                   </div>
-                  {email && !emailValid && (
-                    <p className="text-xs text-red-600">Please enter a valid email.</p>
-                  )}
-                  {phone && !phoneValid && (
-                    <p className="text-xs text-red-600">Phone should have at least 10 digits.</p>
-                  )}
-                  <Button
-                    type="submit"
-                    disabled={
-                      !activeTier ||
-                      paying ||
-                      (requiresPayment && (!cardReady || !!cardError || !!paymentsError)) ||
-                      !emailValid ||
-                      !phoneValid
-                    }
-                    className="w-full text-lg h-12"
-                  >
-                    {paying
-                      ? 'Processing...'
-                      : requiresPayment
-                        ? `Buy ${discountedTotalLabel}`
-                        : 'Complete contribution'}
-                  </Button>
-                </form>
+                  <Card className="card space-y-4 p-6 ring-1 ring-neutral-200">
+                    <CardHeader className="space-y-1 px-0 pt-0">
+                      <CardTitle className="text-lg font-semibold text-slate-900">How it Works</CardTitle>
+                    </CardHeader>
+                    <CardContent className="px-0 pb-0">
+                      <ol className="list-decimal space-y-3 pl-5 text-sm leading-relaxed text-slate-700">
+                        <li>Order a pizza, or 2, or 5, or 10, or 15.</li>
+                        <li>Select your preferred pizzas setting.</li>
+                        <li>
+                          You&apos;ll be able to pick up your pizzas at public events for the next 2-3 months.
+                          We&apos;ll send you updates on all the pizza party fun, including private/ticketed events only for supporters.
+                        </li>
+                        <li>
+                          For delivery, we ask for a minimum of 5 pizzas. We will reach out to schedule a delivery time.
+                        </li>
+                        <li>
+                          We will cook the pizzas at your home with a minimum order of 15 pizzas. We&apos;ll reach out to schedule a time.
+                        </li>
+                      </ol>
+                    </CardContent>
+                  </Card>
+                </div>
               )}
+
             </div>
 
             <Card className="card space-y-4 p-6 ring-1 ring-neutral-200">
