@@ -156,6 +156,21 @@ describe('crowdfunding router', () => {
     expect(stored?.funders?.[0]?.name).toBe('Tester');
   });
 
+  it('gracefully skips persistence when confirm-payment runs without a database', async () => {
+    const warn = vi.fn();
+    const app = createApp({ logger: { warn, error: vi.fn() } });
+
+    const res = await request(app)
+      .post('/crowdfund/confirm-payment')
+      .send({ items: [{ type: 'pizza', pizzaCount: 1 }], funderName: 'Fallback Fan' });
+
+    expect(res.status).toBe(200);
+    expect(res.body).toMatchObject({ success: true, fallback: true });
+    expect(warn).toHaveBeenCalledWith(
+      'crowdfund confirm-payment requested but database unavailable; skipping persistence'
+    );
+  });
+
   it('stores and retrieves pizza feedback entries', async () => {
     const stored = [];
     const feedbackCollection = {
