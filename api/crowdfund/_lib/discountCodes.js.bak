@@ -1,21 +1,5 @@
 const DEFAULT_COMP_LABEL = 'Complimentary contribution';
 
-// Helpers to normalize numeric and money fields across SDK versions
-const toNumber = (v, fallback = 0) => {
-  const n = Number(v);
-  return Number.isFinite(n) ? n : fallback;
-};
-
-const getMoneyAmountCents = (money) => {
-  if (!money || typeof money !== 'object') return 0;
-  const amount =
-    money.amount ??
-    money.amountMoney?.amount ??
-    money.amount_money?.amount ??
-    null;
-  return Math.max(0, Math.round(toNumber(amount, 0)));
-};
-
 const parseCompEntries = () => {
   const raw = process.env.CROWDFUND_COMP_CODES || '';
   return raw
@@ -40,17 +24,15 @@ const parseCompEntries = () => {
 
 const COMP_ENTRIES = parseCompEntries();
 
-const applyPercentDiscount = (amountCents, percent, capCents) => {
+const applyPercentDiscount = (amountCents, percent) => {
   if (!Number.isFinite(percent) || percent <= 0) {
     return amountCents;
   }
   if (percent >= 100) {
-    const deduction = Number.isFinite(capCents) && capCents > 0 ? Math.min(amountCents, capCents) : amountCents;
-    return Math.max(0, amountCents - deduction);
+    return 0;
   }
-  const deduction = Math.floor((amountCents * percent) / 100);
-  const capped = Number.isFinite(capCents) && capCents > 0 ? Math.min(deduction, capCents) : deduction;
-  return Math.max(0, amountCents - capped);
+  const multiplier = 1 - percent / 100;
+  return Math.max(0, Math.round(amountCents * multiplier));
 };
 
 const applyFixedDiscount = (amountCents, deduction) => {
@@ -74,7 +56,7 @@ const applyCrowdfundDiscount = (amountCents, discount) => {
     return baseAmount;
   }
   if (reduction.type === 'percent') {
-    return applyPercentDiscount(baseAmount, Number(reduction.value), Number(reduction.capCents || 0));
+    return applyPercentDiscount(baseAmount, Number(reduction.value));
   }
   if (reduction.type === 'fixed') {
     return applyFixedDiscount(baseAmount, reduction.value);
@@ -126,21 +108,27 @@ const normalizeSquareDiscount = (object) => {
   const discountType = data.discountType || data.discount_type || '';
 
   if (discountType === 'FIXED_PERCENTAGE' || discountType === 'VARIABLE_PERCENTAGE') {
-    const percentValue =
-      data.percentage ??
-      data.percentage_value ??
-      data.percentageValue ??
-      data.percent ??
-      null;
+    const percentValue = data.percentage
+      ?? data.percentage_value
+      ?? data.percentageValue
+      ?? data.percent
+      ?? null;
     const percent = Number.parseFloat(percentValue);
-    const maximumMoney =
-      data.maximumAmountMoney ||
-      data.maximum_amount_money ||
-      data.maximum_money ||
-      null;
-    const capCents = getMoneyAmountCents(maximumMoney);
     if (!Number.isFinite(percent) || percent <= 0) {
       return null;
+    }
+    if (percent >= 100) {
+      return {
+        codeLower: code.toLowerCase(),
+        discount: {
+          code,
+          label,
+          type: 'full',
+          reduction: { type: 'percent', value: 100 },
+          source: 'square',
+          squareDiscountId: object.id || null,
+        },
+      };
     }
     return {
       codeLower: code.toLowerCase(),
@@ -148,7 +136,7 @@ const normalizeSquareDiscount = (object) => {
         code,
         label,
         type: 'percent',
-        reduction: { type: 'percent', value: percent, ...(capCents > 0 ? { capCents } : {}) },
+        reduction: { type: 'percent', value: percent },
         source: 'square',
         squareDiscountId: object.id || null,
       },
@@ -156,7 +144,7 @@ const normalizeSquareDiscount = (object) => {
   }
 
   if (discountType === 'FIXED_AMOUNT') {
-    const amount = getMoneyAmountCents(data.amountMoney || data.amount_money || data.amount);
+    const amount = Number(data.amountMoney?.amount ?? data.amount_money?.amount ?? 0);
     if (!Number.isFinite(amount) || amount <= 0) {
       return null;
     }
