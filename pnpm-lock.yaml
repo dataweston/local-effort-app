@@ -144,6 +144,9 @@ importers:
       tailwind-merge:
         specifier: ^2.5.2
         version: 2.5.2
+      ui-flat-colors:
+        specifier: ^1.0.14
+        version: 1.0.14
       uuid:
         specifier: ^8.3.2
         version: 8.3.2
@@ -7932,6 +7935,9 @@ packages:
     resolution: {integrity: sha512-v3Xu+yuwBXisp6QYTcH4UbH+xYJXqnq2m/LtQVWKWzYc1iehYnLixoQDN9FH6/j9/oybfd6W9Ghwkl8+UMKTKQ==}
     engines: {node: '>=0.8.0'}
     hasBin: true
+
+  ui-flat-colors@1.0.14:
+    resolution: {integrity: sha512-MHOSSO4j7RRFSz1ajogZ/+6QBNjTZj7wkKpLSM8rIfWNxUv4QmhIasIm0AK2MWYyX4J7nzg5c5FJqpNyjfFjoQ==}
 
   uid@2.0.2:
     resolution: {integrity: sha512-u3xV3X7uzvi5b1MncmZo3i2Aw222Zk1keqLA1YkHldREkAhAqi65wuPfe7lHx8H/Wzy+8CE7S7uS3jekIM5s8g==}
@@ -16711,6 +16717,8 @@ snapshots:
 
   uglify-js@3.19.3:
     optional: true
+
+  ui-flat-colors@1.0.14: {}
 
   uid@2.0.2:
     dependencies:
