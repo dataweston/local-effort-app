@@ -1,6 +1,7 @@
 // If some environments fail to resolve 'sanity', consider swapping to:
 // import {defineConfig} from 'sanity/lib/exports'
 import {defineConfig} from 'sanity'
+import type {Template} from 'sanity'
 import {structureTool} from 'sanity/structure'
 import {visionTool} from '@sanity/vision'
 import {schemaTypes} from './schemaTypes'
@@ -28,10 +29,13 @@ export default defineConfig({
                     S.documentTypeListItem('product').title('Products'),
                   ]),
               ),
+            S.listItem()
+              .title('Sales')
+              .child(S.documentTypeList('sale').title('Sales')),
             S.divider(),
             // Fallback: all other types
             ...S.documentTypeListItems().filter(
-              (li) => li.getId() && li.getId() !== 'product',
+              (li) => li.getId() && !['product', 'sale'].includes(li.getId()!),
             ),
           ]),
     }),
@@ -41,4 +45,40 @@ export default defineConfig({
   schema: {
     types: schemaTypes,
   },
+  templates: (prev: Template[]) => [
+    ...prev,
+    {
+      id: 'sale-default',
+      title: 'Sale (Standard layout)',
+      schemaType: 'sale',
+      value: {
+        layoutVariant: 'standard',
+        pickupWindow: {
+          timezone: 'America/Chicago',
+        },
+        theme: {
+          backgroundColor: '#0f172a',
+          foregroundColor: '#f8fafc',
+          accentColor: '#f97316',
+        },
+      },
+    },
+    {
+      id: 'sale-paikka',
+      title: 'Sale (Paikka layout)',
+      schemaType: 'sale',
+      value: {
+        layoutVariant: 'paikka',
+        pickupWindow: {
+          timezone: 'America/Chicago',
+        },
+        theme: {
+          backgroundColor: '#f6f3ed',
+          foregroundColor: '#1f1b16',
+          accentColor: '#b45309',
+          cardStyle: 'frosted',
+        },
+      },
+    },
+  ],
 })

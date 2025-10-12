@@ -6,12 +6,19 @@ const getMode = () => {
   } catch (error) {
     // ignore
   }
-  return typeof process !== 'undefined' && process.env && process.env.NODE_ENV
-    ? process.env.NODE_ENV
-    : 'development';
+  return 'development';
 };
 
-const isDev = () => getMode() !== 'production';
+const isDev = () => {
+  try {
+    if (typeof import.meta !== 'undefined' && typeof import.meta?.env?.DEV !== 'undefined') {
+      return Boolean(import.meta.env.DEV);
+    }
+  } catch (error) {
+    // ignore
+  }
+  return getMode() !== 'production';
+};
 
 const callConsole = (method, args) => {
   if (!isDev()) return;

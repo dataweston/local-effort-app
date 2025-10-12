@@ -24,6 +24,9 @@ import publicEvent from './publicEvent'
 import referralParticipant from './referralParticipant'
 import blogPost from './blogPost'
 import cloudinaryImage from './objects/cloudinaryImage'
+import sale from './sale'
+import saleProduct from './objects/saleProduct'
+import saleFaq from './objects/saleFaq'
 
 export const schemaTypes = [
 	page,
@@ -44,6 +47,9 @@ export const schemaTypes = [
 	campaign,
 	pushSubscription,
 	product,
+	sale,
+	saleProduct,
+	saleFaq,
 	menuItems,
 	happyMondayPage,
 	salePage,

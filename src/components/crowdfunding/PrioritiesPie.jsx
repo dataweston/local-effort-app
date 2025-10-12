@@ -73,7 +73,7 @@ const PrioritiesPie = () => {
     [totals]
   );
 
-  if ((import.meta?.env?.MODE || process.env.NODE_ENV) !== 'production') {
+  if (import.meta.env.DEV) {
     devConsole.assert(totals.fulfillment === 1550, 'Fulfillment should total $1,550');
     devConsole.assert(totals.debt === 5100, 'Debt & Operations should total $5,100');
     devConsole.assert(totals.equipment === 2500, 'Equipment Upgrades should total $2,500');

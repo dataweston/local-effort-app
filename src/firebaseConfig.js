@@ -1,5 +1,5 @@
 // Import the functions you need from the SDKs you need
-import { initializeApp } from 'firebase/app';
+import { initializeApp, getApps, getApp } from 'firebase/app';
 // Optional: App Check for protecting Firestore writes without auth
 // This activates only if VITE_APPCHECK_SITE_KEY is provided
 let initializeAppCheck, ReCaptchaV3Provider;
@@ -36,10 +36,11 @@ const firebaseConfig = {
 let app = null;
 try {
   if (firebaseConfig.apiKey) {
-    app = initializeApp(firebaseConfig);
+    const existingApps = getApps();
+    app = existingApps.length ? getApp() : initializeApp(firebaseConfig);
     // Initialize App Check if configured (no top-level await)
     const siteKey = env.VITE_APPCHECK_SITE_KEY || env.VITE_RECAPTCHA_SITE_KEY;
-    if (siteKey) {
+    if (siteKey && typeof window !== 'undefined') {
       loadAppCheck().then(() => {
         if (initializeAppCheck && ReCaptchaV3Provider) {
           try {
