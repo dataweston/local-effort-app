@@ -119,7 +119,7 @@ SaleStructuredData.tsx
   - Else if `sale.square.checkoutMode === 'inline'` → render inline flow (Tier B; toggled feature flag).
   - Else fallback disabled "Coming soon".
 - `SaleTracker` executes Supabase query `SELECT COALESCE(SUM(qty),0) AS sold FROM sales.orders WHERE sale_slug=$1`. Uses anon key on client, caches via SWR and revalidates on focus. Show skeleton while loading.
-- Current implementation: `/app/api/sales/[sale]/tracker` proxies Supabase using the service role key, while `SaleTrackerClient` polls this endpoint client-side with a 30s interval. Once Supabase RLS is finalized, this can be migrated to the anon-key flow described above.
+- Current implementation: `/app/api/sales/[sale]/tracker` proxies Supabase using the service role key, while `SaleTrackerClient` polls this endpoint client-side with a 30s interval. Once Supabase RLS is finalized, this can be migrated to the anon-key flow described above. Supporting SQL lives in `supabase/sales-orders.sql` and creates the `sales.orders` table and aggregate view.
 
 ## 4. Square Integrations
 
@@ -141,19 +141,7 @@ SaleStructuredData.tsx
   - Signature verification with `SQUARE_WEBHOOK_SIGNATURE_KEY` & `SQUARE_WEBHOOK_NOTIFICATION_URL`.
   - Handle `payment.created` / `payment.updated` where status `COMPLETED`.
   - Compute `qty`, `amount`, `saleSlug` from payment metadata (e.g., `payment.note` or `order.metadata.saleSlug`).
-  - Upsert Supabase `orders` table (service key via env). Table schema:
-    ```sql
-    create table if not exists public.orders (
-      id uuid primary key default gen_random_uuid(),
-      square_payment_id text unique not null,
-      sale_slug text not null,
-      product_id text,
-      qty int not null,
-      amount_cents int not null,
-      customer_email text,
-      received_at timestamptz default now()
-    );
-    ```
+  - Upsert Supabase `sales.orders` table (service key via env). Reference `supabase/sales-orders.sql` for canonical structure and policies.
   - Update cached `stats.soldCount` in Sanity (via mutation) as optional step.
   - Fire `await revalidateSale(saleSlug)` which `fetch`es `/api/revalidate?sale=${saleSlug}` with secret token.
 
@@ -192,7 +180,7 @@ SaleStructuredData.tsx
 - [ ] **Schemas & Studio**: add `sale`, `saleProduct`, field upgrades, initial-value template, panel. *(In progress; sale + saleProduct schemas created, product document fields expanded, initial-value templates registered.)*
 - [x] **Next Route**: scaffold `[sale]`, GROQ fetch, renderer, components, metadata.
 - [ ] **UI Extraction**: port shared elements from current sale/Paikka pages → new component library. *(In progress; theming, structured data, inline checkout provider, and tracking scripts moved.)*
-- [ ] **Supabase Migration**: add `orders` table + RLS policy, service key env wiring. *(In progress; tracker API endpoint and client polling scaffolded, awaiting table + RLS setup.)*
+- [ ] **Supabase Migration**: add `orders` table + RLS policy, service key env wiring. *(In progress; tracker API endpoint and client polling scaffolded, SQL migration `supabase/sales-orders.sql` added, env wiring still pending.)*
 - [ ] **Square Integrations**: CLI script, webhook rewrite, optional inline checkout route.
 - [ ] **Sanity Webhooks & ISR**: configure revalidate endpoint + tags.
 - [ ] **Analytics & SEO**: ensure meta, pixel, JSON-LD coverage.
