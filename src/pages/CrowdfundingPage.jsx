@@ -29,6 +29,8 @@ import PrioritiesPie from '../components/crowdfunding/PrioritiesPie.jsx';
 import { createPortableTextComponents } from '../utils/portableTextComponents';
 import { cn } from '../lib/utils';
 import { useToast } from '../components/common/ToastProvider';
+import { ChevronRight } from 'lucide-react';
+import Separator from '../components/ui/Separator';
 
 import devConsole from '../lib/devConsole.js';
 import { watchCrowdfundingTotals, watchPizzaFeedback, getFirebaseAppInstance } from '../lib/firebaseCrowdfunding';
@@ -251,14 +253,7 @@ const EventBadge = ({ children, variant = 'default' }) => (
   </span>
 );
 
-const EventListSection = ({
-  title,
-  description,
-  events,
-  onSelect,
-  formatDateLabel,
-  deriveSummary,
-}) => {
+const EventListSection = ({ title, description, events, onSelect, formatDateLabel }) => {
   if (!Array.isArray(events) || events.length === 0) {
     return null;
   }
@@ -272,64 +267,34 @@ const EventListSection = ({
         {description && <CardDescription>{description}</CardDescription>}
       </CardHeader>
       <CardContent className="space-y-3">
-        {events.map((event) => {
-          const dateLabel = typeof formatDateLabel === 'function' ? formatDateLabel(event) : '';
-          const summary = typeof deriveSummary === 'function' ? deriveSummary(event) : '';
-          const heroImage =
-            typeof event?.heroImage === 'string'
-              ? event.heroImage
-              : event?.heroImage?.url || event?.heroImageUrl;
-          const heroAlt =
-            event?.heroImageAlt || event?.heroImage?.alt || event?.location || 'Event image';
-          return (
-            <button
-              key={event?._key || event?._id || event?.slug || dateLabel}
-              type="button"
-              onClick={() => onSelect && onSelect(event)}
-              className="group w-full rounded-2xl border border-slate-100 bg-white p-4 text-left transition hover:border-[var(--color-accent)] hover:shadow-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-2"
-              aria-label={`View details for ${event?.location || 'event'}`}
-            >
-              <div className="flex gap-4">
-                {heroImage && (
-                  <div className="relative hidden h-20 w-28 flex-none overflow-hidden rounded-xl bg-slate-100 sm:block">
-                    <img src={heroImage} alt={heroAlt} className="h-full w-full object-cover" />
+        <ul className="space-y-2">
+          {events.map((event) => {
+            const dateLabel = typeof formatDateLabel === 'function' ? formatDateLabel(event) : '';
+            return (
+              <li key={event?._key || event?._id || dateLabel}>
+                <button
+                  type="button"
+                  onClick={() => onSelect && onSelect(event)}
+                  className="group flex w-full items-center justify-between rounded-xl border border-slate-200 bg-white px-4 py-3 text-left transition hover:border-[var(--color-accent)] hover:bg-amber-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-2"
+                  aria-label={`View details for ${event?.location || 'event'}`}
+                >
+                  <div className="space-y-1">
+                    {dateLabel && (
+                      <p className="text-xs font-semibold uppercase tracking-wide text-[var(--color-accent)]">
+                        {dateLabel}
+                      </p>
+                    )}
+                    <p className="text-base font-semibold text-slate-900">{event?.location}</p>
+                    {event?.timingNote && (
+                      <p className="text-sm text-slate-600">{event.timingNote}</p>
+                    )}
                   </div>
-                )}
-                <div className="flex-1 space-y-2">
-                  <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
-                    <div>
-                      {dateLabel && (
-                        <p className="text-xs font-semibold uppercase tracking-wide text-[var(--color-accent)]">
-                          {dateLabel}
-                        </p>
-                      )}
-                      <p className="text-base font-semibold text-slate-900">{event?.location}</p>
-                    </div>
-                    <div className="flex flex-wrap items-center gap-2">
-                      {event?.foodType && <EventBadge>{event.foodType}</EventBadge>}
-                      {event?.status && event.status !== 'scheduled' && (
-                        <EventBadge variant={event.status}>
-                          {EVENT_STATUS_LABELS[event.status] || event.status}
-                        </EventBadge>
-                      )}
-                    </div>
-                  </div>
-                  {event?.timingNote && (
-                    <p className="text-xs font-medium uppercase tracking-wide text-slate-500">
-                      {event.timingNote}
-                    </p>
-                  )}
-                  {event?.tagline && (
-                    <p className="text-sm font-medium text-slate-700">{event.tagline}</p>
-                  )}
-                  {!event?.tagline && summary && (
-                    <p className="text-sm text-slate-600">{summary}</p>
-                  )}
-                </div>
-              </div>
-            </button>
-          );
-        })}
+                  <ChevronRight className="h-5 w-5 text-slate-400 transition group-hover:text-[var(--color-accent)]" aria-hidden="true" />
+                </button>
+              </li>
+            );
+          })}
+        </ul>
       </CardContent>
     </Card>
   );
@@ -352,6 +317,7 @@ const EventDialog = ({
       ? event.heroImage
       : event?.heroImage?.url || event?.heroImageUrl;
   const heroAlt = event?.heroImageAlt || event?.heroImage?.alt || event?.location || 'Event image';
+  const hasHeroImage = Boolean(heroImage);
   const dateLabel = typeof formatModalDate === 'function' ? formatModalDate(event) : '';
   const summary = typeof deriveSummary === 'function' ? deriveSummary(event) : '';
   const hasPortableDescription = Array.isArray(event?.description) && event.description.length > 0;
@@ -362,49 +328,80 @@ const EventDialog = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl space-y-5">
-        {heroImage && (
-          <div className="overflow-hidden rounded-xl border border-slate-200">
-            <img src={heroImage} alt={heroAlt} className="h-56 w-full object-cover" />
+      <DialogContent className="max-w-3xl overflow-hidden p-0">
+        <div className={cn('grid gap-0', hasHeroImage ? 'md:grid-cols-[260px,1fr]' : '')}>
+          {hasHeroImage && (
+            <div className="relative h-56 w-full overflow-hidden bg-slate-100 md:h-full">
+              <img
+                src={heroImage}
+                alt={heroAlt}
+                className="h-full w-full object-cover"
+                loading="lazy"
+              />
+            </div>
+          )}
+          <div className="space-y-5 p-6">
+            <DialogHeader className="space-y-2 text-left">
+              <div className="space-y-1">
+                <DialogTitle className="text-2xl font-semibold text-slate-900">
+                  {event?.location}
+                </DialogTitle>
+                {dateLabel && (
+                  <DialogDescription className="text-sm font-medium text-slate-700">
+                    {dateLabel}
+                  </DialogDescription>
+                )}
+              </div>
+              {event?.timingNote && <p className="text-sm text-slate-600">{event.timingNote}</p>}
+              {event?.locationDetails && (
+                <p className="text-sm text-slate-600">{event.locationDetails}</p>
+              )}
+            </DialogHeader>
+
+            {(event?.foodType || (event?.status && event.status !== 'scheduled')) && (
+              <div className="flex flex-wrap gap-2">
+                {event?.foodType && <EventBadge>{event.foodType}</EventBadge>}
+                {event?.status && event.status !== 'scheduled' && (
+                  <EventBadge variant={statusVariant}>
+                    {EVENT_STATUS_LABELS[event.status] || event.status}
+                  </EventBadge>
+                )}
+              </div>
+            )}
+
+            {event?.tagline && (
+              <p className="text-lg font-medium text-slate-800">{event.tagline}</p>
+            )}
+            {summary && !event?.tagline && (
+              <p className="text-base text-slate-700">{summary}</p>
+            )}
+
+            <Separator className="bg-slate-200" />
+
+            {hasPortableDescription ? (
+              <div className="prose prose-slate max-w-none text-sm leading-relaxed">
+                <PortableText value={event.description} components={portableComponents} />
+              </div>
+            ) : (
+              plainDescription && (
+                <p className="text-sm leading-relaxed text-slate-600">{plainDescription}</p>
+              )
+            )}
+
+            {event?.ticketsUrl && (
+              <div className="pt-2">
+                <a
+                  href={event.ticketsUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center justify-center rounded-md bg-[var(--color-accent)] px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)] focus:ring-offset-2"
+                >
+                  {event?.ctaLabel || 'Get tickets'}
+                </a>
+              </div>
+            )}
           </div>
-        )}
-        <DialogHeader className="space-y-1 text-left">
-          <DialogTitle>{event?.location}</DialogTitle>
-          {dateLabel && <DialogDescription>{dateLabel}</DialogDescription>}
-          {event?.timingNote && <p className="text-sm text-slate-600">{event.timingNote}</p>}
-          {event?.locationDetails && (
-            <p className="text-sm text-slate-600">{event.locationDetails}</p>
-          )}
-        </DialogHeader>
-        <div className="flex flex-wrap gap-2">
-          {event?.foodType && <EventBadge>{event.foodType}</EventBadge>}
-          {event?.status && event.status !== 'scheduled' && (
-            <EventBadge variant={statusVariant}>
-              {EVENT_STATUS_LABELS[event.status] || event.status}
-            </EventBadge>
-          )}
         </div>
-        {summary && <p className="text-base text-slate-700">{summary}</p>}
-        {hasPortableDescription && (
-          <div className="prose prose-slate max-w-none">
-            <PortableText value={event.description} components={portableComponents} />
-          </div>
-        )}
-        {!hasPortableDescription && plainDescription && (
-          <p className="text-sm text-slate-600">{plainDescription}</p>
-        )}
-        {event?.ticketsUrl && (
-          <div className="pt-2">
-            <a
-              href={event.ticketsUrl}
-              target="_blank"
-              rel="noreferrer"
-              className="inline-flex items-center justify-center rounded-md bg-[var(--color-accent)] px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)] focus:ring-offset-2"
-            >
-              {event?.ctaLabel || 'Get tickets'}
-            </a>
-          </div>
-        )}
       </DialogContent>
     </Dialog>
   );
@@ -1711,45 +1708,27 @@ const CrowdfundingPage = () => {
 
   const upcomingEvents = useMemo(() => {
     const rawEvents = Array.isArray(campaignData?.events) ? campaignData.events : [];
-    if (!rawEvents.length) return [];
+    const importedEvents = Array.isArray(campaignData?.featuredPublicEvents)
+      ? campaignData.featuredPublicEvents.map((ev) => ({ ...ev, _imported: true }))
+      : [];
+    const merged = [...rawEvents, ...importedEvents].filter(Boolean);
+    if (!merged.length) return [];
+    const seen = new Set();
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    return rawEvents
-      .filter(Boolean)
-      .map((ev, index) => ({
-        ...ev,
-        _key: ev?._key || ev?._id || String(index),
-      }))
-      .filter((ev) => {
-        const start = parseEventDate(ev.startDate);
-        if (!start) return false;
-        const end = parseEventDate(ev.endDate) || start;
-        const boundary = new Date(end);
-        boundary.setHours(23, 59, 59, 999);
-        return boundary >= today;
+    return merged
+      .map((ev, index) => {
+        const identity = ev?._id || ev?._key || `${ev?.location || 'event'}-${ev?.startDate || index}`;
+        if (seen.has(identity)) {
+          return null;
+        }
+        seen.add(identity);
+        return {
+          ...ev,
+          _key: ev?._key || ev?._id || `campaign-event-${index}`,
+        };
       })
-      .sort((a, b) => {
-        const aStart = parseEventDate(a.startDate);
-        const bStart = parseEventDate(b.startDate);
-        if (!aStart && !bStart) return 0;
-        if (!aStart) return 1;
-        if (!bStart) return -1;
-        return aStart - bStart;
-      });
-  }, [campaignData, parseEventDate]);
-
-  // Featured public events (separate from campaign reward pickup events)
-  const featuredPublicEvents = useMemo(() => {
-    const rawFeatured = Array.isArray(campaignData?.featuredPublicEvents) ? campaignData.featuredPublicEvents : [];
-    if (!rawFeatured.length) return [];
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    return rawFeatured
       .filter(Boolean)
-      .map((ev, index) => ({
-        ...ev,
-        _key: ev?._key || ev?._id || String(index),
-      }))
       .filter((ev) => {
         const start = parseEventDate(ev.startDate);
         if (!start) return false;
@@ -1770,13 +1749,9 @@ const CrowdfundingPage = () => {
 
   useEffect(() => {
     if (!activeEvent) return;
-    const match =
-      upcomingEvents.find(
-        (ev) => (ev._key || ev._id) === (activeEvent._key || activeEvent._id)
-      ) ||
-      featuredPublicEvents.find(
-        (ev) => (ev._key || ev._id) === (activeEvent._key || activeEvent._id)
-      );
+    const match = upcomingEvents.find(
+      (ev) => (ev._key || ev._id) === (activeEvent._key || activeEvent._id)
+    );
     if (!match) {
       setActiveEvent(null);
       return;
@@ -1784,7 +1759,7 @@ const CrowdfundingPage = () => {
     if (match !== activeEvent) {
       setActiveEvent(match);
     }
-  }, [activeEvent, upcomingEvents, featuredPublicEvents]);
+  }, [activeEvent, upcomingEvents]);
 
   const formatListDate = useCallback(
     (event) => {
@@ -2198,15 +2173,6 @@ const CrowdfundingPage = () => {
               events={upcomingEvents}
               onSelect={setActiveEvent}
               formatDateLabel={formatListDate}
-              deriveSummary={deriveEventSummary}
-            />
-            <EventListSection
-              title="Featured public events"
-              description="Catch us out in the community. These are open to everyone."
-              events={featuredPublicEvents}
-              onSelect={setActiveEvent}
-              formatDateLabel={formatListDate}
-              deriveSummary={deriveEventSummary}
             />
           </div>
 
