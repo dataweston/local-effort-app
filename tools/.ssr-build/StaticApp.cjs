@@ -57442,6 +57442,7 @@ var CrowdfundingPage = () => {
   const cardContainerRef = (0, import_react47.useRef)(null);
   const cardInstanceRef = (0, import_react47.useRef)(null);
   const cardInitRef = (0, import_react47.useRef)(false);
+  const modalCloseRef = (0, import_react47.useRef)(null);
   const [cardReady, setCardReady] = (0, import_react47.useState)(false);
   const [cardError, setCardError] = (0, import_react47.useState)("");
   const { notify: notifyToast } = useToast();
@@ -57885,13 +57886,25 @@ var CrowdfundingPage = () => {
   }, [campaignData, parseEventDate]);
   (0, import_react47.useEffect)(() => {
     if (!eventModal) return;
-    const stillExists = upcomingEvents.some(
+    const stillExistsInUpcoming = upcomingEvents.some(
       (ev) => (ev._key || ev._id) === (eventModal._key || eventModal._id)
     );
-    if (!stillExists) {
+    const stillExistsInFeatured = featuredPublicEvents.some(
+      (ev) => (ev._key || ev._id) === (eventModal._key || eventModal._id)
+    );
+    if (!stillExistsInUpcoming && !stillExistsInFeatured) {
       setEventModal(null);
     }
-  }, [eventModal, upcomingEvents]);
+  }, [eventModal, upcomingEvents, featuredPublicEvents]);
+  (0, import_react47.useEffect)(() => {
+    if (!eventModal) return;
+    try {
+      if (modalCloseRef?.current && typeof modalCloseRef.current.focus === "function") {
+        modalCloseRef.current.focus();
+      }
+    } catch (err) {
+    }
+  }, [eventModal]);
   const formatListDate = (0, import_react47.useCallback)(
     (event) => {
       const start = parseEventDate(event?.startDate);
@@ -58668,30 +58681,50 @@ var CrowdfundingPage = () => {
         ] })
       ] }) })
     ] }),
-    eventModal && /* @__PURE__ */ (0, import_jsx_runtime50.jsx)("div", { className: "fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4", children: /* @__PURE__ */ (0, import_jsx_runtime50.jsxs)("div", { className: "bg-white rounded-lg shadow-xl max-w-lg w-full p-5 relative", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime50.jsx)(
-        "button",
-        {
-          type: "button",
-          className: "absolute right-3 top-3 text-sm underline",
-          onClick: () => setEventModal(null),
-          children: "Close"
-        }
-      ),
-      /* @__PURE__ */ (0, import_jsx_runtime50.jsx)("h4", { className: "text-xl font-bold mb-1", children: eventModal.location }),
-      /* @__PURE__ */ (0, import_jsx_runtime50.jsx)("p", { className: "text-sm text-gray-600 mb-3", children: formatModalDate(eventModal) }),
-      eventModal.description && /* @__PURE__ */ (0, import_jsx_runtime50.jsx)("div", { className: "prose max-w-none", children: /* @__PURE__ */ (0, import_jsx_runtime50.jsx)(import_react48.PortableText, { value: eventModal.description, components: portableComponents }) }),
-      eventModal.ticketsUrl && /* @__PURE__ */ (0, import_jsx_runtime50.jsx)(
-        "a",
-        {
-          className: "btn btn-primary mt-4 inline-block",
-          href: eventModal.ticketsUrl,
-          target: "_blank",
-          rel: "noreferrer",
-          children: "Get tickets"
-        }
-      )
-    ] }) })
+    eventModal && /* @__PURE__ */ (0, import_jsx_runtime50.jsx)(
+      "div",
+      {
+        className: "fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4",
+        role: "dialog",
+        "aria-modal": "true",
+        "aria-label": eventModal.location || "Event details",
+        children: /* @__PURE__ */ (0, import_jsx_runtime50.jsxs)("div", { className: "bg-white rounded-lg shadow-xl max-w-2xl w-full p-5 relative max-h-[90vh] overflow-hidden", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime50.jsx)(
+            "button",
+            {
+              type: "button",
+              className: "absolute right-3 top-3 text-sm underline",
+              onClick: () => setEventModal(null),
+              ref: modalCloseRef,
+              children: "Close"
+            }
+          ),
+          eventModal.heroImage && /* @__PURE__ */ (0, import_jsx_runtime50.jsx)("div", { className: "mb-4 rounded-md overflow-hidden", children: /* @__PURE__ */ (0, import_jsx_runtime50.jsx)(
+            "img",
+            {
+              src: eventModal.heroImage,
+              alt: eventModal.location || "Event image",
+              className: "w-full h-44 object-cover rounded-md"
+            }
+          ) }),
+          /* @__PURE__ */ (0, import_jsx_runtime50.jsxs)("div", { className: "overflow-auto p-1", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime50.jsx)("h4", { className: "text-xl font-bold mb-1", children: eventModal.location }),
+            /* @__PURE__ */ (0, import_jsx_runtime50.jsx)("p", { className: "text-sm text-gray-600 mb-3", children: formatModalDate(eventModal) }),
+            eventModal.description && /* @__PURE__ */ (0, import_jsx_runtime50.jsx)("div", { className: "prose max-w-none", children: /* @__PURE__ */ (0, import_jsx_runtime50.jsx)(import_react48.PortableText, { value: eventModal.description, components: portableComponents }) }),
+            eventModal.ticketsUrl && /* @__PURE__ */ (0, import_jsx_runtime50.jsx)(
+              "a",
+              {
+                className: "btn btn-primary mt-4 inline-block",
+                href: eventModal.ticketsUrl,
+                target: "_blank",
+                rel: "noreferrer",
+                children: "Get tickets"
+              }
+            )
+          ] })
+        ] })
+      }
+    )
   ] });
 };
 var CrowdfundingPage_default = CrowdfundingPage;
