@@ -45,6 +45,9 @@ importers:
       '@sentry/react':
         specifier: ^8.28.0
         version: 8.55.0(react@18.2.0)
+      '@supabase/supabase-js':
+        specifier: ^2.45.3
+        version: 2.45.3
       '@vercel/analytics':
         specifier: ^1.5.0
         version: 1.5.0(next@14.2.14(@babel/core@7.28.4)(@opentelemetry/api@1.9.0)(@playwright/test@1.55.1)(react-dom@18.2.0(react@18.2.0))(react@18.2.0))(react@18.2.0)
