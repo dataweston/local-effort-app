@@ -174,11 +174,30 @@ function applyDiscountToCents(amountCents, discount) {
     if (!Number.isFinite(percent) || percent <= 0) {
       return baseAmount;
     }
+
+    const cap = (() => {
+      const rawCap =
+        reduction.capCents ??
+        reduction.cap_cents ??
+        reduction.cap ??
+        reduction.maximumCents ??
+        reduction.maximum_cents ??
+        0;
+      const numeric = Number(rawCap);
+      return Number.isFinite(numeric) && numeric > 0 ? Math.max(0, Math.round(numeric)) : 0;
+    })();
+
+    let deduction;
     if (percent >= 100) {
-      return 0;
+      deduction = cap > 0 ? Math.min(baseAmount, cap) : baseAmount;
+    } else {
+      deduction = Math.floor((baseAmount * percent) / 100);
+      if (cap > 0) {
+        deduction = Math.min(deduction, cap);
+      }
     }
-    const multiplier = 1 - percent / 100;
-    return Math.max(0, Math.round(baseAmount * multiplier));
+
+    return Math.max(0, baseAmount - deduction);
   }
   if (reductionType === 'fixed') {
     const deduction = Math.max(0, Math.round(Number(reduction.value) || 0));
