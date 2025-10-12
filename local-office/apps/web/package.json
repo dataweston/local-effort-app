@@ -13,6 +13,7 @@
     "@local-effort/shared": "workspace:*",
     "@local-office/ui": "workspace:^",
   "@sanity/client": "7.9.0",
+  "@supabase/supabase-js": "2.45.3",
   "clsx": "2.1.1",
     "date-fns": "4.1.0",
     "lucide-react": "0.451.0",
