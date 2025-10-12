@@ -2272,31 +2272,6 @@ const CrowdfundingPage = () => {
                   }}
                 >
                   <div className="grid grid-cols-1 gap-4">
-
-              <Card className="card space-y-4 p-6 ring-1 ring-neutral-200">
-                <CardHeader className="space-y-1 px-0 pt-0">
-                  <CardTitle className="text-lg font-semibold text-slate-900">How it Works</CardTitle>
-                </CardHeader>
-                <CardContent className="px-0 pb-0">
-                  <ol className="list-decimal space-y-3 pl-5 text-sm leading-relaxed text-slate-700">
-                    <li>Order a pizza, or 2, or 5, or 10, or 15.</li>
-                    <li>Select your preferred pizzas setting.</li>
-                    <li>
-                      You&apos;ll be able to pick up your pizzas at public events for the next 2-3 months.
-                      We&apos;ll send you updates on all the pizza party fun, including private/ticketed
-                      events only for supporters.
-                    </li>
-                    <li>
-                      For delivery, we ask for a minimum of 5 pizzas. We will reach out to schedule a
-                      delivery time.
-                    </li>
-                    <li>
-                      We will cook the pizzas at your home with a minimum order of 15 pizzas. We&apos;ll
-                      reach out to schedule a time.
-                    </li>
-                  </ol>
-                </CardContent>
-              </Card>
                     <div className="space-y-2">
                       <Label htmlFor="cf-name">Name</Label>
                       <Input
@@ -2581,6 +2556,31 @@ const CrowdfundingPage = () => {
                 </form>
               )}
             </div>
+
+            <Card className="card space-y-4 p-6 ring-1 ring-neutral-200">
+              <CardHeader className="space-y-1 px-0 pt-0">
+                <CardTitle className="text-lg font-semibold text-slate-900">How it Works</CardTitle>
+              </CardHeader>
+              <CardContent className="px-0 pb-0">
+                <ol className="list-decimal space-y-3 pl-5 text-sm leading-relaxed text-slate-700">
+                  <li>Order a pizza, or 2, or 5, or 10, or 15.</li>
+                  <li>Select your preferred pizzas setting.</li>
+                  <li>
+                    You&apos;ll be able to pick up your pizzas at public events for the next 2-3 months.
+                    We&apos;ll send you updates on all the pizza party fun, including private/ticketed
+                    events only for supporters.
+                  </li>
+                  <li>
+                    For delivery, we ask for a minimum of 5 pizzas. We will reach out to schedule a
+                    delivery time.
+                  </li>
+                  <li>
+                    We will cook the pizzas at your home with a minimum order of 15 pizzas. We&apos;ll
+                    reach out to schedule a time.
+                  </li>
+                </ol>
+              </CardContent>
+            </Card>
 
             <div className="space-y-4">
               <Card className="border-0 bg-slate-900 text-white shadow-xl">
