@@ -1,19 +1,29 @@
+'use client';
+
+import { useCallback } from 'react';
+
 import type { NormalizedSaleProduct, SaleCheckoutMode } from '../../lib/sales';
+import { useSaleInlineCheckout } from './SaleInlineCheckout';
 import type { SaleTheme } from './theme';
 
 export type SaleCheckoutButtonProps = {
   product: NormalizedSaleProduct;
   theme: SaleTheme;
   checkoutMode: SaleCheckoutMode | null | undefined;
-  // eslint-disable-next-line no-unused-vars
-  onInlineCheckout?: (product: NormalizedSaleProduct) => void;
 };
 
-export function SaleCheckoutButton({ product, theme, checkoutMode, onInlineCheckout }: SaleCheckoutButtonProps) {
+export function SaleCheckoutButton({ product, theme, checkoutMode }: SaleCheckoutButtonProps) {
   const manualInventory = product.inventoryMode === 'manual' ? product.manualInventory : null;
   const soldOut = typeof manualInventory === 'number' && manualInventory <= 0;
   const isInlineCheckout = checkoutMode === 'inline';
-  const inlineDisabled = isInlineCheckout && !onInlineCheckout;
+  const inlineContext = useSaleInlineCheckout();
+  const inlineSupported = Boolean(inlineContext);
+
+  const handleInlineCheckout = useCallback(() => {
+    if (inlineContext) {
+      inlineContext.startCheckout(product);
+    }
+  }, [inlineContext, product]);
 
   if (!soldOut && !isInlineCheckout && product.checkoutUrl) {
     return (
@@ -33,11 +43,11 @@ export function SaleCheckoutButton({ product, theme, checkoutMode, onInlineCheck
     );
   }
 
-  if (!soldOut && isInlineCheckout && onInlineCheckout) {
+  if (!soldOut && isInlineCheckout && inlineSupported) {
     return (
       <button
         type="button"
-        onClick={() => onInlineCheckout(product)}
+        onClick={handleInlineCheckout}
         className="inline-flex items-center justify-center rounded-full px-4 py-2 text-sm font-semibold transition focus:outline-none focus-visible:ring-2 focus-visible:ring-white/80"
         style={{
           backgroundColor: theme.accent,
@@ -51,7 +61,7 @@ export function SaleCheckoutButton({ product, theme, checkoutMode, onInlineCheck
 
   const message = soldOut
     ? 'Sold out'
-    : isInlineCheckout && inlineDisabled
+    : isInlineCheckout && !inlineSupported
       ? 'Inline checkout coming soon'
       : 'Unavailable';
 
