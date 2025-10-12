@@ -16,6 +16,12 @@ const getMoneyAmountCents = (money) => {
   return Math.max(0, Math.round(toNumber(amount, 0)));
 };
 
+// Supported entry formats (comma separated):
+// - legacy: CODE:Label            -> full complimentary (100% off)
+// - new:    CODE:Label|percent=50 -> percent off
+// - new:    CODE:Label|fixed_cents=500 -> fixed cents off
+// - new:    CODE|full             -> full complimentary (no label)
+// Spec fields come after a '|' and are key=value or the keyword 'full'.
 const parseCompEntries = () => {
   const raw = process.env.CROWDFUND_COMP_CODES || '';
   return raw
@@ -23,16 +29,58 @@ const parseCompEntries = () => {
     .map((entry) => entry.trim())
     .filter(Boolean)
     .map((entry) => {
-      const [codePart, ...labelParts] = entry.split(':');
+      // Split off any spec fields after a '|' token
+      const [base, ...specParts] = entry.split('|').map((s) => s.trim()).filter(Boolean);
+      const [codePart, ...labelParts] = (base || '').split(':');
       const code = (codePart || '').trim();
-      if (!code) {
-        return null;
+      if (!code) return null;
+
+      const labelCandidate = labelParts.join(':').trim();
+      let label = labelCandidate || DEFAULT_COMP_LABEL;
+
+      // Default discount: full comp (100%) for legacy entries that only provided label
+      let discountSpec = { type: 'full' };
+
+      // Parse specParts (if any) which are like 'percent=50' or 'fixed_cents=500' or 'full'
+      if (specParts && specParts.length) {
+        // merge all spec parts (allow multiple separated by '|')
+        const specs = {};
+        specParts.forEach((part) => {
+          if (!part) return;
+          // keyword 'full'
+          if (part.toLowerCase() === 'full') {
+            specs.full = true;
+            return;
+          }
+          const [k, v] = part.split('=').map((s) => (s || '').trim());
+          if (!k) return;
+          specs[k] = v === undefined ? '' : v;
+        });
+
+        if (specs.full) {
+          discountSpec = { type: 'full' };
+        } else if (specs.percent) {
+          const p = Number.parseFloat(specs.percent);
+          if (Number.isFinite(p) && p > 0) {
+            const capCents = Number.isFinite(Number(specs.cap_cents)) ? Math.max(0, Math.round(Number(specs.cap_cents))) : 0;
+            discountSpec = { type: 'percent', percent: p, capCents: capCents || 0 };
+          }
+        } else if (specs.fixed_cents) {
+          const c = Number(specs.fixed_cents);
+          if (Number.isFinite(c) && c > 0) {
+            discountSpec = { type: 'fixed', fixedCents: Math.max(0, Math.round(c)) };
+          }
+        }
+      } else {
+        // No spec parts: legacy behavior -> full comp
+        discountSpec = { type: 'full' };
       }
-      const label = labelParts.join(':').trim();
+
       return {
         code,
         codeLower: code.toLowerCase(),
-        label: label || DEFAULT_COMP_LABEL,
+        label,
+        spec: discountSpec,
       };
     })
     .filter(Boolean);
@@ -84,20 +132,40 @@ const applyCrowdfundDiscount = (amountCents, discount) => {
 
 const resolveManualDiscount = (rawCode) => {
   const trimmed = typeof rawCode === 'string' ? rawCode.trim() : '';
-  if (!trimmed) {
-    return null;
-  }
+  if (!trimmed) return null;
   const match = COMP_ENTRIES.find((entry) => entry.codeLower === trimmed.toLowerCase());
-  if (!match) {
-    return null;
+  if (!match) return null;
+
+  const spec = match.spec || { type: 'full' };
+  if (spec.type === 'full') {
+    return {
+      code: match.code,
+      label: match.label,
+      type: 'full',
+      reduction: { type: 'percent', value: 100 },
+      source: 'manual',
+    };
   }
-  return {
-    code: match.code,
-    label: match.label,
-    type: 'full',
-    reduction: { type: 'percent', value: 100 },
-    source: 'manual',
-  };
+  if (spec.type === 'percent') {
+    return {
+      code: match.code,
+      label: match.label,
+      type: 'percent',
+      reduction: { type: 'percent', value: Number(spec.percent), ...(spec.capCents > 0 ? { capCents: spec.capCents } : {}) },
+      source: 'manual',
+    };
+  }
+  if (spec.type === 'fixed') {
+    return {
+      code: match.code,
+      label: match.label,
+      type: 'fixed',
+      reduction: { type: 'fixed', value: Number(spec.fixedCents) },
+      source: 'manual',
+    };
+  }
+
+  return null;
 };
 
 const SQUARE_CACHE_MS = Math.max(Number(process.env.CROWDFUND_SQUARE_DISCOUNT_CACHE_MS) || 5 * 60 * 1000, 1000);
