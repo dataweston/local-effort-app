@@ -4,3 +4,4 @@ node_modules
 .env*.local
 firebase-service-account.base64.txt
 firebase-service-account.json.string
+local-effort-firebase-adminsdk-xrvm0-bae4f4c196.json
