@@ -6,6 +6,7 @@ const crypto = require('crypto');
 const { getSquareClient } = require('../_lib/squareClient');
 const { getFirebaseAdmin } = require('../_lib/firebaseAdmin');
 const { resolveCrowdfundDiscount, applyCrowdfundDiscount } = require('./_lib/discountCodes');
+const { sendCrowdfundReceipts } = require('./_lib/sendReceipt');
 
 const countPizzasInItems = (items) => {
   if (!Array.isArray(items)) {
@@ -141,6 +142,10 @@ module.exports = async (req, res) => {
     const safeEmail = typeof email === 'string' && email.trim() ? email.trim().slice(0, 120) : '';
     const safePhone = typeof phone === 'string' && phone.trim() ? phone.trim().slice(0, 30) : '';
     const safeNotify = typeof notify === 'string' && notify.trim() ? notify.trim().slice(0, 60) : 'none';
+    const safeNotes = typeof notes === 'string' && notes.trim() ? notes.trim().slice(0, 500) : '';
+    const safeRewardPreference = typeof rewardPreference === 'string' && rewardPreference.trim()
+      ? rewardPreference.trim().slice(0, 120)
+      : '';
 
     const idempotencyKey = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
     const metaNoteParts = [safeFunderName];
@@ -159,7 +164,7 @@ module.exports = async (req, res) => {
         funderName: safeFunderName,
         email: safeEmail,
         phone: safePhone,
-        notes,
+        notes: safeNotes,
         notify: safeNotify,
         trimmedDiscount,
       });
@@ -182,6 +187,20 @@ module.exports = async (req, res) => {
     const paymentId = resp.result.payment?.id;
 
     await persistContribution();
+
+    await sendCrowdfundReceipts({
+      funderName: safeFunderName,
+      email: safeEmail,
+      phone: safePhone,
+      totalCents: Math.max(0, Math.round(discountedTotal)),
+      items: checkoutItemsPayload,
+      discountCode: trimmedDiscount || '',
+      discountLabel: discountDetails?.label || '',
+      rewardPreference: safeRewardPreference,
+      notify: safeNotify,
+      notes: safeNotes,
+      paymentId: paymentId || '',
+    });
 
     return res.status(200).json({ ok: true, paymentId, discount: discountDetails || null });
   } catch (e) {
