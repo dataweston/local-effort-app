@@ -11,6 +11,68 @@ try {
 
 let cached = null;
 
+const candidateProjectEnvKeys = [
+  'FIREBASE_PROJECT_ID',
+  'GOOGLE_CLOUD_PROJECT',
+  'GCLOUD_PROJECT',
+  'GCP_PROJECT',
+  'NEXT_PUBLIC_FIREBASE_PROJECT_ID',
+  'NEXT_PUBLIC_PROJECT_ID',
+  'VITE_FIREBASE_PROJECT_ID',
+  'VITE_PROJECT_ID',
+  'REACT_APP_FIREBASE_PROJECT_ID',
+  'REACT_APP_PROJECT_ID',
+];
+
+const clientConfigEnvKeys = [
+  'FIREBASE_CLIENT_CONFIG_JSON',
+  'FIREBASE_CLIENT_CONFIG',
+  'FIREBASE_PUBLIC_CONFIG_JSON',
+  'FIREBASE_PUBLIC_CONFIG',
+  'NEXT_PUBLIC_FIREBASE_CONFIG',
+  'VITE_FIREBASE_CONFIG',
+  'REACT_APP_FIREBASE_CONFIG',
+  'FIREBASE_WEB_CONFIG',
+  'FIREBASE_OPTIONS',
+  'FIREBASE_CONFIG',
+];
+
+const safeParseJson = (value) => {
+  if (!value) return null;
+  try {
+    return JSON.parse(value);
+  } catch (error) {
+    return null;
+  }
+};
+
+const safeDecodeBase64Json = (value) => {
+  if (!value) return null;
+  const raw = String(value).trim();
+  if (!raw) return null;
+
+  if (raw.startsWith('{') || raw.startsWith('\u007b')) {
+    return safeParseJson(raw);
+  }
+
+  const unquoted = (raw.startsWith('"') && raw.endsWith('"')) || (raw.startsWith("'") && raw.endsWith("'"))
+    ? raw.slice(1, -1)
+    : raw;
+
+  const candidates = [unquoted, unquoted.replace(/\s+/g, ''), unquoted.replace(/-/g, '+').replace(/_/g, '/')];
+  for (const cand of candidates) {
+    try {
+      const decoded = Buffer.from(cand, 'base64').toString('utf8');
+      const parsed = safeParseJson(decoded);
+      if (parsed) return parsed;
+    } catch (error) {
+      // try next candidate
+    }
+  }
+
+  return null;
+};
+
 const readJsonFromEnv = (value, label) => {
   if (!value) return null;
   try {
@@ -88,9 +150,70 @@ const normalizePrivateKey = (value) => {
   }
 };
 
+const resolveProjectIdFromObject = (candidate) => {
+  if (!candidate || typeof candidate !== 'object') return null;
+  const projectId = candidate.project_id || candidate.projectId || candidate.projectID || candidate.project;
+  if (typeof projectId === 'string' && projectId.trim()) {
+    return projectId.trim();
+  }
+  return null;
+};
+
+const resolveProjectIdFromEnv = () => {
+  for (const key of candidateProjectEnvKeys) {
+    const value = process.env[key];
+    if (typeof value === 'string' && value.trim()) {
+      return value.trim();
+    }
+  }
+
+  const serviceAccountJson = safeParseJson(process.env.FIREBASE_SERVICE_ACCOUNT_JSON);
+  const serviceAccountBase64 = safeDecodeBase64Json(process.env.FIREBASE_SERVICE_ACCOUNT_BASE64);
+  const serviceAccountFromPath = safeParseJson(
+    (() => {
+      try {
+        if (!process.env.FIREBASE_SERVICE_ACCOUNT_PATH) return null;
+        if (!fs.existsSync(process.env.FIREBASE_SERVICE_ACCOUNT_PATH)) return null;
+        return fs.readFileSync(process.env.FIREBASE_SERVICE_ACCOUNT_PATH, 'utf8');
+      } catch (error) {
+        return null;
+      }
+    })(),
+  );
+
+  const serviceAccountProjectId =
+    resolveProjectIdFromObject(serviceAccountJson) ||
+    resolveProjectIdFromObject(serviceAccountBase64) ||
+    resolveProjectIdFromObject(serviceAccountFromPath);
+  if (serviceAccountProjectId) return serviceAccountProjectId;
+
+  for (const key of clientConfigEnvKeys) {
+    const parsed = safeParseJson(process.env[key]);
+    const projectId = resolveProjectIdFromObject(parsed);
+    if (projectId) return projectId;
+  }
+
+  return null;
+};
+
+const applyProjectIdEnv = (projectId) => {
+  if (!projectId || typeof projectId !== 'string' || !projectId.trim()) return;
+  const value = projectId.trim();
+  try {
+    if (!process.env.FIREBASE_PROJECT_ID) process.env.FIREBASE_PROJECT_ID = value;
+    if (!process.env.GOOGLE_CLOUD_PROJECT) process.env.GOOGLE_CLOUD_PROJECT = value;
+    if (!process.env.GCLOUD_PROJECT) process.env.GCLOUD_PROJECT = value;
+    if (!process.env.GCP_PROJECT) process.env.GCP_PROJECT = value;
+  } catch (error) {
+    // Ignore env assignment failures (read-only env)
+  }
+};
+
 function coerceServiceAccount(candidate) {
   if (!candidate || typeof candidate !== 'object') return null;
-  const projectId = candidate.project_id || candidate.projectId || process.env.FIREBASE_PROJECT_ID;
+  const projectId =
+    resolveProjectIdFromObject(candidate) ||
+    resolveProjectIdFromEnv();
   const clientEmail = candidate.client_email || candidate.clientEmail || process.env.FIREBASE_CLIENT_EMAIL;
   const privateKey = normalizePrivateKey(candidate.private_key || candidate.privateKey || process.env.FIREBASE_PRIVATE_KEY);
 
@@ -116,7 +239,7 @@ function loadServiceAccount() {
   }
 
   const fallback = coerceServiceAccount({
-    projectId: process.env.FIREBASE_PROJECT_ID,
+    projectId: resolveProjectIdFromEnv(),
     clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
     privateKey: process.env.FIREBASE_PRIVATE_KEY,
   });
@@ -160,10 +283,12 @@ function getFirebaseAdmin() {
   try {
     if (!admin.apps.length) {
       const serviceAccount = loadServiceAccount();
+      const resolvedProjectId = serviceAccount?.projectId || resolveProjectIdFromEnv();
+      const databaseURL = process.env.FIREBASE_DATABASE_URL || undefined;
       if (serviceAccount) {
         // Ensure process.env has fallback values so firebase-admin can detect project id in different runtimes
         try {
-          if (!process.env.FIREBASE_PROJECT_ID && serviceAccount.projectId) process.env.FIREBASE_PROJECT_ID = serviceAccount.projectId;
+          applyProjectIdEnv(serviceAccount.projectId);
           if (!process.env.FIREBASE_CLIENT_EMAIL && serviceAccount.clientEmail) process.env.FIREBASE_CLIENT_EMAIL = serviceAccount.clientEmail;
         } catch (e) {
           // ignore env set failures
@@ -175,15 +300,46 @@ function getFirebaseAdmin() {
             privateKey: serviceAccount.privateKey,
           }),
           projectId: serviceAccount.projectId,
-          databaseURL: process.env.FIREBASE_DATABASE_URL || undefined,
+          databaseURL,
         });
         console.warn('[firebase-admin] initialized with explicit service account credentials');
       } else {
-        admin.initializeApp();
-        console.warn('[firebase-admin] initialized with default application credentials');
+        const baseOptions = {};
+        if (resolvedProjectId) baseOptions.projectId = resolvedProjectId;
+        if (databaseURL) baseOptions.databaseURL = databaseURL;
+
+        let initialized = false;
+        if (typeof admin.credential?.applicationDefault === 'function') {
+          try {
+            admin.initializeApp({
+              ...baseOptions,
+              credential: admin.credential.applicationDefault(),
+            });
+            initialized = true;
+            console.warn('[firebase-admin] initialized with application default credentials');
+          } catch (error) {
+            console.warn('[firebase-admin] applicationDefault credentials unavailable', error.message);
+          }
+        }
+
+        if (!initialized) {
+          admin.initializeApp(baseOptions);
+          if (resolvedProjectId) {
+            console.warn('[firebase-admin] initialized with project ID only (no explicit credentials)');
+          } else {
+            console.warn('[firebase-admin] initialized without explicit project ID; Firestore will be disabled if unavailable');
+          }
+        }
       }
     }
     firestore = typeof admin.firestore === 'function' ? admin.firestore() : null;
+    const projectId = (admin?.apps?.[0] && admin.apps[0].options && admin.apps[0].options.projectId) || resolveProjectIdFromEnv();
+    if (projectId) {
+      applyProjectIdEnv(projectId);
+    } else {
+      console.warn('[firebase-admin] project ID could not be resolved; disabling Firestore access to avoid runtime errors.');
+      firestore = null;
+    }
   } catch (error) {
     console.warn('[firebase-admin] failed to initialize app', error.message);
     if (process.env.FIREBASE_PRIVATE_KEY || process.env.FIREBASE_SERVICE_ACCOUNT_JSON) {
