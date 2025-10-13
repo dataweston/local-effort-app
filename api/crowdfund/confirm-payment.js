@@ -14,9 +14,6 @@ module.exports = async (req, res) => {
   }
 
   const { firestore: db } = getFirebaseAdmin();
-  if (!db) {
-    return res.status(503).json({ error: 'Database not configured on this server.' });
-  }
 
   const {
     items = [],
