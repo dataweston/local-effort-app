@@ -50,6 +50,7 @@ module.exports = async (req, res) => {
   const safeDiscountLabel = typeof discountLabel === 'string' && discountLabel.trim()
     ? discountLabel.trim().slice(0, 120)
     : '';
+  const trimmedDiscount = typeof discountCode === 'string' ? discountCode.trim().slice(0, 60) : '';
 
   const normalizedItems = Array.isArray(items)
     ? items
@@ -77,6 +78,39 @@ module.exports = async (req, res) => {
     return res.json({ success: true, message: 'No pizza items to update.' });
   }
 
+  if (!db) {
+    console.warn(
+      'crowdfund confirm-payment requested but database unavailable; skipping persistence'
+    );
+
+    try {
+      await sendCrowdfundReceipts({
+        funderName: sanitizedFunderName,
+        email: safeEmail,
+        phone: safePhone,
+        totalCents: contributionTotal,
+        items: normalizedItems,
+        discountCode: trimmedDiscount,
+        discountLabel: safeDiscountLabel,
+        rewardPreference: safeRewardPreference,
+        notify: safeNotify,
+        notes: safeNotes,
+        isComplimentary: contributionTotal <= 0,
+      });
+    } catch (receiptError) {
+      console.warn(
+        '[crowdfund.confirm-payment] failed to send receipt without database',
+        receiptError.message
+      );
+    }
+
+    return res.json({
+      success: true,
+      fallback: true,
+      message: 'Contribution recorded without database update.',
+    });
+  }
+
   try {
     const docRef = db.collection('crowdfund').doc('status');
     await db.runTransaction(async (transaction) => {
@@ -85,8 +119,6 @@ module.exports = async (req, res) => {
       const goal = typeof current.goal === 'number' ? current.goal : 1000;
       const pizzasSold = Number(current.pizzasSold) || 0;
       const funders = Array.isArray(current.funders) ? current.funders.slice() : [];
-
-      const trimmedDiscount = typeof discountCode === 'string' ? discountCode.trim().slice(0, 60) : '';
 
       funders.push({
         name: sanitizedFunderName,
@@ -112,26 +144,26 @@ module.exports = async (req, res) => {
       }
     });
 
-      const updatedDoc = await docRef.get();
-      const updatedTotal = updatedDoc.exists ? updatedDoc.data()?.pizzasSold || 0 : 0;
+    const updatedDoc = await docRef.get();
+    const updatedTotal = updatedDoc.exists ? updatedDoc.data()?.pizzasSold || 0 : 0;
 
-      await sendCrowdfundReceipts({
-        funderName: sanitizedFunderName,
-        email: safeEmail,
-        phone: safePhone,
-        totalCents: contributionTotal,
-        items: normalizedItems,
-        discountCode: trimmedDiscount,
-        discountLabel: safeDiscountLabel,
-        rewardPreference: safeRewardPreference,
-        notify: safeNotify,
-        notes: safeNotes,
-        isComplimentary: contributionTotal <= 0,
-      });
+    await sendCrowdfundReceipts({
+      funderName: sanitizedFunderName,
+      email: safeEmail,
+      phone: safePhone,
+      totalCents: contributionTotal,
+      items: normalizedItems,
+      discountCode: trimmedDiscount,
+      discountLabel: safeDiscountLabel,
+      rewardPreference: safeRewardPreference,
+      notify: safeNotify,
+      notes: safeNotes,
+      isComplimentary: contributionTotal <= 0,
+    });
 
-      return res.json({ success: true, newTotal: updatedTotal });
-    } catch (error) {
-      console.warn('[crowdfund.confirm-payment] failed to persist pizzas', error.message);
-      return res.status(500).json({ error: 'Failed to update database after payment.' });
-    }
+    return res.json({ success: true, newTotal: updatedTotal });
+  } catch (error) {
+    console.warn('[crowdfund.confirm-payment] failed to persist pizzas', error.message);
+    return res.status(500).json({ error: 'Failed to update database after payment.' });
+  }
 };
