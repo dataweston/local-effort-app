@@ -333,12 +333,24 @@ function getFirebaseAdmin() {
       }
     }
     firestore = typeof admin.firestore === 'function' ? admin.firestore() : null;
-    const projectId = (admin?.apps?.[0] && admin.apps[0].options && admin.apps[0].options.projectId) || resolveProjectIdFromEnv();
+
+    const appOptions = admin?.apps?.[0]?.options || {};
+    let projectId = appOptions.projectId || resolveProjectIdFromEnv();
+    if (!projectId) {
+      const credentialProjectId = appOptions.credential && appOptions.credential.projectId;
+      if (typeof credentialProjectId === 'string' && credentialProjectId) {
+        projectId = credentialProjectId;
+      }
+    }
+
     if (projectId) {
       applyProjectIdEnv(projectId);
+    } else if (!firestore) {
+      console.warn('[firebase-admin] project ID could not be resolved and Firestore is unavailable.');
     } else {
-      console.warn('[firebase-admin] project ID could not be resolved; disabling Firestore access to avoid runtime errors.');
-      firestore = null;
+      console.warn(
+        '[firebase-admin] project ID could not be resolved from env or credentials; continuing with Firestore using default credential discovery.'
+      );
     }
   } catch (error) {
     console.warn('[firebase-admin] failed to initialize app', error.message);
