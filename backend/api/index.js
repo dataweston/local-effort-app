@@ -94,15 +94,84 @@ try {
     } else {
       console.warn(`FIREBASE_SERVICE_ACCOUNT_PATH set but file does not exist: ${path}`);
     }
+  } else if (process.env.GOOGLE_APPLICATION_CREDENTIALS) {
+    const path = process.env.GOOGLE_APPLICATION_CREDENTIALS;
+    if (fs.existsSync(path)) {
+      try {
+        const raw = fs.readFileSync(path, 'utf8');
+        serviceAccount = JSON.parse(raw);
+      } catch (err) {
+        console.warn(
+          'GOOGLE_APPLICATION_CREDENTIALS present but failed to read/parse:',
+          err?.message
+        );
+      }
+    } else {
+      console.warn(
+        `GOOGLE_APPLICATION_CREDENTIALS set but file does not exist: ${path}`
+      );
+    }
   }
 
+  const resolvedProjectId =
+    process.env.FIREBASE_PROJECT_ID ||
+    process.env.GOOGLE_CLOUD_PROJECT ||
+    process.env.GCLOUD_PROJECT ||
+    process.env.GCP_PROJECT ||
+    serviceAccount?.project_id ||
+    serviceAccount?.projectId ||
+    null;
+
   if (serviceAccount) {
-    if (!admin.apps.length) {
-      admin.initializeApp({ credential: admin.credential.cert(serviceAccount) });
+    const firebaseOptions = { credential: admin.credential.cert(serviceAccount) };
+    if (resolvedProjectId) {
+      firebaseOptions.projectId = resolvedProjectId;
     }
+
+    if (!admin.apps.length) {
+      admin.initializeApp(firebaseOptions);
+    }
+
     db = admin.firestore();
   } else {
-    console.warn('Firebase service account not provided — Firestore will be unavailable in this process.');
+    if (!resolvedProjectId) {
+      console.warn(
+        'Firebase service account not provided and no project ID configured — Firestore will be unavailable in this process.'
+      );
+    } else {
+      try {
+        if (!admin.apps.length) {
+          admin.initializeApp({ projectId: resolvedProjectId });
+        }
+        db = admin.firestore();
+      } catch (err) {
+        console.warn('Failed to initialize Firebase admin with project ID only:', err.message);
+      }
+    }
+  }
+
+  if (db) {
+    const finalProjectId =
+      admin.app().options?.projectId ||
+      resolvedProjectId ||
+      process.env.GOOGLE_CLOUD_PROJECT ||
+      process.env.GCLOUD_PROJECT ||
+      null;
+
+    if (finalProjectId) {
+      if (!process.env.GOOGLE_CLOUD_PROJECT) process.env.GOOGLE_CLOUD_PROJECT = finalProjectId;
+      if (!process.env.GCLOUD_PROJECT) process.env.GCLOUD_PROJECT = finalProjectId;
+      if (!process.env.FIREBASE_PROJECT_ID) process.env.FIREBASE_PROJECT_ID = finalProjectId;
+    } else {
+      console.warn(
+        'Firestore initialized but no project ID could be resolved — disabling database access to avoid runtime errors.'
+      );
+      db = null;
+    }
+  }
+
+  if (!db) {
+    console.warn('Firestore will be unavailable in this process.');
   }
 } catch (err) {
   console.error('Failed to initialize Firebase admin:', err.message);
