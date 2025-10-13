@@ -21,7 +21,6 @@ try {
 }
 const express = require('express');
 const cors = require('cors');
-const admin = require('firebase-admin');
 const { getSanityClient } = require('./sanityClient');
 const fs = require('fs');
 const path = require('path');
@@ -70,113 +69,23 @@ try {
 } catch (err) {
   console.warn('Square SDK not available or failed to load:', err && err.message);
 }
-const { v4: uuidv4 } = require('uuid'); // Import UUID for idempotency
-
-// --- INITIALIZE FIREBASE ---
-let db;
-// Support either raw JSON in FIREBASE_SERVICE_ACCOUNT_JSON or a path to a JSON file in FIREBASE_SERVICE_ACCOUNT_PATH
-try {
-  let serviceAccount = null;
-  if (process.env.FIREBASE_SERVICE_ACCOUNT_JSON) {
-    serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_JSON);
-  } else if (process.env.FIREBASE_SERVICE_ACCOUNT_BASE64) {
-    try {
-      const decoded = Buffer.from(process.env.FIREBASE_SERVICE_ACCOUNT_BASE64, 'base64').toString('utf8');
-      serviceAccount = JSON.parse(decoded);
-    } catch (err) {
-      console.warn('FIREBASE_SERVICE_ACCOUNT_BASE64 present but failed to decode/parse:', err?.message);
-    }
-  } else if (process.env.FIREBASE_SERVICE_ACCOUNT_PATH) {
-    const path = process.env.FIREBASE_SERVICE_ACCOUNT_PATH;
-    if (fs.existsSync(path)) {
-      const raw = fs.readFileSync(path, 'utf8');
-      serviceAccount = JSON.parse(raw);
-    } else {
-      console.warn(`FIREBASE_SERVICE_ACCOUNT_PATH set but file does not exist: ${path}`);
-    }
-  } else if (process.env.GOOGLE_APPLICATION_CREDENTIALS) {
-    const path = process.env.GOOGLE_APPLICATION_CREDENTIALS;
-    if (fs.existsSync(path)) {
-      try {
-        const raw = fs.readFileSync(path, 'utf8');
-        serviceAccount = JSON.parse(raw);
-      } catch (err) {
-        console.warn(
-          'GOOGLE_APPLICATION_CREDENTIALS present but failed to read/parse:',
-          err?.message
-        );
-      }
-    } else {
-      console.warn(
-        `GOOGLE_APPLICATION_CREDENTIALS set but file does not exist: ${path}`
-      );
-    }
+const { getFirebaseAdmin } = require('../../api/_lib/firebaseAdmin');
+const firebaseAdminResources = (() => {
+  try {
+    return getFirebaseAdmin();
+  } catch (error) {
+    console.warn('[backend] failed to load firebase admin helper', error?.message || error);
+    return { admin: null, firestore: null };
   }
+})();
 
-  const resolvedProjectId =
-    process.env.FIREBASE_PROJECT_ID ||
-    process.env.GOOGLE_CLOUD_PROJECT ||
-    process.env.GCLOUD_PROJECT ||
-    process.env.GCP_PROJECT ||
-    serviceAccount?.project_id ||
-    serviceAccount?.projectId ||
-    null;
-
-  if (serviceAccount) {
-    const firebaseOptions = { credential: admin.credential.cert(serviceAccount) };
-    if (resolvedProjectId) {
-      firebaseOptions.projectId = resolvedProjectId;
-    }
-
-    if (!admin.apps.length) {
-      admin.initializeApp(firebaseOptions);
-    }
-
-    db = admin.firestore();
-  } else {
-    if (!resolvedProjectId) {
-      console.warn(
-        'Firebase service account not provided and no project ID configured — Firestore will be unavailable in this process.'
-      );
-    } else {
-      try {
-        if (!admin.apps.length) {
-          admin.initializeApp({ projectId: resolvedProjectId });
-        }
-        db = admin.firestore();
-      } catch (err) {
-        console.warn('Failed to initialize Firebase admin with project ID only:', err.message);
-      }
-    }
-  }
-
-  if (db) {
-    const finalProjectId =
-      admin.app().options?.projectId ||
-      resolvedProjectId ||
-      process.env.GOOGLE_CLOUD_PROJECT ||
-      process.env.GCLOUD_PROJECT ||
-      null;
-
-    if (finalProjectId) {
-      if (!process.env.GOOGLE_CLOUD_PROJECT) process.env.GOOGLE_CLOUD_PROJECT = finalProjectId;
-      if (!process.env.GCLOUD_PROJECT) process.env.GCLOUD_PROJECT = finalProjectId;
-      if (!process.env.FIREBASE_PROJECT_ID) process.env.FIREBASE_PROJECT_ID = finalProjectId;
-    } else {
-      console.warn(
-        'Firestore initialized but no project ID could be resolved — disabling database access to avoid runtime errors.'
-      );
-      db = null;
-    }
-  }
-
-  if (!db) {
-    console.warn('Firestore will be unavailable in this process.');
-  }
-} catch (err) {
-  console.error('Failed to initialize Firebase admin:', err.message);
+const admin = firebaseAdminResources.admin;
+const db = firebaseAdminResources.firestore;
+if (!db) {
   console.warn('Firestore will be unavailable in this process.');
 }
+
+const { v4: uuidv4 } = require('uuid'); // Import UUID for idempotency
 
 // --- Auth middleware for admin-only endpoints (Gallant tools) ---
 const GALLANT_ALLOWED = new Set([
