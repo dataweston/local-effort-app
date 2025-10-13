@@ -156,11 +156,12 @@ SaleStructuredData.tsx
 
 ## 5. Revalidation & Cache Invalidation
 
-- `/api/revalidate` accepts `?sale=<slug>&secret=<token>`.
+- `/api/revalidate` (Next app, POST) accepts `sale` + optional `secret` via query string or JSON body.
   ```ts
-  const tag = `sale:${slug}`;
-  revalidateTag(tag);
+  // app/api/revalidate/route.ts
+  revalidateTag(`sale:${slug}`);
   ```
+- Configure `SALE_REVALIDATE_URL` (usually the deployed route) and `SALE_REVALIDATE_SECRET` so Square webhook + Sanity webhooks can authenticate.
 - Sanity webhook config triggers this endpoint on `sale` or related `saleProduct` changes.
 - Square webhook triggers revalidate after Supabase upsert.
 

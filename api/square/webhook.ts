@@ -23,7 +23,7 @@ type PaymentLineItem = {
   metadata?: Record<string, unknown> | null;
 };
 
-type PaymentObject = {
+export type PaymentObject = {
   id: string;
   status?: string;
   customer_id?: string | null;
@@ -203,7 +203,7 @@ function extractSaleSlugFromNote(note: unknown): string | null {
   return match ? match[1].toLowerCase() : null;
 }
 
-function extractSaleOrder(payment: PaymentObject): ExtractedSaleOrder | null {
+export function extractSaleOrder(payment: PaymentObject): ExtractedSaleOrder | null {
   const metadataSources = collectMetadataSources(payment);
   const saleSlug =
     lookupString(metadataSources, ['saleSlug', 'sale_slug', 'sale', 'slug']) ?? extractSaleSlugFromNote(payment.note);
@@ -328,7 +328,7 @@ async function triggerSaleRevalidate(saleSlug: string): Promise<boolean> {
   }
 }
 
-async function processSaleOrder(payment: PaymentObject): Promise<SaleOrderProcessResult | null> {
+export async function processSaleOrder(payment: PaymentObject): Promise<SaleOrderProcessResult | null> {
   try {
     const recorded = await insertSaleOrder(payment);
     if (!recorded) {
