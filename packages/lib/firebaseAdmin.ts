@@ -281,14 +281,25 @@ function initializeFirebase(): FirebaseResources {
     if (app) {
       db = getFirestore(app);
       realtimeDb = getDatabase(app);
-      const projectId =
-        (app.options?.projectId as string | undefined) ?? resolveProjectIdFromEnv() ?? undefined;
+
+      const appOptions = app.options ?? {};
+      let projectId =
+        (appOptions.projectId as string | undefined) ?? resolveProjectIdFromEnv() ?? undefined;
+      if (!projectId) {
+        const credentialProjectId = (appOptions.credential as { projectId?: unknown } | undefined)?.projectId;
+        if (typeof credentialProjectId === 'string' && credentialProjectId) {
+          projectId = credentialProjectId;
+        }
+      }
+
       if (projectId) {
         applyProjectIdEnv(projectId);
+      } else if (!db || !realtimeDb) {
+        console.warn('[firebase-admin] project ID could not be resolved and database clients are unavailable.');
       } else {
-        console.warn('[firebase-admin] project ID could not be resolved; disabling Firestore access to avoid runtime errors.');
-        db = null;
-        realtimeDb = null;
+        console.warn(
+          '[firebase-admin] project ID could not be resolved from env or credentials; continuing with Firestore using default credential discovery.'
+        );
       }
     }
 
