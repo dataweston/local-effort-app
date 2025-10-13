@@ -149,7 +149,12 @@
     "release:commits": "node scripts/sentry-release.js commits",
     "release:finalize": "node scripts/sentry-release.js finalize",
     "release:all": "node scripts/sentry-release.js all",
-    "build:release": "node scripts/sentry-release.js build"
+    "build:release": "node scripts/sentry-release.js build",
+    "sale:smoke:webhook": "cross-env TS_NODE_PROJECT=tsconfig.ts-node.json node -r ts-node/register/transpile-only scripts/webhook-smoke-test.ts",
+    "sale:smoke:webhook:sale": "cross-env TS_NODE_PROJECT=tsconfig.ts-node.json node -r ts-node/register/transpile-only scripts/webhook-smoke-test.ts",
+    "sale:smoke:extract": "cross-env TS_NODE_PROJECT=tsconfig.ts-node.json node -r ts-node/register/transpile-only scripts/webhook-smoke-test.ts --extract-only",
+    "sale:links:dry": "cross-env TS_NODE_PROJECT=tsconfig.ts-node.json node -r ts-node/register/transpile-only scripts/square-create-links.ts --dry-run",
+    "sale:links": "cross-env TS_NODE_PROJECT=tsconfig.ts-node.json node -r ts-node/register/transpile-only scripts/square-create-links.ts"
   },
   "browserslist": {
     "production": [
