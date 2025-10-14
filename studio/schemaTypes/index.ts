@@ -18,6 +18,8 @@ import campaign from './campaign'
 import pushSubscription from './pushSubscription'
 import menuItems from './menuItems'
 import happyMondayPage from './happyMondayPage'
+import happyMondaySalePage from './happyMondaySalePage'
+import tinyDinerSalePage from './tinyDinerSalePage'
 import product from './product'
 import salePage from './salePage'
 import publicEvent from './publicEvent'
@@ -52,6 +54,8 @@ export const schemaTypes = [
 	saleFaq,
 	menuItems,
 	happyMondayPage,
+	happyMondaySalePage,
+	tinyDinerSalePage,
 	salePage,
 	publicEvent,
 	referralParticipant,
