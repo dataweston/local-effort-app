@@ -347,15 +347,21 @@ const EventDialog = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-3xl overflow-hidden p-0 max-h-[calc(100vh-4rem)]">
+      <DialogContent
+        className={cn(
+          'max-w-3xl overflow-hidden p-0 min-h-0',
+          'max-h-[calc(100vh-3rem)] sm:max-h-[calc(100vh-4rem)]',
+          '[&_[data-radix-dialog-close]]:z-20'
+        )}
+      >
         <div
           className={cn(
-            'flex h-full flex-col min-h-0',
+            'flex h-full min-h-0 w-full flex-col overflow-hidden',
             hasHeroImage ? 'md:flex-row' : ''
           )}
         >
           {hasHeroImage && (
-            <div className="relative h-56 w-full flex-shrink-0 overflow-hidden bg-slate-100 md:h-full md:w-64">
+            <div className="relative h-56 w-full flex-shrink-0 overflow-hidden bg-slate-100 md:h-full md:w-64 md:max-h-full md:self-stretch">
               <img
                 src={heroImage}
                 alt={heroAlt}
@@ -364,24 +370,26 @@ const EventDialog = ({
               />
             </div>
           )}
-          <div className="flex-1 overflow-y-auto p-6 min-h-0 md:max-h-full md:min-h-0">
-            <div className="space-y-5 pb-2">
-              <DialogHeader className="space-y-2 text-left">
-                <div className="space-y-1">
-                  <DialogTitle className="text-2xl font-semibold text-slate-900">
-                    {event?.location}
-                  </DialogTitle>
-                  {dateLabel && (
-                    <DialogDescription className="text-sm font-medium text-slate-700">
-                      {dateLabel}
-                    </DialogDescription>
+          <div className="flex-1 min-h-0 overflow-y-auto p-6 md:max-h-full">
+            <div className="space-y-6 pb-6">
+              <div className="sticky top-0 z-10 -mx-6 mb-4 border-b border-slate-200 bg-white/95 px-6 pb-4 pt-4 backdrop-blur supports-[backdrop-filter]:backdrop-blur">
+                <DialogHeader className="space-y-2 text-left pr-10">
+                  <div className="space-y-1">
+                    <DialogTitle className="text-2xl font-semibold text-slate-900">
+                      {event?.location}
+                    </DialogTitle>
+                    {dateLabel && (
+                      <DialogDescription className="text-sm font-medium text-slate-700">
+                        {dateLabel}
+                      </DialogDescription>
+                    )}
+                  </div>
+                  {event?.timingNote && <p className="text-sm text-slate-600">{event.timingNote}</p>}
+                  {event?.locationDetails && (
+                    <p className="text-sm text-slate-600">{event.locationDetails}</p>
                   )}
-                </div>
-                {event?.timingNote && <p className="text-sm text-slate-600">{event.timingNote}</p>}
-                {event?.locationDetails && (
-                  <p className="text-sm text-slate-600">{event.locationDetails}</p>
-                )}
-              </DialogHeader>
+                </DialogHeader>
+              </div>
 
               {(event?.foodType || (event?.status && event.status !== 'scheduled')) && (
                 <div className="flex flex-wrap gap-2">
@@ -1845,7 +1853,7 @@ const CrowdfundingPage = () => {
         funderName: funderName?.trim() || '',
         discountCode: trimmedDiscount || '',
         discountLabel:
-          (data?.discount && data.discount.label) || (discountDetails && discountDetails.label) || '',
+          (data?.discount && data.discount.label) || (discountFromState && discountFromState.label) || '',
       });
       setLastContributionTotal(Math.max(0, Math.round(totalAfterLocalDiscount)));
       setSquareDiscountCode('');
