@@ -220,7 +220,26 @@ export default {
               options: { hotspot: true },
               description: 'Optional image displayed in the event preview and dialog.',
             },
-            { name: 'description', title: 'Description', type: 'array', of: [{ type: 'block' }] },
+            {
+              name: 'description',
+              title: 'Description',
+              type: 'array',
+              of: [
+                { type: 'block' },
+                {
+                  type: 'image',
+                  options: { hotspot: true },
+                  fields: [
+                    {
+                      name: 'alt',
+                      type: 'string',
+                      title: 'Alternative text',
+                      description: 'Describe the image for improved accessibility and SEO.',
+                    },
+                  ],
+                },
+              ],
+            },
             {
               name: 'firestoreEventId',
               title: 'Firestore Event ID',
