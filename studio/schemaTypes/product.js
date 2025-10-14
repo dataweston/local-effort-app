@@ -17,6 +17,22 @@ export default {
     { name: 'squareItemId', title: 'Square Item ID', type: 'string' },
     { name: 'squareVariationId', title: 'Square Variation ID', type: 'string' },
     {
+      name: 'stores',
+      title: 'Display on Store Pages',
+      type: 'array',
+      description: 'Select which store page(s) this product should appear on. You can select multiple stores.',
+      of: [{ type: 'string' }],
+      options: {
+        list: [
+          { title: 'Main Store (/sale)', value: 'sale' },
+          { title: 'Happy Monday (/happy-monday)', value: 'happy-monday' },
+          { title: 'Tiny Diner (/tiny-diner)', value: 'tiny-diner' }
+        ],
+        layout: 'checkbox'
+      },
+      validation: (Rule) => Rule.required().min(1).error('Select at least one store page for this product.')
+    },
+    {
       name: 'variants',
       title: 'Variants (optional)',
       type: 'array',
