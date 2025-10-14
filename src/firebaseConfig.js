@@ -13,7 +13,6 @@ const loadAppCheck = () =>
       // app-check is optional; ignore if not available
     });
 import { getFirestore } from 'firebase/firestore';
-import { getDatabase } from 'firebase/database';
 import { getAuth, GoogleAuthProvider, signInWithPopup, signOut } from 'firebase/auth';
 
 // Your web app's Firebase configuration, read from Vite env (fallback to REACT_APP_*)
@@ -25,11 +24,6 @@ const firebaseConfig = {
   storageBucket: env.VITE_STORAGE_BUCKET || env.VITE_FIREBASE_STORAGE_BUCKET || env.REACT_APP_STORAGE_BUCKET,
   messagingSenderId: env.VITE_MESSAGING_SENDER_ID || env.VITE_FIREBASE_MESSAGING_SENDER_ID || env.REACT_APP_MESSAGING_SENDER_ID,
   appId: env.VITE_APP_ID || env.VITE_FIREBASE_APP_ID || env.REACT_APP_APP_ID,
-  databaseURL: env.VITE_DATABASE_URL
-    || env.VITE_FIREBASE_DATABASE_URL
-    || env.REACT_APP_DATABASE_URL
-    || env.REACT_APP_FIREBASE_DATABASE_URL
-    || undefined,
 };
 
 // Initialize Firebase
@@ -63,7 +57,6 @@ try {
 
 // Initialize Cloud Firestore and get a reference to the service
 export const db = app ? getFirestore(app) : null;
-export const realtimeDb = app ? getDatabase(app) : null;
 
 // Auth exports
 export const auth = app ? getAuth(app) : null;

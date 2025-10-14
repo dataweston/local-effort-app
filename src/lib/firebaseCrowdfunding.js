@@ -36,26 +36,18 @@ const buildFirebaseConfig = () => {
   const projectId = readEnvValue('PROJECT_ID');
   const appId = readEnvValue('APP_ID');
   const messagingSenderId = readEnvValue('MESSAGING_SENDER_ID');
-  const databaseURL =
-    readEnvValue('DATABASE_URL') || readEnvValue('DATABASEURL') || undefined;
 
   if (!apiKey || !authDomain || !projectId || !appId || !messagingSenderId) {
     return null;
   }
 
-  const config = {
+  return {
     apiKey,
     authDomain,
     projectId,
     appId,
     messagingSenderId,
   };
-
-  if (databaseURL) {
-    config.databaseURL = databaseURL;
-  }
-
-  return config;
 };
 
 export const getFirebaseAppInstance = () => {
