@@ -1714,9 +1714,7 @@ const CrowdfundingPage = () => {
         if (!recordRes.ok) {
           throw new Error(recordData?.error || 'Failed to record contribution.');
         }
-        const successMessage = discountInfo
-          ? `${discountInfo.label || DEFAULT_DISCOUNT_LABEL}. We've recorded your contribution.`
-          : 'Thanks! Your contribution has been recorded.';
+        const successMessage = 'Thank you for supporting Local Pizza!';
         setConfirmMsg(successMessage);
         setCheckoutComplete(true);
         setProcessingMessage('');
