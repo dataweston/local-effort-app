@@ -186,21 +186,34 @@ module.exports = async (req, res) => {
     const resp = await squareClient.paymentsApi.createPayment(paymentBody);
     const paymentId = resp.result.payment?.id;
 
-    await persistContribution();
+    // Try to record in Firebase, but don't fail the request if it errors
+    // The payment has already succeeded at Square
+    try {
+      await persistContribution();
+    } catch (firestoreError) {
+      console.warn('[crowdfund.checkout] Firebase recording failed (payment succeeded):', firestoreError?.message);
+      // Payment already succeeded - don't throw error to client
+    }
 
-    await sendCrowdfundReceipts({
-      funderName: safeFunderName,
-      email: safeEmail,
-      phone: safePhone,
-      totalCents: Math.max(0, Math.round(discountedTotal)),
-      items: checkoutItemsPayload,
-      discountCode: trimmedDiscount || '',
-      discountLabel: discountDetails?.label || '',
-      rewardPreference: safeRewardPreference,
-      notify: safeNotify,
-      notes: safeNotes,
-      paymentId: paymentId || '',
-    });
+    // Try to send receipts, but don't fail the request if it errors
+    try {
+      await sendCrowdfundReceipts({
+        funderName: safeFunderName,
+        email: safeEmail,
+        phone: safePhone,
+        totalCents: Math.max(0, Math.round(discountedTotal)),
+        items: items,
+        discountCode: trimmedDiscount || '',
+        discountLabel: discountDetails?.label || '',
+        rewardPreference: safeRewardPreference,
+        notify: safeNotify,
+        notes: safeNotes,
+        paymentId: paymentId || '',
+      });
+    } catch (receiptError) {
+      console.warn('[crowdfund.checkout] Receipt sending failed (payment succeeded):', receiptError?.message);
+      // Payment already succeeded - don't throw error to client
+    }
 
     return res.status(200).json({ ok: true, paymentId, discount: discountDetails || null });
   } catch (e) {
