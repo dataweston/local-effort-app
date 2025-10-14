@@ -1722,9 +1722,7 @@ const CrowdfundingPage = () => {
         if (!recordRes.ok) {
           throw new Error(recordData?.error || 'Failed to record contribution.');
         }
-        const successMessage = discountInfo
-          ? `${discountInfo.label || DEFAULT_DISCOUNT_LABEL}. We've recorded your contribution.`
-          : 'Thanks! Your contribution has been recorded.';
+        const successMessage = 'Thank you for supporting Local Pizza!';
         setConfirmMsg(successMessage);
         setCheckoutComplete(true);
         setProcessingMessage('');
@@ -1845,7 +1843,13 @@ const CrowdfundingPage = () => {
         await finalizeWithoutPayment(data.discount || discountFromState);
         return;
       }
-      setConfirmMsg('Thanks! Your contribution has been processed.');
+      
+      // Payment successful - always show success message
+      // Even if Firebase recording fails, the payment went through Square
+      const discountInfo = data?.discount || discountFromState;
+      const successMessage = 'Thank you for supporting Local Pizza!';
+      
+      setConfirmMsg(successMessage);
       setCheckoutComplete(true);
       setProcessingMessage('');
       setReceiptInfo({
@@ -1858,7 +1862,8 @@ const CrowdfundingPage = () => {
       setLastContributionTotal(Math.max(0, Math.round(totalAfterLocalDiscount)));
       setSquareDiscountCode('');
       setDiscountState({ status: 'idle', code: '', discount: null, message: '' });
-      notifyToast('Payment complete. Thanks for fueling pizza!', { type: 'success' });
+      notifyToast(successMessage, { type: 'success' });
+      clearPendingContribution();
     } catch (e) {
       setPayError(e?.message || 'Payment failed');
       notifyToast(e?.message || 'Payment failed', { type: 'error' });

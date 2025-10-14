@@ -1,51 +1,34 @@
 import React, { useEffect, useRef, useState } from 'react';
-import {
-  limitToLast,
-  onValue,
-  orderByChild,
-  push,
-  query,
-  ref,
-  serverTimestamp,
-  set,
-} from 'firebase/database';
-import { realtimeDb } from '../../firebaseConfig';
+// NOTE: This component was using Firebase Realtime Database which has been removed.
+// It needs to be migrated to Firestore or an API endpoint.
+// Keeping imports commented for reference:
+// import {
+//   limitToLast,
+//   onValue,
+//   orderByChild,
+//   push,
+//   query,
+//   ref,
+//   serverTimestamp,
+//   set,
+// } from 'firebase/database';
 
 export function Comments({ menuId, user }) {
+  // Realtime Database has been removed - comments are currently disabled
   const [comments, setComments] = useState([]);
   const [text, setText] = useState('');
   const inputRef = useRef(null);
 
   useEffect(() => {
-    if (!menuId || !realtimeDb) return undefined;
-    const commentsRef = ref(realtimeDb, `mealprep_comments/${menuId}/comments`);
-    const commentsQuery = query(commentsRef, orderByChild('createdAtMs'), limitToLast(100));
-    const unsubscribe = onValue(commentsQuery, (snap) => {
-      const raw = snap.val() || {};
-      const items = Object.entries(raw).map(([id, value]) => ({ id, ...(value || {}) }));
-      items.sort((a, b) => Number(b.createdAtMs || 0) - Number(a.createdAtMs || 0));
-      setComments(items);
-    });
-    return () => unsubscribe();
-  }, [menuId, realtimeDb]);
+    // Firebase Realtime Database has been removed - comments are disabled
+    // This feature needs to be migrated to Firestore
+    setComments([]);
+  }, [menuId]);
 
   const submit = async (e) => {
     e.preventDefault();
-    const body = text.trim();
-    if (!body) return;
-    if (!realtimeDb) return;
-    const commentsRef = ref(realtimeDb, `mealprep_comments/${menuId}/comments`);
-    const newCommentRef = push(commentsRef);
-    const createdAtMs = Date.now();
-    await set(newCommentRef, {
-      body,
-      createdAt: serverTimestamp(),
-      createdAtMs,
-      uid: user?.uid || null,
-      name: user?.displayName || 'Anonymous',
-    });
-    setText('');
-    inputRef.current?.focus();
+    // Firebase Realtime Database has been removed - commenting is disabled
+    alert('Comments are temporarily unavailable while we migrate to our new system.');
   };
 
   return (

@@ -284,7 +284,6 @@ function getFirebaseAdmin() {
     if (!admin.apps.length) {
       const serviceAccount = loadServiceAccount();
       const resolvedProjectId = serviceAccount?.projectId || resolveProjectIdFromEnv();
-      const databaseURL = process.env.FIREBASE_DATABASE_URL || undefined;
       if (serviceAccount) {
         // Ensure process.env has fallback values so firebase-admin can detect project id in different runtimes
         try {
@@ -300,13 +299,11 @@ function getFirebaseAdmin() {
             privateKey: serviceAccount.privateKey,
           }),
           projectId: serviceAccount.projectId,
-          databaseURL,
         });
         console.warn('[firebase-admin] initialized with explicit service account credentials');
       } else {
         const baseOptions = {};
         if (resolvedProjectId) baseOptions.projectId = resolvedProjectId;
-        if (databaseURL) baseOptions.databaseURL = databaseURL;
 
         let initialized = false;
         if (typeof admin.credential?.applicationDefault === 'function') {
