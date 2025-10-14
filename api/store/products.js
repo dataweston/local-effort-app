@@ -10,37 +10,45 @@ const client = projectId && dataset ? sanity.createClient({ projectId, dataset, 
 module.exports = async (req, res) => {
   try {
     if (!client) return res.status(200).json({ products: [] });
-    const query = `*[_type == "product" && active == true]{
+    
+    // Get store filter from query parameter (e.g., ?store=happy-monday)
+    const storeFilter = req.query?.store || 'sale'; // Default to 'sale' for backwards compatibility
+    
+    // Query products that are active AND include the requested store in their stores array
+    const query = `*[_type == "product" && active == true && $store in stores]{
       _id,
       title,
       slug,
       shortDescription,
-  longDescription,
+      longDescription,
       images[]{asset->{url}},
       price,
       salePrice,
-  inventoryManaged,
-  inventory,
+      inventoryManaged,
+      inventory,
       squareItemId,
       squareVariationId,
       variants[]{name, squareVariationId, price},
+      stores
     } | order(title asc)`;
-    const docs = await client.fetch(query);
+    
+    const docs = await client.fetch(query, { store: storeFilter });
     const products = (docs || []).map((d) => ({
       id: d._id,
       title: d.title,
       slug: d.slug?.current,
       shortDescription: d.shortDescription,
-  longDescription: typeof d.longDescription === 'string' ? d.longDescription : null,
-  longDescriptionBlocks: Array.isArray(d.longDescription) ? d.longDescription : null,
+      longDescription: typeof d.longDescription === 'string' ? d.longDescription : null,
+      longDescriptionBlocks: Array.isArray(d.longDescription) ? d.longDescription : null,
       images: (d.images || []).map((i) => i?.asset?.url).filter(Boolean),
       price: d.price ?? 0,
       salePrice: d.salePrice ?? null,
-  inventoryManaged: !!d.inventoryManaged,
-  inventory: typeof d.inventory === 'number' ? d.inventory : null,
+      inventoryManaged: !!d.inventoryManaged,
+      inventory: typeof d.inventory === 'number' ? d.inventory : null,
       squareItemId: d.squareItemId || null,
       squareVariationId: d.squareVariationId || null,
       variants: Array.isArray(d.variants) ? d.variants : [],
+      stores: Array.isArray(d.stores) ? d.stores : [],
     }));
     res.status(200).json({ products });
   } catch (e) {

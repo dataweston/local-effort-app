@@ -18,7 +18,7 @@ const TinyDinerSalePage = () => {
     let alive = true;
     (async () => {
       try {
-        const res = await fetch('/api/store/products');
+        const res = await fetch('/api/store/products?store=tiny-diner');
         const data = res.ok ? await res.json() : { products: [] };
         if (!alive) return;
         setProducts(Array.isArray(data.products) ? data.products : []);

@@ -18,7 +18,7 @@ const SalePage = () => {
     let alive = true;
     (async () => {
       try {
-        const res = await fetch('/api/store/products');
+        const res = await fetch('/api/store/products?store=sale');
         const data = res.ok ? await res.json() : { products: [] };
         if (!alive) return;
         setProducts(Array.isArray(data.products) ? data.products : []);
