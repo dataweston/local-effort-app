@@ -1,9 +1,12 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { ref, push, serverTimestamp, set } from 'firebase/database';
-import { realtimeDb } from '../../firebaseConfig';
+// NOTE: This component was using Firebase Realtime Database which has been removed.
+// It needs to be migrated to Firestore or an API endpoint.
+// Keeping imports commented for reference:
+// import { ref, push, serverTimestamp, set } from 'firebase/database';
 
 const FeedbackForm = () => {
+  // Realtime Database has been removed - this form is currently disabled
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -24,27 +27,11 @@ const FeedbackForm = () => {
       setStatus({ type: 'error', message: 'Please enter a message before submitting.' });
       return;
     }
-    setStatus({ type: 'loading', message: 'Submitting...' });
-    if (!realtimeDb) {
-      setStatus({ type: 'error', message: 'Feedback is unavailable right now. Please try again later.' });
-      return;
-    }
-
-    try {
-      const feedbackCollectionRef = ref(realtimeDb, 'feedback');
-      const newFeedbackRef = push(feedbackCollectionRef);
-      const submittedAtMs = Date.now();
-      await set(newFeedbackRef, {
-        ...formData,
-        submittedAt: serverTimestamp(),
-        submittedAtMs,
-      });
-      setStatus({ type: 'success', message: 'Thank you! Your feedback has been sent.' });
-      setFormData({ name: '', email: '', phone: '', category: 'requests', message: '' }); // Clear form
-    } catch (error) {
-      console.error('Error adding document: ', error);
-      setStatus({ type: 'error', message: 'Something went wrong. Please try again.' });
-    }
+    // Firebase Realtime Database has been removed - form is disabled
+    setStatus({ 
+      type: 'error', 
+      message: 'Feedback form is temporarily unavailable. Please contact us directly at support@localeffortfood.com' 
+    });
   };
 
   return (

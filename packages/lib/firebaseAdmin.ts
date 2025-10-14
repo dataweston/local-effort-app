@@ -1,15 +1,12 @@
 import fs from 'node:fs';
 import type { App, ServiceAccount } from 'firebase-admin/app';
 import { applicationDefault, cert, getApps, initializeApp } from 'firebase-admin/app';
-import type { Database } from 'firebase-admin/database';
-import { getDatabase } from 'firebase-admin/database';
 import type { Firestore } from 'firebase-admin/firestore';
 import { getFirestore } from 'firebase-admin/firestore';
 
 type FirebaseResources = {
   app: App | null;
   db: Firestore | null;
-  realtimeDb: Database | null;
 };
 
 let cached: FirebaseResources | null = null;
@@ -237,19 +234,16 @@ function initializeFirebase(): FirebaseResources {
     if (!getApps().length) {
       const serviceAccount = resolveServiceAccount();
       const resolvedProjectId = serviceAccount?.projectId ?? resolveProjectIdFromEnv() ?? undefined;
-      const databaseURL = process.env.FIREBASE_DATABASE_URL;
 
       if (serviceAccount) {
         applyProjectIdEnv(serviceAccount.projectId);
         initializeApp({
           credential: cert(serviceAccount),
           projectId: serviceAccount.projectId,
-          databaseURL,
         });
       } else {
         const baseOptions: Parameters<typeof initializeApp>[0] = {};
         if (resolvedProjectId) baseOptions.projectId = resolvedProjectId;
-        if (databaseURL) baseOptions.databaseURL = databaseURL;
 
         let initialized = false;
         try {
@@ -277,10 +271,8 @@ function initializeFirebase(): FirebaseResources {
 
     const app = getApps()[0] ?? null;
     let db: Firestore | null = null;
-    let realtimeDb: Database | null = null;
     if (app) {
       db = getFirestore(app);
-      realtimeDb = getDatabase(app);
       const projectId =
         (app.options?.projectId as string | undefined) ?? resolveProjectIdFromEnv() ?? undefined;
       if (projectId) {
@@ -288,14 +280,13 @@ function initializeFirebase(): FirebaseResources {
       } else {
         console.warn('[firebase-admin] project ID could not be resolved; disabling Firestore access to avoid runtime errors.');
         db = null;
-        realtimeDb = null;
       }
     }
 
-    return { app, db, realtimeDb };
+    return { app, db };
   } catch (error) {
     console.warn('[firebase-admin] failed to initialize app', (error as Error).message);
-    return { app: null, db: null, realtimeDb: null };
+    return { app: null, db: null };
   }
 }
 
@@ -310,4 +301,3 @@ const resources = getFirebaseAdmin();
 
 export const app = resources.app;
 export const db = resources.db;
-export const realtimeDb = resources.realtimeDb;
