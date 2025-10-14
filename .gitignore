@@ -5,3 +5,4 @@ node_modules
 .firebase-service-account.base64.txt
 .firebase-service-account.json.string
 .local-effort-firebase-adminsdk-xrvm0-bae4f4c196.json
+.env.vercel.production
