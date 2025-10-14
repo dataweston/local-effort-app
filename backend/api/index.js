@@ -362,6 +362,38 @@ app.all('/api/crowdfund/feedback', async (req, res, next) => {
   }
 });
 
+// --- PizzaFunder Routes ---
+const pizzafunderPledgeHandler = require('../../api/pizzafunder/pledge');
+const pizzafunderStatusHandler = require('../../api/pizzafunder/status');
+const pizzafunderFeedbackHandler = require('../../api/pizzafunder/feedback');
+
+app.all('/api/pizzafunder/pledge', async (req, res, next) => {
+  try {
+    await pizzafunderPledgeHandler(req, res);
+  } catch (err) {
+    logger.error({ err, method: req.method }, 'pizzafunder pledge handler failed');
+    next(err);
+  }
+});
+
+app.all('/api/pizzafunder/status', async (req, res, next) => {
+  try {
+    await pizzafunderStatusHandler(req, res);
+  } catch (err) {
+    logger.error({ err, method: req.method }, 'pizzafunder status handler failed');
+    next(err);
+  }
+});
+
+app.all('/api/pizzafunder/feedback', async (req, res, next) => {
+  try {
+    await pizzafunderFeedbackHandler(req, res);
+  } catch (err) {
+    logger.error({ err, method: req.method }, 'pizzafunder feedback handler failed');
+    next(err);
+  }
+});
+
 app.all('/api/store/checkout', async (req, res, next) => {
   try {
     await storeCheckoutHandler(req, res);
