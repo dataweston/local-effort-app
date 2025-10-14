@@ -11,6 +11,10 @@
       }
     },
     {
+      "src": "api/sales-proxy.js",
+      "use": "@vercel/node"
+    },
+    {
       "src": "api/store/products.js",
       "use": "@vercel/node"
     },
@@ -48,6 +52,14 @@
     }
   ],
   "routes": [
+    {
+      "src": "/sales/(?<slug>[^/]+)$",
+      "dest": "/api/sales-proxy.js?path=/$1"
+    },
+    {
+      "src": "/sales/(?<slug>[^/]+)/(?<rest>.*)",
+      "dest": "/api/sales-proxy.js?path=/$1/$2"
+    },
     {
       "src": "/api/search-images",
       "dest": "/api/search-images.js"
