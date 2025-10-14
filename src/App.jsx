@@ -23,7 +23,6 @@ const CrowdfundingPage = lazy(() => import('./pages/CrowdfundingPage'));
 const PizzaFunderPage = lazy(() => import('./pages/PizzaFunderPage'));
 const ReleasesPage = lazy(() => import('./pages/ReleasesPage'));
 const MenuPage = lazy(() => import('./pages/MenuPage'));
-const HappyMondayPage = lazy(() => import('./pages/HappyMondayPage'));
 const EventsPage = lazy(() => import('./pages/EventsPage'));
 const WeeklyList = lazy(() => import('./pages/WeeklyList'));
 const WeeklyPost = lazy(() => import('./pages/WeeklyPost'));
@@ -34,6 +33,8 @@ const GalleryPage = lazy(() => import('./pages/GalleryPage'));
 const MealPrepPage = lazy(() => import('./pages/MealPrepPage'));
 // --- NEW: Sale page ---
 const SalePage = lazy(() => import('./pages/SalePage'));
+const HappyMondaySalePage = lazy(() => import('./pages/HappyMondaySalePage'));
+const TinyDinerSalePage = lazy(() => import('./pages/TinyDinerSalePage'));
 const ProductPage = lazy(() => import('./pages/ProductPage'));
 // --- NEW: Partner Portal ---
 const PartnerPortalPage = lazy(() => import('./pages/PartnerPortalPage'));
@@ -170,7 +171,15 @@ const AppContent = () => {
                   path="/happy-monday"
                   element={
                     <AnimatedPage>
-                      <HappyMondayPage />
+                      <HappyMondaySalePage />
+                    </AnimatedPage>
+                  }
+                />
+                <Route
+                  path="/tiny-diner"
+                  element={
+                    <AnimatedPage>
+                      <TinyDinerSalePage />
                     </AnimatedPage>
                   }
                 />
