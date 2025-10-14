@@ -20,9 +20,33 @@ module.exports = async (req, res) => {
   try {
     if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
     if (!sq) return res.status(500).json({ error: 'Square not configured' });
-    const { items, customer, token } = req.body || {};
+    const { items, customer, token, store } = req.body || {};
     if (!Array.isArray(items) || !items.length) return res.status(400).json({ error: 'No items' });
     if (!token) return res.status(400).json({ error: 'Missing payment token' });
+
+    // Define store-specific pickup information
+    const storePickupInfo = {
+      'tiny-diner': {
+        name: 'Tiny Diner',
+        date: 'October 31, 2025',
+        time: '4-7pm',
+        address: '1024 E 38th St, Minneapolis'
+      },
+      'happy-monday': {
+        name: 'Happy Monday Coffee',
+        date: 'October 23, 2025',
+        time: '4-7pm',
+        address: '2420 Cleveland Ave N, Roseville'
+      },
+      'sale': {
+        name: 'Local Effort',
+        date: 'TBD',
+        time: 'TBD',
+        address: 'Details will be sent separately'
+      }
+    };
+
+    const pickupDetails = storePickupInfo[store] || storePickupInfo['sale'];
 
     const idempotencyKey = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
 
@@ -49,7 +73,11 @@ module.exports = async (req, res) => {
     if (BREVO_API_KEY && TEAM_EMAIL && SENDER_EMAIL) {
       const summary = (items || []).map(i => `• ${i.title} x${i.qty} — $${(Number(i.unitPrice) / 100).toFixed(2)}`).join('\n');
       const totalUsd = (amount / 100).toFixed(2);
-      const friendly = `Hi ${customer?.name || 'there'},\n\nThanks for your order! We're on it. Here's a quick summary:\n\n${summary}\n\nSubtotal: $${totalUsd}\n\nWe'll be in touch soon.\n\n— Local Effort`;
+      
+      // Build pickup information text
+      const pickupInfo = `\n\n📍 PICKUP INFORMATION:\nWhen: ${pickupDetails.date} at ${pickupDetails.time}\nWhere: ${pickupDetails.name}\n${pickupDetails.address}\n`;
+      
+      const friendly = `Hi ${customer?.name || 'there'},\n\nThanks for your order! We're on it. Here's a quick summary:\n\n${summary}\n\nSubtotal: $${totalUsd}${pickupInfo}\nWe'll be in touch soon.\n\n— Local Effort`;
       const headers = { 'api-key': BREVO_API_KEY, 'content-type': 'application/json', accept: 'application/json' };
 
       // notify team

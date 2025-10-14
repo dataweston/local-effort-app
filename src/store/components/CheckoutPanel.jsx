@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useCart } from '../cart/CartContext';
 
-export default function CheckoutPanel() {
+export default function CheckoutPanel({ store = 'sale' }) {
   const { items, subtotal, open, closeCart, clear } = useCart();
   const [processing, setProcessing] = useState(false);
   const [error, setError] = useState('');
@@ -103,6 +103,7 @@ export default function CheckoutPanel() {
           address: pickup ? null : address,
           items: items.map(i => ({ productId: i.productId, variationId: i.variationId, qty: i.qty, unitPrice: i.unitPrice, title: i.title })),
           token,
+          store,
         }),
       });
       const data = await res.json();
