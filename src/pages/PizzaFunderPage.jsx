@@ -319,48 +319,44 @@ const PizzaFunderPage = () => {
         console.log('[PizzaFunder] Loading gallery images...');
         
         // Fetch pizza and pie images from Cloudinary
-        const [pizzaRes, pieRes] = await Promise.all([
-          fetch('/api/search-images?query=pizza&per_page=50'),
-          fetch('/api/search-images?query=pie&per_page=50'),
-        ]);
+        const endpoints = [
+          '/api/search-images?query=pizza&per_page=50',
+          '/api/search-images?query=pie&per_page=50',
+        ];
+
+        const results = await Promise.all(
+          endpoints.map(async (url) => {
+            try {
+              const response = await fetch(url, { headers: { Accept: 'application/json' } });
+              const payload = await response.json().catch(() => ({}));
+              const images = Array.isArray(payload?.images) ? payload.images : [];
+              return { ok: response.ok, images };
+            } catch (error) {
+              console.warn('[PizzaFunder] gallery fetch failed', error);
+              return { ok: false, images: [] };
+            }
+          })
+        );
 
         if (!mounted) return;
 
-        console.log('[PizzaFunder] Fetch responses:', { 
-          pizzaOk: pizzaRes.ok, 
-          pieOk: pieRes.ok,
-          pizzaStatus: pizzaRes.status,
-          pieStatus: pieRes.status
+        // Merge and deduplicate results
+        const merged = [];
+        const seen = new Set();
+        results.forEach(({ ok, images }) => {
+          if (!ok || !images.length) return;
+          images.forEach((img) => {
+            const id = img?.asset_id || img?.public_id;
+            if (!id || seen.has(id)) return;
+            seen.add(id);
+            merged.push(img);
+          });
         });
 
-        if (!pizzaRes.ok || !pieRes.ok) {
-          throw new Error(`API error: pizza=${pizzaRes.status}, pie=${pieRes.status}`);
-        }
-
-        const [pizzaData, pieData] = await Promise.all([
-          pizzaRes.json(),
-          pieRes.json(),
-        ]);
-
-        console.log('[PizzaFunder] Gallery data:', { 
-          pizzaCount: pizzaData.images?.length || 0,
-          pieCount: pieData.images?.length || 0,
-          pizzaTotalCount: pizzaData.total_count || 0,
-          pieTotalCount: pieData.total_count || 0,
-          pizzaData: pizzaData,
-          pieData: pieData
-        });
-
-        // Combine and deduplicate images (API returns 'images', not 'resources')
-        const allImages = [...(pizzaData.images || []), ...(pieData.images || [])];
-        const uniqueImages = Array.from(
-          new Map(allImages.map((img) => [img.public_id, img])).values()
-        );
-
-        console.log('[PizzaFunder] Gallery loaded:', uniqueImages.length, 'images');
+        console.log('[PizzaFunder] Gallery loaded:', merged.length, 'images');
 
         if (mounted) {
-          setGalleryImages(uniqueImages);
+          setGalleryImages(merged);
           setGalleryLoading(false);
         }
       } catch (error) {
@@ -633,8 +629,8 @@ const PizzaFunderPage = () => {
                         className="relative aspect-square overflow-hidden rounded-lg shadow-md hover:shadow-lg transition-shadow"
                       >
                         <img
-                          src={img.thumbnail_url || img.secure_url}
-                          alt={img.context?.alt || img.public_id}
+                          src={img.thumbnail_url}
+                          alt={img.public_id}
                           loading="lazy"
                           className="w-full h-full object-cover"
                         />
