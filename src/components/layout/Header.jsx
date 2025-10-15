@@ -94,13 +94,13 @@ export const Header = () => {
             </div>
           ))}
           {SHOW_FUNDRAISER && (
-            <NavLink to="/crowdfunding" className="ml-2">
+            <NavLink to="/pizzafunder" className="ml-2">
               <motion.span
                 whileHover={{ scale: 1.03 }}
                 whileTap={{ scale: 0.98 }}
                 className="inline-flex items-center rounded-md bg-[var(--color-accent)] px-3 py-1.5 font-semibold text-white shadow-sm"
               >
-                Crowdfunding
+                Pizza Fundraiser
               </motion.span>
             </NavLink>
           )}
@@ -218,11 +218,11 @@ export const Header = () => {
               {SHOW_FUNDRAISER && (
                 <motion.div variants={{ hidden: { y: 10, opacity: 0 }, show: { y: 0, opacity: 1 } }}>
                   <NavLink
-                    to="/crowdfunding"
+                    to="/pizzafunder"
                     onClick={() => setIsOpen(false)}
                     className="text-2xl uppercase bg-[var(--color-accent)] text-white px-6 py-3 rounded font-semibold"
                   >
-                    Crowdfunding
+                    Pizza Fundraiser
                   </NavLink>
                 </motion.div>
               )}
