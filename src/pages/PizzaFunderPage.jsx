@@ -1,9 +1,8 @@
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState, useMemo, useRef } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { motion } from 'framer-motion';
 import { PortableText } from '@portabletext/react';
 import { groqFetch } from '../sanityClient.js';
-import { useSquarePayments } from '../lib/useSquarePayments';
 import { PizzaProgress } from '../components/pizzafunder/PizzaProgress';
 import { PizzaPledgeForm } from '../components/pizzafunder/PizzaPledgeForm';
 import { FeedbackForm } from '../components/pizzafunder/FeedbackForm';
@@ -11,16 +10,11 @@ import { FeedbackList } from '../components/pizzafunder/FeedbackList';
 import { useToast } from '../components/common/ToastProvider';
 import { Button } from '../components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
-import { Card } from '../components/ui/card';
+import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '../components/ui/card';
+import { Input } from '../components/ui/input';
+import { Label } from '../components/ui/label';
 import { createPortableTextComponents } from '../utils/portableTextComponents';
-import imageUrlBuilder from '@sanity/image-url';
-import sanityClient from '../sanityClient.js';
-
-// Image URL builder for Sanity
-const builder = imageUrlBuilder(sanityClient);
-function urlFor(source) {
-  return builder.image(source);
-}
+import PrioritiesPie from '../components/crowdfunding/PrioritiesPie.jsx';
 
 /**
  * PizzaFunderPage - Modern, Sanity-powered pizza crowdfunding page
@@ -35,11 +29,21 @@ const PizzaFunderPage = () => {
   const [loading, setLoading] = useState({ campaign: true, status: true, feedback: true });
   const [submitting, setSubmitting] = useState({ pledge: false, feedback: false });
   const [showPledgeForm, setShowPledgeForm] = useState(false);
-  const [pledgeData, setPledgeData] = useState(null);
   const [activeTab, setActiveTab] = useState('story');
+  const [selectedTier, setSelectedTier] = useState(null);
+  
+  // Gallery state
+  const [galleryImages, setGalleryImages] = useState([]);
+  const [galleryLoading, setGalleryLoading] = useState(false);
+  const [galleryError, setGalleryError] = useState('');
+  const galleryLoadedRef = useRef(false);
+  
+  // Email subscription state
+  const [subscribeEmail, setSubscribeEmail] = useState('');
+  const [subscribeStatus, setSubscribeStatus] = useState('idle');
+  const [subscribeMessage, setSubscribeMessage] = useState('');
 
   const { toast } = useToast();
-  const { card, payments } = useSquarePayments();
 
   // Portable Text components
   const portableComponents = useMemo(() => createPortableTextComponents(), []);
@@ -56,14 +60,56 @@ const PizzaFunderPage = () => {
           description,
           pizzaGoal,
           pizzasSold,
+          piesSold,
           goal,
           raisedAmount,
           backers,
           endDate,
-          heroImage,
+          heroImage{
+            asset->{
+              _id,
+              url
+            },
+            alt
+          },
           story,
           goals,
+          events[]{
+            _key,
+            location,
+            tagline,
+            summary,
+            startDate,
+            endDate,
+            timingNote,
+            foodType,
+            status,
+            ticketsUrl,
+            ctaLabel,
+            locationDetails,
+            "heroImage": heroImage.asset->url,
+            "heroImageAlt": coalesce(heroImage.alt, location),
+            description
+          },
+          "featuredPublicEvents": featuredPublicEvents[]->{ 
+            _id, 
+            location,
+            tagline,
+            summary,
+            startDate, 
+            endDate, 
+            timingNote,
+            foodType,
+            status,
+            ticketsUrl,
+            ctaLabel,
+            locationDetails,
+            "heroImage": heroImage.asset->url,
+            "heroImageAlt": coalesce(heroImage.alt, location),
+            description
+          },
           faq,
+          "rewardTiers": rewardTiers[]->{ amount, pizzaCount, pieCount, title, description, limit, referralOnly, referralCode } | order(amount asc),
           "updates": updates[]->{ title, publishedAt, body } | order(publishedAt desc)[0...3]
         }`;
 
@@ -131,67 +177,50 @@ const PizzaFunderPage = () => {
   }, []);
 
   // Handle pledge form submission (collects data, shows payment)
-  const handlePledgeSubmit = (data) => {
-    setPledgeData(data);
-    // Payment will be triggered when pledgeData is set
-  };
+  // Handle pledge form submission (now receives tokenized payment data)
+  const handlePledgeSubmit = async (data) => {
+    setSubmitting((prev) => ({ ...prev, pledge: true }));
 
-  // Handle Square payment
-  useEffect(() => {
-    if (!pledgeData || !card || !payments || submitting.pledge) return;
+    try {
+      // Call backend to process payment via Square API
+      const res = await fetch('/api/pizzafunder/pledge', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data), // data already includes sourceId from Square tokenization
+      });
 
-    (async () => {
-      setSubmitting((prev) => ({ ...prev, pledge: true }));
+      const result = await res.json();
 
-      try {
-        const result = await card.tokenize();
-        if (result.status === 'OK') {
-          // Call backend to process payment via Square API
-          const res = await fetch('/api/pizzafunder/pledge', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              ...pledgeData,
-              sourceId: result.token, // Square payment token
-            }),
-          });
-
-          const data = await res.json();
-
-          if (res.ok && data.success) {
-            toast({
-              title: 'Thank you!',
-              description: data.message || 'Your pledge was successful!',
-            });
-
-            // Refresh status
-            const statusRes = await fetch('/api/pizzafunder/status');
-            if (statusRes.ok) {
-              const statusData = await statusRes.json();
-              setStatus(statusData);
-            }
-
-            // Reset form
-            setShowPledgeForm(false);
-            setPledgeData(null);
-          } else {
-            throw new Error(data.error || 'Payment failed');
-          }
-        } else {
-          throw new Error(result.errors?.[0]?.message || 'Payment failed');
-        }
-      } catch (error) {
+      if (res.ok && result.success) {
         toast({
-          title: 'Payment failed',
-          description: error.message || 'Please try again',
-          variant: 'destructive',
+          title: 'Thank you!',
+          description: result.message || 'Your pledge was successful!',
         });
-      } finally {
-        setSubmitting((prev) => ({ ...prev, pledge: false }));
-        setPledgeData(null);
+
+        // Refresh status
+        const statusRes = await fetch('/api/pizzafunder/status');
+        if (statusRes.ok) {
+          const statusData = await statusRes.json();
+          setStatus(statusData);
+        }
+
+        // Reset form
+        setShowPledgeForm(false);
+        setSelectedTier(null);
+      } else {
+        throw new Error(result.error || 'Payment failed');
       }
-    })();
-  }, [pledgeData, card, payments, submitting.pledge, toast]);
+    } catch (error) {
+      toast({
+        title: 'Payment failed',
+        description: error.message || 'Please try again',
+        variant: 'destructive',
+      });
+      throw error; // Re-throw so PizzaPledgeForm knows it failed
+    } finally {
+      setSubmitting((prev) => ({ ...prev, pledge: false }));
+    }
+  };
 
   // Handle feedback submission
   const handleFeedbackSubmit = async (data) => {
@@ -228,6 +257,83 @@ const PizzaFunderPage = () => {
     }
   };
 
+  // Handle email subscription
+  const handleSubscribe = async (e) => {
+    e.preventDefault();
+    if (!subscribeEmail || subscribeStatus === 'loading') return;
+
+    setSubscribeStatus('loading');
+    setSubscribeMessage('');
+
+    try {
+      const res = await fetch('/api/subscribe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: subscribeEmail }),
+      });
+
+      const result = await res.json();
+
+      if (res.ok && result.success) {
+        setSubscribeStatus('success');
+        setSubscribeMessage('Thanks for subscribing!');
+        setSubscribeEmail('');
+      } else {
+        throw new Error(result.error || 'Subscription failed');
+      }
+    } catch (error) {
+      setSubscribeStatus('error');
+      setSubscribeMessage(error.message || 'Failed to subscribe. Please try again.');
+    }
+  };
+
+  // Lazy load gallery images when tab is activated
+  useEffect(() => {
+    if (activeTab !== 'gallery' || galleryLoadedRef.current || galleryLoading) return;
+
+    let mounted = true;
+    galleryLoadedRef.current = true;
+
+    (async () => {
+      setGalleryLoading(true);
+      setGalleryError('');
+
+      try {
+        // Fetch pizza and pie images from Cloudinary
+        const [pizzaRes, pieRes] = await Promise.all([
+          fetch('/api/search-images?query=pizza'),
+          fetch('/api/search-images?query=pie'),
+        ]);
+
+        if (!mounted) return;
+
+        const [pizzaData, pieData] = await Promise.all([
+          pizzaRes.json(),
+          pieRes.json(),
+        ]);
+
+        // Combine and deduplicate images
+        const allImages = [...(pizzaData.resources || []), ...(pieData.resources || [])];
+        const uniqueImages = Array.from(
+          new Map(allImages.map((img) => [img.public_id, img])).values()
+        );
+
+        if (mounted) {
+          setGalleryImages(uniqueImages);
+          setGalleryLoading(false);
+        }
+      } catch (error) {
+        console.error('Failed to load gallery:', error);
+        if (mounted) {
+          setGalleryError('Failed to load images');
+          setGalleryLoading(false);
+        }
+      }
+    })();
+
+    return () => { mounted = false; };
+  }, [activeTab, galleryLoading]);
+
   return (
     <div className="space-y-12 mx-auto max-w-7xl px-4 md:px-6 lg:px-8 py-12">
       <Helmet>
@@ -240,15 +346,15 @@ const PizzaFunderPage = () => {
       </Helmet>
 
       {/* Hero Section with Image */}
-      {campaignData?.heroImage && (
+      {campaignData?.heroImage?.asset?.url && (
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           className="relative w-full h-[400px] md:h-[500px] -mx-4 md:-mx-6 lg:-mx-8 rounded-none md:rounded-2xl overflow-hidden shadow-2xl"
         >
           <img
-            src={urlFor(campaignData.heroImage).width(1400).height(600).url()}
-            alt={campaignData.title}
+            src={campaignData.heroImage.asset.url}
+            alt={campaignData.heroImage.alt || campaignData.title}
             className="w-full h-full object-cover"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
@@ -314,6 +420,63 @@ const PizzaFunderPage = () => {
         </Card>
       </motion.div>
 
+      {/* Reward Tiers Section */}
+      {campaignData?.rewardTiers && campaignData.rewardTiers.length > 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.15 }}
+          className="space-y-4"
+        >
+          <h2 className="text-3xl font-bold text-neutral-900">Choose Your Reward</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {campaignData.rewardTiers.map((tier, index) => {
+              const isSelected = selectedTier?.amount === tier.amount;
+              const pizzaLabel = tier.pizzaCount ? `${tier.pizzaCount} Pizza${tier.pizzaCount > 1 ? 's' : ''}` : null;
+              const pieLabel = tier.pieCount ? `${tier.pieCount} Pie${tier.pieCount > 1 ? 's' : ''}` : null;
+              const displayLabel = pizzaLabel || pieLabel || `$${tier.amount}`;
+
+              return (
+                <Card
+                  key={index}
+                  className={`cursor-pointer transition-all hover:shadow-lg ${
+                    isSelected ? 'ring-2 ring-orange-500 shadow-lg' : ''
+                  }`}
+                  onClick={() => {
+                    setSelectedTier(tier);
+                    setShowPledgeForm(true);
+                  }}
+                >
+                  <div className="p-6 space-y-3">
+                    <div className="flex items-baseline justify-between">
+                      <h3 className="text-xl font-bold text-neutral-900">{displayLabel}</h3>
+                      <span className="text-2xl font-bold text-orange-600">${tier.amount}</span>
+                    </div>
+                    <p className="text-lg font-semibold text-neutral-700">{tier.title}</p>
+                    <p className="text-sm text-neutral-600">{tier.description}</p>
+                    {tier.limit && (
+                      <p className="text-xs font-semibold uppercase text-orange-600">
+                        Limited - {tier.limit} available
+                      </p>
+                    )}
+                    <Button
+                      className="w-full bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedTier(tier);
+                        setShowPledgeForm(true);
+                      }}
+                    >
+                      {isSelected ? 'Selected' : 'Select This Reward'}
+                    </Button>
+                  </div>
+                </Card>
+              );
+            })}
+          </div>
+        </motion.div>
+      )}
+
       {/* Main Content Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         
@@ -326,11 +489,12 @@ const PizzaFunderPage = () => {
         >
           <Card className="p-6 shadow-lg">
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-              <TabsList className="grid w-full grid-cols-4 mb-6">
+              <TabsList className="grid w-full grid-cols-5 mb-6">
                 <TabsTrigger value="story">Story</TabsTrigger>
                 <TabsTrigger value="goals">Goals</TabsTrigger>
                 <TabsTrigger value="faq">FAQ</TabsTrigger>
                 <TabsTrigger value="updates">Updates</TabsTrigger>
+                <TabsTrigger value="gallery">Gallery</TabsTrigger>
               </TabsList>
 
               {/* Story Tab */}
@@ -357,6 +521,9 @@ const PizzaFunderPage = () => {
 
               {/* Goals Tab */}
               <TabsContent value="goals" className="mt-0 prose prose-neutral max-w-none">
+                <div className="mb-8 not-prose">
+                  <PrioritiesPie />
+                </div>
                 {campaignData?.goals ? (
                   <PortableText value={campaignData.goals} components={portableComponents} />
                 ) : (
@@ -431,6 +598,42 @@ const PizzaFunderPage = () => {
                   <p className="text-neutral-600">Campaign updates will appear here. Stay tuned!</p>
                 )}
               </TabsContent>
+
+              {/* Gallery Tab */}
+              <TabsContent value="gallery" className="mt-0">
+                {galleryLoading ? (
+                  <div className="flex items-center justify-center h-64">
+                    <p className="text-neutral-600">Loading gallery...</p>
+                  </div>
+                ) : galleryError ? (
+                  <div className="flex items-center justify-center h-64">
+                    <p className="text-red-600">{galleryError}</p>
+                  </div>
+                ) : galleryImages.length > 0 ? (
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                    {galleryImages.map((img) => (
+                      <motion.div
+                        key={img.public_id}
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ duration: 0.3 }}
+                        className="relative aspect-square overflow-hidden rounded-lg shadow-md hover:shadow-lg transition-shadow"
+                      >
+                        <img
+                          src={img.secure_url}
+                          alt={img.public_id}
+                          loading="lazy"
+                          className="w-full h-full object-cover"
+                        />
+                      </motion.div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-center h-64">
+                    <p className="text-neutral-600">No images to display yet.</p>
+                  </div>
+                )}
+              </TabsContent>
             </Tabs>
           </Card>
         </motion.div>
@@ -442,7 +645,7 @@ const PizzaFunderPage = () => {
           transition={{ delay: 0.3 }}
           className="lg:col-span-1"
         >
-          <div className="sticky top-6">
+          <div className="sticky top-6 space-y-6">
             {!showPledgeForm ? (
               <Card className="p-8 shadow-xl bg-gradient-to-br from-orange-50 to-red-50 border-2 border-orange-200">
                 <div className="text-center space-y-4">
@@ -465,6 +668,7 @@ const PizzaFunderPage = () => {
                 <PizzaPledgeForm
                   onPledge={handlePledgeSubmit}
                   loading={submitting.pledge}
+                  selectedTier={selectedTier}
                 />
                 <Button
                   variant="ghost"
@@ -475,6 +679,71 @@ const PizzaFunderPage = () => {
                 </Button>
               </Card>
             )}
+
+            {/* How it Works */}
+            <Card className="p-6 shadow-lg">
+              <CardHeader>
+                <CardTitle className="text-2xl font-bold">How it Works</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ol className="list-decimal list-inside space-y-3 text-neutral-700">
+                  <li>
+                    <strong>Order by Dec 31, 2024</strong> – Pre-order your pizzas now through our crowdfunding campaign
+                  </li>
+                  <li>
+                    <strong>We'll make them in January 2025</strong> – Once we reach our goal, we'll start baking
+                  </li>
+                  <li>
+                    <strong>Pick up fresh on event day</strong> – Get your hot, delicious pizzas at the designated pickup location
+                  </li>
+                  <li>
+                    <strong>All or nothing</strong> – If we don't reach the goal, you won't be charged
+                  </li>
+                  <li>
+                    <strong>Support local</strong> – Your order helps bring community together through great food
+                  </li>
+                </ol>
+              </CardContent>
+            </Card>
+
+            {/* Email Subscription */}
+            <Card className="p-6 shadow-lg bg-slate-900 text-white">
+              <CardHeader>
+                <CardTitle className="text-2xl font-bold">Follow Along</CardTitle>
+                <CardDescription className="text-slate-300">
+                  Get updates on our pizza-making progress!
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <form onSubmit={handleSubscribe} className="space-y-4">
+                  <div>
+                    <Label htmlFor="subscribe-email" className="text-white">Email</Label>
+                    <Input
+                      id="subscribe-email"
+                      type="email"
+                      placeholder="your@email.com"
+                      value={subscribeEmail}
+                      onChange={(e) => setSubscribeEmail(e.target.value)}
+                      required
+                      disabled={subscribeStatus === 'loading'}
+                      className="bg-slate-800 border-slate-700 text-white placeholder:text-slate-400"
+                    />
+                  </div>
+                  <Button
+                    type="submit"
+                    disabled={subscribeStatus === 'loading'}
+                    className="w-full bg-orange-500 hover:bg-orange-600"
+                  >
+                    {subscribeStatus === 'loading' ? 'Subscribing...' : 'Subscribe'}
+                  </Button>
+                  {subscribeMessage && (
+                    <p className={`text-sm ${subscribeStatus === 'success' ? 'text-green-400' : 'text-red-400'}`}>
+                      {subscribeMessage}
+                    </p>
+                  )}
+                </form>
+              </CardContent>
+            </Card>
           </div>
         </motion.div>
       </div>
