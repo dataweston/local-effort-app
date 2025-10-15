@@ -299,6 +299,8 @@ const PizzaFunderPage = () => {
       setGalleryError('');
 
       try {
+        console.log('[PizzaFunder] Loading gallery images...');
+        
         // Fetch pizza and pie images from Cloudinary
         const [pizzaRes, pieRes] = await Promise.all([
           fetch('/api/search-images?query=pizza'),
@@ -307,10 +309,26 @@ const PizzaFunderPage = () => {
 
         if (!mounted) return;
 
+        console.log('[PizzaFunder] Fetch responses:', { 
+          pizzaOk: pizzaRes.ok, 
+          pieOk: pieRes.ok,
+          pizzaStatus: pizzaRes.status,
+          pieStatus: pieRes.status
+        });
+
+        if (!pizzaRes.ok || !pieRes.ok) {
+          throw new Error(`API error: pizza=${pizzaRes.status}, pie=${pieRes.status}`);
+        }
+
         const [pizzaData, pieData] = await Promise.all([
           pizzaRes.json(),
           pieRes.json(),
         ]);
+
+        console.log('[PizzaFunder] Gallery data:', { 
+          pizzaCount: pizzaData.resources?.length || 0,
+          pieCount: pieData.resources?.length || 0
+        });
 
         // Combine and deduplicate images
         const allImages = [...(pizzaData.resources || []), ...(pieData.resources || [])];
@@ -318,14 +336,16 @@ const PizzaFunderPage = () => {
           new Map(allImages.map((img) => [img.public_id, img])).values()
         );
 
+        console.log('[PizzaFunder] Gallery loaded:', uniqueImages.length, 'images');
+
         if (mounted) {
           setGalleryImages(uniqueImages);
           setGalleryLoading(false);
         }
       } catch (error) {
-        console.error('Failed to load gallery:', error);
+        console.error('[PizzaFunder] Failed to load gallery:', error);
         if (mounted) {
-          setGalleryError('Failed to load images');
+          setGalleryError(error.message || 'Failed to load images');
           setGalleryLoading(false);
         }
       }
@@ -345,62 +365,20 @@ const PizzaFunderPage = () => {
         <link rel="canonical" href="https://localeffortfood.com/pizzafunder" />
       </Helmet>
 
-      {/* Hero Section with Image */}
-      {campaignData?.heroImage?.asset?.url && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="relative w-full h-[400px] md:h-[500px] -mx-4 md:-mx-6 lg:-mx-8 rounded-none md:rounded-2xl overflow-hidden shadow-2xl"
-        >
-          <img
-            src={campaignData.heroImage.asset.url}
-            alt={campaignData.heroImage.alt || campaignData.title}
-            className="w-full h-full object-cover"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
-          <div className="absolute bottom-0 left-0 right-0 p-8 md:p-12">
-            <motion.h1
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-              className="text-4xl md:text-6xl font-bold text-white mb-4"
-            >
-              {campaignData.title}
-            </motion.h1>
-            {campaignData.description && (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.3 }}
-                className="text-lg md:text-xl text-white/90 max-w-3xl prose prose-invert"
-              >
-                <PortableText value={campaignData.description} components={portableComponents} />
-              </motion.div>
-            )}
-          </div>
-        </motion.div>
-      )}
-
-      {/* No hero image fallback */}
-      {!campaignData?.heroImage && !loading.campaign && (
+      {/* Title Section */}
+      {!loading.campaign && (
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="text-center"
+          className="text-center mb-8"
         >
-          <h1 className="text-5xl md:text-6xl font-bold bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent mb-4">
+          <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent mb-4">
             {campaignData?.title || '🍕 Pizza Funder'}
           </h1>
           {campaignData?.description && (
-            <div className="text-xl text-neutral-700 max-w-2xl mx-auto prose">
+            <div className="text-lg text-neutral-700 max-w-3xl mx-auto prose">
               <PortableText value={campaignData.description} components={portableComponents} />
             </div>
-          )}
-          {!campaignData && (
-            <p className="text-xl text-neutral-700 max-w-2xl mx-auto">
-              Help us bring artisanal, wood-fired pizza to the community!
-              Every pledge helps us reach our goal.
-            </p>
           )}
         </motion.div>
       )}
