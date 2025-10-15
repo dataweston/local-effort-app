@@ -11,11 +11,168 @@ import { useToast } from '../components/common/ToastProvider';
 import { Button } from '../components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '../components/ui/card';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '../components/ui/dialog';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { createPortableTextComponents } from '../utils/portableTextComponents';
 import PrioritiesPie from '../components/crowdfunding/PrioritiesPie.jsx';
+import Separator from '../components/ui/Separator';
+import { cn } from '../lib/utils';
 import { ChevronRight } from 'lucide-react';
+
+/**
+ * Event status labels and styling
+ */
+const EVENT_STATUS_LABELS = {
+  scheduled: 'Scheduled',
+  soldOut: 'Sold out',
+  postponed: 'Postponed',
+  cancelled: 'Cancelled',
+};
+
+const EVENT_STATUS_STYLES = {
+  scheduled: 'border-emerald-200 bg-emerald-100 text-emerald-700',
+  soldOut: 'border-rose-200 bg-rose-100 text-rose-700',
+  postponed: 'border-amber-200 bg-amber-100 text-amber-700',
+  cancelled: 'border-slate-300 bg-slate-200 text-slate-600',
+  default: 'border-slate-200 bg-slate-100 text-slate-600',
+};
+
+const EventBadge = ({ children, variant = 'default' }) => (
+  <span
+    className={cn(
+      'inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-medium uppercase tracking-wide',
+      EVENT_STATUS_STYLES[variant] || EVENT_STATUS_STYLES.default
+    )}
+  >
+    {children}
+  </span>
+);
+
+/**
+ * Event Details Dialog Modal
+ */
+const EventDialog = ({
+  event,
+  open,
+  onOpenChange,
+  formatModalDate,
+  deriveSummary,
+  portableComponents,
+}) => {
+  if (!open || !event) {
+    return null;
+  }
+
+  const heroImage =
+    typeof event?.heroImage === 'string'
+      ? event.heroImage
+      : event?.heroImage?.url || event?.heroImageUrl;
+  const heroAlt = event?.heroImageAlt || event?.heroImage?.alt || event?.location || 'Event image';
+  const hasHeroImage = Boolean(heroImage);
+  const dateLabel = typeof formatModalDate === 'function' ? formatModalDate(event) : '';
+  const summary = typeof deriveSummary === 'function' ? deriveSummary(event) : '';
+  const hasPortableDescription = Array.isArray(event?.description) && event.description.length > 0;
+  const plainDescription = !hasPortableDescription && typeof event?.description === 'string'
+    ? event.description
+    : '';
+  const statusVariant = event?.status && EVENT_STATUS_LABELS[event.status] ? event.status : 'default';
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent
+        className={cn(
+          'max-w-3xl overflow-hidden p-0 min-h-0',
+          'max-h-[calc(100vh-3rem)] sm:max-h-[calc(100vh-4rem)]',
+          '[&_[data-radix-dialog-close]]:z-20'
+        )}
+      >
+        <div
+          className={cn(
+            'flex h-full min-h-0 w-full flex-col overflow-hidden',
+            hasHeroImage ? 'md:flex-row' : ''
+          )}
+        >
+          {hasHeroImage && (
+            <div className="relative h-56 w-full flex-shrink-0 overflow-hidden bg-slate-100 md:h-full md:w-64 md:max-h-full md:self-stretch">
+              <img
+                src={heroImage}
+                alt={heroAlt}
+                className="h-full w-full object-cover"
+                loading="lazy"
+              />
+            </div>
+          )}
+          <div className="flex-1 min-h-0 overflow-y-auto p-6 md:max-h-full">
+            <div className="space-y-6 pb-6">
+              <div className="sticky top-0 z-10 -mx-6 mb-4 border-b border-slate-200 bg-white/95 px-6 pb-4 pt-4 backdrop-blur supports-[backdrop-filter]:backdrop-blur">
+                <DialogHeader className="space-y-2 text-left pr-10">
+                  <div className="space-y-1">
+                    <DialogTitle className="text-2xl font-semibold text-slate-900">
+                      {event?.location}
+                    </DialogTitle>
+                    {dateLabel && (
+                      <DialogDescription className="text-sm font-medium text-slate-700">
+                        {dateLabel}
+                      </DialogDescription>
+                    )}
+                  </div>
+                  {event?.timingNote && <p className="text-sm text-slate-600">{event.timingNote}</p>}
+                  {event?.locationDetails && (
+                    <p className="text-sm text-slate-600">{event.locationDetails}</p>
+                  )}
+                </DialogHeader>
+              </div>
+
+              {(event?.foodType || (event?.status && event.status !== 'scheduled')) && (
+                <div className="flex flex-wrap gap-2">
+                  {event?.foodType && <EventBadge>{event.foodType}</EventBadge>}
+                  {event?.status && event.status !== 'scheduled' && (
+                    <EventBadge variant={statusVariant}>
+                      {EVENT_STATUS_LABELS[event.status] || event.status}
+                    </EventBadge>
+                  )}
+                </div>
+              )}
+
+              {event?.tagline && (
+                <p className="text-lg font-medium text-slate-800">{event.tagline}</p>
+              )}
+              {summary && !event?.tagline && (
+                <p className="text-base text-slate-700">{summary}</p>
+              )}
+
+              <Separator className="bg-slate-200" />
+
+              {hasPortableDescription ? (
+                <div className="prose prose-slate max-w-none text-sm leading-relaxed">
+                  <PortableText value={event.description} components={portableComponents} />
+                </div>
+              ) : (
+                plainDescription && (
+                  <p className="text-sm leading-relaxed text-slate-600">{plainDescription}</p>
+                )
+              )}
+
+              {event?.ticketsUrl && (
+                <div className="pt-2">
+                  <a
+                    href={event.ticketsUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center justify-center rounded-md bg-orange-600 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-orange-600 focus:ring-offset-2"
+                  >
+                    {event?.ctaLabel || 'Get tickets'}
+                  </a>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+};
 
 /**
  * PizzaFunderPage - Modern, Sanity-powered pizza crowdfunding page
@@ -120,6 +277,57 @@ const PizzaFunderPage = () => {
     const options = { weekday: 'short', month: 'short', day: 'numeric' };
     return start.toLocaleDateString('en-US', options);
   }, [parseEventDate]);
+
+  const formatModalDate = useCallback((event) => {
+    const start = parseEventDate(event?.startDate);
+    const end = parseEventDate(event?.endDate);
+    if (!start) return '';
+    
+    const currentYear = new Date().getFullYear();
+    const baseOptions = { weekday: 'short', month: 'short', day: 'numeric' };
+    const includeYearStart = start.getFullYear() > currentYear || (end && end.getFullYear() !== start.getFullYear());
+    const startLabel = new Intl.DateTimeFormat(
+      'en-US',
+      includeYearStart ? { ...baseOptions, year: 'numeric' } : baseOptions
+    ).format(start);
+    
+    if (end && end.getTime() !== start.getTime()) {
+      const includeYearEnd = end.getFullYear() > currentYear || end.getFullYear() !== start.getFullYear();
+      const endLabel = new Intl.DateTimeFormat(
+        'en-US',
+        includeYearEnd ? { ...baseOptions, year: 'numeric' } : baseOptions
+      ).format(end);
+      return `${startLabel} - ${endLabel}`;
+    }
+    return startLabel;
+  }, [parseEventDate]);
+
+  const deriveEventSummary = useCallback((event) => {
+    if (!event || typeof event !== 'object') {
+      return '';
+    }
+    if (typeof event.summary === 'string' && event.summary.trim()) {
+      return event.summary.trim();
+    }
+    if (Array.isArray(event.description)) {
+      const firstBlock = event.description.find(
+        (block) => block && block._type === 'block' && Array.isArray(block.children)
+      );
+      if (firstBlock) {
+        const text = firstBlock.children
+          .map((child) => (child && typeof child.text === 'string' ? child.text : ''))
+          .join('')
+          .trim();
+        if (text) {
+          return text;
+        }
+      }
+    }
+    if (typeof event.description === 'string' && event.description.trim()) {
+      return event.description.trim();
+    }
+    return '';
+  }, []);
 
   // Fetch campaign data from Sanity
   useEffect(() => {
@@ -1066,6 +1274,20 @@ const PizzaFunderPage = () => {
           </div>
         </Card>
       </motion.div>
+
+      {/* Event Details Dialog */}
+      <EventDialog
+        event={selectedEvent}
+        open={Boolean(selectedEvent)}
+        onOpenChange={(open) => {
+          if (!open) {
+            setSelectedEvent(null);
+          }
+        }}
+        formatModalDate={formatModalDate}
+        deriveSummary={deriveEventSummary}
+        portableComponents={portableComponents}
+      />
     </div>
   );
 };
