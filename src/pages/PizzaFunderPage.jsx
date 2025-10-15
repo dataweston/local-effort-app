@@ -485,8 +485,22 @@ const PizzaFunderPage = () => {
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: 0.2 }}
-          className="lg:col-span-2"
+          className="lg:col-span-2 space-y-8"
         >
+          {/* Hero Image - matching /crowdfunding style */}
+          {campaignData?.heroImage?.asset?.url ? (
+            <img
+              src={campaignData.heroImage.asset.url}
+              alt={campaignData.heroImage.alt || campaignData.title}
+              className="w-full object-cover rounded-lg aspect-video bg-gray-100"
+              loading="lazy"
+            />
+          ) : (
+            <div className="w-full aspect-video bg-gradient-to-br from-orange-100 to-red-100 rounded-lg flex items-center justify-center">
+              <div className="text-6xl">🍕</div>
+            </div>
+          )}
+
           <Card className="p-6 shadow-lg">
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
               <TabsList className="grid w-full grid-cols-5 mb-6">
