@@ -29,6 +29,8 @@ const PizzaFunderPage = () => {
   const [loading, setLoading] = useState({ campaign: true, status: true, feedback: true });
   const [submitting, setSubmitting] = useState({ pledge: false, feedback: false });
   const [showPledgeForm, setShowPledgeForm] = useState(false);
+  const [pledgeSuccess, setPledgeSuccess] = useState(false);
+  const [lastPledgeData, setLastPledgeData] = useState(null);
   const [activeTab, setActiveTab] = useState('story');
   const [selectedTier, setSelectedTier] = useState(null);
   
@@ -208,11 +210,25 @@ const PizzaFunderPage = () => {
       const result = await res.json();
 
       if (result.success) {
+        // Store pledge data for success display
+        setLastPledgeData({
+          pizzaCount: data.pizzaCount,
+          funderName: data.funderName,
+          email: data.email,
+          discountCode: data.discountCode,
+          total: data.totalCents / 100,
+        });
+
+        // Show success message with details
+        const pizzaText = data.pizzaCount === 1 ? 'pizza' : 'pizzas';
         const discountMsg = data.discountCode 
-          ? ` Discount code "${data.discountCode}" applied!`
+          ? ` Your discount code "${data.discountCode}" has been applied.`
           : '';
         
-        showToast('Thank you!', `Your pledge was successful!${discountMsg}`);
+        showToast(
+          '🍕 Thank You for Your Support!', 
+          `Your pledge for ${data.pizzaCount} ${pizzaText} was successful!${discountMsg} You'll receive a confirmation email shortly at ${data.email}.`
+        );
 
         // Refresh status
         try {
@@ -225,7 +241,8 @@ const PizzaFunderPage = () => {
           console.error('[handlePledgeSubmit] Failed to refresh status:', statusErr);
         }
 
-        // Reset form
+        // Show success state
+        setPledgeSuccess(true);
         setShowPledgeForm(false);
         setSelectedTier(null);
       } else {
@@ -655,7 +672,43 @@ const PizzaFunderPage = () => {
           className="lg:col-span-1"
         >
           <div className="sticky top-6 space-y-6">
-            {!showPledgeForm ? (
+            {pledgeSuccess ? (
+              // Success Thank You Card
+              <Card className="p-8 shadow-xl bg-gradient-to-br from-green-50 to-emerald-50 border-2 border-green-300">
+                <div className="text-center space-y-4">
+                  <div className="text-6xl mb-4">✅</div>
+                  <h3 className="text-2xl font-bold text-green-900">Thank You!</h3>
+                  <p className="text-green-800 font-medium">
+                    Your pledge for {lastPledgeData?.pizzaCount || 1} {lastPledgeData?.pizzaCount === 1 ? 'pizza' : 'pizzas'} was successful!
+                  </p>
+                  {lastPledgeData?.discountCode && (
+                    <p className="text-sm text-green-700">
+                      Discount code "{lastPledgeData.discountCode}" applied
+                    </p>
+                  )}
+                  <div className="pt-4 border-t border-green-200">
+                    <p className="text-sm text-green-800 mb-2">
+                      <strong>Next Steps:</strong>
+                    </p>
+                    <ul className="text-sm text-green-700 space-y-1 text-left">
+                      <li>✉️ Check {lastPledgeData?.email} for confirmation</li>
+                      <li>📧 Watch for updates about pickup details</li>
+                      <li>🍕 Get ready for authentic Local Pizza!</li>
+                    </ul>
+                  </div>
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      setPledgeSuccess(false);
+                      setLastPledgeData(null);
+                    }}
+                    className="w-full mt-4 border-green-300 text-green-800 hover:bg-green-100"
+                  >
+                    Make Another Pledge
+                  </Button>
+                </div>
+              </Card>
+            ) : !showPledgeForm ? (
               <Card className="p-8 shadow-xl bg-gradient-to-br from-orange-50 to-red-50 border-2 border-orange-200">
                 <div className="text-center space-y-4">
                   <div className="text-6xl mb-4">🍕</div>
