@@ -317,96 +317,88 @@ const PizzaFunderPage = () => {
 
   // Lazy load gallery images when tab is activated
   useEffect(() => {
-    console.log('[PizzaFunder] Gallery useEffect triggered:', { 
-      activeTab, 
-      galleryLoaded: galleryLoadedRef.current, 
-      galleryLoading 
-    });
+    if (activeTab !== 'gallery' || galleryLoadedRef.current) {
+      return undefined;
+    }
 
-    if (activeTab !== 'gallery' || galleryLoadedRef.current || galleryLoading) return;
-
-    let mounted = true;
     galleryLoadedRef.current = true;
+    setGalleryLoading(true);
+    setGalleryError('');
 
-    (async () => {
-      setGalleryLoading(true);
-      setGalleryError('');
+    const endpoints = [
+      '/api/search-images?query=pizza&per_page=50',
+      '/api/search-images?query=pie&per_page=50',
+    ];
 
+    let cancelled = false;
+
+    const loadGallery = async () => {
       try {
-        console.log('[PizzaFunder] Loading gallery images...');
-        
-        // Fetch pizza and pie images from Cloudinary
-        const endpoints = [
-          '/api/search-images?query=pizza&per_page=50',
-          '/api/search-images?query=pie&per_page=50',
-        ];
-
-        const results = await Promise.all(
+        const responses = await Promise.all(
           endpoints.map(async (url) => {
             try {
-              console.log('[PizzaFunder] Fetching:', url);
-              const response = await fetch(url, { headers: { Accept: 'application/json' } });
-              console.log('[PizzaFunder] Response status:', response.status, response.ok);
-              
-              const text = await response.text();
-              console.log('[PizzaFunder] Response text (first 200 chars):', text.substring(0, 200));
-              
-              let payload;
+              const res = await fetch(url, { headers: { Accept: 'application/json' } });
+              let data = null;
               try {
-                payload = JSON.parse(text);
+                data = await res.json();
               } catch (parseError) {
-                console.error('[PizzaFunder] JSON parse error:', parseError);
-                console.error('[PizzaFunder] Response was not JSON:', text);
-                return { ok: false, images: [], error: 'Invalid JSON response' };
+                data = null;
               }
-              
-              console.log('[PizzaFunder] Parsed payload:', payload);
-              const images = Array.isArray(payload?.images) ? payload.images : [];
-              console.log('[PizzaFunder] Extracted images:', images.length, images.slice(0, 2));
-              
-              return { ok: response.ok, images };
-            } catch (error) {
-              console.error('[PizzaFunder] gallery fetch failed', error);
-              return { ok: false, images: [], error: error.message };
+              return { ok: res.ok, data };
+            } catch (networkError) {
+              return { ok: false, data: null, error: networkError };
             }
           })
         );
 
-        if (!mounted) return;
+        if (cancelled) {
+          return;
+        }
 
-        // Merge and deduplicate results
-        console.log('[PizzaFunder] Merging results:', results);
         const merged = [];
         const seen = new Set();
-        results.forEach(({ ok, images, error }, index) => {
-          console.log(`[PizzaFunder] Result ${index}:`, { ok, imageCount: images.length, error });
-          if (!ok || !images.length) return;
-          images.forEach((img) => {
+        let hadNetworkError = false;
+
+        responses.forEach(({ ok, data, error }) => {
+          if (error) {
+            hadNetworkError = true;
+          }
+          if (!ok || !data || !Array.isArray(data.images)) {
+            return;
+          }
+
+          data.images.forEach((img) => {
             const id = img?.asset_id || img?.public_id;
-            if (!id || seen.has(id)) return;
+            if (!id || seen.has(id)) {
+              return;
+            }
             seen.add(id);
             merged.push(img);
           });
         });
 
-        console.log('[PizzaFunder] Gallery loaded:', merged.length, 'images');
-        console.log('[PizzaFunder] First 3 merged images:', merged.slice(0, 3));
-
-        if (mounted) {
-          setGalleryImages(merged);
-          setGalleryLoading(false);
+        if (merged.length === 0) {
+          setGalleryError(hadNetworkError ? 'Unable to load gallery images right now.' : 'No images found yet.');
         }
+
+        setGalleryImages(merged);
       } catch (error) {
-        console.error('[PizzaFunder] Failed to load gallery:', error);
-        if (mounted) {
-          setGalleryError(error.message || 'Failed to load images');
+        if (!cancelled) {
+          setGalleryError(error?.message || 'Failed to load images');
+        }
+      } finally {
+        if (!cancelled) {
           setGalleryLoading(false);
         }
       }
-    })();
+    };
 
-    return () => { mounted = false; };
-  }, [activeTab, galleryLoading]);
+    loadGallery();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [activeTab]);
 
   return (
     <div className="space-y-12 mx-auto max-w-7xl px-4 md:px-6 lg:px-8 py-12">
@@ -647,15 +639,6 @@ const PizzaFunderPage = () => {
 
               {/* Gallery Tab */}
               <TabsContent value="gallery" className="mt-0">
-                {(() => {
-                  console.log('[PizzaFunder] Rendering gallery:', {
-                    galleryLoading,
-                    galleryError,
-                    galleryImagesLength: galleryImages.length,
-                    galleryImages: galleryImages.slice(0, 2),
-                  });
-                  return null;
-                })()}
                 {galleryLoading ? (
                   <div className="flex items-center justify-center h-64">
                     <p className="text-neutral-600">Loading gallery...</p>
