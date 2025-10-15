@@ -11,6 +11,7 @@
 
 const { Client: SquareClient, Environment } = require('square');
 const { getSupabase } = require('../../backend/api/supabaseClient');
+const { addPizzaBackerToBrevo } = require('../_lib/brevo');
 
 module.exports = async (req, res) => {
   if (req.method !== 'POST') {
@@ -148,6 +149,16 @@ module.exports = async (req, res) => {
         },
       });
     }
+
+    // Add to Brevo email list (async, don't block response)
+    // This runs in background - failures won't affect pledge success
+    addPizzaBackerToBrevo(pledgeData).catch((brevoError) => {
+      console.error('[pizzafunder.pledge] Brevo sync failed (non-critical):', {
+        error: brevoError.message,
+        email: pledgeData.email,
+        pledgeId: pledgeData.id,
+      });
+    });
 
     // Success response
     return res.status(201).json({
