@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Gallery API Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        pre { background: #f4f4f4; padding: 10px; overflow-x: auto; }
+        img { max-width: 200px; margin: 10px; border: 1px solid #ccc; }
+        .error { color: red; }
+        .success { color: green; }
+    </style>
+</head>
+<body>
+    <h1>Gallery API Test</h1>
+    <button onclick="testAPI()">Test /api/search-images?query=pizza&per_page=3</button>
+    <div id="result"></div>
+    <div id="images"></div>
+
+    <script>
+        async function testAPI() {
+            const resultDiv = document.getElementById('result');
+            const imagesDiv = document.getElementById('images');
+            
+            resultDiv.innerHTML = '<p>Loading...</p>';
+            imagesDiv.innerHTML = '';
+            
+            try {
+                const response = await fetch('/api/search-images?query=pizza&per_page=3', {
+                    headers: { 'Accept': 'application/json' }
+                });
+                
+                const contentType = response.headers.get('content-type');
+                resultDiv.innerHTML = `<p class="success">Response Status: ${response.status}</p>`;
+                resultDiv.innerHTML += `<p>Content-Type: ${contentType}</p>`;
+                
+                const data = await response.json();
+                resultDiv.innerHTML += `<h2>Response Data:</h2><pre>${JSON.stringify(data, null, 2)}</pre>`;
+                
+                // Try to render images
+                if (data.images && Array.isArray(data.images)) {
+                    imagesDiv.innerHTML = `<h2>Images (${data.images.length}):</h2>`;
+                    data.images.forEach((img, idx) => {
+                        const imgEl = document.createElement('div');
+                        imgEl.innerHTML = `
+                            <h3>Image ${idx + 1}</h3>
+                            <p>public_id: ${img.public_id}</p>
+                            <p>thumbnail_url: ${img.thumbnail_url || 'MISSING'}</p>
+                            ${img.thumbnail_url ? `<img src="${img.thumbnail_url}" alt="${img.public_id}" />` : '<p class="error">No thumbnail_url!</p>'}
+                        `;
+                        imagesDiv.appendChild(imgEl);
+                    });
+                } else {
+                    imagesDiv.innerHTML = '<p class="error">No images array in response!</p>';
+                }
+                
+            } catch (error) {
+                resultDiv.innerHTML = `<p class="error">Error: ${error.message}</p>`;
+                console.error(error);
+            }
+        }
+    </script>
+</body>
+</html>
