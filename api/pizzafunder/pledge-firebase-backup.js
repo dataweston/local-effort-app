@@ -8,9 +8,18 @@
  * Pattern: Mirrors api/paikka/finalize.js email implementation
  */
 
-const { getSupabase } = require('../../backend/api/supabaseClient');
-const { Client: SquareClient, Environment } = require('square');
+const { getFirebaseAdmin } = require('../_lib/firebaseAdmin');
 const QRCode = require('qrcode');
+
+// Import Square Client (defensive: handle varying export shapes)
+let Client, Environment;
+try {
+  const squarePkg = require('square');
+  Client = squarePkg.Client || (squarePkg.default && squarePkg.default.Client);
+  Environment = squarePkg.Environment || (squarePkg.default && squarePkg.default.Environment) || null;
+} catch (err) {
+  console.warn('Square SDK not available:', err && err.message);
+}
 
 // =====================================================
 // BREVO EMAIL UTILITY
@@ -47,11 +56,14 @@ async function sendBrevoEmail({ to, subject, htmlContent }) {
     const data = await response.json();
 
     if (!response.ok) {
+      console.error('❌ Brevo email failed:', data);
       return { success: false, error: data.message || 'Email send failed' };
     }
 
+    console.log(`✅ Email sent to ${to}: ${data.messageId || 'OK'}`);
     return { success: true, messageId: data.messageId };
   } catch (error) {
+    console.error('❌ Brevo email error:', error);
     return { success: false, error: error.message };
   }
 }
@@ -67,10 +79,16 @@ module.exports = async (req, res) => {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const supabase = getSupabase();
+  const { firestore } = getFirebaseAdmin();
   
-  if (!supabase) {
-    return res.status(503).json({ error: 'Database temporarily unavailable' });
+  // Firebase is OPTIONAL - payment can still work without it
+  const hasFirestore = !!firestore;
+  if (!hasFirestore) {
+    console.warn('⚠️  Firebase not available - pledge will process but not be stored in database');
+  }
+
+  if (!Client) {
+    return res.status(503).json({ error: 'Payment processing unavailable' });
   }
 
   const {
@@ -113,7 +131,7 @@ module.exports = async (req, res) => {
       resolvedEnv = envName;
     }
 
-    const squareClient = new SquareClient({
+    const squareClient = new Client({
       environment: resolvedEnv,
       accessToken: process.env.SQUARE_ACCESS_TOKEN,
     });
@@ -136,50 +154,46 @@ module.exports = async (req, res) => {
 
     const payment = paymentResponse.result.payment;
 
-    // Save pledge to Supabase (trigger will auto-update aggregates)
-    const { data: pledgeData, error: pledgeError } = await supabase
-      .from('crowdfund_pledges')
-      .insert({
-        funder_name: sanitizedName,
-        email: safeEmail,
-        phone: safePhone || null,
-        notes: safeNotes || null,
-        reward_preference: safeRewardPref || null,
-        pizza_count: pizzas,
-        amount_cents: amount,
-        payment_id: payment.id,
-        status: 'completed',
-      })
-      .select()
-      .single();
-
-    if (pledgeError) {
-      // Payment succeeded but DB failed - critical error
-      console.error('[pizzafunder.pledge] CRITICAL - Payment succeeded but DB failed:', {
-        paymentId: payment.id,
-        error: pledgeError.message,
+    // Record the pledge in Firestore
+    const pledgeRef = await firestore
+      .collection('crowdfund_pledges')
+      .add({
         funderName: sanitizedName,
         email: safeEmail,
+        phone: safePhone,
+        notes: safeNotes,
+        rewardPreference: safeRewardPref,
         pizzaCount: pizzas,
         amountCents: amount,
+        paymentId: payment.id,
+        status: payment.status || 'COMPLETED',
+        createdAt: new Date().toISOString(),
+        createdAtMs: Date.now(),
       });
 
-      return res.status(201).json({
-        success: true,
-        warning: 'Payment succeeded but record may not be saved',
-        payment: {
-          id: payment.id,
-          status: payment.status,
-          amount,
-        },
-      });
-    }
+    // Update aggregates (atomic increment)
+    const aggregateRef = firestore.collection('aggregates').doc('crowdfunding');
+    
+    await firestore.runTransaction(async (transaction) => {
+      const doc = await transaction.get(aggregateRef);
+      
+      const currentPizzas = doc.exists ? (Number(doc.data().pizzas) || 0) : 0;
+      const currentBackers = doc.exists ? (Number(doc.data().backers) || 0) : 0;
+      const goal = doc.exists ? (Number(doc.data().goal) || 1000) : 1000;
+
+      transaction.set(aggregateRef, {
+        pizzas: currentPizzas + pizzas,
+        backers: currentBackers + 1,
+        goal,
+        lastUpdated: new Date().toISOString(),
+      }, { merge: true });
+    });
 
     // =====================================================
     // QR CODE GENERATION
     // =====================================================
-    const pledgeId = pledgeData.id;
-    const timestamp = pledgeData.created_at;
+    const pledgeId = pledgeRef.id;
+    const timestamp = new Date().toISOString();
     
     const qrData = {
       pledgeReference: pledgeId,
@@ -483,7 +497,7 @@ module.exports = async (req, res) => {
 
     return res.status(200).json({
       success: true,
-      pledgeId: pledgeData.id,
+      pledgeId: pledgeRef.id,
       pizzas,
       message: `Thank you for backing ${pizzas} pizza${pizzas > 1 ? 's' : ''}!`,
     });
