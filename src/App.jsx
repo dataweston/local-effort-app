@@ -1,7 +1,7 @@
 ﻿import React, { useEffect, Suspense, lazy } from 'react';
 import { SpeedInsights } from '@vercel/speed-insights/react';
 import { HelmetProvider } from 'react-helmet-async';
-import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, useLocation, Navigate } from 'react-router-dom';
 import { AnimatePresence } from 'framer-motion';
 
 import { Header } from './components/layout/Header';
@@ -19,7 +19,8 @@ const HomePage = lazy(() => import('./pages/HomePage'));
 const AboutUsPage = lazy(() => import('./pages/AboutUsPage'));
 const ServicesPage = lazy(() => import('./pages/ServicesPage'));
 const PricingPage = lazy(() => import('./pages/PricingPage'));
-const CrowdfundingPage = lazy(() => import('./pages/CrowdfundingPage'));
+// Old crowdfunding page - redirects to /pizzafunder
+// const CrowdfundingPage = lazy(() => import('./pages/CrowdfundingPage'));
 const PizzaFunderPage = lazy(() => import('./pages/PizzaFunderPage'));
 const ReleasesPage = lazy(() => import('./pages/ReleasesPage'));
 const MenuPage = lazy(() => import('./pages/MenuPage'));
@@ -113,11 +114,7 @@ const AppContent = () => {
                 />
                 <Route
                   path="/crowdfunding"
-                  element={
-                    <AnimatedPage>
-                      <CrowdfundingPage />
-                    </AnimatedPage>
-                  }
+                  element={<Navigate to="/pizzafunder" replace />}
                 />
                 <Route
                   path="/pizzafunder"
