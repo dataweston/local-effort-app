@@ -18,7 +18,6 @@ import { createPortableTextComponents } from '../utils/portableTextComponents';
 import PrioritiesPie from '../components/crowdfunding/PrioritiesPie.jsx';
 import Separator from '../components/ui/Separator';
 import { cn } from '../lib/utils';
-import { ChevronRight } from 'lucide-react';
 
 /**
  * Event status labels and styling
@@ -82,19 +81,20 @@ const EventDialog = ({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
         className={cn(
-          'max-w-3xl overflow-hidden p-0 min-h-0',
-          'max-h-[calc(100vh-3rem)] sm:max-h-[calc(100vh-4rem)]',
+          'max-w-3xl p-0',
+          'max-h-[90vh] sm:max-h-[85vh]',
+          'overflow-y-auto',
           '[&_[data-radix-dialog-close]]:z-20'
         )}
       >
         <div
           className={cn(
-            'flex h-full min-h-0 w-full flex-col overflow-hidden',
+            'flex w-full flex-col',
             hasHeroImage ? 'md:flex-row' : ''
           )}
         >
           {hasHeroImage && (
-            <div className="relative h-56 w-full flex-shrink-0 overflow-hidden bg-slate-100 md:h-full md:w-64 md:max-h-full md:self-stretch">
+            <div className="relative h-56 w-full flex-shrink-0 overflow-hidden bg-slate-100 md:h-auto md:w-64 md:min-h-[400px]">
               <img
                 src={heroImage}
                 alt={heroAlt}
@@ -103,7 +103,7 @@ const EventDialog = ({
               />
             </div>
           )}
-          <div className="flex-1 min-h-0 overflow-y-auto p-6 md:max-h-full">
+          <div className="flex-1 p-6">
             <div className="space-y-6 pb-6">
               <div className="sticky top-0 z-10 -mx-6 mb-4 border-b border-slate-200 bg-white/95 px-6 pb-4 pt-4 backdrop-blur supports-[backdrop-filter]:backdrop-blur">
                 <DialogHeader className="space-y-2 text-left pr-10">
@@ -766,74 +766,6 @@ const PizzaFunderPage = () => {
               );
             })}
           </div>
-        </motion.div>
-      )}
-
-      {/* Upcoming Events Section */}
-      {upcomingEvents && upcomingEvents.length > 0 && (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="space-y-4"
-        >
-          <h2 className="text-3xl font-bold text-neutral-900">Upcoming Pizza Events</h2>
-          <p className="text-neutral-600">Join us at these pizza parties and pick up your pizzas!</p>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {upcomingEvents.slice(0, 4).map((event) => {
-              const dateLabel = formatEventDate(event);
-              const hasImage = event?.heroImage;
-              
-              return (
-                <Card
-                  key={event._key}
-                  className="overflow-hidden hover:shadow-lg transition-all cursor-pointer"
-                  onClick={() => setSelectedEvent(event)}
-                >
-                  {hasImage && (
-                    <div className="aspect-video w-full overflow-hidden bg-gradient-to-br from-orange-100 to-red-100">
-                      <img
-                        src={event.heroImage}
-                        alt={event.heroImageAlt || event.location}
-                        className="w-full h-full object-cover"
-                        loading="lazy"
-                      />
-                    </div>
-                  )}
-                  <div className="p-6 space-y-3">
-                    {dateLabel && (
-                      <p className="text-sm font-semibold uppercase tracking-wide text-orange-600">
-                        {dateLabel}
-                      </p>
-                    )}
-                    <h3 className="text-xl font-bold text-neutral-900">{event.location}</h3>
-                    {event.tagline && (
-                      <p className="text-sm text-neutral-600 italic">{event.tagline}</p>
-                    )}
-                    {event.timingNote && (
-                      <p className="text-sm text-neutral-700">{event.timingNote}</p>
-                    )}
-                    {event.foodType && (
-                      <span className="inline-block bg-orange-100 text-orange-800 text-xs font-semibold px-3 py-1 rounded-full">
-                        {event.foodType}
-                      </span>
-                    )}
-                    <div className="flex items-center text-orange-600 font-medium text-sm pt-2">
-                      <span>View Details</span>
-                      <ChevronRight className="h-4 w-4 ml-1" />
-                    </div>
-                  </div>
-                </Card>
-              );
-            })}
-          </div>
-          
-          {upcomingEvents.length > 4 && (
-            <p className="text-center text-neutral-600 text-sm">
-              And {upcomingEvents.length - 4} more events! Scroll down to see all upcoming pizza parties.
-            </p>
-          )}
         </motion.div>
       )}
 
