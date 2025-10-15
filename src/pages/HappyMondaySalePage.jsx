@@ -7,6 +7,8 @@ import CheckoutPanel from '../store/components/CheckoutPanel';
 import { PortableText } from '@portabletext/react';
 import { portableTextComponents } from '../utils/portableTextComponents';
 import sanityClient from '../sanityClient';
+import { Card, CardContent } from '../components/ui/card';
+import { Info, MapPin, Clock } from 'lucide-react';
 
 const HappyMondaySalePage = () => {
   const { totalQty, openCart } = useCart();
@@ -80,37 +82,52 @@ const HappyMondaySalePage = () => {
         <script type="application/ld+json">{JSON.stringify(schema)}</script>
       </Helmet>
 
-      <div className="flex items-start justify-between mb-4 gap-4">
-        <div>
-          <h1 className="heading-xl heading-balance">Happy Monday Sale</h1>
+      <div className="flex items-start justify-between mb-6 gap-4">
+        <div className="flex-1">
+          <h1 className="text-5xl md:text-6xl font-bold tracking-tight text-neutral-900 mb-3">
+            PIZZA AT HAPPY MONDAY COFFEE
+          </h1>
           {saleIntro.subheading && (
-            <p className="mt-1 text-neutral-700">{saleIntro.subheading}</p>
+            <p className="text-xl text-neutral-600 font-medium mb-4">{saleIntro.subheading}</p>
           )}
           {Array.isArray(saleIntro.intro) && saleIntro.intro.length > 0 && (
-            <div className="prose prose-neutral max-w-none mt-3">
-              <PortableText value={saleIntro.intro} components={portableTextComponents} />
-            </div>
+            <Card className="border-blue-200 bg-blue-50/30">
+              <CardContent className="pt-4">
+                <div className="prose prose-neutral prose-blue max-w-none">
+                  <PortableText value={saleIntro.intro} components={portableTextComponents} />
+                </div>
+              </CardContent>
+            </Card>
           )}
         </div>
-        <button onClick={openCart} className="btn btn-primary whitespace-nowrap">Cart ({totalQty})</button>
+        <button onClick={openCart} className="btn btn-primary whitespace-nowrap flex-shrink-0">Cart ({totalQty})</button>
       </div>
 
-      <div className="mb-6 rounded-lg bg-blue-50 border-l-4 border-blue-500 p-4">
-        <div className="flex items-start">
-          <div className="flex-shrink-0">
-            <svg className="h-5 w-5 text-blue-500" viewBox="0 0 20 20" fill="currentColor">
-              <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-            </svg>
+      <Card className="mb-6 border-blue-300 bg-gradient-to-br from-blue-50 to-sky-50">
+        <CardContent className="pt-4">
+          <div className="flex items-start gap-3">
+            <div className="flex-shrink-0">
+              <Info className="h-5 w-5 text-blue-600 mt-0.5" />
+            </div>
+            <div className="flex-1">
+              <h3 className="text-sm font-semibold text-blue-900 mb-2 flex items-center gap-2">
+                <MapPin className="h-4 w-4" />
+                Pickup Information
+              </h3>
+              <div className="text-sm text-blue-800 space-y-1">
+                <p className="flex items-start gap-2">
+                  <Clock className="h-4 w-4 mt-0.5 flex-shrink-0" />
+                  <span><strong>When:</strong> October 23, 2025 • 4-7pm</span>
+                </p>
+                <p className="flex items-start gap-2">
+                  <MapPin className="h-4 w-4 mt-0.5 flex-shrink-0" />
+                  <span><strong>Where:</strong> Happy Monday Coffee, 2420 Cleveland Ave N, Roseville</span>
+                </p>
+              </div>
+            </div>
           </div>
-          <div className="ml-3">
-            <h3 className="text-sm font-semibold text-blue-800">Pickup Information</h3>
-            <p className="mt-1 text-sm text-blue-700">
-              <strong>When:</strong> October 23, 2025 • 4-7pm<br />
-              <strong>Where:</strong> Happy Monday Coffee, 2420 Cleveland Ave N, Roseville
-            </p>
-          </div>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
 
       {loading ? (
         <div>Loading...</div>
