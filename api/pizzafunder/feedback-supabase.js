@@ -84,6 +84,12 @@ module.exports = async (req, res) => {
         throw error;
       }
 
+      console.log('[pizzafunder.feedback] New feedback:', {
+        id: data.id,
+        name: data.name,
+        rating: data.rating,
+      });
+
       return res.status(201).json({ 
         success: true,
         feedback: {

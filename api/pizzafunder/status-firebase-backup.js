@@ -1,10 +1,10 @@
 /**
  * GET /api/pizzafunder/status
- * Returns current pizza funding totals from Supabase
- * Replaces Firebase Firestore with Supabase Postgres
+ * Returns current pizza funding totals from Firestore
+ * Simple, reliable backend API - no client-side Firebase needed
  */
 
-const { getSupabase } = require('../../backend/api/supabaseClient');
+const { getFirebaseAdmin } = require('../_lib/firebaseAdmin');
 
 module.exports = async (req, res) => {
   if (req.method !== 'GET') {
@@ -12,9 +12,9 @@ module.exports = async (req, res) => {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const supabase = getSupabase();
+  const { firestore } = getFirebaseAdmin();
   
-  if (!supabase) {
+  if (!firestore) {
     // Graceful fallback - return safe defaults
     return res.status(200).json({
       pizzas: 0,
@@ -25,19 +25,12 @@ module.exports = async (req, res) => {
   }
 
   try {
-    // Use the helper function or direct query
-    const { data, error } = await supabase
-      .from('crowdfund_aggregates')
-      .select('pizzas, backers, goal, last_updated')
-      .eq('id', 'crowdfunding')
-      .single();
+    const doc = await firestore
+      .collection('aggregates')
+      .doc('crowdfunding')
+      .get();
 
-    if (error) {
-      console.error('[pizzafunder.status] Supabase error:', error.message);
-      throw error;
-    }
-
-    if (!data) {
+    if (!doc.exists) {
       return res.status(200).json({
         pizzas: 0,
         backers: 0,
@@ -45,13 +38,15 @@ module.exports = async (req, res) => {
         source: 'default',
       });
     }
+
+    const data = doc.data();
     
     return res.status(200).json({
       pizzas: Number(data.pizzas) || 0,
       backers: Number(data.backers) || 0,
       goal: Number(data.goal) || 1000,
-      lastUpdated: data.last_updated || null,
-      source: 'supabase',
+      lastUpdated: data.lastUpdated || null,
+      source: 'firestore',
     });
   } catch (error) {
     console.error('[pizzafunder.status] Error fetching totals:', error.message);
