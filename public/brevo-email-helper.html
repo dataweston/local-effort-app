@@ -264,6 +264,9 @@
                             endDate,
                             timingNote,
                             foodType,
+                            status,
+                            ticketsUrl,
+                            ctaLabel,
                             locationDetails
                         },
                         "featuredPublicEvents": featuredPublicEvents[]->{ 
@@ -275,12 +278,16 @@
                             endDate,
                             timingNote,
                             foodType,
+                            status,
+                            ticketsUrl,
+                            ctaLabel,
                             locationDetails
                         },
                         "updates": updates[]->{ 
                             title, 
                             publishedAt, 
-                            body
+                            body,
+                            slug
                         } | order(publishedAt desc)[0..1]
                     }`);
                     
@@ -288,12 +295,16 @@
                     if (sanityRes.ok) {
                         const sanityData = await sanityRes.json();
                         
+                        console.log('Sanity data fetched:', sanityData);
+                        
                         // Merge events (same as PizzaFunderPage)
                         const rawEvents = Array.isArray(sanityData?.events) ? sanityData.events : [];
                         const importedEvents = Array.isArray(sanityData?.featuredPublicEvents) 
                             ? sanityData.featuredPublicEvents 
                             : [];
                         const allEvents = [...rawEvents, ...importedEvents].filter(Boolean);
+                        
+                        console.log(`Total events before filtering: ${allEvents.length}`);
                         
                         // Filter to upcoming only
                         const today = new Date();
@@ -307,24 +318,34 @@
                                 boundary.setHours(23, 59, 59, 999);
                                 return boundary >= today;
                             })
-                            .sort((a, b) => new Date(a.startDate) - new Date(b.startDate))
+                            .sort((a, b) => {
+                                const aDate = new Date(a.startDate);
+                                const bDate = new Date(b.startDate);
+                                return aDate - bDate;
+                            })
                             .slice(0, 2);
+                        
+                        console.log(`Upcoming events: ${upcomingEvents.length}`, upcomingEvents);
                         
                         // Add events if available
                         if (upcomingEvents[0]) {
                             const event1 = upcomingEvents[0];
-                            brevoVars.EVENT_1_TITLE = event1.location || '';
+                            brevoVars.EVENT_1_TITLE = event1.location || 'Pizza Event';
                             brevoVars.EVENT_1_LOCATION = event1.locationDetails || event1.location || '';
-                            brevoVars.EVENT_1_DATE = event1.timingNote || formatDate(event1.startDate) || '';
+                            brevoVars.EVENT_1_DATE = event1.startDate 
+                                ? formatDate(event1.startDate) 
+                                : event1.timingNote || '';
                             brevoVars.EVENT_1_TAGLINE = event1.tagline || '';
                             brevoVars.EVENT_1_FOOD_TYPE = event1.foodType || 'Pizza';
                         }
                         
                         if (upcomingEvents[1]) {
                             const event2 = upcomingEvents[1];
-                            brevoVars.EVENT_2_TITLE = event2.location || '';
+                            brevoVars.EVENT_2_TITLE = event2.location || 'Pizza Event';
                             brevoVars.EVENT_2_LOCATION = event2.locationDetails || event2.location || '';
-                            brevoVars.EVENT_2_DATE = event2.timingNote || formatDate(event2.startDate) || '';
+                            brevoVars.EVENT_2_DATE = event2.startDate 
+                                ? formatDate(event2.startDate) 
+                                : event2.timingNote || '';
                             brevoVars.EVENT_2_TAGLINE = event2.tagline || '';
                             brevoVars.EVENT_2_FOOD_TYPE = event2.foodType || 'Pizza';
                         }
@@ -332,26 +353,38 @@
                         // Add updates if available
                         if (sanityData?.updates?.[0]) {
                             const update1 = sanityData.updates[0];
-                            brevoVars.UPDATE_1_TITLE = update1.title || '';
-                            brevoVars.UPDATE_1_DATE = formatLongDate(update1.publishedAt) || '';
-                            brevoVars.UPDATE_1_EXCERPT = extractText(update1.body).substring(0, 150) + '...';
+                            const bodyText = extractText(update1.body);
+                            
+                            brevoVars.UPDATE_1_TITLE = update1.title || 'Campaign Update';
+                            brevoVars.UPDATE_1_DATE = update1.publishedAt 
+                                ? formatLongDate(update1.publishedAt) 
+                                : '';
+                            brevoVars.UPDATE_1_EXCERPT = bodyText.substring(0, 150) + '...';
                             brevoVars.UPDATE_1_LINK = 'https://localeffortfood.com/pizzafunder#updates';
                         }
                         
                         if (sanityData?.updates?.[1]) {
                             const update2 = sanityData.updates[1];
-                            brevoVars.UPDATE_2_TITLE = update2.title || '';
-                            brevoVars.UPDATE_2_DATE = formatLongDate(update2.publishedAt) || '';
-                            brevoVars.UPDATE_2_EXCERPT = extractText(update2.body).substring(0, 150) + '...';
+                            const bodyText = extractText(update2.body);
+                            
+                            brevoVars.UPDATE_2_TITLE = update2.title || 'Campaign Update';
+                            brevoVars.UPDATE_2_DATE = update2.publishedAt 
+                                ? formatLongDate(update2.publishedAt) 
+                                : '';
+                            brevoVars.UPDATE_2_EXCERPT = bodyText.substring(0, 150) + '...';
                             brevoVars.UPDATE_2_LINK = 'https://localeffortfood.com/pizzafunder#updates';
                         }
+                    } else {
+                        console.log('Sanity query failed:', sanityRes.status, sanityRes.statusText);
                     }
                 } catch (sanityErr) {
                     console.log('Could not fetch Sanity data:', sanityErr);
                 }
                 
                 // Show success
-                statusDiv.innerHTML = `<div class="status success">✅ Successfully fetched data! Found ${status.pizzas} pizzas and ${status.backers} backers.</div>`;
+                const eventCount = (brevoVars.EVENT_1_TITLE ? 1 : 0) + (brevoVars.EVENT_2_TITLE ? 1 : 0);
+                const updateCount = (brevoVars.UPDATE_1_TITLE ? 1 : 0) + (brevoVars.UPDATE_2_TITLE ? 1 : 0);
+                statusDiv.innerHTML = `<div class="status success">✅ Successfully fetched data! Found ${status.pizzas} pizzas, ${status.backers} backers, ${eventCount} upcoming events, and ${updateCount} updates.</div>`;
                 
                 // Display variables
                 displayVariables();
