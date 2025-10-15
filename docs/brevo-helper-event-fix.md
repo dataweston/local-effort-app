@@ -2,7 +2,7 @@
 
 **Date:** October 15, 2025  
 **Issue:** Events and updates not appearing in generated email HTML  
-**Status:** ✅ Fixed
+**Status:** ✅ Fixed (Updated with POST request fix)
 
 ## Problem
 
@@ -11,24 +11,62 @@ The Brevo email helper tool (`public/brevo-email-helper.html`) was not properly 
 2. Update data from Sanity CMS
 3. Event dates were not being formatted correctly
 
+**Critical Issue:** The helper was using GET requests to `/api/sanity-query?query=...` but the endpoint **only accepts POST requests**.
+
 ## Root Causes
 
-1. **Incomplete Sanity Query** - Missing fields:
+1. **Wrong HTTP Method** - Using GET with query parameter instead of POST with JSON body
+   - `/api/sanity-query` endpoint requires POST method
+   - Returns data in `{ ok: true, result: data }` format, not raw data
+   
+2. **Incomplete Sanity Query** - Missing fields:
    - `status` (event status)
    - `ticketsUrl` (event ticket link)
    - `ctaLabel` (custom button text)
    - `slug` (update slug for links)
 
-2. **Wrong Date Priority** - Was using `timingNote || formatDate(startDate)` instead of `startDate ? formatDate(startDate) : timingNote`
-   - This caused events with both fields to show timingNote instead of properly formatted dates
+3. **Wrong Date Priority** - Was using `timingNote || formatDate(startDate)` instead of `startDate ? formatDate(startDate) : timingNote`
 
-3. **Missing Validation** - No default values for event titles, causing empty checks to fail
+4. **Missing Validation** - No default values for event titles, causing empty checks to fail
 
-4. **No Debug Logging** - Hard to diagnose what was being fetched
+5. **No Debug Logging** - Hard to diagnose what was being fetched
 
 ## Changes Made
 
-### 1. Updated Sanity Query
+### 1. Fixed API Request Method (CRITICAL)
+
+**Before:**
+```javascript
+const sanityQuery = encodeURIComponent(`*[_type == "crowdfundingCampaign" ...`);
+const sanityRes = await fetch(`/api/sanity-query?query=${sanityQuery}`);
+if (sanityRes.ok) {
+    const sanityData = await sanityRes.json();
+```
+
+**After:**
+```javascript
+const sanityQuery = `*[_type == "crowdfundingCampaign" ...`;
+const sanityRes = await fetch('/api/sanity-query', {
+    method: 'POST',
+    headers: {
+        'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ query: sanityQuery })
+});
+
+if (sanityRes.ok) {
+    const sanityResponse = await sanityRes.json();
+    const sanityData = sanityResponse.result;  // Extract from wrapper
+```
+
+Key changes:
+- Changed from GET to **POST** request
+- Removed `encodeURIComponent()` (not needed for JSON body)
+- Added proper headers
+- Send query in JSON body
+- Extract data from `response.result` wrapper
+
+### 2. Updated Sanity Query
 Added missing fields to both inline events and featuredPublicEvents:
 ```javascript
 events[]{
