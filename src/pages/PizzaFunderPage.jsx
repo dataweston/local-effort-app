@@ -344,13 +344,30 @@ const PizzaFunderPage = () => {
         const results = await Promise.all(
           endpoints.map(async (url) => {
             try {
+              console.log('[PizzaFunder] Fetching:', url);
               const response = await fetch(url, { headers: { Accept: 'application/json' } });
-              const payload = await response.json().catch(() => ({}));
+              console.log('[PizzaFunder] Response status:', response.status, response.ok);
+              
+              const text = await response.text();
+              console.log('[PizzaFunder] Response text (first 200 chars):', text.substring(0, 200));
+              
+              let payload;
+              try {
+                payload = JSON.parse(text);
+              } catch (parseError) {
+                console.error('[PizzaFunder] JSON parse error:', parseError);
+                console.error('[PizzaFunder] Response was not JSON:', text);
+                return { ok: false, images: [], error: 'Invalid JSON response' };
+              }
+              
+              console.log('[PizzaFunder] Parsed payload:', payload);
               const images = Array.isArray(payload?.images) ? payload.images : [];
+              console.log('[PizzaFunder] Extracted images:', images.length, images.slice(0, 2));
+              
               return { ok: response.ok, images };
             } catch (error) {
-              console.warn('[PizzaFunder] gallery fetch failed', error);
-              return { ok: false, images: [] };
+              console.error('[PizzaFunder] gallery fetch failed', error);
+              return { ok: false, images: [], error: error.message };
             }
           })
         );
@@ -358,9 +375,11 @@ const PizzaFunderPage = () => {
         if (!mounted) return;
 
         // Merge and deduplicate results
+        console.log('[PizzaFunder] Merging results:', results);
         const merged = [];
         const seen = new Set();
-        results.forEach(({ ok, images }) => {
+        results.forEach(({ ok, images, error }, index) => {
+          console.log(`[PizzaFunder] Result ${index}:`, { ok, imageCount: images.length, error });
           if (!ok || !images.length) return;
           images.forEach((img) => {
             const id = img?.asset_id || img?.public_id;
@@ -371,6 +390,7 @@ const PizzaFunderPage = () => {
         });
 
         console.log('[PizzaFunder] Gallery loaded:', merged.length, 'images');
+        console.log('[PizzaFunder] First 3 merged images:', merged.slice(0, 3));
 
         if (mounted) {
           setGalleryImages(merged);
@@ -627,6 +647,15 @@ const PizzaFunderPage = () => {
 
               {/* Gallery Tab */}
               <TabsContent value="gallery" className="mt-0">
+                {(() => {
+                  console.log('[PizzaFunder] Rendering gallery:', {
+                    galleryLoading,
+                    galleryError,
+                    galleryImagesLength: galleryImages.length,
+                    galleryImages: galleryImages.slice(0, 2),
+                  });
+                  return null;
+                })()}
                 {galleryLoading ? (
                   <div className="flex items-center justify-center h-64">
                     <p className="text-neutral-600">Loading gallery...</p>
