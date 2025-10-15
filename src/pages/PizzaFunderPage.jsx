@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo, useRef } from 'react';
+import React, { useEffect, useState, useMemo, useRef, useCallback } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { motion } from 'framer-motion';
 import { PortableText } from '@portabletext/react';
@@ -15,6 +15,7 @@ import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { createPortableTextComponents } from '../utils/portableTextComponents';
 import PrioritiesPie from '../components/crowdfunding/PrioritiesPie.jsx';
+import { ChevronRight } from 'lucide-react';
 
 /**
  * PizzaFunderPage - Modern, Sanity-powered pizza crowdfunding page
@@ -33,6 +34,7 @@ const PizzaFunderPage = () => {
   const [lastPledgeData, setLastPledgeData] = useState(null);
   const [activeTab, setActiveTab] = useState('story');
   const [selectedTier, setSelectedTier] = useState(null);
+  const [selectedEvent, setSelectedEvent] = useState(null);
   
   // Gallery state
   const [galleryImages, setGalleryImages] = useState([]);
@@ -60,6 +62,64 @@ const PizzaFunderPage = () => {
 
   // Portable Text components
   const portableComponents = useMemo(() => createPortableTextComponents(), []);
+
+  // Parse and filter upcoming events
+  const parseEventDate = useCallback((value) => {
+    if (!value) return null;
+    const iso = value.includes('T') ? value : `${value}T00:00:00`;
+    const date = new Date(iso);
+    return Number.isNaN(date.getTime()) ? null : date;
+  }, []);
+
+  const upcomingEvents = useMemo(() => {
+    const rawEvents = Array.isArray(campaignData?.events) ? campaignData.events : [];
+    const importedEvents = Array.isArray(campaignData?.featuredPublicEvents)
+      ? campaignData.featuredPublicEvents.map((ev) => ({ ...ev, _imported: true }))
+      : [];
+    const merged = [...rawEvents, ...importedEvents].filter(Boolean);
+    
+    if (!merged.length) return [];
+    
+    const seen = new Set();
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    return merged
+      .map((ev, index) => {
+        const identity = ev?._id || ev?._key || `${ev?.location || 'event'}-${ev?.startDate || index}`;
+        if (seen.has(identity)) return null;
+        seen.add(identity);
+        return {
+          ...ev,
+          _key: ev?._key || ev?._id || `event-${index}`,
+        };
+      })
+      .filter(Boolean)
+      .filter((ev) => {
+        const start = parseEventDate(ev.startDate);
+        if (!start) return false;
+        const end = parseEventDate(ev.endDate) || start;
+        const boundary = new Date(end);
+        boundary.setHours(23, 59, 59, 999);
+        return boundary >= today;
+      })
+      .sort((a, b) => {
+        const aStart = parseEventDate(a.startDate);
+        const bStart = parseEventDate(b.startDate);
+        if (!aStart && !bStart) return 0;
+        if (!aStart) return 1;
+        if (!bStart) return -1;
+        return aStart - bStart;
+      });
+  }, [campaignData, parseEventDate]);
+
+  const formatEventDate = useCallback((event) => {
+    const start = parseEventDate(event?.startDate);
+    if (!start) return event?.timingNote || '';
+    
+    const options = { weekday: 'short', month: 'short', day: 'numeric' };
+    return start.toLocaleDateString('en-US', options);
+  }, [parseEventDate]);
 
   // Fetch campaign data from Sanity
   useEffect(() => {
@@ -501,6 +561,74 @@ const PizzaFunderPage = () => {
         </motion.div>
       )}
 
+      {/* Upcoming Events Section */}
+      {upcomingEvents && upcomingEvents.length > 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="space-y-4"
+        >
+          <h2 className="text-3xl font-bold text-neutral-900">Upcoming Pizza Events</h2>
+          <p className="text-neutral-600">Join us at these pizza parties and pick up your pizzas!</p>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {upcomingEvents.slice(0, 4).map((event) => {
+              const dateLabel = formatEventDate(event);
+              const hasImage = event?.heroImage;
+              
+              return (
+                <Card
+                  key={event._key}
+                  className="overflow-hidden hover:shadow-lg transition-all cursor-pointer"
+                  onClick={() => setSelectedEvent(event)}
+                >
+                  {hasImage && (
+                    <div className="aspect-video w-full overflow-hidden bg-gradient-to-br from-orange-100 to-red-100">
+                      <img
+                        src={event.heroImage}
+                        alt={event.heroImageAlt || event.location}
+                        className="w-full h-full object-cover"
+                        loading="lazy"
+                      />
+                    </div>
+                  )}
+                  <div className="p-6 space-y-3">
+                    {dateLabel && (
+                      <p className="text-sm font-semibold uppercase tracking-wide text-orange-600">
+                        {dateLabel}
+                      </p>
+                    )}
+                    <h3 className="text-xl font-bold text-neutral-900">{event.location}</h3>
+                    {event.tagline && (
+                      <p className="text-sm text-neutral-600 italic">{event.tagline}</p>
+                    )}
+                    {event.timingNote && (
+                      <p className="text-sm text-neutral-700">{event.timingNote}</p>
+                    )}
+                    {event.foodType && (
+                      <span className="inline-block bg-orange-100 text-orange-800 text-xs font-semibold px-3 py-1 rounded-full">
+                        {event.foodType}
+                      </span>
+                    )}
+                    <div className="flex items-center text-orange-600 font-medium text-sm pt-2">
+                      <span>View Details</span>
+                      <ChevronRight className="h-4 w-4 ml-1" />
+                    </div>
+                  </div>
+                </Card>
+              );
+            })}
+          </div>
+          
+          {upcomingEvents.length > 4 && (
+            <p className="text-center text-neutral-600 text-sm">
+              And {upcomingEvents.length - 4} more events! Scroll down to see all upcoming pizza parties.
+            </p>
+          )}
+        </motion.div>
+      )}
+
       {/* Main Content Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         
@@ -527,9 +655,10 @@ const PizzaFunderPage = () => {
 
           <Card className="p-6 shadow-lg">
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-              <TabsList className="grid w-full grid-cols-5 mb-6">
+              <TabsList className="grid w-full grid-cols-6 mb-6">
                 <TabsTrigger value="story">Story</TabsTrigger>
                 <TabsTrigger value="goals">Goals</TabsTrigger>
+                <TabsTrigger value="events">Events</TabsTrigger>
                 <TabsTrigger value="faq">FAQ</TabsTrigger>
                 <TabsTrigger value="updates">Updates</TabsTrigger>
                 <TabsTrigger value="gallery">Gallery</TabsTrigger>
@@ -579,6 +708,78 @@ const PizzaFunderPage = () => {
                       <li>Create jobs in the community</li>
                     </ul>
                   </>
+                )}
+              </TabsContent>
+
+              {/* Events Tab */}
+              <TabsContent value="events" className="mt-0 space-y-4">
+                {upcomingEvents && upcomingEvents.length > 0 ? (
+                  <>
+                    <p className="text-neutral-700 mb-4">
+                      Join us at these pizza parties! These are great opportunities to pick up your pizzas and meet fellow pizza lovers.
+                    </p>
+                    <div className="space-y-3">
+                      {upcomingEvents.map((event) => {
+                        const dateLabel = formatEventDate(event);
+                        return (
+                          <Card
+                            key={event._key}
+                            className="overflow-hidden hover:shadow-md transition-shadow cursor-pointer"
+                            onClick={() => setSelectedEvent(event)}
+                          >
+                            <div className="p-4">
+                              <div className="flex items-start justify-between">
+                                <div className="flex-1">
+                                  {dateLabel && (
+                                    <p className="text-sm font-semibold uppercase tracking-wide text-orange-600 mb-1">
+                                      {dateLabel}
+                                    </p>
+                                  )}
+                                  <h4 className="font-bold text-lg text-neutral-900 mb-1">{event.location}</h4>
+                                  {event.tagline && (
+                                    <p className="text-sm text-neutral-600 italic mb-2">{event.tagline}</p>
+                                  )}
+                                  {event.timingNote && (
+                                    <p className="text-sm text-neutral-700">{event.timingNote}</p>
+                                  )}
+                                  {event.locationDetails && (
+                                    <p className="text-sm text-neutral-600 mt-1">📍 {event.locationDetails}</p>
+                                  )}
+                                </div>
+                                {event.foodType && (
+                                  <span className="inline-block bg-orange-100 text-orange-800 text-xs font-semibold px-3 py-1 rounded-full ml-4">
+                                    {event.foodType}
+                                  </span>
+                                )}
+                              </div>
+                              {event.summary && (
+                                <p className="text-sm text-neutral-600 mt-3 line-clamp-2">{event.summary}</p>
+                              )}
+                              {event.ticketsUrl && (
+                                <a
+                                  href={event.ticketsUrl}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  onClick={(e) => e.stopPropagation()}
+                                  className="inline-block mt-3 text-sm font-medium text-orange-600 hover:text-orange-700 underline"
+                                >
+                                  {event.ctaLabel || 'Get Tickets'}
+                                </a>
+                              )}
+                            </div>
+                          </Card>
+                        );
+                      })}
+                    </div>
+                  </>
+                ) : (
+                  <div className="text-center py-12">
+                    <div className="text-6xl mb-4">📅</div>
+                    <h3 className="text-xl font-semibold text-neutral-800 mb-2">Events Coming Soon!</h3>
+                    <p className="text-neutral-600">
+                      We'll announce pizza party dates and locations as we get closer to our goal. Stay tuned!
+                    </p>
+                  </div>
                 )}
               </TabsContent>
 
