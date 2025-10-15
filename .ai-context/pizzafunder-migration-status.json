@@ -1,0 +1,36 @@
+{
+  "pizzafunder": {
+    "status": "MIGRATED_TO_SUPABASE",
+    "migration_date": "2025-10-15",
+    "database": "supabase",
+    "DO_NOT_REVERT_TO_FIREBASE": true,
+    "api_endpoints": {
+      "status": "api/pizzafunder/status.js",
+      "pledge": "api/pizzafunder/pledge.js", 
+      "feedback": "api/pizzafunder/feedback.js"
+    },
+    "database_implementation": {
+      "type": "Supabase PostgreSQL",
+      "tables": [
+        "crowdfund_pledges",
+        "crowdfund_feedback", 
+        "crowdfund_aggregates"
+      ],
+      "schema_file": "supabase/pizzafunder-schema.sql",
+      "fix_script": "supabase/fix-rls-policies.sql"
+    },
+    "backup_files": {
+      "firebase_backups": [
+        "api/pizzafunder/status-firebase-backup.js",
+        "api/pizzafunder/pledge-firebase-backup.js",
+        "api/pizzafunder/feedback-firebase-backup.js"
+      ],
+      "note": "Backup files are for reference only. DO NOT copy back without explicit user request."
+    },
+    "documentation": [
+      "docs/DO-NOT-REVERT-TO-FIREBASE.md",
+      "docs/pizzafunder-supabase-migration.md",
+      "api/pizzafunder/README.md"
+    ]
+  }
+}

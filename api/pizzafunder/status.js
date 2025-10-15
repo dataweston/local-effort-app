@@ -1,7 +1,12 @@
 /**
  * GET /api/pizzafunder/status
  * Returns current pizza funding totals from Supabase
- * Replaces Firebase Firestore with Supabase Postgres
+ * 
+ * ⚠️ IMPORTANT - DO NOT REVERT TO FIREBASE
+ * This endpoint uses SUPABASE PostgreSQL (migrated Oct 15, 2025)
+ * See: docs/DO-NOT-REVERT-TO-FIREBASE.md
+ * Database: public.crowdfund_aggregates table
+ * DO NOT change to Firebase without explicit user request
  */
 
 const { getSupabase } = require('../../backend/api/supabaseClient');
