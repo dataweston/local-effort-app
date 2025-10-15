@@ -1,6 +1,9 @@
-# 📧 Pizza Funder Email Templates
+## 📧 Pizza Funder Email Templates
 
 Complete email system for sending Pizza Funder campaign updates via Brevo.
+
+**✨ NEW:** Automatic contact sync! Pizza backers are automatically added to Brevo when they pledge.  
+📖 **Setup Guide:** See `docs/brevo-integration.md`
 
 ## 🎯 What's Included
 
@@ -149,6 +152,7 @@ Duplicate any section block and increment variable names (EVENT_3, UPDATE_3, etc
 
 ## 📞 Support
 
+- **Brevo Integration:** See `../docs/brevo-integration.md` for automatic contact sync
 - **Technical Issues:** Check `PIZZAFUNDER-EMAIL-TEMPLATE-GUIDE.md`
 - **Step-by-Step Help:** Read `SIMPLE-BREVO-GUIDE.md`
 - **Quick Answers:** See `QUICK-REFERENCE.md`
@@ -158,6 +162,13 @@ Duplicate any section block and increment variable names (EVENT_3, UPDATE_3, etc
 
 ## 🎉 You're Ready!
 
+**Setup Brevo Auto-Sync (Recommended!):**
+1. Read `../docs/brevo-integration.md`
+2. Add `BREVO_API_KEY` and `BREVO_PIZZAFUNDER_LIST_IDS` to `.env`
+3. Test with `node scripts/test-brevo-integration.js`
+4. Now backers are automatically added when they pledge! 🎉
+
+**Send Email Campaigns:**
 1. Choose your method (web tool recommended)
 2. Get your data
 3. Upload template to Brevo
