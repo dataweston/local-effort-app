@@ -44,16 +44,22 @@ module.exports = async (req, res) => {
       longDescription: typeof d.longDescription === 'string' ? d.longDescription : null,
       longDescriptionBlocks: Array.isArray(d.longDescription) ? d.longDescription : null,
       images: (d.images || []).map((i) => i?.asset?.url).filter(Boolean),
-      price: d.price ?? 0,
-      salePrice: d.salePrice ?? null,
+      price: Math.round((d.price ?? 0) * 100), // Convert dollars to cents
+      salePrice: d.salePrice ? Math.round(d.salePrice * 100) : null, // Convert dollars to cents
       inventoryManaged: !!d.inventoryManaged,
       inventory: typeof d.inventory === 'number' ? d.inventory : null,
       squareItemId: d.squareItemId || null,
       squareVariationId: d.squareVariationId || null,
-      variants: Array.isArray(d.variants) ? d.variants : [],
-      addOns: Array.isArray(d.addOns) ? d.addOns : [],
+      variants: Array.isArray(d.variants) ? d.variants.map(v => ({
+        ...v,
+        price: v.price ? Math.round(v.price * 100) : 0 // Convert variant prices to cents
+      })) : [],
+      addOns: Array.isArray(d.addOns) ? d.addOns.map(a => ({
+        ...a,
+        additionalCost: a.additionalCost ? Math.round(a.additionalCost * 100) : 0 // Convert to cents
+      })) : [],
       offerDairyFree: d.offerDairyFree ?? false,
-      dairyFreeCost: d.dairyFreeCost ?? 0,
+      dairyFreeCost: d.dairyFreeCost ? Math.round(d.dairyFreeCost * 100) : 0, // Convert to cents
       stores: Array.isArray(d.stores) ? d.stores : [],
     }));
     res.status(200).json({ products });

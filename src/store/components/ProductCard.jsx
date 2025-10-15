@@ -20,6 +20,7 @@ export default function ProductCard({ product }) {
   const chosen = hasVariants ? product.variants[Math.max(0, Math.min(variantIdx, product.variants.length-1))] : null;
   
   // Calculate price with add-ons and dairy-free option
+  // Note: All prices are now in cents from the API
   const basePrice = chosen?.price ?? (product.salePrice ?? product.price);
   const addOnsTotal = hasAddOns 
     ? Object.keys(selectedAddOns).reduce((sum, idx) => {
@@ -30,7 +31,7 @@ export default function ProductCard({ product }) {
       }, 0)
     : 0;
   const dairyFreePrice = (isDairyFree && product.offerDairyFree) ? (product.dairyFreeCost || 0) : 0;
-  const price = basePrice + (addOnsTotal * 100) + (dairyFreePrice * 100);
+  const price = basePrice + addOnsTotal + dairyFreePrice;
   
   // Initialize default selected add-ons when details modal opens
   useEffect(() => {
@@ -288,7 +289,7 @@ export default function ProductCard({ product }) {
                               <span>{addon.name}</span>
                             </div>
                             <span className="text-neutral-600 font-mono text-xs">
-                              {addon.additionalCost > 0 ? `+$${addon.additionalCost.toFixed(2)}` : 'Free'}
+                              {addon.additionalCost > 0 ? `+$${(addon.additionalCost / 100).toFixed(2)}` : 'Free'}
                             </span>
                           </label>
                         ))}
@@ -310,7 +311,7 @@ export default function ProductCard({ product }) {
                           <span className="font-medium">Dairy-Free Option</span>
                         </div>
                         <span className="text-neutral-600 font-mono text-xs">
-                          {product.dairyFreeCost > 0 ? `+$${product.dairyFreeCost.toFixed(2)}` : 'Same price'}
+                          {product.dairyFreeCost > 0 ? `+$${(product.dairyFreeCost / 100).toFixed(2)}` : 'Same price'}
                         </span>
                       </label>
                     </div>
