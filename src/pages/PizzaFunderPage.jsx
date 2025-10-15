@@ -662,7 +662,7 @@ const PizzaFunderPage = () => {
                   <div className="text-6xl mb-4">🍕</div>
                   <h3 className="text-2xl font-bold text-neutral-900">Back This Project</h3>
                   <p className="text-neutral-700">
-                    Help us make amazing pizza for the community!
+                    Thank you for bringing authentic Local Pizza to the Midwest!
                   </p>
                   <Button
                     size="lg"
@@ -675,7 +675,7 @@ const PizzaFunderPage = () => {
                     }}
                     className="w-full text-lg py-6 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 shadow-lg"
                   >
-                    Make a Pledge
+                    I Want Pizza
                   </Button>
                 </div>
               </Card>
