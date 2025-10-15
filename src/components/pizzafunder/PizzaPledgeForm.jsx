@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '../ui/card';
 import { Button } from '../ui/button';
@@ -6,44 +6,170 @@ import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import { Textarea } from '../ui/textarea';
 import { Minus, Plus } from 'lucide-react';
+import { useSquarePayments } from '../../lib/useSquarePayments';
+import { useToast } from '../common/ToastProvider';
 
 /**
- * PizzaPledgeForm - Simple pledge form component
- * No Square integration here - just collects pledge details
+ * PizzaPledgeForm - Pledge form with Square payment integration
+ * Collects pledge details and processes payment via Square SDK
  */
-export const PizzaPledgeForm = ({ onPledge, loading = false }) => {
-  const [pizzaCount, setPizzaCount] = useState(1);
+export const PizzaPledgeForm = ({ onPledge, loading = false, selectedTier }) => {
+  const [pizzaCount, setPizzaCount] = useState(selectedTier?.pizzaCount || 1);
   const [funderName, setFunderName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [notes, setNotes] = useState('');
   const [rewardPreference, setRewardPreference] = useState('public pizza party');
+  
+  // Square payment state
+  const [cardReady, setCardReady] = useState(false);
+  const [cardError, setCardError] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const cardContainerRef = useRef(null);
+  const cardInstanceRef = useRef(null);
+  const cardInitRef = useRef(false);
 
-  const pricePerPizza = 20; // $20 per pizza
+  const { toast } = useToast();
+  const { payments, loading: paymentsLoading, error: paymentsError } = useSquarePayments();
+
+  const pricePerPizza = selectedTier?.amount ? selectedTier.amount / (selectedTier.pizzaCount || 1) : 20;
   const total = pizzaCount * pricePerPizza;
 
-  const handleSubmit = (e) => {
+  // Destroy card instance
+  const destroyCard = () => {
+    if (cardInstanceRef.current) {
+      try {
+        cardInstanceRef.current.destroy?.();
+        cardInstanceRef.current = null;
+      } catch (err) {
+        console.warn('Card destroy warning:', err);
+      }
+    }
+    cardInitRef.current = false;
+  };
+
+  // Initialize Square card when payments SDK is ready
+  useEffect(() => {
+    if (!payments || !cardContainerRef.current || cardInitRef.current || paymentsLoading || paymentsError) {
+      return;
+    }
+
+    const container = cardContainerRef.current;
+    let cancelled = false;
+    cardInitRef.current = true;
+    setCardError('');
+    setCardReady(false);
+
+    payments
+      .card()
+      .then((card) => {
+        if (!card) {
+          throw new Error('Square card component unavailable.');
+        }
+        if (cancelled) {
+          try {
+            card.destroy?.();
+          } catch (_) {
+            // ignore
+          }
+          return null;
+        }
+        cardInstanceRef.current = card;
+        return card.attach(container);
+      })
+      .then((result) => {
+        if (cancelled || result === null) {
+          return;
+        }
+        setCardReady(true);
+      })
+      .catch((err) => {
+        if (cancelled) {
+          return;
+        }
+        console.error('Card init failed:', err);
+        const message = err?.message || 'Unable to load the payment form.';
+        setCardError(message);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [payments, paymentsLoading, paymentsError]);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      destroyCard();
+    };
+  }, []);
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
     
+    if (submitting) return;
+
     if (!funderName.trim()) {
-      alert('Please enter your name');
+      toast({
+        title: 'Name required',
+        description: 'Please enter your name',
+        variant: 'destructive',
+      });
       return;
     }
 
     if (!email.trim()) {
-      alert('Please enter your email');
+      toast({
+        title: 'Email required',
+        description: 'Please enter your email',
+        variant: 'destructive',
+      });
       return;
     }
 
-    onPledge({
-      pizzaCount,
-      funderName: funderName.trim(),
-      email: email.trim(),
-      phone: phone.trim(),
-      notes: notes.trim(),
-      rewardPreference,
-      totalCents: total * 100,
-    });
+    if (!cardReady || !cardInstanceRef.current) {
+      toast({
+        title: 'Payment form not ready',
+        description: 'Please wait for the payment form to load',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setSubmitting(true);
+
+    try {
+      // Tokenize the card
+      const result = await cardInstanceRef.current.tokenize();
+      
+      if (result.status === 'OK') {
+        // Call the parent's onPledge with the token
+        await onPledge({
+          pizzaCount,
+          funderName: funderName.trim(),
+          email: email.trim(),
+          phone: phone.trim(),
+          notes: notes.trim(),
+          rewardPreference,
+          totalCents: Math.round(total * 100),
+          sourceId: result.token,
+          selectedTier: selectedTier || null,
+        });
+
+        // Success - parent will handle the toast and reset
+      } else {
+        throw new Error(result.errors?.[0]?.message || 'Payment tokenization failed');
+      }
+    } catch (error) {
+      console.error('Payment error:', error);
+      toast({
+        title: 'Payment failed',
+        description: error.message || 'Please try again',
+        variant: 'destructive',
+      });
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -151,8 +277,30 @@ export const PizzaPledgeForm = ({ onPledge, loading = false }) => {
               onChange={(e) => setNotes(e.target.value)}
               placeholder="Any dietary restrictions, delivery preferences, etc."
               rows={3}
-              disabled={loading}
+              disabled={loading || submitting}
             />
+          </div>
+
+          {/* Square Payment Card */}
+          <div className="space-y-2">
+            <Label htmlFor="pizza-card-container">Payment Details</Label>
+            <div
+              id="pizza-card-container"
+              ref={cardContainerRef}
+              className="border rounded-md p-4 min-h-[88px] bg-white"
+              aria-label="Card payment form"
+            >
+              {!cardReady && !cardError && !paymentsError && (
+                <p className="text-sm text-gray-500">
+                  {paymentsLoading
+                    ? 'Loading secure payment form...'
+                    : 'Preparing secure payment form...'}
+                </p>
+              )}
+              {(cardError || paymentsError) && (
+                <p className="text-sm text-red-600">{cardError || paymentsError}</p>
+              )}
+            </div>
           </div>
         </form>
       </CardContent>
@@ -162,9 +310,9 @@ export const PizzaPledgeForm = ({ onPledge, loading = false }) => {
           onClick={handleSubmit}
           className="w-full"
           size="lg"
-          disabled={loading}
+          disabled={loading || submitting || !cardReady || !!cardError || !!paymentsError}
         >
-          {loading ? 'Processing...' : `Pledge $${total} for ${pizzaCount} pizza${pizzaCount > 1 ? 's' : ''}`}
+          {submitting ? 'Processing...' : `Pledge $${total.toFixed(2)} for ${pizzaCount} pizza${pizzaCount > 1 ? 's' : ''}`}
         </Button>
       </CardFooter>
     </Card>
@@ -174,4 +322,9 @@ export const PizzaPledgeForm = ({ onPledge, loading = false }) => {
 PizzaPledgeForm.propTypes = {
   onPledge: PropTypes.func.isRequired,
   loading: PropTypes.bool,
+  selectedTier: PropTypes.shape({
+    amount: PropTypes.number,
+    pizzaCount: PropTypes.number,
+    title: PropTypes.string,
+  }),
 };

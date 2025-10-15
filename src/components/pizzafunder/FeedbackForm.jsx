@@ -38,8 +38,8 @@ export const FeedbackForm = ({ onSubmit, loading = false }) => {
       <CardHeader>
         <CardTitle>Share Your Pizza Love</CardTitle>
       </CardHeader>
-      <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <CardContent>
           {/* Rating */}
           <div className="space-y-2">
             <Label>How much did you love it?</Label>
@@ -91,18 +91,17 @@ export const FeedbackForm = ({ onSubmit, loading = false }) => {
               required
             />
           </div>
-        </form>
-      </CardContent>
-      <CardFooter>
-        <Button
-          type="submit"
-          onClick={handleSubmit}
-          className="w-full"
-          disabled={loading}
-        >
-          {loading ? 'Submitting...' : 'Share Feedback'}
-        </Button>
-      </CardFooter>
+        </CardContent>
+        <CardFooter>
+          <Button
+            type="submit"
+            className="w-full"
+            disabled={loading}
+          >
+            {loading ? 'Submitting...' : 'Share Feedback'}
+          </Button>
+        </CardFooter>
+      </form>
     </Card>
   );
 };
