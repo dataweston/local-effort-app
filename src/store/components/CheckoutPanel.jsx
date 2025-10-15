@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useCart } from '../cart/CartContext';
 
 export default function CheckoutPanel({ store = 'sale' }) {
-  const { items, subtotal, open, closeCart, clear } = useCart();
+  const { items, subtotal, open, closeCart, clear, remove, updateQty } = useCart();
   const [processing, setProcessing] = useState(false);
   const [error, setError] = useState('');
   const [name, setName] = useState('');
@@ -136,16 +136,54 @@ export default function CheckoutPanel({ store = 'sale' }) {
                   {i.image && <img src={i.image} alt="" className="w-12 h-12 object-cover rounded" />}
                   <div className="flex-1">
                     <div className="font-medium text-sm">{i.title}</div>
-                    <div className="text-xs text-neutral-600">Qty {i.qty} • ${(i.unitPrice/100).toFixed(2)}</div>
+                    <div className="text-xs text-neutral-600">${(i.unitPrice/100).toFixed(2)} each</div>
+                    <div className="flex items-center gap-2 mt-2">
+                      <button 
+                        type="button"
+                        onClick={() => updateQty(i.key, Math.max(0, i.qty - 1))} 
+                        className="h-7 w-7 rounded-full border border-neutral-300 text-sm font-semibold text-neutral-600 hover:border-neutral-400 hover:text-neutral-900"
+                        aria-label="Decrease quantity"
+                      >
+                        −
+                      </button>
+                      <span className="min-w-[2rem] text-center text-sm font-semibold">{i.qty}</span>
+                      <button 
+                        type="button"
+                        onClick={() => updateQty(i.key, i.qty + 1)} 
+                        className="h-7 w-7 rounded-full border border-neutral-300 text-sm font-semibold text-neutral-600 hover:border-neutral-400 hover:text-neutral-900"
+                        aria-label="Increase quantity"
+                      >
+                        +
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => remove(i.key)}
+                        className="ml-auto text-xs text-red-600 hover:text-red-800 underline"
+                        aria-label="Remove item"
+                      >
+                        Remove
+                      </button>
+                    </div>
                   </div>
                 </li>
               ))}
             </ul>
             <div className="mt-4 border-t pt-3">
-              <div className="flex justify-between text-sm">
+              <div className="flex justify-between items-center text-sm mb-2">
                 <span>Subtotal</span>
                 <span>${(subtotal/100).toFixed(2)}</span>
               </div>
+              <button
+                type="button"
+                onClick={() => {
+                  if (window.confirm('Are you sure you want to clear your cart?')) {
+                    clear();
+                  }
+                }}
+                className="text-xs text-red-600 hover:text-red-800 underline"
+              >
+                Clear cart
+              </button>
               <p className="text-xs text-neutral-500 mt-1">Tax calculated by Square.</p>
             </div>
             <form onSubmit={onSubmit} className="mt-4 space-y-3">
