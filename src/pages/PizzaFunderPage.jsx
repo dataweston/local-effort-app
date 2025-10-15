@@ -189,19 +189,32 @@ const PizzaFunderPage = () => {
         body: JSON.stringify(data), // data already includes sourceId from Square tokenization
       });
 
+      if (!res.ok) {
+        const result = await res.json().catch(() => ({ error: 'Failed to process pledge' }));
+        throw new Error(result.error || `Server error: ${res.status}`);
+      }
+
       const result = await res.json();
 
-      if (res.ok && result.success) {
+      if (result.success) {
+        const discountMsg = data.discountCode 
+          ? ` Discount code "${data.discountCode}" applied!`
+          : '';
+        
         toast({
           title: 'Thank you!',
-          description: result.message || 'Your pledge was successful!',
+          description: `Your pledge was successful!${discountMsg}`,
         });
 
         // Refresh status
-        const statusRes = await fetch('/api/pizzafunder/status');
-        if (statusRes.ok) {
-          const statusData = await statusRes.json();
-          setStatus(statusData);
+        try {
+          const statusRes = await fetch('/api/pizzafunder/status');
+          if (statusRes.ok) {
+            const statusData = await statusRes.json();
+            setStatus(statusData);
+          }
+        } catch (statusErr) {
+          console.error('[handlePledgeSubmit] Failed to refresh status:', statusErr);
         }
 
         // Reset form
@@ -211,12 +224,9 @@ const PizzaFunderPage = () => {
         throw new Error(result.error || 'Payment failed');
       }
     } catch (error) {
-      toast({
-        title: 'Payment failed',
-        description: error.message || 'Please try again',
-        variant: 'destructive',
-      });
-      throw error; // Re-throw so PizzaPledgeForm knows it failed
+      console.error('[handlePledgeSubmit] Error:', error);
+      // Re-throw so PizzaPledgeForm can handle showing the toast
+      throw error;
     } finally {
       setSubmitting((prev) => ({ ...prev, pledge: false }));
     }
