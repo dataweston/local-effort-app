@@ -289,6 +289,12 @@ const PizzaFunderPage = () => {
 
   // Lazy load gallery images when tab is activated
   useEffect(() => {
+    console.log('[PizzaFunder] Gallery useEffect triggered:', { 
+      activeTab, 
+      galleryLoaded: galleryLoadedRef.current, 
+      galleryLoading 
+    });
+
     if (activeTab !== 'gallery' || galleryLoadedRef.current || galleryLoading) return;
 
     let mounted = true;
@@ -303,8 +309,8 @@ const PizzaFunderPage = () => {
         
         // Fetch pizza and pie images from Cloudinary
         const [pizzaRes, pieRes] = await Promise.all([
-          fetch('/api/search-images?query=pizza'),
-          fetch('/api/search-images?query=pie'),
+          fetch('/api/search-images?query=pizza&per_page=50'),
+          fetch('/api/search-images?query=pie&per_page=50'),
         ]);
 
         if (!mounted) return;
@@ -327,7 +333,9 @@ const PizzaFunderPage = () => {
 
         console.log('[PizzaFunder] Gallery data:', { 
           pizzaCount: pizzaData.resources?.length || 0,
-          pieCount: pieData.resources?.length || 0
+          pieCount: pieData.resources?.length || 0,
+          pizzaData: pizzaData,
+          pieData: pieData
         });
 
         // Combine and deduplicate images
@@ -648,7 +656,13 @@ const PizzaFunderPage = () => {
                   </p>
                   <Button
                     size="lg"
-                    onClick={() => setShowPledgeForm(true)}
+                    onClick={() => {
+                      // Auto-select first reward tier if not already selected
+                      if (!selectedTier && campaignData?.rewardTiers?.[0]) {
+                        setSelectedTier(campaignData.rewardTiers[0]);
+                      }
+                      setShowPledgeForm(true);
+                    }}
                     className="w-full text-lg py-6 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 shadow-lg"
                   >
                     Make a Pledge
@@ -673,26 +687,23 @@ const PizzaFunderPage = () => {
             )}
 
             {/* How it Works */}
-            <Card className="p-6 shadow-lg">
-              <CardHeader>
-                <CardTitle className="text-2xl font-bold">How it Works</CardTitle>
+            <Card className="card space-y-4 p-6 ring-1 ring-neutral-200">
+              <CardHeader className="space-y-1 px-0 pt-0">
+                <CardTitle className="text-lg font-semibold text-slate-900">How it Works</CardTitle>
               </CardHeader>
-              <CardContent>
-                <ol className="list-decimal list-inside space-y-3 text-neutral-700">
+              <CardContent className="px-0 pb-0">
+                <ol className="list-decimal space-y-3 pl-5 text-sm leading-relaxed text-slate-700">
+                  <li>Order a pizza, or 2, or 5, or 10, or 15.</li>
+                  <li>Select your preferred pizzas setting.</li>
                   <li>
-                    <strong>Order by Dec 31, 2024</strong> – Pre-order your pizzas now through our crowdfunding campaign
+                    You&apos;ll be able to pick up your pizzas at public events for the next 2-3 months.
+                    We&apos;ll send you updates on all the pizza party fun, including private/ticketed events only for supporters.
                   </li>
                   <li>
-                    <strong>We'll make them in January 2025</strong> – Once we reach our goal, we'll start baking
+                    For delivery, we ask for a minimum of 5 pizzas. We will reach out to schedule a delivery time.
                   </li>
                   <li>
-                    <strong>Pick up fresh on event day</strong> – Get your hot, delicious pizzas at the designated pickup location
-                  </li>
-                  <li>
-                    <strong>All or nothing</strong> – If we don't reach the goal, you won't be charged
-                  </li>
-                  <li>
-                    <strong>Support local</strong> – Your order helps bring community together through great food
+                    We will cook the pizzas at your home with a minimum order of 15 pizzas. We&apos;ll reach out to schedule a time.
                   </li>
                 </ol>
               </CardContent>

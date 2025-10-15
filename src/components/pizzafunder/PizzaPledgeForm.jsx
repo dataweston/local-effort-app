@@ -20,6 +20,7 @@ export const PizzaPledgeForm = ({ onPledge, loading = false, selectedTier }) => 
   const [phone, setPhone] = useState('');
   const [notes, setNotes] = useState('');
   const [rewardPreference, setRewardPreference] = useState('public pizza party');
+  const [discountCode, setDiscountCode] = useState('');
   
   // Square payment state
   const [cardReady, setCardReady] = useState(false);
@@ -33,7 +34,13 @@ export const PizzaPledgeForm = ({ onPledge, loading = false, selectedTier }) => 
   const { payments, loading: paymentsLoading, error: paymentsError } = useSquarePayments();
 
   const pricePerPizza = selectedTier?.amount ? selectedTier.amount / (selectedTier.pizzaCount || 1) : 20;
-  const total = pizzaCount * pricePerPizza;
+  const baseTotal = pizzaCount * pricePerPizza;
+  
+  // Apply discount if valid code entered
+  const validDiscountCode = 'since2022';
+  const isDiscountValid = discountCode.toLowerCase().trim() === validDiscountCode;
+  const discountAmount = isDiscountValid ? baseTotal : 0;
+  const total = baseTotal - discountAmount;
 
   // Destroy card instance
   const destroyCard = () => {
@@ -152,6 +159,9 @@ export const PizzaPledgeForm = ({ onPledge, loading = false, selectedTier }) => 
           notes: notes.trim(),
           rewardPreference,
           totalCents: Math.round(total * 100),
+          baseTotalCents: Math.round(baseTotal * 100),
+          discountCode: isDiscountValid ? discountCode.trim() : null,
+          discountAmount: isDiscountValid ? Math.round(discountAmount * 100) : 0,
           sourceId: result.token,
           selectedTier: selectedTier || null,
         });
@@ -281,6 +291,46 @@ export const PizzaPledgeForm = ({ onPledge, loading = false, selectedTier }) => 
             />
           </div>
 
+          {/* Discount Code (optional) */}
+          <div className="space-y-2">
+            <Label htmlFor="discountCode">Discount Code (optional)</Label>
+            <Input
+              id="discountCode"
+              value={discountCode}
+              onChange={(e) => setDiscountCode(e.target.value)}
+              placeholder="Enter discount code"
+              disabled={loading || submitting}
+            />
+            {isDiscountValid && (
+              <p className="text-sm text-green-600 font-semibold">
+                ✓ 100% discount applied! You'll receive a complimentary pledge confirmation.
+              </p>
+            )}
+            {discountCode && !isDiscountValid && (
+              <p className="text-sm text-amber-600">
+                Invalid discount code
+              </p>
+            )}
+          </div>
+
+          {/* Total with Discount Display */}
+          {isDiscountValid && (
+            <div className="p-4 bg-green-50 border border-green-200 rounded-md">
+              <div className="flex justify-between text-sm mb-1">
+                <span>Subtotal:</span>
+                <span className="line-through text-neutral-500">${baseTotal.toFixed(2)}</span>
+              </div>
+              <div className="flex justify-between text-sm mb-1">
+                <span className="text-green-700">Discount ({validDiscountCode}):</span>
+                <span className="text-green-700">-${discountAmount.toFixed(2)}</span>
+              </div>
+              <div className="flex justify-between text-lg font-bold border-t border-green-300 pt-2 mt-2">
+                <span>Total:</span>
+                <span className="text-green-700">${total.toFixed(2)}</span>
+              </div>
+            </div>
+          )}
+
           {/* Square Payment Card */}
           <div className="space-y-2">
             <Label htmlFor="pizza-card-container">Payment Details</Label>
@@ -312,7 +362,12 @@ export const PizzaPledgeForm = ({ onPledge, loading = false, selectedTier }) => 
           size="lg"
           disabled={loading || submitting || !cardReady || !!cardError || !!paymentsError}
         >
-          {submitting ? 'Processing...' : `Pledge $${total.toFixed(2)} for ${pizzaCount} pizza${pizzaCount > 1 ? 's' : ''}`}
+          {submitting 
+            ? 'Processing...' 
+            : isDiscountValid 
+              ? `Confirm Pledge - FREE (${pizzaCount} pizza${pizzaCount > 1 ? 's' : ''})`
+              : `Pledge $${total.toFixed(2)} for ${pizzaCount} pizza${pizzaCount > 1 ? 's' : ''}`
+          }
         </Button>
       </CardFooter>
     </Card>

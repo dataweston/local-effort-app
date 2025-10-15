@@ -123,7 +123,7 @@ alter table public.crowdfund_pledges enable row level security;
 alter table public.crowdfund_feedback enable row level security;
 alter table public.crowdfund_aggregates enable row level security;
 
--- Pledges: Allow service role full access, public can read anonymized data
+-- Pledges: Allow service role full access, public can insert and read
 create policy "Service role can manage pledges"
   on public.crowdfund_pledges
   for all
@@ -131,11 +131,17 @@ create policy "Service role can manage pledges"
   using (true)
   with check (true);
 
-create policy "Public can view pledge count"
+create policy "Public can view pledges"
   on public.crowdfund_pledges
   for select
   to anon, authenticated
-  using (true); -- Individual pledges visible but email/phone protected by select
+  using (true);
+
+create policy "Public can insert pledges"
+  on public.crowdfund_pledges
+  for insert
+  to anon, authenticated
+  with check (true);
 
 -- Feedback: Public can read and insert
 create policy "Public can view feedback"
@@ -226,8 +232,7 @@ $$ language plpgsql stable;
 
 -- Grant necessary permissions to authenticated and anon roles
 grant usage on schema public to anon, authenticated;
-grant select on public.crowdfund_pledges to anon, authenticated;
-grant select on public.crowdfund_feedback to anon, authenticated;
+grant select, insert on public.crowdfund_pledges to anon, authenticated;
 grant select, insert on public.crowdfund_feedback to anon, authenticated;
 grant select on public.crowdfund_aggregates to anon, authenticated;
 
