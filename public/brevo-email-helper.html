@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pizza Funder Email Data Generator</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%);
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            padding: 32px;
+        }
+        
+        h1 {
+            color: #ea580c;
+            font-size: 32px;
+            margin-bottom: 8px;
+        }
+        
+        .subtitle {
+            color: #78716c;
+            margin-bottom: 24px;
+        }
+        
+        .section {
+            margin-bottom: 32px;
+        }
+        
+        .section-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #1c1917;
+            margin-bottom: 16px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #fed7aa;
+        }
+        
+        .button {
+            background: linear-gradient(135deg, #ea580c 0%, #dc2626 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        
+        .button:hover {
+            transform: translateY(-2px);
+        }
+        
+        .button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .output-box {
+            background: #fafaf9;
+            border: 2px solid #e7e5e4;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 16px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .output-box pre {
+            margin: 0;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        
+        .copy-button {
+            background: white;
+            border: 2px solid #ea580c;
+            color: #ea580c;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 12px;
+        }
+        
+        .copy-button:hover {
+            background: #fff7ed;
+        }
+        
+        .status {
+            padding: 12px;
+            border-radius: 6px;
+            margin-top: 12px;
+            font-size: 14px;
+        }
+        
+        .status.success {
+            background: #dcfce7;
+            color: #166534;
+            border: 1px solid #86efac;
+        }
+        
+        .status.error {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fca5a5;
+        }
+        
+        .status.loading {
+            background: #dbeafe;
+            color: #1e40af;
+            border: 1px solid #93c5fd;
+        }
+        
+        .variable-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 16px;
+        }
+        
+        .variable-table th {
+            background: #f5f5f4;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            border-bottom: 2px solid #e7e5e4;
+        }
+        
+        .variable-table td {
+            padding: 10px 12px;
+            border-bottom: 1px solid #e7e5e4;
+        }
+        
+        .variable-table tr:hover {
+            background: #fafaf9;
+        }
+        
+        .help-text {
+            font-size: 14px;
+            color: #78716c;
+            margin-top: 8px;
+        }
+        
+        .pizza-emoji {
+            font-size: 48px;
+            text-align: center;
+            margin-bottom: 16px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="pizza-emoji">🍕</div>
+        <h1>Pizza Funder Email Data Generator</h1>
+        <p class="subtitle">Automatically fetch data from your API and generate Brevo variables</p>
+        
+        <!-- Step 1: Fetch Data -->
+        <div class="section">
+            <h2 class="section-title">Step 1: Fetch Current Data</h2>
+            <button class="button" onclick="fetchData()">Fetch Latest Pizza Data</button>
+            <p class="help-text">This will fetch current stats from your live website</p>
+            <div id="fetchStatus"></div>
+        </div>
+        
+        <!-- Step 2: View Variables -->
+        <div class="section" id="variablesSection" style="display: none;">
+            <h2 class="section-title">Step 2: Brevo Variables (Copy These!)</h2>
+            <table class="variable-table" id="variableTable"></table>
+            <button class="copy-button" onclick="copyVariables()">📋 Copy All Variables as JSON</button>
+        </div>
+        
+        <!-- Step 3: JSON Output -->
+        <div class="section" id="jsonSection" style="display: none;">
+            <h2 class="section-title">Step 3: JSON for Import</h2>
+            <p class="help-text">Copy this and paste into Brevo's JSON import (if available)</p>
+            <div class="output-box">
+                <pre id="jsonOutput"></pre>
+            </div>
+            <button class="copy-button" onclick="copyJSON()">📋 Copy JSON</button>
+        </div>
+        
+        <!-- Step 4: Instructions -->
+        <div class="section" id="instructionsSection" style="display: none;">
+            <h2 class="section-title">Step 4: Use in Brevo</h2>
+            <ol style="line-height: 1.8; color: #44403c; margin-left: 20px;">
+                <li>Log into Brevo and create a new email campaign</li>
+                <li>Upload the template from <code>emails/pizzafunder-update-template.html</code></li>
+                <li>In the campaign settings, add each variable from the table above</li>
+                <li>Or use the JSON import feature if Brevo supports it</li>
+                <li>Send a test email to yourself first!</li>
+                <li>When ready, send to your pizza backers list 🎉</li>
+            </ol>
+        </div>
+    </div>
+    
+    <script>
+        let brevoVars = {};
+        
+        async function fetchData() {
+            const statusDiv = document.getElementById('fetchStatus');
+            statusDiv.innerHTML = '<div class="status loading">⏳ Fetching data from API...</div>';
+            
+            try {
+                // Fetch status from API
+                const statusRes = await fetch('/api/pizzafunder/status');
+                if (!statusRes.ok) {
+                    throw new Error(`API returned ${statusRes.status}`);
+                }
+                const status = await statusRes.json();
+                
+                // Calculate progress
+                const progressPercent = Math.round((status.pizzas / status.goal) * 100);
+                const remaining = status.goal - status.pizzas;
+                
+                // Build variables object
+                brevoVars = {
+                    PIZZAS_SOLD: status.pizzas.toString(),
+                    BACKERS_COUNT: status.backers.toString(),
+                    GOAL: status.goal.toString(),
+                    PROGRESS_PERCENT: progressPercent.toString(),
+                    REMAINING: remaining.toString(),
+                };
+                
+                // Try to fetch Sanity data (optional)
+                try {
+                    const sanityQuery = encodeURIComponent(`*[_type == "crowdfundingCampaign" && slug.current == "local-pizza-by-local-effort-let-s-make-1000-pizzas"][0]{
+                        "events": featuredPublicEvents[0..1]->{ 
+                            location,
+                            tagline,
+                            startDate,
+                            timingNote,
+                            foodType,
+                            locationDetails
+                        },
+                        "updates": updates[]->{ 
+                            title, 
+                            publishedAt, 
+                            body
+                        } | order(publishedAt desc)[0..1]
+                    }`);
+                    
+                    const sanityRes = await fetch(`/api/sanity-query?query=${sanityQuery}`);
+                    if (sanityRes.ok) {
+                        const sanityData = await sanityRes.json();
+                        
+                        // Add events if available
+                        if (sanityData?.events?.[0]) {
+                            const event1 = sanityData.events[0];
+                            brevoVars.EVENT_1_TITLE = event1.location || '';
+                            brevoVars.EVENT_1_LOCATION = event1.locationDetails || event1.location || '';
+                            brevoVars.EVENT_1_DATE = event1.timingNote || formatDate(event1.startDate) || '';
+                            brevoVars.EVENT_1_TAGLINE = event1.tagline || '';
+                            brevoVars.EVENT_1_FOOD_TYPE = event1.foodType || 'Pizza';
+                        }
+                        
+                        if (sanityData?.events?.[1]) {
+                            const event2 = sanityData.events[1];
+                            brevoVars.EVENT_2_TITLE = event2.location || '';
+                            brevoVars.EVENT_2_LOCATION = event2.locationDetails || event2.location || '';
+                            brevoVars.EVENT_2_DATE = event2.timingNote || formatDate(event2.startDate) || '';
+                            brevoVars.EVENT_2_TAGLINE = event2.tagline || '';
+                            brevoVars.EVENT_2_FOOD_TYPE = event2.foodType || 'Pizza';
+                        }
+                        
+                        // Add updates if available
+                        if (sanityData?.updates?.[0]) {
+                            const update1 = sanityData.updates[0];
+                            brevoVars.UPDATE_1_TITLE = update1.title || '';
+                            brevoVars.UPDATE_1_DATE = formatLongDate(update1.publishedAt) || '';
+                            brevoVars.UPDATE_1_EXCERPT = extractText(update1.body).substring(0, 150) + '...';
+                            brevoVars.UPDATE_1_LINK = 'https://localeffortfood.com/pizzafunder#updates';
+                        }
+                        
+                        if (sanityData?.updates?.[1]) {
+                            const update2 = sanityData.updates[1];
+                            brevoVars.UPDATE_2_TITLE = update2.title || '';
+                            brevoVars.UPDATE_2_DATE = formatLongDate(update2.publishedAt) || '';
+                            brevoVars.UPDATE_2_EXCERPT = extractText(update2.body).substring(0, 150) + '...';
+                            brevoVars.UPDATE_2_LINK = 'https://localeffortfood.com/pizzafunder#updates';
+                        }
+                    }
+                } catch (sanityErr) {
+                    console.log('Could not fetch Sanity data:', sanityErr);
+                }
+                
+                // Show success
+                statusDiv.innerHTML = `<div class="status success">✅ Successfully fetched data! Found ${status.pizzas} pizzas and ${status.backers} backers.</div>`;
+                
+                // Display variables
+                displayVariables();
+                
+            } catch (error) {
+                statusDiv.innerHTML = `<div class="status error">❌ Error: ${error.message}<br><br>
+                    Make sure you're viewing this page through the dev server (localhost:5173 or localeffortfood.com)</div>`;
+            }
+        }
+        
+        function formatDate(dateString) {
+            if (!dateString) return '';
+            const date = new Date(dateString);
+            const options = { weekday: 'long', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' };
+            return date.toLocaleDateString('en-US', options);
+        }
+        
+        function formatLongDate(dateString) {
+            if (!dateString) return '';
+            const date = new Date(dateString);
+            const options = { year: 'numeric', month: 'long', day: 'numeric' };
+            return date.toLocaleDateString('en-US', options);
+        }
+        
+        function extractText(blocks) {
+            if (!blocks || !Array.isArray(blocks)) return '';
+            return blocks
+                .filter(block => block._type === 'block')
+                .map(block => block.children?.map(child => child.text).join('') || '')
+                .join(' ');
+        }
+        
+        function displayVariables() {
+            const table = document.getElementById('variableTable');
+            const jsonOutput = document.getElementById('jsonOutput');
+            
+            // Build table
+            let html = '<thead><tr><th>Variable Name</th><th>Value</th><th>Action</th></tr></thead><tbody>';
+            Object.entries(brevoVars).forEach(([key, value]) => {
+                html += `
+                    <tr>
+                        <td><strong>${key}</strong></td>
+                        <td>${value}</td>
+                        <td><button class="copy-button" onclick="copyToClipboard('${value}')" style="margin: 0; padding: 4px 8px; font-size: 12px;">Copy</button></td>
+                    </tr>
+                `;
+            });
+            html += '</tbody>';
+            table.innerHTML = html;
+            
+            // Build JSON
+            const jsonFormatted = JSON.stringify(brevoVars, null, 2);
+            jsonOutput.textContent = jsonFormatted;
+            
+            // Show sections
+            document.getElementById('variablesSection').style.display = 'block';
+            document.getElementById('jsonSection').style.display = 'block';
+            document.getElementById('instructionsSection').style.display = 'block';
+        }
+        
+        function copyVariables() {
+            const json = JSON.stringify(brevoVars, null, 2);
+            copyToClipboard(json);
+            alert('✅ Copied to clipboard! Paste this into your Brevo campaign.');
+        }
+        
+        function copyJSON() {
+            const json = JSON.stringify(brevoVars, null, 2);
+            copyToClipboard(json);
+            alert('✅ JSON copied to clipboard!');
+        }
+        
+        function copyToClipboard(text) {
+            const textarea = document.createElement('textarea');
+            textarea.value = text;
+            document.body.appendChild(textarea);
+            textarea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textarea);
+        }
+    </script>
+</body>
+</html>
