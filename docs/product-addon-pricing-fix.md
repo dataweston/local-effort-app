@@ -1,7 +1,8 @@
-# Product Add-On Pricing Fix
+# Product Add-On Pricing Fix (CORRECTED)
 
 **Date:** October 15, 2024  
 **Issue:** Pizza topping add-ons showing as hundreds of dollars (e.g., $300 instead of $3.00)  
+**Updated:** Reverted incorrect fix after discovering all prices already in cents
 **Files Modified:** `api/store/products.js`, `src/store/components/ProductCard.jsx`
 
 ## Problem Description
@@ -10,157 +11,119 @@ Add-ons for products on `/happy-monday` and `/tiny-diner` pages were displaying 
 - Expected: `+$3.00` for extra toppings
 - Actual: `+$300.00` 
 
-## Root Cause
+## Root Cause (CORRECTED UNDERSTANDING)
 
-**Currency Unit Mismatch**: Inconsistency between how prices were stored in Sanity vs. how they were used in the frontend.
+**IMPORTANT DISCOVERY**: The `PriceUsdInput` component in Sanity Studio **already stores ALL prices in cents**.
 
-### The Confusion
+### How PriceUsdInput Works
 
-1. **Sanity Schema** (`studio/schemaTypes/product.js`):
-   - Stores ALL prices in **dollars (USD)**
-   - `price`: "Enter dollars (USD)"
-   - `additionalCost`: "Extra cost in dollars (USD)"
-   - `dairyFreeCost`: "Extra cost for dairy-free option in dollars (USD)"
-
-2. **Frontend Expectation** (`ProductCard.jsx`):
-   - Expected ALL prices in **cents**
-   - Line 73: `const formatted = useMemo(() => `$${(price / 100).toFixed(2)}`, [price]);`
-   - Line 183: `${(product.price/100).toFixed(2)}`
-
-3. **API Behavior** (Before Fix):
-   - Passed prices through **without conversion**
-   - Sent dollars from Sanity directly to frontend
-   - Frontend expected cents → prices appeared 100x too small
-
-4. **The Double Conversion Bug**:
-   ```jsx
-   // ProductCard.jsx (BEFORE)
-   const price = basePrice + (addOnsTotal * 100) + (dairyFreePrice * 100);
-   ```
-   - `basePrice` was in dollars (e.g., 15 for $15)
-   - `addOnsTotal` was in dollars (e.g., 3 for $3)
-   - Multiplied by 100: 3 × 100 = 300
-   - Added to basePrice (dollars): 15 + 300 = 315
-   - Displayed as: $315 / 100 = $3.15 ❌ (Wrong!)
-   - But wait - this would make $3.15, not $300...
-
-5. **The REAL Issue**:
-   - Display code for add-ons was showing raw value:
-   ```jsx
-   // BEFORE
-   {addon.additionalCost > 0 ? `+$${addon.additionalCost.toFixed(2)}` : 'Free'}
-   ```
-   - If `additionalCost` was supposed to be in cents (300) but displayed as dollars:
-   - Result: `+$300.00` ❌
-
-## Solution
-
-**Standardize on Cents**: Convert all prices from dollars to cents in the API, so the entire frontend works with cents consistently.
-
-### Changes Made
-
-#### 1. **API Conversion** (`api/store/products.js`)
-
-Convert all dollar values to cents when mapping Sanity data:
-
+From `studio/components/PriceUsdInput.jsx`:
 ```javascript
-const products = (docs || []).map((d) => ({
-  // ... other fields
-  price: Math.round((d.price ?? 0) * 100), // Convert dollars to cents
-  salePrice: d.salePrice ? Math.round(d.salePrice * 100) : null,
-  variants: Array.isArray(d.variants) ? d.variants.map(v => ({
-    ...v,
-    price: v.price ? Math.round(v.price * 100) : 0 // Convert variant prices
-  })) : [],
-  addOns: Array.isArray(d.addOns) ? d.addOns.map(a => ({
-    ...a,
-    additionalCost: a.additionalCost ? Math.round(a.additionalCost * 100) : 0 // ✅ FIX
-  })) : [],
-  offerDairyFree: d.offerDairyFree ?? false,
-  dairyFreeCost: d.dairyFreeCost ? Math.round(d.dairyFreeCost * 100) : 0, // ✅ FIX
-}));
+// Displays cents as dollars
+const toDisplay = (v) => (typeof v === 'number' ? (v / 100).toFixed(2) : '')
+
+// Stores dollars as cents
+const cents = Math.round(num * 100)
+onChange(set(cents))
 ```
 
-**Why `Math.round()`?**
-- Prevents floating point precision issues (e.g., 3.00 * 100 = 299.99999999)
-- Ensures integer cent values
+**What this means:**
+- User enters `$13.00` in Sanity Studio
+- PriceUsdInput stores `1300` (cents) in the database
+- When reading, it displays `1300 / 100 = $13.00`
 
-#### 2. **ProductCard Price Calculation** (`src/store/components/ProductCard.jsx`)
+### Which Fields Use PriceUsdInput?
 
-Remove double multiplication since values are already in cents:
-
+From `studio/schemaTypes/product.js`:
 ```javascript
-// BEFORE (Wrong - multiplied cents by 100)
-const price = basePrice + (addOnsTotal * 100) + (dairyFreePrice * 100);
+// Main price - USES PriceUsdInput (stored in cents)
+{ name: 'price', components: { input: PriceUsdInput } }
 
-// AFTER (Correct - all values already in cents)
+// Sale price - USES PriceUsdInput (stored in cents)
+{ name: 'salePrice', components: { input: PriceUsdInput } }
+
+// Add-on cost - USES PriceUsdInput (stored in cents)
+{ name: 'additionalCost', components: { input: PriceUsdInput } }
+
+// Dairy-free cost - USES PriceUsdInput (stored in cents)
+{ name: 'dairyFreeCost', components: { input: PriceUsdInput } }
+
+// Variant prices - ALSO stored in cents (same pattern)
+```
+
+**Conclusion:** ALL prices in Sanity are stored in cents, not dollars!
+
+## The Actual Bug
+
+The original bug was NOT about currency conversion. It was about incorrect field access:
+
+### Wrong Code (Original Bug)
+```javascript
+// Trying to multiply cents by 100 AGAIN
+const price = basePrice + (addOnsTotal * 100) + (dairyFreePrice * 100);
+```
+
+This caused:
+- basePrice: `1300` cents ($13.00) ✅ Correct
+- addOnsTotal: `300` cents ($3.00)
+- Multiplied: `300 * 100 = 30000` cents = $300.00 ❌ Wrong!
+- Total: `1300 + 30000 = 31300` cents = $313.00 ❌ Wrong!
+
+## Solution (CORRECTED)
+
+### Fix 1: Remove Double Multiplication
+
+**API - No Conversion Needed:**
+```javascript
+// BEFORE (WRONG - was converting cents to cents*100)
+price: Math.round((d.price ?? 0) * 100),
+addOns: d.addOns.map(a => ({
+  ...a,
+  additionalCost: Math.round((a.additionalCost ?? 0) * 100)
+}))
+
+// AFTER (CORRECT - pass through cents as-is)
+price: d.price ?? 0,  // Already in cents from Sanity
+addOns: d.addOns // Already in cents from Sanity
+```
+
+**ProductCard - Keep Division by 100:**
+```javascript
+// Display (converts cents to dollars for UI)
+{addon.additionalCost > 0 ? `+$${(addon.additionalCost / 100).toFixed(2)}` : 'Free'}
+
+// Calculation (all values in cents, no conversion needed)
 const price = basePrice + addOnsTotal + dairyFreePrice;
 ```
 
-#### 3. **Add-On Display** (`ProductCard.jsx` line ~291)
+## Data Flow (CORRECTED)
 
-Convert cents to dollars for display:
+### Correct Flow
+1. **Sanity Studio**: User enters `$3.00`
+2. **PriceUsdInput**: Stores `300` (cents)
+3. **Sanity Database**: Contains `300` (cents)
+4. **API**: Passes through `300` (cents) unchanged
+5. **ProductCard calculation**: `300` (cents)
+6. **ProductCard display**: `300 / 100 = $3.00` ✅
 
-```jsx
-// BEFORE (Displayed raw cents as dollars)
-{addon.additionalCost > 0 ? `+$${addon.additionalCost.toFixed(2)}` : 'Free'}
-
-// AFTER (Convert cents to dollars)
-{addon.additionalCost > 0 ? `+$${(addon.additionalCost / 100).toFixed(2)}` : 'Free'}
-```
-
-#### 4. **Dairy-Free Display** (`ProductCard.jsx` line ~315)
-
-Same fix for dairy-free option:
-
-```jsx
-// BEFORE
-{product.dairyFreeCost > 0 ? `+$${product.dairyFreeCost.toFixed(2)}` : 'Same price'}
-
-// AFTER
-{product.dairyFreeCost > 0 ? `+$${(product.dairyFreeCost / 100).toFixed(2)}` : 'Same price'}
-```
-
-## Example Flow
-
-### Before Fix
-1. Sanity: `additionalCost: 3` (dollars)
-2. API: `additionalCost: 3` (passed through)
-3. ProductCard display: `+$3.00` (accidentally correct in display)
-4. ProductCard calculation: `price = 1500 + (3 * 100) = 1800` 
-5. Final display: `$18.00` (correct)
-6. **BUT** if we tried to display additionalCost directly: `+$300.00` ❌
-
-Wait, this doesn't match the bug... Let me reconsider.
-
-### Actual Bug (Re-analyzed)
-
-The bug was likely that the API was already converting to cents somewhere, making:
-1. Sanity: `additionalCost: 3.00` (dollars)
-2. Some previous code converted: `additionalCost: 300` (cents)
-3. ProductCard display: `+$${300.toFixed(2)}` = `+$300.00` ❌
-4. ProductCard calculation: `price = 1500 + (300 * 100) = 31500`
-5. Final display: `$315.00` ❌
-
-### After Fix
-1. Sanity: `additionalCost: 3.00` (dollars)
-2. API converts: `additionalCost: 300` (cents) ✅
-3. ProductCard display: `+$${(300 / 100).toFixed(2)}` = `+$3.00` ✅
-4. ProductCard calculation: `price = 1500 + 300 = 1800` ✅
-5. Final display: `$18.00` ✅
+### What Was Wrong
+1. Sanity Database: `300` cents ✅
+2. API: `300 * 100 = 30000` cents ❌ (WRONG - removed this)
+3. ProductCard calculation: `30000` cents
+4. ProductCard display: `30000 / 100 = $300.00` ❌
 
 ## Testing Checklist
 
-- [ ] Verify base product prices display correctly (e.g., $15.00)
-- [ ] Verify add-on prices display correctly (e.g., +$3.00, not +$300.00)
-- [ ] Verify dairy-free option prices display correctly
+- [x] Verify base product prices display correctly (e.g., $13.00, not $1300.00)
+- [x] Verify add-on prices display correctly (e.g., +$3.00, not +$300.00)  
+- [x] Verify dairy-free option prices display correctly
 - [ ] Test total price calculation with multiple add-ons
 - [ ] Test total price with add-ons + dairy-free option
 - [ ] Verify sale prices work correctly
 - [ ] Test variant prices
 - [ ] Add item to cart and verify price is correct
 - [ ] Check checkout panel shows correct unit prices
-- [ ] Verify Square payment sends correct amounts
+- [ ] Verify Square payment sends correct amounts (cents)
 
 ## Prevention
 
