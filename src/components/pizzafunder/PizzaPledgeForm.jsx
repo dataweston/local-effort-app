@@ -42,6 +42,17 @@ export const PizzaPledgeForm = ({ onPledge, loading = false, selectedTier }) => 
   const discountAmount = isDiscountValid ? baseTotal : 0;
   const total = baseTotal - discountAmount;
 
+  // Helper function to show toast safely
+  const showToast = (title, description, variant = undefined) => {
+    try {
+      if (toast && typeof toast === 'function') {
+        toast({ title, description, variant });
+      }
+    } catch (err) {
+      console.error('Toast error:', err);
+    }
+  };
+
   // Destroy card instance
   const destroyCard = () => {
     if (cardInstanceRef.current) {
@@ -117,29 +128,17 @@ export const PizzaPledgeForm = ({ onPledge, loading = false, selectedTier }) => 
     if (submitting) return;
 
     if (!funderName.trim()) {
-      toast({
-        title: 'Name required',
-        description: 'Please enter your name',
-        variant: 'destructive',
-      });
+      showToast('Name required', 'Please enter your name', 'destructive');
       return;
     }
 
     if (!email.trim()) {
-      toast({
-        title: 'Email required',
-        description: 'Please enter your email',
-        variant: 'destructive',
-      });
+      showToast('Email required', 'Please enter your email', 'destructive');
       return;
     }
 
     if (!cardReady || !cardInstanceRef.current) {
-      toast({
-        title: 'Payment form not ready',
-        description: 'Please wait for the payment form to load',
-        variant: 'destructive',
-      });
+      showToast('Payment form not ready', 'Please wait for the payment form to load', 'destructive');
       return;
     }
 
@@ -149,34 +148,32 @@ export const PizzaPledgeForm = ({ onPledge, loading = false, selectedTier }) => 
       // Tokenize the card
       const result = await cardInstanceRef.current.tokenize();
       
-      if (result.status === 'OK') {
-        // Call the parent's onPledge with the token
-        await onPledge({
-          pizzaCount,
-          funderName: funderName.trim(),
-          email: email.trim(),
-          phone: phone.trim(),
-          notes: notes.trim(),
-          rewardPreference,
-          totalCents: Math.round(total * 100),
-          baseTotalCents: Math.round(baseTotal * 100),
-          discountCode: isDiscountValid ? discountCode.trim() : null,
-          discountAmount: isDiscountValid ? Math.round(discountAmount * 100) : 0,
-          sourceId: result.token,
-          selectedTier: selectedTier || null,
-        });
-
-        // Success - parent will handle the toast and reset
-      } else {
-        throw new Error(result.errors?.[0]?.message || 'Payment tokenization failed');
+      if (result.status !== 'OK') {
+        const errorMsg = result.errors?.[0]?.message || 'Payment tokenization failed';
+        showToast('Card validation failed', errorMsg, 'destructive');
+        return;
       }
+
+      // Call the parent's onPledge with the token
+      await onPledge({
+        pizzaCount,
+        funderName: funderName.trim(),
+        email: email.trim(),
+        phone: phone.trim(),
+        notes: notes.trim(),
+        rewardPreference,
+        totalCents: Math.round(total * 100),
+        baseTotalCents: Math.round(baseTotal * 100),
+        discountCode: isDiscountValid ? discountCode.trim() : null,
+        discountAmount: isDiscountValid ? Math.round(discountAmount * 100) : 0,
+        sourceId: result.token,
+        selectedTier: selectedTier || null,
+      });
+
+      // Success - parent will handle the toast and reset
     } catch (error) {
       console.error('Payment error:', error);
-      toast({
-        title: 'Payment failed',
-        description: error.message || 'Please try again',
-        variant: 'destructive',
-      });
+      showToast('Payment failed', error.message || 'Please try again', 'destructive');
     } finally {
       setSubmitting(false);
     }
