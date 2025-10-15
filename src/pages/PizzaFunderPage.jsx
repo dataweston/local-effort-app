@@ -343,14 +343,16 @@ const PizzaFunderPage = () => {
         ]);
 
         console.log('[PizzaFunder] Gallery data:', { 
-          pizzaCount: pizzaData.resources?.length || 0,
-          pieCount: pieData.resources?.length || 0,
+          pizzaCount: pizzaData.images?.length || 0,
+          pieCount: pieData.images?.length || 0,
+          pizzaTotalCount: pizzaData.total_count || 0,
+          pieTotalCount: pieData.total_count || 0,
           pizzaData: pizzaData,
           pieData: pieData
         });
 
-        // Combine and deduplicate images
-        const allImages = [...(pizzaData.resources || []), ...(pieData.resources || [])];
+        // Combine and deduplicate images (API returns 'images', not 'resources')
+        const allImages = [...(pizzaData.images || []), ...(pieData.images || [])];
         const uniqueImages = Array.from(
           new Map(allImages.map((img) => [img.public_id, img])).values()
         );
@@ -631,8 +633,8 @@ const PizzaFunderPage = () => {
                         className="relative aspect-square overflow-hidden rounded-lg shadow-md hover:shadow-lg transition-shadow"
                       >
                         <img
-                          src={img.secure_url}
-                          alt={img.public_id}
+                          src={img.thumbnail_url || img.secure_url}
+                          alt={img.context?.alt || img.public_id}
                           loading="lazy"
                           className="w-full h-full object-cover"
                         />
