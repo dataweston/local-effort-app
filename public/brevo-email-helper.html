@@ -254,7 +254,7 @@
                 
                 // Try to fetch Sanity data (optional)
                 try {
-                    const sanityQuery = encodeURIComponent(`*[_type == "crowdfundingCampaign" && slug.current == "local-pizza-by-local-effort-let-s-make-1000-pizzas"][0]{
+                    const sanityQuery = `*[_type == "crowdfundingCampaign" && slug.current == "local-pizza-by-local-effort-let-s-make-1000-pizzas"][0]{
                         events[]{
                             _key,
                             location,
@@ -289,11 +289,19 @@
                             body,
                             slug
                         } | order(publishedAt desc)[0..1]
-                    }`);
+                    }`;
                     
-                    const sanityRes = await fetch(`/api/sanity-query?query=${sanityQuery}`);
+                    const sanityRes = await fetch('/api/sanity-query', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ query: sanityQuery })
+                    });
+                    
                     if (sanityRes.ok) {
-                        const sanityData = await sanityRes.json();
+                        const sanityResponse = await sanityRes.json();
+                        const sanityData = sanityResponse.result;
                         
                         console.log('Sanity data fetched:', sanityData);
                         
