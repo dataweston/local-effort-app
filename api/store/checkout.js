@@ -1,6 +1,7 @@
 // POST /api/store/checkout
-// Expects { customer, pickup, items, token } and captures payment via Square.
+// Expects { customer, pickup, items, token, store } and captures payment via Square.
 const { Client, Environment } = require('square');
+const { getFirebaseAdmin } = require('../_lib/firebaseAdmin');
 
 const ACCESS_TOKEN = process.env.SQUARE_ACCESS_TOKEN;
 const LOCATION_ID = process.env.SQUARE_LOCATION_ID;
@@ -52,6 +53,11 @@ module.exports = async (req, res) => {
 
     // Create payment directly (no explicit order API required for simple sales)
     const amount = items.reduce((s, i) => s + Number(i.unitPrice || 0) * Number(i.qty || 1), 0);
+    
+    // Build order note with store identifier
+    const storeLabel = pickupDetails.name || store || 'Local Effort';
+    const orderNote = `[${storeLabel}] ${customer?.name || 'Customer'} - ${items.length} item(s)`;
+    
     const body = {
       sourceId: token, // from Square Web Payments SDK on frontend
       idempotencyKey,
@@ -59,11 +65,45 @@ module.exports = async (req, res) => {
       locationId: LOCATION_ID,
       autocomplete: true,
       buyerEmailAddress: customer?.email,
-      note: 'Local Effort web checkout',
+      note: orderNote, // Now includes store identifier
+      referenceId: `${store}-${Date.now()}`, // Store identifier in reference ID
     };
 
     const resp = await sq.paymentsApi.createPayment(body);
     const paymentId = resp.result.payment?.id;
+
+    // Log order to Firestore for record-keeping and store-based organization
+    const { firestore } = getFirebaseAdmin();
+    if (firestore) {
+      try {
+        await firestore.collection('store_orders').add({
+          store: store || 'sale', // Store identifier: 'tiny-diner', 'happy-monday', or 'sale'
+          storeName: pickupDetails.name,
+          paymentId,
+          customer: {
+            name: customer?.name || 'Unknown',
+            email: customer?.email || '',
+            phone: customer?.phone || '',
+          },
+          items: items.map(i => ({
+            productId: i.productId,
+            variationId: i.variationId,
+            title: i.title,
+            qty: i.qty,
+            unitPrice: i.unitPrice,
+          })),
+          amount: amount,
+          amountUsd: (amount / 100).toFixed(2),
+          pickup: pickupDetails,
+          createdAt: new Date().toISOString(),
+          createdAtMs: Date.now(),
+        });
+        console.log(`✅ Order logged to Firestore: ${store} - ${paymentId}`);
+      } catch (err) {
+        console.error('⚠️  Failed to log order to Firestore:', err.message);
+        // Don't fail the checkout if Firestore logging fails
+      }
+    }
 
     // Best-effort email via Brevo
     const BREVO_API_KEY = process.env.BREVO_API_KEY;
@@ -74,10 +114,16 @@ module.exports = async (req, res) => {
       const summary = (items || []).map(i => `• ${i.title} x${i.qty} — $${(Number(i.unitPrice) / 100).toFixed(2)}`).join('\n');
       const totalUsd = (amount / 100).toFixed(2);
       
-      // Build pickup information text
-      const pickupInfo = `\n\n📍 PICKUP INFORMATION:\nWhen: ${pickupDetails.date} at ${pickupDetails.time}\nWhere: ${pickupDetails.name}\n${pickupDetails.address}\n`;
+      // Build pickup information text with prominent store identification
+      const storeHeader = `🏪 STORE: ${pickupDetails.name.toUpperCase()}\n`;
+      const pickupInfo = `\n\n${storeHeader}📍 PICKUP INFORMATION:\nWhen: ${pickupDetails.date} at ${pickupDetails.time}\nWhere: ${pickupDetails.name}\n${pickupDetails.address}\n`;
       
       const friendly = `Hi ${customer?.name || 'there'},\n\nThanks for your order! We're on it. Here's a quick summary:\n\n${summary}\n\nSubtotal: $${totalUsd}${pickupInfo}\nWe'll be in touch soon.\n\n— Local Effort`;
+      
+      // Team notification with store prominently displayed in subject and body
+      const teamSubject = `🛒 New Order - ${pickupDetails.name}`;
+      const teamBody = `NEW ORDER FROM: ${pickupDetails.name.toUpperCase()}\nStore ID: ${store}\n\nOrder ${paymentId || ''}\nCustomer: ${customer?.name || 'Unknown'}\nEmail: ${customerEmail || 'N/A'}\nPhone: ${customer?.phone || 'N/A'}\n\n${summary}\n\nTotal: $${totalUsd}${pickupInfo}\n\n---\nThis order was placed via ${store === 'tiny-diner' ? 'Tiny Diner' : store === 'happy-monday' ? 'Happy Monday Coffee' : 'the general sale'} page.`;
+      
       const headers = { 'api-key': BREVO_API_KEY, 'content-type': 'application/json', accept: 'application/json' };
 
       // notify team
@@ -88,8 +134,8 @@ module.exports = async (req, res) => {
           body: JSON.stringify({
             to: [{ email: TEAM_EMAIL }],
             sender: { email: SENDER_EMAIL, name: 'Local Effort' },
-            subject: 'New order',
-            textContent: `Order ${paymentId || ''}\n\n${friendly}`,
+            subject: teamSubject,
+            textContent: teamBody,
           }),
         });
       } catch (_) { /* ignore email errors */ }
@@ -103,7 +149,7 @@ module.exports = async (req, res) => {
             body: JSON.stringify({
               to: [{ email: customerEmail }],
               sender: { email: SENDER_EMAIL, name: 'Local Effort' },
-              subject: 'Thanks for your order!',
+              subject: `Thanks for your order from ${pickupDetails.name}!`,
               textContent: friendly,
             }),
           });

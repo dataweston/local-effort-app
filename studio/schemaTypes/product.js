@@ -33,9 +33,78 @@ export default {
       validation: (Rule) => Rule.required().min(1).error('Select at least one store page for this product.')
     },
     {
-      name: 'variants',
-      title: 'Variants (optional)',
+      name: 'addOns',
+      title: 'Add-Ons',
       type: 'array',
+      description: 'Optional add-ons like pizza toppings, extras, etc. that customers can add for an additional cost.',
+      of: [{
+        type: 'object',
+        fields: [
+          { 
+            name: 'name', 
+            type: 'string', 
+            title: 'Add-On Name',
+            description: 'e.g., "Extra Cheese", "Pepperoni", "Gluten-Free Crust"',
+            validation: (Rule) => Rule.required()
+          },
+          { 
+            name: 'additionalCost', 
+            type: 'number', 
+            title: 'Additional Cost (USD)', 
+            description: 'Extra cost in dollars (USD). Use 0 for free add-ons.',
+            components: { input: PriceUsdInput },
+            validation: (Rule) => Rule.min(0).required()
+          },
+          { 
+            name: 'squareModifierId', 
+            type: 'string', 
+            title: 'Square Modifier ID (optional)',
+            description: 'If syncing with Square, enter the modifier ID here.'
+          },
+          {
+            name: 'defaultSelected',
+            type: 'boolean',
+            title: 'Default Selected',
+            description: 'Check if this add-on should be pre-selected by default',
+            initialValue: false
+          },
+        ],
+        preview: {
+          select: {
+            name: 'name',
+            cost: 'additionalCost'
+          },
+          prepare({ name, cost }) {
+            return {
+              title: name || 'Unnamed Add-On',
+              subtitle: cost > 0 ? `+$${cost.toFixed(2)}` : 'Free'
+            }
+          }
+        }
+      }]
+    },
+    {
+      name: 'offerDairyFree',
+      title: 'Offer Dairy-Free Option',
+      type: 'boolean',
+      description: 'Check this box to show a "Dairy-Free" checkbox option for this product.',
+      initialValue: false
+    },
+    {
+      name: 'dairyFreeCost',
+      title: 'Dairy-Free Additional Cost (USD)',
+      type: 'number',
+      description: 'Extra cost for dairy-free option in dollars (USD). Use 0 if same price.',
+      components: { input: PriceUsdInput },
+      hidden: ({ parent }) => !parent?.offerDairyFree,
+      initialValue: 0,
+      validation: (Rule) => Rule.min(0)
+    },
+    {
+      name: 'variants',
+      title: 'Variants (Legacy - deprecated in favor of Add-Ons)',
+      type: 'array',
+      description: 'DEPRECATED: Use Add-Ons instead for better flexibility. This field is kept for backward compatibility.',
       of: [{
         type: 'object',
         fields: [
