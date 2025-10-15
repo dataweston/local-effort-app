@@ -29,6 +29,9 @@ module.exports = async (req, res) => {
       squareItemId,
       squareVariationId,
       variants[]{name, squareVariationId, price},
+      addOns[]{name, additionalCost, squareModifierId, defaultSelected},
+      offerDairyFree,
+      dairyFreeCost,
       stores
     } | order(title asc)`;
     
@@ -48,6 +51,9 @@ module.exports = async (req, res) => {
       squareItemId: d.squareItemId || null,
       squareVariationId: d.squareVariationId || null,
       variants: Array.isArray(d.variants) ? d.variants : [],
+      addOns: Array.isArray(d.addOns) ? d.addOns : [],
+      offerDairyFree: d.offerDairyFree ?? false,
+      dairyFreeCost: d.dairyFreeCost ?? 0,
       stores: Array.isArray(d.stores) ? d.stores : [],
     }));
     res.status(200).json({ products });

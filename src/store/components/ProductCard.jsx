@@ -10,12 +10,40 @@ export default function ProductCard({ product }) {
   const { notify } = useToast();
   const [variantIdx, setVariantIdx] = useState(0);
   const [showDetails, setShowDetails] = useState(false);
+  const [selectedAddOns, setSelectedAddOns] = useState({});
+  const [isDairyFree, setIsDairyFree] = useState(false);
   const dialogRef = useRef(null);
   const closeBtnRef = useRef(null);
   const prevFocusRef = useRef(null);
   const hasVariants = Array.isArray(product.variants) && product.variants.length > 0;
+  const hasAddOns = Array.isArray(product.addOns) && product.addOns.length > 0;
   const chosen = hasVariants ? product.variants[Math.max(0, Math.min(variantIdx, product.variants.length-1))] : null;
-  const price = chosen?.price ?? (product.salePrice ?? product.price);
+  
+  // Calculate price with add-ons and dairy-free option
+  const basePrice = chosen?.price ?? (product.salePrice ?? product.price);
+  const addOnsTotal = hasAddOns 
+    ? Object.keys(selectedAddOns).reduce((sum, idx) => {
+        if (selectedAddOns[idx]) {
+          return sum + (product.addOns[idx]?.additionalCost || 0);
+        }
+        return sum;
+      }, 0)
+    : 0;
+  const dairyFreePrice = (isDairyFree && product.offerDairyFree) ? (product.dairyFreeCost || 0) : 0;
+  const price = basePrice + (addOnsTotal * 100) + (dairyFreePrice * 100);
+  
+  // Initialize default selected add-ons when details modal opens
+  useEffect(() => {
+    if (showDetails && hasAddOns) {
+      const defaults = {};
+      product.addOns.forEach((addon, idx) => {
+        if (addon.defaultSelected) {
+          defaults[idx] = true;
+        }
+      });
+      setSelectedAddOns(defaults);
+    }
+  }, [showDetails, hasAddOns, product.addOns]);
 
   const images = useMemo(() => {
     const arr = Array.isArray(product?.images) ? product.images : [];
@@ -242,6 +270,52 @@ export default function ProductCard({ product }) {
                       </select>
                     </div>
                   )}
+                  
+                  {/* Add-Ons Section */}
+                  {hasAddOns && (
+                    <div className="mt-4 p-3 bg-neutral-50 rounded-lg border border-neutral-200">
+                      <h4 className="text-sm font-semibold mb-2">Customize Your Order</h4>
+                      <div className="space-y-2">
+                        {product.addOns.map((addon, idx) => (
+                          <label key={idx} className="flex items-center justify-between gap-2 text-sm cursor-pointer hover:bg-white p-2 rounded transition">
+                            <div className="flex items-center gap-2">
+                              <input
+                                type="checkbox"
+                                checked={selectedAddOns[idx] || false}
+                                onChange={(e) => setSelectedAddOns(prev => ({ ...prev, [idx]: e.target.checked }))}
+                                className="rounded border-neutral-300"
+                              />
+                              <span>{addon.name}</span>
+                            </div>
+                            <span className="text-neutral-600 font-mono text-xs">
+                              {addon.additionalCost > 0 ? `+$${addon.additionalCost.toFixed(2)}` : 'Free'}
+                            </span>
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  
+                  {/* Dairy-Free Option */}
+                  {product.offerDairyFree && (
+                    <div className="mt-3 p-3 bg-blue-50 rounded-lg border border-blue-200">
+                      <label className="flex items-center justify-between gap-2 text-sm cursor-pointer">
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="checkbox"
+                            checked={isDairyFree}
+                            onChange={(e) => setIsDairyFree(e.target.checked)}
+                            className="rounded border-blue-300"
+                          />
+                          <span className="font-medium">Dairy-Free Option</span>
+                        </div>
+                        <span className="text-neutral-600 font-mono text-xs">
+                          {product.dairyFreeCost > 0 ? `+$${product.dairyFreeCost.toFixed(2)}` : 'Same price'}
+                        </span>
+                      </label>
+                    </div>
+                  )}
+                  
                   {Array.isArray(product.longDescriptionBlocks) && product.longDescriptionBlocks.length > 0 ? (
                     <div className="prose prose-sm mt-4 max-w-none">
                       <PortableText value={product.longDescriptionBlocks} components={portableTextComponents} />
