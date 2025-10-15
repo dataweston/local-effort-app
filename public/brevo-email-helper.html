@@ -243,10 +243,24 @@
                 // Try to fetch Sanity data (optional)
                 try {
                     const sanityQuery = encodeURIComponent(`*[_type == "crowdfundingCampaign" && slug.current == "local-pizza-by-local-effort-let-s-make-1000-pizzas"][0]{
-                        "events": featuredPublicEvents[0..1]->{ 
+                        events[]{
+                            _key,
                             location,
                             tagline,
+                            summary,
                             startDate,
+                            endDate,
+                            timingNote,
+                            foodType,
+                            locationDetails
+                        },
+                        "featuredPublicEvents": featuredPublicEvents[]->{ 
+                            _id,
+                            location,
+                            tagline,
+                            summary,
+                            startDate,
+                            endDate,
                             timingNote,
                             foodType,
                             locationDetails
@@ -262,9 +276,31 @@
                     if (sanityRes.ok) {
                         const sanityData = await sanityRes.json();
                         
+                        // Merge events (same as PizzaFunderPage)
+                        const rawEvents = Array.isArray(sanityData?.events) ? sanityData.events : [];
+                        const importedEvents = Array.isArray(sanityData?.featuredPublicEvents) 
+                            ? sanityData.featuredPublicEvents 
+                            : [];
+                        const allEvents = [...rawEvents, ...importedEvents].filter(Boolean);
+                        
+                        // Filter to upcoming only
+                        const today = new Date();
+                        today.setHours(0, 0, 0, 0);
+                        const upcomingEvents = allEvents
+                            .filter((ev) => {
+                                if (!ev.startDate) return false;
+                                const start = new Date(ev.startDate);
+                                const end = ev.endDate ? new Date(ev.endDate) : start;
+                                const boundary = new Date(end);
+                                boundary.setHours(23, 59, 59, 999);
+                                return boundary >= today;
+                            })
+                            .sort((a, b) => new Date(a.startDate) - new Date(b.startDate))
+                            .slice(0, 2);
+                        
                         // Add events if available
-                        if (sanityData?.events?.[0]) {
-                            const event1 = sanityData.events[0];
+                        if (upcomingEvents[0]) {
+                            const event1 = upcomingEvents[0];
                             brevoVars.EVENT_1_TITLE = event1.location || '';
                             brevoVars.EVENT_1_LOCATION = event1.locationDetails || event1.location || '';
                             brevoVars.EVENT_1_DATE = event1.timingNote || formatDate(event1.startDate) || '';
@@ -272,8 +308,8 @@
                             brevoVars.EVENT_1_FOOD_TYPE = event1.foodType || 'Pizza';
                         }
                         
-                        if (sanityData?.events?.[1]) {
-                            const event2 = sanityData.events[1];
+                        if (upcomingEvents[1]) {
+                            const event2 = upcomingEvents[1];
                             brevoVars.EVENT_2_TITLE = event2.location || '';
                             brevoVars.EVENT_2_LOCATION = event2.locationDetails || event2.location || '';
                             brevoVars.EVENT_2_DATE = event2.timingNote || formatDate(event2.startDate) || '';

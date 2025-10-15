@@ -124,13 +124,32 @@ async function gatherEmailData() {
     console.log('\n📅 Fetching events and updates from Sanity...');
     
     const sanityQuery = encodeURIComponent(`*[_type == "crowdfundingCampaign" && slug.current == "local-pizza-by-local-effort-let-s-make-1000-pizzas"][0]{
-      "events": featuredPublicEvents[0..1]->{ 
+      events[]{
+        _key,
         location,
         tagline,
+        summary,
         startDate,
         endDate,
         timingNote,
         foodType,
+        status,
+        ticketsUrl,
+        ctaLabel,
+        locationDetails
+      },
+      "featuredPublicEvents": featuredPublicEvents[]->{ 
+        _id,
+        location,
+        tagline,
+        summary,
+        startDate,
+        endDate,
+        timingNote,
+        foodType,
+        status,
+        ticketsUrl,
+        ctaLabel,
         locationDetails
       },
       "updates": updates[]->{ 
@@ -142,7 +161,34 @@ async function gatherEmailData() {
     }`);
     
     const sanityData = await fetchJSON(`${BASE_URL}/api/sanity-query?query=${sanityQuery}`);
-    console.log(`✅ Found ${sanityData?.events?.length || 0} events, ${sanityData?.updates?.length || 0} updates`);
+    
+    // Merge inline events and featured events (same as PizzaFunderPage does)
+    const rawEvents = Array.isArray(sanityData?.events) ? sanityData.events : [];
+    const importedEvents = Array.isArray(sanityData?.featuredPublicEvents) 
+      ? sanityData.featuredPublicEvents 
+      : [];
+    const allEvents = [...rawEvents, ...importedEvents].filter(Boolean);
+    
+    // Filter to upcoming events only
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const upcomingEvents = allEvents
+      .filter((ev) => {
+        if (!ev.startDate) return false;
+        const start = new Date(ev.startDate);
+        const end = ev.endDate ? new Date(ev.endDate) : start;
+        const boundary = new Date(end);
+        boundary.setHours(23, 59, 59, 999);
+        return boundary >= today;
+      })
+      .sort((a, b) => {
+        const aDate = new Date(a.startDate);
+        const bDate = new Date(b.startDate);
+        return aDate - bDate;
+      })
+      .slice(0, 2); // Only get first 2 for email
+    
+    console.log(`✅ Found ${upcomingEvents.length} upcoming events, ${sanityData?.updates?.length || 0} updates`);
     
     // 3. Build Brevo Variables Object
     const brevoVars = {
@@ -155,8 +201,8 @@ async function gatherEmailData() {
     };
     
     // Optional: Event 1
-    if (sanityData?.events?.[0]) {
-      const event1 = sanityData.events[0];
+    if (upcomingEvents[0]) {
+      const event1 = upcomingEvents[0];
       brevoVars.EVENT_1_TITLE = event1.location || 'Pizza Event';
       brevoVars.EVENT_1_LOCATION = event1.locationDetails || event1.location || '';
       brevoVars.EVENT_1_DATE = event1.startDate 
@@ -167,8 +213,8 @@ async function gatherEmailData() {
     }
     
     // Optional: Event 2
-    if (sanityData?.events?.[1]) {
-      const event2 = sanityData.events[1];
+    if (upcomingEvents[1]) {
+      const event2 = upcomingEvents[1];
       brevoVars.EVENT_2_TITLE = event2.location || 'Pizza Event';
       brevoVars.EVENT_2_LOCATION = event2.locationDetails || event2.location || '';
       brevoVars.EVENT_2_DATE = event2.startDate 
