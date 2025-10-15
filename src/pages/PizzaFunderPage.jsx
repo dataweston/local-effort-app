@@ -67,7 +67,7 @@ const PizzaFunderPage = () => {
           "updates": updates[]->{ title, publishedAt, body } | order(publishedAt desc)[0...3]
         }`;
 
-        const data = await groqFetch(query, { slug: 'pizzafunder' });
+        const data = await groqFetch(query, { slug: 'local-pizza-by-local-effort-let-s-make-1000-pizzas' });
         
         if (mounted) {
           setCampaignData(data || null);
