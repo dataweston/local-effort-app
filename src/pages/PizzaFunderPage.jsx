@@ -45,6 +45,17 @@ const PizzaFunderPage = () => {
 
   const { toast } = useToast();
 
+  // Safe toast wrapper to prevent "is not a function" errors
+  const showToast = (title, description, variant = undefined) => {
+    try {
+      if (toast && typeof toast === 'function') {
+        toast({ title, description, variant });
+      }
+    } catch (err) {
+      console.error('Toast error:', err);
+    }
+  };
+
   // Portable Text components
   const portableComponents = useMemo(() => createPortableTextComponents(), []);
 
@@ -160,9 +171,9 @@ const PizzaFunderPage = () => {
     (async () => {
       try {
         const res = await fetch('/api/pizzafunder/feedback?limit=8');
-        const data = res.ok ? await res.json() : { entries: [] };
+        const data = res.ok ? await res.json() : { feedback: [] };
         if (mounted) {
-          setFeedback(data.entries || []);
+          setFeedback(data.feedback || []);
           setLoading((prev) => ({ ...prev, feedback: false }));
         }
       } catch {
@@ -201,10 +212,7 @@ const PizzaFunderPage = () => {
           ? ` Discount code "${data.discountCode}" applied!`
           : '';
         
-        toast({
-          title: 'Thank you!',
-          description: `Your pledge was successful!${discountMsg}`,
-        });
+        showToast('Thank you!', `Your pledge was successful!${discountMsg}`);
 
         // Refresh status
         try {
@@ -246,10 +254,7 @@ const PizzaFunderPage = () => {
       const result = await res.json();
 
       if (res.ok && result.success) {
-        toast({
-          title: 'Thank you!',
-          description: 'Your feedback has been shared!',
-        });
+        showToast('Thank you!', 'Your feedback has been shared!');
 
         // Add to local list
         setFeedback((prev) => [result.feedback, ...prev].slice(0, 8));
@@ -257,11 +262,7 @@ const PizzaFunderPage = () => {
         throw new Error(result.error || 'Failed to submit feedback');
       }
     } catch (error) {
-      toast({
-        title: 'Failed to submit',
-        description: error.message || 'Please try again',
-        variant: 'destructive',
-      });
+      showToast('Failed to submit', error.message || 'Please try again', 'destructive');
     } finally {
       setSubmitting((prev) => ({ ...prev, feedback: false }));
     }
