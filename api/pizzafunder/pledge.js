@@ -12,6 +12,7 @@
 const { Client: SquareClient, Environment } = require('square');
 const { getSupabase } = require('../../backend/api/supabaseClient');
 const { addPizzaBackerToBrevo } = require('../_lib/brevo');
+const { sendPizzafunderReceipts } = require('./_lib/sendReceipt');
 
 module.exports = async (req, res) => {
   if (req.method !== 'POST') {
@@ -155,6 +156,30 @@ module.exports = async (req, res) => {
     addPizzaBackerToBrevo(pledgeData).catch((brevoError) => {
       console.error('[pizzafunder.pledge] Brevo sync failed (non-critical):', {
         error: brevoError.message,
+        email: pledgeData.email,
+        pledgeId: pledgeData.id,
+      });
+    });
+
+    // Send transactional emails to customer and admin (async, don't block response)
+    // This runs in background - failures won't affect pledge success
+    sendPizzafunderReceipts({
+      funderName,
+      email,
+      phone,
+      pizzaCount,
+      totalCents: finalAmountCents,
+      rewardPreference,
+      notes,
+      discountCode: isDiscountValid ? discountCode : null,
+      discountLabel: isDiscountValid && pledgeDiscountAmount > 0 ? `100% off (${discountCode})` : null,
+      paymentId,
+      isComplimentary: finalAmountCents === 0,
+      pledgeId: pledgeData.id,
+      timestamp: pledgeData.created_at,
+    }).catch((emailError) => {
+      console.error('[pizzafunder.pledge] Email send failed (non-critical):', {
+        error: emailError.message,
         email: pledgeData.email,
         pledgeId: pledgeData.id,
       });
