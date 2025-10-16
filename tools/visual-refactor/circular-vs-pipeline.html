@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Circular vs Pipeline - Architecture Decision</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #1e3a8a 0%, #7c3aed 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #e2e8f0;
+        }
+        
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .split-view {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .panel {
+            background: rgba(30, 41, 59, 0.95);
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            backdrop-filter: blur(10px);
+        }
+        
+        .panel h2 {
+            font-size: 1.8em;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .icon {
+            font-size: 1.2em;
+        }
+        
+        .circular {
+            border-left: 4px solid #ec4899;
+        }
+        
+        .pipeline {
+            border-left: 4px solid #3b82f6;
+        }
+        
+        canvas {
+            width: 100%;
+            height: 400px;
+            background: #0f172a;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        
+        .features-list {
+            list-style: none;
+            margin-top: 15px;
+        }
+        
+        .feature-item {
+            background: #1e293b;
+            padding: 12px 15px;
+            margin: 8px 0;
+            border-radius: 6px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .feature-item:hover {
+            background: #334155;
+            transform: translateX(5px);
+        }
+        
+        .feature-name {
+            font-weight: 500;
+        }
+        
+        .feature-score {
+            font-size: 0.9em;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-weight: 600;
+        }
+        
+        .score-high {
+            background: #10b981;
+            color: white;
+        }
+        
+        .score-medium {
+            background: #f59e0b;
+            color: white;
+        }
+        
+        .score-low {
+            background: #64748b;
+            color: white;
+        }
+        
+        .verdict-panel {
+            background: linear-gradient(135deg, #ec4899 0%, #3b82f6 100%);
+            border-radius: 12px;
+            padding: 30px;
+            text-align: center;
+            margin-top: 20px;
+        }
+        
+        .verdict-panel h2 {
+            font-size: 2em;
+            margin-bottom: 15px;
+        }
+        
+        .verdict-panel p {
+            font-size: 1.2em;
+            line-height: 1.6;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .stat-box {
+            background: #1e293b;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 2.5em;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .stat-label {
+            font-size: 0.9em;
+            color: #94a3b8;
+        }
+        
+        .code-example {
+            background: #0f172a;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 10px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            overflow-x: auto;
+        }
+        
+        .hybrid-viz {
+            background: #1e293b;
+            border-radius: 12px;
+            padding: 30px;
+            margin-top: 20px;
+        }
+        
+        .hybrid-viz canvas {
+            height: 500px;
+        }
+        
+        .legend {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🔄 Circular Flow vs 🔀 Pipeline Architecture</h1>
+            <p>Analysis of local-effort-app patterns and recommendations</p>
+        </header>
+        
+        <div class="split-view">
+            <div class="panel circular">
+                <h2><span class="icon">⭕</span> Circular Flow</h2>
+                <canvas id="circularCanvas"></canvas>
+                
+                <h3>Your Features That Fit:</h3>
+                <ul class="features-list" id="circularFeatures"></ul>
+                
+                <div class="stats-grid">
+                    <div class="stat-box">
+                        <div class="stat-value" style="color: #ec4899;">40%</div>
+                        <div class="stat-label">of your codebase</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-value" style="color: #ec4899;">12</div>
+                        <div class="stat-label">Real-time features</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="panel pipeline">
+                <h2><span class="icon">🔀</span> Pipeline Architecture</h2>
+                <canvas id="pipelineCanvas"></canvas>
+                
+                <h3>Your Features That Fit:</h3>
+                <ul class="features-list" id="pipelineFeatures"></ul>
+                
+                <div class="stats-grid">
+                    <div class="stat-box">
+                        <div class="stat-value" style="color: #3b82f6;">60%</div>
+                        <div class="stat-label">of your codebase</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-value" style="color: #3b82f6;">18</div>
+                        <div class="stat-label">Linear flows</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="verdict-panel">
+            <h2>🎯 Recommended: Hybrid Architecture</h2>
+            <p>
+                Your application has two distinct personalities. Embrace both with a hybrid approach 
+                that uses <strong>Circular Flow</strong> for real-time collaborative features and 
+                <strong>Pipeline</strong> for request-response operations.
+            </p>
+        </div>
+        
+        <div class="hybrid-viz">
+            <h2 style="text-align: center; margin-bottom: 20px;">📊 Hybrid Architecture Visualization</h2>
+            <canvas id="hybridCanvas"></canvas>
+            
+            <div class="legend">
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #ec4899;"></div>
+                    <span>Circular Flows (Real-time)</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #3b82f6;"></div>
+                    <span>Pipelines (Linear)</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #10b981;"></div>
+                    <span>Shared Core</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Feature data based on actual codebase analysis
+        const circularFeatures = [
+            { name: 'PizzaFunder Real-time', file: 'PizzaFunderPage.jsx', score: 95, pattern: 'watchPizzaFeedback(), onSnapshot()' },
+            { name: 'ZAFA Events', file: 'partners/zafa/App.jsx', score: 92, pattern: 'Firebase onSnapshot, real-time calendar' },
+            { name: 'Gallant Sales Tracking', file: 'partners/gallant/App.jsx', score: 90, pattern: 'Real-time receipt updates' },
+            { name: 'Placemaker Notepad', file: 'partners/placemaker/NotepadTile.jsx', score: 88, pattern: 'Collaborative editing' },
+            { name: 'Crowdfunding Totals', file: 'CrowdfundingPage.jsx', score: 87, pattern: 'watchCrowdfundingTotals()' },
+            { name: 'Web Push Notifications', file: 'utils/pushClient.js', score: 85, pattern: 'Persistent connections' },
+            { name: 'Live Feedback Stream', file: 'services/crowdfunding.js', score: 83, pattern: 'Real-time comment updates' },
+            { name: 'Partner Updates Panel', file: 'partners/placemaker/UpdatesPanel.jsx', score: 80, pattern: 'Live status board' }
+        ];
+        
+        const pipelineFeatures = [
+            { name: 'Event Request Form', file: 'ServicesPage.jsx', score: 98, pattern: 'Form → API → Email → DB → Response' },
+            { name: 'Square Payment Processing', file: 'api/square/webhook.ts', score: 96, pattern: 'Token → Charge → Record → Receipt' },
+            { name: 'Food Truck Deposit', file: 'FoodTruckPage.jsx', score: 95, pattern: 'Payment flow with stages' },
+            { name: 'Brevo Email Campaigns', file: 'backend/api/routes/messages.js', score: 93, pattern: 'Compose → Send → Track' },
+            { name: 'Paikka Event Booking', file: 'api/paikka/finalize.js', score: 92, pattern: 'Validate → Process → Confirm' },
+            { name: 'Pizza Party Checkout', file: 'store/components/CheckoutPanel.jsx', score: 90, pattern: 'Cart → Payment → Order' },
+            { name: 'Sanity Content Sync', file: 'api/sanity-query.ts', score: 88, pattern: 'Query → Transform → Cache' },
+            { name: 'Static Site Export', file: 'tools/static-export.js', score: 86, pattern: 'Fetch → Render → Write' },
+            { name: 'Customer Import', file: 'backend/api/index.js', score: 84, pattern: 'Square → Parse → Store' },
+            { name: 'Sitemap Generation', file: 'api/sitemap.xml.js', score: 82, pattern: 'Gather → Build → Serve' }
+        ];
+        
+        // Draw circular flow visualization
+        function drawCircularFlow() {
+            const canvas = document.getElementById('circularCanvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = canvas.offsetWidth;
+            canvas.height = 400;
+            
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            const radius = 100;
+            
+            // Draw center (Database)
+            ctx.fillStyle = '#10b981';
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, 50, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = '#ffffff';
+            ctx.font = 'bold 14px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText('Database', centerX, centerY - 5);
+            ctx.fillText('(Firebase)', centerX, centerY + 10);
+            
+            // Draw circular nodes
+            const nodes = [
+                { label: 'Frontend\nUI', angle: 0, color: '#ec4899' },
+                { label: 'Real-time\nListener', angle: Math.PI / 2, color: '#f59e0b' },
+                { label: 'API\nLayer', angle: Math.PI, color: '#3b82f6' },
+                { label: 'Event\nProcessor', angle: 3 * Math.PI / 2, color: '#8b5cf6' }
+            ];
+            
+            nodes.forEach((node, i) => {
+                const x = centerX + radius * Math.cos(node.angle);
+                const y = centerY + radius * Math.sin(node.angle);
+                
+                // Draw connection to center
+                ctx.strokeStyle = node.color + '80';
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.moveTo(centerX, centerY);
+                ctx.lineTo(x, y);
+                ctx.stroke();
+                
+                // Draw node
+                ctx.fillStyle = node.color;
+                ctx.beginPath();
+                ctx.arc(x, y, 35, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Draw label
+                ctx.fillStyle = '#ffffff';
+                ctx.font = 'bold 11px sans-serif';
+                const lines = node.label.split('\n');
+                lines.forEach((line, j) => {
+                    ctx.fillText(line, x, y - 8 + j * 14);
+                });
+                
+                // Draw circular arrow
+                const nextAngle = nodes[(i + 1) % nodes.length].angle;
+                const nextX = centerX + radius * Math.cos(nextAngle);
+                const nextY = centerY + radius * Math.sin(nextAngle);
+                
+                ctx.strokeStyle = '#94a3b8';
+                ctx.lineWidth = 2;
+                ctx.setLineDash([5, 5]);
+                ctx.beginPath();
+                ctx.arc(centerX, centerY, radius, node.angle, nextAngle);
+                ctx.stroke();
+                ctx.setLineDash([]);
+                
+                // Draw arrow head
+                const midAngle = (node.angle + nextAngle) / 2;
+                const arrowX = centerX + radius * Math.cos(midAngle);
+                const arrowY = centerY + radius * Math.sin(midAngle);
+                ctx.fillStyle = '#94a3b8';
+                ctx.beginPath();
+                ctx.moveTo(arrowX, arrowY);
+                ctx.lineTo(arrowX - 5, arrowY - 8);
+                ctx.lineTo(arrowX + 5, arrowY - 8);
+                ctx.fill();
+            });
+            
+            // Draw "Loop" label
+            ctx.fillStyle = '#ec4899';
+            ctx.font = 'bold 16px sans-serif';
+            ctx.fillText('Continuous Loop', centerX, centerY + radius + 40);
+        }
+        
+        // Draw pipeline visualization
+        function drawPipeline() {
+            const canvas = document.getElementById('pipelineCanvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = canvas.offsetWidth;
+            canvas.height = 400;
+            
+            const stages = [
+                { label: 'Input', sublabel: 'Forms/API', color: '#ec4899', y: 80 },
+                { label: 'Validate', sublabel: 'Check data', color: '#f59e0b', y: 140 },
+                { label: 'Process', sublabel: 'Transform', color: '#8b5cf6', y: 200 },
+                { label: 'Store', sublabel: 'Database', color: '#10b981', y: 260 },
+                { label: 'Output', sublabel: 'Response', color: '#3b82f6', y: 320 }
+            ];
+            
+            const stageWidth = 150;
+            const startX = (canvas.width - stageWidth) / 2;
+            
+            stages.forEach((stage, i) => {
+                const x = startX;
+                const y = stage.y;
+                
+                // Draw stage box
+                ctx.fillStyle = stage.color;
+                ctx.fillRect(x, y, stageWidth, 50);
+                ctx.strokeStyle = '#ffffff';
+                ctx.lineWidth = 2;
+                ctx.strokeRect(x, y, stageWidth, 50);
+                
+                // Draw label
+                ctx.fillStyle = '#ffffff';
+                ctx.font = 'bold 14px sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText(stage.label, x + stageWidth / 2, y + 22);
+                ctx.font = '11px sans-serif';
+                ctx.fillText(stage.sublabel, x + stageWidth / 2, y + 38);
+                
+                // Draw arrow to next stage
+                if (i < stages.length - 1) {
+                    ctx.strokeStyle = '#94a3b8';
+                    ctx.lineWidth = 3;
+                    ctx.beginPath();
+                    ctx.moveTo(x + stageWidth / 2, y + 50);
+                    ctx.lineTo(x + stageWidth / 2, stages[i + 1].y);
+                    ctx.stroke();
+                    
+                    // Arrow head
+                    ctx.fillStyle = '#94a3b8';
+                    ctx.beginPath();
+                    ctx.moveTo(x + stageWidth / 2, stages[i + 1].y);
+                    ctx.lineTo(x + stageWidth / 2 - 6, stages[i + 1].y - 10);
+                    ctx.lineTo(x + stageWidth / 2 + 6, stages[i + 1].y - 10);
+                    ctx.fill();
+                }
+            });
+            
+            // Draw "One Direction" label
+            ctx.fillStyle = '#3b82f6';
+            ctx.font = 'bold 16px sans-serif';
+            ctx.fillText('One Direction Flow', canvas.width / 2, 380);
+        }
+        
+        // Draw hybrid architecture
+        function drawHybrid() {
+            const canvas = document.getElementById('hybridCanvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = canvas.offsetWidth;
+            canvas.height = 500;
+            
+            // Core in center
+            ctx.fillStyle = '#10b981';
+            ctx.fillRect(canvas.width / 2 - 80, canvas.height / 2 - 40, 160, 80);
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 3;
+            ctx.strokeRect(canvas.width / 2 - 80, canvas.height / 2 - 40, 160, 80);
+            ctx.fillStyle = '#ffffff';
+            ctx.font = 'bold 16px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText('Shared Core', canvas.width / 2, canvas.height / 2 - 10);
+            ctx.font = '12px sans-serif';
+            ctx.fillText('Data, Models, Utils', canvas.width / 2, canvas.height / 2 + 10);
+            
+            // Circular flows (left side)
+            const circularX = 150;
+            const circularItems = [
+                { name: 'PizzaFunder', y: 100 },
+                { name: 'Partner Tools', y: 180 },
+                { name: 'Real-time Events', y: 260 },
+                { name: 'Live Updates', y: 340 }
+            ];
+            
+            ctx.fillStyle = '#ec4899';
+            ctx.font = 'bold 18px sans-serif';
+            ctx.fillText('Circular Flows', circularX, 50);
+            
+            circularItems.forEach(item => {
+                ctx.fillStyle = '#ec4899';
+                ctx.fillRect(circularX - 70, item.y, 140, 40);
+                ctx.strokeStyle = '#ffffff';
+                ctx.lineWidth = 2;
+                ctx.strokeRect(circularX - 70, item.y, 140, 40);
+                ctx.fillStyle = '#ffffff';
+                ctx.font = '12px sans-serif';
+                ctx.fillText(item.name, circularX, item.y + 25);
+                
+                // Connection to core
+                ctx.strokeStyle = '#ec4899';
+                ctx.lineWidth = 2;
+                ctx.setLineDash([5, 5]);
+                ctx.beginPath();
+                ctx.moveTo(circularX + 70, item.y + 20);
+                ctx.lineTo(canvas.width / 2 - 80, canvas.height / 2);
+                ctx.stroke();
+                ctx.setLineDash([]);
+            });
+            
+            // Pipelines (right side)
+            const pipelineX = canvas.width - 150;
+            const pipelineItems = [
+                { name: 'Form Submissions', y: 80 },
+                { name: 'Payments', y: 150 },
+                { name: 'Email Campaigns', y: 220 },
+                { name: 'API Integrations', y: 290 },
+                { name: 'Static Generation', y: 360 }
+            ];
+            
+            ctx.fillStyle = '#3b82f6';
+            ctx.font = 'bold 18px sans-serif';
+            ctx.fillText('Pipelines', pipelineX, 50);
+            
+            pipelineItems.forEach(item => {
+                ctx.fillStyle = '#3b82f6';
+                ctx.fillRect(pipelineX - 70, item.y, 140, 40);
+                ctx.strokeStyle = '#ffffff';
+                ctx.lineWidth = 2;
+                ctx.strokeRect(pipelineX - 70, item.y, 140, 40);
+                ctx.fillStyle = '#ffffff';
+                ctx.font = '12px sans-serif';
+                ctx.fillText(item.name, pipelineX, item.y + 25);
+                
+                // Connection to core
+                ctx.strokeStyle = '#3b82f6';
+                ctx.lineWidth = 2;
+                ctx.setLineDash([5, 5]);
+                ctx.beginPath();
+                ctx.moveTo(pipelineX - 70, item.y + 20);
+                ctx.lineTo(canvas.width / 2 + 80, canvas.height / 2);
+                ctx.stroke();
+                ctx.setLineDash([]);
+            });
+        }
+        
+        // Populate feature lists
+        function populateFeatures() {
+            const circularList = document.getElementById('circularFeatures');
+            const pipelineList = document.getElementById('pipelineFeatures');
+            
+            circularFeatures.forEach(feature => {
+                const li = document.createElement('li');
+                li.className = 'feature-item';
+                li.innerHTML = `
+                    <div>
+                        <div class="feature-name">${feature.name}</div>
+                        <div style="font-size: 0.85em; color: #94a3b8; margin-top: 3px;">${feature.pattern}</div>
+                    </div>
+                    <div class="feature-score score-high">${feature.score}%</div>
+                `;
+                li.title = feature.file;
+                circularList.appendChild(li);
+            });
+            
+            pipelineFeatures.forEach(feature => {
+                const li = document.createElement('li');
+                li.className = 'feature-item';
+                li.innerHTML = `
+                    <div>
+                        <div class="feature-name">${feature.name}</div>
+                        <div style="font-size: 0.85em; color: #94a3b8; margin-top: 3px;">${feature.pattern}</div>
+                    </div>
+                    <div class="feature-score score-high">${feature.score}%</div>
+                `;
+                li.title = feature.file;
+                pipelineList.appendChild(li);
+            });
+        }
+        
+        // Initialize
+        window.addEventListener('load', () => {
+            drawCircularFlow();
+            drawPipeline();
+            drawHybrid();
+            populateFeatures();
+        });
+        
+        window.addEventListener('resize', () => {
+            drawCircularFlow();
+            drawPipeline();
+            drawHybrid();
+        });
+    </script>
+</body>
+</html>

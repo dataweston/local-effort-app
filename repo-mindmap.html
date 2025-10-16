@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Local Effort App - Repository Mind Map</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            overflow: hidden;
+            background: #0f172a;
+            color: #e2e8f0;
+        }
+        
+        #controls {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: rgba(30, 41, 59, 0.95);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            max-width: 300px;
+            backdrop-filter: blur(10px);
+        }
+        
+        #controls h2 {
+            margin-bottom: 15px;
+            font-size: 18px;
+            color: #38bdf8;
+        }
+        
+        #controls button {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            margin: 8px 0;
+            background: #38bdf8;
+            color: #0f172a;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+        
+        #controls button:hover {
+            background: #0ea5e9;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(56, 189, 248, 0.3);
+        }
+        
+        #controls .info {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #334155;
+            font-size: 12px;
+            color: #94a3b8;
+        }
+        
+        #legend {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: rgba(30, 41, 59, 0.95);
+            padding: 15px;
+            border-radius: 12px;
+            backdrop-filter: blur(10px);
+            font-size: 12px;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin: 5px 0;
+        }
+        
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+            margin-right: 10px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        #search {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 6px;
+            color: #e2e8f0;
+            font-size: 14px;
+        }
+        
+        #search:focus {
+            outline: none;
+            border-color: #38bdf8;
+        }
+        
+        svg {
+            width: 100%;
+            height: 100vh;
+            cursor: grab;
+        }
+        
+        svg:active {
+            cursor: grabbing;
+        }
+        
+        .node circle {
+            stroke: #0f172a;
+            stroke-width: 2px;
+            transition: all 0.3s;
+        }
+        
+        .node:hover circle {
+            stroke: #fbbf24;
+            stroke-width: 3px;
+            filter: brightness(1.2);
+        }
+        
+        .node text {
+            font-size: 12px;
+            font-weight: 500;
+            pointer-events: none;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+        }
+        
+        .link {
+            stroke: #475569;
+            stroke-width: 1.5px;
+            fill: none;
+            opacity: 0.6;
+        }
+        
+        .node.highlighted circle {
+            stroke: #fbbf24;
+            stroke-width: 4px;
+            filter: drop-shadow(0 0 10px #fbbf24);
+        }
+        
+        .tooltip {
+            position: fixed;
+            background: rgba(15, 23, 42, 0.98);
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-size: 13px;
+            pointer-events: none;
+            z-index: 2000;
+            max-width: 400px;
+            border: 1px solid #38bdf8;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+        }
+        
+        .tooltip h3 {
+            color: #38bdf8;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+        
+        .tooltip p {
+            color: #cbd5e1;
+            margin: 4px 0;
+            line-height: 1.4;
+        }
+    </style>
+</head>
+<body>
+    <div id="controls">
+        <h2>🗺️ Repository Navigator</h2>
+        <input type="text" id="search" placeholder="Search nodes..." />
+        <button onclick="resetView()">🎯 Reset View</button>
+        <button onclick="expandAll()">📂 Expand All</button>
+        <button onclick="collapseAll()">📁 Collapse All</button>
+        <button onclick="toggleLayout()">🔄 Toggle Layout</button>
+        <button onclick="exportData()">💾 Export Data</button>
+        <div class="info">
+            <strong>💡 Tips:</strong><br>
+            • Click nodes to expand/collapse<br>
+            • Drag to pan, scroll to zoom<br>
+            • Hover for details<br>
+            • Double-click to focus
+        </div>
+    </div>
+    
+    <div id="legend">
+        <div class="legend-item">
+            <div class="legend-color" style="background: #f59e0b"></div>
+            <span>Frontend Apps</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background: #3b82f6"></div>
+            <span>Backend/API</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background: #10b981"></div>
+            <span>Database/Data</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background: #8b5cf6"></div>
+            <span>Tools/Scripts</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background: #ec4899"></div>
+            <span>Partner Tools</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background: #06b6d4"></div>
+            <span>Config/Docs</span>
+        </div>
+    </div>
+    
+    <svg id="mindmap"></svg>
+    
+    <script>
+        // Repository structure data
+        const repoData = {
+            name: "local-effort-app",
+            description: "Main repository - Full-stack food service platform",
+            type: "root",
+            children: [
+                {
+                    name: "Frontend",
+                    type: "frontend",
+                    description: "React-based web application",
+                    children: [
+                        {
+                            name: "Main App (src/)",
+                            type: "frontend",
+                            description: "Primary web application with routing",
+                            children: [
+                                { name: "Pages", type: "frontend", description: "HomePage, MenuPage, GalleryPage, EventsPage, etc." },
+                                { name: "Components", type: "frontend", description: "UI components, layout, common widgets" },
+                                { name: "Services", type: "frontend", description: "API clients, auth, payments" },
+                                { name: "Routing", type: "frontend", description: "React Router setup in App.jsx" }
+                            ]
+                        },
+                        {
+                            name: "Apps",
+                            type: "frontend",
+                            description: "Specialized applications",
+                            children: [
+                                { name: "Kiosk App", type: "frontend", description: "Electron-based kiosk interface" },
+                                { name: "Web App (local-office)", type: "frontend", description: "Next.js admin interface" }
+                            ]
+                        },
+                        {
+                            name: "Partner Tools",
+                            type: "partner",
+                            description: "Embedded partner applications",
+                            children: [
+                                { name: "ZAFA Events", type: "partner", description: "Event management & invoicing" },
+                                { name: "Gallant", type: "partner", description: "Catering sales tracking" },
+                                { name: "Happy Monday", type: "partner", description: "Partner integration" },
+                                { name: "Placemaker", type: "partner", description: "Location management" },
+                                { name: "AACRM", type: "partner", description: "CRM integration" }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    name: "Backend",
+                    type: "backend",
+                    description: "Express API servers",
+                    children: [
+                        {
+                            name: "Main API (backend/api/)",
+                            type: "backend",
+                            description: "Express server with multiple routes",
+                            children: [
+                                { name: "Messages & Inbox", type: "backend", description: "Email, contact forms, Brevo integration" },
+                                { name: "Campaigns", type: "backend", description: "Email campaign management" },
+                                { name: "Push Notifications", type: "backend", description: "Web push service" },
+                                { name: "Square Webhooks", type: "backend", description: "Payment processing" },
+                                { name: "Public APIs", type: "backend", description: "Machine-readable endpoints" }
+                            ]
+                        },
+                        {
+                            name: "Serverless API (api/)",
+                            type: "backend",
+                            description: "Vercel serverless functions",
+                            children: [
+                                { name: "Sanity Proxy", type: "backend", description: "Health checks & queries" },
+                                { name: "Crowdfunding", type: "backend", description: "PizzaFunder endpoints" },
+                                { name: "Square Proxy", type: "backend", description: "Payment processing" },
+                                { name: "Paikka Events", type: "backend", description: "Event management" },
+                                { name: "Sitemap", type: "backend", description: "SEO sitemap generation" }
+                            ]
+                        },
+                        {
+                            name: "Local Office API",
+                            type: "backend",
+                            description: "NestJS-based service",
+                            children: [
+                                { name: "Programs", type: "backend", description: "Program management module" },
+                                { name: "Orders", type: "backend", description: "Order processing" },
+                                { name: "Batches", type: "backend", description: "Batch operations" },
+                                { name: "Deliveries", type: "backend", description: "Delivery tracking" },
+                                { name: "Invoices", type: "backend", description: "Billing & invoicing" }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    name: "Data Layer",
+                    type: "database",
+                    description: "Content & data management",
+                    children: [
+                        {
+                            name: "Sanity CMS (studio/)",
+                            type: "database",
+                            description: "Headless CMS for content",
+                            children: [
+                                { name: "Product Schema", type: "database", description: "Menu items, products" },
+                                { name: "Event Schema", type: "database", description: "Events & campaigns" },
+                                { name: "Message Schema", type: "database", description: "Customer communications" },
+                                { name: "Site Settings", type: "database", description: "Global configuration" }
+                            ]
+                        },
+                        {
+                            name: "Supabase",
+                            type: "database",
+                            description: "PostgreSQL database",
+                            children: [
+                                { name: "Auth", type: "database", description: "User authentication" },
+                                { name: "Storage", type: "database", description: "File storage" },
+                                { name: "RLS Policies", type: "database", description: "Row-level security" }
+                            ]
+                        },
+                        {
+                            name: "Firebase",
+                            type: "database",
+                            description: "Real-time database (legacy)",
+                            children: [
+                                { name: "Firestore", type: "database", description: "NoSQL database" },
+                                { name: "Auth", type: "database", description: "Authentication" }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    name: "Integration Services",
+                    type: "backend",
+                    description: "Third-party integrations",
+                    children: [
+                        { name: "Square Payments", type: "backend", description: "Payment processing & webhooks" },
+                        { name: "Brevo (Sendinblue)", type: "backend", description: "Email & contact management" },
+                        { name: "Cloudinary", type: "backend", description: "Image hosting & optimization" },
+                        { name: "Sentry", type: "backend", description: "Error tracking & monitoring" },
+                        { name: "EmailJS", type: "backend", description: "Email sending service" }
+                    ]
+                },
+                {
+                    name: "DevOps & Config",
+                    type: "config",
+                    description: "Deployment & configuration",
+                    children: [
+                        { name: "Vercel", type: "config", description: "Frontend hosting & serverless" },
+                        { name: "PM2", type: "config", description: "Process management (ecosystem.config.cjs)" },
+                        { name: "Vite", type: "config", description: "Build tool & dev server" },
+                        { name: "Tailwind", type: "config", description: "CSS framework" },
+                        { name: "Firebase Hosting", type: "config", description: "Static hosting" }
+                    ]
+                },
+                {
+                    name: "Tools & Scripts",
+                    type: "tools",
+                    description: "Development utilities",
+                    children: [
+                        { name: "Static Export", type: "tools", description: "SSR/SSG for SEO" },
+                        { name: "COGS Calculator", type: "tools", description: "Cost analysis tool" },
+                        { name: "Batch Upload", type: "tools", description: "Data import scripts" },
+                        { name: "Playwright Tests", type: "tools", description: "E2E testing" },
+                        { name: "LOC Counter", type: "tools", description: "Code metrics" }
+                    ]
+                },
+                {
+                    name: "Documentation",
+                    type: "config",
+                    description: "Project documentation",
+                    children: [
+                        { name: "Brevo Setup", type: "config", description: "Email integration guide" },
+                        { name: "Crowdfunding Docs", type: "config", description: "PizzaFunder documentation" },
+                        { name: "Event SEO", type: "config", description: "SEO implementation" },
+                        { name: "Observability", type: "config", description: "Monitoring setup" },
+                        { name: "Email Flows", type: "config", description: "Email templates & logic" }
+                    ]
+                }
+            ]
+        };
+        
+        // Color scheme
+        const colorMap = {
+            root: "#1e293b",
+            frontend: "#f59e0b",
+            backend: "#3b82f6",
+            database: "#10b981",
+            tools: "#8b5cf6",
+            partner: "#ec4899",
+            config: "#06b6d4"
+        };
+        
+        // Setup
+        const width = window.innerWidth;
+        const height = window.innerHeight;
+        let currentLayout = 'tree';
+        
+        const svg = d3.select("#mindmap");
+        const g = svg.append("g");
+        
+        // Zoom behavior
+        const zoom = d3.zoom()
+            .scaleExtent([0.1, 4])
+            .on("zoom", (event) => {
+                g.attr("transform", event.transform);
+            });
+        
+        svg.call(zoom);
+        
+        // Tooltip
+        const tooltip = d3.select("body")
+            .append("div")
+            .attr("class", "tooltip")
+            .style("display", "none");
+        
+        // Tree layout
+        const tree = d3.tree()
+            .size([height - 100, width - 400])
+            .separation((a, b) => a.parent === b.parent ? 1 : 1.5);
+        
+        // Hierarchical data
+        const root = d3.hierarchy(repoData);
+        
+        // Collapse nodes by default (except first level)
+        root.children.forEach(collapse);
+        
+        function collapse(d) {
+            if (d.children) {
+                d._children = d.children;
+                d._children.forEach(collapse);
+                d.children = null;
+            }
+        }
+        
+        function expand(d) {
+            if (d._children) {
+                d.children = d._children;
+                d._children = null;
+            }
+            if (d.children) {
+                d.children.forEach(expand);
+            }
+        }
+        
+        update(root);
+        
+        function update(source) {
+            const treeData = tree(root);
+            const nodes = treeData.descendants();
+            const links = treeData.links();
+            
+            // Nodes
+            const node = g.selectAll(".node")
+                .data(nodes, d => d.data.name);
+            
+            const nodeEnter = node.enter()
+                .append("g")
+                .attr("class", "node")
+                .attr("transform", d => `translate(${source.y0 || height/2},${source.x0 || width/2})`)
+                .on("click", (event, d) => {
+                    if (d.children) {
+                        d._children = d.children;
+                        d.children = null;
+                    } else {
+                        d.children = d._children;
+                        d._children = null;
+                    }
+                    update(d);
+                })
+                .on("dblclick", (event, d) => {
+                    // Center on node
+                    const transform = d3.zoomIdentity
+                        .translate(width / 2, height / 2)
+                        .scale(1.5)
+                        .translate(-d.y, -d.x);
+                    svg.transition().duration(750).call(zoom.transform, transform);
+                })
+                .on("mouseover", (event, d) => {
+                    tooltip
+                        .style("display", "block")
+                        .html(`
+                            <h3>${d.data.name}</h3>
+                            ${d.data.description ? `<p>${d.data.description}</p>` : ''}
+                            <p><strong>Type:</strong> ${d.data.type}</p>
+                            ${d.children || d._children ? `<p><strong>Children:</strong> ${(d.children || d._children).length}</p>` : ''}
+                        `)
+                        .style("left", (event.pageX + 15) + "px")
+                        .style("top", (event.pageY - 15) + "px");
+                })
+                .on("mouseout", () => {
+                    tooltip.style("display", "none");
+                });
+            
+            nodeEnter.append("circle")
+                .attr("r", d => d.children || d._children ? 8 : 5)
+                .style("fill", d => colorMap[d.data.type] || "#64748b");
+            
+            nodeEnter.append("text")
+                .attr("dy", ".35em")
+                .attr("x", d => d.children || d._children ? -12 : 12)
+                .attr("text-anchor", d => d.children || d._children ? "end" : "start")
+                .text(d => d.data.name)
+                .style("fill", "#e2e8f0");
+            
+            // Update
+            const nodeUpdate = nodeEnter.merge(node);
+            
+            nodeUpdate.transition()
+                .duration(500)
+                .attr("transform", d => `translate(${d.y},${d.x})`);
+            
+            nodeUpdate.select("circle")
+                .attr("r", d => d.children || d._children ? 8 : 5)
+                .style("fill", d => colorMap[d.data.type] || "#64748b");
+            
+            // Exit
+            const nodeExit = node.exit()
+                .transition()
+                .duration(500)
+                .attr("transform", d => `translate(${source.y},${source.x})`)
+                .remove();
+            
+            nodeExit.select("circle").attr("r", 0);
+            nodeExit.select("text").style("fill-opacity", 0);
+            
+            // Links
+            const link = g.selectAll(".link")
+                .data(links, d => d.target.data.name);
+            
+            const linkEnter = link.enter()
+                .insert("path", "g")
+                .attr("class", "link")
+                .attr("d", d => {
+                    const o = {x: source.x0 || height/2, y: source.y0 || width/2};
+                    return diagonal(o, o);
+                });
+            
+            const linkUpdate = linkEnter.merge(link);
+            
+            linkUpdate.transition()
+                .duration(500)
+                .attr("d", d => diagonal(d.source, d.target));
+            
+            link.exit()
+                .transition()
+                .duration(500)
+                .attr("d", d => {
+                    const o = {x: source.x, y: source.y};
+                    return diagonal(o, o);
+                })
+                .remove();
+            
+            // Store positions
+            nodes.forEach(d => {
+                d.x0 = d.x;
+                d.y0 = d.y;
+            });
+        }
+        
+        function diagonal(s, d) {
+            return `M ${s.y} ${s.x}
+                    C ${(s.y + d.y) / 2} ${s.x},
+                      ${(s.y + d.y) / 2} ${d.x},
+                      ${d.y} ${d.x}`;
+        }
+        
+        // Control functions
+        function resetView() {
+            svg.transition().duration(750).call(
+                zoom.transform,
+                d3.zoomIdentity.translate(100, height / 2).scale(0.8)
+            );
+        }
+        
+        function expandAll() {
+            root.children.forEach(expand);
+            update(root);
+        }
+        
+        function collapseAll() {
+            root.children.forEach(collapse);
+            update(root);
+        }
+        
+        function toggleLayout() {
+            // Placeholder for future radial/force layout
+            alert("Alternative layouts coming soon!");
+        }
+        
+        function exportData() {
+            const dataStr = JSON.stringify(repoData, null, 2);
+            const dataBlob = new Blob([dataStr], {type: 'application/json'});
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'repo-structure.json';
+            link.click();
+        }
+        
+        // Search functionality
+        document.getElementById('search').addEventListener('input', (e) => {
+            const searchTerm = e.target.value.toLowerCase();
+            
+            g.selectAll(".node").classed("highlighted", false);
+            
+            if (searchTerm) {
+                g.selectAll(".node")
+                    .filter(d => d.data.name.toLowerCase().includes(searchTerm) || 
+                                 (d.data.description && d.data.description.toLowerCase().includes(searchTerm)))
+                    .classed("highlighted", true);
+            }
+        });
+        
+        // Initialize view
+        resetView();
+        
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            const newWidth = window.innerWidth;
+            const newHeight = window.innerHeight;
+            tree.size([newHeight - 100, newWidth - 400]);
+            update(root);
+        });
+    </script>
+</body>
+</html>
