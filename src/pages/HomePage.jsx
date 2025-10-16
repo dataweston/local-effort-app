@@ -14,6 +14,7 @@ import { portableTextComponents } from '../utils/portableTextComponents';
 import SectionHeader from '../components/ui/SectionHeader';
 import Separator from '../components/ui/Separator';
 import GiftCardDialog from '../components/home/GiftCardDialog';
+import { generateEventListSchema } from '../utils/generateEventSchema';
 
 const HomePage = () => {
   const navigate = useNavigate();
@@ -106,6 +107,12 @@ const HomePage = () => {
     })();
     return () => { mounted = false; };
   }, []);
+
+  // Generate event schemas for SEO
+  const eventSchemas = useMemo(() => 
+    generateEventListSchema(events),
+    [events]
+  );
 
   const PartnerGrid = () => {
     const items = (partners || []).filter((p) => p && p.publicId);
@@ -507,6 +514,9 @@ const HomePage = () => {
           return biz;
         })())}</script>
         <script type="application/ld+json">{JSON.stringify(homeFaqJsonLd)}</script>
+        {eventSchemas && eventSchemas.length > 0 && (
+          <script type="application/ld+json">{JSON.stringify(eventSchemas)}</script>
+        )}
       </Helmet>
 
       <div className="space-y-24">
