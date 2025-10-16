@@ -18,6 +18,7 @@ import { createPortableTextComponents } from '../utils/portableTextComponents';
 import PrioritiesPie from '../components/crowdfunding/PrioritiesPie.jsx';
 import Separator from '../components/ui/Separator';
 import { cn } from '../lib/utils';
+import { generateEventListSchema, generateFAQSchema } from '../utils/generateEventSchema';
 
 /**
  * Event status labels and styling
@@ -269,6 +270,24 @@ const PizzaFunderPage = () => {
         return aStart - bStart;
       });
   }, [campaignData, parseEventDate]);
+
+  // Generate structured data for SEO
+  const eventSchemas = useMemo(() => 
+    generateEventListSchema(upcomingEvents, campaignData),
+    [upcomingEvents, campaignData]
+  );
+
+  const faqSchema = useMemo(() => 
+    campaignData?.faq ? generateFAQSchema(campaignData.faq) : null,
+    [campaignData]
+  );
+
+  const description = useMemo(() => {
+    if (campaignData?.description?.[0]?.children?.[0]?.text) {
+      return campaignData.description[0].children[0].text;
+    }
+    return "Help us bring delicious pizza to the community! Back our pizza crowdfunding campaign.";
+  }, [campaignData]);
 
   const formatEventDate = useCallback((event) => {
     const start = parseEventDate(event?.startDate);
@@ -674,9 +693,37 @@ const PizzaFunderPage = () => {
         <title>{campaignData?.title || 'Pizza Funder'} | Local Effort</title>
         <meta 
           name="description" 
-          content={campaignData?.description?.[0]?.children?.[0]?.text || "Help us bring delicious pizza to the community! Back our pizza crowdfunding campaign."} 
+          content={description} 
         />
         <link rel="canonical" href="https://localeffortfood.com/pizzafunder" />
+        
+        {/* Open Graph */}
+        <meta property="og:title" content={campaignData?.title || 'Pizza Funder'} />
+        <meta property="og:description" content={description} />
+        <meta property="og:image" content={campaignData?.heroImage?.asset?.url || 'https://localeffortfood.com/images/pizza-default.jpg'} />
+        <meta property="og:url" content="https://localeffortfood.com/pizzafunder" />
+        <meta property="og:type" content="website" />
+        <meta property="og:site_name" content="Local Effort" />
+        
+        {/* Twitter Card */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={campaignData?.title || 'Pizza Funder'} />
+        <meta name="twitter:description" content={description} />
+        <meta name="twitter:image" content={campaignData?.heroImage?.asset?.url || 'https://localeffortfood.com/images/pizza-default.jpg'} />
+        
+        {/* Event Structured Data */}
+        {eventSchemas && eventSchemas.length > 0 && (
+          <script type="application/ld+json">
+            {JSON.stringify(eventSchemas)}
+          </script>
+        )}
+        
+        {/* FAQ Structured Data */}
+        {faqSchema && (
+          <script type="application/ld+json">
+            {JSON.stringify(faqSchema)}
+          </script>
+        )}
       </Helmet>
 
       {/* Title Section */}
@@ -791,6 +838,105 @@ const PizzaFunderPage = () => {
             <div className="w-full aspect-video bg-gradient-to-br from-orange-100 to-red-100 rounded-lg flex items-center justify-center">
               <div className="text-6xl">🍕</div>
             </div>
+          )}
+
+          {/* Featured Events Section - BEFORE tabs for SEO */}
+          {upcomingEvents && upcomingEvents.length > 0 && (
+            <section className="space-y-6" aria-labelledby="events-heading">
+              <header className="text-center">
+                <h2 id="events-heading" className="text-3xl font-bold text-neutral-900">
+                  Upcoming Pizza Events
+                </h2>
+                <p className="text-lg text-neutral-600 mt-2">
+                  Join us for pizza! Pick up your pizzas at these events.
+                </p>
+              </header>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {upcomingEvents.slice(0, 6).map((event) => {
+                  const dateLabel = formatEventDate(event);
+                  const startDate = parseEventDate(event.startDate);
+                  return (
+                    <Card
+                      key={event._key}
+                      className="cursor-pointer hover:shadow-lg transition-shadow"
+                      onClick={() => setSelectedEvent(event)}
+                      itemScope
+                      itemType="https://schema.org/Event"
+                    >
+                      <CardContent className="p-4">
+                        <h3 className="font-bold text-lg mb-2" itemProp="name">
+                          {event.location}
+                        </h3>
+                        
+                        {startDate && (
+                          <time 
+                            dateTime={event.startDate}
+                            itemProp="startDate"
+                            className="text-sm text-orange-600 font-semibold block mb-2"
+                          >
+                            {dateLabel}
+                          </time>
+                        )}
+                        
+                        {event.tagline && (
+                          <p className="text-sm font-medium text-neutral-700 mb-2 italic">
+                            {event.tagline}
+                          </p>
+                        )}
+                        
+                        {event.summary && (
+                          <p className="text-sm text-neutral-600 line-clamp-2" itemProp="description">
+                            {event.summary}
+                          </p>
+                        )}
+                        
+                        <div className="flex flex-wrap gap-2 mt-3">
+                          {event.foodType && (
+                            <span className="inline-block px-2 py-1 bg-orange-100 text-orange-800 text-xs rounded-full font-medium">
+                              {event.foodType}
+                            </span>
+                          )}
+                          {event.status && event.status !== 'scheduled' && (
+                            <EventBadge variant={event.status}>
+                              {EVENT_STATUS_LABELS[event.status] || event.status}
+                            </EventBadge>
+                          )}
+                        </div>
+                        
+                        {/* Hidden metadata for SEO */}
+                        {event.locationDetails && (
+                          <meta itemProp="location" content={event.locationDetails} />
+                        )}
+                        {event.endDate && (
+                          <time itemProp="endDate" dateTime={event.endDate} className="sr-only">
+                            {event.endDate}
+                          </time>
+                        )}
+                        <meta itemProp="eventStatus" content={
+                          event.status === 'cancelled' 
+                            ? 'https://schema.org/EventCancelled' 
+                            : event.status === 'postponed'
+                            ? 'https://schema.org/EventPostponed'
+                            : 'https://schema.org/EventScheduled'
+                        } />
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+              </div>
+              
+              {upcomingEvents.length > 6 && (
+                <div className="text-center">
+                  <Button 
+                    variant="outline"
+                    onClick={() => setActiveTab('events')}
+                  >
+                    View All {upcomingEvents.length} Events
+                  </Button>
+                </div>
+              )}
+            </section>
           )}
 
           <Card className="p-6 shadow-lg">
