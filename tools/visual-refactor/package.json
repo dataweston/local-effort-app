@@ -1,0 +1,19 @@
+{
+  "name": "visual-refactor",
+  "version": "1.0.0",
+  "description": "Visual architecture transformation tool with jscodeshift",
+  "scripts": {
+    "start": "node server.js",
+    "transform:imports": "jscodeshift -t transforms/update-imports.js",
+    "transform:extract": "jscodeshift -t transforms/extract-to-module.js",
+    "transform:alias": "jscodeshift -t transforms/add-path-alias.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "jscodeshift": "^0.15.1",
+    "cors": "^2.8.5"
+  },
+  "devDependencies": {
+    "@types/jscodeshift": "^0.11.10"
+  }
+}
