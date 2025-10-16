@@ -289,6 +289,17 @@ const PizzaFunderPage = () => {
     return "Help us bring delicious pizza to the community! Back our pizza crowdfunding campaign.";
   }, [campaignData]);
 
+  // Calculate days left until campaign end
+  const daysLeft = useMemo(() => {
+    if (!campaignData?.endDate) return 0;
+    const endDate = new Date(campaignData.endDate);
+    if (Number.isNaN(endDate.getTime())) return 0;
+    
+    const diffMs = endDate.getTime() - Date.now();
+    const days = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+    return Math.max(days, 0);
+  }, [campaignData?.endDate]);
+
   const formatEventDate = useCallback((event) => {
     const start = parseEventDate(event?.startDate);
     if (!start) return event?.timingNote || '';
@@ -755,6 +766,7 @@ const PizzaFunderPage = () => {
             pizzas={status.pizzas}
             backers={status.backers}
             goal={campaignData?.pizzaGoal || status.goal}
+            daysLeft={daysLeft}
           />
         </Card>
       </motion.div>

@@ -7,7 +7,7 @@ import { motion } from 'framer-motion';
  * PizzaProgress - Compact, modern funding progress display
  * Redesigned for better visual hierarchy and reduced vertical space
  */
-export const PizzaProgress = ({ pizzas = 0, backers = 0, goal = 1000 }) => {
+export const PizzaProgress = ({ pizzas = 0, backers = 0, goal = 1000, daysLeft = null }) => {
   const percentage = goal > 0 ? Math.min(100, (pizzas / goal) * 100) : 0;
   const remaining = Math.max(0, goal - pizzas);
   const isComplete = pizzas >= goal;
@@ -15,7 +15,7 @@ export const PizzaProgress = ({ pizzas = 0, backers = 0, goal = 1000 }) => {
   return (
     <div className="space-y-4">
       {/* Stats Row - Compact horizontal layout */}
-      <div className="grid grid-cols-3 gap-4 text-center">
+      <div className="grid grid-cols-4 gap-4 text-center">
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -54,6 +54,21 @@ export const PizzaProgress = ({ pizzas = 0, backers = 0, goal = 1000 }) => {
             Goal
           </div>
         </motion.div>
+
+        {daysLeft !== null && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.35 }}
+          >
+            <div className="text-4xl font-bold text-neutral-700">
+              {daysLeft > 0 ? daysLeft : 'Ended'}
+            </div>
+            <div className="text-sm font-medium text-neutral-600 mt-1">
+              {daysLeft > 0 ? 'Days to Go' : ''}
+            </div>
+          </motion.div>
+        )}
       </div>
 
       {/* Progress Bar - Enhanced with gradient */}
@@ -119,4 +134,5 @@ PizzaProgress.propTypes = {
   pizzas: PropTypes.number,
   backers: PropTypes.number,
   goal: PropTypes.number,
+  daysLeft: PropTypes.number,
 };
