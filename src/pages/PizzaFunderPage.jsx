@@ -21,6 +21,15 @@ import { cn } from '../lib/utils';
 import { generateEventListSchema, generateFAQSchema } from '../utils/generateEventSchema';
 
 /**
+ * Campaign extension deadline (matches CrowdfundingPage)
+ */
+const CAMPAIGN_EXTENSION_DATE_STRING = '2025-12-10T23:59:59-06:00';
+const CAMPAIGN_EXTENSION_DEADLINE = (() => {
+  const parsed = new Date(CAMPAIGN_EXTENSION_DATE_STRING);
+  return Number.isNaN(parsed.getTime()) ? null : parsed;
+})();
+
+/**
  * Event status labels and styling
  */
 const EVENT_STATUS_LABELS = {
@@ -289,16 +298,31 @@ const PizzaFunderPage = () => {
     return "Help us bring delicious pizza to the community! Back our pizza crowdfunding campaign.";
   }, [campaignData]);
 
+  // Calculate effective end date (respects campaign extension)
+  const effectiveEndDate = useMemo(() => {
+    const fallback = CAMPAIGN_EXTENSION_DEADLINE;
+    if (!campaignData?.endDate) return fallback;
+
+    const parsed = new Date(campaignData.endDate);
+    if (Number.isNaN(parsed.getTime())) {
+      return fallback;
+    }
+
+    if (fallback && parsed < fallback) {
+      return fallback;
+    }
+
+    return parsed;
+  }, [campaignData?.endDate]);
+
   // Calculate days left until campaign end
   const daysLeft = useMemo(() => {
-    if (!campaignData?.endDate) return 0;
-    const endDate = new Date(campaignData.endDate);
-    if (Number.isNaN(endDate.getTime())) return 0;
+    if (!effectiveEndDate) return 0;
     
-    const diffMs = endDate.getTime() - Date.now();
+    const diffMs = effectiveEndDate.getTime() - Date.now();
     const days = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
     return Math.max(days, 0);
-  }, [campaignData?.endDate]);
+  }, [effectiveEndDate]);
 
   const formatEventDate = useCallback((event) => {
     const start = parseEventDate(event?.startDate);
