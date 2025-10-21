@@ -60,6 +60,7 @@ const PersonalChefWisconsinPage = lazy(() => import('./pages/PersonalChefWiscons
 const PizzaPartyPage = lazy(() => import('./pages/PizzaPartyPage'));
 const PaikkaPage = lazy(() => import('./pages/PaikkaPage'));
 const PaikkaSuccessPage = lazy(() => import('./pages/PaikkaSuccessPage'));
+const CalendarPage = lazy(() => import('./pages/CalendarPage'));
 
 const AppContent = () => {
   const location = useLocation();
@@ -274,6 +275,14 @@ const AppContent = () => {
                   element={
                     <AnimatedPage>
                       <PaikkaSuccessPage />
+                    </AnimatedPage>
+                  }
+                />
+                <Route
+                  path="/calendar"
+                  element={
+                    <AnimatedPage>
+                      <CalendarPage />
                     </AnimatedPage>
                   }
                 />
