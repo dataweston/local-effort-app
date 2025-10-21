@@ -33,6 +33,13 @@ export const PizzaPledgeForm = ({ onPledge, loading = false, selectedTier }) => 
   const { toast } = useToast();
   const { payments, loading: paymentsLoading, error: paymentsError } = useSquarePayments();
 
+  // Keep pizza count in sync with the selected reward tier
+  // This ensures switching tiers updates the quantity and total without refresh
+  useEffect(() => {
+    const nextCount = selectedTier?.pizzaCount || 1;
+    setPizzaCount(nextCount);
+  }, [selectedTier]);
+
   const pricePerPizza = selectedTier?.amount ? selectedTier.amount / (selectedTier.pizzaCount || 1) : 20;
   const baseTotal = pizzaCount * pricePerPizza;
   

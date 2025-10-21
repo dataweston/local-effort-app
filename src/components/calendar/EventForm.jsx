@@ -14,6 +14,7 @@ const EventForm = ({ event, isOpen, onClose, onSave, onDelete }) => {
     status: 'scheduled',
     location: '',
     capacity: '',
+    buffer_hours: 4,
     estimated_revenue: '',
     estimated_food_cost: '',
     estimated_labor_cost: '',
@@ -22,12 +23,51 @@ const EventForm = ({ event, isOpen, onClose, onSave, onDelete }) => {
     repeatUntil: ''
   });
   
+  const [conflicts, setConflicts] = useState([]);
+  const [checkingConflicts, setCheckingConflicts] = useState(false);
+  
   const handleSubmit = (e) => {
     e.preventDefault();
     onSave(formData);
   };
   
-  const update = (field, value) => setFormData(prev => ({ ...prev, [field]: value }));
+  const update = (field, value) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+    
+    // Check for conflicts when date/time changes
+    if (['start_date', 'start_time', 'buffer_hours'].includes(field)) {
+      checkConflicts(field === 'start_date' ? value : formData.start_date,
+                     field === 'start_time' ? value : formData.start_time,
+                     field === 'buffer_hours' ? value : formData.buffer_hours);
+    }
+  };
+  
+  const checkConflicts = async (date, time, bufferHours) => {
+    if (!date) return;
+    
+    setCheckingConflicts(true);
+    try {
+      const response = await fetch('/api/calendar/check-conflicts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          check_date: date,
+          check_time: time || '00:00',
+          check_buffer_hours: bufferHours || 4,
+          exclude_event_id: event?.id
+        })
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        setConflicts(data.conflicts || []);
+      }
+    } catch (error) {
+      console.error('Failed to check conflicts:', error);
+    } finally {
+      setCheckingConflicts(false);
+    }
+  };
   
   return (
     <Dialog.Root open={isOpen} onOpenChange={onClose}>
@@ -103,16 +143,49 @@ const EventForm = ({ event, isOpen, onClose, onSave, onDelete }) => {
               </div>
             </div>
             
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-3 gap-3">
               <div>
                 <label className="block text-sm font-medium mb-1">Location</label>
                 <input type="text" value={formData.location} onChange={e => update('location', e.target.value)} className="w-full px-3 py-2 border rounded-md" />
               </div>
               <div>
                 <label className="block text-sm font-medium mb-1">Capacity</label>
-                <input type="number" min="0" value={formData.capacity} onChange={e => update('capacity', e.target.value)} className="w-full px-3 py-2 border rounded-md" />
+                <input type="number" min="0" value={formData.capacity} onChange={e => update('capacity', e.target.value)} className="w-full px-3 py-2 border rounded-md" placeholder="Leave empty for unlimited" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Buffer Hours</label>
+                <input type="number" min="0" value={formData.buffer_hours} onChange={e => update('buffer_hours', e.target.value)} className="w-full px-3 py-2 border rounded-md" />
               </div>
             </div>
+            
+            {/* Conflict Warning */}
+            {conflicts.length > 0 && (
+              <div className="bg-yellow-50 border border-yellow-200 rounded-md p-4">
+                <div className="flex items-start gap-2">
+                  <span className="text-yellow-600 text-xl">⚠️</span>
+                  <div className="flex-1">
+                    <p className="font-semibold text-yellow-900 mb-2">
+                      {conflicts.length} Scheduling {conflicts.length === 1 ? 'Conflict' : 'Conflicts'} Detected
+                    </p>
+                    <ul className="list-disc list-inside space-y-1 text-sm text-yellow-800">
+                      {conflicts.map((c, i) => (
+                        <li key={i}>
+                          {c.conflict_type === 'event' ? '📅' : '🕐'} <strong>{c.conflict_title}</strong> - overlaps by {c.buffer_overlap_minutes} min
+                        </li>
+                      ))}
+                    </ul>
+                    <p className="text-xs text-yellow-700 mt-2">
+                      Reduce buffer hours, change the date/time, or save as draft to resolve conflicts.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+            {checkingConflicts && (
+              <div className="text-sm text-gray-500 text-center">
+                Checking for conflicts...
+              </div>
+            )}
             
             <div className="grid grid-cols-3 gap-3">
               <div>
