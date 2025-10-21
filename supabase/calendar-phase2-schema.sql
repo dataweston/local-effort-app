@@ -246,7 +246,6 @@ $$ LANGUAGE plpgsql;
 CREATE TRIGGER trigger_update_timeslot_booked_count
   AFTER INSERT OR UPDATE OR DELETE ON calendar_bookings
   FOR EACH ROW
-  WHEN (NEW.time_slot_id IS NOT NULL OR OLD.time_slot_id IS NOT NULL)
   EXECUTE FUNCTION update_timeslot_booked_count();
 
 -- Prevent overbooking time slots
