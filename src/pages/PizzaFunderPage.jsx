@@ -12,6 +12,7 @@ import { Button } from '../components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '../components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '../components/ui/dialog';
+import { TimeSlotPicker } from '../components/calendar/TimeSlotPicker';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { createPortableTextComponents } from '../utils/portableTextComponents';
@@ -199,6 +200,8 @@ const PizzaFunderPage = () => {
   const [showPledgeForm, setShowPledgeForm] = useState(false);
   const [pledgeSuccess, setPledgeSuccess] = useState(false);
   const [lastPledgeData, setLastPledgeData] = useState(null);
+  const [showScheduling, setShowScheduling] = useState(false);
+  const [schedulingComplete, setSchedulingComplete] = useState(false);
   const [activeTab, setActiveTab] = useState('story');
   const [selectedTier, setSelectedTier] = useState(null);
   const [selectedEvent, setSelectedEvent] = useState(null);
@@ -539,6 +542,7 @@ const PizzaFunderPage = () => {
           email: data.email,
           discountCode: data.discountCode,
           total: data.totalCents / 100,
+          rewardPreference: data.rewardPreference,
         });
 
         // Show success message with details
@@ -1208,41 +1212,61 @@ const PizzaFunderPage = () => {
         >
           <div className="sticky top-6 space-y-6">
             {pledgeSuccess ? (
-              // Success Thank You Card
-              <Card className="p-8 shadow-xl bg-gradient-to-br from-green-50 to-emerald-50 border-2 border-green-300">
-                <div className="text-center space-y-4">
-                  <div className="text-6xl mb-4">✅</div>
-                  <h3 className="text-2xl font-bold text-green-900">Thank You!</h3>
-                  <p className="text-green-800 font-medium">
-                    Your pledge for {lastPledgeData?.pizzaCount || 1} {lastPledgeData?.pizzaCount === 1 ? 'pizza' : 'pizzas'} was successful!
-                  </p>
-                  {lastPledgeData?.discountCode && (
-                    <p className="text-sm text-green-700">
-                      Discount code "{lastPledgeData.discountCode}" applied
+              // Success Thank You Card with Scheduling
+              <div className="space-y-6">
+                <Card className="p-8 shadow-xl bg-gradient-to-br from-green-50 to-emerald-50 border-2 border-green-300">
+                  <div className="text-center space-y-4">
+                    <div className="text-6xl mb-4">✅</div>
+                    <h3 className="text-2xl font-bold text-green-900">Thank You!</h3>
+                    <p className="text-green-800 font-medium">
+                      Your pledge for {lastPledgeData?.pizzaCount || 1} {lastPledgeData?.pizzaCount === 1 ? 'pizza' : 'pizzas'} was successful!
                     </p>
-                  )}
-                  <div className="pt-4 border-t border-green-200">
-                    <p className="text-sm text-green-800 mb-2">
-                      <strong>Next Steps:</strong>
-                    </p>
-                    <ul className="text-sm text-green-700 space-y-1 text-left">
-                      <li>✉️ Check {lastPledgeData?.email} for confirmation</li>
-                      <li>📧 Watch for updates about pickup details</li>
-                      <li>🍕 Get ready for authentic Local Pizza!</li>
-                    </ul>
+                    {lastPledgeData?.discountCode && (
+                      <p className="text-sm text-green-700">
+                        Discount code "{lastPledgeData.discountCode}" applied
+                      </p>
+                    )}
+                    <div className="pt-4 border-t border-green-200">
+                      <p className="text-sm text-green-800 mb-2">
+                        <strong>Next Steps:</strong>
+                      </p>
+                      <ul className="text-sm text-green-700 space-y-1 text-left">
+                        <li>✉️ Check {lastPledgeData?.email} for confirmation</li>
+                        <li>� Schedule your pickup using the form below</li>
+                        <li>🍕 Get ready for authentic Local Pizza!</li>
+                      </ul>
+                    </div>
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        setPledgeSuccess(false);
+                        setLastPledgeData(null);
+                        setShowScheduling(false);
+                        setSchedulingComplete(false);
+                      }}
+                      className="w-full mt-4 border-green-300 text-green-800 hover:bg-green-100"
+                    >
+                      Make Another Pledge
+                    </Button>
                   </div>
-                  <Button
-                    variant="outline"
-                    onClick={() => {
-                      setPledgeSuccess(false);
-                      setLastPledgeData(null);
+                </Card>
+                
+                {/* Scheduling Component - Only show for 5+ pizzas AND delivery/live preferences */}
+                {!schedulingComplete && 
+                 lastPledgeData?.pizzaCount >= 5 && 
+                 (lastPledgeData?.rewardPreference === 'deliver to my home' || 
+                  lastPledgeData?.rewardPreference === 'make live at my home') && (
+                  <TimeSlotPicker
+                    pizzaCount={lastPledgeData?.pizzaCount || 1}
+                    customerName={lastPledgeData?.funderName || ''}
+                    customerEmail={lastPledgeData?.email || ''}
+                    onBook={(booking) => {
+                      setSchedulingComplete(true);
+                      console.log('Booking confirmed:', booking);
                     }}
-                    className="w-full mt-4 border-green-300 text-green-800 hover:bg-green-100"
-                  >
-                    Make Another Pledge
-                  </Button>
-                </div>
-              </Card>
+                  />
+                )}
+              </div>
             ) : !showPledgeForm ? (
               <Card className="p-8 shadow-xl bg-gradient-to-br from-orange-50 to-red-50 border-2 border-orange-200">
                 <div className="text-center space-y-4">

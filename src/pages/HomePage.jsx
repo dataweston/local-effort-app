@@ -10,6 +10,7 @@ import { cloudinaryConfig, heroPublicId, heroFallbackSrc, heroVersion } from '..
 import TestimonialsCarousel from '../components/common/TestimonialsCarousel';
 import sanityClient from '../sanityClient';
 import { PortableText } from '@portabletext/react';
+import { TimeSlotPicker } from '../components/calendar/TimeSlotPicker';
 import { portableTextComponents } from '../utils/portableTextComponents';
 import SectionHeader from '../components/ui/SectionHeader';
 import Separator from '../components/ui/Separator';
@@ -47,6 +48,7 @@ const HomePage = () => {
   const [reviews, setReviews] = useState([]);
   const [events, setEvents] = useState([]);
   const [eventModal, setEventModal] = useState(null);
+  const [showBooking, setShowBooking] = useState(false);
   const [business, setBusiness] = useState(null);
 
   const parseEventDate = (value) => {
@@ -88,22 +90,21 @@ const HomePage = () => {
     return () => { mounted = false; };
   }, []);
 
-  // Load upcoming public events from Sanity
+  // Load upcoming public events from calendar API (Supabase)
   useEffect(() => {
     let mounted = true;
     (async () => {
       try {
-        const items = await sanityClient.fetch(`*[_type == "publicEvent"]|order(startDate asc){ _id, location, startDate, endDate, foodType, ticketsUrl, description }`).catch(() => []);
+        const res = await fetch('/api/calendar/public-events');
+        const data = await res.json();
         if (!mounted) return;
-        const today = new Date(); today.setHours(0,0,0,0);
-        const upcoming = (items || []).filter((ev) => {
-          const end = parseEventDate(ev.endDate) || parseEventDate(ev.startDate);
-          if (!end) return false;
-          end.setHours(23, 59, 59, 999);
-          return end >= today;
+        const upcoming = (data.events || []).filter(ev => {
+          const eventDate = new Date(ev.start_date);
+          const today = new Date(); today.setHours(0,0,0,0);
+          return eventDate >= today;
         });
         setEvents(upcoming);
-  } catch (_) { /* ignore events fetch error */ }
+      } catch (_) { /* ignore events fetch error */ }
     })();
     return () => { mounted = false; };
   }, []);
@@ -351,28 +352,22 @@ const HomePage = () => {
     const currentYear = today.getFullYear();
 
     const formatListDate = (event) => {
-      const start = parseEventDate(event.startDate);
-      const end = parseEventDate(event.endDate);
-      if (!start) return '';
+      const start = new Date(event.start_date);
+      if (!start || isNaN(start)) return '';
       const includeYear = start.getFullYear() > currentYear;
-      if (end && end.getTime() !== start.getTime()) {
-        const opts = { month: 'short', day: 'numeric' };
-        if (includeYear) opts.year = 'numeric';
-        return `starts ${new Intl.DateTimeFormat('en-US', opts).format(start)}`;
-      }
       const opts = { weekday: 'short', month: 'short', day: 'numeric' };
       if (includeYear) opts.year = 'numeric';
       return new Intl.DateTimeFormat('en-US', opts).format(start);
     };
 
     const formatModalDate = (event) => {
-      const start = parseEventDate(event.startDate);
-      const end = parseEventDate(event.endDate);
-      if (!start) return '';
+      const start = new Date(event.start_date);
+      const end = event.end_date ? new Date(event.end_date) : null;
+      if (!start || isNaN(start)) return '';
       const includeYearStart = start.getFullYear() > currentYear || (end && end.getFullYear() !== start.getFullYear());
       const baseOptions = { weekday: 'short', month: 'short', day: 'numeric' };
       const startLabel = new Intl.DateTimeFormat('en-US', includeYearStart ? { ...baseOptions, year: 'numeric' } : baseOptions).format(start);
-      if (end && end.getTime() !== start.getTime()) {
+      if (end && !isNaN(end) && end.getTime() !== start.getTime()) {
         const includeYearEnd = end.getFullYear() > currentYear || end.getFullYear() !== start.getFullYear();
         const endLabel = new Intl.DateTimeFormat('en-US', includeYearEnd ? { ...baseOptions, year: 'numeric' } : baseOptions).format(end);
         return `${startLabel} - ${endLabel}`;
@@ -386,15 +381,15 @@ const HomePage = () => {
           <ul className="divide-y">
             {events.map((ev) => {
               const dateLabel = formatListDate(ev);
-              const detailLabel = [dateLabel, ev.foodType || 'Food'].filter(Boolean).join(' - ');
+              const detailLabel = [dateLabel, ev.event_type || 'Event'].filter(Boolean).join(' - ');
               return (
-                <li key={ev._id} className="py-2">
+                <li key={ev.id} className="py-2">
                   <button
                     className="text-left hover:underline"
                     onClick={() => setEventModal(ev)}
                   >
                     <span className="flex flex-col sm:flex-row sm:items-baseline sm:gap-2">
-                      <span className="font-semibold text-slate-800">{ev.location}</span>
+                      <span className="font-semibold text-slate-800">{ev.title}</span>
                       <span className="text-sm text-slate-600">{detailLabel}</span>
                     </span>
                   </button>
@@ -408,20 +403,74 @@ const HomePage = () => {
     return (
       <div className="max-w-6xl mx-auto px-4 mt-8">
         {content}
-        {eventModal && (
+        {eventModal && !showBooking && (
           <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
             <div className="bg-white rounded-lg shadow-xl max-w-lg w-full p-5 relative">
-              <button className="absolute right-3 top-3 text-sm underline" onClick={() => setEventModal(null)}>Close</button>
-              <h4 className="text-xl font-bold mb-1">{eventModal.location}</h4>
+              <button 
+                className="absolute right-3 top-3 text-sm underline" 
+                onClick={() => setEventModal(null)}
+              >
+                Close
+              </button>
+              <h4 className="text-xl font-bold mb-1">{eventModal.title}</h4>
               <p className="text-sm text-gray-600 mb-3">{formatModalDate(eventModal)}</p>
-              {eventModal.description && (
+              {eventModal.sanity_data?.description && (
                 <div className="prose max-w-none">
-                  <PortableText value={eventModal.description} components={portableTextComponents} />
+                  <PortableText value={eventModal.sanity_data.description} components={portableTextComponents} />
                 </div>
               )}
-              {eventModal.ticketsUrl && (
-                <a className="btn btn-primary mt-4 inline-block" href={eventModal.ticketsUrl} target="_blank" rel="noreferrer">Get tickets</a>
+              {eventModal.notes && !eventModal.sanity_data?.description && (
+                <p className="text-sm text-gray-700">{eventModal.notes}</p>
               )}
+              <div className="mt-4 space-y-3">
+                {eventModal.sanity_data?.ticketsUrl && (
+                  <a 
+                    className="btn btn-primary inline-block w-full text-center" 
+                    href={eventModal.sanity_data.ticketsUrl} 
+                    target="_blank" 
+                    rel="noreferrer"
+                  >
+                    Get tickets
+                  </a>
+                )}
+                {eventModal.is_bookable && (
+                  <button
+                    className="btn btn-secondary w-full"
+                    onClick={() => setShowBooking(true)}
+                  >
+                    Book a Spot
+                    {eventModal.capacity && eventModal.available_slots !== null && 
+                      ` (${eventModal.available_slots} left)`
+                    }
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+        {eventModal && showBooking && (
+          <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
+            <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full p-5 relative max-h-[90vh] overflow-y-auto">
+              <button 
+                className="absolute right-3 top-3 text-sm underline" 
+                onClick={() => {
+                  setShowBooking(false);
+                  setEventModal(null);
+                }}
+              >
+                Close
+              </button>
+              <TimeSlotPicker
+                pizzaCount={1}
+                customerName=""
+                customerEmail=""
+                onBook={(booking) => {
+                  console.log('Booking created:', booking);
+                  setShowBooking(false);
+                  setEventModal(null);
+                  alert('Booking confirmed! Check your email for details.');
+                }}
+              />
             </div>
           </div>
         )}
