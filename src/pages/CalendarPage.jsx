@@ -1,0 +1,232 @@
+import React, { useState, useEffect } from 'react';
+import { Helmet } from 'react-helmet-async';
+import { Plus, Download, Upload, Calendar as CalendarIcon, DollarSign } from 'lucide-react';
+import * as Tabs from '@radix-ui/react-tabs';
+import CalendarGrid from '../components/calendar/CalendarGrid';
+import EventForm from '../components/calendar/EventForm';
+import FinancialSummary from '../components/calendar/FinancialSummary';
+import CSVImporter from '../components/calendar/CSVImporter';
+
+const CalendarPage = () => {
+  const [currentMonth, setCurrentMonth] = useState(new Date());
+  const [events, setEvents] = useState([]);
+  const [receipts, setReceipts] = useState([]);
+  const [selectedEvent, setSelectedEvent] = useState(null);
+  const [showEventForm, setShowEventForm] = useState(false);
+  const [showCSVImporter, setShowCSVImporter] = useState(false);
+  const [loading, setLoading] = useState(true);
+  
+  useEffect(() => {
+    loadEvents();
+    loadReceipts();
+  }, []);
+  
+  const loadEvents = async () => {
+    try {
+      const res = await fetch('/api/calendar/events');
+      const data = await res.json();
+      setEvents(Array.isArray(data) ? data : []);
+    } catch (error) {
+      console.error('Failed to load events:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+  
+  const loadReceipts = async () => {
+    try {
+      const res = await fetch('/api/calendar/receipts');
+      const data = await res.json();
+      setReceipts(Array.isArray(data) ? data : []);
+    } catch (error) {
+      console.error('Failed to load receipts:', error);
+    }
+  };
+  
+  const handleSaveEvent = async (eventData) => {
+    try {
+      const url = eventData.id ? `/api/calendar/events?id=${eventData.id}` : '/api/calendar/events';
+      const method = eventData.id ? 'PUT' : 'POST';
+      
+      const res = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(eventData)
+      });
+      
+      if (!res.ok) throw new Error('Failed to save event');
+      
+      await loadEvents();
+      setShowEventForm(false);
+      setSelectedEvent(null);
+    } catch (error) {
+      alert('Failed to save event: ' + error.message);
+    }
+  };
+  
+  const handleDeleteEvent = async (eventId) => {
+    if (!confirm('Delete this event?')) return;
+    
+    try {
+      const res = await fetch(`/api/calendar/events?id=${eventId}`, { method: 'DELETE' });
+      if (!res.ok) throw new Error('Failed to delete');
+      
+      await loadEvents();
+      setShowEventForm(false);
+      setSelectedEvent(null);
+    } catch (error) {
+      alert('Failed to delete event: ' + error.message);
+    }
+  };
+  
+  const handleCSVImport = async (data) => {
+    try {
+      const promises = data.map(event => 
+        fetch('/api/calendar/events', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(event)
+        })
+      );
+      
+      await Promise.all(promises);
+      await loadEvents();
+      alert(`Successfully imported ${data.length} events`);
+    } catch (error) {
+      throw new Error('Import failed: ' + error.message);
+    }
+  };
+  
+  const handleExportCSV = () => {
+    const headers = ['title', 'start_date', 'end_date', 'event_type', 'visibility', 'status', 'location', 'capacity', 'estimated_revenue', 'estimated_food_cost', 'estimated_labor_cost', 'notes'];
+    const rows = events.map(e => headers.map(h => e[h] || '').join(','));
+    const csv = [headers.join(','), ...rows].join('\n');
+    
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `calendar-export-${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
+  };
+  
+  const openNewEvent = (date) => {
+    setSelectedEvent({
+      title: '',
+      start_date: date ? date.toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
+      event_type: 'other',
+      visibility: 'private',
+      status: 'scheduled'
+    });
+    setShowEventForm(true);
+  };
+  
+  const openEditEvent = (event) => {
+    setSelectedEvent(event);
+    setShowEventForm(true);
+  };
+  
+  if (loading) return <div className="flex justify-center items-center min-h-screen">Loading...</div>;
+  
+  return (
+    <>
+      <Helmet>
+        <title>Master Calendar | Local Effort</title>
+      </Helmet>
+      
+      <div className="container mx-auto px-4 py-8 max-w-7xl">
+        <div className="flex justify-between items-center mb-8">
+          <h1 className="text-3xl font-bold">Master Calendar</h1>
+          <div className="flex gap-3">
+            <button onClick={() => setShowCSVImporter(true)} className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg flex items-center gap-2">
+              <Upload className="w-4 h-4" />
+              Import CSV
+            </button>
+            <button onClick={handleExportCSV} className="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg flex items-center gap-2">
+              <Download className="w-4 h-4" />
+              Export CSV
+            </button>
+            <button onClick={() => openNewEvent()} className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg flex items-center gap-2">
+              <Plus className="w-4 h-4" />
+              New Event
+            </button>
+          </div>
+        </div>
+        
+        <Tabs.Root defaultValue="calendar" className="w-full">
+          <Tabs.List className="flex border-b mb-6">
+            <Tabs.Trigger value="calendar" className="px-6 py-3 border-b-2 border-transparent data-[state=active]:border-blue-500 data-[state=active]:text-blue-600 font-medium flex items-center gap-2">
+              <CalendarIcon className="w-4 h-4" />
+              Calendar
+            </Tabs.Trigger>
+            <Tabs.Trigger value="financials" className="px-6 py-3 border-b-2 border-transparent data-[state=active]:border-blue-500 data-[state=active]:text-blue-600 font-medium flex items-center gap-2">
+              <DollarSign className="w-4 h-4" />
+              Financials
+            </Tabs.Trigger>
+          </Tabs.List>
+          
+          <Tabs.Content value="calendar">
+            <CalendarGrid
+              currentMonth={currentMonth}
+              setCurrentMonth={setCurrentMonth}
+              events={events}
+              onEventClick={openEditEvent}
+              onDayClick={openNewEvent}
+            />
+            
+            <div className="mt-8">
+              <h2 className="text-xl font-semibold mb-4">Upcoming Events</h2>
+              <div className="space-y-3">
+                {events
+                  .filter(e => new Date(e.start_date) >= new Date() && e.status !== 'cancelled')
+                  .sort((a, b) => new Date(a.start_date) - new Date(b.start_date))
+                  .slice(0, 10)
+                  .map(event => (
+                    <div key={event.id} onClick={() => openEditEvent(event)} className="p-4 border rounded-lg hover:shadow-md cursor-pointer transition">
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <h3 className="font-semibold">{event.title}</h3>
+                          <p className="text-sm text-gray-600">{event.start_date} • {event.location}</p>
+                          <p className="text-xs text-gray-500 mt-1">
+                            {event.event_type} • {event.visibility} • {event.status}
+                          </p>
+                        </div>
+                        {event.estimated_revenue > 0 && (
+                          <div className="text-right">
+                            <p className="font-semibold text-green-600">${event.estimated_revenue.toFixed(2)}</p>
+                            <p className="text-xs text-gray-500">
+                              {event.capacity && `${event.booked_slots || 0}/${event.capacity} booked`}
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+              </div>
+            </div>
+          </Tabs.Content>
+          
+          <Tabs.Content value="financials">
+            <FinancialSummary events={events} receipts={receipts} />
+          </Tabs.Content>
+        </Tabs.Root>
+      </div>
+      
+      <EventForm
+        event={selectedEvent}
+        isOpen={showEventForm}
+        onClose={() => { setShowEventForm(false); setSelectedEvent(null); }}
+        onSave={handleSaveEvent}
+        onDelete={handleDeleteEvent}
+      />
+      
+      <CSVImporter
+        isOpen={showCSVImporter}
+        onClose={() => setShowCSVImporter(false)}
+        onImport={handleCSVImport}
+      />
+    </>
+  );
+};
+
+export default CalendarPage;

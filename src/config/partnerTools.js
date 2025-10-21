@@ -29,6 +29,15 @@ export const PARTNER_TOOLS = [
     icon: 'FileText',
   },
   {
+    key: 'calendar',
+    name: 'Master Calendar',
+    description: 'Unified event & booking calendar system.',
+    type: 'internal',
+    route: '/partners/calendar',
+    icon: 'Calendar',
+    public: true,
+  },
+  {
     key: 'zafa',
     name: 'ZAFA Events',
     description: 'Events management utilities for ZAFA.',
