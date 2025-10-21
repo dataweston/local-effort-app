@@ -26,25 +26,54 @@ export const TimeSlotPicker = ({
   const [loadingDates, setLoadingDates] = useState(true);
   const [bookingSuccess, setBookingSuccess] = useState(false);
 
-  // Fetch available dates from calendar API
+  // Fetch available dates and time slots from calendar API
   useEffect(() => {
     const fetchAvailableDates = async () => {
       try {
-        const res = await fetch('/api/calendar/public-events');
-        if (res.ok) {
-          const events = await res.json();
-          
-          // Filter to events that allow bookings and have available capacity
-          const bookable = events.filter(event => {
-            // Event is bookable if:
-            // 1. Has is_bookable flag (computed in view)
-            // 2. Is in the future
-            const isFuture = new Date(event.start_date) >= new Date();
-            return event.is_bookable && isFuture;
-          });
-          
-          setAvailableDates(bookable);
-        }
+        // Fetch both events and time slots in parallel
+        const [eventsRes, slotsRes] = await Promise.all([
+          fetch('/api/calendar/public-events'),
+          fetch('/api/calendar/time-slots?available_only=true')
+        ]);
+        
+        const events = eventsRes.ok ? await eventsRes.json() : [];
+        const timeSlots = slotsRes.ok ? await slotsRes.json() : [];
+        
+        // Filter to events that allow bookings and are in the future
+        const bookableEvents = events.filter(event => {
+          const isFuture = new Date(event.start_date) >= new Date();
+          return event.is_bookable && isFuture;
+        }).map(event => ({
+          ...event,
+          type: 'event',
+          display_date: event.start_date,
+          display_time: event.start_time,
+          booking_id: event.id,
+          booking_type: 'event'
+        }));
+        
+        // Format time slots to match structure
+        const bookableSlots = timeSlots.filter(slot => {
+          const isFuture = new Date(slot.slot_date) >= new Date();
+          return slot.is_bookable && isFuture;
+        }).map(slot => ({
+          ...slot,
+          type: 'time_slot',
+          title: `${slot.slot_type.replace('_', ' ')} - ${slot.slot_time}`,
+          display_date: slot.slot_date,
+          display_time: slot.slot_time,
+          capacity: slot.capacity,
+          available_slots: slot.available_slots,
+          booking_id: slot.id,
+          booking_type: 'time_slot'
+        }));
+        
+        // Combine and sort by date
+        const combined = [...bookableEvents, ...bookableSlots].sort((a, b) => 
+          new Date(a.display_date) - new Date(b.display_date)
+        );
+        
+        setAvailableDates(combined);
       } catch (error) {
         console.error('Failed to fetch available dates:', error);
       } finally {
@@ -58,14 +87,22 @@ export const TimeSlotPicker = ({
   const handleBooking = async () => {
     if (!selectedDate || !customerEmail) return;
 
+    // Build booking data based on whether it's an event or time slot
     const bookingData = {
-      event_id: selectedDate.id,
       customer_name: customerName,
       customer_email: customerEmail,
-      pizza_count: pizzaCount,
-      preferred_time: selectedTime || null,
+      booking_type: 'pizza_pickup',
+      quantity: pizzaCount,
       notes: notes.trim() || null,
     };
+    
+    // Add either event_id or time_slot_id
+    if (selectedDate.type === 'event') {
+      bookingData.event_id = selectedDate.booking_id;
+      bookingData.slot_time = selectedTime || null;
+    } else {
+      bookingData.time_slot_id = selectedDate.booking_id;
+    }
 
     try {
       const res = await fetch('/api/calendar/book', {
@@ -76,7 +113,7 @@ export const TimeSlotPicker = ({
 
       const result = await res.json();
 
-      if (res.ok && result.success) {
+      if (res.ok) {
         setBookingSuccess(true);
         if (onBook) {
           onBook(result.booking);
@@ -102,14 +139,18 @@ export const TimeSlotPicker = ({
   }
 
   if (bookingSuccess) {
+    const displayDate = selectedDate.display_date || selectedDate.start_date;
+    const displayTime = selectedDate.display_time || selectedTime;
+    
     return (
       <Card>
         <CardContent className="p-8 text-center space-y-4">
           <div className="text-5xl mb-4">✅</div>
           <h3 className="text-2xl font-bold text-green-900">Booking Confirmed!</h3>
           <p className="text-green-800">
-            Your pickup is scheduled for <strong>{format(new Date(selectedDate.start_date), 'MMMM d, yyyy')}</strong>
-            {selectedTime && ` at ${selectedTime}`}.
+            Your {selectedDate.type === 'event' ? 'pickup' : 'appointment'} is scheduled for{' '}
+            <strong>{format(new Date(displayDate), 'MMMM d, yyyy')}</strong>
+            {displayTime && ` at ${displayTime}`}.
           </p>
           <p className="text-sm text-green-700">
             We've sent a confirmation to {customerEmail}
@@ -157,17 +198,19 @@ export const TimeSlotPicker = ({
         <div>
           <Label className="mb-3 block">Select a Date</Label>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {availableDates.map(event => {
-              const eventDate = parseISO(event.start_date);
-              const isSelected = selectedDate?.id === event.id;
-              const slotsRemaining = event.available_slots;
-              const hasCapacity = event.capacity !== null && event.capacity !== undefined;
+            {availableDates.map(item => {
+              const itemDate = parseISO(item.display_date);
+              const isSelected = selectedDate?.booking_id === item.booking_id;
+              const slotsRemaining = item.available_slots;
+              const hasCapacity = item.capacity !== null && item.capacity !== undefined;
+              const isEvent = item.type === 'event';
+              const isTimeSlot = item.type === 'time_slot';
               
               return (
                 <button
-                  key={event.id}
+                  key={`${item.type}-${item.id}`}
                   type="button"
-                  onClick={() => setSelectedDate(event)}
+                  onClick={() => setSelectedDate(item)}
                   className={`
                     relative p-4 rounded-lg border-2 text-left transition-all
                     ${isSelected 
@@ -178,12 +221,26 @@ export const TimeSlotPicker = ({
                 >
                   <div className="flex items-start justify-between">
                     <div>
+                      <div className="flex items-center gap-2 mb-1">
+                        {isEvent && <span className="text-xs px-2 py-0.5 bg-blue-100 text-blue-700 rounded">EVENT</span>}
+                        {isTimeSlot && <span className="text-xs px-2 py-0.5 bg-green-100 text-green-700 rounded">TIME SLOT</span>}
+                      </div>
                       <div className="font-semibold text-neutral-900">
-                        {format(eventDate, 'EEEE, MMM d')}
+                        {format(itemDate, 'EEEE, MMM d')}
+                        {item.display_time && (
+                          <span className="text-sm font-normal text-neutral-600 ml-2">
+                            @ {item.display_time}
+                          </span>
+                        )}
                       </div>
-                      <div className="text-sm text-neutral-600 mt-1">
-                        {event.title}
+                      <div className="text-sm text-neutral-600 mt-1 capitalize">
+                        {item.title}
                       </div>
+                      {item.location && (
+                        <div className="text-xs text-neutral-500 mt-1">
+                          📍 {item.location}
+                        </div>
+                      )}
                       {hasCapacity && (
                         <div className="text-xs text-neutral-500 mt-2">
                           {slotsRemaining} {slotsRemaining === 1 ? 'spot' : 'spots'} left
@@ -200,8 +257,8 @@ export const TimeSlotPicker = ({
           </div>
         </div>
 
-        {/* Time Preference (Optional) */}
-        {selectedDate && (
+        {/* Time Preference (Optional - only show for events, not time slots) */}
+        {selectedDate && selectedDate.type === 'event' && !selectedDate.display_time && (
           <div className="space-y-2 animate-fade-in">
             <Label htmlFor="time">Preferred Time (optional)</Label>
             <div className="flex items-center gap-2">
@@ -216,7 +273,7 @@ export const TimeSlotPicker = ({
               />
             </div>
             <p className="text-xs text-neutral-500">
-              If the event has specific time slots, we'll do our best to accommodate your preference.
+              We'll do our best to accommodate your preference.
             </p>
           </div>
         )}
