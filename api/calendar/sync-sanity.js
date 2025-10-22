@@ -1,18 +1,21 @@
-import { createClient } from '@supabase/supabase-js';
-import { getSanityClient } from '../_lib/sanityClient';
+const { getSanityClient } = require('../../backend/api/sanityClient');
+const { getSupabase } = require('../../backend/api/supabaseClient');
 
-const supabase = createClient(
-  process.env.VITE_SUPABASE_URL,
-  process.env.VITE_SUPABASE_ANON_KEY
-);
-
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
   try {
+    const supabase = getSupabase();
+    if (!supabase) {
+      return res.status(500).json({ error: 'Supabase not configured' });
+    }
+
     const sanityClient = getSanityClient();
+    if (!sanityClient) {
+      return res.status(500).json({ error: 'Sanity not configured' });
+    }
     
     // Fetch published events from Sanity
     const sanityEvents = await sanityClient.fetch(`

@@ -485,13 +485,18 @@ app.all('/api/calendar/receipts', async (req, res, next) => {
   }
 });
 
-app.all('/api/calendar/sync-sanity', async (req, res, next) => {
+app.all('/api/calendar/sync-sanity', async (req, res) => {
   try {
-    const handler = require('../../api/calendar/sync-sanity').default;
+    logger.info({ method: req.method }, 'calendar sync-sanity request received');
+    const handler = require('../../api/calendar/sync-sanity');
+    logger.info('handler loaded');
     await handler(req, res);
+    logger.info('handler completed');
   } catch (err) {
-    logger.error({ err, method: req.method }, 'calendar sync-sanity handler failed');
-    next(err);
+    logger.error({ err: err.message, stack: err.stack, method: req.method }, 'calendar sync-sanity handler failed');
+    if (!res.headersSent) {
+      res.status(500).json({ error: 'sync failed', message: err.message });
+    }
   }
 });
 
