@@ -1,0 +1,10 @@
+[dotenv@17.2.2] injecting env (30) from .env -- tip: ⚙️  enable debug logging with { debug: true }
+[pizza-party.checkout] Square client initialized { env: 'Production', locPresent: true, tokenTail: 'OswT' }
+{"level":40,"time":1761113031468,"service":"backend-api","hostname":"DESKTOP-EG5VJK8","pid":23780,"msg":"square client missing; crowdfund endpoints will error"}
+COOKBOOK_API_BASE not set — enabling internal Cookbook endpoints from local data.
+backend server listening on 3002
+{"level":30,"time":1761113032236,"service":"backend-api","hostname":"DESKTOP-EG5VJK8","pid":23780,"msg":"MCP HTTP bridge active"}
+{"level":30,"time":1761113053071,"service":"backend-api","hostname":"DESKTOP-EG5VJK8","pid":23780,"method":"POST","msg":"calendar sync-sanity request received"}
+[sanity] Client initialized: project=d6l9d0ea, dataset=localeffort
+{"level":30,"time":1761113053150,"service":"backend-api","hostname":"DESKTOP-EG5VJK8","pid":23780,"msg":"handler loaded"}
+{"level":30,"time":1761113055309,"service":"backend-api","hostname":"DESKTOP-EG5VJK8","pid":23780,"msg":"handler completed"}
