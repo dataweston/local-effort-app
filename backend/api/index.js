@@ -466,6 +466,35 @@ app.all('/api/store/products', async (req, res, next) => {
   }
 });
 
+// --- Calendar API Routes ---
+app.all('/api/calendar/events', async (req, res, next) => {
+  try {
+    await require('../../api/calendar/events')(req, res);
+  } catch (err) {
+    logger.error({ err, method: req.method }, 'calendar events handler failed');
+    next(err);
+  }
+});
+
+app.all('/api/calendar/receipts', async (req, res, next) => {
+  try {
+    await require('../../api/calendar/receipts')(req, res);
+  } catch (err) {
+    logger.error({ err, method: req.method }, 'calendar receipts handler failed');
+    next(err);
+  }
+});
+
+app.all('/api/calendar/sync-sanity', async (req, res, next) => {
+  try {
+    const handler = require('../../api/calendar/sync-sanity').default;
+    await handler(req, res);
+  } catch (err) {
+    logger.error({ err, method: req.method }, 'calendar sync-sanity handler failed');
+    next(err);
+  }
+});
+
 const handleCrowdfundingSummary = async (req, res) => {
   try {
     const data = await getCrowdfundingSummary({ db });
