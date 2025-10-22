@@ -111,6 +111,25 @@ const CalendarPage = () => {
     a.click();
   };
   
+  const handleSyncSanity = async () => {
+    if (!confirm('Import all Sanity events into the calendar? Existing events will be updated.')) return;
+    
+    try {
+      setLoading(true);
+      const res = await fetch('/api/calendar/sync-sanity', { method: 'POST' });
+      const result = await res.json();
+      
+      if (!res.ok) throw new Error(result.message || 'Sync failed');
+      
+      await loadEvents();
+      alert(`Synced ${result.synced} of ${result.total} Sanity events`);
+    } catch (error) {
+      alert('Sync failed: ' + error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+  
   const openNewEvent = (date) => {
     setSelectedEvent({
       title: '',
@@ -139,6 +158,10 @@ const CalendarPage = () => {
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-3xl font-bold">Master Calendar</h1>
           <div className="flex gap-3">
+            <button onClick={handleSyncSanity} className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg flex items-center gap-2">
+              <Download className="w-4 h-4" />
+              Sync Sanity
+            </button>
             <button onClick={() => setShowCSVImporter(true)} className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg flex items-center gap-2">
               <Upload className="w-4 h-4" />
               Import CSV

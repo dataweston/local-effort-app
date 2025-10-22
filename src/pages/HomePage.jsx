@@ -98,7 +98,8 @@ const HomePage = () => {
         const res = await fetch('/api/calendar/public-events');
         const data = await res.json();
         if (!mounted) return;
-        const upcoming = (data.events || []).filter(ev => {
+        // API returns array directly (not wrapped in object)
+        const upcoming = (Array.isArray(data) ? data : []).filter(ev => {
           const eventDate = new Date(ev.start_date);
           const today = new Date(); today.setHours(0,0,0,0);
           return eventDate >= today;
@@ -414,14 +415,26 @@ const HomePage = () => {
               </button>
               <h4 className="text-xl font-bold mb-1">{eventModal.title}</h4>
               <p className="text-sm text-gray-600 mb-3">{formatModalDate(eventModal)}</p>
+              
+              {/* Show location if available */}
+              {eventModal.location && (
+                <p className="text-sm text-gray-600 mb-2">
+                  📍 {eventModal.location}
+                </p>
+              )}
+              
+              {/* Prefer Sanity rich description, fallback to plain notes or description */}
               {eventModal.sanity_data?.description && (
-                <div className="prose max-w-none">
+                <div className="prose max-w-none mb-4">
                   <PortableText value={eventModal.sanity_data.description} components={portableTextComponents} />
                 </div>
               )}
-              {eventModal.notes && !eventModal.sanity_data?.description && (
-                <p className="text-sm text-gray-700">{eventModal.notes}</p>
+              {!eventModal.sanity_data?.description && (eventModal.notes || eventModal.description) && (
+                <p className="text-sm text-gray-700 mb-4 whitespace-pre-wrap">
+                  {eventModal.notes || eventModal.description}
+                </p>
               )}
+              
               <div className="mt-4 space-y-3">
                 {eventModal.sanity_data?.ticketsUrl && (
                   <a 
