@@ -1,5 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
-import sanityClient from '../../src/sanityClient';
+import { getSanityClient } from '../_lib/sanityClient';
 
 const supabase = createClient(
   process.env.VITE_SUPABASE_URL,
@@ -12,6 +12,8 @@ export default async function handler(req, res) {
   }
 
   try {
+    const sanityClient = getSanityClient();
+    
     // Fetch published events from Sanity
     const sanityEvents = await sanityClient.fetch(`
       *[_type == "event" && defined(date)] | order(date asc) {
