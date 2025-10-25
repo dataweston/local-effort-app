@@ -7,7 +7,7 @@ import { PizzaProgress } from '../components/pizzafunder/PizzaProgress';
 import { PizzaPledgeForm } from '../components/pizzafunder/PizzaPledgeForm';
 import { FeedbackForm } from '../components/pizzafunder/FeedbackForm';
 import { FeedbackList } from '../components/pizzafunder/FeedbackList';
-import { PizzaShader } from '../components/pizzafunder/PizzaShader';
+// import { PizzaShader } from '../components/pizzafunder/PizzaShader'; // temporarily disabled
 import { useToast } from '../components/common/ToastProvider';
 import { Button } from '../components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
@@ -1378,13 +1378,13 @@ const PizzaFunderPage = () => {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.35 }}
-        className="mt-16"
+        className="mt-16 hidden" // temporarily hide pizza shader section
       >
         <div className="relative w-full rounded-3xl overflow-hidden shadow-2xl border-4 border-orange-300 bg-neutral-900">
           {/* Responsive aspect ratio container */}
           <div className="relative w-full" style={{ paddingBottom: '56.25%' }}> {/* 16:9 aspect ratio */}
             <div className="absolute inset-0">
-              <PizzaShader className="w-full h-full" />
+              {/* PizzaShader temporarily hidden */}
             </div>
           </div>
         </div>
