@@ -7,6 +7,7 @@ import { PizzaProgress } from '../components/pizzafunder/PizzaProgress';
 import { PizzaPledgeForm } from '../components/pizzafunder/PizzaPledgeForm';
 import { FeedbackForm } from '../components/pizzafunder/FeedbackForm';
 import { FeedbackList } from '../components/pizzafunder/FeedbackList';
+import { PizzaShader } from '../components/pizzafunder/PizzaShader';
 import { useToast } from '../components/common/ToastProvider';
 import { Button } from '../components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
@@ -1371,6 +1372,29 @@ const PizzaFunderPage = () => {
           </div>
         </motion.div>
       </div>
+
+      {/* Pizza Shader Animation */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.35 }}
+        className="mt-16"
+      >
+        <div className="relative w-full rounded-3xl overflow-hidden shadow-2xl border-4 border-orange-300 bg-neutral-900">
+          {/* Responsive aspect ratio container */}
+          <div className="relative w-full" style={{ paddingBottom: '56.25%' }}> {/* 16:9 aspect ratio */}
+            <div className="absolute inset-0">
+              <PizzaShader className="w-full h-full" />
+            </div>
+          </div>
+          {/* Optional overlay text */}
+          <div className="absolute bottom-4 left-4 right-4 text-center pointer-events-none">
+            <p className="text-white text-sm md:text-base font-semibold drop-shadow-lg bg-black/30 backdrop-blur-sm px-4 py-2 rounded-full inline-block">
+              Fresh pizza, rotating just for you 🍕
+            </p>
+          </div>
+        </div>
+      </motion.div>
 
       {/* Feedback Section */}
       <motion.div
