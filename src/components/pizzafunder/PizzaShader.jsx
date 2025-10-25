@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 
 /**
  * PizzaShader - Animated rotating pizza shader
@@ -8,14 +8,27 @@ export const PizzaShader = ({ className = '' }) => {
   const canvasRef = useRef(null);
   const animationRef = useRef(null);
   const startTimeRef = useRef(Date.now());
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     const canvas = canvasRef.current;
-    if (!canvas) return;
+    if (!canvas) {
+      setError('Canvas not available');
+      return;
+    }
 
     const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
     if (!gl) {
-      console.warn('WebGL not supported');
+      console.error('WebGL not supported in this browser');
+      setError('WebGL not supported');
+      return;
+    }
+
+    // Enable the derivatives extension (required for fwidth)
+    const ext = gl.getExtension('OES_standard_derivatives');
+    if (!ext) {
+      console.error('OES_standard_derivatives extension not supported');
+      setError('Required WebGL extension not supported');
       return;
     }
 
@@ -29,6 +42,7 @@ export const PizzaShader = ({ className = '' }) => {
 
     // Fragment shader (converted from ShaderToy)
     const fragmentShaderSource = `
+      #extension GL_OES_standard_derivatives : enable
       precision mediump float;
       uniform vec2 iResolution;
       uniform float iTime;
@@ -156,6 +170,7 @@ export const PizzaShader = ({ className = '' }) => {
     
     if (!vertexShader || !fragmentShader) {
       console.error('Failed to compile shaders');
+      setError('Shader compilation failed');
       return;
     }
 
@@ -166,6 +181,7 @@ export const PizzaShader = ({ className = '' }) => {
 
     if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
       console.error('Program link error:', gl.getProgramInfoLog(program));
+      setError('Program link failed');
       return;
     }
 
