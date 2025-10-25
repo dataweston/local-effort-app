@@ -5,8 +5,8 @@
 -- Update the crowdfund_aggregates table with starting values
 UPDATE public.crowdfund_aggregates
 SET 
-  pizzas = 61,
-  backers = 11,
+  pizzas = 71,
+  backers = 17,
   last_updated = now()
 WHERE id = 'crowdfunding';
 
@@ -22,11 +22,11 @@ WHERE id = 'crowdfunding';
 -- =====================================================
 -- NOTES
 -- =====================================================
--- Starting values: 61 pizzas, 11 backers
+-- Starting values: 71 pizzas, 17 backers
 -- The trigger 'trigger_update_aggregates' will automatically
 -- increment these values when new pledges are inserted
 -- 
 -- For example, if someone pledges 3 pizzas:
---   pizzas: 61 → 64
---   backers: 11 → 12
+--   pizzas: 71 → 74
+--   backers: 17 → 18
 -- =====================================================
