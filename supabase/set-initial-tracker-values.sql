@@ -1,32 +1,29 @@
 -- Set initial pizza sales tracker values
--- Run this in Supabase SQL Editor to set starting values
--- All new pledges will automatically increment from these values
-
--- Update the crowdfund_aggregates table with starting values
-UPDATE public.crowdfund_aggregates
-SET 
-  pizzas = 71,
-  backers = 17,
-  last_updated = now()
-WHERE id = 'crowdfunding';
-
--- Verify the update
-SELECT 
-  pizzas,
-  backers,
-  goal,
-  last_updated
-FROM public.crowdfund_aggregates
-WHERE id = 'crowdfunding';
+-- ⚠️ DEPRECATED - DO NOT USE THIS APPROACH
+-- This file is kept for historical reference only
+--
+-- CORRECT APPROACH:
+-- Instead of manually setting aggregate values, insert pledge records
+-- for historical sales. The trigger will automatically update aggregates.
+-- See: fix-pizzafunder-totals.sql
+--
+-- PROBLEM WITH THIS APPROACH:
+-- Manually setting aggregates bypasses the pledge tracking system.
+-- The trigger expects aggregates to be calculated from pledges.
+-- If you set aggregates manually, they won't include actual pledges.
+--
+-- CORRECT METHOD:
+-- 1. Insert historical pledge records (see fix-pizzafunder-totals.sql)
+-- 2. Let the trigger automatically calculate totals
+-- 3. Verify with: SELECT COUNT(*), SUM(pizza_count) FROM crowdfund_pledges
 
 -- =====================================================
--- NOTES
+-- HISTORICAL CONTEXT (October 2025)
 -- =====================================================
--- Starting values: 71 pizzas, 17 backers
--- The trigger 'trigger_update_aggregates' will automatically
--- increment these values when new pledges are inserted
--- 
--- For example, if someone pledges 3 pizzas:
---   pizzas: 71 → 74
---   backers: 17 → 18
+-- Initial situation:
+-- - 71 pizzas, 17 backers sold before Supabase migration
+-- - 32 pizzas, 6 backers sold after Supabase (in database)
+-- - Solution: Inserted 17 historical pledge records totaling 71 pizzas
+-- - Result: 103 total pizzas, 23 total backers
+-- - Trigger continues to work for all future pledges
 -- =====================================================
