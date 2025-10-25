@@ -12,6 +12,8 @@
     "@radix-ui/react-progress": "^1.1.7",
     "@radix-ui/react-radio-group": "^1.1.2",
     "@radix-ui/react-tabs": "^1.1.13",
+    "@react-three/drei": "^10.7.6",
+    "@react-three/fiber": "^9.4.0",
     "@sanity/block-content-to-react": "^3.0.0",
     "@sanity/client": "^7.9.0",
     "@sanity/image-url": "^1.1.0",
@@ -49,6 +51,7 @@
     "square": "^37.0.0",
     "swr": "^2.3.0",
     "tailwind-merge": "^2.5.2",
+    "three": "^0.180.0",
     "ui-flat-colors": "^1.0.14",
     "uuid": "^8.3.2",
     "web-push": "^3.6.6"

@@ -9,6 +9,23 @@ export const PizzaShader = ({ className = '' }) => {
   const animationRef = useRef(null);
   const startTimeRef = useRef(Date.now());
   const [error, setError] = useState(null);
+  const [isVisible, setIsVisible] = useState(true);
+
+  // Pause animation when not visible
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setIsVisible(entry.isIntersecting);
+      },
+      { threshold: 0.1 }
+    );
+
+    observer.observe(canvas);
+    return () => observer.disconnect();
+  }, []);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -51,7 +68,7 @@ export const PizzaShader = ({ className = '' }) => {
       vec2  hash21(float p){ float h = hash11(p); return vec2(h, hash11(p+7.123)); }
       float hash12(vec2 p){ vec3 p3 = fract(vec3(p.xyx)*.1031); p3 += dot(p3, p3.yzx+33.33); return fract((p3.x+p3.y)*p3.z); }
       float vnoise(vec2 p){ vec2 i=floor(p), f=fract(p); float a=hash12(i), b=hash12(i+vec2(1,0)), c=hash12(i+vec2(0,1)), d=hash12(i+vec2(1,1)); vec2 u=f*f*(3.0-2.0*f); return mix(mix(a,b,u.x), mix(c,d,u.x), u.y);}
-      float fbm(vec2 p){ float s=0., a=.5; for(int i=0;i<5;i++){s+=a*vnoise(p); p*=2.02; a*=.55;} return s;}
+      float fbm(vec2 p){ float s=0., a=.5; for(int i=0;i<3;i++){s+=a*vnoise(p); p*=2.02; a*=.55;} return s;} // Reduced from 5 to 3 iterations
       mat2 rot(float a){ float c=cos(a), s=sin(a); return mat2(c,-s,s,c);}
       float sdCircle(vec2 p,float r){return length(p)-r;}
       float aastep(float e,float x){float w=fwidth(x)*.7;return smoothstep(e-w,e+w,x);}
@@ -207,7 +224,7 @@ export const PizzaShader = ({ className = '' }) => {
 
     // Handle resize
     function resize() {
-      const dpr = Math.min(window.devicePixelRatio || 1, 2); // Limit to 2x for performance
+      const dpr = window.devicePixelRatio > 1 ? 1.5 : 1; // Reduce quality on high-DPI screens for performance
       const displayWidth = canvas.clientWidth;
       const displayHeight = canvas.clientHeight;
       
@@ -222,6 +239,11 @@ export const PizzaShader = ({ className = '' }) => {
 
     // Animation loop
     function render() {
+      if (!isVisible) {
+        animationRef.current = requestAnimationFrame(render);
+        return; // Skip rendering when not visible
+      }
+
       const currentTime = (Date.now() - startTimeRef.current) / 1000;
       
       gl.uniform2f(iResolutionLocation, canvas.width, canvas.height);
