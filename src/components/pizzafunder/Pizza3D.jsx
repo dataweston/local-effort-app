@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useRef, useMemo, Suspense } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 
 /**
@@ -18,22 +18,26 @@ function PizzaMesh() {
     }
   });
 
-  // Create pepperoni positions in rings
-  const pepperoniPositions = [];
-  const rings = [
-    { count: 5, radius: 0.4 },
-    { count: 8, radius: 0.7 },
-    { count: 10, radius: 1.0 }
-  ];
+  // Create pepperoni positions in rings (memoized to prevent recreation)
+  const pepperoniPositions = useMemo(() => {
+    const positions = [];
+    const rings = [
+      { count: 5, radius: 0.4 },
+      { count: 8, radius: 0.7 },
+      { count: 10, radius: 1.0 }
+    ];
 
-  rings.forEach((ring, ringIndex) => {
-    for (let i = 0; i < ring.count; i++) {
-      const angle = (i / ring.count) * Math.PI * 2 + ringIndex * 0.4;
-      const x = Math.cos(angle) * ring.radius;
-      const z = Math.sin(angle) * ring.radius;
-      pepperoniPositions.push({ x, z, angle: Math.random() * Math.PI * 2 });
-    }
-  });
+    rings.forEach((ring, ringIndex) => {
+      for (let i = 0; i < ring.count; i++) {
+        const angle = (i / ring.count) * Math.PI * 2 + ringIndex * 0.4;
+        const x = Math.cos(angle) * ring.radius;
+        const z = Math.sin(angle) * ring.radius;
+        positions.push({ x, z, angle: Math.random() * Math.PI * 2 });
+      }
+    });
+
+    return positions;
+  }, []);
 
   return (
     <group ref={groupRef} rotation={[-Math.PI * 0.15, 0, 0]} position={[0, -0.2, 0]}>
@@ -119,35 +123,34 @@ function PizzaMesh() {
 export const Pizza3D = ({ className = '' }) => {
   return (
     <div className={className} style={{ width: '100%', height: '100%' }}>
-      <Canvas
-        camera={{ position: [0, 2, 4], fov: 50 }}
-        shadows
-        gl={{ 
-          antialias: true,
-          alpha: true,
-          powerPreference: 'high-performance'
-        }}
-      >
-        {/* Lighting */}
-        <ambientLight intensity={0.5} />
-        <directionalLight 
-          position={[5, 5, 5]} 
-          intensity={1} 
-          castShadow
-          shadow-mapSize-width={1024}
-          shadow-mapSize-height={1024}
-        />
-        <pointLight position={[-5, 3, -5]} intensity={0.3} color="#ffa500" />
-        
-        {/* Pizza */}
-        <PizzaMesh />
-        
-        {/* Optional: Enable user controls (disabled by default for auto-rotation) */}
-        {/* <OrbitControls enableZoom={false} enablePan={false} /> */}
-        
-        {/* Background */}
-        <color attach="background" args={['#1a1612']} />
-      </Canvas>
+      <Suspense fallback={<div style={{ width: '100%', height: '100%', background: '#1a1612' }} />}>
+        <Canvas
+          camera={{ position: [0, 2, 4], fov: 50 }}
+          shadows
+          dpr={[1, 2]}
+          gl={{ 
+            antialias: true,
+            alpha: true,
+            powerPreference: 'high-performance'
+          }}
+          onCreated={({ gl }) => {
+            gl.setClearColor('#1a1612', 1);
+          }}
+        >
+          {/* Lighting */}
+          <ambientLight intensity={0.5} />
+          <directionalLight 
+            position={[5, 5, 5]} 
+            intensity={1} 
+            castShadow
+            shadow-mapSize={[1024, 1024]}
+          />
+          <pointLight position={[-5, 3, -5]} intensity={0.3} color="#ffa500" />
+          
+          {/* Pizza */}
+          <PizzaMesh />
+        </Canvas>
+      </Suspense>
     </div>
   );
 };
