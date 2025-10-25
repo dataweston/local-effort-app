@@ -7,7 +7,7 @@ import { PizzaProgress } from '../components/pizzafunder/PizzaProgress';
 import { PizzaPledgeForm } from '../components/pizzafunder/PizzaPledgeForm';
 import { FeedbackForm } from '../components/pizzafunder/FeedbackForm';
 import { FeedbackList } from '../components/pizzafunder/FeedbackList';
-import { Pizza3D } from '../components/pizzafunder/Pizza3D';
+import { PizzaShader } from '../components/pizzafunder/PizzaShader';
 import { useToast } from '../components/common/ToastProvider';
 import { Button } from '../components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
@@ -1373,7 +1373,7 @@ const PizzaFunderPage = () => {
         </motion.div>
       </div>
 
-      {/* 3D Pizza Animation */}
+      {/* Pizza Shader Animation */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -1384,7 +1384,7 @@ const PizzaFunderPage = () => {
           {/* Responsive aspect ratio container */}
           <div className="relative w-full" style={{ paddingBottom: '56.25%' }}> {/* 16:9 aspect ratio */}
             <div className="absolute inset-0">
-              <Pizza3D className="w-full h-full" />
+              <PizzaShader className="w-full h-full" />
             </div>
           </div>
         </div>
