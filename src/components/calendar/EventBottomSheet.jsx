@@ -33,6 +33,7 @@ export default function EventBottomSheet({ event, open, onClose, onEdit }) {
         <Dialog.Overlay className="fixed inset-0 bg-black/50 z-40 animate-fade-in" />
         <Dialog.Content 
           className="fixed bottom-0 left-0 right-0 bg-white rounded-t-3xl shadow-2xl z-50 max-h-[85vh] overflow-y-auto animate-slide-up md:left-1/2 md:-translate-x-1/2 md:max-w-lg md:bottom-auto md:top-1/2 md:-translate-y-1/2 md:rounded-2xl"
+          aria-describedby="event-details"
         >
           {/* Header */}
           <div className={`${colorScheme.bg} px-6 py-4 border-b sticky top-0 z-10`}>
@@ -45,6 +46,9 @@ export default function EventBottomSheet({ event, open, onClose, onEdit }) {
                   <Dialog.Title className={`text-xl font-bold ${colorScheme.accent}`}>
                     {event.title}
                   </Dialog.Title>
+                  <Dialog.Description className="sr-only">
+                    Event details for {event.title}
+                  </Dialog.Description>
                   <span className={`inline-block px-2 py-0.5 mt-1 text-xs font-medium rounded-full ${statusBadge.color}`}>
                     {statusBadge.label}
                   </span>
@@ -57,7 +61,7 @@ export default function EventBottomSheet({ event, open, onClose, onEdit }) {
           </div>
 
           {/* Content */}
-          <div className="p-6 space-y-4">
+          <div id="event-details" className="p-6 space-y-4">
             {/* Date & Time */}
             <div className="flex items-start gap-3">
               <Calendar className={`w-5 h-5 mt-0.5 ${colorScheme.accent}`} />
