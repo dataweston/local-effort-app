@@ -2,7 +2,24 @@ import React from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isToday, addMonths } from 'date-fns';
 
-const CalendarGrid = ({ currentMonth, setCurrentMonth, events, onEventClick, onDayClick }) => {
+const EVENT_COLORS = {
+  pizza_party: 'bg-orange-100 text-orange-800',
+  pizza_pickup: 'bg-orange-100 text-orange-800',
+  catering: 'bg-blue-100 text-blue-800',
+  meal_prep: 'bg-purple-100 text-purple-800',
+  private_event: 'bg-indigo-100 text-indigo-800',
+  blocked: 'bg-gray-100 text-gray-600',
+  other: 'bg-slate-100 text-slate-800'
+};
+
+const STATUS_COLORS = {
+  confirmed: 'bg-green-100 text-green-800',
+  scheduled: 'bg-blue-100 text-blue-800',
+  cancelled: 'bg-red-100 text-red-800',
+  draft: 'bg-yellow-100 text-yellow-800'
+};
+
+const CalendarGrid = ({ currentMonth, setCurrentMonth, events, onEventClick, onDayClick, compactMode = false }) => {
   const monthStart = startOfMonth(currentMonth);
   const monthEnd = endOfMonth(currentMonth);
   const days = eachDayOfInterval({ start: monthStart, end: monthEnd });
@@ -33,9 +50,9 @@ const CalendarGrid = ({ currentMonth, setCurrentMonth, events, onEventClick, onD
         </div>
       </div>
       
-      <div className="grid grid-cols-7 gap-0 text-sm">
-        {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
-          <div key={day} className="p-3 text-center font-medium text-gray-500 border-b">
+      <div className={`grid grid-cols-7 gap-0 text-sm ${compactMode ? 'md:text-xs' : ''}`}>
+        {(compactMode ? ['S', 'M', 'T', 'W', 'T', 'F', 'S'] : ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']).map((day, i) => (
+          <div key={i} className="p-3 text-center font-medium text-gray-500 border-b">
             {day}
           </div>
         ))}
@@ -49,27 +66,46 @@ const CalendarGrid = ({ currentMonth, setCurrentMonth, events, onEventClick, onD
             <div
               key={i}
               onClick={() => day && onDayClick && onDayClick(day)}
-              className={`min-h-24 p-2 border-b border-r ${!isCurrentMonth ? 'bg-gray-50' : 'bg-white hover:bg-gray-50'} ${isTodayDate ? 'bg-blue-50' : ''} ${onDayClick ? 'cursor-pointer' : ''}`}
+              className={`${compactMode ? 'min-h-16' : 'min-h-24'} p-2 border-b border-r ${!isCurrentMonth ? 'bg-gray-50' : 'bg-white hover:bg-gray-50'} ${isTodayDate ? 'bg-blue-50' : ''} ${onDayClick ? 'cursor-pointer' : ''}`}
             >
               {day && (
                 <>
                   <div className={`text-sm ${!isCurrentMonth ? 'text-gray-400' : isTodayDate ? 'text-blue-700 font-semibold' : 'text-gray-900'}`}>
                     {format(day, 'd')}
                   </div>
-                  {dayEvents.map(event => (
-                    <div
-                      key={event.id}
-                      onClick={(e) => { e.stopPropagation(); onEventClick && onEventClick(event); }}
-                      className={`mt-1 p-1 text-xs rounded cursor-pointer truncate ${
-                        event.status === 'confirmed' ? 'bg-green-100 text-green-800' :
-                        event.status === 'scheduled' ? 'bg-blue-100 text-blue-800' :
-                        event.status === 'cancelled' ? 'bg-red-100 text-red-800' :
-                        'bg-yellow-100 text-yellow-800'
-                      }`}
-                    >
-                      {event.title}
-                    </div>
-                  ))}
+                  {compactMode ? (
+                    /* Compact mode: show dots only */
+                    dayEvents.length > 0 && (
+                      <div className="flex gap-1 mt-1 flex-wrap">
+                        {dayEvents.slice(0, 3).map((event) => (
+                          <div
+                            key={event.id}
+                            onClick={(e) => { e.stopPropagation(); onEventClick && onEventClick(event); }}
+                            className={`w-2 h-2 rounded-full cursor-pointer ${
+                              EVENT_COLORS[event.event_type] || EVENT_COLORS.other
+                            }`}
+                            title={event.title}
+                          />
+                        ))}
+                        {dayEvents.length > 3 && (
+                          <span className="text-xs text-gray-500">+{dayEvents.length - 3}</span>
+                        )}
+                      </div>
+                    )
+                  ) : (
+                    /* Full mode: show event titles */
+                    dayEvents.map(event => (
+                      <div
+                        key={event.id}
+                        onClick={(e) => { e.stopPropagation(); onEventClick && onEventClick(event); }}
+                        className={`mt-1 p-1 text-xs rounded cursor-pointer truncate ${
+                          STATUS_COLORS[event.status] || STATUS_COLORS.scheduled
+                        }`}
+                      >
+                        {event.title}
+                      </div>
+                    ))
+                  )}
                 </>
               )}
             </div>
