@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
-import { Plus, Download, Upload, Calendar as CalendarIcon, DollarSign, Clock } from 'lucide-react';
+import { Plus, Download, Upload, Calendar as CalendarIcon, DollarSign, Clock, Mail } from 'lucide-react';
 import * as Tabs from '@radix-ui/react-tabs';
 import CalendarGrid from '../components/calendar/CalendarGrid';
 import EventForm from '../components/calendar/EventForm';
 import FinancialSummary from '../components/calendar/FinancialSummary';
 import CSVImporter from '../components/calendar/CSVImporter';
 import TimeSlotManager from '../components/calendar/TimeSlotManager';
+import InvitationManager from '../components/calendar/InvitationManager';
 
 const CalendarPage = () => {
   const [currentMonth, setCurrentMonth] = useState(new Date());
@@ -187,6 +188,10 @@ const CalendarPage = () => {
               <Clock className="w-4 h-4" />
               Time Slots
             </Tabs.Trigger>
+            <Tabs.Trigger value="invitations" className="px-6 py-3 border-b-2 border-transparent data-[state=active]:border-blue-500 data-[state=active]:text-blue-600 font-medium flex items-center gap-2">
+              <Mail className="w-4 h-4" />
+              Invitations
+            </Tabs.Trigger>
             <Tabs.Trigger value="financials" className="px-6 py-3 border-b-2 border-transparent data-[state=active]:border-blue-500 data-[state=active]:text-blue-600 font-medium flex items-center gap-2">
               <DollarSign className="w-4 h-4" />
               Financials
@@ -236,6 +241,10 @@ const CalendarPage = () => {
           
           <Tabs.Content value="time-slots">
             <TimeSlotManager />
+          </Tabs.Content>
+          
+          <Tabs.Content value="invitations">
+            <InvitationManager />
           </Tabs.Content>
           
           <Tabs.Content value="financials">
