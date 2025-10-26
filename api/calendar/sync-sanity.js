@@ -17,54 +17,16 @@ module.exports = async function handler(req, res) {
       return res.status(500).json({ error: 'Sanity not configured' });
     }
     
-    // Fetch published events from Sanity
-    const sanityEvents = await sanityClient.fetch(`
-      *[_type == "event" && defined(date)] | order(date asc) {
-        _id,
-        title,
-        date,
-        endDate,
-        startTime,
-        endTime,
-        location,
-        description,
-        capacity,
-        ticketsUrl,
-        "imageUrl": image.asset->url
-      }
-    `);
+    const sanityEvents = await sanityClient.fetch('*[_type == "event" && defined(date)] | order(date asc) { _id, title, date, endDate, startTime, endTime, location, description, capacity, ticketsUrl, "imageUrl": image.asset->url }');
 
-    // Fetch campaign events (pizza reward pickup opportunities)
-    const campaignEvents = await sanityClient.fetch(`
-      *[_type == "crowdfundingCampaign" && defined(events)] {
-        _id,
-        title,
-        "events": events[] {
-          location,
-          tagline,
-          summary,
-          startDate,
-          endDate,
-          timingNote,
-          foodType,
-          status,
-          ticketsUrl,
-          ctaLabel,
-          locationDetails,
-          description,
-          "heroImageUrl": heroImage.asset->url
-        }
-      }
-    `);
+    const campaignEvents = await sanityClient.fetch('*[_type == "crowdfundingCampaign" && defined(events) && count(events[defined(startDate)]) > 0] { _id, title, "events": events[defined(startDate)] { location, tagline, summary, startDate, endDate, timingNote, foodType, status, ticketsUrl, ctaLabel, locationDetails, description, "heroImageUrl": heroImage.asset->url } }');
 
-    // Flatten campaign events into individual event objects
     const flatCampaignEvents = [];
     campaignEvents.forEach(campaign => {
       if (campaign.events && campaign.events.length > 0) {
         campaign.events.forEach((event, index) => {
           flatCampaignEvents.push({
-            // Create unique ID combining campaign _id and event index
-            _id: `${campaign._id}_event_${index}`,
+            _id: campaign._id + '_event_' + index,
             _type: 'campaignEvent',
             campaignId: campaign._id,
             campaignTitle: campaign.title,
@@ -89,20 +51,16 @@ module.exports = async function handler(req, res) {
       }
     });
 
-    // Combine both event sources
     const allEvents = [...sanityEvents, ...flatCampaignEvents];
-
     if (!allEvents || allEvents.length === 0) {
-      return res.json({ synced: 0, message: 'No Sanity events found' });
+      return res.json({ synced: 0, total: 0, message: 'No Sanity events found' });
     }
 
     let syncedCount = 0;
     const errors = [];
 
-    // Sync each Sanity event into calendar
     for (const sanityEvent of allEvents) {
       try {
-        // Check if event already exists (by Sanity _id in metadata)
         const { data: existing } = await supabase
           .from('calendar_events')
           .select('id')
@@ -113,31 +71,29 @@ module.exports = async function handler(req, res) {
           title: sanityEvent.title || 'Untitled Event',
           start_date: sanityEvent.date,
           end_date: sanityEvent.endDate || null,
-          start_time: sanityEvent.startTime || null,
-          end_time: sanityEvent.endTime || null,
+          start_time: null, // timingNote is text, not TIME format
+          end_time: null,
           location: sanityEvent.location || null,
           capacity: sanityEvent.capacity || null,
           event_type: sanityEvent._type === 'campaignEvent' ? 'pizza_pickup' : 'other',
           visibility: 'public',
-          status: sanityEvent.status === 'soldOut' ? 'sold_out' : 
-                  sanityEvent.status === 'cancelled' ? 'cancelled' :
-                  sanityEvent.status === 'postponed' ? 'postponed' : 'scheduled',
-          sanity_data: sanityEvent
+          status: sanityEvent.status === 'soldOut' ? 'sold_out' : sanityEvent.status === 'cancelled' ? 'cancelled' : sanityEvent.status === 'postponed' ? 'postponed' : 'scheduled',
+          sanity_data: sanityEvent,
+          updated_at: new Date().toISOString()
         };
 
         if (existing) {
-          // Update existing event
-          await supabase
+          const { error: updateError } = await supabase
             .from('calendar_events')
             .update(eventData)
             .eq('id', existing.id);
+          if (updateError) throw updateError;
         } else {
-          // Insert new event
-          await supabase
+          const { error: insertError } = await supabase
             .from('calendar_events')
             .insert([eventData]);
+          if (insertError) throw insertError;
         }
-
         syncedCount++;
       } catch (err) {
         errors.push({
@@ -157,9 +113,7 @@ module.exports = async function handler(req, res) {
       },
       errors: errors.length > 0 ? errors : null
     });
-
   } catch (error) {
-    console.error('Sanity sync error:', error);
     return res.status(500).json({
       error: 'Sync failed',
       message: error.message

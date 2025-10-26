@@ -61,6 +61,7 @@ const PizzaPartyPage = lazy(() => import('./pages/PizzaPartyPage'));
 const PaikkaPage = lazy(() => import('./pages/PaikkaPage'));
 const PaikkaSuccessPage = lazy(() => import('./pages/PaikkaSuccessPage'));
 const CalendarPage = lazy(() => import('./pages/CalendarPage'));
+const SchedulePage = lazy(() => import('./pages/SchedulePage'));
 
 const AppContent = () => {
   const location = useLocation();
@@ -283,6 +284,14 @@ const AppContent = () => {
                   element={
                     <AnimatedPage>
                       <CalendarPage />
+                    </AnimatedPage>
+                  }
+                />
+                <Route
+                  path="/schedule/:token"
+                  element={
+                    <AnimatedPage>
+                      <SchedulePage />
                     </AnimatedPage>
                   }
                 />
