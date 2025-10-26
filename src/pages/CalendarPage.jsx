@@ -1,8 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
-import { Plus, Download, Upload, Calendar as CalendarIcon, DollarSign, Clock, Mail } from 'lucide-react';
+import { Plus, Download, Upload, Calendar as CalendarIcon, DollarSign, Clock, Mail, Grid, List } from 'lucide-react';
 import * as Tabs from '@radix-ui/react-tabs';
 import CalendarGrid from '../components/calendar/CalendarGrid';
+import CalendarAgenda from '../components/calendar/CalendarAgenda';
+import CalendarFilters from '../components/calendar/CalendarFilters';
+import EventBottomSheet from '../components/calendar/EventBottomSheet';
 import EventForm from '../components/calendar/EventForm';
 import FinancialSummary from '../components/calendar/FinancialSummary';
 import CSVImporter from '../components/calendar/CSVImporter';
@@ -16,7 +19,10 @@ const CalendarPage = () => {
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [showEventForm, setShowEventForm] = useState(false);
   const [showCSVImporter, setShowCSVImporter] = useState(false);
+  const [showEventSheet, setShowEventSheet] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [viewMode, setViewMode] = useState('grid'); // 'grid' or 'agenda'
+  const [activeFilters, setActiveFilters] = useState([]);
   
   useEffect(() => {
     loadEvents();
@@ -146,6 +152,25 @@ const CalendarPage = () => {
     setSelectedEvent(event);
     setShowEventForm(true);
   };
+
+  const openEventSheet = (event) => {
+    setSelectedEvent(event);
+    setShowEventSheet(true);
+  };
+
+  const filteredEvents = React.useMemo(() => {
+    if (activeFilters.length === 0) return events;
+    
+    return events.filter(event => {
+      const typeFilters = activeFilters.filter(f => !['confirmed', 'scheduled'].includes(f));
+      const statusFilters = activeFilters.filter(f => ['confirmed', 'scheduled'].includes(f));
+      
+      const matchesType = typeFilters.length === 0 || typeFilters.includes(event.event_type);
+      const matchesStatus = statusFilters.length === 0 || statusFilters.includes(event.status);
+      
+      return matchesType && matchesStatus;
+    });
+  }, [events, activeFilters]);
   
   if (loading) return <div className="flex justify-center items-center min-h-screen">Loading...</div>;
   
@@ -199,13 +224,63 @@ const CalendarPage = () => {
           </Tabs.List>
           
           <Tabs.Content value="calendar">
-            <CalendarGrid
-              currentMonth={currentMonth}
-              setCurrentMonth={setCurrentMonth}
-              events={events}
-              onEventClick={openEditEvent}
-              onDayClick={openNewEvent}
-            />
+            {/* Mobile: Filters + Agenda */}
+            <div className="lg:hidden mb-6">
+              <CalendarFilters 
+                activeFilters={activeFilters}
+                onFilterChange={setActiveFilters}
+              />
+              <CalendarAgenda
+                currentMonth={currentMonth}
+                setCurrentMonth={setCurrentMonth}
+                events={filteredEvents}
+                onEventClick={openEventSheet}
+              />
+            </div>
+
+            {/* Desktop: Grid + Sidebar */}
+            <div className="hidden lg:block">
+              <div className="flex gap-2 mb-4">
+                <button
+                  onClick={() => setViewMode('grid')}
+                  className={`px-4 py-2 rounded-lg flex items-center gap-2 transition ${viewMode === 'grid' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
+                >
+                  <Grid className="w-4 h-4" />
+                  Grid
+                </button>
+                <button
+                  onClick={() => setViewMode('agenda')}
+                  className={`px-4 py-2 rounded-lg flex items-center gap-2 transition ${viewMode === 'agenda' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
+                >
+                  <List className="w-4 h-4" />
+                  Agenda
+                </button>
+              </div>
+
+              {viewMode === 'grid' ? (
+                <CalendarGrid
+                  currentMonth={currentMonth}
+                  setCurrentMonth={setCurrentMonth}
+                  events={events}
+                  onEventClick={openEditEvent}
+                  onDayClick={openNewEvent}
+                  compactMode={false}
+                />
+              ) : (
+                <>
+                  <CalendarFilters 
+                    activeFilters={activeFilters}
+                    onFilterChange={setActiveFilters}
+                  />
+                  <CalendarAgenda
+                    currentMonth={currentMonth}
+                    setCurrentMonth={setCurrentMonth}
+                    events={filteredEvents}
+                    onEventClick={openEditEvent}
+                  />
+                </>
+              )}
+            </div>
             
             <div className="mt-8">
               <h2 className="text-xl font-semibold mb-4">Upcoming Events</h2>
@@ -261,6 +336,13 @@ const CalendarPage = () => {
         onDelete={handleDeleteEvent}
       />
       
+      <EventBottomSheet
+        event={selectedEvent}
+        open={showEventSheet}
+        onClose={() => setShowEventSheet(false)}
+        onEdit={openEditEvent}
+      />
+
       <CSVImporter
         isOpen={showCSVImporter}
         onClose={() => setShowCSVImporter(false)}
