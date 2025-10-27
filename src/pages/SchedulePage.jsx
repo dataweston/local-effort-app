@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import TimeSlotPicker from '../components/calendar/TimeSlotPicker';
+import { TimeSlotPicker } from '../components/calendar/TimeSlotPicker';
 import { Card } from '../components/ui/card';
 import { AlertCircle, CheckCircle, Clock } from 'lucide-react';
 
