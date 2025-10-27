@@ -64,8 +64,8 @@ module.exports = async function handler(req, res) {
         const { data: existing } = await supabase
           .from('calendar_events')
           .select('id')
-          .eq('sanity_data->>_id', sanityEvent._id)
-          .single();
+          .eq('sanity_event_id', sanityEvent._id)
+          .maybeSingle();
 
         const eventData = {
           title: sanityEvent.title || 'Untitled Event',
@@ -77,7 +77,12 @@ module.exports = async function handler(req, res) {
           capacity: sanityEvent.capacity || null,
           event_type: sanityEvent._type === 'campaignEvent' ? 'pizza_pickup' : 'other',
           visibility: 'public',
-          status: sanityEvent.status === 'soldOut' ? 'sold_out' : sanityEvent.status === 'cancelled' ? 'cancelled' : sanityEvent.status === 'postponed' ? 'postponed' : 'scheduled',
+          status: sanityEvent.status === 'soldOut' ? 'completed' : 
+                  sanityEvent.status === 'cancelled' ? 'cancelled' : 
+                  sanityEvent.status === 'postponed' ? 'cancelled' : 
+                  'scheduled',
+          is_bookable: sanityEvent.ticketsUrl ? false : true,
+          sanity_event_id: sanityEvent._id,
           sanity_data: sanityEvent,
           updated_at: new Date().toISOString()
         };

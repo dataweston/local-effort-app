@@ -500,6 +500,78 @@ app.all('/api/calendar/sync-sanity', async (req, res) => {
   }
 });
 
+app.all('/api/calendar/time-slots', async (req, res, next) => {
+  try {
+    await require('../../api/calendar/time-slots')(req, res);
+  } catch (err) {
+    logger.error({ err, method: req.method }, 'calendar time-slots handler failed');
+    next(err);
+  }
+});
+
+app.all('/api/calendar/public-events', async (req, res, next) => {
+  try {
+    await require('../../api/calendar/public-events')(req, res);
+  } catch (err) {
+    logger.error({ err, method: req.method }, 'calendar public-events handler failed');
+    next(err);
+  }
+});
+
+app.all('/api/calendar/generate-invite', async (req, res, next) => {
+  try {
+    await require('../../api/calendar/generate-invite')(req, res);
+  } catch (err) {
+    logger.error({ err, method: req.method }, 'calendar generate-invite handler failed');
+    next(err);
+  }
+});
+
+app.all('/api/calendar/validate-invite', async (req, res, next) => {
+  try {
+    await require('../../api/calendar/validate-invite')(req, res);
+  } catch (err) {
+    logger.error({ err, method: req.method }, 'calendar validate-invite handler failed');
+    next(err);
+  }
+});
+
+app.all('/api/calendar/mark-invite-used', async (req, res, next) => {
+  try {
+    await require('../../api/calendar/mark-invite-used')(req, res);
+  } catch (err) {
+    logger.error({ err, method: req.method }, 'calendar mark-invite-used handler failed');
+    next(err);
+  }
+});
+
+app.all('/api/calendar/book', async (req, res, next) => {
+  try {
+    await require('../../api/calendar/book')(req, res);
+  } catch (err) {
+    logger.error({ err, method: req.method }, 'calendar book handler failed');
+    next(err);
+  }
+});
+
+app.all('/api/calendar/availability', async (req, res, next) => {
+  try {
+    await require('../../api/calendar/availability')(req, res);
+  } catch (err) {
+    logger.error({ err, method: req.method }, 'calendar availability handler failed');
+    next(err);
+  }
+});
+
+app.all('/api/calendar/check-conflicts', async (req, res, next) => {
+  try {
+    await require('../../api/calendar/check-conflicts')(req, res);
+  } catch (err) {
+    logger.error({ err, method: req.method }, 'calendar check-conflicts handler failed');
+    next(err);
+  }
+});
+
 const handleCrowdfundingSummary = async (req, res) => {
   try {
     const data = await getCrowdfundingSummary({ db });
