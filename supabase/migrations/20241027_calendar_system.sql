@@ -2,6 +2,12 @@
 -- Creates all tables, views, functions, and policies for the calendar feature
 
 -- ============================================================
+-- DROP EXISTING VIEWS (if they exist from previous partial migrations)
+-- ============================================================
+DROP VIEW IF EXISTS calendar_events_public CASCADE;
+DROP VIEW IF EXISTS calendar_time_slots_available CASCADE;
+
+-- ============================================================
 -- CALENDAR EVENTS TABLE
 -- ============================================================
 CREATE TABLE IF NOT EXISTS calendar_events (
@@ -679,6 +685,9 @@ CREATE TRIGGER manage_booking_counts
   AFTER INSERT OR UPDATE OR DELETE ON calendar_bookings
   FOR EACH ROW EXECUTE FUNCTION update_booking_counts();
 
+-- Drop existing function if it exists (required when return type changes)
+DROP FUNCTION IF EXISTS check_scheduling_conflicts(DATE, TIME, INTEGER, UUID, UUID);
+
 -- Function to check scheduling conflicts
 CREATE OR REPLACE FUNCTION check_scheduling_conflicts(
   check_date DATE,
@@ -754,6 +763,16 @@ $$ LANGUAGE plpgsql;
 -- ============================================================
 -- ROW LEVEL SECURITY
 -- ============================================================
+
+-- Drop existing policies if they exist (from previous partial migrations)
+DROP POLICY IF EXISTS "Public events are viewable by everyone" ON calendar_events;
+DROP POLICY IF EXISTS "Available time slots are viewable by everyone" ON calendar_time_slots;
+DROP POLICY IF EXISTS "Anyone can create bookings" ON calendar_bookings;
+DROP POLICY IF EXISTS "Customers can view their bookings" ON calendar_bookings;
+DROP POLICY IF EXISTS "Service role has full access to events" ON calendar_events;
+DROP POLICY IF EXISTS "Service role has full access to time slots" ON calendar_time_slots;
+DROP POLICY IF EXISTS "Service role has full access to bookings" ON calendar_bookings;
+DROP POLICY IF EXISTS "Service role has full access to receipts" ON calendar_receipts;
 
 -- Enable RLS on all tables
 ALTER TABLE calendar_events ENABLE ROW LEVEL SECURITY;
