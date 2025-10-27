@@ -63,19 +63,149 @@ CREATE TABLE IF NOT EXISTS calendar_events (
 -- Add missing columns if table already exists (for upgrade path)
 DO $$ 
 BEGIN
+  -- Add end_date if missing
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
+                 WHERE table_name='calendar_events' AND column_name='end_date') THEN
+    ALTER TABLE calendar_events ADD COLUMN end_date DATE;
+  END IF;
+  
+  -- Add start_time if missing
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
+                 WHERE table_name='calendar_events' AND column_name='start_time') THEN
+    ALTER TABLE calendar_events ADD COLUMN start_time TIME;
+  END IF;
+  
+  -- Add end_time if missing
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
+                 WHERE table_name='calendar_events' AND column_name='end_time') THEN
+    ALTER TABLE calendar_events ADD COLUMN end_time TIME;
+  END IF;
+  
+  -- Add all_day if missing
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
+                 WHERE table_name='calendar_events' AND column_name='all_day') THEN
+    ALTER TABLE calendar_events ADD COLUMN all_day BOOLEAN DEFAULT true;
+  END IF;
+  
+  -- Add location if missing
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
+                 WHERE table_name='calendar_events' AND column_name='location') THEN
+    ALTER TABLE calendar_events ADD COLUMN location TEXT;
+  END IF;
+  
+  -- Add event_type if missing
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
+                 WHERE table_name='calendar_events' AND column_name='event_type') THEN
+    ALTER TABLE calendar_events ADD COLUMN event_type TEXT DEFAULT 'other' CHECK (event_type IN ('pizza_party', 'pizza_pickup', 'catering', 'meal_prep', 'private_event', 'blocked', 'other'));
+  END IF;
+  
+  -- Add visibility if missing
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
+                 WHERE table_name='calendar_events' AND column_name='visibility') THEN
+    ALTER TABLE calendar_events ADD COLUMN visibility TEXT DEFAULT 'private' CHECK (visibility IN ('public', 'private'));
+  END IF;
+  
+  -- Add status if missing
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
+                 WHERE table_name='calendar_events' AND column_name='status') THEN
+    ALTER TABLE calendar_events ADD COLUMN status TEXT DEFAULT 'scheduled' CHECK (status IN ('draft', 'scheduled', 'confirmed', 'cancelled', 'completed'));
+  END IF;
+  
+  -- Add capacity if missing
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
+                 WHERE table_name='calendar_events' AND column_name='capacity') THEN
+    ALTER TABLE calendar_events ADD COLUMN capacity INTEGER;
+  END IF;
+  
+  -- Add booked_slots if missing
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
+                 WHERE table_name='calendar_events' AND column_name='booked_slots') THEN
+    ALTER TABLE calendar_events ADD COLUMN booked_slots INTEGER DEFAULT 0;
+  END IF;
+  
+  -- Add is_bookable if missing
   IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
                  WHERE table_name='calendar_events' AND column_name='is_bookable') THEN
     ALTER TABLE calendar_events ADD COLUMN is_bookable BOOLEAN DEFAULT false;
   END IF;
   
+  -- Add financial tracking columns if missing
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
+                 WHERE table_name='calendar_events' AND column_name='estimated_revenue') THEN
+    ALTER TABLE calendar_events ADD COLUMN estimated_revenue DECIMAL(10,2);
+  END IF;
+  
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
+                 WHERE table_name='calendar_events' AND column_name='estimated_food_cost') THEN
+    ALTER TABLE calendar_events ADD COLUMN estimated_food_cost DECIMAL(10,2);
+  END IF;
+  
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
+                 WHERE table_name='calendar_events' AND column_name='estimated_labor_cost') THEN
+    ALTER TABLE calendar_events ADD COLUMN estimated_labor_cost DECIMAL(10,2);
+  END IF;
+  
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
+                 WHERE table_name='calendar_events' AND column_name='actual_revenue') THEN
+    ALTER TABLE calendar_events ADD COLUMN actual_revenue DECIMAL(10,2);
+  END IF;
+  
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
+                 WHERE table_name='calendar_events' AND column_name='actual_food_cost') THEN
+    ALTER TABLE calendar_events ADD COLUMN actual_food_cost DECIMAL(10,2);
+  END IF;
+  
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
+                 WHERE table_name='calendar_events' AND column_name='actual_labor_cost') THEN
+    ALTER TABLE calendar_events ADD COLUMN actual_labor_cost DECIMAL(10,2);
+  END IF;
+  
+  -- Add notes if missing
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
+                 WHERE table_name='calendar_events' AND column_name='notes') THEN
+    ALTER TABLE calendar_events ADD COLUMN notes TEXT;
+  END IF;
+  
+  -- Add internal_notes if missing
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
+                 WHERE table_name='calendar_events' AND column_name='internal_notes') THEN
+    ALTER TABLE calendar_events ADD COLUMN internal_notes TEXT;
+  END IF;
+  
+  -- Add series_id if missing
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
+                 WHERE table_name='calendar_events' AND column_name='series_id') THEN
+    ALTER TABLE calendar_events ADD COLUMN series_id UUID REFERENCES calendar_events(id) ON DELETE SET NULL;
+  END IF;
+  
+  -- Add recurrence_rule if missing
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
+                 WHERE table_name='calendar_events' AND column_name='recurrence_rule') THEN
+    ALTER TABLE calendar_events ADD COLUMN recurrence_rule TEXT;
+  END IF;
+  
+  -- Add sanity_event_id if missing
   IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
                  WHERE table_name='calendar_events' AND column_name='sanity_event_id') THEN
     ALTER TABLE calendar_events ADD COLUMN sanity_event_id TEXT;
   END IF;
   
+  -- Add sanity_data if missing
   IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
                  WHERE table_name='calendar_events' AND column_name='sanity_data') THEN
     ALTER TABLE calendar_events ADD COLUMN sanity_data JSONB;
+  END IF;
+  
+  -- Add external_id if missing
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
+                 WHERE table_name='calendar_events' AND column_name='external_id') THEN
+    ALTER TABLE calendar_events ADD COLUMN external_id TEXT;
+  END IF;
+  
+  -- Add metadata if missing
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
+                 WHERE table_name='calendar_events' AND column_name='metadata') THEN
+    ALTER TABLE calendar_events ADD COLUMN metadata JSONB;
   END IF;
 END $$;
 
@@ -128,9 +258,58 @@ CREATE TABLE IF NOT EXISTS calendar_time_slots (
 -- Add missing columns to calendar_time_slots if table already exists (for upgrade path)
 DO $$ 
 BEGIN
+  -- Add slot_type if missing
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
+                 WHERE table_name='calendar_time_slots' AND column_name='slot_type') THEN
+    ALTER TABLE calendar_time_slots ADD COLUMN slot_type TEXT DEFAULT 'pizza_pickup' CHECK (slot_type IN ('pizza_pickup', 'delivery', 'meal_prep', 'catering', 'other'));
+  END IF;
+  
+  -- Add capacity if missing
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
+                 WHERE table_name='calendar_time_slots' AND column_name='capacity') THEN
+    ALTER TABLE calendar_time_slots ADD COLUMN capacity INTEGER;
+  END IF;
+  
+  -- Add booked_count if missing
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
+                 WHERE table_name='calendar_time_slots' AND column_name='booked_count') THEN
+    ALTER TABLE calendar_time_slots ADD COLUMN booked_count INTEGER DEFAULT 0;
+  END IF;
+  
+  -- Add status if missing
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
+                 WHERE table_name='calendar_time_slots' AND column_name='status') THEN
+    ALTER TABLE calendar_time_slots ADD COLUMN status TEXT DEFAULT 'available' CHECK (status IN ('available', 'booked', 'full', 'cancelled'));
+  END IF;
+  
+  -- Add is_bookable if missing
   IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
                  WHERE table_name='calendar_time_slots' AND column_name='is_bookable') THEN
     ALTER TABLE calendar_time_slots ADD COLUMN is_bookable BOOLEAN DEFAULT true;
+  END IF;
+  
+  -- Add buffer_hours if missing
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
+                 WHERE table_name='calendar_time_slots' AND column_name='buffer_hours') THEN
+    ALTER TABLE calendar_time_slots ADD COLUMN buffer_hours INTEGER DEFAULT 4;
+  END IF;
+  
+  -- Add location if missing
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
+                 WHERE table_name='calendar_time_slots' AND column_name='location') THEN
+    ALTER TABLE calendar_time_slots ADD COLUMN location TEXT;
+  END IF;
+  
+  -- Add notes if missing
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
+                 WHERE table_name='calendar_time_slots' AND column_name='notes') THEN
+    ALTER TABLE calendar_time_slots ADD COLUMN notes TEXT;
+  END IF;
+  
+  -- Add metadata if missing
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
+                 WHERE table_name='calendar_time_slots' AND column_name='metadata') THEN
+    ALTER TABLE calendar_time_slots ADD COLUMN metadata JSONB;
   END IF;
 END $$;
 
@@ -188,9 +367,82 @@ CREATE TABLE IF NOT EXISTS calendar_bookings (
 -- Add missing columns to calendar_bookings if table already exists (for upgrade path)
 DO $$ 
 BEGIN
+  -- Add event_id if missing
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
+                 WHERE table_name='calendar_bookings' AND column_name='event_id') THEN
+    ALTER TABLE calendar_bookings ADD COLUMN event_id UUID REFERENCES calendar_events(id) ON DELETE CASCADE;
+  END IF;
+  
+  -- Add time_slot_id if missing
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
+                 WHERE table_name='calendar_bookings' AND column_name='time_slot_id') THEN
+    ALTER TABLE calendar_bookings ADD COLUMN time_slot_id UUID REFERENCES calendar_time_slots(id) ON DELETE CASCADE;
+  END IF;
+  
+  -- Add invitation_id if missing
   IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
                  WHERE table_name='calendar_bookings' AND column_name='invitation_id') THEN
     ALTER TABLE calendar_bookings ADD COLUMN invitation_id UUID REFERENCES calendar_invitations(id);
+  END IF;
+  
+  -- Add booking_type if missing
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
+                 WHERE table_name='calendar_bookings' AND column_name='booking_type') THEN
+    ALTER TABLE calendar_bookings ADD COLUMN booking_type TEXT DEFAULT 'pizza_pickup';
+  END IF;
+  
+  -- Add booking_status if missing
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
+                 WHERE table_name='calendar_bookings' AND column_name='booking_status') THEN
+    ALTER TABLE calendar_bookings ADD COLUMN booking_status TEXT DEFAULT 'pending' CHECK (booking_status IN ('pending', 'confirmed', 'cancelled', 'completed', 'no_show'));
+  END IF;
+  
+  -- Add quantity if missing
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
+                 WHERE table_name='calendar_bookings' AND column_name='quantity') THEN
+    ALTER TABLE calendar_bookings ADD COLUMN quantity INTEGER DEFAULT 1;
+  END IF;
+  
+  -- Add slot_time if missing
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
+                 WHERE table_name='calendar_bookings' AND column_name='slot_time') THEN
+    ALTER TABLE calendar_bookings ADD COLUMN slot_time TIME;
+  END IF;
+  
+  -- Add notes if missing
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
+                 WHERE table_name='calendar_bookings' AND column_name='notes') THEN
+    ALTER TABLE calendar_bookings ADD COLUMN notes TEXT;
+  END IF;
+  
+  -- Add cancellation_reason if missing
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
+                 WHERE table_name='calendar_bookings' AND column_name='cancellation_reason') THEN
+    ALTER TABLE calendar_bookings ADD COLUMN cancellation_reason TEXT;
+  END IF;
+  
+  -- Add metadata if missing
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
+                 WHERE table_name='calendar_bookings' AND column_name='metadata') THEN
+    ALTER TABLE calendar_bookings ADD COLUMN metadata JSONB;
+  END IF;
+  
+  -- Add booked_at if missing
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
+                 WHERE table_name='calendar_bookings' AND column_name='booked_at') THEN
+    ALTER TABLE calendar_bookings ADD COLUMN booked_at TIMESTAMPTZ DEFAULT NOW();
+  END IF;
+  
+  -- Add confirmed_at if missing
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
+                 WHERE table_name='calendar_bookings' AND column_name='confirmed_at') THEN
+    ALTER TABLE calendar_bookings ADD COLUMN confirmed_at TIMESTAMPTZ;
+  END IF;
+  
+  -- Add cancelled_at if missing
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
+                 WHERE table_name='calendar_bookings' AND column_name='cancelled_at') THEN
+    ALTER TABLE calendar_bookings ADD COLUMN cancelled_at TIMESTAMPTZ;
   END IF;
 END $$;
 
