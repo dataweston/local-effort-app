@@ -1,15 +1,12 @@
-import { createClient } from '@supabase/supabase-js';
+const { getSupabase } = require('../../backend/api/supabaseClient');
 
-const supabase = createClient(
-  process.env.VITE_SUPABASE_URL,
-  process.env.VITE_SUPABASE_ANON_KEY
-);
-
-export default async function handler(req, res) {
+module.exports = async (req, res) => {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
+  const supabase = getSupabase();
+  
   try {
     const {
       check_date,
@@ -50,4 +47,4 @@ export default async function handler(req, res) {
       message: error.message
     });
   }
-}
+};
