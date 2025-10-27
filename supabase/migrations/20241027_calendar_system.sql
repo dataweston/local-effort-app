@@ -125,6 +125,15 @@ CREATE TABLE IF NOT EXISTS calendar_time_slots (
   CONSTRAINT unique_slot_datetime UNIQUE (slot_date, slot_time, slot_type)
 );
 
+-- Add missing columns to calendar_time_slots if table already exists (for upgrade path)
+DO $$ 
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
+                 WHERE table_name='calendar_time_slots' AND column_name='is_bookable') THEN
+    ALTER TABLE calendar_time_slots ADD COLUMN is_bookable BOOLEAN DEFAULT true;
+  END IF;
+END $$;
+
 -- Indexes for calendar_time_slots
 CREATE INDEX IF NOT EXISTS idx_calendar_time_slots_date ON calendar_time_slots(slot_date);
 CREATE INDEX IF NOT EXISTS idx_calendar_time_slots_type ON calendar_time_slots(slot_type);
@@ -176,6 +185,15 @@ CREATE TABLE IF NOT EXISTS calendar_bookings (
   )
 );
 
+-- Add missing columns to calendar_bookings if table already exists (for upgrade path)
+DO $$ 
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
+                 WHERE table_name='calendar_bookings' AND column_name='invitation_id') THEN
+    ALTER TABLE calendar_bookings ADD COLUMN invitation_id UUID REFERENCES calendar_invitations(id);
+  END IF;
+END $$;
+
 -- Indexes for calendar_bookings
 CREATE INDEX IF NOT EXISTS idx_calendar_bookings_event ON calendar_bookings(event_id) WHERE event_id IS NOT NULL;
 CREATE INDEX IF NOT EXISTS idx_calendar_bookings_slot ON calendar_bookings(time_slot_id) WHERE time_slot_id IS NOT NULL;
@@ -210,6 +228,64 @@ CREATE TABLE IF NOT EXISTS calendar_receipts (
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
+
+-- Add missing columns to calendar_receipts if table already exists (for upgrade path)
+DO $$ 
+BEGIN
+  -- Add event_id if missing
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
+                 WHERE table_name='calendar_receipts' AND column_name='event_id') THEN
+    ALTER TABLE calendar_receipts ADD COLUMN event_id UUID REFERENCES calendar_events(id) ON DELETE CASCADE;
+  END IF;
+  
+  -- Add receipt_date if missing
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
+                 WHERE table_name='calendar_receipts' AND column_name='receipt_date') THEN
+    ALTER TABLE calendar_receipts ADD COLUMN receipt_date DATE NOT NULL DEFAULT CURRENT_DATE;
+  END IF;
+  
+  -- Add receipt_type if missing
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
+                 WHERE table_name='calendar_receipts' AND column_name='receipt_type') THEN
+    ALTER TABLE calendar_receipts ADD COLUMN receipt_type TEXT CHECK (receipt_type IN ('revenue', 'food_cost', 'labor_cost', 'other_expense'));
+  END IF;
+  
+  -- Add amount if missing
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
+                 WHERE table_name='calendar_receipts' AND column_name='amount') THEN
+    ALTER TABLE calendar_receipts ADD COLUMN amount DECIMAL(10,2) NOT NULL DEFAULT 0;
+  END IF;
+  
+  -- Add category if missing
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
+                 WHERE table_name='calendar_receipts' AND column_name='category') THEN
+    ALTER TABLE calendar_receipts ADD COLUMN category TEXT;
+  END IF;
+  
+  -- Add vendor if missing
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
+                 WHERE table_name='calendar_receipts' AND column_name='vendor') THEN
+    ALTER TABLE calendar_receipts ADD COLUMN vendor TEXT;
+  END IF;
+  
+  -- Add description if missing
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
+                 WHERE table_name='calendar_receipts' AND column_name='description') THEN
+    ALTER TABLE calendar_receipts ADD COLUMN description TEXT;
+  END IF;
+  
+  -- Add receipt_image_url if missing
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
+                 WHERE table_name='calendar_receipts' AND column_name='receipt_image_url') THEN
+    ALTER TABLE calendar_receipts ADD COLUMN receipt_image_url TEXT;
+  END IF;
+  
+  -- Add metadata if missing
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
+                 WHERE table_name='calendar_receipts' AND column_name='metadata') THEN
+    ALTER TABLE calendar_receipts ADD COLUMN metadata JSONB;
+  END IF;
+END $$;
 
 -- Indexes for calendar_receipts
 CREATE INDEX IF NOT EXISTS idx_calendar_receipts_event ON calendar_receipts(event_id);
