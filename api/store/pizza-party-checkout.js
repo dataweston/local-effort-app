@@ -38,7 +38,7 @@ module.exports = async (req, res) => {
   }
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
   if (!sq) return res.status(500).json({ error: 'Square not configured' });
-  const { date, email, name, phone, address, mealTime, pizzaRequests, addOnGuests = 0, token, basePriceCents = 30000, addOnPricePerGuestCents = 900 } = req.body || {};
+  const { date, email, name, phone, address, mealTime, pizzaRequests, addOnGuests = 0, token, basePriceCents = 7500, addOnPricePerGuestCents = 900 } = req.body || {};
   if (!date || !token) return res.status(400).json({ error: 'Missing required fields (date, token)' });
   if (!name || !phone || !(address && address.line1 && address.city && address.postal)) {
     return res.status(400).json({ error: 'Missing required contact information' });

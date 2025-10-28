@@ -354,6 +354,7 @@ const FoodTruckPage = () => {
         <title>{title}</title>
         <meta name="description" content={description} />
         <meta name="keywords" content={keywords} />
+        <meta name="robots" content="noindex, nofollow" />
         <link rel="canonical" href={canonical} />
         <meta property="og:title" content={title} />
         <meta property="og:description" content={description} />

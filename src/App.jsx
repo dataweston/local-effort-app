@@ -12,6 +12,7 @@ import { SupportWidget } from './components/support/SupportWidget';
 import { CartProvider } from './store/cart/CartContext';
 import { ToastProvider } from './components/common/ToastProvider';
 import { DefaultSeo } from './components/seo/DefaultSeo';
+import { SupabaseAuthProvider } from './contexts/SupabaseAuthContext';
 // Auth guards removed for public access to partner tools and partner portal
 
 // Lazily import page components using the default export pattern
@@ -74,8 +75,9 @@ const AppContent = () => {
   return (
     <HelmetProvider>
       <DefaultSeo />
-      <CartProvider>
-        <ToastProvider>
+      <SupabaseAuthProvider>
+        <CartProvider>
+          <ToastProvider>
         <div className="min-h-screen flex flex-col bg-white">
           {!hideHeader && <Header />}
           <main className="flex-1">
@@ -411,6 +413,7 @@ const AppContent = () => {
         </div>
         </ToastProvider>
       </CartProvider>
+      </SupabaseAuthProvider>
     </HelmetProvider>
   );
 };
