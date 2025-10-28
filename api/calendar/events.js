@@ -3,6 +3,25 @@ const { getSupabase } = require('../../backend/api/supabaseClient');
 module.exports = async (req, res) => {
   const supabase = getSupabase();
   
+  // Extract user session if present (for auth-based filtering)
+  const authHeader = req.headers.authorization;
+  let userEmail = null;
+  let isAdmin = false;
+  
+  if (authHeader && authHeader.startsWith('Bearer ')) {
+    try {
+      const token = authHeader.substring(7);
+      const { data: { user }, error } = await supabase.auth.getUser(token);
+      if (!error && user) {
+        userEmail = user.email;
+        const adminEmails = ['dataweston@gmail.com', 'colsen03@gmail.com'];
+        isAdmin = adminEmails.includes(userEmail?.toLowerCase());
+      }
+    } catch (err) {
+      // Continue without auth
+    }
+  }
+  
   if (req.method === 'GET') {
     const { id } = req.query;
     
@@ -20,9 +39,14 @@ module.exports = async (req, res) => {
     const { start_date, end_date, visibility, status, event_type } = req.query;
     let query = supabase.from('calendar_events').select('*');
     
+    // Filter by visibility unless user is admin
+    if (!isAdmin) {
+      query = query.eq('visibility', 'public');
+    }
+    
     if (start_date) query = query.gte('start_date', start_date);
     if (end_date) query = query.lte('start_date', end_date);
-    if (visibility) query = query.eq('visibility', visibility);
+    if (visibility && isAdmin) query = query.eq('visibility', visibility);
     if (status) query = query.eq('status', status);
     if (event_type) query = query.eq('event_type', event_type);
     
@@ -33,6 +57,11 @@ module.exports = async (req, res) => {
   }
   
   if (req.method === 'POST') {
+    // Only admins can create events
+    if (!isAdmin) {
+      return res.status(403).json({ error: 'Admin access required' });
+    }
+    
     const { repeat, repeatUntil, ...eventData } = req.body;
     
     if (!eventData.title || !eventData.start_date) {
@@ -63,6 +92,11 @@ module.exports = async (req, res) => {
   }
   
   if (req.method === 'PUT') {
+    // Only admins can update events
+    if (!isAdmin) {
+      return res.status(403).json({ error: 'Admin access required' });
+    }
+    
     const { id } = req.query;
     const eventData = req.body;
     
@@ -80,6 +114,11 @@ module.exports = async (req, res) => {
   }
   
   if (req.method === 'DELETE') {
+    // Only admins can delete events
+    if (!isAdmin) {
+      return res.status(403).json({ error: 'Admin access required' });
+    }
+    
     const { id, series } = req.query;
     
     if (!id) return res.status(400).json({ error: 'Event ID required' });

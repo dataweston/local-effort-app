@@ -11,8 +11,12 @@ import FinancialSummary from '../components/calendar/FinancialSummary';
 import CSVImporter from '../components/calendar/CSVImporter';
 import TimeSlotManager from '../components/calendar/TimeSlotManager';
 import InvitationManager from '../components/calendar/InvitationManager';
+import { CalendarAuthBanner } from '../components/calendar/CalendarAuthBanner';
+import { useSupabaseAuth } from '../contexts/SupabaseAuthContext';
+import { supabase } from '../lib/supabaseClient';
 
 const CalendarPage = () => {
+  const { user, isAdmin } = useSupabaseAuth();
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [events, setEvents] = useState([]);
   const [receipts, setReceipts] = useState([]);
@@ -31,7 +35,15 @@ const CalendarPage = () => {
   
   const loadEvents = async () => {
     try {
-      const res = await fetch('/api/calendar/events');
+      const headers = {};
+      if (user) {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.access_token) {
+          headers['Authorization'] = `Bearer ${session.access_token}`;
+        }
+      }
+      
+      const res = await fetch('/api/calendar/events', { headers });
       const data = await res.json();
       setEvents(Array.isArray(data) ? data : []);
     } catch (error) {
@@ -181,9 +193,12 @@ const CalendarPage = () => {
       </Helmet>
       
       <div className="container mx-auto px-4 py-8 max-w-7xl">
+        <CalendarAuthBanner />
+        
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-3xl font-bold">Master Calendar</h1>
-          <div className="flex gap-3">
+          {isAdmin && (
+            <div className="flex gap-3">
             <button onClick={handleSyncSanity} className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg flex items-center gap-2">
               <Download className="w-4 h-4" />
               Sync Sanity
@@ -200,7 +215,8 @@ const CalendarPage = () => {
               <Plus className="w-4 h-4" />
               New Event
             </button>
-          </div>
+            </div>
+          )}
         </div>
         
         <Tabs.Root defaultValue="calendar" className="w-full">

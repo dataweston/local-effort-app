@@ -34,14 +34,15 @@ module.exports = async (req, res) => {
       ${addrHtml}
     `;
     const html = `<p>Thanks for booking your <strong>Local Effort Pizza Party</strong> on <strong>${date}</strong>.</p>
-<p>Payment ID: <code>${paymentId}</code></p>
+<p><strong>Deposit Received:</strong> Payment ID <code>${paymentId}</code></p>
+<p>Your deposit secures your date. The estimated total for 15 guests is approximately <strong>$450</strong>. We'll confirm the final total based on your party details.</p>
 <p>${addOnGuests > 0 ? `${addOnGuests} guest add-on(s) included.` : 'No add-on items selected.'}</p>${metaHtml}
-<p>We will follow up shortly to confirm logistics. Reply to this email with any questions.</p>`;
+<p>We will follow up shortly to confirm logistics and finalize details. Reply to this email with any questions.</p>`;
 
     const payload = {
       sender: { email: FROM_EMAIL, name: FROM_NAME },
       to: [{ email }],
-      subject: `Your Pizza Party Booking (${date})`,
+      subject: `Pizza Party Deposit Confirmed (${date})`,
       htmlContent: html
     };
 

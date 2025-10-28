@@ -65,8 +65,8 @@ const PizzaPartyPage = () => {
   // SEO canonical (update if production domain differs)
   const canonical = 'https://localeffort.app/pizza-party';
   const siteName = 'Local Effort';
-  const pageTitle = 'Mobile Wood-Fired Pizza Party | Local Effort';
-  const pageDescription = 'Book a mobile wood-fired pizza party (up to 15 guests) with Local Effort. We bring the oven, premium midwest ingredients, and sourdough crust to your home.';
+  const pageTitle = 'Book Your Pizza Party - Pay a Deposit | Local Effort';
+  const pageDescription = 'Pay a deposit to book your pizza party. $75 deposit reserves your date. Estimated $450 for parties of 15 guests with premium wood-fired pizza and local ingredients.';
 
   // Build Event JSON-LD from scheduled dates (Central time).
   const startOfToday = (() => {
@@ -101,7 +101,7 @@ const PizzaPartyPage = () => {
   const eventsSchema = upcomingDates.map(({ isoDate }) => ({
     '@type': 'Event',
     name: 'Private Mobile Pizza Party',
-    description: 'On-site artisanal wood-fired pizza experience (up to 15 guests).',
+    description: 'On-site artisanal wood-fired pizza experience (up to 15 guests). $75 deposit to book.',
     startDate: `${isoDate}T${eventStartHour}${timezoneOffset}`,
     eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
     eventStatus: 'https://schema.org/EventScheduled',
@@ -113,7 +113,7 @@ const PizzaPartyPage = () => {
     organizer: { '@type': 'Organization', name: siteName, url: canonical.replace('/pizza-party','/') },
     offers: {
       '@type': 'Offer',
-      price: '300',
+      price: '75',
       priceCurrency: 'USD',
       availability: 'https://schema.org/LimitedAvailability',
       url: canonical,
@@ -123,7 +123,7 @@ const PizzaPartyPage = () => {
 
   const serviceSchema = {
     '@type': 'Service',
-    name: 'Mobile Wood-Fired Pizza Party',
+    name: 'Pizza Party Booking - Deposit Required',
     description: pageDescription,
     provider: {
       '@type': 'LocalBusiness',
@@ -132,9 +132,9 @@ const PizzaPartyPage = () => {
     },
     offers: {
       '@type': 'Offer',
-      price: '300',
+      price: '75',
       priceCurrency: 'USD',
-      description: 'Flat event rate for up to 15 guests.'
+      description: '$75 deposit to reserve your date. Estimated $450 for parties of 15 guests.'
     },
     category: 'Catering',
     additionalType: 'https://schema.org/FoodEstablishment'
@@ -183,13 +183,40 @@ const PizzaPartyPage = () => {
   const formatPostal = (val) => val.replace(/[^0-9]/g,'').slice(0,5);
   const isValidAddress = (a) => a.line1.trim().length > 3 && a.city.trim().length > 1 && a.postal.trim().length >= 5;
 
-  const basePrice = 300;
+  const basePrice = 75; // Deposit amount
+  const estimatedTotal = 450; // Estimated total for 15 guests
   const addOnTotal = addOnEnabled ? guestCount * 9 : 0;
   const grandTotal = basePrice + addOnTotal;
 
   useEffect(() => {
     let active = true;
     fetchPizzaImages((imgs) => { if (active) setImages(imgs); }, (err) => active && setError(err), (val) => active && setLoading(val));
+    
+    // Fetch available pizza party dates from calendar
+    const fetchCalendarDates = async () => {
+      try {
+        const res = await fetch('/api/calendar/events?event_type=pizza_party&visibility=public&status=scheduled');
+        if (res.ok) {
+          const events = await res.json();
+          // Transform calendar events to match expected format
+          const calendarDates = events
+            .filter(e => e.is_bookable && e.start_date)
+            .map(e => ({
+              label: new Date(e.start_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+              isoDate: e.start_date,
+            }));
+          // For now, still use hardcoded dates if no calendar dates available
+          // TODO: Fully transition to calendar-only dates
+          if (calendarDates.length > 0) {
+            // Calendar dates loaded successfully
+          }
+        }
+      } catch (err) {
+        console.warn('Failed to load calendar dates, using fallback:', err);
+      }
+    };
+    
+    fetchCalendarDates();
     return () => { active = false; };
   }, []);
 
@@ -404,11 +431,12 @@ const PizzaPartyPage = () => {
                 </ul>
               </div>
               <div className="flex flex-col items-center justify-center gap-4">
-                <div className="text-center">
-                  <div className="text-5xl font-extrabold tracking-tight bg-gradient-to-r from-orange-500 to-rose-500 bg-clip-text text-transparent">$300</div>
-                  <div className="mt-1 text-xs uppercase tracking-wider text-neutral-500">Flat event rate</div>
+                <div className="text-center space-y-2">
+                  <div className="text-5xl font-extrabold tracking-tight bg-gradient-to-r from-orange-500 to-rose-500 bg-clip-text text-transparent">${basePrice}</div>
+                  <div className="mt-1 text-xs uppercase tracking-wider text-neutral-500">Deposit to Reserve</div>
+                  <div className="text-sm text-neutral-600">Est. ${estimatedTotal} for 15 guests</div>
                 </div>
-                <button type="button" onClick={() => openModal(null)} className="inline-flex items-center rounded-md bg-orange-600 hover:bg-orange-700 text-white font-semibold px-6 py-3 shadow-sm transition-colors">Book / Pay</button>
+                <button type="button" onClick={() => openModal(null)} className="inline-flex items-center rounded-md bg-orange-600 hover:bg-orange-700 text-white font-semibold px-6 py-3 shadow-sm transition-colors">Book / Pay Deposit</button>
               </div>
             </div>
           </div>
@@ -605,9 +633,15 @@ const PizzaPartyPage = () => {
                   <label className="block text-sm font-medium">Pizza Requests (optional)
                     <textarea value={pizzaRequests} onChange={e=>setPizzaRequests(e.target.value)} placeholder="Favorite styles, dietary notes, special requests..." rows={3} className="mt-1 w-full rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500" />
                   </label>
-                  <div className="flex items-center justify-between text-sm font-medium pt-2 border-t">
-                    <span>Total</span>
-                    <span>${grandTotal}</span>
+                  <div className="space-y-1 pt-2 border-t text-sm">
+                    <div className="flex items-center justify-between font-medium">
+                      <span>Deposit (due now)</span>
+                      <span>${grandTotal}</span>
+                    </div>
+                    <div className="flex items-center justify-between text-neutral-600 text-xs">
+                      <span>Estimated total (15 guests)</span>
+                      <span>${estimatedTotal}</span>
+                    </div>
                   </div>
                 </div>
               )}
@@ -620,8 +654,8 @@ const PizzaPartyPage = () => {
                   className={`flex-1 rounded-md text-sm font-semibold px-4 py-2 shadow disabled:opacity-60 disabled:cursor-not-allowed ${selectedDate ? 'bg-orange-600 hover:bg-orange-700 text-white' : 'bg-neutral-200 text-neutral-500 cursor-not-allowed'}`}
                 >
                   {selectedDate ? (
-                    bookingState[selectedDate]?.loading || submitting ? 'Charging…' :
-                      (!fullName.trim() ? 'Enter Name' : !isValidEmail(email) ? 'Enter Email' : !isValidPhone(phone) ? 'Phone Needed' : !isValidAddress(address) ? 'Address Needed' : 'Pay Now')
+                    bookingState[selectedDate]?.loading || submitting ? 'Processing…' :
+                      (!fullName.trim() ? 'Enter Name' : !isValidEmail(email) ? 'Enter Email' : !isValidPhone(phone) ? 'Phone Needed' : !isValidAddress(address) ? 'Address Needed' : 'Pay Deposit')
                   ) : 'Select a Date'}
                 </button>
               </div>
