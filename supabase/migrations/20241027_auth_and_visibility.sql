@@ -64,14 +64,46 @@ CREATE TABLE IF NOT EXISTS calendar_time_slots (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
+-- Add is_available column if it doesn't exist
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.columns 
+        WHERE table_name = 'calendar_time_slots' 
+        AND column_name = 'is_available'
+    ) THEN
+        ALTER TABLE calendar_time_slots 
+        ADD COLUMN is_available BOOLEAN DEFAULT true;
+    END IF;
+END $$;
+
 -- Enable RLS on time slots
 ALTER TABLE calendar_time_slots ENABLE ROW LEVEL SECURITY;
 
--- Policy: Anyone can view available time slots
-CREATE POLICY "Anyone can view available time slots"
-ON calendar_time_slots
-FOR SELECT
-USING (is_available = true);
+-- Drop existing policies if they exist
+DROP POLICY IF EXISTS "Anyone can view available time slots" ON calendar_time_slots;
+DROP POLICY IF EXISTS "Admin users can manage time slots" ON calendar_time_slots;
+
+-- Policy: Anyone can view available time slots (only if is_available column exists)
+DO $$
+BEGIN
+    IF EXISTS (
+        SELECT 1 FROM information_schema.columns 
+        WHERE table_name = 'calendar_time_slots' 
+        AND column_name = 'is_available'
+    ) THEN
+        EXECUTE 'CREATE POLICY "Anyone can view available time slots"
+        ON calendar_time_slots
+        FOR SELECT
+        USING (is_available = true)';
+    ELSE
+        -- Fallback: allow viewing all time slots if is_available doesn't exist
+        EXECUTE 'CREATE POLICY "Anyone can view time slots"
+        ON calendar_time_slots
+        FOR SELECT
+        USING (true)';
+    END IF;
+END $$;
 
 -- Policy: Admin users can manage time slots
 CREATE POLICY "Admin users can manage time slots"
