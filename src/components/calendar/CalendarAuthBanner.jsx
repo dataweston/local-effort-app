@@ -1,7 +1,7 @@
 import React from 'react';
-import { useSupabaseAuth } from '../contexts/SupabaseAuthContext';
-import { Card } from './ui/card';
-import { Button } from './ui/button';
+import { useSupabaseAuth } from '../../contexts/SupabaseAuthContext';
+import { Card } from '../ui/card';
+import { Button } from '../ui/button';
 
 export const CalendarAuthBanner = () => {
   const { user, isAdmin, loading, signInWithGoogle, signOut } = useSupabaseAuth();
