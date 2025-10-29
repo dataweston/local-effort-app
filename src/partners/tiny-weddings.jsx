@@ -62,6 +62,7 @@ export default function TinyWeddingsProxy() {
           src={targetUrl}
           className="absolute inset-0 h-full w-full"
           allow="payment"
+          sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-popups-to-escape-sandbox allow-top-navigation"
           onLoad={() => setLoaded(true)}
         />
       </div>
