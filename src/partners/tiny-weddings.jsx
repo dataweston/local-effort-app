@@ -7,14 +7,6 @@ export default function TinyWeddingsProxy() {
   const targetUrl = configuredUrl || (import.meta.env.DEV ? DEV_FALLBACK : '');
   const [loaded, setLoaded] = useState(false);
 
-  // Debug logging
-  console.log('TinyWeddings Debug:', {
-    configuredUrl,
-    isDev: import.meta.env.DEV,
-    targetUrl,
-    allEnv: import.meta.env
-  });
-
   // Fix mobile viewport height (iOS Safari / Android URL bar collapse)
   useEffect(() => {
     const setVh = () => {
