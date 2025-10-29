@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 
 const DEV_FALLBACK = 'http://localhost:5411';
 
@@ -38,8 +39,19 @@ export default function TinyWeddingsProxy() {
   }
 
   return (
-    <div className="flex flex-col gap-4" style={{ minHeight: 'calc(var(--vh, 1vh) * 100)' }}>
-      <div className="relative flex-1 min-h-[420px] rounded-xl border border-neutral-200 bg-white shadow-sm overflow-hidden">
+    <div className="flex flex-col" style={{ minHeight: 'calc(var(--vh, 1vh) * 100)' }}>
+      <div className="px-4 py-3 bg-white border-b border-neutral-200">
+        <Link
+          to="/"
+          className="inline-flex items-center gap-2 text-sm text-neutral-600 hover:text-neutral-900 transition-colors"
+        >
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+          </svg>
+          Back to Local Effort
+        </Link>
+      </div>
+      <div className="relative flex-1 min-h-[420px] overflow-hidden">
         {!loaded && (
           <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-gradient-to-b from-neutral-50 to-neutral-100 text-neutral-600 text-sm">
             <span className="animate-pulse">Loading Tiny Weddings…</span>

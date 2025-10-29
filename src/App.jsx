@@ -67,7 +67,7 @@ const SchedulePage = lazy(() => import('./pages/SchedulePage'));
 
 const AppContent = () => {
   const location = useLocation();
-  const hideHeader = location.pathname.startsWith('/partners/aacrm');
+  const hideHeader = location.pathname.startsWith('/partners/aacrm') || location.pathname === '/tiny-weddings';
 
   useEffect(() => {
     document.fonts?.ready?.then(() => document.body.classList.add('fonts-loaded'));
