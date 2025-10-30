@@ -140,5 +140,19 @@
       "src": "/((?!api|assets|.*\\.|_next).*)",
       "dest": "/index.html"
     }
+  ],
+  "redirects": [
+    {
+      "source": "/tiny-weddings",
+      "destination": "https://tiny-weddings.localeffortfood.com",
+      "has": [{ "type": "host", "value": "localeffortfood.com" }],
+      "permanent": true
+    },
+    {
+      "source": "/tiny-weddings/(.*)",
+      "destination": "https://tiny-weddings.localeffortfood.com/$1",
+      "has": [{ "type": "host", "value": "localeffortfood.com" }],
+      "permanent": true
+    }
   ]
 }
