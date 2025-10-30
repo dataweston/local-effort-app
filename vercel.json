@@ -139,13 +139,11 @@
     {
       "src": "^/tiny-weddings$",
       "dest": "https://tiny-weddings.localeffortfood.com",
-      "has": [{ "type": "host", "value": "localeffortfood.com" }],
       "status": 308
     },
     {
       "src": "^/tiny-weddings/(.*)",
       "dest": "https://tiny-weddings.localeffortfood.com/$1",
-      "has": [{ "type": "host", "value": "localeffortfood.com" }],
       "status": 308
     },
     {
