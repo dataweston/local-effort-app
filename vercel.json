@@ -137,22 +137,20 @@
       "dest": "/prerender/paikka/index.html"
     },
     {
-      "src": "/((?!api|assets|.*\\.|_next).*)",
-      "dest": "/index.html"
-    }
-  ],
-  "redirects": [
-    {
-      "source": "/tiny-weddings",
-      "destination": "https://tiny-weddings.localeffortfood.com",
+      "src": "^/tiny-weddings$",
+      "dest": "https://tiny-weddings.localeffortfood.com",
       "has": [{ "type": "host", "value": "localeffortfood.com" }],
-      "permanent": true
+      "status": 308
     },
     {
-      "source": "/tiny-weddings/(.*)",
-      "destination": "https://tiny-weddings.localeffortfood.com/$1",
+      "src": "^/tiny-weddings/(.*)",
+      "dest": "https://tiny-weddings.localeffortfood.com/$1",
       "has": [{ "type": "host", "value": "localeffortfood.com" }],
-      "permanent": true
+      "status": 308
+    },
+    {
+      "src": "/((?!api|assets|.*\\.|_next).*)",
+      "dest": "/index.html"
     }
   ]
 }
