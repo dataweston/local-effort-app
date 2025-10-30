@@ -4,9 +4,11 @@ import { motion, AnimatePresence } from 'framer-motion';
 const logo = '/gallery/logo.png?text=Local+Effort&font=mono';
 
 const links = [
-  { path: '/services', name: 'Services', children: [
-    { path: '/services#event-request', name: 'Submit an event request' },
-  ] },
+  {
+    path: '/services',
+    name: 'Services',
+    children: [{ path: '/services#event-request', name: 'Submit an event request' }],
+  },
   { path: '/pricing', name: 'Pricing' },
   { path: '/menu', name: 'Menus' },
   { path: '/pizza-party', name: 'Pizza Party' },
@@ -14,6 +16,7 @@ const links = [
   { path: '/about', name: 'About' },
   // { path: '/happy-monday', name: 'Happy Monday' }, // temporarily hidden
   { path: '/gallery', name: 'Gallery' },
+  { name: 'Tiny Weddings', external: true, href: 'https://tiny-weddings.localeffortfood.com' },
   // { path: '/releases', name: 'Releases' }, // temporarily hidden
 ];
 
@@ -47,52 +50,83 @@ export const Header = () => {
 
         {/* Desktop nav */}
         <nav className="hidden md:flex items-center gap-2 font-mono text-[0.9rem]">
-          {links.map(({ path, name, sale, children, tag }) => (
-            <div key={path} className="relative group">
-              <NavLink to={path} className="relative px-2 py-1 rounded">
-                {({ isActive }) => (
-                  <>
-                    {sale ? (
-                      <span className={`inline-flex items-center rounded-md px-2 py-1 text-white shadow-sm transition-transform ${isActive ? 'scale-[1.02]' : ''}`} style={{ backgroundColor: '#e11d48' }}>
-                        {name}
-                      </span>
-                    ) : (
-                      <span className="inline-flex items-center gap-1 transition-colors hover:text-neutral-900 text-neutral-700">
-                        <span>{name}</span>
-                        {tag && (
-                          <span className="inline-flex items-center rounded-full bg-rose-100 px-2 py-0.5 text-[0.55rem] font-semibold uppercase tracking-[0.2em] text-rose-500">
-                            {tag}
-                          </span>
-                        )}
-                      </span>
-                    )}
-                    {!sale && (
-                      <motion.span
-                        layoutId="nav-underline"
-                        className="absolute left-2 right-2 -bottom-0.5 h-0.5 bg-[var(--color-accent)]"
-                        initial={false}
-                        animate={{ opacity: isActive ? 1 : 0 }}
-                        transition={{ duration: 0.2 }}
-                      />
-                    )}
-                  </>
-                )}
-              </NavLink>
-              {children && (
-                <div className="absolute left-0 mt-1">
-                  <div className="invisible group-hover:visible opacity-0 group-hover:opacity-100 transition-opacity">
-                    <div className="mt-1 rounded-md border bg-white shadow-lg py-1 min-w-[220px]">
-                      {children.map((c) => (
-                        <NavLink key={c.path} to={c.path} className="block px-3 py-2 text-sm text-neutral-700 hover:bg-neutral-50">
-                          {c.name}
-                        </NavLink>
-                      ))}
+          {links.map((link) => {
+            const { path, name, sale, children, tag, external, href } = link;
+            const key = path || href;
+            if (external) {
+              return (
+                <div key={key} className="relative group">
+                  <a
+                    href={href}
+                    className="relative px-2 py-1 rounded inline-flex items-center gap-1 text-neutral-700 transition-colors hover:text-neutral-900"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <span>{name}</span>
+                    <svg
+                      className="h-3.5 w-3.5 opacity-70"
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 20 20"
+                      fill="currentColor"
+                      aria-hidden="true"
+                    >
+                      <path d="M9 3a1 1 0 0 0 0 2h4.586l-9.293 9.293a1 1 0 1 0 1.414 1.414L15 6.414V11a1 1 0 1 0 2 0V3H9Z" />
+                    </svg>
+                  </a>
+                </div>
+              );
+            }
+
+            return (
+              <div key={key} className="relative group">
+                <NavLink to={path} className="relative px-2 py-1 rounded">
+                  {({ isActive }) => (
+                    <>
+                      {sale ? (
+                        <span
+                          className={`inline-flex items-center rounded-md px-2 py-1 text-white shadow-sm transition-transform ${isActive ? 'scale-[1.02]' : ''}`}
+                          style={{ backgroundColor: '#e11d48' }}
+                        >
+                          {name}
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 transition-colors hover:text-neutral-900 text-neutral-700">
+                          <span>{name}</span>
+                          {tag && (
+                            <span className="inline-flex items-center rounded-full bg-rose-100 px-2 py-0.5 text-[0.55rem] font-semibold uppercase tracking-[0.2em] text-rose-500">
+                              {tag}
+                            </span>
+                          )}
+                        </span>
+                      )}
+                      {!sale && (
+                        <motion.span
+                          layoutId="nav-underline"
+                          className="absolute left-2 right-2 -bottom-0.5 h-0.5 bg-[var(--color-accent)]"
+                          initial={false}
+                          animate={{ opacity: isActive ? 1 : 0 }}
+                          transition={{ duration: 0.2 }}
+                        />
+                      )}
+                    </>
+                  )}
+                </NavLink>
+                {children && (
+                  <div className="absolute left-0 mt-1">
+                    <div className="invisible group-hover:visible opacity-0 group-hover:opacity-100 transition-opacity">
+                      <div className="mt-1 rounded-md border bg-white shadow-lg py-1 min-w-[220px]">
+                        {children.map((c) => (
+                          <NavLink key={c.path} to={c.path} className="block px-3 py-2 text-sm text-neutral-700 hover:bg-neutral-50">
+                            {c.name}
+                          </NavLink>
+                        ))}
+                      </div>
                     </div>
                   </div>
-                </div>
-              )}
-            </div>
-          ))}
+                )}
+              </div>
+            );
+          })}
           {SHOW_FUNDRAISER && (
             <NavLink to="/pizzafunder" className="ml-2">
               <motion.span
@@ -146,39 +180,66 @@ export const Header = () => {
               }}
               className="flex flex-col items-center justify-center h-full space-y-6 font-mono px-6"
             >
-              {links.map((l) => (
-                <motion.div
-                  key={l.path}
-                  variants={{ hidden: { y: 10, opacity: 0 }, show: { y: 0, opacity: 1 } }}
-                >
-                  {!l.children ? (
-                    <NavLink
-                      to={l.path}
-                      onClick={() => setIsOpen(false)}
-                      className={`block text-3xl uppercase text-center ${l.sale ? 'bg-rose-600 text-white px-4 py-2 rounded-md' : ''}`}
-                    >
-                      <span className="flex items-center justify-center gap-2">
-                        <span>{l.name}</span>
-                        {l.tag && (
-                          <span className="inline-flex items-center rounded-full bg-rose-100 px-2 py-0.5 text-xs font-semibold uppercase tracking-[0.2em] text-rose-500">
-                            {l.tag}
-                          </span>
-                        )}
-                      </span>
-                    </NavLink>
+              {links.map((l) => {
+                const hasChildren = Array.isArray(l.children) && l.children.length > 0;
+                const sectionKey = l.path || l.href || l.name;
+                const isExternal = Boolean(l.external && l.href);
+                return (
+                  <motion.div
+                    key={sectionKey}
+                    variants={{ hidden: { y: 10, opacity: 0 }, show: { y: 0, opacity: 1 } }}
+                  >
+                  {!hasChildren ? (
+                    isExternal ? (
+                      <a
+                        href={l.href}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={() => setIsOpen(false)}
+                        className="block text-3xl uppercase text-center text-neutral-800 hover:text-black"
+                      >
+                        <span className="flex items-center justify-center gap-3">
+                          <span>{l.name}</span>
+                          <svg
+                            className="h-6 w-6 opacity-70"
+                            xmlns="http://www.w3.org/2000/svg"
+                            viewBox="0 0 20 20"
+                            fill="currentColor"
+                            aria-hidden="true"
+                          >
+                            <path d="M9 3a1 1 0 0 0 0 2h4.586l-9.293 9.293a1 1 0 1 0 1.414 1.414L15 6.414V11a1 1 0 1 0 2 0V3H9Z" />
+                          </svg>
+                        </span>
+                      </a>
+                    ) : (
+                      <NavLink
+                        to={l.path}
+                        onClick={() => setIsOpen(false)}
+                        className={`block text-3xl uppercase text-center ${l.sale ? 'bg-rose-600 text-white px-4 py-2 rounded-md' : ''}`}
+                      >
+                        <span className="flex items-center justify-center gap-2">
+                          <span>{l.name}</span>
+                          {l.tag && (
+                            <span className="inline-flex items-center rounded-full bg-rose-100 px-2 py-0.5 text-xs font-semibold uppercase tracking-[0.2em] text-rose-500">
+                              {l.tag}
+                            </span>
+                          )}
+                        </span>
+                      </NavLink>
+                    )
                   ) : (
                     <div className="w-full max-w-md">
                       <button
                         type="button"
-                        onClick={() => setOpenMobileSection(openMobileSection === l.path ? null : l.path)}
+                        onClick={() => setOpenMobileSection(openMobileSection === sectionKey ? null : sectionKey)}
                         className="w-full text-3xl uppercase text-center flex items-center justify-center gap-2"
-                        aria-expanded={openMobileSection === l.path}
-                        aria-controls={`section-${l.path}`}
+                        aria-expanded={openMobileSection === sectionKey}
+                        aria-controls={`section-${sectionKey}`}
                       >
                         {l.name}
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
-                          className={`h-6 w-6 transition-transform ${openMobileSection === l.path ? 'rotate-180' : ''}`}
+                          className={`h-6 w-6 transition-transform ${openMobileSection === sectionKey ? 'rotate-180' : ''}`}
                           viewBox="0 0 20 20"
                           fill="currentColor"
                           aria-hidden="true"
@@ -187,9 +248,9 @@ export const Header = () => {
                         </svg>
                       </button>
                       <AnimatePresence initial={false}>
-                        {openMobileSection === l.path && (
+                        {openMobileSection === sectionKey && (
                           <motion.div
-                            id={`section-${l.path}`}
+                            id={`section-${sectionKey}`}
                             initial={{ height: 0, opacity: 0 }}
                             animate={{ height: 'auto', opacity: 1 }}
                             exit={{ height: 0, opacity: 0 }}
@@ -213,8 +274,9 @@ export const Header = () => {
                       </AnimatePresence>
                     </div>
                   )}
-                </motion.div>
-              ))}
+                  </motion.div>
+                );
+              })}
               {SHOW_FUNDRAISER && (
                 <motion.div variants={{ hidden: { y: 10, opacity: 0 }, show: { y: 0, opacity: 1 } }}>
                   <NavLink
