@@ -73,14 +73,6 @@
       "dest": "/api/sanity-query.ts"
     },
     {
-      "src": "/api/sanity-health",
-      "dest": "/api/sanity-health.ts"
-    },
-    {
-      "src": "/api/_ping",
-      "dest": "/api/_ping.js"
-    },
-    {
       "src": "/api/store/products",
       "dest": "/api/store/products.js"
     },
