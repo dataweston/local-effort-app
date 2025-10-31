@@ -43,6 +43,22 @@
       "use": "@vercel/node"
     },
     {
+      "src": "api/paikka/pay.js",
+      "use": "@vercel/node"
+    },
+    {
+      "src": "api/paikka/checkout.js",
+      "use": "@vercel/node"
+    },
+    {
+      "src": "api/paikka/finalize.js",
+      "use": "@vercel/node"
+    },
+    {
+      "src": "api/paikka/resend.js",
+      "use": "@vercel/node"
+    },
+    {
       "src": "backend/api/server.js",
       "use": "@vercel/node"
     },
@@ -87,6 +103,22 @@
     {
       "src": "/api/store/sync-square",
       "dest": "/api/store/sync-square.js"
+    },
+    {
+      "src": "/api/paikka/pay",
+      "dest": "/api/paikka/pay.js"
+    },
+    {
+      "src": "/api/paikka/checkout",
+      "dest": "/api/paikka/checkout.js"
+    },
+    {
+      "src": "/api/paikka/finalize",
+      "dest": "/api/paikka/finalize.js"
+    },
+    {
+      "src": "/api/paikka/resend",
+      "dest": "/api/paikka/resend.js"
     },
     {
       "src": "/api/(.*)",
