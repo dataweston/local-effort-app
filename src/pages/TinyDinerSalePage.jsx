@@ -15,6 +15,7 @@ const TinyDinerSalePage = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [saleIntro, setSaleIntro] = useState({ subheading: '', intro: [] });
+  const presaleEnded = true; // Set to false to re-enable purchases
 
   useEffect(() => {
     let alive = true;
@@ -82,6 +83,14 @@ const TinyDinerSalePage = () => {
         <script type="application/ld+json">{JSON.stringify(schema)}</script>
       </Helmet>
 
+      {presaleEnded && (
+        <div className="mb-6 p-4 bg-red-50 border-2 border-red-500 rounded-lg">
+          <p className="text-red-600 font-bold text-lg text-center">
+            PRESALE ENDED! SEE YOU AT TINY DINER AT 4PM
+          </p>
+        </div>
+      )}
+
       <div className="flex items-start justify-between mb-6 gap-4">
         <div className="flex-1">
           <h1 className="text-5xl md:text-6xl font-bold tracking-tight text-neutral-900 mb-3">
@@ -100,7 +109,9 @@ const TinyDinerSalePage = () => {
             </Card>
           )}
         </div>
-        <button onClick={openCart} className="btn btn-primary whitespace-nowrap flex-shrink-0">Cart ({totalQty})</button>
+        {!presaleEnded && (
+          <button onClick={openCart} className="btn btn-primary whitespace-nowrap flex-shrink-0">Cart ({totalQty})</button>
+        )}
       </div>
 
       <Card className="mb-6 border-amber-300 bg-gradient-to-br from-amber-50 to-orange-50">
@@ -131,6 +142,14 @@ const TinyDinerSalePage = () => {
 
       {loading ? (
         <div>Loading...</div>
+      ) : presaleEnded ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 opacity-50 pointer-events-none">
+          {(products || []).map((p) => (
+            <motion.div key={p.id} initial={{ opacity: 0, y: 8 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
+              <ProductCard product={p} />
+            </motion.div>
+          ))}
+        </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
           {(products || []).map((p) => (
@@ -141,7 +160,7 @@ const TinyDinerSalePage = () => {
         </div>
       )}
 
-      <CheckoutPanel store="tiny-diner" />
+      {!presaleEnded && <CheckoutPanel store="tiny-diner" />}
     </div>
   );
 };
