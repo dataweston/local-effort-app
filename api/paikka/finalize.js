@@ -78,22 +78,30 @@ module.exports = async (req, res) => {
   }
 
   if (req.method !== 'POST') {
+    // eslint-disable-next-line no-console
+    console.log('[paikka/finalize] Method not allowed:', req.method);
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
   const payload = parseBody(req);
   if (!payload || typeof payload !== 'object') {
+    // eslint-disable-next-line no-console
+    console.log('[paikka/finalize] Invalid request body:', payload);
     return res.status(400).json({ error: 'Invalid request body.' });
   }
 
   try {
     const stateParam = typeof payload.state === 'string' ? payload.state : undefined;
     if (!stateParam) {
+      // eslint-disable-next-line no-console
+      console.log('[paikka/finalize] Missing checkout state');
       throw new Error('Missing checkout state.');
     }
 
     const checkoutState = decodeCheckoutState(stateParam);
     if (!checkoutState.items.length) {
+      // eslint-disable-next-line no-console
+      console.log('[paikka/finalize] No items in checkout');
       throw new Error('No items found in checkout.');
     }
 
@@ -330,7 +338,7 @@ module.exports = async (req, res) => {
       })
     ).toString('base64');
 
-    return res.status(200).json({
+    const response = {
       success: true,
       paymentReference,
       qrCode: qrCodeDataUrl,
@@ -346,7 +354,17 @@ module.exports = async (req, res) => {
         tipCents,
         totalCents,
       },
+    };
+
+    // eslint-disable-next-line no-console
+    console.log('[paikka/finalize] Success response:', {
+      paymentReference,
+      email: checkoutState.email,
+      hasQR: !!qrCodeDataUrl,
+      itemCount: items.length,
     });
+
+    return res.status(200).json(response);
   } catch (err) {
     // eslint-disable-next-line no-console
     console.error('[paikka/finalize] Error:', err);
