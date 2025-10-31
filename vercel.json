@@ -35,14 +35,6 @@
       "use": "@vercel/node"
     },
     {
-      "src": "api/sanity-health.ts",
-      "use": "@vercel/node"
-    },
-    {
-      "src": "api/_ping.js",
-      "use": "@vercel/node"
-    },
-    {
       "src": "api/paikka/pay.js",
       "use": "@vercel/node"
     },
@@ -60,10 +52,6 @@
     },
     {
       "src": "backend/api/server.js",
-      "use": "@vercel/node"
-    },
-    {
-      "src": "backend/api/ping.js",
       "use": "@vercel/node"
     }
   ],
