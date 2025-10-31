@@ -15,13 +15,27 @@ const PaikkaCheckout = () => {
   const [email, setEmail] = useState('');
   const [tipSelection, setTipSelection] = useState('15');
   const [customTip, setCustomTip] = useState('');
+  const [discountCode, setDiscountCode] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState(null);
 
-  const subtotalCents = useMemo(
-    () => MENU_ITEMS.reduce((sum, item) => sum + (quantities[item.sku] ?? 0) * item.presalePriceCents, 0),
-    [quantities]
+  const validDiscountCode = import.meta.env.VITE_PAIKKA_DISCOUNT_CODE || '';
+  const discountPriceCents = Number(import.meta.env.VITE_PAIKKA_DISCOUNT_PRICE_CENTS) || 0;
+
+  const isDiscountApplied = useMemo(
+    () => discountCode.trim().toLowerCase() === validDiscountCode.toLowerCase(),
+    [discountCode, validDiscountCode]
   );
+
+  const subtotalCents = useMemo(() => {
+    return MENU_ITEMS.reduce((sum, item) => {
+      const quantity = quantities[item.sku] ?? 0;
+      const pricePerItem = isDiscountApplied && discountPriceCents > 0
+        ? discountPriceCents
+        : item.presalePriceCents;
+      return sum + quantity * pricePerItem;
+    }, 0);
+  }, [quantities, isDiscountApplied, discountPriceCents]);
 
   const tipCents = useMemo(() => {
     if (tipSelection === 'custom') {
@@ -69,6 +83,7 @@ const PaikkaCheckout = () => {
       email: email.trim(),
     },
     tipCents,
+    discountCode: isDiscountApplied ? discountCode.trim() : undefined,
   });
 
   const buildEncodedState = () =>
@@ -78,6 +93,7 @@ const PaikkaCheckout = () => {
       lastName: lastName.trim() || undefined,
       items: summaryItems.map(({ item, qty }) => ({ sku: item.sku, qty })),
       tipCents,
+      discountCode: isDiscountApplied ? discountCode.trim() : undefined,
     });
 
   const handleCheckout = async () => {
@@ -237,6 +253,20 @@ const PaikkaCheckout = () => {
               />
             </label>
 
+            <label className="block space-y-1 text-sm font-medium text-neutral-700">
+              Discount Code (optional)
+              <input
+                className={inputClassName}
+                type="text"
+                value={discountCode}
+                onChange={(event) => setDiscountCode(event.target.value)}
+                placeholder="Enter discount code"
+              />
+              {isDiscountApplied && (
+                <p className="text-xs text-green-600 mt-1">Discount applied! Each sandwich is $10.</p>
+              )}
+            </label>
+
             <div className="space-y-2">
               <p className="text-sm font-medium text-neutral-700">Add gratuity (optional)</p>
               <div className="flex flex-wrap gap-3">
@@ -283,13 +313,20 @@ const PaikkaCheckout = () => {
                 <p className="text-sm text-neutral-500">Add sandwiches to your cart to continue.</p>
               ) : (
                 <ul className="space-y-3">
-                  {summaryItems.map(({ item, qty }) => (
-                    <li key={item.sku} className="flex items-start justify-between gap-3">
-                      <div className="space-y-1">
-                        <p className="text-sm font-medium text-neutral-900">{item.summaryTitle || item.title}</p>
-                        <p className="text-xs text-neutral-500">{item.isDairyFree ? 'Dairy-free · prepared without cheese' : 'Contains dairy'}</p>
-                      </div>
-                      <div className="flex items-center gap-2">
+                  {summaryItems.map(({ item, qty }) => {
+                    const pricePerItem = isDiscountApplied && discountPriceCents > 0 ? discountPriceCents : item.presalePriceCents;
+                    return (
+                      <li key={item.sku} className="flex items-start justify-between gap-3">
+                        <div className="space-y-1">
+                          <p className="text-sm font-medium text-neutral-900">{item.summaryTitle || item.title}</p>
+                          <p className="text-xs text-neutral-500">
+                            {item.isDairyFree ? 'Dairy-free · prepared without cheese' : 'Contains dairy'}
+                            {isDiscountApplied && (
+                              <span className="text-green-600"> · ${(pricePerItem / 100).toFixed(2)} each</span>
+                            )}
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-2">
                         <button
                           type="button"
                           onClick={() => handleQuantityChange(item.sku, -1)}
@@ -309,7 +346,8 @@ const PaikkaCheckout = () => {
                         </button>
                       </div>
                     </li>
-                  ))}
+                  );
+                  })}
                 </ul>
               )}
             </div>
