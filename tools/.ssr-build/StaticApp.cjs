@@ -46231,16 +46231,19 @@ var import_framer_motion = require("framer-motion");
 var import_jsx_runtime = require("react/jsx-runtime");
 var logo = "/gallery/logo.png?text=Local+Effort&font=mono";
 var links = [
-  { path: "/services", name: "Services", children: [
-    { path: "/services#event-request", name: "Submit an event request" }
-  ] },
+  {
+    path: "/services",
+    name: "Services",
+    children: [{ path: "/services#event-request", name: "Submit an event request" }]
+  },
   { path: "/pricing", name: "Pricing" },
   { path: "/menu", name: "Menus" },
   { path: "/pizza-party", name: "Pizza Party" },
   // { path: '/book-food-truck', name: 'Book a Food Truck', tag: 'Beta' }, // hidden from nav
   { path: "/about", name: "About" },
   // { path: '/happy-monday', name: 'Happy Monday' }, // temporarily hidden
-  { path: "/gallery", name: "Gallery" }
+  { path: "/gallery", name: "Gallery" },
+  { name: "Tiny Weddings", external: true, href: "https://tiny-weddings.localeffortfood.com" }
   // { path: '/releases', name: 'Releases' }, // temporarily hidden
 ];
 var SHOW_FUNDRAISER = true;
@@ -46266,25 +46269,61 @@ var Header = () => {
         }
       ) }),
       /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("nav", { className: "hidden md:flex items-center gap-2 font-mono text-[0.9rem]", children: [
-        links.map(({ path, name, sale, children, tag }) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "relative group", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_react_router_dom.NavLink, { to: path, className: "relative px-2 py-1 rounded", children: ({ isActive }) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [
-            sale ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: `inline-flex items-center rounded-md px-2 py-1 text-white shadow-sm transition-transform ${isActive ? "scale-[1.02]" : ""}`, style: { backgroundColor: "#e11d48" }, children: name }) : /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { className: "inline-flex items-center gap-1 transition-colors hover:text-neutral-900 text-neutral-700", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: name }),
-              tag && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: "inline-flex items-center rounded-full bg-rose-100 px-2 py-0.5 text-[0.55rem] font-semibold uppercase tracking-[0.2em] text-rose-500", children: tag })
-            ] }),
-            !sale && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
-              import_framer_motion.motion.span,
+        links.map((link) => {
+          const { path, name, sale, children, tag, external, href } = link;
+          const key = path || href;
+          if (external) {
+            return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "relative group", children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(
+              "a",
               {
-                layoutId: "nav-underline",
-                className: "absolute left-2 right-2 -bottom-0.5 h-0.5 bg-[var(--color-accent)]",
-                initial: false,
-                animate: { opacity: isActive ? 1 : 0 },
-                transition: { duration: 0.2 }
+                href,
+                className: "relative px-2 py-1 rounded inline-flex items-center gap-1 text-neutral-700 transition-colors hover:text-neutral-900",
+                target: "_blank",
+                rel: "noopener noreferrer",
+                children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: name }),
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+                    "svg",
+                    {
+                      className: "h-3.5 w-3.5 opacity-70",
+                      xmlns: "http://www.w3.org/2000/svg",
+                      viewBox: "0 0 20 20",
+                      fill: "currentColor",
+                      "aria-hidden": "true",
+                      children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", { d: "M9 3a1 1 0 0 0 0 2h4.586l-9.293 9.293a1 1 0 1 0 1.414 1.414L15 6.414V11a1 1 0 1 0 2 0V3H9Z" })
+                    }
+                  )
+                ]
               }
-            )
-          ] }) }),
-          children && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "absolute left-0 mt-1", children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "invisible group-hover:visible opacity-0 group-hover:opacity-100 transition-opacity", children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "mt-1 rounded-md border bg-white shadow-lg py-1 min-w-[220px]", children: children.map((c) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_react_router_dom.NavLink, { to: c.path, className: "block px-3 py-2 text-sm text-neutral-700 hover:bg-neutral-50", children: c.name }, c.path)) }) }) })
-        ] }, path)),
+            ) }, key);
+          }
+          return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "relative group", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_react_router_dom.NavLink, { to: path, className: "relative px-2 py-1 rounded", children: ({ isActive }) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [
+              sale ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+                "span",
+                {
+                  className: `inline-flex items-center rounded-md px-2 py-1 text-white shadow-sm transition-transform ${isActive ? "scale-[1.02]" : ""}`,
+                  style: { backgroundColor: "#e11d48" },
+                  children: name
+                }
+              ) : /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { className: "inline-flex items-center gap-1 transition-colors hover:text-neutral-900 text-neutral-700", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: name }),
+                tag && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: "inline-flex items-center rounded-full bg-rose-100 px-2 py-0.5 text-[0.55rem] font-semibold uppercase tracking-[0.2em] text-rose-500", children: tag })
+              ] }),
+              !sale && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+                import_framer_motion.motion.span,
+                {
+                  layoutId: "nav-underline",
+                  className: "absolute left-2 right-2 -bottom-0.5 h-0.5 bg-[var(--color-accent)]",
+                  initial: false,
+                  animate: { opacity: isActive ? 1 : 0 },
+                  transition: { duration: 0.2 }
+                }
+              )
+            ] }) }),
+            children && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "absolute left-0 mt-1", children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "invisible group-hover:visible opacity-0 group-hover:opacity-100 transition-opacity", children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "mt-1 rounded-md border bg-white shadow-lg py-1 min-w-[220px]", children: children.map((c) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_react_router_dom.NavLink, { to: c.path, className: "block px-3 py-2 text-sm text-neutral-700 hover:bg-neutral-50", children: c.name }, c.path)) }) }) })
+          ] }, key);
+        }),
         SHOW_FUNDRAISER && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_react_router_dom.NavLink, { to: "/pizzafunder", className: "ml-2", children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
           import_framer_motion.motion.span,
           {
@@ -46346,71 +46385,99 @@ var Header = () => {
             },
             className: "flex flex-col items-center justify-center h-full space-y-6 font-mono px-6",
             children: [
-              links.map((l) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
-                import_framer_motion.motion.div,
-                {
-                  variants: { hidden: { y: 10, opacity: 0 }, show: { y: 0, opacity: 1 } },
-                  children: !l.children ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
-                    import_react_router_dom.NavLink,
-                    {
-                      to: l.path,
-                      onClick: () => setIsOpen(false),
-                      className: `block text-3xl uppercase text-center ${l.sale ? "bg-rose-600 text-white px-4 py-2 rounded-md" : ""}`,
-                      children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { className: "flex items-center justify-center gap-2", children: [
-                        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: l.name }),
-                        l.tag && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: "inline-flex items-center rounded-full bg-rose-100 px-2 py-0.5 text-xs font-semibold uppercase tracking-[0.2em] text-rose-500", children: l.tag })
-                      ] })
-                    }
-                  ) : /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "w-full max-w-md", children: [
-                    /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(
-                      "button",
+              links.map((l) => {
+                const hasChildren = Array.isArray(l.children) && l.children.length > 0;
+                const sectionKey = l.path || l.href || l.name;
+                const isExternal = Boolean(l.external && l.href);
+                return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+                  import_framer_motion.motion.div,
+                  {
+                    variants: { hidden: { y: 10, opacity: 0 }, show: { y: 0, opacity: 1 } },
+                    children: !hasChildren ? isExternal ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+                      "a",
                       {
-                        type: "button",
-                        onClick: () => setOpenMobileSection(openMobileSection === l.path ? null : l.path),
-                        className: "w-full text-3xl uppercase text-center flex items-center justify-center gap-2",
-                        "aria-expanded": openMobileSection === l.path,
-                        "aria-controls": `section-${l.path}`,
-                        children: [
-                          l.name,
+                        href: l.href,
+                        target: "_blank",
+                        rel: "noopener noreferrer",
+                        onClick: () => setIsOpen(false),
+                        className: "block text-3xl uppercase text-center text-neutral-800 hover:text-black",
+                        children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { className: "flex items-center justify-center gap-3", children: [
+                          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: l.name }),
                           /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
                             "svg",
                             {
+                              className: "h-6 w-6 opacity-70",
                               xmlns: "http://www.w3.org/2000/svg",
-                              className: `h-6 w-6 transition-transform ${openMobileSection === l.path ? "rotate-180" : ""}`,
                               viewBox: "0 0 20 20",
                               fill: "currentColor",
                               "aria-hidden": "true",
-                              children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", { fillRule: "evenodd", d: "M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0L5.21 8.29a.75.75 0 01.02-1.08z", clipRule: "evenodd" })
+                              children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", { d: "M9 3a1 1 0 0 0 0 2h4.586l-9.293 9.293a1 1 0 1 0 1.414 1.414L15 6.414V11a1 1 0 1 0 2 0V3H9Z" })
                             }
                           )
-                        ]
+                        ] })
                       }
-                    ),
-                    /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_framer_motion.AnimatePresence, { initial: false, children: openMobileSection === l.path && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
-                      import_framer_motion.motion.div,
+                    ) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+                      import_react_router_dom.NavLink,
                       {
-                        id: `section-${l.path}`,
-                        initial: { height: 0, opacity: 0 },
-                        animate: { height: "auto", opacity: 1 },
-                        exit: { height: 0, opacity: 0 },
-                        transition: { duration: 0.2 },
-                        className: "overflow-hidden mt-2",
-                        children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "flex flex-col items-center space-y-2", children: l.children.map((c) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
-                          import_react_router_dom.NavLink,
-                          {
-                            to: c.path,
-                            onClick: () => setIsOpen(false),
-                            className: "text-base text-neutral-800 hover:text-black",
-                            children: c.name
-                          },
-                          c.path
-                        )) })
+                        to: l.path,
+                        onClick: () => setIsOpen(false),
+                        className: `block text-3xl uppercase text-center ${l.sale ? "bg-rose-600 text-white px-4 py-2 rounded-md" : ""}`,
+                        children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { className: "flex items-center justify-center gap-2", children: [
+                          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: l.name }),
+                          l.tag && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: "inline-flex items-center rounded-full bg-rose-100 px-2 py-0.5 text-xs font-semibold uppercase tracking-[0.2em] text-rose-500", children: l.tag })
+                        ] })
                       }
-                    ) })
-                  ] })
-                },
-                l.path
-              )),
+                    ) : /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "w-full max-w-md", children: [
+                      /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(
+                        "button",
+                        {
+                          type: "button",
+                          onClick: () => setOpenMobileSection(openMobileSection === sectionKey ? null : sectionKey),
+                          className: "w-full text-3xl uppercase text-center flex items-center justify-center gap-2",
+                          "aria-expanded": openMobileSection === sectionKey,
+                          "aria-controls": `section-${sectionKey}`,
+                          children: [
+                            l.name,
+                            /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+                              "svg",
+                              {
+                                xmlns: "http://www.w3.org/2000/svg",
+                                className: `h-6 w-6 transition-transform ${openMobileSection === sectionKey ? "rotate-180" : ""}`,
+                                viewBox: "0 0 20 20",
+                                fill: "currentColor",
+                                "aria-hidden": "true",
+                                children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", { fillRule: "evenodd", d: "M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0L5.21 8.29a.75.75 0 01.02-1.08z", clipRule: "evenodd" })
+                              }
+                            )
+                          ]
+                        }
+                      ),
+                      /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_framer_motion.AnimatePresence, { initial: false, children: openMobileSection === sectionKey && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+                        import_framer_motion.motion.div,
+                        {
+                          id: `section-${sectionKey}`,
+                          initial: { height: 0, opacity: 0 },
+                          animate: { height: "auto", opacity: 1 },
+                          exit: { height: 0, opacity: 0 },
+                          transition: { duration: 0.2 },
+                          className: "overflow-hidden mt-2",
+                          children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "flex flex-col items-center space-y-2", children: l.children.map((c) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+                            import_react_router_dom.NavLink,
+                            {
+                              to: c.path,
+                              onClick: () => setIsOpen(false),
+                              className: "text-base text-neutral-800 hover:text-black",
+                              children: c.name
+                            },
+                            c.path
+                          )) })
+                        }
+                      ) })
+                    ] })
+                  },
+                  sectionKey
+                );
+              }),
               SHOW_FUNDRAISER && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_framer_motion.motion.div, { variants: { hidden: { y: 10, opacity: 0 }, show: { y: 0, opacity: 1 } }, children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
                 import_react_router_dom.NavLink,
                 {

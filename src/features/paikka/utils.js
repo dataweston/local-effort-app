@@ -1,4 +1,4 @@
-const { MENU_LOOKUP } = require('./menu');
+import { MENU_LOOKUP } from './menu';
 
 const TIP_OPTIONS = [
   { label: '0%', value: '0' },
@@ -117,15 +117,3 @@ export {
   resolvePaymentReference,
   computeTotals,
 };
-
-if (typeof module !== 'undefined') {
-  module.exports = {
-    TIP_OPTIONS,
-    isValidEmail,
-    base64UrlEncode,
-    base64UrlDecode,
-    decodeCheckoutState,
-    resolvePaymentReference,
-    computeTotals,
-  };
-}

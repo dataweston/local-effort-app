@@ -80,7 +80,3 @@ const GROUPED_MENU = Array.from(groupedMenuMap.values()).map((entry) => ({
 }));
 
 export { MENU_ITEMS, MENU_LOOKUP, formatCurrency, GROUPED_MENU };
-
-if (typeof module !== 'undefined') {
-  module.exports = { MENU_ITEMS, MENU_LOOKUP, formatCurrency, GROUPED_MENU };
-}
