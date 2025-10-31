@@ -180,7 +180,7 @@ const PaikkaCheckout = () => {
       </header>
 
       <div className="rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm">
-        <div className="space-y-2 text-center text-sm text-neutral-600">
+        <div className="space-y-2 text-left text-sm text-neutral-600">
           <p>served on sourdough focaccia</p>
           <p>red fife and rye milled at bakers field, 100% hydration</p>
           <p>chickens from wild acres, squash from wisconsin growers</p>
