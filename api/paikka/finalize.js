@@ -308,6 +308,13 @@ module.exports = async (req, res) => {
 
     // Send emails via Brevo
     try {
+      if (!BREVO_API_KEY) {
+        throw new Error('BREVO_API_KEY not configured in environment');
+      }
+
+      // eslint-disable-next-line no-console
+      console.log('[paikka/finalize] Sending customer email to:', checkoutState.email);
+
       // Send to customer
       await sendBrevoEmail({
         sender: { name: 'Local Effort', email: SENDER_EMAIL },
@@ -316,6 +323,9 @@ module.exports = async (req, res) => {
         htmlContent: customerEmailHtml,
       });
 
+      // eslint-disable-next-line no-console
+      console.log('[paikka/finalize] Customer email sent successfully');
+
       // Send to admin
       await sendBrevoEmail({
         sender: { name: 'Paikka Orders', email: SENDER_EMAIL },
@@ -323,9 +333,17 @@ module.exports = async (req, res) => {
         subject: `New Paikka Order: ${checkoutState.firstName} ${checkoutState.lastName || ''} - ${formatCurrency(totalCents)}`,
         htmlContent: adminEmailHtml,
       });
+
+      // eslint-disable-next-line no-console
+      console.log('[paikka/finalize] Admin email sent successfully');
     } catch (emailError) {
       // eslint-disable-next-line no-console
       console.error('[paikka/finalize] Email sending failed:', emailError);
+      console.error('[paikka/finalize] Email error details:', {
+        hasBrevoKey: !!BREVO_API_KEY,
+        senderEmail: SENDER_EMAIL,
+        supportEmail: SUPPORT_EMAIL,
+      });
       // Don't fail the request if email fails - order is still valid
     }
 
