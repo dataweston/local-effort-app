@@ -80,3 +80,8 @@ const GROUPED_MENU = Array.from(groupedMenuMap.values()).map((entry) => ({
 }));
 
 export { MENU_ITEMS, MENU_LOOKUP, formatCurrency, GROUPED_MENU };
+
+// CommonJS export for Node.js serverless functions
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = { MENU_ITEMS, MENU_LOOKUP, formatCurrency, GROUPED_MENU };
+}
