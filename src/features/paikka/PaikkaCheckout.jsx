@@ -16,6 +16,7 @@ const PaikkaCheckout = () => {
   const [tipSelection, setTipSelection] = useState('15');
   const [customTip, setCustomTip] = useState('');
   const [discountCode, setDiscountCode] = useState('');
+  const [appliedDiscountCode, setAppliedDiscountCode] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState(null);
 
@@ -23,9 +24,18 @@ const PaikkaCheckout = () => {
   const discountPriceCents = Number(import.meta.env.VITE_PAIKKA_DISCOUNT_PRICE_CENTS) || 0;
 
   const isDiscountApplied = useMemo(
-    () => discountCode.trim().toLowerCase() === validDiscountCode.toLowerCase(),
-    [discountCode, validDiscountCode]
+    () => appliedDiscountCode.trim().toLowerCase() === validDiscountCode.toLowerCase(),
+    [appliedDiscountCode, validDiscountCode]
   );
+
+  const handleApplyDiscount = () => {
+    setAppliedDiscountCode(discountCode);
+  };
+
+  const handleRemoveDiscount = () => {
+    setDiscountCode('');
+    setAppliedDiscountCode('');
+  };
 
   const subtotalCents = useMemo(() => {
     return MENU_ITEMS.reduce((sum, item) => {
@@ -83,7 +93,7 @@ const PaikkaCheckout = () => {
       email: email.trim(),
     },
     tipCents,
-    discountCode: isDiscountApplied ? discountCode.trim() : undefined,
+    discountCode: isDiscountApplied ? appliedDiscountCode.trim() : undefined,
   });
 
   const buildEncodedState = () =>
@@ -93,7 +103,7 @@ const PaikkaCheckout = () => {
       lastName: lastName.trim() || undefined,
       items: summaryItems.map(({ item, qty }) => ({ sku: item.sku, qty })),
       tipCents,
-      discountCode: isDiscountApplied ? discountCode.trim() : undefined,
+      discountCode: isDiscountApplied ? appliedDiscountCode.trim() : undefined,
     });
 
   const handleCheckout = async () => {
@@ -168,6 +178,14 @@ const PaikkaCheckout = () => {
         <h1 className="text-4xl font-semibold tracking-tight text-neutral-900">Paikka Sandwich Presale</h1>
         <p className="mx-auto max-w-2xl text-base text-neutral-600">Skip the line at Paikka. Reserve your sandwiches now and check in with the QR code we will email you.</p>
       </header>
+
+      <div className="rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm">
+        <div className="space-y-2 text-center text-sm text-neutral-600">
+          <p>served on sourdough focaccia</p>
+          <p>red fife and rye milled at bakers field, 100% hydration</p>
+          <p>chickens from wild acres, squash from wisconsin growers</p>
+        </div>
+      </div>
 
       <div className="grid gap-8 lg:grid-cols-[2fr,1fr]">
         <div className="space-y-6">
@@ -253,19 +271,47 @@ const PaikkaCheckout = () => {
               />
             </label>
 
-            <label className="block space-y-1 text-sm font-medium text-neutral-700">
-              Discount Code (optional)
-              <input
-                className={inputClassName}
-                type="text"
-                value={discountCode}
-                onChange={(event) => setDiscountCode(event.target.value)}
-                placeholder="Enter discount code"
-              />
-              {isDiscountApplied && (
-                <p className="text-xs text-green-600 mt-1">Discount applied! Each sandwich is $10.</p>
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-neutral-700">
+                Discount Code (optional)
+              </label>
+              <div className="flex gap-2">
+                <input
+                  className={inputClassName}
+                  type="text"
+                  value={discountCode}
+                  onChange={(event) => setDiscountCode(event.target.value)}
+                  placeholder="Enter discount code"
+                  disabled={isDiscountApplied}
+                />
+                {!isDiscountApplied ? (
+                  <Button
+                    type="button"
+                    onClick={handleApplyDiscount}
+                    disabled={!discountCode.trim()}
+                    variant="outline"
+                    className="whitespace-nowrap"
+                  >
+                    Apply
+                  </Button>
+                ) : (
+                  <Button
+                    type="button"
+                    onClick={handleRemoveDiscount}
+                    variant="outline"
+                    className="whitespace-nowrap"
+                  >
+                    Remove
+                  </Button>
+                )}
+              </div>
+              {isDiscountApplied && hasItems && (
+                <p className="text-xs text-green-600">Discount applied! Each sandwich is $10.</p>
               )}
-            </label>
+              {appliedDiscountCode && !isDiscountApplied && (
+                <p className="text-xs text-red-600">Invalid discount code</p>
+              )}
+            </div>
 
             <div className="space-y-2">
               <p className="text-sm font-medium text-neutral-700">Add gratuity (optional)</p>
