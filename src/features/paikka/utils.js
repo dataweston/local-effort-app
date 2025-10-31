@@ -117,3 +117,16 @@ export {
   resolvePaymentReference,
   computeTotals,
 };
+
+// CommonJS export for Node.js serverless functions
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = {
+    TIP_OPTIONS,
+    isValidEmail,
+    base64UrlEncode,
+    base64UrlDecode,
+    decodeCheckoutState,
+    resolvePaymentReference,
+    computeTotals,
+  };
+}
