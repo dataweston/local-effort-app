@@ -321,20 +321,30 @@ module.exports = async (req, res) => {
       // Don't fail the request if email fails - order is still valid
     }
 
+    // Generate a simple JWT-like token for resend functionality
+    const jwt = Buffer.from(
+      JSON.stringify({
+        paymentReference,
+        email: checkoutState.email,
+        timestamp: new Date().toISOString(),
+      })
+    ).toString('base64');
+
     return res.status(200).json({
       success: true,
       paymentReference,
       qrCode: qrCodeDataUrl,
+      jwt,
       order: {
+        oid: paymentReference,
+        jti: paymentReference.slice(-8).toUpperCase(),
+        email: checkoutState.email,
+        firstName: checkoutState.firstName,
+        lastName: checkoutState.lastName,
         items,
         subtotalCents,
         tipCents,
         totalCents,
-        customer: {
-          email: checkoutState.email,
-          firstName: checkoutState.firstName,
-          lastName: checkoutState.lastName,
-        },
       },
     });
   } catch (err) {

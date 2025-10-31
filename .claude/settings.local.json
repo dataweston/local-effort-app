@@ -7,7 +7,9 @@
       "Bash(git commit:*)",
       "Bash(dir:*)",
       "Bash(findstr:*)",
-      "Bash(npm run build:*)"
+      "Bash(npm run build:*)",
+      "Bash(npm run build:frontend:*)",
+      "Bash(npm run:*)"
     ],
     "deny": [],
     "ask": []
