@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head><title>Config Check</title></head>
+<body>
+<h1>Environment Check</h1>
+<pre id="output"></pre>
+<script type="module">
+  const output = document.getElementById('output');
+  const info = {
+    'Current URL': window.location.href,
+    'Origin': window.location.origin,
+    'Hostname': window.location.hostname,
+    'VITE_SUPABASE_URL': import.meta.env.VITE_SUPABASE_URL || 'NOT SET',
+    'VITE_SUPABASE_ANON_KEY': import.meta.env.VITE_SUPABASE_ANON_KEY ? 'SET (hidden)' : 'NOT SET'
+  };
+  output.textContent = JSON.stringify(info, null, 2);
+</script>
+</body>
+</html>
