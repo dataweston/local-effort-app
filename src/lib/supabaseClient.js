@@ -12,6 +12,7 @@ export const supabase = supabaseUrl && supabaseAnonKey
   ? createClient(supabaseUrl, supabaseAnonKey, {
       auth: {
         persistSession: true,
+        storageKey: 'local-effort-calendar-auth', // keep calendar auth tokens isolated from other Supabase clients
         autoRefreshToken: true,
         detectSessionInUrl: true, // Enable automatic OAuth callback handling
         flowType: 'implicit', // Use implicit flow for hash-based OAuth
