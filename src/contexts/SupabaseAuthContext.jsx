@@ -54,10 +54,15 @@ export const SupabaseAuthProvider = ({ children }) => {
       throw new Error('Supabase not configured');
     }
     
+    // Use production URL in production, current origin otherwise
+    const productionUrl = 'https://localeffortfood.com';
+    const isDevelopment = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    const redirectUrl = isDevelopment ? `${window.location.origin}/calendar` : `${productionUrl}/calendar`;
+    
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: `${window.location.origin}/calendar`,
+        redirectTo: redirectUrl,
       },
     });
 
