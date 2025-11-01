@@ -5,7 +5,7 @@ import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 
-export default function InvitationManager() {
+export default function InvitationManager({ accessToken }) {
   const [customerName, setCustomerName] = useState('');
   const [customerEmail, setCustomerEmail] = useState('');
   const [pizzaCount, setPizzaCount] = useState(5);
@@ -26,9 +26,14 @@ export default function InvitationManager() {
     setLoading(true);
     
     try {
+      const headers = { 'Content-Type': 'application/json' };
+      if (accessToken) {
+        headers['Authorization'] = `Bearer ${accessToken}`;
+      }
+      
       const res = await fetch('/api/calendar/generate-invite', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         body: JSON.stringify({
           customer_name: customerName,
           customer_email: customerEmail,

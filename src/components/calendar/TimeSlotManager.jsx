@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { format, parse } from 'date-fns';
 
-export default function TimeSlotManager() {
+export default function TimeSlotManager({ accessToken }) {
   const [slots, setSlots] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -25,7 +25,11 @@ export default function TimeSlotManager() {
   const loadSlots = async () => {
     try {
       setLoading(true);
-      const response = await fetch('/api/calendar/time-slots');
+      const headers = {};
+      if (accessToken) {
+        headers['Authorization'] = `Bearer ${accessToken}`;
+      }
+      const response = await fetch('/api/calendar/time-slots', { headers });
       if (!response.ok) throw new Error('Failed to load time slots');
       const data = await response.json();
       setSlots(data);
@@ -54,9 +58,14 @@ export default function TimeSlotManager() {
         ? `/api/calendar/time-slots?id=${editingSlot.id}`
         : '/api/calendar/time-slots';
       
+      const headers = { 'Content-Type': 'application/json' };
+      if (accessToken) {
+        headers['Authorization'] = `Bearer ${accessToken}`;
+      }
+      
       const response = await fetch(url, {
         method: editingSlot ? 'PATCH' : 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         body: JSON.stringify(payload)
       });
       
@@ -102,8 +111,13 @@ export default function TimeSlotManager() {
     
     try {
       setLoading(true);
+      const headers = {};
+      if (accessToken) {
+        headers['Authorization'] = `Bearer ${accessToken}`;
+      }
       const response = await fetch(`/api/calendar/time-slots?id=${id}`, {
-        method: 'DELETE'
+        method: 'DELETE',
+        headers
       });
       
       if (!response.ok) {
