@@ -54,12 +54,14 @@ export const SupabaseAuthProvider = ({ children }) => {
       throw new Error('Supabase not configured');
     }
     
-    // Always use the current origin for redirect
-    // This will be production URL in production, localhost in dev
+    // Build the full redirect URL including the path
+    const origin = window.location.origin;
+    const redirectUrl = `${origin}/calendar`;
+    
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: `${window.location.origin}/calendar`,
+        redirectTo: redirectUrl,
       },
     });
 
