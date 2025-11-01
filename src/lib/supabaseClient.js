@@ -13,6 +13,8 @@ export const supabase = supabaseUrl && supabaseAnonKey
       auth: {
         persistSession: true,
         autoRefreshToken: true,
+        detectSessionInUrl: true, // Enable automatic OAuth callback handling
+        flowType: 'implicit', // Use implicit flow for hash-based OAuth
       }
     })
   : null; // Return null instead of mock object
