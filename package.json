@@ -41,6 +41,7 @@
     "node-fetch": "^3.3.2",
     "pino": "^9.4.0",
     "pino-http": "^10.1.0",
+    "qrcode": "^1.5.3",
     "prop-types": "^15.8.1",
     "react": "18.2.0",
     "react-dom": "18.2.0",
