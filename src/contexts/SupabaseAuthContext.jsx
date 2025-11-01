@@ -30,12 +30,26 @@ export const SupabaseAuthProvider = ({ children }) => {
       return;
     }
 
-    // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    // Initialize session - this will automatically handle OAuth callback hash params
+    const initializeAuth = async () => {
+      // getSession will automatically extract tokens from URL hash if present
+      const { data: { session }, error } = await supabase.auth.getSession();
+      
+      if (error) {
+        console.error('Error getting session:', error);
+      }
+      
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
-    });
+
+      // Clean up URL hash after session is established
+      if (window.location.hash.includes('access_token')) {
+        window.history.replaceState(null, '', window.location.pathname);
+      }
+    };
+
+    initializeAuth();
 
     // Listen for auth changes
     const {
