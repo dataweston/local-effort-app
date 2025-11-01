@@ -7,3 +7,4 @@ node_modules
 .local-effort-firebase-adminsdk-xrvm0-bae4f4c196.json
 .env.vercel.production
 nul
+.env.vercel
