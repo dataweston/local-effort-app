@@ -15,16 +15,10 @@ export const supabase = supabaseUrl && supabaseAnonKey
         autoRefreshToken: true,
       }
     })
-  : {
-      // Mock object to prevent crashes when Supabase isn't configured
-      auth: {
-        getSession: async () => ({ data: { session: null }, error: new Error('Supabase not configured') }),
-        getUser: async () => ({ data: { user: null }, error: new Error('Supabase not configured') }),
-        signInWithOAuth: async () => ({ data: null, error: new Error('Supabase not configured') }),
-        signOut: async () => ({ error: new Error('Supabase not configured') }),
-        onAuthStateChange: () => ({ data: { subscription: { unsubscribe: () => {} } } })
-      }
-    };
+  : null; // Return null instead of mock object
+
+// Helper to check if Supabase is configured
+export const isSupabaseConfigured = () => !!supabase;
 
 export const ADMIN_EMAILS = ['dataweston@gmail.com', 'colsen03@gmail.com'];
 
