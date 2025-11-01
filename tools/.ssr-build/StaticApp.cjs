@@ -53852,6 +53852,7 @@ var HomePage = () => {
           /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(SubscribeForm, {})
         ] }) })
       ] }) }),
+      /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("section", { className: "mx-auto max-w-6xl px-4 md:px-6 lg:px-8", children: /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("div", { className: "text-center", children: /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("h3", { className: "text-2xl font-bold", children: /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("a", { href: "/paikka", className: "hover:underline text-primary", children: "pre-order for the paikka holiday bazaar here." }) }) }) }),
       /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("section", { className: "py-12", children: [
         /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("div", { className: "max-w-6xl mx-auto px-4 md:px-6 lg:px-8", children: /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(SectionHeader, { overline: "Community", title: "Our Partners" }) }),
         /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(PartnerGrid, {})
