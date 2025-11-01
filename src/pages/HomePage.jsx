@@ -688,6 +688,17 @@ const HomePage = () => {
           </div>
         </section>
 
+        {/* Paikka Holiday Bazaar Pre-Order */}
+        <section className="mx-auto max-w-6xl px-4 md:px-6 lg:px-8">
+          <div className="text-center">
+            <h3 className="text-2xl font-bold">
+              <a href="/paikka" className="hover:underline text-primary">
+                pre-order for the paikka holiday bazaar here.
+              </a>
+            </h3>
+          </div>
+        </section>
+
         {/* Partner / Logo Wall */}
   <section className="py-12">
           <div className="max-w-6xl mx-auto px-4 md:px-6 lg:px-8">
