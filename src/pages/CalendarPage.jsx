@@ -13,10 +13,9 @@ import TimeSlotManager from '../components/calendar/TimeSlotManager';
 import InvitationManager from '../components/calendar/InvitationManager';
 import { CalendarAuthBanner } from '../components/calendar/CalendarAuthBanner';
 import { useSupabaseAuth } from '../contexts/SupabaseAuthContext';
-import { supabase } from '../lib/supabaseClient';
 
 const CalendarPage = () => {
-  const { user, isAdmin } = useSupabaseAuth();
+  const { user, isAdmin, accessToken, loading: authLoading } = useSupabaseAuth();
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [events, setEvents] = useState([]);
   const [receipts, setReceipts] = useState([]);
@@ -29,18 +28,19 @@ const CalendarPage = () => {
   const [activeFilters, setActiveFilters] = useState([]);
   
   useEffect(() => {
-    loadEvents();
-    loadReceipts();
-  }, []);
+    if (!authLoading) {
+      loadEvents();
+      if (isAdmin) {
+        loadReceipts();
+      }
+    }
+  }, [authLoading, isAdmin, accessToken]);
   
   const loadEvents = async () => {
     try {
       const headers = {};
-      if (user) {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (session?.access_token) {
-          headers['Authorization'] = `Bearer ${session.access_token}`;
-        }
+      if (accessToken) {
+        headers['Authorization'] = `Bearer ${accessToken}`;
       }
       
       const res = await fetch('/api/calendar/events', { headers });
@@ -54,8 +54,13 @@ const CalendarPage = () => {
   };
   
   const loadReceipts = async () => {
+    if (!isAdmin || !accessToken) return;
+    
     try {
-      const res = await fetch('/api/calendar/receipts');
+      const headers = {
+        'Authorization': `Bearer ${accessToken}`
+      };
+      const res = await fetch('/api/calendar/receipts', { headers });
       const data = await res.json();
       setReceipts(Array.isArray(data) ? data : []);
     } catch (error) {
@@ -64,13 +69,21 @@ const CalendarPage = () => {
   };
   
   const handleSaveEvent = async (eventData) => {
+    if (!isAdmin || !accessToken) {
+      alert('Admin access required');
+      return;
+    }
+    
     try {
       const url = eventData.id ? `/api/calendar/events?id=${eventData.id}` : '/api/calendar/events';
       const method = eventData.id ? 'PUT' : 'POST';
       
       const res = await fetch(url, {
         method,
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${accessToken}`
+        },
         body: JSON.stringify(eventData)
       });
       
@@ -85,10 +98,20 @@ const CalendarPage = () => {
   };
   
   const handleDeleteEvent = async (eventId) => {
+    if (!isAdmin || !accessToken) {
+      alert('Admin access required');
+      return;
+    }
+    
     if (!confirm('Delete this event?')) return;
     
     try {
-      const res = await fetch(`/api/calendar/events?id=${eventId}`, { method: 'DELETE' });
+      const res = await fetch(`/api/calendar/events?id=${eventId}`, { 
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${accessToken}`
+        }
+      });
       if (!res.ok) throw new Error('Failed to delete');
       
       await loadEvents();
@@ -100,11 +123,18 @@ const CalendarPage = () => {
   };
   
   const handleCSVImport = async (data) => {
+    if (!isAdmin || !accessToken) {
+      throw new Error('Admin access required');
+    }
+    
     try {
       const promises = data.map(event => 
         fetch('/api/calendar/events', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${accessToken}`
+          },
           body: JSON.stringify(event)
         })
       );
@@ -131,11 +161,21 @@ const CalendarPage = () => {
   };
   
   const handleSyncSanity = async () => {
+    if (!isAdmin || !accessToken) {
+      alert('Admin access required');
+      return;
+    }
+    
     if (!confirm('Import all Sanity events into the calendar? Existing events will be updated.')) return;
     
     try {
       setLoading(true);
-      const res = await fetch('/api/calendar/sync-sanity', { method: 'POST' });
+      const res = await fetch('/api/calendar/sync-sanity', { 
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${accessToken}`
+        }
+      });
       const result = await res.json();
       
       if (!res.ok) throw new Error(result.message || 'Sync failed');
@@ -150,6 +190,8 @@ const CalendarPage = () => {
   };
   
   const openNewEvent = (date) => {
+    if (!isAdmin) return;
+    
     setSelectedEvent({
       title: '',
       start_date: date ? date.toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
@@ -161,6 +203,10 @@ const CalendarPage = () => {
   };
   
   const openEditEvent = (event) => {
+    if (!isAdmin) {
+      openEventSheet(event);
+      return;
+    }
     setSelectedEvent(event);
     setShowEventForm(true);
   };
@@ -184,7 +230,7 @@ const CalendarPage = () => {
     });
   }, [events, activeFilters]);
   
-  if (loading) return <div className="flex justify-center items-center min-h-screen">Loading...</div>;
+  if (loading || authLoading) return <div className="flex justify-center items-center min-h-screen">Loading...</div>;
   
   return (
     <>
@@ -225,18 +271,22 @@ const CalendarPage = () => {
               <CalendarIcon className="w-4 h-4" />
               Calendar
             </Tabs.Trigger>
-            <Tabs.Trigger value="time-slots" className="px-6 py-3 border-b-2 border-transparent data-[state=active]:border-blue-500 data-[state=active]:text-blue-600 font-medium flex items-center gap-2">
-              <Clock className="w-4 h-4" />
-              Time Slots
-            </Tabs.Trigger>
-            <Tabs.Trigger value="invitations" className="px-6 py-3 border-b-2 border-transparent data-[state=active]:border-blue-500 data-[state=active]:text-blue-600 font-medium flex items-center gap-2">
-              <Mail className="w-4 h-4" />
-              Invitations
-            </Tabs.Trigger>
-            <Tabs.Trigger value="financials" className="px-6 py-3 border-b-2 border-transparent data-[state=active]:border-blue-500 data-[state=active]:text-blue-600 font-medium flex items-center gap-2">
-              <DollarSign className="w-4 h-4" />
-              Financials
-            </Tabs.Trigger>
+            {isAdmin && (
+              <>
+                <Tabs.Trigger value="time-slots" className="px-6 py-3 border-b-2 border-transparent data-[state=active]:border-blue-500 data-[state=active]:text-blue-600 font-medium flex items-center gap-2">
+                  <Clock className="w-4 h-4" />
+                  Time Slots
+                </Tabs.Trigger>
+                <Tabs.Trigger value="invitations" className="px-6 py-3 border-b-2 border-transparent data-[state=active]:border-blue-500 data-[state=active]:text-blue-600 font-medium flex items-center gap-2">
+                  <Mail className="w-4 h-4" />
+                  Invitations
+                </Tabs.Trigger>
+                <Tabs.Trigger value="financials" className="px-6 py-3 border-b-2 border-transparent data-[state=active]:border-blue-500 data-[state=active]:text-blue-600 font-medium flex items-center gap-2">
+                  <DollarSign className="w-4 h-4" />
+                  Financials
+                </Tabs.Trigger>
+              </>
+            )}
           </Tabs.List>
           
           <Tabs.Content value="calendar">
@@ -330,17 +380,21 @@ const CalendarPage = () => {
             </div>
           </Tabs.Content>
           
-          <Tabs.Content value="time-slots">
-            <TimeSlotManager />
-          </Tabs.Content>
-          
-          <Tabs.Content value="invitations">
-            <InvitationManager />
-          </Tabs.Content>
-          
-          <Tabs.Content value="financials">
-            <FinancialSummary events={events} receipts={receipts} />
-          </Tabs.Content>
+          {isAdmin && (
+            <>
+              <Tabs.Content value="time-slots">
+                <TimeSlotManager accessToken={accessToken} />
+              </Tabs.Content>
+              
+              <Tabs.Content value="invitations">
+                <InvitationManager accessToken={accessToken} />
+              </Tabs.Content>
+              
+              <Tabs.Content value="financials">
+                <FinancialSummary events={events} receipts={receipts} />
+              </Tabs.Content>
+            </>
+          )}
         </Tabs.Root>
       </div>
       
@@ -350,6 +404,8 @@ const CalendarPage = () => {
         onClose={() => { setShowEventForm(false); setSelectedEvent(null); }}
         onSave={handleSaveEvent}
         onDelete={handleDeleteEvent}
+        accessToken={accessToken}
+        isAdmin={isAdmin}
       />
       
       <EventBottomSheet

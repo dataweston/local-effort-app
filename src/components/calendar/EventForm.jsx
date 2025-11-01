@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { X, Save, Trash2 } from 'lucide-react';
 import * as Dialog from '@radix-ui/react-dialog';
 
-const EventForm = ({ event, isOpen, onClose, onSave, onDelete }) => {
+const EventForm = ({ event, isOpen, onClose, onSave, onDelete, accessToken, isAdmin }) => {
   const [formData, setFormData] = useState(event || {
     title: '',
     start_date: new Date().toISOString().split('T')[0],
@@ -43,13 +43,18 @@ const EventForm = ({ event, isOpen, onClose, onSave, onDelete }) => {
   };
   
   const checkConflicts = async (date, time, bufferHours) => {
-    if (!date) return;
+    if (!date || !isAdmin) return; // Only check conflicts for admins
     
     setCheckingConflicts(true);
     try {
+      const headers = { 'Content-Type': 'application/json' };
+      if (accessToken) {
+        headers['Authorization'] = `Bearer ${accessToken}`;
+      }
+      
       const response = await fetch('/api/calendar/check-conflicts', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         body: JSON.stringify({
           check_date: date,
           check_time: time || '00:00',

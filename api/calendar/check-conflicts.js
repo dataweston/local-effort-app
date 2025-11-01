@@ -7,6 +7,27 @@ module.exports = async (req, res) => {
 
   const supabase = getSupabase();
   
+  // Extract user session for auth (admin only for conflict checking)
+  const authHeader = req.headers.authorization;
+  let isAdmin = false;
+  
+  if (authHeader && authHeader.startsWith('Bearer ')) {
+    try {
+      const token = authHeader.substring(7);
+      const { data: { user }, error } = await supabase.auth.getUser(token);
+      if (!error && user) {
+        const adminEmails = ['dataweston@gmail.com', 'colsen03@gmail.com'];
+        isAdmin = adminEmails.includes(user.email?.toLowerCase());
+      }
+    } catch (err) {
+      // Auth failed
+    }
+  }
+  
+  if (!isAdmin) {
+    return res.status(403).json({ error: 'Admin access required' });
+  }
+  
   try {
     const {
       check_date,

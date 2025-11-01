@@ -4,8 +4,27 @@ module.exports = async (req, res) => {
   const supabase = getSupabase();
   const { method } = req;
 
+  // Extract user session if present for auth-based operations
+  const authHeader = req.headers.authorization;
+  let userEmail = null;
+  let isAdmin = false;
+  
+  if (authHeader && authHeader.startsWith('Bearer ')) {
+    try {
+      const token = authHeader.substring(7);
+      const { data: { user }, error } = await supabase.auth.getUser(token);
+      if (!error && user) {
+        userEmail = user.email;
+        const adminEmails = ['dataweston@gmail.com', 'colsen03@gmail.com'];
+        isAdmin = adminEmails.includes(userEmail?.toLowerCase());
+      }
+    } catch (err) {
+      // Continue without auth
+    }
+  }
+
   try {
-    // GET - List time slots with filters
+    // GET - List time slots with filters (public for available slots)
     if (method === 'GET') {
       const { date, type, status, available_only } = req.query;
       
@@ -35,8 +54,12 @@ module.exports = async (req, res) => {
       return res.json(data || []);
     }
     
-    // POST - Create new time slot
+    // POST - Create new time slot (admin only)
     if (method === 'POST') {
+      if (!isAdmin) {
+        return res.status(403).json({ error: 'Admin access required' });
+      }
+      
       const {
         slot_date,
         slot_time,
@@ -109,8 +132,12 @@ module.exports = async (req, res) => {
       return res.status(201).json(data);
     }
     
-    // PATCH - Update time slot
+    // PATCH - Update time slot (admin only)
     if (method === 'PATCH') {
+      if (!isAdmin) {
+        return res.status(403).json({ error: 'Admin access required' });
+      }
+      
       const { id } = req.query;
       const updates = req.body;
       
@@ -176,8 +203,12 @@ module.exports = async (req, res) => {
       return res.json(data);
     }
     
-    // DELETE - Delete time slot
+    // DELETE - Delete time slot (admin only)
     if (method === 'DELETE') {
+      if (!isAdmin) {
+        return res.status(403).json({ error: 'Admin access required' });
+      }
+      
       const { id } = req.query;
       
       if (!id) {

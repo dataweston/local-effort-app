@@ -4,6 +4,7 @@ import { supabase, isAdmin } from '../lib/supabaseClient';
 const SupabaseAuthContext = createContext({
   user: null,
   session: null,
+  accessToken: null,
   loading: true,
   isAdmin: false,
   signInWithGoogle: async () => {},
@@ -77,6 +78,7 @@ export const SupabaseAuthProvider = ({ children }) => {
   const value = {
     user,
     session,
+    accessToken: session?.access_token || null,
     loading,
     isAdmin: user?.email ? isAdmin(user.email) : false,
     signInWithGoogle,
