@@ -25,28 +25,76 @@ export const SupabaseAuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!supabase) {
-      setLoading(false);
-      return;
-    }
+    let isMounted = true;
 
-    // Get initial session (will automatically handle OAuth callback)
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    const removeHashFragment = () => {
+      if (typeof window === 'undefined') return;
+      const { pathname, search, hash } = window.location;
+      if (!hash) return;
+      window.history.replaceState(window.history.state, '', `${pathname}${search}`);
+    };
+
+    const initializeSession = async () => {
+      if (!supabase) {
+        if (isMounted) setLoading(false);
+        return;
+      }
+
+      if (typeof window !== 'undefined' && window.location.hash.includes('access_token')) {
+        try {
+          const hashParams = new URLSearchParams(window.location.hash.substring(1));
+          const accessToken = hashParams.get('access_token');
+          const refreshToken = hashParams.get('refresh_token');
+
+          if (accessToken && refreshToken) {
+            const { data, error } = await supabase.auth.setSession({
+              access_token: accessToken,
+              refresh_token: refreshToken,
+            });
+
+            if (error) {
+              console.error('Failed to establish Supabase session from redirect hash', error);
+            } else if (data?.session && isMounted) {
+              setSession(data.session);
+              setUser(data.session.user ?? null);
+            }
+          }
+        } catch (err) {
+          console.error('Error processing Supabase auth redirect', err);
+        } finally {
+          removeHashFragment();
+        }
+      }
+
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!isMounted) return;
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
-    });
+    };
 
-    // Listen for auth changes
+    initializeSession();
+
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    } = supabase.auth.onAuthStateChange((event, session) => {
+      if (!isMounted) {
+        return;
+      }
+
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
+
+      if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+        removeHashFragment();
+      }
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      isMounted = false;
+      subscription.unsubscribe();
+    };
   }, []);
 
   const signInWithGoogle = async () => {
