@@ -2,12 +2,35 @@ import React from 'react';
 import { useSupabaseAuth } from '../../contexts/SupabaseAuthContext';
 import { Card } from '../ui/card';
 import { Button } from '../ui/button';
+import { isSupabaseConfigured } from '../../lib/supabaseClient';
 
 export const CalendarAuthBanner = () => {
   const { user, isAdmin, loading, signInWithGoogle, signOut } = useSupabaseAuth();
 
   if (loading) {
     return null;
+  }
+
+  // Show configuration error if Supabase is not configured
+  if (!isSupabaseConfigured()) {
+    return (
+      <Card className="mb-6 p-6 bg-gradient-to-r from-red-50 to-orange-50 border-red-200">
+        <div className="flex flex-col gap-4">
+          <div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-1">
+              ⚠️ Authentication Not Configured
+            </h3>
+            <p className="text-sm text-gray-600">
+              Supabase environment variables are missing. Calendar features requiring authentication will not work.
+            </p>
+            <p className="text-sm text-gray-600 mt-2">
+              Please set <code className="bg-gray-100 px-1 py-0.5 rounded">VITE_SUPABASE_URL</code> and{' '}
+              <code className="bg-gray-100 px-1 py-0.5 rounded">VITE_SUPABASE_ANON_KEY</code> in Vercel environment variables.
+            </p>
+          </div>
+        </div>
+      </Card>
+    );
   }
 
   if (!user) {
