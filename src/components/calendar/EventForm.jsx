@@ -79,6 +79,9 @@ const EventForm = ({ event, isOpen, onClose, onSave, onDelete, accessToken, isAd
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 bg-black/50 z-40" />
         <Dialog.Content className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto z-50 p-6">
+          <Dialog.Description className="sr-only">
+            {event?.id ? 'Edit calendar event details' : 'Create a new calendar event'}
+          </Dialog.Description>
           <div className="flex justify-between items-center mb-4">
             <Dialog.Title className="text-lg font-semibold">
               {event?.id ? 'Edit Event' : 'New Event'}
