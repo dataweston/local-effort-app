@@ -1,11 +1,18 @@
 import { createClient } from '@supabase/supabase-js';
 
-// Support both VITE_ prefixed (local dev) and non-prefixed (Vercel build) env vars
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || import.meta.env.SUPABASE_URL;
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || import.meta.env.SUPABASE_ANON_KEY;
+// Support Vite (VITE_), Next (NEXT_PUBLIC_), and raw SUPABASE_ env var prefixes
+const supabaseUrl =
+  import.meta.env.VITE_SUPABASE_URL ||
+  import.meta.env.NEXT_PUBLIC_SUPABASE_URL ||
+  import.meta.env.SUPABASE_URL;
+
+const supabaseAnonKey =
+  import.meta.env.VITE_SUPABASE_ANON_KEY ||
+  import.meta.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
+  import.meta.env.SUPABASE_ANON_KEY;
 
 if (!supabaseUrl || !supabaseAnonKey) {
-  console.error('Supabase configuration missing. Please set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY (or SUPABASE_URL and SUPABASE_ANON_KEY) in your environment');
+  console.error('Supabase configuration missing. Set SUPABASE_URL/SUPABASE_ANON_KEY with either VITE_ or NEXT_PUBLIC_ prefixes (or without) in your environment');
 }
 
 export const supabase = supabaseUrl && supabaseAnonKey 
