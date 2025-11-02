@@ -36,6 +36,7 @@ export default defineConfig({
       { find: '@partners/happymonday', replacement: r('src/partners/happymonday.jsx') },
     ],
   },
+  envPrefix: ['VITE_', 'NEXT_PUBLIC_', 'SUPABASE_'],
   server: {
     proxy: {
       '/api': {
