@@ -1,7 +1,62 @@
 const { getSupabase } = require('../../backend/api/supabaseClient');
 
+function sanitizeEventPayload(payload = {}) {
+  const sanitized = { ...payload };
+
+  // Remove form-only fields that don't exist on the table
+  delete sanitized.buffer_hours;
+  delete sanitized.repeat;
+  delete sanitized.repeatUntil;
+
+  // Coerce optional date/time fields
+  ['end_date'].forEach((field) => {
+    if (!sanitized[field]) sanitized[field] = null;
+  });
+
+  ['start_time', 'end_time'].forEach((field) => {
+    if (!sanitized[field]) sanitized[field] = null;
+  });
+
+  // Integers
+  ['capacity', 'booked_slots'].forEach((field) => {
+    if (sanitized[field] === '' || sanitized[field] === undefined) {
+      sanitized[field] = null;
+    } else if (sanitized[field] !== null) {
+      const parsed = parseInt(sanitized[field], 10);
+      sanitized[field] = Number.isNaN(parsed) ? null : parsed;
+    }
+  });
+
+  // Numeric/decimal fields
+  [
+    'estimated_revenue',
+    'estimated_food_cost',
+    'estimated_labor_cost',
+    'actual_revenue',
+    'actual_food_cost',
+    'actual_labor_cost',
+  ].forEach((field) => {
+    if (sanitized[field] === '' || sanitized[field] === undefined) {
+      sanitized[field] = null;
+    } else if (sanitized[field] !== null) {
+      const parsed = parseFloat(sanitized[field]);
+      sanitized[field] = Number.isNaN(parsed) ? null : parsed;
+    }
+  });
+
+  // Empty strings to null for optional text fields
+  ['location', 'notes', 'sanity_data'].forEach((field) => {
+    if (sanitized[field] === '') sanitized[field] = null;
+  });
+
+  return sanitized;
+}
+
 module.exports = async (req, res) => {
   const supabase = getSupabase();
+  if (!supabase) {
+    return res.status(500).json({ error: 'Supabase not configured' });
+  }
   
   // Extract user session if present (for auth-based filtering)
   const authHeader = req.headers.authorization;
@@ -63,14 +118,15 @@ module.exports = async (req, res) => {
     }
     
     const { repeat, repeatUntil, ...eventData } = req.body;
+    const sanitizedEventData = sanitizeEventPayload(eventData);
     
-    if (!eventData.title || !eventData.start_date) {
+    if (!sanitizedEventData.title || !sanitizedEventData.start_date) {
       return res.status(400).json({ error: 'Title and start_date required' });
     }
     
     const { data, error } = await supabase
       .from('calendar_events')
-      .insert([eventData])
+      .insert([sanitizedEventData])
       .select()
       .single();
     
@@ -78,7 +134,7 @@ module.exports = async (req, res) => {
     
     if (repeat && repeat !== 'none' && repeatUntil) {
       const seriesId = data.id;
-      const instances = generateRecurringInstances(eventData, repeat, repeatUntil, seriesId);
+      const instances = generateRecurringInstances(sanitizedEventData, repeat, repeatUntil, seriesId);
       
       if (instances.length > 0) {
         await supabase.from('calendar_events').insert(instances);
@@ -98,7 +154,7 @@ module.exports = async (req, res) => {
     }
     
     const { id } = req.query;
-    const eventData = req.body;
+    const eventData = sanitizeEventPayload(req.body);
     
     if (!id) return res.status(400).json({ error: 'Event ID required' });
     

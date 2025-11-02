@@ -227,9 +227,28 @@ const PaikkaCheckout = () => {
               </div>
             );
           })}
+
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div className="overflow-hidden rounded-2xl shadow-md">
+              <img
+                src="https://res.cloudinary.com/dokyhfvyd/image/upload/f_auto,q_auto/v1762044009/afjewnuvii0tgx7wolni.heic"
+                alt="Paikka sandwich preparation"
+                className="h-full w-full object-cover"
+                loading="lazy"
+              />
+            </div>
+            <div className="overflow-hidden rounded-2xl shadow-md sm:mt-6">
+              <img
+                src="https://res.cloudinary.com/dokyhfvyd/image/upload/f_auto,q_auto/v1762044001/fhq1oemkmct8wf73ji6l.heic"
+                alt="Paikka sandwich ingredients"
+                className="h-full w-full object-cover"
+                loading="lazy"
+              />
+            </div>
+          </div>
         </div>
 
-        <aside className="space-y-6 rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm">
+        <aside className="space-y-6 rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm lg:self-start lg:sticky lg:top-6">
           <h3 className="text-lg font-semibold text-neutral-900">Fast Square checkout</h3>
           <form
             className="space-y-5"
