@@ -275,15 +275,21 @@ function createMessagesRouter({ logger, brevoService, getSanityClient, db }) {
 
       const dedupeKey = hashKey(`${email.toLowerCase()}|${eventDate || ''}|${(city || '').toLowerCase()}`);
       let existingId = null;
+      let firestoreAvailable = true;
       if (db) {
-        const snap = await db.collection('events').where('dedupeKey', '==', dedupeKey).limit(1).get().catch(() => null);
-        if (snap && !snap.empty) {
-          const doc = snap.docs[0];
-          const createdAt = doc.get('submittedAt');
-          const ts = createdAt && createdAt.toDate ? createdAt.toDate() : new Date(createdAt);
-          if (ts && (Date.now() - ts.getTime()) < 1000 * 60 * 60 * 48) {
-            existingId = doc.id;
+        try {
+          const snap = await db.collection('events').where('dedupeKey', '==', dedupeKey).limit(1).get();
+          if (snap && !snap.empty) {
+            const doc = snap.docs[0];
+            const createdAt = doc.get('submittedAt');
+            const ts = createdAt && createdAt.toDate ? createdAt.toDate() : new Date(createdAt);
+            if (ts && (Date.now() - ts.getTime()) < 1000 * 60 * 60 * 48) {
+              existingId = doc.id;
+            }
           }
+        } catch (error) {
+          firestoreAvailable = false;
+          if (logger) logger.warn({ err: error }, 'failed to query event request dedupe from firestore');
         }
       }
 
@@ -311,22 +317,27 @@ function createMessagesRouter({ logger, brevoService, getSanityClient, db }) {
       }
 
       let eventId = existingId;
-      if (db && !existingId) {
-        const payload = {
-          title: summary || 'Event Request',
-          date: startDate || new Date(),
-          status: 'pending',
-          notes: details,
-          contact: { name, email, phone },
-          location: location || null,
-          eventType: eventType || null,
-          guestCount: guestCount ? Number(guestCount) : null,
-          source: 'website',
-          submittedAt: new Date(),
-          dedupeKey,
-        };
-        const ref = await db.collection('events').add(payload);
-        eventId = ref.id;
+      if (db && !existingId && firestoreAvailable) {
+        try {
+          const payload = {
+            title: summary || 'Event Request',
+            date: startDate || new Date(),
+            status: 'pending',
+            notes: details,
+            contact: { name, email, phone },
+            location: location || null,
+            eventType: eventType || null,
+            guestCount: guestCount ? Number(guestCount) : null,
+            source: 'website',
+            submittedAt: new Date(),
+            dedupeKey,
+          };
+          const ref = await db.collection('events').add(payload);
+          eventId = ref.id;
+        } catch (error) {
+          firestoreAvailable = false;
+          if (logger) logger.warn({ err: error }, 'failed to persist event request to firestore');
+        }
       }
 
       const headers = getHeaders();
