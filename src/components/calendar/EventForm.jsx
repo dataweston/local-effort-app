@@ -22,6 +22,8 @@ const EventForm = ({ event, isOpen, onClose, onSave, onDelete, accessToken, isAd
     image_url: '',
     image_alt: '',
     description: '',
+    link_url: '',
+    link_label: '',
     repeat: 'none',
     repeatUntil: ''
   });
@@ -50,6 +52,8 @@ const EventForm = ({ event, isOpen, onClose, onSave, onDelete, accessToken, isAd
         image_url: '',
         image_alt: '',
         description: '',
+        link_url: '',
+        link_label: '',
         repeat: 'none',
         repeatUntil: ''
       });
@@ -287,6 +291,19 @@ const EventForm = ({ event, isOpen, onClose, onSave, onDelete, accessToken, isAd
               <label className="block text-sm font-medium mb-1">Public Description</label>
               <textarea value={formData.description} onChange={e => update('description', e.target.value)} rows="4" className="w-full px-3 py-2 border rounded-md font-mono text-sm" placeholder="Event description with *italics* and **bold** support" />
               <p className="text-xs text-gray-500 mt-1">Supports: *italic* **bold** and [links](url)</p>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-sm font-medium mb-1">Link URL</label>
+                <input type="url" value={formData.link_url} onChange={e => update('link_url', e.target.value)} className="w-full px-3 py-2 border rounded-md" placeholder="https://tickets.example.com" />
+                <p className="text-xs text-gray-500 mt-1">For tickets, registration, etc.</p>
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Link Label</label>
+                <input type="text" value={formData.link_label} onChange={e => update('link_label', e.target.value)} className="w-full px-3 py-2 border rounded-md" placeholder="Buy Tickets" />
+                <p className="text-xs text-gray-500 mt-1">Button text</p>
+              </div>
             </div>
 
             <div>

@@ -172,16 +172,26 @@ export default function EventBottomSheet({ event, open, onClose, onEdit }) {
           </div>
 
           {/* Actions */}
-          {onEdit && (
-            <div className="p-4 border-t sticky bottom-0 bg-white">
+          <div className="p-4 border-t sticky bottom-0 bg-white space-y-2">
+            {event.link_url && (
+              <a
+                href={event.link_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block w-full bg-green-600 text-white py-3 rounded-lg font-semibold hover:bg-green-700 transition text-center"
+              >
+                {event.link_label || 'Learn More'}
+              </a>
+            )}
+            {onEdit && (
               <button
                 onClick={() => { onEdit(event); onClose(); }}
                 className="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition"
               >
                 Edit Event
               </button>
-            </div>
-          )}
+            )}
+          </div>
         </Dialog.Content>
       </Dialog.Portal>
     </Dialog.Root>
