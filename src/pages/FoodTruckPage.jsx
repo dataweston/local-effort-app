@@ -351,8 +351,8 @@ const FoodTruckPage = () => {
   return (
     <>
       <Helmet>
-        <title>{title}</title>
-        <meta name="description" content={description} />
+        <title>Food Truck Catering Minneapolis | Book | Local Effort</title>
+        <meta name="description" content="Food truck catering in Minneapolis with Local Effort's personal chef team. Custom Midwest menus, wood-fired pizza, and full-service crew. Beta pricing: $1000 minimum." />
         <meta name="keywords" content={keywords} />
         <meta name="robots" content="noindex, nofollow" />
         <link rel="canonical" href={canonical} />

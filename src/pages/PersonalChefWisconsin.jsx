@@ -33,7 +33,8 @@ export default function PersonalChefWisconsinPage() {
     <CityPage
       city="Wisconsin"
       h1="Personal Chef Wisconsin"
-      description={description}
+      title="Personal Chef Wisconsin | Western WI | Local Effort"
+      description="Personal chef in Western Wisconsin for private dinners, meal prep, and event catering. Serving Hudson, River Falls, and the St. Croix Valley with local ingredients."
       canonical={canonical}
       images={images}
       faq={faq}

@@ -240,8 +240,8 @@ const GalleryPage = () => {
   return (
     <>
       <Helmet>
-          <title>pictures of food. | Local Effort</title>
-          <meta name="description" content="A visual gallery of dinners, events, meal prep, and plates from Local Effort." />
+          <title>Photo Gallery | Minneapolis Personal Chef Images</title>
+          <meta name="description" content="Photo gallery of Minneapolis personal chef dinners, events, and meal prep by Local Effort. Seasonal plates, local ingredients, and in-home dining experiences." />
           <link rel="preconnect" href="https://res.cloudinary.com" crossOrigin="" />
           <link rel="dns-prefetch" href="https://res.cloudinary.com" />
           <script type="application/ld+json">{JSON.stringify({

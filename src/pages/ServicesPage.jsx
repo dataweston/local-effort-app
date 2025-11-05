@@ -123,10 +123,10 @@ const ServicesPage = () => {
   return (
     <>
       <Helmet>
-        <title>Services | Local Effort</title>
+        <title>Personal Chef Services Minneapolis–St. Paul | Local Effort</title>
         <meta
           name="description"
-          content="Explore the personal chef and catering services offered by Local Effort."
+          content="In-home dinners, weekly meal prep, and event catering across Minneapolis and St. Paul. Local ingredients, seasonal menus, and chef-led service. Request a quote."
         />
         <script type="application/ld+json">{JSON.stringify((() => {
           const src = business || {};

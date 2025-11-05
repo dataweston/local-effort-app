@@ -33,7 +33,8 @@ export default function PersonalChefTwinCitiesPage() {
     <CityPage
       city="Twin Cities"
       h1="Personal Chef Twin Cities"
-      description={description}
+      title="Personal Chef Twin Cities | Minneapolis | Local Effort"
+      description="Personal chef serving the Twin Cities metro: in-home dinners, weekly meal prep, and intimate event catering. Minneapolis, St. Paul, Roseville, and beyond. Book today."
       canonical={canonical}
       images={images}
       faq={faq}

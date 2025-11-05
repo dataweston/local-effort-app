@@ -46,12 +46,10 @@ const AboutUsPage = () => {
   return (
     <>
       <Helmet>
-        <title>About | Local Effort</title>
+        <title>About Our Minneapolis Personal Chef Team | Local Effort</title>
         <meta
           name="description"
-          content={
-            "Obsessively local since 2022 — because it’s healthier, tastier, and better for Minnesota."
-          }
+          content="Meet the Local Effort personal chef team in Minneapolis. Obsessively local since 2022, cooking seasonal Minnesota ingredients for events and meal prep. Learn more."
         />
         <meta property="og:title" content="About | Local Effort" />
   <meta property="og:description" content="Obsessively local since 2022 — because it’s healthier, tastier, and better for Minnesota." />

@@ -45,7 +45,8 @@ export default function PersonalChefMinneapolisPage() {
     <CityPage
       city="Minneapolis"
       h1="Personal Chef Minneapolis"
-      description={description}
+      title="Personal Chef Minneapolis | In-Home | Local Effort"
+      description="Personal chef in Minneapolis for in-home dinners, weekly meal prep, and event catering. Serving all neighborhoods with seasonal menus and local ingredients. Get a quote."
       canonical={canonical}
       images={images}
       faq={faq}

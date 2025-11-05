@@ -1,9 +1,9 @@
 import React, { useCallback, useMemo } from 'react';
 import { Helmet } from 'react-helmet-async';
 
-const CityPage = ({ city, h1, description, canonical, images, faq }) => {
+const CityPage = ({ city, h1, title, description, canonical, images, faq }) => {
   const isMinneapolis = city?.toLowerCase() === 'minneapolis';
-  const title = `${city} Personal Chef — Local Effort Food Co. | In-home Chef • Event Catering`;
+  const pageTitle = title || `${city} Personal Chef — Local Effort Food Co. | In-home Chef • Event Catering`;
   const metaDesc = description;
   const imageJsonLd = images.map((img) => ({
     "@context": "https://schema.org",
@@ -46,19 +46,23 @@ const CityPage = ({ city, h1, description, canonical, images, faq }) => {
 
   const businessLd = useMemo(() => ({
     "@context": "https://schema.org",
-    "@type": "ProfessionalService",
-    name: "Local Effort Food Co.",
+    "@type": ["LocalBusiness", "Caterer"],
+    name: "Local Effort",
     url: canonical,
     description: metaDesc,
     address: {
       "@type": "PostalAddress",
-      "addressLocality": "Minneapolis",
+      "addressLocality": city || "Minneapolis",
       "addressRegion": "MN",
       "addressCountry": "US"
     },
-    areaServed: ["Minneapolis", "St. Paul", "Roseville", "Twin Cities"],
-    priceRange: "$$"
-  }), [canonical, metaDesc]);
+    areaServed: [
+      { "@type": "Place", "name": city },
+      { "@type": "Place", "name": "Twin Cities" }
+    ],
+    priceRange: "$$",
+    servesCuisine: ["American", "Farm to Table", "Local", "Seasonal"]
+  }), [canonical, metaDesc, city]);
   const faqLd = faq ? ({
     "@context": "https://schema.org",
     "@type": "FAQPage",
@@ -72,7 +76,7 @@ const CityPage = ({ city, h1, description, canonical, images, faq }) => {
   return (
     <div className="mx-auto max-w-6xl px-4 md:px-6 lg:px-8 py-10">
       <Helmet>
-        <title>{title}</title>
+        <title>{pageTitle}</title>
         <meta name="description" content={metaDesc} />
         <link rel="canonical" href={canonical} />
         {imageJsonLd.map((obj, i) => (

@@ -201,10 +201,10 @@ export const MealPrepPage = () => {
   return (
     <>
       <Helmet>
-        <title>Meal Prep Minneapolis &amp; Custom Meal Plans | Local Effort</title>
+        <title>Meal Prep Minneapolis | Weekly Meal Plans | Local Effort</title>
         <meta
           name="description"
-          content="Meal prep Minneapolis services from Local Effort Food Co. include chef-prepared meals, labeled reheating notes, and flexible meal plan Minneapolis subscriptions for families and busy professionals."
+          content="Weekly meal prep in Minneapolis with chef-prepared meals, reheating notes, and flexible meal plans for families and professionals. Foundation and custom plans available."
         />
         <meta
           name="keywords"
@@ -212,6 +212,28 @@ export const MealPrepPage = () => {
         />
         <link rel="canonical" href="https://localeffortfood.com/meal-prep" />
         <script type="application/ld+json">{JSON.stringify(faqJsonLd)}</script>
+        <script type="application/ld+json">{JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "Service",
+          "name": "Weekly Meal Prep Service",
+          "serviceType": "Meal Preparation",
+          "description": "Weekly meal prep in Minneapolis with chef-prepared meals, reheating notes, and flexible meal plans.",
+          "provider": {
+            "@type": "LocalBusiness",
+            "name": "Local Effort"
+          },
+          "areaServed": [
+            {"@type": "Place", "name": "Minneapolis"},
+            {"@type": "Place", "name": "St. Paul"},
+            {"@type": "Place", "name": "Twin Cities"}
+          ],
+          "offers": {
+            "@type": "Offer",
+            "priceCurrency": "USD",
+            "price": "325",
+            "description": "Starting at $325 for 12 chef-prepared meals"
+          }
+        })}</script>
       </Helmet>
       {showInquiryForm && (
         <div
