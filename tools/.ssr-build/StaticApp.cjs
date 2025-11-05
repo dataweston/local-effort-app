@@ -46503,14 +46503,7 @@ var Footer = () => {
     /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { children: [
       /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("p", { className: "font-semibold", children: "Local Effort Food Co." }),
       /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("p", { className: "text-neutral-600", children: "Roseville, MN" }),
-      /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("p", { className: "text-neutral-600", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("a", { href: "tel:+16514449334", className: "hover:underline", children: "(651) 444-9334" }),
-        " ",
-        "\xB7",
-        " ",
-        /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("a", { href: "mailto:yum@localeffortfood.com", className: "hover:underline", children: "yum@localeffortfood.com" })
-      ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("p", { className: "mt-2 text-neutral-600", children: /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("a", { href: "https://g.page/r/YOUR_GOOGLE_BUSINESS_ID", target: "_blank", rel: "noopener noreferrer", className: "underline hover:opacity-80", children: "Google Business Profile" }) }),
+      /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("p", { className: "text-neutral-600", children: /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("a", { href: "mailto:yum@localeffortfood.com", className: "hover:underline", children: "yum@localeffortfood.com" }) }),
       /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("p", { className: "mt-2 text-neutral-600", children: [
         "Service Areas:",
         " ",

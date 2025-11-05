@@ -285,6 +285,8 @@ const PizzaFunderPage = () => {
       heroImage: ev.image_url,
       heroImageAlt: ev.image_alt || ev.title,
       description: ev.description,
+      ticketsUrl: ev.link_url,
+      ctaLabel: ev.link_label,
       capacity: ev.capacity,
       booked_slots: ev.booked_slots,
       available_slots: ev.available_slots,
