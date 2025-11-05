@@ -4,7 +4,7 @@ import { Link, useLocation } from 'react-router-dom';
 
 import ResendEmailButton from '../features/paikka/ResendEmailButton';
 import { MENU_LOOKUP, formatCurrency } from '../features/paikka/menu';
-import { computeTotals, decodeCheckoutState, resolvePaymentReference } from '../features/paikka/utils';
+import { computeTotals, decodeCheckoutState, resolvePaymentReference, normalizeDiscountCode } from '../features/paikka/utils';
 
 const PaikkaSuccessPage = () => {
   const location = useLocation();
@@ -78,7 +78,29 @@ const PaikkaSuccessPage = () => {
     };
   }, [decodedState, decodeError, referenceError, paymentReference, stateParam]);
 
-  const totals = useMemo(() => computeTotals(decodedState, MENU_LOOKUP), [decodedState]);
+  const validDiscountCode = import.meta.env.VITE_PAIKKA_DISCOUNT_CODE || '';
+  const configuredDiscountPriceCents = Number(import.meta.env.VITE_PAIKKA_DISCOUNT_PRICE_CENTS) || 0;
+
+  const totals = useMemo(
+    () =>
+      computeTotals(decodedState, MENU_LOOKUP, {
+        discountCode: validDiscountCode,
+        discountPriceCents: configuredDiscountPriceCents,
+      }),
+    [decodedState, validDiscountCode, configuredDiscountPriceCents]
+  );
+
+  const discountApplied = useMemo(() => {
+    if (!decodedState) return false;
+    const normalizedStateCode = normalizeDiscountCode(decodedState.discountCode);
+    const normalizedConfiguredCode = normalizeDiscountCode(validDiscountCode);
+    return (
+      Boolean(normalizedStateCode) &&
+      Boolean(normalizedConfiguredCode) &&
+      normalizedStateCode === normalizedConfiguredCode &&
+      configuredDiscountPriceCents > 0
+    );
+  }, [decodedState, validDiscountCode, configuredDiscountPriceCents]);
 
   const canonical = 'https://localeffortfood.com/paikka/success';
   const pageTitle = 'Paikka Check-In Success | Local Effort';
@@ -122,26 +144,56 @@ const PaikkaSuccessPage = () => {
                     {decodedState?.items.map((item) => {
                       const menu = MENU_LOOKUP.get(item.sku);
                       if (!menu) return null;
+                      const defaultSubtotal = Number(menu.presalePriceCents) * Number(item.qty);
+                      const unitPrice = discountApplied
+                        ? Math.min(Number(menu.presalePriceCents), configuredDiscountPriceCents)
+                        : Number(menu.presalePriceCents);
+                      const discountedSubtotal = unitPrice * Number(item.qty);
+                      const hasLineDiscount = discountApplied && discountedSubtotal < defaultSubtotal;
                       return (
                         <li key={item.sku} className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
                           <div className="space-y-0.5">
                             <span className="font-medium text-neutral-900">
-                              {menu.summaryTitle || menu.title} × {item.qty}
+                              {menu.summaryTitle || menu.title} x {item.qty}
                             </span>
                             {menu.isDairyFree && (
                               <span className="text-xs uppercase tracking-[0.2em] text-orange-600">Dairy free</span>
                             )}
                           </div>
-                          <span>{formatCurrency(menu.presalePriceCents * item.qty)}</span>
+                          <span className="font-medium text-neutral-900">
+                            {formatCurrency(discountedSubtotal)}
+                            {hasLineDiscount && (
+                              <span className="ml-2 text-xs font-normal text-neutral-500 line-through">
+                                {formatCurrency(defaultSubtotal)}
+                              </span>
+                            )}
+                          </span>
                         </li>
                       );
                     })}
                   </ul>
                 </div>
-                <div className="flex justify-between text-sm text-neutral-600">
-                  <span>Subtotal</span>
-                  <span>{formatCurrency(totals.subtotal)}</span>
-                </div>
+                {totals.discount > 0 ? (
+                  <>
+                    <div className="flex justify-between text-sm text-neutral-600">
+                      <span>Items total</span>
+                      <span>{formatCurrency(totals.originalSubtotal)}</span>
+                    </div>
+                    <div className="flex justify-between text-sm text-neutral-600">
+                      <span>Discount</span>
+                      <span>-{formatCurrency(totals.discount)}</span>
+                    </div>
+                    <div className="flex justify-between text-sm text-neutral-600">
+                      <span>Subtotal</span>
+                      <span>{formatCurrency(totals.subtotal)}</span>
+                    </div>
+                  </>
+                ) : (
+                  <div className="flex justify-between text-sm text-neutral-600">
+                    <span>Subtotal</span>
+                    <span>{formatCurrency(totals.subtotal)}</span>
+                  </div>
+                )}
                 <div className="flex justify-between text-sm text-neutral-600">
                   <span>Gratuity</span>
                   <span>{formatCurrency(totals.tip)}</span>

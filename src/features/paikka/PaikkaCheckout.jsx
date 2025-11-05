@@ -93,7 +93,7 @@ const PaikkaCheckout = () => {
       email: email.trim(),
     },
     tipCents,
-    discountCode: isDiscountApplied ? appliedDiscountCode.trim() : undefined,
+    discountCode: isDiscountApplied ? validDiscountCode : undefined,
   });
 
   const buildEncodedState = () =>
@@ -103,7 +103,8 @@ const PaikkaCheckout = () => {
       lastName: lastName.trim() || undefined,
       items: summaryItems.map(({ item, qty }) => ({ sku: item.sku, qty })),
       tipCents,
-      discountCode: isDiscountApplied ? appliedDiscountCode.trim() : undefined,
+      discountCode: isDiscountApplied ? validDiscountCode : undefined,
+      discountPriceCents: isDiscountApplied ? discountPriceCents : undefined,
     });
 
   const handleCheckout = async () => {
