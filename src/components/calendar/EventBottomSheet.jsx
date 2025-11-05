@@ -22,6 +22,7 @@ const STATUS_BADGES = {
 };
 
 export default function EventBottomSheet({ event, open, onClose, onEdit }) {
+  console.log('EventBottomSheet render - open:', open, 'event:', event);
   if (!event) return null;
 
   const colorScheme = EVENT_COLORS[event.event_type] || EVENT_COLORS.other;

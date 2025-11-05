@@ -214,8 +214,12 @@ const CalendarPage = () => {
       return;
     }
     console.log('Admin confirmed, opening EventForm');
+    console.log('Setting selectedEvent to:', event);
+    console.log('Setting showEventForm to: true');
     setSelectedEvent(event);
     setShowEventForm(true);
+    console.log('After setState - selectedEvent should be:', event);
+    console.log('After setState - showEventForm should be: true');
   };
 
   const openEventSheet = (event) => {

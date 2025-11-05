@@ -46501,12 +46501,16 @@ var import_jsx_runtime2 = require("react/jsx-runtime");
 var Footer = () => {
   return /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("footer", { className: "mt-16 border-t border-neutral-200", children: /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "mx-auto max-w-6xl px-4 md:px-6 lg:px-8 py-8 font-mono text-sm text-neutral-700", children: /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4", children: [
     /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { children: [
-      /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("p", { children: [
-        "\xA9 ",
-        (/* @__PURE__ */ new Date()).getFullYear(),
-        " Local Effort"
+      /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("p", { className: "font-semibold", children: "Local Effort Food Co." }),
+      /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("p", { className: "text-neutral-600", children: "Roseville, MN" }),
+      /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("p", { className: "text-neutral-600", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("a", { href: "tel:+16514449334", className: "hover:underline", children: "(651) 444-9334" }),
+        " ",
+        "\xB7",
+        " ",
+        /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("a", { href: "mailto:yum@localeffortfood.com", className: "hover:underline", children: "yum@localeffortfood.com" })
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("p", { className: "text-neutral-500", children: "Roseville, MN \xB7 Midwest" }),
+      /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("p", { className: "mt-2 text-neutral-600", children: /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("a", { href: "https://g.page/r/YOUR_GOOGLE_BUSINESS_ID", target: "_blank", rel: "noopener noreferrer", className: "underline hover:opacity-80", children: "Google Business Profile" }) }),
       /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("p", { className: "mt-2 text-neutral-600", children: [
         "Service Areas:",
         " ",
@@ -46527,49 +46531,26 @@ var Footer = () => {
         "|",
         " ",
         /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("a", { href: "/personal-chef-wisconsin", className: "underline underline-offset-4 hover:opacity-80", children: "Wisconsin" })
+      ] }),
+      /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("p", { className: "text-neutral-500 text-xs mt-2", children: [
+        "\xA9 ",
+        (/* @__PURE__ */ new Date()).getFullYear(),
+        " Local Effort"
       ] })
     ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "flex gap-4", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(
-        "a",
-        {
-          href: "/releases",
-          className: "underline underline-offset-4 hover:opacity-80",
-          children: "Press"
-        }
-      ),
-      /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(
-        "a",
-        {
-          href: "https://www.tiktok.com/@localeffort",
-          className: "underline underline-offset-4 hover:opacity-80",
-          children: "TikTok (@localeffort)"
-        }
-      ),
-      /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(
-        "a",
-        {
-          href: "https://instagram.com/localeffort",
-          className: "underline underline-offset-4 hover:opacity-80",
-          children: "Instagram"
-        }
-      ),
-      /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(
-        "a",
-        {
-          href: "https://facebook.com/localeffort",
-          className: "underline underline-offset-4 hover:opacity-80",
-          children: "Facebook"
-        }
-      ),
-      /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(
-        "a",
-        {
-          href: "https://www.thumbtack.com/mn/saint-paul/personal-chefs/weston-smith/service/429294230165643268",
-          className: "underline underline-offset-4 hover:opacity-80",
-          children: "Thumbtack"
-        }
-      )
+    /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "flex flex-col gap-2", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "flex gap-4", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("a", { href: "/services", className: "underline underline-offset-4 hover:opacity-80", children: "Services" }),
+        /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("a", { href: "/menu", className: "underline underline-offset-4 hover:opacity-80", children: "Menus" }),
+        /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("a", { href: "/about", className: "underline underline-offset-4 hover:opacity-80", children: "About" }),
+        /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("a", { href: "/releases", className: "underline underline-offset-4 hover:opacity-80", children: "Press" })
+      ] }),
+      /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "flex gap-4", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("a", { href: "https://www.tiktok.com/@localeffort", target: "_blank", rel: "noopener noreferrer", className: "underline underline-offset-4 hover:opacity-80", children: "TikTok" }),
+        /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("a", { href: "https://instagram.com/localeffort", target: "_blank", rel: "noopener noreferrer", className: "underline underline-offset-4 hover:opacity-80", children: "Instagram" }),
+        /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("a", { href: "https://facebook.com/localeffort", target: "_blank", rel: "noopener noreferrer", className: "underline underline-offset-4 hover:opacity-80", children: "Facebook" }),
+        /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("a", { href: "https://www.thumbtack.com/mn/saint-paul/personal-chefs/weston-smith/service/429294230165643268", target: "_blank", rel: "noopener noreferrer", className: "underline underline-offset-4 hover:opacity-80", children: "Thumbtack" })
+      ] })
     ] })
   ] }) }) });
 };
@@ -53666,12 +53647,12 @@ var HomePage = () => {
   }
   return /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)(import_jsx_runtime24.Fragment, { children: [
     /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)(import_react_helmet_async2.Helmet, { children: [
-      /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("title", { children: "Personal Chef Minneapolis \u2014 Local Effort | In-home Chef \u2022 Event Catering" }),
+      /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("title", { children: "Personal Chef Minneapolis & St. Paul | Local Effort" }),
       /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
         "meta",
         {
           name: "description",
-          content: "Local Effort \u2014 Personal chef & event catering serving Minneapolis, St. Paul, and the Twin Cities. Private in-home dinners, weekly meal prep, and small event catering."
+          content: "Personal chef and event catering in Minneapolis\u2013St. Paul. In-home dinners, weekly meal prep, and seasonal menus. Book your chef-prepared experience today."
         }
       ),
       /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("link", { rel: "canonical", href: "https://localeffortfood.com/" }),
@@ -53699,16 +53680,29 @@ var HomePage = () => {
         };
         const biz = {
           "@context": "https://schema.org",
-          "@type": "ProfessionalService",
-          name: src.name || "Local Effort Food Co.",
+          "@type": ["Organization", "LocalBusiness", "Caterer"],
+          name: src.name || "Local Effort",
           url: src.url || "https://localeffortfood.com/",
           description: src.description || "Personal chef & event catering serving Minneapolis, St. Paul, and the Twin Cities.",
+          logo: src.logo || `${src.url || "https://localeffortfood.com"}/gallery/logo.png`,
           image: imageJsonLd.contentUrl,
-          areaServed: Array.isArray(src.serviceArea) && src.serviceArea.length ? src.serviceArea : ["Minneapolis", "St. Paul", "Twin Cities", "Roseville", "Minnesota", "Western Wisconsin"],
+          areaServed: Array.isArray(src.serviceArea) && src.serviceArea.length ? src.serviceArea.map((area) => ({ "@type": "Place", name: area })) : [
+            { "@type": "Place", name: "Minneapolis" },
+            { "@type": "Place", name: "St. Paul" },
+            { "@type": "Place", name: "Twin Cities" },
+            { "@type": "Place", name: "Minnesota" },
+            { "@type": "Place", name: "Wisconsin" }
+          ],
           address,
-          sameAs: Array.isArray(src.sameAs) ? src.sameAs : ["https://www.instagram.com/localeffortfood", "https://www.facebook.com/localeffortfood", "https://www.tiktok.com/@localeffort"],
+          sameAs: Array.isArray(src.sameAs) ? src.sameAs : [
+            "https://www.tiktok.com/@localeffort",
+            "https://instagram.com/localeffort",
+            "https://facebook.com/localeffort"
+          ],
           telephone: src.telephone || void 0,
+          email: src.email || "yum@localeffortfood.com",
           priceRange: "$$",
+          servesCuisine: ["American", "Farm to Table", "Local", "Seasonal"],
           service: {
             "@type": "Service",
             name: "Personal Chef (In-home)",
@@ -54170,12 +54164,12 @@ var AboutUsPage = () => {
   const whatWeDoMicrocopy = "We bring Minnesota-grown ingredients into everyday meals and special events.";
   return /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)(import_jsx_runtime29.Fragment, { children: [
     /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)(import_react_helmet_async3.Helmet, { children: [
-      /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("title", { children: "About | Local Effort" }),
+      /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("title", { children: "About Our Minneapolis Personal Chef Team | Local Effort" }),
       /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(
         "meta",
         {
           name: "description",
-          content: "Obsessively local since 2022 \u2014 because it\u2019s healthier, tastier, and better for Minnesota."
+          content: "Meet the Local Effort personal chef team in Minneapolis. Obsessively local since 2022, cooking seasonal Minnesota ingredients for events and meal prep. Learn more."
         }
       ),
       /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("meta", { property: "og:title", content: "About | Local Effort" }),
@@ -54442,12 +54436,12 @@ var ServicesPage = () => {
   };
   return /* @__PURE__ */ (0, import_jsx_runtime30.jsxs)(import_jsx_runtime30.Fragment, { children: [
     /* @__PURE__ */ (0, import_jsx_runtime30.jsxs)(import_react_helmet_async4.Helmet, { children: [
-      /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("title", { children: "Services | Local Effort" }),
+      /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("title", { children: "Personal Chef Services Minneapolis\u2013St. Paul | Local Effort" }),
       /* @__PURE__ */ (0, import_jsx_runtime30.jsx)(
         "meta",
         {
           name: "description",
-          content: "Explore the personal chef and catering services offered by Local Effort."
+          content: "In-home dinners, weekly meal prep, and event catering across Minneapolis and St. Paul. Local ingredients, seasonal menus, and chef-led service. Request a quote."
         }
       ),
       /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("script", { type: "application/ld+json", children: JSON.stringify((() => {
@@ -55977,8 +55971,8 @@ function MenuPage() {
   }, []);
   return /* @__PURE__ */ (0, import_jsx_runtime33.jsxs)("div", { className: "mx-auto max-w-6xl px-4 md:px-6 lg:px-8 py-8", children: [
     /* @__PURE__ */ (0, import_jsx_runtime33.jsxs)(import_react_helmet_async6.Helmet, { children: [
-      /* @__PURE__ */ (0, import_jsx_runtime33.jsx)("title", { children: "Past Menu Examples | Local Effort" }),
-      /* @__PURE__ */ (0, import_jsx_runtime33.jsx)("meta", { name: "description", content: "Real menus from recent events, showcasing wide options and locally sourced food." }),
+      /* @__PURE__ */ (0, import_jsx_runtime33.jsx)("title", { children: "Sample Menus & Past Events | Minneapolis | Local Effort" }),
+      /* @__PURE__ */ (0, import_jsx_runtime33.jsx)("meta", { name: "description", content: "Real menu examples from Minneapolis personal chef events. Seasonal ingredients, composed salads, fresh pasta, local pizza, and farm-to-table plates. View menus." }),
       /* @__PURE__ */ (0, import_jsx_runtime33.jsx)("link", { rel: "canonical", href: "https://localeffortfood.com/menu" }),
       /* @__PURE__ */ (0, import_jsx_runtime33.jsx)("script", { type: "application/ld+json", children: JSON.stringify(menuJsonLd) })
     ] }),
@@ -56416,8 +56410,8 @@ var GalleryPage = () => {
   }, [selected]);
   return /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)(import_jsx_runtime40.Fragment, { children: [
     /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)(import_react_helmet_async8.Helmet, { children: [
-      /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("title", { children: "pictures of food. | Local Effort" }),
-      /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("meta", { name: "description", content: "A visual gallery of dinners, events, meal prep, and plates from Local Effort." }),
+      /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("title", { children: "Photo Gallery | Minneapolis Personal Chef Images" }),
+      /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("meta", { name: "description", content: "Photo gallery of Minneapolis personal chef dinners, events, and meal prep by Local Effort. Seasonal plates, local ingredients, and in-home dining experiences." }),
       /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("link", { rel: "preconnect", href: "https://res.cloudinary.com", crossOrigin: "" }),
       /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("link", { rel: "dns-prefetch", href: "https://res.cloudinary.com" }),
       /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("script", { type: "application/ld+json", children: JSON.stringify({
@@ -56607,14 +56601,41 @@ var import_react_helmet_async9 = __toESM(require_lib());
 var import_jsx_runtime41 = require("react/jsx-runtime");
 var EventsPage = () => /* @__PURE__ */ (0, import_jsx_runtime41.jsxs)(import_jsx_runtime41.Fragment, { children: [
   /* @__PURE__ */ (0, import_jsx_runtime41.jsxs)(import_react_helmet_async9.Helmet, { children: [
-    /* @__PURE__ */ (0, import_jsx_runtime41.jsx)("title", { children: "Dinners & Events | Local Effort" }),
+    /* @__PURE__ */ (0, import_jsx_runtime41.jsx)("title", { children: "Event Catering & In-Home Dinners Minneapolis | Local Effort" }),
     /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(
       "meta",
       {
         name: "description",
-        content: "Let Local Effort cater your next event. We specialize in in-home dining for parties of 2 to 50."
+        content: "In-home dinner parties and small event catering in Minneapolis\u2013St. Paul for 2\u201350 guests. Seasonal menus, chef-led service, and local ingredients. Book an event."
       }
-    )
+    ),
+    /* @__PURE__ */ (0, import_jsx_runtime41.jsx)("script", { type: "application/ld+json", children: JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "Service",
+      "name": "Event Catering & In-Home Dinners",
+      "serviceType": "Event Catering",
+      "description": "In-home dinner parties and small event catering in Minneapolis\u2013St. Paul for 2\u201350 guests.",
+      "provider": {
+        "@type": "LocalBusiness",
+        "name": "Local Effort"
+      },
+      "areaServed": [
+        { "@type": "Place", "name": "Minneapolis" },
+        { "@type": "Place", "name": "St. Paul" },
+        { "@type": "Place", "name": "Twin Cities" }
+      ],
+      "offers": {
+        "@type": "Offer",
+        "priceCurrency": "USD",
+        "price": "95",
+        "priceSpecification": {
+          "@type": "UnitPriceSpecification",
+          "price": "95-135",
+          "priceCurrency": "USD",
+          "unitText": "per guest"
+        }
+      }
+    }) })
   ] }),
   /* @__PURE__ */ (0, import_jsx_runtime41.jsxs)("div", { className: "space-y-16", children: [
     /* @__PURE__ */ (0, import_jsx_runtime41.jsx)("h1", { className: "heading-display heading-balance", children: "Dinners & events" }),
@@ -56946,12 +56967,12 @@ var MealPrepPage = () => {
   };
   return /* @__PURE__ */ (0, import_jsx_runtime46.jsxs)(import_jsx_runtime46.Fragment, { children: [
     /* @__PURE__ */ (0, import_jsx_runtime46.jsxs)(import_react_helmet_async10.Helmet, { children: [
-      /* @__PURE__ */ (0, import_jsx_runtime46.jsx)("title", { children: "Meal Prep Minneapolis & Custom Meal Plans | Local Effort" }),
+      /* @__PURE__ */ (0, import_jsx_runtime46.jsx)("title", { children: "Meal Prep Minneapolis | Weekly Meal Plans | Local Effort" }),
       /* @__PURE__ */ (0, import_jsx_runtime46.jsx)(
         "meta",
         {
           name: "description",
-          content: "Meal prep Minneapolis services from Local Effort Food Co. include chef-prepared meals, labeled reheating notes, and flexible meal plan Minneapolis subscriptions for families and busy professionals."
+          content: "Weekly meal prep in Minneapolis with chef-prepared meals, reheating notes, and flexible meal plans for families and professionals. Foundation and custom plans available."
         }
       ),
       /* @__PURE__ */ (0, import_jsx_runtime46.jsx)(
@@ -56962,7 +56983,29 @@ var MealPrepPage = () => {
         }
       ),
       /* @__PURE__ */ (0, import_jsx_runtime46.jsx)("link", { rel: "canonical", href: "https://localeffortfood.com/meal-prep" }),
-      /* @__PURE__ */ (0, import_jsx_runtime46.jsx)("script", { type: "application/ld+json", children: JSON.stringify(faqJsonLd) })
+      /* @__PURE__ */ (0, import_jsx_runtime46.jsx)("script", { type: "application/ld+json", children: JSON.stringify(faqJsonLd) }),
+      /* @__PURE__ */ (0, import_jsx_runtime46.jsx)("script", { type: "application/ld+json", children: JSON.stringify({
+        "@context": "https://schema.org",
+        "@type": "Service",
+        "name": "Weekly Meal Prep Service",
+        "serviceType": "Meal Preparation",
+        "description": "Weekly meal prep in Minneapolis with chef-prepared meals, reheating notes, and flexible meal plans.",
+        "provider": {
+          "@type": "LocalBusiness",
+          "name": "Local Effort"
+        },
+        "areaServed": [
+          { "@type": "Place", "name": "Minneapolis" },
+          { "@type": "Place", "name": "St. Paul" },
+          { "@type": "Place", "name": "Twin Cities" }
+        ],
+        "offers": {
+          "@type": "Offer",
+          "priceCurrency": "USD",
+          "price": "325",
+          "description": "Starting at $325 for 12 chef-prepared meals"
+        }
+      }) })
     ] }),
     showInquiryForm && /* @__PURE__ */ (0, import_jsx_runtime46.jsx)(
       "div",
