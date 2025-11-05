@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { X, Save, Trash2 } from 'lucide-react';
 import * as Dialog from '@radix-ui/react-dialog';
 
@@ -24,6 +24,33 @@ const EventForm = ({ event, isOpen, onClose, onSave, onDelete, accessToken, isAd
     repeat: 'none',
     repeatUntil: ''
   });
+
+  // Update formData when event prop changes
+  useEffect(() => {
+    if (event) {
+      setFormData(event);
+    } else {
+      setFormData({
+        title: '',
+        start_date: new Date().toISOString().split('T')[0],
+        end_date: '',
+        start_time: '',
+        end_time: '',
+        event_type: 'other',
+        visibility: 'private',
+        status: 'scheduled',
+        location: '',
+        capacity: '',
+        buffer_hours: 4,
+        estimated_revenue: '',
+        estimated_food_cost: '',
+        estimated_labor_cost: '',
+        notes: '',
+        repeat: 'none',
+        repeatUntil: ''
+      });
+    }
+  }, [event, isOpen]);
   
   const [conflicts, setConflicts] = useState([]);
   const [checkingConflicts, setCheckingConflicts] = useState(false);
