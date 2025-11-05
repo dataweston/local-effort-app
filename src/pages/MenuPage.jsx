@@ -60,8 +60,8 @@ export default function MenuPage() {
   return (
   <div className="mx-auto max-w-6xl px-4 md:px-6 lg:px-8 py-8">
       <Helmet>
-        <title>Past Menu Examples | Local Effort</title>
-        <meta name="description" content="Real menus from recent events, showcasing wide options and locally sourced food." />
+        <title>Sample Menus & Past Events | Minneapolis | Local Effort</title>
+        <meta name="description" content="Real menu examples from Minneapolis personal chef events. Seasonal ingredients, composed salads, fresh pasta, local pizza, and farm-to-table plates. View menus." />
         <link rel="canonical" href="https://localeffortfood.com/menu" />
         <script type="application/ld+json">{JSON.stringify(menuJsonLd)}</script>
       </Helmet>

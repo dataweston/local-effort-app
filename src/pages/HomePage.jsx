@@ -499,10 +499,10 @@ const HomePage = () => {
   return (
     <>
       <Helmet>
-        <title>Personal Chef Minneapolis — Local Effort | In-home Chef • Event Catering</title>
+        <title>Personal Chef Minneapolis & St. Paul | Local Effort</title>
         <meta
           name="description"
-          content="Local Effort — Personal chef & event catering serving Minneapolis, St. Paul, and the Twin Cities. Private in-home dinners, weekly meal prep, and small event catering."
+          content="Personal chef and event catering in Minneapolis–St. Paul. In-home dinners, weekly meal prep, and seasonal menus. Book your chef-prepared experience today."
         />
         <link rel="canonical" href="https://localeffortfood.com/" />
         {/* Preload hero for faster LCP */}
@@ -529,16 +529,29 @@ const HomePage = () => {
           };
           const biz = {
             '@context': 'https://schema.org',
-            '@type': 'ProfessionalService',
-            name: src.name || 'Local Effort Food Co.',
+            '@type': ['Organization', 'LocalBusiness', 'Caterer'],
+            name: src.name || 'Local Effort',
             url: src.url || 'https://localeffortfood.com/',
             description: src.description || 'Personal chef & event catering serving Minneapolis, St. Paul, and the Twin Cities.',
+            logo: src.logo || `${src.url || 'https://localeffortfood.com'}/gallery/logo.png`,
             image: imageJsonLd.contentUrl,
-            areaServed: Array.isArray(src.serviceArea) && src.serviceArea.length ? src.serviceArea : ['Minneapolis','St. Paul','Twin Cities','Roseville','Minnesota','Western Wisconsin'],
+            areaServed: Array.isArray(src.serviceArea) && src.serviceArea.length ? src.serviceArea.map(area => ({ '@type': 'Place', name: area })) : [
+              { '@type': 'Place', name: 'Minneapolis' },
+              { '@type': 'Place', name: 'St. Paul' },
+              { '@type': 'Place', name: 'Twin Cities' },
+              { '@type': 'Place', name: 'Minnesota' },
+              { '@type': 'Place', name: 'Wisconsin' }
+            ],
             address,
-            sameAs: Array.isArray(src.sameAs) ? src.sameAs : ['https://www.instagram.com/localeffortfood','https://www.facebook.com/localeffortfood','https://www.tiktok.com/@localeffort'],
+            sameAs: Array.isArray(src.sameAs) ? src.sameAs : [
+              'https://www.tiktok.com/@localeffort',
+              'https://instagram.com/localeffort',
+              'https://facebook.com/localeffort'
+            ],
             telephone: src.telephone || undefined,
+            email: src.email || 'yum@localeffortfood.com',
             priceRange: '$$',
+            servesCuisine: ['American', 'Farm to Table', 'Local', 'Seasonal'],
             service: {
               '@type': 'Service',
               name: 'Personal Chef (In-home)',

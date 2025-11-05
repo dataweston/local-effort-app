@@ -33,7 +33,8 @@ export default function PersonalChefMinnesotaPage() {
     <CityPage
       city="Minnesota"
       h1="Personal Chef Minnesota"
-      description={description}
+      title="Personal Chef Minnesota | Statewide | Local Effort"
+      description="Personal chef serving Minnesota: in-home dinners, weekly meal prep, and event catering statewide. Highlighting local farms, walleye, wild rice, and seasonal produce."
       canonical={canonical}
       images={images}
       faq={faq}

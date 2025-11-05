@@ -11,7 +11,8 @@
       "Bash(npm run build:frontend:*)",
       "Bash(npm run:*)",
       "Bash(git push)",
-      "Bash(pnpm start)"
+      "Bash(pnpm start)",
+      "Bash(cat:*)"
     ],
     "deny": [],
     "ask": []

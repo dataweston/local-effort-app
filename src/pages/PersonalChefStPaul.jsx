@@ -33,7 +33,8 @@ export default function PersonalChefStPaulPage() {
     <CityPage
       city="St. Paul"
       h1="Personal Chef St. Paul"
-      description={description}
+      title="Personal Chef St. Paul | In-Home | Local Effort"
+      description="Personal chef in St. Paul for in-home dinners, small events, and weekly meal prep. Seasonal local ingredients and chef-led service across all neighborhoods. Book now."
       canonical={canonical}
       images={images}
       faq={faq}
