@@ -22,7 +22,6 @@ const STATUS_BADGES = {
 };
 
 export default function EventBottomSheet({ event, open, onClose, onEdit }) {
-  console.log('EventBottomSheet render - open:', open, 'event:', event);
   if (!event) return null;
 
   const colorScheme = EVENT_COLORS[event.event_type] || EVENT_COLORS.other;
@@ -63,6 +62,16 @@ export default function EventBottomSheet({ event, open, onClose, onEdit }) {
 
           {/* Content */}
           <div id="event-details" className="p-6 space-y-4">
+            {/* Event Image */}
+            {event.image_url && (
+              <div className="mb-4 -mx-6 -mt-6">
+                <img
+                  src={event.image_url}
+                  alt={event.image_alt || event.title}
+                  className="w-full h-48 object-cover"
+                />
+              </div>
+            )}
             {/* Date & Time */}
             <div className="flex items-start gap-3">
               <Calendar className={`w-5 h-5 mt-0.5 ${colorScheme.accent}`} />
@@ -126,10 +135,27 @@ export default function EventBottomSheet({ event, open, onClose, onEdit }) {
               </div>
             )}
 
-            {/* Notes */}
+            {/* Description (Public) */}
+            {event.description && (
+              <div className="pt-4 border-t">
+                <h4 className="text-sm font-semibold text-gray-700 mb-2">About This Event</h4>
+                <div
+                  className="text-sm text-gray-600 prose prose-sm max-w-none"
+                  dangerouslySetInnerHTML={{
+                    __html: event.description
+                      .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+                      .replace(/\*(.+?)\*/g, '<em>$1</em>')
+                      .replace(/\[(.+?)\]\((.+?)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:underline">$1</a>')
+                      .replace(/\n/g, '<br />')
+                  }}
+                />
+              </div>
+            )}
+
+            {/* Notes (Admin Only - shown when description exists) */}
             {event.notes && (
               <div className="pt-4 border-t">
-                <h4 className="text-sm font-semibold text-gray-700 mb-2">Notes</h4>
+                <h4 className="text-sm font-semibold text-gray-700 mb-2">Internal Notes</h4>
                 <p className="text-sm text-gray-600 whitespace-pre-wrap">{event.notes}</p>
               </div>
             )}

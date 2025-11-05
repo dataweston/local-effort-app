@@ -45,7 +45,7 @@ function sanitizeEventPayload(payload = {}) {
   });
 
   // Empty strings to null for optional text fields
-  ['location', 'notes', 'sanity_data'].forEach((field) => {
+  ['location', 'notes', 'sanity_data', 'image_url', 'image_alt', 'description'].forEach((field) => {
     if (sanitized[field] === '') sanitized[field] = null;
   });
 
