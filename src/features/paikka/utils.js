@@ -8,7 +8,14 @@ const TIP_OPTIONS = [
   { label: 'Other', value: 'custom' },
 ];
 
+const normalizeDiscountCode = (value) => (typeof value === 'string' ? value.trim().toLowerCase() : '');
+const sanitizeCents = (value) => {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) && parsed > 0 ? Math.round(parsed) : null;
+};
+
 const isValidEmail = (value = '') => /.+@.+/.test(String(value).trim());
+
 const base64UrlEncode = (payload) => {
   const json = typeof payload === 'string' ? payload : JSON.stringify(payload);
   if (typeof Buffer !== 'undefined') {
@@ -54,12 +61,17 @@ const decodeCheckoutState = (value) => {
       qty: Number(item?.qty ?? 0),
     }))
     .filter((item) => MENU_LOOKUP.has(item.sku) && Number.isFinite(item.qty) && item.qty > 0);
+  const tipValue = Number(parsed.tipCents);
+  const discountPrice = sanitizeCents(parsed.discountPriceCents);
+  const rawDiscountCode = typeof parsed.discountCode === 'string' ? parsed.discountCode.trim() : '';
   return {
     email: String(parsed.email ?? ''),
     firstName: String(parsed.firstName ?? ''),
     lastName: typeof parsed.lastName === 'string' && parsed.lastName.trim() ? parsed.lastName : undefined,
     items: sanitizedItems,
-    tipCents: Number.isFinite(parsed.tipCents) ? Number(parsed.tipCents) : 0,
+    tipCents: Number.isFinite(tipValue) ? Math.round(tipValue) : 0,
+    discountCode: rawDiscountCode || undefined,
+    discountPriceCents: discountPrice ?? undefined,
   };
 };
 
@@ -96,16 +108,50 @@ const resolvePaymentReference = (params) => {
   return undefined;
 };
 
-const computeTotals = (state, menuLookup) => {
-  if (!state) return { subtotal: 0, tip: 0, total: 0 };
+const computeTotals = (state, menuLookup, discountConfig = {}) => {
+  if (!state) return { subtotal: 0, tip: 0, total: 0, discount: 0, originalSubtotal: 0 };
   const lookup = menuLookup ?? MENU_LOOKUP ?? new Map();
-  const subtotal = state.items.reduce((sum, item) => {
-    const menu = lookup.get(item.sku);
-    if (!menu) return sum;
-    return sum + Number(menu.presalePriceCents) * Number(item.qty);
-  }, 0);
+
+  const normalizedStateCode = normalizeDiscountCode(state.discountCode);
+  const normalizedConfigCode =
+    normalizeDiscountCode(discountConfig.discountCode) || normalizeDiscountCode(discountConfig.code);
+
+  const configuredPrice = sanitizeCents(
+    discountConfig.discountPriceCents ?? discountConfig.priceCents ?? discountConfig.cents
+  );
+  const statePrice = sanitizeCents(state.discountPriceCents);
+  const effectiveDiscountPrice = configuredPrice ?? statePrice ?? null;
+  const discountApplied =
+    Boolean(normalizedStateCode) &&
+    Boolean(normalizedConfigCode) &&
+    normalizedStateCode === normalizedConfigCode &&
+    effectiveDiscountPrice;
+
+  const totals = state.items.reduce(
+    (acc, item) => {
+      const menu = lookup.get(item.sku);
+      if (!menu) return acc;
+      const qty = Number(item.qty) || 0;
+      if (qty <= 0) return acc;
+      const defaultUnitPrice = Number(menu.presalePriceCents);
+      const effectiveUnitPrice =
+        discountApplied && effectiveDiscountPrice ? Math.min(defaultUnitPrice, effectiveDiscountPrice) : defaultUnitPrice;
+      acc.subtotal += effectiveUnitPrice * qty;
+      acc.originalSubtotal += defaultUnitPrice * qty;
+      acc.discount += Math.max(0, defaultUnitPrice - effectiveUnitPrice) * qty;
+      return acc;
+    },
+    { subtotal: 0, originalSubtotal: 0, discount: 0 }
+  );
+
   const tip = Number(state.tipCents || 0);
-  return { subtotal, tip, total: subtotal + tip };
+  return {
+    subtotal: totals.subtotal,
+    tip,
+    total: totals.subtotal + tip,
+    discount: totals.discount,
+    originalSubtotal: totals.originalSubtotal,
+  };
 };
 
 export {
@@ -116,6 +162,8 @@ export {
   decodeCheckoutState,
   resolvePaymentReference,
   computeTotals,
+  normalizeDiscountCode,
+  sanitizeCents,
 };
 
 // CommonJS export for Node.js serverless functions
@@ -128,5 +176,7 @@ if (typeof module !== 'undefined' && module.exports) {
     decodeCheckoutState,
     resolvePaymentReference,
     computeTotals,
+    normalizeDiscountCode,
+    sanitizeCents,
   };
 }

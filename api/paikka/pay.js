@@ -6,6 +6,22 @@ const ACCESS_TOKEN = process.env.SQUARE_ACCESS_TOKEN;
 const LOCATION_ID = process.env.SQUARE_LOCATION_ID;
 const ENV_NAME = (process.env.SQUARE_ENVIRONMENT || 'production').toLowerCase();
 
+const normalizeDiscountCode = (value) => (typeof value === 'string' ? value.trim().toLowerCase() : '');
+const resolveDiscountPrice = (value) => {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) && parsed > 0 ? Math.round(parsed) : null;
+};
+
+const CONFIGURED_DISCOUNT = (() => {
+  const code =
+    normalizeDiscountCode(process.env.PAIKKA_DISCOUNT_CODE) ||
+    normalizeDiscountCode(process.env.VITE_PAIKKA_DISCOUNT_CODE);
+  const priceCents =
+    resolveDiscountPrice(process.env.PAIKKA_DISCOUNT_PRICE_CENTS) ??
+    resolveDiscountPrice(process.env.VITE_PAIKKA_DISCOUNT_PRICE_CENTS);
+  return { code, priceCents };
+})();
+
 let squareClient = null;
 
 try {
@@ -69,24 +85,41 @@ const sanitizeCustomer = (customer = {}) => {
   };
 };
 
-const computeTotals = (parsedItems, tipCentsRaw = 0) => {
-  const subtotal = parsedItems.reduce((sum, item) => {
-    const menuItem = MENU_LOOKUP.get(item.sku);
-    if (!menuItem) {
-      throw new Error('Unsupported SKU.');
-    }
-    return sum + menuItem.presalePriceCents * item.qty;
-  }, 0);
+const computeTotals = (parsedItems, tipCentsRaw = 0, discount = {}) => {
+  const discountPriceCents =
+    resolveDiscountPrice(discount.priceCents) ??
+    resolveDiscountPrice(discount.discountPriceCents);
+  const discountApplied = Boolean(discount.applied && discountPriceCents);
 
+  const subtotalAccumulator = parsedItems.reduce(
+    (acc, item) => {
+      const menuItem = MENU_LOOKUP.get(item.sku);
+      if (!menuItem) {
+        throw new Error('Unsupported SKU.');
+      }
+      const defaultUnitPrice = Number(menuItem.presalePriceCents);
+      const effectiveUnitPrice =
+        discountApplied && discountPriceCents
+          ? Math.min(defaultUnitPrice, discountPriceCents)
+          : defaultUnitPrice;
+      const qty = Number(item.qty);
+      acc.subtotal += effectiveUnitPrice * qty;
+      acc.discount += Math.max(0, defaultUnitPrice - effectiveUnitPrice) * qty;
+      return acc;
+    },
+    { subtotal: 0, discount: 0 }
+  );
+
+  const subtotal = subtotalAccumulator.subtotal;
   if (subtotal <= 0) {
     throw new Error('Cart is empty.');
   }
 
   const tipCents = Number.isFinite(Number(tipCentsRaw)) && Number(tipCentsRaw) > 0 ? Math.round(Number(tipCentsRaw)) : 0;
-  return { subtotal, tipCents, total: subtotal + tipCents };
+  return { subtotal, tipCents, total: subtotal + tipCents, discountCents: subtotalAccumulator.discount };
 };
 
-const buildPaymentNote = (items, tipCents) => {
+const buildPaymentNote = (items, tipCents, discountCents = 0, discountCode) => {
   const parts = items.map(({ sku, qty }) => {
     const menu = MENU_LOOKUP.get(sku);
     if (!menu) return `${sku} x${qty}`;
@@ -94,6 +127,10 @@ const buildPaymentNote = (items, tipCents) => {
   });
   if (tipCents > 0) {
     parts.push(`Tip ${formatCurrency(tipCents)}`);
+  }
+  if (discountCents > 0) {
+    const label = discountCode ? `Discount ${discountCode}` : 'Discount';
+    parts.push(`${label} -${formatCurrency(discountCents)}`);
   }
   return parts.join(' | ').slice(0, 500);
 };
@@ -115,14 +152,23 @@ module.exports = async (req, res) => {
   }
 
   try {
-    const { items, customer, tipCents: tipCentsRaw, token } = req.body || {};
+    const { items, customer, tipCents: tipCentsRaw, token, discountCode } = req.body || {};
     if (!token || typeof token !== 'string') {
       throw new Error('Missing payment token.');
     }
 
     const parsedItems = parseItems(items);
     const normalizedCustomer = sanitizeCustomer(customer);
-    const totals = computeTotals(parsedItems, tipCentsRaw);
+    const normalizedDiscountCode = normalizeDiscountCode(discountCode);
+    const discountApplied =
+      Boolean(CONFIGURED_DISCOUNT.code) &&
+      normalizedDiscountCode &&
+      normalizedDiscountCode === CONFIGURED_DISCOUNT.code &&
+      CONFIGURED_DISCOUNT.priceCents;
+    const totals = computeTotals(parsedItems, tipCentsRaw, {
+      applied: discountApplied,
+      priceCents: CONFIGURED_DISCOUNT.priceCents,
+    });
 
     const idempotencyKey = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
 
@@ -134,7 +180,12 @@ module.exports = async (req, res) => {
       amountMoney: { amount: totals.total, currency: 'USD' },
       autocomplete: true,
       buyerEmailAddress: normalizedCustomer.email,
-      note: buildPaymentNote(parsedItems, totals.tipCents),
+      note: buildPaymentNote(
+        parsedItems,
+        totals.tipCents,
+        discountApplied ? totals.discountCents : 0,
+        discountApplied ? discountCode : undefined
+      ),
       metadata: {
         first_name: normalizedCustomer.firstName.slice(0, 50),
         last_name: (normalizedCustomer.lastName || '').slice(0, 50),
@@ -143,6 +194,10 @@ module.exports = async (req, res) => {
 
     if (totals.tipCents > 0) {
       paymentBody.tipMoney = { amount: totals.tipCents, currency: 'USD' };
+    }
+    if (discountApplied) {
+      paymentBody.metadata.discount_code = normalizedDiscountCode;
+      paymentBody.metadata.discount_cents = String(totals.discountCents);
     }
 
     const response = await paymentsApi.createPayment(paymentBody);

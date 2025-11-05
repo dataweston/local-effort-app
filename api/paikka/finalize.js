@@ -1,10 +1,15 @@
 const QRCode = require('qrcode');
-const { decodeCheckoutState } = require('../../src/features/paikka/utils');
+const { decodeCheckoutState, normalizeDiscountCode, sanitizeCents } = require('../../src/features/paikka/utils');
 const { MENU_LOOKUP, formatCurrency } = require('../../src/features/paikka/menu');
 
 const BREVO_API_KEY = process.env.BREVO_API_KEY;
 const SENDER_EMAIL = process.env.SENDER_EMAIL || 'dataweston@gmail.com';
 const SUPPORT_EMAIL = process.env.SUPPORT_INBOX_EMAIL || 'dataweston@gmail.com';
+const CONFIGURED_DISCOUNT_CODE =
+  normalizeDiscountCode(process.env.PAIKKA_DISCOUNT_CODE) ||
+  normalizeDiscountCode(process.env.VITE_PAIKKA_DISCOUNT_CODE);
+const CONFIGURED_DISCOUNT_PRICE_CENTS =
+  sanitizeCents(process.env.PAIKKA_DISCOUNT_PRICE_CENTS) ?? sanitizeCents(process.env.VITE_PAIKKA_DISCOUNT_PRICE_CENTS);
 
 const parseBody = (req) => {
   if (req.body && typeof req.body === 'object') {
@@ -118,18 +123,35 @@ module.exports = async (req, res) => {
     }
 
     // Calculate order totals
+    const normalizedStateDiscountCode = normalizeDiscountCode(checkoutState.discountCode);
+    const discountApplied =
+      Boolean(CONFIGURED_DISCOUNT_CODE) &&
+      normalizedStateDiscountCode &&
+      normalizedStateDiscountCode === CONFIGURED_DISCOUNT_CODE &&
+      CONFIGURED_DISCOUNT_PRICE_CENTS;
+
+    let discountCents = 0;
     const items = checkoutState.items.map(({ sku, qty }) => {
       const menuItem = MENU_LOOKUP.get(sku);
       if (!menuItem) {
         throw new Error(`Unknown SKU: ${sku}`);
       }
+      const defaultPrice = Number(menuItem.presalePriceCents);
+      const effectivePrice =
+        discountApplied && CONFIGURED_DISCOUNT_PRICE_CENTS
+          ? Math.min(defaultPrice, CONFIGURED_DISCOUNT_PRICE_CENTS)
+          : defaultPrice;
+      const subtotal = qty * effectivePrice;
+      const discountForItem = Math.max(0, defaultPrice - effectivePrice) * qty;
+      discountCents += discountForItem;
       return {
         sku,
         qty,
         title: menuItem.summaryTitle || menuItem.title,
         isDairyFree: menuItem.isDairyFree || false,
-        price: menuItem.presalePriceCents,
-        subtotal: qty * menuItem.presalePriceCents,
+        price: effectivePrice,
+        subtotal,
+        originalPrice: discountForItem > 0 ? defaultPrice : undefined,
       };
     });
 
@@ -371,6 +393,8 @@ module.exports = async (req, res) => {
         subtotalCents,
         tipCents,
         totalCents,
+        discountCents,
+        discountCode: discountApplied ? checkoutState.discountCode : undefined,
       },
     };
 
