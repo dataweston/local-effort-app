@@ -16,6 +16,10 @@ import { useSupabaseAuth } from '../contexts/SupabaseAuthContext';
 
 const CalendarPage = () => {
   const { user, isAdmin, accessToken, loading: authLoading } = useSupabaseAuth();
+
+  // Debug logging
+  console.log('CalendarPage - isAdmin:', isAdmin, 'user email:', user?.email);
+
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [events, setEvents] = useState([]);
   const [receipts, setReceipts] = useState([]);
@@ -203,10 +207,13 @@ const CalendarPage = () => {
   };
   
   const openEditEvent = (event) => {
+    console.log('openEditEvent called - isAdmin:', isAdmin, 'event:', event);
     if (!isAdmin) {
+      console.log('Not admin, opening EventBottomSheet instead');
       openEventSheet(event);
       return;
     }
+    console.log('Admin confirmed, opening EventForm');
     setSelectedEvent(event);
     setShowEventForm(true);
   };
