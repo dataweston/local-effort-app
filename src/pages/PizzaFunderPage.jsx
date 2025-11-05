@@ -242,12 +242,56 @@ const PizzaFunderPage = () => {
     return Number.isNaN(date.getTime()) ? null : date;
   }, []);
 
+  // State for calendar pizza_party events
+  const [calendarPizzaParties, setCalendarPizzaParties] = useState([]);
+
+  // Fetch pizza_party events from calendar
+  useEffect(() => {
+    let mounted = true;
+
+    (async () => {
+      try {
+        const res = await fetch('/api/calendar/public-events?event_type=pizza_party&limit=20');
+        if (res.ok && mounted) {
+          const events = await res.json();
+          setCalendarPizzaParties(events);
+        }
+      } catch (err) {
+        console.error('Failed to load calendar pizza party events:', err);
+      }
+    })();
+
+    return () => { mounted = false; };
+  }, []);
+
   const upcomingEvents = useMemo(() => {
     const rawEvents = Array.isArray(campaignData?.events) ? campaignData.events : [];
     const importedEvents = Array.isArray(campaignData?.featuredPublicEvents)
       ? campaignData.featuredPublicEvents.map((ev) => ({ ...ev, _imported: true }))
       : [];
-    const merged = [...rawEvents, ...importedEvents].filter(Boolean);
+
+    // Convert calendar events to the same format
+    const calendarEvents = calendarPizzaParties.map((ev) => ({
+      _id: ev.id,
+      _key: ev.id,
+      _calendar: true,
+      location: ev.location || 'TBD',
+      startDate: ev.start_date,
+      endDate: ev.end_date,
+      timingNote: ev.start_time ? `${ev.start_time}${ev.end_time ? ` - ${ev.end_time}` : ''}` : null,
+      status: ev.status === 'sold_out' ? 'soldOut' : ev.status,
+      summary: ev.description || ev.title,
+      tagline: ev.title,
+      heroImage: ev.image_url,
+      heroImageAlt: ev.image_alt || ev.title,
+      description: ev.description,
+      capacity: ev.capacity,
+      booked_slots: ev.booked_slots,
+      available_slots: ev.available_slots,
+      is_bookable: ev.is_bookable
+    }));
+
+    const merged = [...rawEvents, ...importedEvents, ...calendarEvents].filter(Boolean);
     
     if (!merged.length) return [];
     

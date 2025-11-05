@@ -3,8 +3,6 @@ import { X, Save, Trash2 } from 'lucide-react';
 import * as Dialog from '@radix-ui/react-dialog';
 
 const EventForm = ({ event, isOpen, onClose, onSave, onDelete, accessToken, isAdmin }) => {
-  console.log('EventForm render - isOpen:', isOpen, 'event:', event);
-
   const [formData, setFormData] = useState(event || {
     title: '',
     start_date: new Date().toISOString().split('T')[0],
@@ -21,6 +19,9 @@ const EventForm = ({ event, isOpen, onClose, onSave, onDelete, accessToken, isAd
     estimated_food_cost: '',
     estimated_labor_cost: '',
     notes: '',
+    image_url: '',
+    image_alt: '',
+    description: '',
     repeat: 'none',
     repeatUntil: ''
   });
@@ -46,6 +47,9 @@ const EventForm = ({ event, isOpen, onClose, onSave, onDelete, accessToken, isAd
         estimated_food_cost: '',
         estimated_labor_cost: '',
         notes: '',
+        image_url: '',
+        image_alt: '',
+        description: '',
         repeat: 'none',
         repeatUntil: ''
       });
@@ -61,8 +65,15 @@ const EventForm = ({ event, isOpen, onClose, onSave, onDelete, accessToken, isAd
   };
   
   const update = (field, value) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
-    
+    const updates = { [field]: value };
+
+    // Auto-set meal_prep to private
+    if (field === 'event_type' && value === 'meal_prep') {
+      updates.visibility = 'private';
+    }
+
+    setFormData(prev => ({ ...prev, ...updates }));
+
     // Check for conflicts when date/time changes
     if (['start_date', 'start_time', 'buffer_hours'].includes(field)) {
       checkConflicts(field === 'start_date' ? value : formData.start_date,
@@ -259,9 +270,28 @@ const EventForm = ({ event, isOpen, onClose, onSave, onDelete, accessToken, isAd
               </div>
             )}
             
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-sm font-medium mb-1">Image URL</label>
+                <input type="url" value={formData.image_url} onChange={e => update('image_url', e.target.value)} className="w-full px-3 py-2 border rounded-md" placeholder="https://..." />
+                <p className="text-xs text-gray-500 mt-1">Public image for event cards</p>
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Image Alt Text</label>
+                <input type="text" value={formData.image_alt} onChange={e => update('image_alt', e.target.value)} className="w-full px-3 py-2 border rounded-md" placeholder="Description of image" />
+                <p className="text-xs text-gray-500 mt-1">For accessibility</p>
+              </div>
+            </div>
+
             <div>
-              <label className="block text-sm font-medium mb-1">Notes</label>
-              <textarea value={formData.notes} onChange={e => update('notes', e.target.value)} rows="3" className="w-full px-3 py-2 border rounded-md" />
+              <label className="block text-sm font-medium mb-1">Public Description</label>
+              <textarea value={formData.description} onChange={e => update('description', e.target.value)} rows="4" className="w-full px-3 py-2 border rounded-md font-mono text-sm" placeholder="Event description with *italics* and **bold** support" />
+              <p className="text-xs text-gray-500 mt-1">Supports: *italic* **bold** and [links](url)</p>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium mb-1">Internal Notes (Admin Only)</label>
+              <textarea value={formData.notes} onChange={e => update('notes', e.target.value)} rows="3" className="w-full px-3 py-2 border rounded-md" placeholder="Private notes for admin use" />
             </div>
             
             <div className="flex justify-between pt-4">

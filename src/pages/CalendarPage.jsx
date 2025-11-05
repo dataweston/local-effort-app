@@ -17,9 +17,6 @@ import { useSupabaseAuth } from '../contexts/SupabaseAuthContext';
 const CalendarPage = () => {
   const { user, isAdmin, accessToken, loading: authLoading } = useSupabaseAuth();
 
-  // Debug logging
-  console.log('CalendarPage - isAdmin:', isAdmin, 'user email:', user?.email);
-
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [events, setEvents] = useState([]);
   const [receipts, setReceipts] = useState([]);
@@ -207,19 +204,12 @@ const CalendarPage = () => {
   };
   
   const openEditEvent = (event) => {
-    console.log('openEditEvent called - isAdmin:', isAdmin, 'event:', event);
     if (!isAdmin) {
-      console.log('Not admin, opening EventBottomSheet instead');
       openEventSheet(event);
       return;
     }
-    console.log('Admin confirmed, opening EventForm');
-    console.log('Setting selectedEvent to:', event);
-    console.log('Setting showEventForm to: true');
     setSelectedEvent(event);
     setShowEventForm(true);
-    console.log('After setState - selectedEvent should be:', event);
-    console.log('After setState - showEventForm should be: true');
   };
 
   const openEventSheet = (event) => {
