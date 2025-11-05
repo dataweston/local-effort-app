@@ -9,12 +9,7 @@ export const Footer = () => {
             <p className="font-semibold">Local Effort Food Co.</p>
             <p className="text-neutral-600">Roseville, MN</p>
             <p className="text-neutral-600">
-              <a href="tel:+16514449334" className="hover:underline">(651) 444-9334</a>
-              {' '}·{' '}
               <a href="mailto:yum@localeffortfood.com" className="hover:underline">yum@localeffortfood.com</a>
-            </p>
-            <p className="mt-2 text-neutral-600">
-              <a href="https://g.page/r/YOUR_GOOGLE_BUSINESS_ID" target="_blank" rel="noopener noreferrer" className="underline hover:opacity-80">Google Business Profile</a>
             </p>
             <p className="mt-2 text-neutral-600">
               Service Areas:
