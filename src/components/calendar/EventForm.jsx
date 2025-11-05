@@ -3,6 +3,8 @@ import { X, Save, Trash2 } from 'lucide-react';
 import * as Dialog from '@radix-ui/react-dialog';
 
 const EventForm = ({ event, isOpen, onClose, onSave, onDelete, accessToken, isAdmin }) => {
+  console.log('EventForm render - isOpen:', isOpen, 'event:', event);
+
   const [formData, setFormData] = useState(event || {
     title: '',
     start_date: new Date().toISOString().split('T')[0],
