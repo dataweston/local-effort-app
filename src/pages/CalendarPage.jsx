@@ -16,7 +16,6 @@ import { useSupabaseAuth } from '../contexts/SupabaseAuthContext';
 
 const CalendarPage = () => {
   const { user, isAdmin, accessToken, loading: authLoading } = useSupabaseAuth();
-
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [events, setEvents] = useState([]);
   const [receipts, setReceipts] = useState([]);
