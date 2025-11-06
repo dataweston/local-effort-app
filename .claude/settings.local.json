@@ -12,7 +12,8 @@
       "Bash(npm run:*)",
       "Bash(git push)",
       "Bash(pnpm start)",
-      "Bash(cat:*)"
+      "Bash(cat:*)",
+      "Bash(pnpm add:*)"
     ],
     "deny": [],
     "ask": []

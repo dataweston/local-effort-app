@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import ServiceCard from '../components/common/ServiceCard';
@@ -16,10 +16,29 @@ import SectionHeader from '../components/ui/SectionHeader';
 import Separator from '../components/ui/Separator';
 import GiftCardDialog from '../components/home/GiftCardDialog';
 import { generateEventListSchema } from '../utils/generateEventSchema';
+import lottie from 'lottie-web';
+import animationData from '../assets/Social-handle.json';
 
 const HomePage = () => {
   const navigate = useNavigate();
   // (removed pizza tracker) — fetch dynamic stats from backend or Sanity if desired
+
+  const animationContainer = useRef(null);
+  
+  // Initialize Lottie animation
+  useEffect(() => {
+    if (animationContainer.current) {
+      const anim = lottie.loadAnimation({
+        container: animationContainer.current,
+        renderer: 'svg',
+        loop: true,
+        autoplay: true,
+        animationData: animationData
+      });
+      
+      return () => anim.destroy();
+    }
+  }, []);
 
   const [partners, setPartners] = useState([]);
   // Load partners from Cloudinary by tag "partner" via our serverless search endpoint
@@ -505,14 +524,6 @@ const HomePage = () => {
           content="Personal chef and event catering in Minneapolis–St. Paul. In-home dinners, weekly meal prep, and seasonal menus. Book your chef-prepared experience today."
         />
         <link rel="canonical" href="https://localeffortfood.com/" />
-        {/* Preload hero for faster LCP */}
-        <link
-          rel="preload"
-          as="image"
-          href={`https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/f_auto,q_auto,w_2400${heroVersionSegment}/${heroImage.publicId}`}
-          imageSrcSet={`https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/f_auto,q_auto,w_800${heroVersionSegment}/${heroImage.publicId} 800w, https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/f_auto,q_auto,w_1200${heroVersionSegment}/${heroImage.publicId} 1200w, https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/f_auto,q_auto,w_1800${heroVersionSegment}/${heroImage.publicId} 1800w, https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/f_auto,q_auto,w_2400${heroVersionSegment}/${heroImage.publicId} 2400w, https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/f_auto,q_auto,w_3200${heroVersionSegment}/${heroImage.publicId} 3200w`}
-          imageSizes="(min-width: 1536px) 768px, (min-width: 1280px) 688px, (min-width: 1024px) 50vw, 100vw"
-        />
         {/* --- NEW: Inject the structured data into the page head --- */}
         <script type="application/ld+json">{JSON.stringify(imageJsonLd)}</script>
         {partnersJsonLd && <script type="application/ld+json">{JSON.stringify(partnersJsonLd)}</script>}
@@ -709,6 +720,21 @@ const HomePage = () => {
                 pre-order for the paikka holiday bazaar here.
               </a>
             </h3>
+          </div>
+        </section>
+
+        {/* Animated Logo */}
+        <section className="mx-auto max-w-6xl px-4 md:px-6 lg:px-8">
+          <div className="flex justify-center items-center">
+            <a 
+              href="https://instagram.com/localeffort" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="block w-full max-w-md hover:opacity-80 transition-opacity"
+              aria-label="Follow us on Instagram @localeffort"
+            >
+              <div ref={animationContainer} className="w-full" />
+            </a>
           </div>
         </section>
 
