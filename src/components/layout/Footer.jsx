@@ -39,6 +39,14 @@ export const Footer = () => {
               <a href="https://facebook.com/localeffort" target="_blank" rel="noopener noreferrer" className="underline underline-offset-4 hover:opacity-80">Facebook</a>
               <a href="https://www.thumbtack.com/mn/saint-paul/personal-chefs/weston-smith/service/429294230165643268" target="_blank" rel="noopener noreferrer" className="underline underline-offset-4 hover:opacity-80">Thumbtack</a>
             </div>
+            <div className="mt-2">
+              <a 
+                href="mailto:yum@localeffortfood.com?subject=Question%20for%20the%20Chef" 
+                className="inline-block bg-neutral-900 text-white px-4 py-2 rounded hover:bg-neutral-700 transition-colors"
+              >
+                Ask a Chef
+              </a>
+            </div>
           </div>
         </div>
       </div>
