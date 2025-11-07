@@ -21,8 +21,19 @@ export const MealPrepPage = () => {
   const [filterName] = useState('');
   const [assignedClient, setAssignedClient] = useState(null);
   const [openSection, setOpenSection] = useState(null); // 'foundation' | 'custom' | null
-  const [waitlistEmail, setWaitlistEmail] = useState('');
+  const [showWaitlistForm, setShowWaitlistForm] = useState(false);
   const [waitlistStatus, setWaitlistStatus] = useState('idle'); // 'idle' | 'sending' | 'success' | 'error'
+  const [waitlist, setWaitlist] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    familySize: '',
+    children: '',
+    daysPerWeek: '',
+    mealsPerDay: '',
+    allergies: '',
+    questions: '',
+  });
 
   // Gallery carousel removed per request
 
@@ -130,24 +141,58 @@ export const MealPrepPage = () => {
     })),
   };
 
+  const resetWaitlist = () =>
+    setWaitlist({
+      name: '',
+      email: '',
+      phone: '',
+      familySize: '',
+      children: '',
+      daysPerWeek: '',
+      mealsPerDay: '',
+      allergies: '',
+      questions: '',
+    });
+
+  const handleWaitlistChange = (field, value) => {
+    setWaitlist((prev) => ({ ...prev, [field]: value }));
+    if (waitlistStatus !== 'idle') setWaitlistStatus('idle');
+  };
+
   const handleWaitlistSubmit = async (event) => {
     event.preventDefault();
     setWaitlistStatus('sending');
     try {
-      const res = await fetch('/api/feedback/brevo-contact', {
+      const lines = [
+        'Weekly Meal Prep Waitlist signup',
+        `Name: ${waitlist.name}`,
+        `Email: ${waitlist.email}`,
+        `Phone: ${waitlist.phone || '(not provided)'}`,
+        `Family size: ${waitlist.familySize || '(not provided)'}`,
+        `Children & ages: ${waitlist.children || '(not provided)'}`,
+        `Days per week: ${waitlist.daysPerWeek || '(not provided)'}`,
+        `Meals per day: ${waitlist.mealsPerDay || '(not provided)'}`,
+        `Allergies or medical comments: ${waitlist.allergies || '(none noted)'}`,
+        '',
+        'Questions or notes:',
+        waitlist.questions || '(none provided)',
+      ];
+      const payload = {
+        name: waitlist.name,
+        email: waitlist.email,
+        phone: waitlist.phone,
+        subject: 'Meal Prep Waitlist signup',
+        type: 'meal-prep-waitlist',
+        message: lines.join('\n'),
+      };
+      const res = await fetch('/api/messages/submit', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email: waitlistEmail,
-          listIds: [4], // Brevo waitlist ID - adjust as needed
-          attributes: {
-            SIGNUP_SOURCE: 'Meal Prep Waitlist'
-          }
-        }),
+        body: JSON.stringify(payload),
       });
       if (!res.ok) throw new Error(await res.text());
       setWaitlistStatus('success');
-      setWaitlistEmail('');
+      resetWaitlist();
     } catch (_error) {
       setWaitlistStatus('error');
     }
@@ -190,6 +235,145 @@ export const MealPrepPage = () => {
           }
         })}</script>
       </Helmet>
+      {showWaitlistForm && (
+        <div
+          className="fixed inset-0 z-50 flex items-start justify-center bg-black/60 px-4 py-8 overflow-y-auto"
+          role="dialog"
+          aria-modal="true"
+        >
+          <div className="form-card w-full max-w-2xl max-h-[90vh] overflow-y-auto relative">
+            <button
+              type="button"
+              className="absolute right-4 top-4 text-sm underline z-10"
+              onClick={() => {
+                setShowWaitlistForm(false);
+                setWaitlistStatus('idle');
+                resetWaitlist();
+              }}
+            >
+              Close
+            </button>
+            <h2 className="text-2xl font-bold mb-2">Join the Waiting List</h2>
+            <p className="text-sm text-gray-600 mb-4">
+              Thank you for your interest in meal planning. Share a few details below and we&rsquo;ll reach out as soon as a space opens up.
+            </p>
+            <form onSubmit={handleWaitlistSubmit} className="space-y-4">
+              <div>
+                <label className="label" htmlFor="waitlist-name">Name</label>
+                <input
+                  id="waitlist-name"
+                  className="input"
+                  value={waitlist.name}
+                  onChange={(e) => handleWaitlistChange('name', e.target.value)}
+                  required
+                />
+              </div>
+              <div className="grid md:grid-cols-2 gap-4">
+                <div>
+                  <label className="label" htmlFor="waitlist-email">Email</label>
+                  <input
+                    id="waitlist-email"
+                    type="email"
+                    className="input"
+                    value={waitlist.email}
+                    onChange={(e) => handleWaitlistChange('email', e.target.value)}
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="label" htmlFor="waitlist-phone">Phone number</label>
+                  <input
+                    id="waitlist-phone"
+                    className="input"
+                    value={waitlist.phone}
+                    onChange={(e) => handleWaitlistChange('phone', e.target.value)}
+                    required
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="label" htmlFor="waitlist-family">Family size</label>
+                <input
+                  id="waitlist-family"
+                  className="input"
+                  placeholder="e.g. 2 adults, 2 kids"
+                  value={waitlist.familySize}
+                  onChange={(e) => handleWaitlistChange('familySize', e.target.value)}
+                  required
+                />
+              </div>
+              <div>
+                <label className="label" htmlFor="waitlist-children">Children &amp; ages</label>
+                <textarea
+                  id="waitlist-children"
+                  className="textarea"
+                  rows={2}
+                  value={waitlist.children}
+                  onChange={(e) => handleWaitlistChange('children', e.target.value)}
+                  placeholder="Tell us about school schedules, toddlers, or teens."
+                />
+              </div>
+              <div className="grid md:grid-cols-2 gap-4">
+                <div>
+                  <label className="label" htmlFor="waitlist-days">Days per week</label>
+                  <input
+                    id="waitlist-days"
+                    className="input"
+                    placeholder="How many days should we cover?"
+                    value={waitlist.daysPerWeek}
+                    onChange={(e) => handleWaitlistChange('daysPerWeek', e.target.value)}
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="label" htmlFor="waitlist-meals">Meals per day</label>
+                  <input
+                    id="waitlist-meals"
+                    className="input"
+                    placeholder="Breakfast, lunch, dinner?"
+                    value={waitlist.mealsPerDay}
+                    onChange={(e) => handleWaitlistChange('mealsPerDay', e.target.value)}
+                    required
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="label" htmlFor="waitlist-allergies">Allergies or medical comments</label>
+                <textarea
+                  id="waitlist-allergies"
+                  className="textarea"
+                  rows={3}
+                  value={waitlist.allergies}
+                  onChange={(e) => handleWaitlistChange('allergies', e.target.value)}
+                  placeholder="Include any dietary restrictions, allergies, or doctor notes."
+                />
+              </div>
+              <div>
+                <label className="label" htmlFor="waitlist-questions">Questions for the team</label>
+                <textarea
+                  id="waitlist-questions"
+                  className="textarea"
+                  rows={3}
+                  value={waitlist.questions}
+                  onChange={(e) => handleWaitlistChange('questions', e.target.value)}
+                  placeholder="Anything else we should know?"
+                />
+              </div>
+              <div className="flex flex-wrap items-center gap-3">
+                <button type="submit" className="btn btn-primary" disabled={waitlistStatus === 'sending'}>
+                  {waitlistStatus === 'sending' ? 'Submitting...' : 'Join waitlist'}
+                </button>
+                {waitlistStatus === 'success' && (
+                  <span className="text-green-700 text-sm">Thank you! We'll reach out as soon as a space opens up.</span>
+                )}
+                {waitlistStatus === 'error' && (
+                  <span className="text-red-700 text-sm">We couldn&rsquo;t submit your request. Please try again.</span>
+                )}
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
       <div className="space-y-16 mx-auto max-w-6xl px-4 md:px-6 lg:px-8">
         <header className="flex items-center gap-4">
           <h1 className="heading-display heading-balance">
@@ -199,43 +383,20 @@ export const MealPrepPage = () => {
 
         <section className="max-w-md">
           <h2 className="text-xl font-bold mb-3">Join the waiting list</h2>
-          <form onSubmit={handleWaitlistSubmit} className="space-y-3">
-            <div>
-              <label className="label" htmlFor="waitlist-email">Email address</label>
-              <input
-                id="waitlist-email"
-                type="email"
-                className="input w-full"
-                value={waitlistEmail}
-                onChange={(e) => {
-                  setWaitlistEmail(e.target.value);
-                  if (waitlistStatus !== 'idle') setWaitlistStatus('idle');
-                }}
-                placeholder="your@email.com"
-                required
-                disabled={waitlistStatus === 'sending'}
-              />
-            </div>
-            <div className="flex items-center gap-3">
-              <button 
-                type="submit" 
-                className="btn btn-primary" 
-                disabled={waitlistStatus === 'sending'}
-              >
-                {waitlistStatus === 'sending' ? 'Joining...' : 'Join waitlist'}
-              </button>
-              {waitlistStatus === 'success' && (
-                <span className="text-green-700 text-sm">
-                  Thank you! We'll reach out as soon as a space opens up.
-                </span>
-              )}
-              {waitlistStatus === 'error' && (
-                <span className="text-red-700 text-sm">
-                  Sorry, something went wrong. Please try again.
-                </span>
-              )}
-            </div>
-          </form>
+          <p className="text-sm text-gray-600 mb-3">
+            We're currently at capacity. Add your name to our waitlist and we'll reach out when a spot opens up.
+          </p>
+          <button
+            type="button"
+            className="btn btn-primary"
+            onClick={() => {
+              resetWaitlist();
+              setWaitlistStatus('idle');
+              setShowWaitlistForm(true);
+            }}
+          >
+            Join the waitlist
+          </button>
         </section>
 
         <section className="space-y-4 max-w-3xl">
