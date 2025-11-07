@@ -1,7 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
-import CloudinaryImage from '../components/common/cloudinaryImage';
 import SectionHeader from '../components/ui/SectionHeader';
 import Separator from '../components/ui/Separator';
 
@@ -42,7 +41,6 @@ const ServicesPage = () => {
   const [submitting, setSubmitting] = useState(false);
   const [result, setResult] = useState(null);
   // const [serviceSlides, setServiceSlides] = useState([]);
-  const [bookHero, setBookHero] = useState(null);
   const [business, setBusiness] = useState(null);
 
   const required = (v) => String(v || '').trim().length > 0;
@@ -53,24 +51,6 @@ const ServicesPage = () => {
   const reset = () => setForm(initialForm);
 
   // Hero carousel removed per request
-
-  // Load a single hero image for the Book section from tag 'book'
-  useEffect(() => {
-    let abort = false;
-    (async () => {
-      try {
-        const res = await fetch(`/api/search-images?query=book&per_page=1`);
-        if (!res.ok) throw new Error(`Book image failed: ${res.status}`);
-        const data = await res.json();
-        if (abort) return;
-        const first = (data.images || [])[0];
-        if (first) setBookHero(first.public_id);
-      } catch (_e) {
-        // ignore
-      }
-    })();
-    return () => { abort = true; };
-  }, []);
 
   // Load canonical business metadata
   useEffect(() => {
@@ -205,19 +185,7 @@ const ServicesPage = () => {
         <section id="event-request" className="pt-10">
           <div className="max-w-3xl mx-auto">
             <SectionHeader overline="Get Started" title="Book an event" />
-            {/* Book section hero image */}
-            {bookHero && (
-              <div className="w-full h-[30vh] md:h-[36vh] lg:h-[42vh] rounded-xl overflow-hidden mb-6">
-                <CloudinaryImage
-                  publicId={bookHero}
-                  alt="Book an event"
-                  className="w-full h-full object-cover"
-                  sizes="100vw"
-                  eager
-                />
-              </div>
-            )}
-            <p className="text-body mb-6 text-center">Tell us about your event and we’ll follow up with availability and a tailored menu.</p>
+            <p className="text-body mb-6 text-center">Tell us about your event and we'll follow up with availability and a tailored menu.</p>
 
             <div className="form-card">
             <form onSubmit={handleSubmit} className="space-y-4">

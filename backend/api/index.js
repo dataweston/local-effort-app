@@ -1268,6 +1268,163 @@ app.get('/api/inbox', async (req, res) => {
   }
 });
 
+// Event request form submission
+app.post('/api/events/request', async (req, res) => {
+  try {
+    const {
+      firstName,
+      lastName,
+      email,
+      phone,
+      eventDate,
+      city,
+      state,
+      zip,
+      eventType,
+      guestCount,
+      notes,
+      sendCopy = false,
+    } = req.body || {};
+
+    // Validation
+    if (!firstName || !lastName || !email || !phone) {
+      return res.status(400).json({
+        error: 'Missing required fields: firstName, lastName, email, phone',
+      });
+    }
+
+    // Basic email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({ error: 'Invalid email address' });
+    }
+
+    // Store in Firestore
+    let firestoreId = null;
+    if (db) {
+      try {
+        const eventRef = db.collection('events').doc();
+        const eventDoc = {
+          contact: {
+            firstName,
+            lastName,
+            email,
+            phone,
+            name: `${firstName} ${lastName}`,
+          },
+          date: eventDate ? new Date(eventDate) : null,
+          location: [city, state, zip].filter(Boolean).join(', '),
+          city,
+          state,
+          zip,
+          eventType: eventType || null,
+          guestCount: guestCount ? parseInt(guestCount, 10) : null,
+          notes: notes || '',
+          status: 'pending',
+          source: 'website-form',
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        };
+
+        await eventRef.set(eventDoc);
+        firestoreId = eventRef.id;
+      } catch (error) {
+        logger.error({ err: error }, 'Firestore save error for event request');
+        // Continue even if Firestore fails - we'll still send the email
+      }
+    }
+
+    // Send email notification to business
+    const headers = brevoService.getHeaders();
+    if (headers) {
+      const businessEmail = process.env.BUSINESS_EMAIL || 'yum@localeffortfood.com';
+      const senderEmail = process.env.SENDER_EMAIL || email;
+      const location = [city, state, zip].filter(Boolean).join(', ');
+
+      const htmlContent = `
+        <h2>New Event Request</h2>
+        <h3>Contact Information</h3>
+        <p><strong>Name:</strong> ${firstName} ${lastName}</p>
+        <p><strong>Email:</strong> ${email}</p>
+        <p><strong>Phone:</strong> ${phone}</p>
+        
+        <h3>Event Details</h3>
+        ${eventDate ? `<p><strong>Date:</strong> ${eventDate}</p>` : ''}
+        ${location ? `<p><strong>Location:</strong> ${location}</p>` : ''}
+        ${eventType ? `<p><strong>Event Type:</strong> ${eventType}</p>` : ''}
+        ${guestCount ? `<p><strong>Guest Count:</strong> ${guestCount}</p>` : ''}
+        ${notes ? `<p><strong>Notes:</strong><br>${notes.replace(/\n/g, '<br>')}</p>` : ''}
+      `;
+
+      // Send to business
+      try {
+        const businessPayload = {
+          to: [{ email: businessEmail }],
+          sender: { email: senderEmail, name: 'Event Request Form' },
+          subject: `New Event Request from ${firstName} ${lastName}`,
+          htmlContent,
+          tags: ['event-request', 'form-submission'],
+        };
+
+        await fetch('https://api.brevo.com/v3/smtp/email', {
+          method: 'POST',
+          headers,
+          body: JSON.stringify(businessPayload),
+        });
+
+        // Send copy to customer if requested
+        if (sendCopy && email) {
+          const customerPayload = {
+            to: [{ email, name: `${firstName} ${lastName}` }],
+            sender: { email: businessEmail, name: 'Local Effort' },
+            subject: 'Your Event Request - Local Effort',
+            htmlContent: `
+              <h2>Thank you for your event request!</h2>
+              <p>Hi ${firstName},</p>
+              <p>We've received your event request and will get back to you shortly.</p>
+              <h3>Your Request Details</h3>
+              ${eventDate ? `<p><strong>Date:</strong> ${eventDate}</p>` : ''}
+              ${location ? `<p><strong>Location:</strong> ${location}</p>` : ''}
+              ${eventType ? `<p><strong>Event Type:</strong> ${eventType}</p>` : ''}
+              ${guestCount ? `<p><strong>Guest Count:</strong> ${guestCount}</p>` : ''}
+              ${notes ? `<p><strong>Your Notes:</strong><br>${notes.replace(/\n/g, '<br>')}</p>` : ''}
+              <p>We look forward to working with you!</p>
+              <p>Best regards,<br>Local Effort Team</p>
+            `,
+            tags: ['event-request', 'customer-copy'],
+          };
+
+          await fetch('https://api.brevo.com/v3/smtp/email', {
+            method: 'POST',
+            headers,
+            body: JSON.stringify(customerPayload),
+          });
+        }
+      } catch (emailErr) {
+        logger.error({ err: emailErr }, 'Email send error for event request');
+        // Don't fail the whole request if email fails
+      }
+
+      // Add to Brevo contacts (async, non-blocking)
+      brevoService.upsertContact({ email, firstName, lastName, phone }).catch((err) => {
+        logger.warn({ err }, 'Background contact sync failed for event request');
+      });
+    }
+
+    return res.json({
+      ok: true,
+      message: 'Event request submitted successfully',
+      id: firestoreId,
+    });
+  } catch (err) {
+    logger.error({ err }, 'Event request error');
+    return res.status(500).json({
+      error: 'Failed to process event request',
+      details: err.message,
+    });
+  }
+});
+
 // --- Push subscriptions (Web Push) ---
 let webPush = null;
 try {

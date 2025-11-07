@@ -8,7 +8,6 @@ import CloudinaryImage from '../components/common/cloudinaryImage'; // Import th
 import { useEffect } from 'react';
 import { cloudinaryConfig, heroPublicId, heroFallbackSrc, heroVersion } from '../data/cloudinaryContent';
 import TestimonialsCarousel from '../components/common/TestimonialsCarousel';
-import sanityClient from '../sanityClient';
 import { PortableText } from '@portabletext/react';
 import { TimeSlotPicker } from '../components/calendar/TimeSlotPicker';
 import { portableTextComponents } from '../utils/portableTextComponents';
@@ -24,20 +23,44 @@ const HomePage = () => {
   // (removed pizza tracker) — fetch dynamic stats from backend or Sanity if desired
 
   const animationContainer = useRef(null);
+  const animationInstanceRef = useRef(null);
+  const hasAnimatedRef = useRef(false);
   
-  // Initialize Lottie animation
+  // Initialize Lottie animation - play once on scroll into view
   useEffect(() => {
-    if (animationContainer.current) {
-      const anim = lottie.loadAnimation({
-        container: animationContainer.current,
-        renderer: 'svg',
-        loop: true,
-        autoplay: true,
-        animationData: animationData
-      });
-      
-      return () => anim.destroy();
-    }
+    if (!animationContainer.current) return;
+    
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting && !hasAnimatedRef.current) {
+            hasAnimatedRef.current = true;
+            
+            if (animationInstanceRef.current) {
+              animationInstanceRef.current.destroy();
+            }
+            
+            animationInstanceRef.current = lottie.loadAnimation({
+              container: animationContainer.current,
+              renderer: 'svg',
+              loop: false,
+              autoplay: true,
+              animationData: animationData
+            });
+          }
+        });
+      },
+      { threshold: 0.1 }
+    );
+    
+    observer.observe(animationContainer.current);
+    
+    return () => {
+      observer.disconnect();
+      if (animationInstanceRef.current) {
+        animationInstanceRef.current.destroy();
+      }
+    };
   }, []);
 
   const [partners, setPartners] = useState([]);
@@ -69,13 +92,6 @@ const HomePage = () => {
   const [eventModal, setEventModal] = useState(null);
   const [showBooking, setShowBooking] = useState(false);
   const [business, setBusiness] = useState(null);
-
-  const parseEventDate = (value) => {
-    if (!value) return null;
-    const iso = value.includes("T") ? value : `${value}T00:00:00`;
-    const date = new Date(iso);
-    return Number.isNaN(date.getTime()) ? null : date;
-  };
 
   // Load canonical business metadata
   useEffect(() => {
@@ -425,57 +441,78 @@ const HomePage = () => {
         {content}
         {eventModal && !showBooking && (
           <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
-            <div className="bg-white rounded-lg shadow-xl max-w-lg w-full p-5 relative">
+            <div className="bg-white rounded-lg shadow-xl max-w-lg w-full relative overflow-hidden max-h-[90vh] overflow-y-auto">
               <button 
-                className="absolute right-3 top-3 text-sm underline" 
+                className="absolute right-3 top-3 text-sm underline bg-white/90 px-2 py-1 rounded z-10" 
                 onClick={() => setEventModal(null)}
               >
                 Close
               </button>
-              <h4 className="text-xl font-bold mb-1">{eventModal.title}</h4>
-              <p className="text-sm text-gray-600 mb-3">{formatModalDate(eventModal)}</p>
               
-              {/* Show location if available */}
-              {eventModal.location && (
-                <p className="text-sm text-gray-600 mb-2">
-                  📍 {eventModal.location}
-                </p>
-              )}
-              
-              {/* Prefer Sanity rich description, fallback to plain notes or description */}
-              {eventModal.sanity_data?.description && (
-                <div className="prose max-w-none mb-4">
-                  <PortableText value={eventModal.sanity_data.description} components={portableTextComponents} />
+              {/* Event Image */}
+              {(eventModal.image_url || eventModal.sanity_data?.heroImage) && (
+                <div className="w-full h-48 md:h-64 overflow-hidden">
+                  <img
+                    src={eventModal.image_url || eventModal.sanity_data?.heroImage}
+                    alt={eventModal.image_alt || eventModal.title}
+                    className="w-full h-full object-cover"
+                  />
                 </div>
               )}
-              {!eventModal.sanity_data?.description && (eventModal.notes || eventModal.description) && (
-                <p className="text-sm text-gray-700 mb-4 whitespace-pre-wrap">
-                  {eventModal.notes || eventModal.description}
-                </p>
-              )}
               
-              <div className="mt-4 space-y-3">
-                {eventModal.sanity_data?.ticketsUrl && (
-                  <a 
-                    className="btn btn-primary inline-block w-full text-center" 
-                    href={eventModal.sanity_data.ticketsUrl} 
-                    target="_blank" 
-                    rel="noreferrer"
-                  >
-                    Get tickets
-                  </a>
+              <div className="p-5">
+                <h4 className="text-xl font-bold mb-1">{eventModal.title}</h4>
+                <p className="text-sm text-gray-600 mb-3">{formatModalDate(eventModal)}</p>
+                
+                {/* Show location if available */}
+                {eventModal.location && (
+                  <p className="text-sm text-gray-600 mb-2">
+                    📍 {eventModal.location}
+                  </p>
                 )}
-                {eventModal.is_bookable && (
-                  <button
-                    className="btn btn-secondary w-full"
-                    onClick={() => setShowBooking(true)}
-                  >
-                    Book a Spot
-                    {eventModal.capacity && eventModal.available_slots !== null && 
-                      ` (${eventModal.available_slots} left)`
-                    }
-                  </button>
+                
+                {/* Show event type if available */}
+                {eventModal.event_type && (
+                  <p className="text-sm text-gray-600 mb-3 capitalize">
+                    {eventModal.event_type.replace(/_/g, ' ')}
+                  </p>
                 )}
+                
+                {/* Prefer Sanity rich description, fallback to plain notes or description */}
+                {eventModal.sanity_data?.description && (
+                  <div className="prose max-w-none mb-4">
+                    <PortableText value={eventModal.sanity_data.description} components={portableTextComponents} />
+                  </div>
+                )}
+                {!eventModal.sanity_data?.description && (eventModal.notes || eventModal.description) && (
+                  <p className="text-sm text-gray-700 mb-4 whitespace-pre-wrap">
+                    {eventModal.notes || eventModal.description}
+                  </p>
+                )}
+                
+                <div className="mt-4 space-y-3">
+                  {(eventModal.link_url || eventModal.sanity_data?.ticketsUrl) && (
+                    <a 
+                      className="btn btn-primary inline-block w-full text-center" 
+                      href={eventModal.link_url || eventModal.sanity_data.ticketsUrl} 
+                      target="_blank" 
+                      rel="noreferrer"
+                    >
+                      {eventModal.link_label || 'Get tickets'}
+                    </a>
+                  )}
+                  {eventModal.is_bookable && (
+                    <button
+                      className="btn btn-secondary w-full"
+                      onClick={() => setShowBooking(true)}
+                    >
+                      Book a Spot
+                      {eventModal.capacity && eventModal.available_slots !== null && 
+                        ` (${eventModal.available_slots} left)`
+                      }
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
           </div>
@@ -496,8 +533,8 @@ const HomePage = () => {
                 pizzaCount={1}
                 customerName=""
                 customerEmail=""
-                onBook={(booking) => {
-                  console.log('Booking created:', booking);
+                onBook={() => {
+                  // Booking created successfully
                   setShowBooking(false);
                   setEventModal(null);
                   alert('Booking confirmed! Check your email for details.');
@@ -678,23 +715,21 @@ const HomePage = () => {
             />
           </motion.div>
         </section>
-        {eventModal && (
-          <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
-            <div className="bg-white rounded-lg shadow-xl max-w-lg w-full p-5 relative">
-              <button className="absolute right-3 top-3 text-sm underline" onClick={() => setEventModal(null)}>Close</button>
-              <h4 className="text-xl font-bold mb-1">{eventModal.location}</h4>
-              <p className="text-sm text-gray-600 mb-3">{eventModal.startDate}{eventModal.endDate && eventModal.endDate!==eventModal.startDate ? ` – ${eventModal.endDate}` : ''}</p>
-              {eventModal.description && (
-                <div className="prose max-w-none">
-                  <PortableText value={eventModal.description} components={portableTextComponents} />
-                </div>
-              )}
-              {eventModal.ticketsUrl && (
-                <a className="btn btn-primary mt-4 inline-block" href={eventModal.ticketsUrl} target="_blank" rel="noreferrer">Get tickets</a>
-              )}
-            </div>
+
+        {/* Animated Social Media Snippet */}
+        <section className="mx-auto max-w-6xl px-4 md:px-6 lg:px-8">
+          <div className="flex justify-center items-center">
+            <a 
+              href="https://instagram.com/localeffort" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="block w-full max-w-md hover:opacity-80 transition-opacity"
+              aria-label="Follow us on Instagram @localeffort"
+            >
+              <div ref={animationContainer} className="w-full" />
+            </a>
           </div>
-        )}
+        </section>
 
         {/* Events + Subscribe side-by-side on desktop, stack on mobile */}
         <section className="mx-auto max-w-6xl px-4 md:px-6 lg:px-8">
@@ -720,21 +755,6 @@ const HomePage = () => {
                 pre-order for the paikka holiday bazaar here.
               </a>
             </h3>
-          </div>
-        </section>
-
-        {/* Animated Logo */}
-        <section className="mx-auto max-w-6xl px-4 md:px-6 lg:px-8">
-          <div className="flex justify-center items-center">
-            <a 
-              href="https://instagram.com/localeffort" 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="block w-full max-w-md hover:opacity-80 transition-opacity"
-              aria-label="Follow us on Instagram @localeffort"
-            >
-              <div ref={animationContainer} className="w-full" />
-            </a>
           </div>
         </section>
 
