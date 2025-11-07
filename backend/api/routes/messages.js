@@ -57,7 +57,7 @@ function hashKey(str) {
   return String(h >>> 0);
 }
 
-function createMessagesRouter({ logger, brevoService, getSanityClient, db }) {
+function createMessagesRouter({ logger, brevoService, getSanityClient, db, getSupabase }) {
   const router = express.Router();
   const { upsertContact, sendEmail, getHeaders } = brevoService;
 
@@ -99,6 +99,34 @@ function createMessagesRouter({ logger, brevoService, getSanityClient, db }) {
           });
         } catch (error) {
           if (logger) logger.warn({ err: error }, 'failed to write message to sanity');
+        }
+      }
+
+      // Store meal-prep-waitlist submissions in Supabase
+      if (type === 'meal-prep-waitlist' && getSupabase) {
+        const supabase = getSupabase();
+        if (supabase) {
+          try {
+            const waitlistData = {
+              name,
+              email,
+              phone: phone || null,
+              family_size: req.body.familySize || null,
+              children: req.body.children || null,
+              days_per_week: req.body.daysPerWeek || null,
+              meals_per_day: req.body.mealsPerDay || null,
+              allergies: req.body.allergies || null,
+              questions: req.body.questions || null,
+              sanity_message_id: msgDoc?._id || null,
+              status: 'pending',
+            };
+            const { error } = await supabase.from('meal_prep_waitlist').insert([waitlistData]);
+            if (error) {
+              if (logger) logger.warn({ err: error }, 'failed to store waitlist entry in supabase');
+            }
+          } catch (error) {
+            if (logger) logger.warn({ err: error }, 'supabase waitlist insert error');
+          }
         }
       }
 
@@ -275,7 +303,34 @@ function createMessagesRouter({ logger, brevoService, getSanityClient, db }) {
 
       const dedupeKey = hashKey(`${email.toLowerCase()}|${eventDate || ''}|${(city || '').toLowerCase()}`);
       let existingId = null;
-      if (db) {
+
+      // Check for duplicates in Supabase first (preferred), fall back to Firebase
+      if (getSupabase) {
+        const supabase = getSupabase();
+        if (supabase) {
+          try {
+            const { data, error } = await supabase
+              .from('event_requests')
+              .select('id, created_at')
+              .eq('dedupe_key', dedupeKey)
+              .order('created_at', { ascending: false })
+              .limit(1);
+
+            if (!error && data && data.length > 0) {
+              const existing = data[0];
+              const ts = new Date(existing.created_at);
+              if (ts && (Date.now() - ts.getTime()) < 1000 * 60 * 60 * 48) {
+                existingId = existing.id;
+              }
+            }
+          } catch (error) {
+            if (logger) logger.warn({ err: error }, 'supabase duplicate check error');
+          }
+        }
+      }
+
+      // Fall back to Firebase if Supabase not available
+      if (!existingId && db) {
         const snap = await db.collection('events').where('dedupeKey', '==', dedupeKey).limit(1).get().catch(() => null);
         if (snap && !snap.empty) {
           const doc = snap.docs[0];
@@ -311,7 +366,47 @@ function createMessagesRouter({ logger, brevoService, getSanityClient, db }) {
       }
 
       let eventId = existingId;
-      if (db && !existingId) {
+
+      // Store in Supabase (preferred)
+      if (getSupabase && !existingId) {
+        const supabase = getSupabase();
+        if (supabase) {
+          try {
+            const eventData = {
+              first_name: firstName,
+              last_name: lastName,
+              email,
+              phone,
+              event_date: startDate || null,
+              city: city || null,
+              state: state || null,
+              zip: zip || null,
+              event_type: eventType || null,
+              guest_count: guestCount ? Number(guestCount) : null,
+              notes: notes || null,
+              send_copy: sendCopy,
+              dedupe_key: dedupeKey,
+              sanity_message_id: msgDoc?._id || null,
+              status: 'pending',
+            };
+            const { data, error } = await supabase
+              .from('event_requests')
+              .insert([eventData])
+              .select('id');
+
+            if (error) {
+              if (logger) logger.warn({ err: error }, 'failed to store event request in supabase');
+            } else if (data && data.length > 0) {
+              eventId = data[0].id;
+            }
+          } catch (error) {
+            if (logger) logger.warn({ err: error }, 'supabase event request insert error');
+          }
+        }
+      }
+
+      // Fall back to Firebase if Supabase not available or if already exists
+      if (db && !existingId && !eventId) {
         const payload = {
           title: summary || 'Event Request',
           date: startDate || new Date(),
