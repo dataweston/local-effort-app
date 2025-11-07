@@ -22,6 +22,7 @@ try {
 const express = require('express');
 const cors = require('cors');
 const { getSanityClient } = require('./sanityClient');
+const { getSupabase } = require('./supabaseClient');
 const fs = require('fs');
 const path = require('path');
 // Structured logger (pino wrapper)
@@ -632,7 +633,7 @@ app.post('/api/feedback', async (req, res) => {
   }
 });
 
-app.use('/api', createMessagesRouter({ logger, brevoService, getSanityClient, db }));
+app.use('/api', createMessagesRouter({ logger, brevoService, getSanityClient, db, getSupabase }));
 
 // Diagnostic endpoint (safe): reports whether required env vars are present
 // and attempts a lightweight Cloudinary ping if configured. Do NOT expose
