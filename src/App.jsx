@@ -93,6 +93,9 @@ const AppContent = () => {
                     </AnimatedPage>
                   }
                 />
+                {/* Legacy bridal expo landing now forwards home */}
+                <Route path="/bridal-expo" element={<Navigate to="/" replace />} />
+                <Route path="/bridalexpo" element={<Navigate to="/" replace />} />
                 <Route
                   path="/about"
                   element={
