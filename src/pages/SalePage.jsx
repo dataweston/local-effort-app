@@ -76,17 +76,13 @@ const SalePage = () => {
         <script type="application/ld+json">{JSON.stringify(schema)}</script>
       </Helmet>
 
-      {/* Full-page masonry gallery background */}
-      <div className="fixed inset-0 overflow-y-auto" style={{ zIndex: 0 }}>
-        <MasonryGallery />
-      </div>
-
       {/* Content overlay with products */}
       <div className="relative" style={{ zIndex: 10 }}>
         <div className="mx-auto max-w-6xl px-4 md:px-6 lg:px-8 py-8">
-          <div className="flex items-start justify-between mb-4 gap-4 bg-white/95 backdrop-blur-sm p-4 rounded-lg shadow-md">
-            <div>
-              <h1 className="heading-xl heading-balance">Sale</h1>
+          <div className="flex items-start justify-between mb-4 gap-4">
+            <div className="inline-block bg-white/95 backdrop-blur-sm px-4 py-3 rounded-lg shadow-md">
+              <h1 className="heading-xl heading-balance">holiday pie sale</h1>
+              <p className="mt-1 text-neutral-700">pickup at Henry & Son 11/26 (day before thanksgiving). we'll get some christmas dates up soon too.</p>
               {saleIntro.subheading && (
                 <p className="mt-1 text-neutral-700">{saleIntro.subheading}</p>
               )}
@@ -96,13 +92,29 @@ const SalePage = () => {
                 </div>
               )}
             </div>
-            <button onClick={openCart} className="btn btn-primary whitespace-nowrap">Cart ({totalQty})</button>
+            <button onClick={openCart} className="btn btn-primary whitespace-nowrap bg-white/95 backdrop-blur-sm shadow-md">Cart ({totalQty})</button>
           </div>
+        </div>
+      </div>
+
+      {/* Full-page masonry gallery background - starts after header */}
+      <div className="fixed top-32 left-0 right-0 bottom-0 overflow-y-auto" style={{ zIndex: 0 }}>
+        <MasonryGallery />
+        {/* Hint text for draggable images */}
+        <div className="fixed bottom-4 left-4 text-xs text-neutral-500/60 flex items-center gap-1 pointer-events-none">
+          <span role="img" aria-label="hand">👆</span>
+          <span>move the images around</span>
+        </div>
+      </div>
+
+      {/* Products section */}
+      <div className="relative" style={{ zIndex: 10 }}>
+        <div className="mx-auto max-w-6xl px-4 md:px-6 lg:px-8">
 
           {loading ? (
-            <div className="bg-white/95 backdrop-blur-sm p-8 rounded-lg shadow-md">Loading…</div>
+            <div className="ml-auto w-full max-w-md bg-white/95 backdrop-blur-sm p-8 rounded-lg shadow-md">Loading…</div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 mt-6">
+            <div className="ml-auto w-full max-w-md flex flex-col gap-6 mt-6">
               {(products || []).map((p) => (
                 <motion.div
                   key={p.id}
