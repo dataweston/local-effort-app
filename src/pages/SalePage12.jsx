@@ -7,9 +7,9 @@ import CheckoutPanel from '../store/components/CheckoutPanel';
 import { PortableText } from '@portabletext/react';
 import { portableTextComponents } from '../utils/portableTextComponents';
 import sanityClient from '../sanityClient';
-import MasonryGallery from '../components/sale/MasonryGallery';
+import LayoutGridGallery from '../components/sale/LayoutGridGallery';
 
-const SalePage = () => {
+const SalePage12 = () => {
   const { totalQty, openCart } = useCart();
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -70,15 +70,15 @@ const SalePage = () => {
   return (
     <div className="relative min-h-screen">
       <Helmet>
-        <title>SALE | Local Effort</title>
-        <meta name="description" content="Shop Local Effort sale items. Pickup/local service with on-site checkout." />
-        <link rel="canonical" href="https://localeffortfood.com/sale" />
+        <title>SALE 12 - Layout Grid | Local Effort</title>
+        <meta name="description" content="Shop Local Effort sale items with interactive layout grid gallery." />
+        <link rel="canonical" href="https://localeffortfood.com/sale12" />
         <script type="application/ld+json">{JSON.stringify(schema)}</script>
       </Helmet>
 
-      {/* Full-page masonry gallery background */}
+      {/* Full-page layout grid gallery background */}
       <div className="fixed inset-0 overflow-y-auto" style={{ zIndex: 0 }}>
-        <MasonryGallery />
+        <LayoutGridGallery />
       </div>
 
       {/* Content overlay with products */}
@@ -86,7 +86,8 @@ const SalePage = () => {
         <div className="mx-auto max-w-6xl px-4 md:px-6 lg:px-8 py-8">
           <div className="flex items-start justify-between mb-4 gap-4 bg-white/95 backdrop-blur-sm p-4 rounded-lg shadow-md">
             <div>
-              <h1 className="heading-xl heading-balance">Sale</h1>
+              <h1 className="heading-xl heading-balance">Sale 12 - Layout Grid</h1>
+              <p className="mt-1 text-sm text-neutral-500">Testing: Aceternity Layout Grid Style</p>
               {saleIntro.subheading && (
                 <p className="mt-1 text-neutral-700">{saleIntro.subheading}</p>
               )}
@@ -124,4 +125,4 @@ const SalePage = () => {
   );
 };
 
-export default SalePage;
+export default SalePage12;
