@@ -106,7 +106,7 @@ const SalePage = () => {
       </div>
 
       {/* Full-page masonry gallery background - desktop only, left side with padding from bottom */}
-      <div className="hidden lg:block fixed top-32 left-0 overflow-hidden pb-20" style={{ zIndex: 0, right: '33.333%', bottom: '80px' }}>
+      <div className="hidden lg:block fixed top-32 left-0 overflow-y-auto" style={{ zIndex: 0, right: '33.333%', bottom: '80px' }}>
         <MasonryGallery />
       </div>
 
