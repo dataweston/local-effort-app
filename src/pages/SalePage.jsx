@@ -7,6 +7,7 @@ import CheckoutPanel from '../store/components/CheckoutPanel';
 import { PortableText } from '@portabletext/react';
 import { portableTextComponents } from '../utils/portableTextComponents';
 import sanityClient from '../sanityClient';
+import MasonryGallery from '../components/sale/MasonryGallery';
 
 const SalePage = () => {
   const { totalQty, openCart } = useCart();
@@ -67,7 +68,7 @@ const SalePage = () => {
   }, [products]);
 
   return (
-    <div className="mx-auto max-w-6xl px-4 md:px-6 lg:px-8 py-8">
+    <div className="relative min-h-screen">
       <Helmet>
         <title>SALE | Local Effort</title>
         <meta name="description" content="Shop Local Effort sale items. Pickup/local service with on-site checkout." />
@@ -75,32 +76,48 @@ const SalePage = () => {
         <script type="application/ld+json">{JSON.stringify(schema)}</script>
       </Helmet>
 
-      <div className="flex items-start justify-between mb-4 gap-4">
-        <div>
-          <h1 className="heading-xl heading-balance">Sale</h1>
-          {saleIntro.subheading && (
-            <p className="mt-1 text-neutral-700">{saleIntro.subheading}</p>
-          )}
-          {Array.isArray(saleIntro.intro) && saleIntro.intro.length > 0 && (
-            <div className="prose prose-neutral max-w-none mt-3">
-              <PortableText value={saleIntro.intro} components={portableTextComponents} />
+      {/* Full-page masonry gallery background */}
+      <div className="fixed inset-0 overflow-y-auto" style={{ zIndex: 0 }}>
+        <MasonryGallery />
+      </div>
+
+      {/* Content overlay with products */}
+      <div className="relative" style={{ zIndex: 10 }}>
+        <div className="mx-auto max-w-6xl px-4 md:px-6 lg:px-8 py-8">
+          <div className="flex items-start justify-between mb-4 gap-4 bg-white/95 backdrop-blur-sm p-4 rounded-lg shadow-md">
+            <div>
+              <h1 className="heading-xl heading-balance">Sale</h1>
+              {saleIntro.subheading && (
+                <p className="mt-1 text-neutral-700">{saleIntro.subheading}</p>
+              )}
+              {Array.isArray(saleIntro.intro) && saleIntro.intro.length > 0 && (
+                <div className="prose prose-neutral max-w-none mt-3">
+                  <PortableText value={saleIntro.intro} components={portableTextComponents} />
+                </div>
+              )}
+            </div>
+            <button onClick={openCart} className="btn btn-primary whitespace-nowrap">Cart ({totalQty})</button>
+          </div>
+
+          {loading ? (
+            <div className="bg-white/95 backdrop-blur-sm p-8 rounded-lg shadow-md">Loading…</div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 mt-6">
+              {(products || []).map((p) => (
+                <motion.div
+                  key={p.id}
+                  initial={{ opacity: 0, y: 8 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  className="bg-white/98 backdrop-blur-sm rounded-lg shadow-lg"
+                >
+                  <ProductCard product={p} />
+                </motion.div>
+              ))}
             </div>
           )}
         </div>
-        <button onClick={openCart} className="btn btn-primary whitespace-nowrap">Cart ({totalQty})</button>
       </div>
-
-      {loading ? (
-        <div>Loading…</div>
-      ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-          {(products || []).map((p) => (
-            <motion.div key={p.id} initial={{ opacity: 0, y: 8 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
-              <ProductCard product={p} />
-            </motion.div>
-          ))}
-        </div>
-      )}
 
       <CheckoutPanel />
     </div>

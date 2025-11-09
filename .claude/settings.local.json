@@ -13,7 +13,11 @@
       "Bash(git push)",
       "Bash(pnpm start)",
       "Bash(cat:*)",
-      "Bash(pnpm add:*)"
+      "Bash(pnpm add:*)",
+      "Bash(npm install:*)",
+      "Bash(npm start)",
+      "Bash(npx shadcn@latest add https://ui.aceternity.com/r/draggable-card)",
+      "Bash(npx aceternity-ui@latest add:*)"
     ],
     "deny": [],
     "ask": []

@@ -1299,10 +1299,10 @@ var require_useMergeRef = __commonJS({
     Object.defineProperty(exports2, "__esModule", { value: true });
     exports2.useMergeRefs = void 0;
     var tslib_1 = (init_tslib_es6(), __toCommonJS(tslib_es6_exports));
-    var React66 = tslib_1.__importStar(require("react"));
+    var React67 = tslib_1.__importStar(require("react"));
     var assignRef_1 = require_assignRef();
     var useRef_1 = require_useRef();
-    var useIsomorphicLayoutEffect2 = typeof window !== "undefined" ? React66.useLayoutEffect : React66.useEffect;
+    var useIsomorphicLayoutEffect2 = typeof window !== "undefined" ? React67.useLayoutEffect : React67.useEffect;
     var currentValues = /* @__PURE__ */ new WeakMap();
     function useMergeRefs(refs, defaultValue) {
       var callbackRef = (0, useRef_1.useCallbackRef)(defaultValue || null, function(newValue) {
@@ -1537,7 +1537,7 @@ var require_hoc = __commonJS({
     Object.defineProperty(exports2, "__esModule", { value: true });
     exports2.sidecar = void 0;
     var tslib_1 = (init_tslib_es6(), __toCommonJS(tslib_es6_exports));
-    var React66 = tslib_1.__importStar(require("react"));
+    var React67 = tslib_1.__importStar(require("react"));
     var hook_1 = require_hook();
     function sidecar(importer, errorComponent) {
       var ErrorCase = function() {
@@ -1548,7 +1548,7 @@ var require_hoc = __commonJS({
         if (error && errorComponent) {
           return ErrorCase;
         }
-        return Car ? React66.createElement(Car, tslib_1.__assign({}, props)) : null;
+        return Car ? React67.createElement(Car, tslib_1.__assign({}, props)) : null;
       };
     }
     exports2.sidecar = sidecar;
@@ -1682,7 +1682,7 @@ var require_renderProp = __commonJS({
     Object.defineProperty(exports2, "__esModule", { value: true });
     exports2.renderCar = void 0;
     var tslib_1 = (init_tslib_es6(), __toCommonJS(tslib_es6_exports));
-    var React66 = tslib_1.__importStar(require("react"));
+    var React67 = tslib_1.__importStar(require("react"));
     var react_1 = require("react");
     function renderCar(WrappedComponent, defaults) {
       function State(_a) {
@@ -1697,9 +1697,9 @@ var require_renderProp = __commonJS({
           });
           return null;
         }, []);
-        return React66.createElement(WrappedComponent, tslib_1.__assign({}, props, { children: renderTarget }));
+        return React67.createElement(WrappedComponent, tslib_1.__assign({}, props, { children: renderTarget }));
       }
-      var Children4 = React66.memo(function(_a) {
+      var Children4 = React67.memo(function(_a) {
         var stateRef = _a.stateRef, defaultState = _a.defaultState, children = _a.children;
         var _b = (0, react_1.useState)(defaultState.current), state = _b[0], setState = _b[1];
         (0, react_1.useEffect)(function() {
@@ -1710,15 +1710,15 @@ var require_renderProp = __commonJS({
         return true;
       });
       return function Combiner(props) {
-        var defaultState = React66.useRef(defaults(props));
-        var ref = React66.useRef(function(state) {
+        var defaultState = React67.useRef(defaults(props));
+        var ref = React67.useRef(function(state) {
           return defaultState.current = state;
         });
-        return React66.createElement(
-          React66.Fragment,
+        return React67.createElement(
+          React67.Fragment,
           null,
-          React66.createElement(State, { stateRef: ref, props }),
-          React66.createElement(Children4, { stateRef: ref, defaultState, children: props.children })
+          React67.createElement(State, { stateRef: ref, props }),
+          React67.createElement(Children4, { stateRef: ref, defaultState, children: props.children })
         );
       };
     }
@@ -1733,7 +1733,7 @@ var require_exports = __commonJS({
     Object.defineProperty(exports2, "__esModule", { value: true });
     exports2.exportSidecar = void 0;
     var tslib_1 = (init_tslib_es6(), __toCommonJS(tslib_es6_exports));
-    var React66 = tslib_1.__importStar(require("react"));
+    var React67 = tslib_1.__importStar(require("react"));
     var SideCar = function(_a) {
       var sideCar = _a.sideCar, rest = tslib_1.__rest(_a, ["sideCar"]);
       if (!sideCar) {
@@ -1743,7 +1743,7 @@ var require_exports = __commonJS({
       if (!Target) {
         throw new Error("Sidecar medium not found");
       }
-      return React66.createElement(Target, tslib_1.__assign({}, rest));
+      return React67.createElement(Target, tslib_1.__assign({}, rest));
     };
     SideCar.isSideCarExport = true;
     function exportSidecar(medium, exported) {
@@ -1808,16 +1808,16 @@ var require_UI = __commonJS({
     Object.defineProperty(exports2, "__esModule", { value: true });
     exports2.RemoveScroll = void 0;
     var tslib_1 = (init_tslib_es6(), __toCommonJS(tslib_es6_exports));
-    var React66 = tslib_1.__importStar(require("react"));
+    var React67 = tslib_1.__importStar(require("react"));
     var constants_1 = require_constants();
     var use_callback_ref_1 = require_es5();
     var medium_1 = require_medium2();
     var nothing = function() {
       return;
     };
-    var RemoveScroll2 = React66.forwardRef(function(props, parentRef) {
-      var ref = React66.useRef(null);
-      var _a = React66.useState({
+    var RemoveScroll2 = React67.forwardRef(function(props, parentRef) {
+      var ref = React67.useRef(null);
+      var _a = React67.useState({
         onScrollCapture: nothing,
         onWheelCapture: nothing,
         onTouchMoveCapture: nothing
@@ -1826,11 +1826,11 @@ var require_UI = __commonJS({
       var SideCar = sideCar;
       var containerRef = (0, use_callback_ref_1.useMergeRefs)([ref, parentRef]);
       var containerProps = tslib_1.__assign(tslib_1.__assign({}, rest), callbacks);
-      return React66.createElement(
-        React66.Fragment,
+      return React67.createElement(
+        React67.Fragment,
         null,
-        enabled && React66.createElement(SideCar, { sideCar: medium_1.effectCar, removeScrollBar, shards, noRelative, noIsolation, inert, setCallbacks, allowPinchZoom: !!allowPinchZoom, lockRef: ref, gapMode }),
-        forwardProps ? React66.cloneElement(React66.Children.only(children), tslib_1.__assign(tslib_1.__assign({}, containerProps), { ref: containerRef })) : React66.createElement(Container, tslib_1.__assign({}, containerProps, { className, ref: containerRef }), children)
+        enabled && React67.createElement(SideCar, { sideCar: medium_1.effectCar, removeScrollBar, shards, noRelative, noIsolation, inert, setCallbacks, allowPinchZoom: !!allowPinchZoom, lockRef: ref, gapMode }),
+        forwardProps ? React67.cloneElement(React67.Children.only(children), tslib_1.__assign(tslib_1.__assign({}, containerProps), { ref: containerRef })) : React67.createElement(Container, tslib_1.__assign({}, containerProps, { className, ref: containerRef }), children)
       );
     });
     exports2.RemoveScroll = RemoveScroll2;
@@ -1929,12 +1929,12 @@ var require_hook2 = __commonJS({
     Object.defineProperty(exports2, "__esModule", { value: true });
     exports2.styleHookSingleton = void 0;
     var tslib_1 = (init_tslib_es6(), __toCommonJS(tslib_es6_exports));
-    var React66 = tslib_1.__importStar(require("react"));
+    var React67 = tslib_1.__importStar(require("react"));
     var singleton_1 = require_singleton();
     var styleHookSingleton = function() {
       var sheet = (0, singleton_1.stylesheetSingleton)();
       return function(styles, isDynamic) {
-        React66.useEffect(function() {
+        React67.useEffect(function() {
           sheet.add(styles);
           return function() {
             sheet.remove();
@@ -2037,7 +2037,7 @@ var require_component2 = __commonJS({
     Object.defineProperty(exports2, "__esModule", { value: true });
     exports2.RemoveScrollBar = exports2.useLockAttribute = exports2.lockAttribute = void 0;
     var tslib_1 = (init_tslib_es6(), __toCommonJS(tslib_es6_exports));
-    var React66 = tslib_1.__importStar(require("react"));
+    var React67 = tslib_1.__importStar(require("react"));
     var react_style_singleton_1 = require_es54();
     var constants_1 = require_constants();
     var utils_1 = require_utils();
@@ -2059,7 +2059,7 @@ var require_component2 = __commonJS({
       return isFinite(counter2) ? counter2 : 0;
     };
     var useLockAttribute = function() {
-      React66.useEffect(function() {
+      React67.useEffect(function() {
         document.body.setAttribute(exports2.lockAttribute, (getCurrentUseCounter() + 1).toString());
         return function() {
           var newCounter = getCurrentUseCounter() - 1;
@@ -2075,10 +2075,10 @@ var require_component2 = __commonJS({
     var RemoveScrollBar = function(_a) {
       var noRelative = _a.noRelative, noImportant = _a.noImportant, _b = _a.gapMode, gapMode = _b === void 0 ? "margin" : _b;
       (0, exports2.useLockAttribute)();
-      var gap = React66.useMemo(function() {
+      var gap = React67.useMemo(function() {
         return (0, utils_1.getGapWidth)(gapMode);
       }, [gapMode]);
-      return React66.createElement(Style, { styles: getStyles(gap, !noRelative, gapMode, !noImportant ? "!important" : "") });
+      return React67.createElement(Style, { styles: getStyles(gap, !noRelative, gapMode, !noImportant ? "!important" : "") });
     };
     exports2.RemoveScrollBar = RemoveScrollBar;
   }
@@ -2256,7 +2256,7 @@ var require_SideEffect = __commonJS({
     Object.defineProperty(exports2, "__esModule", { value: true });
     exports2.RemoveScrollSideCar = exports2.getDeltaXY = exports2.getTouchXY = void 0;
     var tslib_1 = (init_tslib_es6(), __toCommonJS(tslib_es6_exports));
-    var React66 = tslib_1.__importStar(require("react"));
+    var React67 = tslib_1.__importStar(require("react"));
     var react_remove_scroll_bar_1 = require_es55();
     var react_style_singleton_1 = require_es54();
     var aggresiveCapture_1 = require_aggresiveCapture();
@@ -2281,16 +2281,16 @@ var require_SideEffect = __commonJS({
     var idCounter = 0;
     var lockStack = [];
     function RemoveScrollSideCar(props) {
-      var shouldPreventQueue = React66.useRef([]);
-      var touchStartRef = React66.useRef([0, 0]);
-      var activeAxis = React66.useRef();
-      var id = React66.useState(idCounter++)[0];
-      var Style = React66.useState(react_style_singleton_1.styleSingleton)[0];
-      var lastProps = React66.useRef(props);
-      React66.useEffect(function() {
+      var shouldPreventQueue = React67.useRef([]);
+      var touchStartRef = React67.useRef([0, 0]);
+      var activeAxis = React67.useRef();
+      var id = React67.useState(idCounter++)[0];
+      var Style = React67.useState(react_style_singleton_1.styleSingleton)[0];
+      var lastProps = React67.useRef(props);
+      React67.useEffect(function() {
         lastProps.current = props;
       }, [props]);
-      React66.useEffect(function() {
+      React67.useEffect(function() {
         if (props.inert) {
           document.body.classList.add("block-interactivity-".concat(id));
           var allow_1 = tslib_1.__spreadArray([props.lockRef.current], (props.shards || []).map(extractRef), true).filter(Boolean);
@@ -2306,7 +2306,7 @@ var require_SideEffect = __commonJS({
         }
         return;
       }, [props.inert, props.lockRef.current, props.shards]);
-      var shouldCancelEvent = React66.useCallback(function(event, parent2) {
+      var shouldCancelEvent = React67.useCallback(function(event, parent2) {
         if ("touches" in event && event.touches.length === 2 || event.type === "wheel" && event.ctrlKey) {
           return !lastProps.current.allowPinchZoom;
         }
@@ -2342,7 +2342,7 @@ var require_SideEffect = __commonJS({
         var cancelingAxis = activeAxis.current || currentAxis;
         return (0, handleScroll_1.handleScroll)(cancelingAxis, parent2, event, cancelingAxis === "h" ? deltaX : deltaY, true);
       }, []);
-      var shouldPrevent = React66.useCallback(function(_event) {
+      var shouldPrevent = React67.useCallback(function(_event) {
         var event = _event;
         if (!lockStack.length || lockStack[lockStack.length - 1] !== Style) {
           return;
@@ -2369,7 +2369,7 @@ var require_SideEffect = __commonJS({
           }
         }
       }, []);
-      var shouldCancel = React66.useCallback(function(name2, delta, target, should) {
+      var shouldCancel = React67.useCallback(function(name2, delta, target, should) {
         var event = { name: name2, delta, target, should, shadowParent: getOutermostShadowParent(target) };
         shouldPreventQueue.current.push(event);
         setTimeout(function() {
@@ -2378,17 +2378,17 @@ var require_SideEffect = __commonJS({
           });
         }, 1);
       }, []);
-      var scrollTouchStart = React66.useCallback(function(event) {
+      var scrollTouchStart = React67.useCallback(function(event) {
         touchStartRef.current = (0, exports2.getTouchXY)(event);
         activeAxis.current = void 0;
       }, []);
-      var scrollWheel = React66.useCallback(function(event) {
+      var scrollWheel = React67.useCallback(function(event) {
         shouldCancel(event.type, (0, exports2.getDeltaXY)(event), event.target, shouldCancelEvent(event, props.lockRef.current));
       }, []);
-      var scrollTouchMove = React66.useCallback(function(event) {
+      var scrollTouchMove = React67.useCallback(function(event) {
         shouldCancel(event.type, (0, exports2.getTouchXY)(event), event.target, shouldCancelEvent(event, props.lockRef.current));
       }, []);
-      React66.useEffect(function() {
+      React67.useEffect(function() {
         lockStack.push(Style);
         props.setCallbacks({
           onScrollCapture: scrollWheel,
@@ -2408,11 +2408,11 @@ var require_SideEffect = __commonJS({
         };
       }, []);
       var removeScrollBar = props.removeScrollBar, inert = props.inert;
-      return React66.createElement(
-        React66.Fragment,
+      return React67.createElement(
+        React67.Fragment,
         null,
-        inert ? React66.createElement(Style, { styles: generateStyle(id) }) : null,
-        removeScrollBar ? React66.createElement(react_remove_scroll_bar_1.RemoveScrollBar, { noRelative: props.noRelative, gapMode: props.gapMode }) : null
+        inert ? React67.createElement(Style, { styles: generateStyle(id) }) : null,
+        removeScrollBar ? React67.createElement(react_remove_scroll_bar_1.RemoveScrollBar, { noRelative: props.noRelative, gapMode: props.gapMode }) : null
       );
     }
     exports2.RemoveScrollSideCar = RemoveScrollSideCar;
@@ -2448,11 +2448,11 @@ var require_Combination = __commonJS({
     "use strict";
     Object.defineProperty(exports2, "__esModule", { value: true });
     var tslib_1 = (init_tslib_es6(), __toCommonJS(tslib_es6_exports));
-    var React66 = tslib_1.__importStar(require("react"));
+    var React67 = tslib_1.__importStar(require("react"));
     var UI_1 = require_UI();
     var sidecar_1 = tslib_1.__importDefault(require_sidecar());
-    var ReactRemoveScroll = React66.forwardRef(function(props, ref) {
-      return React66.createElement(UI_1.RemoveScroll, tslib_1.__assign({}, props, { ref, sideCar: sidecar_1.default }));
+    var ReactRemoveScroll = React67.forwardRef(function(props, ref) {
+      return React67.createElement(UI_1.RemoveScroll, tslib_1.__assign({}, props, { ref, sideCar: sidecar_1.default }));
     });
     ReactRemoveScroll.classNames = UI_1.RemoveScroll.classNames;
     exports2.default = ReactRemoveScroll;
@@ -18937,12 +18937,12 @@ var FoodItemModal_exports = {};
 __export(FoodItemModal_exports, {
   default: () => FoodItemModal_default
 });
-var import_react30, import_framer_motion8, import_jsx_runtime36, backdrop, modal, FoodItemModal, FoodItemModal_default;
+var import_react31, import_framer_motion8, import_jsx_runtime38, backdrop, modal, FoodItemModal, FoodItemModal_default;
 var init_FoodItemModal = __esm({
   "src/components/menu/FoodItemModal.jsx"() {
-    import_react30 = __toESM(require("react"));
+    import_react31 = __toESM(require("react"));
     import_framer_motion8 = require("framer-motion");
-    import_jsx_runtime36 = require("react/jsx-runtime");
+    import_jsx_runtime38 = require("react/jsx-runtime");
     backdrop = {
       visible: { opacity: 1 },
       hidden: { opacity: 0 }
@@ -18952,7 +18952,7 @@ var init_FoodItemModal = __esm({
       visible: { y: "0", opacity: 1, transition: { delay: 0.1 } }
     };
     FoodItemModal = ({ item, onClose }) => {
-      return /* @__PURE__ */ (0, import_jsx_runtime36.jsx)(
+      return /* @__PURE__ */ (0, import_jsx_runtime38.jsx)(
         import_framer_motion8.motion.div,
         {
           className: "fixed inset-0 bg-black bg-opacity-60 z-50 flex justify-center items-center p-4",
@@ -18961,14 +18961,14 @@ var init_FoodItemModal = __esm({
           animate: "visible",
           exit: "hidden",
           onClick: onClose,
-          children: /* @__PURE__ */ (0, import_jsx_runtime36.jsxs)(
+          children: /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)(
             import_framer_motion8.motion.div,
             {
               variants: modal,
               className: "bg-white rounded-lg shadow-xl max-w-lg w-full p-8 relative",
               onClick: (e) => e.stopPropagation(),
               children: [
-                /* @__PURE__ */ (0, import_jsx_runtime36.jsx)(
+                /* @__PURE__ */ (0, import_jsx_runtime38.jsx)(
                   "button",
                   {
                     onClick: onClose,
@@ -18976,11 +18976,11 @@ var init_FoodItemModal = __esm({
                     children: "\xD7"
                   }
                 ),
-                /* @__PURE__ */ (0, import_jsx_runtime36.jsx)("h3", { className: "text-3xl font-bold mb-4", children: item.name }),
-                /* @__PURE__ */ (0, import_jsx_runtime36.jsx)("p", { className: "text-body mb-6", children: item.description }),
-                /* @__PURE__ */ (0, import_jsx_runtime36.jsxs)("div", { children: [
-                  /* @__PURE__ */ (0, import_jsx_runtime36.jsx)("h4", { className: "font-bold text-lg mb-2", children: "Ingredients:" }),
-                  /* @__PURE__ */ (0, import_jsx_runtime36.jsx)("ul", { className: "list-disc list-inside text-neutral-600 space-y-1", children: item.ingredients.map((ingredient, index2) => /* @__PURE__ */ (0, import_jsx_runtime36.jsx)("li", { children: ingredient }, index2)) })
+                /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("h3", { className: "text-3xl font-bold mb-4", children: item.name }),
+                /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("p", { className: "text-body mb-6", children: item.description }),
+                /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)("div", { children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("h4", { className: "font-bold text-lg mb-2", children: "Ingredients:" }),
+                  /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("ul", { className: "list-disc list-inside text-neutral-600 space-y-1", children: item.ingredients.map((ingredient, index2) => /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("li", { children: ingredient }, index2)) })
                 ] })
               ]
             }
@@ -18997,21 +18997,21 @@ var FeedbackForm_exports = {};
 __export(FeedbackForm_exports, {
   default: () => FeedbackForm_default
 });
-var import_react31, import_framer_motion9, import_jsx_runtime37, FeedbackForm, FeedbackForm_default;
+var import_react32, import_framer_motion9, import_jsx_runtime39, FeedbackForm, FeedbackForm_default;
 var init_FeedbackForm = __esm({
   "src/components/menu/FeedbackForm.jsx"() {
-    import_react31 = __toESM(require("react"));
+    import_react32 = __toESM(require("react"));
     import_framer_motion9 = require("framer-motion");
-    import_jsx_runtime37 = require("react/jsx-runtime");
+    import_jsx_runtime39 = require("react/jsx-runtime");
     FeedbackForm = () => {
-      const [formData, setFormData] = (0, import_react31.useState)({
+      const [formData, setFormData] = (0, import_react32.useState)({
         name: "",
         email: "",
         phone: "",
         category: "requests",
         message: ""
       });
-      const [status, setStatus] = (0, import_react31.useState)({ type: "", message: "" });
+      const [status, setStatus] = (0, import_react32.useState)({ type: "", message: "" });
       const handleChange = (e) => {
         const { name: name2, value: value2 } = e.target;
         setFormData((prev) => ({ ...prev, [name2]: value2 }));
@@ -19027,10 +19027,10 @@ var init_FeedbackForm = __esm({
           message: "Feedback form is temporarily unavailable. Please contact us directly at support@localeffortfood.com"
         });
       };
-      return /* @__PURE__ */ (0, import_jsx_runtime37.jsx)("div", { className: "max-w-2xl bg-neutral-50 border border-neutral-200 p-8 rounded-lg", children: /* @__PURE__ */ (0, import_jsx_runtime37.jsxs)("form", { onSubmit: handleSubmit, className: "space-y-6", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime37.jsx)("div", { className: "grid sm:grid-cols-2 gap-6", children: /* @__PURE__ */ (0, import_jsx_runtime37.jsxs)("div", { children: [
-          /* @__PURE__ */ (0, import_jsx_runtime37.jsx)("label", { htmlFor: "category", className: "block text-sm font-medium text-neutral-700", children: "Category" }),
-          /* @__PURE__ */ (0, import_jsx_runtime37.jsxs)(
+      return /* @__PURE__ */ (0, import_jsx_runtime39.jsx)("div", { className: "max-w-2xl bg-neutral-50 border border-neutral-200 p-8 rounded-lg", children: /* @__PURE__ */ (0, import_jsx_runtime39.jsxs)("form", { onSubmit: handleSubmit, className: "space-y-6", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime39.jsx)("div", { className: "grid sm:grid-cols-2 gap-6", children: /* @__PURE__ */ (0, import_jsx_runtime39.jsxs)("div", { children: [
+          /* @__PURE__ */ (0, import_jsx_runtime39.jsx)("label", { htmlFor: "category", className: "block text-sm font-medium text-neutral-700", children: "Category" }),
+          /* @__PURE__ */ (0, import_jsx_runtime39.jsxs)(
             "select",
             {
               id: "category",
@@ -19039,16 +19039,16 @@ var init_FeedbackForm = __esm({
               onChange: handleChange,
               className: "mt-1 block w-full rounded-md border-neutral-300 shadow-sm focus:border-primary focus:ring-primary",
               children: [
-                /* @__PURE__ */ (0, import_jsx_runtime37.jsx)("option", { value: "requests", children: "Requests" }),
-                /* @__PURE__ */ (0, import_jsx_runtime37.jsx)("option", { value: "quality", children: "Quality Feedback" }),
-                /* @__PURE__ */ (0, import_jsx_runtime37.jsx)("option", { value: "other", children: "Other" })
+                /* @__PURE__ */ (0, import_jsx_runtime39.jsx)("option", { value: "requests", children: "Requests" }),
+                /* @__PURE__ */ (0, import_jsx_runtime39.jsx)("option", { value: "quality", children: "Quality Feedback" }),
+                /* @__PURE__ */ (0, import_jsx_runtime39.jsx)("option", { value: "other", children: "Other" })
               ]
             }
           )
         ] }) }),
-        /* @__PURE__ */ (0, import_jsx_runtime37.jsxs)("div", { children: [
-          /* @__PURE__ */ (0, import_jsx_runtime37.jsx)("label", { htmlFor: "message", className: "block text-sm font-medium text-neutral-700", children: "Message" }),
-          /* @__PURE__ */ (0, import_jsx_runtime37.jsx)(
+        /* @__PURE__ */ (0, import_jsx_runtime39.jsxs)("div", { children: [
+          /* @__PURE__ */ (0, import_jsx_runtime39.jsx)("label", { htmlFor: "message", className: "block text-sm font-medium text-neutral-700", children: "Message" }),
+          /* @__PURE__ */ (0, import_jsx_runtime39.jsx)(
             "textarea",
             {
               id: "message",
@@ -19061,10 +19061,10 @@ var init_FeedbackForm = __esm({
             }
           )
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime37.jsxs)("div", { className: "grid sm:grid-cols-2 gap-6", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime37.jsxs)("div", { children: [
-            /* @__PURE__ */ (0, import_jsx_runtime37.jsx)("label", { htmlFor: "name", className: "block text-sm font-medium text-neutral-700", children: "Name (Optional)" }),
-            /* @__PURE__ */ (0, import_jsx_runtime37.jsx)(
+        /* @__PURE__ */ (0, import_jsx_runtime39.jsxs)("div", { className: "grid sm:grid-cols-2 gap-6", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime39.jsxs)("div", { children: [
+            /* @__PURE__ */ (0, import_jsx_runtime39.jsx)("label", { htmlFor: "name", className: "block text-sm font-medium text-neutral-700", children: "Name (Optional)" }),
+            /* @__PURE__ */ (0, import_jsx_runtime39.jsx)(
               "input",
               {
                 type: "text",
@@ -19076,9 +19076,9 @@ var init_FeedbackForm = __esm({
               }
             )
           ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime37.jsxs)("div", { children: [
-            /* @__PURE__ */ (0, import_jsx_runtime37.jsx)("label", { htmlFor: "email", className: "block text-sm font-medium text-neutral-700", children: "Email (Optional)" }),
-            /* @__PURE__ */ (0, import_jsx_runtime37.jsx)(
+          /* @__PURE__ */ (0, import_jsx_runtime39.jsxs)("div", { children: [
+            /* @__PURE__ */ (0, import_jsx_runtime39.jsx)("label", { htmlFor: "email", className: "block text-sm font-medium text-neutral-700", children: "Email (Optional)" }),
+            /* @__PURE__ */ (0, import_jsx_runtime39.jsx)(
               "input",
               {
                 type: "email",
@@ -19091,8 +19091,8 @@ var init_FeedbackForm = __esm({
             )
           ] })
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime37.jsxs)("div", { className: "flex items-center justify-between", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime37.jsx)(
+        /* @__PURE__ */ (0, import_jsx_runtime39.jsxs)("div", { className: "flex items-center justify-between", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime39.jsx)(
             import_framer_motion9.motion.button,
             {
               type: "submit",
@@ -19103,7 +19103,7 @@ var init_FeedbackForm = __esm({
               children: status.type === "loading" ? "Sending..." : "Submit Feedback"
             }
           ),
-          status.message && /* @__PURE__ */ (0, import_jsx_runtime37.jsx)(
+          status.message && /* @__PURE__ */ (0, import_jsx_runtime39.jsx)(
             "p",
             {
               className: `text-sm ${status.type === "success" ? "text-green-600" : "text-red-600"}`,
@@ -19122,21 +19122,21 @@ var LoadingSpinner_exports = {};
 __export(LoadingSpinner_exports, {
   LoadingSpinner: () => LoadingSpinner
 });
-var import_react32, import_framer_motion10, import_jsx_runtime38, LoadingSpinner;
+var import_react33, import_framer_motion10, import_jsx_runtime40, LoadingSpinner;
 var init_LoadingSpinner = __esm({
   "src/components/layout/LoadingSpinner.jsx"() {
-    import_react32 = __toESM(require("react"));
+    import_react33 = __toESM(require("react"));
     import_framer_motion10 = require("framer-motion");
-    import_jsx_runtime38 = require("react/jsx-runtime");
-    LoadingSpinner = () => /* @__PURE__ */ (0, import_jsx_runtime38.jsx)(
+    import_jsx_runtime40 = require("react/jsx-runtime");
+    LoadingSpinner = () => /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(
       import_framer_motion10.motion.div,
       {
         className: "min-h-screen flex items-center justify-center bg-gradient-to-br from-orange-50 to-red-50",
         initial: { opacity: 0 },
         animate: { opacity: 1 },
         exit: { opacity: 0 },
-        children: /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)("div", { className: "text-center", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime38.jsx)(
+        children: /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)("div", { className: "text-center", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(
             import_framer_motion10.motion.div,
             {
               className: "w-16 h-16 mx-auto mb-4 border-4 border-orange-200 border-t-orange-500 rounded-full",
@@ -19144,7 +19144,7 @@ var init_LoadingSpinner = __esm({
               transition: { duration: 1, repeat: Infinity, ease: "linear" }
             }
           ),
-          /* @__PURE__ */ (0, import_jsx_runtime38.jsx)(
+          /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(
             import_framer_motion10.motion.p,
             {
               className: "text-gray-600 font-medium",
@@ -19164,17 +19164,17 @@ var init_LoadingSpinner = __esm({
 var require_use_sync_external_store_shim_production = __commonJS({
   "node_modules/.pnpm/use-sync-external-store@1.6.0_react@18.2.0/node_modules/use-sync-external-store/cjs/use-sync-external-store-shim.production.js"(exports2) {
     "use strict";
-    var React66 = require("react");
+    var React67 = require("react");
     function is(x, y) {
       return x === y && (0 !== x || 1 / x === 1 / y) || x !== x && y !== y;
     }
     var objectIs = "function" === typeof Object.is ? Object.is : is;
-    var useState27 = React66.useState;
-    var useEffect28 = React66.useEffect;
-    var useLayoutEffect4 = React66.useLayoutEffect;
-    var useDebugValue2 = React66.useDebugValue;
+    var useState29 = React67.useState;
+    var useEffect28 = React67.useEffect;
+    var useLayoutEffect4 = React67.useLayoutEffect;
+    var useDebugValue2 = React67.useDebugValue;
     function useSyncExternalStore$2(subscribe, getSnapshot) {
-      var value2 = getSnapshot(), _useState = useState27({ inst: { value: value2, getSnapshot } }), inst = _useState[0].inst, forceUpdate = _useState[1];
+      var value2 = getSnapshot(), _useState = useState29({ inst: { value: value2, getSnapshot } }), inst = _useState[0].inst, forceUpdate = _useState[1];
       useLayoutEffect4(
         function() {
           inst.value = value2;
@@ -19209,7 +19209,7 @@ var require_use_sync_external_store_shim_production = __commonJS({
       return getSnapshot();
     }
     var shim = "undefined" === typeof window || "undefined" === typeof window.document || "undefined" === typeof window.document.createElement ? useSyncExternalStore$1 : useSyncExternalStore$2;
-    exports2.useSyncExternalStore = void 0 !== React66.useSyncExternalStore ? React66.useSyncExternalStore : shim;
+    exports2.useSyncExternalStore = void 0 !== React67.useSyncExternalStore ? React67.useSyncExternalStore : shim;
   }
 });
 
@@ -41923,7 +41923,7 @@ var require_Curve = __commonJS({
       value: true
     });
     exports2.getPath = exports2.Curve = void 0;
-    var React66 = _interopRequireWildcard(require("react"));
+    var React67 = _interopRequireWildcard(require("react"));
     var _d3Shape = require_d3_shape();
     var _upperFirst = _interopRequireDefault(require_upperFirst());
     var _isFunction = _interopRequireDefault(require_isFunction());
@@ -42097,7 +42097,7 @@ var require_Curve = __commonJS({
         return null;
       }
       var realPath = points && points.length ? getPath(props) : path;
-      return /* @__PURE__ */ React66.createElement("path", _extends({}, (0, _ReactUtils.filterProps)(props, false), (0, _types.adaptEventHandlers)(props), {
+      return /* @__PURE__ */ React67.createElement("path", _extends({}, (0, _ReactUtils.filterProps)(props, false), (0, _types.adaptEventHandlers)(props), {
         className: (0, _clsx["default"])("recharts-curve", className),
         d: realPath,
         ref: pathRef
@@ -46083,7 +46083,7 @@ var require_Dot = __commonJS({
       value: true
     });
     exports2.Dot = void 0;
-    var React66 = _interopRequireWildcard(require("react"));
+    var React67 = _interopRequireWildcard(require("react"));
     var _clsx = _interopRequireDefault(require_clsx());
     var _types = require_types();
     var _ReactUtils = require_ReactUtils();
@@ -46127,7 +46127,7 @@ var require_Dot = __commonJS({
       var cx2 = props.cx, cy = props.cy, r = props.r, className = props.className;
       var layerClass = (0, _clsx["default"])("recharts-dot", className);
       if (cx2 === +cx2 && cy === +cy && r === +r) {
-        return /* @__PURE__ */ React66.createElement("circle", _extends({}, (0, _ReactUtils.filterProps)(props, false), (0, _types.adaptEventHandlers)(props), {
+        return /* @__PURE__ */ React67.createElement("circle", _extends({}, (0, _ReactUtils.filterProps)(props, false), (0, _types.adaptEventHandlers)(props), {
           className: layerClass,
           cx: cx2,
           cy,
@@ -54978,7 +54978,7 @@ var require_ZAxis = __commonJS({
       value: true
     });
     exports2.ZAxis = void 0;
-    var React66 = _interopRequireWildcard(require("react"));
+    var React67 = _interopRequireWildcard(require("react"));
     function _getRequireWildcardCache(e) {
       if ("function" != typeof WeakMap) return null;
       var r = /* @__PURE__ */ new WeakMap(), t = /* @__PURE__ */ new WeakMap();
@@ -55109,7 +55109,7 @@ var require_ZAxis = __commonJS({
           return null;
         }
       }]);
-    }(React66.Component);
+    }(React67.Component);
     _defineProperty(ZAxis, "displayName", "ZAxis");
     _defineProperty(ZAxis, "defaultProps", {
       zAxisId: 0,
@@ -55136,7 +55136,7 @@ var require_ScatterUtils = __commonJS({
       value: true
     });
     exports2.ScatterSymbol = ScatterSymbol;
-    var React66 = _interopRequireWildcard(require("react"));
+    var React67 = _interopRequireWildcard(require("react"));
     var _Symbols = require_Symbols();
     var _ActiveShapeUtils = require_ActiveShapeUtils();
     var _excluded = ["option", "isActive"];
@@ -55202,15 +55202,15 @@ var require_ScatterUtils = __commonJS({
     function ScatterSymbol(_ref) {
       var option = _ref.option, isActive = _ref.isActive, props = _objectWithoutProperties(_ref, _excluded);
       if (typeof option === "string") {
-        return /* @__PURE__ */ React66.createElement(_ActiveShapeUtils.Shape, _extends({
-          option: /* @__PURE__ */ React66.createElement(_Symbols.Symbols, _extends({
+        return /* @__PURE__ */ React67.createElement(_ActiveShapeUtils.Shape, _extends({
+          option: /* @__PURE__ */ React67.createElement(_Symbols.Symbols, _extends({
             type: option
           }, props)),
           isActive,
           shapeType: "symbols"
         }, props));
       }
-      return /* @__PURE__ */ React66.createElement(_ActiveShapeUtils.Shape, _extends({
+      return /* @__PURE__ */ React67.createElement(_ActiveShapeUtils.Shape, _extends({
         option,
         isActive,
         shapeType: "symbols"
@@ -55747,7 +55747,7 @@ var require_XAxis = __commonJS({
       value: true
     });
     exports2.XAxis = void 0;
-    var React66 = _interopRequireWildcard(require("react"));
+    var React67 = _interopRequireWildcard(require("react"));
     var _clsx = _interopRequireDefault(require_clsx());
     var _chartLayoutContext = require_chartLayoutContext();
     var _CartesianAxis = require_CartesianAxis();
@@ -55889,7 +55889,7 @@ var require_XAxis = __commonJS({
       }
       return (
         // @ts-expect-error the axisOptions type is not exactly what CartesianAxis is expecting.
-        /* @__PURE__ */ React66.createElement(_CartesianAxis.CartesianAxis, _extends({}, axisOptions, {
+        /* @__PURE__ */ React67.createElement(_CartesianAxis.CartesianAxis, _extends({}, axisOptions, {
           className: (0, _clsx["default"])("recharts-".concat(axisOptions.axisType, " ").concat(axisOptions.axisType), axisOptions.className),
           viewBox: {
             x: 0,
@@ -55912,10 +55912,10 @@ var require_XAxis = __commonJS({
       return _createClass(XAxis2, [{
         key: "render",
         value: function render() {
-          return /* @__PURE__ */ React66.createElement(XAxisImpl, this.props);
+          return /* @__PURE__ */ React67.createElement(XAxisImpl, this.props);
         }
       }]);
-    }(React66.Component);
+    }(React67.Component);
     _defineProperty(XAxis, "displayName", "XAxis");
     _defineProperty(XAxis, "defaultProps", {
       allowDecimals: true,
@@ -55955,7 +55955,7 @@ var require_YAxis = __commonJS({
       value: true
     });
     exports2.YAxis = void 0;
-    var React66 = _interopRequireWildcard(require("react"));
+    var React67 = _interopRequireWildcard(require("react"));
     var _clsx = _interopRequireDefault(require_clsx());
     var _chartLayoutContext = require_chartLayoutContext();
     var _CartesianAxis = require_CartesianAxis();
@@ -56097,7 +56097,7 @@ var require_YAxis = __commonJS({
       }
       return (
         // @ts-expect-error the axisOptions type is not exactly what CartesianAxis is expecting.
-        /* @__PURE__ */ React66.createElement(_CartesianAxis.CartesianAxis, _extends({}, axisOptions, {
+        /* @__PURE__ */ React67.createElement(_CartesianAxis.CartesianAxis, _extends({}, axisOptions, {
           className: (0, _clsx["default"])("recharts-".concat(axisOptions.axisType, " ").concat(axisOptions.axisType), axisOptions.className),
           viewBox: {
             x: 0,
@@ -56120,10 +56120,10 @@ var require_YAxis = __commonJS({
       return _createClass(YAxis2, [{
         key: "render",
         value: function render() {
-          return /* @__PURE__ */ React66.createElement(YAxisImpl, this.props);
+          return /* @__PURE__ */ React67.createElement(YAxisImpl, this.props);
         }
       }]);
-    }(React66.Component);
+    }(React67.Component);
     _defineProperty(YAxis, "displayName", "YAxis");
     _defineProperty(YAxis, "defaultProps", {
       allowDuplicatedCategory: true,
@@ -62528,7 +62528,7 @@ __export(StaticApp_exports, {
   default: () => StaticApp
 });
 module.exports = __toCommonJS(StaticApp_exports);
-var import_react50 = __toESM(require("react"));
+var import_react51 = __toESM(require("react"));
 var import_react_router_dom7 = require("react-router-dom");
 var import_react_helmet_async13 = __toESM(require_lib());
 
@@ -62804,65 +62804,1647 @@ var Header = () => {
 };
 
 // src/components/layout/Footer.jsx
+var import_react3 = __toESM(require("react"));
+
+// src/components/forms/AskChefForm.jsx
 var import_react2 = __toESM(require("react"));
+
+// src/components/ui/dialog.jsx
+var React17 = __toESM(require("react"));
+
+// node_modules/.pnpm/@radix-ui+react-dialog@1.1.15_@types+react-dom@18.3.1_@types+react@19.2.0_react-dom@18.2.0_react@18.2.0__react@18.2.0/node_modules/@radix-ui/react-dialog/dist/index.mjs
+var React16 = __toESM(require("react"), 1);
+
+// node_modules/.pnpm/@radix-ui+primitive@1.1.3/node_modules/@radix-ui/primitive/dist/index.mjs
+var canUseDOM = !!(typeof window !== "undefined" && window.document && window.document.createElement);
+function composeEventHandlers(originalEventHandler, ourEventHandler, { checkForDefaultPrevented = true } = {}) {
+  return function handleEvent(event) {
+    originalEventHandler?.(event);
+    if (checkForDefaultPrevented === false || !event.defaultPrevented) {
+      return ourEventHandler?.(event);
+    }
+  };
+}
+
+// node_modules/.pnpm/@radix-ui+react-compose-refs@1.1.2_@types+react@19.2.0_react@18.2.0/node_modules/@radix-ui/react-compose-refs/dist/index.mjs
+var React2 = __toESM(require("react"), 1);
+function setRef(ref, value2) {
+  if (typeof ref === "function") {
+    return ref(value2);
+  } else if (ref !== null && ref !== void 0) {
+    ref.current = value2;
+  }
+}
+function composeRefs(...refs) {
+  return (node) => {
+    let hasCleanup = false;
+    const cleanups = refs.map((ref) => {
+      const cleanup = setRef(ref, node);
+      if (!hasCleanup && typeof cleanup == "function") {
+        hasCleanup = true;
+      }
+      return cleanup;
+    });
+    if (hasCleanup) {
+      return () => {
+        for (let i = 0; i < cleanups.length; i++) {
+          const cleanup = cleanups[i];
+          if (typeof cleanup == "function") {
+            cleanup();
+          } else {
+            setRef(refs[i], null);
+          }
+        }
+      };
+    }
+  };
+}
+function useComposedRefs(...refs) {
+  return React2.useCallback(composeRefs(...refs), refs);
+}
+
+// node_modules/.pnpm/@radix-ui+react-context@1.1.2_@types+react@19.2.0_react@18.2.0/node_modules/@radix-ui/react-context/dist/index.mjs
+var React3 = __toESM(require("react"), 1);
 var import_jsx_runtime2 = require("react/jsx-runtime");
-var Footer = () => {
-  return /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("footer", { className: "mt-16 border-t border-neutral-200", children: /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "mx-auto max-w-6xl px-4 md:px-6 lg:px-8 py-8 font-mono text-sm text-neutral-700", children: /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4", children: [
-    /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { children: [
-      /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("p", { className: "font-semibold", children: "Local Effort Food Co." }),
-      /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("p", { className: "text-neutral-600", children: "Roseville, MN" }),
-      /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("p", { className: "text-neutral-600", children: /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("a", { href: "mailto:yum@localeffortfood.com", className: "hover:underline", children: "yum@localeffortfood.com" }) }),
-      /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("p", { className: "mt-2 text-neutral-600", children: [
-        "Service Areas:",
-        " ",
-        /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("a", { href: "/personal-chef-minneapolis", className: "underline underline-offset-4 hover:opacity-80", children: "Minneapolis" }),
-        " ",
-        "|",
-        " ",
-        /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("a", { href: "/personal-chef-st-paul", className: "underline underline-offset-4 hover:opacity-80", children: "St. Paul" }),
-        " ",
-        "|",
-        " ",
-        /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("a", { href: "/personal-chef-twin-cities", className: "underline underline-offset-4 hover:opacity-80", children: "Twin Cities" }),
-        " ",
-        "|",
-        " ",
-        /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("a", { href: "/personal-chef-minnesota", className: "underline underline-offset-4 hover:opacity-80", children: "Minnesota" }),
-        " ",
-        "|",
-        " ",
-        /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("a", { href: "/personal-chef-wisconsin", className: "underline underline-offset-4 hover:opacity-80", children: "Wisconsin" })
-      ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("p", { className: "text-neutral-500 text-xs mt-2", children: [
-        "\xA9 ",
-        (/* @__PURE__ */ new Date()).getFullYear(),
-        " Local Effort"
+function createContext2(rootComponentName, defaultContext) {
+  const Context = React3.createContext(defaultContext);
+  const Provider = (props) => {
+    const { children, ...context } = props;
+    const value2 = React3.useMemo(() => context, Object.values(context));
+    return /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Context.Provider, { value: value2, children });
+  };
+  Provider.displayName = rootComponentName + "Provider";
+  function useContext22(consumerName) {
+    const context = React3.useContext(Context);
+    if (context) return context;
+    if (defaultContext !== void 0) return defaultContext;
+    throw new Error(`\`${consumerName}\` must be used within \`${rootComponentName}\``);
+  }
+  return [Provider, useContext22];
+}
+function createContextScope(scopeName, createContextScopeDeps = []) {
+  let defaultContexts = [];
+  function createContext32(rootComponentName, defaultContext) {
+    const BaseContext = React3.createContext(defaultContext);
+    const index2 = defaultContexts.length;
+    defaultContexts = [...defaultContexts, defaultContext];
+    const Provider = (props) => {
+      const { scope, children, ...context } = props;
+      const Context = scope?.[scopeName]?.[index2] || BaseContext;
+      const value2 = React3.useMemo(() => context, Object.values(context));
+      return /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Context.Provider, { value: value2, children });
+    };
+    Provider.displayName = rootComponentName + "Provider";
+    function useContext22(consumerName, scope) {
+      const Context = scope?.[scopeName]?.[index2] || BaseContext;
+      const context = React3.useContext(Context);
+      if (context) return context;
+      if (defaultContext !== void 0) return defaultContext;
+      throw new Error(`\`${consumerName}\` must be used within \`${rootComponentName}\``);
+    }
+    return [Provider, useContext22];
+  }
+  const createScope = () => {
+    const scopeContexts = defaultContexts.map((defaultContext) => {
+      return React3.createContext(defaultContext);
+    });
+    return function useScope(scope) {
+      const contexts = scope?.[scopeName] || scopeContexts;
+      return React3.useMemo(
+        () => ({ [`__scope${scopeName}`]: { ...scope, [scopeName]: contexts } }),
+        [scope, contexts]
+      );
+    };
+  };
+  createScope.scopeName = scopeName;
+  return [createContext32, composeContextScopes(createScope, ...createContextScopeDeps)];
+}
+function composeContextScopes(...scopes) {
+  const baseScope = scopes[0];
+  if (scopes.length === 1) return baseScope;
+  const createScope = () => {
+    const scopeHooks = scopes.map((createScope2) => ({
+      useScope: createScope2(),
+      scopeName: createScope2.scopeName
+    }));
+    return function useComposedScopes(overrideScopes) {
+      const nextScopes = scopeHooks.reduce((nextScopes2, { useScope, scopeName }) => {
+        const scopeProps = useScope(overrideScopes);
+        const currentScope = scopeProps[`__scope${scopeName}`];
+        return { ...nextScopes2, ...currentScope };
+      }, {});
+      return React3.useMemo(() => ({ [`__scope${baseScope.scopeName}`]: nextScopes }), [nextScopes]);
+    };
+  };
+  createScope.scopeName = baseScope.scopeName;
+  return createScope;
+}
+
+// node_modules/.pnpm/@radix-ui+react-id@1.1.1_@types+react@19.2.0_react@18.2.0/node_modules/@radix-ui/react-id/dist/index.mjs
+var React5 = __toESM(require("react"), 1);
+
+// node_modules/.pnpm/@radix-ui+react-use-layout-effect@1.1.1_@types+react@19.2.0_react@18.2.0/node_modules/@radix-ui/react-use-layout-effect/dist/index.mjs
+var React4 = __toESM(require("react"), 1);
+var useLayoutEffect2 = globalThis?.document ? React4.useLayoutEffect : () => {
+};
+
+// node_modules/.pnpm/@radix-ui+react-id@1.1.1_@types+react@19.2.0_react@18.2.0/node_modules/@radix-ui/react-id/dist/index.mjs
+var useReactId = React5[" useId ".trim().toString()] || (() => void 0);
+var count = 0;
+function useId(deterministicId) {
+  const [id, setId] = React5.useState(useReactId());
+  useLayoutEffect2(() => {
+    if (!deterministicId) setId((reactId) => reactId ?? String(count++));
+  }, [deterministicId]);
+  return deterministicId || (id ? `radix-${id}` : "");
+}
+
+// node_modules/.pnpm/@radix-ui+react-use-controllable-state@1.2.2_@types+react@19.2.0_react@18.2.0/node_modules/@radix-ui/react-use-controllable-state/dist/index.mjs
+var React6 = __toESM(require("react"), 1);
+var React22 = __toESM(require("react"), 1);
+var useInsertionEffect = React6[" useInsertionEffect ".trim().toString()] || useLayoutEffect2;
+function useControllableState({
+  prop,
+  defaultProp,
+  onChange = () => {
+  },
+  caller
+}) {
+  const [uncontrolledProp, setUncontrolledProp, onChangeRef] = useUncontrolledState({
+    defaultProp,
+    onChange
+  });
+  const isControlled = prop !== void 0;
+  const value2 = isControlled ? prop : uncontrolledProp;
+  if (true) {
+    const isControlledRef = React6.useRef(prop !== void 0);
+    React6.useEffect(() => {
+      const wasControlled = isControlledRef.current;
+      if (wasControlled !== isControlled) {
+        const from = wasControlled ? "controlled" : "uncontrolled";
+        const to = isControlled ? "controlled" : "uncontrolled";
+        console.warn(
+          `${caller} is changing from ${from} to ${to}. Components should not switch from controlled to uncontrolled (or vice versa). Decide between using a controlled or uncontrolled value for the lifetime of the component.`
+        );
+      }
+      isControlledRef.current = isControlled;
+    }, [isControlled, caller]);
+  }
+  const setValue = React6.useCallback(
+    (nextValue) => {
+      if (isControlled) {
+        const value22 = isFunction(nextValue) ? nextValue(prop) : nextValue;
+        if (value22 !== prop) {
+          onChangeRef.current?.(value22);
+        }
+      } else {
+        setUncontrolledProp(nextValue);
+      }
+    },
+    [isControlled, prop, setUncontrolledProp, onChangeRef]
+  );
+  return [value2, setValue];
+}
+function useUncontrolledState({
+  defaultProp,
+  onChange
+}) {
+  const [value2, setValue] = React6.useState(defaultProp);
+  const prevValueRef = React6.useRef(value2);
+  const onChangeRef = React6.useRef(onChange);
+  useInsertionEffect(() => {
+    onChangeRef.current = onChange;
+  }, [onChange]);
+  React6.useEffect(() => {
+    if (prevValueRef.current !== value2) {
+      onChangeRef.current?.(value2);
+      prevValueRef.current = value2;
+    }
+  }, [value2, prevValueRef]);
+  return [value2, setValue, onChangeRef];
+}
+function isFunction(value2) {
+  return typeof value2 === "function";
+}
+var SYNC_STATE = Symbol("RADIX:SYNC_STATE");
+
+// node_modules/.pnpm/@radix-ui+react-dismissable-layer@1.1.11_@types+react-dom@18.3.1_@types+react@19.2.0_react-do_6egxp5znpyk3c7yb7fm5vbccse/node_modules/@radix-ui/react-dismissable-layer/dist/index.mjs
+var React11 = __toESM(require("react"), 1);
+
+// node_modules/.pnpm/@radix-ui+react-primitive@2.1.3_@types+react-dom@18.3.1_@types+react@19.2.0_react-dom@18.2.0_react@18.2.0__react@18.2.0/node_modules/@radix-ui/react-primitive/dist/index.mjs
+var React8 = __toESM(require("react"), 1);
+var ReactDOM = __toESM(require("react-dom"), 1);
+
+// node_modules/.pnpm/@radix-ui+react-slot@1.2.3_@types+react@19.2.0_react@18.2.0/node_modules/@radix-ui/react-slot/dist/index.mjs
+var React7 = __toESM(require("react"), 1);
+var import_jsx_runtime3 = require("react/jsx-runtime");
+// @__NO_SIDE_EFFECTS__
+function createSlot(ownerName) {
+  const SlotClone = /* @__PURE__ */ createSlotClone(ownerName);
+  const Slot2 = React7.forwardRef((props, forwardedRef) => {
+    const { children, ...slotProps } = props;
+    const childrenArray = React7.Children.toArray(children);
+    const slottable = childrenArray.find(isSlottable);
+    if (slottable) {
+      const newElement = slottable.props.children;
+      const newChildren = childrenArray.map((child) => {
+        if (child === slottable) {
+          if (React7.Children.count(newElement) > 1) return React7.Children.only(null);
+          return React7.isValidElement(newElement) ? newElement.props.children : null;
+        } else {
+          return child;
+        }
+      });
+      return /* @__PURE__ */ (0, import_jsx_runtime3.jsx)(SlotClone, { ...slotProps, ref: forwardedRef, children: React7.isValidElement(newElement) ? React7.cloneElement(newElement, void 0, newChildren) : null });
+    }
+    return /* @__PURE__ */ (0, import_jsx_runtime3.jsx)(SlotClone, { ...slotProps, ref: forwardedRef, children });
+  });
+  Slot2.displayName = `${ownerName}.Slot`;
+  return Slot2;
+}
+// @__NO_SIDE_EFFECTS__
+function createSlotClone(ownerName) {
+  const SlotClone = React7.forwardRef((props, forwardedRef) => {
+    const { children, ...slotProps } = props;
+    if (React7.isValidElement(children)) {
+      const childrenRef = getElementRef(children);
+      const props2 = mergeProps(slotProps, children.props);
+      if (children.type !== React7.Fragment) {
+        props2.ref = forwardedRef ? composeRefs(forwardedRef, childrenRef) : childrenRef;
+      }
+      return React7.cloneElement(children, props2);
+    }
+    return React7.Children.count(children) > 1 ? React7.Children.only(null) : null;
+  });
+  SlotClone.displayName = `${ownerName}.SlotClone`;
+  return SlotClone;
+}
+var SLOTTABLE_IDENTIFIER = Symbol("radix.slottable");
+function isSlottable(child) {
+  return React7.isValidElement(child) && typeof child.type === "function" && "__radixId" in child.type && child.type.__radixId === SLOTTABLE_IDENTIFIER;
+}
+function mergeProps(slotProps, childProps) {
+  const overrideProps = { ...childProps };
+  for (const propName in childProps) {
+    const slotPropValue = slotProps[propName];
+    const childPropValue = childProps[propName];
+    const isHandler = /^on[A-Z]/.test(propName);
+    if (isHandler) {
+      if (slotPropValue && childPropValue) {
+        overrideProps[propName] = (...args) => {
+          const result = childPropValue(...args);
+          slotPropValue(...args);
+          return result;
+        };
+      } else if (slotPropValue) {
+        overrideProps[propName] = slotPropValue;
+      }
+    } else if (propName === "style") {
+      overrideProps[propName] = { ...slotPropValue, ...childPropValue };
+    } else if (propName === "className") {
+      overrideProps[propName] = [slotPropValue, childPropValue].filter(Boolean).join(" ");
+    }
+  }
+  return { ...slotProps, ...overrideProps };
+}
+function getElementRef(element) {
+  let getter = Object.getOwnPropertyDescriptor(element.props, "ref")?.get;
+  let mayWarn = getter && "isReactWarning" in getter && getter.isReactWarning;
+  if (mayWarn) {
+    return element.ref;
+  }
+  getter = Object.getOwnPropertyDescriptor(element, "ref")?.get;
+  mayWarn = getter && "isReactWarning" in getter && getter.isReactWarning;
+  if (mayWarn) {
+    return element.props.ref;
+  }
+  return element.props.ref || element.ref;
+}
+
+// node_modules/.pnpm/@radix-ui+react-primitive@2.1.3_@types+react-dom@18.3.1_@types+react@19.2.0_react-dom@18.2.0_react@18.2.0__react@18.2.0/node_modules/@radix-ui/react-primitive/dist/index.mjs
+var import_jsx_runtime4 = require("react/jsx-runtime");
+var NODES = [
+  "a",
+  "button",
+  "div",
+  "form",
+  "h2",
+  "h3",
+  "img",
+  "input",
+  "label",
+  "li",
+  "nav",
+  "ol",
+  "p",
+  "select",
+  "span",
+  "svg",
+  "ul"
+];
+var Primitive = NODES.reduce((primitive, node) => {
+  const Slot2 = createSlot(`Primitive.${node}`);
+  const Node2 = React8.forwardRef((props, forwardedRef) => {
+    const { asChild, ...primitiveProps } = props;
+    const Comp = asChild ? Slot2 : node;
+    if (typeof window !== "undefined") {
+      window[Symbol.for("radix-ui")] = true;
+    }
+    return /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(Comp, { ...primitiveProps, ref: forwardedRef });
+  });
+  Node2.displayName = `Primitive.${node}`;
+  return { ...primitive, [node]: Node2 };
+}, {});
+function dispatchDiscreteCustomEvent(target, event) {
+  if (target) ReactDOM.flushSync(() => target.dispatchEvent(event));
+}
+
+// node_modules/.pnpm/@radix-ui+react-use-callback-ref@1.1.1_@types+react@19.2.0_react@18.2.0/node_modules/@radix-ui/react-use-callback-ref/dist/index.mjs
+var React9 = __toESM(require("react"), 1);
+function useCallbackRef(callback) {
+  const callbackRef = React9.useRef(callback);
+  React9.useEffect(() => {
+    callbackRef.current = callback;
+  });
+  return React9.useMemo(() => (...args) => callbackRef.current?.(...args), []);
+}
+
+// node_modules/.pnpm/@radix-ui+react-use-escape-keydown@1.1.1_@types+react@19.2.0_react@18.2.0/node_modules/@radix-ui/react-use-escape-keydown/dist/index.mjs
+var React10 = __toESM(require("react"), 1);
+function useEscapeKeydown(onEscapeKeyDownProp, ownerDocument = globalThis?.document) {
+  const onEscapeKeyDown = useCallbackRef(onEscapeKeyDownProp);
+  React10.useEffect(() => {
+    const handleKeyDown = (event) => {
+      if (event.key === "Escape") {
+        onEscapeKeyDown(event);
+      }
+    };
+    ownerDocument.addEventListener("keydown", handleKeyDown, { capture: true });
+    return () => ownerDocument.removeEventListener("keydown", handleKeyDown, { capture: true });
+  }, [onEscapeKeyDown, ownerDocument]);
+}
+
+// node_modules/.pnpm/@radix-ui+react-dismissable-layer@1.1.11_@types+react-dom@18.3.1_@types+react@19.2.0_react-do_6egxp5znpyk3c7yb7fm5vbccse/node_modules/@radix-ui/react-dismissable-layer/dist/index.mjs
+var import_jsx_runtime5 = require("react/jsx-runtime");
+var DISMISSABLE_LAYER_NAME = "DismissableLayer";
+var CONTEXT_UPDATE = "dismissableLayer.update";
+var POINTER_DOWN_OUTSIDE = "dismissableLayer.pointerDownOutside";
+var FOCUS_OUTSIDE = "dismissableLayer.focusOutside";
+var originalBodyPointerEvents;
+var DismissableLayerContext = React11.createContext({
+  layers: /* @__PURE__ */ new Set(),
+  layersWithOutsidePointerEventsDisabled: /* @__PURE__ */ new Set(),
+  branches: /* @__PURE__ */ new Set()
+});
+var DismissableLayer = React11.forwardRef(
+  (props, forwardedRef) => {
+    const {
+      disableOutsidePointerEvents = false,
+      onEscapeKeyDown,
+      onPointerDownOutside,
+      onFocusOutside,
+      onInteractOutside,
+      onDismiss,
+      ...layerProps
+    } = props;
+    const context = React11.useContext(DismissableLayerContext);
+    const [node, setNode] = React11.useState(null);
+    const ownerDocument = node?.ownerDocument ?? globalThis?.document;
+    const [, force] = React11.useState({});
+    const composedRefs = useComposedRefs(forwardedRef, (node2) => setNode(node2));
+    const layers = Array.from(context.layers);
+    const [highestLayerWithOutsidePointerEventsDisabled] = [...context.layersWithOutsidePointerEventsDisabled].slice(-1);
+    const highestLayerWithOutsidePointerEventsDisabledIndex = layers.indexOf(highestLayerWithOutsidePointerEventsDisabled);
+    const index2 = node ? layers.indexOf(node) : -1;
+    const isBodyPointerEventsDisabled = context.layersWithOutsidePointerEventsDisabled.size > 0;
+    const isPointerEventsEnabled = index2 >= highestLayerWithOutsidePointerEventsDisabledIndex;
+    const pointerDownOutside = usePointerDownOutside((event) => {
+      const target = event.target;
+      const isPointerDownOnBranch = [...context.branches].some((branch) => branch.contains(target));
+      if (!isPointerEventsEnabled || isPointerDownOnBranch) return;
+      onPointerDownOutside?.(event);
+      onInteractOutside?.(event);
+      if (!event.defaultPrevented) onDismiss?.();
+    }, ownerDocument);
+    const focusOutside = useFocusOutside((event) => {
+      const target = event.target;
+      const isFocusInBranch = [...context.branches].some((branch) => branch.contains(target));
+      if (isFocusInBranch) return;
+      onFocusOutside?.(event);
+      onInteractOutside?.(event);
+      if (!event.defaultPrevented) onDismiss?.();
+    }, ownerDocument);
+    useEscapeKeydown((event) => {
+      const isHighestLayer = index2 === context.layers.size - 1;
+      if (!isHighestLayer) return;
+      onEscapeKeyDown?.(event);
+      if (!event.defaultPrevented && onDismiss) {
+        event.preventDefault();
+        onDismiss();
+      }
+    }, ownerDocument);
+    React11.useEffect(() => {
+      if (!node) return;
+      if (disableOutsidePointerEvents) {
+        if (context.layersWithOutsidePointerEventsDisabled.size === 0) {
+          originalBodyPointerEvents = ownerDocument.body.style.pointerEvents;
+          ownerDocument.body.style.pointerEvents = "none";
+        }
+        context.layersWithOutsidePointerEventsDisabled.add(node);
+      }
+      context.layers.add(node);
+      dispatchUpdate();
+      return () => {
+        if (disableOutsidePointerEvents && context.layersWithOutsidePointerEventsDisabled.size === 1) {
+          ownerDocument.body.style.pointerEvents = originalBodyPointerEvents;
+        }
+      };
+    }, [node, ownerDocument, disableOutsidePointerEvents, context]);
+    React11.useEffect(() => {
+      return () => {
+        if (!node) return;
+        context.layers.delete(node);
+        context.layersWithOutsidePointerEventsDisabled.delete(node);
+        dispatchUpdate();
+      };
+    }, [node, context]);
+    React11.useEffect(() => {
+      const handleUpdate = () => force({});
+      document.addEventListener(CONTEXT_UPDATE, handleUpdate);
+      return () => document.removeEventListener(CONTEXT_UPDATE, handleUpdate);
+    }, []);
+    return /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(
+      Primitive.div,
+      {
+        ...layerProps,
+        ref: composedRefs,
+        style: {
+          pointerEvents: isBodyPointerEventsDisabled ? isPointerEventsEnabled ? "auto" : "none" : void 0,
+          ...props.style
+        },
+        onFocusCapture: composeEventHandlers(props.onFocusCapture, focusOutside.onFocusCapture),
+        onBlurCapture: composeEventHandlers(props.onBlurCapture, focusOutside.onBlurCapture),
+        onPointerDownCapture: composeEventHandlers(
+          props.onPointerDownCapture,
+          pointerDownOutside.onPointerDownCapture
+        )
+      }
+    );
+  }
+);
+DismissableLayer.displayName = DISMISSABLE_LAYER_NAME;
+var BRANCH_NAME = "DismissableLayerBranch";
+var DismissableLayerBranch = React11.forwardRef((props, forwardedRef) => {
+  const context = React11.useContext(DismissableLayerContext);
+  const ref = React11.useRef(null);
+  const composedRefs = useComposedRefs(forwardedRef, ref);
+  React11.useEffect(() => {
+    const node = ref.current;
+    if (node) {
+      context.branches.add(node);
+      return () => {
+        context.branches.delete(node);
+      };
+    }
+  }, [context.branches]);
+  return /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(Primitive.div, { ...props, ref: composedRefs });
+});
+DismissableLayerBranch.displayName = BRANCH_NAME;
+function usePointerDownOutside(onPointerDownOutside, ownerDocument = globalThis?.document) {
+  const handlePointerDownOutside = useCallbackRef(onPointerDownOutside);
+  const isPointerInsideReactTreeRef = React11.useRef(false);
+  const handleClickRef = React11.useRef(() => {
+  });
+  React11.useEffect(() => {
+    const handlePointerDown = (event) => {
+      if (event.target && !isPointerInsideReactTreeRef.current) {
+        let handleAndDispatchPointerDownOutsideEvent2 = function() {
+          handleAndDispatchCustomEvent(
+            POINTER_DOWN_OUTSIDE,
+            handlePointerDownOutside,
+            eventDetail,
+            { discrete: true }
+          );
+        };
+        var handleAndDispatchPointerDownOutsideEvent = handleAndDispatchPointerDownOutsideEvent2;
+        const eventDetail = { originalEvent: event };
+        if (event.pointerType === "touch") {
+          ownerDocument.removeEventListener("click", handleClickRef.current);
+          handleClickRef.current = handleAndDispatchPointerDownOutsideEvent2;
+          ownerDocument.addEventListener("click", handleClickRef.current, { once: true });
+        } else {
+          handleAndDispatchPointerDownOutsideEvent2();
+        }
+      } else {
+        ownerDocument.removeEventListener("click", handleClickRef.current);
+      }
+      isPointerInsideReactTreeRef.current = false;
+    };
+    const timerId = window.setTimeout(() => {
+      ownerDocument.addEventListener("pointerdown", handlePointerDown);
+    }, 0);
+    return () => {
+      window.clearTimeout(timerId);
+      ownerDocument.removeEventListener("pointerdown", handlePointerDown);
+      ownerDocument.removeEventListener("click", handleClickRef.current);
+    };
+  }, [ownerDocument, handlePointerDownOutside]);
+  return {
+    // ensures we check React component tree (not just DOM tree)
+    onPointerDownCapture: () => isPointerInsideReactTreeRef.current = true
+  };
+}
+function useFocusOutside(onFocusOutside, ownerDocument = globalThis?.document) {
+  const handleFocusOutside = useCallbackRef(onFocusOutside);
+  const isFocusInsideReactTreeRef = React11.useRef(false);
+  React11.useEffect(() => {
+    const handleFocus = (event) => {
+      if (event.target && !isFocusInsideReactTreeRef.current) {
+        const eventDetail = { originalEvent: event };
+        handleAndDispatchCustomEvent(FOCUS_OUTSIDE, handleFocusOutside, eventDetail, {
+          discrete: false
+        });
+      }
+    };
+    ownerDocument.addEventListener("focusin", handleFocus);
+    return () => ownerDocument.removeEventListener("focusin", handleFocus);
+  }, [ownerDocument, handleFocusOutside]);
+  return {
+    onFocusCapture: () => isFocusInsideReactTreeRef.current = true,
+    onBlurCapture: () => isFocusInsideReactTreeRef.current = false
+  };
+}
+function dispatchUpdate() {
+  const event = new CustomEvent(CONTEXT_UPDATE);
+  document.dispatchEvent(event);
+}
+function handleAndDispatchCustomEvent(name2, handler, detail, { discrete }) {
+  const target = detail.originalEvent.target;
+  const event = new CustomEvent(name2, { bubbles: false, cancelable: true, detail });
+  if (handler) target.addEventListener(name2, handler, { once: true });
+  if (discrete) {
+    dispatchDiscreteCustomEvent(target, event);
+  } else {
+    target.dispatchEvent(event);
+  }
+}
+
+// node_modules/.pnpm/@radix-ui+react-focus-scope@1.1.7_@types+react-dom@18.3.1_@types+react@19.2.0_react-dom@18.2._dhkdyyxeakawqe2hoiycn4cg2m/node_modules/@radix-ui/react-focus-scope/dist/index.mjs
+var React12 = __toESM(require("react"), 1);
+var import_jsx_runtime6 = require("react/jsx-runtime");
+var AUTOFOCUS_ON_MOUNT = "focusScope.autoFocusOnMount";
+var AUTOFOCUS_ON_UNMOUNT = "focusScope.autoFocusOnUnmount";
+var EVENT_OPTIONS = { bubbles: false, cancelable: true };
+var FOCUS_SCOPE_NAME = "FocusScope";
+var FocusScope = React12.forwardRef((props, forwardedRef) => {
+  const {
+    loop = false,
+    trapped = false,
+    onMountAutoFocus: onMountAutoFocusProp,
+    onUnmountAutoFocus: onUnmountAutoFocusProp,
+    ...scopeProps
+  } = props;
+  const [container, setContainer] = React12.useState(null);
+  const onMountAutoFocus = useCallbackRef(onMountAutoFocusProp);
+  const onUnmountAutoFocus = useCallbackRef(onUnmountAutoFocusProp);
+  const lastFocusedElementRef = React12.useRef(null);
+  const composedRefs = useComposedRefs(forwardedRef, (node) => setContainer(node));
+  const focusScope = React12.useRef({
+    paused: false,
+    pause() {
+      this.paused = true;
+    },
+    resume() {
+      this.paused = false;
+    }
+  }).current;
+  React12.useEffect(() => {
+    if (trapped) {
+      let handleFocusIn2 = function(event) {
+        if (focusScope.paused || !container) return;
+        const target = event.target;
+        if (container.contains(target)) {
+          lastFocusedElementRef.current = target;
+        } else {
+          focus(lastFocusedElementRef.current, { select: true });
+        }
+      }, handleFocusOut2 = function(event) {
+        if (focusScope.paused || !container) return;
+        const relatedTarget = event.relatedTarget;
+        if (relatedTarget === null) return;
+        if (!container.contains(relatedTarget)) {
+          focus(lastFocusedElementRef.current, { select: true });
+        }
+      }, handleMutations2 = function(mutations) {
+        const focusedElement = document.activeElement;
+        if (focusedElement !== document.body) return;
+        for (const mutation of mutations) {
+          if (mutation.removedNodes.length > 0) focus(container);
+        }
+      };
+      var handleFocusIn = handleFocusIn2, handleFocusOut = handleFocusOut2, handleMutations = handleMutations2;
+      document.addEventListener("focusin", handleFocusIn2);
+      document.addEventListener("focusout", handleFocusOut2);
+      const mutationObserver = new MutationObserver(handleMutations2);
+      if (container) mutationObserver.observe(container, { childList: true, subtree: true });
+      return () => {
+        document.removeEventListener("focusin", handleFocusIn2);
+        document.removeEventListener("focusout", handleFocusOut2);
+        mutationObserver.disconnect();
+      };
+    }
+  }, [trapped, container, focusScope.paused]);
+  React12.useEffect(() => {
+    if (container) {
+      focusScopesStack.add(focusScope);
+      const previouslyFocusedElement = document.activeElement;
+      const hasFocusedCandidate = container.contains(previouslyFocusedElement);
+      if (!hasFocusedCandidate) {
+        const mountEvent = new CustomEvent(AUTOFOCUS_ON_MOUNT, EVENT_OPTIONS);
+        container.addEventListener(AUTOFOCUS_ON_MOUNT, onMountAutoFocus);
+        container.dispatchEvent(mountEvent);
+        if (!mountEvent.defaultPrevented) {
+          focusFirst(removeLinks(getTabbableCandidates(container)), { select: true });
+          if (document.activeElement === previouslyFocusedElement) {
+            focus(container);
+          }
+        }
+      }
+      return () => {
+        container.removeEventListener(AUTOFOCUS_ON_MOUNT, onMountAutoFocus);
+        setTimeout(() => {
+          const unmountEvent = new CustomEvent(AUTOFOCUS_ON_UNMOUNT, EVENT_OPTIONS);
+          container.addEventListener(AUTOFOCUS_ON_UNMOUNT, onUnmountAutoFocus);
+          container.dispatchEvent(unmountEvent);
+          if (!unmountEvent.defaultPrevented) {
+            focus(previouslyFocusedElement ?? document.body, { select: true });
+          }
+          container.removeEventListener(AUTOFOCUS_ON_UNMOUNT, onUnmountAutoFocus);
+          focusScopesStack.remove(focusScope);
+        }, 0);
+      };
+    }
+  }, [container, onMountAutoFocus, onUnmountAutoFocus, focusScope]);
+  const handleKeyDown = React12.useCallback(
+    (event) => {
+      if (!loop && !trapped) return;
+      if (focusScope.paused) return;
+      const isTabKey = event.key === "Tab" && !event.altKey && !event.ctrlKey && !event.metaKey;
+      const focusedElement = document.activeElement;
+      if (isTabKey && focusedElement) {
+        const container2 = event.currentTarget;
+        const [first, last] = getTabbableEdges(container2);
+        const hasTabbableElementsInside = first && last;
+        if (!hasTabbableElementsInside) {
+          if (focusedElement === container2) event.preventDefault();
+        } else {
+          if (!event.shiftKey && focusedElement === last) {
+            event.preventDefault();
+            if (loop) focus(first, { select: true });
+          } else if (event.shiftKey && focusedElement === first) {
+            event.preventDefault();
+            if (loop) focus(last, { select: true });
+          }
+        }
+      }
+    },
+    [loop, trapped, focusScope.paused]
+  );
+  return /* @__PURE__ */ (0, import_jsx_runtime6.jsx)(Primitive.div, { tabIndex: -1, ...scopeProps, ref: composedRefs, onKeyDown: handleKeyDown });
+});
+FocusScope.displayName = FOCUS_SCOPE_NAME;
+function focusFirst(candidates, { select = false } = {}) {
+  const previouslyFocusedElement = document.activeElement;
+  for (const candidate of candidates) {
+    focus(candidate, { select });
+    if (document.activeElement !== previouslyFocusedElement) return;
+  }
+}
+function getTabbableEdges(container) {
+  const candidates = getTabbableCandidates(container);
+  const first = findVisible(candidates, container);
+  const last = findVisible(candidates.reverse(), container);
+  return [first, last];
+}
+function getTabbableCandidates(container) {
+  const nodes = [];
+  const walker = document.createTreeWalker(container, NodeFilter.SHOW_ELEMENT, {
+    acceptNode: (node) => {
+      const isHiddenInput = node.tagName === "INPUT" && node.type === "hidden";
+      if (node.disabled || node.hidden || isHiddenInput) return NodeFilter.FILTER_SKIP;
+      return node.tabIndex >= 0 ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_SKIP;
+    }
+  });
+  while (walker.nextNode()) nodes.push(walker.currentNode);
+  return nodes;
+}
+function findVisible(elements, container) {
+  for (const element of elements) {
+    if (!isHidden(element, { upTo: container })) return element;
+  }
+}
+function isHidden(node, { upTo }) {
+  if (getComputedStyle(node).visibility === "hidden") return true;
+  while (node) {
+    if (upTo !== void 0 && node === upTo) return false;
+    if (getComputedStyle(node).display === "none") return true;
+    node = node.parentElement;
+  }
+  return false;
+}
+function isSelectableInput(element) {
+  return element instanceof HTMLInputElement && "select" in element;
+}
+function focus(element, { select = false } = {}) {
+  if (element && element.focus) {
+    const previouslyFocusedElement = document.activeElement;
+    element.focus({ preventScroll: true });
+    if (element !== previouslyFocusedElement && isSelectableInput(element) && select)
+      element.select();
+  }
+}
+var focusScopesStack = createFocusScopesStack();
+function createFocusScopesStack() {
+  let stack = [];
+  return {
+    add(focusScope) {
+      const activeFocusScope = stack[0];
+      if (focusScope !== activeFocusScope) {
+        activeFocusScope?.pause();
+      }
+      stack = arrayRemove(stack, focusScope);
+      stack.unshift(focusScope);
+    },
+    remove(focusScope) {
+      stack = arrayRemove(stack, focusScope);
+      stack[0]?.resume();
+    }
+  };
+}
+function arrayRemove(array, item) {
+  const updatedArray = [...array];
+  const index2 = updatedArray.indexOf(item);
+  if (index2 !== -1) {
+    updatedArray.splice(index2, 1);
+  }
+  return updatedArray;
+}
+function removeLinks(items2) {
+  return items2.filter((item) => item.tagName !== "A");
+}
+
+// node_modules/.pnpm/@radix-ui+react-portal@1.1.9_@types+react-dom@18.3.1_@types+react@19.2.0_react-dom@18.2.0_react@18.2.0__react@18.2.0/node_modules/@radix-ui/react-portal/dist/index.mjs
+var React13 = __toESM(require("react"), 1);
+var import_react_dom = __toESM(require("react-dom"), 1);
+var import_jsx_runtime7 = require("react/jsx-runtime");
+var PORTAL_NAME = "Portal";
+var Portal = React13.forwardRef((props, forwardedRef) => {
+  const { container: containerProp, ...portalProps } = props;
+  const [mounted, setMounted] = React13.useState(false);
+  useLayoutEffect2(() => setMounted(true), []);
+  const container = containerProp || mounted && globalThis?.document?.body;
+  return container ? import_react_dom.default.createPortal(/* @__PURE__ */ (0, import_jsx_runtime7.jsx)(Primitive.div, { ...portalProps, ref: forwardedRef }), container) : null;
+});
+Portal.displayName = PORTAL_NAME;
+
+// node_modules/.pnpm/@radix-ui+react-presence@1.1.5_@types+react-dom@18.3.1_@types+react@19.2.0_react-dom@18.2.0_react@18.2.0__react@18.2.0/node_modules/@radix-ui/react-presence/dist/index.mjs
+var React23 = __toESM(require("react"), 1);
+var React14 = __toESM(require("react"), 1);
+function useStateMachine(initialState, machine) {
+  return React14.useReducer((state, event) => {
+    const nextState = machine[state][event];
+    return nextState ?? state;
+  }, initialState);
+}
+var Presence = (props) => {
+  const { present, children } = props;
+  const presence = usePresence(present);
+  const child = typeof children === "function" ? children({ present: presence.isPresent }) : React23.Children.only(children);
+  const ref = useComposedRefs(presence.ref, getElementRef2(child));
+  const forceMount = typeof children === "function";
+  return forceMount || presence.isPresent ? React23.cloneElement(child, { ref }) : null;
+};
+Presence.displayName = "Presence";
+function usePresence(present) {
+  const [node, setNode] = React23.useState();
+  const stylesRef = React23.useRef(null);
+  const prevPresentRef = React23.useRef(present);
+  const prevAnimationNameRef = React23.useRef("none");
+  const initialState = present ? "mounted" : "unmounted";
+  const [state, send] = useStateMachine(initialState, {
+    mounted: {
+      UNMOUNT: "unmounted",
+      ANIMATION_OUT: "unmountSuspended"
+    },
+    unmountSuspended: {
+      MOUNT: "mounted",
+      ANIMATION_END: "unmounted"
+    },
+    unmounted: {
+      MOUNT: "mounted"
+    }
+  });
+  React23.useEffect(() => {
+    const currentAnimationName = getAnimationName(stylesRef.current);
+    prevAnimationNameRef.current = state === "mounted" ? currentAnimationName : "none";
+  }, [state]);
+  useLayoutEffect2(() => {
+    const styles = stylesRef.current;
+    const wasPresent = prevPresentRef.current;
+    const hasPresentChanged = wasPresent !== present;
+    if (hasPresentChanged) {
+      const prevAnimationName = prevAnimationNameRef.current;
+      const currentAnimationName = getAnimationName(styles);
+      if (present) {
+        send("MOUNT");
+      } else if (currentAnimationName === "none" || styles?.display === "none") {
+        send("UNMOUNT");
+      } else {
+        const isAnimating = prevAnimationName !== currentAnimationName;
+        if (wasPresent && isAnimating) {
+          send("ANIMATION_OUT");
+        } else {
+          send("UNMOUNT");
+        }
+      }
+      prevPresentRef.current = present;
+    }
+  }, [present, send]);
+  useLayoutEffect2(() => {
+    if (node) {
+      let timeoutId;
+      const ownerWindow = node.ownerDocument.defaultView ?? window;
+      const handleAnimationEnd = (event) => {
+        const currentAnimationName = getAnimationName(stylesRef.current);
+        const isCurrentAnimation = currentAnimationName.includes(CSS.escape(event.animationName));
+        if (event.target === node && isCurrentAnimation) {
+          send("ANIMATION_END");
+          if (!prevPresentRef.current) {
+            const currentFillMode = node.style.animationFillMode;
+            node.style.animationFillMode = "forwards";
+            timeoutId = ownerWindow.setTimeout(() => {
+              if (node.style.animationFillMode === "forwards") {
+                node.style.animationFillMode = currentFillMode;
+              }
+            });
+          }
+        }
+      };
+      const handleAnimationStart = (event) => {
+        if (event.target === node) {
+          prevAnimationNameRef.current = getAnimationName(stylesRef.current);
+        }
+      };
+      node.addEventListener("animationstart", handleAnimationStart);
+      node.addEventListener("animationcancel", handleAnimationEnd);
+      node.addEventListener("animationend", handleAnimationEnd);
+      return () => {
+        ownerWindow.clearTimeout(timeoutId);
+        node.removeEventListener("animationstart", handleAnimationStart);
+        node.removeEventListener("animationcancel", handleAnimationEnd);
+        node.removeEventListener("animationend", handleAnimationEnd);
+      };
+    } else {
+      send("ANIMATION_END");
+    }
+  }, [node, send]);
+  return {
+    isPresent: ["mounted", "unmountSuspended"].includes(state),
+    ref: React23.useCallback((node2) => {
+      stylesRef.current = node2 ? getComputedStyle(node2) : null;
+      setNode(node2);
+    }, [])
+  };
+}
+function getAnimationName(styles) {
+  return styles?.animationName || "none";
+}
+function getElementRef2(element) {
+  let getter = Object.getOwnPropertyDescriptor(element.props, "ref")?.get;
+  let mayWarn = getter && "isReactWarning" in getter && getter.isReactWarning;
+  if (mayWarn) {
+    return element.ref;
+  }
+  getter = Object.getOwnPropertyDescriptor(element, "ref")?.get;
+  mayWarn = getter && "isReactWarning" in getter && getter.isReactWarning;
+  if (mayWarn) {
+    return element.props.ref;
+  }
+  return element.props.ref || element.ref;
+}
+
+// node_modules/.pnpm/@radix-ui+react-focus-guards@1.1.3_@types+react@19.2.0_react@18.2.0/node_modules/@radix-ui/react-focus-guards/dist/index.mjs
+var React15 = __toESM(require("react"), 1);
+var count2 = 0;
+function useFocusGuards() {
+  React15.useEffect(() => {
+    const edgeGuards = document.querySelectorAll("[data-radix-focus-guard]");
+    document.body.insertAdjacentElement("afterbegin", edgeGuards[0] ?? createFocusGuard());
+    document.body.insertAdjacentElement("beforeend", edgeGuards[1] ?? createFocusGuard());
+    count2++;
+    return () => {
+      if (count2 === 1) {
+        document.querySelectorAll("[data-radix-focus-guard]").forEach((node) => node.remove());
+      }
+      count2--;
+    };
+  }, []);
+}
+function createFocusGuard() {
+  const element = document.createElement("span");
+  element.setAttribute("data-radix-focus-guard", "");
+  element.tabIndex = 0;
+  element.style.outline = "none";
+  element.style.opacity = "0";
+  element.style.position = "fixed";
+  element.style.pointerEvents = "none";
+  return element;
+}
+
+// node_modules/.pnpm/@radix-ui+react-dialog@1.1.15_@types+react-dom@18.3.1_@types+react@19.2.0_react-dom@18.2.0_react@18.2.0__react@18.2.0/node_modules/@radix-ui/react-dialog/dist/index.mjs
+var import_react_remove_scroll = __toESM(require_es56(), 1);
+var import_aria_hidden = __toESM(require_es57(), 1);
+var import_jsx_runtime8 = require("react/jsx-runtime");
+var DIALOG_NAME = "Dialog";
+var [createDialogContext, createDialogScope] = createContextScope(DIALOG_NAME);
+var [DialogProvider, useDialogContext] = createDialogContext(DIALOG_NAME);
+var Dialog = (props) => {
+  const {
+    __scopeDialog,
+    children,
+    open: openProp,
+    defaultOpen,
+    onOpenChange,
+    modal: modal2 = true
+  } = props;
+  const triggerRef = React16.useRef(null);
+  const contentRef = React16.useRef(null);
+  const [open, setOpen] = useControllableState({
+    prop: openProp,
+    defaultProp: defaultOpen ?? false,
+    onChange: onOpenChange,
+    caller: DIALOG_NAME
+  });
+  return /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(
+    DialogProvider,
+    {
+      scope: __scopeDialog,
+      triggerRef,
+      contentRef,
+      contentId: useId(),
+      titleId: useId(),
+      descriptionId: useId(),
+      open,
+      onOpenChange: setOpen,
+      onOpenToggle: React16.useCallback(() => setOpen((prevOpen) => !prevOpen), [setOpen]),
+      modal: modal2,
+      children
+    }
+  );
+};
+Dialog.displayName = DIALOG_NAME;
+var TRIGGER_NAME = "DialogTrigger";
+var DialogTrigger = React16.forwardRef(
+  (props, forwardedRef) => {
+    const { __scopeDialog, ...triggerProps } = props;
+    const context = useDialogContext(TRIGGER_NAME, __scopeDialog);
+    const composedTriggerRef = useComposedRefs(forwardedRef, context.triggerRef);
+    return /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(
+      Primitive.button,
+      {
+        type: "button",
+        "aria-haspopup": "dialog",
+        "aria-expanded": context.open,
+        "aria-controls": context.contentId,
+        "data-state": getState(context.open),
+        ...triggerProps,
+        ref: composedTriggerRef,
+        onClick: composeEventHandlers(props.onClick, context.onOpenToggle)
+      }
+    );
+  }
+);
+DialogTrigger.displayName = TRIGGER_NAME;
+var PORTAL_NAME2 = "DialogPortal";
+var [PortalProvider, usePortalContext] = createDialogContext(PORTAL_NAME2, {
+  forceMount: void 0
+});
+var DialogPortal = (props) => {
+  const { __scopeDialog, forceMount, children, container } = props;
+  const context = useDialogContext(PORTAL_NAME2, __scopeDialog);
+  return /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(PortalProvider, { scope: __scopeDialog, forceMount, children: React16.Children.map(children, (child) => /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(Presence, { present: forceMount || context.open, children: /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(Portal, { asChild: true, container, children: child }) })) });
+};
+DialogPortal.displayName = PORTAL_NAME2;
+var OVERLAY_NAME = "DialogOverlay";
+var DialogOverlay = React16.forwardRef(
+  (props, forwardedRef) => {
+    const portalContext = usePortalContext(OVERLAY_NAME, props.__scopeDialog);
+    const { forceMount = portalContext.forceMount, ...overlayProps } = props;
+    const context = useDialogContext(OVERLAY_NAME, props.__scopeDialog);
+    return context.modal ? /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(Presence, { present: forceMount || context.open, children: /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(DialogOverlayImpl, { ...overlayProps, ref: forwardedRef }) }) : null;
+  }
+);
+DialogOverlay.displayName = OVERLAY_NAME;
+var Slot = createSlot("DialogOverlay.RemoveScroll");
+var DialogOverlayImpl = React16.forwardRef(
+  (props, forwardedRef) => {
+    const { __scopeDialog, ...overlayProps } = props;
+    const context = useDialogContext(OVERLAY_NAME, __scopeDialog);
+    return (
+      // Make sure `Content` is scrollable even when it doesn't live inside `RemoveScroll`
+      // ie. when `Overlay` and `Content` are siblings
+      /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(import_react_remove_scroll.RemoveScroll, { as: Slot, allowPinchZoom: true, shards: [context.contentRef], children: /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(
+        Primitive.div,
+        {
+          "data-state": getState(context.open),
+          ...overlayProps,
+          ref: forwardedRef,
+          style: { pointerEvents: "auto", ...overlayProps.style }
+        }
+      ) })
+    );
+  }
+);
+var CONTENT_NAME = "DialogContent";
+var DialogContent = React16.forwardRef(
+  (props, forwardedRef) => {
+    const portalContext = usePortalContext(CONTENT_NAME, props.__scopeDialog);
+    const { forceMount = portalContext.forceMount, ...contentProps } = props;
+    const context = useDialogContext(CONTENT_NAME, props.__scopeDialog);
+    return /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(Presence, { present: forceMount || context.open, children: context.modal ? /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(DialogContentModal, { ...contentProps, ref: forwardedRef }) : /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(DialogContentNonModal, { ...contentProps, ref: forwardedRef }) });
+  }
+);
+DialogContent.displayName = CONTENT_NAME;
+var DialogContentModal = React16.forwardRef(
+  (props, forwardedRef) => {
+    const context = useDialogContext(CONTENT_NAME, props.__scopeDialog);
+    const contentRef = React16.useRef(null);
+    const composedRefs = useComposedRefs(forwardedRef, context.contentRef, contentRef);
+    React16.useEffect(() => {
+      const content2 = contentRef.current;
+      if (content2) return (0, import_aria_hidden.hideOthers)(content2);
+    }, []);
+    return /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(
+      DialogContentImpl,
+      {
+        ...props,
+        ref: composedRefs,
+        trapFocus: context.open,
+        disableOutsidePointerEvents: true,
+        onCloseAutoFocus: composeEventHandlers(props.onCloseAutoFocus, (event) => {
+          event.preventDefault();
+          context.triggerRef.current?.focus();
+        }),
+        onPointerDownOutside: composeEventHandlers(props.onPointerDownOutside, (event) => {
+          const originalEvent = event.detail.originalEvent;
+          const ctrlLeftClick = originalEvent.button === 0 && originalEvent.ctrlKey === true;
+          const isRightClick = originalEvent.button === 2 || ctrlLeftClick;
+          if (isRightClick) event.preventDefault();
+        }),
+        onFocusOutside: composeEventHandlers(
+          props.onFocusOutside,
+          (event) => event.preventDefault()
+        )
+      }
+    );
+  }
+);
+var DialogContentNonModal = React16.forwardRef(
+  (props, forwardedRef) => {
+    const context = useDialogContext(CONTENT_NAME, props.__scopeDialog);
+    const hasInteractedOutsideRef = React16.useRef(false);
+    const hasPointerDownOutsideRef = React16.useRef(false);
+    return /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(
+      DialogContentImpl,
+      {
+        ...props,
+        ref: forwardedRef,
+        trapFocus: false,
+        disableOutsidePointerEvents: false,
+        onCloseAutoFocus: (event) => {
+          props.onCloseAutoFocus?.(event);
+          if (!event.defaultPrevented) {
+            if (!hasInteractedOutsideRef.current) context.triggerRef.current?.focus();
+            event.preventDefault();
+          }
+          hasInteractedOutsideRef.current = false;
+          hasPointerDownOutsideRef.current = false;
+        },
+        onInteractOutside: (event) => {
+          props.onInteractOutside?.(event);
+          if (!event.defaultPrevented) {
+            hasInteractedOutsideRef.current = true;
+            if (event.detail.originalEvent.type === "pointerdown") {
+              hasPointerDownOutsideRef.current = true;
+            }
+          }
+          const target = event.target;
+          const targetIsTrigger = context.triggerRef.current?.contains(target);
+          if (targetIsTrigger) event.preventDefault();
+          if (event.detail.originalEvent.type === "focusin" && hasPointerDownOutsideRef.current) {
+            event.preventDefault();
+          }
+        }
+      }
+    );
+  }
+);
+var DialogContentImpl = React16.forwardRef(
+  (props, forwardedRef) => {
+    const { __scopeDialog, trapFocus, onOpenAutoFocus, onCloseAutoFocus, ...contentProps } = props;
+    const context = useDialogContext(CONTENT_NAME, __scopeDialog);
+    const contentRef = React16.useRef(null);
+    const composedRefs = useComposedRefs(forwardedRef, contentRef);
+    useFocusGuards();
+    return /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)(import_jsx_runtime8.Fragment, { children: [
+      /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(
+        FocusScope,
+        {
+          asChild: true,
+          loop: true,
+          trapped: trapFocus,
+          onMountAutoFocus: onOpenAutoFocus,
+          onUnmountAutoFocus: onCloseAutoFocus,
+          children: /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(
+            DismissableLayer,
+            {
+              role: "dialog",
+              id: context.contentId,
+              "aria-describedby": context.descriptionId,
+              "aria-labelledby": context.titleId,
+              "data-state": getState(context.open),
+              ...contentProps,
+              ref: composedRefs,
+              onDismiss: () => context.onOpenChange(false)
+            }
+          )
+        }
+      ),
+      /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)(import_jsx_runtime8.Fragment, { children: [
+        /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(TitleWarning, { titleId: context.titleId }),
+        /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(DescriptionWarning, { contentRef, descriptionId: context.descriptionId })
       ] })
+    ] });
+  }
+);
+var TITLE_NAME = "DialogTitle";
+var DialogTitle = React16.forwardRef(
+  (props, forwardedRef) => {
+    const { __scopeDialog, ...titleProps } = props;
+    const context = useDialogContext(TITLE_NAME, __scopeDialog);
+    return /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(Primitive.h2, { id: context.titleId, ...titleProps, ref: forwardedRef });
+  }
+);
+DialogTitle.displayName = TITLE_NAME;
+var DESCRIPTION_NAME = "DialogDescription";
+var DialogDescription = React16.forwardRef(
+  (props, forwardedRef) => {
+    const { __scopeDialog, ...descriptionProps } = props;
+    const context = useDialogContext(DESCRIPTION_NAME, __scopeDialog);
+    return /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(Primitive.p, { id: context.descriptionId, ...descriptionProps, ref: forwardedRef });
+  }
+);
+DialogDescription.displayName = DESCRIPTION_NAME;
+var CLOSE_NAME = "DialogClose";
+var DialogClose = React16.forwardRef(
+  (props, forwardedRef) => {
+    const { __scopeDialog, ...closeProps } = props;
+    const context = useDialogContext(CLOSE_NAME, __scopeDialog);
+    return /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(
+      Primitive.button,
+      {
+        type: "button",
+        ...closeProps,
+        ref: forwardedRef,
+        onClick: composeEventHandlers(props.onClick, () => context.onOpenChange(false))
+      }
+    );
+  }
+);
+DialogClose.displayName = CLOSE_NAME;
+function getState(open) {
+  return open ? "open" : "closed";
+}
+var TITLE_WARNING_NAME = "DialogTitleWarning";
+var [WarningProvider, useWarningContext] = createContext2(TITLE_WARNING_NAME, {
+  contentName: CONTENT_NAME,
+  titleName: TITLE_NAME,
+  docsSlug: "dialog"
+});
+var TitleWarning = ({ titleId }) => {
+  const titleWarningContext = useWarningContext(TITLE_WARNING_NAME);
+  const MESSAGE = `\`${titleWarningContext.contentName}\` requires a \`${titleWarningContext.titleName}\` for the component to be accessible for screen reader users.
+
+If you want to hide the \`${titleWarningContext.titleName}\`, you can wrap it with our VisuallyHidden component.
+
+For more information, see https://radix-ui.com/primitives/docs/components/${titleWarningContext.docsSlug}`;
+  React16.useEffect(() => {
+    if (titleId) {
+      const hasTitle = document.getElementById(titleId);
+      if (!hasTitle) console.error(MESSAGE);
+    }
+  }, [MESSAGE, titleId]);
+  return null;
+};
+var DESCRIPTION_WARNING_NAME = "DialogDescriptionWarning";
+var DescriptionWarning = ({ contentRef, descriptionId }) => {
+  const descriptionWarningContext = useWarningContext(DESCRIPTION_WARNING_NAME);
+  const MESSAGE = `Warning: Missing \`Description\` or \`aria-describedby={undefined}\` for {${descriptionWarningContext.contentName}}.`;
+  React16.useEffect(() => {
+    const describedById = contentRef.current?.getAttribute("aria-describedby");
+    if (descriptionId && describedById) {
+      const hasDescription = document.getElementById(descriptionId);
+      if (!hasDescription) console.warn(MESSAGE);
+    }
+  }, [MESSAGE, contentRef, descriptionId]);
+  return null;
+};
+var Root = Dialog;
+var Trigger = DialogTrigger;
+var Portal2 = DialogPortal;
+var Overlay = DialogOverlay;
+var Content = DialogContent;
+var Title = DialogTitle;
+var Description = DialogDescription;
+var Close = DialogClose;
+
+// src/components/ui/dialog.jsx
+var import_lucide_react = require("lucide-react");
+
+// src/lib/utils.js
+function cx(...args) {
+  const classes = [];
+  const push = (v) => {
+    if (v) classes.push(String(v));
+  };
+  const walk = (a) => {
+    for (const x of a) {
+      const t = typeof x;
+      if (!x) continue;
+      if (t === "string" || t === "number") {
+        push(x);
+        continue;
+      }
+      if (Array.isArray(x)) {
+        walk(x);
+        continue;
+      }
+      if (t === "object") {
+        for (const k in x) if (Object.prototype.hasOwnProperty.call(x, k) && x[k]) push(k);
+      }
+    }
+  };
+  walk(args);
+  return classes.join(" ");
+}
+function cn(...inputs) {
+  return cx(...inputs);
+}
+
+// src/components/ui/dialog.jsx
+var import_jsx_runtime9 = require("react/jsx-runtime");
+var Dialog2 = Root;
+var DialogTrigger2 = Trigger;
+var DialogPortal2 = ({ className, children, ...props }) => /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(Portal2, { ...props, children: /* @__PURE__ */ (0, import_jsx_runtime9.jsx)("div", { className: cn("fixed inset-0 z-[999] flex items-start justify-center overflow-y-auto sm:items-center", className), children }) });
+DialogPortal2.displayName = Portal2.displayName;
+var DialogOverlay2 = React17.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(
+  Overlay,
+  {
+    ref,
+    className: cn("fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity data-[state=open]:opacity-100 data-[state=closed]:opacity-0", className),
+    ...props
+  }
+));
+DialogOverlay2.displayName = Overlay.displayName;
+var DialogContent2 = React17.forwardRef(({ className, children, ...props }, ref) => /* @__PURE__ */ (0, import_jsx_runtime9.jsxs)(DialogPortal2, { children: [
+  /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(DialogOverlay2, {}),
+  /* @__PURE__ */ (0, import_jsx_runtime9.jsxs)(
+    Content,
+    {
+      ref,
+      className: cn(
+        "relative z-[1000] m-4 w-full max-w-2xl origin-center scale-100 rounded-2xl border border-slate-200 bg-white p-6 shadow-xl transition-all duration-200 data-[state=open]:opacity-100 data-[state=closed]:opacity-0 sm:m-6",
+        className
+      ),
+      ...props,
+      children: [
+        children,
+        /* @__PURE__ */ (0, import_jsx_runtime9.jsxs)(Close, { className: "absolute right-5 top-5 rounded-full p-1 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:ring-offset-2", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime9.jsx)("span", { className: "sr-only", children: "Close" }),
+          /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(import_lucide_react.X, { className: "h-4 w-4" })
+        ] })
+      ]
+    }
+  )
+] }));
+DialogContent2.displayName = Content.displayName;
+var DialogHeader = ({ className, ...props }) => /* @__PURE__ */ (0, import_jsx_runtime9.jsx)("div", { className: cn("flex flex-col space-y-2 text-center sm:text-left", className), ...props });
+DialogHeader.displayName = "DialogHeader";
+var DialogFooter = ({ className, ...props }) => /* @__PURE__ */ (0, import_jsx_runtime9.jsx)("div", { className: cn("flex flex-col-reverse gap-2 sm:flex-row sm:justify-end", className), ...props });
+DialogFooter.displayName = "DialogFooter";
+var DialogTitle2 = React17.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(Title, { ref, className: cn("text-left text-2xl font-semibold text-slate-900", className), ...props }));
+DialogTitle2.displayName = Title.displayName;
+var DialogDescription2 = React17.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(Description, { ref, className: cn("text-left text-sm text-slate-600", className), ...props }));
+DialogDescription2.displayName = Description.displayName;
+
+// src/components/ui/button.jsx
+var React18 = __toESM(require("react"));
+var import_jsx_runtime10 = require("react/jsx-runtime");
+var baseClasses = "inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-60";
+var variantClasses = {
+  default: "bg-[var(--color-accent)] text-white hover:bg-orange-600 focus-visible:ring-[var(--color-accent)]",
+  secondary: "bg-slate-900 text-white hover:bg-black focus-visible:ring-slate-900",
+  outline: "border border-slate-300 bg-white text-slate-900 hover:bg-slate-100 focus-visible:ring-slate-500",
+  ghost: "bg-transparent text-slate-700 hover:bg-slate-100 focus-visible:ring-slate-400"
+};
+var sizeClasses = {
+  default: "h-10 px-4 py-2",
+  lg: "h-11 px-5",
+  sm: "h-9 px-3 text-sm",
+  icon: "h-10 w-10"
+};
+var Button = React18.forwardRef(({ className = "", variant = "default", size = "default", ...props }, ref) => {
+  const variantClass = variantClasses[variant] || variantClasses.default;
+  const sizeClass = sizeClasses[size] || sizeClasses.default;
+  return /* @__PURE__ */ (0, import_jsx_runtime10.jsx)(
+    "button",
+    {
+      ref,
+      className: cn(baseClasses, variantClass, sizeClass, className),
+      ...props
+    }
+  );
+});
+Button.displayName = "Button";
+
+// src/components/ui/input.jsx
+var React19 = __toESM(require("react"));
+var import_jsx_runtime11 = require("react/jsx-runtime");
+var Input = React19.forwardRef(({ className = "", type = "text", ...props }, ref) => /* @__PURE__ */ (0, import_jsx_runtime11.jsx)(
+  "input",
+  {
+    ref,
+    type,
+    className: cn(
+      "flex h-10 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] disabled:cursor-not-allowed disabled:opacity-60",
+      className
+    ),
+    ...props
+  }
+));
+Input.displayName = "Input";
+
+// src/components/ui/textarea.jsx
+var React20 = __toESM(require("react"));
+var import_jsx_runtime12 = require("react/jsx-runtime");
+var Textarea = React20.forwardRef(({ className = "", rows = 3, ...props }, ref) => /* @__PURE__ */ (0, import_jsx_runtime12.jsx)(
+  "textarea",
+  {
+    ref,
+    rows,
+    className: cn(
+      "w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] disabled:cursor-not-allowed disabled:opacity-60",
+      className
+    ),
+    ...props
+  }
+));
+Textarea.displayName = "Textarea";
+
+// src/components/ui/label.jsx
+var React21 = __toESM(require("react"));
+var import_jsx_runtime13 = require("react/jsx-runtime");
+var Label = React21.forwardRef(({ className = "", children, ...props }, ref) => /* @__PURE__ */ (0, import_jsx_runtime13.jsx)("label", { ref, className: cn("text-sm font-semibold text-slate-700", className), ...props, children }));
+Label.displayName = "Label";
+
+// src/components/forms/AskChefForm.jsx
+var import_jsx_runtime14 = require("react/jsx-runtime");
+var AskChefForm = ({ open, onOpenChange }) => {
+  const [formData, setFormData] = (0, import_react2.useState)({
+    name: "",
+    email: "",
+    phone: "",
+    subject: "",
+    message: ""
+  });
+  const [status, setStatus] = (0, import_react2.useState)("idle");
+  const handleChange = (e) => {
+    const { name: name2, value: value2 } = e.target;
+    setFormData((prev) => ({ ...prev, [name2]: value2 }));
+    if (status !== "idle") setStatus("idle");
+  };
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setStatus("submitting");
+    try {
+      const payload = {
+        name: formData.name,
+        email: formData.email,
+        phone: formData.phone,
+        subject: formData.subject || "Question for the Chef",
+        message: formData.message,
+        type: "ask-chef"
+      };
+      const response = await fetch("/api/messages/submit", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+      if (!response.ok) {
+        throw new Error(await response.text());
+      }
+      setStatus("success");
+      setTimeout(() => {
+        setFormData({
+          name: "",
+          email: "",
+          phone: "",
+          subject: "",
+          message: ""
+        });
+        setStatus("idle");
+        onOpenChange(false);
+      }, 2e3);
+    } catch (error) {
+      setStatus("error");
+    }
+  };
+  return /* @__PURE__ */ (0, import_jsx_runtime14.jsx)(Dialog2, { open, onOpenChange, children: /* @__PURE__ */ (0, import_jsx_runtime14.jsxs)(DialogContent2, { className: "sm:max-w-[500px]", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime14.jsxs)(DialogHeader, { children: [
+      /* @__PURE__ */ (0, import_jsx_runtime14.jsx)(DialogTitle2, { children: "Ask a Chef" }),
+      /* @__PURE__ */ (0, import_jsx_runtime14.jsx)(DialogDescription2, { children: "Have a question? Send us a message and we'll get back to you soon." })
     ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "flex flex-col gap-2", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "flex gap-4", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("a", { href: "/services", className: "underline underline-offset-4 hover:opacity-80", children: "Services" }),
-        /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("a", { href: "/menu", className: "underline underline-offset-4 hover:opacity-80", children: "Menus" }),
-        /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("a", { href: "/about", className: "underline underline-offset-4 hover:opacity-80", children: "About" }),
-        /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("a", { href: "/releases", className: "underline underline-offset-4 hover:opacity-80", children: "Press" })
+    status === "success" ? /* @__PURE__ */ (0, import_jsx_runtime14.jsxs)("div", { className: "py-8 text-center", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime14.jsx)("div", { className: "mb-4 text-5xl", children: "\u2713" }),
+      /* @__PURE__ */ (0, import_jsx_runtime14.jsx)("h3", { className: "mb-2 text-lg font-semibold text-green-700", children: "Thank you!" }),
+      /* @__PURE__ */ (0, import_jsx_runtime14.jsx)("p", { className: "text-sm text-slate-600", children: "We've received your message and will get back to you shortly." })
+    ] }) : /* @__PURE__ */ (0, import_jsx_runtime14.jsxs)("form", { onSubmit: handleSubmit, className: "space-y-4", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime14.jsxs)("div", { className: "space-y-2", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime14.jsx)(Label, { htmlFor: "name", children: "Name *" }),
+        /* @__PURE__ */ (0, import_jsx_runtime14.jsx)(
+          Input,
+          {
+            id: "name",
+            name: "name",
+            value: formData.name,
+            onChange: handleChange,
+            placeholder: "Your name",
+            required: true
+          }
+        )
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "flex gap-4", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("a", { href: "https://www.tiktok.com/@localeffort", target: "_blank", rel: "noopener noreferrer", className: "underline underline-offset-4 hover:opacity-80", children: "TikTok" }),
-        /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("a", { href: "https://instagram.com/localeffort", target: "_blank", rel: "noopener noreferrer", className: "underline underline-offset-4 hover:opacity-80", children: "Instagram" }),
-        /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("a", { href: "https://facebook.com/localeffort", target: "_blank", rel: "noopener noreferrer", className: "underline underline-offset-4 hover:opacity-80", children: "Facebook" }),
-        /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("a", { href: "https://www.thumbtack.com/mn/saint-paul/personal-chefs/weston-smith/service/429294230165643268", target: "_blank", rel: "noopener noreferrer", className: "underline underline-offset-4 hover:opacity-80", children: "Thumbtack" })
+      /* @__PURE__ */ (0, import_jsx_runtime14.jsxs)("div", { className: "space-y-2", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime14.jsx)(Label, { htmlFor: "email", children: "Email *" }),
+        /* @__PURE__ */ (0, import_jsx_runtime14.jsx)(
+          Input,
+          {
+            id: "email",
+            name: "email",
+            type: "email",
+            value: formData.email,
+            onChange: handleChange,
+            placeholder: "your@email.com",
+            required: true
+          }
+        )
+      ] }),
+      /* @__PURE__ */ (0, import_jsx_runtime14.jsxs)("div", { className: "space-y-2", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime14.jsx)(Label, { htmlFor: "phone", children: "Phone Number *" }),
+        /* @__PURE__ */ (0, import_jsx_runtime14.jsx)(
+          Input,
+          {
+            id: "phone",
+            name: "phone",
+            type: "tel",
+            value: formData.phone,
+            onChange: handleChange,
+            placeholder: "(000) 000-0000",
+            required: true
+          }
+        )
+      ] }),
+      /* @__PURE__ */ (0, import_jsx_runtime14.jsxs)("div", { className: "space-y-2", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime14.jsx)(Label, { htmlFor: "subject", children: "Subject" }),
+        /* @__PURE__ */ (0, import_jsx_runtime14.jsx)(
+          Input,
+          {
+            id: "subject",
+            name: "subject",
+            value: formData.subject,
+            onChange: handleChange,
+            placeholder: "What's this about?"
+          }
+        )
+      ] }),
+      /* @__PURE__ */ (0, import_jsx_runtime14.jsxs)("div", { className: "space-y-2", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime14.jsx)(Label, { htmlFor: "message", children: "Message *" }),
+        /* @__PURE__ */ (0, import_jsx_runtime14.jsx)(
+          Textarea,
+          {
+            id: "message",
+            name: "message",
+            value: formData.message,
+            onChange: handleChange,
+            placeholder: "Type your question or message here...",
+            rows: 5,
+            required: true
+          }
+        )
+      ] }),
+      status === "error" && /* @__PURE__ */ (0, import_jsx_runtime14.jsxs)("div", { className: "rounded-md bg-red-50 p-3 text-sm text-red-700", children: [
+        "We couldn't submit your message. Please try again or email us directly at",
+        " ",
+        /* @__PURE__ */ (0, import_jsx_runtime14.jsx)("a", { href: "mailto:yum@localeffortfood.com", className: "underline", children: "yum@localeffortfood.com" })
+      ] }),
+      /* @__PURE__ */ (0, import_jsx_runtime14.jsxs)("div", { className: "flex justify-end gap-3 pt-2", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime14.jsx)(
+          Button,
+          {
+            type: "button",
+            variant: "outline",
+            onClick: () => onOpenChange(false),
+            disabled: status === "submitting",
+            children: "Cancel"
+          }
+        ),
+        /* @__PURE__ */ (0, import_jsx_runtime14.jsx)(Button, { type: "submit", disabled: status === "submitting", children: status === "submitting" ? "Sending..." : "Submit" })
       ] })
     ] })
-  ] }) }) });
+  ] }) });
+};
+
+// src/components/layout/Footer.jsx
+var import_jsx_runtime15 = require("react/jsx-runtime");
+var Footer = () => {
+  const [showAskChef, setShowAskChef] = (0, import_react3.useState)(false);
+  return /* @__PURE__ */ (0, import_jsx_runtime15.jsxs)(import_jsx_runtime15.Fragment, { children: [
+    /* @__PURE__ */ (0, import_jsx_runtime15.jsx)("footer", { className: "mt-16 border-t border-neutral-200", children: /* @__PURE__ */ (0, import_jsx_runtime15.jsx)("div", { className: "mx-auto max-w-6xl px-4 md:px-6 lg:px-8 py-8 font-mono text-sm text-neutral-700", children: /* @__PURE__ */ (0, import_jsx_runtime15.jsxs)("div", { className: "flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime15.jsxs)("div", { children: [
+        /* @__PURE__ */ (0, import_jsx_runtime15.jsx)("p", { className: "font-semibold", children: "Local Effort Food Co." }),
+        /* @__PURE__ */ (0, import_jsx_runtime15.jsx)("p", { className: "text-neutral-600", children: "Roseville, MN" }),
+        /* @__PURE__ */ (0, import_jsx_runtime15.jsx)("p", { className: "text-neutral-600", children: /* @__PURE__ */ (0, import_jsx_runtime15.jsx)("a", { href: "mailto:yum@localeffortfood.com", className: "hover:underline", children: "yum@localeffortfood.com" }) }),
+        /* @__PURE__ */ (0, import_jsx_runtime15.jsxs)("p", { className: "mt-2 text-neutral-600", children: [
+          "Service Areas:",
+          " ",
+          /* @__PURE__ */ (0, import_jsx_runtime15.jsx)("a", { href: "/personal-chef-minneapolis", className: "underline underline-offset-4 hover:opacity-80", children: "Minneapolis" }),
+          " ",
+          "|",
+          " ",
+          /* @__PURE__ */ (0, import_jsx_runtime15.jsx)("a", { href: "/personal-chef-st-paul", className: "underline underline-offset-4 hover:opacity-80", children: "St. Paul" }),
+          " ",
+          "|",
+          " ",
+          /* @__PURE__ */ (0, import_jsx_runtime15.jsx)("a", { href: "/personal-chef-twin-cities", className: "underline underline-offset-4 hover:opacity-80", children: "Twin Cities" }),
+          " ",
+          "|",
+          " ",
+          /* @__PURE__ */ (0, import_jsx_runtime15.jsx)("a", { href: "/personal-chef-minnesota", className: "underline underline-offset-4 hover:opacity-80", children: "Minnesota" }),
+          " ",
+          "|",
+          " ",
+          /* @__PURE__ */ (0, import_jsx_runtime15.jsx)("a", { href: "/personal-chef-wisconsin", className: "underline underline-offset-4 hover:opacity-80", children: "Wisconsin" })
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime15.jsxs)("p", { className: "text-neutral-500 text-xs mt-2", children: [
+          "\xA9 ",
+          (/* @__PURE__ */ new Date()).getFullYear(),
+          " Local Effort"
+        ] })
+      ] }),
+      /* @__PURE__ */ (0, import_jsx_runtime15.jsxs)("div", { className: "flex flex-col gap-2", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime15.jsxs)("div", { className: "flex gap-4", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime15.jsx)("a", { href: "/services", className: "underline underline-offset-4 hover:opacity-80", children: "Services" }),
+          /* @__PURE__ */ (0, import_jsx_runtime15.jsx)("a", { href: "/menu", className: "underline underline-offset-4 hover:opacity-80", children: "Menus" }),
+          /* @__PURE__ */ (0, import_jsx_runtime15.jsx)("a", { href: "/about", className: "underline underline-offset-4 hover:opacity-80", children: "About" }),
+          /* @__PURE__ */ (0, import_jsx_runtime15.jsx)("a", { href: "/releases", className: "underline underline-offset-4 hover:opacity-80", children: "Press" })
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime15.jsxs)("div", { className: "flex gap-4", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime15.jsx)("a", { href: "https://www.tiktok.com/@localeffort", target: "_blank", rel: "noopener noreferrer", className: "underline underline-offset-4 hover:opacity-80", children: "TikTok" }),
+          /* @__PURE__ */ (0, import_jsx_runtime15.jsx)("a", { href: "https://instagram.com/localeffort", target: "_blank", rel: "noopener noreferrer", className: "underline underline-offset-4 hover:opacity-80", children: "Instagram" }),
+          /* @__PURE__ */ (0, import_jsx_runtime15.jsx)("a", { href: "https://facebook.com/localeffort", target: "_blank", rel: "noopener noreferrer", className: "underline underline-offset-4 hover:opacity-80", children: "Facebook" }),
+          /* @__PURE__ */ (0, import_jsx_runtime15.jsx)("a", { href: "https://www.thumbtack.com/mn/saint-paul/personal-chefs/weston-smith/service/429294230165643268", target: "_blank", rel: "noopener noreferrer", className: "underline underline-offset-4 hover:opacity-80", children: "Thumbtack" })
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime15.jsx)("div", { className: "mt-2", children: /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(
+          "button",
+          {
+            type: "button",
+            onClick: () => setShowAskChef(true),
+            className: "inline-block bg-neutral-900 text-white px-4 py-2 rounded hover:bg-neutral-700 transition-colors",
+            children: "Ask a Chef"
+          }
+        ) })
+      ] })
+    ] }) }) }),
+    /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(AskChefForm, { open: showAskChef, onOpenChange: setShowAskChef })
+  ] });
 };
 
 // src/pages/HomePage.jsx
-var import_react16 = __toESM(require("react"));
+var import_react17 = __toESM(require("react"));
 var import_react_router_dom3 = require("react-router-dom");
 var import_react_helmet_async2 = __toESM(require_lib());
 
 // src/components/common/ServiceCard.jsx
-var import_react3 = __toESM(require("react"));
+var import_react4 = __toESM(require("react"));
 var import_react_router_dom2 = require("react-router-dom");
 var import_framer_motion2 = require("framer-motion");
 
@@ -62884,8 +64466,8 @@ var scaleOnHover = {
 };
 
 // src/components/common/ServiceCard.jsx
-var import_jsx_runtime3 = require("react/jsx-runtime");
-var ServiceCard = ({ to = "#", title, description, children }) => /* @__PURE__ */ (0, import_jsx_runtime3.jsxs)(
+var import_jsx_runtime16 = require("react/jsx-runtime");
+var ServiceCard = ({ to = "#", title, description, children }) => /* @__PURE__ */ (0, import_jsx_runtime16.jsxs)(
   import_framer_motion2.motion.div,
   {
     ...scaleOnHover,
@@ -62894,12 +64476,12 @@ var ServiceCard = ({ to = "#", title, description, children }) => /* @__PURE__ *
     whileInView: { opacity: 1, y: 0 },
     viewport: { once: true, amount: 0.2 },
     children: [
-      /* @__PURE__ */ (0, import_jsx_runtime3.jsxs)(import_react_router_dom2.Link, { to, className: "block h-full", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime3.jsx)("h4", { className: "text-2xl font-bold uppercase tracking-tight", children: title }),
-        /* @__PURE__ */ (0, import_jsx_runtime3.jsx)("p", { className: "font-mono text-neutral-600 min-h-[5.5rem] mt-2", children: description }),
-        /* @__PURE__ */ (0, import_jsx_runtime3.jsx)("span", { className: "font-mono text-sm inline-block underline underline-offset-4 group-hover:translate-x-0.5 transition-transform", children: "Learn More \u2192" })
+      /* @__PURE__ */ (0, import_jsx_runtime16.jsxs)(import_react_router_dom2.Link, { to, className: "block h-full", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime16.jsx)("h4", { className: "text-2xl font-bold uppercase tracking-tight", children: title }),
+        /* @__PURE__ */ (0, import_jsx_runtime16.jsx)("p", { className: "font-mono text-neutral-600 min-h-[5.5rem] mt-2", children: description }),
+        /* @__PURE__ */ (0, import_jsx_runtime16.jsx)("span", { className: "font-mono text-sm inline-block underline underline-offset-4 group-hover:translate-x-0.5 transition-transform", children: "Learn More \u2192" })
       ] }),
-      children && /* @__PURE__ */ (0, import_jsx_runtime3.jsx)("div", { className: "mt-4", children })
+      children && /* @__PURE__ */ (0, import_jsx_runtime16.jsx)("div", { className: "mt-4", children })
     ]
   }
 );
@@ -62909,16 +64491,16 @@ var ServiceCard_default = ServiceCard;
 var import_framer_motion3 = require("framer-motion");
 
 // src/components/common/cloudinaryImage.jsx
-var import_react4 = __toESM(require("react"));
-var import_react5 = require("@cloudinary/react");
+var import_react5 = __toESM(require("react"));
+var import_react6 = require("@cloudinary/react");
 var import_url_gen = require("@cloudinary/url-gen");
 var import_resize = require("@cloudinary/url-gen/actions/resize");
 var import_gravity = require("@cloudinary/url-gen/qualifiers/gravity");
 var import_quality = require("@cloudinary/url-gen/qualifiers/quality");
 var import_format = require("@cloudinary/url-gen/qualifiers/format");
 var import_delivery = require("@cloudinary/url-gen/actions/delivery");
-var import_react6 = require("react");
-var import_jsx_runtime4 = require("react/jsx-runtime");
+var import_react7 = require("react");
+var import_jsx_runtime17 = require("react/jsx-runtime");
 var import_meta = {};
 var CLOUD_NAME = import_meta.env?.VITE_CLOUDINARY_CLOUD_NAME || typeof process !== "undefined" && process?.env?.CLOUDINARY_CLOUD_NAME || "dokyhfvyd";
 var cld = new import_url_gen.Cloudinary({
@@ -62927,9 +64509,9 @@ var cld = new import_url_gen.Cloudinary({
   }
 });
 var CloudinaryImage = ({ publicId, alt, width: width2, height: height2, className, containerClassName, imgClassName, containerStyle, disableLazy = false, fallbackSrc, resizeMode = "fill", placeholderMode = "blur", sizes, responsiveSteps = [480, 768, 1024, 1400, 2e3, 2600, 3200], eager = false, version }) => {
-  const [loaded, setLoaded] = (0, import_react6.useState)(false);
-  const [error, setError] = (0, import_react6.useState)(false);
-  const imgRef = (0, import_react6.useRef)(null);
+  const [loaded, setLoaded] = (0, import_react7.useState)(false);
+  const [error, setError] = (0, import_react7.useState)(false);
+  const imgRef = (0, import_react7.useRef)(null);
   if (!publicId) {
     const placeholderStyle = {
       width: width2 ? `${width2}px` : "100%",
@@ -62938,7 +64520,7 @@ var CloudinaryImage = ({ publicId, alt, width: width2, height: height2, classNam
       // A light gray placeholder
       display: "inline-block"
     };
-    return /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("span", { style: placeholderStyle, className });
+    return /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("span", { style: placeholderStyle, className });
   }
   const myImage = cld.image(publicId);
   if (version) {
@@ -62962,7 +64544,7 @@ var CloudinaryImage = ({ publicId, alt, width: width2, height: height2, classNam
       myImage.resize((0, import_resize.fill)(width2, height2).gravity((0, import_gravity.autoGravity)()));
     }
   }
-  (0, import_react6.useEffect)(() => {
+  (0, import_react7.useEffect)(() => {
     let mounted = true;
     let el = null;
     let pollTimer = null;
@@ -63003,7 +64585,7 @@ var CloudinaryImage = ({ publicId, alt, width: width2, height: height2, classNam
     };
   }, [publicId, version]);
   if (error && fallbackSrc) {
-    return /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(
+    return /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(
       "img",
       {
         src: fallbackSrc,
@@ -63029,14 +64611,14 @@ var CloudinaryImage = ({ publicId, alt, width: width2, height: height2, classNam
     }
     return s;
   })();
-  return /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(
+  return /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(
     "div",
     {
       ref: imgRef,
       className: `${containerClassName || className || ""} relative overflow-hidden w-full`,
       style: { ...baseStyle, ...containerStyle || {} },
-      children: /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(
-        import_react5.AdvancedImage,
+      children: /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(
+        import_react6.AdvancedImage,
         {
           cldImg: myImage,
           alt,
@@ -63045,9 +64627,9 @@ var CloudinaryImage = ({ publicId, alt, width: width2, height: height2, classNam
           loading: eager ? "eager" : "lazy",
           style: imgStyle,
           plugins: (() => {
-            const base = [(0, import_react5.responsive)({ steps: responsiveSteps })];
+            const base = [(0, import_react6.responsive)({ steps: responsiveSteps })];
             const isLazy = !eager && !disableLazy;
-            return isLazy ? [...base, (0, import_react5.lazyload)()] : base;
+            return isLazy ? [...base, (0, import_react6.lazyload)()] : base;
           })()
         }
       )
@@ -63057,7 +64639,7 @@ var CloudinaryImage = ({ publicId, alt, width: width2, height: height2, classNam
 var cloudinaryImage_default = CloudinaryImage;
 
 // src/pages/HomePage.jsx
-var import_react17 = require("react");
+var import_react18 = require("react");
 
 // src/data/cloudinaryContent.js
 var import_meta2 = {};
@@ -63069,13 +64651,13 @@ var heroVersion = "1759456148";
 var heroFallbackSrc = "/gallery/IMG_3145.jpg";
 
 // src/components/common/TestimonialsCarousel.jsx
-var import_react9 = __toESM(require("react"));
+var import_react10 = __toESM(require("react"));
 
 // src/components/common/EmblaCarousel.jsx
-var import_react8 = __toESM(require("react"));
+var import_react9 = __toESM(require("react"));
 
 // node_modules/.pnpm/embla-carousel-react@8.6.0_react@18.2.0/node_modules/embla-carousel-react/esm/embla-carousel-react.esm.js
-var import_react7 = require("react");
+var import_react8 = require("react");
 
 // node_modules/.pnpm/embla-carousel-reactive-utils@8.6.0_embla-carousel@8.6.0/node_modules/embla-carousel-reactive-utils/esm/embla-carousel-reactive-utils.esm.js
 function isObject(subject) {
@@ -63084,7 +64666,7 @@ function isObject(subject) {
 function isRecord(subject) {
   return isObject(subject) || Array.isArray(subject);
 }
-function canUseDOM() {
+function canUseDOM2() {
   return !!(typeof window !== "undefined" && window.document && window.document.createElement);
 }
 function areOptionsEqual(optionsA, optionsB) {
@@ -64745,25 +66327,25 @@ EmblaCarousel.globalOptions = void 0;
 
 // node_modules/.pnpm/embla-carousel-react@8.6.0_react@18.2.0/node_modules/embla-carousel-react/esm/embla-carousel-react.esm.js
 function useEmblaCarousel(options = {}, plugins = []) {
-  const storedOptions = (0, import_react7.useRef)(options);
-  const storedPlugins = (0, import_react7.useRef)(plugins);
-  const [emblaApi, setEmblaApi] = (0, import_react7.useState)();
-  const [viewport, setViewport] = (0, import_react7.useState)();
-  const reInit = (0, import_react7.useCallback)(() => {
+  const storedOptions = (0, import_react8.useRef)(options);
+  const storedPlugins = (0, import_react8.useRef)(plugins);
+  const [emblaApi, setEmblaApi] = (0, import_react8.useState)();
+  const [viewport, setViewport] = (0, import_react8.useState)();
+  const reInit = (0, import_react8.useCallback)(() => {
     if (emblaApi) emblaApi.reInit(storedOptions.current, storedPlugins.current);
   }, [emblaApi]);
-  (0, import_react7.useEffect)(() => {
+  (0, import_react8.useEffect)(() => {
     if (areOptionsEqual(storedOptions.current, options)) return;
     storedOptions.current = options;
     reInit();
   }, [options, reInit]);
-  (0, import_react7.useEffect)(() => {
+  (0, import_react8.useEffect)(() => {
     if (arePluginsEqual(storedPlugins.current, plugins)) return;
     storedPlugins.current = plugins;
     reInit();
   }, [plugins, reInit]);
-  (0, import_react7.useEffect)(() => {
-    if (canUseDOM() && viewport) {
+  (0, import_react8.useEffect)(() => {
+    if (canUseDOM2() && viewport) {
       EmblaCarousel.globalOptions = useEmblaCarousel.globalOptions;
       const newEmblaApi = EmblaCarousel(viewport, storedOptions.current, storedPlugins.current);
       setEmblaApi(newEmblaApi);
@@ -64777,7 +66359,7 @@ function useEmblaCarousel(options = {}, plugins = []) {
 useEmblaCarousel.globalOptions = void 0;
 
 // src/components/common/EmblaCarousel.jsx
-var import_jsx_runtime5 = require("react/jsx-runtime");
+var import_jsx_runtime18 = require("react/jsx-runtime");
 var import_meta3 = {};
 function buildCloudinarySrcSet(publicId, cloudName) {
   if (!publicId || !cloudName) return null;
@@ -64798,7 +66380,7 @@ function EmblaCarousel2({
 }) {
   const cloudName = typeof import_meta3 !== "undefined" && import_meta3.env?.VITE_CLOUDINARY_CLOUD_NAME || "";
   const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true, align: "center" });
-  (0, import_react8.useEffect)(() => {
+  (0, import_react9.useEffect)(() => {
     if (!emblaApi || !autoPlayMs) return void 0;
     const interval = setInterval(() => {
       try {
@@ -64808,14 +66390,14 @@ function EmblaCarousel2({
     }, autoPlayMs);
     return () => clearInterval(interval);
   }, [emblaApi, autoPlayMs]);
-  const onThumbClick = (0, import_react8.useCallback)((index2) => emblaApi && emblaApi.scrollTo(index2), [emblaApi]);
+  const onThumbClick = (0, import_react9.useCallback)((index2) => emblaApi && emblaApi.scrollTo(index2), [emblaApi]);
   if (!slides.length) return null;
-  return /* @__PURE__ */ (0, import_jsx_runtime5.jsxs)("div", { className: "w-full", children: [
-    /* @__PURE__ */ (0, import_jsx_runtime5.jsx)("div", { className: "overflow-hidden rounded-xl", ref: emblaRef, children: /* @__PURE__ */ (0, import_jsx_runtime5.jsx)("div", { className: "flex touch-pan-y", children: slides.map((s, i) => /* @__PURE__ */ (0, import_jsx_runtime5.jsx)("div", { className: "min-w-0 flex-[0_0_100%] relative", children: /* @__PURE__ */ (0, import_jsx_runtime5.jsx)("div", { className: `w-full ${heightClass} bg-neutral-100`, children: s.node ? s.node : s.src || s.publicId ? (() => {
+  return /* @__PURE__ */ (0, import_jsx_runtime18.jsxs)("div", { className: "w-full", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime18.jsx)("div", { className: "overflow-hidden rounded-xl", ref: emblaRef, children: /* @__PURE__ */ (0, import_jsx_runtime18.jsx)("div", { className: "flex touch-pan-y", children: slides.map((s, i) => /* @__PURE__ */ (0, import_jsx_runtime18.jsx)("div", { className: "min-w-0 flex-[0_0_100%] relative", children: /* @__PURE__ */ (0, import_jsx_runtime18.jsx)("div", { className: `w-full ${heightClass} bg-neutral-100`, children: s.node ? s.node : s.src || s.publicId ? (() => {
       const publicId = s.publicId || null;
       const src = s.src || (publicId ? buildCloudinaryUrl(publicId, cloudName, 1400) : "");
       const srcSet = publicId ? buildCloudinarySrcSet(publicId, cloudName) : null;
-      return /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(
+      return /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(
         "img",
         {
           src,
@@ -64827,8 +66409,8 @@ function EmblaCarousel2({
         }
       );
     })() : null }) }, (s.key || i) + "")) }) }),
-    showThumbs && slides.length > 1 && /* @__PURE__ */ (0, import_jsx_runtime5.jsx)("div", { className: "mt-3 flex justify-center gap-2", children: slides.map(
-      (s, i) => /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(
+    showThumbs && slides.length > 1 && /* @__PURE__ */ (0, import_jsx_runtime18.jsx)("div", { className: "mt-3 flex justify-center gap-2", children: slides.map(
+      (s, i) => /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(
         "button",
         {
           className: "w-2.5 h-2.5 rounded-full bg-neutral-800/70 aria-[current=true]:bg-neutral-900",
@@ -64843,7 +66425,7 @@ function EmblaCarousel2({
 }
 
 // src/components/common/TestimonialsCarousel.jsx
-var import_jsx_runtime6 = require("react/jsx-runtime");
+var import_jsx_runtime19 = require("react/jsx-runtime");
 function shuffle(array) {
   const a = array.slice();
   for (let i = a.length - 1; i > 0; i--) {
@@ -64858,8 +66440,8 @@ function chunk(arr, size) {
   return out;
 }
 function TestimonialsCarousel({ items: items2 = [], title = "Testimonials", headingExtra = null, maxLines = 5 }) {
-  const [business, setBusiness] = (0, import_react9.useState)(null);
-  (0, import_react9.useEffect)(() => {
+  const [business, setBusiness] = (0, import_react10.useState)(null);
+  (0, import_react10.useEffect)(() => {
     let mounted = true;
     fetch("/business.json").then((r) => r.ok ? r.json() : null).then((data2) => {
       if (mounted) setBusiness(data2 || null);
@@ -64877,7 +66459,7 @@ function TestimonialsCarousel({ items: items2 = [], title = "Testimonials", head
     if (isNaN(d)) return void 0;
     return d.toISOString().slice(0, 10);
   }
-  const reviewsJsonLd = (0, import_react9.useMemo)(() => {
+  const reviewsJsonLd = (0, import_react10.useMemo)(() => {
     if (!items2 || !items2.length) return null;
     const subj = {
       "@type": "ProfessionalService",
@@ -64895,32 +66477,32 @@ function TestimonialsCarousel({ items: items2 = [], title = "Testimonials", head
     }));
     return { "@context": "https://schema.org", "@graph": graph };
   }, [items2, business]);
-  const slides = (0, import_react9.useMemo)(() => {
+  const slides = (0, import_react10.useMemo)(() => {
     if (!items2.length) return [];
     const randomized = shuffle(items2);
     const groups = chunk(randomized, 3);
     return groups.map((group, idx) => ({
       key: `t-slide-${idx}`,
-      node: /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("div", { className: "grid md:grid-cols-3 gap-6", children: group.map((t, i) => /* @__PURE__ */ (0, import_jsx_runtime6.jsx)(TestimonialCard, { t, maxLines }, i)) })
+      node: /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("div", { className: "grid md:grid-cols-3 gap-6", children: group.map((t, i) => /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(TestimonialCard, { t, maxLines }, i)) })
     }));
   }, [items2]);
   if (!slides.length) return null;
-  return /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("section", { className: "mx-auto max-w-6xl px-4 md:px-6 lg:px-8", children: [
-    reviewsJsonLd && /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("script", { type: "application/ld+json", children: JSON.stringify(reviewsJsonLd) }),
-    /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("div", { className: "mb-6 border-b border-neutral-300 pb-3 flex items-end justify-between gap-3", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("h3", { className: "text-heading uppercase", children: title }),
+  return /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("section", { className: "mx-auto max-w-6xl px-4 md:px-6 lg:px-8", children: [
+    reviewsJsonLd && /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("script", { type: "application/ld+json", children: JSON.stringify(reviewsJsonLd) }),
+    /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("div", { className: "mb-6 border-b border-neutral-300 pb-3 flex items-end justify-between gap-3", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("h3", { className: "text-heading uppercase", children: title }),
       headingExtra
     ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime6.jsx)(EmblaCarousel2, { slides, autoPlayMs: 7e3, contain: false, heightClass: "h-auto", showThumbs: false })
+    /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(EmblaCarousel2, { slides, autoPlayMs: 7e3, contain: false, heightClass: "h-auto", showThumbs: false })
   ] });
 }
 function TestimonialCard({ t, maxLines = 5 }) {
-  const [expanded, setExpanded] = (0, import_react9.useState)(false);
+  const [expanded, setExpanded] = (0, import_react10.useState)(false);
   const quote = String(t.quote || "").trim();
   const author = t.author || "Anonymous";
   const context = t.context;
-  return /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("blockquote", { className: "p-6 rounded-xl bg-white shadow flex flex-col", children: [
-    /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)(
+  return /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("blockquote", { className: "p-6 rounded-xl bg-white shadow flex flex-col", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)(
       "p",
       {
         className: `text-body italic ${expanded ? "" : "line-clamp-" + maxLines}`,
@@ -64932,81 +66514,20 @@ function TestimonialCard({ t, maxLines = 5 }) {
         ]
       }
     ),
-    quote.length > 220 && /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("button", { className: "mt-2 text-sm underline self-start", onClick: () => setExpanded((v) => !v), "aria-expanded": expanded, children: expanded ? "See less" : "See more" }),
-    /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("footer", { className: "mt-4 text-sm text-neutral-600", children: [
+    quote.length > 220 && /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("button", { className: "mt-2 text-sm underline self-start", onClick: () => setExpanded((v) => !v), "aria-expanded": expanded, children: expanded ? "See less" : "See more" }),
+    /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("footer", { className: "mt-4 text-sm text-neutral-600", children: [
       "\u2014 ",
       author,
-      context ? /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("span", { className: "block text-neutral-400 mt-1", children: context }) : null
+      context ? /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("span", { className: "block text-neutral-400 mt-1", children: context }) : null
     ] })
   ] });
 }
 
-// src/sanityClient.js
-var import_client = require("@sanity/client");
-var import_meta4 = {};
-var rawBuildEnv = typeof import_meta4 !== "undefined" && import_meta4.env ? import_meta4.env : {};
-var runtimeWindowEnv = typeof window !== "undefined" && window.__SANITY_CONFIG__ ? window.__SANITY_CONFIG__ : {};
-var env = { ...rawBuildEnv, ...runtimeWindowEnv };
-var projectId = env.VITE_APP_SANITY_PROJECT_ID || env.VITE_SANITY_PROJECT_ID || env.SANITY_PROJECT_ID || env.PROJECT_ID;
-var dataset = env.VITE_APP_SANITY_DATASET || env.VITE_SANITY_DATASET || env.SANITY_DATASET || env.DATASET;
-var createProxyClient = () => {
-  return {
-    fetch: async (query2, params = {}) => {
-      try {
-        const response = await fetch("/api/sanity-query", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ query: query2, params })
-        });
-        if (!response.ok) {
-          const error = await response.json().catch(() => ({ error: "fetch-failed" }));
-          throw new Error(error.message || error.error || "Sanity query failed");
-        }
-        const data2 = await response.json();
-        return data2.result;
-      } catch (err) {
-        console.error("Sanity proxy fetch error:", err);
-        throw err;
-      }
-    }
-  };
-};
-var client = null;
-try {
-  if (projectId && dataset) {
-    if (typeof window !== "undefined") {
-      client = createProxyClient();
-    } else {
-      client = (0, import_client.createClient)({ projectId, dataset, useCdn: true, apiVersion: "2023-05-03" });
-    }
-  } else {
-    client = {
-      fetch: async () => {
-        throw new Error("Sanity client unavailable");
-      }
-    };
-  }
-} catch (e) {
-  console.warn("Failed to initialize Sanity client:", e && (e.message || e));
-  client = {
-    fetch: async () => {
-      throw new Error("Sanity client unavailable");
-    }
-  };
-}
-var sanityClient_default = client;
-var groqFetch = async (query2, params = {}) => {
-  if (!client || typeof client.fetch !== "function") {
-    throw new Error("Sanity client unavailable");
-  }
-  return client.fetch(query2, params);
-};
-
 // src/pages/HomePage.jsx
-var import_react18 = require("@portabletext/react");
+var import_react19 = require("@portabletext/react");
 
 // src/components/calendar/TimeSlotPicker.jsx
-var import_react10 = __toESM(require("react"));
+var import_react11 = __toESM(require("react"));
 var import_prop_types = __toESM(require_prop_types());
 
 // node_modules/.pnpm/date-fns@4.1.0/node_modules/date-fns/constants.js
@@ -66756,44 +68277,12 @@ function validateTimezone(_hours, minutes) {
 }
 
 // src/components/calendar/TimeSlotPicker.jsx
-var import_lucide_react = require("lucide-react");
+var import_lucide_react2 = require("lucide-react");
 
 // src/components/ui/card.jsx
-var React7 = __toESM(require("react"));
-
-// src/lib/utils.js
-function cx(...args) {
-  const classes = [];
-  const push = (v) => {
-    if (v) classes.push(String(v));
-  };
-  const walk = (a) => {
-    for (const x of a) {
-      const t = typeof x;
-      if (!x) continue;
-      if (t === "string" || t === "number") {
-        push(x);
-        continue;
-      }
-      if (Array.isArray(x)) {
-        walk(x);
-        continue;
-      }
-      if (t === "object") {
-        for (const k in x) if (Object.prototype.hasOwnProperty.call(x, k) && x[k]) push(k);
-      }
-    }
-  };
-  walk(args);
-  return classes.join(" ");
-}
-function cn(...inputs) {
-  return cx(...inputs);
-}
-
-// src/components/ui/card.jsx
-var import_jsx_runtime7 = require("react/jsx-runtime");
-var Card = React7.forwardRef(({ className = "", children, ...props }, ref) => /* @__PURE__ */ (0, import_jsx_runtime7.jsx)(
+var React30 = __toESM(require("react"));
+var import_jsx_runtime20 = require("react/jsx-runtime");
+var Card = React30.forwardRef(({ className = "", children, ...props }, ref) => /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
   "div",
   {
     ref,
@@ -66803,72 +68292,19 @@ var Card = React7.forwardRef(({ className = "", children, ...props }, ref) => /*
   }
 ));
 Card.displayName = "Card";
-var CardHeader = ({ className = "", children, ...props }) => /* @__PURE__ */ (0, import_jsx_runtime7.jsx)("div", { className: cn("space-y-1.5 border-b border-slate-100 px-6 py-5", className), ...props, children });
+var CardHeader = ({ className = "", children, ...props }) => /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: cn("space-y-1.5 border-b border-slate-100 px-6 py-5", className), ...props, children });
 CardHeader.displayName = "CardHeader";
-var CardTitle = ({ className = "", children, ...props }) => /* @__PURE__ */ (0, import_jsx_runtime7.jsx)("h3", { className: cn("text-lg font-semibold text-slate-900", className), ...props, children });
+var CardTitle = ({ className = "", children, ...props }) => /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("h3", { className: cn("text-lg font-semibold text-slate-900", className), ...props, children });
 CardTitle.displayName = "CardTitle";
-var CardDescription = ({ className = "", children, ...props }) => /* @__PURE__ */ (0, import_jsx_runtime7.jsx)("p", { className: cn("text-sm text-slate-500", className), ...props, children });
+var CardDescription = ({ className = "", children, ...props }) => /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("p", { className: cn("text-sm text-slate-500", className), ...props, children });
 CardDescription.displayName = "CardDescription";
-var CardContent = ({ className = "", children, ...props }) => /* @__PURE__ */ (0, import_jsx_runtime7.jsx)("div", { className: cn("px-6 py-5", className), ...props, children });
+var CardContent = ({ className = "", children, ...props }) => /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: cn("px-6 py-5", className), ...props, children });
 CardContent.displayName = "CardContent";
-var CardFooter = ({ className = "", children, ...props }) => /* @__PURE__ */ (0, import_jsx_runtime7.jsx)("div", { className: cn("flex items-center gap-3 px-6 py-4 border-t border-slate-100", className), ...props, children });
+var CardFooter = ({ className = "", children, ...props }) => /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: cn("flex items-center gap-3 px-6 py-4 border-t border-slate-100", className), ...props, children });
 CardFooter.displayName = "CardFooter";
 
-// src/components/ui/button.jsx
-var React8 = __toESM(require("react"));
-var import_jsx_runtime8 = require("react/jsx-runtime");
-var baseClasses = "inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-60";
-var variantClasses = {
-  default: "bg-[var(--color-accent)] text-white hover:bg-orange-600 focus-visible:ring-[var(--color-accent)]",
-  secondary: "bg-slate-900 text-white hover:bg-black focus-visible:ring-slate-900",
-  outline: "border border-slate-300 bg-white text-slate-900 hover:bg-slate-100 focus-visible:ring-slate-500",
-  ghost: "bg-transparent text-slate-700 hover:bg-slate-100 focus-visible:ring-slate-400"
-};
-var sizeClasses = {
-  default: "h-10 px-4 py-2",
-  lg: "h-11 px-5",
-  sm: "h-9 px-3 text-sm",
-  icon: "h-10 w-10"
-};
-var Button = React8.forwardRef(({ className = "", variant = "default", size = "default", ...props }, ref) => {
-  const variantClass = variantClasses[variant] || variantClasses.default;
-  const sizeClass = sizeClasses[size] || sizeClasses.default;
-  return /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(
-    "button",
-    {
-      ref,
-      className: cn(baseClasses, variantClass, sizeClass, className),
-      ...props
-    }
-  );
-});
-Button.displayName = "Button";
-
-// src/components/ui/label.jsx
-var React9 = __toESM(require("react"));
-var import_jsx_runtime9 = require("react/jsx-runtime");
-var Label = React9.forwardRef(({ className = "", children, ...props }, ref) => /* @__PURE__ */ (0, import_jsx_runtime9.jsx)("label", { ref, className: cn("text-sm font-semibold text-slate-700", className), ...props, children }));
-Label.displayName = "Label";
-
-// src/components/ui/input.jsx
-var React10 = __toESM(require("react"));
-var import_jsx_runtime10 = require("react/jsx-runtime");
-var Input = React10.forwardRef(({ className = "", type = "text", ...props }, ref) => /* @__PURE__ */ (0, import_jsx_runtime10.jsx)(
-  "input",
-  {
-    ref,
-    type,
-    className: cn(
-      "flex h-10 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] disabled:cursor-not-allowed disabled:opacity-60",
-      className
-    ),
-    ...props
-  }
-));
-Input.displayName = "Input";
-
 // src/components/calendar/TimeSlotPicker.jsx
-var import_jsx_runtime11 = require("react/jsx-runtime");
+var import_jsx_runtime21 = require("react/jsx-runtime");
 var TimeSlotPicker = ({
   pizzaCount = 1,
   customerName = "",
@@ -66876,13 +68312,13 @@ var TimeSlotPicker = ({
   onBook,
   loading = false
 }) => {
-  const [availableDates, setAvailableDates] = (0, import_react10.useState)([]);
-  const [selectedDate, setSelectedDate] = (0, import_react10.useState)(null);
-  const [selectedTime, setSelectedTime] = (0, import_react10.useState)("");
-  const [notes, setNotes] = (0, import_react10.useState)("");
-  const [loadingDates, setLoadingDates] = (0, import_react10.useState)(true);
-  const [bookingSuccess, setBookingSuccess] = (0, import_react10.useState)(false);
-  (0, import_react10.useEffect)(() => {
+  const [availableDates, setAvailableDates] = (0, import_react11.useState)([]);
+  const [selectedDate, setSelectedDate] = (0, import_react11.useState)(null);
+  const [selectedTime, setSelectedTime] = (0, import_react11.useState)("");
+  const [notes, setNotes] = (0, import_react11.useState)("");
+  const [loadingDates, setLoadingDates] = (0, import_react11.useState)(true);
+  const [bookingSuccess, setBookingSuccess] = (0, import_react11.useState)(false);
+  (0, import_react11.useEffect)(() => {
     const fetchAvailableDates = async () => {
       try {
         const [eventsRes, slotsRes] = await Promise.all([
@@ -66964,53 +68400,53 @@ var TimeSlotPicker = ({
     }
   };
   if (loadingDates) {
-    return /* @__PURE__ */ (0, import_jsx_runtime11.jsx)(Card, { children: /* @__PURE__ */ (0, import_jsx_runtime11.jsxs)(CardContent, { className: "p-8 text-center", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime11.jsx)("div", { className: "animate-spin rounded-full h-8 w-8 border-4 border-orange-500 border-t-transparent mx-auto mb-4" }),
-      /* @__PURE__ */ (0, import_jsx_runtime11.jsx)("p", { className: "text-neutral-600", children: "Loading available dates..." })
+    return /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(Card, { children: /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)(CardContent, { className: "p-8 text-center", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("div", { className: "animate-spin rounded-full h-8 w-8 border-4 border-orange-500 border-t-transparent mx-auto mb-4" }),
+      /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("p", { className: "text-neutral-600", children: "Loading available dates..." })
     ] }) });
   }
   if (bookingSuccess) {
     const displayDate = selectedDate.display_date || selectedDate.start_date;
     const displayTime = selectedDate.display_time || selectedTime;
-    return /* @__PURE__ */ (0, import_jsx_runtime11.jsx)(Card, { children: /* @__PURE__ */ (0, import_jsx_runtime11.jsxs)(CardContent, { className: "p-8 text-center space-y-4", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime11.jsx)("div", { className: "text-5xl mb-4", children: "\u2705" }),
-      /* @__PURE__ */ (0, import_jsx_runtime11.jsx)("h3", { className: "text-2xl font-bold text-green-900", children: "Booking Confirmed!" }),
-      /* @__PURE__ */ (0, import_jsx_runtime11.jsxs)("p", { className: "text-green-800", children: [
+    return /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(Card, { children: /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)(CardContent, { className: "p-8 text-center space-y-4", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("div", { className: "text-5xl mb-4", children: "\u2705" }),
+      /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("h3", { className: "text-2xl font-bold text-green-900", children: "Booking Confirmed!" }),
+      /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)("p", { className: "text-green-800", children: [
         "Your ",
         selectedDate.type === "event" ? "pickup" : "appointment",
         " is scheduled for",
         " ",
-        /* @__PURE__ */ (0, import_jsx_runtime11.jsx)("strong", { children: format(new Date(displayDate), "MMMM d, yyyy") }),
+        /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("strong", { children: format(new Date(displayDate), "MMMM d, yyyy") }),
         displayTime && ` at ${displayTime}`,
         "."
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime11.jsxs)("p", { className: "text-sm text-green-700", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)("p", { className: "text-sm text-green-700", children: [
         "We've sent a confirmation to ",
         customerEmail
       ] })
     ] }) });
   }
   if (availableDates.length === 0) {
-    return /* @__PURE__ */ (0, import_jsx_runtime11.jsxs)(Card, { children: [
-      /* @__PURE__ */ (0, import_jsx_runtime11.jsx)(CardHeader, { children: /* @__PURE__ */ (0, import_jsx_runtime11.jsxs)(CardTitle, { className: "flex items-center gap-2", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime11.jsx)(import_lucide_react.Calendar, { className: "w-5 h-5" }),
+    return /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)(Card, { children: [
+      /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(CardHeader, { children: /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)(CardTitle, { className: "flex items-center gap-2", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(import_lucide_react2.Calendar, { className: "w-5 h-5" }),
         "Schedule Your Pizza Pickup"
       ] }) }),
-      /* @__PURE__ */ (0, import_jsx_runtime11.jsx)(CardContent, { className: "space-y-4", children: /* @__PURE__ */ (0, import_jsx_runtime11.jsx)("div", { className: "bg-amber-50 border border-amber-200 rounded-lg p-4", children: /* @__PURE__ */ (0, import_jsx_runtime11.jsxs)("p", { className: "text-amber-800 text-sm", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime11.jsx)("strong", { children: "No pickup dates available yet." }),
+      /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(CardContent, { className: "space-y-4", children: /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("div", { className: "bg-amber-50 border border-amber-200 rounded-lg p-4", children: /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)("p", { className: "text-amber-800 text-sm", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("strong", { children: "No pickup dates available yet." }),
         " We'll send you an email when pickup dates are scheduled. You can also check back here anytime to see available dates."
       ] }) }) })
     ] });
   }
-  return /* @__PURE__ */ (0, import_jsx_runtime11.jsxs)(Card, { children: [
-    /* @__PURE__ */ (0, import_jsx_runtime11.jsxs)(CardHeader, { children: [
-      /* @__PURE__ */ (0, import_jsx_runtime11.jsxs)(CardTitle, { className: "flex items-center gap-2", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime11.jsx)(import_lucide_react.Calendar, { className: "w-5 h-5" }),
+  return /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)(Card, { children: [
+    /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)(CardHeader, { children: [
+      /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)(CardTitle, { className: "flex items-center gap-2", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(import_lucide_react2.Calendar, { className: "w-5 h-5" }),
         "Schedule Your Pizza Pickup"
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime11.jsxs)("p", { className: "text-sm text-neutral-600 mt-2", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)("p", { className: "text-sm text-neutral-600 mt-2", children: [
         "You have ",
-        /* @__PURE__ */ (0, import_jsx_runtime11.jsxs)("strong", { children: [
+        /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)("strong", { children: [
           pizzaCount,
           " ",
           pizzaCount === 1 ? "pizza" : "pizzas"
@@ -67018,17 +68454,17 @@ var TimeSlotPicker = ({
         " to pick up. Choose from available public events below:"
       ] })
     ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime11.jsxs)(CardContent, { className: "space-y-6", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime11.jsxs)("div", { children: [
-        /* @__PURE__ */ (0, import_jsx_runtime11.jsx)(Label, { className: "mb-3 block", children: "Select a Date" }),
-        /* @__PURE__ */ (0, import_jsx_runtime11.jsx)("div", { className: "grid grid-cols-1 sm:grid-cols-2 gap-3", children: availableDates.map((item) => {
+    /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)(CardContent, { className: "space-y-6", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)("div", { children: [
+        /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(Label, { className: "mb-3 block", children: "Select a Date" }),
+        /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("div", { className: "grid grid-cols-1 sm:grid-cols-2 gap-3", children: availableDates.map((item) => {
           const itemDate = parseISO(item.display_date);
           const isSelected = selectedDate?.booking_id === item.booking_id;
           const slotsRemaining = item.available_slots;
           const hasCapacity = item.capacity !== null && item.capacity !== void 0;
           const isEvent = item.type === "event";
           const isTimeSlot = item.type === "time_slot";
-          return /* @__PURE__ */ (0, import_jsx_runtime11.jsx)(
+          return /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(
             "button",
             {
               type: "button",
@@ -67037,43 +68473,43 @@ var TimeSlotPicker = ({
                     relative p-4 rounded-lg border-2 text-left transition-all
                     ${isSelected ? "border-orange-500 bg-orange-50" : "border-neutral-200 hover:border-orange-300 bg-white"}
                   `,
-              children: /* @__PURE__ */ (0, import_jsx_runtime11.jsxs)("div", { className: "flex items-start justify-between", children: [
-                /* @__PURE__ */ (0, import_jsx_runtime11.jsxs)("div", { children: [
-                  /* @__PURE__ */ (0, import_jsx_runtime11.jsxs)("div", { className: "flex items-center gap-2 mb-1", children: [
-                    isEvent && /* @__PURE__ */ (0, import_jsx_runtime11.jsx)("span", { className: "text-xs px-2 py-0.5 bg-blue-100 text-blue-700 rounded", children: "EVENT" }),
-                    isTimeSlot && /* @__PURE__ */ (0, import_jsx_runtime11.jsx)("span", { className: "text-xs px-2 py-0.5 bg-green-100 text-green-700 rounded", children: "TIME SLOT" })
+              children: /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)("div", { className: "flex items-start justify-between", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)("div", { children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)("div", { className: "flex items-center gap-2 mb-1", children: [
+                    isEvent && /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("span", { className: "text-xs px-2 py-0.5 bg-blue-100 text-blue-700 rounded", children: "EVENT" }),
+                    isTimeSlot && /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("span", { className: "text-xs px-2 py-0.5 bg-green-100 text-green-700 rounded", children: "TIME SLOT" })
                   ] }),
-                  /* @__PURE__ */ (0, import_jsx_runtime11.jsxs)("div", { className: "font-semibold text-neutral-900", children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)("div", { className: "font-semibold text-neutral-900", children: [
                     format(itemDate, "EEEE, MMM d"),
-                    item.display_time && /* @__PURE__ */ (0, import_jsx_runtime11.jsxs)("span", { className: "text-sm font-normal text-neutral-600 ml-2", children: [
+                    item.display_time && /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)("span", { className: "text-sm font-normal text-neutral-600 ml-2", children: [
                       "@ ",
                       item.display_time
                     ] })
                   ] }),
-                  /* @__PURE__ */ (0, import_jsx_runtime11.jsx)("div", { className: "text-sm text-neutral-600 mt-1 capitalize", children: item.title }),
-                  item.location && /* @__PURE__ */ (0, import_jsx_runtime11.jsxs)("div", { className: "text-xs text-neutral-500 mt-1", children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("div", { className: "text-sm text-neutral-600 mt-1 capitalize", children: item.title }),
+                  item.location && /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)("div", { className: "text-xs text-neutral-500 mt-1", children: [
                     "\u{1F4CD} ",
                     item.location
                   ] }),
-                  hasCapacity && /* @__PURE__ */ (0, import_jsx_runtime11.jsxs)("div", { className: "text-xs text-neutral-500 mt-2", children: [
+                  hasCapacity && /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)("div", { className: "text-xs text-neutral-500 mt-2", children: [
                     slotsRemaining,
                     " ",
                     slotsRemaining === 1 ? "spot" : "spots",
                     " left"
                   ] })
                 ] }),
-                isSelected && /* @__PURE__ */ (0, import_jsx_runtime11.jsx)(import_lucide_react.Check, { className: "w-5 h-5 text-orange-500 shrink-0" })
+                isSelected && /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(import_lucide_react2.Check, { className: "w-5 h-5 text-orange-500 shrink-0" })
               ] })
             },
             `${item.type}-${item.id}`
           );
         }) })
       ] }),
-      selectedDate && selectedDate.type === "event" && !selectedDate.display_time && /* @__PURE__ */ (0, import_jsx_runtime11.jsxs)("div", { className: "space-y-2 animate-fade-in", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime11.jsx)(Label, { htmlFor: "time", children: "Preferred Time (optional)" }),
-        /* @__PURE__ */ (0, import_jsx_runtime11.jsxs)("div", { className: "flex items-center gap-2", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime11.jsx)(import_lucide_react.Clock, { className: "w-4 h-4 text-neutral-500" }),
-          /* @__PURE__ */ (0, import_jsx_runtime11.jsx)(
+      selectedDate && selectedDate.type === "event" && !selectedDate.display_time && /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)("div", { className: "space-y-2 animate-fade-in", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(Label, { htmlFor: "time", children: "Preferred Time (optional)" }),
+        /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)("div", { className: "flex items-center gap-2", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(import_lucide_react2.Clock, { className: "w-4 h-4 text-neutral-500" }),
+          /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(
             Input,
             {
               id: "time",
@@ -67085,11 +68521,11 @@ var TimeSlotPicker = ({
             }
           )
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime11.jsx)("p", { className: "text-xs text-neutral-500", children: "We'll do our best to accommodate your preference." })
+        /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("p", { className: "text-xs text-neutral-500", children: "We'll do our best to accommodate your preference." })
       ] }),
-      selectedDate && /* @__PURE__ */ (0, import_jsx_runtime11.jsxs)("div", { className: "space-y-2", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime11.jsx)(Label, { htmlFor: "notes", children: "Special Requests (optional)" }),
-        /* @__PURE__ */ (0, import_jsx_runtime11.jsx)(
+      selectedDate && /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)("div", { className: "space-y-2", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(Label, { htmlFor: "notes", children: "Special Requests (optional)" }),
+        /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(
           Input,
           {
             id: "notes",
@@ -67100,7 +68536,7 @@ var TimeSlotPicker = ({
           }
         )
       ] }),
-      selectedDate && /* @__PURE__ */ (0, import_jsx_runtime11.jsx)(
+      selectedDate && /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(
         Button,
         {
           onClick: handleBooking,
@@ -67121,9 +68557,72 @@ TimeSlotPicker.propTypes = {
 };
 
 // src/utils/portableTextComponents.jsx
-var import_react11 = __toESM(require("react"));
+var import_react12 = __toESM(require("react"));
 var import_image_url = __toESM(require("@sanity/image-url"));
-var import_jsx_runtime12 = require("react/jsx-runtime");
+
+// src/sanityClient.js
+var import_client = require("@sanity/client");
+var import_meta4 = {};
+var rawBuildEnv = typeof import_meta4 !== "undefined" && import_meta4.env ? import_meta4.env : {};
+var runtimeWindowEnv = typeof window !== "undefined" && window.__SANITY_CONFIG__ ? window.__SANITY_CONFIG__ : {};
+var env = { ...rawBuildEnv, ...runtimeWindowEnv };
+var projectId = env.VITE_APP_SANITY_PROJECT_ID || env.VITE_SANITY_PROJECT_ID || env.SANITY_PROJECT_ID || env.PROJECT_ID;
+var dataset = env.VITE_APP_SANITY_DATASET || env.VITE_SANITY_DATASET || env.SANITY_DATASET || env.DATASET;
+var createProxyClient = () => {
+  return {
+    fetch: async (query2, params = {}) => {
+      try {
+        const response = await fetch("/api/sanity-query", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ query: query2, params })
+        });
+        if (!response.ok) {
+          const error = await response.json().catch(() => ({ error: "fetch-failed" }));
+          throw new Error(error.message || error.error || "Sanity query failed");
+        }
+        const data2 = await response.json();
+        return data2.result;
+      } catch (err) {
+        console.error("Sanity proxy fetch error:", err);
+        throw err;
+      }
+    }
+  };
+};
+var client = null;
+try {
+  if (projectId && dataset) {
+    if (typeof window !== "undefined") {
+      client = createProxyClient();
+    } else {
+      client = (0, import_client.createClient)({ projectId, dataset, useCdn: true, apiVersion: "2023-05-03" });
+    }
+  } else {
+    client = {
+      fetch: async () => {
+        throw new Error("Sanity client unavailable");
+      }
+    };
+  }
+} catch (e) {
+  console.warn("Failed to initialize Sanity client:", e && (e.message || e));
+  client = {
+    fetch: async () => {
+      throw new Error("Sanity client unavailable");
+    }
+  };
+}
+var sanityClient_default = client;
+var groqFetch = async (query2, params = {}) => {
+  if (!client || typeof client.fetch !== "function") {
+    throw new Error("Sanity client unavailable");
+  }
+  return client.fetch(query2, params);
+};
+
+// src/utils/portableTextComponents.jsx
+var import_jsx_runtime22 = require("react/jsx-runtime");
 var accentLinkClass = "text-[var(--color-accent)] underline underline-offset-4 decoration-[var(--color-accent)] hover:opacity-80 transition-colors";
 function DefaultLink({ children, value: value2 }) {
   const href = typeof value2?.href === "string" && value2.href.trim() ? value2.href : "#";
@@ -67132,7 +68631,7 @@ function DefaultLink({ children, value: value2 }) {
   const shouldOpenNewTab = explicitTarget === "_blank" || explicitTarget === true || explicitTarget === void 0 && isExternal;
   const target = shouldOpenNewTab ? "_blank" : void 0;
   const rel = shouldOpenNewTab ? "noopener noreferrer" : void 0;
-  return /* @__PURE__ */ (0, import_jsx_runtime12.jsx)("a", { href, target, rel, className: accentLinkClass, children });
+  return /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("a", { href, target, rel, className: accentLinkClass, children });
 }
 var imageBuilder = null;
 try {
@@ -67159,7 +68658,7 @@ function DefaultPortableTextImage({ value: value2 }) {
     return null;
   }
   const alt = typeof value2?.alt === "string" ? value2.alt : "";
-  return /* @__PURE__ */ (0, import_jsx_runtime12.jsx)(
+  return /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
     "img",
     {
       src,
@@ -67186,1338 +68685,32 @@ function createPortableTextComponents(overrides = {}) {
 var portableTextComponents = createPortableTextComponents();
 
 // src/components/ui/SectionHeader.jsx
-var import_react12 = __toESM(require("react"));
-var import_jsx_runtime13 = require("react/jsx-runtime");
+var import_react13 = __toESM(require("react"));
+var import_jsx_runtime23 = require("react/jsx-runtime");
 function SectionHeader({ overline, title, className = "" }) {
-  return /* @__PURE__ */ (0, import_jsx_runtime13.jsxs)("div", { className: ["space-y-2", className].filter(Boolean).join(" "), children: [
-    overline ? /* @__PURE__ */ (0, import_jsx_runtime13.jsx)("span", { className: "heading-overline", children: overline }) : null,
-    title ? /* @__PURE__ */ (0, import_jsx_runtime13.jsx)("h2", { className: "heading-xl heading-balance", children: title }) : null
+  return /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { className: ["space-y-2", className].filter(Boolean).join(" "), children: [
+    overline ? /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("span", { className: "heading-overline", children: overline }) : null,
+    title ? /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("h2", { className: "heading-xl heading-balance", children: title }) : null
   ] });
 }
 
 // src/components/ui/Separator.jsx
-var import_react13 = __toESM(require("react"));
-var import_jsx_runtime14 = require("react/jsx-runtime");
+var import_react14 = __toESM(require("react"));
+var import_jsx_runtime24 = require("react/jsx-runtime");
 function Separator({ className = "", orientation = "horizontal", decorative = true, ...props }) {
   const isHorizontal = orientation !== "vertical";
   const base = isHorizontal ? "h-px w-full my-12" : "w-px h-full mx-4";
   const classes = [base, "bg-neutral-200", className].filter(Boolean).join(" ");
-  return /* @__PURE__ */ (0, import_jsx_runtime14.jsx)("div", { role: decorative ? "none" : "separator", "aria-orientation": orientation, className: classes, ...props });
+  return /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("div", { role: decorative ? "none" : "separator", "aria-orientation": orientation, className: classes, ...props });
 }
 
 // src/components/home/GiftCardDialog.jsx
-var import_react15 = __toESM(require("react"));
+var import_react16 = __toESM(require("react"));
 var import_react_helmet_async = __toESM(require_lib());
 var import_lucide_react3 = require("lucide-react");
 
-// src/components/ui/dialog.jsx
-var React32 = __toESM(require("react"));
-
-// node_modules/.pnpm/@radix-ui+react-dialog@1.1.15_@types+react-dom@18.3.1_@types+react@19.2.0_react-dom@18.2.0_react@18.2.0__react@18.2.0/node_modules/@radix-ui/react-dialog/dist/index.mjs
-var React31 = __toESM(require("react"), 1);
-
-// node_modules/.pnpm/@radix-ui+primitive@1.1.3/node_modules/@radix-ui/primitive/dist/index.mjs
-var canUseDOM2 = !!(typeof window !== "undefined" && window.document && window.document.createElement);
-function composeEventHandlers(originalEventHandler, ourEventHandler, { checkForDefaultPrevented = true } = {}) {
-  return function handleEvent(event) {
-    originalEventHandler?.(event);
-    if (checkForDefaultPrevented === false || !event.defaultPrevented) {
-      return ourEventHandler?.(event);
-    }
-  };
-}
-
-// node_modules/.pnpm/@radix-ui+react-compose-refs@1.1.2_@types+react@19.2.0_react@18.2.0/node_modules/@radix-ui/react-compose-refs/dist/index.mjs
-var React15 = __toESM(require("react"), 1);
-function setRef(ref, value2) {
-  if (typeof ref === "function") {
-    return ref(value2);
-  } else if (ref !== null && ref !== void 0) {
-    ref.current = value2;
-  }
-}
-function composeRefs(...refs) {
-  return (node) => {
-    let hasCleanup = false;
-    const cleanups = refs.map((ref) => {
-      const cleanup = setRef(ref, node);
-      if (!hasCleanup && typeof cleanup == "function") {
-        hasCleanup = true;
-      }
-      return cleanup;
-    });
-    if (hasCleanup) {
-      return () => {
-        for (let i = 0; i < cleanups.length; i++) {
-          const cleanup = cleanups[i];
-          if (typeof cleanup == "function") {
-            cleanup();
-          } else {
-            setRef(refs[i], null);
-          }
-        }
-      };
-    }
-  };
-}
-function useComposedRefs(...refs) {
-  return React15.useCallback(composeRefs(...refs), refs);
-}
-
-// node_modules/.pnpm/@radix-ui+react-context@1.1.2_@types+react@19.2.0_react@18.2.0/node_modules/@radix-ui/react-context/dist/index.mjs
-var React16 = __toESM(require("react"), 1);
-var import_jsx_runtime15 = require("react/jsx-runtime");
-function createContext2(rootComponentName, defaultContext) {
-  const Context = React16.createContext(defaultContext);
-  const Provider = (props) => {
-    const { children, ...context } = props;
-    const value2 = React16.useMemo(() => context, Object.values(context));
-    return /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(Context.Provider, { value: value2, children });
-  };
-  Provider.displayName = rootComponentName + "Provider";
-  function useContext22(consumerName) {
-    const context = React16.useContext(Context);
-    if (context) return context;
-    if (defaultContext !== void 0) return defaultContext;
-    throw new Error(`\`${consumerName}\` must be used within \`${rootComponentName}\``);
-  }
-  return [Provider, useContext22];
-}
-function createContextScope(scopeName, createContextScopeDeps = []) {
-  let defaultContexts = [];
-  function createContext32(rootComponentName, defaultContext) {
-    const BaseContext = React16.createContext(defaultContext);
-    const index2 = defaultContexts.length;
-    defaultContexts = [...defaultContexts, defaultContext];
-    const Provider = (props) => {
-      const { scope, children, ...context } = props;
-      const Context = scope?.[scopeName]?.[index2] || BaseContext;
-      const value2 = React16.useMemo(() => context, Object.values(context));
-      return /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(Context.Provider, { value: value2, children });
-    };
-    Provider.displayName = rootComponentName + "Provider";
-    function useContext22(consumerName, scope) {
-      const Context = scope?.[scopeName]?.[index2] || BaseContext;
-      const context = React16.useContext(Context);
-      if (context) return context;
-      if (defaultContext !== void 0) return defaultContext;
-      throw new Error(`\`${consumerName}\` must be used within \`${rootComponentName}\``);
-    }
-    return [Provider, useContext22];
-  }
-  const createScope = () => {
-    const scopeContexts = defaultContexts.map((defaultContext) => {
-      return React16.createContext(defaultContext);
-    });
-    return function useScope(scope) {
-      const contexts = scope?.[scopeName] || scopeContexts;
-      return React16.useMemo(
-        () => ({ [`__scope${scopeName}`]: { ...scope, [scopeName]: contexts } }),
-        [scope, contexts]
-      );
-    };
-  };
-  createScope.scopeName = scopeName;
-  return [createContext32, composeContextScopes(createScope, ...createContextScopeDeps)];
-}
-function composeContextScopes(...scopes) {
-  const baseScope = scopes[0];
-  if (scopes.length === 1) return baseScope;
-  const createScope = () => {
-    const scopeHooks = scopes.map((createScope2) => ({
-      useScope: createScope2(),
-      scopeName: createScope2.scopeName
-    }));
-    return function useComposedScopes(overrideScopes) {
-      const nextScopes = scopeHooks.reduce((nextScopes2, { useScope, scopeName }) => {
-        const scopeProps = useScope(overrideScopes);
-        const currentScope = scopeProps[`__scope${scopeName}`];
-        return { ...nextScopes2, ...currentScope };
-      }, {});
-      return React16.useMemo(() => ({ [`__scope${baseScope.scopeName}`]: nextScopes }), [nextScopes]);
-    };
-  };
-  createScope.scopeName = baseScope.scopeName;
-  return createScope;
-}
-
-// node_modules/.pnpm/@radix-ui+react-id@1.1.1_@types+react@19.2.0_react@18.2.0/node_modules/@radix-ui/react-id/dist/index.mjs
-var React18 = __toESM(require("react"), 1);
-
-// node_modules/.pnpm/@radix-ui+react-use-layout-effect@1.1.1_@types+react@19.2.0_react@18.2.0/node_modules/@radix-ui/react-use-layout-effect/dist/index.mjs
-var React17 = __toESM(require("react"), 1);
-var useLayoutEffect2 = globalThis?.document ? React17.useLayoutEffect : () => {
-};
-
-// node_modules/.pnpm/@radix-ui+react-id@1.1.1_@types+react@19.2.0_react@18.2.0/node_modules/@radix-ui/react-id/dist/index.mjs
-var useReactId = React18[" useId ".trim().toString()] || (() => void 0);
-var count = 0;
-function useId(deterministicId) {
-  const [id, setId] = React18.useState(useReactId());
-  useLayoutEffect2(() => {
-    if (!deterministicId) setId((reactId) => reactId ?? String(count++));
-  }, [deterministicId]);
-  return deterministicId || (id ? `radix-${id}` : "");
-}
-
-// node_modules/.pnpm/@radix-ui+react-use-controllable-state@1.2.2_@types+react@19.2.0_react@18.2.0/node_modules/@radix-ui/react-use-controllable-state/dist/index.mjs
-var React19 = __toESM(require("react"), 1);
-var React22 = __toESM(require("react"), 1);
-var useInsertionEffect = React19[" useInsertionEffect ".trim().toString()] || useLayoutEffect2;
-function useControllableState({
-  prop,
-  defaultProp,
-  onChange = () => {
-  },
-  caller
-}) {
-  const [uncontrolledProp, setUncontrolledProp, onChangeRef] = useUncontrolledState({
-    defaultProp,
-    onChange
-  });
-  const isControlled = prop !== void 0;
-  const value2 = isControlled ? prop : uncontrolledProp;
-  if (true) {
-    const isControlledRef = React19.useRef(prop !== void 0);
-    React19.useEffect(() => {
-      const wasControlled = isControlledRef.current;
-      if (wasControlled !== isControlled) {
-        const from = wasControlled ? "controlled" : "uncontrolled";
-        const to = isControlled ? "controlled" : "uncontrolled";
-        console.warn(
-          `${caller} is changing from ${from} to ${to}. Components should not switch from controlled to uncontrolled (or vice versa). Decide between using a controlled or uncontrolled value for the lifetime of the component.`
-        );
-      }
-      isControlledRef.current = isControlled;
-    }, [isControlled, caller]);
-  }
-  const setValue = React19.useCallback(
-    (nextValue) => {
-      if (isControlled) {
-        const value22 = isFunction(nextValue) ? nextValue(prop) : nextValue;
-        if (value22 !== prop) {
-          onChangeRef.current?.(value22);
-        }
-      } else {
-        setUncontrolledProp(nextValue);
-      }
-    },
-    [isControlled, prop, setUncontrolledProp, onChangeRef]
-  );
-  return [value2, setValue];
-}
-function useUncontrolledState({
-  defaultProp,
-  onChange
-}) {
-  const [value2, setValue] = React19.useState(defaultProp);
-  const prevValueRef = React19.useRef(value2);
-  const onChangeRef = React19.useRef(onChange);
-  useInsertionEffect(() => {
-    onChangeRef.current = onChange;
-  }, [onChange]);
-  React19.useEffect(() => {
-    if (prevValueRef.current !== value2) {
-      onChangeRef.current?.(value2);
-      prevValueRef.current = value2;
-    }
-  }, [value2, prevValueRef]);
-  return [value2, setValue, onChangeRef];
-}
-function isFunction(value2) {
-  return typeof value2 === "function";
-}
-var SYNC_STATE = Symbol("RADIX:SYNC_STATE");
-
-// node_modules/.pnpm/@radix-ui+react-dismissable-layer@1.1.11_@types+react-dom@18.3.1_@types+react@19.2.0_react-do_6egxp5znpyk3c7yb7fm5vbccse/node_modules/@radix-ui/react-dismissable-layer/dist/index.mjs
-var React25 = __toESM(require("react"), 1);
-
-// node_modules/.pnpm/@radix-ui+react-primitive@2.1.3_@types+react-dom@18.3.1_@types+react@19.2.0_react-dom@18.2.0_react@18.2.0__react@18.2.0/node_modules/@radix-ui/react-primitive/dist/index.mjs
-var React21 = __toESM(require("react"), 1);
-var ReactDOM = __toESM(require("react-dom"), 1);
-
-// node_modules/.pnpm/@radix-ui+react-slot@1.2.3_@types+react@19.2.0_react@18.2.0/node_modules/@radix-ui/react-slot/dist/index.mjs
-var React20 = __toESM(require("react"), 1);
-var import_jsx_runtime16 = require("react/jsx-runtime");
-// @__NO_SIDE_EFFECTS__
-function createSlot(ownerName) {
-  const SlotClone = /* @__PURE__ */ createSlotClone(ownerName);
-  const Slot2 = React20.forwardRef((props, forwardedRef) => {
-    const { children, ...slotProps } = props;
-    const childrenArray = React20.Children.toArray(children);
-    const slottable = childrenArray.find(isSlottable);
-    if (slottable) {
-      const newElement = slottable.props.children;
-      const newChildren = childrenArray.map((child) => {
-        if (child === slottable) {
-          if (React20.Children.count(newElement) > 1) return React20.Children.only(null);
-          return React20.isValidElement(newElement) ? newElement.props.children : null;
-        } else {
-          return child;
-        }
-      });
-      return /* @__PURE__ */ (0, import_jsx_runtime16.jsx)(SlotClone, { ...slotProps, ref: forwardedRef, children: React20.isValidElement(newElement) ? React20.cloneElement(newElement, void 0, newChildren) : null });
-    }
-    return /* @__PURE__ */ (0, import_jsx_runtime16.jsx)(SlotClone, { ...slotProps, ref: forwardedRef, children });
-  });
-  Slot2.displayName = `${ownerName}.Slot`;
-  return Slot2;
-}
-// @__NO_SIDE_EFFECTS__
-function createSlotClone(ownerName) {
-  const SlotClone = React20.forwardRef((props, forwardedRef) => {
-    const { children, ...slotProps } = props;
-    if (React20.isValidElement(children)) {
-      const childrenRef = getElementRef(children);
-      const props2 = mergeProps(slotProps, children.props);
-      if (children.type !== React20.Fragment) {
-        props2.ref = forwardedRef ? composeRefs(forwardedRef, childrenRef) : childrenRef;
-      }
-      return React20.cloneElement(children, props2);
-    }
-    return React20.Children.count(children) > 1 ? React20.Children.only(null) : null;
-  });
-  SlotClone.displayName = `${ownerName}.SlotClone`;
-  return SlotClone;
-}
-var SLOTTABLE_IDENTIFIER = Symbol("radix.slottable");
-function isSlottable(child) {
-  return React20.isValidElement(child) && typeof child.type === "function" && "__radixId" in child.type && child.type.__radixId === SLOTTABLE_IDENTIFIER;
-}
-function mergeProps(slotProps, childProps) {
-  const overrideProps = { ...childProps };
-  for (const propName in childProps) {
-    const slotPropValue = slotProps[propName];
-    const childPropValue = childProps[propName];
-    const isHandler = /^on[A-Z]/.test(propName);
-    if (isHandler) {
-      if (slotPropValue && childPropValue) {
-        overrideProps[propName] = (...args) => {
-          const result = childPropValue(...args);
-          slotPropValue(...args);
-          return result;
-        };
-      } else if (slotPropValue) {
-        overrideProps[propName] = slotPropValue;
-      }
-    } else if (propName === "style") {
-      overrideProps[propName] = { ...slotPropValue, ...childPropValue };
-    } else if (propName === "className") {
-      overrideProps[propName] = [slotPropValue, childPropValue].filter(Boolean).join(" ");
-    }
-  }
-  return { ...slotProps, ...overrideProps };
-}
-function getElementRef(element) {
-  let getter = Object.getOwnPropertyDescriptor(element.props, "ref")?.get;
-  let mayWarn = getter && "isReactWarning" in getter && getter.isReactWarning;
-  if (mayWarn) {
-    return element.ref;
-  }
-  getter = Object.getOwnPropertyDescriptor(element, "ref")?.get;
-  mayWarn = getter && "isReactWarning" in getter && getter.isReactWarning;
-  if (mayWarn) {
-    return element.props.ref;
-  }
-  return element.props.ref || element.ref;
-}
-
-// node_modules/.pnpm/@radix-ui+react-primitive@2.1.3_@types+react-dom@18.3.1_@types+react@19.2.0_react-dom@18.2.0_react@18.2.0__react@18.2.0/node_modules/@radix-ui/react-primitive/dist/index.mjs
-var import_jsx_runtime17 = require("react/jsx-runtime");
-var NODES = [
-  "a",
-  "button",
-  "div",
-  "form",
-  "h2",
-  "h3",
-  "img",
-  "input",
-  "label",
-  "li",
-  "nav",
-  "ol",
-  "p",
-  "select",
-  "span",
-  "svg",
-  "ul"
-];
-var Primitive = NODES.reduce((primitive, node) => {
-  const Slot2 = createSlot(`Primitive.${node}`);
-  const Node2 = React21.forwardRef((props, forwardedRef) => {
-    const { asChild, ...primitiveProps } = props;
-    const Comp = asChild ? Slot2 : node;
-    if (typeof window !== "undefined") {
-      window[Symbol.for("radix-ui")] = true;
-    }
-    return /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(Comp, { ...primitiveProps, ref: forwardedRef });
-  });
-  Node2.displayName = `Primitive.${node}`;
-  return { ...primitive, [node]: Node2 };
-}, {});
-function dispatchDiscreteCustomEvent(target, event) {
-  if (target) ReactDOM.flushSync(() => target.dispatchEvent(event));
-}
-
-// node_modules/.pnpm/@radix-ui+react-use-callback-ref@1.1.1_@types+react@19.2.0_react@18.2.0/node_modules/@radix-ui/react-use-callback-ref/dist/index.mjs
-var React23 = __toESM(require("react"), 1);
-function useCallbackRef(callback) {
-  const callbackRef = React23.useRef(callback);
-  React23.useEffect(() => {
-    callbackRef.current = callback;
-  });
-  return React23.useMemo(() => (...args) => callbackRef.current?.(...args), []);
-}
-
-// node_modules/.pnpm/@radix-ui+react-use-escape-keydown@1.1.1_@types+react@19.2.0_react@18.2.0/node_modules/@radix-ui/react-use-escape-keydown/dist/index.mjs
-var React24 = __toESM(require("react"), 1);
-function useEscapeKeydown(onEscapeKeyDownProp, ownerDocument = globalThis?.document) {
-  const onEscapeKeyDown = useCallbackRef(onEscapeKeyDownProp);
-  React24.useEffect(() => {
-    const handleKeyDown = (event) => {
-      if (event.key === "Escape") {
-        onEscapeKeyDown(event);
-      }
-    };
-    ownerDocument.addEventListener("keydown", handleKeyDown, { capture: true });
-    return () => ownerDocument.removeEventListener("keydown", handleKeyDown, { capture: true });
-  }, [onEscapeKeyDown, ownerDocument]);
-}
-
-// node_modules/.pnpm/@radix-ui+react-dismissable-layer@1.1.11_@types+react-dom@18.3.1_@types+react@19.2.0_react-do_6egxp5znpyk3c7yb7fm5vbccse/node_modules/@radix-ui/react-dismissable-layer/dist/index.mjs
-var import_jsx_runtime18 = require("react/jsx-runtime");
-var DISMISSABLE_LAYER_NAME = "DismissableLayer";
-var CONTEXT_UPDATE = "dismissableLayer.update";
-var POINTER_DOWN_OUTSIDE = "dismissableLayer.pointerDownOutside";
-var FOCUS_OUTSIDE = "dismissableLayer.focusOutside";
-var originalBodyPointerEvents;
-var DismissableLayerContext = React25.createContext({
-  layers: /* @__PURE__ */ new Set(),
-  layersWithOutsidePointerEventsDisabled: /* @__PURE__ */ new Set(),
-  branches: /* @__PURE__ */ new Set()
-});
-var DismissableLayer = React25.forwardRef(
-  (props, forwardedRef) => {
-    const {
-      disableOutsidePointerEvents = false,
-      onEscapeKeyDown,
-      onPointerDownOutside,
-      onFocusOutside,
-      onInteractOutside,
-      onDismiss,
-      ...layerProps
-    } = props;
-    const context = React25.useContext(DismissableLayerContext);
-    const [node, setNode] = React25.useState(null);
-    const ownerDocument = node?.ownerDocument ?? globalThis?.document;
-    const [, force] = React25.useState({});
-    const composedRefs = useComposedRefs(forwardedRef, (node2) => setNode(node2));
-    const layers = Array.from(context.layers);
-    const [highestLayerWithOutsidePointerEventsDisabled] = [...context.layersWithOutsidePointerEventsDisabled].slice(-1);
-    const highestLayerWithOutsidePointerEventsDisabledIndex = layers.indexOf(highestLayerWithOutsidePointerEventsDisabled);
-    const index2 = node ? layers.indexOf(node) : -1;
-    const isBodyPointerEventsDisabled = context.layersWithOutsidePointerEventsDisabled.size > 0;
-    const isPointerEventsEnabled = index2 >= highestLayerWithOutsidePointerEventsDisabledIndex;
-    const pointerDownOutside = usePointerDownOutside((event) => {
-      const target = event.target;
-      const isPointerDownOnBranch = [...context.branches].some((branch) => branch.contains(target));
-      if (!isPointerEventsEnabled || isPointerDownOnBranch) return;
-      onPointerDownOutside?.(event);
-      onInteractOutside?.(event);
-      if (!event.defaultPrevented) onDismiss?.();
-    }, ownerDocument);
-    const focusOutside = useFocusOutside((event) => {
-      const target = event.target;
-      const isFocusInBranch = [...context.branches].some((branch) => branch.contains(target));
-      if (isFocusInBranch) return;
-      onFocusOutside?.(event);
-      onInteractOutside?.(event);
-      if (!event.defaultPrevented) onDismiss?.();
-    }, ownerDocument);
-    useEscapeKeydown((event) => {
-      const isHighestLayer = index2 === context.layers.size - 1;
-      if (!isHighestLayer) return;
-      onEscapeKeyDown?.(event);
-      if (!event.defaultPrevented && onDismiss) {
-        event.preventDefault();
-        onDismiss();
-      }
-    }, ownerDocument);
-    React25.useEffect(() => {
-      if (!node) return;
-      if (disableOutsidePointerEvents) {
-        if (context.layersWithOutsidePointerEventsDisabled.size === 0) {
-          originalBodyPointerEvents = ownerDocument.body.style.pointerEvents;
-          ownerDocument.body.style.pointerEvents = "none";
-        }
-        context.layersWithOutsidePointerEventsDisabled.add(node);
-      }
-      context.layers.add(node);
-      dispatchUpdate();
-      return () => {
-        if (disableOutsidePointerEvents && context.layersWithOutsidePointerEventsDisabled.size === 1) {
-          ownerDocument.body.style.pointerEvents = originalBodyPointerEvents;
-        }
-      };
-    }, [node, ownerDocument, disableOutsidePointerEvents, context]);
-    React25.useEffect(() => {
-      return () => {
-        if (!node) return;
-        context.layers.delete(node);
-        context.layersWithOutsidePointerEventsDisabled.delete(node);
-        dispatchUpdate();
-      };
-    }, [node, context]);
-    React25.useEffect(() => {
-      const handleUpdate = () => force({});
-      document.addEventListener(CONTEXT_UPDATE, handleUpdate);
-      return () => document.removeEventListener(CONTEXT_UPDATE, handleUpdate);
-    }, []);
-    return /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(
-      Primitive.div,
-      {
-        ...layerProps,
-        ref: composedRefs,
-        style: {
-          pointerEvents: isBodyPointerEventsDisabled ? isPointerEventsEnabled ? "auto" : "none" : void 0,
-          ...props.style
-        },
-        onFocusCapture: composeEventHandlers(props.onFocusCapture, focusOutside.onFocusCapture),
-        onBlurCapture: composeEventHandlers(props.onBlurCapture, focusOutside.onBlurCapture),
-        onPointerDownCapture: composeEventHandlers(
-          props.onPointerDownCapture,
-          pointerDownOutside.onPointerDownCapture
-        )
-      }
-    );
-  }
-);
-DismissableLayer.displayName = DISMISSABLE_LAYER_NAME;
-var BRANCH_NAME = "DismissableLayerBranch";
-var DismissableLayerBranch = React25.forwardRef((props, forwardedRef) => {
-  const context = React25.useContext(DismissableLayerContext);
-  const ref = React25.useRef(null);
-  const composedRefs = useComposedRefs(forwardedRef, ref);
-  React25.useEffect(() => {
-    const node = ref.current;
-    if (node) {
-      context.branches.add(node);
-      return () => {
-        context.branches.delete(node);
-      };
-    }
-  }, [context.branches]);
-  return /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(Primitive.div, { ...props, ref: composedRefs });
-});
-DismissableLayerBranch.displayName = BRANCH_NAME;
-function usePointerDownOutside(onPointerDownOutside, ownerDocument = globalThis?.document) {
-  const handlePointerDownOutside = useCallbackRef(onPointerDownOutside);
-  const isPointerInsideReactTreeRef = React25.useRef(false);
-  const handleClickRef = React25.useRef(() => {
-  });
-  React25.useEffect(() => {
-    const handlePointerDown = (event) => {
-      if (event.target && !isPointerInsideReactTreeRef.current) {
-        let handleAndDispatchPointerDownOutsideEvent2 = function() {
-          handleAndDispatchCustomEvent(
-            POINTER_DOWN_OUTSIDE,
-            handlePointerDownOutside,
-            eventDetail,
-            { discrete: true }
-          );
-        };
-        var handleAndDispatchPointerDownOutsideEvent = handleAndDispatchPointerDownOutsideEvent2;
-        const eventDetail = { originalEvent: event };
-        if (event.pointerType === "touch") {
-          ownerDocument.removeEventListener("click", handleClickRef.current);
-          handleClickRef.current = handleAndDispatchPointerDownOutsideEvent2;
-          ownerDocument.addEventListener("click", handleClickRef.current, { once: true });
-        } else {
-          handleAndDispatchPointerDownOutsideEvent2();
-        }
-      } else {
-        ownerDocument.removeEventListener("click", handleClickRef.current);
-      }
-      isPointerInsideReactTreeRef.current = false;
-    };
-    const timerId = window.setTimeout(() => {
-      ownerDocument.addEventListener("pointerdown", handlePointerDown);
-    }, 0);
-    return () => {
-      window.clearTimeout(timerId);
-      ownerDocument.removeEventListener("pointerdown", handlePointerDown);
-      ownerDocument.removeEventListener("click", handleClickRef.current);
-    };
-  }, [ownerDocument, handlePointerDownOutside]);
-  return {
-    // ensures we check React component tree (not just DOM tree)
-    onPointerDownCapture: () => isPointerInsideReactTreeRef.current = true
-  };
-}
-function useFocusOutside(onFocusOutside, ownerDocument = globalThis?.document) {
-  const handleFocusOutside = useCallbackRef(onFocusOutside);
-  const isFocusInsideReactTreeRef = React25.useRef(false);
-  React25.useEffect(() => {
-    const handleFocus = (event) => {
-      if (event.target && !isFocusInsideReactTreeRef.current) {
-        const eventDetail = { originalEvent: event };
-        handleAndDispatchCustomEvent(FOCUS_OUTSIDE, handleFocusOutside, eventDetail, {
-          discrete: false
-        });
-      }
-    };
-    ownerDocument.addEventListener("focusin", handleFocus);
-    return () => ownerDocument.removeEventListener("focusin", handleFocus);
-  }, [ownerDocument, handleFocusOutside]);
-  return {
-    onFocusCapture: () => isFocusInsideReactTreeRef.current = true,
-    onBlurCapture: () => isFocusInsideReactTreeRef.current = false
-  };
-}
-function dispatchUpdate() {
-  const event = new CustomEvent(CONTEXT_UPDATE);
-  document.dispatchEvent(event);
-}
-function handleAndDispatchCustomEvent(name2, handler, detail, { discrete }) {
-  const target = detail.originalEvent.target;
-  const event = new CustomEvent(name2, { bubbles: false, cancelable: true, detail });
-  if (handler) target.addEventListener(name2, handler, { once: true });
-  if (discrete) {
-    dispatchDiscreteCustomEvent(target, event);
-  } else {
-    target.dispatchEvent(event);
-  }
-}
-
-// node_modules/.pnpm/@radix-ui+react-focus-scope@1.1.7_@types+react-dom@18.3.1_@types+react@19.2.0_react-dom@18.2._dhkdyyxeakawqe2hoiycn4cg2m/node_modules/@radix-ui/react-focus-scope/dist/index.mjs
-var React26 = __toESM(require("react"), 1);
-var import_jsx_runtime19 = require("react/jsx-runtime");
-var AUTOFOCUS_ON_MOUNT = "focusScope.autoFocusOnMount";
-var AUTOFOCUS_ON_UNMOUNT = "focusScope.autoFocusOnUnmount";
-var EVENT_OPTIONS = { bubbles: false, cancelable: true };
-var FOCUS_SCOPE_NAME = "FocusScope";
-var FocusScope = React26.forwardRef((props, forwardedRef) => {
-  const {
-    loop = false,
-    trapped = false,
-    onMountAutoFocus: onMountAutoFocusProp,
-    onUnmountAutoFocus: onUnmountAutoFocusProp,
-    ...scopeProps
-  } = props;
-  const [container, setContainer] = React26.useState(null);
-  const onMountAutoFocus = useCallbackRef(onMountAutoFocusProp);
-  const onUnmountAutoFocus = useCallbackRef(onUnmountAutoFocusProp);
-  const lastFocusedElementRef = React26.useRef(null);
-  const composedRefs = useComposedRefs(forwardedRef, (node) => setContainer(node));
-  const focusScope = React26.useRef({
-    paused: false,
-    pause() {
-      this.paused = true;
-    },
-    resume() {
-      this.paused = false;
-    }
-  }).current;
-  React26.useEffect(() => {
-    if (trapped) {
-      let handleFocusIn2 = function(event) {
-        if (focusScope.paused || !container) return;
-        const target = event.target;
-        if (container.contains(target)) {
-          lastFocusedElementRef.current = target;
-        } else {
-          focus(lastFocusedElementRef.current, { select: true });
-        }
-      }, handleFocusOut2 = function(event) {
-        if (focusScope.paused || !container) return;
-        const relatedTarget = event.relatedTarget;
-        if (relatedTarget === null) return;
-        if (!container.contains(relatedTarget)) {
-          focus(lastFocusedElementRef.current, { select: true });
-        }
-      }, handleMutations2 = function(mutations) {
-        const focusedElement = document.activeElement;
-        if (focusedElement !== document.body) return;
-        for (const mutation of mutations) {
-          if (mutation.removedNodes.length > 0) focus(container);
-        }
-      };
-      var handleFocusIn = handleFocusIn2, handleFocusOut = handleFocusOut2, handleMutations = handleMutations2;
-      document.addEventListener("focusin", handleFocusIn2);
-      document.addEventListener("focusout", handleFocusOut2);
-      const mutationObserver = new MutationObserver(handleMutations2);
-      if (container) mutationObserver.observe(container, { childList: true, subtree: true });
-      return () => {
-        document.removeEventListener("focusin", handleFocusIn2);
-        document.removeEventListener("focusout", handleFocusOut2);
-        mutationObserver.disconnect();
-      };
-    }
-  }, [trapped, container, focusScope.paused]);
-  React26.useEffect(() => {
-    if (container) {
-      focusScopesStack.add(focusScope);
-      const previouslyFocusedElement = document.activeElement;
-      const hasFocusedCandidate = container.contains(previouslyFocusedElement);
-      if (!hasFocusedCandidate) {
-        const mountEvent = new CustomEvent(AUTOFOCUS_ON_MOUNT, EVENT_OPTIONS);
-        container.addEventListener(AUTOFOCUS_ON_MOUNT, onMountAutoFocus);
-        container.dispatchEvent(mountEvent);
-        if (!mountEvent.defaultPrevented) {
-          focusFirst(removeLinks(getTabbableCandidates(container)), { select: true });
-          if (document.activeElement === previouslyFocusedElement) {
-            focus(container);
-          }
-        }
-      }
-      return () => {
-        container.removeEventListener(AUTOFOCUS_ON_MOUNT, onMountAutoFocus);
-        setTimeout(() => {
-          const unmountEvent = new CustomEvent(AUTOFOCUS_ON_UNMOUNT, EVENT_OPTIONS);
-          container.addEventListener(AUTOFOCUS_ON_UNMOUNT, onUnmountAutoFocus);
-          container.dispatchEvent(unmountEvent);
-          if (!unmountEvent.defaultPrevented) {
-            focus(previouslyFocusedElement ?? document.body, { select: true });
-          }
-          container.removeEventListener(AUTOFOCUS_ON_UNMOUNT, onUnmountAutoFocus);
-          focusScopesStack.remove(focusScope);
-        }, 0);
-      };
-    }
-  }, [container, onMountAutoFocus, onUnmountAutoFocus, focusScope]);
-  const handleKeyDown = React26.useCallback(
-    (event) => {
-      if (!loop && !trapped) return;
-      if (focusScope.paused) return;
-      const isTabKey = event.key === "Tab" && !event.altKey && !event.ctrlKey && !event.metaKey;
-      const focusedElement = document.activeElement;
-      if (isTabKey && focusedElement) {
-        const container2 = event.currentTarget;
-        const [first, last] = getTabbableEdges(container2);
-        const hasTabbableElementsInside = first && last;
-        if (!hasTabbableElementsInside) {
-          if (focusedElement === container2) event.preventDefault();
-        } else {
-          if (!event.shiftKey && focusedElement === last) {
-            event.preventDefault();
-            if (loop) focus(first, { select: true });
-          } else if (event.shiftKey && focusedElement === first) {
-            event.preventDefault();
-            if (loop) focus(last, { select: true });
-          }
-        }
-      }
-    },
-    [loop, trapped, focusScope.paused]
-  );
-  return /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(Primitive.div, { tabIndex: -1, ...scopeProps, ref: composedRefs, onKeyDown: handleKeyDown });
-});
-FocusScope.displayName = FOCUS_SCOPE_NAME;
-function focusFirst(candidates, { select = false } = {}) {
-  const previouslyFocusedElement = document.activeElement;
-  for (const candidate of candidates) {
-    focus(candidate, { select });
-    if (document.activeElement !== previouslyFocusedElement) return;
-  }
-}
-function getTabbableEdges(container) {
-  const candidates = getTabbableCandidates(container);
-  const first = findVisible(candidates, container);
-  const last = findVisible(candidates.reverse(), container);
-  return [first, last];
-}
-function getTabbableCandidates(container) {
-  const nodes = [];
-  const walker = document.createTreeWalker(container, NodeFilter.SHOW_ELEMENT, {
-    acceptNode: (node) => {
-      const isHiddenInput = node.tagName === "INPUT" && node.type === "hidden";
-      if (node.disabled || node.hidden || isHiddenInput) return NodeFilter.FILTER_SKIP;
-      return node.tabIndex >= 0 ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_SKIP;
-    }
-  });
-  while (walker.nextNode()) nodes.push(walker.currentNode);
-  return nodes;
-}
-function findVisible(elements, container) {
-  for (const element of elements) {
-    if (!isHidden(element, { upTo: container })) return element;
-  }
-}
-function isHidden(node, { upTo }) {
-  if (getComputedStyle(node).visibility === "hidden") return true;
-  while (node) {
-    if (upTo !== void 0 && node === upTo) return false;
-    if (getComputedStyle(node).display === "none") return true;
-    node = node.parentElement;
-  }
-  return false;
-}
-function isSelectableInput(element) {
-  return element instanceof HTMLInputElement && "select" in element;
-}
-function focus(element, { select = false } = {}) {
-  if (element && element.focus) {
-    const previouslyFocusedElement = document.activeElement;
-    element.focus({ preventScroll: true });
-    if (element !== previouslyFocusedElement && isSelectableInput(element) && select)
-      element.select();
-  }
-}
-var focusScopesStack = createFocusScopesStack();
-function createFocusScopesStack() {
-  let stack = [];
-  return {
-    add(focusScope) {
-      const activeFocusScope = stack[0];
-      if (focusScope !== activeFocusScope) {
-        activeFocusScope?.pause();
-      }
-      stack = arrayRemove(stack, focusScope);
-      stack.unshift(focusScope);
-    },
-    remove(focusScope) {
-      stack = arrayRemove(stack, focusScope);
-      stack[0]?.resume();
-    }
-  };
-}
-function arrayRemove(array, item) {
-  const updatedArray = [...array];
-  const index2 = updatedArray.indexOf(item);
-  if (index2 !== -1) {
-    updatedArray.splice(index2, 1);
-  }
-  return updatedArray;
-}
-function removeLinks(items2) {
-  return items2.filter((item) => item.tagName !== "A");
-}
-
-// node_modules/.pnpm/@radix-ui+react-portal@1.1.9_@types+react-dom@18.3.1_@types+react@19.2.0_react-dom@18.2.0_react@18.2.0__react@18.2.0/node_modules/@radix-ui/react-portal/dist/index.mjs
-var React27 = __toESM(require("react"), 1);
-var import_react_dom = __toESM(require("react-dom"), 1);
-var import_jsx_runtime20 = require("react/jsx-runtime");
-var PORTAL_NAME = "Portal";
-var Portal = React27.forwardRef((props, forwardedRef) => {
-  const { container: containerProp, ...portalProps } = props;
-  const [mounted, setMounted] = React27.useState(false);
-  useLayoutEffect2(() => setMounted(true), []);
-  const container = containerProp || mounted && globalThis?.document?.body;
-  return container ? import_react_dom.default.createPortal(/* @__PURE__ */ (0, import_jsx_runtime20.jsx)(Primitive.div, { ...portalProps, ref: forwardedRef }), container) : null;
-});
-Portal.displayName = PORTAL_NAME;
-
-// node_modules/.pnpm/@radix-ui+react-presence@1.1.5_@types+react-dom@18.3.1_@types+react@19.2.0_react-dom@18.2.0_react@18.2.0__react@18.2.0/node_modules/@radix-ui/react-presence/dist/index.mjs
-var React28 = __toESM(require("react"), 1);
-var React29 = __toESM(require("react"), 1);
-function useStateMachine(initialState, machine) {
-  return React29.useReducer((state, event) => {
-    const nextState = machine[state][event];
-    return nextState ?? state;
-  }, initialState);
-}
-var Presence = (props) => {
-  const { present, children } = props;
-  const presence = usePresence(present);
-  const child = typeof children === "function" ? children({ present: presence.isPresent }) : React28.Children.only(children);
-  const ref = useComposedRefs(presence.ref, getElementRef2(child));
-  const forceMount = typeof children === "function";
-  return forceMount || presence.isPresent ? React28.cloneElement(child, { ref }) : null;
-};
-Presence.displayName = "Presence";
-function usePresence(present) {
-  const [node, setNode] = React28.useState();
-  const stylesRef = React28.useRef(null);
-  const prevPresentRef = React28.useRef(present);
-  const prevAnimationNameRef = React28.useRef("none");
-  const initialState = present ? "mounted" : "unmounted";
-  const [state, send] = useStateMachine(initialState, {
-    mounted: {
-      UNMOUNT: "unmounted",
-      ANIMATION_OUT: "unmountSuspended"
-    },
-    unmountSuspended: {
-      MOUNT: "mounted",
-      ANIMATION_END: "unmounted"
-    },
-    unmounted: {
-      MOUNT: "mounted"
-    }
-  });
-  React28.useEffect(() => {
-    const currentAnimationName = getAnimationName(stylesRef.current);
-    prevAnimationNameRef.current = state === "mounted" ? currentAnimationName : "none";
-  }, [state]);
-  useLayoutEffect2(() => {
-    const styles = stylesRef.current;
-    const wasPresent = prevPresentRef.current;
-    const hasPresentChanged = wasPresent !== present;
-    if (hasPresentChanged) {
-      const prevAnimationName = prevAnimationNameRef.current;
-      const currentAnimationName = getAnimationName(styles);
-      if (present) {
-        send("MOUNT");
-      } else if (currentAnimationName === "none" || styles?.display === "none") {
-        send("UNMOUNT");
-      } else {
-        const isAnimating = prevAnimationName !== currentAnimationName;
-        if (wasPresent && isAnimating) {
-          send("ANIMATION_OUT");
-        } else {
-          send("UNMOUNT");
-        }
-      }
-      prevPresentRef.current = present;
-    }
-  }, [present, send]);
-  useLayoutEffect2(() => {
-    if (node) {
-      let timeoutId;
-      const ownerWindow = node.ownerDocument.defaultView ?? window;
-      const handleAnimationEnd = (event) => {
-        const currentAnimationName = getAnimationName(stylesRef.current);
-        const isCurrentAnimation = currentAnimationName.includes(CSS.escape(event.animationName));
-        if (event.target === node && isCurrentAnimation) {
-          send("ANIMATION_END");
-          if (!prevPresentRef.current) {
-            const currentFillMode = node.style.animationFillMode;
-            node.style.animationFillMode = "forwards";
-            timeoutId = ownerWindow.setTimeout(() => {
-              if (node.style.animationFillMode === "forwards") {
-                node.style.animationFillMode = currentFillMode;
-              }
-            });
-          }
-        }
-      };
-      const handleAnimationStart = (event) => {
-        if (event.target === node) {
-          prevAnimationNameRef.current = getAnimationName(stylesRef.current);
-        }
-      };
-      node.addEventListener("animationstart", handleAnimationStart);
-      node.addEventListener("animationcancel", handleAnimationEnd);
-      node.addEventListener("animationend", handleAnimationEnd);
-      return () => {
-        ownerWindow.clearTimeout(timeoutId);
-        node.removeEventListener("animationstart", handleAnimationStart);
-        node.removeEventListener("animationcancel", handleAnimationEnd);
-        node.removeEventListener("animationend", handleAnimationEnd);
-      };
-    } else {
-      send("ANIMATION_END");
-    }
-  }, [node, send]);
-  return {
-    isPresent: ["mounted", "unmountSuspended"].includes(state),
-    ref: React28.useCallback((node2) => {
-      stylesRef.current = node2 ? getComputedStyle(node2) : null;
-      setNode(node2);
-    }, [])
-  };
-}
-function getAnimationName(styles) {
-  return styles?.animationName || "none";
-}
-function getElementRef2(element) {
-  let getter = Object.getOwnPropertyDescriptor(element.props, "ref")?.get;
-  let mayWarn = getter && "isReactWarning" in getter && getter.isReactWarning;
-  if (mayWarn) {
-    return element.ref;
-  }
-  getter = Object.getOwnPropertyDescriptor(element, "ref")?.get;
-  mayWarn = getter && "isReactWarning" in getter && getter.isReactWarning;
-  if (mayWarn) {
-    return element.props.ref;
-  }
-  return element.props.ref || element.ref;
-}
-
-// node_modules/.pnpm/@radix-ui+react-focus-guards@1.1.3_@types+react@19.2.0_react@18.2.0/node_modules/@radix-ui/react-focus-guards/dist/index.mjs
-var React30 = __toESM(require("react"), 1);
-var count2 = 0;
-function useFocusGuards() {
-  React30.useEffect(() => {
-    const edgeGuards = document.querySelectorAll("[data-radix-focus-guard]");
-    document.body.insertAdjacentElement("afterbegin", edgeGuards[0] ?? createFocusGuard());
-    document.body.insertAdjacentElement("beforeend", edgeGuards[1] ?? createFocusGuard());
-    count2++;
-    return () => {
-      if (count2 === 1) {
-        document.querySelectorAll("[data-radix-focus-guard]").forEach((node) => node.remove());
-      }
-      count2--;
-    };
-  }, []);
-}
-function createFocusGuard() {
-  const element = document.createElement("span");
-  element.setAttribute("data-radix-focus-guard", "");
-  element.tabIndex = 0;
-  element.style.outline = "none";
-  element.style.opacity = "0";
-  element.style.position = "fixed";
-  element.style.pointerEvents = "none";
-  return element;
-}
-
-// node_modules/.pnpm/@radix-ui+react-dialog@1.1.15_@types+react-dom@18.3.1_@types+react@19.2.0_react-dom@18.2.0_react@18.2.0__react@18.2.0/node_modules/@radix-ui/react-dialog/dist/index.mjs
-var import_react_remove_scroll = __toESM(require_es56(), 1);
-var import_aria_hidden = __toESM(require_es57(), 1);
-var import_jsx_runtime21 = require("react/jsx-runtime");
-var DIALOG_NAME = "Dialog";
-var [createDialogContext, createDialogScope] = createContextScope(DIALOG_NAME);
-var [DialogProvider, useDialogContext] = createDialogContext(DIALOG_NAME);
-var Dialog = (props) => {
-  const {
-    __scopeDialog,
-    children,
-    open: openProp,
-    defaultOpen,
-    onOpenChange,
-    modal: modal2 = true
-  } = props;
-  const triggerRef = React31.useRef(null);
-  const contentRef = React31.useRef(null);
-  const [open, setOpen] = useControllableState({
-    prop: openProp,
-    defaultProp: defaultOpen ?? false,
-    onChange: onOpenChange,
-    caller: DIALOG_NAME
-  });
-  return /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(
-    DialogProvider,
-    {
-      scope: __scopeDialog,
-      triggerRef,
-      contentRef,
-      contentId: useId(),
-      titleId: useId(),
-      descriptionId: useId(),
-      open,
-      onOpenChange: setOpen,
-      onOpenToggle: React31.useCallback(() => setOpen((prevOpen) => !prevOpen), [setOpen]),
-      modal: modal2,
-      children
-    }
-  );
-};
-Dialog.displayName = DIALOG_NAME;
-var TRIGGER_NAME = "DialogTrigger";
-var DialogTrigger = React31.forwardRef(
-  (props, forwardedRef) => {
-    const { __scopeDialog, ...triggerProps } = props;
-    const context = useDialogContext(TRIGGER_NAME, __scopeDialog);
-    const composedTriggerRef = useComposedRefs(forwardedRef, context.triggerRef);
-    return /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(
-      Primitive.button,
-      {
-        type: "button",
-        "aria-haspopup": "dialog",
-        "aria-expanded": context.open,
-        "aria-controls": context.contentId,
-        "data-state": getState(context.open),
-        ...triggerProps,
-        ref: composedTriggerRef,
-        onClick: composeEventHandlers(props.onClick, context.onOpenToggle)
-      }
-    );
-  }
-);
-DialogTrigger.displayName = TRIGGER_NAME;
-var PORTAL_NAME2 = "DialogPortal";
-var [PortalProvider, usePortalContext] = createDialogContext(PORTAL_NAME2, {
-  forceMount: void 0
-});
-var DialogPortal = (props) => {
-  const { __scopeDialog, forceMount, children, container } = props;
-  const context = useDialogContext(PORTAL_NAME2, __scopeDialog);
-  return /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(PortalProvider, { scope: __scopeDialog, forceMount, children: React31.Children.map(children, (child) => /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(Presence, { present: forceMount || context.open, children: /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(Portal, { asChild: true, container, children: child }) })) });
-};
-DialogPortal.displayName = PORTAL_NAME2;
-var OVERLAY_NAME = "DialogOverlay";
-var DialogOverlay = React31.forwardRef(
-  (props, forwardedRef) => {
-    const portalContext = usePortalContext(OVERLAY_NAME, props.__scopeDialog);
-    const { forceMount = portalContext.forceMount, ...overlayProps } = props;
-    const context = useDialogContext(OVERLAY_NAME, props.__scopeDialog);
-    return context.modal ? /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(Presence, { present: forceMount || context.open, children: /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(DialogOverlayImpl, { ...overlayProps, ref: forwardedRef }) }) : null;
-  }
-);
-DialogOverlay.displayName = OVERLAY_NAME;
-var Slot = createSlot("DialogOverlay.RemoveScroll");
-var DialogOverlayImpl = React31.forwardRef(
-  (props, forwardedRef) => {
-    const { __scopeDialog, ...overlayProps } = props;
-    const context = useDialogContext(OVERLAY_NAME, __scopeDialog);
-    return (
-      // Make sure `Content` is scrollable even when it doesn't live inside `RemoveScroll`
-      // ie. when `Overlay` and `Content` are siblings
-      /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(import_react_remove_scroll.RemoveScroll, { as: Slot, allowPinchZoom: true, shards: [context.contentRef], children: /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(
-        Primitive.div,
-        {
-          "data-state": getState(context.open),
-          ...overlayProps,
-          ref: forwardedRef,
-          style: { pointerEvents: "auto", ...overlayProps.style }
-        }
-      ) })
-    );
-  }
-);
-var CONTENT_NAME = "DialogContent";
-var DialogContent = React31.forwardRef(
-  (props, forwardedRef) => {
-    const portalContext = usePortalContext(CONTENT_NAME, props.__scopeDialog);
-    const { forceMount = portalContext.forceMount, ...contentProps } = props;
-    const context = useDialogContext(CONTENT_NAME, props.__scopeDialog);
-    return /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(Presence, { present: forceMount || context.open, children: context.modal ? /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(DialogContentModal, { ...contentProps, ref: forwardedRef }) : /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(DialogContentNonModal, { ...contentProps, ref: forwardedRef }) });
-  }
-);
-DialogContent.displayName = CONTENT_NAME;
-var DialogContentModal = React31.forwardRef(
-  (props, forwardedRef) => {
-    const context = useDialogContext(CONTENT_NAME, props.__scopeDialog);
-    const contentRef = React31.useRef(null);
-    const composedRefs = useComposedRefs(forwardedRef, context.contentRef, contentRef);
-    React31.useEffect(() => {
-      const content2 = contentRef.current;
-      if (content2) return (0, import_aria_hidden.hideOthers)(content2);
-    }, []);
-    return /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(
-      DialogContentImpl,
-      {
-        ...props,
-        ref: composedRefs,
-        trapFocus: context.open,
-        disableOutsidePointerEvents: true,
-        onCloseAutoFocus: composeEventHandlers(props.onCloseAutoFocus, (event) => {
-          event.preventDefault();
-          context.triggerRef.current?.focus();
-        }),
-        onPointerDownOutside: composeEventHandlers(props.onPointerDownOutside, (event) => {
-          const originalEvent = event.detail.originalEvent;
-          const ctrlLeftClick = originalEvent.button === 0 && originalEvent.ctrlKey === true;
-          const isRightClick = originalEvent.button === 2 || ctrlLeftClick;
-          if (isRightClick) event.preventDefault();
-        }),
-        onFocusOutside: composeEventHandlers(
-          props.onFocusOutside,
-          (event) => event.preventDefault()
-        )
-      }
-    );
-  }
-);
-var DialogContentNonModal = React31.forwardRef(
-  (props, forwardedRef) => {
-    const context = useDialogContext(CONTENT_NAME, props.__scopeDialog);
-    const hasInteractedOutsideRef = React31.useRef(false);
-    const hasPointerDownOutsideRef = React31.useRef(false);
-    return /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(
-      DialogContentImpl,
-      {
-        ...props,
-        ref: forwardedRef,
-        trapFocus: false,
-        disableOutsidePointerEvents: false,
-        onCloseAutoFocus: (event) => {
-          props.onCloseAutoFocus?.(event);
-          if (!event.defaultPrevented) {
-            if (!hasInteractedOutsideRef.current) context.triggerRef.current?.focus();
-            event.preventDefault();
-          }
-          hasInteractedOutsideRef.current = false;
-          hasPointerDownOutsideRef.current = false;
-        },
-        onInteractOutside: (event) => {
-          props.onInteractOutside?.(event);
-          if (!event.defaultPrevented) {
-            hasInteractedOutsideRef.current = true;
-            if (event.detail.originalEvent.type === "pointerdown") {
-              hasPointerDownOutsideRef.current = true;
-            }
-          }
-          const target = event.target;
-          const targetIsTrigger = context.triggerRef.current?.contains(target);
-          if (targetIsTrigger) event.preventDefault();
-          if (event.detail.originalEvent.type === "focusin" && hasPointerDownOutsideRef.current) {
-            event.preventDefault();
-          }
-        }
-      }
-    );
-  }
-);
-var DialogContentImpl = React31.forwardRef(
-  (props, forwardedRef) => {
-    const { __scopeDialog, trapFocus, onOpenAutoFocus, onCloseAutoFocus, ...contentProps } = props;
-    const context = useDialogContext(CONTENT_NAME, __scopeDialog);
-    const contentRef = React31.useRef(null);
-    const composedRefs = useComposedRefs(forwardedRef, contentRef);
-    useFocusGuards();
-    return /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)(import_jsx_runtime21.Fragment, { children: [
-      /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(
-        FocusScope,
-        {
-          asChild: true,
-          loop: true,
-          trapped: trapFocus,
-          onMountAutoFocus: onOpenAutoFocus,
-          onUnmountAutoFocus: onCloseAutoFocus,
-          children: /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(
-            DismissableLayer,
-            {
-              role: "dialog",
-              id: context.contentId,
-              "aria-describedby": context.descriptionId,
-              "aria-labelledby": context.titleId,
-              "data-state": getState(context.open),
-              ...contentProps,
-              ref: composedRefs,
-              onDismiss: () => context.onOpenChange(false)
-            }
-          )
-        }
-      ),
-      /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)(import_jsx_runtime21.Fragment, { children: [
-        /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(TitleWarning, { titleId: context.titleId }),
-        /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(DescriptionWarning, { contentRef, descriptionId: context.descriptionId })
-      ] })
-    ] });
-  }
-);
-var TITLE_NAME = "DialogTitle";
-var DialogTitle = React31.forwardRef(
-  (props, forwardedRef) => {
-    const { __scopeDialog, ...titleProps } = props;
-    const context = useDialogContext(TITLE_NAME, __scopeDialog);
-    return /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(Primitive.h2, { id: context.titleId, ...titleProps, ref: forwardedRef });
-  }
-);
-DialogTitle.displayName = TITLE_NAME;
-var DESCRIPTION_NAME = "DialogDescription";
-var DialogDescription = React31.forwardRef(
-  (props, forwardedRef) => {
-    const { __scopeDialog, ...descriptionProps } = props;
-    const context = useDialogContext(DESCRIPTION_NAME, __scopeDialog);
-    return /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(Primitive.p, { id: context.descriptionId, ...descriptionProps, ref: forwardedRef });
-  }
-);
-DialogDescription.displayName = DESCRIPTION_NAME;
-var CLOSE_NAME = "DialogClose";
-var DialogClose = React31.forwardRef(
-  (props, forwardedRef) => {
-    const { __scopeDialog, ...closeProps } = props;
-    const context = useDialogContext(CLOSE_NAME, __scopeDialog);
-    return /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(
-      Primitive.button,
-      {
-        type: "button",
-        ...closeProps,
-        ref: forwardedRef,
-        onClick: composeEventHandlers(props.onClick, () => context.onOpenChange(false))
-      }
-    );
-  }
-);
-DialogClose.displayName = CLOSE_NAME;
-function getState(open) {
-  return open ? "open" : "closed";
-}
-var TITLE_WARNING_NAME = "DialogTitleWarning";
-var [WarningProvider, useWarningContext] = createContext2(TITLE_WARNING_NAME, {
-  contentName: CONTENT_NAME,
-  titleName: TITLE_NAME,
-  docsSlug: "dialog"
-});
-var TitleWarning = ({ titleId }) => {
-  const titleWarningContext = useWarningContext(TITLE_WARNING_NAME);
-  const MESSAGE = `\`${titleWarningContext.contentName}\` requires a \`${titleWarningContext.titleName}\` for the component to be accessible for screen reader users.
-
-If you want to hide the \`${titleWarningContext.titleName}\`, you can wrap it with our VisuallyHidden component.
-
-For more information, see https://radix-ui.com/primitives/docs/components/${titleWarningContext.docsSlug}`;
-  React31.useEffect(() => {
-    if (titleId) {
-      const hasTitle = document.getElementById(titleId);
-      if (!hasTitle) console.error(MESSAGE);
-    }
-  }, [MESSAGE, titleId]);
-  return null;
-};
-var DESCRIPTION_WARNING_NAME = "DialogDescriptionWarning";
-var DescriptionWarning = ({ contentRef, descriptionId }) => {
-  const descriptionWarningContext = useWarningContext(DESCRIPTION_WARNING_NAME);
-  const MESSAGE = `Warning: Missing \`Description\` or \`aria-describedby={undefined}\` for {${descriptionWarningContext.contentName}}.`;
-  React31.useEffect(() => {
-    const describedById = contentRef.current?.getAttribute("aria-describedby");
-    if (descriptionId && describedById) {
-      const hasDescription = document.getElementById(descriptionId);
-      if (!hasDescription) console.warn(MESSAGE);
-    }
-  }, [MESSAGE, contentRef, descriptionId]);
-  return null;
-};
-var Root = Dialog;
-var Trigger = DialogTrigger;
-var Portal2 = DialogPortal;
-var Overlay = DialogOverlay;
-var Content = DialogContent;
-var Title = DialogTitle;
-var Description = DialogDescription;
-var Close = DialogClose;
-
-// src/components/ui/dialog.jsx
-var import_lucide_react2 = require("lucide-react");
-var import_jsx_runtime22 = require("react/jsx-runtime");
-var Dialog2 = Root;
-var DialogTrigger2 = Trigger;
-var DialogPortal2 = ({ className, children, ...props }) => /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(Portal2, { ...props, children: /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { className: cn("fixed inset-0 z-[999] flex items-start justify-center overflow-y-auto sm:items-center", className), children }) });
-DialogPortal2.displayName = Portal2.displayName;
-var DialogOverlay2 = React32.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
-  Overlay,
-  {
-    ref,
-    className: cn("fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity data-[state=open]:opacity-100 data-[state=closed]:opacity-0", className),
-    ...props
-  }
-));
-DialogOverlay2.displayName = Overlay.displayName;
-var DialogContent2 = React32.forwardRef(({ className, children, ...props }, ref) => /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)(DialogPortal2, { children: [
-  /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(DialogOverlay2, {}),
-  /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)(
-    Content,
-    {
-      ref,
-      className: cn(
-        "relative z-[1000] m-4 w-full max-w-2xl origin-center scale-100 rounded-2xl border border-slate-200 bg-white p-6 shadow-xl transition-all duration-200 data-[state=open]:opacity-100 data-[state=closed]:opacity-0 sm:m-6",
-        className
-      ),
-      ...props,
-      children: [
-        children,
-        /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)(Close, { className: "absolute right-5 top-5 rounded-full p-1 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:ring-offset-2", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("span", { className: "sr-only", children: "Close" }),
-          /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(import_lucide_react2.X, { className: "h-4 w-4" })
-        ] })
-      ]
-    }
-  )
-] }));
-DialogContent2.displayName = Content.displayName;
-var DialogHeader = ({ className, ...props }) => /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { className: cn("flex flex-col space-y-2 text-center sm:text-left", className), ...props });
-DialogHeader.displayName = "DialogHeader";
-var DialogFooter = ({ className, ...props }) => /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { className: cn("flex flex-col-reverse gap-2 sm:flex-row sm:justify-end", className), ...props });
-DialogFooter.displayName = "DialogFooter";
-var DialogTitle2 = React32.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(Title, { ref, className: cn("text-left text-2xl font-semibold text-slate-900", className), ...props }));
-DialogTitle2.displayName = Title.displayName;
-var DialogDescription2 = React32.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(Description, { ref, className: cn("text-left text-sm text-slate-600", className), ...props }));
-DialogDescription2.displayName = Description.displayName;
-
 // src/hooks/useSquareCard.js
-var import_react14 = require("react");
+var import_react15 = require("react");
 var import_meta5 = {};
 var SQUARE_SCRIPT_ATTR = "data-square-sdk";
 var squareScriptState = { url: null, promise: null };
@@ -68633,16 +68826,16 @@ var ensureSquareSdkScript = (sdkUrl, isSandbox) => {
   return promise;
 };
 function useSquareCard(containerId, enabled, deps = []) {
-  const paymentsRef = (0, import_react14.useRef)(null);
-  const cardRef = (0, import_react14.useRef)(null);
-  const [cardLoaded, setCardLoaded] = (0, import_react14.useState)(false);
-  const [attempts, setAttempts] = (0, import_react14.useState)(0);
-  const attemptsRef = (0, import_react14.useRef)(0);
-  const [error, setError] = (0, import_react14.useState)("");
-  const [loadingScript, setLoadingScript] = (0, import_react14.useState)(false);
-  const attachStartedRef = (0, import_react14.useRef)(false);
+  const paymentsRef = (0, import_react15.useRef)(null);
+  const cardRef = (0, import_react15.useRef)(null);
+  const [cardLoaded, setCardLoaded] = (0, import_react15.useState)(false);
+  const [attempts, setAttempts] = (0, import_react15.useState)(0);
+  const attemptsRef = (0, import_react15.useRef)(0);
+  const [error, setError] = (0, import_react15.useState)("");
+  const [loadingScript, setLoadingScript] = (0, import_react15.useState)(false);
+  const attachStartedRef = (0, import_react15.useRef)(false);
   const securityState = getSquareSecurityState();
-  const [envInfo, setEnvInfo] = (0, import_react14.useState)({
+  const [envInfo, setEnvInfo] = (0, import_react15.useState)({
     appId: null,
     locationId: null,
     sdkUrl: null,
@@ -68655,7 +68848,7 @@ function useSquareCard(containerId, enabled, deps = []) {
     hostname: securityState.hostname,
     protocol: securityState.protocol
   });
-  const cleanupContainer = (0, import_react14.useCallback)(() => {
+  const cleanupContainer = (0, import_react15.useCallback)(() => {
     if (typeof document === "undefined") return;
     try {
       const node = typeof containerId === "string" ? document.querySelector(containerId) : containerId;
@@ -68665,7 +68858,7 @@ function useSquareCard(containerId, enabled, deps = []) {
     } catch (_) {
     }
   }, [containerId]);
-  const destroyCardInstance = (0, import_react14.useCallback)(() => {
+  const destroyCardInstance = (0, import_react15.useCallback)(() => {
     const card = cardRef.current;
     cardRef.current = null;
     attachStartedRef.current = false;
@@ -68688,7 +68881,7 @@ function useSquareCard(containerId, enabled, deps = []) {
     }
     finalize();
   }, [cleanupContainer]);
-  const reset = (0, import_react14.useCallback)(() => {
+  const reset = (0, import_react15.useCallback)(() => {
     try {
       destroyCardInstance();
       paymentsRef.current = null;
@@ -68698,7 +68891,7 @@ function useSquareCard(containerId, enabled, deps = []) {
     } catch (_) {
     }
   }, [destroyCardInstance]);
-  (0, import_react14.useEffect)(() => {
+  (0, import_react15.useEffect)(() => {
     if (!enabled) return;
     let cancelled = false;
     const config = readSquareRuntimeConfig();
@@ -68735,7 +68928,7 @@ function useSquareCard(containerId, enabled, deps = []) {
       cancelled = true;
     };
   }, [enabled]);
-  (0, import_react14.useEffect)(() => {
+  (0, import_react15.useEffect)(() => {
     if (!enabled) return;
     const abortController = new AbortController();
     const { signal } = abortController;
@@ -68905,7 +69098,7 @@ function useSquareCard(containerId, enabled, deps = []) {
       paymentsRef.current = null;
     };
   }, [enabled, containerId, destroyCardInstance, cleanupContainer, ...deps]);
-  (0, import_react14.useEffect)(() => {
+  (0, import_react15.useEffect)(() => {
     setEnvInfo((info) => ({ ...info, attempts }));
   }, [attempts]);
   const tokenize = async () => {
@@ -68922,7 +69115,7 @@ function useSquareCard(containerId, enabled, deps = []) {
 }
 
 // src/components/home/GiftCardDialog.jsx
-var import_jsx_runtime23 = require("react/jsx-runtime");
+var import_jsx_runtime25 = require("react/jsx-runtime");
 var presetAmounts = [100, 150, 200, 250, 350, 500];
 var initialForm = {
   amount: 150,
@@ -68957,7 +69150,7 @@ var GiftCardDialog = ({ className = "" }) => {
   const defaultSiteUrl = "https://localeffort.app";
   const siteUrl = typeof window !== "undefined" ? window.location.origin : defaultSiteUrl;
   const giftCardImage = heroFallbackSrc ? heroFallbackSrc.startsWith("http") ? heroFallbackSrc : `${siteUrl}${heroFallbackSrc}` : void 0;
-  const productSchema = (0, import_react15.useMemo)(() => {
+  const productSchema = (0, import_react16.useMemo)(() => {
     const schema = {
       "@context": "https://schema.org",
       "@type": "Product",
@@ -68978,15 +69171,15 @@ var GiftCardDialog = ({ className = "" }) => {
     }
     return schema;
   }, [giftCardImage, siteUrl]);
-  const [open, setOpen] = (0, import_react15.useState)(false);
-  const [form, setForm] = (0, import_react15.useState)(initialForm);
-  const [status, setStatus] = (0, import_react15.useState)("idle");
-  const [error, setError] = (0, import_react15.useState)("");
-  const [success, setSuccess] = (0, import_react15.useState)(null);
-  const amountValue = (0, import_react15.useMemo)(() => normalizeAmount(form.amount, form.customAmount), [form.amount, form.customAmount]);
+  const [open, setOpen] = (0, import_react16.useState)(false);
+  const [form, setForm] = (0, import_react16.useState)(initialForm);
+  const [status, setStatus] = (0, import_react16.useState)("idle");
+  const [error, setError] = (0, import_react16.useState)("");
+  const [success, setSuccess] = (0, import_react16.useState)(null);
+  const amountValue = (0, import_react16.useMemo)(() => normalizeAmount(form.amount, form.customAmount), [form.amount, form.customAmount]);
   const canChoosePhysical = amountValue >= 250;
   const { cardLoaded, error: squareError, tokenize, reset: resetSquare } = useSquareCard("#gift-card-card-container", open, [amountValue]);
-  const handleDialogOpenChange = (0, import_react15.useCallback)((nextOpen) => {
+  const handleDialogOpenChange = (0, import_react16.useCallback)((nextOpen) => {
     if (!nextOpen) {
       resetSquare();
       setForm(initialForm);
@@ -68996,12 +69189,12 @@ var GiftCardDialog = ({ className = "" }) => {
     }
     setOpen(nextOpen);
   }, [resetSquare]);
-  (0, import_react15.useEffect)(() => {
+  (0, import_react16.useEffect)(() => {
     if (!canChoosePhysical && form.cardType === "physical") {
       setForm((prev) => ({ ...prev, cardType: "digital" }));
     }
   }, [canChoosePhysical, form.cardType]);
-  (0, import_react15.useEffect)(() => {
+  (0, import_react16.useEffect)(() => {
     if (form.cardType !== "digital" || form.deliveryTarget !== "recipient") {
       setForm((prev) => prev.sendOn ? { ...prev, sendOn: "" } : prev);
     }
@@ -69110,9 +69303,9 @@ var GiftCardDialog = ({ className = "" }) => {
       setError(err?.message || "Something went wrong while processing your gift card.");
     }
   };
-  const amountLabel = (0, import_react15.useMemo)(() => `$${amountValue.toFixed(2)}`, [amountValue]);
+  const amountLabel = (0, import_react16.useMemo)(() => `$${amountValue.toFixed(2)}`, [amountValue]);
   const disableSubmit = !cardLoaded || status === "processing";
-  const minSendOn = (0, import_react15.useMemo)(() => {
+  const minSendOn = (0, import_react16.useMemo)(() => {
     const base = /* @__PURE__ */ new Date();
     base.setMinutes(base.getMinutes() + 10);
     return base.toISOString().slice(0, 16);
@@ -69132,23 +69325,23 @@ var GiftCardDialog = ({ className = "" }) => {
   };
   const renderSuccess = () => {
     const scheduledCopy = success?.sendOn ? formatDateTime(success.sendOn) : "";
-    return /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { className: "space-y-6", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { className: "rounded-2xl border border-emerald-100 bg-emerald-50/80 p-6 text-center", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(import_lucide_react3.Sparkles, { className: "mx-auto h-10 w-10 text-emerald-500" }),
-        /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("h3", { className: "mt-4 text-2xl font-semibold text-emerald-700", children: success?.sendOn ? "Gift card scheduled!" : "Gift card sent!" }),
-        /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("p", { className: "text-sm text-emerald-700", children: success?.sendOn ? `We'll deliver the gift card email to the ${success?.deliveryTarget === "recipient" ? "recipient" : "buyer"} on ${scheduledCopy}.` : "We just delivered the gift card email and a confirmation receipt. Save this code for your records." }),
-        /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { className: "mt-4 rounded-xl border border-emerald-200 bg-white px-4 py-3", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("p", { className: "text-xs font-semibold uppercase tracking-[0.32em] text-emerald-500", children: "Gift card code" }),
-          /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("p", { className: "mt-2 text-2xl font-mono font-bold tracking-widest text-slate-900", children: success?.code || "Pending" })
+    return /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { className: "space-y-6", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { className: "rounded-2xl border border-emerald-100 bg-emerald-50/80 p-6 text-center", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(import_lucide_react3.Sparkles, { className: "mx-auto h-10 w-10 text-emerald-500" }),
+        /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("h3", { className: "mt-4 text-2xl font-semibold text-emerald-700", children: success?.sendOn ? "Gift card scheduled!" : "Gift card sent!" }),
+        /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("p", { className: "text-sm text-emerald-700", children: success?.sendOn ? `We'll deliver the gift card email to the ${success?.deliveryTarget === "recipient" ? "recipient" : "buyer"} on ${scheduledCopy}.` : "We just delivered the gift card email and a confirmation receipt. Save this code for your records." }),
+        /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { className: "mt-4 rounded-xl border border-emerald-200 bg-white px-4 py-3", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("p", { className: "text-xs font-semibold uppercase tracking-[0.32em] text-emerald-500", children: "Gift card code" }),
+          /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("p", { className: "mt-2 text-2xl font-mono font-bold tracking-widest text-slate-900", children: success?.code || "Pending" })
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("p", { className: "mt-4 text-sm text-slate-600", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("p", { className: "mt-4 text-sm text-slate-600", children: [
           "Amount: ",
-          /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("span", { className: "font-semibold", children: amountLabel }),
+          /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("span", { className: "font-semibold", children: amountLabel }),
           " - Type: ",
           success?.cardType === "physical" ? "Leather physical card + digital code" : "Digital"
         ] }),
-        success?.sendOn && /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("p", { className: "text-xs text-slate-500", children: "You'll also get a reminder email when it goes out." }),
-        /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(
+        success?.sendOn && /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("p", { className: "text-xs text-slate-500", children: "You'll also get a reminder email when it goes out." }),
+        /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(
           "button",
           {
             type: "button",
@@ -69161,7 +69354,7 @@ var GiftCardDialog = ({ className = "" }) => {
           }
         )
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(DialogFooter, { children: /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(
+      /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(DialogFooter, { children: /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(
         "button",
         {
           type: "button",
@@ -69172,25 +69365,25 @@ var GiftCardDialog = ({ className = "" }) => {
       ) })
     ] });
   };
-  return /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)(import_jsx_runtime23.Fragment, { children: [
-    /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(import_react_helmet_async.Helmet, { children: /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("script", { type: "application/ld+json", children: JSON.stringify(productSchema) }) }),
-    /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)(Dialog2, { open, onOpenChange: handleDialogOpenChange, children: [
-      /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(DialogTrigger2, { asChild: true, children: /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("button", { className: cn("btn btn-primary flex items-center gap-2 shadow-sm", className), children: [
-        /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(import_lucide_react3.Gift, { className: "h-4 w-4" }),
+  return /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)(import_jsx_runtime25.Fragment, { children: [
+    /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(import_react_helmet_async.Helmet, { children: /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("script", { type: "application/ld+json", children: JSON.stringify(productSchema) }) }),
+    /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)(Dialog2, { open, onOpenChange: handleDialogOpenChange, children: [
+      /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(DialogTrigger2, { asChild: true, children: /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("button", { className: cn("btn btn-primary flex items-center gap-2 shadow-sm", className), children: [
+        /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(import_lucide_react3.Gift, { className: "h-4 w-4" }),
         "Buy Gift Card"
       ] }) }),
-      /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)(DialogContent2, { className: "max-h-[90vh] overflow-y-auto", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)(DialogHeader, { children: [
-          /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(DialogTitle2, { children: "Gift a Local Effort experience" }),
-          /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(DialogDescription2, { children: "Choose the amount, pick digital or leather gift card, and we will send it instantly with all the right instructions." })
+      /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)(DialogContent2, { className: "max-h-[90vh] overflow-y-auto", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)(DialogHeader, { children: [
+          /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(DialogTitle2, { children: "Gift a Local Effort experience" }),
+          /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(DialogDescription2, { children: "Choose the amount, pick digital or leather gift card, and we will send it instantly with all the right instructions." })
         ] }),
-        status === "success" && success ? renderSuccess() : /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("form", { className: "space-y-6", onSubmit: handleSubmit, children: [
-          /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("section", { className: "space-y-3", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("p", { className: "text-sm font-semibold uppercase tracking-[0.24em] text-orange-500", children: "Amount" }),
-            /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { className: "flex flex-wrap gap-2", children: [
+        status === "success" && success ? renderSuccess() : /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("form", { className: "space-y-6", onSubmit: handleSubmit, children: [
+          /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("section", { className: "space-y-3", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("p", { className: "text-sm font-semibold uppercase tracking-[0.24em] text-orange-500", children: "Amount" }),
+            /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { className: "flex flex-wrap gap-2", children: [
               presetAmounts.map((value2) => {
                 const active2 = form.customAmount === "" && form.amount === value2;
-                return /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)(
+                return /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)(
                   "button",
                   {
                     type: "button",
@@ -69207,9 +69400,9 @@ var GiftCardDialog = ({ className = "" }) => {
                   value2
                 );
               }),
-              /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("label", { className: "flex items-center gap-2 rounded-full border border-dashed border-slate-300 bg-white px-3 py-2 text-sm shadow-sm transition hover:border-orange-300", children: [
-                /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("span", { className: "text-slate-500", children: "Other" }),
-                /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(
+              /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("label", { className: "flex items-center gap-2 rounded-full border border-dashed border-slate-300 bg-white px-3 py-2 text-sm shadow-sm transition hover:border-orange-300", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("span", { className: "text-slate-500", children: "Other" }),
+                /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(
                   "input",
                   {
                     type: "number",
@@ -69226,17 +69419,17 @@ var GiftCardDialog = ({ className = "" }) => {
                 )
               ] })
             ] }),
-            /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("p", { className: "text-xs text-slate-500", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("p", { className: "text-xs text-slate-500", children: [
               amountLabel,
               " selected. Physical leather cards unlock at $250+."
             ] })
           ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("section", { className: "grid gap-4 rounded-xl border border-slate-200 bg-slate-50/70 p-4", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("h4", { className: "text-sm font-semibold text-slate-700", children: "Delivery preferences" }),
-            /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("div", { className: "flex flex-wrap gap-2", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("section", { className: "grid gap-4 rounded-xl border border-slate-200 bg-slate-50/70 p-4", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("h4", { className: "text-sm font-semibold text-slate-700", children: "Delivery preferences" }),
+            /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("div", { className: "flex flex-wrap gap-2", children: [
               { value: "recipient", label: "Email recipient" },
               { value: "buyer", label: "Email me" }
-            ].map((option) => /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)(
+            ].map((option) => /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)(
               "button",
               {
                 type: "button",
@@ -69246,14 +69439,14 @@ var GiftCardDialog = ({ className = "" }) => {
                   form.deliveryTarget === option.value ? "border-orange-500 bg-orange-500/10 text-orange-600" : "border-slate-200 text-slate-600 hover:border-orange-300 hover:text-orange-500"
                 ),
                 children: [
-                  /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(import_lucide_react3.Mail, { className: "h-4 w-4" }),
+                  /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(import_lucide_react3.Mail, { className: "h-4 w-4" }),
                   option.label
                 ]
               },
               option.value
             )) }),
-            /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { className: "flex flex-wrap gap-2", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(
+            /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { className: "flex flex-wrap gap-2", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(
                 "button",
                 {
                   type: "button",
@@ -69265,7 +69458,7 @@ var GiftCardDialog = ({ className = "" }) => {
                   children: "Instant digital"
                 }
               ),
-              /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(
+              /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(
                 "button",
                 {
                   type: "button",
@@ -69279,12 +69472,12 @@ var GiftCardDialog = ({ className = "" }) => {
                 }
               )
             ] }),
-            !canChoosePhysical && /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("p", { className: "text-xs text-slate-500", children: "Select $250 or more to ship a physical leather card along with the digital code." }),
-            form.cardType === "physical" && /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { className: "space-y-3 rounded-xl border border-amber-100 bg-white p-4", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("div", { className: "flex gap-3", children: [
+            !canChoosePhysical && /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("p", { className: "text-xs text-slate-500", children: "Select $250 or more to ship a physical leather card along with the digital code." }),
+            form.cardType === "physical" && /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { className: "space-y-3 rounded-xl border border-amber-100 bg-white p-4", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("div", { className: "flex gap-3", children: [
                 { value: "recipient", label: "Ship to recipient" },
                 { value: "buyer", label: "Ship to me" }
-              ].map((option) => /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)(
+              ].map((option) => /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)(
                 "button",
                 {
                   type: "button",
@@ -69294,65 +69487,65 @@ var GiftCardDialog = ({ className = "" }) => {
                     form.shipTo === option.value ? "border-amber-500 bg-amber-500/15 text-amber-700" : "border-amber-200 text-amber-500 hover:border-amber-300"
                   ),
                   children: [
-                    /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(import_lucide_react3.MapPin, { className: "h-3.5 w-3.5" }),
+                    /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(import_lucide_react3.MapPin, { className: "h-3.5 w-3.5" }),
                     option.label
                   ]
                 },
                 option.value
               )) }),
-              /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { className: "grid gap-3 md:grid-cols-2", children: [
-                /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { className: "md:col-span-2", children: [
-                  /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("label", { className: "label", htmlFor: "gift-shipping-line1", children: "Street address" }),
-                  /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("input", { id: "gift-shipping-line1", className: "input", value: form.shippingLine1, onChange: handleInputChange("shippingLine1") })
+              /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { className: "grid gap-3 md:grid-cols-2", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { className: "md:col-span-2", children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("label", { className: "label", htmlFor: "gift-shipping-line1", children: "Street address" }),
+                  /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("input", { id: "gift-shipping-line1", className: "input", value: form.shippingLine1, onChange: handleInputChange("shippingLine1") })
                 ] }),
-                /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { className: "md:col-span-2", children: [
-                  /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("label", { className: "label", htmlFor: "gift-shipping-line2", children: "Apartment, suite (optional)" }),
-                  /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("input", { id: "gift-shipping-line2", className: "input", value: form.shippingLine2, onChange: handleInputChange("shippingLine2") })
+                /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { className: "md:col-span-2", children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("label", { className: "label", htmlFor: "gift-shipping-line2", children: "Apartment, suite (optional)" }),
+                  /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("input", { id: "gift-shipping-line2", className: "input", value: form.shippingLine2, onChange: handleInputChange("shippingLine2") })
                 ] }),
-                /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { children: [
-                  /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("label", { className: "label", htmlFor: "gift-shipping-city", children: "City" }),
-                  /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("input", { id: "gift-shipping-city", className: "input", value: form.shippingCity, onChange: handleInputChange("shippingCity") })
+                /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("label", { className: "label", htmlFor: "gift-shipping-city", children: "City" }),
+                  /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("input", { id: "gift-shipping-city", className: "input", value: form.shippingCity, onChange: handleInputChange("shippingCity") })
                 ] }),
-                /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { children: [
-                  /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("label", { className: "label", htmlFor: "gift-shipping-state", children: "State" }),
-                  /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("input", { id: "gift-shipping-state", className: "input", value: form.shippingState, onChange: handleInputChange("shippingState") })
+                /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("label", { className: "label", htmlFor: "gift-shipping-state", children: "State" }),
+                  /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("input", { id: "gift-shipping-state", className: "input", value: form.shippingState, onChange: handleInputChange("shippingState") })
                 ] }),
-                /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { children: [
-                  /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("label", { className: "label", htmlFor: "gift-shipping-postal", children: "Postal code" }),
-                  /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("input", { id: "gift-shipping-postal", className: "input", value: form.shippingPostal, onChange: handleInputChange("shippingPostal") })
+                /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("label", { className: "label", htmlFor: "gift-shipping-postal", children: "Postal code" }),
+                  /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("input", { id: "gift-shipping-postal", className: "input", value: form.shippingPostal, onChange: handleInputChange("shippingPostal") })
                 ] })
               ] })
             ] })
           ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("section", { className: "grid gap-4 md:grid-cols-2", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { className: "space-y-3", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("h4", { className: "text-sm font-semibold text-slate-700", children: "Buyer details" }),
-              /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { children: [
-                /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("label", { className: "label", htmlFor: "gift-buyer-name", children: "Your name" }),
-                /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("input", { id: "gift-buyer-name", className: "input", value: form.buyerName, onChange: handleInputChange("buyerName"), required: true })
+          /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("section", { className: "grid gap-4 md:grid-cols-2", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { className: "space-y-3", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("h4", { className: "text-sm font-semibold text-slate-700", children: "Buyer details" }),
+              /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { children: [
+                /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("label", { className: "label", htmlFor: "gift-buyer-name", children: "Your name" }),
+                /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("input", { id: "gift-buyer-name", className: "input", value: form.buyerName, onChange: handleInputChange("buyerName"), required: true })
               ] }),
-              /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { children: [
-                /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("label", { className: "label", htmlFor: "gift-buyer-email", children: "Email" }),
-                /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("input", { id: "gift-buyer-email", className: "input", type: "email", value: form.buyerEmail, onChange: handleInputChange("buyerEmail"), required: true })
+              /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { children: [
+                /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("label", { className: "label", htmlFor: "gift-buyer-email", children: "Email" }),
+                /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("input", { id: "gift-buyer-email", className: "input", type: "email", value: form.buyerEmail, onChange: handleInputChange("buyerEmail"), required: true })
               ] }),
-              /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { children: [
-                /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("label", { className: "label", htmlFor: "gift-buyer-phone", children: "Phone (optional)" }),
-                /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("input", { id: "gift-buyer-phone", className: "input", value: form.buyerPhone, onChange: handleInputChange("buyerPhone") })
+              /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { children: [
+                /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("label", { className: "label", htmlFor: "gift-buyer-phone", children: "Phone (optional)" }),
+                /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("input", { id: "gift-buyer-phone", className: "input", value: form.buyerPhone, onChange: handleInputChange("buyerPhone") })
               ] })
             ] }),
-            /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { className: "space-y-3", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("h4", { className: "text-sm font-semibold text-slate-700", children: "Recipient details" }),
-              /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { children: [
-                /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("label", { className: "label", htmlFor: "gift-recipient-name", children: "Recipient name" }),
-                /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("input", { id: "gift-recipient-name", className: "input", value: form.recipientName, onChange: handleInputChange("recipientName") })
+            /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { className: "space-y-3", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("h4", { className: "text-sm font-semibold text-slate-700", children: "Recipient details" }),
+              /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { children: [
+                /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("label", { className: "label", htmlFor: "gift-recipient-name", children: "Recipient name" }),
+                /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("input", { id: "gift-recipient-name", className: "input", value: form.recipientName, onChange: handleInputChange("recipientName") })
               ] }),
-              /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { children: [
-                /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("label", { className: "label", htmlFor: "gift-recipient-email", children: "Recipient email" }),
-                /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("input", { id: "gift-recipient-email", className: "input", type: "email", value: form.recipientEmail, onChange: handleInputChange("recipientEmail"), placeholder: "hello@friend.com" })
+              /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { children: [
+                /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("label", { className: "label", htmlFor: "gift-recipient-email", children: "Recipient email" }),
+                /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("input", { id: "gift-recipient-email", className: "input", type: "email", value: form.recipientEmail, onChange: handleInputChange("recipientEmail"), placeholder: "hello@friend.com" })
               ] }),
-              form.cardType === "digital" && form.deliveryTarget === "recipient" && /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { children: [
-                /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("label", { className: "label", htmlFor: "gift-send-on", children: "Send on (optional)" }),
-                /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(
+              form.cardType === "digital" && form.deliveryTarget === "recipient" && /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { children: [
+                /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("label", { className: "label", htmlFor: "gift-send-on", children: "Send on (optional)" }),
+                /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(
                   "input",
                   {
                     id: "gift-send-on",
@@ -69363,17 +69556,17 @@ var GiftCardDialog = ({ className = "" }) => {
                     min: minSendOn
                   }
                 ),
-                /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("p", { className: "mt-1 text-xs text-slate-500", children: "Choose a future date and time (your local timezone) to deliver the email automatically. Leave blank to send it right away." })
+                /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("p", { className: "mt-1 text-xs text-slate-500", children: "Choose a future date and time (your local timezone) to deliver the email automatically. Leave blank to send it right away." })
               ] }),
-              /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { children: [
-                /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("label", { className: "label", htmlFor: "gift-recipient-phone", children: "Recipient phone (optional)" }),
-                /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("input", { id: "gift-recipient-phone", className: "input", value: form.recipientPhone, onChange: handleInputChange("recipientPhone") })
+              /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { children: [
+                /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("label", { className: "label", htmlFor: "gift-recipient-phone", children: "Recipient phone (optional)" }),
+                /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("input", { id: "gift-recipient-phone", className: "input", value: form.recipientPhone, onChange: handleInputChange("recipientPhone") })
               ] })
             ] })
           ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("section", { className: "space-y-2", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("label", { className: "label", htmlFor: "gift-note", children: "Note for the recipient (optional)" }),
-            /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(
+          /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("section", { className: "space-y-2", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("label", { className: "label", htmlFor: "gift-note", children: "Note for the recipient (optional)" }),
+            /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(
               "textarea",
               {
                 id: "gift-note",
@@ -69384,47 +69577,47 @@ var GiftCardDialog = ({ className = "" }) => {
               }
             )
           ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("section", { className: "space-y-3", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("h4", { className: "text-sm font-semibold text-slate-700", children: "Gift card FAQ" }),
-            /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("details", { className: "group rounded-xl border border-slate-200 bg-white p-4", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("summary", { className: "flex cursor-pointer items-center justify-between text-sm font-semibold text-slate-700", children: [
-                /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("span", { children: "How much should I buy?" }),
-                /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("span", { className: "text-xl leading-none text-slate-400 transition group-open:rotate-45", children: "+" })
+          /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("section", { className: "space-y-3", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("h4", { className: "text-sm font-semibold text-slate-700", children: "Gift card FAQ" }),
+            /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("details", { className: "group rounded-xl border border-slate-200 bg-white p-4", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("summary", { className: "flex cursor-pointer items-center justify-between text-sm font-semibold text-slate-700", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("span", { children: "How much should I buy?" }),
+                /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("span", { className: "text-xl leading-none text-slate-400 transition group-open:rotate-45", children: "+" })
               ] }),
-              /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("p", { className: "mt-2 text-sm text-slate-600", children: "A simple dinner family style is around $65/person. A super fancy coursed dinner with wine and scallops is $115/person plus a discretionary wine budget (an additional $50-$150/person recommended). Pizzas are usually around $15 and pies are around $30. That's the range." })
+              /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("p", { className: "mt-2 text-sm text-slate-600", children: "A simple dinner family style is around $65/person. A super fancy coursed dinner with wine and scallops is $115/person plus a discretionary wine budget (an additional $50-$150/person recommended). Pizzas are usually around $15 and pies are around $30. That's the range." })
             ] }),
-            /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("details", { className: "group rounded-xl border border-slate-200 bg-white p-4", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("summary", { className: "flex cursor-pointer items-center justify-between text-sm font-semibold text-slate-700", children: [
-                /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("span", { children: "Leather???" }),
-                /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("span", { className: "text-xl leading-none text-slate-400 transition group-open:rotate-45", children: "+" })
+            /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("details", { className: "group rounded-xl border border-slate-200 bg-white p-4", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("summary", { className: "flex cursor-pointer items-center justify-between text-sm font-semibold text-slate-700", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("span", { children: "Leather???" }),
+                /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("span", { className: "text-xl leading-none text-slate-400 transition group-open:rotate-45", children: "+" })
               ] }),
-              /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("p", { className: "mt-2 text-sm text-slate-600", children: "We hand-letter a short note into leather from Tandy Leather. It's a souvenir that makes a big impact as a gift." })
+              /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("p", { className: "mt-2 text-sm text-slate-600", children: "We hand-letter a short note into leather from Tandy Leather. It's a souvenir that makes a big impact as a gift." })
             ] })
           ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("section", { className: "space-y-2", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("p", { className: "text-sm font-semibold text-slate-700", children: "Payment details" }),
-            /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { className: "min-h-[96px] rounded-lg border border-slate-200 bg-white p-3", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("div", { id: "gift-card-card-container", className: "min-h-[64px]" }),
-              !cardLoaded && !squareError && /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("p", { className: "mt-2 text-sm text-slate-500", children: "Loading secure card entry..." }),
-              squareError && /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("p", { className: "mt-2 text-sm text-red-600", children: squareError })
+          /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("section", { className: "space-y-2", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("p", { className: "text-sm font-semibold text-slate-700", children: "Payment details" }),
+            /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { className: "min-h-[96px] rounded-lg border border-slate-200 bg-white p-3", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("div", { id: "gift-card-card-container", className: "min-h-[64px]" }),
+              !cardLoaded && !squareError && /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("p", { className: "mt-2 text-sm text-slate-500", children: "Loading secure card entry..." }),
+              squareError && /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("p", { className: "mt-2 text-sm text-red-600", children: squareError })
             ] }),
-            /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("p", { className: "text-xs text-slate-400", children: "We use Square to process payments securely. The card is charged immediately and refunds are available on request within 14 days (if unused)." })
+            /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("p", { className: "text-xs text-slate-400", children: "We use Square to process payments securely. The card is charged immediately and refunds are available on request within 14 days (if unused)." })
           ] }),
-          error && /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("p", { className: "rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-600", children: error }),
-          /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)(DialogFooter, { className: "items-center justify-between gap-3 sm:flex-row", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { className: "text-xs text-slate-500", children: [
+          error && /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("p", { className: "rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-600", children: error }),
+          /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)(DialogFooter, { className: "items-center justify-between gap-3 sm:flex-row", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { className: "text-xs text-slate-500", children: [
               amountLabel,
               " - ",
               form.cardType === "physical" ? "Digital + leather card" : "Instant digital card"
             ] }),
-            /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)(
+            /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)(
               "button",
               {
                 type: "submit",
                 className: cn("btn btn-primary flex items-center gap-2", disableSubmit && "opacity-60"),
                 disabled: disableSubmit,
                 children: [
-                  status === "processing" ? /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(import_lucide_react3.Loader2, { className: "h-4 w-4 animate-spin" }) : /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(import_lucide_react3.Gift, { className: "h-4 w-4" }),
+                  status === "processing" ? /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(import_lucide_react3.Loader2, { className: "h-4 w-4 animate-spin" }) : /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(import_lucide_react3.Gift, { className: "h-4 w-4" }),
                   status === "processing" ? "Processing..." : "Send gift card"
                 ]
               }
@@ -69532,24 +69725,44 @@ var import_lottie_web = __toESM(require_lottie());
 var Social_handle_default = { assets: [{ h: 240, id: "0", p: "data:image/png;base64,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", u: "", w: 240, e: 1 }, { id: "10", layers: [{ ind: 9, ty: 4, parent: 8, ks: {}, ip: 0, op: 241, st: 0, shapes: [{ ty: "sh", ks: { a: 0, k: { c: true, i: [[0, 0], [0, 0], [0, 0], [0, 0], [0, 0]], v: [[0.5, 15.3], [16, 15.3], [16, 20.6], [0.5, 20.6], [0.5, 15.3]], o: [[0, 0], [0, 0], [0, 0], [0, 0], [0, 0]] } } }, { ty: "sh", ks: { a: 0, k: { c: true, i: [[0, 0], [0, 0], [0, 0], [0, 0], [-0.4, -0.4], [-0.9, 0], [0, 0], [-0.5, 0.1], [-0.2, 0.1], [0, 0], [0, 0], [0.8, -0.1], [0.7, 0], [0, 0], [1.4, 1.3], [0, 2.4], [0, 0]], v: [[4.1, 34.4], [4.1, 9], [11.1, 9], [11.1, 33.8], [11.7, 35.6], [13.5, 36.2], [13.5, 36.2], [14.6, 36.1], [15.7, 35.9], [15.7, 35.9], [16.7, 41.2], [14.4, 41.7], [12.2, 41.8], [12.2, 41.8], [6.2, 39.9], [4.1, 34.4], [4.1, 34.4]], o: [[0, 0], [0, 0], [0, 0], [0, 0.8], [0.4, 0.4], [0, 0], [0.3, 0], [0.5, -0.1], [0, 0], [0, 0], [-0.8, 0.2], [-0.8, 0.1], [0, 0], [-2.6, 0], [-1.4, -1.3], [0, 0], [0, 0]] } } }, { ty: "fl", c: { a: 0, k: [0.4, 0.4, 0.4] }, o: { a: 0, k: 100 } }] }, { ind: 8, ty: 3, ks: { p: { a: 0, k: [0, -9] } }, ip: 0, op: 241, st: 0 }] }, { id: "15", layers: [{ ind: 14, ty: 4, parent: 13, ks: {}, ip: 0, op: 241, st: 0, shapes: [{ ty: "sh", ks: { a: 0, k: { c: true, i: [[0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [-1.1, 0.8], [-1.5, 0], [0, 0], [-0.4, 0], [-0.3, -0.1], [0, 0], [0, 0], [0.6, 0.1], [0.5, 0], [0, 0], [0.9, -0.5], [0.5, -0.8], [0, -1.1], [0, 0], [0, 0]], v: [[10, 41.5], [3, 41.5], [3, 15.3], [9.8, 15.3], [9.8, 19.8], [10.1, 19.8], [12.5, 16.1], [16.4, 14.9], [16.4, 14.9], [17.6, 15], [18.7, 15.1], [18.7, 15.1], [18.7, 21.4], [17.3, 21.2], [15.6, 21.1], [15.6, 21.1], [12.8, 21.8], [10.7, 23.7], [10, 26.6], [10, 26.6], [10, 41.5]], o: [[0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0.5, -1.6], [1.1, -0.8], [0, 0], [0.4, 0], [0.4, 0], [0, 0], [0, 0], [-0.3, -0.1], [-0.6, -0.1], [0, 0], [-1.1, 0], [-0.9, 0.5], [-0.5, 0.8], [0, 0], [0, 0], [0, 0]] } } }, { ty: "fl", c: { a: 0, k: [0.4, 0.4, 0.4] }, o: { a: 0, k: 100 } }] }, { ind: 13, ty: 3, ks: { p: { a: 0, k: [-3, -14] } }, ip: 0, op: 241, st: 0 }] }, { id: "20", layers: [{ ind: 19, ty: 4, parent: 18, ks: {}, ip: 0, op: 241, st: 0, shapes: [{ ty: "sh", ks: { a: 0, k: { c: true, i: [[0, 0], [0, 0], [1.9, 1.1], [1, 2], [0, 2.7], [0, 0], [-1, 2], [-1.9, 1.1], [-2.6, 0], [0, 0], [-1.9, -1.1], [-1, -2], [0, -2.7], [0, 0], [1, -2], [1.9, -1.1], [2.6, 0]], v: [[14.7, 42], [14.7, 42], [7.9, 40.3], [3.5, 35.5], [1.9, 28.5], [1.9, 28.5], [3.5, 21.4], [7.9, 16.6], [14.7, 14.9], [14.7, 14.9], [21.6, 16.6], [26, 21.4], [27.5, 28.5], [27.5, 28.5], [26, 35.5], [21.6, 40.3], [14.7, 42]], o: [[0, 0], [-2.6, 0], [-1.9, -1.1], [-1, -2], [0, 0], [0, -2.7], [1, -2], [1.9, -1.1], [0, 0], [2.6, 0], [1.9, 1.1], [1, 2], [0, 0], [0, 2.7], [-1, 2], [-1.9, 1.1], [0, 0]] } } }, { ty: "sh", ks: { a: 0, k: { c: true, i: [[0, 0], [0, 0], [-0.8, 0.7], [-0.4, 1.2], [0, 1.5], [0, 0], [0.4, 1.2], [0.8, 0.7], [1.3, 0], [0, 0], [0.8, -0.7], [0.4, -1.2], [0, -1.5], [0, 0], [-0.4, -1.2], [-0.8, -0.7], [-1.2, 0]], v: [[14.7, 36.4], [14.7, 36.4], [17.9, 35.4], [19.8, 32.5], [20.4, 28.5], [20.4, 28.5], [19.8, 24.3], [17.9, 21.5], [14.7, 20.5], [14.7, 20.5], [11.6, 21.5], [9.7, 24.3], [9.1, 28.5], [9.1, 28.5], [9.7, 32.5], [11.6, 35.4], [14.7, 36.4]], o: [[0, 0], [1.3, 0], [0.8, -0.7], [0.4, -1.2], [0, 0], [0, -1.5], [-0.4, -1.2], [-0.8, -0.7], [0, 0], [-1.2, 0], [-0.8, 0.7], [-0.4, 1.2], [0, 0], [0, 1.5], [0.4, 1.2], [0.8, 0.7], [0, 0]] } } }, { ty: "fl", c: { a: 0, k: [0.4, 0.4, 0.4] }, o: { a: 0, k: 100 } }] }, { ind: 18, ty: 3, ks: { p: { a: 0, k: [-1, -14] } }, ip: 0, op: 241, st: 0 }] }, { id: "25", layers: [{ ind: 24, ty: 4, parent: 23, ks: {}, ip: 0, op: 241, st: 0, shapes: [{ ty: "sh", ks: { a: 0, k: { c: true, i: [[0, 0], [0, 0], [0, 0], [0, 0], [0, 0]], v: [[0.5, 15.3], [17.6, 15.3], [17.6, 20.6], [0.5, 20.6], [0.5, 15.3]], o: [[0, 0], [0, 0], [0, 0], [0, 0], [0, 0]] } } }, { ty: "sh", ks: { a: 0, k: { c: true, i: [[0, 0], [0, 0], [0, 0], [-0.7, 1.2], [-1.3, 0.6], [-1.6, 0], [0, 0], [-0.9, -0.2], [-0.4, -0.1], [0, 0], [0, 0], [0.4, 0.1], [0.5, 0], [0, 0], [0.4, -0.5], [0, -0.9], [0, 0], [0, 0]], v: [[12.1, 41.5], [5.1, 41.5], [5.1, 13.2], [6.2, 8.6], [9.2, 5.8], [13.6, 4.9], [13.6, 4.9], [16.6, 5.2], [18.6, 5.6], [18.6, 5.6], [17.4, 10.9], [16.3, 10.7], [15, 10.6], [15, 10.6], [12.8, 11.3], [12.1, 13.5], [12.1, 13.5], [12.1, 41.5]], o: [[0, 0], [0, 0], [0, -1.9], [0.7, -1.2], [1.3, -0.6], [0, 0], [1.1, 0], [0.9, 0.2], [0, 0], [0, 0], [-0.3, -0.1], [-0.4, -0.1], [0, 0], [-1.1, 0], [-0.4, 0.5], [0, 0], [0, 0], [0, 0]] } } }, { ty: "fl", c: { a: 0, k: [0.4, 0.4, 0.4] }, o: { a: 0, k: 100 } }] }, { ind: 23, ty: 3, ks: { p: { a: 0, k: [0, -4] } }, ip: 0, op: 241, st: 0 }] }, { id: "30", layers: [{ ind: 29, ty: 4, parent: 28, ks: {}, ip: 0, op: 241, st: 0, shapes: [{ ty: "sh", ks: { a: 0, k: { c: true, i: [[0, 0], [0, 0], [0, 0], [0, 0], [0, 0]], v: [[0.5, 15.3], [17.6, 15.3], [17.6, 20.6], [0.5, 20.6], [0.5, 15.3]], o: [[0, 0], [0, 0], [0, 0], [0, 0], [0, 0]] } } }, { ty: "sh", ks: { a: 0, k: { c: true, i: [[0, 0], [0, 0], [0, 0], [-0.7, 1.2], [-1.3, 0.6], [-1.6, 0], [0, 0], [-0.9, -0.2], [-0.4, -0.1], [0, 0], [0, 0], [0.4, 0.1], [0.5, 0], [0, 0], [0.4, -0.5], [0, -0.9], [0, 0], [0, 0]], v: [[12.1, 41.5], [5.1, 41.5], [5.1, 13.2], [6.2, 8.6], [9.2, 5.8], [13.6, 4.9], [13.6, 4.9], [16.6, 5.2], [18.6, 5.6], [18.6, 5.6], [17.4, 10.9], [16.3, 10.7], [15, 10.6], [15, 10.6], [12.8, 11.3], [12.1, 13.5], [12.1, 13.5], [12.1, 41.5]], o: [[0, 0], [0, 0], [0, -1.9], [0.7, -1.2], [1.3, -0.6], [0, 0], [1.1, 0], [0.9, 0.2], [0, 0], [0, 0], [-0.3, -0.1], [-0.4, -0.1], [0, 0], [-1.1, 0], [-0.4, 0.5], [0, 0], [0, 0], [0, 0]] } } }, { ty: "fl", c: { a: 0, k: [0.4, 0.4, 0.4] }, o: { a: 0, k: 100 } }] }, { ind: 28, ty: 3, ks: { p: { a: 0, k: [0, -4] } }, ip: 0, op: 241, st: 0 }] }, { id: "35", layers: [{ ind: 34, ty: 4, parent: 33, ks: {}, ip: 0, op: 241, st: 0, shapes: [{ ty: "sh", ks: { a: 0, k: { c: true, i: [[0, 0], [0, 0], [1.9, 1.1], [1, 2], [0, 2.8], [0, 0], [-1, 2], [-1.9, 1.1], [-2.5, 0], [0, 0], [-1.5, -0.5], [-1.1, -1.1], [-0.6, -1.7], [0, -2.2], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0.4, 1], [0.8, 0.6], [1.2, 0], [0, 0], [0.9, -0.6], [0.4, -1], [0, -1.2], [0, 0], [0, 0], [-0.5, -1], [-0.9, -0.5], [-1.2, 0], [0, 0], [-0.7, 0.2], [-0.5, 0.5], [-0.2, 0.7], [0, 0], [0, 0], [1, -1.1], [1.6, -0.6], [2, 0]], v: [[14.8, 42], [14.8, 42], [7.9, 40.3], [3.5, 35.7], [1.9, 28.5], [1.9, 28.5], [3.4, 21.4], [7.8, 16.6], [14.5, 14.9], [14.5, 14.9], [19.3, 15.8], [23.2, 18.2], [25.8, 22.4], [26.8, 28.2], [26.8, 28.2], [26.8, 30.2], [4.8, 30.2], [4.8, 25.8], [23.3, 25.8], [20.1, 27], [19.4, 23.4], [17.6, 21.1], [14.5, 20.2], [14.5, 20.2], [11.4, 21.1], [9.5, 23.4], [8.9, 26.6], [8.9, 26.6], [8.9, 29.8], [9.6, 33.6], [11.8, 35.9], [15, 36.7], [15, 36.7], [17.2, 36.3], [18.9, 35.3], [20, 33.6], [20, 33.6], [26.4, 34.8], [24.2, 38.6], [20.3, 41.1], [14.8, 42]], o: [[0, 0], [-2.7, 0], [-1.9, -1.1], [-1, -2], [0, 0], [0, -2.7], [1, -2], [1.9, -1.1], [0, 0], [1.7, 0], [1.5, 0.5], [1.1, 1.1], [0.6, 1.7], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, -1.4], [-0.4, -1], [-0.8, -0.6], [0, 0], [-1.2, 0], [-0.9, 0.6], [-0.4, 1], [0, 0], [0, 0], [0, 1.5], [0.5, 1], [0.9, 0.5], [0, 0], [0.8, 0], [0.7, -0.2], [0.5, -0.5], [0, 0], [0, 0], [-0.4, 1.4], [-1, 1.1], [-1.6, 0.6], [0, 0]] } } }, { ty: "fl", c: { a: 0, k: [0.4, 0.4, 0.4] }, o: { a: 0, k: 100 } }] }, { ind: 33, ty: 3, ks: { p: { a: 0, k: [-1, -14] } }, ip: 0, op: 241, st: 0 }] }, { id: "40", layers: [{ ind: 39, ty: 4, parent: 38, ks: {}, ip: 0, op: 241, st: 0, shapes: [{ ty: "sh", ks: { a: 0, k: { c: true, i: [[0, 0], [0, 0], [0, 0], [0, 0], [0, 0]], v: [[3, 6.5], [10, 6.5], [10, 41.5], [3, 41.5], [3, 6.5]], o: [[0, 0], [0, 0], [0, 0], [0, 0], [0, 0]] } } }, { ty: "fl", c: { a: 0, k: [0.4, 0.4, 0.4] }, o: { a: 0, k: 100 } }] }, { ind: 38, ty: 3, ks: { p: { a: 0, k: [-3, -6] } }, ip: 0, op: 241, st: 0 }] }, { id: "45", layers: [{ ind: 44, ty: 4, parent: 43, ks: {}, ip: 0, op: 241, st: 0, shapes: [{ ty: "sh", ks: { a: 0, k: { c: true, i: [[0, 0], [0, 0], [1.3, 0.6], [0.8, 1.2], [0, 1.7], [0, 0], [-0.5, 1], [-0.9, 0.6], [-1.2, 0.3], [-1.3, 0.1], [0, 0], [-0.9, 0.1], [-0.4, 0.3], [0, 0.6], [0, 0], [0, 0], [0.3, 0.5], [0.6, 0.3], [0.9, 0], [0, 0], [0.7, -0.3], [0.4, -0.5], [0.2, -0.6], [0, 0], [0, 0], [-1, 1.1], [-1.6, 0.6], [-1.9, 0], [0, 0], [-1.3, -0.3], [-1.1, -0.7], [-0.6, -1.1], [0, -1.6], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0.7, -0.6], [1, -0.4], [1.3, 0]], v: [[10.3, 42], [10.3, 42], [5.8, 41.1], [2.7, 38.5], [1.6, 34.1], [1.6, 34.1], [2.4, 30.5], [4.6, 28.1], [7.8, 26.7], [11.5, 26.1], [11.5, 26.1], [15.2, 25.7], [17.2, 25], [17.8, 23.7], [17.8, 23.7], [17.8, 23.6], [17.4, 21.7], [16, 20.5], [13.7, 20.1], [13.7, 20.1], [11.4, 20.5], [9.7, 21.6], [8.8, 23.2], [8.8, 23.2], [2.3, 22.1], [4.6, 18.2], [8.5, 15.8], [13.7, 14.9], [13.7, 14.9], [17.9, 15.4], [21.4, 17], [23.9, 19.7], [24.9, 23.8], [24.9, 23.8], [24.9, 41.5], [18.2, 41.5], [18.2, 37.8], [18, 37.8], [16.3, 40], [13.7, 41.4], [10.3, 42]], o: [[0, 0], [-1.7, 0], [-1.3, -0.6], [-0.8, -1.2], [0, 0], [0, -1.5], [0.5, -1], [0.9, -0.6], [1.2, -0.3], [0, 0], [1.5, -0.2], [0.9, -0.1], [0.4, -0.3], [0, 0], [0, 0], [0, -0.7], [-0.3, -0.5], [-0.6, -0.3], [0, 0], [-0.9, 0], [-0.7, 0.3], [-0.4, 0.5], [0, 0], [0, 0], [0.5, -1.5], [1, -1.1], [1.6, -0.6], [0, 0], [1.4, 0], [1.3, 0.3], [1.1, 0.7], [0.6, 1.1], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [-0.4, 0.8], [-0.7, 0.6], [-1, 0.4], [0, 0]] } } }, { ty: "sh", ks: { a: 0, k: { c: true, i: [[0, 0], [0, 0], [-0.8, 0.4], [-0.5, 0.8], [0, 0.9], [0, 0], [0, 0], [0.4, -0.1], [0.5, -0.1], [0.5, -0.1], [0.4, 0], [0, 0], [0.7, -0.3], [0.4, -0.5], [0, -0.7], [0, 0], [-0.3, -0.5], [-0.6, -0.2], [-0.8, 0]], v: [[12.3, 37], [12.3, 37], [15.2, 36.4], [17.2, 34.6], [17.9, 32.1], [17.9, 32.1], [17.9, 29.3], [16.9, 29.7], [15.5, 30], [14, 30.3], [12.7, 30.4], [12.7, 30.4], [10.4, 31.1], [8.9, 32.2], [8.3, 33.9], [8.3, 33.9], [8.9, 35.6], [10.3, 36.7], [12.3, 37]], o: [[0, 0], [1.1, 0], [0.8, -0.4], [0.5, -0.7], [0, 0], [0, 0], [-0.2, 0.2], [-0.4, 0.1], [-0.5, 0.1], [-0.5, 0.1], [0, 0], [-0.9, 0.1], [-0.7, 0.3], [-0.4, 0.5], [0, 0], [0, 0.7], [0.3, 0.5], [0.6, 0.2], [0, 0]] } } }, { ty: "fl", c: { a: 0, k: [0.4, 0.4, 0.4] }, o: { a: 0, k: 100 } }] }, { ind: 43, ty: 3, ks: { p: { a: 0, k: [-1, -14] } }, ip: 0, op: 241, st: 0 }] }, { id: "50", layers: [{ ind: 49, ty: 4, parent: 48, ks: {}, ip: 0, op: 241, st: 0, shapes: [{ ty: "sh", ks: { a: 0, k: { c: true, i: [[0, 0], [0, 0], [1.9, 1.1], [1, 2], [0, 2.7], [0, 0], [-1, 2], [-1.9, 1.1], [-2.6, 0], [0, 0], [-1.3, -0.4], [-1, -0.7], [-0.7, -1.1], [-0.2, -1.3], [0, 0], [0, 0], [0.3, 0.5], [0.4, 0.4], [0.6, 0.2], [0.7, 0], [0, 0], [0.9, -0.7], [0.4, -1.2], [0, -1.6], [0, 0], [-0.4, -1.2], [-0.9, -0.7], [-1.2, 0], [0, 0], [-0.6, 0.2], [-0.4, 0.4], [-0.3, 0.6], [-0.1, 0.7], [0, 0], [0, 0], [0.7, -1.1], [1, -0.8], [1.3, -0.4], [1.6, 0]], v: [[14.7, 42], [14.7, 42], [7.9, 40.3], [3.5, 35.5], [1.9, 28.5], [1.9, 28.5], [3.5, 21.4], [7.9, 16.6], [14.7, 14.9], [14.7, 14.9], [19, 15.5], [22.5, 17.3], [25, 20], [26.4, 23.6], [26.4, 23.6], [19.8, 24.9], [19.2, 23], [18.1, 21.6], [16.6, 20.8], [14.8, 20.5], [14.8, 20.5], [11.6, 21.5], [9.7, 24.3], [9.1, 28.5], [9.1, 28.5], [9.7, 32.6], [11.6, 35.4], [14.8, 36.4], [14.8, 36.4], [16.6, 36.1], [18.1, 35.2], [19.2, 33.8], [19.9, 31.9], [19.9, 31.9], [26.4, 33.1], [25.1, 36.8], [22.5, 39.6], [19, 41.4], [14.7, 42]], o: [[0, 0], [-2.6, 0], [-1.9, -1.1], [-1, -2], [0, 0], [0, -2.7], [1, -2], [1.9, -1.1], [0, 0], [1.5, 0], [1.3, 0.4], [1, 0.8], [0.7, 1.1], [0, 0], [0, 0], [-0.1, -0.7], [-0.3, -0.5], [-0.4, -0.4], [-0.6, -0.2], [0, 0], [-1.2, 0], [-0.9, 0.7], [-0.4, 1.2], [0, 0], [0, 1.6], [0.4, 1.2], [0.9, 0.7], [0, 0], [0.7, 0], [0.6, -0.2], [0.4, -0.4], [0.3, -0.6], [0, 0], [0, 0], [-0.2, 1.4], [-0.7, 1.1], [-1, 0.8], [-1.3, 0.4], [0, 0]] } } }, { ty: "fl", c: { a: 0, k: [0.4, 0.4, 0.4] }, o: { a: 0, k: 100 } }] }, { ind: 48, ty: 3, ks: { p: { a: 0, k: [-1, -14] } }, ip: 0, op: 241, st: 0 }] }, { id: "55", layers: [{ ind: 54, ty: 4, parent: 53, ks: {}, ip: 0, op: 241, st: 0, shapes: [{ ty: "sh", ks: { a: 0, k: { c: true, i: [[0, 0], [0, 0], [1.9, 1.1], [1, 2], [0, 2.7], [0, 0], [-1, 2], [-1.9, 1.1], [-2.6, 0], [0, 0], [-1.9, -1.1], [-1, -2], [0, -2.7], [0, 0], [1, -2], [1.9, -1.1], [2.6, 0]], v: [[14.7, 42], [14.7, 42], [7.9, 40.3], [3.5, 35.5], [1.9, 28.5], [1.9, 28.5], [3.5, 21.4], [7.9, 16.6], [14.7, 14.9], [14.7, 14.9], [21.6, 16.6], [26, 21.4], [27.5, 28.5], [27.5, 28.5], [26, 35.5], [21.6, 40.3], [14.7, 42]], o: [[0, 0], [-2.6, 0], [-1.9, -1.1], [-1, -2], [0, 0], [0, -2.7], [1, -2], [1.9, -1.1], [0, 0], [2.6, 0], [1.9, 1.1], [1, 2], [0, 0], [0, 2.7], [-1, 2], [-1.9, 1.1], [0, 0]] } } }, { ty: "sh", ks: { a: 0, k: { c: true, i: [[0, 0], [0, 0], [-0.8, 0.7], [-0.4, 1.2], [0, 1.5], [0, 0], [0.4, 1.2], [0.8, 0.7], [1.3, 0], [0, 0], [0.8, -0.7], [0.4, -1.2], [0, -1.5], [0, 0], [-0.4, -1.2], [-0.8, -0.7], [-1.2, 0]], v: [[14.7, 36.4], [14.7, 36.4], [17.9, 35.4], [19.8, 32.5], [20.4, 28.5], [20.4, 28.5], [19.8, 24.3], [17.9, 21.5], [14.7, 20.5], [14.7, 20.5], [11.6, 21.5], [9.7, 24.3], [9.1, 28.5], [9.1, 28.5], [9.7, 32.5], [11.6, 35.4], [14.7, 36.4]], o: [[0, 0], [1.3, 0], [0.8, -0.7], [0.4, -1.2], [0, 0], [0, -1.5], [-0.4, -1.2], [-0.8, -0.7], [0, 0], [-1.2, 0], [-0.8, 0.7], [-0.4, 1.2], [0, 0], [0, 1.5], [0.4, 1.2], [0.8, 0.7], [0, 0]] } } }, { ty: "fl", c: { a: 0, k: [0.4, 0.4, 0.4] }, o: { a: 0, k: 100 } }] }, { ind: 53, ty: 3, ks: { p: { a: 0, k: [-1, -14] } }, ip: 0, op: 241, st: 0 }] }, { id: "60", layers: [{ ind: 59, ty: 4, parent: 58, ks: {}, ip: 0, op: 241, st: 0, shapes: [{ ty: "sh", ks: { a: 0, k: { c: true, i: [[0, 0], [0, 0], [0, 0], [0, 0], [0, 0]], v: [[3, 6.5], [10, 6.5], [10, 41.5], [3, 41.5], [3, 6.5]], o: [[0, 0], [0, 0], [0, 0], [0, 0], [0, 0]] } } }, { ty: "fl", c: { a: 0, k: [0.4, 0.4, 0.4] }, o: { a: 0, k: 100 } }] }, { ind: 58, ty: 3, ks: { p: { a: 0, k: [-3, -6] } }, ip: 0, op: 241, st: 0 }] }, { id: "66", layers: [{ ind: 65, ty: 2, parent: 64, ks: { s: { a: 0, k: [133.33, 133.33] } }, ip: 0, op: 241, st: 0, refId: "0" }, { ind: 64, ty: 3, ks: { s: { a: 0, k: [25, 25] } }, ip: 0, op: 241, st: 0 }] }, { id: "69", layers: [{ ind: 68, ty: 0, ks: {}, w: 80, h: 80, ip: 0, op: 241, st: 0, refId: "66" }] }, { id: "74", layers: [{ ind: 73, ty: 4, parent: 72, ks: {}, ip: 0, op: 241, st: 0, shapes: [{ ty: "rc", p: { a: 1, k: [{ t: 0, s: [60, 60], i: { x: [1, 1], y: [1, 1] }, o: { x: [0, 0], y: [0, 0] } }, { t: 18.6, s: [60, 60], i: { x: [0.25, 1], y: [1, 1] }, o: { x: [0.25, 0], y: [0.1, 0] } }, { t: 54.6, s: [208, 60], i: { x: [1, 1], y: [1, 1] }, o: { x: [0, 0], y: [0, 0] } }, { t: 240, s: [208, 60], h: 1 }] }, r: { a: 0, k: 40 }, s: { a: 1, k: [{ t: 0, s: [120, 120], i: { x: [1, 1], y: [1, 1] }, o: { x: [0, 0], y: [0, 0] } }, { t: 18.6, s: [120, 120], i: { x: [0.25, 1], y: [1, 1] }, o: { x: [0.25, 0], y: [0.1, 0] } }, { t: 54.6, s: [416, 120], i: { x: [1, 1], y: [1, 1] }, o: { x: [0, 0], y: [0, 0] } }, { t: 240, s: [416, 120], h: 1 }] } }, { ty: "fl", c: { a: 0, k: [1, 1, 1] }, o: { a: 0, k: 100 } }] }, { ind: 72, ty: 3, ks: { p: { a: 0, k: [148, 0] } }, ip: 0, op: 241, st: 0 }] }, { id: "77", layers: [{ ind: 12, ty: 0, parent: 7, ks: { a: { a: 0, k: [0, -9] }, o: { a: 1, k: [{ t: 0, s: [0], h: 1 }, { t: 24.6, s: [0], i: { x: 1, y: 1 }, o: { x: 0, y: 0 } }, { t: 32.82438, s: [100], h: 1 }, { t: 240, s: [100], h: 1 }] }, p: { a: 0, k: [227.344, 0] } }, w: 17, h: 33, ip: 0, op: 241, st: 0, refId: "10" }, { ind: 17, ty: 0, parent: 7, ks: { a: { a: 0, k: [-3, -14] }, o: { a: 1, k: [{ t: 0, s: [0], h: 1 }, { t: 28.119502, s: [0], i: { x: 1, y: 1 }, o: { x: 0, y: 0 } }, { t: 34.138303, s: [100], h: 1 }, { t: 240, s: [100], h: 1 }] }, p: { a: 0, k: [207.797, 0] } }, w: 16, h: 28, ip: 0, op: 241, st: 0, refId: "15" }, { ind: 22, ty: 0, parent: 7, ks: { a: { a: 0, k: [-1, -14] }, o: { a: 1, k: [{ t: 0, s: [0], h: 1 }, { t: 29.986357, s: [0], i: { x: 1, y: 1 }, o: { x: 0, y: 0 } }, { t: 35.484673, s: [100], h: 1 }, { t: 240, s: [100], h: 1 }] }, p: { a: 0, k: [178.359, 0] } }, w: 27, h: 28, ip: 0, op: 241, st: 0, refId: "20" }, { ind: 27, ty: 0, parent: 7, ks: { a: { a: 0, k: [0, -4] }, o: { a: 1, k: [{ t: 0, s: [0], h: 1 }, { t: 31.475689, s: [0], i: { x: 1, y: 1 }, o: { x: 0, y: 0 } }, { t: 36.918628, s: [100], h: 1 }, { t: 240, s: [100], h: 1 }] }, p: { a: 0, k: [159.258, 0] } }, w: 19, h: 38, ip: 0, op: 241, st: 0, refId: "25" }, { ind: 32, ty: 0, parent: 7, ks: { a: { a: 0, k: [0, -4] }, o: { a: 1, k: [{ t: 0, s: [0], h: 1 }, { t: 32.82438, s: [0], i: { x: 1, y: 1 }, o: { x: 0, y: 0 } }, { t: 38.495948, s: [100], h: 1 }, { t: 240, s: [100], h: 1 }] }, p: { a: 0, k: [140.156, 0] } }, w: 19, h: 38, ip: 0, op: 241, st: 0, refId: "30" }, { ind: 37, ty: 0, parent: 7, ks: { a: { a: 0, k: [-1, -14] }, o: { a: 1, k: [{ t: 0, s: [0], h: 1 }, { t: 34.138303, s: [0], i: { x: 1, y: 1 }, o: { x: 0, y: 0 } }, { t: 40.283564, s: [100], h: 1 }, { t: 240, s: [100], h: 1 }] }, p: { a: 0, k: [111.563, 0] } }, w: 26, h: 28, ip: 0, op: 241, st: 0, refId: "35" }, { ind: 42, ty: 0, parent: 7, ks: { a: { a: 0, k: [-3, -6] }, o: { a: 1, k: [{ t: 0, s: [0], h: 1 }, { t: 35.484673, s: [0], i: { x: 1, y: 1 }, o: { x: 0, y: 0 } }, { t: 42.374233, s: [100], h: 1 }, { t: 240, s: [100], h: 1 }] }, p: { a: 0, k: [98.555, 0] } }, w: 8, h: 36, ip: 0, op: 241, st: 0, refId: "40" }, { ind: 47, ty: 0, parent: 7, ks: { a: { a: 0, k: [-1, -14] }, o: { a: 1, k: [{ t: 0, s: [0], h: 1 }, { t: 36.918628, s: [0], i: { x: 1, y: 1 }, o: { x: 0, y: 0 } }, { t: 44.915869, s: [100], h: 1 }, { t: 240, s: [100], h: 1 }] }, p: { a: 0, k: [70.688, 0] } }, w: 24, h: 28, ip: 0, op: 241, st: 0, refId: "45" }, { ind: 52, ty: 0, parent: 7, ks: { a: { a: 0, k: [-1, -14] }, o: { a: 1, k: [{ t: 0, s: [0], h: 1 }, { t: 38.495948, s: [0], i: { x: 1, y: 1 }, o: { x: 0, y: 0 } }, { t: 48.189263, s: [100], h: 1 }, { t: 240, s: [100], h: 1 }] }, p: { a: 0, k: [42.445, 0] } }, w: 26, h: 28, ip: 0, op: 241, st: 0, refId: "50" }, { ind: 57, ty: 0, parent: 7, ks: { a: { a: 0, k: [-1, -14] }, o: { a: 1, k: [{ t: 0, s: [0], h: 1 }, { t: 40.283564, s: [0], i: { x: 1, y: 1 }, o: { x: 0, y: 0 } }, { t: 52.910912, s: [100], h: 1 }, { t: 240, s: [100], h: 1 }] }, p: { a: 0, k: [13.008, 0] } }, w: 27, h: 28, ip: 0, op: 241, st: 0, refId: "55" }, { ind: 62, ty: 0, parent: 7, ks: { a: { a: 0, k: [-3, -6] }, o: { a: 1, k: [{ t: 0, s: [0], h: 1 }, { t: 42.374233, s: [0], i: { x: 1, y: 1 }, o: { x: 0, y: 0 } }, { t: 66.6, s: [100], h: 1 }, { t: 240, s: [100], h: 1 }] } }, w: 8, h: 36, ip: 0, op: 241, st: 0, refId: "60" }, { ind: 7, ty: 3, parent: 6, ks: {}, ip: 0, op: 241, st: 0 }, { ind: 6, ty: 3, parent: 5, ks: {}, ip: 0, op: 241, st: 0 }, { ind: 5, ty: 3, parent: 4, ks: { p: { a: 1, k: [{ t: 0, s: [-28, 36], i: { x: [1, 1], y: [1, 1] }, o: { x: [0, 0], y: [0, 0] } }, { t: 18.6, s: [-28, 36], i: { x: [0.25, 1], y: [1, 1] }, o: { x: [0.25, 0], y: [0.1, 0] } }, { t: 54.6, s: [120, 36], i: { x: [1, 1], y: [1, 1] }, o: { x: [0, 0], y: [0, 0] } }, { t: 240, s: [120, 36], h: 1 }] } }, ip: 0, op: 241, st: 0 }, { ind: 71, ty: 0, parent: 63, ks: { a: { a: 0, k: [40, 40] }, o: { a: 1, k: [{ t: 0, s: [0], h: 1 }, { t: 6, s: [0], i: { x: 0.25, y: 1 }, o: { x: 0.25, y: 0.1 } }, { t: 24, s: [100], h: 1 }, { t: 240, s: [100], h: 1 }] }, p: { a: 0, k: [40, 40] }, s: { a: 1, k: [{ t: 0, s: [0, 0], i: { x: [1, 1], y: [1, 1] }, o: { x: [0, 0], y: [0, 0] } }, { t: 6, s: [0, 0], i: { x: [0.25, 0.25], y: [1, 1] }, o: { x: [0.25, 0.25], y: [0.1, 0.1] } }, { t: 24, s: [100, 100], i: { x: [1, 1], y: [1, 1] }, o: { x: [0, 0], y: [0, 0] } }, { t: 240, s: [100, 100], h: 1 }] } }, w: 80, h: 80, ip: 0, op: 241, st: 0, refId: "69" }, { ind: 63, ty: 3, parent: 4, ks: { p: { a: 1, k: [{ t: 0, s: [168, 20], i: { x: [1, 1], y: [1, 1] }, o: { x: [0, 0], y: [0, 0] } }, { t: 18.6, s: [168, 20], i: { x: [0.25, 1], y: [1, 1] }, o: { x: [0.25, 0], y: [0.1, 0] } }, { t: 54.6, s: [20, 20], i: { x: [1, 1], y: [1, 1] }, o: { x: [0, 0], y: [0, 0] } }, { t: 240, s: [20, 20], h: 1 }] } }, ip: 0, op: 241, st: 0 }, { ind: 76, ty: 0, parent: 4, ks: { a: { a: 0, k: [148, 0] }, o: { a: 0, k: 80 }, p: { a: 1, k: [{ t: 0, s: [148, 0], i: { x: [1, 1], y: [1, 1] }, o: { x: [0, 0], y: [0, 0] } }, { t: 18.6, s: [148, 0], i: { x: [0.25, 1], y: [1, 1] }, o: { x: [0.25, 0], y: [0.1, 0] } }, { t: 54.6, s: [0, 0], i: { x: [1, 1], y: [1, 1] }, o: { x: [0, 0], y: [0, 0] } }, { t: 240, s: [0, 0], h: 1 }] } }, w: 564, h: 120, ip: 0, op: 241, st: 0, refId: "74" }, { ind: 4, ty: 3, ks: { p: { a: 0, k: [148, 0] } }, ip: 0, op: 241, st: 0 }] }], fr: 60, h: 160, ip: 0, layers: [{ ind: 79, ty: 0, parent: 3, ks: { a: { a: 0, k: [356, 60] }, o: { a: 1, k: [{ t: 0, s: [0], i: { x: 0.666, y: 1 }, o: { x: 0.333, y: 0.999 } }, { t: 18, s: [100], h: 1 }, { t: 240, s: [100], h: 1 }] }, p: { a: 0, k: [208, 60] }, s: { a: 1, k: [{ t: 0, s: [0, 0], i: { x: [0.666, 0.666], y: [1, 1] }, o: { x: [0.333, 0.333], y: [0.999, 0.999] } }, { t: 18, s: [100, 100], i: { x: [1, 1], y: [1, 1] }, o: { x: [0, 0], y: [0, 0] } }, { t: 240, s: [100, 100], h: 1 }] } }, w: 712, h: 120, ip: 0, op: 241, st: 0, refId: "77" }, { ind: 3, ty: 3, parent: 2, ks: { p: { a: 0, k: [20, 20] } }, ip: 0, op: 241, st: 0 }, { ind: 2, ty: 3, parent: 1, ks: {}, ip: 0, op: 241, st: 0 }, { ind: 1, ty: 3, ks: {}, ip: 0, op: 241, st: 0 }], meta: { g: "https://jitter.video" }, op: 240, v: "5.7.4", w: 456 };
 
 // src/pages/HomePage.jsx
-var import_jsx_runtime24 = require("react/jsx-runtime");
+var import_jsx_runtime26 = require("react/jsx-runtime");
 var HomePage = () => {
   const navigate = (0, import_react_router_dom3.useNavigate)();
-  const animationContainer = (0, import_react16.useRef)(null);
-  (0, import_react17.useEffect)(() => {
-    if (animationContainer.current) {
-      const anim = import_lottie_web.default.loadAnimation({
-        container: animationContainer.current,
-        renderer: "svg",
-        loop: true,
-        autoplay: true,
-        animationData: Social_handle_default
-      });
-      return () => anim.destroy();
-    }
+  const animationContainer = (0, import_react17.useRef)(null);
+  const animationInstanceRef = (0, import_react17.useRef)(null);
+  const hasAnimatedRef = (0, import_react17.useRef)(false);
+  (0, import_react18.useEffect)(() => {
+    if (!animationContainer.current) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting && !hasAnimatedRef.current) {
+            hasAnimatedRef.current = true;
+            if (animationInstanceRef.current) {
+              animationInstanceRef.current.destroy();
+            }
+            animationInstanceRef.current = import_lottie_web.default.loadAnimation({
+              container: animationContainer.current,
+              renderer: "svg",
+              loop: false,
+              autoplay: true,
+              animationData: Social_handle_default
+            });
+          }
+        });
+      },
+      { threshold: 0.1 }
+    );
+    observer.observe(animationContainer.current);
+    return () => {
+      observer.disconnect();
+      if (animationInstanceRef.current) {
+        animationInstanceRef.current.destroy();
+      }
+    };
   }, []);
-  const [partners, setPartners] = (0, import_react16.useState)([]);
-  (0, import_react17.useEffect)(() => {
+  const [partners, setPartners] = (0, import_react17.useState)([]);
+  (0, import_react18.useEffect)(() => {
     let mounted = true;
     fetch("/api/search-images?query=partner&per_page=48").then((r) => r.ok ? r.json() : null).then((data2) => {
       if (!mounted || !data2 || !Array.isArray(data2.images)) return;
@@ -69568,18 +69781,12 @@ var HomePage = () => {
       mounted = false;
     };
   }, []);
-  const [reviews, setReviews] = (0, import_react16.useState)([]);
-  const [events, setEvents] = (0, import_react16.useState)([]);
-  const [eventModal, setEventModal] = (0, import_react16.useState)(null);
-  const [showBooking, setShowBooking] = (0, import_react16.useState)(false);
-  const [business, setBusiness] = (0, import_react16.useState)(null);
-  const parseEventDate2 = (value2) => {
-    if (!value2) return null;
-    const iso = value2.includes("T") ? value2 : `${value2}T00:00:00`;
-    const date = new Date(iso);
-    return Number.isNaN(date.getTime()) ? null : date;
-  };
-  (0, import_react17.useEffect)(() => {
+  const [reviews, setReviews] = (0, import_react17.useState)([]);
+  const [events, setEvents] = (0, import_react17.useState)([]);
+  const [eventModal, setEventModal] = (0, import_react17.useState)(null);
+  const [showBooking, setShowBooking] = (0, import_react17.useState)(false);
+  const [business, setBusiness] = (0, import_react17.useState)(null);
+  (0, import_react18.useEffect)(() => {
     let mounted = true;
     fetch("/business.json").then((r) => r.ok ? r.json() : null).then((data2) => {
       if (mounted) setBusiness(data2 || null);
@@ -69589,7 +69796,7 @@ var HomePage = () => {
       mounted = false;
     };
   }, []);
-  (0, import_react17.useEffect)(() => {
+  (0, import_react18.useEffect)(() => {
     let mounted = true;
     fetch("/reviews/thumbtack.json").then((r) => r.ok ? r.json() : null).then((ext) => {
       if (!mounted || !Array.isArray(ext) || !ext.length) return;
@@ -69609,7 +69816,7 @@ var HomePage = () => {
       mounted = false;
     };
   }, []);
-  (0, import_react17.useEffect)(() => {
+  (0, import_react18.useEffect)(() => {
     let mounted = true;
     (async () => {
       try {
@@ -69630,14 +69837,14 @@ var HomePage = () => {
       mounted = false;
     };
   }, []);
-  const eventSchemas = (0, import_react16.useMemo)(
+  const eventSchemas = (0, import_react17.useMemo)(
     () => generateEventListSchema(events),
     [events]
   );
   const PartnerGrid = () => {
     const items2 = (partners || []).filter((p) => p && p.publicId);
     if (!items2.length) return null;
-    return /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("div", { className: "max-w-6xl mx-auto grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-5 items-center px-4", children: items2.map((p, i) => /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
+    return /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "max-w-6xl mx-auto grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-5 items-center px-4", children: items2.map((p, i) => /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(
       import_framer_motion3.motion.a,
       {
         href: p.url || "#",
@@ -69655,7 +69862,7 @@ var HomePage = () => {
         whileInView: { opacity: 1, scale: 1 },
         viewport: { once: true },
         transition: { duration: 0.25, ease: "easeOut", delay: i * 0.03 },
-        children: /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("div", { className: "w-full", children: /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("div", { className: "relative w-full", style: { paddingTop: "18.2%" }, children: /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
+        children: /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "w-full", children: /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "relative w-full", style: { paddingTop: "18.2%" }, children: /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(
           cloudinaryImage_default,
           {
             publicId: p.publicId,
@@ -69728,13 +69935,13 @@ var HomePage = () => {
       }
     }))
   } : null;
-  const [showFeedback, setShowFeedback] = (0, import_react16.useState)(false);
-  const [fb, setFb] = (0, import_react16.useState)({ name: "", email: "", sentiment: "positive", message: "" });
-  const [fbStatus, setFbStatus] = (0, import_react16.useState)("idle");
+  const [showFeedback, setShowFeedback] = (0, import_react17.useState)(false);
+  const [fb, setFb] = (0, import_react17.useState)({ name: "", email: "", sentiment: "positive", message: "" });
+  const [fbStatus, setFbStatus] = (0, import_react17.useState)("idle");
   function SubscribeForm() {
-    const [email, setEmail] = (0, import_react16.useState)("");
-    const [status, setStatus] = (0, import_react16.useState)("idle");
-    return /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)(
+    const [email, setEmail] = (0, import_react17.useState)("");
+    const [status, setStatus] = (0, import_react17.useState)("idle");
+    return /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)(
       "form",
       {
         onSubmit: async (e) => {
@@ -69756,7 +69963,7 @@ var HomePage = () => {
         },
         className: "mt-4 flex gap-3",
         children: [
-          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
+          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(
             "input",
             {
               type: "email",
@@ -69768,17 +69975,17 @@ var HomePage = () => {
               "aria-label": "Email address"
             }
           ),
-          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("button", { type: "submit", className: "btn btn-primary", disabled: status === "sending", children: status === "sending" ? "Subscribing\u2026" : "Subscribe" }),
-          status === "ok" && /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("span", { className: "text-green-700 text-sm self-center", children: "Thanks! You\u2019re on the list." }),
-          status === "error" && /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("span", { className: "text-red-700 text-sm self-center", children: "Couldn\u2019t subscribe." })
+          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("button", { type: "submit", className: "btn btn-primary", disabled: status === "sending", children: status === "sending" ? "Subscribing\u2026" : "Subscribe" }),
+          status === "ok" && /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("span", { className: "text-green-700 text-sm self-center", children: "Thanks! You\u2019re on the list." }),
+          status === "error" && /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("span", { className: "text-red-700 text-sm self-center", children: "Couldn\u2019t subscribe." })
         ]
       }
     );
   }
-  const FeedbackModal = (0, import_react16.useMemo)(() => {
+  const FeedbackModal = (0, import_react17.useMemo)(() => {
     if (!showFeedback) return null;
-    return /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("div", { className: "fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4", role: "dialog", "aria-modal": "true", children: /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "form-card w-full max-w-lg relative", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
+    return /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4", role: "dialog", "aria-modal": "true", children: /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "form-card w-full max-w-lg relative", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(
         "button",
         {
           className: "absolute right-4 top-4 text-sm underline",
@@ -69787,9 +69994,9 @@ var HomePage = () => {
           children: "Close"
         }
       ),
-      /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("h4", { className: "text-xl font-bold mb-2", children: "Send Feedback" }),
-      /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("p", { className: "text-sm text-gray-600 mb-4", children: "We read every note. Thanks for helping us improve." }),
-      /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)(
+      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("h4", { className: "text-xl font-bold mb-2", children: "Send Feedback" }),
+      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("p", { className: "text-sm text-gray-600 mb-4", children: "We read every note. Thanks for helping us improve." }),
+      /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)(
         "form",
         {
           onSubmit: async (e) => {
@@ -69818,29 +70025,29 @@ var HomePage = () => {
           },
           className: "space-y-3",
           children: [
-            /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { children: [
-              /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("label", { className: "label", htmlFor: "fb-name", children: "Name" }),
-              /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("input", { id: "fb-name", className: "input", value: fb.name, onChange: (e) => setFb({ ...fb, name: e.target.value }), required: true })
+            /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { children: [
+              /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("label", { className: "label", htmlFor: "fb-name", children: "Name" }),
+              /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("input", { id: "fb-name", className: "input", value: fb.name, onChange: (e) => setFb({ ...fb, name: e.target.value }), required: true })
             ] }),
-            /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { children: [
-              /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("label", { className: "label", htmlFor: "fb-email", children: "Email" }),
-              /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("input", { id: "fb-email", type: "email", className: "input", value: fb.email, onChange: (e) => setFb({ ...fb, email: e.target.value }), required: true })
+            /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { children: [
+              /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("label", { className: "label", htmlFor: "fb-email", children: "Email" }),
+              /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("input", { id: "fb-email", type: "email", className: "input", value: fb.email, onChange: (e) => setFb({ ...fb, email: e.target.value }), required: true })
             ] }),
-            /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { children: [
-              /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("label", { className: "label", htmlFor: "fb-sentiment", children: "Type" }),
-              /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("div", { className: "flex gap-4", id: "fb-sentiment", children: ["positive", "neutral", "negative"].map((s) => /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("label", { className: "inline-flex items-center gap-2", children: [
-                /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("input", { type: "radio", name: "sentiment", value: s, checked: fb.sentiment === s, onChange: () => setFb({ ...fb, sentiment: s }) }),
-                /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("span", { className: "capitalize", children: s })
+            /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { children: [
+              /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("label", { className: "label", htmlFor: "fb-sentiment", children: "Type" }),
+              /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "flex gap-4", id: "fb-sentiment", children: ["positive", "neutral", "negative"].map((s) => /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("label", { className: "inline-flex items-center gap-2", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("input", { type: "radio", name: "sentiment", value: s, checked: fb.sentiment === s, onChange: () => setFb({ ...fb, sentiment: s }) }),
+                /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("span", { className: "capitalize", children: s })
               ] }, s)) })
             ] }),
-            /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { children: [
-              /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("label", { className: "label", htmlFor: "fb-message", children: "Message" }),
-              /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("textarea", { id: "fb-message", className: "textarea", value: fb.message, onChange: (e) => setFb({ ...fb, message: e.target.value }), rows: 5, required: true })
+            /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { children: [
+              /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("label", { className: "label", htmlFor: "fb-message", children: "Message" }),
+              /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("textarea", { id: "fb-message", className: "textarea", value: fb.message, onChange: (e) => setFb({ ...fb, message: e.target.value }), rows: 5, required: true })
             ] }),
-            /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "flex items-center gap-3", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("button", { type: "submit", className: "btn btn-primary", disabled: fbStatus === "sending", children: fbStatus === "sending" ? "Sending\u2026" : "Send feedback" }),
-              fbStatus === "sent" && /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("span", { className: "text-green-700 text-sm", children: "Thanks! Sent." }),
-              fbStatus === "error" && /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("span", { className: "text-red-700 text-sm", children: "Could not send. Try again." })
+            /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "flex items-center gap-3", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("button", { type: "submit", className: "btn btn-primary", disabled: fbStatus === "sending", children: fbStatus === "sending" ? "Sending\u2026" : "Send feedback" }),
+              fbStatus === "sent" && /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("span", { className: "text-green-700 text-sm", children: "Thanks! Sent." }),
+              fbStatus === "error" && /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("span", { className: "text-red-700 text-sm", children: "Could not send. Try again." })
             ] })
           ]
         }
@@ -69874,70 +70081,81 @@ var HomePage = () => {
       }
       return startLabel;
     };
-    const content2 = /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "border rounded-lg p-4 bg-white shadow-sm", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("h3", { className: "text-lg font-semibold mb-2", children: "upcoming public events." }),
-      /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("ul", { className: "divide-y", children: events.map((ev) => {
+    const content2 = /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "border rounded-lg p-4 bg-white shadow-sm", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("h3", { className: "text-lg font-semibold mb-2", children: "upcoming public events." }),
+      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("ul", { className: "divide-y", children: events.map((ev) => {
         const dateLabel = formatListDate(ev);
         const detailLabel = [dateLabel, ev.event_type || "Event"].filter(Boolean).join(" - ");
-        return /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("li", { className: "py-2", children: /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
+        return /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("li", { className: "py-2", children: /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(
           "button",
           {
             className: "text-left hover:underline",
             onClick: () => setEventModal(ev),
-            children: /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("span", { className: "flex flex-col sm:flex-row sm:items-baseline sm:gap-2", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("span", { className: "font-semibold text-slate-800", children: ev.title }),
-              /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("span", { className: "text-sm text-slate-600", children: detailLabel })
+            children: /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("span", { className: "flex flex-col sm:flex-row sm:items-baseline sm:gap-2", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("span", { className: "font-semibold text-slate-800", children: ev.title }),
+              /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("span", { className: "text-sm text-slate-600", children: detailLabel })
             ] })
           }
         ) }, ev.id);
       }) })
     ] });
     if (asCard) return content2;
-    return /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "max-w-6xl mx-auto px-4 mt-8", children: [
+    return /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "max-w-6xl mx-auto px-4 mt-8", children: [
       content2,
-      eventModal && !showBooking && /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("div", { className: "fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4", children: /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "bg-white rounded-lg shadow-xl max-w-lg w-full p-5 relative", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
+      eventModal && !showBooking && /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4", children: /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "bg-white rounded-lg shadow-xl max-w-lg w-full relative overflow-hidden max-h-[90vh] overflow-y-auto", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(
           "button",
           {
-            className: "absolute right-3 top-3 text-sm underline",
+            className: "absolute right-3 top-3 text-sm underline bg-white/90 px-2 py-1 rounded z-10",
             onClick: () => setEventModal(null),
             children: "Close"
           }
         ),
-        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("h4", { className: "text-xl font-bold mb-1", children: eventModal.title }),
-        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("p", { className: "text-sm text-gray-600 mb-3", children: formatModalDate(eventModal) }),
-        eventModal.location && /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("p", { className: "text-sm text-gray-600 mb-2", children: [
-          "\u{1F4CD} ",
-          eventModal.location
-        ] }),
-        eventModal.sanity_data?.description && /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("div", { className: "prose max-w-none mb-4", children: /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(import_react18.PortableText, { value: eventModal.sanity_data.description, components: portableTextComponents }) }),
-        !eventModal.sanity_data?.description && (eventModal.notes || eventModal.description) && /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("p", { className: "text-sm text-gray-700 mb-4 whitespace-pre-wrap", children: eventModal.notes || eventModal.description }),
-        /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "mt-4 space-y-3", children: [
-          eventModal.sanity_data?.ticketsUrl && /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
-            "a",
-            {
-              className: "btn btn-primary inline-block w-full text-center",
-              href: eventModal.sanity_data.ticketsUrl,
-              target: "_blank",
-              rel: "noreferrer",
-              children: "Get tickets"
-            }
-          ),
-          eventModal.is_bookable && /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)(
-            "button",
-            {
-              className: "btn btn-secondary w-full",
-              onClick: () => setShowBooking(true),
-              children: [
-                "Book a Spot",
-                eventModal.capacity && eventModal.available_slots !== null && ` (${eventModal.available_slots} left)`
-              ]
-            }
-          )
+        (eventModal.image_url || eventModal.sanity_data?.heroImage) && /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "w-full h-48 md:h-64 overflow-hidden", children: /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(
+          "img",
+          {
+            src: eventModal.image_url || eventModal.sanity_data?.heroImage,
+            alt: eventModal.image_alt || eventModal.title,
+            className: "w-full h-full object-cover"
+          }
+        ) }),
+        /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "p-5", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("h4", { className: "text-xl font-bold mb-1", children: eventModal.title }),
+          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("p", { className: "text-sm text-gray-600 mb-3", children: formatModalDate(eventModal) }),
+          eventModal.location && /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("p", { className: "text-sm text-gray-600 mb-2", children: [
+            "\u{1F4CD} ",
+            eventModal.location
+          ] }),
+          eventModal.event_type && /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("p", { className: "text-sm text-gray-600 mb-3 capitalize", children: eventModal.event_type.replace(/_/g, " ") }),
+          eventModal.sanity_data?.description && /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "prose max-w-none mb-4", children: /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(import_react19.PortableText, { value: eventModal.sanity_data.description, components: portableTextComponents }) }),
+          !eventModal.sanity_data?.description && (eventModal.notes || eventModal.description) && /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("p", { className: "text-sm text-gray-700 mb-4 whitespace-pre-wrap", children: eventModal.notes || eventModal.description }),
+          /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "mt-4 space-y-3", children: [
+            (eventModal.link_url || eventModal.sanity_data?.ticketsUrl) && /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(
+              "a",
+              {
+                className: "btn btn-primary inline-block w-full text-center",
+                href: eventModal.link_url || eventModal.sanity_data.ticketsUrl,
+                target: "_blank",
+                rel: "noreferrer",
+                children: eventModal.link_label || "Get tickets"
+              }
+            ),
+            eventModal.is_bookable && /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)(
+              "button",
+              {
+                className: "btn btn-secondary w-full",
+                onClick: () => setShowBooking(true),
+                children: [
+                  "Book a Spot",
+                  eventModal.capacity && eventModal.available_slots !== null && ` (${eventModal.available_slots} left)`
+                ]
+              }
+            )
+          ] })
         ] })
       ] }) }),
-      eventModal && showBooking && /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("div", { className: "fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4", children: /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "bg-white rounded-lg shadow-xl max-w-2xl w-full p-5 relative max-h-[90vh] overflow-y-auto", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
+      eventModal && showBooking && /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4", children: /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "bg-white rounded-lg shadow-xl max-w-2xl w-full p-5 relative max-h-[90vh] overflow-y-auto", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(
           "button",
           {
             className: "absolute right-3 top-3 text-sm underline",
@@ -69948,14 +70166,13 @@ var HomePage = () => {
             children: "Close"
           }
         ),
-        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
+        /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(
           TimeSlotPicker,
           {
             pizzaCount: 1,
             customerName: "",
             customerEmail: "",
-            onBook: (booking) => {
-              console.log("Booking created:", booking);
+            onBook: () => {
               setShowBooking(false);
               setEventModal(null);
               alert("Booking confirmed! Check your email for details.");
@@ -69965,20 +70182,20 @@ var HomePage = () => {
       ] }) })
     ] });
   }
-  return /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)(import_jsx_runtime24.Fragment, { children: [
-    /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)(import_react_helmet_async2.Helmet, { children: [
-      /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("title", { children: "Personal Chef Minneapolis & St. Paul | Local Effort" }),
-      /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
+  return /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)(import_jsx_runtime26.Fragment, { children: [
+    /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)(import_react_helmet_async2.Helmet, { children: [
+      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("title", { children: "Personal Chef Minneapolis & St. Paul | Local Effort" }),
+      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(
         "meta",
         {
           name: "description",
           content: "Personal chef and event catering in Minneapolis\u2013St. Paul. In-home dinners, weekly meal prep, and seasonal menus. Book your chef-prepared experience today."
         }
       ),
-      /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("link", { rel: "canonical", href: "https://localeffortfood.com/" }),
-      /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("script", { type: "application/ld+json", children: JSON.stringify(imageJsonLd) }),
-      partnersJsonLd && /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("script", { type: "application/ld+json", children: JSON.stringify(partnersJsonLd) }),
-      /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("script", { type: "application/ld+json", children: JSON.stringify((() => {
+      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("link", { rel: "canonical", href: "https://localeffortfood.com/" }),
+      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("script", { type: "application/ld+json", children: JSON.stringify(imageJsonLd) }),
+      partnersJsonLd && /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("script", { type: "application/ld+json", children: JSON.stringify(partnersJsonLd) }),
+      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("script", { type: "application/ld+json", children: JSON.stringify((() => {
         const src = business || {};
         const address = {
           "@type": "PostalAddress",
@@ -70049,14 +70266,14 @@ var HomePage = () => {
         };
         return biz;
       })()) }),
-      /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("script", { type: "application/ld+json", children: JSON.stringify(homeFaqJsonLd) }),
-      eventSchemas && eventSchemas.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("script", { type: "application/ld+json", children: JSON.stringify(eventSchemas) })
+      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("script", { type: "application/ld+json", children: JSON.stringify(homeFaqJsonLd) }),
+      eventSchemas && eventSchemas.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("script", { type: "application/ld+json", children: JSON.stringify(eventSchemas) })
     ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "space-y-24", children: [
-      !cloudinaryConfig.cloudName && /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("div", { className: "card bg-yellow-100 border-yellow-400 text-body", children: "Cloudinary not configured. Set VITE_CLOUDINARY_CLOUD_NAME in your environment." }),
-      /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("section", { className: "mx-auto max-w-6xl px-4 md:px-6 lg:px-8 grid md:grid-cols-2 gap-8 items-center min-h-[60vh]", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { children: [
-          /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)(
+    /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "space-y-24", children: [
+      !cloudinaryConfig.cloudName && /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "card bg-yellow-100 border-yellow-400 text-body", children: "Cloudinary not configured. Set VITE_CLOUDINARY_CLOUD_NAME in your environment." }),
+      /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("section", { className: "mx-auto max-w-6xl px-4 md:px-6 lg:px-8 grid md:grid-cols-2 gap-8 items-center min-h-[60vh]", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { children: [
+          /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)(
             import_framer_motion3.motion.h1,
             {
               variants: fadeInLeft,
@@ -70065,11 +70282,11 @@ var HomePage = () => {
               className: "heading-display",
               children: [
                 "Minnesotan food ",
-                /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("span", { className: "heading-accent", children: "for your functions." })
+                /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("span", { className: "heading-accent", children: "for your functions." })
               ]
             }
           ),
-          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
+          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(
             import_framer_motion3.motion.h2,
             {
               variants: fadeInLeft,
@@ -70080,7 +70297,7 @@ var HomePage = () => {
               children: "Personal chef services in Minneapolis\u2013St. Paul"
             }
           ),
-          /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)(
+          /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)(
             import_framer_motion3.motion.p,
             {
               variants: fadeInUp,
@@ -70089,14 +70306,14 @@ var HomePage = () => {
               className: "mt-6 md:mt-8 text-body max-w-md",
               children: [
                 "Event hospitality and personal chef services, with an obsessive focus on local ingredients.",
-                /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("br", {}),
-                /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("br", {}),
+                /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("br", {}),
+                /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("br", {}),
                 "Think of us for special occasions and special events. Count on us for weekly home cooked meals. We're comfortable in homes, offices, bars and cafes, parks, vineyards, and uh.. anywhere, really."
               ]
             }
           ),
-          /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "mt-8 flex flex-wrap gap-3", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
+          /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "mt-8 flex flex-wrap gap-3", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(
               import_framer_motion3.motion.button,
               {
                 whileHover: { scale: 1.03 },
@@ -70106,22 +70323,22 @@ var HomePage = () => {
                 children: "Book an event"
               }
             ),
-            /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(GiftCardDialog_default, { className: "text-lg px-5 py-3" }),
-            /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("span", { className: "sr-only", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("a", { href: "/personal-chef-minneapolis", className: "btn", children: "Personal Chef Minneapolis" }),
-              /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("a", { href: "/personal-chef-st-paul", className: "btn", children: "Personal Chef St. Paul" }),
-              /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("a", { href: "/personal-chef-twin-cities", className: "btn", children: "Twin Cities Personal Chef" })
+            /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(GiftCardDialog_default, { className: "text-lg px-5 py-3" }),
+            /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("span", { className: "sr-only", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("a", { href: "/personal-chef-minneapolis", className: "btn", children: "Personal Chef Minneapolis" }),
+              /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("a", { href: "/personal-chef-st-paul", className: "btn", children: "Personal Chef St. Paul" }),
+              /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("a", { href: "/personal-chef-twin-cities", className: "btn", children: "Twin Cities Personal Chef" })
             ] })
           ] })
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
+        /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(
           import_framer_motion3.motion.div,
           {
             className: "w-full min-h-[400px] h-full rounded-xl overflow-hidden",
             initial: { opacity: 0, y: 10 },
             animate: { opacity: 1, y: 0 },
             transition: { duration: 0.6 },
-            children: /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
+            children: /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(
               cloudinaryImage_default,
               {
                 publicId: heroImage.publicId,
@@ -70138,26 +70355,7 @@ var HomePage = () => {
           }
         )
       ] }),
-      eventModal && /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("div", { className: "fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4", children: /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "bg-white rounded-lg shadow-xl max-w-lg w-full p-5 relative", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("button", { className: "absolute right-3 top-3 text-sm underline", onClick: () => setEventModal(null), children: "Close" }),
-        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("h4", { className: "text-xl font-bold mb-1", children: eventModal.location }),
-        /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("p", { className: "text-sm text-gray-600 mb-3", children: [
-          eventModal.startDate,
-          eventModal.endDate && eventModal.endDate !== eventModal.startDate ? ` \u2013 ${eventModal.endDate}` : ""
-        ] }),
-        eventModal.description && /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("div", { className: "prose max-w-none", children: /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(import_react18.PortableText, { value: eventModal.description, components: portableTextComponents }) }),
-        eventModal.ticketsUrl && /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("a", { className: "btn btn-primary mt-4 inline-block", href: eventModal.ticketsUrl, target: "_blank", rel: "noreferrer", children: "Get tickets" })
-      ] }) }),
-      /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("section", { className: "mx-auto max-w-6xl px-4 md:px-6 lg:px-8", children: /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "grid md:grid-cols-2 gap-6 items-start", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("div", { children: /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(EventsWidget, { asCard: true }) }),
-        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("div", { children: /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "form-card h-full", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("h3", { className: "text-xl font-bold", children: "Subscribe to our email list" }),
-          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("p", { className: "text-sm text-gray-600 mt-1", children: "Occasional updates about seasonal menus, events, and meal prep openings." }),
-          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(SubscribeForm, {})
-        ] }) })
-      ] }) }),
-      /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("section", { className: "mx-auto max-w-6xl px-4 md:px-6 lg:px-8", children: /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("div", { className: "text-center", children: /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("h3", { className: "text-2xl font-bold", children: /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("a", { href: "/paikka", className: "hover:underline text-primary", children: "pre-order for the paikka holiday bazaar here." }) }) }) }),
-      /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("section", { className: "mx-auto max-w-6xl px-4 md:px-6 lg:px-8", children: /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("div", { className: "flex justify-center items-center", children: /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
+      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("section", { className: "mx-auto max-w-6xl px-4 md:px-6 lg:px-8", children: /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "flex justify-center items-center", children: /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(
         "a",
         {
           href: "https://instagram.com/localeffort",
@@ -70165,17 +70363,26 @@ var HomePage = () => {
           rel: "noopener noreferrer",
           className: "block w-full max-w-md hover:opacity-80 transition-opacity",
           "aria-label": "Follow us on Instagram @localeffort",
-          children: /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("div", { ref: animationContainer, className: "w-full" })
+          children: /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { ref: animationContainer, className: "w-full" })
         }
       ) }) }),
-      /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("section", { className: "py-12", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("div", { className: "max-w-6xl mx-auto px-4 md:px-6 lg:px-8", children: /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(SectionHeader, { overline: "Community", title: "Our Partners" }) }),
-        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(PartnerGrid, {})
+      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("section", { className: "mx-auto max-w-6xl px-4 md:px-6 lg:px-8", children: /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "grid md:grid-cols-2 gap-6 items-start", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { children: /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(EventsWidget, { asCard: true }) }),
+        /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { children: /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "form-card h-full", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("h3", { className: "text-xl font-bold", children: "Subscribe to our email list" }),
+          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("p", { className: "text-sm text-gray-600 mt-1", children: "Occasional updates about seasonal menus, events, and meal prep openings." }),
+          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(SubscribeForm, {})
+        ] }) })
+      ] }) }),
+      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("section", { className: "mx-auto max-w-6xl px-4 md:px-6 lg:px-8", children: /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "text-center", children: /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("h3", { className: "text-2xl font-bold", children: /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("a", { href: "/paikka", className: "hover:underline text-primary", children: "pre-order for the paikka holiday bazaar here." }) }) }) }),
+      /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("section", { className: "py-12", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "max-w-6xl mx-auto px-4 md:px-6 lg:px-8", children: /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(SectionHeader, { overline: "Community", title: "Our Partners" }) }),
+        /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(PartnerGrid, {})
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("section", { className: "mx-auto max-w-6xl px-4 md:px-6 lg:px-8", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(SectionHeader, { overline: "Capabilities", title: "What We Do" }),
-        /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "grid md:grid-cols-3 gap-6", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
+      /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("section", { className: "mx-auto max-w-6xl px-4 md:px-6 lg:px-8", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(SectionHeader, { overline: "Capabilities", title: "What We Do" }),
+        /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "grid md:grid-cols-3 gap-6", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(
             ServiceCard_default,
             {
               to: "/events",
@@ -70183,7 +70390,7 @@ var HomePage = () => {
               description: "in-home dinner parties and small events up to 50"
             }
           ),
-          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
+          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(
             ServiceCard_default,
             {
               to: "/meal-prep",
@@ -70191,7 +70398,7 @@ var HomePage = () => {
               description: "Nutritious, locally-sourced weekly menus and plans."
             }
           ),
-          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
+          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(
             ServiceCard_default,
             {
               to: "/pizza-party",
@@ -70201,15 +70408,15 @@ var HomePage = () => {
           )
         ] })
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(Separator, {}),
-      /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
+      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(Separator, {}),
+      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(
         TestimonialsCarousel,
         {
           items: reviews,
           title: "Feedback",
-          headingExtra: /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("span", { className: "text-sm text-neutral-600", children: [
+          headingExtra: /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("span", { className: "text-sm text-neutral-600", children: [
             "Want to ",
-            /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("button", { className: "underline", onClick: () => setShowFeedback(true), children: "provide feedback" }),
+            /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("button", { className: "underline", onClick: () => setShowFeedback(true), children: "provide feedback" }),
             "?"
           ] })
         }
@@ -70221,14 +70428,14 @@ var HomePage = () => {
 var HomePage_default = HomePage;
 
 // src/pages/AboutUsPage.jsx
-var import_react23 = __toESM(require("react"));
+var import_react24 = __toESM(require("react"));
 var import_react_helmet_async3 = __toESM(require_lib());
 
 // src/components/ui/ModernButton.jsx
-var import_react19 = __toESM(require("react"));
+var import_react20 = __toESM(require("react"));
 var import_prop_types2 = __toESM(require_prop_types());
 var import_framer_motion4 = require("framer-motion");
-var import_jsx_runtime25 = require("react/jsx-runtime");
+var import_jsx_runtime27 = require("react/jsx-runtime");
 var ModernButton = ({
   as: Component = "button",
   children,
@@ -70256,7 +70463,7 @@ var ModernButton = ({
   };
   const Tag = (0, import_framer_motion4.motion)(Component);
   const motionProps = Component === "button" ? { disabled } : {};
-  return /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)(
+  return /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)(
     Tag,
     {
       className: `${baseClasses2} ${variantClasses2[variant]} ${sizeClasses2[size]} ${className}`,
@@ -70270,7 +70477,7 @@ var ModernButton = ({
       transition: { type: "spring", stiffness: 400, damping: 25 },
       ...props,
       children: [
-        icon && /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("span", { className: "mr-2", children: icon }),
+        icon && /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("span", { className: "mr-2", children: icon }),
         children
       ]
     }
@@ -70298,14 +70505,14 @@ ModernButton.defaultProps = {
 };
 
 // src/components/common/PhotoGrid.jsx
-var import_react20 = __toESM(require("react"));
-var import_jsx_runtime26 = require("react/jsx-runtime");
+var import_react21 = __toESM(require("react"));
+var import_jsx_runtime28 = require("react/jsx-runtime");
 function PhotoGrid({ tags, title, perPage = 24, layout, masonry = false, className = "", ...rest }) {
-  const tagList = (0, import_react20.useMemo)(() => Array.isArray(tags) ? tags.filter(Boolean) : [tags].filter(Boolean), [tags]);
-  const [images, setImages] = (0, import_react20.useState)([]);
-  const [loading, setLoading] = (0, import_react20.useState)(false);
-  const [error, setError] = (0, import_react20.useState)(null);
-  (0, import_react20.useEffect)(() => {
+  const tagList = (0, import_react21.useMemo)(() => Array.isArray(tags) ? tags.filter(Boolean) : [tags].filter(Boolean), [tags]);
+  const [images, setImages] = (0, import_react21.useState)([]);
+  const [loading, setLoading] = (0, import_react21.useState)(false);
+  const [error, setError] = (0, import_react21.useState)(null);
+  (0, import_react21.useEffect)(() => {
     let abort = false;
     const controller = new AbortController();
     (async () => {
@@ -70347,16 +70554,16 @@ function PhotoGrid({ tags, title, perPage = 24, layout, masonry = false, classNa
   }, [tagList.join(","), perPage]);
   if (!tagList.length) return null;
   const useMasonry = masonry || String(layout || "").toLowerCase() === "masonry";
-  return /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("section", { className: ["space-y-4", className].filter(Boolean).join(" "), ...rest, children: [
-    title ? /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("h3", { className: "text-2xl font-bold", children: title }) : null,
-    loading ? /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("p", { children: "Loading photos\u2026" }) : error ? /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "text-red-700 bg-red-50 border border-red-200 p-3 rounded", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("p", { className: "font-semibold", children: error }),
-      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("p", { className: "text-sm mt-1", children: "If this persists, check Cloudinary env vars and the serverless function logs." })
-    ] }) : images.length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("p", { className: "text-sm text-gray-600", children: "No photos found." }) : useMasonry ? /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "columns-2 md:columns-3 lg:columns-4 gap-4 [column-fill:_balance]", children: images.map((img, idx) => /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(
+  return /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("section", { className: ["space-y-4", className].filter(Boolean).join(" "), ...rest, children: [
+    title ? /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("h3", { className: "text-2xl font-bold", children: title }) : null,
+    loading ? /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("p", { children: "Loading photos\u2026" }) : error ? /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("div", { className: "text-red-700 bg-red-50 border border-red-200 p-3 rounded", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("p", { className: "font-semibold", children: error }),
+      /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("p", { className: "text-sm mt-1", children: "If this persists, check Cloudinary env vars and the serverless function logs." })
+    ] }) : images.length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("p", { className: "text-sm text-gray-600", children: "No photos found." }) : useMasonry ? /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("div", { className: "columns-2 md:columns-3 lg:columns-4 gap-4 [column-fill:_balance]", children: images.map((img, idx) => /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(
       "div",
       {
         className: "mb-4 break-inside-avoid border p-2 bg-white rounded-lg overflow-hidden",
-        children: img.thumbnail_url ? /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(
+        children: img.thumbnail_url ? /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(
           "img",
           {
             src: img.thumbnail_url,
@@ -70364,7 +70571,7 @@ function PhotoGrid({ tags, title, perPage = 24, layout, masonry = false, classNa
             className: "rounded-lg w-full h-auto",
             loading: "lazy"
           }
-        ) : /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(
+        ) : /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(
           cloudinaryImage_default,
           {
             publicId: img.public_id || img.publicId,
@@ -70375,7 +70582,7 @@ function PhotoGrid({ tags, title, perPage = 24, layout, masonry = false, classNa
         )
       },
       (img.asset_id || img.public_id || idx) + ":" + idx
-    )) }) : /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4", children: images.map((img, idx) => /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "border p-2 bg-white rounded-lg overflow-hidden", children: img.thumbnail_url ? /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(
+    )) }) : /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("div", { className: "grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4", children: images.map((img, idx) => /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("div", { className: "border p-2 bg-white rounded-lg overflow-hidden", children: img.thumbnail_url ? /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(
       "img",
       {
         src: img.thumbnail_url,
@@ -70383,7 +70590,7 @@ function PhotoGrid({ tags, title, perPage = 24, layout, masonry = false, classNa
         className: "rounded-lg object-cover w-full h-full aspect-square",
         loading: "lazy"
       }
-    ) : /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(
+    ) : /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(
       cloudinaryImage_default,
       {
         publicId: img.public_id || img.publicId,
@@ -70397,23 +70604,23 @@ function PhotoGrid({ tags, title, perPage = 24, layout, masonry = false, classNa
 }
 
 // src/components/AspectRatio.jsx
-var import_react21 = __toESM(require("react"));
-var import_jsx_runtime27 = require("react/jsx-runtime");
+var import_react22 = __toESM(require("react"));
+var import_jsx_runtime29 = require("react/jsx-runtime");
 function AspectRatio({ ratio = 4 / 3, children, className = "", style = {}, ...props }) {
   const paddingTop = `${100 / ratio}%`;
-  return /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)("div", { className: ["relative w-full overflow-hidden", className].filter(Boolean).join(" "), style, ...props, children: [
-    /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("div", { style: { paddingTop } }),
-    /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("div", { className: "absolute inset-0", children })
+  return /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("div", { className: ["relative w-full overflow-hidden", className].filter(Boolean).join(" "), style, ...props, children: [
+    /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("div", { style: { paddingTop } }),
+    /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("div", { className: "absolute inset-0", children })
   ] });
 }
 
 // src/components/ChefCard.jsx
-var import_react22 = __toESM(require("react"));
-var import_jsx_runtime28 = require("react/jsx-runtime");
+var import_react23 = __toESM(require("react"));
+var import_jsx_runtime30 = require("react/jsx-runtime");
 function ChefCard({ name: name2, bio, imageSrc, imageAlt, className = "", textClass = "prose-lite max-w-none" }) {
   const fallbackSrc = "/gallery/catherine.jpg";
   const src = imageSrc || fallbackSrc;
-  return /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)(
+  return /* @__PURE__ */ (0, import_jsx_runtime30.jsxs)(
     "figure",
     {
       className: [
@@ -70425,7 +70632,7 @@ function ChefCard({ name: name2, bio, imageSrc, imageAlt, className = "", textCl
         className
       ].filter(Boolean).join(" "),
       children: [
-        /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(AspectRatio, { ratio: 4 / 3, className: "rounded-xl overflow-hidden bg-neutral-100", children: /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(
+        /* @__PURE__ */ (0, import_jsx_runtime30.jsx)(AspectRatio, { ratio: 4 / 3, className: "rounded-xl overflow-hidden bg-neutral-100", children: /* @__PURE__ */ (0, import_jsx_runtime30.jsx)(
           "img",
           {
             src,
@@ -70439,9 +70646,9 @@ function ChefCard({ name: name2, bio, imageSrc, imageAlt, className = "", textCl
             }
           }
         ) }),
-        /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("figcaption", { className: "mt-4", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("h3", { className: "text-xl font-semibold tracking-tight", children: name2 }),
-          /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("p", { className: ["mt-2 text-neutral-700", textClass].filter(Boolean).join(" "), children: bio })
+        /* @__PURE__ */ (0, import_jsx_runtime30.jsxs)("figcaption", { className: "mt-4", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("h3", { className: "text-xl font-semibold tracking-tight", children: name2 }),
+          /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("p", { className: ["mt-2 text-neutral-700", textClass].filter(Boolean).join(" "), children: bio })
         ] })
       ]
     }
@@ -70449,7 +70656,7 @@ function ChefCard({ name: name2, bio, imageSrc, imageAlt, className = "", textCl
 }
 
 // src/pages/AboutUsPage.jsx
-var import_jsx_runtime29 = require("react/jsx-runtime");
+var import_jsx_runtime31 = require("react/jsx-runtime");
 var AboutUsPage = () => {
   const services = [
     "Meal planning and nutrition support for families",
@@ -70483,36 +70690,36 @@ var AboutUsPage = () => {
     { id: "photos-events", tags: ["event", "dinner"], title: "At events", perPage: 8 }
   ];
   const whatWeDoMicrocopy = "We bring Minnesota-grown ingredients into everyday meals and special events.";
-  return /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)(import_jsx_runtime29.Fragment, { children: [
-    /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)(import_react_helmet_async3.Helmet, { children: [
-      /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("title", { children: "About Our Minneapolis Personal Chef Team | Local Effort" }),
-      /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(
+  return /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)(import_jsx_runtime31.Fragment, { children: [
+    /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)(import_react_helmet_async3.Helmet, { children: [
+      /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("title", { children: "About Our Minneapolis Personal Chef Team | Local Effort" }),
+      /* @__PURE__ */ (0, import_jsx_runtime31.jsx)(
         "meta",
         {
           name: "description",
           content: "Meet the Local Effort personal chef team in Minneapolis. Obsessively local since 2022, cooking seasonal Minnesota ingredients for events and meal prep. Learn more."
         }
       ),
-      /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("meta", { property: "og:title", content: "About | Local Effort" }),
-      /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("meta", { property: "og:description", content: "Obsessively local since 2022 \u2014 because it\u2019s healthier, tastier, and better for Minnesota." }),
-      /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("meta", { property: "og:type", content: "website" }),
-      /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("meta", { property: "og:image", content: "https://res.cloudinary.com/dokyhfvyd/image/upload/v1758464124/jo9pxtjng8zpt4yo4rcz.jpg" }),
-      /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("meta", { name: "twitter:card", content: "summary_large_image" }),
-      /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("meta", { name: "twitter:title", content: "About | Local Effort" }),
-      /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("meta", { name: "twitter:description", content: "Obsessively local since 2022 \u2014 because it\u2019s healthier, tastier, and better for Minnesota." }),
-      /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("meta", { name: "twitter:image", content: "https://res.cloudinary.com/dokyhfvyd/image/upload/v1758464124/jo9pxtjng8zpt4yo4rcz.jpg" })
+      /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("meta", { property: "og:title", content: "About | Local Effort" }),
+      /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("meta", { property: "og:description", content: "Obsessively local since 2022 \u2014 because it\u2019s healthier, tastier, and better for Minnesota." }),
+      /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("meta", { property: "og:type", content: "website" }),
+      /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("meta", { property: "og:image", content: "https://res.cloudinary.com/dokyhfvyd/image/upload/v1758464124/jo9pxtjng8zpt4yo4rcz.jpg" }),
+      /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("meta", { name: "twitter:card", content: "summary_large_image" }),
+      /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("meta", { name: "twitter:title", content: "About | Local Effort" }),
+      /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("meta", { name: "twitter:description", content: "Obsessively local since 2022 \u2014 because it\u2019s healthier, tastier, and better for Minnesota." }),
+      /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("meta", { name: "twitter:image", content: "https://res.cloudinary.com/dokyhfvyd/image/upload/v1758464124/jo9pxtjng8zpt4yo4rcz.jpg" })
     ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("main", { id: "main", className: "container-page", children: /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("article", { className: "space-y-16 md:space-y-24", "aria-labelledby": "about-hero-title", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("header", { className: "relative overflow-hidden rounded-2xl ring-1 ring-neutral-200 bg-gradient-to-br from-neutral-50 to-white", children: /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("div", { className: "grid gap-10 md:grid-cols-2 md:items-center p-8 md:p-12 lg:p-16", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("div", { children: [
-          /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("h1", { id: "about-hero-title", className: "heading-display heading-balance", children: "Local Effort" }),
-          /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("p", { className: "mt-4 text-lg text-neutral-700 max-w-xl", children: "Obsessively local since 2022 \u2014 because it\u2019s healthier, tastier, and better for Minnesota." }),
-          /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("div", { className: "mt-6 inline-flex items-center gap-2 rounded-full border border-neutral-200 bg-white px-3 py-1 text-sm text-neutral-700 shadow-sm", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("span", { className: "inline-block h-2 w-2 rounded-full bg-emerald-500", "aria-hidden": "true" }),
-            /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("span", { children: "Since 2022" })
+    /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("main", { id: "main", className: "container-page", children: /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)("article", { className: "space-y-16 md:space-y-24", "aria-labelledby": "about-hero-title", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("header", { className: "relative overflow-hidden rounded-2xl ring-1 ring-neutral-200 bg-gradient-to-br from-neutral-50 to-white", children: /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)("div", { className: "grid gap-10 md:grid-cols-2 md:items-center p-8 md:p-12 lg:p-16", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)("div", { children: [
+          /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("h1", { id: "about-hero-title", className: "heading-display heading-balance", children: "Local Effort" }),
+          /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("p", { className: "mt-4 text-lg text-neutral-700 max-w-xl", children: "Obsessively local since 2022 \u2014 because it\u2019s healthier, tastier, and better for Minnesota." }),
+          /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)("div", { className: "mt-6 inline-flex items-center gap-2 rounded-full border border-neutral-200 bg-white px-3 py-1 text-sm text-neutral-700 shadow-sm", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("span", { className: "inline-block h-2 w-2 rounded-full bg-emerald-500", "aria-hidden": "true" }),
+            /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("span", { children: "Since 2022" })
           ] })
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("div", { className: "w-full", children: /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(AspectRatio, { ratio: 4 / 3, className: "rounded-xl shadow-sm ring-1 ring-neutral-200 max-h-[480px] bg-neutral-100", children: /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(
+        /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("div", { className: "w-full", children: /* @__PURE__ */ (0, import_jsx_runtime31.jsx)(AspectRatio, { ratio: 4 / 3, className: "rounded-xl shadow-sm ring-1 ring-neutral-200 max-h-[480px] bg-neutral-100", children: /* @__PURE__ */ (0, import_jsx_runtime31.jsx)(
           "img",
           {
             src: "https://res.cloudinary.com/dokyhfvyd/image/upload/v1758464124/jo9pxtjng8zpt4yo4rcz.jpg",
@@ -70524,54 +70731,54 @@ var AboutUsPage = () => {
           }
         ) }) })
       ] }) }),
-      /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(Separator, {}),
-      /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("section", { "aria-labelledby": "our-story-title", className: "space-y-4", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(SectionHeader, { overline: "Background", title: "Our Story" }),
-        /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("div", { className: "grid gap-6 md:grid-cols-3", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("div", { className: "prose-lite md:col-span-2 space-y-4", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("p", { children: "Weston is from all over, and Catherine is from Minneapolis. We're chefs and married parents, lifelong restaurant and hospitality professionals, home cooks from the heart." }),
-            /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("p", { children: [
+      /* @__PURE__ */ (0, import_jsx_runtime31.jsx)(Separator, {}),
+      /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)("section", { "aria-labelledby": "our-story-title", className: "space-y-4", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime31.jsx)(SectionHeader, { overline: "Background", title: "Our Story" }),
+        /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)("div", { className: "grid gap-6 md:grid-cols-3", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)("div", { className: "prose-lite md:col-span-2 space-y-4", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("p", { children: "Weston is from all over, and Catherine is from Minneapolis. We're chefs and married parents, lifelong restaurant and hospitality professionals, home cooks from the heart." }),
+            /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)("p", { children: [
               "Weston did it like this:",
-              /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("br", {}),
+              /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("br", {}),
               "coffee> food runner> wine> management> kitchen",
-              /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("br", {}),
+              /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("br", {}),
               "Catherine did it like this:",
-              /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("br", {}),
+              /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("br", {}),
               "coffee> restaurant> patisserie> grocery> mom>>>"
             ] }),
-            /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("p", { children: "We're a knockout team of widely experienced kitchen professionals. We love platters and cassoulets and juleps and celery and croque monsieur and white rice, we love vegetables and meats and grain and nuts and grapes and HAZELNUTS and ducks and lamb and the weird great awesome people who make them and keep making them. We love meeting our growers. We love living in an city where shopping locally is valued and not hard to do." }),
-            /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("p", { children: "We feel strongly about choosing food grown and produced closer to home. It's a duty, and a gift, and it's at the center of our practice and culture. We're the realest people make the localest food." })
+            /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("p", { children: "We're a knockout team of widely experienced kitchen professionals. We love platters and cassoulets and juleps and celery and croque monsieur and white rice, we love vegetables and meats and grain and nuts and grapes and HAZELNUTS and ducks and lamb and the weird great awesome people who make them and keep making them. We love meeting our growers. We love living in an city where shopping locally is valued and not hard to do." }),
+            /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("p", { children: "We feel strongly about choosing food grown and produced closer to home. It's a duty, and a gift, and it's at the center of our practice and culture. We're the realest people make the localest food." })
           ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("div", { className: "space-y-2 text-sm text-neutral-700", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("h3", { className: "text-base font-semibold text-neutral-900", children: "At a glance" }),
-            /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("ul", { className: "list-disc pl-5", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("li", { children: "Founded in 2022" }),
-              /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("li", { children: "Based in Minneapolis, MN" }),
-              /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("li", { children: "100% locally sourced focus" })
+          /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)("div", { className: "space-y-2 text-sm text-neutral-700", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("h3", { className: "text-base font-semibold text-neutral-900", children: "At a glance" }),
+            /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)("ul", { className: "list-disc pl-5", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("li", { children: "Founded in 2022" }),
+              /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("li", { children: "Based in Minneapolis, MN" }),
+              /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("li", { children: "100% locally sourced focus" })
             ] })
           ] })
         ] })
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(Separator, {}),
-      /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("section", { "aria-labelledby": "what-we-do-title", className: "space-y-4", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(SectionHeader, { overline: "Capabilities", title: "What We Do" }),
-        /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("div", { className: "grid gap-6 md:grid-cols-3", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("p", { className: "prose-lite md:col-span-2", children: whatWeDoMicrocopy }),
-          /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("div", { className: "space-y-6 text-sm text-neutral-700", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("div", { children: [
-              /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("h3", { className: "text-base font-semibold text-neutral-900", children: "Foods we specialize in" }),
-              /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("ul", { className: "list-disc pl-5 mt-2", children: specialties.map((v) => /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("li", { children: v }, v)) })
+      /* @__PURE__ */ (0, import_jsx_runtime31.jsx)(Separator, {}),
+      /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)("section", { "aria-labelledby": "what-we-do-title", className: "space-y-4", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime31.jsx)(SectionHeader, { overline: "Capabilities", title: "What We Do" }),
+        /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)("div", { className: "grid gap-6 md:grid-cols-3", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("p", { className: "prose-lite md:col-span-2", children: whatWeDoMicrocopy }),
+          /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)("div", { className: "space-y-6 text-sm text-neutral-700", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)("div", { children: [
+              /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("h3", { className: "text-base font-semibold text-neutral-900", children: "Foods we specialize in" }),
+              /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("ul", { className: "list-disc pl-5 mt-2", children: specialties.map((v) => /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("li", { children: v }, v)) })
             ] }),
-            /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("div", { children: [
-              /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("h3", { className: "text-base font-semibold text-neutral-900", children: "Services we offer" }),
-              /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("ul", { className: "list-disc pl-5 mt-2", children: services.map((s) => /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("li", { children: s }, s)) })
+            /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)("div", { children: [
+              /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("h3", { className: "text-base font-semibold text-neutral-900", children: "Services we offer" }),
+              /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("ul", { className: "list-disc pl-5 mt-2", children: services.map((s) => /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("li", { children: s }, s)) })
             ] })
           ] })
         ] })
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("section", { "aria-label": "Photo galleries", className: "space-y-12", children: photoGrids.map((pg) => /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("div", { children: [
-        /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(SectionHeader, { overline: "Gallery", title: pg.title }),
-        /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(
+      /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("section", { "aria-label": "Photo galleries", className: "space-y-12", children: photoGrids.map((pg) => /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)("div", { children: [
+        /* @__PURE__ */ (0, import_jsx_runtime31.jsx)(SectionHeader, { overline: "Gallery", title: pg.title }),
+        /* @__PURE__ */ (0, import_jsx_runtime31.jsx)(
           PhotoGrid,
           {
             tags: pg.tags,
@@ -70581,54 +70788,54 @@ var AboutUsPage = () => {
           }
         )
       ] }, pg.id)) }),
-      /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(Separator, {}),
-      /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("section", { "aria-labelledby": "meet-chefs-title", className: "space-y-6", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(SectionHeader, { overline: "Team", title: "Meet the Chefs" }),
-        /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("div", { className: "grid gap-8 md:grid-cols-2", children: chefs.map((c) => /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(ChefCard, { name: c.name, bio: c.bio, imageSrc: c.imageSrc, imageAlt: c.imageAlt }, c.name)) })
+      /* @__PURE__ */ (0, import_jsx_runtime31.jsx)(Separator, {}),
+      /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)("section", { "aria-labelledby": "meet-chefs-title", className: "space-y-6", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime31.jsx)(SectionHeader, { overline: "Team", title: "Meet the Chefs" }),
+        /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("div", { className: "grid gap-8 md:grid-cols-2", children: chefs.map((c) => /* @__PURE__ */ (0, import_jsx_runtime31.jsx)(ChefCard, { name: c.name, bio: c.bio, imageSrc: c.imageSrc, imageAlt: c.imageAlt }, c.name)) })
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(Separator, {}),
-      /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("section", { "aria-labelledby": "values-title", className: "space-y-4", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(SectionHeader, { overline: "Principles", title: "What We Value" }),
-        /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("div", { className: "grid gap-6 md:grid-cols-3", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("p", { className: "prose-lite md:col-span-2", children: "We care about flavor and nutrition in equal measure. We cook with care, spend with purpose, and look for long-term relationships \u2014 with families who invite us in, and with producers who grow the food we serve." }),
-          /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("div", { className: "space-y-2 text-sm text-neutral-700", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("h3", { className: "text-base font-semibold text-neutral-900", children: "Principles" }),
-            /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("ul", { className: "list-disc pl-5", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("li", { children: "Celebrating home cooks" }),
-              /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("li", { children: "Supporting family nutrition" }),
-              /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("li", { children: "Spending with local producers" }),
-              /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("li", { children: "Collaborating with Minnesota organizations" }),
-              /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("li", { children: "Sharing and shaping Minnesota food culture" })
+      /* @__PURE__ */ (0, import_jsx_runtime31.jsx)(Separator, {}),
+      /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)("section", { "aria-labelledby": "values-title", className: "space-y-4", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime31.jsx)(SectionHeader, { overline: "Principles", title: "What We Value" }),
+        /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)("div", { className: "grid gap-6 md:grid-cols-3", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("p", { className: "prose-lite md:col-span-2", children: "We care about flavor and nutrition in equal measure. We cook with care, spend with purpose, and look for long-term relationships \u2014 with families who invite us in, and with producers who grow the food we serve." }),
+          /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)("div", { className: "space-y-2 text-sm text-neutral-700", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("h3", { className: "text-base font-semibold text-neutral-900", children: "Principles" }),
+            /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)("ul", { className: "list-disc pl-5", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("li", { children: "Celebrating home cooks" }),
+              /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("li", { children: "Supporting family nutrition" }),
+              /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("li", { children: "Spending with local producers" }),
+              /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("li", { children: "Collaborating with Minnesota organizations" }),
+              /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("li", { children: "Sharing and shaping Minnesota food culture" })
             ] })
           ] })
         ] })
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(Separator, {}),
-      /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("section", { "aria-labelledby": "local-title", className: "space-y-4", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(SectionHeader, { overline: "Philosophy", title: "What We Mean by Local" }),
-        /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("div", { className: "grid gap-6 md:grid-cols-3", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("p", { className: "prose-lite md:col-span-2", children: "\u201CLocal\u201D is more than a trend for us \u2014 it\u2019s the backbone of how we cook and shop. We prioritize Minnesota-grown ingredients, plan menus around the seasons, and maintain relationships with small producers so we can tell you where your food comes from." }),
-          /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("div", { className: "space-y-2 text-sm text-neutral-700", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("h3", { className: "text-base font-semibold text-neutral-900", children: "How we apply it" }),
-            /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("ul", { className: "list-disc pl-5", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("li", { children: "Minnesota-first sourcing; regional when sensible" }),
-              /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("li", { children: "Seasonal menus; preserve when possible" }),
-              /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("li", { children: "Direct relationships with farms and mills" }),
-              /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("li", { children: "Reasonable exceptions for essentials (e.g., spices)" }),
-              /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("li", { children: "Transparency: ask us about any ingredient" })
+      /* @__PURE__ */ (0, import_jsx_runtime31.jsx)(Separator, {}),
+      /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)("section", { "aria-labelledby": "local-title", className: "space-y-4", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime31.jsx)(SectionHeader, { overline: "Philosophy", title: "What We Mean by Local" }),
+        /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)("div", { className: "grid gap-6 md:grid-cols-3", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("p", { className: "prose-lite md:col-span-2", children: "\u201CLocal\u201D is more than a trend for us \u2014 it\u2019s the backbone of how we cook and shop. We prioritize Minnesota-grown ingredients, plan menus around the seasons, and maintain relationships with small producers so we can tell you where your food comes from." }),
+          /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)("div", { className: "space-y-2 text-sm text-neutral-700", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("h3", { className: "text-base font-semibold text-neutral-900", children: "How we apply it" }),
+            /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)("ul", { className: "list-disc pl-5", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("li", { children: "Minnesota-first sourcing; regional when sensible" }),
+              /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("li", { children: "Seasonal menus; preserve when possible" }),
+              /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("li", { children: "Direct relationships with farms and mills" }),
+              /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("li", { children: "Reasonable exceptions for essentials (e.g., spices)" }),
+              /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("li", { children: "Transparency: ask us about any ingredient" })
             ] })
           ] })
         ] })
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(Separator, {}),
-      /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("section", { "aria-labelledby": "why-us-title", className: "space-y-4", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(SectionHeader, { overline: "Partner With Us", title: "Why Work With Us" }),
-        /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("p", { className: "prose-lite max-w-4xl", children: "Clients trust us for our professional experience, pride in ingredients, and equal care for nutrition and flavor. We keep presentation humble, but our food \u2014 and our commitment to your happiness \u2014 is anything but." })
+      /* @__PURE__ */ (0, import_jsx_runtime31.jsx)(Separator, {}),
+      /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)("section", { "aria-labelledby": "why-us-title", className: "space-y-4", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime31.jsx)(SectionHeader, { overline: "Partner With Us", title: "Why Work With Us" }),
+        /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("p", { className: "prose-lite max-w-4xl", children: "Clients trust us for our professional experience, pride in ingredients, and equal care for nutrition and flavor. We keep presentation humble, but our food \u2014 and our commitment to your happiness \u2014 is anything but." })
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("section", { "aria-labelledby": "cta-title", className: "space-y-6", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(SectionHeader, { overline: "Get Started", title: "Let\u2019s Cook Something Local" }),
-        /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("p", { className: "prose-lite max-w-3xl", children: "We\u2019d love to bring Minnesota-grown food to your table or event." }),
-        /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("div", { children: /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(
+      /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)("section", { "aria-labelledby": "cta-title", className: "space-y-6", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime31.jsx)(SectionHeader, { overline: "Get Started", title: "Let\u2019s Cook Something Local" }),
+        /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("p", { className: "prose-lite max-w-3xl", children: "We\u2019d love to bring Minnesota-grown food to your table or event." }),
+        /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("div", { children: /* @__PURE__ */ (0, import_jsx_runtime31.jsx)(
           ModernButton,
           {
             as: "a",
@@ -70646,14 +70853,14 @@ var AboutUsPage = () => {
 var AboutUsPage_default = AboutUsPage;
 
 // src/pages/ServicesPage.jsx
-var import_react24 = __toESM(require("react"));
+var import_react25 = __toESM(require("react"));
 var import_react_router_dom4 = require("react-router-dom");
 var import_react_helmet_async4 = __toESM(require_lib());
-var import_jsx_runtime30 = require("react/jsx-runtime");
+var import_jsx_runtime32 = require("react/jsx-runtime");
 var ServicesPage = () => {
   const navigate = (0, import_react_router_dom4.useNavigate)();
   const location = (0, import_react_router_dom4.useLocation)();
-  (0, import_react24.useEffect)(() => {
+  (0, import_react25.useEffect)(() => {
     if (location.hash) {
       const id = location.hash.replace("#", "");
       const el = document.getElementById(id);
@@ -70662,7 +70869,7 @@ var ServicesPage = () => {
       }
     }
   }, [location.hash]);
-  const initialForm2 = (0, import_react24.useMemo)(
+  const initialForm2 = (0, import_react25.useMemo)(
     () => ({
       firstName: "",
       lastName: "",
@@ -70680,35 +70887,17 @@ var ServicesPage = () => {
     }),
     []
   );
-  const [form, setForm] = (0, import_react24.useState)(initialForm2);
-  const [submitting, setSubmitting] = (0, import_react24.useState)(false);
-  const [result, setResult] = (0, import_react24.useState)(null);
-  const [bookHero, setBookHero] = (0, import_react24.useState)(null);
-  const [business, setBusiness] = (0, import_react24.useState)(null);
+  const [form, setForm] = (0, import_react25.useState)(initialForm2);
+  const [submitting, setSubmitting] = (0, import_react25.useState)(false);
+  const [result, setResult] = (0, import_react25.useState)(null);
+  const [business, setBusiness] = (0, import_react25.useState)(null);
   const required = (v) => String(v || "").trim().length > 0;
   const handleChange = (e) => {
     const { name: name2, type, checked, value: value2 } = e.target;
     setForm((f) => ({ ...f, [name2]: type === "checkbox" ? checked : value2 }));
   };
   const reset = () => setForm(initialForm2);
-  (0, import_react24.useEffect)(() => {
-    let abort = false;
-    (async () => {
-      try {
-        const res = await fetch(`/api/search-images?query=book&per_page=1`);
-        if (!res.ok) throw new Error(`Book image failed: ${res.status}`);
-        const data2 = await res.json();
-        if (abort) return;
-        const first = (data2.images || [])[0];
-        if (first) setBookHero(first.public_id);
-      } catch (_e) {
-      }
-    })();
-    return () => {
-      abort = true;
-    };
-  }, []);
-  (0, import_react24.useEffect)(() => {
+  (0, import_react25.useEffect)(() => {
     let mounted = true;
     fetch("/business.json").then((r) => r.ok ? r.json() : null).then((data2) => {
       if (mounted) setBusiness(data2 || null);
@@ -70755,17 +70944,17 @@ var ServicesPage = () => {
       setSubmitting(false);
     }
   };
-  return /* @__PURE__ */ (0, import_jsx_runtime30.jsxs)(import_jsx_runtime30.Fragment, { children: [
-    /* @__PURE__ */ (0, import_jsx_runtime30.jsxs)(import_react_helmet_async4.Helmet, { children: [
-      /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("title", { children: "Personal Chef Services Minneapolis\u2013St. Paul | Local Effort" }),
-      /* @__PURE__ */ (0, import_jsx_runtime30.jsx)(
+  return /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)(import_jsx_runtime32.Fragment, { children: [
+    /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)(import_react_helmet_async4.Helmet, { children: [
+      /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("title", { children: "Personal Chef Services Minneapolis\u2013St. Paul | Local Effort" }),
+      /* @__PURE__ */ (0, import_jsx_runtime32.jsx)(
         "meta",
         {
           name: "description",
           content: "In-home dinners, weekly meal prep, and event catering across Minneapolis and St. Paul. Local ingredients, seasonal menus, and chef-led service. Request a quote."
         }
       ),
-      /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("script", { type: "application/ld+json", children: JSON.stringify((() => {
+      /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("script", { type: "application/ld+json", children: JSON.stringify((() => {
         const src = business || {};
         return {
           "@context": "https://schema.org",
@@ -70786,7 +70975,7 @@ var ServicesPage = () => {
           }
         };
       })()) }),
-      /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("script", { type: "application/ld+json", children: JSON.stringify({
+      /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("script", { type: "application/ld+json", children: JSON.stringify({
         "@context": "https://schema.org",
         "@type": "FAQPage",
         mainEntity: [
@@ -70796,23 +70985,23 @@ var ServicesPage = () => {
         ]
       }) })
     ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime30.jsxs)("div", { className: "space-y-16 mx-auto max-w-6xl px-4 md:px-6 lg:px-8", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime30.jsx)(SectionHeader, { overline: "Capabilities", title: "Services" }),
-      /* @__PURE__ */ (0, import_jsx_runtime30.jsxs)("div", { className: "grid md:grid-cols-2 lg:grid-cols-3 gap-8", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime30.jsxs)("div", { className: "card space-y-4", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("h3", { className: "text-heading", children: "Dinners & Events" }),
-          /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("p", { className: "text-body", children: "in-home dinner parties and small events up to 50" }),
-          /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("button", { onClick: () => navigate("/events"), className: "text-body text-sm underline", children: "Details \u2192" })
+    /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("div", { className: "space-y-16 mx-auto max-w-6xl px-4 md:px-6 lg:px-8", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime32.jsx)(SectionHeader, { overline: "Capabilities", title: "Services" }),
+      /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("div", { className: "grid md:grid-cols-2 lg:grid-cols-3 gap-8", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("div", { className: "card space-y-4", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("h3", { className: "text-heading", children: "Dinners & Events" }),
+          /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("p", { className: "text-body", children: "in-home dinner parties and small events up to 50" }),
+          /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("button", { onClick: () => navigate("/events"), className: "text-body text-sm underline", children: "Details \u2192" })
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime30.jsxs)("div", { className: "card space-y-4", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("h3", { className: "text-heading", children: "Weekly Meal Plans" }),
-          /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("p", { className: "text-body", children: "Nutritious, locally-sourced meals delivered weekly." }),
-          /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("button", { onClick: () => navigate("/meal-prep"), className: "text-body text-sm underline", children: "Details \u2192" })
+        /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("div", { className: "card space-y-4", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("h3", { className: "text-heading", children: "Weekly Meal Plans" }),
+          /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("p", { className: "text-body", children: "Nutritious, locally-sourced meals delivered weekly." }),
+          /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("button", { onClick: () => navigate("/meal-prep"), className: "text-body text-sm underline", children: "Details \u2192" })
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime30.jsxs)("div", { className: "card space-y-4", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("h3", { className: "text-heading", children: "Pizza Parties" }),
-          /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("p", { className: "text-body", children: "local pizza at your party. we'll bring the oven." }),
-          /* @__PURE__ */ (0, import_jsx_runtime30.jsx)(
+        /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("div", { className: "card space-y-4", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("h3", { className: "text-heading", children: "Pizza Parties" }),
+          /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("p", { className: "text-body", children: "local pizza at your party. we'll bring the oven." }),
+          /* @__PURE__ */ (0, import_jsx_runtime32.jsx)(
             "button",
             {
               onClick: () => navigate("/pizza-party"),
@@ -70822,30 +71011,20 @@ var ServicesPage = () => {
           )
         ] })
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("div", { className: "text-center", children: /* @__PURE__ */ (0, import_jsx_runtime30.jsxs)("span", { className: "sr-only", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("a", { href: "/personal-chef-minneapolis", className: "btn btn-ghost", children: "Personal Chef Minneapolis" }),
-        /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("a", { href: "/personal-chef-st-paul", className: "btn btn-ghost", children: "Personal Chef St. Paul" }),
-        /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("a", { href: "/personal-chef-twin-cities", className: "btn btn-ghost", children: "Twin Cities Personal Chef" })
+      /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("div", { className: "text-center", children: /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("span", { className: "sr-only", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("a", { href: "/personal-chef-minneapolis", className: "btn btn-ghost", children: "Personal Chef Minneapolis" }),
+        /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("a", { href: "/personal-chef-st-paul", className: "btn btn-ghost", children: "Personal Chef St. Paul" }),
+        /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("a", { href: "/personal-chef-twin-cities", className: "btn btn-ghost", children: "Twin Cities Personal Chef" })
       ] }) }),
-      /* @__PURE__ */ (0, import_jsx_runtime30.jsx)(Separator, {}),
-      /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("section", { id: "event-request", className: "pt-10", children: /* @__PURE__ */ (0, import_jsx_runtime30.jsxs)("div", { className: "max-w-3xl mx-auto", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime30.jsx)(SectionHeader, { overline: "Get Started", title: "Book an event" }),
-        bookHero && /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("div", { className: "w-full h-[30vh] md:h-[36vh] lg:h-[42vh] rounded-xl overflow-hidden mb-6", children: /* @__PURE__ */ (0, import_jsx_runtime30.jsx)(
-          cloudinaryImage_default,
-          {
-            publicId: bookHero,
-            alt: "Book an event",
-            className: "w-full h-full object-cover",
-            sizes: "100vw",
-            eager: true
-          }
-        ) }),
-        /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("p", { className: "text-body mb-6 text-center", children: "Tell us about your event and we\u2019ll follow up with availability and a tailored menu." }),
-        /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("div", { className: "form-card", children: /* @__PURE__ */ (0, import_jsx_runtime30.jsxs)("form", { onSubmit: handleSubmit, className: "space-y-4", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime30.jsxs)("div", { children: [
-            /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("label", { className: "block text-sm font-medium", htmlFor: "firstName", children: "Contact Name *" }),
-            /* @__PURE__ */ (0, import_jsx_runtime30.jsxs)("div", { className: "grid md:grid-cols-2 gap-4 mt-1", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime30.jsx)(
+      /* @__PURE__ */ (0, import_jsx_runtime32.jsx)(Separator, {}),
+      /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("section", { id: "event-request", className: "pt-10", children: /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("div", { className: "max-w-3xl mx-auto", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime32.jsx)(SectionHeader, { overline: "Get Started", title: "Book an event" }),
+        /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("p", { className: "text-body mb-6 text-center", children: "Tell us about your event and we'll follow up with availability and a tailored menu." }),
+        /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("div", { className: "form-card", children: /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("form", { onSubmit: handleSubmit, className: "space-y-4", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("div", { children: [
+            /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("label", { className: "block text-sm font-medium", htmlFor: "firstName", children: "Contact Name *" }),
+            /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("div", { className: "grid md:grid-cols-2 gap-4 mt-1", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime32.jsx)(
                 "input",
                 {
                   id: "firstName",
@@ -70857,7 +71036,7 @@ var ServicesPage = () => {
                   required: true
                 }
               ),
-              /* @__PURE__ */ (0, import_jsx_runtime30.jsx)(
+              /* @__PURE__ */ (0, import_jsx_runtime32.jsx)(
                 "input",
                 {
                   id: "lastName",
@@ -70870,12 +71049,12 @@ var ServicesPage = () => {
                 }
               )
             ] }),
-            /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("p", { className: "hint mt-1", children: "This field is required." })
+            /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("p", { className: "hint mt-1", children: "This field is required." })
           ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime30.jsxs)("div", { className: "grid md:grid-cols-2 gap-4", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime30.jsxs)("div", { children: [
-              /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("label", { className: "block text-sm font-medium", htmlFor: "phone", children: "Phone Number *" }),
-              /* @__PURE__ */ (0, import_jsx_runtime30.jsx)(
+          /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("div", { className: "grid md:grid-cols-2 gap-4", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("div", { children: [
+              /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("label", { className: "block text-sm font-medium", htmlFor: "phone", children: "Phone Number *" }),
+              /* @__PURE__ */ (0, import_jsx_runtime32.jsx)(
                 "input",
                 {
                   type: "tel",
@@ -70889,9 +71068,9 @@ var ServicesPage = () => {
                 }
               )
             ] }),
-            /* @__PURE__ */ (0, import_jsx_runtime30.jsxs)("div", { children: [
-              /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("label", { className: "block text-sm font-medium", htmlFor: "email", children: "E-mail *" }),
-              /* @__PURE__ */ (0, import_jsx_runtime30.jsx)(
+            /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("div", { children: [
+              /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("label", { className: "block text-sm font-medium", htmlFor: "email", children: "E-mail *" }),
+              /* @__PURE__ */ (0, import_jsx_runtime32.jsx)(
                 "input",
                 {
                   type: "email",
@@ -70906,9 +71085,9 @@ var ServicesPage = () => {
               )
             ] })
           ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime30.jsxs)("div", { children: [
-            /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("label", { className: "block text-sm font-medium", htmlFor: "eventDate", children: "Event Date" }),
-            /* @__PURE__ */ (0, import_jsx_runtime30.jsx)(
+          /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("div", { children: [
+            /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("label", { className: "block text-sm font-medium", htmlFor: "eventDate", children: "Event Date" }),
+            /* @__PURE__ */ (0, import_jsx_runtime32.jsx)(
               "input",
               {
                 type: "date",
@@ -70919,12 +71098,12 @@ var ServicesPage = () => {
                 className: "mt-1 w-full border rounded-md p-2"
               }
             ),
-            /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("p", { className: "hint mt-1", children: "Choose a date from the calendar." })
+            /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("p", { className: "hint mt-1", children: "Choose a date from the calendar." })
           ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime30.jsxs)("div", { children: [
-            /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("label", { className: "block text-sm font-medium", htmlFor: "city", children: "Where will the event take place?" }),
-            /* @__PURE__ */ (0, import_jsx_runtime30.jsxs)("div", { className: "grid md:grid-cols-3 gap-4 mt-1", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime30.jsx)(
+          /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("div", { children: [
+            /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("label", { className: "block text-sm font-medium", htmlFor: "city", children: "Where will the event take place?" }),
+            /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("div", { className: "grid md:grid-cols-3 gap-4 mt-1", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime32.jsx)(
                 "input",
                 {
                   id: "city",
@@ -70935,7 +71114,7 @@ var ServicesPage = () => {
                   placeholder: "City"
                 }
               ),
-              /* @__PURE__ */ (0, import_jsx_runtime30.jsxs)(
+              /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)(
                 "select",
                 {
                   id: "state",
@@ -70944,12 +71123,12 @@ var ServicesPage = () => {
                   onChange: handleChange,
                   className: "w-full border rounded-md p-2 bg-white",
                   children: [
-                    /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("option", { value: "", children: "Please Select" }),
-                    ["AL", "AK", "AZ", "AR", "CA", "CO", "CT", "DE", "FL", "GA", "HI", "ID", "IL", "IN", "IA", "KS", "KY", "LA", "ME", "MD", "MA", "MI", "MN", "MS", "MO", "MT", "NE", "NV", "NH", "NJ", "NM", "NY", "NC", "ND", "OH", "OK", "OR", "PA", "RI", "SC", "SD", "TN", "TX", "UT", "VT", "VA", "WA", "WV", "WI", "WY"].map((s) => /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("option", { value: s, children: s }, s))
+                    /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("option", { value: "", children: "Please Select" }),
+                    ["AL", "AK", "AZ", "AR", "CA", "CO", "CT", "DE", "FL", "GA", "HI", "ID", "IL", "IN", "IA", "KS", "KY", "LA", "ME", "MD", "MA", "MI", "MN", "MS", "MO", "MT", "NE", "NV", "NH", "NJ", "NM", "NY", "NC", "ND", "OH", "OK", "OR", "PA", "RI", "SC", "SD", "TN", "TX", "UT", "VT", "VA", "WA", "WV", "WI", "WY"].map((s) => /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("option", { value: s, children: s }, s))
                   ]
                 }
               ),
-              /* @__PURE__ */ (0, import_jsx_runtime30.jsx)(
+              /* @__PURE__ */ (0, import_jsx_runtime32.jsx)(
                 "input",
                 {
                   id: "zip",
@@ -70962,9 +71141,9 @@ var ServicesPage = () => {
               )
             ] })
           ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime30.jsxs)("div", { children: [
-            /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("label", { className: "block text-sm font-medium", htmlFor: "eventType", children: "Event Type" }),
-            /* @__PURE__ */ (0, import_jsx_runtime30.jsxs)(
+          /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("div", { children: [
+            /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("label", { className: "block text-sm font-medium", htmlFor: "eventType", children: "Event Type" }),
+            /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)(
               "select",
               {
                 id: "eventType",
@@ -70973,20 +71152,20 @@ var ServicesPage = () => {
                 onChange: handleChange,
                 className: "mt-1 w-full border rounded-md p-2 bg-white",
                 children: [
-                  /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("option", { value: "", children: "Please Select" }),
-                  /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("option", { children: "Home Dinner" }),
-                  /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("option", { children: "Small Event" }),
-                  /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("option", { children: "Wedding" }),
-                  /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("option", { children: "Baby Shower" }),
-                  /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("option", { children: "Pizza Party" }),
-                  /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("option", { children: "Other" })
+                  /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("option", { value: "", children: "Please Select" }),
+                  /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("option", { children: "Home Dinner" }),
+                  /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("option", { children: "Small Event" }),
+                  /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("option", { children: "Wedding" }),
+                  /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("option", { children: "Baby Shower" }),
+                  /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("option", { children: "Pizza Party" }),
+                  /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("option", { children: "Other" })
                 ]
               }
             )
           ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime30.jsxs)("div", { children: [
-            /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("label", { className: "block text-sm font-medium", htmlFor: "guestCount", children: "Estimated guest count" }),
-            /* @__PURE__ */ (0, import_jsx_runtime30.jsx)(
+          /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("div", { children: [
+            /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("label", { className: "block text-sm font-medium", htmlFor: "guestCount", children: "Estimated guest count" }),
+            /* @__PURE__ */ (0, import_jsx_runtime32.jsx)(
               "input",
               {
                 type: "number",
@@ -71000,9 +71179,9 @@ var ServicesPage = () => {
               }
             )
           ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime30.jsxs)("div", { children: [
-            /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("label", { className: "block text-sm font-medium", htmlFor: "notes", children: "Tell us more! What sort of meal are you thinking? Which foods do you like? What questions do you have for us straight away?" }),
-            /* @__PURE__ */ (0, import_jsx_runtime30.jsx)(
+          /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("div", { children: [
+            /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("label", { className: "block text-sm font-medium", htmlFor: "notes", children: "Tell us more! What sort of meal are you thinking? Which foods do you like? What questions do you have for us straight away?" }),
+            /* @__PURE__ */ (0, import_jsx_runtime32.jsx)(
               "textarea",
               {
                 id: "notes",
@@ -71015,12 +71194,12 @@ var ServicesPage = () => {
               }
             )
           ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime30.jsxs)("label", { className: "inline-flex items-center gap-2", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("input", { type: "checkbox", name: "sendCopy", checked: form.sendCopy, onChange: handleChange }),
-            /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("span", { className: "text-sm", children: "Email me a copy of this request" })
+          /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("label", { className: "inline-flex items-center gap-2", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("input", { type: "checkbox", name: "sendCopy", checked: form.sendCopy, onChange: handleChange }),
+            /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("span", { className: "text-sm", children: "Email me a copy of this request" })
           ] }),
-          result && /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("div", { className: "text-sm " + (result.ok ? "text-green-700" : "text-red-700"), children: result.message }),
-          /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("div", { className: "actions", children: /* @__PURE__ */ (0, import_jsx_runtime30.jsx)(
+          result && /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("div", { className: "text-sm " + (result.ok ? "text-green-700" : "text-red-700"), children: result.message }),
+          /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("div", { className: "actions", children: /* @__PURE__ */ (0, import_jsx_runtime32.jsx)(
             "button",
             {
               type: "submit",
@@ -71037,19 +71216,19 @@ var ServicesPage = () => {
 var ServicesPage_default = ServicesPage;
 
 // src/pages/PricingPage.jsx
-var import_react26 = __toESM(require("react"));
+var import_react27 = __toESM(require("react"));
 var import_react_helmet_async5 = __toESM(require_lib());
 
 // src/components/pricing/CostEstimator.jsx
-var import_react25 = __toESM(require("react"));
-var import_jsx_runtime31 = require("react/jsx-runtime");
+var import_react26 = __toESM(require("react"));
+var import_jsx_runtime33 = require("react/jsx-runtime");
 var CostEstimator = () => {
-  const [userAnswers, setUserAnswers] = (0, import_react25.useState)({});
-  const [currentQuestionKey, setCurrentQuestionKey] = (0, import_react25.useState)("start");
-  const [questionPath, setQuestionPath] = (0, import_react25.useState)([]);
-  const [finalCost, setFinalCost] = (0, import_react25.useState)(0);
-  const [breakdown, setBreakdown] = (0, import_react25.useState)([]);
-  const [showResults, setShowResults] = (0, import_react25.useState)(false);
+  const [userAnswers, setUserAnswers] = (0, import_react26.useState)({});
+  const [currentQuestionKey, setCurrentQuestionKey] = (0, import_react26.useState)("start");
+  const [questionPath, setQuestionPath] = (0, import_react26.useState)([]);
+  const [finalCost, setFinalCost] = (0, import_react26.useState)(0);
+  const [breakdown, setBreakdown] = (0, import_react26.useState)([]);
+  const [showResults, setShowResults] = (0, import_react26.useState)(false);
   const questions = {
     start: {
       id: "serviceType",
@@ -71210,20 +71389,20 @@ var CostEstimator = () => {
     setShowResults(false);
   };
   if (showResults) {
-    return /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)("div", { className: "border border-gray-900 p-8 text-center", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("h3", { className: "heading-lg heading-balance", children: "All-inclusive ballpark estimate" }),
-      /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)("p", { className: "text-6xl font-bold my-4", children: [
+    return /* @__PURE__ */ (0, import_jsx_runtime33.jsxs)("div", { className: "border border-gray-900 p-8 text-center", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime33.jsx)("h3", { className: "heading-lg heading-balance", children: "All-inclusive ballpark estimate" }),
+      /* @__PURE__ */ (0, import_jsx_runtime33.jsxs)("p", { className: "text-6xl font-bold my-4", children: [
         "$",
         finalCost.toFixed(2)
       ] }),
-      breakdown.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("div", { className: "bg-gray-200 p-4 text-left mb-6 font-mono text-sm", children: breakdown.map((item, index2) => /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("p", { children: item }, index2)) }),
-      /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("button", { onClick: restart, className: "mt-6 text-sm underline font-mono", children: "Start Over" })
+      breakdown.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime33.jsx)("div", { className: "bg-gray-200 p-4 text-left mb-6 font-mono text-sm", children: breakdown.map((item, index2) => /* @__PURE__ */ (0, import_jsx_runtime33.jsx)("p", { children: item }, index2)) }),
+      /* @__PURE__ */ (0, import_jsx_runtime33.jsx)("button", { onClick: restart, className: "mt-6 text-sm underline font-mono", children: "Start Over" })
     ] });
   }
   const currentQData = questions[currentQuestionKey];
-  return /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)("div", { className: "relative w-full border border-gray-900 p-8 min-h-[400px]", children: [
-    /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("h2", { className: "heading-lg heading-balance mb-6", children: currentQData.title }),
-    currentQData.type === "options" && /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("div", { className: "space-y-3 font-mono", children: currentQData.options.map((opt) => /* @__PURE__ */ (0, import_jsx_runtime31.jsx)(
+  return /* @__PURE__ */ (0, import_jsx_runtime33.jsxs)("div", { className: "relative w-full border border-gray-900 p-8 min-h-[400px]", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime33.jsx)("h2", { className: "heading-lg heading-balance mb-6", children: currentQData.title }),
+    currentQData.type === "options" && /* @__PURE__ */ (0, import_jsx_runtime33.jsx)("div", { className: "space-y-3 font-mono", children: currentQData.options.map((opt) => /* @__PURE__ */ (0, import_jsx_runtime33.jsx)(
       "button",
       {
         onClick: () => handleAnswer(currentQData, opt.value),
@@ -71232,8 +71411,8 @@ var CostEstimator = () => {
       },
       opt.value.toString()
     )) }),
-    currentQData.type === "number" && /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)("div", { children: [
-      /* @__PURE__ */ (0, import_jsx_runtime31.jsx)(
+    currentQData.type === "number" && /* @__PURE__ */ (0, import_jsx_runtime33.jsxs)("div", { children: [
+      /* @__PURE__ */ (0, import_jsx_runtime33.jsx)(
         "input",
         {
           type: "number",
@@ -71247,7 +71426,7 @@ var CostEstimator = () => {
           }
         }
       ),
-      /* @__PURE__ */ (0, import_jsx_runtime31.jsx)(
+      /* @__PURE__ */ (0, import_jsx_runtime33.jsx)(
         "button",
         {
           onClick: () => handleAnswer(
@@ -71259,10 +71438,10 @@ var CostEstimator = () => {
         }
       )
     ] }),
-    currentQData.type === "multi_number" && /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)("div", { className: "font-mono space-y-4", children: [
-      currentQData.fields.map((field) => /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)("div", { className: "grid grid-cols-2 items-center gap-4", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("label", { htmlFor: `input-${field.id}`, className: "text-lg", children: field.label }),
-        /* @__PURE__ */ (0, import_jsx_runtime31.jsx)(
+    currentQData.type === "multi_number" && /* @__PURE__ */ (0, import_jsx_runtime33.jsxs)("div", { className: "font-mono space-y-4", children: [
+      currentQData.fields.map((field) => /* @__PURE__ */ (0, import_jsx_runtime33.jsxs)("div", { className: "grid grid-cols-2 items-center gap-4", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime33.jsx)("label", { htmlFor: `input-${field.id}`, className: "text-lg", children: field.label }),
+        /* @__PURE__ */ (0, import_jsx_runtime33.jsx)(
           "input",
           {
             type: "number",
@@ -71272,7 +71451,7 @@ var CostEstimator = () => {
           }
         )
       ] }, field.id)),
-      /* @__PURE__ */ (0, import_jsx_runtime31.jsx)(
+      /* @__PURE__ */ (0, import_jsx_runtime33.jsx)(
         "button",
         {
           onClick: () => {
@@ -71314,7 +71493,7 @@ var pricingFaq_default = [
 ];
 
 // src/pages/PricingPage.jsx
-var import_jsx_runtime32 = require("react/jsx-runtime");
+var import_jsx_runtime34 = require("react/jsx-runtime");
 var PricingPage = () => {
   const faqEntities = pricingFaq_default.map((item) => ({
     "@type": "Question",
@@ -71324,35 +71503,35 @@ var PricingPage = () => {
       text: item.answer
     }
   }));
-  return /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)(import_jsx_runtime32.Fragment, { children: [
-    /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)(import_react_helmet_async5.Helmet, { children: [
-      /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("title", { children: "How Much Does a Personal Chef Cost? | Minneapolis Personal Chef Pricing \u2014 Local Effort" }),
-      /* @__PURE__ */ (0, import_jsx_runtime32.jsx)(
+  return /* @__PURE__ */ (0, import_jsx_runtime34.jsxs)(import_jsx_runtime34.Fragment, { children: [
+    /* @__PURE__ */ (0, import_jsx_runtime34.jsxs)(import_react_helmet_async5.Helmet, { children: [
+      /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("title", { children: "How Much Does a Personal Chef Cost? | Minneapolis Personal Chef Pricing \u2014 Local Effort" }),
+      /* @__PURE__ */ (0, import_jsx_runtime34.jsx)(
         "meta",
         {
           name: "description",
           content: "How much does a personal chef cost? See Minneapolis\u2013St. Paul price ranges for in-home dinners, weekly meal prep, and small events. Use our estimator for a quick ballpark."
         }
       ),
-      /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("link", { rel: "canonical", href: "https://localeffortfood.com/pricing" }),
-      /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("meta", { name: "robots", content: "index,follow" }),
-      /* @__PURE__ */ (0, import_jsx_runtime32.jsx)(
+      /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("link", { rel: "canonical", href: "https://localeffortfood.com/pricing" }),
+      /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("meta", { name: "robots", content: "index,follow" }),
+      /* @__PURE__ */ (0, import_jsx_runtime34.jsx)(
         "meta",
         {
           name: "keywords",
           content: "how much does a personal chef cost, personal chef cost Minneapolis, private chef cost, personal chef pricing, cost of personal chef per person, weekly meal prep cost, private chef Minneapolis pricing"
         }
       ),
-      /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("meta", { property: "og:type", content: "website" }),
-      /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("meta", { property: "og:url", content: "https://localeffortfood.com/pricing" }),
-      /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("meta", { property: "og:title", content: "How Much Does a Personal Chef Cost? Minneapolis Personal Chef Pricing \u2014 Local Effort" }),
-      /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("meta", { property: "og:description", content: "See typical costs for personal chefs in Minneapolis\u2013St. Paul: in-home dinners, weekly meal prep, and small events. Try the estimator for a quick ballpark." }),
-      /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("meta", { property: "og:image", content: "/gallery/logo.png?text=Local+Effort&font=mono" }),
-      /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("meta", { name: "twitter:card", content: "summary_large_image" }),
-      /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("meta", { name: "twitter:title", content: "How Much Does a Personal Chef Cost? Minneapolis Personal Chef Pricing \u2014 Local Effort" }),
-      /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("meta", { name: "twitter:description", content: "See typical personal chef costs in Minneapolis\u2013St. Paul and use our estimator to get a quick ballpark for your event or weekly meals." }),
-      /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("meta", { name: "twitter:image", content: "/gallery/logo.png?text=Local+Effort&font=mono" }),
-      /* @__PURE__ */ (0, import_jsx_runtime32.jsx)(
+      /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("meta", { property: "og:type", content: "website" }),
+      /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("meta", { property: "og:url", content: "https://localeffortfood.com/pricing" }),
+      /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("meta", { property: "og:title", content: "How Much Does a Personal Chef Cost? Minneapolis Personal Chef Pricing \u2014 Local Effort" }),
+      /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("meta", { property: "og:description", content: "See typical costs for personal chefs in Minneapolis\u2013St. Paul: in-home dinners, weekly meal prep, and small events. Try the estimator for a quick ballpark." }),
+      /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("meta", { property: "og:image", content: "/gallery/logo.png?text=Local+Effort&font=mono" }),
+      /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("meta", { name: "twitter:card", content: "summary_large_image" }),
+      /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("meta", { name: "twitter:title", content: "How Much Does a Personal Chef Cost? Minneapolis Personal Chef Pricing \u2014 Local Effort" }),
+      /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("meta", { name: "twitter:description", content: "See typical personal chef costs in Minneapolis\u2013St. Paul and use our estimator to get a quick ballpark for your event or weekly meals." }),
+      /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("meta", { name: "twitter:image", content: "/gallery/logo.png?text=Local+Effort&font=mono" }),
+      /* @__PURE__ */ (0, import_jsx_runtime34.jsx)(
         "script",
         {
           type: "application/ld+json",
@@ -71360,8 +71539,8 @@ var PricingPage = () => {
         }
       )
     ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("div", { className: "space-y-16 max-w-5xl mx-auto px-4 py-12", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)(
+    /* @__PURE__ */ (0, import_jsx_runtime34.jsxs)("div", { className: "space-y-16 max-w-5xl mx-auto px-4 py-12", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime34.jsxs)(
         import_framer_motion5.motion.div,
         {
           initial: { opacity: 0, y: 20 },
@@ -71369,18 +71548,18 @@ var PricingPage = () => {
           transition: { duration: 0.5 },
           className: "text-center space-y-4",
           children: [
-            /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("h1", { className: "heading-display heading-balance", children: "Personal chef pricing, simplified." }),
-            /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("p", { className: "heading-subtitle text-neutral-600 max-w-3xl mx-auto", children: "It\u2019s not as expensive as you think." }),
-            /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("p", { className: "text-lg text-gray-700 max-w-3xl mx-auto", children: "We tailor pricing closely to your needs. We try to stay competitive to an evening at a nice restaurant, (or to the price of takeout, depending on the request). Oftentimes, we're the much better deal." }),
-            /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("p", { className: "text-lg text-gray-700 max-w-3xl mx-auto mt-4", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("h1", { className: "heading-display heading-balance", children: "Personal chef pricing, simplified." }),
+            /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("p", { className: "heading-subtitle text-neutral-600 max-w-3xl mx-auto", children: "It\u2019s not as expensive as you think." }),
+            /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("p", { className: "text-lg text-gray-700 max-w-3xl mx-auto", children: "We tailor pricing closely to your needs. We try to stay competitive to an evening at a nice restaurant, (or to the price of takeout, depending on the request). Oftentimes, we're the much better deal." }),
+            /* @__PURE__ */ (0, import_jsx_runtime34.jsxs)("p", { className: "text-lg text-gray-700 max-w-3xl mx-auto mt-4", children: [
               "Below is a handy tool that can take some of the mystery out. We'll finalize the actual price ",
-              /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("a", { href: "/services#event-request", className: "underline", children: "together" }),
+              /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("a", { href: "/services#event-request", className: "underline", children: "together" }),
               "."
             ] })
           ]
         }
       ),
-      /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)(
+      /* @__PURE__ */ (0, import_jsx_runtime34.jsxs)(
         import_framer_motion5.motion.section,
         {
           initial: { opacity: 0, y: 20 },
@@ -71388,12 +71567,12 @@ var PricingPage = () => {
           viewport: { once: true, amount: 0.2 },
           transition: { duration: 0.5 },
           children: [
-            /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("h2", { className: "heading-xl heading-underline", children: "Cost estimator" }),
-            /* @__PURE__ */ (0, import_jsx_runtime32.jsx)(CostEstimator, {})
+            /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("h2", { className: "heading-xl heading-underline", children: "Cost estimator" }),
+            /* @__PURE__ */ (0, import_jsx_runtime34.jsx)(CostEstimator, {})
           ]
         }
       ),
-      /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)(
+      /* @__PURE__ */ (0, import_jsx_runtime34.jsxs)(
         import_framer_motion5.motion.section,
         {
           id: "pricing-faq",
@@ -71403,12 +71582,12 @@ var PricingPage = () => {
           transition: { duration: 0.5 },
           className: "space-y-4",
           children: [
-            /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("h2", { className: "heading-xl heading-underline", children: "Personal chef pricing FAQ" }),
-            /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("p", { className: "text-gray-700", children: "Weekly meal prep plans begin around $275 per person per week for 15 meals. This is a median price based on typical variables. Pricing is always calculated for each client's actual needs, with discounts for couples, families, and longer-term billing." }),
-            /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("h3", { className: "text-lg font-semibold mt-4", children: "How much does a personal chef cost in Minneapolis?" }),
-            /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("div", { className: "space-y-6", children: pricingFaq_default.map((item) => /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("div", { className: "border border-gray-200 rounded-lg p-6", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("h4", { className: "text-xl font-semibold", children: item.name }),
-              /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("p", { className: "text-gray-700 mt-2", children: item.answer })
+            /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("h2", { className: "heading-xl heading-underline", children: "Personal chef pricing FAQ" }),
+            /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("p", { className: "text-gray-700", children: "Weekly meal prep plans begin around $275 per person per week for 15 meals. This is a median price based on typical variables. Pricing is always calculated for each client's actual needs, with discounts for couples, families, and longer-term billing." }),
+            /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("h3", { className: "text-lg font-semibold mt-4", children: "How much does a personal chef cost in Minneapolis?" }),
+            /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("div", { className: "space-y-6", children: pricingFaq_default.map((item) => /* @__PURE__ */ (0, import_jsx_runtime34.jsxs)("div", { className: "border border-gray-200 rounded-lg p-6", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("h4", { className: "text-xl font-semibold", children: item.name }),
+              /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("p", { className: "text-gray-700 mt-2", children: item.answer })
             ] }, item.name)) })
           ]
         }
@@ -71419,7 +71598,7 @@ var PricingPage = () => {
 var PricingPage_default = PricingPage;
 
 // src/pages/MenuPage.jsx
-var import_react27 = __toESM(require("react"));
+var import_react28 = __toESM(require("react"));
 var import_react_helmet_async6 = __toESM(require_lib());
 
 // src/data/sampleMenus.js
@@ -72250,8 +72429,8 @@ var sampleMenus = [
 
 // src/pages/MenuPage.jsx
 var import_framer_motion6 = require("framer-motion");
-var import_jsx_runtime33 = require("react/jsx-runtime");
-var ServiceCard2 = ({ title, description, children, isOpen = false }) => /* @__PURE__ */ (0, import_jsx_runtime33.jsxs)(
+var import_jsx_runtime35 = require("react/jsx-runtime");
+var ServiceCard2 = ({ title, description, children, isOpen = false }) => /* @__PURE__ */ (0, import_jsx_runtime35.jsxs)(
   import_framer_motion6.motion.div,
   {
     className: `group rounded-xl bg-neutral-50 shadow-sm ring-1 ring-neutral-200 transition-all hover:shadow-md ` + (isOpen ? "p-8" : "p-4 md:p-5"),
@@ -72259,18 +72438,18 @@ var ServiceCard2 = ({ title, description, children, isOpen = false }) => /* @__P
     animate: { opacity: 1, y: 0 },
     transition: { duration: 0.3 },
     children: [
-      /* @__PURE__ */ (0, import_jsx_runtime33.jsx)("h4", { className: isOpen ? "text-2xl font-bold uppercase tracking-tight" : "text-xl font-bold uppercase tracking-tight", children: title }),
-      /* @__PURE__ */ (0, import_jsx_runtime33.jsx)("p", { className: isOpen ? "font-mono text-neutral-600 min-h-[2rem] mt-2" : "font-mono text-neutral-600 mt-1", children: description }),
-      /* @__PURE__ */ (0, import_jsx_runtime33.jsx)("div", { className: isOpen ? "mt-4" : "mt-2", children })
+      /* @__PURE__ */ (0, import_jsx_runtime35.jsx)("h4", { className: isOpen ? "text-2xl font-bold uppercase tracking-tight" : "text-xl font-bold uppercase tracking-tight", children: title }),
+      /* @__PURE__ */ (0, import_jsx_runtime35.jsx)("p", { className: isOpen ? "font-mono text-neutral-600 min-h-[2rem] mt-2" : "font-mono text-neutral-600 mt-1", children: description }),
+      /* @__PURE__ */ (0, import_jsx_runtime35.jsx)("div", { className: isOpen ? "mt-4" : "mt-2", children })
     ]
   }
 );
 function MenuPage() {
-  const [openMenu, setOpenMenu] = (0, import_react27.useState)(null);
-  const [hoveredKey, setHoveredKey] = (0, import_react27.useState)(null);
-  const [lookup, setLookup] = (0, import_react27.useState)({});
+  const [openMenu, setOpenMenu] = (0, import_react28.useState)(null);
+  const [hoveredKey, setHoveredKey] = (0, import_react28.useState)(null);
+  const [lookup, setLookup] = (0, import_react28.useState)({});
   const toggleMenu = (id) => setOpenMenu(openMenu === id ? null : id);
-  const menuJsonLd = (0, import_react27.useMemo)(() => {
+  const menuJsonLd = (0, import_react28.useMemo)(() => {
     const menuSections = sampleMenus.map((m) => ({
       "@type": "Menu",
       name: m.title,
@@ -72290,19 +72469,19 @@ function MenuPage() {
       hasMenu: menuSections
     };
   }, []);
-  return /* @__PURE__ */ (0, import_jsx_runtime33.jsxs)("div", { className: "mx-auto max-w-6xl px-4 md:px-6 lg:px-8 py-8", children: [
-    /* @__PURE__ */ (0, import_jsx_runtime33.jsxs)(import_react_helmet_async6.Helmet, { children: [
-      /* @__PURE__ */ (0, import_jsx_runtime33.jsx)("title", { children: "Sample Menus & Past Events | Minneapolis | Local Effort" }),
-      /* @__PURE__ */ (0, import_jsx_runtime33.jsx)("meta", { name: "description", content: "Real menu examples from Minneapolis personal chef events. Seasonal ingredients, composed salads, fresh pasta, local pizza, and farm-to-table plates. View menus." }),
-      /* @__PURE__ */ (0, import_jsx_runtime33.jsx)("link", { rel: "canonical", href: "https://localeffortfood.com/menu" }),
-      /* @__PURE__ */ (0, import_jsx_runtime33.jsx)("script", { type: "application/ld+json", children: JSON.stringify(menuJsonLd) })
+  return /* @__PURE__ */ (0, import_jsx_runtime35.jsxs)("div", { className: "mx-auto max-w-6xl px-4 md:px-6 lg:px-8 py-8", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime35.jsxs)(import_react_helmet_async6.Helmet, { children: [
+      /* @__PURE__ */ (0, import_jsx_runtime35.jsx)("title", { children: "Sample Menus & Past Events | Minneapolis | Local Effort" }),
+      /* @__PURE__ */ (0, import_jsx_runtime35.jsx)("meta", { name: "description", content: "Real menu examples from Minneapolis personal chef events. Seasonal ingredients, composed salads, fresh pasta, local pizza, and farm-to-table plates. View menus." }),
+      /* @__PURE__ */ (0, import_jsx_runtime35.jsx)("link", { rel: "canonical", href: "https://localeffortfood.com/menu" }),
+      /* @__PURE__ */ (0, import_jsx_runtime35.jsx)("script", { type: "application/ld+json", children: JSON.stringify(menuJsonLd) })
     ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime33.jsx)("h1", { className: "heading-xl heading-balance text-center", children: "Past menu examples." }),
-    /* @__PURE__ */ (0, import_jsx_runtime33.jsx)("div", { className: "prose-lite max-w-3xl mx-auto text-center mb-8", children: /* @__PURE__ */ (0, import_jsx_runtime33.jsx)("p", { children: 'these are all real menus from events in the past couple years, just to show how wide the options are. We love to "make it local."' }) }),
-    /* @__PURE__ */ (0, import_jsx_runtime33.jsx)("div", { className: "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6", children: sampleMenus.map((menu) => {
+    /* @__PURE__ */ (0, import_jsx_runtime35.jsx)("h1", { className: "heading-xl heading-balance text-center", children: "Past menu examples." }),
+    /* @__PURE__ */ (0, import_jsx_runtime35.jsx)("div", { className: "prose-lite max-w-3xl mx-auto text-center mb-8", children: /* @__PURE__ */ (0, import_jsx_runtime35.jsx)("p", { children: 'these are all real menus from events in the past couple years, just to show how wide the options are. We love to "make it local."' }) }),
+    /* @__PURE__ */ (0, import_jsx_runtime35.jsx)("div", { className: "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6", children: sampleMenus.map((menu) => {
       const isOpen = openMenu === menu.id;
-      return /* @__PURE__ */ (0, import_jsx_runtime33.jsxs)(ServiceCard2, { title: menu.title, description: menu.description || "", isOpen, children: [
-        /* @__PURE__ */ (0, import_jsx_runtime33.jsx)(
+      return /* @__PURE__ */ (0, import_jsx_runtime35.jsxs)(ServiceCard2, { title: menu.title, description: menu.description || "", isOpen, children: [
+        /* @__PURE__ */ (0, import_jsx_runtime35.jsx)(
           "button",
           {
             onClick: () => toggleMenu(menu.id),
@@ -72310,16 +72489,16 @@ function MenuPage() {
             children: isOpen ? "Hide Sections \u25B2" : "View More \u25BC"
           }
         ),
-        /* @__PURE__ */ (0, import_jsx_runtime33.jsx)(
+        /* @__PURE__ */ (0, import_jsx_runtime35.jsx)(
           import_framer_motion6.motion.div,
           {
             initial: { height: 0, opacity: 0 },
             animate: { height: isOpen ? "auto" : 0, opacity: isOpen ? 1 : 0 },
             transition: { duration: 0.3 },
             className: "overflow-hidden mt-4",
-            children: isOpen && menu.sections.map((section, idx) => /* @__PURE__ */ (0, import_jsx_runtime33.jsxs)("div", { className: "mt-4", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime33.jsx)("h5", { className: "text-lg font-semibold", children: section.course }),
-              /* @__PURE__ */ (0, import_jsx_runtime33.jsx)("ul", { className: "list-disc list-inside mt-2 space-y-1", children: section.items.map((item, i) => {
+            children: isOpen && menu.sections.map((section, idx) => /* @__PURE__ */ (0, import_jsx_runtime35.jsxs)("div", { className: "mt-4", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime35.jsx)("h5", { className: "text-lg font-semibold", children: section.course }),
+              /* @__PURE__ */ (0, import_jsx_runtime35.jsx)("ul", { className: "list-disc list-inside mt-2 space-y-1", children: section.items.map((item, i) => {
                 const hasImage = typeof item.imagePublicId === "string" && item.imagePublicId.trim().length > 0;
                 const itemKey = `${menu.id}-${section.course}-${i}`;
                 const previewPublicId = hasImage ? item.imagePublicId : lookup[itemKey];
@@ -72343,29 +72522,29 @@ function MenuPage() {
                   } catch (_) {
                   }
                 };
-                return /* @__PURE__ */ (0, import_jsx_runtime33.jsxs)(
+                return /* @__PURE__ */ (0, import_jsx_runtime35.jsxs)(
                   "li",
                   {
                     onMouseEnter: handleEnter,
                     onMouseLeave: () => setHoveredKey(null),
                     className: `relative py-1 ${hasImage || lookup[itemKey] ? "cursor-pointer" : "cursor-default"}`,
                     children: [
-                      /* @__PURE__ */ (0, import_jsx_runtime33.jsx)("span", { className: `font-medium ${hasImage || lookup[itemKey] ? "underline decoration-dotted underline-offset-2" : ""}`, children: item.name }),
-                      hasImage || lookup[itemKey] ? /* @__PURE__ */ (0, import_jsx_runtime33.jsx)("span", { className: "ml-1 align-middle inline-block text-neutral-500", title: "Preview available", "aria-hidden": "true", children: /* @__PURE__ */ (0, import_jsx_runtime33.jsxs)("svg", { width: "14", height: "14", viewBox: "0 0 24 24", fill: "none", xmlns: "http://www.w3.org/2000/svg", children: [
-                        /* @__PURE__ */ (0, import_jsx_runtime33.jsx)("path", { d: "M3 7a2 2 0 012-2h14a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2V7z", stroke: "currentColor", strokeWidth: "1.5" }),
-                        /* @__PURE__ */ (0, import_jsx_runtime33.jsx)("path", { d: "M9 11l3 3 3-3 4 5H5l4-5z", stroke: "currentColor", strokeWidth: "1.5" }),
-                        /* @__PURE__ */ (0, import_jsx_runtime33.jsx)("circle", { cx: "8", cy: "9", r: "1.5", fill: "currentColor" })
+                      /* @__PURE__ */ (0, import_jsx_runtime35.jsx)("span", { className: `font-medium ${hasImage || lookup[itemKey] ? "underline decoration-dotted underline-offset-2" : ""}`, children: item.name }),
+                      hasImage || lookup[itemKey] ? /* @__PURE__ */ (0, import_jsx_runtime35.jsx)("span", { className: "ml-1 align-middle inline-block text-neutral-500", title: "Preview available", "aria-hidden": "true", children: /* @__PURE__ */ (0, import_jsx_runtime35.jsxs)("svg", { width: "14", height: "14", viewBox: "0 0 24 24", fill: "none", xmlns: "http://www.w3.org/2000/svg", children: [
+                        /* @__PURE__ */ (0, import_jsx_runtime35.jsx)("path", { d: "M3 7a2 2 0 012-2h14a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2V7z", stroke: "currentColor", strokeWidth: "1.5" }),
+                        /* @__PURE__ */ (0, import_jsx_runtime35.jsx)("path", { d: "M9 11l3 3 3-3 4 5H5l4-5z", stroke: "currentColor", strokeWidth: "1.5" }),
+                        /* @__PURE__ */ (0, import_jsx_runtime35.jsx)("circle", { cx: "8", cy: "9", r: "1.5", fill: "currentColor" })
                       ] }) }) : null,
-                      item.note && /* @__PURE__ */ (0, import_jsx_runtime33.jsxs)("span", { className: "text-gray-600 italic", children: [
+                      item.note && /* @__PURE__ */ (0, import_jsx_runtime35.jsxs)("span", { className: "text-gray-600 italic", children: [
                         " \u2014 ",
                         item.note
                       ] }),
-                      item.dietary?.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime33.jsxs)("span", { className: "ml-2 text-sm text-green-600", children: [
+                      item.dietary?.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime35.jsxs)("span", { className: "ml-2 text-sm text-green-600", children: [
                         "[",
                         item.dietary.join(", "),
                         "]"
                       ] }),
-                      (hasImage || previewPublicId) && /* @__PURE__ */ (0, import_jsx_runtime33.jsx)(import_framer_motion6.AnimatePresence, { children: hoveredKey === itemKey && /* @__PURE__ */ (0, import_jsx_runtime33.jsx)(
+                      (hasImage || previewPublicId) && /* @__PURE__ */ (0, import_jsx_runtime35.jsx)(import_framer_motion6.AnimatePresence, { children: hoveredKey === itemKey && /* @__PURE__ */ (0, import_jsx_runtime35.jsx)(
                         import_framer_motion6.motion.div,
                         {
                           className: "absolute bottom-full left-1/2 -translate-x-1/2 mb-2 p-2 bg-white rounded-lg shadow-xl z-20 w-48 h-48 pointer-events-none",
@@ -72373,7 +72552,7 @@ function MenuPage() {
                           animate: { opacity: 1, y: 0, scale: 1 },
                           exit: { opacity: 0, y: 10, scale: 0.9 },
                           transition: { duration: 0.2, ease: "easeInOut" },
-                          children: /* @__PURE__ */ (0, import_jsx_runtime33.jsx)(
+                          children: /* @__PURE__ */ (0, import_jsx_runtime35.jsx)(
                             cloudinaryImage_default,
                             {
                               publicId: previewPublicId,
@@ -72400,16 +72579,16 @@ function MenuPage() {
 }
 
 // src/pages/HappyMondayPage.jsx
-var import_react33 = __toESM(require("react"));
+var import_react34 = __toESM(require("react"));
 var import_react_helmet_async7 = __toESM(require_lib());
 var import_framer_motion11 = require("framer-motion");
 
 // src/components/menu/FoodItemCard.jsx
-var import_react28 = __toESM(require("react"));
+var import_react29 = __toESM(require("react"));
 var import_framer_motion7 = require("framer-motion");
-var import_jsx_runtime34 = require("react/jsx-runtime");
+var import_jsx_runtime36 = require("react/jsx-runtime");
 var FoodItemCard = ({ item, onClick }) => {
-  return /* @__PURE__ */ (0, import_jsx_runtime34.jsxs)(
+  return /* @__PURE__ */ (0, import_jsx_runtime36.jsxs)(
     import_framer_motion7.motion.div,
     {
       variants: fadeInUp,
@@ -72418,8 +72597,8 @@ var FoodItemCard = ({ item, onClick }) => {
       whileHover: { scale: 1.03 },
       whileTap: { scale: 0.98 },
       children: [
-        /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("h4", { className: "text-xl font-bold text-neutral-800", children: item.name }),
-        /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("p", { className: "text-neutral-600 mt-2 line-clamp-2", children: item.description })
+        /* @__PURE__ */ (0, import_jsx_runtime36.jsx)("h4", { className: "text-xl font-bold text-neutral-800", children: item.name }),
+        /* @__PURE__ */ (0, import_jsx_runtime36.jsx)("p", { className: "text-neutral-600 mt-2 line-clamp-2", children: item.description })
       ]
     }
   );
@@ -72427,9 +72606,9 @@ var FoodItemCard = ({ item, onClick }) => {
 var FoodItemCard_default = FoodItemCard;
 
 // src/components/ErrorBoundary.jsx
-var import_react29 = __toESM(require("react"));
-var import_jsx_runtime35 = require("react/jsx-runtime");
-var ErrorBoundary = class extends import_react29.default.Component {
+var import_react30 = __toESM(require("react"));
+var import_jsx_runtime37 = require("react/jsx-runtime");
+var ErrorBoundary = class extends import_react30.default.Component {
   constructor(props) {
     super(props);
     this.state = { error: null, info: null };
@@ -72444,14 +72623,14 @@ var ErrorBoundary = class extends import_react29.default.Component {
   render() {
     const { error, info } = this.state;
     if (error) {
-      return /* @__PURE__ */ (0, import_jsx_runtime35.jsxs)("div", { style: { padding: 24, fontFamily: "system-ui, Arial", color: "#111" }, children: [
-        /* @__PURE__ */ (0, import_jsx_runtime35.jsx)("h1", { children: "Application error" }),
-        /* @__PURE__ */ (0, import_jsx_runtime35.jsx)("p", { style: { whiteSpace: "pre-wrap" }, children: String(error && (error.message || error)) }),
-        info && info.componentStack && /* @__PURE__ */ (0, import_jsx_runtime35.jsxs)("details", { style: { marginTop: 12, whiteSpace: "pre-wrap" }, children: [
-          /* @__PURE__ */ (0, import_jsx_runtime35.jsx)("summary", { children: "Component stack" }),
-          /* @__PURE__ */ (0, import_jsx_runtime35.jsx)("div", { children: info.componentStack })
+      return /* @__PURE__ */ (0, import_jsx_runtime37.jsxs)("div", { style: { padding: 24, fontFamily: "system-ui, Arial", color: "#111" }, children: [
+        /* @__PURE__ */ (0, import_jsx_runtime37.jsx)("h1", { children: "Application error" }),
+        /* @__PURE__ */ (0, import_jsx_runtime37.jsx)("p", { style: { whiteSpace: "pre-wrap" }, children: String(error && (error.message || error)) }),
+        info && info.componentStack && /* @__PURE__ */ (0, import_jsx_runtime37.jsxs)("details", { style: { marginTop: 12, whiteSpace: "pre-wrap" }, children: [
+          /* @__PURE__ */ (0, import_jsx_runtime37.jsx)("summary", { children: "Component stack" }),
+          /* @__PURE__ */ (0, import_jsx_runtime37.jsx)("div", { children: info.componentStack })
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime35.jsx)("div", { style: { marginTop: 12 }, children: /* @__PURE__ */ (0, import_jsx_runtime35.jsx)("button", { onClick: () => window.location.reload(), children: "Reload" }) })
+        /* @__PURE__ */ (0, import_jsx_runtime37.jsx)("div", { style: { marginTop: 12 }, children: /* @__PURE__ */ (0, import_jsx_runtime37.jsx)("button", { onClick: () => window.location.reload(), children: "Reload" }) })
       ] });
     }
     return this.props.children;
@@ -72460,17 +72639,17 @@ var ErrorBoundary = class extends import_react29.default.Component {
 var ErrorBoundary_default = ErrorBoundary;
 
 // src/pages/HappyMondayPage.jsx
-var import_jsx_runtime39 = require("react/jsx-runtime");
-var BlockContent = (0, import_react33.lazy)(() => import("@sanity/block-content-to-react"));
-var FoodItemModal2 = (0, import_react33.lazy)(() => Promise.resolve().then(() => (init_FoodItemModal(), FoodItemModal_exports)));
-var FeedbackForm2 = (0, import_react33.lazy)(() => Promise.resolve().then(() => (init_FeedbackForm(), FeedbackForm_exports)));
-var LoadingSpinner2 = (0, import_react33.lazy)(() => Promise.resolve().then(() => (init_LoadingSpinner(), LoadingSpinner_exports)).then((mod2) => ({ default: mod2.LoadingSpinner })));
+var import_jsx_runtime41 = require("react/jsx-runtime");
+var BlockContent = (0, import_react34.lazy)(() => import("@sanity/block-content-to-react"));
+var FoodItemModal2 = (0, import_react34.lazy)(() => Promise.resolve().then(() => (init_FoodItemModal(), FoodItemModal_exports)));
+var FeedbackForm2 = (0, import_react34.lazy)(() => Promise.resolve().then(() => (init_FeedbackForm(), FeedbackForm_exports)));
+var LoadingSpinner2 = (0, import_react34.lazy)(() => Promise.resolve().then(() => (init_LoadingSpinner(), LoadingSpinner_exports)).then((mod2) => ({ default: mod2.LoadingSpinner })));
 var HappyMondayPage = () => {
-  const [menuItems, setMenuItems] = (0, import_react33.useState)([]);
-  const [pageContent, setPageContent] = (0, import_react33.useState)(null);
-  const [selectedItem, setSelectedItem] = (0, import_react33.useState)(null);
-  const [isLoading, setIsLoading] = (0, import_react33.useState)(true);
-  (0, import_react33.useEffect)(() => {
+  const [menuItems, setMenuItems] = (0, import_react34.useState)([]);
+  const [pageContent, setPageContent] = (0, import_react34.useState)(null);
+  const [selectedItem, setSelectedItem] = (0, import_react34.useState)(null);
+  const [isLoading, setIsLoading] = (0, import_react34.useState)(true);
+  (0, import_react34.useEffect)(() => {
     const query2 = `{
       "menuItems": *[_type == "menuItems"],
       "pageContent": *[_type == "happyMondayPage"][0]
@@ -72487,10 +72666,10 @@ var HappyMondayPage = () => {
   const handleCloseModal = () => {
     setSelectedItem(null);
   };
-  return /* @__PURE__ */ (0, import_jsx_runtime39.jsxs)(import_jsx_runtime39.Fragment, { children: [
-    /* @__PURE__ */ (0, import_jsx_runtime39.jsxs)(import_react_helmet_async7.Helmet, { children: [
-      /* @__PURE__ */ (0, import_jsx_runtime39.jsx)("title", { children: "Happy Monday | Local Effort" }),
-      /* @__PURE__ */ (0, import_jsx_runtime39.jsx)(
+  return /* @__PURE__ */ (0, import_jsx_runtime41.jsxs)(import_jsx_runtime41.Fragment, { children: [
+    /* @__PURE__ */ (0, import_jsx_runtime41.jsxs)(import_react_helmet_async7.Helmet, { children: [
+      /* @__PURE__ */ (0, import_jsx_runtime41.jsx)("title", { children: "Happy Monday | Local Effort" }),
+      /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(
         "meta",
         {
           name: "description",
@@ -72498,48 +72677,48 @@ var HappyMondayPage = () => {
         }
       )
     ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime39.jsxs)("div", { className: "space-y-24 mb-24", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime39.jsxs)("section", { className: "mx-auto max-w-6xl px-4 md:px-6 lg:px-8", children: [
-        pageContent && /* @__PURE__ */ (0, import_jsx_runtime39.jsxs)("div", { className: "text-center mb-12", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime39.jsx)(SectionHeader, { overline: "Weekly Special", title: pageContent.title }),
-          /* @__PURE__ */ (0, import_jsx_runtime39.jsx)("div", { className: "prose lg:prose-lg mx-auto max-w-3xl", children: /* @__PURE__ */ (0, import_jsx_runtime39.jsx)(ErrorBoundary_default, { children: /* @__PURE__ */ (0, import_jsx_runtime39.jsx)(import_react33.Suspense, { fallback: /* @__PURE__ */ (0, import_jsx_runtime39.jsx)("div", { className: "text-center", children: "Loading content\u2026" }), children: /* @__PURE__ */ (0, import_jsx_runtime39.jsx)(BlockContent, { blocks: pageContent.body, client: sanityClient_default }) }) }) })
+    /* @__PURE__ */ (0, import_jsx_runtime41.jsxs)("div", { className: "space-y-24 mb-24", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime41.jsxs)("section", { className: "mx-auto max-w-6xl px-4 md:px-6 lg:px-8", children: [
+        pageContent && /* @__PURE__ */ (0, import_jsx_runtime41.jsxs)("div", { className: "text-center mb-12", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(SectionHeader, { overline: "Weekly Special", title: pageContent.title }),
+          /* @__PURE__ */ (0, import_jsx_runtime41.jsx)("div", { className: "prose lg:prose-lg mx-auto max-w-3xl", children: /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(ErrorBoundary_default, { children: /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(import_react34.Suspense, { fallback: /* @__PURE__ */ (0, import_jsx_runtime41.jsx)("div", { className: "text-center", children: "Loading content\u2026" }), children: /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(BlockContent, { blocks: pageContent.body, client: sanityClient_default }) }) }) })
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime39.jsx)(import_react33.Suspense, { fallback: /* @__PURE__ */ (0, import_jsx_runtime39.jsx)("div", { className: "flex justify-center items-center h-64", children: "Loading\u2026" }), children: isLoading ? /* @__PURE__ */ (0, import_jsx_runtime39.jsx)("div", { className: "flex justify-center items-center h-64", children: /* @__PURE__ */ (0, import_jsx_runtime39.jsx)(LoadingSpinner2, {}) }) : /* @__PURE__ */ (0, import_jsx_runtime39.jsx)(
+        /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(import_react34.Suspense, { fallback: /* @__PURE__ */ (0, import_jsx_runtime41.jsx)("div", { className: "flex justify-center items-center h-64", children: "Loading\u2026" }), children: isLoading ? /* @__PURE__ */ (0, import_jsx_runtime41.jsx)("div", { className: "flex justify-center items-center h-64", children: /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(LoadingSpinner2, {}) }) : /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(
           import_framer_motion11.motion.div,
           {
             className: "grid md:grid-cols-2 lg:grid-cols-3 gap-6",
             initial: "initial",
             animate: "animate",
             variants: { animate: { transition: { staggerChildren: 0.1 } } },
-            children: menuItems.map((item) => /* @__PURE__ */ (0, import_jsx_runtime39.jsx)(FoodItemCard_default, { item, onClick: () => handleCardClick(item) }, item._id))
+            children: menuItems.map((item) => /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(FoodItemCard_default, { item, onClick: () => handleCardClick(item) }, item._id))
           }
         ) })
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime39.jsxs)("section", { className: "mx-auto max-w-6xl px-4 md:px-6 lg:px-8", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime39.jsx)(SectionHeader, { overline: "Help Us Improve", title: "Feedback" }),
-        /* @__PURE__ */ (0, import_jsx_runtime39.jsx)("p", { className: "text-body mb-8 max-w-2xl", children: "Have a suggestion, a request, or feedback on our quality? We'd love to hear it. Your input helps us grow and improve." }),
-        /* @__PURE__ */ (0, import_jsx_runtime39.jsx)(ErrorBoundary_default, { children: /* @__PURE__ */ (0, import_jsx_runtime39.jsx)(import_react33.Suspense, { fallback: /* @__PURE__ */ (0, import_jsx_runtime39.jsx)("div", { className: "text-center p-8", children: "Loading form\u2026" }), children: /* @__PURE__ */ (0, import_jsx_runtime39.jsx)(FeedbackForm2, {}) }) })
+      /* @__PURE__ */ (0, import_jsx_runtime41.jsxs)("section", { className: "mx-auto max-w-6xl px-4 md:px-6 lg:px-8", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(SectionHeader, { overline: "Help Us Improve", title: "Feedback" }),
+        /* @__PURE__ */ (0, import_jsx_runtime41.jsx)("p", { className: "text-body mb-8 max-w-2xl", children: "Have a suggestion, a request, or feedback on our quality? We'd love to hear it. Your input helps us grow and improve." }),
+        /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(ErrorBoundary_default, { children: /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(import_react34.Suspense, { fallback: /* @__PURE__ */ (0, import_jsx_runtime41.jsx)("div", { className: "text-center p-8", children: "Loading form\u2026" }), children: /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(FeedbackForm2, {}) }) })
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime39.jsx)(Separator, {})
+      /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(Separator, {})
     ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime39.jsx)(import_framer_motion11.AnimatePresence, { children: selectedItem && /* @__PURE__ */ (0, import_jsx_runtime39.jsx)(ErrorBoundary_default, { children: /* @__PURE__ */ (0, import_jsx_runtime39.jsx)(import_react33.Suspense, { fallback: /* @__PURE__ */ (0, import_jsx_runtime39.jsx)("div", { className: "fixed inset-0 flex items-center justify-center", children: "Loading\u2026" }), children: /* @__PURE__ */ (0, import_jsx_runtime39.jsx)(FoodItemModal2, { item: selectedItem, onClose: handleCloseModal }) }) }) })
+    /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(import_framer_motion11.AnimatePresence, { children: selectedItem && /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(ErrorBoundary_default, { children: /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(import_react34.Suspense, { fallback: /* @__PURE__ */ (0, import_jsx_runtime41.jsx)("div", { className: "fixed inset-0 flex items-center justify-center", children: "Loading\u2026" }), children: /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(FoodItemModal2, { item: selectedItem, onClose: handleCloseModal }) }) }) })
   ] });
 };
 var HappyMondayPage_default = HappyMondayPage;
 
 // src/pages/GalleryPage.jsx
-var import_react34 = __toESM(require("react"));
+var import_react35 = __toESM(require("react"));
 var import_react_helmet_async8 = __toESM(require_lib());
 var import_framer_motion12 = require("framer-motion");
-var import_jsx_runtime40 = require("react/jsx-runtime");
+var import_jsx_runtime42 = require("react/jsx-runtime");
 var GalleryPage = () => {
-  const [images, setImages] = (0, import_react34.useState)([]);
-  const [nextCursor, setNextCursor] = (0, import_react34.useState)(null);
-  const [query2, setQuery] = (0, import_react34.useState)("");
-  const [loading, setLoading] = (0, import_react34.useState)(true);
-  const [loadingMore, setLoadingMore] = (0, import_react34.useState)(false);
-  const [error, setError] = (0, import_react34.useState)(null);
-  const [selected, setSelected] = (0, import_react34.useState)(null);
+  const [images, setImages] = (0, import_react35.useState)([]);
+  const [nextCursor, setNextCursor] = (0, import_react35.useState)(null);
+  const [query2, setQuery] = (0, import_react35.useState)("");
+  const [loading, setLoading] = (0, import_react35.useState)(true);
+  const [loadingMore, setLoadingMore] = (0, import_react35.useState)(false);
+  const [error, setError] = (0, import_react35.useState)(null);
+  const [selected, setSelected] = (0, import_react35.useState)(null);
   const staticFallback = [
     {
       src: "/gallery/5Z0A5729-Edit.jpg",
@@ -72557,9 +72736,9 @@ var GalleryPage = () => {
       caption: "Private dinner service \u2014 Local Effort, St. Paul personal chef."
     }
   ];
-  const fallbackLoadedRef = (0, import_react34.useRef)(false);
-  const prefetched = (0, import_react34.useRef)(/* @__PURE__ */ new Set());
-  const tryLoadFallback = (0, import_react34.useCallback)(async () => {
+  const fallbackLoadedRef = (0, import_react35.useRef)(false);
+  const prefetched = (0, import_react35.useRef)(/* @__PURE__ */ new Set());
+  const tryLoadFallback = (0, import_react35.useCallback)(async () => {
     if (fallbackLoadedRef.current) return null;
     return new Promise((resolve) => {
       const already = typeof window !== "undefined" && window.photoData;
@@ -72588,9 +72767,9 @@ var GalleryPage = () => {
       document.body.appendChild(s);
     });
   }, []);
-  const closeBtnRef = (0, import_react34.useRef)(null);
+  const closeBtnRef = (0, import_react35.useRef)(null);
   const PAGE_SIZE = 36;
-  const shuffle2 = (0, import_react34.useCallback)((arr) => {
+  const shuffle2 = (0, import_react35.useCallback)((arr) => {
     const a = arr.slice();
     for (let i = a.length - 1; i > 0; i -= 1) {
       const j = Math.floor(Math.random() * (i + 1));
@@ -72598,7 +72777,7 @@ var GalleryPage = () => {
     }
     return a;
   }, []);
-  const fetchImages = (0, import_react34.useCallback)(async (opts = {}) => {
+  const fetchImages = (0, import_react35.useCallback)(async (opts = {}) => {
     const { append = false, cursor = null, signal, mode = "initial" } = opts;
     if (mode === "loadMore") {
       setLoadingMore(true);
@@ -72651,7 +72830,7 @@ var GalleryPage = () => {
       }
     }
   }, [query2, shuffle2, tryLoadFallback]);
-  const ensurePreconnect = (0, import_react34.useCallback)(() => {
+  const ensurePreconnect = (0, import_react35.useCallback)(() => {
     if (typeof document === "undefined") return;
     const id = "cld-preconnect";
     if (document.getElementById(id)) return;
@@ -72666,7 +72845,7 @@ var GalleryPage = () => {
     link2.href = "https://res.cloudinary.com";
     document.head.appendChild(link2);
   }, []);
-  const prefetchImage = (0, import_react34.useCallback)((url) => {
+  const prefetchImage = (0, import_react35.useCallback)((url) => {
     if (!url || typeof document === "undefined") return;
     if (prefetched.current.has(url)) return;
     try {
@@ -72682,7 +72861,7 @@ var GalleryPage = () => {
     img.src = url;
     prefetched.current.add(url);
   }, []);
-  (0, import_react34.useEffect)(() => {
+  (0, import_react35.useEffect)(() => {
     const controller = new AbortController();
     const handler = setTimeout(() => {
       setError(null);
@@ -72694,7 +72873,7 @@ var GalleryPage = () => {
       controller.abort();
     };
   }, [query2, fetchImages]);
-  const openLightbox = (0, import_react34.useCallback)(
+  const openLightbox = (0, import_react35.useCallback)(
     (img, idx) => {
       setSelected({ img, idx });
       if (img && img.large_url) {
@@ -72709,8 +72888,8 @@ var GalleryPage = () => {
     },
     [setSelected, images, prefetchImage, ensurePreconnect]
   );
-  const closeLightbox = (0, import_react34.useCallback)(() => setSelected(null), [setSelected]);
-  (0, import_react34.useEffect)(() => {
+  const closeLightbox = (0, import_react35.useCallback)(() => setSelected(null), [setSelected]);
+  (0, import_react35.useEffect)(() => {
     const onKey = (e) => {
       if (!selected) return;
       if (e.key === "Escape") closeLightbox();
@@ -72726,16 +72905,16 @@ var GalleryPage = () => {
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [selected, images, closeLightbox]);
-  (0, import_react34.useEffect)(() => {
+  (0, import_react35.useEffect)(() => {
     if (selected && closeBtnRef.current) closeBtnRef.current.focus();
   }, [selected]);
-  return /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)(import_jsx_runtime40.Fragment, { children: [
-    /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)(import_react_helmet_async8.Helmet, { children: [
-      /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("title", { children: "Photo Gallery | Minneapolis Personal Chef Images" }),
-      /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("meta", { name: "description", content: "Photo gallery of Minneapolis personal chef dinners, events, and meal prep by Local Effort. Seasonal plates, local ingredients, and in-home dining experiences." }),
-      /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("link", { rel: "preconnect", href: "https://res.cloudinary.com", crossOrigin: "" }),
-      /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("link", { rel: "dns-prefetch", href: "https://res.cloudinary.com" }),
-      /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("script", { type: "application/ld+json", children: JSON.stringify({
+  return /* @__PURE__ */ (0, import_jsx_runtime42.jsxs)(import_jsx_runtime42.Fragment, { children: [
+    /* @__PURE__ */ (0, import_jsx_runtime42.jsxs)(import_react_helmet_async8.Helmet, { children: [
+      /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("title", { children: "Photo Gallery | Minneapolis Personal Chef Images" }),
+      /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("meta", { name: "description", content: "Photo gallery of Minneapolis personal chef dinners, events, and meal prep by Local Effort. Seasonal plates, local ingredients, and in-home dining experiences." }),
+      /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("link", { rel: "preconnect", href: "https://res.cloudinary.com", crossOrigin: "" }),
+      /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("link", { rel: "dns-prefetch", href: "https://res.cloudinary.com" }),
+      /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("script", { type: "application/ld+json", children: JSON.stringify({
         "@context": "https://schema.org",
         "@type": "Restaurant",
         name: "Local Effort",
@@ -72744,7 +72923,7 @@ var GalleryPage = () => {
         servesCuisine: ["American", "Local", "Seasonal"],
         sameAs: ["https://www.instagram.com/localeffortfood", "https://www.facebook.com/localeffortfood", "https://www.tiktok.com/@localeffort"]
       }) }),
-      images.slice(0, 12).map((img, idx) => /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("script", { type: "application/ld+json", children: JSON.stringify({
+      images.slice(0, 12).map((img, idx) => /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("script", { type: "application/ld+json", children: JSON.stringify({
         "@context": "https://schema.org",
         "@type": "ImageObject",
         contentUrl: img.large_url || img.thumbnail_url,
@@ -72754,9 +72933,9 @@ var GalleryPage = () => {
         creator: { "@type": "Organization", name: "Local Effort Food Co." }
       }) }, `imgld-${idx}`))
     ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)("div", { className: "container mx-auto px-4 py-8", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("h1", { className: "heading-xl heading-balance text-center", children: "Pictures of food." }),
-      /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(
+    /* @__PURE__ */ (0, import_jsx_runtime42.jsxs)("div", { className: "container mx-auto px-4 py-8", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("h1", { className: "heading-xl heading-balance text-center", children: "Pictures of food." }),
+      /* @__PURE__ */ (0, import_jsx_runtime42.jsx)(
         "input",
         {
           type: "text",
@@ -72766,8 +72945,8 @@ var GalleryPage = () => {
           className: "w-full max-w-md mx-auto block p-3 border rounded-md mb-8"
         }
       ),
-      loading ? /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(import_jsx_runtime40.Fragment, { children: /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("div", { className: "columns-2 md:columns-3 lg:columns-4 gap-4 [column-fill:_balance]", children: staticFallback.map((img, idx) => /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)("figure", { className: "mb-4 w-full break-inside-avoid border p-2 bg-white rounded-lg overflow-hidden", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(
+      loading ? /* @__PURE__ */ (0, import_jsx_runtime42.jsx)(import_jsx_runtime42.Fragment, { children: /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("div", { className: "columns-2 md:columns-3 lg:columns-4 gap-4 [column-fill:_balance]", children: staticFallback.map((img, idx) => /* @__PURE__ */ (0, import_jsx_runtime42.jsxs)("figure", { className: "mb-4 w-full break-inside-avoid border p-2 bg-white rounded-lg overflow-hidden", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime42.jsx)(
           "img",
           {
             src: img.src,
@@ -72779,23 +72958,23 @@ var GalleryPage = () => {
             decoding: "async"
           }
         ),
-        /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("figcaption", { className: "text-xs text-neutral-600 mt-2", children: img.caption })
-      ] }, `fallback-${idx}`)) }) }) : error ? /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)("div", { className: "text-red-600 bg-red-50 p-4 rounded", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("h3", { className: "font-bold", children: "Error Details:" }),
-        /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("p", { children: error }),
-        /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("p", { className: "mt-2 text-sm", children: "This usually means:" }),
-        /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)("ul", { className: "list-disc ml-6 text-sm", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("li", { children: "The /api/search-images.js file wasn't created properly" }),
-          /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("li", { children: "Environment variables aren't set in Vercel" }),
-          /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("li", { children: "The serverless function has an error" })
+        /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("figcaption", { className: "text-xs text-neutral-600 mt-2", children: img.caption })
+      ] }, `fallback-${idx}`)) }) }) : error ? /* @__PURE__ */ (0, import_jsx_runtime42.jsxs)("div", { className: "text-red-600 bg-red-50 p-4 rounded", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("h3", { className: "font-bold", children: "Error Details:" }),
+        /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("p", { children: error }),
+        /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("p", { className: "mt-2 text-sm", children: "This usually means:" }),
+        /* @__PURE__ */ (0, import_jsx_runtime42.jsxs)("ul", { className: "list-disc ml-6 text-sm", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("li", { children: "The /api/search-images.js file wasn't created properly" }),
+          /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("li", { children: "Environment variables aren't set in Vercel" }),
+          /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("li", { children: "The serverless function has an error" })
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("p", { className: "mt-2 text-sm", children: "Check the browser Network tab and Vercel function logs." })
-      ] }) : images.length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)("div", { className: "text-center p-8", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("p", { children: "No images found." }),
-        /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("p", { className: "text-sm text-gray-600 mt-2", children: "Try removing search terms or check that you have images in your Cloudinary account." })
-      ] }) : /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)(import_jsx_runtime40.Fragment, { children: [
-        /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("div", { className: "columns-2 md:columns-3 lg:columns-4 gap-4 [column-fill:_balance]", children: images.map((img, idx) => /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)("figure", { className: "mb-4 w-full break-inside-avoid border p-2 bg-white rounded-lg overflow-hidden", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(
+        /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("p", { className: "mt-2 text-sm", children: "Check the browser Network tab and Vercel function logs." })
+      ] }) : images.length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime42.jsxs)("div", { className: "text-center p-8", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("p", { children: "No images found." }),
+        /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("p", { className: "text-sm text-gray-600 mt-2", children: "Try removing search terms or check that you have images in your Cloudinary account." })
+      ] }) : /* @__PURE__ */ (0, import_jsx_runtime42.jsxs)(import_jsx_runtime42.Fragment, { children: [
+        /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("div", { className: "columns-2 md:columns-3 lg:columns-4 gap-4 [column-fill:_balance]", children: images.map((img, idx) => /* @__PURE__ */ (0, import_jsx_runtime42.jsxs)("figure", { className: "mb-4 w-full break-inside-avoid border p-2 bg-white rounded-lg overflow-hidden", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime42.jsx)(
             "button",
             {
               type: "button",
@@ -72803,7 +72982,7 @@ var GalleryPage = () => {
               onMouseEnter: () => img?.large_url && prefetchImage(img.large_url),
               "aria-label": img.context?.alt || `Gallery image ${idx + 1}`,
               className: "block",
-              children: img.thumbnail_url ? /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(
+              children: img.thumbnail_url ? /* @__PURE__ */ (0, import_jsx_runtime42.jsx)(
                 "img",
                 {
                   src: img.thumbnail_url,
@@ -72815,7 +72994,7 @@ var GalleryPage = () => {
                   loading: "lazy",
                   decoding: "async"
                 }
-              ) : /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(
+              ) : /* @__PURE__ */ (0, import_jsx_runtime42.jsx)(
                 cloudinaryImage_default,
                 {
                   publicId: img.public_id,
@@ -72827,23 +73006,23 @@ var GalleryPage = () => {
               )
             }
           ),
-          /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("figcaption", { className: "text-xs text-neutral-600 mt-2", children: img.context?.alt || "Private chef plated seared trout \u2014 Local Effort Personal Chef \u2014 Minneapolis" })
+          /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("figcaption", { className: "text-xs text-neutral-600 mt-2", children: img.context?.alt || "Private chef plated seared trout \u2014 Local Effort Personal Chef \u2014 Minneapolis" })
         ] }, img.asset_id)) }),
-        /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("noscript", { children: /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)("div", { children: [
-          /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)("figure", { className: "gallery-item", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("img", { src: "/gallery/5Z0A5729-Edit.jpg", width: "1200", height: "800", alt: "Private chef plated dish \u2014 Local Effort Personal Chef \u2014 Minneapolis" }),
-            /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("figcaption", { children: "Private chef plated dish \u2014 Local Effort, Minneapolis in-home chef." })
+        /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("noscript", { children: /* @__PURE__ */ (0, import_jsx_runtime42.jsxs)("div", { children: [
+          /* @__PURE__ */ (0, import_jsx_runtime42.jsxs)("figure", { className: "gallery-item", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("img", { src: "/gallery/5Z0A5729-Edit.jpg", width: "1200", height: "800", alt: "Private chef plated dish \u2014 Local Effort Personal Chef \u2014 Minneapolis" }),
+            /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("figcaption", { children: "Private chef plated dish \u2014 Local Effort, Minneapolis in-home chef." })
           ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)("figure", { className: "gallery-item", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("img", { src: "/gallery/5Z0A5665-Edit.jpg", width: "1200", height: "800", alt: "Seasonal menu \u2014 Local Effort Personal Chef \u2014 Twin Cities" }),
-            /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("figcaption", { children: "Seasonal menu \u2014 Local Effort, Twin Cities personal chef." })
+          /* @__PURE__ */ (0, import_jsx_runtime42.jsxs)("figure", { className: "gallery-item", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("img", { src: "/gallery/5Z0A5665-Edit.jpg", width: "1200", height: "800", alt: "Seasonal menu \u2014 Local Effort Personal Chef \u2014 Twin Cities" }),
+            /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("figcaption", { children: "Seasonal menu \u2014 Local Effort, Twin Cities personal chef." })
           ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)("figure", { className: "gallery-item", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("img", { src: "/gallery/IMG_3145.jpg", width: "1200", height: "800", alt: "Private dinner service \u2014 Local Effort Personal Chef \u2014 St. Paul" }),
-            /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("figcaption", { children: "Private dinner service \u2014 Local Effort, St. Paul personal chef." })
+          /* @__PURE__ */ (0, import_jsx_runtime42.jsxs)("figure", { className: "gallery-item", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("img", { src: "/gallery/IMG_3145.jpg", width: "1200", height: "800", alt: "Private dinner service \u2014 Local Effort Personal Chef \u2014 St. Paul" }),
+            /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("figcaption", { children: "Private dinner service \u2014 Local Effort, St. Paul personal chef." })
           ] })
         ] }) }),
-        nextCursor && /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("div", { className: "mt-6 text-center", children: /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(
+        nextCursor && /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("div", { className: "mt-6 text-center", children: /* @__PURE__ */ (0, import_jsx_runtime42.jsx)(
           "button",
           {
             type: "button",
@@ -72859,7 +73038,7 @@ var GalleryPage = () => {
         ) })
       ] })
     ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(import_framer_motion12.AnimatePresence, { children: selected && /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(
+    /* @__PURE__ */ (0, import_jsx_runtime42.jsx)(import_framer_motion12.AnimatePresence, { children: selected && /* @__PURE__ */ (0, import_jsx_runtime42.jsx)(
       import_framer_motion12.motion.div,
       {
         className: "fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4",
@@ -72867,7 +73046,7 @@ var GalleryPage = () => {
         animate: { opacity: 1 },
         exit: { opacity: 0 },
         onClick: closeLightbox,
-        children: /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(
+        children: /* @__PURE__ */ (0, import_jsx_runtime42.jsx)(
           import_framer_motion12.motion.div,
           {
             className: "max-w-5xl w-full max-h-full",
@@ -72875,8 +73054,8 @@ var GalleryPage = () => {
             animate: { y: 0, scale: 1 },
             exit: { y: 20, scale: 0.98 },
             onClick: (e) => e.stopPropagation(),
-            children: /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)("div", { className: "relative overflow-hidden", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(
+            children: /* @__PURE__ */ (0, import_jsx_runtime42.jsxs)("div", { className: "relative overflow-hidden", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime42.jsx)(
                 "button",
                 {
                   ref: closeBtnRef,
@@ -72886,7 +73065,7 @@ var GalleryPage = () => {
                   children: "\u2715"
                 }
               ),
-              /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("div", { className: "flex items-center justify-center p-2", children: selected.img.large_url ? /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(
+              /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("div", { className: "flex items-center justify-center p-2", children: selected.img.large_url ? /* @__PURE__ */ (0, import_jsx_runtime42.jsx)(
                 "img",
                 {
                   src: selected.img.large_url,
@@ -72895,7 +73074,7 @@ var GalleryPage = () => {
                   fetchPriority: "high",
                   className: "w-full h-auto max-h-[90vh] object-contain"
                 }
-              ) : /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(
+              ) : /* @__PURE__ */ (0, import_jsx_runtime42.jsx)(
                 cloudinaryImage_default,
                 {
                   publicId: selected.img.public_id,
@@ -72917,20 +73096,20 @@ var GalleryPage = () => {
 var GalleryPage_default = GalleryPage;
 
 // src/pages/EventsPage.jsx
-var import_react35 = __toESM(require("react"));
+var import_react36 = __toESM(require("react"));
 var import_react_helmet_async9 = __toESM(require_lib());
-var import_jsx_runtime41 = require("react/jsx-runtime");
-var EventsPage = () => /* @__PURE__ */ (0, import_jsx_runtime41.jsxs)(import_jsx_runtime41.Fragment, { children: [
-  /* @__PURE__ */ (0, import_jsx_runtime41.jsxs)(import_react_helmet_async9.Helmet, { children: [
-    /* @__PURE__ */ (0, import_jsx_runtime41.jsx)("title", { children: "Event Catering & In-Home Dinners Minneapolis | Local Effort" }),
-    /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(
+var import_jsx_runtime43 = require("react/jsx-runtime");
+var EventsPage = () => /* @__PURE__ */ (0, import_jsx_runtime43.jsxs)(import_jsx_runtime43.Fragment, { children: [
+  /* @__PURE__ */ (0, import_jsx_runtime43.jsxs)(import_react_helmet_async9.Helmet, { children: [
+    /* @__PURE__ */ (0, import_jsx_runtime43.jsx)("title", { children: "Event Catering & In-Home Dinners Minneapolis | Local Effort" }),
+    /* @__PURE__ */ (0, import_jsx_runtime43.jsx)(
       "meta",
       {
         name: "description",
         content: "In-home dinner parties and small event catering in Minneapolis\u2013St. Paul for 2\u201350 guests. Seasonal menus, chef-led service, and local ingredients. Book an event."
       }
     ),
-    /* @__PURE__ */ (0, import_jsx_runtime41.jsx)("script", { type: "application/ld+json", children: JSON.stringify({
+    /* @__PURE__ */ (0, import_jsx_runtime43.jsx)("script", { type: "application/ld+json", children: JSON.stringify({
       "@context": "https://schema.org",
       "@type": "Service",
       "name": "Event Catering & In-Home Dinners",
@@ -72958,21 +73137,21 @@ var EventsPage = () => /* @__PURE__ */ (0, import_jsx_runtime41.jsxs)(import_jsx
       }
     }) })
   ] }),
-  /* @__PURE__ */ (0, import_jsx_runtime41.jsxs)("div", { className: "space-y-16", children: [
-    /* @__PURE__ */ (0, import_jsx_runtime41.jsx)("h1", { className: "heading-display heading-balance", children: "Dinners & events" }),
-    /* @__PURE__ */ (0, import_jsx_runtime41.jsx)("p", { className: "font-mono text-lg max-w-3xl", children: "We bring our passion for food and hospitality to your home or venue. We specialize in cooking for parties from 2 to 50 people." })
+  /* @__PURE__ */ (0, import_jsx_runtime43.jsxs)("div", { className: "space-y-16", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime43.jsx)("h1", { className: "heading-display heading-balance", children: "Dinners & events" }),
+    /* @__PURE__ */ (0, import_jsx_runtime43.jsx)("p", { className: "font-mono text-lg max-w-3xl", children: "We bring our passion for food and hospitality to your home or venue. We specialize in cooking for parties from 2 to 50 people." })
   ] }),
-  /* @__PURE__ */ (0, import_jsx_runtime41.jsx)("div", { className: "container mx-auto px-4 py-8", children: /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(PhotoGrid, { tags: ["dinner", "event"], title: "Dinners & events photos", perPage: 24 }) })
+  /* @__PURE__ */ (0, import_jsx_runtime43.jsx)("div", { className: "container mx-auto px-4 py-8", children: /* @__PURE__ */ (0, import_jsx_runtime43.jsx)(PhotoGrid, { tags: ["dinner", "event"], title: "Dinners & events photos", perPage: 24 }) })
 ] });
 var EventsPage_default = EventsPage;
 
 // src/pages/MealPrepPage.jsx
-var import_react40 = __toESM(require("react"));
+var import_react41 = __toESM(require("react"));
 var import_react_helmet_async10 = __toESM(require_lib());
 
 // src/components/common/VennDiagram.jsx
-var import_react36 = __toESM(require("react"));
-var import_jsx_runtime42 = require("react/jsx-runtime");
+var import_react37 = __toESM(require("react"));
+var import_jsx_runtime44 = require("react/jsx-runtime");
 var VennDiagram = () => {
   const svgStyle = {
     fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
@@ -72981,29 +73160,29 @@ var VennDiagram = () => {
   const circleStyle = { mixBlendMode: "multiply" };
   const labelStyle = { fontSize: "10px", fontWeight: "bold", fill: "#000", textAnchor: "middle" };
   const centerLabelStyle = { ...labelStyle, fontSize: "8px", fill: "#FFFFFF" };
-  return /* @__PURE__ */ (0, import_jsx_runtime42.jsxs)("svg", { viewBox: "0 0 300 200", xmlns: "http://www.w3.org/2000/svg", style: svgStyle, children: [
-    /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("circle", { cx: "115", cy: "120", r: "50", fill: "#fde047", style: circleStyle }),
-    /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("circle", { cx: "185", cy: "120", r: "50", fill: "#67e8f9", style: circleStyle }),
-    /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("circle", { cx: "150", cy: "70", r: "50", fill: "#fca5a5", style: circleStyle }),
-    /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("text", { x: "100", y: "130", style: labelStyle, children: "Cost Efficiency" }),
-    /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("text", { x: "200", y: "130", style: labelStyle, children: "Local Ingredients" }),
-    /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("text", { x: "150", y: "55", style: labelStyle, children: "Perfect Nutrition" }),
-    /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("text", { x: "150", y: "105", style: centerLabelStyle, children: "Foundation" }),
-    /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("text", { x: "150", y: "115", style: centerLabelStyle, children: "Meal Plan" })
+  return /* @__PURE__ */ (0, import_jsx_runtime44.jsxs)("svg", { viewBox: "0 0 300 200", xmlns: "http://www.w3.org/2000/svg", style: svgStyle, children: [
+    /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("circle", { cx: "115", cy: "120", r: "50", fill: "#fde047", style: circleStyle }),
+    /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("circle", { cx: "185", cy: "120", r: "50", fill: "#67e8f9", style: circleStyle }),
+    /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("circle", { cx: "150", cy: "70", r: "50", fill: "#fca5a5", style: circleStyle }),
+    /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("text", { x: "100", y: "130", style: labelStyle, children: "Cost Efficiency" }),
+    /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("text", { x: "200", y: "130", style: labelStyle, children: "Local Ingredients" }),
+    /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("text", { x: "150", y: "55", style: labelStyle, children: "Perfect Nutrition" }),
+    /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("text", { x: "150", y: "105", style: centerLabelStyle, children: "Foundation" }),
+    /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("text", { x: "150", y: "115", style: centerLabelStyle, children: "Meal Plan" })
   ] });
 };
 
 // src/components/mealprep/MenuList.jsx
-var import_react37 = __toESM(require("react"));
-var import_jsx_runtime43 = require("react/jsx-runtime");
+var import_react38 = __toESM(require("react"));
+var import_jsx_runtime45 = require("react/jsx-runtime");
 
 // src/components/mealprep/MenuDetail.jsx
-var import_react38 = __toESM(require("react"));
-var import_jsx_runtime44 = require("react/jsx-runtime");
+var import_react39 = __toESM(require("react"));
+var import_jsx_runtime46 = require("react/jsx-runtime");
 
 // src/components/mealprep/Comments.jsx
-var import_react39 = __toESM(require("react"));
-var import_jsx_runtime45 = require("react/jsx-runtime");
+var import_react40 = __toESM(require("react"));
+var import_jsx_runtime47 = require("react/jsx-runtime");
 
 // src/data/mealPrepClients.js
 var mealPrepClients = [
@@ -73121,19 +73300,19 @@ async function getUserProfile(uid) {
 
 // src/pages/MealPrepPage.jsx
 var import_react_router_dom5 = require("react-router-dom");
-var import_jsx_runtime46 = require("react/jsx-runtime");
+var import_jsx_runtime48 = require("react/jsx-runtime");
 var MealPrepPage = () => {
   const user = null;
-  const [menus, setMenus] = (0, import_react40.useState)([]);
-  const [loading, setLoading] = (0, import_react40.useState)(false);
-  const [error, setError] = (0, import_react40.useState)(null);
-  const [selected, setSelected] = (0, import_react40.useState)(null);
-  const [filterName] = (0, import_react40.useState)("");
-  const [assignedClient, setAssignedClient] = (0, import_react40.useState)(null);
-  const [openSection, setOpenSection] = (0, import_react40.useState)(null);
-  const [showInquiryForm, setShowInquiryForm] = (0, import_react40.useState)(false);
-  const [inquiryStatus, setInquiryStatus] = (0, import_react40.useState)("idle");
-  const [inquiry, setInquiry] = (0, import_react40.useState)({
+  const [menus, setMenus] = (0, import_react41.useState)([]);
+  const [loading, setLoading] = (0, import_react41.useState)(false);
+  const [error, setError] = (0, import_react41.useState)(null);
+  const [selected, setSelected] = (0, import_react41.useState)(null);
+  const [filterName] = (0, import_react41.useState)("");
+  const [assignedClient, setAssignedClient] = (0, import_react41.useState)(null);
+  const [openSection, setOpenSection] = (0, import_react41.useState)(null);
+  const [showWaitlistForm, setShowWaitlistForm] = (0, import_react41.useState)(false);
+  const [waitlistStatus, setWaitlistStatus] = (0, import_react41.useState)("idle");
+  const [waitlist, setWaitlist] = (0, import_react41.useState)({
     name: "",
     email: "",
     phone: "",
@@ -73144,7 +73323,7 @@ var MealPrepPage = () => {
     allergies: "",
     questions: ""
   });
-  (0, import_react40.useEffect)(() => {
+  (0, import_react41.useEffect)(() => {
     let mounted = true;
     (async () => {
       if (!user) {
@@ -73176,7 +73355,7 @@ var MealPrepPage = () => {
       mounted = false;
     };
   }, [user]);
-  (0, import_react40.useEffect)(() => {
+  (0, import_react41.useEffect)(() => {
     let mounted = true;
     (async () => {
       try {
@@ -73201,7 +73380,7 @@ var MealPrepPage = () => {
       mounted = false;
     };
   }, [user]);
-  const filtered = (0, import_react40.useMemo)(() => {
+  const filtered = (0, import_react41.useMemo)(() => {
     const base = assignedClient ? menus.filter((m) => (m.clientName || "").toLowerCase() === assignedClient.toLowerCase()) : menus;
     const q = filterName.trim().toLowerCase();
     if (!q) return base;
@@ -73233,7 +73412,7 @@ var MealPrepPage = () => {
       }
     }))
   };
-  const resetInquiry = () => setInquiry({
+  const resetWaitlist = () => setWaitlist({
     name: "",
     email: "",
     phone: "",
@@ -73244,34 +73423,34 @@ var MealPrepPage = () => {
     allergies: "",
     questions: ""
   });
-  const handleInquiryChange = (field, value2) => {
-    setInquiry((prev) => ({ ...prev, [field]: value2 }));
-    if (inquiryStatus !== "idle") setInquiryStatus("idle");
+  const handleWaitlistChange = (field, value2) => {
+    setWaitlist((prev) => ({ ...prev, [field]: value2 }));
+    if (waitlistStatus !== "idle") setWaitlistStatus("idle");
   };
-  const handleInquirySubmit = async (event) => {
+  const handleWaitlistSubmit = async (event) => {
     event.preventDefault();
-    setInquiryStatus("sending");
+    setWaitlistStatus("sending");
     try {
       const lines = [
-        "Weekly Meal Prep inquiry via Ask the Chefs form",
-        `Name: ${inquiry.name}`,
-        `Email: ${inquiry.email}`,
-        `Phone: ${inquiry.phone || "(not provided)"}`,
-        `Family size: ${inquiry.familySize || "(not provided)"}`,
-        `Children & ages: ${inquiry.children || "(not provided)"}`,
-        `Days per week: ${inquiry.daysPerWeek || "(not provided)"}`,
-        `Meals per day: ${inquiry.mealsPerDay || "(not provided)"}`,
-        `Allergies or medical comments: ${inquiry.allergies || "(none noted)"}`,
+        "Weekly Meal Prep Waitlist signup",
+        `Name: ${waitlist.name}`,
+        `Email: ${waitlist.email}`,
+        `Phone: ${waitlist.phone || "(not provided)"}`,
+        `Family size: ${waitlist.familySize || "(not provided)"}`,
+        `Children & ages: ${waitlist.children || "(not provided)"}`,
+        `Days per week: ${waitlist.daysPerWeek || "(not provided)"}`,
+        `Meals per day: ${waitlist.mealsPerDay || "(not provided)"}`,
+        `Allergies or medical comments: ${waitlist.allergies || "(none noted)"}`,
         "",
         "Questions or notes:",
-        inquiry.questions || "(none provided)"
+        waitlist.questions || "(none provided)"
       ];
       const payload = {
-        name: inquiry.name,
-        email: inquiry.email,
-        phone: inquiry.phone,
-        subject: "Weekly meal prep inquiry",
-        type: "meal-prep",
+        name: waitlist.name,
+        email: waitlist.email,
+        phone: waitlist.phone,
+        subject: "Meal Prep Waitlist signup",
+        type: "meal-prep-waitlist",
         message: lines.join("\n")
       };
       const res = await fetch("/api/messages/submit", {
@@ -73280,32 +73459,32 @@ var MealPrepPage = () => {
         body: JSON.stringify(payload)
       });
       if (!res.ok) throw new Error(await res.text());
-      setInquiryStatus("success");
-      resetInquiry();
+      setWaitlistStatus("success");
+      resetWaitlist();
     } catch (_error) {
-      setInquiryStatus("error");
+      setWaitlistStatus("error");
     }
   };
-  return /* @__PURE__ */ (0, import_jsx_runtime46.jsxs)(import_jsx_runtime46.Fragment, { children: [
-    /* @__PURE__ */ (0, import_jsx_runtime46.jsxs)(import_react_helmet_async10.Helmet, { children: [
-      /* @__PURE__ */ (0, import_jsx_runtime46.jsx)("title", { children: "Meal Prep Minneapolis | Weekly Meal Plans | Local Effort" }),
-      /* @__PURE__ */ (0, import_jsx_runtime46.jsx)(
+  return /* @__PURE__ */ (0, import_jsx_runtime48.jsxs)(import_jsx_runtime48.Fragment, { children: [
+    /* @__PURE__ */ (0, import_jsx_runtime48.jsxs)(import_react_helmet_async10.Helmet, { children: [
+      /* @__PURE__ */ (0, import_jsx_runtime48.jsx)("title", { children: "Meal Prep Minneapolis | Weekly Meal Plans | Local Effort" }),
+      /* @__PURE__ */ (0, import_jsx_runtime48.jsx)(
         "meta",
         {
           name: "description",
           content: "Weekly meal prep in Minneapolis with chef-prepared meals, reheating notes, and flexible meal plans for families and professionals. Foundation and custom plans available."
         }
       ),
-      /* @__PURE__ */ (0, import_jsx_runtime46.jsx)(
+      /* @__PURE__ */ (0, import_jsx_runtime48.jsx)(
         "meta",
         {
           name: "keywords",
           content: "meal prep Minneapolis, meal plan Minneapolis, Minneapolis personal chef, weekly meal prep, custom meal plan"
         }
       ),
-      /* @__PURE__ */ (0, import_jsx_runtime46.jsx)("link", { rel: "canonical", href: "https://localeffortfood.com/meal-prep" }),
-      /* @__PURE__ */ (0, import_jsx_runtime46.jsx)("script", { type: "application/ld+json", children: JSON.stringify(faqJsonLd) }),
-      /* @__PURE__ */ (0, import_jsx_runtime46.jsx)("script", { type: "application/ld+json", children: JSON.stringify({
+      /* @__PURE__ */ (0, import_jsx_runtime48.jsx)("link", { rel: "canonical", href: "https://localeffortfood.com/meal-prep" }),
+      /* @__PURE__ */ (0, import_jsx_runtime48.jsx)("script", { type: "application/ld+json", children: JSON.stringify(faqJsonLd) }),
+      /* @__PURE__ */ (0, import_jsx_runtime48.jsx)("script", { type: "application/ld+json", children: JSON.stringify({
         "@context": "https://schema.org",
         "@type": "Service",
         "name": "Weekly Meal Prep Service",
@@ -73328,258 +73507,260 @@ var MealPrepPage = () => {
         }
       }) })
     ] }),
-    showInquiryForm && /* @__PURE__ */ (0, import_jsx_runtime46.jsx)(
+    showWaitlistForm && /* @__PURE__ */ (0, import_jsx_runtime48.jsx)(
       "div",
       {
         className: "fixed inset-0 z-50 flex items-start justify-center bg-black/60 px-4 py-8 overflow-y-auto",
         role: "dialog",
         "aria-modal": "true",
-        children: /* @__PURE__ */ (0, import_jsx_runtime46.jsxs)("div", { className: "form-card w-full max-w-2xl max-h-[90vh] overflow-y-auto relative", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime46.jsx)(
+        children: /* @__PURE__ */ (0, import_jsx_runtime48.jsxs)("div", { className: "form-card w-full max-w-2xl max-h-[90vh] overflow-y-auto relative", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime48.jsx)(
             "button",
             {
               type: "button",
               className: "absolute right-4 top-4 text-sm underline z-10",
               onClick: () => {
-                setShowInquiryForm(false);
-                setInquiryStatus("idle");
-                resetInquiry();
+                setShowWaitlistForm(false);
+                setWaitlistStatus("idle");
+                resetWaitlist();
               },
               children: "Close"
             }
           ),
-          /* @__PURE__ */ (0, import_jsx_runtime46.jsx)("h2", { className: "text-2xl font-bold mb-2", children: "Ask the Chefs" }),
-          /* @__PURE__ */ (0, import_jsx_runtime46.jsx)("p", { className: "text-sm text-gray-600 mb-4", children: "Thank you for your interest in meal planning. Share a few details below and we\u2019ll map out a plan that fits your household." }),
-          /* @__PURE__ */ (0, import_jsx_runtime46.jsxs)("form", { onSubmit: handleInquirySubmit, className: "space-y-4", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime46.jsxs)("div", { children: [
-              /* @__PURE__ */ (0, import_jsx_runtime46.jsx)("label", { className: "label", htmlFor: "ask-name", children: "Name" }),
-              /* @__PURE__ */ (0, import_jsx_runtime46.jsx)(
+          /* @__PURE__ */ (0, import_jsx_runtime48.jsx)("h2", { className: "text-2xl font-bold mb-2", children: "Join the Waiting List" }),
+          /* @__PURE__ */ (0, import_jsx_runtime48.jsx)("p", { className: "text-sm text-gray-600 mb-4", children: "Thank you for your interest in meal planning. Share a few details below and we\u2019ll reach out as soon as a space opens up." }),
+          /* @__PURE__ */ (0, import_jsx_runtime48.jsxs)("form", { onSubmit: handleWaitlistSubmit, className: "space-y-4", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime48.jsxs)("div", { children: [
+              /* @__PURE__ */ (0, import_jsx_runtime48.jsx)("label", { className: "label", htmlFor: "waitlist-name", children: "Name" }),
+              /* @__PURE__ */ (0, import_jsx_runtime48.jsx)(
                 "input",
                 {
-                  id: "ask-name",
+                  id: "waitlist-name",
                   className: "input",
-                  value: inquiry.name,
-                  onChange: (e) => handleInquiryChange("name", e.target.value),
+                  value: waitlist.name,
+                  onChange: (e) => handleWaitlistChange("name", e.target.value),
                   required: true
                 }
               )
             ] }),
-            /* @__PURE__ */ (0, import_jsx_runtime46.jsxs)("div", { className: "grid md:grid-cols-2 gap-4", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime46.jsxs)("div", { children: [
-                /* @__PURE__ */ (0, import_jsx_runtime46.jsx)("label", { className: "label", htmlFor: "ask-email", children: "Email" }),
-                /* @__PURE__ */ (0, import_jsx_runtime46.jsx)(
+            /* @__PURE__ */ (0, import_jsx_runtime48.jsxs)("div", { className: "grid md:grid-cols-2 gap-4", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime48.jsxs)("div", { children: [
+                /* @__PURE__ */ (0, import_jsx_runtime48.jsx)("label", { className: "label", htmlFor: "waitlist-email", children: "Email" }),
+                /* @__PURE__ */ (0, import_jsx_runtime48.jsx)(
                   "input",
                   {
-                    id: "ask-email",
+                    id: "waitlist-email",
                     type: "email",
                     className: "input",
-                    value: inquiry.email,
-                    onChange: (e) => handleInquiryChange("email", e.target.value),
+                    value: waitlist.email,
+                    onChange: (e) => handleWaitlistChange("email", e.target.value),
                     required: true
                   }
                 )
               ] }),
-              /* @__PURE__ */ (0, import_jsx_runtime46.jsxs)("div", { children: [
-                /* @__PURE__ */ (0, import_jsx_runtime46.jsx)("label", { className: "label", htmlFor: "ask-phone", children: "Phone number" }),
-                /* @__PURE__ */ (0, import_jsx_runtime46.jsx)(
+              /* @__PURE__ */ (0, import_jsx_runtime48.jsxs)("div", { children: [
+                /* @__PURE__ */ (0, import_jsx_runtime48.jsx)("label", { className: "label", htmlFor: "waitlist-phone", children: "Phone number" }),
+                /* @__PURE__ */ (0, import_jsx_runtime48.jsx)(
                   "input",
                   {
-                    id: "ask-phone",
+                    id: "waitlist-phone",
                     className: "input",
-                    value: inquiry.phone,
-                    onChange: (e) => handleInquiryChange("phone", e.target.value),
+                    value: waitlist.phone,
+                    onChange: (e) => handleWaitlistChange("phone", e.target.value),
                     required: true
                   }
                 )
               ] })
             ] }),
-            /* @__PURE__ */ (0, import_jsx_runtime46.jsxs)("div", { children: [
-              /* @__PURE__ */ (0, import_jsx_runtime46.jsx)("label", { className: "label", htmlFor: "ask-family", children: "Family size" }),
-              /* @__PURE__ */ (0, import_jsx_runtime46.jsx)(
+            /* @__PURE__ */ (0, import_jsx_runtime48.jsxs)("div", { children: [
+              /* @__PURE__ */ (0, import_jsx_runtime48.jsx)("label", { className: "label", htmlFor: "waitlist-family", children: "Family size" }),
+              /* @__PURE__ */ (0, import_jsx_runtime48.jsx)(
                 "input",
                 {
-                  id: "ask-family",
+                  id: "waitlist-family",
                   className: "input",
                   placeholder: "e.g. 2 adults, 2 kids",
-                  value: inquiry.familySize,
-                  onChange: (e) => handleInquiryChange("familySize", e.target.value),
+                  value: waitlist.familySize,
+                  onChange: (e) => handleWaitlistChange("familySize", e.target.value),
                   required: true
                 }
               )
             ] }),
-            /* @__PURE__ */ (0, import_jsx_runtime46.jsxs)("div", { children: [
-              /* @__PURE__ */ (0, import_jsx_runtime46.jsx)("label", { className: "label", htmlFor: "ask-children", children: "Children & ages" }),
-              /* @__PURE__ */ (0, import_jsx_runtime46.jsx)(
+            /* @__PURE__ */ (0, import_jsx_runtime48.jsxs)("div", { children: [
+              /* @__PURE__ */ (0, import_jsx_runtime48.jsx)("label", { className: "label", htmlFor: "waitlist-children", children: "Children & ages" }),
+              /* @__PURE__ */ (0, import_jsx_runtime48.jsx)(
                 "textarea",
                 {
-                  id: "ask-children",
+                  id: "waitlist-children",
                   className: "textarea",
                   rows: 2,
-                  value: inquiry.children,
-                  onChange: (e) => handleInquiryChange("children", e.target.value),
+                  value: waitlist.children,
+                  onChange: (e) => handleWaitlistChange("children", e.target.value),
                   placeholder: "Tell us about school schedules, toddlers, or teens."
                 }
               )
             ] }),
-            /* @__PURE__ */ (0, import_jsx_runtime46.jsxs)("div", { className: "grid md:grid-cols-2 gap-4", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime46.jsxs)("div", { children: [
-                /* @__PURE__ */ (0, import_jsx_runtime46.jsx)("label", { className: "label", htmlFor: "ask-days", children: "Days per week" }),
-                /* @__PURE__ */ (0, import_jsx_runtime46.jsx)(
+            /* @__PURE__ */ (0, import_jsx_runtime48.jsxs)("div", { className: "grid md:grid-cols-2 gap-4", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime48.jsxs)("div", { children: [
+                /* @__PURE__ */ (0, import_jsx_runtime48.jsx)("label", { className: "label", htmlFor: "waitlist-days", children: "Days per week" }),
+                /* @__PURE__ */ (0, import_jsx_runtime48.jsx)(
                   "input",
                   {
-                    id: "ask-days",
+                    id: "waitlist-days",
                     className: "input",
                     placeholder: "How many days should we cover?",
-                    value: inquiry.daysPerWeek,
-                    onChange: (e) => handleInquiryChange("daysPerWeek", e.target.value),
+                    value: waitlist.daysPerWeek,
+                    onChange: (e) => handleWaitlistChange("daysPerWeek", e.target.value),
                     required: true
                   }
                 )
               ] }),
-              /* @__PURE__ */ (0, import_jsx_runtime46.jsxs)("div", { children: [
-                /* @__PURE__ */ (0, import_jsx_runtime46.jsx)("label", { className: "label", htmlFor: "ask-meals", children: "Meals per day" }),
-                /* @__PURE__ */ (0, import_jsx_runtime46.jsx)(
+              /* @__PURE__ */ (0, import_jsx_runtime48.jsxs)("div", { children: [
+                /* @__PURE__ */ (0, import_jsx_runtime48.jsx)("label", { className: "label", htmlFor: "waitlist-meals", children: "Meals per day" }),
+                /* @__PURE__ */ (0, import_jsx_runtime48.jsx)(
                   "input",
                   {
-                    id: "ask-meals",
+                    id: "waitlist-meals",
                     className: "input",
                     placeholder: "Breakfast, lunch, dinner?",
-                    value: inquiry.mealsPerDay,
-                    onChange: (e) => handleInquiryChange("mealsPerDay", e.target.value),
+                    value: waitlist.mealsPerDay,
+                    onChange: (e) => handleWaitlistChange("mealsPerDay", e.target.value),
                     required: true
                   }
                 )
               ] })
             ] }),
-            /* @__PURE__ */ (0, import_jsx_runtime46.jsxs)("div", { children: [
-              /* @__PURE__ */ (0, import_jsx_runtime46.jsx)("label", { className: "label", htmlFor: "ask-allergies", children: "Allergies or medical comments" }),
-              /* @__PURE__ */ (0, import_jsx_runtime46.jsx)(
+            /* @__PURE__ */ (0, import_jsx_runtime48.jsxs)("div", { children: [
+              /* @__PURE__ */ (0, import_jsx_runtime48.jsx)("label", { className: "label", htmlFor: "waitlist-allergies", children: "Allergies or medical comments" }),
+              /* @__PURE__ */ (0, import_jsx_runtime48.jsx)(
                 "textarea",
                 {
-                  id: "ask-allergies",
+                  id: "waitlist-allergies",
                   className: "textarea",
                   rows: 3,
-                  value: inquiry.allergies,
-                  onChange: (e) => handleInquiryChange("allergies", e.target.value),
+                  value: waitlist.allergies,
+                  onChange: (e) => handleWaitlistChange("allergies", e.target.value),
                   placeholder: "Include any dietary restrictions, allergies, or doctor notes."
                 }
               )
             ] }),
-            /* @__PURE__ */ (0, import_jsx_runtime46.jsxs)("div", { children: [
-              /* @__PURE__ */ (0, import_jsx_runtime46.jsx)("label", { className: "label", htmlFor: "ask-questions", children: "Questions for the team" }),
-              /* @__PURE__ */ (0, import_jsx_runtime46.jsx)(
+            /* @__PURE__ */ (0, import_jsx_runtime48.jsxs)("div", { children: [
+              /* @__PURE__ */ (0, import_jsx_runtime48.jsx)("label", { className: "label", htmlFor: "waitlist-questions", children: "Questions for the team" }),
+              /* @__PURE__ */ (0, import_jsx_runtime48.jsx)(
                 "textarea",
                 {
-                  id: "ask-questions",
+                  id: "waitlist-questions",
                   className: "textarea",
                   rows: 3,
-                  value: inquiry.questions,
-                  onChange: (e) => handleInquiryChange("questions", e.target.value),
+                  value: waitlist.questions,
+                  onChange: (e) => handleWaitlistChange("questions", e.target.value),
                   placeholder: "Anything else we should know?"
                 }
               )
             ] }),
-            /* @__PURE__ */ (0, import_jsx_runtime46.jsxs)("div", { className: "flex flex-wrap items-center gap-3", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime46.jsx)("button", { type: "submit", className: "btn btn-primary", disabled: inquiryStatus === "sending", children: inquiryStatus === "sending" ? "Sending..." : "Send message" }),
-              inquiryStatus === "success" && /* @__PURE__ */ (0, import_jsx_runtime46.jsx)("span", { className: "text-green-700 text-sm", children: "Thank you! Weston will get right back to you." }),
-              inquiryStatus === "error" && /* @__PURE__ */ (0, import_jsx_runtime46.jsx)("span", { className: "text-red-700 text-sm", children: "We couldn\u2019t send your note. Please try again." })
+            /* @__PURE__ */ (0, import_jsx_runtime48.jsxs)("div", { className: "flex flex-wrap items-center gap-3", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime48.jsx)("button", { type: "submit", className: "btn btn-primary", disabled: waitlistStatus === "sending", children: waitlistStatus === "sending" ? "Submitting..." : "Join waitlist" }),
+              waitlistStatus === "success" && /* @__PURE__ */ (0, import_jsx_runtime48.jsx)("span", { className: "text-green-700 text-sm", children: "Thank you! We'll reach out as soon as a space opens up." }),
+              waitlistStatus === "error" && /* @__PURE__ */ (0, import_jsx_runtime48.jsx)("span", { className: "text-red-700 text-sm", children: "We couldn\u2019t submit your request. Please try again." })
             ] })
           ] })
         ] })
       }
     ),
-    /* @__PURE__ */ (0, import_jsx_runtime46.jsxs)("div", { className: "space-y-16 mx-auto max-w-6xl px-4 md:px-6 lg:px-8", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime46.jsxs)("header", { className: "flex items-center gap-4", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime46.jsx)("h1", { className: "heading-display heading-balance", children: "Weekly meal prep" }),
-        /* @__PURE__ */ (0, import_jsx_runtime46.jsx)(
+    /* @__PURE__ */ (0, import_jsx_runtime48.jsxs)("div", { className: "space-y-16 mx-auto max-w-6xl px-4 md:px-6 lg:px-8", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime48.jsx)("header", { className: "flex items-center gap-4", children: /* @__PURE__ */ (0, import_jsx_runtime48.jsx)("h1", { className: "heading-display heading-balance", children: "Weekly meal prep" }) }),
+      /* @__PURE__ */ (0, import_jsx_runtime48.jsxs)("section", { className: "max-w-md", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime48.jsx)("h2", { className: "text-xl font-bold mb-3", children: "Join the waiting list" }),
+        /* @__PURE__ */ (0, import_jsx_runtime48.jsx)("p", { className: "text-sm text-gray-600 mb-3", children: "We're currently at capacity. Add your name to our waitlist and we'll reach out when a spot opens up." }),
+        /* @__PURE__ */ (0, import_jsx_runtime48.jsx)(
           "button",
           {
             type: "button",
-            className: "btn btn-primary text-sm px-4 py-2",
+            className: "btn btn-primary",
             onClick: () => {
-              resetInquiry();
-              setInquiryStatus("idle");
-              setShowInquiryForm(true);
+              resetWaitlist();
+              setWaitlistStatus("idle");
+              setShowWaitlistForm(true);
             },
-            children: "Ask the Chefs"
+            children: "Join the waitlist"
           }
         )
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime46.jsxs)("section", { className: "space-y-4 max-w-3xl", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime46.jsx)("p", { className: "text-body", children: "Basic, good nutrition from local Midwest sources. We offer a Foundation Plan and are happy to create custom plans for any diet." }),
-        /* @__PURE__ */ (0, import_jsx_runtime46.jsx)("p", { className: "text-body", children: "Looking for meal prep Minneapolis support between events? Our chefs cook, portion, and package complete menus so your family has reheatable dinners, lunches, and snacks. Prefer variety? Build a meal plan Minneapolis subscription with rotating cuisines, macros, and ingredient sourcing that fits your schedule." }),
-        /* @__PURE__ */ (0, import_jsx_runtime46.jsxs)("div", { className: "flex gap-2 items-center text-sm text-gray-700", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime46.jsx)("a", { href: "#menus", className: "underline", children: "View current menus" }),
-          assignedClient ? /* @__PURE__ */ (0, import_jsx_runtime46.jsxs)("span", { children: [
+      /* @__PURE__ */ (0, import_jsx_runtime48.jsxs)("section", { className: "space-y-4 max-w-3xl", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime48.jsx)("p", { className: "text-body", children: "Basic, good nutrition from local Midwest sources. We offer a Foundation Plan and are happy to create custom plans for any diet." }),
+        /* @__PURE__ */ (0, import_jsx_runtime48.jsx)("p", { className: "text-body", children: "Looking for meal prep Minneapolis support between events? Our chefs cook, portion, and package complete menus so your family has reheatable dinners, lunches, and snacks. Prefer variety? Build a meal plan Minneapolis subscription with rotating cuisines, macros, and ingredient sourcing that fits your schedule." }),
+        /* @__PURE__ */ (0, import_jsx_runtime48.jsxs)("div", { className: "flex gap-2 items-center text-sm text-gray-700", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime48.jsx)("a", { href: "#menus", className: "underline", children: "View current menus" }),
+          assignedClient ? /* @__PURE__ */ (0, import_jsx_runtime48.jsxs)("span", { children: [
             "for ",
-            /* @__PURE__ */ (0, import_jsx_runtime46.jsx)("strong", { children: assignedClient })
-          ] }) : /* @__PURE__ */ (0, import_jsx_runtime46.jsx)("span", { className: "italic", children: "no client assigned yet" })
+            /* @__PURE__ */ (0, import_jsx_runtime48.jsx)("strong", { children: assignedClient })
+          ] }) : /* @__PURE__ */ (0, import_jsx_runtime48.jsx)("span", { className: "italic", children: "no client assigned yet" })
         ] })
       ] }),
       false,
-      /* @__PURE__ */ (0, import_jsx_runtime46.jsxs)("section", { className: "space-y-4", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime46.jsx)("h3", { className: "text-2xl font-bold", children: "Meal Prep Minneapolis Gallery" }),
-        /* @__PURE__ */ (0, import_jsx_runtime46.jsx)(PhotoGrid, { tags: "mealplan", perPage: 24, masonry: true })
+      /* @__PURE__ */ (0, import_jsx_runtime48.jsxs)("section", { className: "space-y-4", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime48.jsx)("h3", { className: "text-2xl font-bold", children: "Meal Prep Minneapolis Gallery" }),
+        /* @__PURE__ */ (0, import_jsx_runtime48.jsx)(PhotoGrid, { tags: "mealplan", perPage: 24, masonry: true })
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime46.jsxs)("section", { className: "space-y-6", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime46.jsx)("h3", { className: "text-2xl font-bold", children: "Meal Plan Options" }),
-        /* @__PURE__ */ (0, import_jsx_runtime46.jsxs)("div", { className: "grid md:grid-cols-2 gap-6", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime46.jsxs)("div", { className: "border border-gray-900 rounded-md overflow-hidden", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime46.jsxs)(
+      /* @__PURE__ */ (0, import_jsx_runtime48.jsxs)("section", { className: "space-y-6", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime48.jsx)("h3", { className: "text-2xl font-bold", children: "Meal Plan Options" }),
+        /* @__PURE__ */ (0, import_jsx_runtime48.jsxs)("div", { className: "grid md:grid-cols-2 gap-6", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime48.jsxs)("div", { className: "border border-gray-900 rounded-md overflow-hidden", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime48.jsxs)(
               "button",
               {
                 type: "button",
                 className: "w-full flex items-center justify-between px-4 py-3 bg-gray-50 hover:bg-gray-100",
                 onClick: () => setOpenSection(openSection === "foundation" ? null : "foundation"),
                 children: [
-                  /* @__PURE__ */ (0, import_jsx_runtime46.jsx)("span", { className: "text-xl font-bold", children: "Foundation Meal Plan" }),
-                  /* @__PURE__ */ (0, import_jsx_runtime46.jsx)("span", { className: "text-sm text-gray-600", children: openSection === "foundation" ? "Hide \u25B2" : "View More \u25BC" })
+                  /* @__PURE__ */ (0, import_jsx_runtime48.jsx)("span", { className: "text-xl font-bold", children: "Foundation Meal Plan" }),
+                  /* @__PURE__ */ (0, import_jsx_runtime48.jsx)("span", { className: "text-sm text-gray-600", children: openSection === "foundation" ? "Hide \u25B2" : "View More \u25BC" })
                 ]
               }
             ),
-            /* @__PURE__ */ (0, import_jsx_runtime46.jsx)(
+            /* @__PURE__ */ (0, import_jsx_runtime48.jsx)(
               "div",
               {
                 className: `transition-[max-height,opacity] duration-300 ease-in-out ${openSection === "foundation" ? "max-h-[1000px] opacity-100" : "max-h-0 opacity-0"} overflow-hidden`,
-                children: /* @__PURE__ */ (0, import_jsx_runtime46.jsxs)("div", { className: "p-6", children: [
-                  /* @__PURE__ */ (0, import_jsx_runtime46.jsx)(VennDiagram, {}),
-                  /* @__PURE__ */ (0, import_jsx_runtime46.jsx)("p", { className: "font-mono mt-6 max-w-2xl", children: "Inspired by the 'Protocol' by Bryan Johnson, this plan provides up to 21 meals/week at ~1800 calories/day." })
+                children: /* @__PURE__ */ (0, import_jsx_runtime48.jsxs)("div", { className: "p-6", children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime48.jsx)(VennDiagram, {}),
+                  /* @__PURE__ */ (0, import_jsx_runtime48.jsx)("p", { className: "font-mono mt-6 max-w-2xl", children: "Inspired by the 'Protocol' by Bryan Johnson, this plan provides up to 21 meals/week at ~1800 calories/day." })
                 ] })
               }
             )
           ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime46.jsxs)("div", { className: "border border-gray-900 rounded-md overflow-hidden", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime46.jsxs)(
+          /* @__PURE__ */ (0, import_jsx_runtime48.jsxs)("div", { className: "border border-gray-900 rounded-md overflow-hidden", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime48.jsxs)(
               "button",
               {
                 type: "button",
                 className: "w-full flex items-center justify-between px-4 py-3 bg-gray-50 hover:bg-gray-100",
                 onClick: () => setOpenSection(openSection === "custom" ? null : "custom"),
                 children: [
-                  /* @__PURE__ */ (0, import_jsx_runtime46.jsx)("span", { className: "text-xl font-bold", children: "Custom Plan" }),
-                  /* @__PURE__ */ (0, import_jsx_runtime46.jsx)("span", { className: "text-sm text-gray-600", children: openSection === "custom" ? "Hide \u25B2" : "View More \u25BC" })
+                  /* @__PURE__ */ (0, import_jsx_runtime48.jsx)("span", { className: "text-xl font-bold", children: "Custom Plan" }),
+                  /* @__PURE__ */ (0, import_jsx_runtime48.jsx)("span", { className: "text-sm text-gray-600", children: openSection === "custom" ? "Hide \u25B2" : "View More \u25BC" })
                 ]
               }
             ),
-            /* @__PURE__ */ (0, import_jsx_runtime46.jsx)(
+            /* @__PURE__ */ (0, import_jsx_runtime48.jsx)(
               "div",
               {
                 className: `transition-[max-height,opacity] duration-300 ease-in-out ${openSection === "custom" ? "max-h-[1000px] opacity-100" : "max-h-0 opacity-0"} overflow-hidden`,
-                children: /* @__PURE__ */ (0, import_jsx_runtime46.jsx)("div", { className: "p-6", children: /* @__PURE__ */ (0, import_jsx_runtime46.jsx)("p", { className: "text-body", children: "We tailor plans to your needs (gluten-free, vegetarian, high-protein, etc.). Tell us your goals and preferences and we\u2019ll propose a weekly plan and schedule." }) })
+                children: /* @__PURE__ */ (0, import_jsx_runtime48.jsx)("div", { className: "p-6", children: /* @__PURE__ */ (0, import_jsx_runtime48.jsx)("p", { className: "text-body", children: "We tailor plans to your needs (gluten-free, vegetarian, high-protein, etc.). Tell us your goals and preferences and we\u2019ll propose a weekly plan and schedule." }) })
               }
             )
           ] })
         ] })
       ] }),
       false,
-      /* @__PURE__ */ (0, import_jsx_runtime46.jsx)("section", { className: "mt-10", children: /* @__PURE__ */ (0, import_jsx_runtime46.jsx)(WeeklyJournalEmbeds, {}) })
+      /* @__PURE__ */ (0, import_jsx_runtime48.jsx)("section", { className: "mt-10", children: /* @__PURE__ */ (0, import_jsx_runtime48.jsx)(WeeklyJournalEmbeds, {}) })
     ] })
   ] });
 };
 var MealPrepPage_default = MealPrepPage;
 function WeeklyJournalEmbeds() {
-  const [posts, setPosts] = (0, import_react40.useState)([]);
-  (0, import_react40.useEffect)(() => {
+  const [posts, setPosts] = (0, import_react41.useState)([]);
+  (0, import_react41.useEffect)(() => {
     let mounted = true;
     (async () => {
       try {
@@ -73594,22 +73775,22 @@ function WeeklyJournalEmbeds() {
     };
   }, []);
   if (!posts.length) return null;
-  return /* @__PURE__ */ (0, import_jsx_runtime46.jsxs)("div", { className: "border rounded-lg p-5 bg-white shadow-sm", children: [
-    /* @__PURE__ */ (0, import_jsx_runtime46.jsxs)("div", { className: "flex items-center justify-between", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime46.jsx)("h3", { className: "text-xl font-bold", children: "Weekly Meal Prep Journal" }),
-      /* @__PURE__ */ (0, import_jsx_runtime46.jsx)(import_react_router_dom5.Link, { to: "/weekly", className: "text-sm underline", children: "View more" })
+  return /* @__PURE__ */ (0, import_jsx_runtime48.jsxs)("div", { className: "border rounded-lg p-5 bg-white shadow-sm", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime48.jsxs)("div", { className: "flex items-center justify-between", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime48.jsx)("h3", { className: "text-xl font-bold", children: "Weekly Meal Prep Journal" }),
+      /* @__PURE__ */ (0, import_jsx_runtime48.jsx)(import_react_router_dom5.Link, { to: "/weekly", className: "text-sm underline", children: "View more" })
     ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime46.jsx)("div", { className: "mt-4 grid gap-4 sm:grid-cols-2", children: posts.map((p) => /* @__PURE__ */ (0, import_jsx_runtime46.jsxs)("article", { className: "rounded-md ring-1 ring-neutral-200 p-4", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime46.jsx)("h4", { className: "text-lg font-semibold", children: /* @__PURE__ */ (0, import_jsx_runtime46.jsx)(import_react_router_dom5.Link, { to: `/weekly/${p.slug}`, className: "hover:underline", children: p.title }) }),
-      /* @__PURE__ */ (0, import_jsx_runtime46.jsx)("div", { className: "text-sm text-gray-500 mt-1", children: p.publishedAt ? new Date(p.publishedAt).toLocaleDateString() : "" }),
-      p.excerpt && /* @__PURE__ */ (0, import_jsx_runtime46.jsx)("p", { className: "text-gray-700 mt-2", children: p.excerpt }),
-      /* @__PURE__ */ (0, import_jsx_runtime46.jsx)("div", { className: "mt-3", children: /* @__PURE__ */ (0, import_jsx_runtime46.jsx)(import_react_router_dom5.Link, { to: `/weekly/${p.slug}`, className: "btn btn-ghost px-3 py-1 text-sm", children: "Read" }) })
+    /* @__PURE__ */ (0, import_jsx_runtime48.jsx)("div", { className: "mt-4 grid gap-4 sm:grid-cols-2", children: posts.map((p) => /* @__PURE__ */ (0, import_jsx_runtime48.jsxs)("article", { className: "rounded-md ring-1 ring-neutral-200 p-4", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime48.jsx)("h4", { className: "text-lg font-semibold", children: /* @__PURE__ */ (0, import_jsx_runtime48.jsx)(import_react_router_dom5.Link, { to: `/weekly/${p.slug}`, className: "hover:underline", children: p.title }) }),
+      /* @__PURE__ */ (0, import_jsx_runtime48.jsx)("div", { className: "text-sm text-gray-500 mt-1", children: p.publishedAt ? new Date(p.publishedAt).toLocaleDateString() : "" }),
+      p.excerpt && /* @__PURE__ */ (0, import_jsx_runtime48.jsx)("p", { className: "text-gray-700 mt-2", children: p.excerpt }),
+      /* @__PURE__ */ (0, import_jsx_runtime48.jsx)("div", { className: "mt-3", children: /* @__PURE__ */ (0, import_jsx_runtime48.jsx)(import_react_router_dom5.Link, { to: `/weekly/${p.slug}`, className: "btn btn-ghost px-3 py-1 text-sm", children: "Read" }) })
     ] }, p.slug)) })
   ] });
 }
 
 // src/pages/PartnerPortalPage.jsx
-var import_react41 = __toESM(require("react"));
+var import_react42 = __toESM(require("react"));
 var import_react_helmet_async11 = __toESM(require_lib());
 var import_react_router_dom6 = require("react-router-dom");
 
@@ -73699,46 +73880,46 @@ var PARTNER_TOOLS = [
 
 // src/pages/PartnerPortalPage.jsx
 var Icons = __toESM(require("lucide-react"));
-var import_jsx_runtime47 = require("react/jsx-runtime");
+var import_jsx_runtime49 = require("react/jsx-runtime");
 var PartnerPortalPage = () => {
-  return /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)(import_jsx_runtime47.Fragment, { children: [
-    /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)(import_react_helmet_async11.Helmet, { children: [
-      /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("title", { children: "Partner Portal | Local Effort" }),
-      /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("meta", { name: "description", content: "Tools and resources for Local Effort partners." })
+  return /* @__PURE__ */ (0, import_jsx_runtime49.jsxs)(import_jsx_runtime49.Fragment, { children: [
+    /* @__PURE__ */ (0, import_jsx_runtime49.jsxs)(import_react_helmet_async11.Helmet, { children: [
+      /* @__PURE__ */ (0, import_jsx_runtime49.jsx)("title", { children: "Partner Portal | Local Effort" }),
+      /* @__PURE__ */ (0, import_jsx_runtime49.jsx)("meta", { name: "description", content: "Tools and resources for Local Effort partners." })
     ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)("div", { className: "space-y-6", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("h1", { className: "heading-display heading-balance", children: "Partner portal" }),
-      /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("p", { className: "text-body max-w-2xl", children: "Public tools and links for partners. No sign-in required." }),
-      /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(ToolGrid, {})
+    /* @__PURE__ */ (0, import_jsx_runtime49.jsxs)("div", { className: "space-y-6", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime49.jsx)("h1", { className: "heading-display heading-balance", children: "Partner portal" }),
+      /* @__PURE__ */ (0, import_jsx_runtime49.jsx)("p", { className: "text-body max-w-2xl", children: "Public tools and links for partners. No sign-in required." }),
+      /* @__PURE__ */ (0, import_jsx_runtime49.jsx)(ToolGrid, {})
     ] })
   ] });
 };
 var PartnerPortalPage_default = PartnerPortalPage;
 function ToolGrid() {
   const visible = PARTNER_TOOLS;
-  return /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("div", { className: "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4", children: visible.map((t) => {
+  return /* @__PURE__ */ (0, import_jsx_runtime49.jsx)("div", { className: "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4", children: visible.map((t) => {
     const Icon = Icons[t.icon] || Icons.AppWindow;
     const isExternal = t.type === "external" && t.href;
-    const content2 = /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("div", { className: "group block p-5 border rounded-xl hover:shadow transition bg-white", children: /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)("div", { className: "flex items-center gap-3", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("span", { className: "inline-flex items-center justify-center w-10 h-10 rounded-lg bg-neutral-100 group-hover:bg-neutral-200", children: /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(Icon, { className: "w-5 h-5 text-neutral-800" }) }),
-      /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)("div", { children: [
-        /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("div", { className: "font-semibold", children: t.name }),
-        /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("div", { className: "text-sm text-neutral-600", children: t.description })
+    const content2 = /* @__PURE__ */ (0, import_jsx_runtime49.jsx)("div", { className: "group block p-5 border rounded-xl hover:shadow transition bg-white", children: /* @__PURE__ */ (0, import_jsx_runtime49.jsxs)("div", { className: "flex items-center gap-3", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime49.jsx)("span", { className: "inline-flex items-center justify-center w-10 h-10 rounded-lg bg-neutral-100 group-hover:bg-neutral-200", children: /* @__PURE__ */ (0, import_jsx_runtime49.jsx)(Icon, { className: "w-5 h-5 text-neutral-800" }) }),
+      /* @__PURE__ */ (0, import_jsx_runtime49.jsxs)("div", { children: [
+        /* @__PURE__ */ (0, import_jsx_runtime49.jsx)("div", { className: "font-semibold", children: t.name }),
+        /* @__PURE__ */ (0, import_jsx_runtime49.jsx)("div", { className: "text-sm text-neutral-600", children: t.description })
       ] })
     ] }) });
-    return isExternal ? /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("a", { href: t.href, target: "_blank", rel: "noopener noreferrer", children: content2 }, t.key) : /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(import_react_router_dom6.Link, { to: t.route, children: content2 }, t.key);
+    return isExternal ? /* @__PURE__ */ (0, import_jsx_runtime49.jsx)("a", { href: t.href, target: "_blank", rel: "noopener noreferrer", children: content2 }, t.key) : /* @__PURE__ */ (0, import_jsx_runtime49.jsx)(import_react_router_dom6.Link, { to: t.route, children: content2 }, t.key);
   }) });
 }
 
 // src/pages/CrowdfundingPage.jsx
-var import_react48 = __toESM(require("react"));
+var import_react49 = __toESM(require("react"));
 
 // node_modules/.pnpm/swr@2.3.6_react@18.2.0/node_modules/swr/dist/index/index.mjs
-var import_react44 = __toESM(require("react"), 1);
+var import_react45 = __toESM(require("react"), 1);
 var import_shim = __toESM(require_shim(), 1);
 
 // node_modules/.pnpm/swr@2.3.6_react@18.2.0/node_modules/swr/dist/_internal/config-context-client-BoS53ST9.mjs
-var import_react42 = __toESM(require("react"), 1);
+var import_react43 = __toESM(require("react"), 1);
 
 // node_modules/.pnpm/swr@2.3.6_react@18.2.0/node_modules/swr/dist/_internal/events.mjs
 var events_exports = {};
@@ -73876,10 +74057,10 @@ var defaultConfigOptions = {
   initFocus,
   initReconnect
 };
-var IS_REACT_LEGACY = !import_react42.default.useId;
+var IS_REACT_LEGACY = !import_react43.default.useId;
 var IS_SERVER = !isWindowDefined || isLegacyDeno;
 var rAF = (f) => hasRequestAnimationFrame() ? window["requestAnimationFrame"](f) : setTimeout(f, 1);
-var useIsomorphicLayoutEffect = IS_SERVER ? import_react42.useEffect : import_react42.useLayoutEffect;
+var useIsomorphicLayoutEffect = IS_SERVER ? import_react43.useEffect : import_react43.useLayoutEffect;
 var navigatorConnection = typeof navigator !== "undefined" && navigator.connection;
 var slowConnection = !IS_SERVER && navigatorConnection && ([
   "slow-2g",
@@ -74181,23 +74362,23 @@ var mergeConfigs = (a, b) => {
   }
   return v;
 };
-var SWRConfigContext = (0, import_react42.createContext)({});
+var SWRConfigContext = (0, import_react43.createContext)({});
 var SWRConfig = (props) => {
   const { value: value2 } = props;
-  const parentConfig = (0, import_react42.useContext)(SWRConfigContext);
+  const parentConfig = (0, import_react43.useContext)(SWRConfigContext);
   const isFunctionalConfig = isFunction2(value2);
-  const config = (0, import_react42.useMemo)(() => isFunctionalConfig ? value2(parentConfig) : value2, [
+  const config = (0, import_react43.useMemo)(() => isFunctionalConfig ? value2(parentConfig) : value2, [
     isFunctionalConfig,
     parentConfig,
     value2
   ]);
-  const extendedConfig = (0, import_react42.useMemo)(() => isFunctionalConfig ? config : mergeConfigs(parentConfig, config), [
+  const extendedConfig = (0, import_react43.useMemo)(() => isFunctionalConfig ? config : mergeConfigs(parentConfig, config), [
     isFunctionalConfig,
     parentConfig,
     config
   ]);
   const provider = config && config.provider;
-  const cacheContextRef = (0, import_react42.useRef)(UNDEFINED);
+  const cacheContextRef = (0, import_react43.useRef)(UNDEFINED);
   if (provider && !cacheContextRef.current) {
     cacheContextRef.current = initCache(provider(extendedConfig.cache || cache), config);
   }
@@ -74212,7 +74393,7 @@ var SWRConfig = (props) => {
       return cacheContext[3];
     }
   }, []);
-  return (0, import_react42.createElement)(SWRConfigContext.Provider, mergeObjects(props, {
+  return (0, import_react43.createElement)(SWRConfigContext.Provider, mergeObjects(props, {
     value: extendedConfig
   }));
 };
@@ -74221,12 +74402,12 @@ var SWRConfig = (props) => {
 var INFINITE_PREFIX = "$inf$";
 
 // node_modules/.pnpm/swr@2.3.6_react@18.2.0/node_modules/swr/dist/_internal/index.mjs
-var import_react43 = __toESM(require("react"), 1);
+var import_react44 = __toESM(require("react"), 1);
 var enableDevtools = isWindowDefined && window.__SWR_DEVTOOLS_USE__;
 var use = enableDevtools ? window.__SWR_DEVTOOLS_USE__ : [];
 var setupDevTools = () => {
   if (enableDevtools) {
-    window.__SWR_DEVTOOLS_REACT__ = import_react43.default;
+    window.__SWR_DEVTOOLS_REACT__ = import_react44.default;
   }
 };
 var normalize2 = (args) => {
@@ -74241,8 +74422,8 @@ var normalize2 = (args) => {
   ];
 };
 var useSWRConfig = () => {
-  const parentConfig = (0, import_react43.useContext)(SWRConfigContext);
-  const mergedConfig = (0, import_react43.useMemo)(() => mergeObjects(defaultConfig, parentConfig), [
+  const parentConfig = (0, import_react44.useContext)(SWRConfigContext);
+  const mergedConfig = (0, import_react44.useMemo)(() => mergeObjects(defaultConfig, parentConfig), [
     parentConfig
   ]);
   return mergedConfig;
@@ -74296,7 +74477,7 @@ var UNDEFINED2 = (
   /*#__NOINLINE__*/
   noop2()
 );
-var use2 = import_react44.default.use || // This extra generic is to avoid TypeScript mixing up the generic and JSX sytax
+var use2 = import_react45.default.use || // This extra generic is to avoid TypeScript mixing up the generic and JSX sytax
 // and emitting an error.
 // We assume that this is only for the `use(thenable)` case, not `use(context)`.
 // https://github.com/facebook/react/blob/aed00dacfb79d17c53218404c52b1c7aa59c4a89/packages/react-server/src/ReactFizzThenable.js#L45
@@ -74328,15 +74509,15 @@ var useSWRHandler = (_key, fetcher, config) => {
   const { cache: cache2, compare: compare2, suspense, fallbackData, revalidateOnMount, revalidateIfStale, refreshInterval, refreshWhenHidden, refreshWhenOffline, keepPreviousData } = config;
   const [EVENT_REVALIDATORS, MUTATION, FETCH, PRELOAD] = SWRGlobalState.get(cache2);
   const [key2, fnArg] = serialize(_key);
-  const initialMountedRef = (0, import_react44.useRef)(false);
-  const unmountedRef = (0, import_react44.useRef)(false);
-  const keyRef = (0, import_react44.useRef)(key2);
-  const fetcherRef = (0, import_react44.useRef)(fetcher);
-  const configRef = (0, import_react44.useRef)(config);
+  const initialMountedRef = (0, import_react45.useRef)(false);
+  const unmountedRef = (0, import_react45.useRef)(false);
+  const keyRef = (0, import_react45.useRef)(key2);
+  const fetcherRef = (0, import_react45.useRef)(fetcher);
+  const configRef = (0, import_react45.useRef)(config);
   const getConfig = () => configRef.current;
   const isActive = () => getConfig().isVisible() && getConfig().isOnline();
   const [getCache, setCache, subscribeCache, getInitialCache] = createCacheHelper(cache2, key2);
-  const stateDependencies = (0, import_react44.useRef)({}).current;
+  const stateDependencies = (0, import_react45.useRef)({}).current;
   const fallback = isUndefined(fallbackData) ? isUndefined(config.fallback) ? UNDEFINED : config.fallback[key2] : fallbackData;
   const isEqual = (prev, current) => {
     for (const _ in stateDependencies) {
@@ -74358,7 +74539,7 @@ var useSWRHandler = (_key, fetcher, config) => {
     }
     return true;
   };
-  const getSnapshot = (0, import_react44.useMemo)(() => {
+  const getSnapshot = (0, import_react45.useMemo)(() => {
     const shouldStartRequest = (() => {
       if (!key2) return false;
       if (!fetcher) return false;
@@ -74405,7 +74586,7 @@ var useSWRHandler = (_key, fetcher, config) => {
     cache2,
     key2
   ]);
-  const cached = (0, import_shim.useSyncExternalStore)((0, import_react44.useCallback)(
+  const cached = (0, import_shim.useSyncExternalStore)((0, import_react45.useCallback)(
     (callback) => subscribeCache(key2, (current, prev) => {
       if (!isEqual(prev, current)) callback();
     }),
@@ -74420,7 +74601,7 @@ var useSWRHandler = (_key, fetcher, config) => {
   const cachedData = cached.data;
   const data2 = isUndefined(cachedData) ? fallback && isPromiseLike(fallback) ? use2(fallback) : fallback : cachedData;
   const error = cached.error;
-  const laggyDataRef = (0, import_react44.useRef)(data2);
+  const laggyDataRef = (0, import_react45.useRef)(data2);
   const returnedData = keepPreviousData ? isUndefined(cachedData) ? isUndefined(laggyDataRef.current) ? data2 : laggyDataRef.current : cachedData : data2;
   const shouldDoInitialRevalidation = (() => {
     if (hasRevalidator && !isUndefined(error)) return false;
@@ -74432,7 +74613,7 @@ var useSWRHandler = (_key, fetcher, config) => {
   const defaultValidatingState = !!(key2 && fetcher && isInitialMount && shouldDoInitialRevalidation);
   const isValidating = isUndefined(cached.isValidating) ? defaultValidatingState : cached.isValidating;
   const isLoading = isUndefined(cached.isLoading) ? defaultValidatingState : cached.isLoading;
-  const revalidate = (0, import_react44.useCallback)(
+  const revalidate = (0, import_react45.useCallback)(
     async (revalidateOpts) => {
       const currentFetcher = fetcherRef.current;
       if (!key2 || !currentFetcher || unmountedRef.current || getConfig().isPaused()) {
@@ -74562,7 +74743,7 @@ var useSWRHandler = (_key, fetcher, config) => {
       cache2
     ]
   );
-  const boundMutate = (0, import_react44.useCallback)(
+  const boundMutate = (0, import_react45.useCallback)(
     // Use callback to make sure `keyRef.current` returns latest result every time
     (...args) => {
       return internalMutate(cache2, keyRef.current, ...args);
@@ -74654,7 +74835,7 @@ var useSWRHandler = (_key, fetcher, config) => {
     refreshWhenOffline,
     key2
   ]);
-  (0, import_react44.useDebugValue)(returnedData);
+  (0, import_react45.useDebugValue)(returnedData);
   if (suspense) {
     const hasKeyButNoData = key2 && isUndefined(data2);
     if (!IS_REACT_LEGACY && IS_SERVER && hasKeyButNoData) {
@@ -74707,10 +74888,10 @@ var useSWR = withArgs(useSWRHandler);
 // src/pages/CrowdfundingPage.jsx
 var import_prop_types3 = __toESM(require_prop_types());
 var import_react_helmet_async12 = __toESM(require_lib());
-var import_react49 = require("@portabletext/react");
+var import_react50 = require("@portabletext/react");
 
 // src/lib/useSquarePayments.ts
-var import_react45 = require("react");
+var import_react46 = require("react");
 var import_meta7 = {};
 var SQUARE_SCRIPT_ATTR2 = "data-square-sdk";
 var scriptState = {
@@ -74817,12 +74998,12 @@ var loadSquareSdk = (sdkUrl, isSandbox) => {
   return promise;
 };
 var useSquarePayments = () => {
-  const config = (0, import_react45.useMemo)(() => getSquareConfig(), []);
-  const [payments, setPayments] = (0, import_react45.useState)(null);
-  const [loading, setLoading] = (0, import_react45.useState)(false);
-  const [error, setError] = (0, import_react45.useState)(null);
-  const initRef = (0, import_react45.useRef)(false);
-  (0, import_react45.useEffect)(() => {
+  const config = (0, import_react46.useMemo)(() => getSquareConfig(), []);
+  const [payments, setPayments] = (0, import_react46.useState)(null);
+  const [loading, setLoading] = (0, import_react46.useState)(false);
+  const [error, setError] = (0, import_react46.useState)(null);
+  const initRef = (0, import_react46.useRef)(false);
+  (0, import_react46.useEffect)(() => {
     if (initRef.current) return;
     initRef.current = true;
     if (typeof window === "undefined") {
@@ -74879,25 +75060,8 @@ var useSquarePayments = () => {
   };
 };
 
-// src/components/ui/textarea.jsx
-var React61 = __toESM(require("react"));
-var import_jsx_runtime48 = require("react/jsx-runtime");
-var Textarea = React61.forwardRef(({ className = "", rows = 3, ...props }, ref) => /* @__PURE__ */ (0, import_jsx_runtime48.jsx)(
-  "textarea",
-  {
-    ref,
-    rows,
-    className: cn(
-      "w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] disabled:cursor-not-allowed disabled:opacity-60",
-      className
-    ),
-    ...props
-  }
-));
-Textarea.displayName = "Textarea";
-
 // src/components/crowdfunding/PrioritiesPie.jsx
-var import_react46 = __toESM(require("react"));
+var import_react47 = __toESM(require("react"));
 var import_recharts = __toESM(require_lib4());
 
 // src/lib/devConsole.js
@@ -74938,7 +75102,7 @@ var devConsole = {
 var devConsole_default = devConsole;
 
 // src/components/crowdfunding/PrioritiesPie.jsx
-var import_jsx_runtime49 = require("react/jsx-runtime");
+var import_jsx_runtime50 = require("react/jsx-runtime");
 var items = {
   fulfillment: [
     { name: "Cheese", amount: 900 },
@@ -74991,9 +75155,9 @@ var tooltipFormatter = (value2) => {
   return `$${numeric.toLocaleString()}`;
 };
 var PrioritiesPie = () => {
-  const totals = (0, import_react46.useMemo)(() => totalsByCategory(), []);
+  const totals = (0, import_react47.useMemo)(() => totalsByCategory(), []);
   const grandTotal = totals.fulfillment + totals.debt + totals.equipment + totals.marketing;
-  const pieData = (0, import_react46.useMemo)(
+  const pieData = (0, import_react47.useMemo)(
     () => Object.keys(totals).map((key2) => ({
       name: CATEGORY_LABEL[key2],
       value: totals[key2],
@@ -75011,24 +75175,24 @@ var PrioritiesPie = () => {
     const sumSlices = pieData.reduce((acc, slice) => acc + slice.value, 0);
     devConsole_default.assert(sumSlices === grandTotal, "Pie slices should sum to the grand total");
   }
-  return /* @__PURE__ */ (0, import_jsx_runtime49.jsx)("div", { className: "mx-auto w-full max-w-3xl", children: /* @__PURE__ */ (0, import_jsx_runtime49.jsxs)(Card, { children: [
-    /* @__PURE__ */ (0, import_jsx_runtime49.jsx)(CardHeader, { children: /* @__PURE__ */ (0, import_jsx_runtime49.jsx)(CardTitle, { children: "Priorities and Allocations" }) }),
-    /* @__PURE__ */ (0, import_jsx_runtime49.jsx)(CardContent, { children: /* @__PURE__ */ (0, import_jsx_runtime49.jsx)("div", { className: "h-80 w-full", children: /* @__PURE__ */ (0, import_jsx_runtime49.jsx)(import_recharts.ResponsiveContainer, { children: /* @__PURE__ */ (0, import_jsx_runtime49.jsxs)(import_recharts.PieChart, { children: [
-      /* @__PURE__ */ (0, import_jsx_runtime49.jsx)(import_recharts.Pie, { dataKey: "value", data: pieData, nameKey: "name", outerRadius: 120, label: true, children: pieData.map((entry) => /* @__PURE__ */ (0, import_jsx_runtime49.jsx)(import_recharts.Cell, { fill: COLORS[entry.key] }, entry.key)) }),
-      /* @__PURE__ */ (0, import_jsx_runtime49.jsx)(import_recharts.Tooltip, { formatter: tooltipFormatter }),
-      /* @__PURE__ */ (0, import_jsx_runtime49.jsx)(import_recharts.Legend, {})
+  return /* @__PURE__ */ (0, import_jsx_runtime50.jsx)("div", { className: "mx-auto w-full max-w-3xl", children: /* @__PURE__ */ (0, import_jsx_runtime50.jsxs)(Card, { children: [
+    /* @__PURE__ */ (0, import_jsx_runtime50.jsx)(CardHeader, { children: /* @__PURE__ */ (0, import_jsx_runtime50.jsx)(CardTitle, { children: "Priorities and Allocations" }) }),
+    /* @__PURE__ */ (0, import_jsx_runtime50.jsx)(CardContent, { children: /* @__PURE__ */ (0, import_jsx_runtime50.jsx)("div", { className: "h-80 w-full", children: /* @__PURE__ */ (0, import_jsx_runtime50.jsx)(import_recharts.ResponsiveContainer, { children: /* @__PURE__ */ (0, import_jsx_runtime50.jsxs)(import_recharts.PieChart, { children: [
+      /* @__PURE__ */ (0, import_jsx_runtime50.jsx)(import_recharts.Pie, { dataKey: "value", data: pieData, nameKey: "name", outerRadius: 120, label: true, children: pieData.map((entry) => /* @__PURE__ */ (0, import_jsx_runtime50.jsx)(import_recharts.Cell, { fill: COLORS[entry.key] }, entry.key)) }),
+      /* @__PURE__ */ (0, import_jsx_runtime50.jsx)(import_recharts.Tooltip, { formatter: tooltipFormatter }),
+      /* @__PURE__ */ (0, import_jsx_runtime50.jsx)(import_recharts.Legend, {})
     ] }) }) }) })
   ] }) });
 };
 var PrioritiesPie_default = PrioritiesPie;
 
 // src/components/common/ToastProvider.jsx
-var import_react47 = __toESM(require("react"));
-var import_jsx_runtime50 = require("react/jsx-runtime");
-var ToastContext = (0, import_react47.createContext)({ notify: () => {
+var import_react48 = __toESM(require("react"));
+var import_jsx_runtime51 = require("react/jsx-runtime");
+var ToastContext = (0, import_react48.createContext)({ notify: () => {
 } });
 function useToast() {
-  return (0, import_react47.useContext)(ToastContext);
+  return (0, import_react48.useContext)(ToastContext);
 }
 
 // src/pages/CrowdfundingPage.jsx
@@ -75200,7 +75364,7 @@ var watchPizzaFeedback = ({ limit = 8, onUpdate, onError } = {}) => {
 
 // src/pages/CrowdfundingPage.jsx
 var import_firestore4 = require("firebase/firestore");
-var import_jsx_runtime51 = require("react/jsx-runtime");
+var import_jsx_runtime52 = require("react/jsx-runtime");
 function isPortableTextBlocks(value2) {
   return Array.isArray(value2) && value2.some(
     (item) => item && typeof item === "object" && item._type === "block" && Array.isArray(item.children)
@@ -75357,9 +75521,9 @@ var summaryFetcher = async () => {
   const message2 = errors.length ? `Unable to load crowdfunding summary (${errors.join("; ")})` : "Unable to load crowdfunding summary";
   throw new Error(message2);
 };
-var StatBox = ({ value: value2, label }) => /* @__PURE__ */ (0, import_jsx_runtime51.jsxs)("div", { children: [
-  /* @__PURE__ */ (0, import_jsx_runtime51.jsx)("p", { className: "text-3xl font-bold", children: value2 }),
-  /* @__PURE__ */ (0, import_jsx_runtime51.jsx)("p", { className: "text-gray-600", children: label })
+var StatBox = ({ value: value2, label }) => /* @__PURE__ */ (0, import_jsx_runtime52.jsxs)("div", { children: [
+  /* @__PURE__ */ (0, import_jsx_runtime52.jsx)("p", { className: "text-3xl font-bold", children: value2 }),
+  /* @__PURE__ */ (0, import_jsx_runtime52.jsx)("p", { className: "text-gray-600", children: label })
 ] });
 var EVENT_STATUS_LABELS = {
   scheduled: "Scheduled",
@@ -75374,7 +75538,7 @@ var EVENT_STATUS_STYLES = {
   cancelled: "border-slate-300 bg-slate-200 text-slate-600",
   default: "border-slate-200 bg-slate-100 text-slate-600"
 };
-var EventBadge = ({ children, variant = "default" }) => /* @__PURE__ */ (0, import_jsx_runtime51.jsx)(
+var EventBadge = ({ children, variant = "default" }) => /* @__PURE__ */ (0, import_jsx_runtime52.jsx)(
   "span",
   {
     className: cn(
@@ -75388,14 +75552,14 @@ var EventListSection = ({ title, description, events, onSelect, formatDateLabel 
   if (!Array.isArray(events) || events.length === 0) {
     return null;
   }
-  return /* @__PURE__ */ (0, import_jsx_runtime51.jsxs)(Card, { className: "border-slate-200 shadow-sm", children: [
-    /* @__PURE__ */ (0, import_jsx_runtime51.jsxs)(CardHeader, { className: "space-y-1", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime51.jsx)(CardTitle, { className: "text-base font-semibold uppercase tracking-tight text-slate-900", children: title }),
-      description && /* @__PURE__ */ (0, import_jsx_runtime51.jsx)(CardDescription, { children: description })
+  return /* @__PURE__ */ (0, import_jsx_runtime52.jsxs)(Card, { className: "border-slate-200 shadow-sm", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime52.jsxs)(CardHeader, { className: "space-y-1", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime52.jsx)(CardTitle, { className: "text-base font-semibold uppercase tracking-tight text-slate-900", children: title }),
+      description && /* @__PURE__ */ (0, import_jsx_runtime52.jsx)(CardDescription, { children: description })
     ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime51.jsx)(CardContent, { className: "space-y-3", children: /* @__PURE__ */ (0, import_jsx_runtime51.jsx)("ul", { className: "space-y-2", children: events.map((event) => {
+    /* @__PURE__ */ (0, import_jsx_runtime52.jsx)(CardContent, { className: "space-y-3", children: /* @__PURE__ */ (0, import_jsx_runtime52.jsx)("ul", { className: "space-y-2", children: events.map((event) => {
       const dateLabel = typeof formatDateLabel === "function" ? formatDateLabel(event) : "";
-      return /* @__PURE__ */ (0, import_jsx_runtime51.jsx)("li", { children: /* @__PURE__ */ (0, import_jsx_runtime51.jsxs)(
+      return /* @__PURE__ */ (0, import_jsx_runtime52.jsx)("li", { children: /* @__PURE__ */ (0, import_jsx_runtime52.jsxs)(
         "button",
         {
           type: "button",
@@ -75403,12 +75567,12 @@ var EventListSection = ({ title, description, events, onSelect, formatDateLabel 
           className: "group flex w-full items-center justify-between rounded-xl border border-slate-200 bg-white px-4 py-3 text-left transition hover:border-[var(--color-accent)] hover:bg-amber-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-2",
           "aria-label": `View details for ${event?.location || "event"}`,
           children: [
-            /* @__PURE__ */ (0, import_jsx_runtime51.jsxs)("div", { className: "space-y-1", children: [
-              dateLabel && /* @__PURE__ */ (0, import_jsx_runtime51.jsx)("p", { className: "text-xs font-semibold uppercase tracking-wide text-[var(--color-accent)]", children: dateLabel }),
-              /* @__PURE__ */ (0, import_jsx_runtime51.jsx)("p", { className: "text-base font-semibold text-slate-900", children: event?.location }),
-              event?.timingNote && /* @__PURE__ */ (0, import_jsx_runtime51.jsx)("p", { className: "text-sm text-slate-600", children: event.timingNote })
+            /* @__PURE__ */ (0, import_jsx_runtime52.jsxs)("div", { className: "space-y-1", children: [
+              dateLabel && /* @__PURE__ */ (0, import_jsx_runtime52.jsx)("p", { className: "text-xs font-semibold uppercase tracking-wide text-[var(--color-accent)]", children: dateLabel }),
+              /* @__PURE__ */ (0, import_jsx_runtime52.jsx)("p", { className: "text-base font-semibold text-slate-900", children: event?.location }),
+              event?.timingNote && /* @__PURE__ */ (0, import_jsx_runtime52.jsx)("p", { className: "text-sm text-slate-600", children: event.timingNote })
             ] }),
-            /* @__PURE__ */ (0, import_jsx_runtime51.jsx)(import_lucide_react4.ChevronRight, { className: "h-5 w-5 text-slate-400 transition group-hover:text-[var(--color-accent)]", "aria-hidden": "true" })
+            /* @__PURE__ */ (0, import_jsx_runtime52.jsx)(import_lucide_react4.ChevronRight, { className: "h-5 w-5 text-slate-400 transition group-hover:text-[var(--color-accent)]", "aria-hidden": "true" })
           ]
         }
       ) }, event?._key || event?._id || dateLabel);
@@ -75434,7 +75598,7 @@ var EventDialog = ({
   const hasPortableDescription = Array.isArray(event?.description) && event.description.length > 0;
   const plainDescription = !hasPortableDescription && typeof event?.description === "string" ? event.description : "";
   const statusVariant = event?.status && EVENT_STATUS_LABELS[event.status] ? event.status : "default";
-  return /* @__PURE__ */ (0, import_jsx_runtime51.jsx)(Dialog2, { open, onOpenChange, children: /* @__PURE__ */ (0, import_jsx_runtime51.jsx)(
+  return /* @__PURE__ */ (0, import_jsx_runtime52.jsx)(Dialog2, { open, onOpenChange, children: /* @__PURE__ */ (0, import_jsx_runtime52.jsx)(
     DialogContent2,
     {
       className: cn(
@@ -75442,7 +75606,7 @@ var EventDialog = ({
         "max-h-[calc(100vh-3rem)] sm:max-h-[calc(100vh-4rem)]",
         "[&_[data-radix-dialog-close]]:z-20"
       ),
-      children: /* @__PURE__ */ (0, import_jsx_runtime51.jsxs)(
+      children: /* @__PURE__ */ (0, import_jsx_runtime52.jsxs)(
         "div",
         {
           className: cn(
@@ -75450,7 +75614,7 @@ var EventDialog = ({
             hasHeroImage ? "md:flex-row" : ""
           ),
           children: [
-            hasHeroImage && /* @__PURE__ */ (0, import_jsx_runtime51.jsx)("div", { className: "relative h-56 w-full flex-shrink-0 overflow-hidden bg-slate-100 md:h-full md:w-64 md:max-h-full md:self-stretch", children: /* @__PURE__ */ (0, import_jsx_runtime51.jsx)(
+            hasHeroImage && /* @__PURE__ */ (0, import_jsx_runtime52.jsx)("div", { className: "relative h-56 w-full flex-shrink-0 overflow-hidden bg-slate-100 md:h-full md:w-64 md:max-h-full md:self-stretch", children: /* @__PURE__ */ (0, import_jsx_runtime52.jsx)(
               "img",
               {
                 src: heroImage,
@@ -75459,24 +75623,24 @@ var EventDialog = ({
                 loading: "lazy"
               }
             ) }),
-            /* @__PURE__ */ (0, import_jsx_runtime51.jsx)("div", { className: "flex-1 min-h-0 overflow-y-auto p-6 md:max-h-full", children: /* @__PURE__ */ (0, import_jsx_runtime51.jsxs)("div", { className: "space-y-6 pb-6", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime51.jsx)("div", { className: "sticky top-0 z-10 -mx-6 mb-4 border-b border-slate-200 bg-white/95 px-6 pb-4 pt-4 backdrop-blur supports-[backdrop-filter]:backdrop-blur", children: /* @__PURE__ */ (0, import_jsx_runtime51.jsxs)(DialogHeader, { className: "space-y-2 text-left pr-10", children: [
-                /* @__PURE__ */ (0, import_jsx_runtime51.jsxs)("div", { className: "space-y-1", children: [
-                  /* @__PURE__ */ (0, import_jsx_runtime51.jsx)(DialogTitle2, { className: "text-2xl font-semibold text-slate-900", children: event?.location }),
-                  dateLabel && /* @__PURE__ */ (0, import_jsx_runtime51.jsx)(DialogDescription2, { className: "text-sm font-medium text-slate-700", children: dateLabel })
+            /* @__PURE__ */ (0, import_jsx_runtime52.jsx)("div", { className: "flex-1 min-h-0 overflow-y-auto p-6 md:max-h-full", children: /* @__PURE__ */ (0, import_jsx_runtime52.jsxs)("div", { className: "space-y-6 pb-6", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime52.jsx)("div", { className: "sticky top-0 z-10 -mx-6 mb-4 border-b border-slate-200 bg-white/95 px-6 pb-4 pt-4 backdrop-blur supports-[backdrop-filter]:backdrop-blur", children: /* @__PURE__ */ (0, import_jsx_runtime52.jsxs)(DialogHeader, { className: "space-y-2 text-left pr-10", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime52.jsxs)("div", { className: "space-y-1", children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime52.jsx)(DialogTitle2, { className: "text-2xl font-semibold text-slate-900", children: event?.location }),
+                  dateLabel && /* @__PURE__ */ (0, import_jsx_runtime52.jsx)(DialogDescription2, { className: "text-sm font-medium text-slate-700", children: dateLabel })
                 ] }),
-                event?.timingNote && /* @__PURE__ */ (0, import_jsx_runtime51.jsx)("p", { className: "text-sm text-slate-600", children: event.timingNote }),
-                event?.locationDetails && /* @__PURE__ */ (0, import_jsx_runtime51.jsx)("p", { className: "text-sm text-slate-600", children: event.locationDetails })
+                event?.timingNote && /* @__PURE__ */ (0, import_jsx_runtime52.jsx)("p", { className: "text-sm text-slate-600", children: event.timingNote }),
+                event?.locationDetails && /* @__PURE__ */ (0, import_jsx_runtime52.jsx)("p", { className: "text-sm text-slate-600", children: event.locationDetails })
               ] }) }),
-              (event?.foodType || event?.status && event.status !== "scheduled") && /* @__PURE__ */ (0, import_jsx_runtime51.jsxs)("div", { className: "flex flex-wrap gap-2", children: [
-                event?.foodType && /* @__PURE__ */ (0, import_jsx_runtime51.jsx)(EventBadge, { children: event.foodType }),
-                event?.status && event.status !== "scheduled" && /* @__PURE__ */ (0, import_jsx_runtime51.jsx)(EventBadge, { variant: statusVariant, children: EVENT_STATUS_LABELS[event.status] || event.status })
+              (event?.foodType || event?.status && event.status !== "scheduled") && /* @__PURE__ */ (0, import_jsx_runtime52.jsxs)("div", { className: "flex flex-wrap gap-2", children: [
+                event?.foodType && /* @__PURE__ */ (0, import_jsx_runtime52.jsx)(EventBadge, { children: event.foodType }),
+                event?.status && event.status !== "scheduled" && /* @__PURE__ */ (0, import_jsx_runtime52.jsx)(EventBadge, { variant: statusVariant, children: EVENT_STATUS_LABELS[event.status] || event.status })
               ] }),
-              event?.tagline && /* @__PURE__ */ (0, import_jsx_runtime51.jsx)("p", { className: "text-lg font-medium text-slate-800", children: event.tagline }),
-              summary && !event?.tagline && /* @__PURE__ */ (0, import_jsx_runtime51.jsx)("p", { className: "text-base text-slate-700", children: summary }),
-              /* @__PURE__ */ (0, import_jsx_runtime51.jsx)(Separator, { className: "bg-slate-200" }),
-              hasPortableDescription ? /* @__PURE__ */ (0, import_jsx_runtime51.jsx)("div", { className: "prose prose-slate max-w-none text-sm leading-relaxed", children: /* @__PURE__ */ (0, import_jsx_runtime51.jsx)(import_react49.PortableText, { value: event.description, components: portableComponents }) }) : plainDescription && /* @__PURE__ */ (0, import_jsx_runtime51.jsx)("p", { className: "text-sm leading-relaxed text-slate-600", children: plainDescription }),
-              event?.ticketsUrl && /* @__PURE__ */ (0, import_jsx_runtime51.jsx)("div", { className: "pt-2", children: /* @__PURE__ */ (0, import_jsx_runtime51.jsx)(
+              event?.tagline && /* @__PURE__ */ (0, import_jsx_runtime52.jsx)("p", { className: "text-lg font-medium text-slate-800", children: event.tagline }),
+              summary && !event?.tagline && /* @__PURE__ */ (0, import_jsx_runtime52.jsx)("p", { className: "text-base text-slate-700", children: summary }),
+              /* @__PURE__ */ (0, import_jsx_runtime52.jsx)(Separator, { className: "bg-slate-200" }),
+              hasPortableDescription ? /* @__PURE__ */ (0, import_jsx_runtime52.jsx)("div", { className: "prose prose-slate max-w-none text-sm leading-relaxed", children: /* @__PURE__ */ (0, import_jsx_runtime52.jsx)(import_react50.PortableText, { value: event.description, components: portableComponents }) }) : plainDescription && /* @__PURE__ */ (0, import_jsx_runtime52.jsx)("p", { className: "text-sm leading-relaxed text-slate-600", children: plainDescription }),
+              event?.ticketsUrl && /* @__PURE__ */ (0, import_jsx_runtime52.jsx)("div", { className: "pt-2", children: /* @__PURE__ */ (0, import_jsx_runtime52.jsx)(
                 "a",
                 {
                   href: event.ticketsUrl,
@@ -75510,7 +75674,7 @@ var RewardTierCard = ({ tier, onSelect, busy, selected }) => {
     if (!isAvailable || busy) return;
     if (onSelect) onSelect(tier);
   };
-  return /* @__PURE__ */ (0, import_jsx_runtime51.jsxs)(
+  return /* @__PURE__ */ (0, import_jsx_runtime52.jsxs)(
     Card,
     {
       role: isAvailable ? "button" : void 0,
@@ -75531,20 +75695,20 @@ var RewardTierCard = ({ tier, onSelect, busy, selected }) => {
         selected && "border-[var(--color-accent)] shadow-lg"
       ),
       children: [
-        /* @__PURE__ */ (0, import_jsx_runtime51.jsxs)(CardHeader, { className: "space-y-2 border-none px-5 pt-5 pb-0", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime51.jsx)(CardTitle, { className: "text-xl font-semibold text-slate-900", children: headline }),
-          !pizzaCountLabel && /* @__PURE__ */ (0, import_jsx_runtime51.jsx)("p", { className: "text-base font-semibold text-[var(--color-accent)]", children: tier.title })
+        /* @__PURE__ */ (0, import_jsx_runtime52.jsxs)(CardHeader, { className: "space-y-2 border-none px-5 pt-5 pb-0", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime52.jsx)(CardTitle, { className: "text-xl font-semibold text-slate-900", children: headline }),
+          !pizzaCountLabel && /* @__PURE__ */ (0, import_jsx_runtime52.jsx)("p", { className: "text-base font-semibold text-[var(--color-accent)]", children: tier.title })
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime51.jsxs)(CardContent, { className: "space-y-3 px-5 pb-4 pt-4", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime51.jsx)("p", { className: "text-sm text-slate-600 leading-relaxed", children: tier.description }),
-          tier.limit && /* @__PURE__ */ (0, import_jsx_runtime51.jsxs)("p", { className: "text-xs font-semibold uppercase tracking-[0.2em] text-slate-500", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime52.jsxs)(CardContent, { className: "space-y-3 px-5 pb-4 pt-4", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime52.jsx)("p", { className: "text-sm text-slate-600 leading-relaxed", children: tier.description }),
+          tier.limit && /* @__PURE__ */ (0, import_jsx_runtime52.jsxs)("p", { className: "text-xs font-semibold uppercase tracking-[0.2em] text-slate-500", children: [
             "Limited - ",
             tier.limit,
             " left"
           ] })
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime51.jsxs)(CardFooter, { className: "flex items-center gap-3 px-5 pb-5 pt-0 border-none", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime51.jsx)(
+        /* @__PURE__ */ (0, import_jsx_runtime52.jsxs)(CardFooter, { className: "flex items-center gap-3 px-5 pb-5 pt-0 border-none", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime52.jsx)(
             Button,
             {
               type: "button",
@@ -75558,7 +75722,7 @@ var RewardTierCard = ({ tier, onSelect, busy, selected }) => {
               children: selected ? "Reward selected" : isAvailable ? "Select this reward" : "Unavailable online"
             }
           ),
-          !isAvailable && /* @__PURE__ */ (0, import_jsx_runtime51.jsx)("span", { className: "text-xs text-slate-500", children: "Contact us to claim." })
+          !isAvailable && /* @__PURE__ */ (0, import_jsx_runtime52.jsx)("span", { className: "text-xs text-slate-500", children: "Contact us to claim." })
         ] })
       ]
     }
@@ -75591,58 +75755,58 @@ var CAMPAIGN_EXTENSION_DEADLINE = (() => {
   return Number.isNaN(parsed.getTime()) ? null : parsed;
 })();
 var CrowdfundingPage = () => {
-  const [campaignData, setCampaignData] = (0, import_react48.useState)(null);
-  const [activeTab, setActiveTab] = (0, import_react48.useState)("story");
-  const [paying, setPaying] = (0, import_react48.useState)(false);
-  const [payError, setPayError] = (0, import_react48.useState)("");
-  const [processingMessage, setProcessingMessage] = (0, import_react48.useState)("");
-  const [funderName, setFunderName] = (0, import_react48.useState)("");
-  const [email, setEmail] = (0, import_react48.useState)("");
-  const [phone, setPhone] = (0, import_react48.useState)("");
-  const [notes, setNotes] = (0, import_react48.useState)("");
-  const [squareDiscountCode, setSquareDiscountCode] = (0, import_react48.useState)("");
-  const [discountState, setDiscountState] = (0, import_react48.useState)({
+  const [campaignData, setCampaignData] = (0, import_react49.useState)(null);
+  const [activeTab, setActiveTab] = (0, import_react49.useState)("story");
+  const [paying, setPaying] = (0, import_react49.useState)(false);
+  const [payError, setPayError] = (0, import_react49.useState)("");
+  const [processingMessage, setProcessingMessage] = (0, import_react49.useState)("");
+  const [funderName, setFunderName] = (0, import_react49.useState)("");
+  const [email, setEmail] = (0, import_react49.useState)("");
+  const [phone, setPhone] = (0, import_react49.useState)("");
+  const [notes, setNotes] = (0, import_react49.useState)("");
+  const [squareDiscountCode, setSquareDiscountCode] = (0, import_react49.useState)("");
+  const [discountState, setDiscountState] = (0, import_react49.useState)({
     status: "idle",
     code: "",
     discount: null,
     message: ""
   });
   const notify = "none";
-  const [showForm, setShowForm] = (0, import_react48.useState)(false);
-  const [pizzaQty, setPizzaQty] = (0, import_react48.useState)(1);
-  const [confirmMsg, setConfirmMsg] = (0, import_react48.useState)("");
-  const [checkoutComplete, setCheckoutComplete] = (0, import_react48.useState)(false);
-  const [receiptInfo, setReceiptInfo] = (0, import_react48.useState)(null);
-  const [lastContributionTotal, setLastContributionTotal] = (0, import_react48.useState)(null);
-  const [formNotice, setFormNotice] = (0, import_react48.useState)("");
-  const [referralInput, setReferralInput] = (0, import_react48.useState)("");
-  const [referralState, setReferralState] = (0, import_react48.useState)({
+  const [showForm, setShowForm] = (0, import_react49.useState)(false);
+  const [pizzaQty, setPizzaQty] = (0, import_react49.useState)(1);
+  const [confirmMsg, setConfirmMsg] = (0, import_react49.useState)("");
+  const [checkoutComplete, setCheckoutComplete] = (0, import_react49.useState)(false);
+  const [receiptInfo, setReceiptInfo] = (0, import_react49.useState)(null);
+  const [lastContributionTotal, setLastContributionTotal] = (0, import_react49.useState)(null);
+  const [formNotice, setFormNotice] = (0, import_react49.useState)("");
+  const [referralInput, setReferralInput] = (0, import_react49.useState)("");
+  const [referralState, setReferralState] = (0, import_react49.useState)({
     status: "idle",
     valid: false,
     participant: null,
     code: ""
   });
-  const [selectedTierId, setSelectedTierId] = (0, import_react48.useState)("");
-  const [subscribeEmail, setSubscribeEmail] = (0, import_react48.useState)("");
-  const [subscribeStatus, setSubscribeStatus] = (0, import_react48.useState)("idle");
-  const [subscribeMessage, setSubscribeMessage] = (0, import_react48.useState)("");
-  const [rewardPreference, setRewardPreference] = (0, import_react48.useState)(REWARD_PREFERENCE_OPTIONS[0].value);
-  const [feedbackRating, setFeedbackRating] = (0, import_react48.useState)(5);
-  const [feedbackMessage, setFeedbackMessage] = (0, import_react48.useState)("");
-  const [feedbackNotice, setFeedbackNotice] = (0, import_react48.useState)("");
-  const [feedbackStatus, setFeedbackStatus] = (0, import_react48.useState)("idle");
-  const [feedbackEntries, setFeedbackEntries] = (0, import_react48.useState)([]);
-  const [feedbackSubmitting, setFeedbackSubmitting] = (0, import_react48.useState)(false);
-  const [feedbackLoading, setFeedbackLoading] = (0, import_react48.useState)(false);
-  const [feedbackFetchError, setFeedbackFetchError] = (0, import_react48.useState)("");
-  const [realtimeTotals, setRealtimeTotals] = (0, import_react48.useState)(null);
-  const [feedbackRealtimeStatus, setFeedbackRealtimeStatus] = (0, import_react48.useState)("idle");
-  const [galleryImages, setGalleryImages] = (0, import_react48.useState)([]);
-  const [galleryLoading, setGalleryLoading] = (0, import_react48.useState)(false);
-  const [galleryError, setGalleryError] = (0, import_react48.useState)("");
-  const feedbackFallbackStatusRef = (0, import_react48.useRef)(null);
-  const galleryLoadedRef = (0, import_react48.useRef)(false);
-  const [activeEvent, setActiveEvent] = (0, import_react48.useState)(null);
+  const [selectedTierId, setSelectedTierId] = (0, import_react49.useState)("");
+  const [subscribeEmail, setSubscribeEmail] = (0, import_react49.useState)("");
+  const [subscribeStatus, setSubscribeStatus] = (0, import_react49.useState)("idle");
+  const [subscribeMessage, setSubscribeMessage] = (0, import_react49.useState)("");
+  const [rewardPreference, setRewardPreference] = (0, import_react49.useState)(REWARD_PREFERENCE_OPTIONS[0].value);
+  const [feedbackRating, setFeedbackRating] = (0, import_react49.useState)(5);
+  const [feedbackMessage, setFeedbackMessage] = (0, import_react49.useState)("");
+  const [feedbackNotice, setFeedbackNotice] = (0, import_react49.useState)("");
+  const [feedbackStatus, setFeedbackStatus] = (0, import_react49.useState)("idle");
+  const [feedbackEntries, setFeedbackEntries] = (0, import_react49.useState)([]);
+  const [feedbackSubmitting, setFeedbackSubmitting] = (0, import_react49.useState)(false);
+  const [feedbackLoading, setFeedbackLoading] = (0, import_react49.useState)(false);
+  const [feedbackFetchError, setFeedbackFetchError] = (0, import_react49.useState)("");
+  const [realtimeTotals, setRealtimeTotals] = (0, import_react49.useState)(null);
+  const [feedbackRealtimeStatus, setFeedbackRealtimeStatus] = (0, import_react49.useState)("idle");
+  const [galleryImages, setGalleryImages] = (0, import_react49.useState)([]);
+  const [galleryLoading, setGalleryLoading] = (0, import_react49.useState)(false);
+  const [galleryError, setGalleryError] = (0, import_react49.useState)("");
+  const feedbackFallbackStatusRef = (0, import_react49.useRef)(null);
+  const galleryLoadedRef = (0, import_react49.useRef)(false);
+  const [activeEvent, setActiveEvent] = (0, import_react49.useState)(null);
   const { data: summaryData, error: summaryError } = useSWR(
     "crowdfund-summary",
     summaryFetcher,
@@ -75659,7 +75823,7 @@ var CrowdfundingPage = () => {
   const livePizzas = Number.isFinite(Number(realtimeTotals?.pizzas)) ? Number(realtimeTotals.pizzas) : null;
   const liveBackers = Number.isFinite(Number(realtimeTotals?.backers)) ? Number(realtimeTotals.backers) : null;
   const liveGoal = Number.isFinite(Number(realtimeTotals?.goal)) ? Number(realtimeTotals.goal) : null;
-  (0, import_react48.useEffect)(() => {
+  (0, import_react49.useEffect)(() => {
     if (typeof window === "undefined") {
       return void 0;
     }
@@ -75695,7 +75859,7 @@ var CrowdfundingPage = () => {
       }
     };
   }, []);
-  (0, import_react48.useEffect)(() => {
+  (0, import_react49.useEffect)(() => {
     if (activeTab !== "gallery" || galleryLoadedRef.current) {
       return void 0;
     }
@@ -75803,7 +75967,7 @@ var CrowdfundingPage = () => {
       cancelled = true;
     };
   }, [activeTab]);
-  (0, import_react48.useEffect)(() => {
+  (0, import_react49.useEffect)(() => {
     if (typeof window === "undefined") {
       return void 0;
     }
@@ -75851,7 +76015,7 @@ var CrowdfundingPage = () => {
       }
     };
   }, []);
-  (0, import_react48.useEffect)(() => {
+  (0, import_react49.useEffect)(() => {
     if (feedbackRealtimeStatus === "ready") {
       feedbackFallbackStatusRef.current = null;
       return void 0;
@@ -75911,10 +76075,10 @@ var CrowdfundingPage = () => {
       cancelled = true;
     };
   }, [feedbackRealtimeStatus]);
-  const emailValid = (0, import_react48.useMemo)(() => !email || /.+@.+\..+/.test(email), [email]);
-  const phoneDigits = (0, import_react48.useMemo)(() => phone.replace(/\D/g, ""), [phone]);
-  const phoneValid = (0, import_react48.useMemo)(() => !phone || phoneDigits.length >= 10, [phone, phoneDigits]);
-  (0, import_react48.useEffect)(() => {
+  const emailValid = (0, import_react49.useMemo)(() => !email || /.+@.+\..+/.test(email), [email]);
+  const phoneDigits = (0, import_react49.useMemo)(() => phone.replace(/\D/g, ""), [phone]);
+  const phoneValid = (0, import_react49.useMemo)(() => !phone || phoneDigits.length >= 10, [phone, phoneDigits]);
+  (0, import_react49.useEffect)(() => {
     const slug = "local-pizza-by-local-effort-let-s-make-1000-pizzas";
     const query2 = `*[_type == "crowdfundingCampaign" && slug.current == $slug][0]{
       title,
@@ -76053,7 +76217,7 @@ var CrowdfundingPage = () => {
     doFetch();
   }, []);
   const rewardTiers = campaignData?.rewardTiers || [];
-  const visibleTiers = (0, import_react48.useMemo)(() => {
+  const visibleTiers = (0, import_react49.useMemo)(() => {
     const hasValid = referralState.valid && referralState.code;
     return rewardTiers.filter((t) => {
       if (!t?.referralOnly) return true;
@@ -76064,70 +76228,70 @@ var CrowdfundingPage = () => {
       return true;
     });
   }, [rewardTiers, referralState]);
-  const hasPayableTier = (0, import_react48.useMemo)(
+  const hasPayableTier = (0, import_react49.useMemo)(
     () => visibleTiers.some((t) => typeof t?.amount === "number" && t.amount > 0),
     [visibleTiers]
   );
-  const firstPayTier = (0, import_react48.useMemo)(
+  const firstPayTier = (0, import_react49.useMemo)(
     () => visibleTiers.find((t) => typeof t?.amount === "number" && t.amount > 0) || null,
     [visibleTiers]
   );
-  (0, import_react48.useEffect)(() => {
+  (0, import_react49.useEffect)(() => {
     if (!selectedTierId) return;
     const exists = visibleTiers.some((tier) => tierIdentifier(tier) === selectedTierId);
     if (!exists) setSelectedTierId("");
   }, [selectedTierId, visibleTiers]);
-  const activeTier = (0, import_react48.useMemo)(() => {
+  const activeTier = (0, import_react49.useMemo)(() => {
     if (selectedTierId) {
       const matched = visibleTiers.find((tier) => tierIdentifier(tier) === selectedTierId);
       if (matched) return matched;
     }
     return firstPayTier;
   }, [selectedTierId, visibleTiers, firstPayTier]);
-  const activeTierId = (0, import_react48.useMemo)(() => tierIdentifier(activeTier), [activeTier]);
-  const currencyFormatter = (0, import_react48.useMemo)(
+  const activeTierId = (0, import_react49.useMemo)(() => tierIdentifier(activeTier), [activeTier]);
+  const currencyFormatter = (0, import_react49.useMemo)(
     () => new Intl.NumberFormat("en-US", {
       style: "currency",
       currency: "USD"
     }),
     []
   );
-  const activeTierAmountLabel = (0, import_react48.useMemo)(() => {
+  const activeTierAmountLabel = (0, import_react49.useMemo)(() => {
     if (!activeTier || typeof activeTier.amount !== "number") return "";
     return currencyFormatter.format(activeTier.amount);
   }, [activeTier, currencyFormatter]);
-  const trimmedDiscountCode = (0, import_react48.useMemo)(() => squareDiscountCode.trim(), [squareDiscountCode]);
-  const appliedDiscount = (0, import_react48.useMemo)(() => {
+  const trimmedDiscountCode = (0, import_react49.useMemo)(() => squareDiscountCode.trim(), [squareDiscountCode]);
+  const appliedDiscount = (0, import_react49.useMemo)(() => {
     if (!trimmedDiscountCode) return null;
     if (discountState.status !== "applied") return null;
     if (!discountState.code || !discountState.discount) return null;
     if (discountState.code.toLowerCase() !== trimmedDiscountCode.toLowerCase()) return null;
     return discountState.discount;
   }, [trimmedDiscountCode, discountState]);
-  const baseCartTotalCents = (0, import_react48.useMemo)(() => {
+  const baseCartTotalCents = (0, import_react49.useMemo)(() => {
     if (!activeTier || typeof activeTier.amount !== "number") return 0;
     const totalDollars = activeTier.amount * Math.max(1, pizzaQty);
     return Math.max(0, Math.round(totalDollars * 100));
   }, [activeTier, pizzaQty]);
-  const discountedTotalCents = (0, import_react48.useMemo)(
+  const discountedTotalCents = (0, import_react49.useMemo)(
     () => applyDiscountToCents(baseCartTotalCents, appliedDiscount),
     [baseCartTotalCents, appliedDiscount]
   );
   const requiresPayment = discountedTotalCents > 0;
-  const discountedTotalLabel = (0, import_react48.useMemo)(() => {
+  const discountedTotalLabel = (0, import_react49.useMemo)(() => {
     if (discountedTotalCents <= 0) {
       return "Free";
     }
     return currencyFormatter.format(discountedTotalCents / 100);
   }, [discountedTotalCents, currencyFormatter]);
-  const lastContributionLabel = (0, import_react48.useMemo)(() => {
+  const lastContributionLabel = (0, import_react49.useMemo)(() => {
     if (!Number.isFinite(lastContributionTotal)) {
       return null;
     }
     const safeTotal = Math.max(0, Math.round(Number(lastContributionTotal) || 0));
     return currencyFormatter.format(safeTotal / 100);
   }, [lastContributionTotal, currencyFormatter]);
-  (0, import_react48.useEffect)(() => {
+  (0, import_react49.useEffect)(() => {
     if (showForm && !activeTier) {
       setShowForm(false);
       setFormNotice(
@@ -76135,7 +76299,7 @@ var CrowdfundingPage = () => {
       );
     }
   }, [showForm, activeTier, hasPayableTier]);
-  (0, import_react48.useEffect)(() => {
+  (0, import_react49.useEffect)(() => {
     if (!showForm && hasPayableTier && activeTier) {
       setFormNotice("");
     }
@@ -76156,7 +76320,7 @@ var CrowdfundingPage = () => {
     setLastContributionTotal(null);
     setShowForm(true);
   };
-  const handleStartNewContribution = (0, import_react48.useCallback)(() => {
+  const handleStartNewContribution = (0, import_react49.useCallback)(() => {
     setCheckoutComplete(false);
     setProcessingMessage("");
     setPayError("");
@@ -76204,7 +76368,7 @@ var CrowdfundingPage = () => {
       setSubscribeMessage(err.message || "Something went wrong. Please try again.");
     }
   };
-  const handleFeedbackSubmit = (0, import_react48.useCallback)(
+  const handleFeedbackSubmit = (0, import_react49.useCallback)(
     async (event) => {
       event.preventDefault();
       if (feedbackSubmitting) return;
@@ -76283,13 +76447,13 @@ var CrowdfundingPage = () => {
     locationId: squareLocationId,
     isSandbox: squareIsSandbox
   } = useSquarePayments();
-  const cardContainerRef = (0, import_react48.useRef)(null);
-  const cardInstanceRef = (0, import_react48.useRef)(null);
-  const cardInitRef = (0, import_react48.useRef)(false);
-  const [cardReady, setCardReady] = (0, import_react48.useState)(false);
-  const [cardError, setCardError] = (0, import_react48.useState)("");
+  const cardContainerRef = (0, import_react49.useRef)(null);
+  const cardInstanceRef = (0, import_react49.useRef)(null);
+  const cardInitRef = (0, import_react49.useRef)(false);
+  const [cardReady, setCardReady] = (0, import_react49.useState)(false);
+  const [cardError, setCardError] = (0, import_react49.useState)("");
   const { notify: notifyToast } = useToast();
-  (0, import_react48.useEffect)(() => {
+  (0, import_react49.useEffect)(() => {
     setDiscountState((prev) => {
       if (!trimmedDiscountCode) {
         if (prev.status === "idle" && !prev.code && !prev.discount && !prev.message) {
@@ -76306,7 +76470,7 @@ var CrowdfundingPage = () => {
       return { status: "idle", code: "", discount: null, message: "" };
     });
   }, [trimmedDiscountCode]);
-  const handleDiscountApply = (0, import_react48.useCallback)(async () => {
+  const handleDiscountApply = (0, import_react49.useCallback)(async () => {
     if (!trimmedDiscountCode) {
       setDiscountState({ status: "idle", code: "", discount: null, message: "" });
       return;
@@ -76353,7 +76517,7 @@ var CrowdfundingPage = () => {
       });
     }
   }, [trimmedDiscountCode, notifyToast]);
-  const rememberPendingContribution = (0, import_react48.useCallback)((cartItems, context = {}) => {
+  const rememberPendingContribution = (0, import_react49.useCallback)((cartItems, context = {}) => {
     if (!Array.isArray(cartItems) || cartItems.length === 0) return;
     try {
       localStorage.setItem("cf_items", JSON.stringify(cartItems));
@@ -76383,7 +76547,7 @@ var CrowdfundingPage = () => {
       devConsole_default.warn("[square] [crowdfunding] failed to persist pending contribution", err);
     }
   }, []);
-  const clearPendingContribution = (0, import_react48.useCallback)(() => {
+  const clearPendingContribution = (0, import_react49.useCallback)(() => {
     try {
       localStorage.removeItem("cf_items");
       localStorage.removeItem("cf_name");
@@ -76393,7 +76557,7 @@ var CrowdfundingPage = () => {
       devConsole_default.warn("[square] [crowdfunding] failed to clear pending contribution", err);
     }
   }, []);
-  const destroyCard = (0, import_react48.useCallback)(() => {
+  const destroyCard = (0, import_react49.useCallback)(() => {
     const card = cardInstanceRef.current;
     if (card) {
       devConsole_default.log("[square] [crowdfunding] destroying card instance");
@@ -76416,17 +76580,17 @@ var CrowdfundingPage = () => {
     cardInitRef.current = false;
     setCardReady(false);
   }, []);
-  (0, import_react48.useEffect)(() => {
+  (0, import_react49.useEffect)(() => {
     if (!showForm) {
       destroyCard();
     }
   }, [showForm, destroyCard]);
-  (0, import_react48.useEffect)(() => {
+  (0, import_react49.useEffect)(() => {
     if (paymentsError) {
       notifyToast(paymentsError, { type: "error" });
     }
   }, [paymentsError, notifyToast]);
-  (0, import_react48.useEffect)(() => {
+  (0, import_react49.useEffect)(() => {
     if (!requiresPayment) {
       destroyCard();
       return;
@@ -76482,13 +76646,13 @@ var CrowdfundingPage = () => {
       cancelled = true;
     };
   }, [payments, showForm, activeTier, requiresPayment, notifyToast, destroyCard]);
-  (0, import_react48.useEffect)(() => {
+  (0, import_react49.useEffect)(() => {
     return () => {
       devConsole_default.log("[square] [crowdfunding] page unmount cleanup");
       destroyCard();
     };
   }, [destroyCard]);
-  (0, import_react48.useEffect)(() => {
+  (0, import_react49.useEffect)(() => {
     const params = new URLSearchParams(window.location.search);
     if (params.get("payment") === "success") {
       (async () => {
@@ -76558,7 +76722,7 @@ var CrowdfundingPage = () => {
       })();
     }
   }, [clearPendingContribution, setCheckoutComplete, setReceiptInfo]);
-  const tokenizeCard = (0, import_react48.useCallback)(async () => {
+  const tokenizeCard = (0, import_react49.useCallback)(async () => {
     const card = cardInstanceRef.current;
     if (!card) {
       const message2 = "Payment form is not ready yet.";
@@ -76771,13 +76935,13 @@ var CrowdfundingPage = () => {
     }
   };
   const updates = Array.isArray(campaignData?.updates) ? campaignData.updates : [];
-  const parseEventDate2 = (0, import_react48.useCallback)((value2) => {
+  const parseEventDate2 = (0, import_react49.useCallback)((value2) => {
     if (!value2) return null;
     const iso = value2.includes("T") ? value2 : `${value2}T00:00:00`;
     const date = new Date(iso);
     return Number.isNaN(date.getTime()) ? null : date;
   }, []);
-  const upcomingEvents = (0, import_react48.useMemo)(() => {
+  const upcomingEvents = (0, import_react49.useMemo)(() => {
     const rawEvents = Array.isArray(campaignData?.events) ? campaignData.events : [];
     const importedEvents = Array.isArray(campaignData?.featuredPublicEvents) ? campaignData.featuredPublicEvents.map((ev) => ({ ...ev, _imported: true })) : [];
     const merged = [...rawEvents, ...importedEvents].filter(Boolean);
@@ -76811,7 +76975,7 @@ var CrowdfundingPage = () => {
       return aStart - bStart;
     });
   }, [campaignData, parseEventDate2]);
-  (0, import_react48.useEffect)(() => {
+  (0, import_react49.useEffect)(() => {
     if (!activeEvent) return;
     const match2 = upcomingEvents.find(
       (ev) => (ev._key || ev._id) === (activeEvent._key || activeEvent._id)
@@ -76824,7 +76988,7 @@ var CrowdfundingPage = () => {
       setActiveEvent(match2);
     }
   }, [activeEvent, upcomingEvents]);
-  const formatListDate = (0, import_react48.useCallback)(
+  const formatListDate = (0, import_react49.useCallback)(
     (event) => {
       const start = parseEventDate2(event?.startDate);
       const end = parseEventDate2(event?.endDate);
@@ -76842,7 +77006,7 @@ var CrowdfundingPage = () => {
     },
     [parseEventDate2]
   );
-  const formatModalDate = (0, import_react48.useCallback)(
+  const formatModalDate = (0, import_react49.useCallback)(
     (event) => {
       const start = parseEventDate2(event?.startDate);
       const end = parseEventDate2(event?.endDate);
@@ -76866,7 +77030,7 @@ var CrowdfundingPage = () => {
     },
     [parseEventDate2]
   );
-  const deriveEventSummary = (0, import_react48.useCallback)((event) => {
+  const deriveEventSummary = (0, import_react49.useCallback)((event) => {
     if (!event || typeof event !== "object") {
       return "";
     }
@@ -76911,7 +77075,7 @@ var CrowdfundingPage = () => {
     return 0;
   })();
   const basePizzasSold = Number.isFinite(publishedPizzasSold) ? publishedPizzasSold : fallbackPizzasBase;
-  const computeIncrement = (0, import_react48.useCallback)(
+  const computeIncrement = (0, import_react49.useCallback)(
     (value2) => {
       if (!Number.isFinite(value2) || value2 <= 0) {
         return 0;
@@ -76941,7 +77105,7 @@ var CrowdfundingPage = () => {
   if (Number.isFinite(liveBackers)) {
     backers = Math.max(liveBackers, baseBackers);
   }
-  const effectiveEndDate = (0, import_react48.useMemo)(() => {
+  const effectiveEndDate = (0, import_react49.useMemo)(() => {
     const fallback = CAMPAIGN_EXTENSION_DEADLINE;
     if (!endDate) return fallback;
     const parsed = new Date(endDate);
@@ -76960,7 +77124,7 @@ var CrowdfundingPage = () => {
     return Math.max(days, 0);
   })();
   const progressPercentage = pizzaGoal > 0 ? Math.min(pizzasSold / pizzaGoal * 100, 100) : 0;
-  const TabButton = ({ tabName, label }) => /* @__PURE__ */ (0, import_jsx_runtime51.jsx)(
+  const TabButton = ({ tabName, label }) => /* @__PURE__ */ (0, import_jsx_runtime52.jsx)(
     "button",
     {
       type: "button",
@@ -77013,19 +77177,19 @@ var CrowdfundingPage = () => {
       remainingDescriptionBlocks = description.slice(1);
     }
   }
-  const portableComponents = (0, import_react48.useMemo)(() => createPortableTextComponents(), []);
-  return /* @__PURE__ */ (0, import_jsx_runtime51.jsxs)(import_jsx_runtime51.Fragment, { children: [
-    /* @__PURE__ */ (0, import_jsx_runtime51.jsxs)(import_react_helmet_async12.Helmet, { children: [
-      /* @__PURE__ */ (0, import_jsx_runtime51.jsx)("title", { children: `${title} | Crowdfunding Campaign` }),
-      /* @__PURE__ */ (0, import_jsx_runtime51.jsx)("meta", { name: "description", content: plainTextFromPortable(description).slice(0, 160) })
+  const portableComponents = (0, import_react49.useMemo)(() => createPortableTextComponents(), []);
+  return /* @__PURE__ */ (0, import_jsx_runtime52.jsxs)(import_jsx_runtime52.Fragment, { children: [
+    /* @__PURE__ */ (0, import_jsx_runtime52.jsxs)(import_react_helmet_async12.Helmet, { children: [
+      /* @__PURE__ */ (0, import_jsx_runtime52.jsx)("title", { children: `${title} | Crowdfunding Campaign` }),
+      /* @__PURE__ */ (0, import_jsx_runtime52.jsx)("meta", { name: "description", content: plainTextFromPortable(description).slice(0, 160) })
     ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime51.jsxs)("div", { className: "space-y-16 mx-auto max-w-6xl px-4 md:px-6 lg:px-8", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime51.jsxs)("div", { children: [
-        /* @__PURE__ */ (0, import_jsx_runtime51.jsx)("h1", { className: "heading-display heading-balance", children: title }),
-        /* @__PURE__ */ (0, import_jsx_runtime51.jsxs)("div", { className: "mt-6 md:mt-8 text-body max-w-2xl", children: [
-          taglineBlock && /* @__PURE__ */ (0, import_jsx_runtime51.jsx)("h2", { className: "heading-lg text-neutral-600", children: blockText(taglineBlock) }),
-          description && (Array.isArray(description) ? /* @__PURE__ */ (0, import_jsx_runtime51.jsx)(import_react49.PortableText, { value: remainingDescriptionBlocks, components: portableComponents }) : /* @__PURE__ */ (0, import_jsx_runtime51.jsx)(
-            import_react49.PortableText,
+    /* @__PURE__ */ (0, import_jsx_runtime52.jsxs)("div", { className: "space-y-16 mx-auto max-w-6xl px-4 md:px-6 lg:px-8", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime52.jsxs)("div", { children: [
+        /* @__PURE__ */ (0, import_jsx_runtime52.jsx)("h1", { className: "heading-display heading-balance", children: title }),
+        /* @__PURE__ */ (0, import_jsx_runtime52.jsxs)("div", { className: "mt-6 md:mt-8 text-body max-w-2xl", children: [
+          taglineBlock && /* @__PURE__ */ (0, import_jsx_runtime52.jsx)("h2", { className: "heading-lg text-neutral-600", children: blockText(taglineBlock) }),
+          description && (Array.isArray(description) ? /* @__PURE__ */ (0, import_jsx_runtime52.jsx)(import_react50.PortableText, { value: remainingDescriptionBlocks, components: portableComponents }) : /* @__PURE__ */ (0, import_jsx_runtime52.jsx)(
+            import_react50.PortableText,
             {
               value: toPortableBlocks(description),
               components: portableComponents
@@ -77033,9 +77197,9 @@ var CrowdfundingPage = () => {
           ))
         ] })
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime51.jsxs)("div", { className: "grid grid-cols-1 lg:grid-cols-5 lg:gap-16", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime51.jsxs)("div", { className: "lg:col-span-3 space-y-8 order-2 lg:order-1", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime51.jsx)(
+      /* @__PURE__ */ (0, import_jsx_runtime52.jsxs)("div", { className: "grid grid-cols-1 lg:grid-cols-5 lg:gap-16", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime52.jsxs)("div", { className: "lg:col-span-3 space-y-8 order-2 lg:order-1", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime52.jsx)(
             "img",
             {
               src: "/gallery/5Z0A5718-Edit.jpg",
@@ -77044,16 +77208,16 @@ var CrowdfundingPage = () => {
               loading: "lazy"
             }
           ),
-          /* @__PURE__ */ (0, import_jsx_runtime51.jsx)("div", { className: "border-b border-neutral-200", children: /* @__PURE__ */ (0, import_jsx_runtime51.jsxs)("nav", { className: "tablist", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime51.jsx)(TabButton, { tabName: "story", label: "Our Story" }),
-            updates.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime51.jsx)(TabButton, { tabName: "updates", label: `Updates (${updates.length})` }),
-            /* @__PURE__ */ (0, import_jsx_runtime51.jsx)(TabButton, { tabName: "goals", label: "Goals" }),
-            faq.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime51.jsx)(TabButton, { tabName: "faq", label: "FAQ" }),
-            /* @__PURE__ */ (0, import_jsx_runtime51.jsx)(TabButton, { tabName: "gallery", label: "Gallery" })
+          /* @__PURE__ */ (0, import_jsx_runtime52.jsx)("div", { className: "border-b border-neutral-200", children: /* @__PURE__ */ (0, import_jsx_runtime52.jsxs)("nav", { className: "tablist", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime52.jsx)(TabButton, { tabName: "story", label: "Our Story" }),
+            updates.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime52.jsx)(TabButton, { tabName: "updates", label: `Updates (${updates.length})` }),
+            /* @__PURE__ */ (0, import_jsx_runtime52.jsx)(TabButton, { tabName: "goals", label: "Goals" }),
+            faq.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime52.jsx)(TabButton, { tabName: "faq", label: "FAQ" }),
+            /* @__PURE__ */ (0, import_jsx_runtime52.jsx)(TabButton, { tabName: "gallery", label: "Gallery" })
           ] }) }),
-          /* @__PURE__ */ (0, import_jsx_runtime51.jsxs)("div", { className: "prose max-w-none text-body", children: [
-            activeTab === "story" && story.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime51.jsx)(import_react49.PortableText, { value: story, components: portableComponents }),
-            activeTab === "updates" && /* @__PURE__ */ (0, import_jsx_runtime51.jsx)("div", { className: "space-y-8", children: updates.map((update, index2) => {
+          /* @__PURE__ */ (0, import_jsx_runtime52.jsxs)("div", { className: "prose max-w-none text-body", children: [
+            activeTab === "story" && story.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime52.jsx)(import_react50.PortableText, { value: story, components: portableComponents }),
+            activeTab === "updates" && /* @__PURE__ */ (0, import_jsx_runtime52.jsx)("div", { className: "space-y-8", children: updates.map((update, index2) => {
               let publishDate;
               try {
                 const rawDate = update.publishedAt;
@@ -77070,39 +77234,39 @@ var CrowdfundingPage = () => {
               } catch (e) {
                 publishDate = /* @__PURE__ */ new Date();
               }
-              return /* @__PURE__ */ (0, import_jsx_runtime51.jsxs)("div", { className: "p-4 border-l-4 border-gray-200", children: [
-                /* @__PURE__ */ (0, import_jsx_runtime51.jsx)("div", { className: "mt-0", children: /* @__PURE__ */ (0, import_jsx_runtime51.jsx)(SectionHeader, { overline: "Update", title: update.title }) }),
-                /* @__PURE__ */ (0, import_jsx_runtime51.jsx)("p", { className: "text-sm text-gray-500 mb-2", children: publishDate.toLocaleDateString("en-US", {
+              return /* @__PURE__ */ (0, import_jsx_runtime52.jsxs)("div", { className: "p-4 border-l-4 border-gray-200", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime52.jsx)("div", { className: "mt-0", children: /* @__PURE__ */ (0, import_jsx_runtime52.jsx)(SectionHeader, { overline: "Update", title: update.title }) }),
+                /* @__PURE__ */ (0, import_jsx_runtime52.jsx)("p", { className: "text-sm text-gray-500 mb-2", children: publishDate.toLocaleDateString("en-US", {
                   year: "numeric",
                   month: "long",
                   day: "numeric"
                 }) }),
-                /* @__PURE__ */ (0, import_jsx_runtime51.jsx)(import_react49.PortableText, { value: update.body, components: portableComponents })
+                /* @__PURE__ */ (0, import_jsx_runtime52.jsx)(import_react50.PortableText, { value: update.body, components: portableComponents })
               ] }, index2);
             }) }),
-            activeTab === "goals" && /* @__PURE__ */ (0, import_jsx_runtime51.jsxs)("div", { className: "space-y-6", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime51.jsx)(PrioritiesPie_default, {}),
-              campaignData?.goals ? Array.isArray(campaignData.goals) ? /* @__PURE__ */ (0, import_jsx_runtime51.jsx)(import_react49.PortableText, { value: campaignData.goals, components: portableComponents }) : /* @__PURE__ */ (0, import_jsx_runtime51.jsx)(
-                import_react49.PortableText,
+            activeTab === "goals" && /* @__PURE__ */ (0, import_jsx_runtime52.jsxs)("div", { className: "space-y-6", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime52.jsx)(PrioritiesPie_default, {}),
+              campaignData?.goals ? Array.isArray(campaignData.goals) ? /* @__PURE__ */ (0, import_jsx_runtime52.jsx)(import_react50.PortableText, { value: campaignData.goals, components: portableComponents }) : /* @__PURE__ */ (0, import_jsx_runtime52.jsx)(
+                import_react50.PortableText,
                 {
                   value: toPortableBlocks(campaignData.goals),
                   components: portableComponents
                 }
-              ) : /* @__PURE__ */ (0, import_jsx_runtime51.jsx)("p", { className: "text-gray-500", children: "No goals content yet. Add content in the Goals field in Sanity Studio." })
+              ) : /* @__PURE__ */ (0, import_jsx_runtime52.jsx)("p", { className: "text-gray-500", children: "No goals content yet. Add content in the Goals field in Sanity Studio." })
             ] }),
-            activeTab === "faq" && /* @__PURE__ */ (0, import_jsx_runtime51.jsx)("div", { className: "space-y-6", children: faq.map((item, index2) => /* @__PURE__ */ (0, import_jsx_runtime51.jsxs)("div", { children: [
-              /* @__PURE__ */ (0, import_jsx_runtime51.jsx)("h4", { className: "font-bold text-lg mb-1", children: item.question }),
-              /* @__PURE__ */ (0, import_jsx_runtime51.jsx)("p", { className: "mt-0", children: item.answer })
+            activeTab === "faq" && /* @__PURE__ */ (0, import_jsx_runtime52.jsx)("div", { className: "space-y-6", children: faq.map((item, index2) => /* @__PURE__ */ (0, import_jsx_runtime52.jsxs)("div", { children: [
+              /* @__PURE__ */ (0, import_jsx_runtime52.jsx)("h4", { className: "font-bold text-lg mb-1", children: item.question }),
+              /* @__PURE__ */ (0, import_jsx_runtime52.jsx)("p", { className: "mt-0", children: item.answer })
             ] }, index2)) }),
-            activeTab === "gallery" && /* @__PURE__ */ (0, import_jsx_runtime51.jsxs)("div", { className: "mt-4", children: [
-              galleryLoading && /* @__PURE__ */ (0, import_jsx_runtime51.jsx)("p", { className: "text-sm text-gray-500 animate-pulse", children: "Loading images..." }),
-              galleryError && /* @__PURE__ */ (0, import_jsx_runtime51.jsx)("p", { className: "text-sm text-red-600", children: galleryError }),
-              !galleryLoading && !galleryError && galleryImages.length === 0 && /* @__PURE__ */ (0, import_jsx_runtime51.jsx)("p", { className: "text-sm text-gray-500", children: "No images found yet. Tag Cloudinary images with 'pizza' or 'pie'." }),
-              /* @__PURE__ */ (0, import_jsx_runtime51.jsx)("div", { className: "mt-4 columns-2 md:columns-3 lg:columns-4 gap-3 [column-fill:_balance]", children: galleryImages.map((img) => /* @__PURE__ */ (0, import_jsx_runtime51.jsx)(
+            activeTab === "gallery" && /* @__PURE__ */ (0, import_jsx_runtime52.jsxs)("div", { className: "mt-4", children: [
+              galleryLoading && /* @__PURE__ */ (0, import_jsx_runtime52.jsx)("p", { className: "text-sm text-gray-500 animate-pulse", children: "Loading images..." }),
+              galleryError && /* @__PURE__ */ (0, import_jsx_runtime52.jsx)("p", { className: "text-sm text-red-600", children: galleryError }),
+              !galleryLoading && !galleryError && galleryImages.length === 0 && /* @__PURE__ */ (0, import_jsx_runtime52.jsx)("p", { className: "text-sm text-gray-500", children: "No images found yet. Tag Cloudinary images with 'pizza' or 'pie'." }),
+              /* @__PURE__ */ (0, import_jsx_runtime52.jsx)("div", { className: "mt-4 columns-2 md:columns-3 lg:columns-4 gap-3 [column-fill:_balance]", children: galleryImages.map((img) => /* @__PURE__ */ (0, import_jsx_runtime52.jsx)(
                 "figure",
                 {
                   className: "mb-3 break-inside-avoid rounded-lg overflow-hidden shadow-sm bg-neutral-100",
-                  children: /* @__PURE__ */ (0, import_jsx_runtime51.jsx)(
+                  children: /* @__PURE__ */ (0, import_jsx_runtime52.jsx)(
                     "img",
                     {
                       src: img.thumbnail_url,
@@ -77117,7 +77281,7 @@ var CrowdfundingPage = () => {
               )) })
             ] })
           ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime51.jsx)(
+          /* @__PURE__ */ (0, import_jsx_runtime52.jsx)(
             EventListSection,
             {
               title: "Upcoming campaign events",
@@ -77128,34 +77292,34 @@ var CrowdfundingPage = () => {
             }
           )
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime51.jsxs)("div", { className: "lg:col-span-2 space-y-8 mt-12 lg:mt-0 order-1 lg:order-2", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime51.jsxs)("div", { className: "card p-6 space-y-4 ring-1 ring-neutral-200", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime51.jsx)("div", { className: "w-full bg-gray-200 rounded-full h-2.5", children: /* @__PURE__ */ (0, import_jsx_runtime51.jsx)(
+        /* @__PURE__ */ (0, import_jsx_runtime52.jsxs)("div", { className: "lg:col-span-2 space-y-8 mt-12 lg:mt-0 order-1 lg:order-2", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime52.jsxs)("div", { className: "card p-6 space-y-4 ring-1 ring-neutral-200", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime52.jsx)("div", { className: "w-full bg-gray-200 rounded-full h-2.5", children: /* @__PURE__ */ (0, import_jsx_runtime52.jsx)(
               "div",
               {
                 className: "bg-[var(--color-accent)] h-2.5 rounded-full",
                 style: { width: `${progressPercentage}%` }
               }
             ) }),
-            /* @__PURE__ */ (0, import_jsx_runtime51.jsxs)("div", { children: [
-              /* @__PURE__ */ (0, import_jsx_runtime51.jsxs)("p", { className: "text-4xl font-bold text-[var(--color-accent)]", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime52.jsxs)("div", { children: [
+              /* @__PURE__ */ (0, import_jsx_runtime52.jsxs)("p", { className: "text-4xl font-bold text-[var(--color-accent)]", children: [
                 pizzasSold.toLocaleString(),
                 " pizzas"
               ] }),
-              /* @__PURE__ */ (0, import_jsx_runtime51.jsxs)("p", { className: "text-body text-gray-600", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime52.jsxs)("p", { className: "text-body text-gray-600", children: [
                 "sold of ",
                 pizzaGoal.toLocaleString(),
                 " pizzas goal"
               ] }),
-              /* @__PURE__ */ (0, import_jsx_runtime51.jsxs)("p", { className: "mt-2 text-2xl font-semibold", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime52.jsxs)("p", { className: "mt-2 text-2xl font-semibold", children: [
                 piesSold.toLocaleString(),
                 " pies"
               ] }),
-              /* @__PURE__ */ (0, import_jsx_runtime51.jsx)("p", { className: "text-body text-gray-600", children: "sold" })
+              /* @__PURE__ */ (0, import_jsx_runtime52.jsx)("p", { className: "text-body text-gray-600", children: "sold" })
             ] }),
-            /* @__PURE__ */ (0, import_jsx_runtime51.jsxs)("div", { className: "flex justify-between text-body text-center border-y py-3", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime51.jsx)(StatBox, { value: backers.toLocaleString(), label: "backers" }),
-              /* @__PURE__ */ (0, import_jsx_runtime51.jsx)(
+            /* @__PURE__ */ (0, import_jsx_runtime52.jsxs)("div", { className: "flex justify-between text-body text-center border-y py-3", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime52.jsx)(StatBox, { value: backers.toLocaleString(), label: "backers" }),
+              /* @__PURE__ */ (0, import_jsx_runtime52.jsx)(
                 StatBox,
                 {
                   value: daysLeft > 0 ? daysLeft : "Ended",
@@ -77163,10 +77327,10 @@ var CrowdfundingPage = () => {
                 }
               )
             ] }),
-            showLiveTotalsFallbackNotice && /* @__PURE__ */ (0, import_jsx_runtime51.jsx)("p", { className: "text-xs text-amber-600", children: "Live totals temporarily unavailable; showing published numbers for now." }),
-            confirmMsg && /* @__PURE__ */ (0, import_jsx_runtime51.jsx)("p", { className: "text-sm text-emerald-700", children: confirmMsg }),
-            payError && /* @__PURE__ */ (0, import_jsx_runtime51.jsx)("p", { className: "text-sm text-red-600", children: payError }),
-            !showForm && /* @__PURE__ */ (0, import_jsx_runtime51.jsx)(
+            showLiveTotalsFallbackNotice && /* @__PURE__ */ (0, import_jsx_runtime52.jsx)("p", { className: "text-xs text-amber-600", children: "Live totals temporarily unavailable; showing published numbers for now." }),
+            confirmMsg && /* @__PURE__ */ (0, import_jsx_runtime52.jsx)("p", { className: "text-sm text-emerald-700", children: confirmMsg }),
+            payError && /* @__PURE__ */ (0, import_jsx_runtime52.jsx)("p", { className: "text-sm text-red-600", children: payError }),
+            !showForm && /* @__PURE__ */ (0, import_jsx_runtime52.jsx)(
               Button,
               {
                 type: "button",
@@ -77184,17 +77348,17 @@ var CrowdfundingPage = () => {
                 children: "I want pizza"
               }
             ),
-            (formNotice || !hasPayableTier && !showForm) && /* @__PURE__ */ (0, import_jsx_runtime51.jsx)("p", { className: "text-sm text-slate-600", children: formNotice || "Online checkout is temporarily unavailable. Email hello@localeffortfood.com to pledge." }),
-            showForm && activeTier && /* @__PURE__ */ (0, import_jsx_runtime51.jsxs)("div", { className: "space-y-6", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime51.jsx)("div", { className: "relative", children: checkoutComplete ? /* @__PURE__ */ (0, import_jsx_runtime51.jsxs)(
+            (formNotice || !hasPayableTier && !showForm) && /* @__PURE__ */ (0, import_jsx_runtime52.jsx)("p", { className: "text-sm text-slate-600", children: formNotice || "Online checkout is temporarily unavailable. Email hello@localeffortfood.com to pledge." }),
+            showForm && activeTier && /* @__PURE__ */ (0, import_jsx_runtime52.jsxs)("div", { className: "space-y-6", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime52.jsx)("div", { className: "relative", children: checkoutComplete ? /* @__PURE__ */ (0, import_jsx_runtime52.jsxs)(
                 "div",
                 {
                   className: "space-y-4 rounded-lg border border-emerald-200 bg-emerald-50 p-5 text-emerald-900",
                   role: "status",
                   "aria-live": "polite",
                   children: [
-                    /* @__PURE__ */ (0, import_jsx_runtime51.jsxs)("div", { className: "flex items-start gap-3", children: [
-                      /* @__PURE__ */ (0, import_jsx_runtime51.jsx)("div", { className: "mt-1 flex h-9 w-9 items-center justify-center rounded-full bg-emerald-500 text-white", children: /* @__PURE__ */ (0, import_jsx_runtime51.jsx)(
+                    /* @__PURE__ */ (0, import_jsx_runtime52.jsxs)("div", { className: "flex items-start gap-3", children: [
+                      /* @__PURE__ */ (0, import_jsx_runtime52.jsx)("div", { className: "mt-1 flex h-9 w-9 items-center justify-center rounded-full bg-emerald-500 text-white", children: /* @__PURE__ */ (0, import_jsx_runtime52.jsx)(
                         "svg",
                         {
                           xmlns: "http://www.w3.org/2000/svg",
@@ -77202,7 +77366,7 @@ var CrowdfundingPage = () => {
                           fill: "currentColor",
                           className: "h-5 w-5",
                           "aria-hidden": "true",
-                          children: /* @__PURE__ */ (0, import_jsx_runtime51.jsx)(
+                          children: /* @__PURE__ */ (0, import_jsx_runtime52.jsx)(
                             "path",
                             {
                               fillRule: "evenodd",
@@ -77212,28 +77376,28 @@ var CrowdfundingPage = () => {
                           )
                         }
                       ) }),
-                      /* @__PURE__ */ (0, import_jsx_runtime51.jsxs)("div", { className: "space-y-2", children: [
-                        /* @__PURE__ */ (0, import_jsx_runtime51.jsx)("p", { className: "text-base font-semibold", children: "Contribution confirmed" }),
-                        /* @__PURE__ */ (0, import_jsx_runtime51.jsx)("p", { className: "text-sm", children: confirmMsg || "Thanks! Your contribution has been processed." }),
-                        lastContributionLabel && /* @__PURE__ */ (0, import_jsx_runtime51.jsxs)("p", { className: "text-sm font-medium", children: [
+                      /* @__PURE__ */ (0, import_jsx_runtime52.jsxs)("div", { className: "space-y-2", children: [
+                        /* @__PURE__ */ (0, import_jsx_runtime52.jsx)("p", { className: "text-base font-semibold", children: "Contribution confirmed" }),
+                        /* @__PURE__ */ (0, import_jsx_runtime52.jsx)("p", { className: "text-sm", children: confirmMsg || "Thanks! Your contribution has been processed." }),
+                        lastContributionLabel && /* @__PURE__ */ (0, import_jsx_runtime52.jsxs)("p", { className: "text-sm font-medium", children: [
                           "Total contributed: ",
-                          /* @__PURE__ */ (0, import_jsx_runtime51.jsx)("span", { children: lastContributionLabel })
+                          /* @__PURE__ */ (0, import_jsx_runtime52.jsx)("span", { children: lastContributionLabel })
                         ] }),
-                        receiptInfo?.discountLabel ? /* @__PURE__ */ (0, import_jsx_runtime51.jsxs)("p", { className: "text-sm", children: [
+                        receiptInfo?.discountLabel ? /* @__PURE__ */ (0, import_jsx_runtime52.jsxs)("p", { className: "text-sm", children: [
                           "Discount applied: ",
                           receiptInfo.discountLabel
-                        ] }) : receiptInfo?.discountCode ? /* @__PURE__ */ (0, import_jsx_runtime51.jsxs)("p", { className: "text-sm", children: [
+                        ] }) : receiptInfo?.discountCode ? /* @__PURE__ */ (0, import_jsx_runtime52.jsxs)("p", { className: "text-sm", children: [
                           "Discount code used: ",
                           receiptInfo.discountCode
                         ] }) : null,
-                        receiptInfo?.email ? /* @__PURE__ */ (0, import_jsx_runtime51.jsxs)("p", { className: "text-sm", children: [
+                        receiptInfo?.email ? /* @__PURE__ */ (0, import_jsx_runtime52.jsxs)("p", { className: "text-sm", children: [
                           "A receipt was sent to ",
-                          /* @__PURE__ */ (0, import_jsx_runtime51.jsx)("span", { className: "font-medium", children: receiptInfo.email }),
+                          /* @__PURE__ */ (0, import_jsx_runtime52.jsx)("span", { className: "font-medium", children: receiptInfo.email }),
                           ". If it is not in your inbox, please check your spam folder."
-                        ] }) : /* @__PURE__ */ (0, import_jsx_runtime51.jsx)("p", { className: "text-sm", children: "A confirmation email is on the way. Reach out to hello@localeffortfood.com if you need a hand." })
+                        ] }) : /* @__PURE__ */ (0, import_jsx_runtime52.jsx)("p", { className: "text-sm", children: "A confirmation email is on the way. Reach out to hello@localeffortfood.com if you need a hand." })
                       ] })
                     ] }),
-                    /* @__PURE__ */ (0, import_jsx_runtime51.jsx)(
+                    /* @__PURE__ */ (0, import_jsx_runtime52.jsx)(
                       Button,
                       {
                         type: "button",
@@ -77245,19 +77409,19 @@ var CrowdfundingPage = () => {
                     )
                   ]
                 }
-              ) : /* @__PURE__ */ (0, import_jsx_runtime51.jsxs)(import_jsx_runtime51.Fragment, { children: [
-                paying && /* @__PURE__ */ (0, import_jsx_runtime51.jsxs)("div", { className: "absolute inset-0 z-10 flex flex-col items-center justify-center gap-3 rounded-lg bg-white/85 backdrop-blur-sm", children: [
-                  /* @__PURE__ */ (0, import_jsx_runtime51.jsx)(
+              ) : /* @__PURE__ */ (0, import_jsx_runtime52.jsxs)(import_jsx_runtime52.Fragment, { children: [
+                paying && /* @__PURE__ */ (0, import_jsx_runtime52.jsxs)("div", { className: "absolute inset-0 z-10 flex flex-col items-center justify-center gap-3 rounded-lg bg-white/85 backdrop-blur-sm", children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime52.jsx)(
                     "div",
                     {
                       className: "h-10 w-10 animate-spin rounded-full border-4 border-[var(--color-accent)] border-t-transparent",
                       "aria-hidden": "true"
                     }
                   ),
-                  /* @__PURE__ */ (0, import_jsx_runtime51.jsx)("p", { className: "text-sm font-medium text-slate-700", role: "status", "aria-live": "assertive", children: processingMessage || "Processing your contribution..." }),
-                  /* @__PURE__ */ (0, import_jsx_runtime51.jsx)("p", { className: "text-xs text-slate-500", children: "Please stay on this page until we finish." })
+                  /* @__PURE__ */ (0, import_jsx_runtime52.jsx)("p", { className: "text-sm font-medium text-slate-700", role: "status", "aria-live": "assertive", children: processingMessage || "Processing your contribution..." }),
+                  /* @__PURE__ */ (0, import_jsx_runtime52.jsx)("p", { className: "text-xs text-slate-500", children: "Please stay on this page until we finish." })
                 ] }),
-                /* @__PURE__ */ (0, import_jsx_runtime51.jsx)(
+                /* @__PURE__ */ (0, import_jsx_runtime52.jsx)(
                   "form",
                   {
                     className: "space-y-6",
@@ -77275,11 +77439,11 @@ var CrowdfundingPage = () => {
                       ]);
                     },
                     "aria-busy": paying ? "true" : "false",
-                    children: /* @__PURE__ */ (0, import_jsx_runtime51.jsxs)("fieldset", { disabled: paying, className: "space-y-6", children: [
-                      /* @__PURE__ */ (0, import_jsx_runtime51.jsxs)("div", { className: "grid grid-cols-1 gap-4", children: [
-                        /* @__PURE__ */ (0, import_jsx_runtime51.jsxs)("div", { className: "space-y-2", children: [
-                          /* @__PURE__ */ (0, import_jsx_runtime51.jsx)(Label, { htmlFor: "cf-name", children: "Name" }),
-                          /* @__PURE__ */ (0, import_jsx_runtime51.jsx)(
+                    children: /* @__PURE__ */ (0, import_jsx_runtime52.jsxs)("fieldset", { disabled: paying, className: "space-y-6", children: [
+                      /* @__PURE__ */ (0, import_jsx_runtime52.jsxs)("div", { className: "grid grid-cols-1 gap-4", children: [
+                        /* @__PURE__ */ (0, import_jsx_runtime52.jsxs)("div", { className: "space-y-2", children: [
+                          /* @__PURE__ */ (0, import_jsx_runtime52.jsx)(Label, { htmlFor: "cf-name", children: "Name" }),
+                          /* @__PURE__ */ (0, import_jsx_runtime52.jsx)(
                             Input,
                             {
                               id: "cf-name",
@@ -77290,9 +77454,9 @@ var CrowdfundingPage = () => {
                             }
                           )
                         ] }),
-                        /* @__PURE__ */ (0, import_jsx_runtime51.jsxs)("div", { className: "space-y-2", children: [
-                          /* @__PURE__ */ (0, import_jsx_runtime51.jsx)(Label, { htmlFor: "cf-email", children: "Email" }),
-                          /* @__PURE__ */ (0, import_jsx_runtime51.jsx)(
+                        /* @__PURE__ */ (0, import_jsx_runtime52.jsxs)("div", { className: "space-y-2", children: [
+                          /* @__PURE__ */ (0, import_jsx_runtime52.jsx)(Label, { htmlFor: "cf-email", children: "Email" }),
+                          /* @__PURE__ */ (0, import_jsx_runtime52.jsx)(
                             Input,
                             {
                               id: "cf-email",
@@ -77304,9 +77468,9 @@ var CrowdfundingPage = () => {
                             }
                           )
                         ] }),
-                        /* @__PURE__ */ (0, import_jsx_runtime51.jsxs)("div", { className: "space-y-2", children: [
-                          /* @__PURE__ */ (0, import_jsx_runtime51.jsx)(Label, { htmlFor: "cf-phone", children: "Phone" }),
-                          /* @__PURE__ */ (0, import_jsx_runtime51.jsx)(
+                        /* @__PURE__ */ (0, import_jsx_runtime52.jsxs)("div", { className: "space-y-2", children: [
+                          /* @__PURE__ */ (0, import_jsx_runtime52.jsx)(Label, { htmlFor: "cf-phone", children: "Phone" }),
+                          /* @__PURE__ */ (0, import_jsx_runtime52.jsx)(
                             Input,
                             {
                               id: "cf-phone",
@@ -77320,10 +77484,10 @@ var CrowdfundingPage = () => {
                           )
                         ] })
                       ] }),
-                      /* @__PURE__ */ (0, import_jsx_runtime51.jsxs)("div", { className: "space-y-2", children: [
-                        /* @__PURE__ */ (0, import_jsx_runtime51.jsx)(Label, { htmlFor: "cf-referral", children: "Referral code (optional)" }),
-                        /* @__PURE__ */ (0, import_jsx_runtime51.jsxs)("div", { className: "flex flex-col gap-2 sm:flex-row", children: [
-                          /* @__PURE__ */ (0, import_jsx_runtime51.jsx)(
+                      /* @__PURE__ */ (0, import_jsx_runtime52.jsxs)("div", { className: "space-y-2", children: [
+                        /* @__PURE__ */ (0, import_jsx_runtime52.jsx)(Label, { htmlFor: "cf-referral", children: "Referral code (optional)" }),
+                        /* @__PURE__ */ (0, import_jsx_runtime52.jsxs)("div", { className: "flex flex-col gap-2 sm:flex-row", children: [
+                          /* @__PURE__ */ (0, import_jsx_runtime52.jsx)(
                             Input,
                             {
                               id: "cf-referral",
@@ -77333,7 +77497,7 @@ var CrowdfundingPage = () => {
                               className: "sm:flex-1"
                             }
                           ),
-                          /* @__PURE__ */ (0, import_jsx_runtime51.jsx)(
+                          /* @__PURE__ */ (0, import_jsx_runtime52.jsx)(
                             Button,
                             {
                               type: "button",
@@ -77385,17 +77549,17 @@ var CrowdfundingPage = () => {
                           )
                         ] })
                       ] }),
-                      referralState.status === "ok" && referralState.valid && /* @__PURE__ */ (0, import_jsx_runtime51.jsxs)("p", { className: "text-sm text-emerald-700", children: [
+                      referralState.status === "ok" && referralState.valid && /* @__PURE__ */ (0, import_jsx_runtime52.jsxs)("p", { className: "text-sm text-emerald-700", children: [
                         "Code applied",
                         referralState.participant?.name ? ` for ${referralState.participant.name}` : "",
                         "."
                       ] }),
-                      referralState.status === "ok" && !referralState.valid && /* @__PURE__ */ (0, import_jsx_runtime51.jsx)("p", { className: "text-sm text-red-600", children: "That code is not valid." }),
-                      referralState.status === "error" && /* @__PURE__ */ (0, import_jsx_runtime51.jsx)("p", { className: "text-sm text-red-600", children: "Unable to validate that code right now." }),
-                      /* @__PURE__ */ (0, import_jsx_runtime51.jsxs)("div", { className: "space-y-2", children: [
-                        /* @__PURE__ */ (0, import_jsx_runtime51.jsx)(Label, { htmlFor: "cf-square-discount", children: "Square discount code (optional)" }),
-                        /* @__PURE__ */ (0, import_jsx_runtime51.jsxs)("div", { className: "flex flex-col gap-2 sm:flex-row", children: [
-                          /* @__PURE__ */ (0, import_jsx_runtime51.jsx)(
+                      referralState.status === "ok" && !referralState.valid && /* @__PURE__ */ (0, import_jsx_runtime52.jsx)("p", { className: "text-sm text-red-600", children: "That code is not valid." }),
+                      referralState.status === "error" && /* @__PURE__ */ (0, import_jsx_runtime52.jsx)("p", { className: "text-sm text-red-600", children: "Unable to validate that code right now." }),
+                      /* @__PURE__ */ (0, import_jsx_runtime52.jsxs)("div", { className: "space-y-2", children: [
+                        /* @__PURE__ */ (0, import_jsx_runtime52.jsx)(Label, { htmlFor: "cf-square-discount", children: "Square discount code (optional)" }),
+                        /* @__PURE__ */ (0, import_jsx_runtime52.jsxs)("div", { className: "flex flex-col gap-2 sm:flex-row", children: [
+                          /* @__PURE__ */ (0, import_jsx_runtime52.jsx)(
                             Input,
                             {
                               id: "cf-square-discount",
@@ -77406,7 +77570,7 @@ var CrowdfundingPage = () => {
                               className: "sm:flex-1"
                             }
                           ),
-                          /* @__PURE__ */ (0, import_jsx_runtime51.jsx)(
+                          /* @__PURE__ */ (0, import_jsx_runtime52.jsx)(
                             Button,
                             {
                               type: "button",
@@ -77418,19 +77582,19 @@ var CrowdfundingPage = () => {
                             }
                           )
                         ] }),
-                        /* @__PURE__ */ (0, import_jsx_runtime51.jsx)("p", { className: "text-xs text-slate-500", children: "Apply a complimentary or promo code before checking out." }),
-                        discountState.status === "applied" && /* @__PURE__ */ (0, import_jsx_runtime51.jsxs)("p", { className: "text-sm text-emerald-700", children: [
+                        /* @__PURE__ */ (0, import_jsx_runtime52.jsx)("p", { className: "text-xs text-slate-500", children: "Apply a complimentary or promo code before checking out." }),
+                        discountState.status === "applied" && /* @__PURE__ */ (0, import_jsx_runtime52.jsxs)("p", { className: "text-sm text-emerald-700", children: [
                           discountState.discount?.label || DEFAULT_DISCOUNT_LABEL,
                           discountedTotalCents <= 0 ? " \u2014 no payment required." : " applied."
                         ] }),
-                        discountState.status === "invalid" && /* @__PURE__ */ (0, import_jsx_runtime51.jsx)("p", { className: "text-sm text-red-600", children: discountState.message || "That code is not valid for this crowdfunding campaign." }),
-                        discountState.status === "error" && /* @__PURE__ */ (0, import_jsx_runtime51.jsx)("p", { className: "text-sm text-red-600", children: discountState.message || "Unable to validate that discount code right now." }),
-                        /* @__PURE__ */ (0, import_jsx_runtime51.jsx)("p", { className: "text-xs text-slate-500", children: "We'll include this code with your secure Square checkout." })
+                        discountState.status === "invalid" && /* @__PURE__ */ (0, import_jsx_runtime52.jsx)("p", { className: "text-sm text-red-600", children: discountState.message || "That code is not valid for this crowdfunding campaign." }),
+                        discountState.status === "error" && /* @__PURE__ */ (0, import_jsx_runtime52.jsx)("p", { className: "text-sm text-red-600", children: discountState.message || "Unable to validate that discount code right now." }),
+                        /* @__PURE__ */ (0, import_jsx_runtime52.jsx)("p", { className: "text-xs text-slate-500", children: "We'll include this code with your secure Square checkout." })
                       ] }),
-                      activeTier && /* @__PURE__ */ (0, import_jsx_runtime51.jsxs)("div", { className: "flex flex-col gap-2 sm:flex-row sm:items-end", children: [
-                        /* @__PURE__ */ (0, import_jsx_runtime51.jsxs)("div", { className: "space-y-2", children: [
-                          /* @__PURE__ */ (0, import_jsx_runtime51.jsx)(Label, { htmlFor: "pizza-qty", children: "Quantity" }),
-                          /* @__PURE__ */ (0, import_jsx_runtime51.jsx)(
+                      activeTier && /* @__PURE__ */ (0, import_jsx_runtime52.jsxs)("div", { className: "flex flex-col gap-2 sm:flex-row sm:items-end", children: [
+                        /* @__PURE__ */ (0, import_jsx_runtime52.jsxs)("div", { className: "space-y-2", children: [
+                          /* @__PURE__ */ (0, import_jsx_runtime52.jsx)(Label, { htmlFor: "pizza-qty", children: "Quantity" }),
+                          /* @__PURE__ */ (0, import_jsx_runtime52.jsx)(
                             Input,
                             {
                               id: "pizza-qty",
@@ -77443,14 +77607,14 @@ var CrowdfundingPage = () => {
                             }
                           )
                         ] }),
-                        activeTierAmountLabel && /* @__PURE__ */ (0, import_jsx_runtime51.jsxs)("p", { className: "text-sm text-slate-600 sm:pb-2", children: [
+                        activeTierAmountLabel && /* @__PURE__ */ (0, import_jsx_runtime52.jsxs)("p", { className: "text-sm text-slate-600 sm:pb-2", children: [
                           "Each pledge: ",
                           activeTierAmountLabel
                         ] })
                       ] }),
-                      /* @__PURE__ */ (0, import_jsx_runtime51.jsxs)("div", { className: "space-y-2", children: [
-                        /* @__PURE__ */ (0, import_jsx_runtime51.jsx)(Label, { htmlFor: "cf-notes", children: "Notes (optional)" }),
-                        /* @__PURE__ */ (0, import_jsx_runtime51.jsx)(
+                      /* @__PURE__ */ (0, import_jsx_runtime52.jsxs)("div", { className: "space-y-2", children: [
+                        /* @__PURE__ */ (0, import_jsx_runtime52.jsx)(Label, { htmlFor: "cf-notes", children: "Notes (optional)" }),
+                        /* @__PURE__ */ (0, import_jsx_runtime52.jsx)(
                           Textarea,
                           {
                             id: "cf-notes",
@@ -77461,15 +77625,15 @@ var CrowdfundingPage = () => {
                           }
                         )
                       ] }),
-                      /* @__PURE__ */ (0, import_jsx_runtime51.jsxs)("div", { className: "space-y-2", children: [
-                        /* @__PURE__ */ (0, import_jsx_runtime51.jsx)("span", { className: "text-sm font-semibold text-slate-700", children: "Preferred reward setting" }),
-                        /* @__PURE__ */ (0, import_jsx_runtime51.jsx)(
+                      /* @__PURE__ */ (0, import_jsx_runtime52.jsxs)("div", { className: "space-y-2", children: [
+                        /* @__PURE__ */ (0, import_jsx_runtime52.jsx)("span", { className: "text-sm font-semibold text-slate-700", children: "Preferred reward setting" }),
+                        /* @__PURE__ */ (0, import_jsx_runtime52.jsx)(
                           "fieldset",
                           {
                             className: "grid gap-2 sm:grid-cols-2",
                             role: "group",
                             "aria-label": "Preferred reward setting",
-                            children: REWARD_PREFERENCE_OPTIONS.map((option) => /* @__PURE__ */ (0, import_jsx_runtime51.jsxs)(
+                            children: REWARD_PREFERENCE_OPTIONS.map((option) => /* @__PURE__ */ (0, import_jsx_runtime52.jsxs)(
                               "label",
                               {
                                 className: cn(
@@ -77477,7 +77641,7 @@ var CrowdfundingPage = () => {
                                   rewardPreference === option.value ? "border-[var(--color-accent)] ring-1 ring-[var(--color-accent)]" : "hover:border-[var(--color-accent)]"
                                 ),
                                 children: [
-                                  /* @__PURE__ */ (0, import_jsx_runtime51.jsx)(
+                                  /* @__PURE__ */ (0, import_jsx_runtime52.jsx)(
                                     "input",
                                     {
                                       type: "radio",
@@ -77488,7 +77652,7 @@ var CrowdfundingPage = () => {
                                       className: "h-4 w-4 border-slate-300 text-[var(--color-accent)] focus:ring-[var(--color-accent)]"
                                     }
                                   ),
-                                  /* @__PURE__ */ (0, import_jsx_runtime51.jsx)("span", { className: "text-slate-700", children: option.label })
+                                  /* @__PURE__ */ (0, import_jsx_runtime52.jsx)("span", { className: "text-slate-700", children: option.label })
                                 ]
                               },
                               option.value
@@ -77496,9 +77660,9 @@ var CrowdfundingPage = () => {
                           }
                         )
                       ] }),
-                      /* @__PURE__ */ (0, import_jsx_runtime51.jsxs)("div", { className: "space-y-2", children: [
-                        /* @__PURE__ */ (0, import_jsx_runtime51.jsx)(Label, { htmlFor: "cf-card-container", children: "Payment details" }),
-                        /* @__PURE__ */ (0, import_jsx_runtime51.jsx)(
+                      /* @__PURE__ */ (0, import_jsx_runtime52.jsxs)("div", { className: "space-y-2", children: [
+                        /* @__PURE__ */ (0, import_jsx_runtime52.jsx)(Label, { htmlFor: "cf-card-container", children: "Payment details" }),
+                        /* @__PURE__ */ (0, import_jsx_runtime52.jsx)(
                           "div",
                           {
                             id: "cf-card-container",
@@ -77508,16 +77672,16 @@ var CrowdfundingPage = () => {
                               requiresPayment ? "bg-white" : "border-dashed bg-slate-50 flex items-center"
                             ),
                             "aria-label": "Card payment form",
-                            children: requiresPayment ? /* @__PURE__ */ (0, import_jsx_runtime51.jsxs)(import_jsx_runtime51.Fragment, { children: [
-                              !cardReady && !cardError && !paymentsError && /* @__PURE__ */ (0, import_jsx_runtime51.jsx)("p", { className: "text-sm text-gray-500", children: paymentsLoading ? "Loading secure payment form..." : "Preparing secure payment form..." }),
-                              (cardError || paymentsError) && /* @__PURE__ */ (0, import_jsx_runtime51.jsx)("p", { className: "text-sm text-red-600", children: cardError || paymentsError })
-                            ] }) : /* @__PURE__ */ (0, import_jsx_runtime51.jsx)("p", { className: "text-sm text-slate-600", children: "No payment required for this contribution." })
+                            children: requiresPayment ? /* @__PURE__ */ (0, import_jsx_runtime52.jsxs)(import_jsx_runtime52.Fragment, { children: [
+                              !cardReady && !cardError && !paymentsError && /* @__PURE__ */ (0, import_jsx_runtime52.jsx)("p", { className: "text-sm text-gray-500", children: paymentsLoading ? "Loading secure payment form..." : "Preparing secure payment form..." }),
+                              (cardError || paymentsError) && /* @__PURE__ */ (0, import_jsx_runtime52.jsx)("p", { className: "text-sm text-red-600", children: cardError || paymentsError })
+                            ] }) : /* @__PURE__ */ (0, import_jsx_runtime52.jsx)("p", { className: "text-sm text-slate-600", children: "No payment required for this contribution." })
                           }
                         )
                       ] }),
-                      email && !emailValid && /* @__PURE__ */ (0, import_jsx_runtime51.jsx)("p", { className: "text-xs text-red-600", children: "Please enter a valid email." }),
-                      phone && !phoneValid && /* @__PURE__ */ (0, import_jsx_runtime51.jsx)("p", { className: "text-xs text-red-600", children: "Phone should have at least 10 digits." }),
-                      /* @__PURE__ */ (0, import_jsx_runtime51.jsx)(
+                      email && !emailValid && /* @__PURE__ */ (0, import_jsx_runtime52.jsx)("p", { className: "text-xs text-red-600", children: "Please enter a valid email." }),
+                      phone && !phoneValid && /* @__PURE__ */ (0, import_jsx_runtime52.jsx)("p", { className: "text-xs text-red-600", children: "Phone should have at least 10 digits." }),
+                      /* @__PURE__ */ (0, import_jsx_runtime52.jsx)(
                         Button,
                         {
                           type: "submit",
@@ -77530,37 +77694,37 @@ var CrowdfundingPage = () => {
                   }
                 )
               ] }) }),
-              /* @__PURE__ */ (0, import_jsx_runtime51.jsxs)(Card, { className: "card space-y-4 p-6 ring-1 ring-neutral-200", children: [
-                /* @__PURE__ */ (0, import_jsx_runtime51.jsx)(CardHeader, { className: "space-y-1 px-0 pt-0", children: /* @__PURE__ */ (0, import_jsx_runtime51.jsx)(CardTitle, { className: "text-lg font-semibold text-slate-900", children: "How it Works" }) }),
-                /* @__PURE__ */ (0, import_jsx_runtime51.jsx)(CardContent, { className: "px-0 pb-0", children: /* @__PURE__ */ (0, import_jsx_runtime51.jsxs)("ol", { className: "list-decimal space-y-3 pl-5 text-sm leading-relaxed text-slate-700", children: [
-                  /* @__PURE__ */ (0, import_jsx_runtime51.jsx)("li", { children: "Order a pizza, or 2, or 5, or 10, or 15." }),
-                  /* @__PURE__ */ (0, import_jsx_runtime51.jsx)("li", { children: "Select your preferred pizzas setting." }),
-                  /* @__PURE__ */ (0, import_jsx_runtime51.jsx)("li", { children: "You'll be able to pick up your pizzas at public events for the next 2-3 months. We'll send you updates on all the pizza party fun, including private/ticketed events only for supporters." }),
-                  /* @__PURE__ */ (0, import_jsx_runtime51.jsx)("li", { children: "For delivery, we ask for a minimum of 5 pizzas. We will reach out to schedule a delivery time." }),
-                  /* @__PURE__ */ (0, import_jsx_runtime51.jsx)("li", { children: "We will cook the pizzas at your home with a minimum order of 15 pizzas. We'll reach out to schedule a time." })
+              /* @__PURE__ */ (0, import_jsx_runtime52.jsxs)(Card, { className: "card space-y-4 p-6 ring-1 ring-neutral-200", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime52.jsx)(CardHeader, { className: "space-y-1 px-0 pt-0", children: /* @__PURE__ */ (0, import_jsx_runtime52.jsx)(CardTitle, { className: "text-lg font-semibold text-slate-900", children: "How it Works" }) }),
+                /* @__PURE__ */ (0, import_jsx_runtime52.jsx)(CardContent, { className: "px-0 pb-0", children: /* @__PURE__ */ (0, import_jsx_runtime52.jsxs)("ol", { className: "list-decimal space-y-3 pl-5 text-sm leading-relaxed text-slate-700", children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime52.jsx)("li", { children: "Order a pizza, or 2, or 5, or 10, or 15." }),
+                  /* @__PURE__ */ (0, import_jsx_runtime52.jsx)("li", { children: "Select your preferred pizzas setting." }),
+                  /* @__PURE__ */ (0, import_jsx_runtime52.jsx)("li", { children: "You'll be able to pick up your pizzas at public events for the next 2-3 months. We'll send you updates on all the pizza party fun, including private/ticketed events only for supporters." }),
+                  /* @__PURE__ */ (0, import_jsx_runtime52.jsx)("li", { children: "For delivery, we ask for a minimum of 5 pizzas. We will reach out to schedule a delivery time." }),
+                  /* @__PURE__ */ (0, import_jsx_runtime52.jsx)("li", { children: "We will cook the pizzas at your home with a minimum order of 15 pizzas. We'll reach out to schedule a time." })
                 ] }) })
               ] })
             ] })
           ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime51.jsxs)(Card, { className: "card space-y-4 p-6 ring-1 ring-neutral-200", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime51.jsx)(CardHeader, { className: "space-y-1 px-0 pt-0", children: /* @__PURE__ */ (0, import_jsx_runtime51.jsx)(CardTitle, { className: "text-lg font-semibold text-slate-900", children: "How it Works" }) }),
-            /* @__PURE__ */ (0, import_jsx_runtime51.jsx)(CardContent, { className: "px-0 pb-0", children: /* @__PURE__ */ (0, import_jsx_runtime51.jsxs)("ol", { className: "list-decimal space-y-3 pl-5 text-sm leading-relaxed text-slate-700", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime51.jsx)("li", { children: "Order a pizza, or 2, or 5, or 10, or 15." }),
-              /* @__PURE__ */ (0, import_jsx_runtime51.jsx)("li", { children: "Select your preferred pizzas setting." }),
-              /* @__PURE__ */ (0, import_jsx_runtime51.jsx)("li", { children: "You'll be able to pick up your pizzas at public events for the next 2-3 months. We'll send you updates on all the pizza party fun, including private/ticketed events only for supporters." }),
-              /* @__PURE__ */ (0, import_jsx_runtime51.jsx)("li", { children: "For delivery, we ask for a minimum of 5 pizzas. We will reach out to schedule a delivery time." }),
-              /* @__PURE__ */ (0, import_jsx_runtime51.jsx)("li", { children: "We will cook the pizzas at your home with a minimum order of 15 pizzas. We'll reach out to schedule a time." })
+          /* @__PURE__ */ (0, import_jsx_runtime52.jsxs)(Card, { className: "card space-y-4 p-6 ring-1 ring-neutral-200", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime52.jsx)(CardHeader, { className: "space-y-1 px-0 pt-0", children: /* @__PURE__ */ (0, import_jsx_runtime52.jsx)(CardTitle, { className: "text-lg font-semibold text-slate-900", children: "How it Works" }) }),
+            /* @__PURE__ */ (0, import_jsx_runtime52.jsx)(CardContent, { className: "px-0 pb-0", children: /* @__PURE__ */ (0, import_jsx_runtime52.jsxs)("ol", { className: "list-decimal space-y-3 pl-5 text-sm leading-relaxed text-slate-700", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime52.jsx)("li", { children: "Order a pizza, or 2, or 5, or 10, or 15." }),
+              /* @__PURE__ */ (0, import_jsx_runtime52.jsx)("li", { children: "Select your preferred pizzas setting." }),
+              /* @__PURE__ */ (0, import_jsx_runtime52.jsx)("li", { children: "You'll be able to pick up your pizzas at public events for the next 2-3 months. We'll send you updates on all the pizza party fun, including private/ticketed events only for supporters." }),
+              /* @__PURE__ */ (0, import_jsx_runtime52.jsx)("li", { children: "For delivery, we ask for a minimum of 5 pizzas. We will reach out to schedule a delivery time." }),
+              /* @__PURE__ */ (0, import_jsx_runtime52.jsx)("li", { children: "We will cook the pizzas at your home with a minimum order of 15 pizzas. We'll reach out to schedule a time." })
             ] }) })
           ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime51.jsxs)("div", { className: "space-y-4", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime51.jsxs)(Card, { className: "border-0 bg-slate-900 text-white shadow-xl", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime51.jsxs)(CardHeader, { className: "px-5 py-4 space-y-1 border-none", children: [
-                /* @__PURE__ */ (0, import_jsx_runtime51.jsx)(CardTitle, { className: "text-lg font-semibold tracking-wide uppercase text-amber-300", children: "Follow along as we raise" }),
-                /* @__PURE__ */ (0, import_jsx_runtime51.jsx)(CardDescription, { className: "text-sm text-slate-200", children: "Get pizza updates, milestones, and openings first." })
+          /* @__PURE__ */ (0, import_jsx_runtime52.jsxs)("div", { className: "space-y-4", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime52.jsxs)(Card, { className: "border-0 bg-slate-900 text-white shadow-xl", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime52.jsxs)(CardHeader, { className: "px-5 py-4 space-y-1 border-none", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime52.jsx)(CardTitle, { className: "text-lg font-semibold tracking-wide uppercase text-amber-300", children: "Follow along as we raise" }),
+                /* @__PURE__ */ (0, import_jsx_runtime52.jsx)(CardDescription, { className: "text-sm text-slate-200", children: "Get pizza updates, milestones, and openings first." })
               ] }),
-              /* @__PURE__ */ (0, import_jsx_runtime51.jsx)(CardContent, { className: "px-5 py-4", children: /* @__PURE__ */ (0, import_jsx_runtime51.jsxs)("form", { className: "space-y-4", onSubmit: handleSubscribe, children: [
-                /* @__PURE__ */ (0, import_jsx_runtime51.jsxs)("div", { className: "space-y-2", children: [
-                  /* @__PURE__ */ (0, import_jsx_runtime51.jsx)(
+              /* @__PURE__ */ (0, import_jsx_runtime52.jsx)(CardContent, { className: "px-5 py-4", children: /* @__PURE__ */ (0, import_jsx_runtime52.jsxs)("form", { className: "space-y-4", onSubmit: handleSubscribe, children: [
+                /* @__PURE__ */ (0, import_jsx_runtime52.jsxs)("div", { className: "space-y-2", children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime52.jsx)(
                     Label,
                     {
                       htmlFor: "cf-subscribe-email",
@@ -77568,7 +77732,7 @@ var CrowdfundingPage = () => {
                       children: "Email address"
                     }
                   ),
-                  /* @__PURE__ */ (0, import_jsx_runtime51.jsx)(
+                  /* @__PURE__ */ (0, import_jsx_runtime52.jsx)(
                     Input,
                     {
                       id: "cf-subscribe-email",
@@ -77582,14 +77746,14 @@ var CrowdfundingPage = () => {
                     }
                   )
                 ] }),
-                subscribeMessage && /* @__PURE__ */ (0, import_jsx_runtime51.jsx)(
+                subscribeMessage && /* @__PURE__ */ (0, import_jsx_runtime52.jsx)(
                   "p",
                   {
                     className: subscribeStatus === "success" ? "text-sm text-emerald-300" : "text-sm text-red-300",
                     children: subscribeMessage
                   }
                 ),
-                /* @__PURE__ */ (0, import_jsx_runtime51.jsx)(
+                /* @__PURE__ */ (0, import_jsx_runtime52.jsx)(
                   Button,
                   {
                     type: "submit",
@@ -77603,7 +77767,7 @@ var CrowdfundingPage = () => {
             false,
             rewardTiers.map((tier) => {
               const tierId = tierIdentifier(tier);
-              return /* @__PURE__ */ (0, import_jsx_runtime51.jsx)(
+              return /* @__PURE__ */ (0, import_jsx_runtime52.jsx)(
                 RewardTierCard,
                 {
                   tier,
@@ -77617,14 +77781,14 @@ var CrowdfundingPage = () => {
           ] })
         ] })
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime51.jsx)("section", { className: "rounded-3xl border border-slate-200 bg-white p-6 md:p-10 shadow-sm", children: /* @__PURE__ */ (0, import_jsx_runtime51.jsxs)("div", { className: "mx-auto flex max-w-4xl flex-col gap-10 md:flex-row", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime51.jsxs)("div", { className: "md:w-1/2 space-y-6", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime51.jsx)(SectionHeader, { overline: "Share the pizza love", title: "Pizza feedback" }),
-          /* @__PURE__ */ (0, import_jsx_runtime51.jsx)("p", { className: "text-base text-slate-600", children: "Leave a quick note about what you enjoy most. Your kind words help us keep the pizza party going for our neighbors." }),
-          /* @__PURE__ */ (0, import_jsx_runtime51.jsxs)("form", { className: "space-y-4", onSubmit: handleFeedbackSubmit, children: [
-            /* @__PURE__ */ (0, import_jsx_runtime51.jsxs)("div", { className: "space-y-2", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime51.jsx)(Label, { htmlFor: "pizza-feedback-rating", children: "How was your pizza?" }),
-              /* @__PURE__ */ (0, import_jsx_runtime51.jsx)(
+      /* @__PURE__ */ (0, import_jsx_runtime52.jsx)("section", { className: "rounded-3xl border border-slate-200 bg-white p-6 md:p-10 shadow-sm", children: /* @__PURE__ */ (0, import_jsx_runtime52.jsxs)("div", { className: "mx-auto flex max-w-4xl flex-col gap-10 md:flex-row", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime52.jsxs)("div", { className: "md:w-1/2 space-y-6", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime52.jsx)(SectionHeader, { overline: "Share the pizza love", title: "Pizza feedback" }),
+          /* @__PURE__ */ (0, import_jsx_runtime52.jsx)("p", { className: "text-base text-slate-600", children: "Leave a quick note about what you enjoy most. Your kind words help us keep the pizza party going for our neighbors." }),
+          /* @__PURE__ */ (0, import_jsx_runtime52.jsxs)("form", { className: "space-y-4", onSubmit: handleFeedbackSubmit, children: [
+            /* @__PURE__ */ (0, import_jsx_runtime52.jsxs)("div", { className: "space-y-2", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime52.jsx)(Label, { htmlFor: "pizza-feedback-rating", children: "How was your pizza?" }),
+              /* @__PURE__ */ (0, import_jsx_runtime52.jsx)(
                 "select",
                 {
                   id: "pizza-feedback-rating",
@@ -77637,14 +77801,14 @@ var CrowdfundingPage = () => {
                     }
                   },
                   className: "w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-amber-400",
-                  children: [5, 4, 3, 2, 1].map((value2) => /* @__PURE__ */ (0, import_jsx_runtime51.jsx)("option", { value: value2, children: `${value2} / 5` }, value2))
+                  children: [5, 4, 3, 2, 1].map((value2) => /* @__PURE__ */ (0, import_jsx_runtime52.jsx)("option", { value: value2, children: `${value2} / 5` }, value2))
                 }
               ),
-              /* @__PURE__ */ (0, import_jsx_runtime51.jsx)("p", { className: "text-xs text-slate-500", children: "5 = legendary pizza party, 1 = needs another try." })
+              /* @__PURE__ */ (0, import_jsx_runtime52.jsx)("p", { className: "text-xs text-slate-500", children: "5 = legendary pizza party, 1 = needs another try." })
             ] }),
-            /* @__PURE__ */ (0, import_jsx_runtime51.jsxs)("div", { className: "space-y-2", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime51.jsx)(Label, { htmlFor: "pizza-feedback-message", children: "What made your pizza special?" }),
-              /* @__PURE__ */ (0, import_jsx_runtime51.jsx)(
+            /* @__PURE__ */ (0, import_jsx_runtime52.jsxs)("div", { className: "space-y-2", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime52.jsx)(Label, { htmlFor: "pizza-feedback-message", children: "What made your pizza special?" }),
+              /* @__PURE__ */ (0, import_jsx_runtime52.jsx)(
                 Textarea,
                 {
                   id: "pizza-feedback-message",
@@ -77661,7 +77825,7 @@ var CrowdfundingPage = () => {
                 }
               )
             ] }),
-            feedbackNotice && /* @__PURE__ */ (0, import_jsx_runtime51.jsx)(
+            feedbackNotice && /* @__PURE__ */ (0, import_jsx_runtime52.jsx)(
               "p",
               {
                 className: feedbackStatus === "error" ? "text-sm text-red-600" : "text-sm text-emerald-600",
@@ -77669,31 +77833,31 @@ var CrowdfundingPage = () => {
                 children: feedbackNotice
               }
             ),
-            /* @__PURE__ */ (0, import_jsx_runtime51.jsx)(Button, { type: "submit", className: "w-full sm:w-auto", disabled: feedbackSubmitting, children: feedbackSubmitting ? "Sharing pizza love..." : "Share feedback" })
+            /* @__PURE__ */ (0, import_jsx_runtime52.jsx)(Button, { type: "submit", className: "w-full sm:w-auto", disabled: feedbackSubmitting, children: feedbackSubmitting ? "Sharing pizza love..." : "Share feedback" })
           ] })
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime51.jsxs)("div", { className: "md:w-1/2 space-y-4", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime51.jsx)("h3", { className: "text-lg font-semibold text-slate-900", children: "Recent happy pizza thoughts" }),
-          feedbackLoading ? /* @__PURE__ */ (0, import_jsx_runtime51.jsx)("p", { className: "text-sm text-slate-500", children: "Loading pizza love..." }) : feedbackEntries.length > 0 ? /* @__PURE__ */ (0, import_jsx_runtime51.jsx)("ul", { className: "space-y-4", children: feedbackEntries.map((entry) => /* @__PURE__ */ (0, import_jsx_runtime51.jsxs)(
+        /* @__PURE__ */ (0, import_jsx_runtime52.jsxs)("div", { className: "md:w-1/2 space-y-4", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime52.jsx)("h3", { className: "text-lg font-semibold text-slate-900", children: "Recent happy pizza thoughts" }),
+          feedbackLoading ? /* @__PURE__ */ (0, import_jsx_runtime52.jsx)("p", { className: "text-sm text-slate-500", children: "Loading pizza love..." }) : feedbackEntries.length > 0 ? /* @__PURE__ */ (0, import_jsx_runtime52.jsx)("ul", { className: "space-y-4", children: feedbackEntries.map((entry) => /* @__PURE__ */ (0, import_jsx_runtime52.jsxs)(
             "li",
             {
               className: "rounded-2xl border border-amber-100 bg-amber-50/70 p-4 shadow-sm",
               children: [
-                /* @__PURE__ */ (0, import_jsx_runtime51.jsxs)("p", { className: "text-sm text-amber-900", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime52.jsxs)("p", { className: "text-sm text-amber-900", children: [
                   "\u201C",
                   entry.comment,
                   "\u201D"
                 ] }),
-                /* @__PURE__ */ (0, import_jsx_runtime51.jsx)("p", { className: "mt-2 text-xs font-semibold uppercase tracking-wide text-amber-700", children: Number.isFinite(entry.rating) ? `Rating: ${"\u2B50".repeat(Math.max(1, Math.min(5, entry.rating)))} (${entry.rating}/5)` : "Rating: shared anonymously" })
+                /* @__PURE__ */ (0, import_jsx_runtime52.jsx)("p", { className: "mt-2 text-xs font-semibold uppercase tracking-wide text-amber-700", children: Number.isFinite(entry.rating) ? `Rating: ${"\u2B50".repeat(Math.max(1, Math.min(5, entry.rating)))} (${entry.rating}/5)` : "Rating: shared anonymously" })
               ]
             },
             entry.id
-          )) }) : /* @__PURE__ */ (0, import_jsx_runtime51.jsx)("p", { className: "text-sm text-slate-500", children: feedbackFetchError ? "We couldn't load recent pizza notes. Share yours to kick things off!" : "No pizza notes yet\u2014be the first to share your experience!" }),
-          feedbackFetchError && /* @__PURE__ */ (0, import_jsx_runtime51.jsx)("p", { className: "text-xs text-red-600", children: feedbackFetchError })
+          )) }) : /* @__PURE__ */ (0, import_jsx_runtime52.jsx)("p", { className: "text-sm text-slate-500", children: feedbackFetchError ? "We couldn't load recent pizza notes. Share yours to kick things off!" : "No pizza notes yet\u2014be the first to share your experience!" }),
+          feedbackFetchError && /* @__PURE__ */ (0, import_jsx_runtime52.jsx)("p", { className: "text-xs text-red-600", children: feedbackFetchError })
         ] })
       ] }) })
     ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime51.jsx)(
+    /* @__PURE__ */ (0, import_jsx_runtime52.jsx)(
       EventDialog,
       {
         event: activeEvent,
@@ -77713,24 +77877,24 @@ var CrowdfundingPage = () => {
 var CrowdfundingPage_default = CrowdfundingPage;
 
 // src/ssr/StaticApp.jsx
-var import_jsx_runtime52 = require("react/jsx-runtime");
+var import_jsx_runtime53 = require("react/jsx-runtime");
 function StaticApp({ helmetContext }) {
-  return /* @__PURE__ */ (0, import_jsx_runtime52.jsx)(import_react_helmet_async13.HelmetProvider, { context: helmetContext, children: /* @__PURE__ */ (0, import_jsx_runtime52.jsxs)("div", { className: "app-root min-h-screen flex flex-col", children: [
-    /* @__PURE__ */ (0, import_jsx_runtime52.jsx)(Header, {}),
-    /* @__PURE__ */ (0, import_jsx_runtime52.jsx)("main", { className: "flex-1", children: /* @__PURE__ */ (0, import_jsx_runtime52.jsxs)(import_react_router_dom7.Routes, { children: [
-      /* @__PURE__ */ (0, import_jsx_runtime52.jsx)(import_react_router_dom7.Route, { path: "/", element: /* @__PURE__ */ (0, import_jsx_runtime52.jsx)(HomePage_default, {}) }),
-      /* @__PURE__ */ (0, import_jsx_runtime52.jsx)(import_react_router_dom7.Route, { path: "/about", element: /* @__PURE__ */ (0, import_jsx_runtime52.jsx)(AboutUsPage_default, {}) }),
-      /* @__PURE__ */ (0, import_jsx_runtime52.jsx)(import_react_router_dom7.Route, { path: "/services", element: /* @__PURE__ */ (0, import_jsx_runtime52.jsx)(ServicesPage_default, {}) }),
-      /* @__PURE__ */ (0, import_jsx_runtime52.jsx)(import_react_router_dom7.Route, { path: "/pricing", element: /* @__PURE__ */ (0, import_jsx_runtime52.jsx)(PricingPage_default, {}) }),
-      /* @__PURE__ */ (0, import_jsx_runtime52.jsx)(import_react_router_dom7.Route, { path: "/menu", element: /* @__PURE__ */ (0, import_jsx_runtime52.jsx)(MenuPage, {}) }),
-      /* @__PURE__ */ (0, import_jsx_runtime52.jsx)(import_react_router_dom7.Route, { path: "/happy-monday", element: /* @__PURE__ */ (0, import_jsx_runtime52.jsx)(HappyMondayPage_default, {}) }),
-      /* @__PURE__ */ (0, import_jsx_runtime52.jsx)(import_react_router_dom7.Route, { path: "/gallery", element: /* @__PURE__ */ (0, import_jsx_runtime52.jsx)(GalleryPage_default, {}) }),
-      /* @__PURE__ */ (0, import_jsx_runtime52.jsx)(import_react_router_dom7.Route, { path: "/events", element: /* @__PURE__ */ (0, import_jsx_runtime52.jsx)(EventsPage_default, {}) }),
-      /* @__PURE__ */ (0, import_jsx_runtime52.jsx)(import_react_router_dom7.Route, { path: "/meal-prep", element: /* @__PURE__ */ (0, import_jsx_runtime52.jsx)(MealPrepPage_default, {}) }),
-      /* @__PURE__ */ (0, import_jsx_runtime52.jsx)(import_react_router_dom7.Route, { path: "/partner-portal", element: /* @__PURE__ */ (0, import_jsx_runtime52.jsx)(PartnerPortalPage_default, {}) }),
-      /* @__PURE__ */ (0, import_jsx_runtime52.jsx)(import_react_router_dom7.Route, { path: "/crowdfunding", element: /* @__PURE__ */ (0, import_jsx_runtime52.jsx)(CrowdfundingPage_default, {}) })
+  return /* @__PURE__ */ (0, import_jsx_runtime53.jsx)(import_react_helmet_async13.HelmetProvider, { context: helmetContext, children: /* @__PURE__ */ (0, import_jsx_runtime53.jsxs)("div", { className: "app-root min-h-screen flex flex-col", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime53.jsx)(Header, {}),
+    /* @__PURE__ */ (0, import_jsx_runtime53.jsx)("main", { className: "flex-1", children: /* @__PURE__ */ (0, import_jsx_runtime53.jsxs)(import_react_router_dom7.Routes, { children: [
+      /* @__PURE__ */ (0, import_jsx_runtime53.jsx)(import_react_router_dom7.Route, { path: "/", element: /* @__PURE__ */ (0, import_jsx_runtime53.jsx)(HomePage_default, {}) }),
+      /* @__PURE__ */ (0, import_jsx_runtime53.jsx)(import_react_router_dom7.Route, { path: "/about", element: /* @__PURE__ */ (0, import_jsx_runtime53.jsx)(AboutUsPage_default, {}) }),
+      /* @__PURE__ */ (0, import_jsx_runtime53.jsx)(import_react_router_dom7.Route, { path: "/services", element: /* @__PURE__ */ (0, import_jsx_runtime53.jsx)(ServicesPage_default, {}) }),
+      /* @__PURE__ */ (0, import_jsx_runtime53.jsx)(import_react_router_dom7.Route, { path: "/pricing", element: /* @__PURE__ */ (0, import_jsx_runtime53.jsx)(PricingPage_default, {}) }),
+      /* @__PURE__ */ (0, import_jsx_runtime53.jsx)(import_react_router_dom7.Route, { path: "/menu", element: /* @__PURE__ */ (0, import_jsx_runtime53.jsx)(MenuPage, {}) }),
+      /* @__PURE__ */ (0, import_jsx_runtime53.jsx)(import_react_router_dom7.Route, { path: "/happy-monday", element: /* @__PURE__ */ (0, import_jsx_runtime53.jsx)(HappyMondayPage_default, {}) }),
+      /* @__PURE__ */ (0, import_jsx_runtime53.jsx)(import_react_router_dom7.Route, { path: "/gallery", element: /* @__PURE__ */ (0, import_jsx_runtime53.jsx)(GalleryPage_default, {}) }),
+      /* @__PURE__ */ (0, import_jsx_runtime53.jsx)(import_react_router_dom7.Route, { path: "/events", element: /* @__PURE__ */ (0, import_jsx_runtime53.jsx)(EventsPage_default, {}) }),
+      /* @__PURE__ */ (0, import_jsx_runtime53.jsx)(import_react_router_dom7.Route, { path: "/meal-prep", element: /* @__PURE__ */ (0, import_jsx_runtime53.jsx)(MealPrepPage_default, {}) }),
+      /* @__PURE__ */ (0, import_jsx_runtime53.jsx)(import_react_router_dom7.Route, { path: "/partner-portal", element: /* @__PURE__ */ (0, import_jsx_runtime53.jsx)(PartnerPortalPage_default, {}) }),
+      /* @__PURE__ */ (0, import_jsx_runtime53.jsx)(import_react_router_dom7.Route, { path: "/crowdfunding", element: /* @__PURE__ */ (0, import_jsx_runtime53.jsx)(CrowdfundingPage_default, {}) })
     ] }) }),
-    /* @__PURE__ */ (0, import_jsx_runtime52.jsx)(Footer, {})
+    /* @__PURE__ */ (0, import_jsx_runtime53.jsx)(Footer, {})
   ] }) });
 }
 /*! Bundled license information:
