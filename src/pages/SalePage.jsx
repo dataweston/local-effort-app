@@ -79,8 +79,11 @@ const SalePage = () => {
       {/* Content overlay with products */}
       <div className="relative" style={{ zIndex: 10 }}>
         <div className="mx-auto max-w-6xl px-4 md:px-6 lg:px-8 py-8">
-          <div className="flex items-start justify-between mb-4 gap-4">
-            <div className="inline-block bg-white/95 backdrop-blur-sm px-4 py-3 rounded-lg shadow-md">
+          <div className="flex flex-col md:flex-row items-start justify-between md:justify-end mb-4 gap-4">
+            <div className="inline-block bg-white/95 backdrop-blur-sm px-4 py-3 rounded-lg shadow-md order-2 md:order-1">
+              <button onClick={openCart} className="btn btn-primary whitespace-nowrap w-full md:w-auto">Cart ({totalQty})</button>
+            </div>
+            <div className="inline-block bg-white/95 backdrop-blur-sm px-4 py-3 rounded-lg shadow-md order-1 md:order-2">
               <h1 className="heading-xl heading-balance">holiday pie sale</h1>
               <p className="mt-1 text-neutral-700">pickup at Henry & Son 11/26 (day before thanksgiving). we'll get some christmas dates up soon too.</p>
               {saleIntro.subheading && (
@@ -92,29 +95,29 @@ const SalePage = () => {
                 </div>
               )}
             </div>
-            <button onClick={openCart} className="btn btn-primary whitespace-nowrap bg-white/95 backdrop-blur-sm shadow-md">Cart ({totalQty})</button>
           </div>
         </div>
       </div>
 
-      {/* Full-page masonry gallery background - starts after header */}
-      <div className="fixed top-32 left-0 right-0 bottom-0 overflow-y-auto" style={{ zIndex: 0 }}>
+      {/* Hint text for draggable images - top left after header, desktop only */}
+      <div className="hidden lg:flex fixed top-32 left-4 text-xs text-neutral-500/60 items-center gap-1 pointer-events-none" style={{ zIndex: 5 }}>
+        <span role="img" aria-label="hand">👆</span>
+        <span>move the images around</span>
+      </div>
+
+      {/* Full-page masonry gallery background - desktop only, left side with padding from bottom */}
+      <div className="hidden lg:block fixed top-32 left-0 overflow-hidden pb-20" style={{ zIndex: 0, right: '33.333%', bottom: '80px' }}>
         <MasonryGallery />
-        {/* Hint text for draggable images */}
-        <div className="fixed bottom-4 left-4 text-xs text-neutral-500/60 flex items-center gap-1 pointer-events-none">
-          <span role="img" aria-label="hand">👆</span>
-          <span>move the images around</span>
-        </div>
       </div>
 
       {/* Products section */}
       <div className="relative" style={{ zIndex: 10 }}>
-        <div className="mx-auto max-w-6xl px-4 md:px-6 lg:px-8">
+        <div className="mx-auto max-w-6xl px-4 md:px-6 lg:px-8 pb-12">
 
           {loading ? (
-            <div className="ml-auto w-full max-w-md bg-white/95 backdrop-blur-sm p-8 rounded-lg shadow-md">Loading…</div>
+            <div className="w-full lg:ml-auto lg:max-w-md bg-white/95 backdrop-blur-sm p-8 rounded-lg shadow-md">Loading…</div>
           ) : (
-            <div className="ml-auto w-full max-w-md flex flex-col gap-6 mt-6">
+            <div className="w-full lg:ml-auto lg:max-w-md flex flex-col gap-6 mt-6">
               {(products || []).map((p) => (
                 <motion.div
                   key={p.id}
