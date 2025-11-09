@@ -19,6 +19,8 @@ const PaikkaCheckout = () => {
   const [appliedDiscountCode, setAppliedDiscountCode] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState(null);
+  const presaleClosed = true;
+  const presaleClosedCopy = 'pre-sale has ended, see you at Paikka!';
 
   const validDiscountCode = import.meta.env.VITE_PAIKKA_DISCOUNT_CODE || '';
   const discountPriceCents = Number(import.meta.env.VITE_PAIKKA_DISCOUNT_PRICE_CENTS) || 0;
@@ -81,6 +83,10 @@ const PaikkaCheckout = () => {
   };
 
   const handleAddToCart = (sku) => {
+    if (presaleClosed) {
+      setError(presaleClosedCopy);
+      return;
+    }
     setError(null);
     handleQuantityChange(sku, 1);
   };
@@ -108,6 +114,10 @@ const PaikkaCheckout = () => {
     });
 
   const handleCheckout = async () => {
+    if (presaleClosed) {
+      setError(presaleClosedCopy);
+      return;
+    }
     if (!hasItems) {
       setError('Add at least one sandwich to your cart.');
       return;
@@ -169,11 +179,16 @@ const PaikkaCheckout = () => {
     }
   };
 
-  const canSubmit = hasItems && emailValid && firstNameValid && cardLoaded && !isSubmitting;
+  const canSubmit = !presaleClosed && hasItems && emailValid && firstNameValid && cardLoaded && !isSubmitting;
   const showCustomTipInput = tipSelection === 'custom';
 
   return (
     <section className="mx-auto max-w-5xl space-y-10">
+      {presaleClosed && (
+        <p className="rounded-md border border-red-200 bg-red-50 p-3 text-center text-sm font-semibold uppercase tracking-wide text-red-700">
+          {presaleClosedCopy}
+        </p>
+      )}
       <header className="space-y-3 text-center">
         <p className="text-sm uppercase tracking-[0.3em] text-neutral-500">Local Effort x Paikka</p>
         <h1 className="text-4xl font-semibold tracking-tight text-neutral-900">Paikka Sandwich Presale</h1>
@@ -213,8 +228,9 @@ const PaikkaCheckout = () => {
                         key={variant.sku}
                         type="button"
                         onClick={() => handleAddToCart(variant.sku)}
+                        disabled={presaleClosed}
                         variant={variant.isDairyFree ? 'outline' : 'default'}
-                        className="flex-1 min-w-[10rem]"
+                        className="flex-1 min-w-[10rem] disabled:cursor-not-allowed disabled:opacity-60"
                       >
                         {variant.isDairyFree ? 'Add dairy-free' : 'Add to cart'}
                       </Button>
@@ -258,6 +274,7 @@ const PaikkaCheckout = () => {
               handleCheckout();
             }}
           >
+            <fieldset disabled={presaleClosed} className="space-y-5">
             <div className="grid gap-4 sm:grid-cols-2">
               <label className="space-y-1 text-sm font-medium text-neutral-700">
                 First name
@@ -267,6 +284,7 @@ const PaikkaCheckout = () => {
                   onChange={(event) => setFirstName(event.target.value)}
                   placeholder="Alex"
                   required
+                  disabled={presaleClosed}
                 />
               </label>
               <label className="space-y-1 text-sm font-medium text-neutral-700">
@@ -276,6 +294,7 @@ const PaikkaCheckout = () => {
                   value={lastName}
                   onChange={(event) => setLastName(event.target.value)}
                   placeholder="Patel"
+                  disabled={presaleClosed}
                 />
               </label>
             </div>
@@ -288,6 +307,7 @@ const PaikkaCheckout = () => {
                 onChange={(event) => setEmail(event.target.value)}
                 placeholder="you@example.com"
                 required
+                disabled={presaleClosed}
               />
             </label>
 
@@ -302,13 +322,13 @@ const PaikkaCheckout = () => {
                   value={discountCode}
                   onChange={(event) => setDiscountCode(event.target.value)}
                   placeholder="Enter discount code"
-                  disabled={isDiscountApplied}
+                  disabled={isDiscountApplied || presaleClosed}
                 />
                 {!isDiscountApplied ? (
                   <Button
                     type="button"
                     onClick={handleApplyDiscount}
-                    disabled={!discountCode.trim()}
+                    disabled={presaleClosed || !discountCode.trim()}
                     variant="outline"
                     className="whitespace-nowrap"
                   >
@@ -318,6 +338,7 @@ const PaikkaCheckout = () => {
                   <Button
                     type="button"
                     onClick={handleRemoveDiscount}
+                    disabled={presaleClosed}
                     variant="outline"
                     className="whitespace-nowrap"
                   >
@@ -341,11 +362,13 @@ const PaikkaCheckout = () => {
                     key={option.value}
                     type="button"
                     onClick={() => setTipSelection(option.value)}
+                    disabled={presaleClosed}
                     className={clsx(
                       'rounded-full border px-4 py-2 text-sm font-medium transition-colors',
                       tipSelection === option.value
                         ? 'border-accent bg-accent/10 text-accent'
-                        : 'border-neutral-300 text-neutral-600 hover:border-neutral-400 hover:text-neutral-800'
+                        : 'border-neutral-300 text-neutral-600 hover:border-neutral-400 hover:text-neutral-800',
+                      presaleClosed && 'cursor-not-allowed opacity-60'
                     )}
                   >
                     {option.label}
@@ -365,6 +388,7 @@ const PaikkaCheckout = () => {
                     onChange={(event) => setCustomTip(event.target.value)}
                     className="w-32 rounded-md border border-neutral-300 px-3 py-2 text-sm shadow-sm focus:border-accent focus:outline-none focus:ring-2 focus:ring-orange-200"
                     placeholder="$5.00"
+                    disabled={presaleClosed}
                   />
                 </div>
               )}
@@ -396,17 +420,19 @@ const PaikkaCheckout = () => {
                         <button
                           type="button"
                           onClick={() => handleQuantityChange(item.sku, -1)}
-                          className="h-8 w-8 rounded-full border border-neutral-300 text-sm font-semibold text-neutral-600 hover:border-neutral-400 hover:text-neutral-900"
+                          className="h-8 w-8 rounded-full border border-neutral-300 text-sm font-semibold text-neutral-600 hover:border-neutral-400 hover:text-neutral-900 disabled:cursor-not-allowed disabled:opacity-60"
                           aria-label={`Remove one ${item.summaryTitle || item.title}`}
+                          disabled={presaleClosed}
                         >
-                          −
+                          -
                         </button>
                         <span className="min-w-[2rem] text-center text-base font-semibold text-neutral-900">{qty}</span>
                         <button
                           type="button"
                           onClick={() => handleQuantityChange(item.sku, 1)}
-                          className="h-8 w-8 rounded-full border border-neutral-300 text-sm font-semibold text-neutral-600 hover:border-neutral-400 hover:text-neutral-900"
+                          className="h-8 w-8 rounded-full border border-neutral-300 text-sm font-semibold text-neutral-600 hover:border-neutral-400 hover:text-neutral-900 disabled:cursor-not-allowed disabled:opacity-60"
                           aria-label={`Add one ${item.summaryTitle || item.title}`}
+                          disabled={presaleClosed}
                         >
                           +
                         </button>
@@ -443,7 +469,7 @@ const PaikkaCheckout = () => {
                 <span>{formatCurrency(totalCents)}</span>
               </div>
             </div>
-
+            </fieldset>
             {error && <p className="rounded-md bg-red-50 p-3 text-sm text-red-700">{error}</p>}
             <Button type="submit" className="w-full" disabled={!canSubmit}>{isSubmitting ? 'Processing payment…' : `Pay ${formatCurrency(totalCents)}`}</Button>
             <p className="text-xs text-neutral-500">Your receipt and QR code will arrive by email within a few minutes after payment.</p>
