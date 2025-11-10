@@ -99,6 +99,12 @@ const SalePage = () => {
           });
         });
         
+        // Shuffle images to mix Cloudinary and local images randomly
+        for (let i = images.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [images[i], images[j]] = [images[j], images[i]];
+        }
+        
         if (!alive) return;
         setGalleryImages(images);
       } catch (e) {
@@ -218,14 +224,15 @@ const SalePage = () => {
         {/* Main content grid */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
           {/* Masonry Gallery - takes up 7 columns on desktop */}
-          <div className="hidden lg:block lg:col-span-7">
+          <div className="hidden lg:block lg:col-span-7 relative z-0">
             <div className="relative">
               <DraggableMasonry images={galleryImages} />
             </div>
           </div>
 
           {/* Products Section - takes up 5 columns on desktop */}
-          <div className="lg:col-span-5">
+          <div className="lg:col-span-5 relative z-10">
+            {loading ? (
             {loading ? (
               <div className="bg-white/90 backdrop-blur-md p-8 rounded-2xl shadow-xl border-2 border-orange-200/50">
                 <div className="flex items-center justify-center">
