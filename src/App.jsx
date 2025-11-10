@@ -68,6 +68,7 @@ const SchedulePage = lazy(() => import('./pages/SchedulePage'));
 const AppContent = () => {
   const location = useLocation();
   const hideHeader = location.pathname.startsWith('/partners/aacrm') || location.pathname === '/tiny-weddings';
+  const hideFooter = location.pathname === '/sale';
 
   useEffect(() => {
     document.fonts?.ready?.then(() => document.body.classList.add('fonts-loaded'));
@@ -419,7 +420,7 @@ const AppContent = () => {
             </AnimatePresence>
           </Suspense>
           </main>
-          <Footer />
+          {!hideFooter && <Footer />}
           <SupportWidget />
           {/* Vercel Speed Insights */}
           <SpeedInsights />
