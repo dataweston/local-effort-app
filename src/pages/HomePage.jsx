@@ -747,14 +747,14 @@ const HomePage = () => {
           </div>
         </section>
 
-        {/* Paikka Holiday Bazaar Pre-Order */}
+        {/* Holiday Pie Sale Banner */}
         <section className="mx-auto max-w-6xl px-4 md:px-6 lg:px-8">
           <div className="text-center">
-            <h3 className="text-2xl font-bold">
-              <a href="/paikka" className="hover:underline text-primary">
-                pre-order for the paikka holiday bazaar here.
-              </a>
-            </h3>
+            <img 
+              src="https://res.cloudinary.com/dokyhfvyd/image/upload/c_limit,f_auto,q_auto,w_1600/wv9huoauoimjozqzq4kr?_a=BAMAK+eA0" 
+              alt="Holiday Pie Sale"
+              className="w-full rounded-lg shadow-lg"
+            />
           </div>
         </section>
 
