@@ -17,6 +17,7 @@ const links = [
   // { path: '/happy-monday', name: 'Happy Monday' }, // temporarily hidden
   { path: '/gallery', name: 'Gallery' },
   { name: 'Tiny Weddings', external: true, href: 'https://tiny-weddings.localeffortfood.com' },
+  { path: '/sale', name: '🥧 Holiday Pie Sale', isRedLink: true },
   // { path: '/releases', name: 'Releases' }, // temporarily hidden
 ];
 
@@ -51,7 +52,7 @@ export const Header = () => {
         {/* Desktop nav */}
         <nav className="hidden md:flex items-center gap-2 font-mono text-[0.9rem]">
           {links.map((link) => {
-            const { path, name, sale, children, tag, external, href } = link;
+            const { path, name, sale, children, tag, external, href, isRedLink } = link;
             const key = path || href;
             if (external) {
               return (
@@ -89,6 +90,10 @@ export const Header = () => {
                         >
                           {name}
                         </span>
+                      ) : isRedLink ? (
+                        <span className="inline-flex items-center gap-1 transition-colors hover:text-red-700 text-red-600 font-semibold">
+                          <span>{name}</span>
+                        </span>
                       ) : (
                         <span className="inline-flex items-center gap-1 transition-colors hover:text-neutral-900 text-neutral-700">
                           <span>{name}</span>
@@ -99,10 +104,19 @@ export const Header = () => {
                           )}
                         </span>
                       )}
-                      {!sale && (
+                      {!sale && !isRedLink && (
                         <motion.span
                           layoutId="nav-underline"
                           className="absolute left-2 right-2 -bottom-0.5 h-0.5 bg-[var(--color-accent)]"
+                          initial={false}
+                          animate={{ opacity: isActive ? 1 : 0 }}
+                          transition={{ duration: 0.2 }}
+                        />
+                      )}
+                      {isRedLink && (
+                        <motion.span
+                          layoutId="nav-underline-red"
+                          className="absolute left-2 right-2 -bottom-0.5 h-0.5 bg-red-600"
                           initial={false}
                           animate={{ opacity: isActive ? 1 : 0 }}
                           transition={{ duration: 0.2 }}
@@ -215,7 +229,7 @@ export const Header = () => {
                       <NavLink
                         to={l.path}
                         onClick={() => setIsOpen(false)}
-                        className={`block text-3xl uppercase text-center ${l.sale ? 'bg-rose-600 text-white px-4 py-2 rounded-md' : ''}`}
+                        className={`block text-3xl uppercase text-center ${l.sale ? 'bg-rose-600 text-white px-4 py-2 rounded-md' : l.isRedLink ? 'text-red-600 font-bold' : ''}`}
                       >
                         <span className="flex items-center justify-center gap-2">
                           <span>{l.name}</span>
