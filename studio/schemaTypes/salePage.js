@@ -13,6 +13,12 @@ export default {
       validation: Rule => Rule.required(),
     },
     {
+      name: 'titleIcon',
+      title: 'Title Icon',
+      type: 'iconPicker',
+      description: 'Optional icon to display next to the title.',
+    },
+    {
       name: 'subheading',
       title: 'Subtitle (H2)',
       type: 'string',
@@ -27,7 +33,13 @@ export default {
     },
   ],
   preview: {
-    select: { title: 'title', subtitle: 'subheading' },
-    prepare({ title, subtitle }) { return { title: title || 'Sale Page', subtitle }; },
+    select: { title: 'title', subtitle: 'subheading', icon: 'titleIcon' },
+    prepare({ title, subtitle, icon }) { 
+      return { 
+        title: title || 'Sale Page', 
+        subtitle,
+        media: icon
+      }; 
+    },
   },
 }
