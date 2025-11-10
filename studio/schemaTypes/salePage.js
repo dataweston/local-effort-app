@@ -6,21 +6,28 @@ export default {
   type: 'document',
   fields: [
     {
-      name: 'subheading',
-      title: 'Subheading',
+      name: 'title',
+      title: 'Title (H1)',
       type: 'string',
-      description: 'Short subheading shown under the Sale title.',
+      description: 'Main title/heading for the sale page.',
+      validation: Rule => Rule.required(),
+    },
+    {
+      name: 'subheading',
+      title: 'Subtitle (H2)',
+      type: 'string',
+      description: 'Short subtitle shown under the main title.',
     },
     {
       name: 'intro',
       title: 'Intro Text',
       type: 'array',
       of: [{ type: 'block' }],
-      description: 'Optional text shown under the title to explain the sale.',
+      description: 'Optional text shown under the subtitle to explain the sale.',
     },
   ],
   preview: {
-    select: { title: 'subheading' },
-    prepare({ title }) { return { title: title || 'Sale Page' }; },
+    select: { title: 'title', subtitle: 'subheading' },
+    prepare({ title, subtitle }) { return { title: title || 'Sale Page', subtitle }; },
   },
 }
