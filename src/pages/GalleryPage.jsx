@@ -290,7 +290,6 @@ const GalleryPage = () => {
                     loading="lazy"
                     decoding="async"
                   />
-                  <figcaption className="text-xs text-neutral-600 mt-2">{img.caption}</figcaption>
                 </figure>
               ))}
             </div>
