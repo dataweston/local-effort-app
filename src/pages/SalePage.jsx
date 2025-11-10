@@ -157,17 +157,8 @@ const SalePage = () => {
             <div className="bg-white/90 backdrop-blur-md px-8 py-6 rounded-2xl shadow-xl border-2 border-orange-200/50">
               <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
                 <div className="flex-1">
-                  <h1 className="text-4xl md:text-5xl font-bold text-neutral-900 mb-2 tracking-tight">
-                    holiday pie sale ✨
-                  </h1>
-                  <p className="text-lg text-neutral-700">
-                    pickup at Henry & Son 11/26 (day before thanksgiving)
-                  </p>
-                  <p className="text-base text-neutral-600 mt-1">
-                    we'll get some christmas dates up soon too.
-                  </p>
                   {saleIntro.subheading && (
-                    <p className="mt-2 text-neutral-700">{saleIntro.subheading}</p>
+                    <p className="text-lg text-neutral-700">{saleIntro.subheading}</p>
                   )}
                   {Array.isArray(saleIntro.intro) && saleIntro.intro.length > 0 && (
                     <div className="prose prose-neutral max-w-none mt-3">
