@@ -1,109 +1,137 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { motion, useMotionValue, useSpring } from 'framer-motion';
+import { motion } from 'framer-motion';
 
 const DraggableMasonry = ({ images = [] }) => {
+  const [imageOrder, setImageOrder] = useState([]);
   const [positions, setPositions] = useState({});
+  const [rotations, setRotations] = useState({});
   const containerRef = useRef(null);
-  const [isDragging, setIsDragging] = useState(false);
+  const [isDragging, setIsDragging] = useState(null);
 
+  // Initialize order and rotations once
   useEffect(() => {
-    // Initialize positions with loose masonry layout
-    const initPositions = {};
-    const columns = 3;
-    const columnHeights = new Array(columns).fill(0);
-    const baseGap = 25;
-    const columnWidth = 310;
-
-    images.forEach((img, idx) => {
-      // Find shortest column
-      const shortestCol = columnHeights.indexOf(Math.min(...columnHeights));
+    if (images.length > 0 && imageOrder.length === 0) {
+      setImageOrder(images.map(img => img.id));
       
-      // Add randomness for a loose, organic feel (but not too much)
-      const randomOffset = {
-        x: (Math.random() - 0.5) * 25,
-        y: (Math.random() - 0.5) * 15,
-      };
+      // Set random rotations for each image (only once)
+      const rots = {};
+      images.forEach(img => {
+        rots[img.id] = (Math.random() - 0.5) * 3;
+      });
+      setRotations(rots);
+    }
+  }, [images, imageOrder.length]);
 
-      const x = shortestCol * columnWidth + randomOffset.x;
-      const y = columnHeights[shortestCol] + baseGap + randomOffset.y;
+  // Recalculate positions whenever order changes
+  useEffect(() => {
+    if (imageOrder.length === 0) return;
+    
+    const calculatePositions = () => {
+      const newPositions = {};
+      const columns = 3;
+      const columnHeights = new Array(columns).fill(0);
+      const baseGap = 16;
+      const columnWidth = 310;
 
-      // Add slight random rotation
-      const rotation = (Math.random() - 0.5) * 3;
+      imageOrder.forEach((imgId) => {
+        const img = images.find(i => i.id === imgId);
+        if (!img) return;
+        
+        // Find shortest column
+        const shortestCol = columnHeights.indexOf(Math.min(...columnHeights));
+        
+        // Calculate position with slight randomness for organic feel
+        const randomOffset = {
+          x: (Math.random() - 0.5) * 20,
+          y: (Math.random() - 0.5) * 10,
+        };
 
-      initPositions[img.id] = { x, y, rotation };
-      columnHeights[shortestCol] += (img.height || 380) + baseGap;
-    });
+        const x = shortestCol * columnWidth + randomOffset.x;
+        const y = columnHeights[shortestCol] + baseGap + randomOffset.y;
 
-    setPositions(initPositions);
-  }, [images]);
+        newPositions[imgId] = { x, y, column: shortestCol };
+        
+        // Update column height
+        columnHeights[shortestCol] += (img.height || 380) + baseGap;
+      });
 
-  const handleDragStart = () => {
-    setIsDragging(true);
+      setPositions(newPositions);
+    };
+
+    calculatePositions();
+  }, [imageOrder, images]);
+
+  const handleDragStart = (id) => {
+    setIsDragging(id);
   };
 
   const handleDragEnd = (id, event, info) => {
-    setIsDragging(false);
+    setIsDragging(null);
+    
+    const currentPos = positions[id];
+    if (!currentPos) return;
     
     // Calculate new position after drag
-    const newX = (positions[id]?.x || 0) + info.offset.x;
-    const newY = (positions[id]?.y || 0) + info.offset.y;
+    const newX = currentPos.x + info.offset.x;
+    const newY = currentPos.y + info.offset.y;
     
-    // Snap to nearest column
+    // Determine which column we're closest to
     const columnWidth = 310;
-    const nearestColumn = Math.round(newX / columnWidth);
-    const snappedX = nearestColumn * columnWidth;
+    const targetColumn = Math.max(0, Math.min(2, Math.round(newX / columnWidth)));
     
-    // Find the appropriate Y position in that column
-    const imagesInColumn = Object.entries(positions)
-      .filter(([imgId, pos]) => {
-        if (imgId === String(id)) return false;
-        const colIndex = Math.round(pos.x / columnWidth);
-        return colIndex === nearestColumn;
-      })
-      .map(([imgId, pos]) => {
-        const img = images.find(i => String(i.id) === imgId);
-        return { y: pos.y, height: img?.height || 380 };
-      })
-      .sort((a, b) => a.y - b.y);
-    
-    // Find appropriate Y position (either above, between, or below existing images)
-    let snappedY = newY;
-    const currentImage = images.find(i => String(i.id) === String(id));
-    const currentHeight = currentImage?.height || 380;
-    const baseGap = 25;
-    
-    if (imagesInColumn.length === 0) {
-      // Empty column, snap to top with some offset
-      snappedY = baseGap + (Math.random() - 0.5) * 15;
-    } else {
-      // Find best spot in column
-      let bestSpot = baseGap + (Math.random() - 0.5) * 15;
-      
-      for (let i = 0; i < imagesInColumn.length; i++) {
-        const img = imagesInColumn[i];
-        const potentialY = img.y + img.height + baseGap;
-        
-        if (newY < img.y && i === 0) {
-          // Before first image
-          bestSpot = baseGap + (Math.random() - 0.5) * 15;
-          break;
-        } else if (newY >= img.y && (i === imagesInColumn.length - 1 || newY < imagesInColumn[i + 1].y)) {
-          // After this image
-          bestSpot = potentialY + (Math.random() - 0.5) * 15;
-          break;
-        }
+    // Find all images in each column (excluding the dragged one)
+    const columnImages = [[], [], []];
+    imageOrder.forEach(imgId => {
+      if (imgId === id) return;
+      const pos = positions[imgId];
+      if (pos) {
+        columnImages[pos.column].push({
+          id: imgId,
+          y: pos.y,
+          height: images.find(i => i.id === imgId)?.height || 380
+        });
       }
-      snappedY = bestSpot;
+    });
+    
+    // Sort each column by Y position
+    columnImages.forEach(col => col.sort((a, b) => a.y - b.y));
+    
+    // Find where in the target column this image should be inserted
+    const targetColumnImages = columnImages[targetColumn];
+    let insertIndex = targetColumnImages.length;
+    
+    for (let i = 0; i < targetColumnImages.length; i++) {
+      if (newY < targetColumnImages[i].y) {
+        insertIndex = i;
+        break;
+      }
     }
     
-    setPositions(prev => ({
-      ...prev,
-      [id]: {
-        x: snappedX,
-        y: snappedY,
-        rotation: prev[id]?.rotation || 0,
+    // Rebuild the order array with the moved image in its new position
+    const newOrder = [];
+    const columnsToProcess = [[], [], []];
+    
+    // Distribute images back into columns
+    imageOrder.forEach(imgId => {
+      if (imgId === id) return;
+      const pos = positions[imgId];
+      if (pos) {
+        columnsToProcess[pos.column].push(imgId);
       }
-    }));
+    });
+    
+    // Insert dragged image into target column at correct position
+    columnsToProcess[targetColumn].splice(insertIndex, 0, id);
+    
+    // Interleave columns to rebuild order (for more natural flow)
+    const maxLength = Math.max(...columnsToProcess.map(col => col.length));
+    for (let i = 0; i < maxLength; i++) {
+      columnsToProcess.forEach(col => {
+        if (col[i]) newOrder.push(col[i]);
+      });
+    }
+    
+    setImageOrder(newOrder);
   };
 
   return (
@@ -113,7 +141,9 @@ const DraggableMasonry = ({ images = [] }) => {
       style={{ minHeight: '1000px' }}
     >
       {images.map((img, idx) => {
-        const pos = positions[img.id] || { x: 0, y: 0, rotation: 0 };
+        const pos = positions[img.id] || { x: 0, y: 0, column: 0 };
+        const rotation = rotations[img.id] || 0;
+        const isBeingDragged = isDragging === img.id;
         
         return (
           <motion.div
@@ -121,29 +151,30 @@ const DraggableMasonry = ({ images = [] }) => {
             drag
             dragMomentum={false}
             dragElastic={0.05}
-            onDragStart={handleDragStart}
+            onDragStart={() => handleDragStart(img.id)}
             onDragEnd={(e, info) => handleDragEnd(img.id, e, info)}
             style={{
               position: 'absolute',
               width: img.width || 300,
-              cursor: isDragging ? 'grabbing' : 'grab',
+              cursor: isBeingDragged ? 'grabbing' : 'grab',
+              zIndex: isBeingDragged ? 100 : 1,
             }}
             animate={{
               x: pos.x,
               y: pos.y,
-              rotate: pos.rotation,
+              rotate: rotation,
               opacity: 1,
               scale: 1,
             }}
             whileHover={{ 
               scale: 1.08, 
-              rotate: pos.rotation + (Math.random() - 0.5) * 2,
+              rotate: rotation + (Math.random() - 0.5) * 2,
               zIndex: 50,
               transition: { type: "spring", stiffness: 400, damping: 25 }
             }}
             whileDrag={{ 
               scale: 1.12, 
-              rotate: pos.rotation + (Math.random() - 0.5) * 3,
+              rotate: rotation + (Math.random() - 0.5) * 3,
               zIndex: 100,
               transition: { type: "spring", stiffness: 400, damping: 25 }
             }}
@@ -152,13 +183,13 @@ const DraggableMasonry = ({ images = [] }) => {
               scale: 0.7, 
               x: pos.x,
               y: pos.y,
-              rotate: pos.rotation - 10 
+              rotate: rotation - 10 
             }}
             transition={{ 
               type: "spring",
-              stiffness: 300,
-              damping: 30,
-              delay: idx * 0.05,
+              stiffness: 260,
+              damping: 26,
+              delay: idx * 0.04,
             }}
             className="shadow-xl hover:shadow-2xl transition-shadow duration-300"
           >
@@ -166,7 +197,7 @@ const DraggableMasonry = ({ images = [] }) => {
             <div className="relative bg-white p-3 pb-8 rounded-sm">
               <img
                 src={img.url}
-                alt={`Gallery image ${img.id}`}
+                alt={`Pie gallery ${idx + 1}`}
                 className="w-full h-auto select-none pointer-events-none"
                 draggable={false}
                 loading="lazy"

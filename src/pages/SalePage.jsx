@@ -50,24 +50,25 @@ const SalePage = () => {
         
         // Fetch from Cloudinary API
         try {
-          const cloudinaryRes = await fetch('/api/search-images?query=pie');
+          const cloudinaryRes = await fetch('/api/search-images?query=pie&per_page=50', {
+            headers: { Accept: 'application/json' }
+          });
           if (cloudinaryRes.ok) {
             const cloudinaryData = await cloudinaryRes.json();
-            if (Array.isArray(cloudinaryData.resources)) {
-              images.push(...cloudinaryData.resources.map((img, idx) => ({
-                id: `cloudinary-${idx}`,
-                url: img.secure_url || img.url,
+            if (Array.isArray(cloudinaryData.images)) {
+              images.push(...cloudinaryData.images.map((img) => ({
+                id: img.asset_id || img.public_id,
+                url: img.thumbnail_url || img.large_url,
                 width: img.width ? Math.min(img.width, 320) : 300,
                 height: img.height ? Math.round((Math.min(img.width, 320) / img.width) * img.height) : 380,
               })));
             }
           }
         } catch (e) {
-          console.log('Cloudinary fetch failed, continuing with local images');
+          console.error('Cloudinary fetch failed:', e);
         }
         
         // Add local /images folder images
-        // You'll need to update this list with your actual image filenames
         const localImages = [
           '2f4a4f32-21ae-47fc-bcf1-f4e2439294bc_3000.jpg',
           '819af5c9-a882-4a4d-a1f1-357762a78ebd_3000.jpg',
