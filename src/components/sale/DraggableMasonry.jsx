@@ -75,7 +75,8 @@ const DraggableMasonry = ({ images = [] }) => {
     const dragDistance = Math.sqrt(info.offset.x ** 2 + info.offset.y ** 2);
     
     // If it was a quick click (not a drag), open lightbox
-    if (dragDuration < 200 && dragDistance < 5) {
+    // More lenient thresholds: 300ms and 10px
+    if (dragDuration < 300 && dragDistance < 10) {
       const img = images.find(i => i.id === id);
       if (img) {
         setLightboxImage(img);
