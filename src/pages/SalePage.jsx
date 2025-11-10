@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useCart } from '../store/cart/CartContext';
 import ProductCard from '../store/components/ProductCard';
 import CheckoutPanel from '../store/components/CheckoutPanel';
@@ -15,6 +15,7 @@ const SalePage = () => {
   const [loading, setLoading] = useState(true);
   const [saleIntro, setSaleIntro] = useState({ title: '', titleIcon: null, subheading: '', intro: [] });
   const [galleryImages, setGalleryImages] = useState([]);
+  const [lightboxImage, setLightboxImage] = useState(null);
 
   useEffect(() => {
     let alive = true;
@@ -280,19 +281,20 @@ const SalePage = () => {
               <p className="text-xs text-neutral-500 text-center mb-4">
                 for best experience, view on a monitor
               </p>
-              <div className="grid grid-cols-2 gap-4">
-                {galleryImages.slice(0, 8).map((img, i) => (
+              <div className="columns-2 gap-4 space-y-4">
+                {galleryImages.map((img, i) => (
                   <motion.div
                     key={img.id}
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.3 + (i * 0.1) }}
-                    className="aspect-[3/4] rounded-lg overflow-hidden shadow-md bg-white p-2"
+                    transition={{ delay: 0.3 + (i * 0.05) }}
+                    className="break-inside-avoid mb-4 rounded-lg overflow-hidden shadow-md bg-white p-2 cursor-pointer active:scale-95 transition-transform"
+                    onClick={() => setLightboxImage(img)}
                   >
                     <img 
                       src={img.url} 
                       alt={`Pie ${i + 1}`}
-                      className="w-full h-full object-cover rounded"
+                      className="w-full h-auto object-cover rounded"
                       loading="lazy"
                     />
                   </motion.div>
@@ -302,6 +304,40 @@ const SalePage = () => {
           </div>
         </div>
       </div>
+
+      {/* Lightbox Modal */}
+      <AnimatePresence>
+        {lightboxImage && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setLightboxImage(null)}
+            className="fixed inset-0 z-50 bg-black/90 backdrop-blur-sm flex items-center justify-center p-4 cursor-zoom-out"
+          >
+            <motion.div
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.8, opacity: 0 }}
+              className="relative max-w-6xl max-h-[90vh]"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <img
+                src={lightboxImage.url}
+                alt="Enlarged view"
+                className="w-full h-full object-contain rounded-lg shadow-2xl"
+              />
+              <button
+                onClick={() => setLightboxImage(null)}
+                className="absolute -top-4 -right-4 w-12 h-12 bg-white hover:bg-gray-100 rounded-full flex items-center justify-center text-gray-800 text-3xl font-light transition-colors shadow-lg"
+                aria-label="Close"
+              >
+                ×
+              </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <CheckoutPanel />
     </div>
