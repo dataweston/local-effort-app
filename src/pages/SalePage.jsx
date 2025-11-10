@@ -13,7 +13,7 @@ const SalePage = () => {
   const { totalQty, openCart } = useCart();
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [saleIntro, setSaleIntro] = useState({ title: '', subheading: '', intro: [] });
+  const [saleIntro, setSaleIntro] = useState({ title: '', titleIcon: null, subheading: '', intro: [] });
   const [galleryImages, setGalleryImages] = useState([]);
 
   useEffect(() => {
@@ -37,9 +37,14 @@ const SalePage = () => {
     // Fetch Sale page intro from Sanity (optional)
     (async () => {
       try {
-        const doc = await sanityClient.fetch('*[_type == "salePage"][0]{ title, subheading, intro }').catch(() => null);
+        const doc = await sanityClient.fetch('*[_type == "salePage"][0]{ title, titleIcon, subheading, intro }').catch(() => null);
         if (!alive) return;
-        if (doc) setSaleIntro({ title: doc.title || '', subheading: doc.subheading || '', intro: Array.isArray(doc.intro) ? doc.intro : [] });
+        if (doc) setSaleIntro({ 
+          title: doc.title || '', 
+          titleIcon: doc.titleIcon || null,
+          subheading: doc.subheading || '', 
+          intro: Array.isArray(doc.intro) ? doc.intro : [] 
+        });
       } catch (_) { /* ignore */ }
     })();
     
@@ -159,8 +164,15 @@ const SalePage = () => {
               <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
                 <div className="flex-1">
                   {saleIntro.title && (
-                    <h1 className="text-4xl md:text-5xl font-bold text-neutral-900 mb-2 tracking-tight">
-                      {saleIntro.title}
+                    <h1 className="text-4xl md:text-5xl font-bold text-neutral-900 mb-2 tracking-tight flex items-center gap-3">
+                      {saleIntro.titleIcon && (
+                        <span className="text-5xl md:text-6xl" role="img" aria-label="icon">
+                          {saleIntro.titleIcon.provider === 'emoji' 
+                            ? saleIntro.titleIcon.name 
+                            : saleIntro.titleIcon.name || '✨'}
+                        </span>
+                      )}
+                      <span>{saleIntro.title}</span>
                     </h1>
                   )}
                   {saleIntro.subheading && (
