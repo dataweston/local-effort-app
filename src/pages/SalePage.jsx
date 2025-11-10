@@ -277,15 +277,24 @@ const SalePage = () => {
               <h2 className="text-2xl font-bold text-neutral-900 mb-4 text-center">
                 gallery 📸
               </h2>
+              <p className="text-xs text-neutral-500 text-center mb-4">
+                for best experience, view on a monitor
+              </p>
               <div className="grid grid-cols-2 gap-4">
-                {/* Simplified static grid for mobile */}
-                {[1, 2, 3, 4].map((i) => (
+                {galleryImages.slice(0, 8).map((img, i) => (
                   <motion.div
-                    key={i}
-                    whileHover={{ scale: 1.05, rotate: Math.random() * 4 - 2 }}
+                    key={img.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.3 + (i * 0.1) }}
                     className="aspect-[3/4] rounded-lg overflow-hidden shadow-md bg-white p-2"
                   >
-                    <div className="w-full h-full bg-gradient-to-br from-orange-100 to-amber-100 rounded" />
+                    <img 
+                      src={img.url} 
+                      alt={`Pie ${i + 1}`}
+                      className="w-full h-full object-cover rounded"
+                      loading="lazy"
+                    />
                   </motion.div>
                 ))}
               </div>
