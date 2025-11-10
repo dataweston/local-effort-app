@@ -14,9 +14,12 @@ const SalePage = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [saleIntro, setSaleIntro] = useState({ subheading: '', intro: [] });
+  const [galleryImages, setGalleryImages] = useState([]);
 
   useEffect(() => {
     let alive = true;
+    
+    // Fetch products
     (async () => {
       try {
         const res = await fetch('/api/store/products?store=sale');
@@ -30,6 +33,7 @@ const SalePage = () => {
         if (alive) setLoading(false);
       }
     })();
+    
     // Fetch Sale page intro from Sanity (optional)
     (async () => {
       try {
@@ -38,6 +42,64 @@ const SalePage = () => {
         if (doc) setSaleIntro({ subheading: doc.subheading || '', intro: Array.isArray(doc.intro) ? doc.intro : [] });
       } catch (_) { /* ignore */ }
     })();
+    
+    // Fetch gallery images from Cloudinary (tagged 'pie') and local /images folder
+    (async () => {
+      try {
+        const images = [];
+        
+        // Fetch from Cloudinary API
+        try {
+          const cloudinaryRes = await fetch('/api/search-images?query=pie');
+          if (cloudinaryRes.ok) {
+            const cloudinaryData = await cloudinaryRes.json();
+            if (Array.isArray(cloudinaryData.resources)) {
+              images.push(...cloudinaryData.resources.map((img, idx) => ({
+                id: `cloudinary-${idx}`,
+                url: img.secure_url || img.url,
+                width: img.width ? Math.min(img.width, 320) : 300,
+                height: img.height ? Math.round((Math.min(img.width, 320) / img.width) * img.height) : 380,
+              })));
+            }
+          }
+        } catch (e) {
+          console.log('Cloudinary fetch failed, continuing with local images');
+        }
+        
+        // Add local /images folder images
+        // You'll need to update this list with your actual image filenames
+        const localImages = [
+          '2f4a4f32-21ae-47fc-bcf1-f4e2439294bc_3000.jpg',
+          '819af5c9-a882-4a4d-a1f1-357762a78ebd_3000.jpg',
+          '927eec02-f5a6-4501-8a83-edd2af06f973_3000.jpg',
+          'a847c096-4191-454a-82a2-35e6fd246b2a_2645.jpg',
+          'DP-14936-049.jpg',
+          'DP-15526-010.jpg',
+          'DP-30169-001.jpg',
+          'DP800004.jpg',
+          'DP823463.jpg',
+          'DP885938.jpg',
+          'DPB874625.jpg',
+          'DT1939.jpg',
+          'DT4854.jpg',
+        ];
+        
+        localImages.forEach((filename, idx) => {
+          images.push({
+            id: `local-${idx}`,
+            url: `/images/${filename}`,
+            width: 300,
+            height: 380,
+          });
+        });
+        
+        if (!alive) return;
+        setGalleryImages(images);
+      } catch (e) {
+        console.error('Error fetching gallery images:', e);
+      }
+    })();
+    
     return () => { alive = false; };
   }, []);
 
@@ -147,7 +209,7 @@ const SalePage = () => {
           {/* Masonry Gallery - takes up 7 columns on desktop */}
           <div className="hidden lg:block lg:col-span-7">
             <div className="relative">
-              <DraggableMasonry />
+              <DraggableMasonry images={galleryImages} />
             </div>
           </div>
 

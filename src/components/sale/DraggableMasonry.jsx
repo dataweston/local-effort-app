@@ -1,19 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, useMotionValue, useSpring } from 'framer-motion';
 
-// Sample images - replace with your actual image URLs from your sanity/backend
-const SAMPLE_IMAGES = [
-  { id: 1, url: 'https://images.unsplash.com/photo-1464305795204-6f5bbfc7fb81?w=400', width: 280, height: 380 },
-  { id: 2, url: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?w=400', width: 300, height: 340 },
-  { id: 3, url: 'https://images.unsplash.com/photo-1476887334197-56adbf254e1a?w=400', width: 270, height: 400 },
-  { id: 4, url: 'https://images.unsplash.com/photo-1495147466023-ac5c588e2e94?w=400', width: 310, height: 360 },
-  { id: 5, url: 'https://images.unsplash.com/photo-1488477181946-6428a0291777?w=400', width: 280, height: 380 },
-  { id: 6, url: 'https://images.unsplash.com/photo-1481833761820-0509d3217039?w=400', width: 300, height: 350 },
-  { id: 7, url: 'https://images.unsplash.com/photo-1519915212116-7cfef71f1d3e?w=400', width: 290, height: 370 },
-  { id: 8, url: 'https://images.unsplash.com/photo-1515694346937-94d85e41e6f0?w=400', width: 280, height: 390 },
-];
-
-const DraggableMasonry = ({ images = SAMPLE_IMAGES }) => {
+const DraggableMasonry = ({ images = [] }) => {
   const [positions, setPositions] = useState({});
   const containerRef = useRef(null);
   const [isDragging, setIsDragging] = useState(false);
@@ -55,11 +43,64 @@ const DraggableMasonry = ({ images = SAMPLE_IMAGES }) => {
 
   const handleDragEnd = (id, event, info) => {
     setIsDragging(false);
+    
+    // Calculate new position after drag
+    const newX = (positions[id]?.x || 0) + info.offset.x;
+    const newY = (positions[id]?.y || 0) + info.offset.y;
+    
+    // Snap to nearest column
+    const columnWidth = 310;
+    const nearestColumn = Math.round(newX / columnWidth);
+    const snappedX = nearestColumn * columnWidth;
+    
+    // Find the appropriate Y position in that column
+    const imagesInColumn = Object.entries(positions)
+      .filter(([imgId, pos]) => {
+        if (imgId === String(id)) return false;
+        const colIndex = Math.round(pos.x / columnWidth);
+        return colIndex === nearestColumn;
+      })
+      .map(([imgId, pos]) => {
+        const img = images.find(i => String(i.id) === imgId);
+        return { y: pos.y, height: img?.height || 380 };
+      })
+      .sort((a, b) => a.y - b.y);
+    
+    // Find appropriate Y position (either above, between, or below existing images)
+    let snappedY = newY;
+    const currentImage = images.find(i => String(i.id) === String(id));
+    const currentHeight = currentImage?.height || 380;
+    const baseGap = 25;
+    
+    if (imagesInColumn.length === 0) {
+      // Empty column, snap to top with some offset
+      snappedY = baseGap + (Math.random() - 0.5) * 15;
+    } else {
+      // Find best spot in column
+      let bestSpot = baseGap + (Math.random() - 0.5) * 15;
+      
+      for (let i = 0; i < imagesInColumn.length; i++) {
+        const img = imagesInColumn[i];
+        const potentialY = img.y + img.height + baseGap;
+        
+        if (newY < img.y && i === 0) {
+          // Before first image
+          bestSpot = baseGap + (Math.random() - 0.5) * 15;
+          break;
+        } else if (newY >= img.y && (i === imagesInColumn.length - 1 || newY < imagesInColumn[i + 1].y)) {
+          // After this image
+          bestSpot = potentialY + (Math.random() - 0.5) * 15;
+          break;
+        }
+      }
+      snappedY = bestSpot;
+    }
+    
     setPositions(prev => ({
       ...prev,
       [id]: {
-        x: (prev[id]?.x || 0) + info.offset.x,
-        y: (prev[id]?.y || 0) + info.offset.y,
+        x: snappedX,
+        y: snappedY,
         rotation: prev[id]?.rotation || 0,
       }
     }));
@@ -84,10 +125,15 @@ const DraggableMasonry = ({ images = SAMPLE_IMAGES }) => {
             onDragEnd={(e, info) => handleDragEnd(img.id, e, info)}
             style={{
               position: 'absolute',
-              left: pos.x,
-              top: pos.y,
               width: img.width || 300,
               cursor: isDragging ? 'grabbing' : 'grab',
+            }}
+            animate={{
+              x: pos.x,
+              y: pos.y,
+              rotate: pos.rotation,
+              opacity: 1,
+              scale: 1,
             }}
             whileHover={{ 
               scale: 1.08, 
@@ -104,17 +150,14 @@ const DraggableMasonry = ({ images = SAMPLE_IMAGES }) => {
             initial={{ 
               opacity: 0, 
               scale: 0.7, 
+              x: pos.x,
+              y: pos.y,
               rotate: pos.rotation - 10 
-            }}
-            animate={{ 
-              opacity: 1, 
-              scale: 1, 
-              rotate: pos.rotation 
             }}
             transition={{ 
               type: "spring",
               stiffness: 300,
-              damping: 25,
+              damping: 30,
               delay: idx * 0.05,
             }}
             className="shadow-xl hover:shadow-2xl transition-shadow duration-300"
