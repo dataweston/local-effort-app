@@ -233,7 +233,6 @@ const SalePage = () => {
           {/* Products Section - takes up 5 columns on desktop */}
           <div className="lg:col-span-5 relative z-10">
             {loading ? (
-            {loading ? (
               <div className="bg-white/90 backdrop-blur-md p-8 rounded-2xl shadow-xl border-2 border-orange-200/50">
                 <div className="flex items-center justify-center">
                   <div className="animate-pulse text-neutral-600">Loading delicious pies...</div>
