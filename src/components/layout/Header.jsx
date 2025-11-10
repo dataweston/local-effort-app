@@ -10,8 +10,6 @@ const links = [
     children: [{ path: '/services#event-request', name: 'Submit an event request' }],
   },
   { path: '/pricing', name: 'Pricing' },
-  { path: '/menu', name: 'Menus' },
-  { path: '/pizza-party', name: 'Pizza Party' },
   // { path: '/book-food-truck', name: 'Book a Food Truck', tag: 'Beta' }, // hidden from nav
   { path: '/about', name: 'About' },
   // { path: '/happy-monday', name: 'Happy Monday' }, // temporarily hidden
