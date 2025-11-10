@@ -13,7 +13,7 @@ const SalePage = () => {
   const { totalQty, openCart } = useCart();
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [saleIntro, setSaleIntro] = useState({ subheading: '', intro: [] });
+  const [saleIntro, setSaleIntro] = useState({ title: '', subheading: '', intro: [] });
   const [galleryImages, setGalleryImages] = useState([]);
 
   useEffect(() => {
@@ -37,9 +37,9 @@ const SalePage = () => {
     // Fetch Sale page intro from Sanity (optional)
     (async () => {
       try {
-        const doc = await sanityClient.fetch('*[_type == "salePage"][0]{ subheading, intro }').catch(() => null);
+        const doc = await sanityClient.fetch('*[_type == "salePage"][0]{ title, subheading, intro }').catch(() => null);
         if (!alive) return;
-        if (doc) setSaleIntro({ subheading: doc.subheading || '', intro: Array.isArray(doc.intro) ? doc.intro : [] });
+        if (doc) setSaleIntro({ title: doc.title || '', subheading: doc.subheading || '', intro: Array.isArray(doc.intro) ? doc.intro : [] });
       } catch (_) { /* ignore */ }
     })();
     
@@ -158,8 +158,15 @@ const SalePage = () => {
             <div className="bg-white/90 backdrop-blur-md px-8 py-6 rounded-2xl shadow-xl border-2 border-orange-200/50">
               <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
                 <div className="flex-1">
+                  {saleIntro.title && (
+                    <h1 className="text-4xl md:text-5xl font-bold text-neutral-900 mb-2 tracking-tight">
+                      {saleIntro.title}
+                    </h1>
+                  )}
                   {saleIntro.subheading && (
-                    <p className="text-lg text-neutral-700">{saleIntro.subheading}</p>
+                    <h2 className="text-xl md:text-2xl font-semibold text-neutral-700 mb-2">
+                      {saleIntro.subheading}
+                    </h2>
                   )}
                   {Array.isArray(saleIntro.intro) && saleIntro.intro.length > 0 && (
                     <div className="prose prose-neutral max-w-none mt-3">
