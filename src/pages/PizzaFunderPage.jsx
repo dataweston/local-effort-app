@@ -25,7 +25,7 @@ import { generateEventListSchema, generateFAQSchema } from '../utils/generateEve
 /**
  * Campaign extension deadline (matches CrowdfundingPage)
  */
-const CAMPAIGN_EXTENSION_DATE_STRING = '2025-12-10T23:59:59-06:00';
+const CAMPAIGN_EXTENSION_DATE_STRING = '2026-01-12T23:59:59-06:00';
 const CAMPAIGN_EXTENSION_DEADLINE = (() => {
   const parsed = new Date(CAMPAIGN_EXTENSION_DATE_STRING);
   return Number.isNaN(parsed.getTime()) ? null : parsed;
