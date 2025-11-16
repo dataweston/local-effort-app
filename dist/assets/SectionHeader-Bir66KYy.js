@@ -1,0 +1,1 @@
+import{R as e}from"./index-BUhm5nXR.js";function t({overline:a,title:n,className:l=""}){return e.createElement("div",{className:["space-y-2",l].filter(Boolean).join(" ")},a?e.createElement("span",{className:"heading-overline"},a):null,n?e.createElement("h2",{className:"heading-xl heading-balance"},n):null)}export{t as S};
