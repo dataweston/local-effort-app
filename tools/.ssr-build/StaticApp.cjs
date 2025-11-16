@@ -62545,13 +62545,12 @@ var links = [
     children: [{ path: "/services#event-request", name: "Submit an event request" }]
   },
   { path: "/pricing", name: "Pricing" },
-  { path: "/menu", name: "Menus" },
-  { path: "/pizza-party", name: "Pizza Party" },
   // { path: '/book-food-truck', name: 'Book a Food Truck', tag: 'Beta' }, // hidden from nav
   { path: "/about", name: "About" },
   // { path: '/happy-monday', name: 'Happy Monday' }, // temporarily hidden
   { path: "/gallery", name: "Gallery" },
-  { name: "Tiny Weddings", external: true, href: "https://tiny-weddings.localeffortfood.com" }
+  { name: "Tiny Weddings", external: true, href: "https://tiny-weddings.localeffortfood.com" },
+  { path: "/sale", name: "\u{1F967} Holiday Pie Sale", isRedLink: true }
   // { path: '/releases', name: 'Releases' }, // temporarily hidden
 ];
 var SHOW_FUNDRAISER = true;
@@ -62578,7 +62577,7 @@ var Header = () => {
       ) }),
       /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("nav", { className: "hidden md:flex items-center gap-2 font-mono text-[0.9rem]", children: [
         links.map((link) => {
-          const { path, name: name2, sale, children, tag, external, href } = link;
+          const { path, name: name2, sale, children, tag, external, href, isRedLink } = link;
           const key2 = path || href;
           if (external) {
             return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "relative group", children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(
@@ -62614,15 +62613,25 @@ var Header = () => {
                   style: { backgroundColor: "#e11d48" },
                   children: name2
                 }
-              ) : /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { className: "inline-flex items-center gap-1 transition-colors hover:text-neutral-900 text-neutral-700", children: [
+              ) : isRedLink ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: "inline-flex items-center gap-1 transition-colors hover:text-red-700 text-red-600 font-semibold", children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: name2 }) }) : /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { className: "inline-flex items-center gap-1 transition-colors hover:text-neutral-900 text-neutral-700", children: [
                 /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: name2 }),
                 tag && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: "inline-flex items-center rounded-full bg-rose-100 px-2 py-0.5 text-[0.55rem] font-semibold uppercase tracking-[0.2em] text-rose-500", children: tag })
               ] }),
-              !sale && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+              !sale && !isRedLink && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
                 import_framer_motion.motion.span,
                 {
                   layoutId: "nav-underline",
                   className: "absolute left-2 right-2 -bottom-0.5 h-0.5 bg-[var(--color-accent)]",
+                  initial: false,
+                  animate: { opacity: isActive ? 1 : 0 },
+                  transition: { duration: 0.2 }
+                }
+              ),
+              isRedLink && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+                import_framer_motion.motion.span,
+                {
+                  layoutId: "nav-underline-red",
+                  className: "absolute left-2 right-2 -bottom-0.5 h-0.5 bg-red-600",
                   initial: false,
                   animate: { opacity: isActive ? 1 : 0 },
                   transition: { duration: 0.2 }
@@ -62729,7 +62738,7 @@ var Header = () => {
                       {
                         to: l.path,
                         onClick: () => setIsOpen(false),
-                        className: `block text-3xl uppercase text-center ${l.sale ? "bg-rose-600 text-white px-4 py-2 rounded-md" : ""}`,
+                        className: `block text-3xl uppercase text-center ${l.sale ? "bg-rose-600 text-white px-4 py-2 rounded-md" : l.isRedLink ? "text-red-600 font-bold" : ""}`,
                         children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { className: "flex items-center justify-center gap-2", children: [
                           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: l.name }),
                           l.tag && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: "inline-flex items-center rounded-full bg-rose-100 px-2 py-0.5 text-xs font-semibold uppercase tracking-[0.2em] text-rose-500", children: l.tag })
@@ -70374,7 +70383,14 @@ var HomePage = () => {
           /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(SubscribeForm, {})
         ] }) })
       ] }) }),
-      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("section", { className: "mx-auto max-w-6xl px-4 md:px-6 lg:px-8", children: /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "text-center", children: /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("h3", { className: "text-2xl font-bold", children: /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("a", { href: "/paikka", className: "hover:underline text-primary", children: "pre-order for the paikka holiday bazaar here." }) }) }) }),
+      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("section", { className: "mx-auto max-w-6xl px-4 md:px-6 lg:px-8", children: /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "text-center", children: /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(
+        "img",
+        {
+          src: "https://res.cloudinary.com/dokyhfvyd/image/upload/c_limit,f_auto,q_auto,w_1600/wv9huoauoimjozqzq4kr?_a=BAMAK+eA0",
+          alt: "Holiday Pie Sale",
+          className: "w-full rounded-lg shadow-lg"
+        }
+      ) }) }),
       /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("section", { className: "py-12", children: [
         /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "max-w-6xl mx-auto px-4 md:px-6 lg:px-8", children: /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(SectionHeader, { overline: "Community", title: "Our Partners" }) }),
         /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(PartnerGrid, {})
@@ -72945,21 +72961,18 @@ var GalleryPage = () => {
           className: "w-full max-w-md mx-auto block p-3 border rounded-md mb-8"
         }
       ),
-      loading ? /* @__PURE__ */ (0, import_jsx_runtime42.jsx)(import_jsx_runtime42.Fragment, { children: /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("div", { className: "columns-2 md:columns-3 lg:columns-4 gap-4 [column-fill:_balance]", children: staticFallback.map((img, idx) => /* @__PURE__ */ (0, import_jsx_runtime42.jsxs)("figure", { className: "mb-4 w-full break-inside-avoid border p-2 bg-white rounded-lg overflow-hidden", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime42.jsx)(
-          "img",
-          {
-            src: img.src,
-            alt: img.alt,
-            className: "rounded-lg w-full h-auto",
-            width: 1200,
-            height: 800,
-            loading: "lazy",
-            decoding: "async"
-          }
-        ),
-        /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("figcaption", { className: "text-xs text-neutral-600 mt-2", children: img.caption })
-      ] }, `fallback-${idx}`)) }) }) : error ? /* @__PURE__ */ (0, import_jsx_runtime42.jsxs)("div", { className: "text-red-600 bg-red-50 p-4 rounded", children: [
+      loading ? /* @__PURE__ */ (0, import_jsx_runtime42.jsx)(import_jsx_runtime42.Fragment, { children: /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("div", { className: "columns-2 md:columns-3 lg:columns-4 gap-4 [column-fill:_balance]", children: staticFallback.map((img, idx) => /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("figure", { className: "mb-4 w-full break-inside-avoid border p-2 bg-white rounded-lg overflow-hidden", children: /* @__PURE__ */ (0, import_jsx_runtime42.jsx)(
+        "img",
+        {
+          src: img.src,
+          alt: img.alt,
+          className: "rounded-lg w-full h-auto",
+          width: 1200,
+          height: 800,
+          loading: "lazy",
+          decoding: "async"
+        }
+      ) }, `fallback-${idx}`)) }) }) : error ? /* @__PURE__ */ (0, import_jsx_runtime42.jsxs)("div", { className: "text-red-600 bg-red-50 p-4 rounded", children: [
         /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("h3", { className: "font-bold", children: "Error Details:" }),
         /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("p", { children: error }),
         /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("p", { className: "mt-2 text-sm", children: "This usually means:" }),

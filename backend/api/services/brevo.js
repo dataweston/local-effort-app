@@ -59,8 +59,10 @@ function createBrevoService({ getSanityClient, logger, fetch = fetchImpl } = {})
     const sc = getSanityClient ? getSanityClient() : null;
     if (sc && email) {
       try {
+        // Sanitize email for use as document ID (replace @ and . with safe characters)
+        const sanitizedEmail = email.replace(/@/g, '-at-').replace(/\./g, '-');
         await sc.createIfNotExists({
-          _id: `contact-${email}`,
+          _id: `contact-${sanitizedEmail}`,
           _type: 'contact',
           email,
           firstName: firstName || null,

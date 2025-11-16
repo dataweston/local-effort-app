@@ -64,11 +64,12 @@ const PaikkaPage = lazy(() => import('./pages/PaikkaPage'));
 const PaikkaSuccessPage = lazy(() => import('./pages/PaikkaSuccessPage'));
 const CalendarPage = lazy(() => import('./pages/CalendarPage'));
 const SchedulePage = lazy(() => import('./pages/SchedulePage'));
+const WinterDinnerPage = lazy(() => import('./pages/WinterDinnerPage'));
 
 const AppContent = () => {
   const location = useLocation();
-  const hideHeader = location.pathname.startsWith('/partners/aacrm') || location.pathname === '/tiny-weddings';
-  const hideFooter = location.pathname === '/sale';
+  const hideHeader = location.pathname.startsWith('/partners/aacrm') || location.pathname === '/tiny-weddings' || location.pathname === '/winterdinner';
+  const hideFooter = location.pathname === '/sale' || location.pathname === '/winterdinner';
 
   useEffect(() => {
     document.fonts?.ready?.then(() => document.body.classList.add('fonts-loaded'));
@@ -299,6 +300,14 @@ const AppContent = () => {
                   element={
                     <AnimatedPage>
                       <SchedulePage />
+                    </AnimatedPage>
+                  }
+                />
+                <Route
+                  path="/winterdinner"
+                  element={
+                    <AnimatedPage>
+                      <WinterDinnerPage />
                     </AnimatedPage>
                   }
                 />
