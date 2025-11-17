@@ -4,6 +4,7 @@ import { Helmet } from 'react-helmet-async';
 import { Link } from 'react-router-dom';
 import { Home } from 'lucide-react';
 import DinnerRegistrationModal from '../components/WinterDinner/DinnerRegistrationModal';
+import { FuzzyText } from '../components/ui/fuzzy-text';
 import { SITE_NAME, SITE_URL } from '../config/siteMetadata';
 
 const WinterDinnerPage = () => {
@@ -88,6 +89,11 @@ const WinterDinnerPage = () => {
         <meta name="description" content={pageDescription} />
         <link rel="canonical" href={canonical} />
 
+        {/* Google Fonts - Cardo & Special Gothic Expanded One */}
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link href="https://fonts.googleapis.com/css2?family=Cardo:ital,wght@0,400;0,700;1,400&family=Special+Gothic+Expanded+One&display=swap" rel="stylesheet" />
+
         {/* Open Graph */}
         <meta property="og:title" content={pageTitle} />
         <meta property="og:description" content={pageDescription} />
@@ -117,42 +123,87 @@ const WinterDinnerPage = () => {
       <div className="fixed inset-0 w-full h-full overflow-hidden bg-black flex items-center justify-center">
         {/* Breadcrumb Navigation */}
         <nav
-          className="absolute top-6 left-6 z-20"
+          className="absolute top-4 left-4 z-20"
           aria-label="Breadcrumb"
         >
           <Link
             to="/"
-            className="inline-flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-lg text-white/90 hover:text-white hover:bg-white/20 transition-all duration-300 text-sm font-light tracking-wide"
+            className="inline-flex items-center gap-1 text-white/60 hover:text-white/90 transition-colors duration-200 text-xs tracking-wide"
             aria-label="Return to home page"
+            style={{ textShadow: '0 1px 3px rgba(0,0,0,0.3)' }}
           >
-            <Home size={16} />
+            <Home size={12} />
             <span>Home</span>
           </Link>
         </nav>
 
         {/* Animated Background */}
-        <div className="absolute inset-0 flex items-center justify-center">
+        <div className="absolute inset-0 flex items-center justify-center overflow-hidden">
           <img
             src="/images/sprite_flicker.gif"
             alt="Winter Dinner - Flickering candlelight ambiance"
-            className="w-[80%] h-auto object-contain"
+            className="w-[120%] h-[120%] md:w-[110%] md:h-auto object-cover md:object-contain"
             style={{ imageRendering: 'crisp-edges' }}
           />
         </div>
 
-        {/* Call to Action Button */}
-        <motion.button
-          onClick={() => setIsModalOpen(true)}
-          className="relative z-10 px-12 py-6 bg-white/10 backdrop-blur-md border-2 border-white/20 rounded-lg text-white text-2xl font-light tracking-wider hover:bg-white/20 transition-all duration-300 shadow-2xl focus:outline-none focus:ring-2 focus:ring-white/50 focus:ring-offset-2 focus:ring-offset-black"
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5, duration: 0.8 }}
-          aria-label="Purchase ticket for Winter Dinner - $75"
-        >
-          Attend Dinner
-        </motion.button>
+        {/* Main Content Container */}
+        <div className="relative z-10 flex flex-col items-center gap-8 mt-[25vh]">
+          {/* Event Details with Fuzzy Text */}
+          <motion.div
+            className="text-center space-y-4"
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3, duration: 0.8 }}
+          >
+            <h1 className="text-5xl md:text-7xl font-light tracking-widest text-white/90" style={{ fontFamily: "'Cardo', serif", textShadow: '0 2px 8px rgba(0,0,0,0.4)' }}>
+              <FuzzyText
+                text="WINTER DINNER"
+                className="inline-block"
+                duration={40}
+                iterations={2}
+              />
+            </h1>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 1.5, duration: 1 }}
+              className="text-white/70 text-lg md:text-xl font-light tracking-wide"
+              style={{ fontFamily: "'Cardo', serif", textShadow: '0 1px 6px rgba(0,0,0,0.3)' }}
+            >
+              <FuzzyText
+                text="December 21, 2025 • 6:00 PM"
+                className="inline-block"
+                duration={30}
+                iterations={1}
+              />
+            </motion.div>
+            <motion.p
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 2, duration: 1 }}
+              className="text-white/60 text-sm md:text-base font-light tracking-wider max-w-md mx-auto"
+              style={{ fontFamily: "'Cardo', serif", textShadow: '0 1px 4px rgba(0,0,0,0.3)' }}
+            >
+              An intimate multi-course dining experience
+            </motion.p>
+          </motion.div>
+
+          {/* Call to Action Button */}
+          <motion.button
+            onClick={() => setIsModalOpen(true)}
+            className="px-12 py-6 bg-white/10 backdrop-blur-md border-2 border-white/20 rounded-lg text-white text-2xl tracking-wider hover:bg-white/20 transition-all duration-300 shadow-2xl focus:outline-none focus:ring-2 focus:ring-white/50 focus:ring-offset-2 focus:ring-offset-black"
+            style={{ fontFamily: "'Special Gothic Expanded One', sans-serif", textShadow: '0 2px 6px rgba(0,0,0,0.4)' }}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 2.5, duration: 0.8 }}
+            aria-label="Purchase ticket for Winter Dinner - $75"
+          >
+            Attend Dinner
+          </motion.button>
+        </div>
 
         {/* Registration Modal */}
         <AnimatePresence>
