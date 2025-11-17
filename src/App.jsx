@@ -8,7 +8,6 @@ import { Header } from './components/layout/Header';
 import { Footer } from './components/layout/Footer';
 import { LoadingSpinner } from './components/layout/LoadingSpinner';
 import { AnimatedPage } from './components/layout/AnimatedPage';
-import { SupportWidget } from './components/support/SupportWidget';
 import { CartProvider } from './store/cart/CartContext';
 import { ToastProvider } from './components/common/ToastProvider';
 import { DefaultSeo } from './components/seo/DefaultSeo';
@@ -430,7 +429,6 @@ const AppContent = () => {
           </Suspense>
           </main>
           {!hideFooter && <Footer />}
-          <SupportWidget />
           {/* Vercel Speed Insights */}
           <SpeedInsights />
         </div>

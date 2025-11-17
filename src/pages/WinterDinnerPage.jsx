@@ -29,6 +29,7 @@ const WinterDinnerPage = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [bgDimensions, setBgDimensions] = useState({ width: 0, height: 0, left: 0, top: 0 });
   const [debugMode, setDebugMode] = useState(false);
+  const [clickedCoords, setClickedCoords] = useState([]);
   const bgImageRef = React.useRef(null);
 
   // SEO Configuration
@@ -103,21 +104,44 @@ const WinterDinnerPage = () => {
 
   const structuredData = [eventSchema, breadcrumbSchema];
 
+  // Handle click on background to get coordinates
+  const handleBgClick = (e) => {
+    if (!debugMode) return;
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = ((e.clientX - rect.left) / rect.width) * 100;
+    const y = ((e.clientY - rect.top) / rect.height) * 100;
+    const newCoord = { x: x.toFixed(1), y: y.toFixed(1), id: Date.now() };
+    setClickedCoords(prev => [...prev, newCoord]);
+  };
+
   // Calculate background image dimensions for coordinate system
   React.useEffect(() => {
+    let resizeTimeout;
+
     const updateBgDimensions = () => {
-      if (bgImageRef.current) {
-        const rect = bgImageRef.current.getBoundingClientRect();
-        setBgDimensions({
-          width: rect.width,
-          height: rect.height,
-          left: rect.left,
-          top: rect.top
-        });
+      // Clear any pending updates
+      if (resizeTimeout) {
+        clearTimeout(resizeTimeout);
       }
+
+      // Delay calculation slightly to ensure layout has settled
+      resizeTimeout = setTimeout(() => {
+        if (bgImageRef.current) {
+          const rect = bgImageRef.current.getBoundingClientRect();
+          setBgDimensions({
+            width: rect.width,
+            height: rect.height,
+            left: rect.left,
+            top: rect.top
+          });
+        }
+      }, 50);
     };
 
+    // Initial update
     updateBgDimensions();
+
+    // Update on resize with debouncing
     window.addEventListener('resize', updateBgDimensions);
 
     // Also update after image loads
@@ -127,6 +151,9 @@ const WinterDinnerPage = () => {
     }
 
     return () => {
+      if (resizeTimeout) {
+        clearTimeout(resizeTimeout);
+      }
       window.removeEventListener('resize', updateBgDimensions);
       if (img) {
         img.removeEventListener('load', updateBgDimensions);
@@ -202,14 +229,17 @@ const WinterDinnerPage = () => {
 
         {/* Background Coordinate System Overlay */}
         <div
-          className="absolute pointer-events-none"
+          className="absolute"
           style={{
             width: bgDimensions.width,
             height: bgDimensions.height,
             left: bgDimensions.left,
             top: bgDimensions.top,
             border: debugMode ? '2px solid lime' : 'none',
+            pointerEvents: debugMode ? 'auto' : 'none',
+            cursor: debugMode ? 'crosshair' : 'default',
           }}
+          onClick={handleBgClick}
         >
           {/* Debug grid overlay */}
           {debugMode && (
@@ -229,36 +259,52 @@ const WinterDinnerPage = () => {
                 {Math.round(bgDimensions.width)}x{Math.round(bgDimensions.height)}
               </div>
 
-              {/* Example positioned elements */}
-              <BgPositioned x={50} y={25} className="text-lime-400 text-xs font-mono bg-black/80 px-2 py-1 rounded">
-                50%, 25%
-              </BgPositioned>
+              {/* Coordinate helper text */}
+              <div className="absolute bottom-2 left-2 text-lime-400 text-xs font-mono pointer-events-auto bg-black/80 px-2 py-1 rounded">
+                Click anywhere to get coordinates
+              </div>
             </>
           )}
 
+          {/* Clicked coordinate markers */}
+          {clickedCoords.map((coord) => (
+            <BgPositioned
+              key={coord.id}
+              x={parseFloat(coord.x)}
+              y={parseFloat(coord.y)}
+              className="pointer-events-auto"
+            >
+              <div className="relative">
+                {/* Crosshair */}
+                <div className="absolute w-4 h-px bg-red-500 left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2" />
+                <div className="absolute w-px h-4 bg-red-500 left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2" />
+                {/* Label */}
+                <div className="absolute top-3 left-3 text-red-400 text-xs font-mono bg-black/90 px-2 py-1 rounded whitespace-nowrap shadow-lg border border-red-500/30">
+                  {coord.x}%, {coord.y}%
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setClickedCoords(prev => prev.filter(c => c.id !== coord.id));
+                    }}
+                    className="ml-2 text-red-300 hover:text-red-100"
+                    aria-label="Remove marker"
+                  >
+                    ×
+                  </button>
+                </div>
+              </div>
+            </BgPositioned>
+          ))}
+
           {/* Place your positioned elements here using BgPositioned component */}
-          {/* Example: <BgPositioned x={50} y={30}>Your Element</BgPositioned> */}
-        </div>
-
-        {/* Debug Mode Toggle */}
-        <button
-          onClick={() => setDebugMode(!debugMode)}
-          className="absolute bottom-4 right-4 z-50 text-xs text-white/60 hover:text-white/90 bg-black/50 px-3 py-2 rounded transition-colors"
-          aria-label="Toggle coordinate system debug mode"
-        >
-          {debugMode ? 'Hide' : 'Show'} Grid
-        </button>
-
-        {/* Main Content Container */}
-        <div className="relative z-10 flex flex-col items-center gap-8 mt-[25vh]">
-          {/* Event Details with Fuzzy Text */}
-          <motion.div
-            className="text-center space-y-4"
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3, duration: 0.8 }}
-          >
-            <h1 className="text-5xl md:text-7xl font-light tracking-widest text-white/90 px-3 py-1 rounded-lg" style={{ fontFamily: "'Cardo', serif", backgroundColor: 'rgba(0, 0, 0, 0.15)' }}>
+          <BgPositioned x={18.7} y={68.7}>
+            <motion.h1
+              className="text-5xl md:text-7xl font-light tracking-widest text-white/90 px-3 py-1 rounded-lg"
+              style={{ fontFamily: "'Cardo', serif", backgroundColor: 'rgba(0, 0, 0, 0.15)' }}
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3, duration: 0.8 }}
+            >
               <FuzzyText
                 fontSize="clamp(2.5rem, 7vw, 4.5rem)"
                 fontWeight={300}
@@ -271,7 +317,39 @@ const WinterDinnerPage = () => {
               >
                 WINTER DINNER
               </FuzzyText>
-            </h1>
+            </motion.h1>
+          </BgPositioned>
+        </div>
+
+        {/* Debug Mode Toggle */}
+        <div className="absolute bottom-4 right-4 z-50 flex flex-col gap-2">
+          <button
+            onClick={() => setDebugMode(!debugMode)}
+            className="text-xs text-white/60 hover:text-white/90 bg-black/50 px-3 py-2 rounded transition-colors"
+            aria-label="Toggle coordinate system debug mode"
+          >
+            {debugMode ? 'Hide' : 'Show'} Grid
+          </button>
+          {debugMode && clickedCoords.length > 0 && (
+            <button
+              onClick={() => setClickedCoords([])}
+              className="text-xs text-red-400/60 hover:text-red-400/90 bg-black/50 px-3 py-2 rounded transition-colors"
+              aria-label="Clear all markers"
+            >
+              Clear Markers ({clickedCoords.length})
+            </button>
+          )}
+        </div>
+
+        {/* Main Content Container */}
+        <div className="relative z-10 flex flex-col items-center gap-8 mt-[25vh]">
+          {/* Event Details with Fuzzy Text */}
+          <motion.div
+            className="text-center space-y-4"
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3, duration: 0.8 }}
+          >
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
