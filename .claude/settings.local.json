@@ -20,7 +20,9 @@
       "Bash(npx aceternity-ui@latest add:*)",
       "Bash(nul)",
       "Bash(move:*)",
-      "Bash(mv:*)"
+      "Bash(mv:*)",
+      "Bash(npx shadcn@latest add:*)",
+      "Bash(netstat:*)"
     ],
     "deny": [],
     "ask": []
