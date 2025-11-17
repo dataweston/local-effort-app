@@ -128,9 +128,9 @@ const WinterDinnerPage = () => {
         >
           <Link
             to="/"
-            className="inline-flex items-center gap-1 text-white/60 hover:text-white/90 transition-colors duration-200 text-xs tracking-wide"
+            className="inline-flex items-center gap-1 text-white/60 hover:text-white/90 transition-colors duration-200 text-xs tracking-wide px-2 py-1 rounded"
             aria-label="Return to home page"
-            style={{ textShadow: '0 1px 3px rgba(0,0,0,0.3)' }}
+            style={{ backgroundColor: 'rgba(0, 0, 0, 0.1)' }}
           >
             <Home size={12} />
             <span>Home</span>
@@ -156,34 +156,46 @@ const WinterDinnerPage = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3, duration: 0.8 }}
           >
-            <h1 className="text-5xl md:text-7xl font-light tracking-widest text-white/90" style={{ fontFamily: "'Cardo', serif", textShadow: '0 2px 8px rgba(0,0,0,0.4)' }}>
+            <h1 className="text-5xl md:text-7xl font-light tracking-widest text-white/90 px-6 py-3 rounded-lg" style={{ fontFamily: "'Cardo', serif", backgroundColor: 'rgba(0, 0, 0, 0.15)' }}>
               <FuzzyText
-                text="WINTER DINNER"
+                fontSize="clamp(2.5rem, 7vw, 4.5rem)"
+                fontWeight={300}
+                fontFamily="'Cardo', serif"
+                color="rgba(255, 255, 255, 0.9)"
+                baseIntensity={0.09}
+                hoverIntensity={0.24}
+                enableHover={true}
                 className="inline-block"
-                duration={40}
-                iterations={2}
-              />
+              >
+                WINTER DINNER
+              </FuzzyText>
             </h1>
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 1.5, duration: 1 }}
-              className="text-white/70 text-lg md:text-xl font-light tracking-wide"
-              style={{ fontFamily: "'Cardo', serif", textShadow: '0 1px 6px rgba(0,0,0,0.3)' }}
+              className="text-white/70 text-lg md:text-xl font-light tracking-wide px-4 py-2 rounded-lg"
+              style={{ fontFamily: "'Cardo', serif", backgroundColor: 'rgba(0, 0, 0, 0.1)' }}
             >
               <FuzzyText
-                text="December 21, 2025 • 6:00 PM"
+                fontSize="clamp(1rem, 2vw, 1.5rem)"
+                fontWeight={300}
+                fontFamily="'Cardo', serif"
+                color="rgba(255, 255, 255, 0.7)"
+                baseIntensity={0.09}
+                hoverIntensity={0.24}
+                enableHover={true}
                 className="inline-block"
-                duration={30}
-                iterations={1}
-              />
+              >
+                December 21, 2025 • 6:00 PM
+              </FuzzyText>
             </motion.div>
             <motion.p
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 2, duration: 1 }}
-              className="text-white/60 text-sm md:text-base font-light tracking-wider max-w-md mx-auto"
-              style={{ fontFamily: "'Cardo', serif", textShadow: '0 1px 4px rgba(0,0,0,0.3)' }}
+              className="text-white/60 text-sm md:text-base font-light tracking-wider max-w-md mx-auto px-4 py-2 rounded-lg"
+              style={{ fontFamily: "'Cardo', serif", backgroundColor: 'rgba(0, 0, 0, 0.1)' }}
             >
               An intimate multi-course dining experience
             </motion.p>
