@@ -7,8 +7,29 @@ import DinnerRegistrationModal from '../components/WinterDinner/DinnerRegistrati
 import { FuzzyText } from '../components/ui/fuzzy-text';
 import { SITE_NAME, SITE_URL } from '../config/siteMetadata';
 
+// Helper component for positioning elements in background coordinate system
+const BgPositioned = ({ x, y, children, className = '', style = {}, ...props }) => {
+  return (
+    <div
+      className={`absolute pointer-events-auto ${className}`}
+      style={{
+        left: typeof x === 'number' ? `${x}%` : x,
+        top: typeof y === 'number' ? `${y}%` : y,
+        transform: 'translate(-50%, -50%)', // Center the element at the coordinates
+        ...style
+      }}
+      {...props}
+    >
+      {children}
+    </div>
+  );
+};
+
 const WinterDinnerPage = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [bgDimensions, setBgDimensions] = useState({ width: 0, height: 0, left: 0, top: 0 });
+  const [debugMode, setDebugMode] = useState(false);
+  const bgImageRef = React.useRef(null);
 
   // SEO Configuration
   const pageTitle = 'Winter Dinner 2025 - Exclusive Multi-Course Dining Experience | Local Effort';
@@ -82,6 +103,37 @@ const WinterDinnerPage = () => {
 
   const structuredData = [eventSchema, breadcrumbSchema];
 
+  // Calculate background image dimensions for coordinate system
+  React.useEffect(() => {
+    const updateBgDimensions = () => {
+      if (bgImageRef.current) {
+        const rect = bgImageRef.current.getBoundingClientRect();
+        setBgDimensions({
+          width: rect.width,
+          height: rect.height,
+          left: rect.left,
+          top: rect.top
+        });
+      }
+    };
+
+    updateBgDimensions();
+    window.addEventListener('resize', updateBgDimensions);
+
+    // Also update after image loads
+    const img = bgImageRef.current;
+    if (img) {
+      img.addEventListener('load', updateBgDimensions);
+    }
+
+    return () => {
+      window.removeEventListener('resize', updateBgDimensions);
+      if (img) {
+        img.removeEventListener('load', updateBgDimensions);
+      }
+    };
+  }, []);
+
   return (
     <>
       <Helmet>
@@ -140,12 +192,62 @@ const WinterDinnerPage = () => {
         {/* Animated Background */}
         <div className="absolute inset-0 flex items-center justify-center overflow-hidden">
           <img
+            ref={bgImageRef}
             src="/images/sprite_flicker.gif"
             alt="Winter Dinner - Flickering candlelight ambiance"
-            className="w-[120%] h-[120%] md:w-[110%] md:h-auto object-cover md:object-contain"
+            className="w-[105%] h-[105%] md:w-[110%] md:h-auto object-cover md:object-contain"
             style={{ imageRendering: 'crisp-edges' }}
           />
         </div>
+
+        {/* Background Coordinate System Overlay */}
+        <div
+          className="absolute pointer-events-none"
+          style={{
+            width: bgDimensions.width,
+            height: bgDimensions.height,
+            left: bgDimensions.left,
+            top: bgDimensions.top,
+            border: debugMode ? '2px solid lime' : 'none',
+          }}
+        >
+          {/* Debug grid overlay */}
+          {debugMode && (
+            <>
+              {/* Center crosshair */}
+              <div className="absolute left-1/2 top-0 w-px h-full bg-lime-500/50" />
+              <div className="absolute left-0 top-1/2 w-full h-px bg-lime-500/50" />
+
+              {/* Quadrant lines */}
+              <div className="absolute left-1/4 top-0 w-px h-full bg-lime-500/30" />
+              <div className="absolute left-3/4 top-0 w-px h-full bg-lime-500/30" />
+              <div className="absolute left-0 top-1/4 w-full h-px bg-lime-500/30" />
+              <div className="absolute left-0 top-3/4 w-full h-px bg-lime-500/30" />
+
+              {/* Dimension labels */}
+              <div className="absolute top-2 left-2 text-lime-400 text-xs font-mono pointer-events-auto bg-black/80 px-2 py-1 rounded">
+                {Math.round(bgDimensions.width)}x{Math.round(bgDimensions.height)}
+              </div>
+
+              {/* Example positioned elements */}
+              <BgPositioned x={50} y={25} className="text-lime-400 text-xs font-mono bg-black/80 px-2 py-1 rounded">
+                50%, 25%
+              </BgPositioned>
+            </>
+          )}
+
+          {/* Place your positioned elements here using BgPositioned component */}
+          {/* Example: <BgPositioned x={50} y={30}>Your Element</BgPositioned> */}
+        </div>
+
+        {/* Debug Mode Toggle */}
+        <button
+          onClick={() => setDebugMode(!debugMode)}
+          className="absolute bottom-4 right-4 z-50 text-xs text-white/60 hover:text-white/90 bg-black/50 px-3 py-2 rounded transition-colors"
+          aria-label="Toggle coordinate system debug mode"
+        >
+          {debugMode ? 'Hide' : 'Show'} Grid
+        </button>
 
         {/* Main Content Container */}
         <div className="relative z-10 flex flex-col items-center gap-8 mt-[25vh]">
@@ -156,7 +258,7 @@ const WinterDinnerPage = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3, duration: 0.8 }}
           >
-            <h1 className="text-5xl md:text-7xl font-light tracking-widest text-white/90 px-6 py-3 rounded-lg" style={{ fontFamily: "'Cardo', serif", backgroundColor: 'rgba(0, 0, 0, 0.15)' }}>
+            <h1 className="text-5xl md:text-7xl font-light tracking-widest text-white/90 px-3 py-1 rounded-lg" style={{ fontFamily: "'Cardo', serif", backgroundColor: 'rgba(0, 0, 0, 0.15)' }}>
               <FuzzyText
                 fontSize="clamp(2.5rem, 7vw, 4.5rem)"
                 fontWeight={300}
@@ -174,7 +276,7 @@ const WinterDinnerPage = () => {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 1.5, duration: 1 }}
-              className="text-white/70 text-lg md:text-xl font-light tracking-wide px-4 py-2 rounded-lg"
+              className="text-white/70 text-lg md:text-xl font-light tracking-wide px-2 py-1 rounded-lg"
               style={{ fontFamily: "'Cardo', serif", backgroundColor: 'rgba(0, 0, 0, 0.1)' }}
             >
               <FuzzyText
@@ -194,7 +296,7 @@ const WinterDinnerPage = () => {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 2, duration: 1 }}
-              className="text-white/60 text-sm md:text-base font-light tracking-wider max-w-md mx-auto px-4 py-2 rounded-lg"
+              className="text-white/60 text-sm md:text-base font-light tracking-wider max-w-md mx-auto px-2 py-1 rounded-lg"
               style={{ fontFamily: "'Cardo', serif", backgroundColor: 'rgba(0, 0, 0, 0.1)' }}
             >
               An intimate multi-course dining experience
