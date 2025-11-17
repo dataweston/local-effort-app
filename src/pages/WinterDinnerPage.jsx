@@ -27,7 +27,6 @@ const BgPositioned = ({ x, y, children, className = '', style = {}, ...props }) 
 
 const WinterDinnerPage = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [bgDimensions, setBgDimensions] = useState({ width: 0, height: 0, left: 0, top: 0 });
   const [debugMode, setDebugMode] = useState(false);
   const [clickedCoords, setClickedCoords] = useState([]);
   const bgImageRef = React.useRef(null);
@@ -114,53 +113,6 @@ const WinterDinnerPage = () => {
     setClickedCoords(prev => [...prev, newCoord]);
   };
 
-  // Calculate background image dimensions for coordinate system
-  React.useEffect(() => {
-    let resizeTimeout;
-
-    const updateBgDimensions = () => {
-      // Clear any pending updates
-      if (resizeTimeout) {
-        clearTimeout(resizeTimeout);
-      }
-
-      // Delay calculation slightly to ensure layout has settled
-      resizeTimeout = setTimeout(() => {
-        if (bgImageRef.current) {
-          const rect = bgImageRef.current.getBoundingClientRect();
-          setBgDimensions({
-            width: rect.width,
-            height: rect.height,
-            left: rect.left,
-            top: rect.top
-          });
-        }
-      }, 50);
-    };
-
-    // Initial update
-    updateBgDimensions();
-
-    // Update on resize with debouncing
-    window.addEventListener('resize', updateBgDimensions);
-
-    // Also update after image loads
-    const img = bgImageRef.current;
-    if (img) {
-      img.addEventListener('load', updateBgDimensions);
-    }
-
-    return () => {
-      if (resizeTimeout) {
-        clearTimeout(resizeTimeout);
-      }
-      window.removeEventListener('resize', updateBgDimensions);
-      if (img) {
-        img.removeEventListener('load', updateBgDimensions);
-      }
-    };
-  }, []);
-
   return (
     <>
       <Helmet>
@@ -218,29 +170,30 @@ const WinterDinnerPage = () => {
 
         {/* Animated Background */}
         <div className="absolute inset-0 flex items-center justify-center overflow-hidden">
-          <img
+          <div
             ref={bgImageRef}
-            src="/images/sprite_flicker.gif"
-            alt="Winter Dinner - Flickering candlelight ambiance"
-            className="w-[105%] h-[105%] md:w-[110%] md:h-auto object-cover md:object-contain"
-            style={{ imageRendering: 'crisp-edges' }}
-          />
-        </div>
+            className="relative w-full h-full"
+            onClick={handleBgClick}
+            style={{
+              pointerEvents: debugMode ? 'auto' : 'none',
+              cursor: debugMode ? 'crosshair' : 'default',
+            }}
+          >
+            <img
+              src="/images/sprite_flicker.gif"
+              alt="Winter Dinner - Flickering candlelight ambiance"
+              className="absolute inset-0 w-full h-full object-contain"
+              style={{ imageRendering: 'crisp-edges' }}
+            />
 
-        {/* Background Coordinate System Overlay */}
-        <div
-          className="absolute"
-          style={{
-            width: bgDimensions.width,
-            height: bgDimensions.height,
-            left: bgDimensions.left,
-            top: bgDimensions.top,
-            border: debugMode ? '2px solid lime' : 'none',
-            pointerEvents: debugMode ? 'auto' : 'none',
-            cursor: debugMode ? 'crosshair' : 'default',
-          }}
-          onClick={handleBgClick}
-        >
+            {/* Background Coordinate System Overlay */}
+            <div
+              className="absolute inset-0"
+              style={{
+                border: debugMode ? '2px solid lime' : 'none',
+                pointerEvents: 'none',
+              }}
+            >
           {/* Debug grid overlay */}
           {debugMode && (
             <>
@@ -256,7 +209,7 @@ const WinterDinnerPage = () => {
 
               {/* Dimension labels */}
               <div className="absolute top-2 left-2 text-lime-400 text-xs font-mono pointer-events-auto bg-black/80 px-2 py-1 rounded">
-                {Math.round(bgDimensions.width)}x{Math.round(bgDimensions.height)}
+                {bgImageRef.current ? `${Math.round(bgImageRef.current.getBoundingClientRect().width)}x${Math.round(bgImageRef.current.getBoundingClientRect().height)}` : 'Loading...'}
               </div>
 
               {/* Coordinate helper text */}
@@ -297,7 +250,7 @@ const WinterDinnerPage = () => {
           ))}
 
           {/* Place your positioned elements here using BgPositioned component */}
-          <BgPositioned x={18.7} y={68.7}>
+          <BgPositioned x={27.9} y={24.2}>
             <motion.h1
               className="text-5xl md:text-7xl font-light tracking-widest text-white/90 px-3 py-1 rounded-lg"
               style={{ fontFamily: "'Cardo', serif", backgroundColor: 'rgba(0, 0, 0, 0.15)' }}
@@ -319,6 +272,8 @@ const WinterDinnerPage = () => {
               </FuzzyText>
             </motion.h1>
           </BgPositioned>
+            </div>
+          </div>
         </div>
 
         {/* Debug Mode Toggle */}
