@@ -130,11 +130,13 @@ const App = () => {
 
     try {
       setLoading(true);
+      console.log('[HappyMonday] Loading user data for:', user.email);
       const userData = await getCurrentHappyMondayUser(user.email);
+      console.log('[HappyMonday] User data received:', userData);
 
       if (!userData) {
-        console.error("User not found in Happy Monday system");
-        alert("Your account is not authorized for this portal. Please contact hello@localeffortfood.com");
+        console.error("[HappyMonday] User not found in happymonday_users table. Email:", user.email);
+        alert(`Your account (${user.email}) is not authorized for this portal. Please contact hello@localeffortfood.com`);
         await signOut();
         return;
       }
@@ -360,11 +362,10 @@ const App = () => {
             </button>
           </form>
 
-          <div className="mt-6 p-4 bg-blue-50 rounded-lg">
-            <p className="text-sm text-blue-800 font-medium mb-2">Authorized Users:</p>
-            <p className="text-xs text-blue-700">• Admin: dataweston@gmail.com (Google)</p>
-            <p className="text-xs text-blue-700">• Client: hello@happymonday.company</p>
-            <p className="text-xs text-blue-600 mt-2">Client password: superf00d</p>
+          <div className="mt-6 p-3 bg-slate-50 rounded-lg border border-slate-200">
+            <p className="text-xs text-slate-600 text-center">
+              Authorized users only. Contact <a href="mailto:hello@localeffortfood.com" className="text-blue-600 hover:underline">hello@localeffortfood.com</a> for access.
+            </p>
           </div>
         </div>
       </div>
