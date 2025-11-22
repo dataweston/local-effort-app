@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Happy Monday Auth Debug</title>
+  <script type="module">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+
+    const supabaseUrl = 'https://qupwpcsbaidpykghqzxt.supabase.co';
+    const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF1cHdwY3NiYWlkcHlrZ2hxenh0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQwODAyODcsImV4cCI6MjA2OTY1NjI4N30.LLNEVl3bAegP-xUNu4ihldCcH6K_uMPVv8XstWWlGsk';
+
+    const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+      auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: true,
+        flowType: 'implicit',
+      }
+    });
+
+    window.supabase = supabase;
+
+    async function debugAuth() {
+      const output = document.getElementById('output');
+
+      // Get current session
+      const { data: { session } } = await supabase.auth.getSession();
+
+      if (!session) {
+        output.innerHTML = '<h2>Not authenticated</h2><p>Please sign in with Google first.</p>';
+        return;
+      }
+
+      const user = session.user;
+
+      let html = '<h2>Auth Session Debug Info</h2>';
+      html += `<h3>User Email: ${user.email}</h3>`;
+      html += `<h3>User ID: ${user.id}</h3>`;
+      html += `<pre>${JSON.stringify(user, null, 2)}</pre>`;
+
+      // Try to fetch the user from happymonday_users table
+      html += '<hr><h2>Database Query Results</h2>';
+
+      const { data, error } = await supabase
+        .from('happymonday_users')
+        .select('*')
+        .eq('email', user.email.toLowerCase())
+        .single();
+
+      if (error) {
+        html += `<p style="color: red;"><strong>ERROR querying happymonday_users:</strong></p>`;
+        html += `<pre>${JSON.stringify(error, null, 2)}</pre>`;
+      } else if (data) {
+        html += `<p style="color: green;"><strong>SUCCESS! User found:</strong></p>`;
+        html += `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+      } else {
+        html += `<p style="color: orange;"><strong>No user found in database</strong></p>`;
+      }
+
+      // Check RLS by trying to query without email filter
+      html += '<hr><h2>All Users Query (should fail if RLS working)</h2>';
+      const { data: allUsers, error: allError } = await supabase
+        .from('happymonday_users')
+        .select('*');
+
+      if (allError) {
+        html += `<p style="color: red;">ERROR: ${allError.message}</p>`;
+      } else {
+        html += `<p>Found ${allUsers?.length || 0} users:</p>`;
+        html += `<pre>${JSON.stringify(allUsers, null, 2)}</pre>`;
+      }
+
+      output.innerHTML = html;
+    }
+
+    async function signIn() {
+      const origin = window.location.origin;
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${origin}/check-auth-debug.html`,
+        },
+      });
+
+      if (error) {
+        alert('Error: ' + error.message);
+      }
+    }
+
+    async function signOut() {
+      await supabase.auth.signOut();
+      location.reload();
+    }
+
+    window.signIn = signIn;
+    window.signOut = signOut;
+
+    // Auto-run debug on page load
+    window.addEventListener('load', debugAuth);
+  </script>
+  <style>
+    body {
+      font-family: monospace;
+      max-width: 900px;
+      margin: 40px auto;
+      padding: 20px;
+    }
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+      margin: 10px;
+    }
+    pre {
+      background: #f4f4f4;
+      padding: 15px;
+      overflow-x: auto;
+      border: 1px solid #ddd;
+    }
+  </style>
+</head>
+<body>
+  <h1>Happy Monday Auth Debugger</h1>
+  <button onclick="signIn()">Sign in with Google</button>
+  <button onclick="signOut()">Sign Out</button>
+  <hr>
+  <div id="output">Loading...</div>
+</body>
+</html>

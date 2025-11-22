@@ -22,7 +22,8 @@
       "Bash(move:*)",
       "Bash(mv:*)",
       "Bash(npx shadcn@latest add:*)",
-      "Bash(netstat:*)"
+      "Bash(netstat:*)",
+      "Bash(node apply-rls-fix.js:*)"
     ],
     "deny": [],
     "ask": []
