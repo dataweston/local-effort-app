@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { ShoppingCart, FileText, Plus, Minus, Send, ArrowLeft, Clock, MessageSquare, ClipboardList, DollarSign, CreditCard } from "lucide-react";
 import { useSupabaseAuth } from "../../contexts/SupabaseAuthContext";
+import { supabase } from "../../lib/supabaseClient";
 import {
   getCurrentHappyMondayUser,
   getUserCredit,
@@ -35,7 +36,29 @@ const App = () => {
   ]);
 
   // Auth and user state
-  const { user, loading: authLoading, signInWithGoogle, signOut } = useSupabaseAuth();
+  const { user, loading: authLoading, signOut } = useSupabaseAuth();
+
+  // Custom sign-in for Happy Monday that redirects back here
+  const signInWithGoogle = async () => {
+    if (!supabase) {
+      throw new Error('Supabase not configured');
+    }
+
+    const origin = window.location.origin;
+    const redirectUrl = `${origin}/partners/happy-monday`;
+
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: redirectUrl,
+      },
+    });
+
+    if (error) {
+      console.error('Sign in error:', error);
+      alert('Failed to sign in. Please try again.');
+    }
+  };
   const [hmUser, setHmUser] = useState(null);
   const [creditBalance, setCreditBalance] = useState(null);
   const [isAdmin, setIsAdmin] = useState(false);
