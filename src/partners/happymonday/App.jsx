@@ -1,8 +1,16 @@
 import React, { useState, useEffect } from "react";
-import { ShoppingCart, FileText, Plus, Minus, Send, ArrowLeft, Clock, MessageSquare, ClipboardList } from "lucide-react";
-import { db } from "../../firebaseConfig";
-import { collection, addDoc, getDocs, query, orderBy } from "firebase/firestore";
+import { ShoppingCart, FileText, Plus, Minus, Send, ArrowLeft, Clock, MessageSquare, ClipboardList, DollarSign, CreditCard } from "lucide-react";
+import { useSupabaseAuth } from "../../contexts/SupabaseAuthContext";
+import {
+  getCurrentHappyMondayUser,
+  getUserCredit,
+  loadOrders,
+  createOrder,
+  updateOrderStatus,
+  adjustCreditBalance,
+} from "./supabaseClient";
 import CostingWorksheet from "./CostingWorksheet.jsx";
+import SquarePaymentButton from "./SquarePaymentButton.jsx";
 
 const App = () => {
   // Items for sale
@@ -26,6 +34,12 @@ const App = () => {
     { id: 17, name: "Chia Pudding (dairy free)", price: 4.1, category: "Breakfast" },
   ]);
 
+  // Auth and user state
+  const { user, loading: authLoading, signInWithGoogle, signOut } = useSupabaseAuth();
+  const [hmUser, setHmUser] = useState(null);
+  const [creditBalance, setCreditBalance] = useState(null);
+  const [isAdmin, setIsAdmin] = useState(false);
+
   // State management
   const [currentView, setCurrentView] = useState("order");
   const [cart, setCart] = useState({});
@@ -35,17 +49,54 @@ const App = () => {
   const [selectedInvoice, setSelectedInvoice] = useState(null);
   const [refundRequest, setRefundRequest] = useState({ orderId: null, reason: "" });
   const [loading, setLoading] = useState(false);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
 
-  // Load orders from Firebase
-  useEffect(() => { loadOrders(); }, []);
+  // Load user data and orders
+  useEffect(() => {
+    if (user?.email) {
+      loadUserData();
+    } else {
+      setHmUser(null);
+      setCreditBalance(null);
+      setIsAdmin(false);
+      setOrders([]);
+    }
+  }, [user]);
 
-  const loadOrders = async () => {
-    if (!db) return;
+  const loadUserData = async () => {
+    if (!user?.email) return;
+
     try {
-      const q = query(collection(db, "orders"), orderBy("createdAt", "desc"));
-      const querySnapshot = await getDocs(q);
-      const loadedOrders = [];
-      querySnapshot.forEach((d) => { loadedOrders.push({ id: d.id, firestoreId: d.id, ...d.data() }); });
+      setLoading(true);
+      const userData = await getCurrentHappyMondayUser(user.email);
+
+      if (!userData) {
+        console.error("User not found in Happy Monday system");
+        alert("Your account is not authorized for this portal. Please contact hello@localeffortfood.com");
+        await signOut();
+        return;
+      }
+
+      setHmUser(userData);
+      setIsAdmin(userData.role === 'admin');
+
+      // Load credit balance
+      const credit = await getUserCredit(userData.id);
+      setCreditBalance(credit);
+
+      // Load orders
+      await loadOrdersData(userData.id, userData.role === 'admin');
+    } catch (error) {
+      console.error("Error loading user data:", error);
+      alert("Error loading your data. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loadOrdersData = async (userId, isAdminUser = false) => {
+    try {
+      const loadedOrders = await loadOrders(userId, isAdminUser);
       setOrders(loadedOrders);
     } catch (error) {
       console.error("Error loading orders:", error);
@@ -70,22 +121,37 @@ const App = () => {
   };
 
   const submitOrder = async () => {
-    if (!orderConfirmed || Object.keys(cart).length === 0 || loading || !db) return;
+    if (!orderConfirmed || Object.keys(cart).length === 0 || loading || !hmUser) return;
     setLoading(true);
     try {
-      const orderData = {
-        date: new Date().toISOString().split("T")[0],
-        items: { ...cart },
-        total: calculateTotal(),
+      const totalCents = Math.round(calculateTotal() * 100);
+      const orderNumber = `HM-${Date.now()}`;
+      const orderDate = new Date().toISOString().split("T")[0];
+      const isClientOrder = !isAdmin; // Client orders trigger email
+
+      await createOrder({
+        userId: hmUser.id,
+        createdBy: hmUser.id,
+        orderNumber,
+        orderDate,
+        items: cart,
+        totalCents,
         notes,
-        status: "unpaid",
-        createdAt: new Date(),
-        orderNumber: `ORD-${Date.now()}`,
-      };
-      await addDoc(collection(db, "orders"), orderData);
-      setCart({}); setOrderConfirmed(false); setNotes("");
-      await loadOrders();
-      alert("Order submitted successfully!");
+        isClientOrder,
+      });
+
+      setCart({});
+      setOrderConfirmed(false);
+      setNotes("");
+
+      // Reload data
+      await loadUserData();
+
+      if (isClientOrder) {
+        alert("Order submitted successfully! An email has been sent to both you and Local Effort.");
+      } else {
+        alert("Order created successfully!");
+      }
     } catch (error) {
       console.error("Error submitting order:", error);
       alert("Error submitting order. Please try again.");
@@ -94,16 +160,21 @@ const App = () => {
   };
 
   const submitRefundRequest = async () => {
-    if (!refundRequest.orderId || !refundRequest.reason.trim() || loading || !db) return;
+    if (!refundRequest.orderId || !refundRequest.reason.trim() || loading) return;
     setLoading(true);
     try {
-      await addDoc(collection(db, "refundRequests"), {
-        orderId: refundRequest.orderId,
-        reason: refundRequest.reason,
-        createdAt: new Date(),
-        status: "pending",
+      // Send email to admin about refund request
+      await fetch('/api/happymonday/refund-request', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          orderId: selectedInvoice.id,
+          orderNumber: selectedInvoice.order_number,
+          reason: refundRequest.reason,
+          userEmail: hmUser.email,
+        }),
       });
-      alert(`Refund request submitted for order ${selectedInvoice.orderNumber || selectedInvoice.id}`);
+      alert(`Refund request submitted for order ${selectedInvoice.order_number || selectedInvoice.id}`);
       setRefundRequest({ orderId: null, reason: "" });
     } catch (error) {
       console.error("Error submitting refund request:", error);
@@ -112,16 +183,112 @@ const App = () => {
     setLoading(false);
   };
 
+  const handleMarkAsPaid = async (orderId) => {
+    if (!isAdmin || !confirm("Mark this order as paid?")) return;
+    setLoading(true);
+    try {
+      await updateOrderStatus(orderId, 'paid');
+      await loadOrdersData(hmUser.id, isAdmin);
+      alert("Order marked as paid!");
+    } catch (error) {
+      console.error("Error updating order:", error);
+      alert("Error updating order. Please try again.");
+    }
+    setLoading(false);
+  };
+
   const getItemById = (id) => items.find((item) => item.id === id);
   const total = calculateTotal();
   const hasItems = Object.keys(cart).length > 0;
 
+  // Show loading while checking auth
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
+          <p className="text-slate-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show login if not authenticated
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 flex items-center justify-center">
+        <div className="bg-white rounded-2xl shadow-xl p-8 max-w-md w-full">
+          <div className="text-center mb-8">
+            <h1 className="text-3xl font-bold text-slate-800 mb-2">Local Effort ↔ Happy Monday</h1>
+            <p className="text-slate-600">Trade Order System</p>
+          </div>
+          <button
+            onClick={signInWithGoogle}
+            className="w-full py-3 px-4 bg-blue-500 hover:bg-blue-600 text-white rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
+          >
+            Sign in with Google
+          </button>
+          <p className="text-sm text-slate-500 text-center mt-4">
+            Authorized users only: dataweston@gmail.com or hello@happymonday.company
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // Format balance for display
+  const formatBalance = (cents) => {
+    const dollars = Math.abs(cents || 0) / 100;
+    return `$${dollars.toFixed(2)}`;
+  };
+
+  const balanceColor = (creditBalance?.balance_cents || 0) < 0 ? 'text-green-600' : 'text-red-600';
+  const balanceLabel = (creditBalance?.balance_cents || 0) < 0 ? 'Credit Available' : 'Balance Due';
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
       <div className="container mx-auto px-4 py-8 max-w-4xl">
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-slate-800 mb-2">Local Effort ↔ Happy Monday</h1>
-          <p className="text-slate-600">Trade Order System</p>
+        {/* Header with balance and logout */}
+        <div className="bg-white rounded-2xl shadow-xl p-6 mb-6">
+          <div className="flex justify-between items-start mb-4">
+            <div>
+              <h1 className="text-4xl font-bold text-slate-800 mb-2">Local Effort ↔ Happy Monday</h1>
+              <p className="text-slate-600">Trade Order System</p>
+              <p className="text-sm text-slate-500 mt-1">Logged in as: {hmUser?.email} ({isAdmin ? 'Admin' : 'Client'})</p>
+            </div>
+            <button
+              onClick={signOut}
+              className="px-4 py-2 text-sm bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-lg transition-colors"
+            >
+              Sign Out
+            </button>
+          </div>
+
+          {/* Credit Balance Display */}
+          {creditBalance && (
+            <div className="flex justify-between items-center p-4 bg-gradient-to-r from-slate-50 to-blue-50 rounded-xl border-2 border-blue-200">
+              <div>
+                <p className="text-sm font-medium text-slate-600 uppercase tracking-wide">{balanceLabel}</p>
+                <p className={`text-3xl font-bold ${balanceColor}`}>
+                  {formatBalance(creditBalance.balance_cents)}
+                </p>
+                {creditBalance.opening_credit_cents > 0 && (
+                  <p className="text-xs text-slate-500 mt-1">
+                    Opening credit: {formatBalance(creditBalance.opening_credit_cents)}
+                  </p>
+                )}
+              </div>
+              {!isAdmin && (creditBalance?.balance_cents || 0) > 0 && (
+                <button
+                  onClick={() => setShowPaymentModal(true)}
+                  className="px-6 py-3 bg-green-500 hover:bg-green-600 text-white rounded-lg font-medium transition-colors flex items-center gap-2"
+                >
+                  <CreditCard size={20} />
+                  Make Payment
+                </button>
+              )}
+            </div>
+          )}
         </div>
         <div className="flex justify-center mb-8">
           <div className="bg-white rounded-xl p-1 shadow-lg">
@@ -220,13 +387,30 @@ const App = () => {
                   <div key={order.id} onClick={() => setSelectedInvoice(order)} className="p-4 border border-slate-200 rounded-xl hover:border-blue-300 cursor-pointer transition-all hover:shadow-md">
                     <div className="flex justify-between items-start">
                       <div>
-                        <h3 className="font-semibold text-slate-800">{order.orderNumber || order.id}</h3>
-                        <p className="text-sm text-slate-500 flex items-center gap-1"><Clock size={14} />{new Date(order.date).toLocaleDateString()}</p>
-                        {order.notes && (<p className="text-sm text-slate-600 mt-1 flex items-center gap-1"><MessageSquare size={14} />{order.notes}</p>)}
+                        <h3 className="font-semibold text-slate-800">{order.order_number || order.id}</h3>
+                        <p className="text-sm text-slate-500 flex items-center gap-1">
+                          <Clock size={14} />
+                          {new Date(order.order_date).toLocaleDateString()}
+                        </p>
+                        {isAdmin && order.user && (
+                          <p className="text-xs text-slate-500 mt-1">Client: {order.user.email}</p>
+                        )}
+                        {order.notes && (
+                          <p className="text-sm text-slate-600 mt-1 flex items-center gap-1">
+                            <MessageSquare size={14} />{order.notes}
+                          </p>
+                        )}
                       </div>
                       <div className="text-right">
-                        <p className="text-lg font-bold text-blue-600">${order.total.toFixed(2)}</p>
-                        <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${order.status === "paid" ? "bg-green-100 text-green-800" : "bg-orange-100 text-orange-800"}`}>{order.status.toUpperCase()}</span>
+                        <p className="text-lg font-bold text-blue-600">${(order.total_cents / 100).toFixed(2)}</p>
+                        <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${
+                          order.status === "paid" ? "bg-green-100 text-green-800" :
+                          order.status === "partial" ? "bg-yellow-100 text-yellow-800" :
+                          order.status === "refunded" ? "bg-red-100 text-red-800" :
+                          "bg-orange-100 text-orange-800"
+                        }`}>
+                          {order.status.toUpperCase()}
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -237,20 +421,49 @@ const App = () => {
         )}
         {currentView === "invoices" && selectedInvoice && (
           <div className="bg-white rounded-2xl shadow-xl p-6">
-            <div className="flex items-center gap-4 mb-6">
-              <button onClick={() => setSelectedInvoice(null)} className="p-2 hover:bg-slate-100 rounded-lg transition-colors"><ArrowLeft size={20} /></button>
-              <h2 className="text-2xl font-bold text-slate-800">Invoice {selectedInvoice.orderNumber || selectedInvoice.id}</h2>
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center gap-4">
+                <button onClick={() => setSelectedInvoice(null)} className="p-2 hover:bg-slate-100 rounded-lg transition-colors">
+                  <ArrowLeft size={20} />
+                </button>
+                <h2 className="text-2xl font-bold text-slate-800">Invoice {selectedInvoice.order_number || selectedInvoice.id}</h2>
+              </div>
+              {isAdmin && selectedInvoice.status !== 'paid' && (
+                <button
+                  onClick={() => handleMarkAsPaid(selectedInvoice.id)}
+                  className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg font-medium transition-colors"
+                >
+                  Mark as Paid
+                </button>
+              )}
             </div>
             <div className="grid md:grid-cols-2 gap-6 mb-6">
               <div>
                 <h3 className="font-semibold text-slate-800 mb-2">Order Details</h3>
-                <p className="text-sm text-slate-600">Date: {new Date(selectedInvoice.date).toLocaleDateString()}</p>
-                <p className="text-sm text-slate-600">Status: <span className={`font-medium ${selectedInvoice.status === "paid" ? "text-green-600" : "text-orange-600"}`}>{selectedInvoice.status.toUpperCase()}</span></p>
-                {selectedInvoice.notes && (<div className="mt-2"><p className="text-sm text-slate-600">Notes:</p><p className="text-sm text-slate-800">{selectedInvoice.notes}</p></div>)}
+                <p className="text-sm text-slate-600">Date: {new Date(selectedInvoice.order_date).toLocaleDateString()}</p>
+                <p className="text-sm text-slate-600">
+                  Status: <span className={`font-medium ${
+                    selectedInvoice.status === "paid" ? "text-green-600" :
+                    selectedInvoice.status === "partial" ? "text-yellow-600" :
+                    selectedInvoice.status === "refunded" ? "text-red-600" :
+                    "text-orange-600"
+                  }`}>
+                    {selectedInvoice.status.toUpperCase()}
+                  </span>
+                </p>
+                {isAdmin && selectedInvoice.user && (
+                  <p className="text-sm text-slate-600">Client: {selectedInvoice.user.email}</p>
+                )}
+                {selectedInvoice.notes && (
+                  <div className="mt-2">
+                    <p className="text-sm text-slate-600">Notes:</p>
+                    <p className="text-sm text-slate-800">{selectedInvoice.notes}</p>
+                  </div>
+                )}
               </div>
               <div className="text-right">
                 <h3 className="font-semibold text-slate-800 mb-2">Total Amount</h3>
-                <p className="text-3xl font-bold text-blue-600">${selectedInvoice.total.toFixed(2)}</p>
+                <p className="text-3xl font-bold text-blue-600">${(selectedInvoice.total_cents / 100).toFixed(2)}</p>
               </div>
             </div>
             <div className="mb-6">
@@ -280,6 +493,19 @@ const App = () => {
           </div>
         )}
         {currentView === "costing" && <CostingWorksheet items={items} />}
+
+        {/* Square Payment Modal */}
+        {showPaymentModal && hmUser && creditBalance && (
+          <SquarePaymentButton
+            userId={hmUser.id}
+            currentBalance={creditBalance.balance_cents}
+            onClose={() => setShowPaymentModal(false)}
+            onSuccess={() => {
+              setShowPaymentModal(false);
+              loadUserData(); // Reload to update balance
+            }}
+          />
+        )}
       </div>
     </div>
   );

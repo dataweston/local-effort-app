@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { DollarSign, Plus, Trash2, Save, Download } from "lucide-react";
-import { db } from "../../firebaseConfig";
-import { doc, getDoc, setDoc } from "firebase/firestore";
+import { loadCosting, saveCosting } from "./supabaseClient";
 
 const CostingWorksheet = ({ items }) => {
   const [costs, setCosts] = useState(
@@ -11,15 +10,12 @@ const CostingWorksheet = ({ items }) => {
     }, {})
   );
   const [loading, setLoading] = useState(false);
-  const costDocRef = doc(db, "costing", "worksheet");
 
-  const loadCosts = async () => {
+  const loadCostsData = async () => {
     setLoading(true);
     try {
-      if (!db) return;
-      const docSnap = await getDoc(costDocRef);
-      if (docSnap.exists()) {
-        const savedCosts = docSnap.data();
+      const savedCosts = await loadCosting();
+      if (savedCosts && Object.keys(savedCosts).length > 0) {
         const mergedCosts = items.reduce((acc, item) => {
           acc[item.id] = { ...costs[item.id], ...(savedCosts[item.id] || {}) };
           return acc;
@@ -33,13 +29,12 @@ const CostingWorksheet = ({ items }) => {
     setLoading(false);
   };
 
-  useEffect(() => { loadCosts(); }, []);
+  useEffect(() => { loadCostsData(); }, []);
 
-  const saveCosts = async () => {
+  const saveCostsData = async () => {
     setLoading(true);
     try {
-      if (!db) return;
-      await setDoc(costDocRef, costs);
+      await saveCosting(costs);
       alert("Costs saved successfully!");
     } catch (error) {
       console.error("Error saving costs:", error);
@@ -127,10 +122,10 @@ const CostingWorksheet = ({ items }) => {
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-bold text-slate-800">Costing Worksheet</h2>
         <div className="flex gap-2">
-          <button onClick={loadCosts} disabled={loading} className="px-4 py-2 rounded-lg font-medium transition-all flex items-center justify-center gap-2 bg-slate-500 hover:bg-slate-600 text-white">
+          <button onClick={loadCostsData} disabled={loading} className="px-4 py-2 rounded-lg font-medium transition-all flex items-center justify-center gap-2 bg-slate-500 hover:bg-slate-600 text-white disabled:opacity-50 disabled:cursor-not-allowed">
             <Download size={18} />{loading ? "Loading..." : "Reload Costs"}
           </button>
-          <button onClick={saveCosts} disabled={loading} className="px-4 py-2 rounded-lg font-medium transition-all flex items-center justify-center gap-2 bg-blue-500 hover:bg-blue-600 text-white">
+          <button onClick={saveCostsData} disabled={loading} className="px-4 py-2 rounded-lg font-medium transition-all flex items-center justify-center gap-2 bg-blue-500 hover:bg-blue-600 text-white disabled:opacity-50 disabled:cursor-not-allowed">
             <Save size={18} />{loading ? "Saving..." : "Save Costs"}
           </button>
         </div>
