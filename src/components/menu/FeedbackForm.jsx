@@ -1,12 +1,7 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-// NOTE: This component was using Firebase Realtime Database which has been removed.
-// It needs to be migrated to Firestore or an API endpoint.
-// Keeping imports commented for reference:
-// import { ref, push, serverTimestamp, set } from 'firebase/database';
 
 const FeedbackForm = () => {
-  // Realtime Database has been removed - this form is currently disabled
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -27,11 +22,39 @@ const FeedbackForm = () => {
       setStatus({ type: 'error', message: 'Please enter a message before submitting.' });
       return;
     }
-    // Firebase Realtime Database has been removed - form is disabled
-    setStatus({ 
-      type: 'error', 
-      message: 'Feedback form is temporarily unavailable. Please contact us directly at support@localeffortfood.com' 
-    });
+
+    setStatus({ type: 'loading', message: '' });
+
+    try {
+      const payload = {
+        name: formData.name,
+        email: formData.email,
+        subject: `Happy Monday Feedback (${formData.category})`,
+        message: formData.message,
+        type: 'feedback',
+        category: formData.category,
+      };
+
+      const res = await fetch('/api/messages/submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      if (!res.ok) throw new Error(await res.text());
+
+      setStatus({ type: 'success', message: 'Thank you! Your feedback has been submitted.' });
+      setFormData({ name: '', email: '', phone: '', category: 'requests', message: '' });
+
+      setTimeout(() => {
+        setStatus({ type: '', message: '' });
+      }, 5000);
+    } catch (err) {
+      setStatus({
+        type: 'error',
+        message: 'Could not submit feedback. Please try again or contact us at yum@localeffortfood.com'
+      });
+    }
   };
 
   return (
