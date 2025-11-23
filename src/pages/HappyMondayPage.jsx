@@ -59,6 +59,14 @@ const HappyMondayPage = () => {
           {pageContent && (
             <div className="text-center mb-12">
               <SectionHeader overline="Weekly Special" title={pageContent.title} />
+              <div className="flex justify-center mt-8 mb-8">
+                <img
+                  src="https://www.localeffortfood.com/gallery/IMG_3145.jpg"
+                  alt="Happy Monday"
+                  className="max-w-full h-auto rounded-lg shadow-lg"
+                  style={{ width: '50%' }}
+                />
+              </div>
               {/* The BlockContent component renders rich text. Wrap lazy import in Suspense + ErrorBoundary */}
               <div className="prose lg:prose-lg mx-auto max-w-3xl">
                 <ErrorBoundary>
@@ -67,15 +75,12 @@ const HappyMondayPage = () => {
                   </Suspense>
                 </ErrorBoundary>
               </div>
-              <div className="flex justify-center mt-8">
-                <img
-                  src="https://www.localeffortfood.com/gallery/IMG_3145.jpg"
-                  alt="Happy Monday"
-                  className="max-w-full h-auto rounded-lg shadow-lg"
-                />
-              </div>
             </div>
           )}
+
+          <div className="text-center mb-8">
+            <h2 className="text-2xl font-semibold">Ingredient Lists</h2>
+          </div>
 
           <Suspense fallback={<div className="flex justify-center items-center h-64">Loading…</div>}>
             {isLoading ? (
