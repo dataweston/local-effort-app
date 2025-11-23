@@ -27,7 +27,7 @@ export default function StaticApp({ helmetContext }) {
             <Route path="/services" element={<ServicesPage />} />
             <Route path="/pricing" element={<PricingPage />} />
             <Route path="/menu" element={<MenuPage />} />
-            <Route path="/happy-monday" element={<HappyMondayPage />} />
+            <Route path="/happymonday" element={<HappyMondayPage />} />
             <Route path="/gallery" element={<GalleryPage />} />
             <Route path="/events" element={<EventsPage />} />
             <Route path="/meal-prep" element={<MealPrepPage />} />
