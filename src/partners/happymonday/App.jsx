@@ -107,6 +107,7 @@ const App = () => {
   const [cart, setCart] = useState({});
   const [orderConfirmed, setOrderConfirmed] = useState(false);
   const [notes, setNotes] = useState("");
+  const [orderDate, setOrderDate] = useState(new Date().toISOString().split("T")[0]);
   const [orders, setOrders] = useState([]);
   const [selectedInvoice, setSelectedInvoice] = useState(null);
   const [refundRequest, setRefundRequest] = useState({ orderId: null, reason: "" });
@@ -190,7 +191,6 @@ const App = () => {
     try {
       const totalCents = Math.round(calculateTotal() * 100);
       const orderNumber = `HM-${Date.now()}`;
-      const orderDate = new Date().toISOString().split("T")[0];
       const isClientOrder = !isAdmin; // Client orders trigger email
 
       await createOrder({
@@ -207,6 +207,7 @@ const App = () => {
       setCart({});
       setOrderConfirmed(false);
       setNotes("");
+      setOrderDate(new Date().toISOString().split("T")[0]);
 
       // Reload data
       await loadUserData();
@@ -248,17 +249,225 @@ const App = () => {
   };
 
   const handleMarkAsPaid = async (orderId) => {
-    if (!isAdmin || !confirm("Mark this order as paid?")) return;
+    if (!isAdmin || !confirm("Mark this order as paid? This will apply any available credits and close the invoice.")) return;
     setLoading(true);
     try {
-      await updateOrderStatus(orderId, 'paid');
+      // Call the database function that handles credit application
+      const { data, error } = await supabase.rpc('mark_happymonday_order_paid', {
+        p_order_id: orderId,
+        p_processed_by: hmUser.id
+      });
+
+      if (error) throw error;
+
       await loadOrdersData(hmUser.id, isAdmin);
-      alert("Order marked as paid!");
+      
+      // Show summary of what happened
+      const summary = data;
+      let message = "Order marked as paid!\n\n";
+      if (summary.credit_used > 0) {
+        message += `Credit applied: $${(summary.credit_used / 100).toFixed(2)}\n`;
+        message += `New credit balance: $${Math.abs(summary.new_credit_balance / 100).toFixed(2)}\n`;
+        if (summary.amount_remaining > 0) {
+          message += `\nRemaining amount due: $${(summary.amount_remaining / 100).toFixed(2)}`;
+        }
+      }
+      alert(message);
     } catch (error) {
       console.error("Error updating order:", error);
       alert("Error updating order. Please try again.");
     }
     setLoading(false);
+  };
+
+  const handlePrintInvoice = (invoice) => {
+    // Generate print-friendly HTML
+    const itemsHtml = Object.entries(invoice.items).map(([itemId, quantity]) => {
+      const item = getItemById(parseInt(itemId));
+      const itemPrice = item ? item.price * quantity : 0;
+      return `
+        <tr>
+          <td style="padding: 12px; border-bottom: 1px solid #e2e8f0;">${item ? item.name : `Item ${itemId}`}</td>
+          <td style="padding: 12px; border-bottom: 1px solid #e2e8f0; text-align: center;">${quantity}</td>
+          <td style="padding: 12px; border-bottom: 1px solid #e2e8f0; text-align: right;">$${item ? item.price.toFixed(2) : '0.00'}</td>
+          <td style="padding: 12px; border-bottom: 1px solid #e2e8f0; text-align: right; font-weight: 600;">$${itemPrice.toFixed(2)}</td>
+        </tr>
+      `;
+    }).join('');
+
+    const printWindow = window.open('', '_blank');
+    printWindow.document.write(`
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>Invoice ${invoice.order_number || invoice.id}</title>
+          <style>
+            @media print {
+              body { margin: 0; }
+              .no-print { display: none; }
+            }
+            body {
+              font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+              padding: 40px;
+              max-width: 800px;
+              margin: 0 auto;
+              color: #1e293b;
+            }
+            .header {
+              border-bottom: 3px solid #3b82f6;
+              padding-bottom: 20px;
+              margin-bottom: 30px;
+            }
+            .header h1 {
+              margin: 0 0 10px 0;
+              color: #1e293b;
+              font-size: 28px;
+            }
+            .header p {
+              margin: 0;
+              color: #64748b;
+            }
+            .invoice-details {
+              display: flex;
+              justify-content: space-between;
+              margin-bottom: 30px;
+            }
+            .details-section {
+              flex: 1;
+            }
+            .details-section h3 {
+              font-size: 14px;
+              text-transform: uppercase;
+              color: #64748b;
+              margin: 0 0 10px 0;
+              font-weight: 600;
+            }
+            .details-section p {
+              margin: 5px 0;
+              font-size: 14px;
+            }
+            .status-badge {
+              display: inline-block;
+              padding: 4px 12px;
+              border-radius: 9999px;
+              font-size: 12px;
+              font-weight: 600;
+              text-transform: uppercase;
+            }
+            .status-paid { background: #d1fae5; color: #065f46; }
+            .status-unpaid { background: #fed7aa; color: #92400e; }
+            .status-partial { background: #fef3c7; color: #92400e; }
+            table {
+              width: 100%;
+              border-collapse: collapse;
+              margin-bottom: 30px;
+            }
+            th {
+              background: #f1f5f9;
+              padding: 12px;
+              text-align: left;
+              font-weight: 600;
+              font-size: 14px;
+              text-transform: uppercase;
+              color: #475569;
+            }
+            th:nth-child(2), th:nth-child(3), th:nth-child(4) {
+              text-align: right;
+            }
+            .total-row {
+              background: #f8fafc;
+              font-weight: 700;
+              font-size: 18px;
+            }
+            .total-row td {
+              padding: 16px 12px;
+              border-top: 2px solid #3b82f6;
+            }
+            .notes {
+              background: #f8fafc;
+              padding: 16px;
+              border-radius: 8px;
+              margin-top: 30px;
+            }
+            .notes h3 {
+              margin: 0 0 8px 0;
+              font-size: 14px;
+              text-transform: uppercase;
+              color: #64748b;
+            }
+            .notes p {
+              margin: 0;
+              font-size: 14px;
+              line-height: 1.6;
+            }
+            .print-button {
+              background: #3b82f6;
+              color: white;
+              border: none;
+              padding: 12px 24px;
+              border-radius: 8px;
+              font-size: 14px;
+              font-weight: 600;
+              cursor: pointer;
+              margin-bottom: 20px;
+            }
+            .print-button:hover {
+              background: #2563eb;
+            }
+          </style>
+        </head>
+        <body>
+          <button class="print-button no-print" onclick="window.print()">🖨️ Print Invoice</button>
+          
+          <div class="header">
+            <h1>Local Effort Food</h1>
+            <p>Happy Monday Partnership Invoice</p>
+          </div>
+
+          <div class="invoice-details">
+            <div class="details-section">
+              <h3>Invoice Details</h3>
+              <p><strong>Invoice #:</strong> ${invoice.order_number || invoice.id}</p>
+              <p><strong>Date:</strong> ${new Date(invoice.order_date).toLocaleDateString()}</p>
+              <p><strong>Status:</strong> <span class="status-badge status-${invoice.status}">${invoice.status.toUpperCase()}</span></p>
+            </div>
+            ${invoice.user ? `
+              <div class="details-section">
+                <h3>Bill To</h3>
+                <p><strong>Happy Monday</strong></p>
+                <p>${invoice.user.email}</p>
+              </div>
+            ` : ''}
+          </div>
+
+          <table>
+            <thead>
+              <tr>
+                <th>Item</th>
+                <th style="text-align: center;">Quantity</th>
+                <th style="text-align: right;">Price</th>
+                <th style="text-align: right;">Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${itemsHtml}
+              <tr class="total-row">
+                <td colspan="3" style="text-align: right;">Total Amount:</td>
+                <td style="text-align: right; color: #3b82f6;">$${(invoice.total_cents / 100).toFixed(2)}</td>
+              </tr>
+            </tbody>
+          </table>
+
+          ${invoice.notes ? `
+            <div class="notes">
+              <h3>Notes</h3>
+              <p>${invoice.notes}</p>
+            </div>
+          ` : ''}
+        </body>
+      </html>
+    `);
+    printWindow.document.close();
   };
 
   const getItemById = (id) => items.find((item) => item.id === id);
@@ -434,9 +643,12 @@ const App = () => {
             <button onClick={() => setCurrentView("invoices")} className={`px-6 py-3 rounded-lg font-medium transition-all flex items-center gap-2 ${currentView === "invoices" ? "bg-blue-500 text-white shadow-md" : "text-slate-600 hover:text-blue-500"}`}>
               <FileText size={20} /> Past Orders
             </button>
-            <button onClick={() => setCurrentView("costing")} className={`px-6 py-3 rounded-lg font-medium transition-all flex items-center gap-2 ${currentView === "costing" ? "bg-blue-500 text-white shadow-md" : "text-slate-600 hover:text-blue-500"}`}>
-              <ClipboardList size={20} /> Costing
-            </button>
+            {/* Hide costing for hello@happymonday.company */}
+            {hmUser?.email !== 'hello@happymonday.company' && (
+              <button onClick={() => setCurrentView("costing")} className={`px-6 py-3 rounded-lg font-medium transition-all flex items-center gap-2 ${currentView === "costing" ? "bg-blue-500 text-white shadow-md" : "text-slate-600 hover:text-blue-500"}`}>
+                <ClipboardList size={20} /> Costing
+              </button>
+            )}
           </div>
         </div>
         {currentView === "order" && (
@@ -469,9 +681,15 @@ const App = () => {
             <div className="lg:col-span-1">
               <div className="bg-white rounded-2xl shadow-xl p-6 sticky top-8">
                 <h2 className="text-2xl font-bold text-slate-800 mb-6">Order Summary</h2>
-                <div className="mb-4 p-3 bg-slate-50 rounded-lg">
-                  <p className="text-sm text-slate-600">Order Date</p>
-                  <p className="font-medium">{new Date().toLocaleDateString()}</p>
+                <div className="mb-4">
+                  <label htmlFor="hm-order-date" className="block text-sm font-medium text-slate-700 mb-2">Order Date</label>
+                  <input 
+                    id="hm-order-date"
+                    type="date"
+                    value={orderDate}
+                    onChange={(e) => setOrderDate(e.target.value)}
+                    className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
                 </div>
                 {hasItems ? (
                   <div className="space-y-2 mb-4">
@@ -515,6 +733,41 @@ const App = () => {
         {currentView === "invoices" && !selectedInvoice && (
           <div className="bg-white rounded-2xl shadow-xl p-6">
             <h2 className="text-2xl font-bold text-slate-800 mb-6">Past Orders</h2>
+            
+            {/* Admin Summary */}
+            {isAdmin && orders.length > 0 && (
+              <div className="mb-8 p-6 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl border-2 border-blue-200">
+                <h3 className="text-lg font-bold text-slate-800 mb-4">Financial Summary</h3>
+                <div className="grid md:grid-cols-3 gap-6">
+                  <div>
+                    <p className="text-sm font-medium text-slate-600 uppercase tracking-wide mb-1">Total Open Invoices</p>
+                    <p className="text-3xl font-bold text-orange-600">
+                      ${(orders.filter(o => o.status === 'unpaid' || o.status === 'partial').reduce((sum, o) => sum + o.total_cents, 0) / 100).toFixed(2)}
+                    </p>
+                    <p className="text-xs text-slate-500 mt-1">
+                      {orders.filter(o => o.status === 'unpaid' || o.status === 'partial').length} unpaid orders
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-slate-600 uppercase tracking-wide mb-1">Client Standing Credit</p>
+                    <p className={`text-3xl font-bold ${(creditBalance?.balance_cents || 0) < 0 ? 'text-green-600' : 'text-slate-600'}`}>
+                      ${Math.abs((creditBalance?.balance_cents || 0) / 100).toFixed(2)}
+                    </p>
+                    <p className="text-xs text-slate-500 mt-1">
+                      {(creditBalance?.balance_cents || 0) < 0 ? 'Credit available' : 'No credit'}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-slate-600 uppercase tracking-wide mb-1">Net Amount Due</p>
+                    <p className="text-3xl font-bold text-blue-600">
+                      ${((orders.filter(o => o.status === 'unpaid' || o.status === 'partial').reduce((sum, o) => sum + o.total_cents, 0) + (creditBalance?.balance_cents || 0)) / 100).toFixed(2)}
+                    </p>
+                    <p className="text-xs text-slate-500 mt-1">After applying credits</p>
+                  </div>
+                </div>
+              </div>
+            )}
+            
             {orders.length === 0 ? (
               <p className="text-slate-500 text-center py-8">No orders yet</p>
             ) : (
@@ -564,14 +817,23 @@ const App = () => {
                 </button>
                 <h2 className="text-2xl font-bold text-slate-800">Invoice {selectedInvoice.order_number || selectedInvoice.id}</h2>
               </div>
-              {isAdmin && selectedInvoice.status !== 'paid' && (
+              <div className="flex gap-2">
                 <button
-                  onClick={() => handleMarkAsPaid(selectedInvoice.id)}
-                  className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg font-medium transition-colors"
+                  onClick={() => handlePrintInvoice(selectedInvoice)}
+                  className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg font-medium transition-colors flex items-center gap-2"
                 >
-                  Mark as Paid
+                  <FileText size={18} />
+                  Print
                 </button>
-              )}
+                {isAdmin && selectedInvoice.status !== 'paid' && (
+                  <button
+                    onClick={() => handleMarkAsPaid(selectedInvoice.id)}
+                    className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg font-medium transition-colors"
+                  >
+                    Mark as Paid
+                  </button>
+                )}
+              </div>
             </div>
             <div className="grid md:grid-cols-2 gap-6 mb-6">
               <div>
