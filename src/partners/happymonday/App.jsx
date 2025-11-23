@@ -1,14 +1,13 @@
 import React, { useState, useEffect } from "react";
-import { ShoppingCart, FileText, Plus, Minus, Send, ArrowLeft, Clock, MessageSquare, ClipboardList, DollarSign, CreditCard } from "lucide-react";
+import { ShoppingCart, FileText, Plus, Minus, Send, ArrowLeft, Clock, MessageSquare, ClipboardList, CreditCard } from "lucide-react";
 import { useSupabaseAuth } from "../../contexts/SupabaseAuthContext";
 import { supabase } from "../../lib/supabaseClient";
 import {
   getCurrentHappyMondayUser,
+  getClientUserId,
   getUserCredit,
   loadOrders,
   createOrder,
-  updateOrderStatus,
-  adjustCreditBalance,
 } from "./supabaseClient";
 import CostingWorksheet from "./CostingWorksheet.jsx";
 import SquarePaymentButton from "./SquarePaymentButton.jsx";
@@ -38,6 +37,7 @@ const App = () => {
   // Auth and user state
   const { user, loading: authLoading, signOut } = useSupabaseAuth();
   const [hmUser, setHmUser] = useState(null);
+  const [clientUserId, setClientUserId] = useState(null); // Always the client ID
   const [creditBalance, setCreditBalance] = useState(null);
   const [isAdmin, setIsAdmin] = useState(false);
 
@@ -53,7 +53,7 @@ const App = () => {
 
     setSigningIn(true);
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
+      const { error } = await supabase.auth.signInWithPassword({
         email: email.trim(),
         password,
       });
@@ -145,12 +145,16 @@ const App = () => {
       setHmUser(userData);
       setIsAdmin(userData.role === 'admin');
 
-      // Load credit balance
-      const credit = await getUserCredit(userData.id);
+      // Always get the client's user ID (for payments and credit)
+      const clientId = await getClientUserId();
+      setClientUserId(clientId);
+
+      // Load credit balance (admin sees client's balance)
+      const credit = await getUserCredit(userData.id, userData.role);
       setCreditBalance(credit);
 
-      // Load orders
-      await loadOrdersData(userData.id, userData.role === 'admin');
+      // Load orders (both users see all orders)
+      await loadOrdersData();
     } catch (error) {
       console.error("Error loading user data:", error);
       alert("Error loading your data. Please try again.");
@@ -159,9 +163,9 @@ const App = () => {
     }
   };
 
-  const loadOrdersData = async (userId, isAdminUser = false) => {
+  const loadOrdersData = async () => {
     try {
-      const loadedOrders = await loadOrders(userId, isAdminUser);
+      const loadedOrders = await loadOrders();
       setOrders(loadedOrders);
     } catch (error) {
       console.error("Error loading orders:", error);
@@ -194,7 +198,6 @@ const App = () => {
       const isClientOrder = !isAdmin; // Client orders trigger email
 
       await createOrder({
-        userId: hmUser.id,
         createdBy: hmUser.id,
         orderNumber,
         orderDate,
@@ -260,7 +263,7 @@ const App = () => {
 
       if (error) throw error;
 
-      await loadOrdersData(hmUser.id, isAdmin);
+      await loadOrdersData();
       
       // Show summary of what happened
       const summary = data;
@@ -893,9 +896,9 @@ const App = () => {
         {currentView === "costing" && <CostingWorksheet items={items} />}
 
         {/* Square Payment Modal */}
-        {showPaymentModal && hmUser && creditBalance && (
+        {showPaymentModal && clientUserId && creditBalance && (
           <SquarePaymentButton
-            userId={hmUser.id}
+            userId={clientUserId}
             currentBalance={creditBalance.balance_cents}
             onClose={() => setShowPaymentModal(false)}
             onSuccess={() => {

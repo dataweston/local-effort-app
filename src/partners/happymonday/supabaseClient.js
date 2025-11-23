@@ -25,15 +25,53 @@ export const getCurrentHappyMondayUser = async (email) => {
 };
 
 /**
- * Get user's credit balance
+ * Get the client user ID (always returns Happy Monday client ID)
+ * This is used to ensure all operations target the correct customer account
  */
-export const getUserCredit = async (userId) => {
+export const getClientUserId = async () => {
+  if (!supabase) return null;
+
+  const { data, error } = await supabase
+    .from('happymonday_users')
+    .select('id')
+    .eq('email', 'hello@happymonday.company')
+    .single();
+
+  if (error) {
+    console.error('[HappyMonday] Error fetching client user:', error);
+    return null;
+  }
+
+  return data?.id || null;
+};
+
+/**
+ * Get user's credit balance
+ * NOTE: For admin users, this returns the CLIENT's credit balance since this is a
+ * customer-provider portal where admin manages the client's account.
+ */
+export const getUserCredit = async (userId, userRole = null) => {
   if (!supabase || !userId) return null;
+
+  let targetUserId = userId;
+
+  // If user is admin, get the client's credit balance instead
+  if (userRole === 'admin') {
+    const { data: clientUser } = await supabase
+      .from('happymonday_users')
+      .select('id')
+      .eq('email', 'hello@happymonday.company')
+      .single();
+    
+    if (clientUser) {
+      targetUserId = clientUser.id;
+    }
+  }
 
   const { data, error } = await supabase
     .from('happymonday_credits')
     .select('*')
-    .eq('user_id', userId)
+    .eq('user_id', targetUserId)
     .single();
 
   if (error) {
@@ -46,11 +84,15 @@ export const getUserCredit = async (userId) => {
 
 /**
  * Load all orders for a user (or all orders if admin)
+ * NOTE: Since this is a single customer-provider portal, both users see ALL orders.
+ * Orders are always associated with the client, but created_by tracks who made them.
  */
-export const loadOrders = async (userId, isAdmin = false) => {
+export const loadOrders = async () => {
   if (!supabase) return [];
 
-  let query = supabase
+  // Both admin and client see ALL orders in this portal
+  // This is a single customer-provider relationship, not multi-customer
+  const query = supabase
     .from('happymonday_orders')
     .select(`
       *,
@@ -58,11 +100,6 @@ export const loadOrders = async (userId, isAdmin = false) => {
       created_by_user:created_by(email, name, role)
     `)
     .order('created_at', { ascending: false });
-
-  // If not admin, only show orders for this user
-  if (!isAdmin) {
-    query = query.eq('user_id', userId);
-  }
 
   const { data, error } = await query;
 
@@ -76,9 +113,10 @@ export const loadOrders = async (userId, isAdmin = false) => {
 
 /**
  * Create a new order
+ * NOTE: In this customer-provider portal, ALL orders are for the client (hello@happymonday.company).
+ * The created_by field tracks who actually created the order (admin or client).
  */
 export const createOrder = async ({
-  userId,
   createdBy,
   orderNumber,
   orderDate,
@@ -89,11 +127,22 @@ export const createOrder = async ({
 }) => {
   if (!supabase) throw new Error('Supabase not configured');
 
+  // Always assign orders to the client user, regardless of who creates them
+  const { data: clientUser } = await supabase
+    .from('happymonday_users')
+    .select('id')
+    .eq('email', 'hello@happymonday.company')
+    .single();
+
+  if (!clientUser) {
+    throw new Error('Client user not found');
+  }
+
   const { data, error } = await supabase
     .from('happymonday_orders')
     .insert({
-      user_id: userId,
-      created_by: createdBy,
+      user_id: clientUser.id, // Always the client
+      created_by: createdBy, // Tracks who actually created it
       order_number: orderNumber,
       order_date: orderDate,
       items,
@@ -276,6 +325,7 @@ export const saveCosting = async (costs) => {
 
 export default {
   getCurrentHappyMondayUser,
+  getClientUserId,
   getUserCredit,
   loadOrders,
   createOrder,
