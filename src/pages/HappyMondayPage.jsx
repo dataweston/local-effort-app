@@ -67,6 +67,13 @@ const HappyMondayPage = () => {
                   </Suspense>
                 </ErrorBoundary>
               </div>
+              <div className="flex justify-center mt-8">
+                <img
+                  src="https://www.localeffortfood.com/gallery/IMG_3145.jpg"
+                  alt="Happy Monday"
+                  className="max-w-full h-auto rounded-lg shadow-lg"
+                />
+              </div>
             </div>
           )}
 

@@ -747,17 +747,6 @@ const HomePage = () => {
           </div>
         </section>
 
-        {/* Holiday Pie Sale Banner */}
-        <section className="mx-auto max-w-6xl px-4 md:px-6 lg:px-8">
-          <div className="text-center">
-            <img 
-              src="https://res.cloudinary.com/dokyhfvyd/image/upload/c_limit,f_auto,q_auto,w_1600/wv9huoauoimjozqzq4kr?_a=BAMAK+eA0" 
-              alt="Holiday Pie Sale"
-              className="w-full rounded-lg shadow-lg"
-            />
-          </div>
-        </section>
-
         {/* Partner / Logo Wall */}
   <section className="py-12">
           <div className="max-w-6xl mx-auto px-4 md:px-6 lg:px-8">
