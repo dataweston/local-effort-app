@@ -8,7 +8,7 @@ import { Textarea } from '../ui/textarea';
 import { Switch } from '../ui/switch';
 import { Button } from '../ui/button';
 
-const TICKET_PRICE = 7500; // $75.00 in cents
+const TICKET_PRICE = 17500; // $175.00 in cents
 const TICKET_PRICE_USD = (TICKET_PRICE / 100).toFixed(2);
 
 const DinnerRegistrationModal = ({ isOpen, onClose }) => {
@@ -17,7 +17,7 @@ const DinnerRegistrationModal = ({ isOpen, onClose }) => {
     email: '',
     phone: '',
     dietaryRestrictions: '',
-    includesAlcohol: true,
+    drinkMenu: 'wine', // 'wine' or 'non-alcoholic'
   });
 
   const [isProcessing, setIsProcessing] = useState(false);
@@ -37,7 +37,7 @@ const DinnerRegistrationModal = ({ isOpen, onClose }) => {
         email: '',
         phone: '',
         dietaryRestrictions: '',
-        includesAlcohol: true,
+        drinkMenu: 'wine',
       });
       setShowSuccess(false);
       setErrorMessage('');
@@ -50,8 +50,8 @@ const DinnerRegistrationModal = ({ isOpen, onClose }) => {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleAlcoholToggle = (checked) => {
-    setFormData(prev => ({ ...prev, includesAlcohol: checked }));
+  const handleDrinkMenuChange = (value) => {
+    setFormData(prev => ({ ...prev, drinkMenu: value }));
   };
 
   const validateForm = () => {
@@ -100,7 +100,7 @@ const DinnerRegistrationModal = ({ isOpen, onClose }) => {
             phone: formData.phone,
           },
           dietaryRestrictions: formData.dietaryRestrictions,
-          includesAlcohol: formData.includesAlcohol,
+          drinkMenu: formData.drinkMenu,
           token,
           amount: TICKET_PRICE,
         }),
@@ -254,22 +254,37 @@ const DinnerRegistrationModal = ({ isOpen, onClose }) => {
                 />
               </div>
 
-              {/* Alcohol Toggle */}
-              <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                <div className="flex-1">
-                  <Label htmlFor="alcohol-toggle" className="text-base font-medium cursor-pointer">
-                    Include Alcohol Pairing
-                  </Label>
-                  <p className="text-sm text-gray-500 mt-1">
-                    Curated wine pairings with each course
-                  </p>
+              {/* Drink Menu Selection */}
+              <div className="space-y-2">
+                <Label className="text-base font-medium">Beverage Pairing</Label>
+                <div className="grid grid-cols-2 gap-3">
+                  <button
+                    type="button"
+                    onClick={() => handleDrinkMenuChange('wine')}
+                    disabled={isProcessing}
+                    className={`p-4 rounded-lg border-2 transition-all ${
+                      formData.drinkMenu === 'wine'
+                        ? 'border-black bg-black text-white'
+                        : 'border-gray-300 bg-white text-gray-700 hover:border-gray-400'
+                    }`}
+                  >
+                    <div className="font-medium">Wine Pairing</div>
+                    <div className="text-sm mt-1 opacity-80">Curated wine selections</div>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleDrinkMenuChange('non-alcoholic')}
+                    disabled={isProcessing}
+                    className={`p-4 rounded-lg border-2 transition-all ${
+                      formData.drinkMenu === 'non-alcoholic'
+                        ? 'border-black bg-black text-white'
+                        : 'border-gray-300 bg-white text-gray-700 hover:border-gray-400'
+                    }`}
+                  >
+                    <div className="font-medium">Non-Alcoholic</div>
+                    <div className="text-sm mt-1 opacity-80">Artisanal beverages</div>
+                  </button>
                 </div>
-                <Switch
-                  id="alcohol-toggle"
-                  checked={formData.includesAlcohol}
-                  onCheckedChange={handleAlcoholToggle}
-                  disabled={isProcessing}
-                />
               </div>
 
               {/* Payment Section */}

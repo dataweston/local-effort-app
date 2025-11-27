@@ -183,8 +183,19 @@ const WinterDinnerPage = () => {
               src="/images/sprite_flicker.gif"
               alt="Winter Dinner - Flickering candlelight ambiance"
               className="absolute inset-0 w-full h-full object-contain"
-              style={{ imageRendering: 'crisp-edges' }}
+              style={{
+                imageRendering: 'crisp-edges'
+              }}
             />
+            <style>{`
+              @media (max-width: 768px) {
+                img[src="/images/sprite_flicker.gif"] {
+                  width: 150% !important;
+                  object-fit: cover !important;
+                  object-position: left center !important;
+                }
+              }
+            `}</style>
 
             {/* Background Coordinate System Overlay */}
             <div
@@ -250,27 +261,130 @@ const WinterDinnerPage = () => {
           ))}
 
           {/* Place your positioned elements here using BgPositioned component */}
-          <BgPositioned x={27.9} y={24.2}>
+          <BgPositioned x={50} y={13}>
             <motion.h1
-              className="text-5xl md:text-7xl font-light tracking-widest text-white/90 px-3 py-1 rounded-lg"
-              style={{ fontFamily: "'Cardo', serif", backgroundColor: 'rgba(0, 0, 0, 0.15)' }}
+              className="font-light tracking-widest text-white/90 px-3 py-1 rounded-lg bg-white/10 backdrop-blur-md"
+              style={{ fontFamily: "'Cardo', serif", maxWidth: '90vw' }}
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3, duration: 0.8 }}
             >
-              <FuzzyText
-                fontSize="clamp(2.5rem, 7vw, 4.5rem)"
-                fontWeight={300}
-                fontFamily="'Cardo', serif"
-                color="rgba(255, 255, 255, 0.9)"
-                baseIntensity={0.09}
-                hoverIntensity={0.24}
-                enableHover={true}
-                className="inline-block"
-              >
-                WINTER DINNER
-              </FuzzyText>
+              <div style={{ textAlign: 'center', lineHeight: '1.1' }}>
+                <div style={{ display: 'block' }}>
+                  <FuzzyText
+                    fontSize="4.5rem"
+                    fontWeight={300}
+                    fontFamily="'Cardo', serif"
+                    color="rgba(255, 255, 255, 0.9)"
+                    colorPalette={['#B2FFFF', '#8D8D8D', '#FFB2B2']}
+                    baseIntensity={0.0225}
+                    hoverIntensity={0.06}
+                    enableHover={true}
+                  >
+                    WINTER DINNER
+                  </FuzzyText>
+                </div>
+              </div>
             </motion.h1>
+          </BgPositioned>
+
+          {/* Menu text */}
+          <BgPositioned x={25} y={55}>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 1.5, duration: 1 }}
+              className="text-white/70 font-light tracking-wide rounded-lg text-left bg-white/10 backdrop-blur-md"
+              style={{
+                fontFamily: "'Cardo', serif",
+                maxWidth: '300px',
+                overflow: 'hidden',
+                padding: '6px 10px'
+              }}
+            >
+              <div style={{ fontSize: '1rem', lineHeight: '1.6', maxWidth: '100%' }}>
+                {[
+                  'Apple beet juice',
+                  '',
+                  'Carrot celery salad',
+                  'roasted carrot, celery seed,',
+                  'celery leaves',
+                  '',
+                  "Purple potato gnocchi",
+                  "'cacio e pepe'",
+                  '',
+                  'Trout and rice',
+                  'fresh trout roe, natto,',
+                  'daikon',
+                  '',
+                  'Rack of lamb',
+                  'mint, focaccia',
+                  'breadcrumbs',
+                  '',
+                  'Apple Malvern',
+                  'caramelized panela,',
+                  'currant',
+                  '',
+                  'Cookie plate',
+                  'gingerbread, spritz,',
+                  'crinkle, cranberry thumb'
+                ].map((line, index) => (
+                  line === '' ? (
+                    <div key={index} style={{ height: '0.5rem' }} />
+                  ) : (
+                    <div key={index} style={{ display: 'block', marginBottom: '0.2rem', maxWidth: '100%', overflow: 'hidden' }}>
+                      <FuzzyText
+                        fontSize="1rem"
+                        fontWeight={300}
+                        fontFamily="'Cardo', serif"
+                        color="rgba(255, 255, 255, 0.7)"
+                        colorPalette={['#B2FFFF', '#8D8D8D', '#FFB2B2']}
+                        baseIntensity={0.0225}
+                        hoverIntensity={0.06}
+                        enableHover={true}
+                      >
+                        {line}
+                      </FuzzyText>
+                    </div>
+                  )
+                ))}
+              </div>
+            </motion.div>
+          </BgPositioned>
+
+          {/* Date/Time text */}
+          <BgPositioned x={66} y={37}>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 2, duration: 1 }}
+              className="text-white/60 font-light tracking-wider rounded-lg bg-white/10 backdrop-blur-md"
+              style={{
+                fontFamily: "'Cardo', serif",
+                maxWidth: '230px',
+                overflow: 'hidden',
+                padding: '6px 10px'
+              }}
+            >
+              <div style={{ fontSize: '1.125rem', lineHeight: '1.6', maxWidth: '100%' }}>
+                {['December 21, 2025', '6:00 PM'].map((line, index) => (
+                  <div key={index} style={{ display: 'block', marginBottom: index === 0 ? '0.3rem' : '0', maxWidth: '100%', overflow: 'hidden' }}>
+                    <FuzzyText
+                      fontSize="1.125rem"
+                      fontWeight={300}
+                      fontFamily="'Cardo', serif"
+                      color="rgba(255, 255, 255, 0.6)"
+                      colorPalette={['#B2FFFF', '#8D8D8D', '#FFB2B2']}
+                      baseIntensity={0.0225}
+                      hoverIntensity={0.06}
+                      enableHover={true}
+                    >
+                      {line}
+                    </FuzzyText>
+                  </div>
+                ))}
+              </div>
+            </motion.div>
           </BgPositioned>
             </div>
           </div>
@@ -296,47 +410,8 @@ const WinterDinnerPage = () => {
           )}
         </div>
 
-        {/* Main Content Container */}
-        <div className="relative z-10 flex flex-col items-center gap-8 mt-[25vh]">
-          {/* Event Details with Fuzzy Text */}
-          <motion.div
-            className="text-center space-y-4"
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3, duration: 0.8 }}
-          >
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 1.5, duration: 1 }}
-              className="text-white/70 text-lg md:text-xl font-light tracking-wide px-2 py-1 rounded-lg"
-              style={{ fontFamily: "'Cardo', serif", backgroundColor: 'rgba(0, 0, 0, 0.1)' }}
-            >
-              <FuzzyText
-                fontSize="clamp(1rem, 2vw, 1.5rem)"
-                fontWeight={300}
-                fontFamily="'Cardo', serif"
-                color="rgba(255, 255, 255, 0.7)"
-                baseIntensity={0.09}
-                hoverIntensity={0.24}
-                enableHover={true}
-                className="inline-block"
-              >
-                December 21, 2025 • 6:00 PM
-              </FuzzyText>
-            </motion.div>
-            <motion.p
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 2, duration: 1 }}
-              className="text-white/60 text-sm md:text-base font-light tracking-wider max-w-md mx-auto px-2 py-1 rounded-lg"
-              style={{ fontFamily: "'Cardo', serif", backgroundColor: 'rgba(0, 0, 0, 0.1)' }}
-            >
-              An intimate multi-course dining experience
-            </motion.p>
-          </motion.div>
-
-          {/* Call to Action Button */}
+        {/* Call to Action Button */}
+        <BgPositioned x={50} y={82}>
           <motion.button
             onClick={() => setIsModalOpen(true)}
             className="px-12 py-6 bg-white/10 backdrop-blur-md border-2 border-white/20 rounded-lg text-white text-2xl tracking-wider hover:bg-white/20 transition-all duration-300 shadow-2xl focus:outline-none focus:ring-2 focus:ring-white/50 focus:ring-offset-2 focus:ring-offset-black"
@@ -350,7 +425,7 @@ const WinterDinnerPage = () => {
           >
             Attend Dinner
           </motion.button>
-        </div>
+        </BgPositioned>
 
         {/* Registration Modal */}
         <AnimatePresence>

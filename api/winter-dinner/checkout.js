@@ -32,7 +32,7 @@ module.exports = async (req, res) => {
       return res.status(500).json({ error: 'Square not configured' });
     }
 
-    const { customer, dietaryRestrictions, includesAlcohol, token, amount } = req.body || {};
+    const { customer, dietaryRestrictions, drinkMenu, token, amount } = req.body || {};
 
     if (!customer?.name || !customer?.email || !customer?.phone) {
       return res.status(400).json({ error: 'Customer information incomplete' });
@@ -53,7 +53,7 @@ module.exports = async (req, res) => {
       locationId: LOCATION_ID,
       autocomplete: true,
       buyerEmailAddress: customer.email,
-      note: `Winter Dinner Ticket - ${customer.name}${includesAlcohol ? ' (with alcohol)' : ' (no alcohol)'}`,
+      note: `Winter Dinner Ticket - ${customer.name} (${drinkMenu === 'wine' ? 'Wine Pairing' : 'Non-Alcoholic Pairing'})`,
       referenceId: `winter-dinner-${Date.now()}`,
     };
 
@@ -75,7 +75,7 @@ module.exports = async (req, res) => {
               customer_email: customer.email,
               customer_phone: customer.phone,
               dietary_restrictions: dietaryRestrictions || null,
-              includes_alcohol: includesAlcohol,
+              drink_menu: drinkMenu || 'wine',
               ticket_price: ticketPrice,
               ticket_price_usd: (ticketPrice / 100).toFixed(2),
               created_at: new Date().toISOString(),
@@ -122,9 +122,9 @@ module.exports = async (req, res) => {
     // Send customer confirmation email
     if (customer.email && SENDER_EMAIL) {
       try {
-        const alcoholText = includesAlcohol
+        const beverageText = drinkMenu === 'wine'
           ? 'with curated wine pairings'
-          : 'with non-alcoholic beverage pairings';
+          : 'with artisanal non-alcoholic beverage pairings';
 
         const dietaryText = dietaryRestrictions
           ? `\n\nDietary Restrictions/Allergies: ${dietaryRestrictions}`
@@ -143,7 +143,7 @@ Time: ${eventTime}
 Location: ${eventLocation}
 Address: ${eventAddress}
 
-Your ticket includes a multi-course seasonal dinner ${alcoholText}.${dietaryText}
+Your ticket includes a multi-course seasonal dinner ${beverageText}.${dietaryText}
 
 ═══════════════════════════════════════
 YOUR CONFIRMATION
@@ -195,7 +195,7 @@ TICKET DETAILS
 ═══════════════════════════════════════
 
 Price: $${(ticketPrice / 100).toFixed(2)}
-Alcohol Pairing: ${includesAlcohol ? 'YES' : 'NO'}
+Beverage Pairing: ${drinkMenu === 'wine' ? 'Wine Pairing' : 'Non-Alcoholic Pairing'}
 Dietary Restrictions: ${dietaryRestrictions || 'None specified'}
 
 Payment ID: ${paymentId}

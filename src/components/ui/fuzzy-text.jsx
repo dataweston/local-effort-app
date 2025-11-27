@@ -6,6 +6,7 @@ const FuzzyText = ({
   fontWeight = 900,
   fontFamily = 'inherit',
   color = '#fff',
+  colorPalette = null,
   enableHover = true,
   baseIntensity = 0.18,
   hoverIntensity = 0.5,
@@ -93,10 +94,24 @@ const FuzzyText = ({
         if (isCancelled) return;
         ctx.clearRect(-fuzzRange, -fuzzRange, offscreenWidth + 2 * fuzzRange, tightHeight + 2 * fuzzRange);
         const intensity = isHovering ? hoverIntensity : baseIntensity;
+
+        // Draw fuzzy text with displacement
         for (let j = 0; j < tightHeight; j++) {
           const dx = Math.floor(intensity * (Math.random() - 0.5) * fuzzRange);
           ctx.drawImage(offscreen, 0, j, offscreenWidth, 1, dx, j, offscreenWidth, 1);
         }
+
+        // Apply color palette if specified
+        if (colorPalette && Array.isArray(colorPalette) && colorPalette.length > 0) {
+          ctx.globalCompositeOperation = 'source-atop';
+          for (let j = 0; j < tightHeight; j++) {
+            const randomColor = colorPalette[Math.floor(Math.random() * colorPalette.length)];
+            ctx.fillStyle = randomColor;
+            ctx.fillRect(-fuzzRange, j, offscreenWidth + 2 * fuzzRange, 1);
+          }
+          ctx.globalCompositeOperation = 'source-over';
+        }
+
         animationFrameId = window.requestAnimationFrame(run);
       };
 
@@ -161,7 +176,7 @@ const FuzzyText = ({
         canvas.cleanupFuzzyText();
       }
     };
-  }, [children, fontSize, fontWeight, fontFamily, color, enableHover, baseIntensity, hoverIntensity]);
+  }, [children, fontSize, fontWeight, fontFamily, color, colorPalette, enableHover, baseIntensity, hoverIntensity]);
 
   return <canvas ref={canvasRef} className={className} {...props} />;
 };
