@@ -13,6 +13,15 @@ import {
 import CostingWorksheet from "./CostingWorksheet.jsx";
 import SquarePaymentButton from "./SquarePaymentButton.jsx";
 
+// Helper function to format dates correctly without timezone conversion
+const formatDate = (dateString) => {
+  if (!dateString) return '';
+  // Parse as local date to avoid timezone shifts
+  const [year, month, day] = dateString.split('T')[0].split('-');
+  const date = new Date(year, month - 1, day);
+  return date.toLocaleDateString();
+};
+
 const App = () => {
   // Items for sale
   const [items] = useState([
@@ -216,7 +225,9 @@ const App = () => {
     if (!selectedInvoice) return;
     setEditCart({ ...selectedInvoice.items });
     setEditNotes(selectedInvoice.notes || "");
-    setEditOrderDate(selectedInvoice.order_date);
+    // Normalize date to YYYY-MM-DD format for date input
+    const dateOnly = selectedInvoice.order_date.split('T')[0];
+    setEditOrderDate(dateOnly);
     setIsEditingInvoice(true);
   };
 
@@ -503,7 +514,7 @@ const App = () => {
             <div class="details-section">
               <h3>Invoice Details</h3>
               <p><strong>Invoice #:</strong> ${invoice.order_number || invoice.id}</p>
-              <p><strong>Date:</strong> ${new Date(invoice.order_date).toLocaleDateString()}</p>
+              <p><strong>Date:</strong> ${formatDate(invoice.order_date)}</p>
               <p><strong>Status:</strong> <span class="status-badge status-${invoice.status}">${invoice.status.toUpperCase()}</span></p>
             </div>
             ${invoice.user ? `
@@ -875,7 +886,7 @@ const App = () => {
                         <h3 className="font-semibold text-slate-800">{order.order_number || order.id}</h3>
                         <p className="text-sm text-slate-500 flex items-center gap-1">
                           <Clock size={14} />
-                          {new Date(order.order_date).toLocaleDateString()}
+                          {formatDate(order.order_date)}
                         </p>
                         {isAdmin && order.user && (
                           <p className="text-xs text-slate-500 mt-1">Client: {order.user.email}</p>
@@ -968,7 +979,7 @@ const App = () => {
                 <div className="grid md:grid-cols-2 gap-6 mb-6">
                   <div>
                     <h3 className="font-semibold text-slate-800 mb-2">Order Details</h3>
-                    <p className="text-sm text-slate-600">Date: {new Date(selectedInvoice.order_date).toLocaleDateString()}</p>
+                    <p className="text-sm text-slate-600">Date: {formatDate(selectedInvoice.order_date)}</p>
                     <p className="text-sm text-slate-600">
                       Status: <span className={`font-medium ${
                         selectedInvoice.status === "paid" ? "text-green-600" :
