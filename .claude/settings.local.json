@@ -23,7 +23,8 @@
       "Bash(mv:*)",
       "Bash(npx shadcn@latest add:*)",
       "Bash(netstat:*)",
-      "Bash(node apply-rls-fix.js:*)"
+      "Bash(node apply-rls-fix.js:*)",
+      "Bash(node apply-invoice-edit-migration.js:*)"
     ],
     "deny": [],
     "ask": []
