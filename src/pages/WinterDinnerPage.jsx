@@ -278,7 +278,7 @@ const WinterDinnerPage = () => {
           </BgPositioned>
 
           {/* Description text - Upper copy */}
-          <BgPositioned x={60} y={38} className="!fixed !top-4 !right-4 md:!absolute md:!top-[38%] md:!left-[60%] md:!right-auto">
+          <BgPositioned x={60} y={38} className="!fixed !top-4 !right-4 !left-auto !translate-x-0 !translate-y-0 md:!absolute md:!top-[38%] md:!left-[60%] md:!right-auto md:!-translate-x-1/2 md:!-translate-y-1/2">
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -337,7 +337,7 @@ const WinterDinnerPage = () => {
 
 
         {/* Call to Action Button */}
-        <BgPositioned x={50} y={82} className="!fixed !bottom-4 !right-4 md:!absolute md:!top-[82%] md:!left-1/2 md:!bottom-auto md:!right-auto">
+        <BgPositioned x={50} y={82} className="!fixed !bottom-4 !right-4 !left-auto !top-auto !translate-x-0 !translate-y-0 md:!absolute md:!top-[82%] md:!left-1/2 md:!bottom-auto md:!right-auto md:!-translate-x-1/2 md:!-translate-y-1/2">
           <motion.button
             onClick={() => setIsModalOpen(true)}
             className="px-12 py-6 bg-white/10 backdrop-blur-md border-2 border-white/20 rounded-lg text-white text-2xl tracking-wider hover:bg-white/20 transition-all duration-300 shadow-2xl focus:outline-none focus:ring-2 focus:ring-white/50 focus:ring-offset-2 focus:ring-offset-black"
