@@ -278,15 +278,14 @@ const WinterDinnerPage = () => {
           </BgPositioned>
 
           {/* Description text - Upper copy */}
-          <BgPositioned x={60} y={38} className="!fixed !top-4 !right-4 !left-auto !translate-x-0 !translate-y-0 md:!absolute md:!top-[38%] md:!left-[60%] md:!right-auto md:!-translate-x-1/2 md:!-translate-y-1/2">
+          <BgPositioned x={60} y={38} className="!fixed !top-20 !right-1 !left-auto !translate-x-0 !translate-y-0 md:!absolute md:!top-[38%] md:!left-[60%] md:!right-auto md:!-translate-x-1/2 md:!-translate-y-1/2">
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 2, duration: 1 }}
-              className="font-light tracking-wider rounded-lg bg-white/10 backdrop-blur-md"
+              className="font-light tracking-wider rounded-lg bg-white/10 backdrop-blur-md max-w-[138px] md:max-w-[230px]"
               style={{
                 fontFamily: "'Cardo', serif",
-                maxWidth: '230px',
                 overflow: 'hidden',
                 padding: '6px 10px'
               }}
@@ -337,10 +336,10 @@ const WinterDinnerPage = () => {
 
 
         {/* Call to Action Button */}
-        <BgPositioned x={50} y={82} className="!fixed !bottom-4 !right-4 !left-auto !top-auto !translate-x-0 !translate-y-0 md:!absolute md:!top-[82%] md:!left-1/2 md:!bottom-auto md:!right-auto md:!-translate-x-1/2 md:!-translate-y-1/2">
+        <BgPositioned x={50} y={82} className="!fixed !bottom-4 !right-1 !left-auto !top-auto !translate-x-0 !translate-y-0 md:!absolute md:!top-[82%] md:!left-1/2 md:!bottom-auto md:!right-auto md:!-translate-x-1/2 md:!-translate-y-1/2">
           <motion.button
             onClick={() => setIsModalOpen(true)}
-            className="px-12 py-6 bg-white/10 backdrop-blur-md border-2 border-white/20 rounded-lg text-white text-2xl tracking-wider hover:bg-white/20 transition-all duration-300 shadow-2xl focus:outline-none focus:ring-2 focus:ring-white/50 focus:ring-offset-2 focus:ring-offset-black"
+            className="px-4 py-3 md:px-12 md:py-6 bg-white/10 backdrop-blur-md border-2 border-white/20 rounded-lg text-white text-base md:text-2xl tracking-wider hover:bg-white/20 transition-all duration-300 shadow-2xl focus:outline-none focus:ring-2 focus:ring-white/50 focus:ring-offset-2 focus:ring-offset-black max-w-[30vw] md:max-w-none"
             style={{ fontFamily: "'Special Gothic Expanded One', sans-serif", textShadow: '0 2px 6px rgba(0,0,0,0.4)' }}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
