@@ -69,8 +69,8 @@ const WinterPizzaPage = lazy(() => import('./pages/WinterPizzaPage'));
 
 const AppContent = () => {
   const location = useLocation();
-  const hideHeader = location.pathname.startsWith('/partners/aacrm') || location.pathname === '/tiny-weddings' || location.pathname === '/winterdinner';
-  const hideFooter = location.pathname === '/sale' || location.pathname === '/winterdinner';
+  const hideHeader = location.pathname.startsWith('/partners/aacrm') || location.pathname === '/tiny-weddings' || location.pathname === '/winterdinner' || location.pathname === '/winterpizza';
+  const hideFooter = location.pathname === '/sale' || location.pathname === '/winterdinner' || location.pathname === '/winterpizza';
 
   useEffect(() => {
     document.fonts?.ready?.then(() => document.body.classList.add('fonts-loaded'));
