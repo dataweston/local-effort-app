@@ -28,8 +28,6 @@ const BgPositioned = ({ x, y, children, className = '', style = {}, ...props }) 
 const WinterDinnerPage = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isMenuModalOpen, setIsMenuModalOpen] = useState(false);
-  const [debugMode, setDebugMode] = useState(false);
-  const [clickedCoords, setClickedCoords] = useState([]);
   const bgImageRef = React.useRef(null);
 
   // SEO Configuration
@@ -104,16 +102,6 @@ const WinterDinnerPage = () => {
 
   const structuredData = [eventSchema, breadcrumbSchema];
 
-  // Handle click on background to get coordinates
-  const handleBgClick = (e) => {
-    if (!debugMode) return;
-    const rect = e.currentTarget.getBoundingClientRect();
-    const x = ((e.clientX - rect.left) / rect.width) * 100;
-    const y = ((e.clientY - rect.top) / rect.height) * 100;
-    const newCoord = { x: x.toFixed(1), y: y.toFixed(1), id: Date.now() };
-    setClickedCoords(prev => [...prev, newCoord]);
-  };
-
   return (
     <>
       <Helmet>
@@ -183,11 +171,6 @@ const WinterDinnerPage = () => {
           <div
             ref={bgImageRef}
             className="relative w-full h-full"
-            onClick={handleBgClick}
-            style={{
-              pointerEvents: debugMode ? 'auto' : 'none',
-              cursor: debugMode ? 'crosshair' : 'default',
-            }}
           >
             <img
               src="/images/sprite_flicker.gif"
@@ -211,64 +194,9 @@ const WinterDinnerPage = () => {
             <div
               className="absolute inset-0"
               style={{
-                border: debugMode ? '2px solid lime' : 'none',
                 pointerEvents: 'none',
               }}
             >
-          {/* Debug grid overlay */}
-          {debugMode && (
-            <>
-              {/* Center crosshair */}
-              <div className="absolute left-1/2 top-0 w-px h-full bg-lime-500/50" />
-              <div className="absolute left-0 top-1/2 w-full h-px bg-lime-500/50" />
-
-              {/* Quadrant lines */}
-              <div className="absolute left-1/4 top-0 w-px h-full bg-lime-500/30" />
-              <div className="absolute left-3/4 top-0 w-px h-full bg-lime-500/30" />
-              <div className="absolute left-0 top-1/4 w-full h-px bg-lime-500/30" />
-              <div className="absolute left-0 top-3/4 w-full h-px bg-lime-500/30" />
-
-              {/* Dimension labels */}
-              <div className="absolute top-2 left-2 text-lime-400 text-xs font-mono pointer-events-auto bg-black/80 px-2 py-1 rounded">
-                {bgImageRef.current ? `${Math.round(bgImageRef.current.getBoundingClientRect().width)}x${Math.round(bgImageRef.current.getBoundingClientRect().height)}` : 'Loading...'}
-              </div>
-
-              {/* Coordinate helper text */}
-              <div className="absolute bottom-2 left-2 text-lime-400 text-xs font-mono pointer-events-auto bg-black/80 px-2 py-1 rounded">
-                Click anywhere to get coordinates
-              </div>
-            </>
-          )}
-
-          {/* Clicked coordinate markers */}
-          {clickedCoords.map((coord) => (
-            <BgPositioned
-              key={coord.id}
-              x={parseFloat(coord.x)}
-              y={parseFloat(coord.y)}
-              className="pointer-events-auto"
-            >
-              <div className="relative">
-                {/* Crosshair */}
-                <div className="absolute w-4 h-px bg-red-500 left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2" />
-                <div className="absolute w-px h-4 bg-red-500 left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2" />
-                {/* Label */}
-                <div className="absolute top-3 left-3 text-red-400 text-xs font-mono bg-black/90 px-2 py-1 rounded whitespace-nowrap shadow-lg border border-red-500/30">
-                  {coord.x}%, {coord.y}%
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setClickedCoords(prev => prev.filter(c => c.id !== coord.id));
-                    }}
-                    className="ml-2 text-red-300 hover:text-red-100"
-                    aria-label="Remove marker"
-                  >
-                    ×
-                  </button>
-                </div>
-              </div>
-            </BgPositioned>
-          ))}
 
           {/* Place your positioned elements here using BgPositioned component */}
           <BgPositioned x={50} y={13}>
@@ -349,7 +277,27 @@ const WinterDinnerPage = () => {
             </motion.div>
           </BgPositioned>
 
-          {/* Date/Time text */}
+          {/* Description text - Upper copy */}
+          <BgPositioned x={60} y={38}>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 2, duration: 1 }}
+              className="font-light tracking-wider rounded-lg bg-white/10 backdrop-blur-md"
+              style={{
+                fontFamily: "'Cardo', serif",
+                maxWidth: '230px',
+                overflow: 'hidden',
+                padding: '6px 10px'
+              }}
+            >
+              <div style={{ fontSize: '1rem', lineHeight: '1.6', maxWidth: '100%', color: '#404040' }}>
+                join us for a warm winter dinner on a cold winter night. our fanciest dinner, in the oldest barn we could find. price includes beverage pairing.
+              </div>
+            </motion.div>
+          </BgPositioned>
+
+          {/* Date/Time text - Lower copy */}
           <BgPositioned x={60} y={63}>
             <motion.div
               initial={{ opacity: 0 }}
@@ -387,31 +335,12 @@ const WinterDinnerPage = () => {
           </div>
         </div>
 
-        {/* Debug Mode Toggle */}
-        <div className="absolute bottom-4 right-4 z-50 flex flex-col gap-2">
-          <button
-            onClick={() => setDebugMode(!debugMode)}
-            className="text-xs text-white/60 hover:text-white/90 bg-black/50 px-3 py-2 rounded transition-colors"
-            aria-label="Toggle coordinate system debug mode"
-          >
-            {debugMode ? 'Hide' : 'Show'} Grid
-          </button>
-          {debugMode && clickedCoords.length > 0 && (
-            <button
-              onClick={() => setClickedCoords([])}
-              className="text-xs text-red-400/60 hover:text-red-400/90 bg-black/50 px-3 py-2 rounded transition-colors"
-              aria-label="Clear all markers"
-            >
-              Clear Markers ({clickedCoords.length})
-            </button>
-          )}
-        </div>
 
         {/* Call to Action Button */}
-        <BgPositioned x={50} y={82}>
+        <BgPositioned x={50} y={82} className="md:left-1/2">
           <motion.button
             onClick={() => setIsModalOpen(true)}
-            className="px-12 py-6 bg-white/10 backdrop-blur-md border-2 border-white/20 rounded-lg text-white text-2xl tracking-wider hover:bg-white/20 transition-all duration-300 shadow-2xl focus:outline-none focus:ring-2 focus:ring-white/50 focus:ring-offset-2 focus:ring-offset-black"
+            className="px-12 py-6 bg-white/10 backdrop-blur-md border-2 border-white/20 rounded-lg text-white text-2xl tracking-wider hover:bg-white/20 transition-all duration-300 shadow-2xl focus:outline-none focus:ring-2 focus:ring-white/50 focus:ring-offset-2 focus:ring-offset-black fixed bottom-4 right-4 md:relative md:bottom-auto md:right-auto"
             style={{ fontFamily: "'Special Gothic Expanded One', sans-serif", textShadow: '0 2px 6px rgba(0,0,0,0.4)' }}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
