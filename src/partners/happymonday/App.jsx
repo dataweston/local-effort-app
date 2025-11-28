@@ -8,6 +8,7 @@ import {
   getUserCredit,
   loadOrders,
   createOrder,
+  updateOrder,
 } from "./supabaseClient";
 import CostingWorksheet from "./CostingWorksheet.jsx";
 import SquarePaymentButton from "./SquarePaymentButton.jsx";
@@ -113,6 +114,10 @@ const App = () => {
   const [refundRequest, setRefundRequest] = useState({ orderId: null, reason: "" });
   const [loading, setLoading] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [isEditingInvoice, setIsEditingInvoice] = useState(false);
+  const [editCart, setEditCart] = useState({});
+  const [editNotes, setEditNotes] = useState("");
+  const [editOrderDate, setEditOrderDate] = useState("");
 
   // Load user data and orders
   useEffect(() => {
@@ -182,11 +187,78 @@ const App = () => {
     setCart((prev) => {
       const newCart = { ...prev };
       const currentQty = newCart[itemId] || 0;
-      const newQty = Math.max(0, currentQty + change);
+      const newQty = currentQty + change;
+      // Allow negative quantities for credits (both admin and customer)
       if (newQty === 0) delete newCart[itemId];
       else newCart[itemId] = newQty;
       return newCart;
     });
+  };
+
+  const updateEditCart = (itemId, change) => {
+    setEditCart((prev) => {
+      const newCart = { ...prev };
+      const currentQty = newCart[itemId] || 0;
+      const newQty = currentQty + change;
+      // Allow negative quantities for credits
+      if (newQty === 0) delete newCart[itemId];
+      else newCart[itemId] = newQty;
+      return newCart;
+    });
+  };
+
+  const calculateEditTotal = () => Object.entries(editCart).reduce((total, [itemId, quantity]) => {
+    const item = items.find((i) => i.id === parseInt(itemId));
+    return total + (item ? item.price * quantity : 0);
+  }, 0);
+
+  const startEditingInvoice = () => {
+    if (!selectedInvoice) return;
+    setEditCart({ ...selectedInvoice.items });
+    setEditNotes(selectedInvoice.notes || "");
+    setEditOrderDate(selectedInvoice.order_date);
+    setIsEditingInvoice(true);
+  };
+
+  const cancelEditingInvoice = () => {
+    setIsEditingInvoice(false);
+    setEditCart({});
+    setEditNotes("");
+    setEditOrderDate("");
+  };
+
+  const saveInvoiceEdits = async () => {
+    if (!selectedInvoice || !hmUser || loading) return;
+    setLoading(true);
+    try {
+      const totalCents = Math.round(calculateEditTotal() * 100);
+
+      await updateOrder(selectedInvoice.id, {
+        items: editCart,
+        totalCents,
+        notes: editNotes,
+        orderDate: editOrderDate,
+        editedBy: hmUser.id,
+      });
+
+      // Reload data
+      await loadOrdersData();
+      await loadUserData();
+
+      // Update selected invoice
+      const updatedOrders = await loadOrders();
+      const updatedInvoice = updatedOrders.find(o => o.id === selectedInvoice.id);
+      if (updatedInvoice) {
+        setSelectedInvoice(updatedInvoice);
+      }
+
+      setIsEditingInvoice(false);
+      alert("Invoice updated successfully!");
+    } catch (error) {
+      console.error("Error updating invoice:", error);
+      alert(`Error updating invoice: ${error.message}`);
+    }
+    setLoading(false);
   };
 
   const submitOrder = async () => {
@@ -658,26 +730,35 @@ const App = () => {
           <div className="grid lg:grid-cols-3 gap-8">
             <div className="lg:col-span-2">
               <div className="bg-white rounded-2xl shadow-xl p-6">
-                <h2 className="text-2xl font-bold text-slate-800 mb-6">Available Items</h2>
+                <h2 className="text-2xl font-bold text-slate-800 mb-4">Available Items</h2>
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+                  <p className="text-sm text-blue-800">
+                    <strong>Tip:</strong> Use negative quantities to receive credit. For example, -3 sandwiches gives you $15.30 credit
+                    instead of charging you. This is useful for returns, credits, or promotional adjustments.
+                  </p>
+                </div>
                 <div className="grid gap-4">
-                  {items.map((item) => (
-                    <div key={item.id} className="flex items-center justify-between p-4 border border-slate-200 rounded-xl hover:border-blue-300 transition-colors">
-                      <div className="flex-1">
-                        <h3 className="font-semibold text-slate-800">{item.name}</h3>
-                        <p className="text-sm text-slate-500">{item.category}</p>
-                        <p className="text-lg font-bold text-blue-600">${item.price.toFixed(2)}</p>
+                  {items.map((item) => {
+                    const qty = cart[item.id] || 0;
+                    return (
+                      <div key={item.id} className="flex items-center justify-between p-4 border border-slate-200 rounded-xl hover:border-blue-300 transition-colors">
+                        <div className="flex-1">
+                          <h3 className="font-semibold text-slate-800">{item.name}</h3>
+                          <p className="text-sm text-slate-500">{item.category}</p>
+                          <p className="text-lg font-bold text-blue-600">${item.price.toFixed(2)}</p>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <button onClick={() => updateCart(item.id, -1)} className="w-8 h-8 rounded-full bg-slate-200 hover:bg-slate-300 flex items-center justify-center transition-colors">
+                            <Minus size={16} />
+                          </button>
+                          <span className={`w-12 text-center font-medium ${qty < 0 ? 'text-red-600' : ''}`}>{qty}</span>
+                          <button onClick={() => updateCart(item.id, 1)} className="w-8 h-8 rounded-full bg-blue-500 hover:bg-blue-600 text-white flex items-center justify-center transition-colors">
+                            <Plus size={16} />
+                          </button>
+                        </div>
                       </div>
-                      <div className="flex items-center gap-3">
-                        <button onClick={() => updateCart(item.id, -1)} className="w-8 h-8 rounded-full bg-slate-200 hover:bg-slate-300 flex items-center justify-center transition-colors" disabled={!cart[item.id]}>
-                          <Minus size={16} />
-                        </button>
-                        <span className="w-8 text-center font-medium">{cart[item.id] || 0}</span>
-                        <button onClick={() => updateCart(item.id, 1)} className="w-8 h-8 rounded-full bg-blue-500 hover:bg-blue-600 text-white flex items-center justify-center transition-colors">
-                          <Plus size={16} />
-                        </button>
-                      </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             </div>
@@ -698,10 +779,15 @@ const App = () => {
                   <div className="space-y-2 mb-4">
                     {Object.entries(cart).map(([itemId, quantity]) => {
                       const item = getItemById(parseInt(itemId));
+                      const lineTotal = item.price * quantity;
                       return (
                         <div key={itemId} className="flex justify-between text-sm">
-                          <span>{item.name} × {quantity}</span>
-                          <span>${(item.price * quantity).toFixed(2)}</span>
+                          <span className={quantity < 0 ? 'text-red-600' : ''}>
+                            {item.name} × {quantity}
+                          </span>
+                          <span className={lineTotal < 0 ? 'text-red-600' : ''}>
+                            ${lineTotal.toFixed(2)}
+                          </span>
                         </div>
                       );
                     })}
@@ -710,9 +796,16 @@ const App = () => {
                   <p className="text-slate-500 text-center py-4">No items selected</p>
                 )}
                 <div className="border-t pt-4 mb-6">
-                  <div className="flex justify-between text-xl font-bold">
-                    <span>Total:</span>
-                    <span className="text-blue-600">${total.toFixed(2)}</span>
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <span className="text-xl font-bold">Total:</span>
+                      {total < 0 && (
+                        <p className="text-xs text-red-600 mt-1">Credit amount</p>
+                      )}
+                    </div>
+                    <span className={`text-xl font-bold ${total < 0 ? 'text-red-600' : 'text-blue-600'}`}>
+                      ${total.toFixed(2)}
+                    </span>
                   </div>
                 </div>
                 <div className="mb-6">
@@ -815,82 +908,219 @@ const App = () => {
           <div className="bg-white rounded-2xl shadow-xl p-6">
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-4">
-                <button onClick={() => setSelectedInvoice(null)} className="p-2 hover:bg-slate-100 rounded-lg transition-colors">
+                <button onClick={() => { setSelectedInvoice(null); setIsEditingInvoice(false); }} className="p-2 hover:bg-slate-100 rounded-lg transition-colors">
                   <ArrowLeft size={20} />
                 </button>
-                <h2 className="text-2xl font-bold text-slate-800">Invoice {selectedInvoice.order_number || selectedInvoice.id}</h2>
+                <h2 className="text-2xl font-bold text-slate-800">
+                  {isEditingInvoice ? "Edit Invoice" : "Invoice"} {selectedInvoice.order_number || selectedInvoice.id}
+                </h2>
               </div>
               <div className="flex gap-2">
-                <button
-                  onClick={() => handlePrintInvoice(selectedInvoice)}
-                  className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg font-medium transition-colors flex items-center gap-2"
-                >
-                  <FileText size={18} />
-                  Print
-                </button>
-                {isAdmin && selectedInvoice.status !== 'paid' && (
-                  <button
-                    onClick={() => handleMarkAsPaid(selectedInvoice.id)}
-                    className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg font-medium transition-colors"
-                  >
-                    Mark as Paid
-                  </button>
+                {!isEditingInvoice && (
+                  <>
+                    <button
+                      onClick={() => handlePrintInvoice(selectedInvoice)}
+                      className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg font-medium transition-colors flex items-center gap-2"
+                    >
+                      <FileText size={18} />
+                      Print
+                    </button>
+                    {isAdmin && selectedInvoice.status === 'unpaid' && !selectedInvoice.is_closed && (
+                      <button
+                        onClick={startEditingInvoice}
+                        className="px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded-lg font-medium transition-colors"
+                      >
+                        Edit Invoice
+                      </button>
+                    )}
+                    {isAdmin && selectedInvoice.status !== 'paid' && (
+                      <button
+                        onClick={() => handleMarkAsPaid(selectedInvoice.id)}
+                        className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg font-medium transition-colors"
+                      >
+                        Mark as Paid
+                      </button>
+                    )}
+                  </>
+                )}
+                {isEditingInvoice && (
+                  <>
+                    <button
+                      onClick={cancelEditingInvoice}
+                      className="px-4 py-2 bg-slate-300 hover:bg-slate-400 text-slate-700 rounded-lg font-medium transition-colors"
+                      disabled={loading}
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={saveInvoiceEdits}
+                      className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg font-medium transition-colors"
+                      disabled={loading || Object.keys(editCart).length === 0}
+                    >
+                      {loading ? "Saving..." : "Save Changes"}
+                    </button>
+                  </>
                 )}
               </div>
             </div>
-            <div className="grid md:grid-cols-2 gap-6 mb-6">
-              <div>
-                <h3 className="font-semibold text-slate-800 mb-2">Order Details</h3>
-                <p className="text-sm text-slate-600">Date: {new Date(selectedInvoice.order_date).toLocaleDateString()}</p>
-                <p className="text-sm text-slate-600">
-                  Status: <span className={`font-medium ${
-                    selectedInvoice.status === "paid" ? "text-green-600" :
-                    selectedInvoice.status === "partial" ? "text-yellow-600" :
-                    selectedInvoice.status === "refunded" ? "text-red-600" :
-                    "text-orange-600"
-                  }`}>
-                    {selectedInvoice.status.toUpperCase()}
-                  </span>
-                </p>
-                {isAdmin && selectedInvoice.user && (
-                  <p className="text-sm text-slate-600">Client: {selectedInvoice.user.email}</p>
-                )}
-                {selectedInvoice.notes && (
-                  <div className="mt-2">
-                    <p className="text-sm text-slate-600">Notes:</p>
-                    <p className="text-sm text-slate-800">{selectedInvoice.notes}</p>
-                  </div>
-                )}
-              </div>
-              <div className="text-right">
-                <h3 className="font-semibold text-slate-800 mb-2">Total Amount</h3>
-                <p className="text-3xl font-bold text-blue-600">${(selectedInvoice.total_cents / 100).toFixed(2)}</p>
-              </div>
-            </div>
-            <div className="mb-6">
-              <h3 className="font-semibold text-slate-800 mb-4">Items Ordered</h3>
-              <div className="space-y-2">
-                {Object.entries(selectedInvoice.items).map(([itemId, quantity]) => {
-                  const item = getItemById(parseInt(itemId));
-                  return (
-                    <div key={itemId} className="flex justify-between p-3 bg-slate-50 rounded-lg">
-                      <div>
-                        <p className="font-medium">{item ? item.name : `Item ${itemId}`}</p>
-                        <p className="text-sm text-slate-600">Quantity: {quantity}</p>
+            {!isEditingInvoice ? (
+              <>
+                <div className="grid md:grid-cols-2 gap-6 mb-6">
+                  <div>
+                    <h3 className="font-semibold text-slate-800 mb-2">Order Details</h3>
+                    <p className="text-sm text-slate-600">Date: {new Date(selectedInvoice.order_date).toLocaleDateString()}</p>
+                    <p className="text-sm text-slate-600">
+                      Status: <span className={`font-medium ${
+                        selectedInvoice.status === "paid" ? "text-green-600" :
+                        selectedInvoice.status === "partial" ? "text-yellow-600" :
+                        selectedInvoice.status === "refunded" ? "text-red-600" :
+                        "text-orange-600"
+                      }`}>
+                        {selectedInvoice.status.toUpperCase()}
+                      </span>
+                    </p>
+                    {isAdmin && selectedInvoice.user && (
+                      <p className="text-sm text-slate-600">Client: {selectedInvoice.user.email}</p>
+                    )}
+                    {selectedInvoice.notes && (
+                      <div className="mt-2">
+                        <p className="text-sm text-slate-600">Notes:</p>
+                        <p className="text-sm text-slate-800">{selectedInvoice.notes}</p>
                       </div>
-                      <p className="font-medium">${item ? (item.price * quantity).toFixed(2) : "0.00"}</p>
+                    )}
+                  </div>
+                  <div className="text-right">
+                    <h3 className="font-semibold text-slate-800 mb-2">Total Amount</h3>
+                    <p className="text-3xl font-bold text-blue-600">${(selectedInvoice.total_cents / 100).toFixed(2)}</p>
+                  </div>
+                </div>
+                <div className="mb-6">
+                  <h3 className="font-semibold text-slate-800 mb-4">Items Ordered</h3>
+                  <div className="space-y-2">
+                    {Object.entries(selectedInvoice.items).map(([itemId, quantity]) => {
+                      const item = getItemById(parseInt(itemId));
+                      return (
+                        <div key={itemId} className="flex justify-between p-3 bg-slate-50 rounded-lg">
+                          <div>
+                            <p className="font-medium">{item ? item.name : `Item ${itemId}`}</p>
+                            <p className="text-sm text-slate-600">Quantity: {quantity}</p>
+                          </div>
+                          <p className="font-medium">${item ? (item.price * quantity).toFixed(2) : "0.00"}</p>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="mb-6">
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+                    <p className="text-sm text-blue-800">
+                      <strong>Edit Mode:</strong> You can add/remove items and adjust quantities. Use negative quantities to give credit
+                      (e.g., -3 sandwiches gives customer $15.30 credit instead of charging them).
+                    </p>
+                  </div>
+
+                  <div className="mb-4">
+                    <label htmlFor="edit-order-date" className="block text-sm font-medium text-slate-700 mb-2">Order Date</label>
+                    <input
+                      id="edit-order-date"
+                      type="date"
+                      value={editOrderDate}
+                      onChange={(e) => setEditOrderDate(e.target.value)}
+                      className="px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                  </div>
+
+                  <h3 className="font-semibold text-slate-800 mb-4">Edit Items</h3>
+                  <div className="grid gap-4 mb-6">
+                    {items.map((item) => {
+                      const qty = editCart[item.id] || 0;
+                      if (qty === 0) return null;
+                      return (
+                        <div key={item.id} className="flex items-center justify-between p-4 border border-slate-200 rounded-xl">
+                          <div className="flex-1">
+                            <h3 className="font-semibold text-slate-800">{item.name}</h3>
+                            <p className="text-sm text-slate-500">{item.category}</p>
+                            <p className="text-lg font-bold text-blue-600">${item.price.toFixed(2)}</p>
+                          </div>
+                          <div className="flex items-center gap-3">
+                            <button onClick={() => updateEditCart(item.id, -1)} className="w-8 h-8 rounded-full bg-slate-200 hover:bg-slate-300 flex items-center justify-center transition-colors">
+                              <Minus size={16} />
+                            </button>
+                            <span className={`w-12 text-center font-medium ${qty < 0 ? 'text-red-600' : ''}`}>{qty}</span>
+                            <button onClick={() => updateEditCart(item.id, 1)} className="w-8 h-8 rounded-full bg-blue-500 hover:bg-blue-600 text-white flex items-center justify-center transition-colors">
+                              <Plus size={16} />
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  <h3 className="font-semibold text-slate-800 mb-4">Add More Items</h3>
+                  <div className="grid gap-4 mb-6 max-h-96 overflow-y-auto">
+                    {items.map((item) => {
+                      const qty = editCart[item.id] || 0;
+                      if (qty !== 0) return null;
+                      return (
+                        <div key={item.id} className="flex items-center justify-between p-4 border border-slate-200 rounded-xl hover:border-blue-300 transition-colors">
+                          <div className="flex-1">
+                            <h3 className="font-semibold text-slate-800">{item.name}</h3>
+                            <p className="text-sm text-slate-500">{item.category}</p>
+                            <p className="text-lg font-bold text-blue-600">${item.price.toFixed(2)}</p>
+                          </div>
+                          <div className="flex items-center gap-3">
+                            <button onClick={() => updateEditCart(item.id, -1)} className="w-8 h-8 rounded-full bg-red-100 hover:bg-red-200 text-red-600 flex items-center justify-center transition-colors" title="Add as credit (negative)">
+                              <Minus size={16} />
+                            </button>
+                            <button onClick={() => updateEditCart(item.id, 1)} className="w-8 h-8 rounded-full bg-blue-500 hover:bg-blue-600 text-white flex items-center justify-center transition-colors">
+                              <Plus size={16} />
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  <div className="mb-6">
+                    <label htmlFor="edit-notes" className="block text-sm font-medium text-slate-700 mb-2">Notes</label>
+                    <textarea
+                      id="edit-notes"
+                      value={editNotes}
+                      onChange={(e) => setEditNotes(e.target.value)}
+                      className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                      rows="3"
+                      placeholder="Any special requests or notes..."
+                    />
+                  </div>
+
+                  <div className="border-t pt-6">
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <h3 className="font-semibold text-slate-800">New Total</h3>
+                        {calculateEditTotal() < 0 && (
+                          <p className="text-sm text-red-600">Credit amount (will reduce customer balance)</p>
+                        )}
+                      </div>
+                      <p className={`text-3xl font-bold ${calculateEditTotal() < 0 ? 'text-red-600' : 'text-blue-600'}`}>
+                        ${calculateEditTotal().toFixed(2)}
+                      </p>
                     </div>
-                  );
-                })}
+                  </div>
+                </div>
+              </>
+            )}
+            {!isEditingInvoice && (
+              <div className="border-t pt-6">
+                <h3 className="font-semibold text-slate-800 mb-4">Request Refund or Credit</h3>
+                <textarea value={refundRequest.orderId === selectedInvoice.id ? refundRequest.reason : ""} onChange={(e) => setRefundRequest({ orderId: selectedInvoice.id, reason: e.target.value })} className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none mb-4" rows="3" placeholder="Please explain the reason for your refund or credit request..." />
+                <button onClick={submitRefundRequest} disabled={!refundRequest.reason.trim() || refundRequest.orderId !== selectedInvoice.id || loading} className={`px-6 py-2 rounded-lg font-medium transition-all ${refundRequest.reason.trim() && refundRequest.orderId === selectedInvoice.id && !loading ? "bg-orange-500 hover:bg-orange-600 text-white" : "bg-slate-200 text-slate-400 cursor-not-allowed"}`}>
+                  {loading ? "Submitting..." : "Submit Refund Request"}
+                </button>
               </div>
-            </div>
-            <div className="border-t pt-6">
-              <h3 className="font-semibold text-slate-800 mb-4">Request Refund or Credit</h3>
-              <textarea value={refundRequest.orderId === selectedInvoice.id ? refundRequest.reason : ""} onChange={(e) => setRefundRequest({ orderId: selectedInvoice.id, reason: e.target.value })} className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none mb-4" rows="3" placeholder="Please explain the reason for your refund or credit request..." />
-              <button onClick={submitRefundRequest} disabled={!refundRequest.reason.trim() || refundRequest.orderId !== selectedInvoice.id || loading} className={`px-6 py-2 rounded-lg font-medium transition-all ${refundRequest.reason.trim() && refundRequest.orderId === selectedInvoice.id && !loading ? "bg-orange-500 hover:bg-orange-600 text-white" : "bg-slate-200 text-slate-400 cursor-not-allowed"}`}>
-                {loading ? "Submitting..." : "Submit Refund Request"}
-              </button>
-            </div>
+            )}
           </div>
         )}
         {currentView === "costing" && <CostingWorksheet items={items} />}

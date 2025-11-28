@@ -204,6 +204,30 @@ export const updateOrderStatus = async (orderId, status) => {
 };
 
 /**
+ * Update unpaid order items, total, notes, and date (admin only)
+ * Supports negative quantities for credit entries
+ */
+export const updateOrder = async (orderId, { items, totalCents, notes, orderDate, editedBy }) => {
+  if (!supabase) throw new Error('Supabase not configured');
+
+  const { data, error } = await supabase.rpc('update_happymonday_order', {
+    p_order_id: orderId,
+    p_items: items,
+    p_total_cents: totalCents,
+    p_notes: notes || '',
+    p_order_date: orderDate,
+    p_edited_by: editedBy,
+  });
+
+  if (error) {
+    console.error('[HappyMonday] Error updating order:', error);
+    throw error;
+  }
+
+  return data;
+};
+
+/**
  * Adjust user credit balance (admin only)
  */
 export const adjustCreditBalance = async (userId, adjustmentCents, notes, processedBy) => {
@@ -329,6 +353,7 @@ export default {
   getUserCredit,
   loadOrders,
   createOrder,
+  updateOrder,
   updateOrderStatus,
   adjustCreditBalance,
   recordSquarePayment,
