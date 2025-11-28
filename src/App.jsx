@@ -65,6 +65,7 @@ const PaikkaSuccessPage = lazy(() => import('./pages/PaikkaSuccessPage'));
 const CalendarPage = lazy(() => import('./pages/CalendarPage'));
 const SchedulePage = lazy(() => import('./pages/SchedulePage'));
 const WinterDinnerPage = lazy(() => import('./pages/WinterDinnerPage'));
+const WinterPizzaPage = lazy(() => import('./pages/WinterPizzaPage'));
 
 const AppContent = () => {
   const location = useLocation();
@@ -316,6 +317,14 @@ const AppContent = () => {
                   element={
                     <AnimatedPage>
                       <WinterDinnerPage />
+                    </AnimatedPage>
+                  }
+                />
+                <Route
+                  path="/winterpizza"
+                  element={
+                    <AnimatedPage>
+                      <WinterPizzaPage />
                     </AnimatedPage>
                   }
                 />
