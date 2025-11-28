@@ -4,7 +4,7 @@ import { Helmet } from 'react-helmet-async';
 import { Link } from 'react-router-dom';
 import { Home } from 'lucide-react';
 import DinnerRegistrationModal from '../components/WinterDinner/DinnerRegistrationModal';
-import { FuzzyText } from '../components/ui/fuzzy-text';
+import Noise from '../components/ui/Noise';
 import { SITE_NAME, SITE_URL } from '../config/siteMetadata';
 
 // Helper component for positioning elements in background coordinate system
@@ -27,6 +27,7 @@ const BgPositioned = ({ x, y, children, className = '', style = {}, ...props }) 
 
 const WinterDinnerPage = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isMenuModalOpen, setIsMenuModalOpen] = useState(false);
   const [debugMode, setDebugMode] = useState(false);
   const [clickedCoords, setClickedCoords] = useState([]);
   const bgImageRef = React.useRef(null);
@@ -152,6 +153,15 @@ const WinterDinnerPage = () => {
       </Helmet>
 
       <div className="fixed inset-0 w-full h-full overflow-hidden bg-black flex items-center justify-center">
+        {/* Noise Overlay */}
+        <Noise
+          patternSize={250}
+          patternScaleX={1}
+          patternScaleY={1}
+          patternRefreshInterval={2}
+          patternAlpha={15}
+        />
+
         {/* Breadcrumb Navigation */}
         <nav
           className="absolute top-4 left-4 z-20"
@@ -270,19 +280,13 @@ const WinterDinnerPage = () => {
               transition={{ delay: 0.3, duration: 0.8 }}
             >
               <div style={{ textAlign: 'center', lineHeight: '1.1' }}>
-                <div style={{ display: 'block' }}>
-                  <FuzzyText
-                    fontSize="4.5rem"
-                    fontWeight={300}
-                    fontFamily="'Cardo', serif"
-                    color="rgba(255, 255, 255, 0.9)"
-                    colorPalette={['#B2FFFF', '#8D8D8D', '#FFB2B2']}
-                    baseIntensity={0.0225}
-                    hoverIntensity={0.06}
-                    enableHover={true}
-                  >
-                    WINTER DINNER
-                  </FuzzyText>
+                <div style={{
+                  display: 'block',
+                  fontSize: 'clamp(1.4rem, 5.6vw, 2.45rem)',
+                  fontWeight: 300,
+                  whiteSpace: 'nowrap'
+                }}>
+                  WINTER DINNER
                 </div>
               </div>
             </motion.h1>
@@ -294,57 +298,50 @@ const WinterDinnerPage = () => {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 1.5, duration: 1 }}
-              className="text-white/70 font-light tracking-wide rounded-lg text-left bg-white/10 backdrop-blur-md"
+              onClick={() => setIsMenuModalOpen(true)}
+              className="text-white/70 font-light tracking-wide rounded-lg text-left bg-white/10 backdrop-blur-md cursor-pointer hover:bg-white/20 transition-colors"
               style={{
                 fontFamily: "'Cardo', serif",
                 maxWidth: '300px',
-                overflow: 'hidden',
                 padding: '6px 10px'
               }}
             >
-              <div style={{ fontSize: '1rem', lineHeight: '1.6', maxWidth: '100%' }}>
+              <div style={{ fontSize: '1rem', lineHeight: '1.6', width: '100%' }}>
                 {[
-                  'Apple beet juice',
-                  '',
-                  'Carrot celery salad',
-                  'roasted carrot, celery seed,',
-                  'celery leaves',
-                  '',
-                  "Purple potato gnocchi",
-                  "'cacio e pepe'",
-                  '',
-                  'Trout and rice',
-                  'fresh trout roe, natto,',
-                  'daikon',
-                  '',
-                  'Rack of lamb',
-                  'mint, focaccia',
-                  'breadcrumbs',
-                  '',
-                  'Apple Malvern',
-                  'caramelized panela,',
-                  'currant',
-                  '',
-                  'Cookie plate',
-                  'gingerbread, spritz,',
-                  'crinkle, cranberry thumb'
-                ].map((line, index) => (
-                  line === '' ? (
+                  { text: 'Apple beet juice', isTitle: true },
+                  { text: '', isTitle: false },
+                  { text: 'Carrot celery salad', isTitle: true },
+                  { text: 'roasted carrot, celery seed,', isTitle: false },
+                  { text: 'celery leaves', isTitle: false },
+                  { text: '', isTitle: false },
+                  { text: "Purple potato gnocchi", isTitle: true },
+                  { text: "'cacio e pepe'", isTitle: false },
+                  { text: '', isTitle: false },
+                  { text: 'Trout and rice', isTitle: true },
+                  { text: 'fresh trout roe, natto,', isTitle: false },
+                  { text: 'daikon', isTitle: false },
+                  { text: '', isTitle: false },
+                  { text: 'Rack of lamb', isTitle: true },
+                  { text: 'mint, focaccia', isTitle: false },
+                  { text: 'breadcrumbs', isTitle: false },
+                  { text: '', isTitle: false },
+                  { text: 'Apple Malvern', isTitle: true },
+                  { text: 'caramelized panela,', isTitle: false },
+                  { text: 'currant', isTitle: false },
+                  { text: '', isTitle: false },
+                  { text: 'Cookie plate', isTitle: true },
+                  { text: 'gingerbread, spritz,', isTitle: false },
+                  { text: 'crinkle, cranberry thumb', isTitle: false }
+                ].map((item, index) => (
+                  item.text === '' ? (
                     <div key={index} style={{ height: '0.5rem' }} />
+                  ) : item.isTitle ? (
+                    <h3 key={index} style={{ display: 'block', marginBottom: '0.2rem', width: '100%', fontSize: '1.125rem', fontWeight: 400, fontFamily: "'Cardo', serif", color: '#FFB2B2', wordWrap: 'break-word' }}>
+                      {item.text}
+                    </h3>
                   ) : (
-                    <div key={index} style={{ display: 'block', marginBottom: '0.2rem', maxWidth: '100%', overflow: 'hidden' }}>
-                      <FuzzyText
-                        fontSize="1rem"
-                        fontWeight={300}
-                        fontFamily="'Cardo', serif"
-                        color="rgba(255, 255, 255, 0.7)"
-                        colorPalette={['#B2FFFF', '#8D8D8D', '#FFB2B2']}
-                        baseIntensity={0.0225}
-                        hoverIntensity={0.06}
-                        enableHover={true}
-                      >
-                        {line}
-                      </FuzzyText>
+                    <div key={index} style={{ display: 'block', marginBottom: '0.2rem', width: '100%', wordWrap: 'break-word' }}>
+                      {item.text}
                     </div>
                   )
                 ))}
@@ -353,7 +350,7 @@ const WinterDinnerPage = () => {
           </BgPositioned>
 
           {/* Date/Time text */}
-          <BgPositioned x={66} y={37}>
+          <BgPositioned x={60} y={63}>
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -367,22 +364,22 @@ const WinterDinnerPage = () => {
               }}
             >
               <div style={{ fontSize: '1.125rem', lineHeight: '1.6', maxWidth: '100%' }}>
-                {['December 21, 2025', '6:00 PM'].map((line, index) => (
-                  <div key={index} style={{ display: 'block', marginBottom: index === 0 ? '0.3rem' : '0', maxWidth: '100%', overflow: 'hidden' }}>
-                    <FuzzyText
-                      fontSize="1.125rem"
-                      fontWeight={300}
-                      fontFamily="'Cardo', serif"
-                      color="rgba(255, 255, 255, 0.6)"
-                      colorPalette={['#B2FFFF', '#8D8D8D', '#FFB2B2']}
-                      baseIntensity={0.0225}
-                      hoverIntensity={0.06}
-                      enableHover={true}
-                    >
-                      {line}
-                    </FuzzyText>
-                  </div>
-                ))}
+                <h3 style={{ display: 'block', marginBottom: '0.3rem', maxWidth: '100%', overflow: 'hidden', fontSize: '1.125rem', fontWeight: 400, fontFamily: "'Cardo', serif", color: '#FFB2B2' }}>
+                  December 12, 2025
+                </h3>
+                <h3 style={{ display: 'block', marginBottom: '0.3rem', maxWidth: '100%', overflow: 'hidden', fontSize: '1.125rem', fontWeight: 400, fontFamily: "'Cardo', serif", color: '#FFB2B2' }}>
+                  5:30 PM
+                </h3>
+                <h3 style={{ display: 'block', maxWidth: '100%', overflow: 'hidden', fontSize: '1.125rem', fontWeight: 400, fontFamily: "'Cardo', serif", color: '#FFB2B2' }}>
+                  <a
+                    href="https://rchs.com/gibbs-farm/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{ color: 'inherit', textDecoration: 'underline' }}
+                  >
+                    Gibbs Farm
+                  </a>
+                </h3>
               </div>
             </motion.div>
           </BgPositioned>
@@ -434,6 +431,74 @@ const WinterDinnerPage = () => {
               isOpen={isModalOpen}
               onClose={() => setIsModalOpen(false)}
             />
+          )}
+        </AnimatePresence>
+
+        {/* Menu Modal */}
+        <AnimatePresence>
+          {isMenuModalOpen && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsMenuModalOpen(false)}
+              className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+            >
+              <motion.div
+                initial={{ scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.9, opacity: 0 }}
+                onClick={(e) => e.stopPropagation()}
+                className="bg-black/90 border-2 border-white/20 rounded-lg p-8 max-w-2xl w-full max-h-[80vh] overflow-y-auto"
+                style={{ fontFamily: "'Cardo', serif" }}
+              >
+                <button
+                  onClick={() => setIsMenuModalOpen(false)}
+                  className="absolute top-4 right-4 text-white/60 hover:text-white/90 text-3xl"
+                  aria-label="Close menu"
+                >
+                  ×
+                </button>
+                <h2 className="text-3xl font-light tracking-wider mb-6 text-center" style={{ color: '#FFB2B2' }}>
+                  Menu
+                </h2>
+                <div className="text-white/70 space-y-4">
+                  {[
+                    { text: 'Apple beet juice', isTitle: true },
+                    { text: '', isTitle: false },
+                    { text: 'Carrot celery salad', isTitle: true },
+                    { text: 'roasted carrot, celery seed, celery leaves', isTitle: false },
+                    { text: '', isTitle: false },
+                    { text: "Purple potato gnocchi", isTitle: true },
+                    { text: "'cacio e pepe'", isTitle: false },
+                    { text: '', isTitle: false },
+                    { text: 'Trout and rice', isTitle: true },
+                    { text: 'fresh trout roe, natto, daikon', isTitle: false },
+                    { text: '', isTitle: false },
+                    { text: 'Rack of lamb', isTitle: true },
+                    { text: 'mint, focaccia breadcrumbs', isTitle: false },
+                    { text: '', isTitle: false },
+                    { text: 'Apple Malvern', isTitle: true },
+                    { text: 'caramelized panela, currant', isTitle: false },
+                    { text: '', isTitle: false },
+                    { text: 'Cookie plate', isTitle: true },
+                    { text: 'gingerbread, spritz, crinkle, cranberry thumb', isTitle: false }
+                  ].map((item, index) => (
+                    item.text === '' ? (
+                      <div key={index} style={{ height: '0.5rem' }} />
+                    ) : item.isTitle ? (
+                      <h3 key={index} className="text-xl font-normal" style={{ color: '#FFB2B2' }}>
+                        {item.text}
+                      </h3>
+                    ) : (
+                      <p key={index} className="text-base ml-4">
+                        {item.text}
+                      </p>
+                    )
+                  ))}
+                </div>
+              </motion.div>
+            </motion.div>
           )}
         </AnimatePresence>
       </div>
