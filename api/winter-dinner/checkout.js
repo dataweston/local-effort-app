@@ -32,7 +32,7 @@ module.exports = async (req, res) => {
       return res.status(500).json({ error: 'Square not configured' });
     }
 
-    const { customer, dietaryRestrictions, drinkMenu, token, amount } = req.body || {};
+    const { customer, dietaryRestrictions, drinkMenu, token, amount, quantity } = req.body || {};
 
     if (!customer?.name || !customer?.email || !customer?.phone) {
       return res.status(400).json({ error: 'Customer information incomplete' });
@@ -43,7 +43,8 @@ module.exports = async (req, res) => {
     }
 
     const idempotencyKey = `winter-dinner-${Date.now()}-${Math.random().toString(36).slice(2)}`;
-    const ticketPrice = amount || 7500; // Default $75.00
+    const ticketCount = Number.isInteger(quantity) && quantity > 0 ? quantity : 1;
+    const ticketPrice = amount || 7500; // Default $75.00 total for the order
 
     // Process Square payment
     const paymentBody = {
@@ -53,7 +54,7 @@ module.exports = async (req, res) => {
       locationId: LOCATION_ID,
       autocomplete: true,
       buyerEmailAddress: customer.email,
-      note: `Winter Dinner Ticket - ${customer.name} (${drinkMenu === 'wine' ? 'Wine Pairing' : 'Non-Alcoholic Pairing'})`,
+      note: `Winter Dinner Ticket${ticketCount > 1 ? 's' : ''} x${ticketCount} - ${customer.name} (${drinkMenu === 'wine' ? 'Wine Pairing' : 'Non-Alcoholic Pairing'})`,
       referenceId: `winter-dinner-${Date.now()}`,
     };
 
@@ -152,6 +153,7 @@ YOUR CONFIRMATION
 Name: ${customer.name}
 Email: ${customer.email}
 Phone: ${customer.phone}
+Quantity: ${ticketCount}
 Ticket Price: $${(ticketPrice / 100).toFixed(2)}
 Payment ID: ${paymentId}
 
@@ -195,6 +197,7 @@ TICKET DETAILS
 ═══════════════════════════════════════
 
 Price: $${(ticketPrice / 100).toFixed(2)}
+Quantity: ${ticketCount}
 Beverage Pairing: ${drinkMenu === 'wine' ? 'Wine Pairing' : 'Non-Alcoholic Pairing'}
 Dietary Restrictions: ${dietaryRestrictions || 'None specified'}
 

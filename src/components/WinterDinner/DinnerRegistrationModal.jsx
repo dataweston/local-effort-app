@@ -5,20 +5,29 @@ import { useSquareCard } from '../../hooks/useSquareCard';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import { Textarea } from '../ui/textarea';
-import { Switch } from '../ui/switch';
 import { Button } from '../ui/button';
 
 const TICKET_PRICE = 17500; // $175.00 in cents
 const TICKET_PRICE_USD = (TICKET_PRICE / 100).toFixed(2);
+const MIN_TICKETS = 1;
+const MAX_TICKETS = 6;
+
+const createInitialFormData = () => ({
+  name: '',
+  email: '',
+  phone: '',
+  dietaryRestrictions: '',
+  drinkMenu: 'wine', // 'wine' or 'non-alcoholic'
+  quantity: 1,
+});
+
+const clampQuantity = (value) => {
+  if (Number.isNaN(value)) return MIN_TICKETS;
+  return Math.min(MAX_TICKETS, Math.max(MIN_TICKETS, value));
+};
 
 const DinnerRegistrationModal = ({ isOpen, onClose }) => {
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    phone: '',
-    dietaryRestrictions: '',
-    drinkMenu: 'wine', // 'wine' or 'non-alcoholic'
-  });
+  const [formData, setFormData] = useState(createInitialFormData);
 
   const [isProcessing, setIsProcessing] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
@@ -32,13 +41,7 @@ const DinnerRegistrationModal = ({ isOpen, onClose }) => {
 
   useEffect(() => {
     if (!isOpen) {
-      setFormData({
-        name: '',
-        email: '',
-        phone: '',
-        dietaryRestrictions: '',
-        drinkMenu: 'wine',
-      });
+      setFormData(createInitialFormData());
       setShowSuccess(false);
       setErrorMessage('');
       setIsProcessing(false);
@@ -47,11 +50,23 @@ const DinnerRegistrationModal = ({ isOpen, onClose }) => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
+    if (name === 'quantity') {
+      const parsed = parseInt(value, 10);
+      setFormData(prev => ({ ...prev, quantity: clampQuantity(parsed) }));
+      return;
+    }
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
   const handleDrinkMenuChange = (value) => {
     setFormData(prev => ({ ...prev, drinkMenu: value }));
+  };
+
+  const handleQuantityStep = (direction) => {
+    setFormData(prev => ({
+      ...prev,
+      quantity: clampQuantity(prev.quantity + direction),
+    }));
   };
 
   const validateForm = () => {
@@ -67,8 +82,16 @@ const DinnerRegistrationModal = ({ isOpen, onClose }) => {
       setErrorMessage('Please enter your phone number');
       return false;
     }
+    if (!Number.isInteger(formData.quantity) || formData.quantity < MIN_TICKETS) {
+      setErrorMessage(`Please select between ${MIN_TICKETS} and ${MAX_TICKETS} tickets.`);
+      return false;
+    }
     return true;
   };
+
+  const totalAmount = formData.quantity * TICKET_PRICE;
+  const totalAmountUsd = (totalAmount / 100).toFixed(2);
+  const ticketLabel = formData.quantity > 1 ? 'tickets' : 'ticket';
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -102,7 +125,8 @@ const DinnerRegistrationModal = ({ isOpen, onClose }) => {
           dietaryRestrictions: formData.dietaryRestrictions,
           drinkMenu: formData.drinkMenu,
           token,
-          amount: TICKET_PRICE,
+          quantity: formData.quantity,
+          amount: totalAmount,
         }),
       });
 
@@ -171,7 +195,7 @@ const DinnerRegistrationModal = ({ isOpen, onClose }) => {
             </motion.div>
             <h2 className="text-3xl font-light mb-4">Thank You!</h2>
             <p className="text-gray-600 text-lg mb-2">
-              Your ticket has been confirmed.
+              Your {ticketLabel} {formData.quantity > 1 ? 'have' : 'has'} been confirmed.
             </p>
             <p className="text-gray-500 text-sm mb-8">
               We've sent a confirmation email to <span className="font-medium">{formData.email}</span> with all the details.
@@ -287,11 +311,55 @@ const DinnerRegistrationModal = ({ isOpen, onClose }) => {
                 </div>
               </div>
 
+              {/* Quantity Selection */}
+              <div className="space-y-2">
+                <Label htmlFor="quantity" className="text-base font-medium">
+                  Quantity
+                </Label>
+                <div className="flex items-center gap-4">
+                  <button
+                    type="button"
+                    onClick={() => handleQuantityStep(-1)}
+                    disabled={isProcessing || formData.quantity <= MIN_TICKETS}
+                    className="w-12 h-12 rounded-full border border-gray-300 text-2xl leading-none text-gray-700 hover:border-gray-500 disabled:opacity-40 disabled:cursor-not-allowed"
+                    aria-label="Decrease quantity"
+                  >
+                    -
+                  </button>
+                  <Input
+                    id="quantity"
+                    name="quantity"
+                    type="number"
+                    min={MIN_TICKETS}
+                    max={MAX_TICKETS}
+                    value={formData.quantity}
+                    onChange={handleChange}
+                    className="text-center text-lg py-6 w-24"
+                    disabled={isProcessing}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => handleQuantityStep(1)}
+                    disabled={isProcessing || formData.quantity >= MAX_TICKETS}
+                    className="w-12 h-12 rounded-full border border-gray-300 text-2xl leading-none text-gray-700 hover:border-gray-500 disabled:opacity-40 disabled:cursor-not-allowed"
+                    aria-label="Increase quantity"
+                  >
+                    +
+                  </button>
+                </div>
+                <p className="text-sm text-gray-500">
+                  {`$${TICKET_PRICE_USD} per seat · Max ${MAX_TICKETS} seats per order`}
+                </p>
+              </div>
+
               {/* Payment Section */}
               <div className="space-y-4 pt-4 border-t">
                 <div className="flex justify-between items-center mb-4">
                   <span className="text-lg font-light">Total</span>
-                  <span className="text-2xl font-light">${TICKET_PRICE_USD}</span>
+                  <div className="text-right">
+                    <span className="text-2xl font-light block">${totalAmountUsd}</span>
+                    <span className="text-xs text-gray-500">{formData.quantity} × ${TICKET_PRICE_USD}</span>
+                  </div>
                 </div>
 
                 <div className="space-y-2">
@@ -331,7 +399,7 @@ const DinnerRegistrationModal = ({ isOpen, onClose }) => {
                     Processing...
                   </span>
                 ) : (
-                  `Purchase Ticket - $${TICKET_PRICE_USD}`
+                  `Purchase ${ticketLabel.charAt(0).toUpperCase() + ticketLabel.slice(1)} - $${totalAmountUsd}`
                 )}
               </Button>
 
