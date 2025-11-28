@@ -290,7 +290,7 @@ const WinterDinnerPage = () => {
                 padding: '6px 10px'
               }}
             >
-              <div style={{ fontSize: '1rem', lineHeight: '1.6', maxWidth: '100%', color: '#404040' }}>
+              <div className="text-sm md:text-base" style={{ lineHeight: '1.6', maxWidth: '100%', color: '#404040' }}>
                 join us for a warm winter dinner on a cold winter night. our fanciest dinner, in the oldest barn we could find. price includes beverage pairing.
               </div>
             </motion.div>
