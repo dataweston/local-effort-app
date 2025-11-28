@@ -278,7 +278,7 @@ const WinterDinnerPage = () => {
           </BgPositioned>
 
           {/* Description text - Upper copy */}
-          <BgPositioned x={60} y={38} className="!fixed !top-20 !right-1 !left-auto !translate-x-0 !translate-y-0 md:!absolute md:!top-[38%] md:!left-[60%] md:!right-auto md:!-translate-x-1/2 md:!-translate-y-1/2">
+          <BgPositioned x={60} y={38} className="!fixed !top-32 !right-1 !left-auto !translate-x-0 !translate-y-0 md:!absolute md:!top-[38%] md:!left-[60%] md:!right-auto md:!-translate-x-1/2 md:!-translate-y-1/2">
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -297,7 +297,7 @@ const WinterDinnerPage = () => {
           </BgPositioned>
 
           {/* Date/Time text - Lower copy */}
-          <BgPositioned x={60} y={63}>
+          <BgPositioned x={60} y={68}>
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
