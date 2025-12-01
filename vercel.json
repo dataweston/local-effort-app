@@ -51,6 +51,10 @@
       "use": "@vercel/node"
     },
     {
+      "src": "api/winter-dinner/checkout.js",
+      "use": "@vercel/node"
+    },
+    {
       "src": "backend/api/server.js",
       "use": "@vercel/node"
     }
@@ -99,6 +103,10 @@
     {
       "src": "/api/paikka/resend",
       "dest": "/api/paikka/resend.js"
+    },
+    {
+      "src": "/api/winter-dinner/checkout",
+      "dest": "/api/winter-dinner/checkout.js"
     },
     {
       "src": "/api/(.*)",
