@@ -122,24 +122,10 @@ const DIET_GOALS = {
   omega3: { min: 2, max: 3, label: 'Omega-3', unit: 'g' }
 };
 
-const DINNER_TYPES = {
-  KB: { name: 'Kale & White Bean Stew', color: '#2D5A27' },
-  PB: { name: 'Braised Pork Belly', color: '#8B4513' },
-  BY: { name: 'Beet & Yogurt Bowl', color: '#8B1538' },
-  BS: { name: 'Bone Broth Beef Stew', color: '#6B4423' },
-  CC: { name: 'Chickpea Coconut Curry', color: '#D4A574' },
-  SP: { name: 'Stuffed Sweet Potato', color: '#E07020' },
-  MC: { name: 'Miso Glazed Cabbage', color: '#5A8F5A' }
-};
-
 const NUTRITION_CSV_FIELDS = [
   { key: 'day', label: 'Day' },
   { key: 'dinnerType', label: 'Dinner Code' },
-  {
-    key: 'dinnerName',
-    label: 'Dinner Name',
-    compute: (row) => DINNER_TYPES[row.dinnerType]?.name || '',
-  },
+  { key: 'dinnerName', label: 'Dinner Name' },
   { key: 'calories', label: 'Calories (kcal)' },
   { key: 'protein', label: 'Protein (g)' },
   { key: 'carbs', label: 'Carbs (g)' },
@@ -157,6 +143,153 @@ const NUTRITION_CSV_FIELDS = [
   { key: 'zinc', label: 'Zinc (mg)' },
   { key: 'iron', label: 'Iron (mg)' },
 ];
+
+const buildNutritionCsv = (dinnerMap) => {
+  const rows = DAILY_NUTRITION.map((entry) =>
+    NUTRITION_CSV_FIELDS.map((field) => {
+      if (field.key === 'dinnerName') {
+        return dinnerMap?.[entry.dinnerType]?.name || '';
+      }
+      return entry[field.key] ?? '';
+    })
+  );
+
+  const allRows = [NUTRITION_CSV_FIELDS.map((field) => field.label), ...rows];
+
+  return allRows
+    .map((row) =>
+      row
+        .map((value) => {
+          if (value === null || value === undefined) return '';
+          const str = String(value);
+          return /[",\n]/.test(str) ? `"${str.replace(/"/g, '""')}"` : str;
+        })
+        .join(',')
+    )
+    .join('\r\n');
+};
+
+const BASE_DINNER_RECIPES = {
+  KB: {
+    name: 'Tuscan Kale & White Bean Stew',
+    color: '#2D5A27',
+    ingredients: [
+      { name: 'Lacinato Kale (chopped)', amount: 150, unit: 'g', calories: 50, protein: 4, carbs: 7, fat: 0.6, fiber: 4 },
+      { name: 'Cannellini Beans', amount: 120, unit: 'g', calories: 145, protein: 10, carbs: 26, fat: 0.5, fiber: 7 },
+      { name: 'Bone Broth (chicken)', amount: 250, unit: 'ml', calories: 40, protein: 8, carbs: 1, fat: 0.5, fiber: 0 },
+      { name: 'Italian Sausage', amount: 60, unit: 'g', calories: 170, protein: 9, carbs: 1, fat: 14, fiber: 0 },
+      { name: 'San Marzano Tomatoes', amount: 100, unit: 'g', calories: 26, protein: 1.3, carbs: 5, fat: 0.2, fiber: 1.5 },
+      { name: 'Garlic (minced)', amount: 10, unit: 'g', calories: 15, protein: 0.6, carbs: 3, fat: 0, fiber: 0.2 },
+      { name: 'Parmesan Cheese', amount: 20, unit: 'g', calories: 80, protein: 7, carbs: 0.5, fat: 5.5, fiber: 0 },
+      { name: 'Extra Virgin Olive Oil', amount: 15, unit: 'ml', calories: 132, protein: 0, carbs: 0, fat: 15, fiber: 0 },
+      { name: 'Sourdough Bread', amount: 50, unit: 'g', calories: 140, protein: 5, carbs: 27, fat: 1, fiber: 2 }
+    ]
+  },
+  PB: {
+    name: 'Braised Pork Belly with Cabbage',
+    color: '#8B4513',
+    ingredients: [
+      { name: 'Pork Belly', amount: 100, unit: 'g', calories: 310, protein: 16, carbs: 0, fat: 27, fiber: 0 },
+      { name: 'Napa Cabbage', amount: 150, unit: 'g', calories: 20, protein: 1.5, carbs: 3, fat: 0.2, fiber: 2 },
+      { name: 'Barley (cooked)', amount: 120, unit: 'g', calories: 144, protein: 3.5, carbs: 31, fat: 0.5, fiber: 4 },
+      { name: 'Kimchi', amount: 60, unit: 'g', calories: 15, protein: 1, carbs: 2, fat: 0.3, fiber: 1.5 },
+      { name: 'Green Onions', amount: 20, unit: 'g', calories: 6, protein: 0.4, carbs: 1.4, fat: 0, fiber: 0.5 },
+      { name: 'Ginger (fresh)', amount: 10, unit: 'g', calories: 8, protein: 0.2, carbs: 2, fat: 0, fiber: 0.2 },
+      { name: 'Soy Sauce (low sodium)', amount: 15, unit: 'ml', calories: 10, protein: 1.5, carbs: 1, fat: 0, fiber: 0 },
+      { name: 'Rice Vinegar', amount: 10, unit: 'ml', calories: 2, protein: 0, carbs: 0.5, fat: 0, fiber: 0 },
+      { name: 'Sesame Oil', amount: 5, unit: 'ml', calories: 44, protein: 0, carbs: 0, fat: 5, fiber: 0 }
+    ]
+  },
+  BY: {
+    name: 'Roasted Beet & Yogurt Bowl',
+    color: '#8B1538',
+    ingredients: [
+      { name: 'Roasted Beets', amount: 200, unit: 'g', calories: 110, protein: 3.2, carbs: 25, fat: 0.3, fiber: 5 },
+      { name: 'Greek Yogurt', amount: 150, unit: 'g', calories: 150, protein: 15, carbs: 6, fat: 8, fiber: 0 },
+      { name: 'Goat Cheese (chèvre)', amount: 40, unit: 'g', calories: 100, protein: 7, carbs: 0, fat: 8, fiber: 0 },
+      { name: 'Walnuts (toasted)', amount: 25, unit: 'g', calories: 163, protein: 3.8, carbs: 3.4, fat: 16, fiber: 1.7 },
+      { name: 'Fresh Orange Segments', amount: 80, unit: 'g', calories: 38, protein: 0.8, carbs: 9, fat: 0.1, fiber: 2 },
+      { name: 'Arugula', amount: 40, unit: 'g', calories: 10, protein: 1, carbs: 1.5, fat: 0.3, fiber: 0.6 },
+      { name: 'Fresh Dill', amount: 5, unit: 'g', calories: 2, protein: 0.2, carbs: 0.4, fat: 0, fiber: 0.2 },
+      { name: 'Extra Virgin Olive Oil', amount: 15, unit: 'ml', calories: 132, protein: 0, carbs: 0, fat: 15, fiber: 0 },
+      { name: 'Honey', amount: 10, unit: 'g', calories: 30, protein: 0, carbs: 8, fat: 0, fiber: 0 }
+    ]
+  },
+  BS: {
+    name: 'Hearty Bone Broth Beef Stew',
+    color: '#6B4423',
+    ingredients: [
+      { name: 'Beef Chuck (cubed)', amount: 120, unit: 'g', calories: 270, protein: 26, carbs: 0, fat: 18, fiber: 0 },
+      { name: 'Bone Broth (beef)', amount: 300, unit: 'ml', calories: 50, protein: 10, carbs: 1, fat: 0.5, fiber: 0 },
+      { name: 'Carrots', amount: 100, unit: 'g', calories: 41, protein: 0.9, carbs: 10, fat: 0.2, fiber: 2.8 },
+      { name: 'Celery', amount: 60, unit: 'g', calories: 10, protein: 0.4, carbs: 2, fat: 0.1, fiber: 1 },
+      { name: 'Potatoes (baby)', amount: 100, unit: 'g', calories: 77, protein: 2, carbs: 17, fat: 0.1, fiber: 2 },
+      { name: 'Onion', amount: 60, unit: 'g', calories: 24, protein: 0.7, carbs: 5.6, fat: 0.1, fiber: 1 },
+      { name: 'Fresh Thyme', amount: 5, unit: 'g', calories: 5, protein: 0.3, carbs: 1, fat: 0.1, fiber: 0.5 },
+      { name: 'Red Wine', amount: 60, unit: 'ml', calories: 50, protein: 0, carbs: 2, fat: 0, fiber: 0 },
+      { name: 'Butter (grass-fed)', amount: 15, unit: 'g', calories: 107, protein: 0.1, carbs: 0, fat: 12, fiber: 0 }
+    ]
+  },
+  CC: {
+    name: 'Coconut Chickpea Curry',
+    color: '#D4A574',
+    ingredients: [
+      { name: 'Chickpeas (cooked)', amount: 150, unit: 'g', calories: 180, protein: 9.5, carbs: 30, fat: 3, fiber: 8 },
+      { name: 'Coconut Milk (full-fat)', amount: 100, unit: 'ml', calories: 180, protein: 1.8, carbs: 2.8, fat: 19, fiber: 0 },
+      { name: 'Spinach (fresh)', amount: 100, unit: 'g', calories: 23, protein: 2.9, carbs: 3.6, fat: 0.4, fiber: 2.2 },
+      { name: 'Brown Rice (cooked)', amount: 120, unit: 'g', calories: 132, protein: 3, carbs: 28, fat: 1.1, fiber: 2 },
+      { name: 'Tomatoes (diced)', amount: 100, unit: 'g', calories: 18, protein: 0.9, carbs: 3.9, fat: 0.2, fiber: 1.2 },
+      { name: 'Garam Masala', amount: 5, unit: 'g', calories: 15, protein: 0.6, carbs: 2.7, fat: 0.6, fiber: 0.8 },
+      { name: 'Turmeric', amount: 3, unit: 'g', calories: 9, protein: 0.3, carbs: 2, fat: 0.1, fiber: 0.5 },
+      { name: 'Fresh Cilantro', amount: 10, unit: 'g', calories: 2, protein: 0.2, carbs: 0.4, fat: 0.1, fiber: 0.3 },
+      { name: 'Ghee', amount: 10, unit: 'g', calories: 90, protein: 0, carbs: 0, fat: 10, fiber: 0 }
+    ]
+  },
+  SP: {
+    name: 'Loaded Sweet Potato',
+    color: '#E07020',
+    ingredients: [
+      { name: 'Sweet Potato (large)', amount: 250, unit: 'g', calories: 215, protein: 4, carbs: 50, fat: 0.3, fiber: 7 },
+      { name: 'Black Beans', amount: 100, unit: 'g', calories: 130, protein: 8.5, carbs: 23, fat: 0.5, fiber: 7 },
+      { name: 'Greek Yogurt', amount: 80, unit: 'g', calories: 80, protein: 8, carbs: 3.2, fat: 4, fiber: 0 },
+      { name: 'Avocado', amount: 60, unit: 'g', calories: 96, protein: 1.2, carbs: 5, fat: 9, fiber: 4 },
+      { name: 'Cotija Cheese', amount: 25, unit: 'g', calories: 90, protein: 5.5, carbs: 1, fat: 7.5, fiber: 0 },
+      { name: 'Pickled Red Onion', amount: 30, unit: 'g', calories: 15, protein: 0.3, carbs: 3.5, fat: 0, fiber: 0.5 },
+      { name: 'Fresh Lime Juice', amount: 15, unit: 'ml', calories: 4, protein: 0.1, carbs: 1.4, fat: 0, fiber: 0 },
+      { name: 'Cilantro', amount: 10, unit: 'g', calories: 2, protein: 0.2, carbs: 0.4, fat: 0.1, fiber: 0.3 },
+      { name: 'Hot Sauce', amount: 5, unit: 'ml', calories: 1, protein: 0, carbs: 0.2, fat: 0, fiber: 0 }
+    ]
+  },
+  MC: {
+    name: 'Miso-Glazed Cabbage Steak',
+    color: '#5A8F5A',
+    ingredients: [
+      { name: 'Green Cabbage (thick slices)', amount: 250, unit: 'g', calories: 63, protein: 3.2, carbs: 15, fat: 0.3, fiber: 6 },
+      { name: 'White Miso Paste', amount: 30, unit: 'g', calories: 60, protein: 3.6, carbs: 7.5, fat: 2, fiber: 1 },
+      { name: 'Silken Tofu', amount: 100, unit: 'g', calories: 55, protein: 5, carbs: 2, fat: 3, fiber: 0 },
+      { name: 'Short Grain Rice (cooked)', amount: 130, unit: 'g', calories: 169, protein: 3.5, carbs: 37, fat: 0.4, fiber: 1 },
+      { name: 'Shiitake Mushrooms', amount: 60, unit: 'g', calories: 21, protein: 1.5, carbs: 4, fat: 0.3, fiber: 1.5 },
+      { name: 'Pickled Cucumber', amount: 50, unit: 'g', calories: 12, protein: 0.3, carbs: 2.8, fat: 0.1, fiber: 0.6 },
+      { name: 'Nori (crumbled)', amount: 3, unit: 'g', calories: 9, protein: 1.5, carbs: 1.4, fat: 0.1, fiber: 0.4 },
+      { name: 'Sesame Seeds', amount: 8, unit: 'g', calories: 46, protein: 1.4, carbs: 1.9, fat: 4, fiber: 0.9 },
+      { name: 'Mirin', amount: 15, unit: 'ml', calories: 35, protein: 0, carbs: 8, fat: 0, fiber: 0 },
+      { name: 'Sesame Oil', amount: 10, unit: 'ml', calories: 88, protein: 0, carbs: 0, fat: 10, fiber: 0 }
+    ]
+  }
+};
+
+const DINNER_STORAGE_KEY = 'january-meal-plan-dinners';
+
+const cloneDinnerRecipes = (recipes) =>
+  Object.fromEntries(
+    Object.entries(recipes).map(([code, recipe]) => [
+      code,
+      {
+        ...recipe,
+        ingredients: recipe.ingredients.map((ingredient) => ({ ...ingredient })),
+      },
+    ])
+  );
 
 const BASE_MEALS = {
   breakfast: {
@@ -212,107 +345,7 @@ const BASE_MEALS = {
       ]
     }
   },
-  dinner: {
-    KB: {
-      name: 'Tuscan Kale & White Bean Stew',
-      ingredients: [
-        { name: 'Lacinato Kale (chopped)', amount: 150, unit: 'g', calories: 50, protein: 4, carbs: 7, fat: 0.6, fiber: 4 },
-        { name: 'Cannellini Beans', amount: 120, unit: 'g', calories: 145, protein: 10, carbs: 26, fat: 0.5, fiber: 7 },
-        { name: 'Bone Broth (chicken)', amount: 250, unit: 'ml', calories: 40, protein: 8, carbs: 1, fat: 0.5, fiber: 0 },
-        { name: 'Italian Sausage', amount: 60, unit: 'g', calories: 170, protein: 9, carbs: 1, fat: 14, fiber: 0 },
-        { name: 'San Marzano Tomatoes', amount: 100, unit: 'g', calories: 26, protein: 1.3, carbs: 5, fat: 0.2, fiber: 1.5 },
-        { name: 'Garlic (minced)', amount: 10, unit: 'g', calories: 15, protein: 0.6, carbs: 3, fat: 0, fiber: 0.2 },
-        { name: 'Parmesan Cheese', amount: 20, unit: 'g', calories: 80, protein: 7, carbs: 0.5, fat: 5.5, fiber: 0 },
-        { name: 'Extra Virgin Olive Oil', amount: 15, unit: 'ml', calories: 132, protein: 0, carbs: 0, fat: 15, fiber: 0 },
-        { name: 'Sourdough Bread', amount: 50, unit: 'g', calories: 140, protein: 5, carbs: 27, fat: 1, fiber: 2 }
-      ]
-    },
-    PB: {
-      name: 'Braised Pork Belly with Cabbage',
-      ingredients: [
-        { name: 'Pork Belly', amount: 100, unit: 'g', calories: 310, protein: 16, carbs: 0, fat: 27, fiber: 0 },
-        { name: 'Napa Cabbage', amount: 150, unit: 'g', calories: 20, protein: 1.5, carbs: 3, fat: 0.2, fiber: 2 },
-        { name: 'Barley (cooked)', amount: 120, unit: 'g', calories: 144, protein: 3.5, carbs: 31, fat: 0.5, fiber: 4 },
-        { name: 'Kimchi', amount: 60, unit: 'g', calories: 15, protein: 1, carbs: 2, fat: 0.3, fiber: 1.5 },
-        { name: 'Green Onions', amount: 20, unit: 'g', calories: 6, protein: 0.4, carbs: 1.4, fat: 0, fiber: 0.5 },
-        { name: 'Ginger (fresh)', amount: 10, unit: 'g', calories: 8, protein: 0.2, carbs: 2, fat: 0, fiber: 0.2 },
-        { name: 'Soy Sauce (low sodium)', amount: 15, unit: 'ml', calories: 10, protein: 1.5, carbs: 1, fat: 0, fiber: 0 },
-        { name: 'Rice Vinegar', amount: 10, unit: 'ml', calories: 2, protein: 0, carbs: 0.5, fat: 0, fiber: 0 },
-        { name: 'Sesame Oil', amount: 5, unit: 'ml', calories: 44, protein: 0, carbs: 0, fat: 5, fiber: 0 }
-      ]
-    },
-    BY: {
-      name: 'Roasted Beet & Yogurt Bowl',
-      ingredients: [
-        { name: 'Roasted Beets', amount: 200, unit: 'g', calories: 110, protein: 3.2, carbs: 25, fat: 0.3, fiber: 5 },
-        { name: 'Greek Yogurt', amount: 150, unit: 'g', calories: 150, protein: 15, carbs: 6, fat: 8, fiber: 0 },
-        { name: 'Goat Cheese (chèvre)', amount: 40, unit: 'g', calories: 100, protein: 7, carbs: 0, fat: 8, fiber: 0 },
-        { name: 'Walnuts (toasted)', amount: 25, unit: 'g', calories: 163, protein: 3.8, carbs: 3.4, fat: 16, fiber: 1.7 },
-        { name: 'Fresh Orange Segments', amount: 80, unit: 'g', calories: 38, protein: 0.8, carbs: 9, fat: 0.1, fiber: 2 },
-        { name: 'Arugula', amount: 40, unit: 'g', calories: 10, protein: 1, carbs: 1.5, fat: 0.3, fiber: 0.6 },
-        { name: 'Fresh Dill', amount: 5, unit: 'g', calories: 2, protein: 0.2, carbs: 0.4, fat: 0, fiber: 0.2 },
-        { name: 'Extra Virgin Olive Oil', amount: 15, unit: 'ml', calories: 132, protein: 0, carbs: 0, fat: 15, fiber: 0 },
-        { name: 'Honey', amount: 10, unit: 'g', calories: 30, protein: 0, carbs: 8, fat: 0, fiber: 0 }
-      ]
-    },
-    BS: {
-      name: 'Hearty Bone Broth Beef Stew',
-      ingredients: [
-        { name: 'Beef Chuck (cubed)', amount: 120, unit: 'g', calories: 270, protein: 26, carbs: 0, fat: 18, fiber: 0 },
-        { name: 'Bone Broth (beef)', amount: 300, unit: 'ml', calories: 50, protein: 10, carbs: 1, fat: 0.5, fiber: 0 },
-        { name: 'Carrots', amount: 100, unit: 'g', calories: 41, protein: 0.9, carbs: 10, fat: 0.2, fiber: 2.8 },
-        { name: 'Celery', amount: 60, unit: 'g', calories: 10, protein: 0.4, carbs: 2, fat: 0.1, fiber: 1 },
-        { name: 'Potatoes (baby)', amount: 100, unit: 'g', calories: 77, protein: 2, carbs: 17, fat: 0.1, fiber: 2 },
-        { name: 'Onion', amount: 60, unit: 'g', calories: 24, protein: 0.7, carbs: 5.6, fat: 0.1, fiber: 1 },
-        { name: 'Fresh Thyme', amount: 5, unit: 'g', calories: 5, protein: 0.3, carbs: 1, fat: 0.1, fiber: 0.5 },
-        { name: 'Red Wine', amount: 60, unit: 'ml', calories: 50, protein: 0, carbs: 2, fat: 0, fiber: 0 },
-        { name: 'Butter (grass-fed)', amount: 15, unit: 'g', calories: 107, protein: 0.1, carbs: 0, fat: 12, fiber: 0 }
-      ]
-    },
-    CC: {
-      name: 'Coconut Chickpea Curry',
-      ingredients: [
-        { name: 'Chickpeas (cooked)', amount: 150, unit: 'g', calories: 180, protein: 9.5, carbs: 30, fat: 3, fiber: 8 },
-        { name: 'Coconut Milk (full-fat)', amount: 100, unit: 'ml', calories: 180, protein: 1.8, carbs: 2.8, fat: 19, fiber: 0 },
-        { name: 'Spinach (fresh)', amount: 100, unit: 'g', calories: 23, protein: 2.9, carbs: 3.6, fat: 0.4, fiber: 2.2 },
-        { name: 'Brown Rice (cooked)', amount: 120, unit: 'g', calories: 132, protein: 3, carbs: 28, fat: 1.1, fiber: 2 },
-        { name: 'Tomatoes (diced)', amount: 100, unit: 'g', calories: 18, protein: 0.9, carbs: 3.9, fat: 0.2, fiber: 1.2 },
-        { name: 'Garam Masala', amount: 5, unit: 'g', calories: 15, protein: 0.6, carbs: 2.7, fat: 0.6, fiber: 0.8 },
-        { name: 'Turmeric', amount: 3, unit: 'g', calories: 9, protein: 0.3, carbs: 2, fat: 0.1, fiber: 0.5 },
-        { name: 'Fresh Cilantro', amount: 10, unit: 'g', calories: 2, protein: 0.2, carbs: 0.4, fat: 0.1, fiber: 0.3 },
-        { name: 'Ghee', amount: 10, unit: 'g', calories: 90, protein: 0, carbs: 0, fat: 10, fiber: 0 }
-      ]
-    },
-    SP: {
-      name: 'Loaded Sweet Potato',
-      ingredients: [
-        { name: 'Sweet Potato (large)', amount: 250, unit: 'g', calories: 215, protein: 4, carbs: 50, fat: 0.3, fiber: 7 },
-        { name: 'Black Beans', amount: 100, unit: 'g', calories: 130, protein: 8.5, carbs: 23, fat: 0.5, fiber: 7 },
-        { name: 'Greek Yogurt', amount: 80, unit: 'g', calories: 80, protein: 8, carbs: 3.2, fat: 4, fiber: 0 },
-        { name: 'Avocado', amount: 60, unit: 'g', calories: 96, protein: 1.2, carbs: 5, fat: 9, fiber: 4 },
-        { name: 'Cotija Cheese', amount: 25, unit: 'g', calories: 90, protein: 5.5, carbs: 1, fat: 7.5, fiber: 0 },
-        { name: 'Pickled Red Onion', amount: 30, unit: 'g', calories: 15, protein: 0.3, carbs: 3.5, fat: 0, fiber: 0.5 },
-        { name: 'Fresh Lime Juice', amount: 15, unit: 'ml', calories: 4, protein: 0.1, carbs: 1.4, fat: 0, fiber: 0 },
-        { name: 'Cilantro', amount: 10, unit: 'g', calories: 2, protein: 0.2, carbs: 0.4, fat: 0.1, fiber: 0.3 },
-        { name: 'Hot Sauce', amount: 5, unit: 'ml', calories: 1, protein: 0, carbs: 0.2, fat: 0, fiber: 0 }
-      ]
-    },
-    MC: {
-      name: 'Miso-Glazed Cabbage Steak',
-      ingredients: [
-        { name: 'Green Cabbage (thick slices)', amount: 250, unit: 'g', calories: 63, protein: 3.2, carbs: 15, fat: 0.3, fiber: 6 },
-        { name: 'White Miso Paste', amount: 30, unit: 'g', calories: 60, protein: 3.6, carbs: 7.5, fat: 2, fiber: 1 },
-        { name: 'Silken Tofu', amount: 100, unit: 'g', calories: 55, protein: 5, carbs: 2, fat: 3, fiber: 0 },
-        { name: 'Short Grain Rice (cooked)', amount: 130, unit: 'g', calories: 169, protein: 3.5, carbs: 37, fat: 0.4, fiber: 1 },
-        { name: 'Shiitake Mushrooms', amount: 60, unit: 'g', calories: 21, protein: 1.5, carbs: 4, fat: 0.3, fiber: 1.5 },
-        { name: 'Pickled Cucumber', amount: 50, unit: 'g', calories: 12, protein: 0.3, carbs: 2.8, fat: 0.1, fiber: 0.6 },
-        { name: 'Nori (crumbled)', amount: 3, unit: 'g', calories: 9, protein: 1.5, carbs: 1.4, fat: 0.1, fiber: 0.4 },
-        { name: 'Sesame Seeds', amount: 8, unit: 'g', calories: 46, protein: 1.4, carbs: 1.9, fat: 4, fiber: 0.9 },
-        { name: 'Mirin', amount: 15, unit: 'ml', calories: 35, protein: 0, carbs: 8, fat: 0, fiber: 0 },
-        { name: 'Sesame Oil', amount: 10, unit: 'ml', calories: 88, protein: 0, carbs: 0, fat: 10, fiber: 0 }
-      ]
-    }
-  },
+  dinner: BASE_DINNER_RECIPES,
   snacks: {
     default: {
       name: 'Afternoon Snack',
@@ -411,6 +444,14 @@ const BookIcon = () => (
   <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
     <path d="M3 4.5A1.5 1.5 0 014.5 3H13v10H4.5A1.5 1.5 0 013 11.5V4.5z"/>
     <path d="M8 3v10"/>
+  </svg>
+);
+
+const SheetsIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
+    <path d="M4 2h6l3 3v9a1 1 0 01-1 1H4a1 1 0 01-1-1V3a1 1 0 011-1z"/>
+    <path d="M10 2v3h3"/>
+    <path d="M5 8h6M5 11h6"/>
   </svg>
 );
 
@@ -735,6 +776,45 @@ const IngredientRow = ({ ingredient, index, onAmountChange, onRemove, isEditing 
   );
 };
 
+const DinnerIngredientRow = ({ ingredient, onChange, onRemove }) => {
+  return (
+    <div className="grid grid-cols-12 gap-3 items-center py-2 border-b border-neutral-800/40 last:border-0">
+      <div className="col-span-5">
+        <input
+          type="text"
+          value={ingredient.name}
+          onChange={(e) => onChange({ ...ingredient, name: e.target.value })}
+          className="w-full px-3 py-2 text-sm bg-neutral-900 border border-neutral-800 rounded-lg text-neutral-200 focus:outline-none focus:border-amber-500"
+        />
+      </div>
+      <div className="col-span-3">
+        <input
+          type="number"
+          value={ingredient.amount || ''}
+          onChange={(e) => onChange({ ...ingredient, amount: parseFloat(e.target.value) || 0 })}
+          className="w-full px-3 py-2 text-sm bg-neutral-900 border border-neutral-800 rounded-lg text-neutral-200 text-right focus:outline-none focus:border-amber-500"
+        />
+      </div>
+      <div className="col-span-3">
+        <input
+          type="text"
+          value={ingredient.unit || ''}
+          onChange={(e) => onChange({ ...ingredient, unit: e.target.value })}
+          className="w-full px-3 py-2 text-sm bg-neutral-900 border border-neutral-800 rounded-lg text-neutral-200 focus:outline-none focus:border-amber-500"
+        />
+      </div>
+      <div className="col-span-1 flex justify-end">
+        <button
+          onClick={onRemove}
+          className="p-2 text-neutral-500 hover:text-red-400 hover:bg-red-500/10 rounded transition-colors"
+        >
+          <TrashIcon />
+        </button>
+      </div>
+    </div>
+  );
+};
+
 // ============================================================================
 // MEAL CARD COMPONENT
 // ============================================================================
@@ -900,10 +980,11 @@ const MealCard = ({ title, meal, mealKey, dayKey, onUpdate, isEditing, setIsEdit
 // DAY DETAIL MODAL
 // ============================================================================
 
-const DayDetail = ({ day, nutrition, customMeals, onUpdate, onClose }) => {
+const DayDetail = ({ day, nutrition, customMeals, dinnerRecipes, onUpdate, onClose }) => {
   const [editingMeal, setEditingMeal] = useState(null);
   
-  const dinnerInfo = DINNER_TYPES[nutrition.dinnerType];
+  const dinnerInfo =
+    dinnerRecipes[nutrition.dinnerType] || { name: 'Dinner', color: '#94a3b8', ingredients: [] };
   const dayKey = `day-${day}`;
   
   const getMeal = (mealType, subType = null) => {
@@ -918,7 +999,7 @@ const DayDetail = ({ day, nutrition, customMeals, onUpdate, onClose }) => {
       return BASE_MEALS.lunch[day % 2 === 0 ? 'trout' : 'salmon'];
     }
     if (mealType === 'dinner') {
-      return BASE_MEALS.dinner[nutrition.dinnerType];
+      return dinnerRecipes[nutrition.dinnerType] || dinnerInfo;
     }
     return BASE_MEALS.snacks.default;
   };
@@ -1028,8 +1109,8 @@ const DayDetail = ({ day, nutrition, customMeals, onUpdate, onClose }) => {
 // CALENDAR DAY CELL
 // ============================================================================
 
-const CalendarDay = ({ day, nutrition, hasCustomization, onClick }) => {
-  const dinnerInfo = DINNER_TYPES[nutrition.dinnerType];
+const CalendarDay = ({ day, nutrition, dinnerInfo, hasCustomization, onClick }) => {
+  const info = dinnerInfo || { name: 'Dinner', color: '#94a3b8' };
   
   return (
     <div 
@@ -1048,10 +1129,10 @@ const CalendarDay = ({ day, nutrition, hasCustomization, onClick }) => {
         
         <div 
           className="flex-1 flex items-center justify-center rounded-lg"
-          style={{ backgroundColor: dinnerInfo.color + '20' }}
+          style={{ backgroundColor: info.color + '20' }}
         >
-          <span className="text-xs font-medium px-2 text-center" style={{ color: dinnerInfo.color }}>
-            {dinnerInfo.name.split(' ')[0]}
+          <span className="text-xs font-medium px-2 text-center" style={{ color: info.color }}>
+            {info.name.split(' ')[0]}
           </span>
         </div>
         
@@ -1141,13 +1222,12 @@ const MethodologyPanel = ({ isOpen, onClose }) => {
 // RECIPES PANEL
 // ============================================================================
 
-const RecipesPanel = ({ isOpen, onClose }) => {
+const RecipesPanel = ({ isOpen, onClose, dinnerRecipes, onAddDinner, onEditDinner }) => {
   if (!isOpen) return null;
 
   const sections = [
     { key: 'breakfast', title: 'Breakfast', meals: BASE_MEALS.breakfast },
     { key: 'lunch', title: 'Lunch', meals: BASE_MEALS.lunch },
-    { key: 'dinner', title: 'Dinner', meals: BASE_MEALS.dinner },
     { key: 'snacks', title: 'Snacks', meals: BASE_MEALS.snacks },
   ];
 
@@ -1176,12 +1256,7 @@ const RecipesPanel = ({ isOpen, onClose }) => {
                     <div className="flex items-start justify-between gap-3">
                       <div>
                         <p className="text-base font-semibold text-white">{meal.name}</p>
-                        {section.key === 'dinner' && (
-                          <p className="text-xs font-mono text-neutral-500 mt-1">Code: {mealKey}</p>
-                        )}
-                      </div>
-                      <div className="text-xs text-neutral-500 uppercase tracking-wide">
-                        {section.title}
+                        <p className="text-xs text-neutral-500">{section.title}</p>
                       </div>
                     </div>
                     <ul className="mt-3 space-y-1.5 text-xs text-neutral-400">
@@ -1197,8 +1272,272 @@ const RecipesPanel = ({ isOpen, onClose }) => {
               </div>
             </section>
           ))}
+
+          <section>
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-amber-400 font-medium">Dinner</h3>
+              <button
+                onClick={onAddDinner}
+                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-amber-400 border border-amber-400/40 rounded-lg hover:bg-amber-500/10 transition-colors"
+              >
+                <PlusIcon /> Add Dinner Recipe
+              </button>
+            </div>
+            <div className="grid gap-4 md:grid-cols-2">
+              {Object.entries(dinnerRecipes).map(([mealKey, meal]) => (
+                <div key={mealKey} className="p-4 rounded-xl bg-neutral-900/50 border border-neutral-800/60">
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <p className="text-base font-semibold text-white">{meal.name}</p>
+                      <p className="text-xs font-mono text-neutral-500 mt-1">Code: {mealKey}</p>
+                    </div>
+                    <button
+                      onClick={() => onEditDinner(mealKey)}
+                      className="px-2 py-1 text-xs font-medium text-neutral-300 bg-neutral-800 rounded hover:bg-neutral-700 transition-colors"
+                    >
+                      Edit
+                    </button>
+                  </div>
+                  <ul className="mt-3 space-y-1.5 text-xs text-neutral-400">
+                    {meal.ingredients.map((ingredient, index) => (
+                      <li key={`${mealKey}-${index}`} className="flex justify-between gap-2">
+                        <span className="text-neutral-200">{ingredient.name}</span>
+                        <span className="text-neutral-500">{formatAmount(ingredient)}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+            </div>
+          </section>
         </div>
       </div>
+    </div>
+  );
+};
+
+const DinnerEditor = ({
+  isOpen,
+  mode,
+  initialCode,
+  recipe,
+  existingCodes,
+  canDelete,
+  onSave,
+  onDelete,
+  onClose,
+}) => {
+  const [code, setCode] = useState(initialCode || '');
+  const [localRecipe, setLocalRecipe] = useState(
+    recipe || { name: '', color: '#f97316', ingredients: [] }
+  );
+  const [error, setError] = useState('');
+  const [showIngredientSearch, setShowIngredientSearch] = useState(false);
+
+  useEffect(() => {
+    setCode(initialCode || '');
+    setLocalRecipe(recipe || { name: '', color: '#f97316', ingredients: [] });
+    setError('');
+    setShowIngredientSearch(false);
+  }, [initialCode, recipe, isOpen]);
+
+  if (!isOpen) return null;
+
+  const handleIngredientChange = (index, updated) => {
+    setLocalRecipe((prev) => ({
+      ...prev,
+      ingredients: prev.ingredients.map((ing, idx) => (idx === index ? updated : ing)),
+    }));
+  };
+
+  const handleRemoveIngredient = (index) => {
+    setLocalRecipe((prev) => ({
+      ...prev,
+      ingredients: prev.ingredients.filter((_, idx) => idx !== index),
+    }));
+  };
+
+  const handleAddBlankIngredient = () => {
+    setLocalRecipe((prev) => ({
+      ...prev,
+      ingredients: [...prev.ingredients, { name: '', amount: 0, unit: 'g' }],
+    }));
+  };
+
+  const handleAddIngredientFromSearch = (ingredient) => {
+    setLocalRecipe((prev) => ({
+      ...prev,
+      ingredients: [...prev.ingredients, ingredient],
+    }));
+    setShowIngredientSearch(false);
+  };
+
+  const handleSave = () => {
+    const normalizedCode = mode === 'create' ? code.trim().toUpperCase() : initialCode;
+    if (!normalizedCode) {
+      setError('Dinner code is required.');
+      return;
+    }
+    if (mode === 'create' && existingCodes.includes(normalizedCode)) {
+      setError('This dinner code already exists.');
+      return;
+    }
+    if (!localRecipe.name.trim()) {
+      setError('Please provide a recipe name.');
+      return;
+    }
+
+    onSave(normalizedCode, {
+      ...localRecipe,
+      name: localRecipe.name.trim(),
+      color: localRecipe.color || '#f97316',
+      ingredients: localRecipe.ingredients.map((ingredient) => ({ ...ingredient })),
+    });
+  };
+
+  const handleDelete = () => {
+    if (!canDelete || !initialCode) return;
+    onDelete(initialCode);
+  };
+
+  return (
+    <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm">
+      <div className="w-full max-w-3xl bg-neutral-950 rounded-2xl border border-neutral-800 overflow-hidden">
+        <div className="flex items-center justify-between p-5 border-b border-neutral-800">
+          <div>
+            <h3 className="text-lg font-semibold text-white">
+              {mode === 'create' ? 'Add Dinner Recipe' : 'Edit Dinner Recipe'}
+            </h3>
+            <p className="text-sm text-neutral-500">
+              Define reusable dinner templates for the calendar.
+            </p>
+          </div>
+          <button onClick={onClose} className="p-2 rounded-lg hover:bg-neutral-800 text-neutral-400">
+            <XIcon />
+          </button>
+        </div>
+
+        <div className="p-5 space-y-4 max-h-[75vh] overflow-y-auto">
+          {error && (
+            <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/30 text-sm text-red-300">
+              {error}
+            </div>
+          )}
+
+          <div className="grid md:grid-cols-3 gap-4">
+            <div className="md:col-span-1">
+              <label className="block text-xs uppercase tracking-wide text-neutral-500 mb-1">
+                Dinner Code
+              </label>
+              <input
+                type="text"
+                value={code}
+                onChange={(e) => setCode(e.target.value.toUpperCase())}
+                maxLength={3}
+                disabled={mode === 'edit'}
+                className="w-full px-3 py-2 bg-neutral-900 border border-neutral-800 rounded-lg text-white focus:outline-none focus:border-amber-500 disabled:opacity-50"
+              />
+            </div>
+            <div className="md:col-span-1">
+              <label className="block text-xs uppercase tracking-wide text-neutral-500 mb-1">
+                Recipe Name
+              </label>
+              <input
+                type="text"
+                value={localRecipe.name}
+                onChange={(e) => setLocalRecipe({ ...localRecipe, name: e.target.value })}
+                className="w-full px-3 py-2 bg-neutral-900 border border-neutral-800 rounded-lg text-white focus:outline-none focus:border-amber-500"
+              />
+            </div>
+            <div className="md:col-span-1">
+              <label className="block text-xs uppercase tracking-wide text-neutral-500 mb-1">
+                Accent Color
+              </label>
+              <div className="flex items-center gap-3">
+                <input
+                  type="color"
+                  value={localRecipe.color || '#f97316'}
+                  onChange={(e) => setLocalRecipe({ ...localRecipe, color: e.target.value })}
+                  className="w-12 h-10 rounded border border-neutral-800 bg-neutral-900"
+                />
+                <input
+                  type="text"
+                  value={localRecipe.color || ''}
+                  onChange={(e) => setLocalRecipe({ ...localRecipe, color: e.target.value })}
+                  className="flex-1 px-3 py-2 bg-neutral-900 border border-neutral-800 rounded-lg text-white focus:outline-none focus:border-amber-500"
+                />
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-xs uppercase tracking-wide text-neutral-500">Ingredients</p>
+              <div className="flex gap-2">
+                <button
+                  onClick={handleAddBlankIngredient}
+                  className="px-3 py-1.5 text-xs font-medium text-neutral-300 bg-neutral-800 rounded-lg hover:bg-neutral-700 transition-colors"
+                >
+                  Add Empty Row
+                </button>
+                <button
+                  onClick={() => setShowIngredientSearch(true)}
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-amber-400 border border-amber-400/40 rounded-lg hover:bg-amber-500/10 transition-colors"
+                >
+                  <PlusIcon /> USDA Ingredient
+                </button>
+              </div>
+            </div>
+            <div className="rounded-xl border border-neutral-800 divide-y divide-neutral-800">
+              {localRecipe.ingredients.length === 0 && (
+                <p className="p-4 text-center text-sm text-neutral-500">
+                  No ingredients yet. Add from the USDA database or create manual rows.
+                </p>
+              )}
+              {localRecipe.ingredients.map((ingredient, index) => (
+                <DinnerIngredientRow
+                  key={`${ingredient.name}-${index}`}
+                  ingredient={ingredient}
+                  onChange={(updated) => handleIngredientChange(index, updated)}
+                  onRemove={() => handleRemoveIngredient(index)}
+                />
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <div className="p-5 border-t border-neutral-800 flex flex-wrap items-center justify-between gap-3">
+          <div className="flex gap-2">
+            <button
+              onClick={onClose}
+              className="px-4 py-2 text-sm font-medium text-neutral-400 hover:text-white transition-colors"
+            >
+              Cancel
+            </button>
+            {canDelete && (
+              <button
+                onClick={handleDelete}
+                className="px-4 py-2 text-sm font-medium text-red-300 bg-red-500/10 border border-red-500/30 rounded-lg hover:bg-red-500/20 transition-colors"
+              >
+                Delete
+              </button>
+            )}
+          </div>
+          <button
+            onClick={handleSave}
+            className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-neutral-900 bg-amber-400 rounded-lg hover:bg-amber-300 transition-colors"
+          >
+            <SaveIcon /> Save Recipe
+          </button>
+        </div>
+      </div>
+
+      {showIngredientSearch && (
+        <IngredientSearch
+          onSelect={handleAddIngredientFromSearch}
+          onClose={() => setShowIngredientSearch(false)}
+        />
+      )}
     </div>
   );
 };
@@ -1316,6 +1655,8 @@ export default function JanuaryMealsPage() {
   const [customMeals, setCustomMeals] = useState({});
   const [showMethodology, setShowMethodology] = useState(false);
   const [showRecipes, setShowRecipes] = useState(false);
+  const [dinnerRecipes, setDinnerRecipes] = useState(() => cloneDinnerRecipes(BASE_DINNER_RECIPES));
+  const [activeDinnerEditor, setActiveDinnerEditor] = useState(null);
   const [saveStatus, setSaveStatus] = useState(null);
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -1409,36 +1750,65 @@ export default function JanuaryMealsPage() {
       return false;
     }
   };
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    try {
+      const stored = localStorage.getItem(DINNER_STORAGE_KEY);
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        setDinnerRecipes(cloneDinnerRecipes(parsed));
+      }
+    } catch (error) {
+      console.error('Failed to load dinner recipes', error);
+    }
+  }, []);
+
+  const persistDinnerRecipes = useCallback((updater) => {
+    setDinnerRecipes((prev) => {
+      const base = typeof updater === 'function' ? updater(prev) : updater;
+      const next = cloneDinnerRecipes(base);
+      if (typeof window !== 'undefined') {
+        try {
+          localStorage.setItem(DINNER_STORAGE_KEY, JSON.stringify(next));
+        } catch (error) {
+          console.error('Failed to save dinner recipes', error);
+        }
+      }
+      return next;
+    });
+  }, []);
+
+  const handleSaveDinnerTemplate = useCallback(
+    (code, recipe) => {
+      persistDinnerRecipes((prev) => ({
+        ...prev,
+        [code]: {
+          ...recipe,
+          ingredients: (recipe.ingredients || []).map((ingredient) => ({ ...ingredient })),
+        },
+      }));
+      setActiveDinnerEditor(null);
+    },
+    [persistDinnerRecipes]
+  );
+
+  const handleDeleteDinnerTemplate = useCallback(
+    (code) => {
+      persistDinnerRecipes((prev) => {
+        const next = { ...prev };
+        delete next[code];
+        return next;
+      });
+      setActiveDinnerEditor(null);
+    },
+    [persistDinnerRecipes]
+  );
   
   const handleExportCsv = useCallback(() => {
     if (typeof window === 'undefined' || typeof document === 'undefined') return;
     
-    const rows = DAILY_NUTRITION.map((entry) =>
-      NUTRITION_CSV_FIELDS.map((field) => {
-        if (field.compute) {
-          return field.compute(entry);
-        }
-        return entry[field.key] ?? '';
-      })
-    );
-    
-    const allRows = [
-      NUTRITION_CSV_FIELDS.map((field) => field.label),
-      ...rows,
-    ];
-    
-    const csvText = allRows
-      .map((row) =>
-        row
-          .map((value) => {
-            if (value === null || value === undefined) return '';
-            const str = String(value);
-            return /[",\n]/.test(str) ? `"${str.replace(/"/g, '""')}"` : str;
-          })
-          .join(',')
-      )
-      .join('\r\n');
-    
+    const csvText = buildNutritionCsv(dinnerRecipes);
     const blob = new Blob([csvText], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
@@ -1448,7 +1818,21 @@ export default function JanuaryMealsPage() {
     link.click();
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
-  }, []);
+  }, [dinnerRecipes]);
+
+  const handleOpenInGoogleSheets = useCallback(async () => {
+    if (typeof window === 'undefined') return;
+
+    const csvText = buildNutritionCsv(dinnerRecipes);
+
+    try {
+      await navigator?.clipboard?.writeText(csvText);
+    } catch {
+      // Clipboard may not be available; ignore silently
+    }
+
+    window.location.href = 'https://docs.google.com/spreadsheets/u/0/create?usp=sheets_home';
+  }, [dinnerRecipes]);
   
   const handleUpdateMeal = useCallback(async (dayKey, mealKey, mealData) => {
     const updated = {
@@ -1567,6 +1951,12 @@ export default function JanuaryMealsPage() {
                 <BookIcon /> View recipes
               </button>
               <button
+                onClick={handleOpenInGoogleSheets}
+                className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-neutral-300 bg-neutral-800/50 rounded-lg hover:bg-neutral-700/50 transition-colors border border-neutral-700/50"
+              >
+                <SheetsIcon /> Open in Sheets
+              </button>
+              <button
                 onClick={handleExportCsv}
                 className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-neutral-300 bg-neutral-800/50 rounded-lg hover:bg-neutral-700/50 transition-colors border border-neutral-700/50"
               >
@@ -1636,6 +2026,7 @@ export default function JanuaryMealsPage() {
                 key={day}
                 day={day}
                 nutrition={nutrition}
+                dinnerInfo={dinnerRecipes[nutrition.dinnerType]}
                 hasCustomization={!!customMeals[`day-${day}`]}
                 onClick={() => setSelectedDay(day)}
               />
@@ -1646,7 +2037,7 @@ export default function JanuaryMealsPage() {
         <div className="mt-8 p-4 rounded-xl bg-neutral-900/30 border border-neutral-800/30">
           <p className="text-xs uppercase tracking-wider text-neutral-500 mb-3">Dinner Rotation</p>
           <div className="flex flex-wrap gap-2">
-            {Object.entries(DINNER_TYPES).map(([code, info]) => (
+            {Object.entries(dinnerRecipes).map(([code, info]) => (
               <div 
                 key={code} 
                 className="px-3 py-1.5 rounded-lg text-xs"
@@ -1665,16 +2056,42 @@ export default function JanuaryMealsPage() {
       </div>
       
       {selectedDay && selectedNutrition && (
-      <DayDetail
-        day={selectedDay}
-        nutrition={selectedNutrition}
-        customMeals={customMeals}
-        onUpdate={handleUpdateMeal}
-        onClose={() => setSelectedDay(null)}
-      />
-    )}
+        <DayDetail
+          day={selectedDay}
+          nutrition={selectedNutrition}
+          customMeals={customMeals}
+          dinnerRecipes={dinnerRecipes}
+          onUpdate={handleUpdateMeal}
+          onClose={() => setSelectedDay(null)}
+        />
+      )}
     
-      <RecipesPanel isOpen={showRecipes} onClose={() => setShowRecipes(false)} />
+      <RecipesPanel
+        isOpen={showRecipes}
+        onClose={() => setShowRecipes(false)}
+        dinnerRecipes={dinnerRecipes}
+        onAddDinner={() => setActiveDinnerEditor({ mode: 'create' })}
+        onEditDinner={(code) => setActiveDinnerEditor({ mode: 'edit', code })}
+      />
+      <DinnerEditor
+        isOpen={!!activeDinnerEditor}
+        mode={activeDinnerEditor?.mode || 'edit'}
+        initialCode={activeDinnerEditor?.code || ''}
+        recipe={
+          activeDinnerEditor?.mode === 'edit' && activeDinnerEditor.code
+            ? dinnerRecipes[activeDinnerEditor.code]
+            : { name: '', color: '#f97316', ingredients: [] }
+        }
+        existingCodes={Object.keys(dinnerRecipes)}
+        canDelete={
+          activeDinnerEditor?.mode === 'edit' &&
+          activeDinnerEditor.code &&
+          !BASE_DINNER_RECIPES[activeDinnerEditor.code]
+        }
+        onSave={handleSaveDinnerTemplate}
+        onDelete={handleDeleteDinnerTemplate}
+        onClose={() => setActiveDinnerEditor(null)}
+      />
       <MethodologyPanel isOpen={showMethodology} onClose={() => setShowMethodology(false)} />
     </div>
   );
