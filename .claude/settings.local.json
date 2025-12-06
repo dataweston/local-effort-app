@@ -26,7 +26,9 @@
       "Bash(node apply-rls-fix.js:*)",
       "Bash(node apply-invoice-edit-migration.js:*)",
       "Bash(npm:*)",
-      "Bash(npx jsrepo@latest add:*)"
+      "Bash(npx jsrepo@latest add:*)",
+      "Bash(git fetch:*)",
+      "Bash(git pull:*)"
     ],
     "deny": [],
     "ask": []
