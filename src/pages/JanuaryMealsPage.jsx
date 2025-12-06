@@ -119,7 +119,7 @@ const DIET_GOALS = {
   carbs: { min: 140, max: 170, label: 'Carbs', unit: 'g' },
   fat: { min: 65, max: 75, label: 'Fat', unit: 'g' },
   fiber: { min: 40, max: 60, label: 'Fiber', unit: 'g' },
-  omega3: { min: 1, max: 2, label: 'Omega-3', unit: 'g' }
+  omega3: { min: 2, max: 3, label: 'Omega-3', unit: 'g' }
 };
 
 const DINNER_TYPES = {
@@ -131,6 +131,32 @@ const DINNER_TYPES = {
   SP: { name: 'Stuffed Sweet Potato', color: '#E07020' },
   MC: { name: 'Miso Glazed Cabbage', color: '#5A8F5A' }
 };
+
+const NUTRITION_CSV_FIELDS = [
+  { key: 'day', label: 'Day' },
+  { key: 'dinnerType', label: 'Dinner Code' },
+  {
+    key: 'dinnerName',
+    label: 'Dinner Name',
+    compute: (row) => DINNER_TYPES[row.dinnerType]?.name || '',
+  },
+  { key: 'calories', label: 'Calories (kcal)' },
+  { key: 'protein', label: 'Protein (g)' },
+  { key: 'carbs', label: 'Carbs (g)' },
+  { key: 'fat', label: 'Fat (g)' },
+  { key: 'fiber', label: 'Fiber (g)' },
+  { key: 'ala', label: 'ALA (g)' },
+  { key: 'epa_dha', label: 'EPA + DHA (g)' },
+  { key: 'vitA', label: 'Vitamin A (mcg)' },
+  { key: 'vitC', label: 'Vitamin C (mg)' },
+  { key: 'vitD', label: 'Vitamin D (mcg)' },
+  { key: 'vitK', label: 'Vitamin K (mcg)' },
+  { key: 'calcium', label: 'Calcium (mg)' },
+  { key: 'magnesium', label: 'Magnesium (mg)' },
+  { key: 'potassium', label: 'Potassium (mg)' },
+  { key: 'zinc', label: 'Zinc (mg)' },
+  { key: 'iron', label: 'Iron (mg)' },
+];
 
 const BASE_MEALS = {
   breakfast: {
@@ -378,6 +404,21 @@ const InfoIcon = () => (
   <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
     <circle cx="8" cy="8" r="6"/>
     <path d="M8 11V7M8 5h.01"/>
+  </svg>
+);
+
+const BookIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
+    <path d="M3 4.5A1.5 1.5 0 014.5 3H13v10H4.5A1.5 1.5 0 013 11.5V4.5z"/>
+    <path d="M8 3v10"/>
+  </svg>
+);
+
+const DownloadIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
+    <path d="M8 3v7"/>
+    <path d="M5.5 7.5L8 10l2.5-2.5"/>
+    <path d="M3 13h10"/>
   </svg>
 );
 
@@ -1072,7 +1113,7 @@ const MethodologyPanel = ({ isOpen, onClose }) => {
             <h3 className="text-amber-400 font-medium mb-2">Key Principles</h3>
             <div className="space-y-3">
               <p><strong className="text-white">High Fiber (40–60g):</strong> Feeds beneficial gut bacteria, produces SCFAs for gut barrier integrity and anti-inflammatory effects.</p>
-              <p><strong className="text-white">Omega-3 Rich (1–2g EPA/DHA):</strong> Anti-inflammatory, supports microbiome diversity, enhances mood.</p>
+              <p><strong className="text-white">Omega-3 Rich (2–3g EPA/DHA):</strong> Anti-inflammatory, supports microbiome diversity, enhances mood.</p>
               <p><strong className="text-white">Fermented Foods (2–3/day):</strong> Yogurt, kefir, kimchi, sauerkraut, miso, natto increase microbiome diversity.</p>
               <p><strong className="text-white">Quality Fats:</strong> Olive oil, dairy fat, animal fat from good sources. Saturated fat is fine when paired with fiber + omega-3 + polyphenols.</p>
               <p><strong className="text-white">Collagen Sources:</strong> Supports gut lining and joint health via bone broth, skin-on fish, collagen peptides.</p>
@@ -1085,11 +1126,77 @@ const MethodologyPanel = ({ isOpen, onClose }) => {
               <div className="flex justify-between p-2 rounded bg-neutral-900"><span>Calories</span><span className="text-neutral-400">1500–1800 kcal</span></div>
               <div className="flex justify-between p-2 rounded bg-neutral-900"><span>Protein</span><span className="text-neutral-400">90–100g</span></div>
               <div className="flex justify-between p-2 rounded bg-neutral-900"><span>Fiber</span><span className="text-neutral-400">40–60g</span></div>
-              <div className="flex justify-between p-2 rounded bg-neutral-900"><span>Omega-3</span><span className="text-neutral-400">1–2g EPA/DHA</span></div>
+              <div className="flex justify-between p-2 rounded bg-neutral-900"><span>Omega-3</span><span className="text-neutral-400">2–3g EPA/DHA</span></div>
               <div className="flex justify-between p-2 rounded bg-neutral-900"><span>Fermented</span><span className="text-neutral-400">2–3 servings</span></div>
               <div className="flex justify-between p-2 rounded bg-neutral-900"><span>Collagen</span><span className="text-neutral-400">1–2 sources</span></div>
             </div>
           </section>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ============================================================================
+// RECIPES PANEL
+// ============================================================================
+
+const RecipesPanel = ({ isOpen, onClose }) => {
+  if (!isOpen) return null;
+
+  const sections = [
+    { key: 'breakfast', title: 'Breakfast', meals: BASE_MEALS.breakfast },
+    { key: 'lunch', title: 'Lunch', meals: BASE_MEALS.lunch },
+    { key: 'dinner', title: 'Dinner', meals: BASE_MEALS.dinner },
+    { key: 'snacks', title: 'Snacks', meals: BASE_MEALS.snacks },
+  ];
+
+  const formatAmount = (ingredient) => {
+    if (!ingredient.amount) return ingredient.unit || '';
+    return `${ingredient.amount}${ingredient.unit ? ` ${ingredient.unit}` : ''}`;
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+      <div className="relative w-full max-w-4xl max-h-[90vh] overflow-hidden bg-neutral-950 rounded-2xl border border-neutral-800">
+        <div className="sticky top-0 z-10 flex items-center justify-between p-6 bg-neutral-950 border-b border-neutral-800">
+          <h2 className="text-xl font-semibold text-white">All Recipes</h2>
+          <button onClick={onClose} className="p-2 rounded-lg hover:bg-neutral-800 text-neutral-400 hover:text-white">
+            <XIcon />
+          </button>
+        </div>
+
+        <div className="p-6 overflow-y-auto max-h-[calc(90vh-88px)] space-y-8 text-sm text-neutral-300 leading-relaxed">
+          {sections.map((section) => (
+            <section key={section.key}>
+              <h3 className="text-amber-400 font-medium mb-3">{section.title}</h3>
+              <div className="grid gap-4 md:grid-cols-2">
+                {Object.entries(section.meals).map(([mealKey, meal]) => (
+                  <div key={mealKey} className="p-4 rounded-xl bg-neutral-900/50 border border-neutral-800/60">
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <p className="text-base font-semibold text-white">{meal.name}</p>
+                        {section.key === 'dinner' && (
+                          <p className="text-xs font-mono text-neutral-500 mt-1">Code: {mealKey}</p>
+                        )}
+                      </div>
+                      <div className="text-xs text-neutral-500 uppercase tracking-wide">
+                        {section.title}
+                      </div>
+                    </div>
+                    <ul className="mt-3 space-y-1.5 text-xs text-neutral-400">
+                      {meal.ingredients.map((ingredient, index) => (
+                        <li key={`${mealKey}-${index}`} className="flex justify-between gap-2">
+                          <span className="text-neutral-200">{ingredient.name}</span>
+                          <span className="text-neutral-500">{formatAmount(ingredient)}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ))}
+              </div>
+            </section>
+          ))}
         </div>
       </div>
     </div>
@@ -1208,6 +1315,7 @@ export default function JanuaryMealsPage() {
   const [selectedDay, setSelectedDay] = useState(null);
   const [customMeals, setCustomMeals] = useState({});
   const [showMethodology, setShowMethodology] = useState(false);
+  const [showRecipes, setShowRecipes] = useState(false);
   const [saveStatus, setSaveStatus] = useState(null);
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -1301,6 +1409,46 @@ export default function JanuaryMealsPage() {
       return false;
     }
   };
+  
+  const handleExportCsv = useCallback(() => {
+    if (typeof window === 'undefined' || typeof document === 'undefined') return;
+    
+    const rows = DAILY_NUTRITION.map((entry) =>
+      NUTRITION_CSV_FIELDS.map((field) => {
+        if (field.compute) {
+          return field.compute(entry);
+        }
+        return entry[field.key] ?? '';
+      })
+    );
+    
+    const allRows = [
+      NUTRITION_CSV_FIELDS.map((field) => field.label),
+      ...rows,
+    ];
+    
+    const csvText = allRows
+      .map((row) =>
+        row
+          .map((value) => {
+            if (value === null || value === undefined) return '';
+            const str = String(value);
+            return /[",\n]/.test(str) ? `"${str.replace(/"/g, '""')}"` : str;
+          })
+          .join(',')
+      )
+      .join('\r\n');
+    
+    const blob = new Blob([csvText], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', 'january-meal-plan.csv');
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  }, []);
   
   const handleUpdateMeal = useCallback(async (dayKey, mealKey, mealData) => {
     const updated = {
@@ -1412,6 +1560,18 @@ export default function JanuaryMealsPage() {
               >
                 <InfoIcon /> Methodology
               </button>
+              <button
+                onClick={() => setShowRecipes(true)}
+                className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-neutral-300 bg-neutral-800/50 rounded-lg hover:bg-neutral-700/50 transition-colors border border-neutral-700/50"
+              >
+                <BookIcon /> View recipes
+              </button>
+              <button
+                onClick={handleExportCsv}
+                className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-neutral-300 bg-neutral-800/50 rounded-lg hover:bg-neutral-700/50 transition-colors border border-neutral-700/50"
+              >
+                <DownloadIcon /> Export CSV
+              </button>
               
               {saveStatus && (
                 <span className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-full ${
@@ -1505,15 +1665,16 @@ export default function JanuaryMealsPage() {
       </div>
       
       {selectedDay && selectedNutrition && (
-        <DayDetail
-          day={selectedDay}
-          nutrition={selectedNutrition}
-          customMeals={customMeals}
-          onUpdate={handleUpdateMeal}
-          onClose={() => setSelectedDay(null)}
-        />
-      )}
-      
+      <DayDetail
+        day={selectedDay}
+        nutrition={selectedNutrition}
+        customMeals={customMeals}
+        onUpdate={handleUpdateMeal}
+        onClose={() => setSelectedDay(null)}
+      />
+    )}
+    
+      <RecipesPanel isOpen={showRecipes} onClose={() => setShowRecipes(false)} />
       <MethodologyPanel isOpen={showMethodology} onClose={() => setShowMethodology(false)} />
     </div>
   );
