@@ -169,6 +169,15 @@ const buildNutritionCsv = (dinnerMap) => {
     .join('\r\n');
 };
 
+const THEME = {
+  background: '#F8FAFC',
+  panel: '#D9EAFD',
+  card: '#BCCCDC',
+  accent: '#9AA6B2',
+  text: '#0F172A',
+  mutedText: '#475569',
+};
+
 const BASE_DINNER_RECIPES = {
   KB: {
     name: 'Tuscan Kale & White Bean Stew',
@@ -522,11 +531,11 @@ const CircularProgress = ({ value, max, color, size = 64, strokeWidth = 6, label
             style={{ transition: 'stroke-dashoffset 0.5s ease' }} />
         </svg>
         <div className="absolute inset-0 flex items-center justify-center">
-          <span className="text-xs font-medium text-neutral-200">{Math.round(percentage)}%</span>
+          <span className="text-xs font-medium text-slate-800">{Math.round(percentage)}%</span>
         </div>
       </div>
-      <span className="mt-1.5 text-[10px] uppercase tracking-wider text-neutral-500">{label}</span>
-      <span className="text-xs font-medium text-neutral-300">{value}{unit}</span>
+      <span className="mt-1.5 text-[10px] uppercase tracking-wider text-slate-500">{label}</span>
+      <span className="text-xs font-medium text-slate-700">{value}{unit}</span>
     </div>
   );
 };
@@ -537,10 +546,10 @@ const MicroBar = ({ label, value, max, unit, color }) => {
   return (
     <div className="space-y-1">
       <div className="flex justify-between text-xs">
-        <span className="text-neutral-400">{label}</span>
-        <span className="text-neutral-300 font-medium">{value}{unit}</span>
+        <span className="text-slate-600">{label}</span>
+        <span className="text-slate-700 font-medium">{value}{unit}</span>
       </div>
-      <div className="h-1.5 bg-neutral-800 rounded-full overflow-hidden">
+      <div className="h-1.5 bg-[#BCCCDC] rounded-full overflow-hidden">
         <div className="h-full rounded-full transition-all duration-500"
           style={{ width: `${percentage}%`, backgroundColor: color }} />
       </div>
@@ -622,11 +631,11 @@ const IngredientSearch = ({ onSelect, onClose }) => {
   
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/90 backdrop-blur-sm">
-      <div className="w-full max-w-lg bg-neutral-900 rounded-xl border border-neutral-700 overflow-hidden">
-        <div className="p-4 border-b border-neutral-800">
+      <div className="w-full max-w-lg bg-[#D9EAFD] rounded-xl border border-[#9AA6B2] overflow-hidden">
+        <div className="p-4 border-b border-[#9AA6B2]">
           <div className="flex items-center justify-between mb-3">
-            <h3 className="font-medium text-white">Search Ingredient</h3>
-            <button onClick={onClose} className="p-1.5 rounded hover:bg-neutral-800 text-neutral-400">
+            <h3 className="font-medium text-slate-900">Search Ingredient</h3>
+            <button onClick={onClose} className="p-1.5 rounded hover:bg-[#BCCCDC] text-slate-600">
               <XIcon />
             </button>
           </div>
@@ -638,66 +647,66 @@ const IngredientSearch = ({ onSelect, onClose }) => {
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search USDA database..."
-              className="w-full pl-9 pr-4 py-2.5 bg-neutral-800 border border-neutral-700 rounded-lg text-white placeholder-neutral-500 focus:outline-none focus:border-amber-500"
+              className="w-full pl-9 pr-4 py-2.5 bg-[#BCCCDC] border border-[#9AA6B2] rounded-lg text-slate-900 placeholder-slate-500 focus:outline-none focus:border-[#9AA6B2]"
               style={{ paddingLeft: '2.5rem' }}
             />
-            <div className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-500">
+            <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500">
               <SearchIcon />
             </div>
             {loading && (
-              <div className="absolute right-3 top-1/2 -translate-y-1/2 text-amber-400">
+              <div className="absolute right-3 top-1/2 -translate-y-1/2 text-[#9AA6B2]">
                 <LoaderIcon />
               </div>
             )}
           </div>
-          <p className="mt-2 text-[10px] text-neutral-500">Data from USDA FoodData Central</p>
+          <p className="mt-2 text-[10px] text-slate-500">Data from USDA FoodData Central</p>
         </div>
         
         {selectedFood ? (
           <div className="p-4">
-            <div className="p-3 bg-neutral-800 rounded-lg mb-4">
-              <p className="font-medium text-white text-sm">{selectedFood.name}</p>
+            <div className="p-3 bg-[#BCCCDC] rounded-lg mb-4">
+              <p className="font-medium text-slate-900 text-sm">{selectedFood.name}</p>
               <div className="mt-2 grid grid-cols-4 gap-2 text-xs">
-                <div className="text-center p-2 bg-neutral-900 rounded">
-                  <p className="text-amber-400 font-medium">{Math.round(selectedFood.nutrients.calories * amount / 100)}</p>
-                  <p className="text-neutral-500">kcal</p>
+                <div className="text-center p-2 bg-[#D9EAFD] rounded">
+                  <p className="text-[#9AA6B2] font-medium">{Math.round(selectedFood.nutrients.calories * amount / 100)}</p>
+                  <p className="text-slate-500">kcal</p>
                 </div>
-                <div className="text-center p-2 bg-neutral-900 rounded">
+                <div className="text-center p-2 bg-[#D9EAFD] rounded">
                   <p className="text-blue-400 font-medium">{Math.round(selectedFood.nutrients.protein * amount / 100 * 10) / 10}g</p>
-                  <p className="text-neutral-500">protein</p>
+                  <p className="text-slate-500">protein</p>
                 </div>
-                <div className="text-center p-2 bg-neutral-900 rounded">
+                <div className="text-center p-2 bg-[#D9EAFD] rounded">
                   <p className="text-green-400 font-medium">{Math.round(selectedFood.nutrients.carbs * amount / 100 * 10) / 10}g</p>
-                  <p className="text-neutral-500">carbs</p>
+                  <p className="text-slate-500">carbs</p>
                 </div>
-                <div className="text-center p-2 bg-neutral-900 rounded">
+                <div className="text-center p-2 bg-[#D9EAFD] rounded">
                   <p className="text-rose-400 font-medium">{Math.round(selectedFood.nutrients.fat * amount / 100 * 10) / 10}g</p>
-                  <p className="text-neutral-500">fat</p>
+                  <p className="text-slate-500">fat</p>
                 </div>
               </div>
             </div>
             
             <div className="flex items-center gap-3 mb-4">
-              <label className="text-sm text-neutral-400">Amount:</label>
+              <label className="text-sm text-slate-600">Amount:</label>
               <input
                 type="number"
                 value={amount}
                 onChange={(e) => setAmount(Math.max(1, parseInt(e.target.value) || 0))}
-                className="w-24 px-3 py-2 bg-neutral-800 border border-neutral-700 rounded-lg text-white text-center focus:outline-none focus:border-amber-500"
+                className="w-24 px-3 py-2 bg-[#BCCCDC] border border-[#9AA6B2] rounded-lg text-slate-900 text-center focus:outline-none focus:border-[#9AA6B2]"
               />
-              <span className="text-sm text-neutral-500">grams</span>
+              <span className="text-sm text-slate-500">grams</span>
             </div>
             
             <div className="flex gap-3">
               <button
                 onClick={() => setSelectedFood(null)}
-                className="flex-1 px-4 py-2.5 text-sm font-medium text-neutral-300 bg-neutral-800 rounded-lg hover:bg-neutral-700"
+                className="flex-1 px-4 py-2.5 text-sm font-medium text-slate-700 bg-[#BCCCDC] rounded-lg hover:bg-[#9AA6B2]"
               >
                 Back to Search
               </button>
               <button
                 onClick={handleConfirm}
-                className="flex-1 px-4 py-2.5 text-sm font-medium text-neutral-900 bg-amber-400 rounded-lg hover:bg-amber-300"
+                className="flex-1 px-4 py-2.5 text-sm font-medium text-slate-900 bg-[#BCCCDC] rounded-lg hover:bg-[#9AA6B2]"
               >
                 Add Ingredient
               </button>
@@ -706,21 +715,21 @@ const IngredientSearch = ({ onSelect, onClose }) => {
         ) : (
           <div className="max-h-80 overflow-y-auto">
             {results.length === 0 && query.length >= 2 && !loading && (
-              <p className="p-4 text-center text-neutral-500 text-sm">No results found</p>
+              <p className="p-4 text-center text-slate-500 text-sm">No results found</p>
             )}
             {results.map((food) => (
               <button
                 key={food.fdcId}
                 onClick={() => handleSelect(food)}
-                className="w-full p-3 text-left hover:bg-neutral-800 border-b border-neutral-800/50 last:border-0 transition-colors"
+                className="w-full p-3 text-left hover:bg-[#BCCCDC] border-b border-[#9AA6B2]/50 last:border-0 transition-colors"
               >
-                <p className="text-sm text-white truncate">{food.name}</p>
-                <div className="flex gap-3 mt-1 text-xs text-neutral-500">
+                <p className="text-sm text-slate-900 truncate">{food.name}</p>
+                <div className="flex gap-3 mt-1 text-xs text-slate-500">
                   <span>{Math.round(food.nutrients.calories)} kcal</span>
                   <span>{Math.round(food.nutrients.protein)}g P</span>
                   <span>{Math.round(food.nutrients.carbs)}g C</span>
                   <span>{Math.round(food.nutrients.fat)}g F</span>
-                  <span className="text-neutral-600">per 100g</span>
+                  <span className="text-slate-500">per 100g</span>
                 </div>
               </button>
             ))}
@@ -737,10 +746,10 @@ const IngredientSearch = ({ onSelect, onClose }) => {
 
 const IngredientRow = ({ ingredient, index, onAmountChange, onRemove, isEditing }) => {
   return (
-    <div className="flex items-center justify-between py-2.5 border-b border-neutral-800/50 last:border-0 group">
+    <div className="flex items-center justify-between py-2.5 border-b border-[#9AA6B2]/50 last:border-0 group">
       <div className="flex-1 min-w-0">
-        <p className="text-sm text-neutral-200 truncate">{ingredient.name}</p>
-        <div className="flex gap-3 mt-0.5 text-[10px] text-neutral-500">
+        <p className="text-sm text-slate-800 truncate">{ingredient.name}</p>
+        <div className="flex gap-3 mt-0.5 text-[10px] text-slate-500">
           <span>{ingredient.calories} kcal</span>
           <span>{ingredient.protein}g P</span>
           <span>{ingredient.carbs}g C</span>
@@ -755,20 +764,20 @@ const IngredientRow = ({ ingredient, index, onAmountChange, onRemove, isEditing 
               type="number"
               value={ingredient.amount}
               onChange={(e) => onAmountChange(index, parseFloat(e.target.value) || 0)}
-              className="w-16 px-2 py-1 text-sm text-right bg-neutral-800 border border-neutral-700 rounded text-neutral-200 focus:outline-none focus:border-amber-500"
+              className="w-16 px-2 py-1 text-sm text-right bg-[#BCCCDC] border border-[#9AA6B2] rounded text-slate-800 focus:outline-none focus:border-[#9AA6B2]"
             />
-            <span className="text-xs text-neutral-500 w-6">{ingredient.unit}</span>
+            <span className="text-xs text-slate-500 w-6">{ingredient.unit}</span>
             <button
               onClick={() => onRemove(index)}
-              className="p-1.5 text-neutral-500 hover:text-red-400 hover:bg-red-500/10 rounded transition-colors"
+              className="p-1.5 text-slate-500 hover:text-red-400 hover:bg-red-500/10 rounded transition-colors"
             >
               <TrashIcon />
             </button>
           </>
         ) : (
           <>
-            <span className="text-sm text-neutral-300 font-medium">{ingredient.amount}</span>
-            <span className="text-xs text-neutral-500 w-6">{ingredient.unit}</span>
+            <span className="text-sm text-slate-700 font-medium">{ingredient.amount}</span>
+            <span className="text-xs text-slate-500 w-6">{ingredient.unit}</span>
           </>
         )}
       </div>
@@ -778,13 +787,13 @@ const IngredientRow = ({ ingredient, index, onAmountChange, onRemove, isEditing 
 
 const DinnerIngredientRow = ({ ingredient, onChange, onRemove }) => {
   return (
-    <div className="grid grid-cols-12 gap-3 items-center py-2 border-b border-neutral-800/40 last:border-0">
+    <div className="grid grid-cols-12 gap-3 items-center py-2 border-b border-[#9AA6B2]/40 last:border-0">
       <div className="col-span-5">
         <input
           type="text"
           value={ingredient.name}
           onChange={(e) => onChange({ ...ingredient, name: e.target.value })}
-          className="w-full px-3 py-2 text-sm bg-neutral-900 border border-neutral-800 rounded-lg text-neutral-200 focus:outline-none focus:border-amber-500"
+          className="w-full px-3 py-2 text-sm bg-[#D9EAFD] border border-[#9AA6B2] rounded-lg text-slate-800 focus:outline-none focus:border-[#9AA6B2]"
         />
       </div>
       <div className="col-span-3">
@@ -792,7 +801,7 @@ const DinnerIngredientRow = ({ ingredient, onChange, onRemove }) => {
           type="number"
           value={ingredient.amount || ''}
           onChange={(e) => onChange({ ...ingredient, amount: parseFloat(e.target.value) || 0 })}
-          className="w-full px-3 py-2 text-sm bg-neutral-900 border border-neutral-800 rounded-lg text-neutral-200 text-right focus:outline-none focus:border-amber-500"
+          className="w-full px-3 py-2 text-sm bg-[#D9EAFD] border border-[#9AA6B2] rounded-lg text-slate-800 text-right focus:outline-none focus:border-[#9AA6B2]"
         />
       </div>
       <div className="col-span-3">
@@ -800,13 +809,13 @@ const DinnerIngredientRow = ({ ingredient, onChange, onRemove }) => {
           type="text"
           value={ingredient.unit || ''}
           onChange={(e) => onChange({ ...ingredient, unit: e.target.value })}
-          className="w-full px-3 py-2 text-sm bg-neutral-900 border border-neutral-800 rounded-lg text-neutral-200 focus:outline-none focus:border-amber-500"
+          className="w-full px-3 py-2 text-sm bg-[#D9EAFD] border border-[#9AA6B2] rounded-lg text-slate-800 focus:outline-none focus:border-[#9AA6B2]"
         />
       </div>
       <div className="col-span-1 flex justify-end">
         <button
           onClick={onRemove}
-          className="p-2 text-neutral-500 hover:text-red-400 hover:bg-red-500/10 rounded transition-colors"
+          className="p-2 text-slate-500 hover:text-red-400 hover:bg-red-500/10 rounded transition-colors"
         >
           <TrashIcon />
         </button>
@@ -883,21 +892,21 @@ const MealCard = ({ title, meal, mealKey, dayKey, onUpdate, isEditing, setIsEdit
   
   return (
     <>
-      <div className="bg-neutral-900/80 rounded-xl border border-neutral-800/50 overflow-hidden">
+      <div className="bg-[#D9EAFD] rounded-xl border border-[#9AA6B2]/50 overflow-hidden">
         <div 
-          className="flex items-center justify-between p-4 cursor-pointer hover:bg-neutral-800/30 transition-colors"
+          className="flex items-center justify-between p-4 cursor-pointer hover:bg-[#BCCCDC]/60 transition-colors"
           onClick={() => setExpanded(!expanded)}
         >
           <div className="flex items-center gap-3">
             <div>
-              <h4 className="font-medium text-neutral-100">{title}</h4>
-              <p className="text-sm text-neutral-400">{localMeal.name}</p>
+              <h4 className="font-medium text-slate-800">{title}</h4>
+              <p className="text-sm text-slate-600">{localMeal.name}</p>
             </div>
           </div>
           <div className="flex items-center gap-4">
             <div className="text-right hidden sm:block">
-              <p className="text-sm font-medium text-neutral-200">{Math.round(totalNutrition.calories)} kcal</p>
-              <p className="text-xs text-neutral-500">{Math.round(totalNutrition.protein)}g protein</p>
+              <p className="text-sm font-medium text-slate-800">{Math.round(totalNutrition.calories)} kcal</p>
+              <p className="text-xs text-slate-500">{Math.round(totalNutrition.protein)}g protein</p>
             </div>
             <div className={`transform transition-transform ${expanded ? 'rotate-90' : ''}`}>
               <ChevronRight />
@@ -906,10 +915,10 @@ const MealCard = ({ title, meal, mealKey, dayKey, onUpdate, isEditing, setIsEdit
         </div>
         
         {expanded && (
-          <div className="px-4 pb-4 border-t border-neutral-800/50">
+          <div className="px-4 pb-4 border-t border-[#9AA6B2]/50">
             <div className="flex flex-wrap justify-between items-center py-3 gap-2">
               <div className="flex flex-wrap gap-2 text-xs">
-                <span className="px-2 py-1 rounded bg-amber-500/10 text-amber-400">{Math.round(totalNutrition.calories)} kcal</span>
+                <span className="px-2 py-1 rounded bg-[#BCCCDC]/30 text-[#9AA6B2]">{Math.round(totalNutrition.calories)} kcal</span>
                 <span className="px-2 py-1 rounded bg-blue-500/10 text-blue-400">{Math.round(totalNutrition.protein)}g P</span>
                 <span className="px-2 py-1 rounded bg-green-500/10 text-green-400">{Math.round(totalNutrition.carbs)}g C</span>
                 <span className="px-2 py-1 rounded bg-rose-500/10 text-rose-400">{Math.round(totalNutrition.fat)}g F</span>
@@ -920,13 +929,13 @@ const MealCard = ({ title, meal, mealKey, dayKey, onUpdate, isEditing, setIsEdit
                 <div className="flex gap-2">
                   <button 
                     onClick={handleCancel}
-                    className="px-3 py-1.5 text-xs font-medium text-neutral-400 hover:text-white transition-colors"
+                    className="px-3 py-1.5 text-xs font-medium text-slate-600 hover:text-slate-900 transition-colors"
                   >
                     Cancel
                   </button>
                   <button 
                     onClick={handleSave}
-                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-neutral-900 bg-amber-400 rounded-lg hover:bg-amber-300 transition-colors"
+                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-900 bg-[#BCCCDC] rounded-lg hover:bg-[#9AA6B2] transition-colors"
                   >
                     <SaveIcon /> Save
                   </button>
@@ -934,7 +943,7 @@ const MealCard = ({ title, meal, mealKey, dayKey, onUpdate, isEditing, setIsEdit
               ) : (
                 <button 
                   onClick={(e) => { e.stopPropagation(); setIsEditing(true); }}
-                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-neutral-300 bg-neutral-800 rounded-lg hover:bg-neutral-700 transition-colors"
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-700 bg-[#BCCCDC] rounded-lg hover:bg-[#9AA6B2] transition-colors"
                 >
                   <EditIcon /> Edit
                 </button>
@@ -957,7 +966,7 @@ const MealCard = ({ title, meal, mealKey, dayKey, onUpdate, isEditing, setIsEdit
             {isEditing && (
               <button
                 onClick={() => setShowIngredientSearch(true)}
-                className="mt-3 w-full flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium text-amber-400 border border-dashed border-amber-400/30 rounded-lg hover:bg-amber-400/5 transition-colors"
+                className="mt-3 w-full flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium text-[#9AA6B2] border border-dashed border-[#9AA6B2]/30 rounded-lg hover:bg-[#BCCCDC]/5 transition-colors"
               >
                 <PlusIcon /> Add Ingredient from USDA Database
               </button>
@@ -1006,8 +1015,8 @@ const DayDetail = ({ day, nutrition, customMeals, dinnerRecipes, onUpdate, onClo
   
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-      <div className="relative w-full max-w-4xl max-h-[90vh] overflow-hidden bg-neutral-950 rounded-2xl border border-neutral-800">
-        <div className="sticky top-0 z-10 flex items-center justify-between p-6 bg-neutral-950/95 backdrop-blur border-b border-neutral-800">
+      <div className="relative w-full max-w-4xl max-h-[90vh] overflow-hidden bg-slate-50 rounded-2xl border border-[#9AA6B2]">
+        <div className="sticky top-0 z-10 flex items-center justify-between p-6 bg-slate-50/95 backdrop-blur border-b border-[#9AA6B2]">
           <div className="flex items-center gap-4">
             <div 
               className="w-12 h-12 rounded-xl flex items-center justify-center"
@@ -1016,21 +1025,21 @@ const DayDetail = ({ day, nutrition, customMeals, dinnerRecipes, onUpdate, onClo
               <span className="text-lg font-bold" style={{ color: dinnerInfo.color }}>{day}</span>
             </div>
             <div>
-              <h2 className="text-xl font-semibold text-white">Day {day}</h2>
-              <p className="text-sm text-neutral-400">{dinnerInfo.name}</p>
+              <h2 className="text-xl font-semibold text-slate-900">Day {day}</h2>
+              <p className="text-sm text-slate-600">{dinnerInfo.name}</p>
             </div>
           </div>
           <button 
             onClick={onClose}
-            className="p-2 rounded-lg hover:bg-neutral-800 transition-colors text-neutral-400 hover:text-white"
+            className="p-2 rounded-lg hover:bg-[#BCCCDC] transition-colors text-slate-600 hover:text-slate-900"
           >
             <XIcon />
           </button>
         </div>
         
         <div className="overflow-y-auto max-h-[calc(90vh-88px)]">
-          <div className="p-6 border-b border-neutral-800 bg-gradient-to-b from-neutral-900/50 to-transparent">
-            <h3 className="text-xs uppercase tracking-wider text-neutral-500 mb-4">Daily Nutrition</h3>
+          <div className="p-6 border-b border-[#9AA6B2] bg-gradient-to-b from-[#BCCCDC]/60 to-transparent">
+            <h3 className="text-xs uppercase tracking-wider text-slate-500 mb-4">Daily Nutrition</h3>
             
             <div className="grid grid-cols-5 gap-4 mb-6">
               <CircularProgress value={nutrition.calories} max={DIET_GOALS.calories.max} color="#f59e0b" label="Calories" unit=" kcal" />
@@ -1057,7 +1066,7 @@ const DayDetail = ({ day, nutrition, customMeals, dinnerRecipes, onUpdate, onClo
           </div>
           
           <div className="p-6 space-y-4">
-            <h3 className="text-xs uppercase tracking-wider text-neutral-500 mb-4">Meals & Ingredients</h3>
+            <h3 className="text-xs uppercase tracking-wider text-slate-500 mb-4">Meals & Ingredients</h3>
             
             <MealCard 
               title="Breakfast"
@@ -1115,16 +1124,16 @@ const CalendarDay = ({ day, nutrition, dinnerInfo, hasCustomization, onClick }) 
   return (
     <div 
       onClick={onClick}
-      className="group relative aspect-square p-2 sm:p-3 rounded-xl border border-neutral-800/50 bg-neutral-900/30 hover:bg-neutral-800/50 hover:border-neutral-700 cursor-pointer transition-all duration-200"
+      className="group relative aspect-square p-2 sm:p-3 rounded-xl border border-[#9AA6B2]/50 bg-[#D9EAFD]/70 hover:bg-[#BCCCDC]/70 hover:border-[#9AA6B2] cursor-pointer transition-all duration-200"
     >
       {hasCustomization && (
-        <div className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-amber-400" />
+        <div className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-[#BCCCDC]" />
       )}
       
       <div className="flex flex-col h-full">
         <div className="flex items-center justify-between mb-2">
-          <span className="text-[10px] uppercase tracking-wider text-neutral-600">Day</span>
-          <span className="text-lg font-semibold text-white">{day}</span>
+          <span className="text-[10px] uppercase tracking-wider text-slate-500">Day</span>
+          <span className="text-lg font-semibold text-slate-900">{day}</span>
         </div>
         
         <div 
@@ -1137,8 +1146,8 @@ const CalendarDay = ({ day, nutrition, dinnerInfo, hasCustomization, onClick }) 
         </div>
         
         <div className="mt-2 hidden sm:block">
-          <p className="text-xs font-medium text-neutral-300">{nutrition.calories} kcal</p>
-          <p className="text-[10px] text-neutral-500">{nutrition.protein}g protein</p>
+          <p className="text-xs font-medium text-slate-700">{nutrition.calories} kcal</p>
+          <p className="text-[10px] text-slate-500">{nutrition.protein}g protein</p>
         </div>
       </div>
     </div>
@@ -1154,63 +1163,84 @@ const MethodologyPanel = ({ isOpen, onClose }) => {
   
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-      <div className="relative w-full max-w-2xl max-h-[85vh] overflow-hidden bg-neutral-950 rounded-2xl border border-neutral-800">
-        <div className="sticky top-0 z-10 flex items-center justify-between p-6 bg-neutral-950 border-b border-neutral-800">
-          <h2 className="text-xl font-semibold text-white">Methodology</h2>
-          <button onClick={onClose} className="p-2 rounded-lg hover:bg-neutral-800 text-neutral-400 hover:text-white">
+      <div className="relative w-full max-w-2xl max-h-[85vh] overflow-hidden bg-slate-50 rounded-2xl border border-[#9AA6B2]">
+        <div className="sticky top-0 z-10 flex items-center justify-between p-6 bg-slate-50 border-b border-[#9AA6B2]">
+          <h2 className="text-xl font-semibold text-slate-900">Methodology</h2>
+          <button onClick={onClose} className="p-2 rounded-lg hover:bg-[#BCCCDC] text-slate-600 hover:text-slate-900">
             <XIcon />
           </button>
         </div>
         
-        <div className="p-6 overflow-y-auto max-h-[calc(85vh-88px)] space-y-6 text-sm text-neutral-300 leading-relaxed">
+        <div className="p-6 overflow-y-auto max-h-[calc(85vh-88px)] space-y-6 text-sm text-slate-700 leading-relaxed">
           <section>
-            <h3 className="text-amber-400 font-medium mb-2">Core Goals</h3>
+            <h3 className="text-[#9AA6B2] font-medium mb-2">Core Goals</h3>
             <ul className="space-y-1.5">
-              <li className="flex items-start gap-2"><CheckIcon /><span>Improve gut health & bowel function</span></li>
-              <li className="flex items-start gap-2"><CheckIcon /><span>Enhance mood through gut-brain axis</span></li>
+              <li className="flex items-start gap-2"><CheckIcon /><span>Rebuild and restore gut health</span></li>
+              <li className="flex items-start gap-2"><CheckIcon /><span>Reset baseline nutritional needs</span></li>
               <li className="flex items-start gap-2"><CheckIcon /><span>Reduce systemic inflammation</span></li>
             </ul>
           </section>
           
           <section>
-            <h3 className="text-amber-400 font-medium mb-2">Macro Framework</h3>
+            <h3 className="text-[#9AA6B2] font-medium mb-2">Daily Macros</h3>
             <div className="grid grid-cols-3 gap-3">
-              <div className="p-3 rounded-lg bg-neutral-900 border border-neutral-800">
+              <div className="p-3 rounded-lg bg-[#D9EAFD] border border-[#9AA6B2]">
                 <p className="text-blue-400 font-medium">Protein</p>
-                <p className="text-neutral-400 text-xs">20–25% (~90–100g)</p>
+                <p className="text-slate-600 text-xs">20–25% (~90–100g)</p>
               </div>
-              <div className="p-3 rounded-lg bg-neutral-900 border border-neutral-800">
+              <div className="p-3 rounded-lg bg-[#D9EAFD] border border-[#9AA6B2]">
                 <p className="text-rose-400 font-medium">Fat</p>
-                <p className="text-neutral-400 text-xs">35–45% (high quality)</p>
+                <p className="text-slate-600 text-xs">35–45% (high quality)</p>
               </div>
-              <div className="p-3 rounded-lg bg-neutral-900 border border-neutral-800">
+              <div className="p-3 rounded-lg bg-[#D9EAFD] border border-[#9AA6B2]">
                 <p className="text-green-400 font-medium">Carbs</p>
-                <p className="text-neutral-400 text-xs">30–40% (high fiber)</p>
+                <p className="text-slate-600 text-xs">30–40% (high fiber)</p>
               </div>
             </div>
           </section>
           
           <section>
-            <h3 className="text-amber-400 font-medium mb-2">Key Principles</h3>
+            <h3 className="text-[#9AA6B2] font-medium mb-2">Key Principles</h3>
             <div className="space-y-3">
-              <p><strong className="text-white">High Fiber (40–60g):</strong> Feeds beneficial gut bacteria, produces SCFAs for gut barrier integrity and anti-inflammatory effects.</p>
-              <p><strong className="text-white">Omega-3 Rich (2–3g EPA/DHA):</strong> Anti-inflammatory, supports microbiome diversity, enhances mood.</p>
-              <p><strong className="text-white">Fermented Foods (2–3/day):</strong> Yogurt, kefir, kimchi, sauerkraut, miso, natto increase microbiome diversity.</p>
-              <p><strong className="text-white">Quality Fats:</strong> Olive oil, dairy fat, animal fat from good sources. Saturated fat is fine when paired with fiber + omega-3 + polyphenols.</p>
-              <p><strong className="text-white">Collagen Sources:</strong> Supports gut lining and joint health via bone broth, skin-on fish, collagen peptides.</p>
+              <p><strong className="text-slate-900">High Fiber (40–60g):</strong> Feeds beneficial gut bacteria, produces SCFAs for gut barrier integrity and anti-inflammatory effects.</p>
+              <p><strong className="text-slate-900">Omega-3 Rich (2–3g EPA/DHA):</strong> Anti-inflammatory, supports microbiome diversity, enhances mood.</p>
+              <p><strong className="text-slate-900">Fermented Foods (2–3/day):</strong> Yogurt, kefir, kimchi, sauerkraut, miso, natto increase microbiome diversity.</p>
+              <p><strong className="text-slate-900">Quality Fats:</strong> Olive oil, dairy fat, animal fat from good sources. Reduce overall saturated fat intake.</p>
+              <p><strong className="text-slate-900">Collagen Sources:</strong> Supports gut lining and joint health via bone broth, skin-on fish, collagen peptides.</p>
             </div>
           </section>
           
           <section>
-            <h3 className="text-amber-400 font-medium mb-2">Daily Targets</h3>
+            <h3 className="text-[#9AA6B2] font-medium mb-2">Daily Targets</h3>
             <div className="grid grid-cols-2 gap-2 text-xs">
-              <div className="flex justify-between p-2 rounded bg-neutral-900"><span>Calories</span><span className="text-neutral-400">1500–1800 kcal</span></div>
-              <div className="flex justify-between p-2 rounded bg-neutral-900"><span>Protein</span><span className="text-neutral-400">90–100g</span></div>
-              <div className="flex justify-between p-2 rounded bg-neutral-900"><span>Fiber</span><span className="text-neutral-400">40–60g</span></div>
-              <div className="flex justify-between p-2 rounded bg-neutral-900"><span>Omega-3</span><span className="text-neutral-400">2–3g EPA/DHA</span></div>
-              <div className="flex justify-between p-2 rounded bg-neutral-900"><span>Fermented</span><span className="text-neutral-400">2–3 servings</span></div>
-              <div className="flex justify-between p-2 rounded bg-neutral-900"><span>Collagen</span><span className="text-neutral-400">1–2 sources</span></div>
+              <div className="flex justify-between p-2 rounded bg-[#D9EAFD]"><span>Calories</span><span className="text-slate-600">1500–1800 kcal</span></div>
+              <div className="flex justify-between p-2 rounded bg-[#D9EAFD]"><span>Protein</span><span className="text-slate-600">90–100g</span></div>
+              <div className="flex justify-between p-2 rounded bg-[#D9EAFD]"><span>Fiber</span><span className="text-slate-600">40–60g</span></div>
+              <div className="flex justify-between p-2 rounded bg-[#D9EAFD]"><span>Omega-3</span><span className="text-slate-600">2–3g EPA/DHA</span></div>
+              <div className="flex justify-between p-2 rounded bg-[#D9EAFD]"><span>Fermented</span><span className="text-slate-600">2–3 servings</span></div>
+              <div className="flex justify-between p-2 rounded bg-[#D9EAFD]"><span>Collagen</span><span className="text-slate-600">1–2 sources</span></div>
             </div>
+          </section>
+
+          <section>
+            <h3 className="text-[#9AA6B2] font-medium mb-2">Underlying Science</h3>
+            <ul className="list-disc pl-5 space-y-1 text-slate-600">
+              <li>
+                <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC9040132" className="text-[#9AA6B2] hover:underline" target="_blank" rel="noreferrer">
+                  Gut microbiota modulation in metabolic health (PMC9040132)
+                </a>
+              </li>
+              <li>
+                <a href="https://onlinelibrary.wiley.com/doi/10.1111/jgh.16619" className="text-[#9AA6B2] hover:underline" target="_blank" rel="noreferrer">
+                  Nutritional interventions for liver-gut axis (JGH.16619)
+                </a>
+              </li>
+              <li>
+                <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC9268559" className="text-[#9AA6B2] hover:underline" target="_blank" rel="noreferrer">
+                  Dietary fiber’s role in inflammation control (PMC9268559)
+                </a>
+              </li>
+            </ul>
           </section>
         </div>
       </div>
@@ -1238,32 +1268,32 @@ const RecipesPanel = ({ isOpen, onClose, dinnerRecipes, onAddDinner, onEditDinne
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-      <div className="relative w-full max-w-4xl max-h-[90vh] overflow-hidden bg-neutral-950 rounded-2xl border border-neutral-800">
-        <div className="sticky top-0 z-10 flex items-center justify-between p-6 bg-neutral-950 border-b border-neutral-800">
-          <h2 className="text-xl font-semibold text-white">All Recipes</h2>
-          <button onClick={onClose} className="p-2 rounded-lg hover:bg-neutral-800 text-neutral-400 hover:text-white">
+      <div className="relative w-full max-w-4xl max-h-[90vh] overflow-hidden bg-slate-50 rounded-2xl border border-[#9AA6B2]">
+        <div className="sticky top-0 z-10 flex items-center justify-between p-6 bg-slate-50 border-b border-[#9AA6B2]">
+          <h2 className="text-xl font-semibold text-slate-900">All Recipes</h2>
+          <button onClick={onClose} className="p-2 rounded-lg hover:bg-[#BCCCDC] text-slate-600 hover:text-slate-900">
             <XIcon />
           </button>
         </div>
 
-        <div className="p-6 overflow-y-auto max-h-[calc(90vh-88px)] space-y-8 text-sm text-neutral-300 leading-relaxed">
+        <div className="p-6 overflow-y-auto max-h-[calc(90vh-88px)] space-y-8 text-sm text-slate-700 leading-relaxed">
           {sections.map((section) => (
             <section key={section.key}>
-              <h3 className="text-amber-400 font-medium mb-3">{section.title}</h3>
+              <h3 className="text-[#9AA6B2] font-medium mb-3">{section.title}</h3>
               <div className="grid gap-4 md:grid-cols-2">
                 {Object.entries(section.meals).map(([mealKey, meal]) => (
-                  <div key={mealKey} className="p-4 rounded-xl bg-neutral-900/50 border border-neutral-800/60">
+                  <div key={mealKey} className="p-4 rounded-xl bg-[#D9EAFD]/80 border border-[#9AA6B2]/60">
                     <div className="flex items-start justify-between gap-3">
                       <div>
-                        <p className="text-base font-semibold text-white">{meal.name}</p>
-                        <p className="text-xs text-neutral-500">{section.title}</p>
+                        <p className="text-base font-semibold text-slate-900">{meal.name}</p>
+                        <p className="text-xs text-slate-500">{section.title}</p>
                       </div>
                     </div>
-                    <ul className="mt-3 space-y-1.5 text-xs text-neutral-400">
+                    <ul className="mt-3 space-y-1.5 text-xs text-slate-600">
                       {meal.ingredients.map((ingredient, index) => (
                         <li key={`${mealKey}-${index}`} className="flex justify-between gap-2">
-                          <span className="text-neutral-200">{ingredient.name}</span>
-                          <span className="text-neutral-500">{formatAmount(ingredient)}</span>
+                          <span className="text-slate-800">{ingredient.name}</span>
+                          <span className="text-slate-500">{formatAmount(ingredient)}</span>
                         </li>
                       ))}
                     </ul>
@@ -1275,34 +1305,34 @@ const RecipesPanel = ({ isOpen, onClose, dinnerRecipes, onAddDinner, onEditDinne
 
           <section>
             <div className="flex items-center justify-between mb-3">
-              <h3 className="text-amber-400 font-medium">Dinner</h3>
+              <h3 className="text-[#9AA6B2] font-medium">Dinner</h3>
               <button
                 onClick={onAddDinner}
-                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-amber-400 border border-amber-400/40 rounded-lg hover:bg-amber-500/10 transition-colors"
+                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-[#9AA6B2] border border-[#9AA6B2]/40 rounded-lg hover:bg-[#BCCCDC]/30 transition-colors"
               >
                 <PlusIcon /> Add Dinner Recipe
               </button>
             </div>
             <div className="grid gap-4 md:grid-cols-2">
               {Object.entries(dinnerRecipes).map(([mealKey, meal]) => (
-                <div key={mealKey} className="p-4 rounded-xl bg-neutral-900/50 border border-neutral-800/60">
+                <div key={mealKey} className="p-4 rounded-xl bg-[#D9EAFD]/80 border border-[#9AA6B2]/60">
                   <div className="flex items-start justify-between gap-3">
                     <div>
-                      <p className="text-base font-semibold text-white">{meal.name}</p>
-                      <p className="text-xs font-mono text-neutral-500 mt-1">Code: {mealKey}</p>
+                      <p className="text-base font-semibold text-slate-900">{meal.name}</p>
+                      <p className="text-xs font-mono text-slate-500 mt-1">Code: {mealKey}</p>
                     </div>
                     <button
                       onClick={() => onEditDinner(mealKey)}
-                      className="px-2 py-1 text-xs font-medium text-neutral-300 bg-neutral-800 rounded hover:bg-neutral-700 transition-colors"
+                      className="px-2 py-1 text-xs font-medium text-slate-700 bg-[#BCCCDC] rounded hover:bg-[#9AA6B2] transition-colors"
                     >
                       Edit
                     </button>
                   </div>
-                  <ul className="mt-3 space-y-1.5 text-xs text-neutral-400">
+                  <ul className="mt-3 space-y-1.5 text-xs text-slate-600">
                     {meal.ingredients.map((ingredient, index) => (
                       <li key={`${mealKey}-${index}`} className="flex justify-between gap-2">
-                        <span className="text-neutral-200">{ingredient.name}</span>
-                        <span className="text-neutral-500">{formatAmount(ingredient)}</span>
+                        <span className="text-slate-800">{ingredient.name}</span>
+                        <span className="text-slate-500">{formatAmount(ingredient)}</span>
                       </li>
                     ))}
                   </ul>
@@ -1402,17 +1432,17 @@ const DinnerEditor = ({
 
   return (
     <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm">
-      <div className="w-full max-w-3xl bg-neutral-950 rounded-2xl border border-neutral-800 overflow-hidden">
-        <div className="flex items-center justify-between p-5 border-b border-neutral-800">
+      <div className="w-full max-w-3xl bg-slate-50 rounded-2xl border border-[#9AA6B2] overflow-hidden">
+        <div className="flex items-center justify-between p-5 border-b border-[#9AA6B2]">
           <div>
-            <h3 className="text-lg font-semibold text-white">
+            <h3 className="text-lg font-semibold text-slate-900">
               {mode === 'create' ? 'Add Dinner Recipe' : 'Edit Dinner Recipe'}
             </h3>
-            <p className="text-sm text-neutral-500">
+            <p className="text-sm text-slate-500">
               Define reusable dinner templates for the calendar.
             </p>
           </div>
-          <button onClick={onClose} className="p-2 rounded-lg hover:bg-neutral-800 text-neutral-400">
+          <button onClick={onClose} className="p-2 rounded-lg hover:bg-[#BCCCDC] text-slate-600">
             <XIcon />
           </button>
         </div>
@@ -1426,7 +1456,7 @@ const DinnerEditor = ({
 
           <div className="grid md:grid-cols-3 gap-4">
             <div className="md:col-span-1">
-              <label className="block text-xs uppercase tracking-wide text-neutral-500 mb-1">
+              <label className="block text-xs uppercase tracking-wide text-slate-500 mb-1">
                 Dinner Code
               </label>
               <input
@@ -1435,22 +1465,22 @@ const DinnerEditor = ({
                 onChange={(e) => setCode(e.target.value.toUpperCase())}
                 maxLength={3}
                 disabled={mode === 'edit'}
-                className="w-full px-3 py-2 bg-neutral-900 border border-neutral-800 rounded-lg text-white focus:outline-none focus:border-amber-500 disabled:opacity-50"
+                className="w-full px-3 py-2 bg-[#D9EAFD] border border-[#9AA6B2] rounded-lg text-slate-900 focus:outline-none focus:border-[#9AA6B2] disabled:opacity-50"
               />
             </div>
             <div className="md:col-span-1">
-              <label className="block text-xs uppercase tracking-wide text-neutral-500 mb-1">
+              <label className="block text-xs uppercase tracking-wide text-slate-500 mb-1">
                 Recipe Name
               </label>
               <input
                 type="text"
                 value={localRecipe.name}
                 onChange={(e) => setLocalRecipe({ ...localRecipe, name: e.target.value })}
-                className="w-full px-3 py-2 bg-neutral-900 border border-neutral-800 rounded-lg text-white focus:outline-none focus:border-amber-500"
+                className="w-full px-3 py-2 bg-[#D9EAFD] border border-[#9AA6B2] rounded-lg text-slate-900 focus:outline-none focus:border-[#9AA6B2]"
               />
             </div>
             <div className="md:col-span-1">
-              <label className="block text-xs uppercase tracking-wide text-neutral-500 mb-1">
+              <label className="block text-xs uppercase tracking-wide text-slate-500 mb-1">
                 Accent Color
               </label>
               <div className="flex items-center gap-3">
@@ -1458,13 +1488,13 @@ const DinnerEditor = ({
                   type="color"
                   value={localRecipe.color || '#f97316'}
                   onChange={(e) => setLocalRecipe({ ...localRecipe, color: e.target.value })}
-                  className="w-12 h-10 rounded border border-neutral-800 bg-neutral-900"
+                  className="w-12 h-10 rounded border border-[#9AA6B2] bg-[#D9EAFD]"
                 />
                 <input
                   type="text"
                   value={localRecipe.color || ''}
                   onChange={(e) => setLocalRecipe({ ...localRecipe, color: e.target.value })}
-                  className="flex-1 px-3 py-2 bg-neutral-900 border border-neutral-800 rounded-lg text-white focus:outline-none focus:border-amber-500"
+                  className="flex-1 px-3 py-2 bg-[#D9EAFD] border border-[#9AA6B2] rounded-lg text-slate-900 focus:outline-none focus:border-[#9AA6B2]"
                 />
               </div>
             </div>
@@ -1472,25 +1502,25 @@ const DinnerEditor = ({
 
           <div>
             <div className="flex items-center justify-between mb-2">
-              <p className="text-xs uppercase tracking-wide text-neutral-500">Ingredients</p>
+              <p className="text-xs uppercase tracking-wide text-slate-500">Ingredients</p>
               <div className="flex gap-2">
                 <button
                   onClick={handleAddBlankIngredient}
-                  className="px-3 py-1.5 text-xs font-medium text-neutral-300 bg-neutral-800 rounded-lg hover:bg-neutral-700 transition-colors"
+                  className="px-3 py-1.5 text-xs font-medium text-slate-700 bg-[#BCCCDC] rounded-lg hover:bg-[#9AA6B2] transition-colors"
                 >
                   Add Empty Row
                 </button>
                 <button
                   onClick={() => setShowIngredientSearch(true)}
-                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-amber-400 border border-amber-400/40 rounded-lg hover:bg-amber-500/10 transition-colors"
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-[#9AA6B2] border border-[#9AA6B2]/40 rounded-lg hover:bg-[#BCCCDC]/30 transition-colors"
                 >
                   <PlusIcon /> USDA Ingredient
                 </button>
               </div>
             </div>
-            <div className="rounded-xl border border-neutral-800 divide-y divide-neutral-800">
+            <div className="rounded-xl border border-[#9AA6B2] divide-y divide-[#9AA6B2]/50">
               {localRecipe.ingredients.length === 0 && (
-                <p className="p-4 text-center text-sm text-neutral-500">
+                <p className="p-4 text-center text-sm text-slate-500">
                   No ingredients yet. Add from the USDA database or create manual rows.
                 </p>
               )}
@@ -1506,11 +1536,11 @@ const DinnerEditor = ({
           </div>
         </div>
 
-        <div className="p-5 border-t border-neutral-800 flex flex-wrap items-center justify-between gap-3">
+        <div className="p-5 border-t border-[#9AA6B2] flex flex-wrap items-center justify-between gap-3">
           <div className="flex gap-2">
             <button
               onClick={onClose}
-              className="px-4 py-2 text-sm font-medium text-neutral-400 hover:text-white transition-colors"
+              className="px-4 py-2 text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors"
             >
               Cancel
             </button>
@@ -1525,7 +1555,7 @@ const DinnerEditor = ({
           </div>
           <button
             onClick={handleSave}
-            className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-neutral-900 bg-amber-400 rounded-lg hover:bg-amber-300 transition-colors"
+            className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-900 bg-[#BCCCDC] rounded-lg hover:bg-[#9AA6B2] transition-colors"
           >
             <SaveIcon /> Save Recipe
           </button>
@@ -1553,7 +1583,7 @@ const AuthButton = ({ user, onSignIn, onSignOut }) => {
     return (
       <button
         onClick={onSignIn}
-        className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-neutral-800 rounded-lg hover:bg-neutral-700 transition-colors border border-neutral-700"
+        className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-900 bg-[#BCCCDC] rounded-lg hover:bg-[#9AA6B2] transition-colors border border-[#9AA6B2]"
       >
         <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
           <path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z" fill="#4285F4"/>
@@ -1570,29 +1600,29 @@ const AuthButton = ({ user, onSignIn, onSignOut }) => {
     <div className="relative">
       <button
         onClick={() => setShowMenu(!showMenu)}
-        className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-neutral-800 transition-colors"
+        className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-[#BCCCDC] transition-colors"
       >
         {user.user_metadata?.avatar_url ? (
           <img src={user.user_metadata.avatar_url} alt="" className="w-8 h-8 rounded-full" />
         ) : (
-          <div className="w-8 h-8 rounded-full bg-amber-500 flex items-center justify-center text-neutral-900 font-medium">
+          <div className="w-8 h-8 rounded-full bg-[#9AA6B2] flex items-center justify-center text-slate-900 font-medium">
             {user.email?.[0]?.toUpperCase() || 'U'}
           </div>
         )}
-        <span className="text-sm text-neutral-300 hidden sm:block">{user.user_metadata?.full_name || user.email}</span>
+        <span className="text-sm text-slate-700 hidden sm:block">{user.user_metadata?.full_name || user.email}</span>
       </button>
       
       {showMenu && (
         <>
           <div className="fixed inset-0 z-40" onClick={() => setShowMenu(false)} />
-          <div className="absolute right-0 top-full mt-2 w-48 bg-neutral-900 border border-neutral-700 rounded-lg shadow-xl z-50 overflow-hidden">
-            <div className="p-3 border-b border-neutral-800">
-              <p className="text-sm font-medium text-white truncate">{user.user_metadata?.full_name || 'User'}</p>
-              <p className="text-xs text-neutral-500 truncate">{user.email}</p>
+          <div className="absolute right-0 top-full mt-2 w-48 bg-[#D9EAFD] border border-[#9AA6B2] rounded-lg shadow-xl z-50 overflow-hidden">
+            <div className="p-3 border-b border-[#9AA6B2]">
+              <p className="text-sm font-medium text-slate-900 truncate">{user.user_metadata?.full_name || 'User'}</p>
+              <p className="text-xs text-slate-500 truncate">{user.email}</p>
             </div>
             <button
               onClick={() => { setShowMenu(false); onSignOut(); }}
-              className="w-full flex items-center gap-2 px-3 py-2.5 text-sm text-neutral-300 hover:bg-neutral-800 transition-colors"
+              className="w-full flex items-center gap-2 px-3 py-2.5 text-sm text-slate-700 hover:bg-[#BCCCDC] transition-colors"
             >
               <LogOutIcon /> Sign out
             </button>
@@ -1613,7 +1643,7 @@ const WeekNav = ({ currentWeek, onWeekChange }) => {
       <button 
         onClick={() => onWeekChange(Math.max(1, currentWeek - 1))}
         disabled={currentWeek === 1}
-        className="p-2 rounded-lg bg-neutral-800/50 hover:bg-neutral-700/50 disabled:opacity-30 disabled:cursor-not-allowed transition-colors text-neutral-300"
+        className="p-2 rounded-lg bg-[#BCCCDC]/70 hover:bg-[#9AA6B2]/50 disabled:opacity-30 disabled:cursor-not-allowed transition-colors text-slate-700"
       >
         <ChevronLeft />
       </button>
@@ -1625,8 +1655,8 @@ const WeekNav = ({ currentWeek, onWeekChange }) => {
             onClick={() => onWeekChange(week)}
             className={`w-8 h-8 rounded-lg text-sm font-medium transition-all ${
               currentWeek === week 
-                ? 'bg-amber-500 text-neutral-900' 
-                : 'bg-neutral-800/50 text-neutral-400 hover:bg-neutral-700/50 hover:text-neutral-200'
+                ? 'bg-[#9AA6B2] text-slate-900' 
+                : 'bg-[#BCCCDC]/70 text-slate-600 hover:bg-[#9AA6B2]/50 hover:text-slate-800'
             }`}
           >
             {week}
@@ -1637,7 +1667,7 @@ const WeekNav = ({ currentWeek, onWeekChange }) => {
       <button 
         onClick={() => onWeekChange(Math.min(5, currentWeek + 1))}
         disabled={currentWeek === 5}
-        className="p-2 rounded-lg bg-neutral-800/50 hover:bg-neutral-700/50 disabled:opacity-30 disabled:cursor-not-allowed transition-colors text-neutral-300"
+        className="p-2 rounded-lg bg-[#BCCCDC]/70 hover:bg-[#9AA6B2]/50 disabled:opacity-30 disabled:cursor-not-allowed transition-colors text-slate-700"
       >
         <ChevronRight />
       </button>
@@ -1912,96 +1942,98 @@ export default function JanuaryMealsPage() {
   
   if (loading) {
     return (
-      <div className="min-h-screen bg-neutral-950 flex items-center justify-center">
-        <div className="text-amber-400"><LoaderIcon /></div>
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+        <div className="text-[#9AA6B2]"><LoaderIcon /></div>
       </div>
     );
   }
   
   return (
-    <div className="min-h-screen bg-neutral-950 text-white">
-      <div className="fixed inset-0 opacity-30 pointer-events-none" style={{
-        backgroundImage: `radial-gradient(circle at 50% 50%, rgba(251, 191, 36, 0.03) 0%, transparent 50%),
-                          radial-gradient(circle at 80% 20%, rgba(168, 85, 247, 0.02) 0%, transparent 40%)`,
-      }} />
+    <div
+      className="min-h-screen"
+      style={{ backgroundColor: THEME.background, color: THEME.text }}
+    >
+      <div
+        className="fixed inset-0 opacity-40 pointer-events-none"
+        style={{
+          backgroundImage: `radial-gradient(circle at 50% 50%, rgba(154, 166, 178, 0.15) 0%, transparent 55%),
+                            radial-gradient(circle at 80% 20%, rgba(188, 204, 220, 0.2) 0%, transparent 45%)`,
+        }}
+      />
       
       <div className="relative max-w-6xl mx-auto px-4 py-8 sm:px-6 sm:py-12">
-        <header className="mb-8 sm:mb-12">
-          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
-            <div>
-              <h1 className="text-2xl sm:text-3xl font-bold tracking-tight mb-1">
-                <span className="text-amber-400">January</span> Meal Plan
-              </h1>
-              <p className="text-neutral-400 text-sm sm:text-base">
-                30-day anti-inflammatory protocol • High fiber • Fermented foods
-              </p>
-            </div>
-            
-            <div className="flex items-center gap-3 flex-wrap">
-              <button
-                onClick={() => setShowMethodology(true)}
-                className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-neutral-300 bg-neutral-800/50 rounded-lg hover:bg-neutral-700/50 transition-colors border border-neutral-700/50"
-              >
-                <InfoIcon /> Methodology
-              </button>
-              <button
-                onClick={() => setShowRecipes(true)}
-                className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-neutral-300 bg-neutral-800/50 rounded-lg hover:bg-neutral-700/50 transition-colors border border-neutral-700/50"
-              >
-                <BookIcon /> View recipes
-              </button>
-              <button
-                onClick={handleOpenInGoogleSheets}
-                className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-neutral-300 bg-neutral-800/50 rounded-lg hover:bg-neutral-700/50 transition-colors border border-neutral-700/50"
-              >
-                <SheetsIcon /> Open in Sheets
-              </button>
-              <button
-                onClick={handleExportCsv}
-                className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-neutral-300 bg-neutral-800/50 rounded-lg hover:bg-neutral-700/50 transition-colors border border-neutral-700/50"
-              >
-                <DownloadIcon /> Export CSV
-              </button>
-              
-              {saveStatus && (
-                <span className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-full ${
-                  saveStatus === 'saving' ? 'text-amber-400 bg-amber-500/10' :
-                  saveStatus === 'saved' ? 'text-green-400 bg-green-500/10' :
-                  'text-red-400 bg-red-500/10'
-                }`}>
-                  {saveStatus === 'saving' ? <LoaderIcon /> : <CheckIcon />}
-                  {saveStatus === 'saving' ? 'Saving...' : saveStatus === 'saved' ? 'Saved' : 'Error'}
-                </span>
-              )}
-              
-              <AuthButton user={user} onSignIn={handleSignIn} onSignOut={handleSignOut} />
-            </div>
+        <div className="flex items-center gap-2 text-sm text-slate-500 mb-4">
+          <a href="/" className="text-[#9AA6B2] hover:underline">
+            Home
+          </a>
+          <span>/</span>
+          <span className="text-slate-700">January Meal Plan</span>
+        </div>
+
+        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-10">
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight mb-1">
+              <span className="text-[#9AA6B2]">January</span> Meal Plan
+            </h1>
+            <p className="text-slate-600 text-sm sm:text-base">
+              30-day anti-inflammatory protocol • High fiber • Fermented foods
+            </p>
           </div>
-          
-          {!user && (
-            <div className="mt-4 p-3 bg-amber-500/10 border border-amber-500/20 rounded-lg">
-              <p className="text-sm text-amber-200">
-                Sign in with Google to save your customizations across devices.
-              </p>
-            </div>
-          )}
-        </header>
+
+          <div className="flex items-center gap-3 flex-wrap">
+            {[
+              { label: 'Methodology', icon: <InfoIcon />, action: () => setShowMethodology(true) },
+              { label: 'View recipes', icon: <BookIcon />, action: () => setShowRecipes(true) },
+              { label: 'Open in Sheets', icon: <SheetsIcon />, action: handleOpenInGoogleSheets },
+              { label: 'Export CSV', icon: <DownloadIcon />, action: handleExportCsv },
+            ].map((button) => (
+              <button
+                key={button.label}
+                onClick={button.action}
+                className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-700 rounded-lg border transition-colors hover:bg-[#BCCCDC]"
+                style={{
+                  backgroundColor: THEME.panel,
+                  borderColor: THEME.accent,
+                }}
+              >
+                {button.icon} {button.label}
+              </button>
+            ))}
+
+            {saveStatus && (
+              <span
+                className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-full ${
+                  saveStatus === 'saving'
+                    ? 'text-[#9AA6B2] bg-[#BCCCDC]/30'
+                    : saveStatus === 'saved'
+                    ? 'text-green-400 bg-green-500/10'
+                    : 'text-red-400 bg-red-500/10'
+                }`}
+              >
+                {saveStatus === 'saving' ? <LoaderIcon /> : <CheckIcon />}
+                {saveStatus === 'saving' ? 'Saving...' : saveStatus === 'saved' ? 'Saved' : 'Error'}
+              </span>
+            )}
+
+            <AuthButton user={user} onSignIn={handleSignIn} onSignOut={handleSignOut} />
+          </div>
+        </div>
         
-        <div className="mb-6 p-4 rounded-xl bg-neutral-900/50 border border-neutral-800/50">
+        <div className="mb-6 p-4 rounded-xl bg-[#D9EAFD]/80 border border-[#9AA6B2]/50">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div className="flex items-center gap-6">
               <div>
-                <p className="text-[10px] uppercase tracking-wider text-neutral-500">Week {currentWeek} Avg</p>
-                <p className="text-lg font-semibold text-amber-400">{Math.round(weeklyAvg.calories / weeklyAvg.count)} <span className="text-sm font-normal text-neutral-500">kcal/day</span></p>
+                <p className="text-[10px] uppercase tracking-wider text-slate-500">Week {currentWeek} Avg</p>
+                <p className="text-lg font-semibold text-[#9AA6B2]">{Math.round(weeklyAvg.calories / weeklyAvg.count)} <span className="text-sm font-normal text-slate-500">kcal/day</span></p>
               </div>
-              <div className="w-px h-8 bg-neutral-800" />
+              <div className="w-px h-8 bg-[#BCCCDC]" />
               <div>
-                <p className="text-[10px] uppercase tracking-wider text-neutral-500">Protein</p>
+                <p className="text-[10px] uppercase tracking-wider text-slate-500">Protein</p>
                 <p className="text-lg font-semibold text-blue-400">{Math.round(weeklyAvg.protein / weeklyAvg.count)}g</p>
               </div>
-              <div className="w-px h-8 bg-neutral-800" />
+              <div className="w-px h-8 bg-[#BCCCDC]" />
               <div>
-                <p className="text-[10px] uppercase tracking-wider text-neutral-500">Fiber</p>
+                <p className="text-[10px] uppercase tracking-wider text-slate-500">Fiber</p>
                 <p className="text-lg font-semibold text-purple-400">{Math.round(weeklyAvg.fiber / weeklyAvg.count)}g</p>
               </div>
             </div>
@@ -2012,7 +2044,7 @@ export default function JanuaryMealsPage() {
         
         <div className="grid grid-cols-7 gap-2 sm:gap-3">
           {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(day => (
-            <div key={day} className="text-center text-xs font-medium text-neutral-500 py-2">
+            <div key={day} className="text-center text-xs font-medium text-slate-500 py-2">
               {day}
             </div>
           ))}
@@ -2034,8 +2066,8 @@ export default function JanuaryMealsPage() {
           })}
         </div>
         
-        <div className="mt-8 p-4 rounded-xl bg-neutral-900/30 border border-neutral-800/30">
-          <p className="text-xs uppercase tracking-wider text-neutral-500 mb-3">Dinner Rotation</p>
+        <div className="mt-8 p-4 rounded-xl bg-[#D9EAFD]/70 border border-[#9AA6B2]/30">
+          <p className="text-xs uppercase tracking-wider text-slate-500 mb-3">Dinner Rotation</p>
           <div className="flex flex-wrap gap-2">
             {Object.entries(dinnerRecipes).map(([code, info]) => (
               <div 
@@ -2049,10 +2081,6 @@ export default function JanuaryMealsPage() {
           </div>
         </div>
         
-        <footer className="mt-12 pt-6 border-t border-neutral-800/50 text-center text-xs text-neutral-500">
-          <p>Nutritional data sourced from USDA FoodData Central API.</p>
-          <p className="mt-1">Click any day to view details and customize ingredients.</p>
-        </footer>
       </div>
       
       {selectedDay && selectedNutrition && (

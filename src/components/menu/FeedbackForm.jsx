@@ -41,7 +41,11 @@ const FeedbackForm = () => {
         body: JSON.stringify(payload),
       });
 
-      if (!res.ok) throw new Error(await res.text());
+      if (!res.ok) {
+        const errorText = await res.text();
+        console.error('API Error Response:', errorText);
+        throw new Error(errorText);
+      }
 
       setStatus({ type: 'success', message: 'Thank you! Your feedback has been submitted.' });
       setFormData({ name: '', email: '', phone: '', category: 'requests', message: '' });

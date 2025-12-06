@@ -74,10 +74,13 @@ function createMessagesRouter({ logger, brevoService, getSanityClient, db, getSu
   router.post('/messages/submit', async (req, res) => {
     try {
       const { name, email, phone, subject, message, type = 'general', sendCopy = false } = req.body || {};
-      if (!email || !message) return res.status(400).json({ error: 'Missing email or message' });
+      if (!message) return res.status(400).json({ error: 'Message is required' });
 
-      const [firstName, ...rest] = (name || '').split(' ');
-      await upsertContact({ email, firstName, lastName: rest.join(' '), phone });
+      // Only upsert contact if email is provided
+      if (email) {
+        const [firstName, ...rest] = (name || '').split(' ');
+        await upsertContact({ email, firstName, lastName: rest.join(' '), phone });
+      }
 
       const sc = getSanityClient ? getSanityClient() : null;
       let msgDoc = null;
@@ -134,9 +137,10 @@ function createMessagesRouter({ logger, brevoService, getSanityClient, db, getSu
       const senderEmail = process.env.SENDER_EMAIL || teamEmail;
       if (!teamEmail) return res.status(500).json({ error: 'No TEAM/SUPPORT inbox configured on server' });
 
+      const fromDisplay = name || email || 'Anonymous';
       const htmlContent = `
-        <p>New inquiry from <strong>${name || email}</strong></p>
-        <p><strong>Email:</strong> ${email}</p>
+        <p>New inquiry from <strong>${fromDisplay}</strong></p>
+        ${email ? `<p><strong>Email:</strong> ${email}</p>` : '<p><strong>Email:</strong> Not provided (anonymous)</p>'}
         ${phone ? `<p><strong>Phone:</strong> ${phone}</p>` : ''}
         <p><strong>Type:</strong> ${type}</p>
         <hr />
@@ -147,7 +151,7 @@ function createMessagesRouter({ logger, brevoService, getSanityClient, db, getSu
         sender: { email: senderEmail, name: 'Local Effort' },
         subject: subject || 'New inquiry',
         htmlContent,
-        replyTo: { email, name: name || email },
+        replyTo: email ? { email, name: name || email } : undefined,
         tags: ['inquiry', type].filter(Boolean),
         headers: msgDoc?._id ? { 'X-Message-Id': msgDoc._id } : undefined,
       };
