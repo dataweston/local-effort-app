@@ -103,7 +103,11 @@ const WinterPizzaPage = () => {
       </Helmet>
 
       <div className="relative min-h-screen w-full overflow-hidden bg-neutral-950 text-white">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,#f59e0b33,transparent_35%),radial-gradient(circle_at_80%_0%,#fb718533,transparent_30%),radial-gradient(circle_at_50%_80%,#a855f733,transparent_35%)]" />
+        <div
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat bg-fixed opacity-40"
+          style={{ backgroundImage: 'url(/images/IMG_4930.JPEG)' }}
+        />
+        <div className="absolute inset-0 bg-neutral-950/40" />
 
         <div className="relative mx-auto flex min-h-screen max-w-6xl flex-col px-4 py-12 md:flex-row md:items-stretch md:px-8 lg:px-12">
           <div className="relative mb-10 flex-1 md:mb-0 md:pr-10 lg:pr-16">
