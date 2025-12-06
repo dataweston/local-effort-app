@@ -66,6 +66,7 @@ const CalendarPage = lazy(() => import('./pages/CalendarPage'));
 const SchedulePage = lazy(() => import('./pages/SchedulePage'));
 const WinterDinnerPage = lazy(() => import('./pages/WinterDinnerPage'));
 const WinterPizzaPage = lazy(() => import('./pages/WinterPizzaPage'));
+const JanuaryMealsPage = lazy(() => import('./pages/JanuaryMealsPage'));
 
 const AppContent = () => {
   const location = useLocation();
@@ -196,6 +197,14 @@ const AppContent = () => {
                   element={
                     <AnimatedPage>
                       <TinyDinerSalePage />
+                    </AnimatedPage>
+                  }
+                />
+                <Route
+                  path="/januarymeals"
+                  element={
+                    <AnimatedPage>
+                      <JanuaryMealsPage />
                     </AnimatedPage>
                   }
                 />
