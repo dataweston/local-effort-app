@@ -169,6 +169,56 @@ const buildNutritionCsv = (dinnerMap) => {
     .join('\r\n');
 };
 
+const escapeXml = (value) => {
+  if (value === null || value === undefined) return '';
+  return String(value)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+};
+
+const buildExcelXml = (dinnerMap) => {
+  const rows = DAILY_NUTRITION.map((entry) =>
+    NUTRITION_CSV_FIELDS.map((field) => {
+      if (field.key === 'dinnerName') {
+        return dinnerMap?.[entry.dinnerType]?.name || '';
+      }
+      return entry[field.key] ?? '';
+    })
+  );
+
+  const headerRow = `<Row>${NUTRITION_CSV_FIELDS.map(
+    (field) => `<Cell><Data ss:Type="String">${escapeXml(field.label)}</Data></Cell>`
+  ).join('')}</Row>`;
+
+  const bodyRows = rows
+    .map(
+      (row) =>
+        `<Row>${row
+          .map((value) => {
+            const isNumber = typeof value === 'number' && !Number.isNaN(value);
+            const type = isNumber ? 'Number' : 'String';
+            return `<Cell><Data ss:Type="${type}">${escapeXml(value)}</Data></Cell>`;
+          })
+          .join('')}</Row>`
+    )
+    .join('');
+
+  return `<?xml version="1.0"?>
+<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet"
+ xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:x="urn:schemas-microsoft-com:office:excel"
+ xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">
+  <Worksheet ss:Name="January Meals">
+    <Table>
+      ${headerRow}
+      ${bodyRows}
+    </Table>
+  </Worksheet>
+</Workbook>`;
+};
+
 const THEME = {
   background: '#F8FAFC',
   panel: '#D9EAFD',
@@ -1850,18 +1900,21 @@ export default function JanuaryMealsPage() {
     URL.revokeObjectURL(url);
   }, [dinnerRecipes]);
 
-  const handleOpenInGoogleSheets = useCallback(async () => {
-    if (typeof window === 'undefined') return;
+  const handleOpenInGoogleSheets = useCallback(() => {
+    if (typeof window === 'undefined' || typeof document === 'undefined') return;
 
-    const csvText = buildNutritionCsv(dinnerRecipes);
+    const excelXml = buildExcelXml(dinnerRecipes);
+    const blob = new Blob([excelXml], { type: 'application/vnd.ms-excel' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', 'january-meal-plan.xls');
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
 
-    try {
-      await navigator?.clipboard?.writeText(csvText);
-    } catch {
-      // Clipboard may not be available; ignore silently
-    }
-
-    window.location.href = 'https://docs.google.com/spreadsheets/u/0/create?usp=sheets_home';
+    window.open('https://docs.google.com/spreadsheets/u/0/create?usp=sheets_home', '_blank');
   }, [dinnerRecipes]);
   
   const handleUpdateMeal = useCallback(async (dayKey, mealKey, mealData) => {
