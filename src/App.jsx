@@ -70,8 +70,17 @@ const JanuaryMealsPage = lazy(() => import('./pages/JanuaryMealsPage'));
 
 const AppContent = () => {
   const location = useLocation();
-  const hideHeader = location.pathname.startsWith('/partners/aacrm') || location.pathname === '/tiny-weddings' || location.pathname === '/winterdinner' || location.pathname === '/winterpizza';
-  const hideFooter = location.pathname === '/sale' || location.pathname === '/winterdinner' || location.pathname === '/winterpizza';
+  const hideHeader =
+    location.pathname.startsWith('/partners/aacrm') ||
+    location.pathname === '/tiny-weddings' ||
+    location.pathname === '/winterdinner' ||
+    location.pathname === '/winterpizza' ||
+    location.pathname === '/januarymeals';
+  const hideFooter =
+    location.pathname === '/sale' ||
+    location.pathname === '/winterdinner' ||
+    location.pathname === '/winterpizza' ||
+    location.pathname === '/januarymeals';
 
   useEffect(() => {
     document.fonts?.ready?.then(() => document.body.classList.add('fonts-loaded'));
