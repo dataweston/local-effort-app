@@ -92,13 +92,12 @@ module.exports = async function handler(req, res) {
     });
 
     // Get current balance for the user
-    const { data: credit } = await supabase
-      .from('happymonday_credits')
-      .select('balance_cents')
-      .eq('user_id', order.user_id)
-      .single();
+    const { data: snapshot } = await supabase.rpc('happymonday_financial_snapshot', {
+      p_user_email: order.user?.email || null,
+      p_update_balance: true,
+    });
 
-    const currentBalance = credit?.balance_cents || 0;
+    const currentBalance = snapshot?.calculated_balance_cents ?? snapshot?.balance_cents ?? 0;
 
     // Send email to both admin and client
     const recipientEmails = [

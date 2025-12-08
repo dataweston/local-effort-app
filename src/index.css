@@ -282,3 +282,55 @@ h2 {
 }
 .form-card .hint { font-size: 0.75rem; color: #6b7280; }
 .form-card .actions { margin-top: 1rem; }
+
+/* Full-page horizontal scroll navigation */
+.fullpage-container {
+  width: 100vw;
+  height: 100vh;
+  overflow-x: scroll;
+  overflow-y: hidden;
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+  display: flex;
+  flex-direction: row;
+}
+
+.fullpage-section {
+  min-width: 100vw;
+  width: 100vw;
+  height: 100vh;
+  flex-shrink: 0;
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+  overflow-y: auto;
+}
+
+/* Mobile: Dynamic viewport height for browser UI */
+@media (max-width: 768px) {
+  .fullpage-section {
+    height: 100vh;
+    height: 100dvh; /* Dynamic viewport height fallback */
+  }
+}
+
+/* Hide scrollbar but keep functionality */
+.fullpage-container {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.fullpage-container::-webkit-scrollbar {
+  display: none;
+}
+
+/* Accessibility: Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .fullpage-container {
+    scroll-snap-type: none;
+    scroll-behavior: auto;
+  }
+  .fullpage-section * {
+    animation: none !important;
+    transition: none !important;
+  }
+}
