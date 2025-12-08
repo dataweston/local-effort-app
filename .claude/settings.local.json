@@ -28,7 +28,8 @@
       "Bash(npm:*)",
       "Bash(npx jsrepo@latest add:*)",
       "Bash(git fetch:*)",
-      "Bash(git pull:*)"
+      "Bash(git pull:*)",
+      "Bash(find:*)"
     ],
     "deny": [],
     "ask": []
