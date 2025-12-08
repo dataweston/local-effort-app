@@ -112,14 +112,10 @@ BEGIN
   IF v_credit.balance_cents < 0 THEN
     v_credit_used := LEAST(ABS(v_credit.balance_cents), v_amount_to_pay);
     v_amount_to_pay := v_amount_to_pay - v_credit_used;
-    
-    -- Update credit balance (reduce negative balance or increase positive)
-    UPDATE public.happymonday_credits
-    SET balance_cents = balance_cents + v_credit_used,
-        updated_at = now()
-    WHERE user_id = v_order.user_id;
-    
+
     -- Record the credit usage as a payment
+    -- Note: The trigger_update_credit_balance_after_payment will automatically
+    -- update the balance when this payment record is inserted
     INSERT INTO public.happymonday_payments (
       user_id,
       order_id,
@@ -143,14 +139,17 @@ BEGIN
       is_closed = true,
       updated_at = now()
   WHERE id = p_order_id;
-  
+
+  -- Get the updated credit balance (after the payment trigger has run)
+  SELECT balance_cents INTO v_credit FROM public.happymonday_credits WHERE user_id = v_order.user_id;
+
   -- Return summary
   RETURN jsonb_build_object(
     'order_id', p_order_id,
     'order_total', v_order.total_cents,
     'credit_used', v_credit_used,
     'amount_remaining', v_amount_to_pay,
-    'new_credit_balance', v_credit.balance_cents + v_credit_used
+    'new_credit_balance', v_credit.balance_cents
   );
 END;
 $$;
