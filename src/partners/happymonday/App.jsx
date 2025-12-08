@@ -346,7 +346,7 @@ const App = () => {
 
       if (error) throw error;
 
-      await loadOrdersData();
+      await loadUserData();
       
       // Show summary of what happened
       const summary = data;
@@ -673,6 +673,13 @@ const App = () => {
     return `$${dollars.toFixed(2)}`;
   };
 
+  const openInvoicesCents = creditBalance?.open_invoice_total_cents ?? orders.filter(o => o.status === 'unpaid' || o.status === 'partial').reduce((sum, o) => sum + o.total_cents, 0);
+  const closedInvoicesCents = creditBalance?.closed_invoice_total_cents ?? orders.filter(o => o.status === 'paid' || o.status === 'refunded').reduce((sum, o) => sum + o.total_cents, 0);
+  const openInvoiceCount = creditBalance?.open_invoice_count ?? orders.filter(o => o.status === 'unpaid' || o.status === 'partial').length;
+  const closedInvoiceCount = creditBalance?.closed_invoice_count ?? orders.filter(o => o.status === 'paid' || o.status === 'refunded').length;
+  const balanceDriftCents = creditBalance?.balance_drift_cents ?? 0;
+  const netAfterOpenCents = (openInvoicesCents || 0) + (creditBalance?.balance_cents || 0);
+
   const balanceColor = (creditBalance?.balance_cents || 0) < 0 ? 'text-green-600' : 'text-red-600';
   const balanceLabel = (creditBalance?.balance_cents || 0) < 0 ? 'Credit Available' : 'Balance Due';
 
@@ -706,6 +713,11 @@ const App = () => {
                 {creditBalance.opening_credit_cents > 0 && (
                   <p className="text-xs text-slate-500 mt-1">
                     Opening credit: {formatBalance(creditBalance.opening_credit_cents)}
+                  </p>
+                )}
+                {Math.abs(balanceDriftCents) > 0 && (
+                  <p className="text-xs text-amber-700 mt-1">
+                    Stored balance was off by {formatBalance(balanceDriftCents)}; auto-synced to the canonical ledger.
                   </p>
                 )}
               </div>
@@ -845,14 +857,23 @@ const App = () => {
             {isAdmin && orders.length > 0 && (
               <div className="mb-8 p-6 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl border-2 border-blue-200">
                 <h3 className="text-lg font-bold text-slate-800 mb-4">Financial Summary</h3>
-                <div className="grid md:grid-cols-3 gap-6">
+                <div className="grid md:grid-cols-2 xl:grid-cols-4 gap-6">
+                  <div>
+                    <p className="text-sm font-medium text-slate-600 uppercase tracking-wide mb-1">Closed Invoices</p>
+                    <p className="text-3xl font-bold text-slate-800">
+                      ${(closedInvoicesCents / 100).toFixed(2)}
+                    </p>
+                    <p className="text-xs text-slate-500 mt-1">
+                      {closedInvoiceCount} closed invoices
+                    </p>
+                  </div>
                   <div>
                     <p className="text-sm font-medium text-slate-600 uppercase tracking-wide mb-1">Total Open Invoices</p>
                     <p className="text-3xl font-bold text-orange-600">
-                      ${(orders.filter(o => o.status === 'unpaid' || o.status === 'partial').reduce((sum, o) => sum + o.total_cents, 0) / 100).toFixed(2)}
+                      ${(openInvoicesCents / 100).toFixed(2)}
                     </p>
                     <p className="text-xs text-slate-500 mt-1">
-                      {orders.filter(o => o.status === 'unpaid' || o.status === 'partial').length} unpaid orders
+                      {openInvoiceCount} unpaid/partial
                     </p>
                   </div>
                   <div>
@@ -865,13 +886,20 @@ const App = () => {
                     </p>
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-slate-600 uppercase tracking-wide mb-1">Net Amount Due</p>
-                    <p className="text-3xl font-bold text-blue-600">
-                      ${((orders.filter(o => o.status === 'unpaid' || o.status === 'partial').reduce((sum, o) => sum + o.total_cents, 0) + (creditBalance?.balance_cents || 0)) / 100).toFixed(2)}
+                    <p className="text-sm font-medium text-slate-600 uppercase tracking-wide mb-1">Net After Credit</p>
+                    <p className={`text-3xl font-bold ${netAfterOpenCents < 0 ? 'text-green-600' : 'text-blue-600'}`}>
+                      ${(netAfterOpenCents / 100).toFixed(2)}
                     </p>
-                    <p className="text-xs text-slate-500 mt-1">After applying credits</p>
+                    <p className="text-xs text-slate-500 mt-1">
+                      {netAfterOpenCents < 0 ? 'Credit remains after open invoices' : 'Amount owed after applying credit'}
+                    </p>
                   </div>
                 </div>
+                {Math.abs(balanceDriftCents) > 0 && (
+                  <p className="text-xs text-amber-700 mt-4">
+                    Stored balance differed from canonical ledger by {formatBalance(balanceDriftCents)}; numbers above use the canonical calculation.
+                  </p>
+                )}
               </div>
             )}
             

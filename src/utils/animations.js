@@ -54,3 +54,42 @@ export const scaleOnHover = {
   whileTap: { scale: 0.95 },
   transition: { type: 'spring', stiffness: 400, damping: 25 },
 };
+
+// Full-page section animations
+export const fullPageSectionReveal = {
+  hidden: { opacity: 0, y: 60 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.8, ease: [0.4, 0, 0.2, 1] },
+  },
+};
+
+export const fullPageSlideUp = {
+  hidden: { opacity: 0, y: 100 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 1, ease: [0.4, 0, 0.2, 1] },
+  },
+};
+
+export const fullPageFadeScale = {
+  hidden: { opacity: 0, scale: 0.95 },
+  visible: {
+    opacity: 1,
+    scale: 1,
+    transition: { duration: 0.8, ease: [0.4, 0, 0.2, 1] },
+  },
+};
+
+export const fullPageStagger = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.15,
+      delayChildren: 0.2,
+    },
+  },
+};

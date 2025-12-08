@@ -29,7 +29,8 @@
       "Bash(npx jsrepo@latest add:*)",
       "Bash(git fetch:*)",
       "Bash(git pull:*)",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "Bash(timeout:*)"
     ],
     "deny": [],
     "ask": []

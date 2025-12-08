@@ -42,7 +42,34 @@ export const getClientUserId = async () => {
     return null;
   }
 
-  return data?.id || null;
+ return data?.id || null;
+};
+
+/**
+ * Canonical financial snapshot (opening credit + client-authored orders - payments)
+ * Optionally repairs the stored happymonday_credits balance if it has drifted.
+ */
+export const getFinancialSnapshot = async ({ email, role, repair = false } = {}) => {
+  if (!supabase) return null;
+
+  const targetEmail = role === 'admin' ? 'hello@happymonday.company' : email;
+
+  const { data, error } = await supabase.rpc('happymonday_financial_snapshot', {
+    p_user_email: targetEmail,
+    p_update_balance: repair,
+  });
+
+  if (error) {
+    console.error('[HappyMonday] Error fetching financial snapshot:', error);
+    return null;
+  }
+
+  if (!data) return null;
+
+  return {
+    ...data,
+    balance_cents: data.calculated_balance_cents ?? data.balance_cents ?? 0,
+  };
 };
 
 /**
@@ -53,29 +80,23 @@ export const getClientUserId = async () => {
 export const getUserCredit = async (userId, userRole = null) => {
   if (!supabase || !userId) return null;
 
-  let targetUserId = userId;
+  // Prefer canonical snapshot (self-heals stored balance if it drifted)
+  const snapshot = await getFinancialSnapshot({
+    role: userRole,
+    repair: true,
+  });
 
-  // If user is admin, get the client's credit balance instead
-  if (userRole === 'admin') {
-    const { data: clientUser } = await supabase
-      .from('happymonday_users')
-      .select('id')
-      .eq('email', 'hello@happymonday.company')
-      .single();
-    
-    if (clientUser) {
-      targetUserId = clientUser.id;
-    }
-  }
+  if (snapshot) return snapshot;
 
+  // Fallback to the raw credits table if snapshot is unavailable
   const { data, error } = await supabase
     .from('happymonday_credits')
     .select('*')
-    .eq('user_id', targetUserId)
+    .eq('user_id', userId)
     .single();
 
   if (error) {
-    console.error('[HappyMonday] Error fetching credits:', error);
+    console.error('[HappyMonday] Error fetching credits (fallback):', error);
     return null;
   }
 
@@ -357,6 +378,7 @@ export default {
   updateOrderStatus,
   adjustCreditBalance,
   recordSquarePayment,
+  getFinancialSnapshot,
   loadCosting,
   saveCosting,
 };
