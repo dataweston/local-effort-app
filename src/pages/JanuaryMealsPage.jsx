@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { supabase } from '../lib/supabaseClient';
 
 // ============================================================================
@@ -113,13 +113,61 @@ const extractNutrients = (foodNutrients) => {
 // DATA: Complete meal plan with recipes, ingredients, and nutrition
 // ============================================================================
 
-const DIET_GOALS = {
+const GOALS_STORAGE_KEY = 'january-meal-plan-goals';
+const MEAL_RECIPES_STORAGE_KEY = 'january-meal-plan-recipes';
+
+const DEFAULT_DIET_GOALS = {
   calories: { min: 1500, max: 1800, label: 'Calories', unit: 'kcal' },
   protein: { min: 90, max: 100, label: 'Protein', unit: 'g' },
   carbs: { min: 140, max: 170, label: 'Carbs', unit: 'g' },
   fat: { min: 65, max: 75, label: 'Fat', unit: 'g' },
   fiber: { min: 40, max: 60, label: 'Fiber', unit: 'g' },
   omega3: { min: 2, max: 3, label: 'Omega-3', unit: 'g' }
+};
+
+const NUTRIENT_FIELDS = [
+  'calories',
+  'protein',
+  'carbs',
+  'fat',
+  'fiber',
+  'ala',
+  'epa',
+  'dha',
+  'epa_dha',
+  'vitA',
+  'b12',
+  'folate',
+  'vitC',
+  'vitD',
+  'vitK',
+  'calcium',
+  'magnesium',
+  'potassium',
+  'zinc',
+  'iron'
+];
+
+const createEmptyNutrition = () =>
+  NUTRIENT_FIELDS.reduce(
+    (acc, key) => {
+      acc[key] = 0;
+      return acc;
+    },
+    {}
+  );
+
+const sumNutrition = (ingredients = []) => {
+  const totals = createEmptyNutrition();
+  ingredients.forEach((ingredient) => {
+    NUTRIENT_FIELDS.forEach((key) => {
+      const value = Number(ingredient?.[key] ?? 0);
+      if (!Number.isNaN(value)) {
+        totals[key] += value;
+      }
+    });
+  });
+  return totals;
 };
 
 const NUTRITION_CSV_FIELDS = [
@@ -134,6 +182,8 @@ const NUTRITION_CSV_FIELDS = [
   { key: 'ala', label: 'ALA (g)' },
   { key: 'epa_dha', label: 'EPA + DHA (g)' },
   { key: 'vitA', label: 'Vitamin A (mcg)' },
+  { key: 'b12', label: 'Vitamin B12 (mcg)' },
+  { key: 'folate', label: 'Folate (mcg)' },
   { key: 'vitC', label: 'Vitamin C (mg)' },
   { key: 'vitD', label: 'Vitamin D (mcg)' },
   { key: 'vitK', label: 'Vitamin K (mcg)' },
@@ -144,11 +194,11 @@ const NUTRITION_CSV_FIELDS = [
   { key: 'iron', label: 'Iron (mg)' },
 ];
 
-const buildNutritionCsv = (dinnerMap) => {
-  const rows = DAILY_NUTRITION.map((entry) =>
+const buildNutritionCsv = (dailyEntries, mealRecipes) => {
+  const rows = dailyEntries.map((entry) =>
     NUTRITION_CSV_FIELDS.map((field) => {
       if (field.key === 'dinnerName') {
-        return dinnerMap?.[entry.dinnerType]?.name || '';
+        return mealRecipes?.dinner?.[entry.dinnerType]?.name || '';
       }
       return entry[field.key] ?? '';
     })
@@ -178,11 +228,11 @@ const escapeXml = (value) => {
     .replace(/"/g, '&quot;');
 };
 
-const buildExcelXml = (dinnerMap) => {
-  const rows = DAILY_NUTRITION.map((entry) =>
+const buildExcelXml = (dailyEntries, mealRecipes) => {
+  const rows = dailyEntries.map((entry) =>
     NUTRITION_CSV_FIELDS.map((field) => {
       if (field.key === 'dinnerName') {
-        return dinnerMap?.[entry.dinnerType]?.name || '';
+        return mealRecipes?.dinner?.[entry.dinnerType]?.name || '';
       }
       return entry[field.key] ?? '';
     })
@@ -337,19 +387,6 @@ const BASE_DINNER_RECIPES = {
   }
 };
 
-const DINNER_STORAGE_KEY = 'january-meal-plan-dinners';
-
-const cloneDinnerRecipes = (recipes) =>
-  Object.fromEntries(
-    Object.entries(recipes).map(([code, recipe]) => [
-      code,
-      {
-        ...recipe,
-        ingredients: recipe.ingredients.map((ingredient) => ({ ...ingredient })),
-      },
-    ])
-  );
-
 const BASE_MEALS = {
   breakfast: {
     shake: {
@@ -417,39 +454,109 @@ const BASE_MEALS = {
   }
 };
 
-// Daily nutritional data from spreadsheet (extended to 30 days)
-const DAILY_NUTRITION = [
-  { day: 1, dinnerType: 'KB', calories: 1650, protein: 98, carbs: 185, fat: 58, fiber: 44, ala: 3.1, epa_dha: 1.8, vitA: 1040, b12: 7.1, folate: 520, vitC: 132, vitD: 16, vitK: 290, calcium: 630, magnesium: 330, potassium: 3290, zinc: 12.0, iron: 12.3 },
-  { day: 2, dinnerType: 'PB', calories: 1750, protein: 96, carbs: 185, fat: 72, fiber: 38, ala: 2.7, epa_dha: 1.8, vitA: 900, b12: 8.0, folate: 480, vitC: 90, vitD: 16, vitK: 240, calcium: 600, magnesium: 300, potassium: 3000, zinc: 14.0, iron: 11.5 },
-  { day: 3, dinnerType: 'BY', calories: 1620, protein: 94, carbs: 192, fat: 52, fiber: 43, ala: 2.8, epa_dha: 1.8, vitA: 900, b12: 7.0, folate: 580, vitC: 150, vitD: 15, vitK: 260, calcium: 610, magnesium: 320, potassium: 3530, zinc: 11.2, iron: 11.0 },
-  { day: 4, dinnerType: 'BS', calories: 1760, protein: 101, carbs: 180, fat: 70, fiber: 37, ala: 2.7, epa_dha: 1.8, vitA: 900, b12: 8.5, folate: 480, vitC: 82, vitD: 15, vitK: 210, calcium: 610, magnesium: 310, potassium: 3150, zinc: 14.0, iron: 14.1 },
-  { day: 5, dinnerType: 'CC', calories: 1670, protein: 97, carbs: 190, fat: 59, fiber: 48, ala: 3.2, epa_dha: 1.8, vitA: 950, b12: 7.0, folate: 600, vitC: 130, vitD: 16, vitK: 430, calcium: 620, magnesium: 360, potassium: 3400, zinc: 12.0, iron: 12.0 },
-  { day: 6, dinnerType: 'SP', calories: 1680, protein: 95, carbs: 205, fat: 55, fiber: 52, ala: 3.3, epa_dha: 1.8, vitA: 1800, b12: 7.0, folate: 580, vitC: 130, vitD: 16, vitK: 260, calcium: 620, magnesium: 390, potassium: 3710, zinc: 11.5, iron: 12.0 },
-  { day: 7, dinnerType: 'MC', calories: 1640, protein: 92, carbs: 183, fat: 58, fiber: 46, ala: 3.0, epa_dha: 1.8, vitA: 900, b12: 7.0, folate: 520, vitC: 120, vitD: 16, vitK: 420, calcium: 690, magnesium: 330, potassium: 3180, zinc: 11.0, iron: 11.5 },
-  { day: 8, dinnerType: 'KB', calories: 1650, protein: 98, carbs: 185, fat: 58, fiber: 44, ala: 3.1, epa_dha: 1.8, vitA: 1040, b12: 7.1, folate: 520, vitC: 132, vitD: 16, vitK: 290, calcium: 630, magnesium: 330, potassium: 3290, zinc: 12.0, iron: 12.3 },
-  { day: 9, dinnerType: 'PB', calories: 1750, protein: 96, carbs: 185, fat: 72, fiber: 38, ala: 2.7, epa_dha: 1.8, vitA: 900, b12: 8.0, folate: 480, vitC: 90, vitD: 16, vitK: 240, calcium: 600, magnesium: 300, potassium: 3000, zinc: 14.0, iron: 11.5 },
-  { day: 10, dinnerType: 'BY', calories: 1620, protein: 94, carbs: 192, fat: 52, fiber: 43, ala: 2.8, epa_dha: 1.8, vitA: 900, b12: 7.0, folate: 580, vitC: 150, vitD: 15, vitK: 260, calcium: 610, magnesium: 320, potassium: 3530, zinc: 11.2, iron: 11.0 },
-  { day: 11, dinnerType: 'BS', calories: 1760, protein: 101, carbs: 180, fat: 70, fiber: 37, ala: 2.7, epa_dha: 1.8, vitA: 900, b12: 8.5, folate: 480, vitC: 82, vitD: 15, vitK: 210, calcium: 610, magnesium: 310, potassium: 3150, zinc: 14.0, iron: 14.1 },
-  { day: 12, dinnerType: 'CC', calories: 1670, protein: 97, carbs: 190, fat: 59, fiber: 48, ala: 3.2, epa_dha: 1.8, vitA: 950, b12: 7.0, folate: 600, vitC: 130, vitD: 16, vitK: 430, calcium: 620, magnesium: 360, potassium: 3400, zinc: 12.0, iron: 12.0 },
-  { day: 13, dinnerType: 'SP', calories: 1680, protein: 95, carbs: 205, fat: 55, fiber: 52, ala: 3.3, epa_dha: 1.8, vitA: 1800, b12: 7.0, folate: 580, vitC: 130, vitD: 16, vitK: 260, calcium: 620, magnesium: 390, potassium: 3710, zinc: 11.5, iron: 12.0 },
-  { day: 14, dinnerType: 'MC', calories: 1640, protein: 92, carbs: 183, fat: 58, fiber: 46, ala: 3.0, epa_dha: 1.8, vitA: 900, b12: 7.0, folate: 520, vitC: 120, vitD: 16, vitK: 420, calcium: 690, magnesium: 330, potassium: 3180, zinc: 11.0, iron: 11.5 },
-  { day: 15, dinnerType: 'KB', calories: 1650, protein: 98, carbs: 185, fat: 58, fiber: 44, ala: 3.1, epa_dha: 1.8, vitA: 1040, b12: 7.1, folate: 520, vitC: 132, vitD: 16, vitK: 290, calcium: 630, magnesium: 330, potassium: 3290, zinc: 12.0, iron: 12.3 },
-  { day: 16, dinnerType: 'PB', calories: 1750, protein: 96, carbs: 185, fat: 72, fiber: 38, ala: 2.7, epa_dha: 1.8, vitA: 900, b12: 8.0, folate: 480, vitC: 90, vitD: 16, vitK: 240, calcium: 600, magnesium: 300, potassium: 3000, zinc: 14.0, iron: 11.5 },
-  { day: 17, dinnerType: 'BY', calories: 1620, protein: 94, carbs: 192, fat: 52, fiber: 43, ala: 2.8, epa_dha: 1.8, vitA: 900, b12: 7.0, folate: 580, vitC: 150, vitD: 15, vitK: 260, calcium: 610, magnesium: 320, potassium: 3530, zinc: 11.2, iron: 11.0 },
-  { day: 18, dinnerType: 'BS', calories: 1760, protein: 101, carbs: 180, fat: 70, fiber: 37, ala: 2.7, epa_dha: 1.8, vitA: 900, b12: 8.5, folate: 480, vitC: 82, vitD: 15, vitK: 210, calcium: 610, magnesium: 310, potassium: 3150, zinc: 14.0, iron: 14.1 },
-  { day: 19, dinnerType: 'CC', calories: 1670, protein: 97, carbs: 190, fat: 59, fiber: 48, ala: 3.2, epa_dha: 1.8, vitA: 950, b12: 7.0, folate: 600, vitC: 130, vitD: 16, vitK: 430, calcium: 620, magnesium: 360, potassium: 3400, zinc: 12.0, iron: 12.0 },
-  { day: 20, dinnerType: 'SP', calories: 1680, protein: 95, carbs: 205, fat: 55, fiber: 52, ala: 3.3, epa_dha: 1.8, vitA: 1800, b12: 7.0, folate: 580, vitC: 130, vitD: 16, vitK: 260, calcium: 620, magnesium: 390, potassium: 3710, zinc: 11.5, iron: 12.0 },
-  { day: 21, dinnerType: 'MC', calories: 1640, protein: 92, carbs: 183, fat: 58, fiber: 46, ala: 3.0, epa_dha: 1.8, vitA: 900, b12: 7.0, folate: 520, vitC: 120, vitD: 16, vitK: 420, calcium: 690, magnesium: 330, potassium: 3180, zinc: 11.0, iron: 11.5 },
-  { day: 22, dinnerType: 'KB', calories: 1650, protein: 98, carbs: 185, fat: 58, fiber: 44, ala: 3.1, epa_dha: 1.8, vitA: 1040, b12: 7.1, folate: 520, vitC: 132, vitD: 16, vitK: 290, calcium: 630, magnesium: 330, potassium: 3290, zinc: 12.0, iron: 12.3 },
-  { day: 23, dinnerType: 'PB', calories: 1750, protein: 96, carbs: 185, fat: 72, fiber: 38, ala: 2.7, epa_dha: 1.8, vitA: 900, b12: 8.0, folate: 480, vitC: 90, vitD: 16, vitK: 240, calcium: 600, magnesium: 300, potassium: 3000, zinc: 14.0, iron: 11.5 },
-  { day: 24, dinnerType: 'BY', calories: 1620, protein: 94, carbs: 192, fat: 52, fiber: 43, ala: 2.8, epa_dha: 1.8, vitA: 900, b12: 7.0, folate: 580, vitC: 150, vitD: 15, vitK: 260, calcium: 610, magnesium: 320, potassium: 3530, zinc: 11.2, iron: 11.0 },
-  { day: 25, dinnerType: 'BS', calories: 1760, protein: 101, carbs: 180, fat: 70, fiber: 37, ala: 2.7, epa_dha: 1.8, vitA: 900, b12: 8.5, folate: 480, vitC: 82, vitD: 15, vitK: 210, calcium: 610, magnesium: 310, potassium: 3150, zinc: 14.0, iron: 14.1 },
-  { day: 26, dinnerType: 'CC', calories: 1670, protein: 97, carbs: 190, fat: 59, fiber: 48, ala: 3.2, epa_dha: 1.8, vitA: 950, b12: 7.0, folate: 600, vitC: 130, vitD: 16, vitK: 430, calcium: 620, magnesium: 360, potassium: 3400, zinc: 12.0, iron: 12.0 },
-  { day: 27, dinnerType: 'SP', calories: 1680, protein: 95, carbs: 205, fat: 55, fiber: 52, ala: 3.3, epa_dha: 1.8, vitA: 1800, b12: 7.0, folate: 580, vitC: 130, vitD: 16, vitK: 260, calcium: 620, magnesium: 390, potassium: 3710, zinc: 11.5, iron: 12.0 },
-  { day: 28, dinnerType: 'MC', calories: 1640, protein: 92, carbs: 183, fat: 58, fiber: 46, ala: 3.0, epa_dha: 1.8, vitA: 900, b12: 7.0, folate: 520, vitC: 120, vitD: 16, vitK: 420, calcium: 690, magnesium: 330, potassium: 3180, zinc: 11.0, iron: 11.5 },
-  { day: 29, dinnerType: 'KB', calories: 1650, protein: 98, carbs: 185, fat: 58, fiber: 44, ala: 3.1, epa_dha: 1.8, vitA: 1040, b12: 7.1, folate: 520, vitC: 132, vitD: 16, vitK: 290, calcium: 630, magnesium: 330, potassium: 3290, zinc: 12.0, iron: 12.3 },
-  { day: 30, dinnerType: 'PB', calories: 1750, protein: 96, carbs: 185, fat: 72, fiber: 38, ala: 2.7, epa_dha: 1.8, vitA: 900, b12: 8.0, folate: 480, vitC: 90, vitD: 16, vitK: 240, calcium: 600, magnesium: 300, potassium: 3000, zinc: 14.0, iron: 11.5 }
+const cloneMealRecipes = (recipes) =>
+  Object.fromEntries(
+    Object.entries(recipes).map(([mealType, entries]) => [
+      mealType,
+      Object.fromEntries(
+        Object.entries(entries).map(([code, recipe]) => [
+          code,
+          {
+            ...recipe,
+            ingredients: (recipe.ingredients || []).map((ingredient) => ({ ...ingredient })),
+          },
+        ])
+      ),
+    ])
+  );
+
+const mergeMealRecipesWithDefaults = (recipes) => {
+  if (!recipes) return cloneMealRecipes(BASE_MEALS);
+  const merged = {};
+  Object.keys(BASE_MEALS).forEach((mealType) => {
+    merged[mealType] = {
+      ...BASE_MEALS[mealType],
+      ...(recipes[mealType] || {}),
+    };
+  });
+  return cloneMealRecipes(merged);
+};
+
+const MEAL_ROTATION = {
+  breakfast: (day) => (day % 2 === 0 ? 'chia' : 'shake'),
+  lunch: (day) => (day % 2 === 0 ? 'trout' : 'salmon'),
+  snacks: () => 'default',
+};
+
+const getDefaultMealKey = (mealType, day, dinnerCode) => {
+  if (mealType === 'dinner') return dinnerCode;
+  if (mealType === 'snacks') return 'default';
+  return MEAL_ROTATION[mealType]?.(day);
+};
+
+// Dinner rotation template (30 days)
+const DAILY_PLAN = [
+  { day: 1, dinnerType: 'KB' },
+  { day: 2, dinnerType: 'PB' },
+  { day: 3, dinnerType: 'BY' },
+  { day: 4, dinnerType: 'BS' },
+  { day: 5, dinnerType: 'CC' },
+  { day: 6, dinnerType: 'SP' },
+  { day: 7, dinnerType: 'MC' },
+  { day: 8, dinnerType: 'KB' },
+  { day: 9, dinnerType: 'PB' },
+  { day: 10, dinnerType: 'BY' },
+  { day: 11, dinnerType: 'BS' },
+  { day: 12, dinnerType: 'CC' },
+  { day: 13, dinnerType: 'SP' },
+  { day: 14, dinnerType: 'MC' },
+  { day: 15, dinnerType: 'KB' },
+  { day: 16, dinnerType: 'PB' },
+  { day: 17, dinnerType: 'BY' },
+  { day: 18, dinnerType: 'BS' },
+  { day: 19, dinnerType: 'CC' },
+  { day: 20, dinnerType: 'SP' },
+  { day: 21, dinnerType: 'MC' },
+  { day: 22, dinnerType: 'KB' },
+  { day: 23, dinnerType: 'PB' },
+  { day: 24, dinnerType: 'BY' },
+  { day: 25, dinnerType: 'BS' },
+  { day: 26, dinnerType: 'CC' },
+  { day: 27, dinnerType: 'SP' },
+  { day: 28, dinnerType: 'MC' },
+  { day: 29, dinnerType: 'KB' },
+  { day: 30, dinnerType: 'PB' }
 ];
+
+const getMealForDay = (mealType, day, mealRecipes, customMeals, dinnerCode) => {
+  const dayKey = `day-${day}`;
+  const dayCustomizations = customMeals?.[dayKey] || {};
+  const templateKey = getDefaultMealKey(mealType, day, dinnerCode);
+  const customKey = mealType === 'snacks' ? 'snacks' : `${mealType}-${templateKey}`;
+
+  return (
+    dayCustomizations[customKey] ||
+    mealRecipes?.[mealType]?.[templateKey] ||
+    { name: 'Custom Meal', ingredients: [] }
+  );
+};
+
+const buildDailyNutritionEntry = (day, dinnerType, mealRecipes, customMeals) => {
+  const totals = createEmptyNutrition();
+  ['breakfast', 'lunch', 'dinner', 'snacks'].forEach((mealType) => {
+    const meal = getMealForDay(mealType, day, mealRecipes, customMeals, dinnerType);
+    const nutrition = sumNutrition(meal?.ingredients || []);
+    NUTRIENT_FIELDS.forEach((key) => {
+      totals[key] += nutrition[key];
+    });
+  });
+  return { day, dinnerType, ...totals };
+};
+
+const buildPlanNutrition = (mealRecipes, customMeals) =>
+  DAILY_PLAN.map(({ day, dinnerType }) =>
+    buildDailyNutritionEntry(day, dinnerType, mealRecipes, customMeals)
+  );
 
 // ============================================================================
 // ICON COMPONENTS
@@ -519,6 +626,14 @@ const DownloadIcon = () => (
     <path d="M8 3v7"/>
     <path d="M5.5 7.5L8 10l2.5-2.5"/>
     <path d="M3 13h10"/>
+  </svg>
+);
+
+const TargetIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
+    <circle cx="8" cy="8" r="6"/>
+    <circle cx="8" cy="8" r="3"/>
+    <circle cx="8" cy="8" r="1"/>
   </svg>
 );
 
@@ -1039,29 +1154,23 @@ const MealCard = ({ title, meal, mealKey, dayKey, onUpdate, isEditing, setIsEdit
 // DAY DETAIL MODAL
 // ============================================================================
 
-const DayDetail = ({ day, nutrition, customMeals, dinnerRecipes, onUpdate, onClose }) => {
+const DayDetail = ({ day, nutrition, customMeals, mealRecipes, goals, onUpdate, onClose }) => {
   const [editingMeal, setEditingMeal] = useState(null);
   
   const dinnerInfo =
-    dinnerRecipes[nutrition.dinnerType] || { name: 'Dinner', color: '#94a3b8', ingredients: [] };
+    mealRecipes.dinner?.[nutrition.dinnerType] || { name: 'Dinner', color: '#94a3b8', ingredients: [] };
   const dayKey = `day-${day}`;
-  
-  const getMeal = (mealType, subType = null) => {
-    const key = subType ? `${mealType}-${subType}` : mealType;
-    if (customMeals[dayKey] && customMeals[dayKey][key]) {
-      return customMeals[dayKey][key];
+
+  const getMeal = (mealType) => {
+    const templateKey = getDefaultMealKey(mealType, day, nutrition.dinnerType);
+    const customKey = mealType === 'snacks' ? 'snacks' : `${mealType}-${templateKey}`;
+    if (customMeals[dayKey] && customMeals[dayKey][customKey]) {
+      return customMeals[dayKey][customKey];
     }
-    if (mealType === 'breakfast') {
-      return BASE_MEALS.breakfast[day % 2 === 0 ? 'chia' : 'shake'];
-    }
-    if (mealType === 'lunch') {
-      return BASE_MEALS.lunch[day % 2 === 0 ? 'trout' : 'salmon'];
-    }
-    if (mealType === 'dinner') {
-      return dinnerRecipes[nutrition.dinnerType] || dinnerInfo;
-    }
-    return BASE_MEALS.snacks.default;
+    return mealRecipes[mealType]?.[templateKey] || { name: 'Custom Meal', ingredients: [] };
   };
+
+  const activeGoals = goals || DEFAULT_DIET_GOALS;
   
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
@@ -1092,15 +1201,15 @@ const DayDetail = ({ day, nutrition, customMeals, dinnerRecipes, onUpdate, onClo
             <h3 className="text-xs uppercase tracking-wider text-slate-500 mb-4">Daily Nutrition</h3>
             
             <div className="grid grid-cols-5 gap-4 mb-6">
-              <CircularProgress value={nutrition.calories} max={DIET_GOALS.calories.max} color="#f59e0b" label="Calories" unit=" kcal" />
-              <CircularProgress value={nutrition.protein} max={DIET_GOALS.protein.max} color="#3b82f6" label="Protein" unit="g" />
-              <CircularProgress value={nutrition.carbs} max={DIET_GOALS.carbs.max} color="#22c55e" label="Carbs" unit="g" />
-              <CircularProgress value={nutrition.fat} max={DIET_GOALS.fat.max} color="#f43f5e" label="Fat" unit="g" />
-              <CircularProgress value={nutrition.fiber} max={DIET_GOALS.fiber.max} color="#8b5cf6" label="Fiber" unit="g" />
+              <CircularProgress value={nutrition.calories} max={activeGoals.calories.max} color="#f59e0b" label="Calories" unit=" kcal" />
+              <CircularProgress value={nutrition.protein} max={activeGoals.protein.max} color="#3b82f6" label="Protein" unit="g" />
+              <CircularProgress value={nutrition.carbs} max={activeGoals.carbs.max} color="#22c55e" label="Carbs" unit="g" />
+              <CircularProgress value={nutrition.fat} max={activeGoals.fat.max} color="#f43f5e" label="Fat" unit="g" />
+              <CircularProgress value={nutrition.fiber} max={activeGoals.fiber.max} color="#8b5cf6" label="Fiber" unit="g" />
             </div>
             
             <div className="grid grid-cols-2 gap-x-8 gap-y-3">
-              <MicroBar label="Omega-3 (ALA + EPA/DHA)" value={nutrition.ala + nutrition.epa_dha} max={5} unit="g" color="#06b6d4" />
+              <MicroBar label="Omega-3 (ALA + EPA/DHA)" value={nutrition.ala + nutrition.epa_dha} max={activeGoals.omega3.max} unit="g" color="#06b6d4" />
               <MicroBar label="Vitamin A" value={nutrition.vitA} max={900} unit=" mcg" color="#f97316" />
               <MicroBar label="Vitamin B12" value={nutrition.b12} max={2.4} unit=" mcg" color="#ec4899" />
               <MicroBar label="Folate" value={nutrition.folate} max={400} unit=" mcg" color="#14b8a6" />
@@ -1121,7 +1230,7 @@ const DayDetail = ({ day, nutrition, customMeals, dinnerRecipes, onUpdate, onClo
             <MealCard 
               title="Breakfast"
               meal={getMeal('breakfast')}
-              mealKey={`breakfast-${day % 2 === 0 ? 'chia' : 'shake'}`}
+              mealKey={`breakfast-${breakfastKey}`}
               dayKey={dayKey}
               onUpdate={onUpdate}
               isEditing={editingMeal === 'breakfast'}
@@ -1131,7 +1240,7 @@ const DayDetail = ({ day, nutrition, customMeals, dinnerRecipes, onUpdate, onClo
             <MealCard 
               title="Lunch"
               meal={getMeal('lunch')}
-              mealKey={`lunch-${day % 2 === 0 ? 'trout' : 'salmon'}`}
+              mealKey={`lunch-${lunchKey}`}
               dayKey={dayKey}
               onUpdate={onUpdate}
               isEditing={editingMeal === 'lunch'}
@@ -1208,8 +1317,17 @@ const CalendarDay = ({ day, nutrition, dinnerInfo, hasCustomization, onClick }) 
 // METHODOLOGY PANEL
 // ============================================================================
 
-const MethodologyPanel = ({ isOpen, onClose }) => {
+const MethodologyPanel = ({ isOpen, onClose, goals }) => {
   if (!isOpen) return null;
+  const activeGoals = goals || DEFAULT_DIET_GOALS;
+  const goalList = [
+    { key: 'calories', label: 'Calories' },
+    { key: 'protein', label: 'Protein' },
+    { key: 'fiber', label: 'Fiber' },
+    { key: 'omega3', label: 'Omega-3' },
+  ];
+  const formatGoal = (goal) =>
+    goal ? `${goal.min ?? 0}–${goal.max ?? 0} ${goal.unit || ''}` : '';
   
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
@@ -1263,10 +1381,12 @@ const MethodologyPanel = ({ isOpen, onClose }) => {
           <section>
             <h3 className="text-[#9AA6B2] font-medium mb-2">Daily Targets</h3>
             <div className="grid grid-cols-2 gap-2 text-xs">
-              <div className="flex justify-between p-2 rounded bg-[#D9EAFD]"><span>Calories</span><span className="text-slate-600">1500–1800 kcal</span></div>
-              <div className="flex justify-between p-2 rounded bg-[#D9EAFD]"><span>Protein</span><span className="text-slate-600">90–100g</span></div>
-              <div className="flex justify-between p-2 rounded bg-[#D9EAFD]"><span>Fiber</span><span className="text-slate-600">40–60g</span></div>
-              <div className="flex justify-between p-2 rounded bg-[#D9EAFD]"><span>Omega-3</span><span className="text-slate-600">2–3g EPA/DHA</span></div>
+              {goalList.map((goal) => (
+                <div key={goal.key} className="flex justify-between p-2 rounded bg-[#D9EAFD]">
+                  <span>{goal.label}</span>
+                  <span className="text-slate-600">{formatGoal(activeGoals[goal.key])}</span>
+                </div>
+              ))}
               <div className="flex justify-between p-2 rounded bg-[#D9EAFD]"><span>Fermented</span><span className="text-slate-600">2–3 servings</span></div>
               <div className="flex justify-between p-2 rounded bg-[#D9EAFD]"><span>Collagen</span><span className="text-slate-600">1–2 sources</span></div>
             </div>
@@ -1298,17 +1418,114 @@ const MethodologyPanel = ({ isOpen, onClose }) => {
   );
 };
 
+const GoalSettingsPanel = ({ isOpen, goals, onSave, onClose }) => {
+  const [localGoals, setLocalGoals] = useState(goals || DEFAULT_DIET_GOALS);
+
+  useEffect(() => {
+    setLocalGoals(goals || DEFAULT_DIET_GOALS);
+  }, [goals, isOpen]);
+
+  if (!isOpen) return null;
+
+  const fields = [
+    { key: 'calories', label: 'Calories (kcal)' },
+    { key: 'protein', label: 'Protein (g)' },
+    { key: 'carbs', label: 'Carbs (g)' },
+    { key: 'fat', label: 'Fat (g)' },
+    { key: 'fiber', label: 'Fiber (g)' },
+    { key: 'omega3', label: 'Omega-3 (g)' },
+  ];
+
+  const handleChange = (key, bound, value) => {
+    setLocalGoals((prev) => ({
+      ...prev,
+      [key]: {
+        ...prev[key],
+        [bound]: Number(value),
+      },
+    }));
+  };
+
+  const handleSubmit = () => {
+    onSave(localGoals);
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+      <div className="relative w-full max-w-xl max-h-[85vh] overflow-hidden bg-slate-50 rounded-2xl border border-[#9AA6B2]">
+        <div className="flex items-center justify-between p-6 border-b border-[#9AA6B2]">
+          <div>
+            <h2 className="text-xl font-semibold text-slate-900">Daily Targets</h2>
+            <p className="text-sm text-slate-600">Adjust your calorie and macro goals.</p>
+          </div>
+          <button onClick={onClose} className="p-2 rounded-lg hover:bg-[#BCCCDC] text-slate-600">
+            <XIcon />
+          </button>
+        </div>
+
+        <div className="p-6 space-y-4 overflow-y-auto max-h-[calc(85vh-140px)]">
+          {fields.map((field) => (
+            <div key={field.key} className="p-4 rounded-xl bg-[#D9EAFD]/80 border border-[#9AA6B2]/50">
+              <p className="text-sm font-medium text-slate-800 mb-2">{field.label}</p>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-[10px] uppercase tracking-wider text-slate-500 mb-1">
+                    Minimum
+                  </label>
+                  <input
+                    type="number"
+                    value={localGoals[field.key]?.min ?? 0}
+                    onChange={(e) => handleChange(field.key, 'min', e.target.value)}
+                    className="w-full px-3 py-2 bg-[#BCCCDC] border border-[#9AA6B2] rounded-lg text-slate-900 focus:outline-none focus:border-[#9AA6B2]"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[10px] uppercase tracking-wider text-slate-500 mb-1">
+                    Maximum
+                  </label>
+                  <input
+                    type="number"
+                    value={localGoals[field.key]?.max ?? 0}
+                    onChange={(e) => handleChange(field.key, 'max', e.target.value)}
+                    className="w-full px-3 py-2 bg-[#BCCCDC] border border-[#9AA6B2] rounded-lg text-slate-900 focus:outline-none focus:border-[#9AA6B2]"
+                  />
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div className="p-5 border-t border-[#9AA6B2] flex items-center justify-end gap-3">
+          <button
+            onClick={onClose}
+            className="px-4 py-2 text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={handleSubmit}
+            className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-900 bg-[#BCCCDC] rounded-lg hover:bg-[#9AA6B2] transition-colors"
+          >
+            <SaveIcon /> Save Targets
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 // ============================================================================
 // RECIPES PANEL
 // ============================================================================
 
-const RecipesPanel = ({ isOpen, onClose, dinnerRecipes, onAddDinner, onEditDinner }) => {
+const RecipesPanel = ({ isOpen, onClose, mealRecipes, onAddRecipe, onEditRecipe }) => {
   if (!isOpen) return null;
 
   const sections = [
-    { key: 'breakfast', title: 'Breakfast', meals: BASE_MEALS.breakfast },
-    { key: 'lunch', title: 'Lunch', meals: BASE_MEALS.lunch },
-    { key: 'snacks', title: 'Snacks', meals: BASE_MEALS.snacks },
+    { key: 'breakfast', title: 'Breakfast', canAdd: true },
+    { key: 'lunch', title: 'Lunch', canAdd: true },
+    { key: 'snacks', title: 'Snacks', canAdd: false },
+    { key: 'dinner', title: 'Dinner', canAdd: true },
   ];
 
   const formatAmount = (ingredient) => {
@@ -1329,18 +1546,34 @@ const RecipesPanel = ({ isOpen, onClose, dinnerRecipes, onAddDinner, onEditDinne
         <div className="p-6 overflow-y-auto max-h-[calc(90vh-88px)] space-y-8 text-sm text-slate-700 leading-relaxed">
           {sections.map((section) => (
             <section key={section.key}>
-              <h3 className="text-[#9AA6B2] font-medium mb-3">{section.title}</h3>
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-[#9AA6B2] font-medium">{section.title}</h3>
+                {section.canAdd && (
+                  <button
+                    onClick={() => onAddRecipe(section.key)}
+                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-[#9AA6B2] border border-[#9AA6B2]/40 rounded-lg hover:bg-[#BCCCDC]/30 transition-colors"
+                  >
+                    <PlusIcon /> Add {section.title} Recipe
+                  </button>
+                )}
+              </div>
               <div className="grid gap-4 md:grid-cols-2">
-                {Object.entries(section.meals).map(([mealKey, meal]) => (
-                  <div key={mealKey} className="p-4 rounded-xl bg-[#D9EAFD]/80 border border-[#9AA6B2]/60">
+                {Object.entries(mealRecipes[section.key] || {}).map(([mealKey, meal]) => (
+                  <div key={`${section.key}-${mealKey}`} className="p-4 rounded-xl bg-[#D9EAFD]/80 border border-[#9AA6B2]/60">
                     <div className="flex items-start justify-between gap-3">
                       <div>
                         <p className="text-base font-semibold text-slate-900">{meal.name}</p>
-                        <p className="text-xs text-slate-500">{section.title}</p>
+                        <p className="text-xs font-mono text-slate-500 mt-1">Key: {mealKey}</p>
                       </div>
+                      <button
+                        onClick={() => onEditRecipe(section.key, mealKey)}
+                        className="px-2 py-1 text-xs font-medium text-slate-700 bg-[#BCCCDC] rounded hover:bg-[#9AA6B2] transition-colors"
+                      >
+                        Edit
+                      </button>
                     </div>
                     <ul className="mt-3 space-y-1.5 text-xs text-slate-600">
-                      {meal.ingredients.map((ingredient, index) => (
+                      {(meal.ingredients || []).map((ingredient, index) => (
                         <li key={`${mealKey}-${index}`} className="flex justify-between gap-2">
                           <span className="text-slate-800">{ingredient.name}</span>
                           <span className="text-slate-500">{formatAmount(ingredient)}</span>
@@ -1352,52 +1585,15 @@ const RecipesPanel = ({ isOpen, onClose, dinnerRecipes, onAddDinner, onEditDinne
               </div>
             </section>
           ))}
-
-          <section>
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="text-[#9AA6B2] font-medium">Dinner</h3>
-              <button
-                onClick={onAddDinner}
-                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-[#9AA6B2] border border-[#9AA6B2]/40 rounded-lg hover:bg-[#BCCCDC]/30 transition-colors"
-              >
-                <PlusIcon /> Add Dinner Recipe
-              </button>
-            </div>
-            <div className="grid gap-4 md:grid-cols-2">
-              {Object.entries(dinnerRecipes).map(([mealKey, meal]) => (
-                <div key={mealKey} className="p-4 rounded-xl bg-[#D9EAFD]/80 border border-[#9AA6B2]/60">
-                  <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <p className="text-base font-semibold text-slate-900">{meal.name}</p>
-                      <p className="text-xs font-mono text-slate-500 mt-1">Code: {mealKey}</p>
-                    </div>
-                    <button
-                      onClick={() => onEditDinner(mealKey)}
-                      className="px-2 py-1 text-xs font-medium text-slate-700 bg-[#BCCCDC] rounded hover:bg-[#9AA6B2] transition-colors"
-                    >
-                      Edit
-                    </button>
-                  </div>
-                  <ul className="mt-3 space-y-1.5 text-xs text-slate-600">
-                    {meal.ingredients.map((ingredient, index) => (
-                      <li key={`${mealKey}-${index}`} className="flex justify-between gap-2">
-                        <span className="text-slate-800">{ingredient.name}</span>
-                        <span className="text-slate-500">{formatAmount(ingredient)}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              ))}
-            </div>
-          </section>
         </div>
       </div>
     </div>
   );
 };
 
-const DinnerEditor = ({
+const RecipeEditor = ({
   isOpen,
+  mealType,
   mode,
   initialCode,
   recipe,
@@ -1422,6 +1618,25 @@ const DinnerEditor = ({
   }, [initialCode, recipe, isOpen]);
 
   if (!isOpen) return null;
+
+  const mealTitleMap = {
+    breakfast: 'Breakfast',
+    lunch: 'Lunch',
+    dinner: 'Dinner',
+    snacks: 'Snack',
+  };
+  const mealTitle = mealTitleMap[mealType] || 'Meal';
+
+  const normalizeCode = (value) => {
+    if (mealType === 'dinner') {
+      return value.trim().toUpperCase();
+    }
+    return value
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9-]/g, '-')
+      .replace(/-+/g, '-');
+  };
 
   const handleIngredientChange = (index, updated) => {
     setLocalRecipe((prev) => ({
@@ -1453,13 +1668,13 @@ const DinnerEditor = ({
   };
 
   const handleSave = () => {
-    const normalizedCode = mode === 'create' ? code.trim().toUpperCase() : initialCode;
+    const normalizedCode = mode === 'create' ? normalizeCode(code) : initialCode;
     if (!normalizedCode) {
-      setError('Dinner code is required.');
+      setError('Recipe key is required.');
       return;
     }
     if (mode === 'create' && existingCodes.includes(normalizedCode)) {
-      setError('This dinner code already exists.');
+      setError('This recipe key already exists.');
       return;
     }
     if (!localRecipe.name.trim()) {
@@ -1486,10 +1701,10 @@ const DinnerEditor = ({
         <div className="flex items-center justify-between p-5 border-b border-[#9AA6B2]">
           <div>
             <h3 className="text-lg font-semibold text-slate-900">
-              {mode === 'create' ? 'Add Dinner Recipe' : 'Edit Dinner Recipe'}
+              {mode === 'create' ? `Add ${mealTitle} Recipe` : `Edit ${mealTitle} Recipe`}
             </h3>
             <p className="text-sm text-slate-500">
-              Define reusable dinner templates for the calendar.
+              Define reusable {mealTitle.toLowerCase()} templates for the calendar.
             </p>
           </div>
           <button onClick={onClose} className="p-2 rounded-lg hover:bg-[#BCCCDC] text-slate-600">
@@ -1507,13 +1722,13 @@ const DinnerEditor = ({
           <div className="grid md:grid-cols-3 gap-4">
             <div className="md:col-span-1">
               <label className="block text-xs uppercase tracking-wide text-slate-500 mb-1">
-                Dinner Code
+                Recipe Key
               </label>
               <input
                 type="text"
                 value={code}
-                onChange={(e) => setCode(e.target.value.toUpperCase())}
-                maxLength={3}
+                onChange={(e) => setCode(e.target.value)}
+                maxLength={mealType === 'dinner' ? 4 : 24}
                 disabled={mode === 'edit'}
                 className="w-full px-3 py-2 bg-[#D9EAFD] border border-[#9AA6B2] rounded-lg text-slate-900 focus:outline-none focus:border-[#9AA6B2] disabled:opacity-50"
               />
@@ -1529,25 +1744,27 @@ const DinnerEditor = ({
                 className="w-full px-3 py-2 bg-[#D9EAFD] border border-[#9AA6B2] rounded-lg text-slate-900 focus:outline-none focus:border-[#9AA6B2]"
               />
             </div>
-            <div className="md:col-span-1">
-              <label className="block text-xs uppercase tracking-wide text-slate-500 mb-1">
-                Accent Color
-              </label>
-              <div className="flex items-center gap-3">
-                <input
-                  type="color"
-                  value={localRecipe.color || '#f97316'}
-                  onChange={(e) => setLocalRecipe({ ...localRecipe, color: e.target.value })}
-                  className="w-12 h-10 rounded border border-[#9AA6B2] bg-[#D9EAFD]"
-                />
-                <input
-                  type="text"
-                  value={localRecipe.color || ''}
-                  onChange={(e) => setLocalRecipe({ ...localRecipe, color: e.target.value })}
-                  className="flex-1 px-3 py-2 bg-[#D9EAFD] border border-[#9AA6B2] rounded-lg text-slate-900 focus:outline-none focus:border-[#9AA6B2]"
-                />
+            {mealType === 'dinner' && (
+              <div className="md:col-span-1">
+                <label className="block text-xs uppercase tracking-wide text-slate-500 mb-1">
+                  Accent Color
+                </label>
+                <div className="flex items-center gap-3">
+                  <input
+                    type="color"
+                    value={localRecipe.color || '#f97316'}
+                    onChange={(e) => setLocalRecipe({ ...localRecipe, color: e.target.value })}
+                    className="w-12 h-10 rounded border border-[#9AA6B2] bg-[#D9EAFD]"
+                  />
+                  <input
+                    type="text"
+                    value={localRecipe.color || ''}
+                    onChange={(e) => setLocalRecipe({ ...localRecipe, color: e.target.value })}
+                    className="flex-1 px-3 py-2 bg-[#D9EAFD] border border-[#9AA6B2] rounded-lg text-slate-900 focus:outline-none focus:border-[#9AA6B2]"
+                  />
+                </div>
               </div>
-            </div>
+            )}
           </div>
 
           <div>
@@ -1735,8 +1952,10 @@ export default function JanuaryMealsPage() {
   const [customMeals, setCustomMeals] = useState({});
   const [showMethodology, setShowMethodology] = useState(false);
   const [showRecipes, setShowRecipes] = useState(false);
-  const [dinnerRecipes, setDinnerRecipes] = useState(() => cloneDinnerRecipes(BASE_DINNER_RECIPES));
-  const [activeDinnerEditor, setActiveDinnerEditor] = useState(null);
+  const [mealRecipes, setMealRecipes] = useState(() => cloneMealRecipes(BASE_MEALS));
+  const [activeRecipeEditor, setActiveRecipeEditor] = useState(null);
+  const [dietGoals, setDietGoals] = useState(DEFAULT_DIET_GOALS);
+  const [showGoalSettings, setShowGoalSettings] = useState(false);
   const [saveStatus, setSaveStatus] = useState(null);
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -1834,61 +2053,104 @@ export default function JanuaryMealsPage() {
   useEffect(() => {
     if (typeof window === 'undefined') return;
     try {
-      const stored = localStorage.getItem(DINNER_STORAGE_KEY);
-      if (stored) {
-        const parsed = JSON.parse(stored);
-        setDinnerRecipes(cloneDinnerRecipes(parsed));
+      const storedRecipes = localStorage.getItem(MEAL_RECIPES_STORAGE_KEY);
+      if (storedRecipes) {
+        const parsed = JSON.parse(storedRecipes);
+        setMealRecipes(mergeMealRecipesWithDefaults(parsed));
       }
     } catch (error) {
-      console.error('Failed to load dinner recipes', error);
+      console.error('Failed to load saved recipes', error);
     }
   }, []);
 
-  const persistDinnerRecipes = useCallback((updater) => {
-    setDinnerRecipes((prev) => {
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    try {
+      const storedGoals = localStorage.getItem(GOALS_STORAGE_KEY);
+      if (storedGoals) {
+        setDietGoals(JSON.parse(storedGoals));
+      }
+    } catch (error) {
+      console.error('Failed to load goals', error);
+    }
+  }, []);
+
+  const persistMealRecipes = useCallback((updater) => {
+    setMealRecipes((prev) => {
       const base = typeof updater === 'function' ? updater(prev) : updater;
-      const next = cloneDinnerRecipes(base);
+      const next = cloneMealRecipes(base);
       if (typeof window !== 'undefined') {
         try {
-          localStorage.setItem(DINNER_STORAGE_KEY, JSON.stringify(next));
+          localStorage.setItem(MEAL_RECIPES_STORAGE_KEY, JSON.stringify(next));
         } catch (error) {
-          console.error('Failed to save dinner recipes', error);
+          console.error('Failed to save recipes', error);
         }
       }
       return next;
     });
   }, []);
 
-  const handleSaveDinnerTemplate = useCallback(
-    (code, recipe) => {
-      persistDinnerRecipes((prev) => ({
+  const handleSaveMealTemplate = useCallback(
+    (mealType, code, recipe) => {
+      persistMealRecipes((prev) => ({
         ...prev,
-        [code]: {
-          ...recipe,
-          ingredients: (recipe.ingredients || []).map((ingredient) => ({ ...ingredient })),
+        [mealType]: {
+          ...(prev[mealType] || {}),
+          [code]: {
+            ...recipe,
+            ingredients: (recipe.ingredients || []).map((ingredient) => ({ ...ingredient })),
+          },
         },
       }));
-      setActiveDinnerEditor(null);
+      setActiveRecipeEditor(null);
     },
-    [persistDinnerRecipes]
+    [persistMealRecipes]
   );
 
-  const handleDeleteDinnerTemplate = useCallback(
-    (code) => {
-      persistDinnerRecipes((prev) => {
-        const next = { ...prev };
-        delete next[code];
+  const handleDeleteMealTemplate = useCallback(
+    (mealType, code) => {
+      persistMealRecipes((prev) => {
+        const next = { ...prev, [mealType]: { ...(prev[mealType] || {}) } };
+        delete next[mealType][code];
         return next;
       });
-      setActiveDinnerEditor(null);
+      setActiveRecipeEditor(null);
     },
-    [persistDinnerRecipes]
+    [persistMealRecipes]
   );
+
+  const handleSaveGoals = useCallback((nextGoals) => {
+    const normalized = Object.fromEntries(
+      Object.entries(nextGoals || {}).map(([key, goal]) => [key, { ...goal }])
+    );
+    setDietGoals(normalized);
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.setItem(GOALS_STORAGE_KEY, JSON.stringify(normalized));
+      } catch (error) {
+        console.error('Failed to save goals', error);
+      }
+    }
+    setShowGoalSettings(false);
+  }, []);
   
+  const dailyNutrition = useMemo(
+    () => buildPlanNutrition(mealRecipes, customMeals),
+    [mealRecipes, customMeals]
+  );
+
+  const nutritionByDay = useMemo(() => {
+    const map = {};
+    dailyNutrition.forEach((entry) => {
+      map[entry.day] = entry;
+    });
+    return map;
+  }, [dailyNutrition]);
+
   const handleExportCsv = useCallback(() => {
     if (typeof window === 'undefined' || typeof document === 'undefined') return;
     
-    const csvText = buildNutritionCsv(dinnerRecipes);
+    const csvText = buildNutritionCsv(dailyNutrition, mealRecipes);
     const blob = new Blob([csvText], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
@@ -1898,12 +2160,12 @@ export default function JanuaryMealsPage() {
     link.click();
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
-  }, [dinnerRecipes]);
+  }, [dailyNutrition, mealRecipes]);
 
   const handleOpenInGoogleSheets = useCallback(() => {
     if (typeof window === 'undefined' || typeof document === 'undefined') return;
 
-    const excelXml = buildExcelXml(dinnerRecipes);
+    const excelXml = buildExcelXml(dailyNutrition, mealRecipes);
     const blob = new Blob([excelXml], { type: 'application/vnd.ms-excel' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
@@ -1915,7 +2177,7 @@ export default function JanuaryMealsPage() {
     setTimeout(() => URL.revokeObjectURL(url), 1000);
 
     window.open('https://docs.google.com/spreadsheets/u/0/create?usp=sheets_home', '_blank');
-  }, [dinnerRecipes]);
+  }, [dailyNutrition, mealRecipes]);
   
   const handleUpdateMeal = useCallback(async (dayKey, mealKey, mealData) => {
     const updated = {
@@ -1980,18 +2242,24 @@ export default function JanuaryMealsPage() {
   };
   
   const weekDays = getWeekDays();
-  const selectedNutrition = selectedDay ? DAILY_NUTRITION.find(n => n.day === selectedDay) : null;
+  const selectedNutrition = selectedDay ? nutritionByDay[selectedDay] : null;
   
-  const weeklyAvg = weekDays.reduce((acc, day) => {
-    const n = DAILY_NUTRITION.find(d => d.day === day);
-    if (n) {
-      acc.calories += n.calories;
-      acc.protein += n.protein;
-      acc.fiber += n.fiber;
-      acc.count += 1;
-    }
-    return acc;
-  }, { calories: 0, protein: 0, fiber: 0, count: 0 });
+  const weeklyAvg = weekDays.reduce(
+    (acc, day) => {
+      const n = nutritionByDay[day];
+      if (n) {
+        acc.calories += n.calories;
+        acc.protein += n.protein;
+        acc.fiber += n.fiber;
+        acc.count += 1;
+      }
+      return acc;
+    },
+    { calories: 0, protein: 0, fiber: 0, count: 0 }
+  );
+  const avgCalories = weeklyAvg.count ? Math.round(weeklyAvg.calories / weeklyAvg.count) : 0;
+  const avgProtein = weeklyAvg.count ? Math.round(weeklyAvg.protein / weeklyAvg.count) : 0;
+  const avgFiber = weeklyAvg.count ? Math.round(weeklyAvg.fiber / weeklyAvg.count) : 0;
   
   if (loading) {
     return (
@@ -2036,6 +2304,7 @@ export default function JanuaryMealsPage() {
           <div className="flex items-center gap-3 flex-wrap">
             {[
               { label: 'Methodology', icon: <InfoIcon />, action: () => setShowMethodology(true) },
+              { label: 'Targets', icon: <TargetIcon />, action: () => setShowGoalSettings(true) },
               { label: 'View recipes', icon: <BookIcon />, action: () => setShowRecipes(true) },
               { label: 'Open in Sheets', icon: <SheetsIcon />, action: handleOpenInGoogleSheets },
               { label: 'Export CSV', icon: <DownloadIcon />, action: handleExportCsv },
@@ -2077,17 +2346,17 @@ export default function JanuaryMealsPage() {
             <div className="flex items-center gap-6">
               <div>
                 <p className="text-[10px] uppercase tracking-wider text-slate-500">Week {currentWeek} Avg</p>
-                <p className="text-lg font-semibold text-[#9AA6B2]">{Math.round(weeklyAvg.calories / weeklyAvg.count)} <span className="text-sm font-normal text-slate-500">kcal/day</span></p>
+                <p className="text-lg font-semibold text-[#9AA6B2]">{avgCalories} <span className="text-sm font-normal text-slate-500">kcal/day</span></p>
               </div>
               <div className="w-px h-8 bg-[#BCCCDC]" />
               <div>
                 <p className="text-[10px] uppercase tracking-wider text-slate-500">Protein</p>
-                <p className="text-lg font-semibold text-blue-400">{Math.round(weeklyAvg.protein / weeklyAvg.count)}g</p>
+                <p className="text-lg font-semibold text-blue-400">{avgProtein}g</p>
               </div>
               <div className="w-px h-8 bg-[#BCCCDC]" />
               <div>
                 <p className="text-[10px] uppercase tracking-wider text-slate-500">Fiber</p>
-                <p className="text-lg font-semibold text-purple-400">{Math.round(weeklyAvg.fiber / weeklyAvg.count)}g</p>
+                <p className="text-lg font-semibold text-purple-400">{avgFiber}g</p>
               </div>
             </div>
             
@@ -2103,7 +2372,7 @@ export default function JanuaryMealsPage() {
           ))}
           
           {weekDays.map(day => {
-            const nutrition = DAILY_NUTRITION.find(n => n.day === day);
+            const nutrition = nutritionByDay[day];
             if (!nutrition) return <div key={day} />;
             
             return (
@@ -2111,7 +2380,7 @@ export default function JanuaryMealsPage() {
                 key={day}
                 day={day}
                 nutrition={nutrition}
-                dinnerInfo={dinnerRecipes[nutrition.dinnerType]}
+                dinnerInfo={mealRecipes.dinner?.[nutrition.dinnerType]}
                 hasCustomization={!!customMeals[`day-${day}`]}
                 onClick={() => setSelectedDay(day)}
               />
@@ -2122,7 +2391,7 @@ export default function JanuaryMealsPage() {
         <div className="mt-8 p-4 rounded-xl bg-[#D9EAFD]/70 border border-[#9AA6B2]/30">
           <p className="text-xs uppercase tracking-wider text-slate-500 mb-3">Dinner Rotation</p>
           <div className="flex flex-wrap gap-2">
-            {Object.entries(dinnerRecipes).map(([code, info]) => (
+            {Object.entries(mealRecipes.dinner || {}).map(([code, info]) => (
               <div 
                 key={code} 
                 className="px-3 py-1.5 rounded-lg text-xs"
@@ -2141,7 +2410,8 @@ export default function JanuaryMealsPage() {
           day={selectedDay}
           nutrition={selectedNutrition}
           customMeals={customMeals}
-          dinnerRecipes={dinnerRecipes}
+          mealRecipes={mealRecipes}
+          goals={dietGoals}
           onUpdate={handleUpdateMeal}
           onClose={() => setSelectedDay(null)}
         />
@@ -2150,30 +2420,46 @@ export default function JanuaryMealsPage() {
       <RecipesPanel
         isOpen={showRecipes}
         onClose={() => setShowRecipes(false)}
-        dinnerRecipes={dinnerRecipes}
-        onAddDinner={() => setActiveDinnerEditor({ mode: 'create' })}
-        onEditDinner={(code) => setActiveDinnerEditor({ mode: 'edit', code })}
+        mealRecipes={mealRecipes}
+        onAddRecipe={(mealType) => setActiveRecipeEditor({ mealType, mode: 'create' })}
+        onEditRecipe={(mealType, code) => setActiveRecipeEditor({ mealType, mode: 'edit', code })}
       />
-      <DinnerEditor
-        isOpen={!!activeDinnerEditor}
-        mode={activeDinnerEditor?.mode || 'edit'}
-        initialCode={activeDinnerEditor?.code || ''}
+      <RecipeEditor
+        isOpen={!!activeRecipeEditor}
+        mealType={activeRecipeEditor?.mealType || 'dinner'}
+        mode={activeRecipeEditor?.mode || 'edit'}
+        initialCode={activeRecipeEditor?.code || ''}
         recipe={
-          activeDinnerEditor?.mode === 'edit' && activeDinnerEditor.code
-            ? dinnerRecipes[activeDinnerEditor.code]
+          activeRecipeEditor?.mode === 'edit' &&
+          activeRecipeEditor?.code &&
+          activeRecipeEditor?.mealType
+            ? mealRecipes[activeRecipeEditor.mealType]?.[activeRecipeEditor.code]
             : { name: '', color: '#f97316', ingredients: [] }
         }
-        existingCodes={Object.keys(dinnerRecipes)}
+        existingCodes={Object.keys(mealRecipes[activeRecipeEditor?.mealType || 'dinner'] || {})}
         canDelete={
-          activeDinnerEditor?.mode === 'edit' &&
-          activeDinnerEditor.code &&
-          !BASE_DINNER_RECIPES[activeDinnerEditor.code]
+          activeRecipeEditor?.mode === 'edit' &&
+          activeRecipeEditor.code &&
+          activeRecipeEditor.mealType &&
+          !BASE_MEALS[activeRecipeEditor.mealType]?.[activeRecipeEditor.code]
         }
-        onSave={handleSaveDinnerTemplate}
-        onDelete={handleDeleteDinnerTemplate}
-        onClose={() => setActiveDinnerEditor(null)}
+        onSave={(code, recipe) => handleSaveMealTemplate(activeRecipeEditor?.mealType || 'dinner', code, recipe)}
+        onDelete={(code) =>
+          handleDeleteMealTemplate(activeRecipeEditor?.mealType || 'dinner', code)
+        }
+        onClose={() => setActiveRecipeEditor(null)}
       />
-      <MethodologyPanel isOpen={showMethodology} onClose={() => setShowMethodology(false)} />
+      <MethodologyPanel
+        isOpen={showMethodology}
+        onClose={() => setShowMethodology(false)}
+        goals={dietGoals}
+      />
+      <GoalSettingsPanel
+        isOpen={showGoalSettings}
+        goals={dietGoals}
+        onSave={handleSaveGoals}
+        onClose={() => setShowGoalSettings(false)}
+      />
     </div>
   );
 }
