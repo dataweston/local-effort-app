@@ -164,7 +164,7 @@ const App = () => {
       setClientUserId(clientId);
 
       // Load credit balance (admin sees client's balance)
-      const credit = await getUserCredit(userData.id, userData.role);
+      const credit = await getUserCredit(userData.id, userData.role, userData.email);
       setCreditBalance(credit);
 
       // Load orders (both users see all orders)
