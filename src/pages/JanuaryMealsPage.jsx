@@ -1160,9 +1160,14 @@ const DayDetail = ({ day, nutrition, customMeals, mealRecipes, goals, onUpdate, 
   const dinnerInfo =
     mealRecipes.dinner?.[nutrition.dinnerType] || { name: 'Dinner', color: '#94a3b8', ingredients: [] };
   const dayKey = `day-${day}`;
+  const defaultMealKeys = {
+    breakfast: getDefaultMealKey('breakfast', day, nutrition.dinnerType),
+    lunch: getDefaultMealKey('lunch', day, nutrition.dinnerType),
+    dinner: getDefaultMealKey('dinner', day, nutrition.dinnerType),
+  };
 
   const getMeal = (mealType) => {
-    const templateKey = getDefaultMealKey(mealType, day, nutrition.dinnerType);
+    const templateKey = defaultMealKeys[mealType];
     const customKey = mealType === 'snacks' ? 'snacks' : `${mealType}-${templateKey}`;
     if (customMeals[dayKey] && customMeals[dayKey][customKey]) {
       return customMeals[dayKey][customKey];
@@ -1230,7 +1235,7 @@ const DayDetail = ({ day, nutrition, customMeals, mealRecipes, goals, onUpdate, 
             <MealCard 
               title="Breakfast"
               meal={getMeal('breakfast')}
-              mealKey={`breakfast-${breakfastKey}`}
+              mealKey={`breakfast-${defaultMealKeys.breakfast}`}
               dayKey={dayKey}
               onUpdate={onUpdate}
               isEditing={editingMeal === 'breakfast'}
@@ -1240,7 +1245,7 @@ const DayDetail = ({ day, nutrition, customMeals, mealRecipes, goals, onUpdate, 
             <MealCard 
               title="Lunch"
               meal={getMeal('lunch')}
-              mealKey={`lunch-${lunchKey}`}
+              mealKey={`lunch-${defaultMealKeys.lunch}`}
               dayKey={dayKey}
               onUpdate={onUpdate}
               isEditing={editingMeal === 'lunch'}
