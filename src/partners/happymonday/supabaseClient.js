@@ -77,11 +77,24 @@ export const getFinancialSnapshot = async ({ email, role, repair = false } = {})
  * NOTE: For admin users, this returns the CLIENT's credit balance since this is a
  * customer-provider portal where admin manages the client's account.
  */
-export const getUserCredit = async (userId, userRole = null) => {
+export const getUserCredit = async (userId, userRole = null, userEmail = null) => {
   if (!supabase || !userId) return null;
+
+  // Determine which account to read (client when admin is viewing)
+  let targetUserId = userId;
+  let targetEmail = userEmail;
+
+  if (userRole === 'admin') {
+    const clientId = await getClientUserId();
+    if (clientId) {
+      targetUserId = clientId;
+      targetEmail = 'hello@happymonday.company';
+    }
+  }
 
   // Prefer canonical snapshot (self-heals stored balance if it drifted)
   const snapshot = await getFinancialSnapshot({
+    email: targetEmail,
     role: userRole,
     repair: true,
   });
@@ -92,7 +105,7 @@ export const getUserCredit = async (userId, userRole = null) => {
   const { data, error } = await supabase
     .from('happymonday_credits')
     .select('*')
-    .eq('user_id', userId)
+    .eq('user_id', targetUserId)
     .single();
 
   if (error) {
