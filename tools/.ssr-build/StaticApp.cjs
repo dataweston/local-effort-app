@@ -19022,10 +19022,37 @@ var init_FeedbackForm = __esm({
           setStatus({ type: "error", message: "Please enter a message before submitting." });
           return;
         }
-        setStatus({
-          type: "error",
-          message: "Feedback form is temporarily unavailable. Please contact us directly at support@localeffortfood.com"
-        });
+        setStatus({ type: "loading", message: "" });
+        try {
+          const payload = {
+            name: formData.name,
+            email: formData.email,
+            subject: `Happy Monday Feedback (${formData.category})`,
+            message: formData.message,
+            type: "feedback",
+            category: formData.category
+          };
+          const res = await fetch("/api/messages/submit", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+          });
+          if (!res.ok) {
+            const errorText = await res.text();
+            console.error("API Error Response:", errorText);
+            throw new Error(errorText);
+          }
+          setStatus({ type: "success", message: "Thank you! Your feedback has been submitted." });
+          setFormData({ name: "", email: "", phone: "", category: "requests", message: "" });
+          setTimeout(() => {
+            setStatus({ type: "", message: "" });
+          }, 5e3);
+        } catch (err) {
+          setStatus({
+            type: "error",
+            message: "Could not submit feedback. Please try again or contact us at yum@localeffortfood.com"
+          });
+        }
       };
       return /* @__PURE__ */ (0, import_jsx_runtime39.jsx)("div", { className: "max-w-2xl bg-neutral-50 border border-neutral-200 p-8 rounded-lg", children: /* @__PURE__ */ (0, import_jsx_runtime39.jsxs)("form", { onSubmit: handleSubmit, className: "space-y-6", children: [
         /* @__PURE__ */ (0, import_jsx_runtime39.jsx)("div", { className: "grid sm:grid-cols-2 gap-6", children: /* @__PURE__ */ (0, import_jsx_runtime39.jsxs)("div", { children: [
@@ -70383,14 +70410,6 @@ var HomePage = () => {
           /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(SubscribeForm, {})
         ] }) })
       ] }) }),
-      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("section", { className: "mx-auto max-w-6xl px-4 md:px-6 lg:px-8", children: /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "text-center", children: /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(
-        "img",
-        {
-          src: "https://res.cloudinary.com/dokyhfvyd/image/upload/c_limit,f_auto,q_auto,w_1600/wv9huoauoimjozqzq4kr?_a=BAMAK+eA0",
-          alt: "Holiday Pie Sale",
-          className: "w-full rounded-lg shadow-lg"
-        }
-      ) }) }),
       /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("section", { className: "py-12", children: [
         /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "max-w-6xl mx-auto px-4 md:px-6 lg:px-8", children: /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(SectionHeader, { overline: "Community", title: "Our Partners" }) }),
         /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(PartnerGrid, {})
@@ -72697,8 +72716,18 @@ var HappyMondayPage = () => {
       /* @__PURE__ */ (0, import_jsx_runtime41.jsxs)("section", { className: "mx-auto max-w-6xl px-4 md:px-6 lg:px-8", children: [
         pageContent && /* @__PURE__ */ (0, import_jsx_runtime41.jsxs)("div", { className: "text-center mb-12", children: [
           /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(SectionHeader, { overline: "Weekly Special", title: pageContent.title }),
+          /* @__PURE__ */ (0, import_jsx_runtime41.jsx)("div", { className: "flex justify-center mt-8 mb-8", children: /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(
+            "img",
+            {
+              src: "https://www.localeffortfood.com/gallery/IMG_3145.jpg",
+              alt: "Happy Monday",
+              className: "max-w-full h-auto rounded-lg shadow-lg",
+              style: { width: "50%" }
+            }
+          ) }),
           /* @__PURE__ */ (0, import_jsx_runtime41.jsx)("div", { className: "prose lg:prose-lg mx-auto max-w-3xl", children: /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(ErrorBoundary_default, { children: /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(import_react34.Suspense, { fallback: /* @__PURE__ */ (0, import_jsx_runtime41.jsx)("div", { className: "text-center", children: "Loading content\u2026" }), children: /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(BlockContent, { blocks: pageContent.body, client: sanityClient_default }) }) }) })
         ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime41.jsx)("div", { className: "text-center mb-8", children: /* @__PURE__ */ (0, import_jsx_runtime41.jsx)("h2", { className: "text-2xl font-semibold", children: "Ingredient Lists" }) }),
         /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(import_react34.Suspense, { fallback: /* @__PURE__ */ (0, import_jsx_runtime41.jsx)("div", { className: "flex justify-center items-center h-64", children: "Loading\u2026" }), children: isLoading ? /* @__PURE__ */ (0, import_jsx_runtime41.jsx)("div", { className: "flex justify-center items-center h-64", children: /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(LoadingSpinner2, {}) }) : /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(
           import_framer_motion11.motion.div,
           {
@@ -77900,7 +77929,7 @@ function StaticApp({ helmetContext }) {
       /* @__PURE__ */ (0, import_jsx_runtime53.jsx)(import_react_router_dom7.Route, { path: "/services", element: /* @__PURE__ */ (0, import_jsx_runtime53.jsx)(ServicesPage_default, {}) }),
       /* @__PURE__ */ (0, import_jsx_runtime53.jsx)(import_react_router_dom7.Route, { path: "/pricing", element: /* @__PURE__ */ (0, import_jsx_runtime53.jsx)(PricingPage_default, {}) }),
       /* @__PURE__ */ (0, import_jsx_runtime53.jsx)(import_react_router_dom7.Route, { path: "/menu", element: /* @__PURE__ */ (0, import_jsx_runtime53.jsx)(MenuPage, {}) }),
-      /* @__PURE__ */ (0, import_jsx_runtime53.jsx)(import_react_router_dom7.Route, { path: "/happy-monday", element: /* @__PURE__ */ (0, import_jsx_runtime53.jsx)(HappyMondayPage_default, {}) }),
+      /* @__PURE__ */ (0, import_jsx_runtime53.jsx)(import_react_router_dom7.Route, { path: "/happymonday", element: /* @__PURE__ */ (0, import_jsx_runtime53.jsx)(HappyMondayPage_default, {}) }),
       /* @__PURE__ */ (0, import_jsx_runtime53.jsx)(import_react_router_dom7.Route, { path: "/gallery", element: /* @__PURE__ */ (0, import_jsx_runtime53.jsx)(GalleryPage_default, {}) }),
       /* @__PURE__ */ (0, import_jsx_runtime53.jsx)(import_react_router_dom7.Route, { path: "/events", element: /* @__PURE__ */ (0, import_jsx_runtime53.jsx)(EventsPage_default, {}) }),
       /* @__PURE__ */ (0, import_jsx_runtime53.jsx)(import_react_router_dom7.Route, { path: "/meal-prep", element: /* @__PURE__ */ (0, import_jsx_runtime53.jsx)(MealPrepPage_default, {}) }),
