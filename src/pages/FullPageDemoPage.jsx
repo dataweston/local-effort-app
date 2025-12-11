@@ -12,6 +12,7 @@ const FullPageDemoPage = () => {
   const [images, setImages] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState(null);
+  const [imageLoadCount, setImageLoadCount] = useState(0);
   const prefetched = useRef(new Set());
   const closeBtnRef = useRef(null);
 
@@ -116,7 +117,7 @@ const FullPageDemoPage = () => {
         <div className="flex items-center justify-between px-6 py-4">
           <button
             onClick={() => navigateToPage(0)}
-            className="flex items-center gap-2"
+            className="flex items-center gap-3"
           >
             <motion.img
               src={logo}
@@ -126,6 +127,9 @@ const FullPageDemoPage = () => {
               whileHover={{ scale: 1.03 }}
               transition={{ type: 'spring', stiffness: 300, damping: 20 }}
             />
+            <span className="text-sm font-medium" style={{ color: '#2F2722', fontFamily: 'Fraunces, serif' }}>
+              always mostly local
+            </span>
           </button>
 
           <div className="flex gap-1">
@@ -137,6 +141,7 @@ const FullPageDemoPage = () => {
                 style={{
                   backgroundColor: activePage === index + 1 ? '#82CCDD' : 'transparent',
                   color: activePage === index + 1 ? '#2F2722' : '#2F2722',
+                  fontFamily: 'Work Sans, sans-serif',
                 }}
                 onMouseEnter={(e) => {
                   if (activePage !== index + 1) {
@@ -171,7 +176,7 @@ const FullPageDemoPage = () => {
           animation="fadeScale"
         >
           <div className="w-full h-full overflow-y-auto pt-20">
-            <div className="columns-4 md:columns-8 lg:columns-12 gap-0 p-0 m-0">
+            <div className="columns-3 md:columns-5 lg:columns-6 gap-0 p-0 m-0">
               {loading ? (
                 <div className="col-span-full text-center py-20" style={{ color: '#2F2722' }}>
                   Loading images...
@@ -181,33 +186,50 @@ const FullPageDemoPage = () => {
                   No images found.
                 </div>
               ) : (
-                images.map((img, idx) => (
-                  <button
-                    key={img.asset_id || idx}
-                    type="button"
-                    onClick={() => openLightbox(img, idx)}
-                    onMouseEnter={() => img?.large_url && prefetchImage(img.large_url)}
-                    className="block w-full break-inside-avoid mb-0 p-0 transition-transform hover:scale-105 hover:z-10"
-                    style={{ cursor: 'pointer' }}
-                  >
-                    {img.thumbnail_url ? (
-                      <img
-                        src={img.thumbnail_url}
-                        alt={img.context?.alt || 'Gallery image'}
-                        className="w-full h-auto block"
-                        loading="lazy"
-                        decoding="async"
-                      />
-                    ) : (
-                      <CloudinaryImage
-                        publicId={img.public_id}
-                        alt={img.context?.alt || 'Gallery image'}
-                        width={400}
-                        className="w-full h-auto block"
-                      />
-                    )}
-                  </button>
-                ))
+                images.map((img, idx) => {
+                  // Make every 9th or 10th image larger (random)
+                  const isLarge = idx % 9 === 0 || idx % 10 === 0;
+
+                  return (
+                    <button
+                      key={img.asset_id || idx}
+                      type="button"
+                      onClick={() => openLightbox(img, idx)}
+                      onMouseEnter={() => img?.large_url && prefetchImage(img.large_url)}
+                      className={`block w-full break-inside-avoid mb-0 p-0 transition-transform hover:scale-105 hover:z-10 ${
+                        isLarge ? 'md:col-span-2' : ''
+                      }`}
+                      style={{
+                        cursor: 'pointer',
+                        opacity: 1,
+                        transform: 'translateZ(0)', // Force GPU acceleration
+                      }}
+                    >
+                      {img.thumbnail_url ? (
+                        <img
+                          src={img.thumbnail_url}
+                          alt={img.context?.alt || 'Gallery image'}
+                          className="w-full h-auto block"
+                          loading="eager"
+                          decoding="async"
+                          fetchpriority={idx < 20 ? "high" : "auto"}
+                          style={{
+                            transition: 'none',
+                            display: 'block',
+                          }}
+                        />
+                      ) : (
+                        <CloudinaryImage
+                          publicId={img.public_id}
+                          alt={img.context?.alt || 'Gallery image'}
+                          width={isLarge ? 800 : 400}
+                          className="w-full h-auto block"
+                          disableLazy={idx < 20}
+                        />
+                      )}
+                    </button>
+                  );
+                })
               )}
             </div>
           </div>
@@ -219,7 +241,7 @@ const FullPageDemoPage = () => {
           style={{ backgroundColor: '#E6EBF2' }}
         >
           <div className="flex items-center justify-center h-full pt-20" style={{ color: '#2F2722' }}>
-            <h2 className="text-4xl font-bold">Weekly Meals</h2>
+            <h2 className="text-4xl font-bold" style={{ fontFamily: 'Work Sans, sans-serif' }}>Weekly Meals</h2>
           </div>
         </FullPageSection>
 
@@ -229,7 +251,7 @@ const FullPageDemoPage = () => {
           style={{ backgroundColor: '#D1D8E0' }}
         >
           <div className="flex items-center justify-center h-full pt-20" style={{ color: '#2F2722' }}>
-            <h2 className="text-4xl font-bold">Small Events</h2>
+            <h2 className="text-4xl font-bold" style={{ fontFamily: 'Work Sans, sans-serif' }}>Small Events</h2>
           </div>
         </FullPageSection>
 
@@ -239,7 +261,7 @@ const FullPageDemoPage = () => {
           style={{ backgroundColor: '#E6EBF2' }}
         >
           <div className="flex items-center justify-center h-full pt-20" style={{ color: '#2F2722' }}>
-            <h2 className="text-4xl font-bold">For Businesses</h2>
+            <h2 className="text-4xl font-bold" style={{ fontFamily: 'Work Sans, sans-serif' }}>For Businesses</h2>
           </div>
         </FullPageSection>
 
@@ -249,7 +271,7 @@ const FullPageDemoPage = () => {
           style={{ backgroundColor: '#D1D8E0' }}
         >
           <div className="flex items-center justify-center h-full pt-20" style={{ color: '#2F2722' }}>
-            <h2 className="text-4xl font-bold">About</h2>
+            <h2 className="text-4xl font-bold" style={{ fontFamily: 'Work Sans, sans-serif' }}>About</h2>
           </div>
         </FullPageSection>
 
@@ -259,7 +281,7 @@ const FullPageDemoPage = () => {
           style={{ backgroundColor: '#E6EBF2' }}
         >
           <div className="flex items-center justify-center h-full pt-20" style={{ color: '#2F2722' }}>
-            <h2 className="text-4xl font-bold">Local Pizza</h2>
+            <h2 className="text-4xl font-bold" style={{ fontFamily: 'Work Sans, sans-serif' }}>Local Pizza</h2>
           </div>
         </FullPageSection>
       </FullPageContainer>
