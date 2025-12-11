@@ -5,7 +5,7 @@ import App from './App';
 import { inject } from '@vercel/analytics';
 // Sentry (frontend)
 import * as Sentry from '@sentry/react';
-import 'semantic-ui-css/semantic.min.css';
+import './styles/semantic-ui.css';
 
 // Initialize Sentry only if DSN provided (avoid noisy console in local dev)
 if (import.meta.env.VITE_SENTRY_DSN) {

@@ -112,7 +112,7 @@ const FullPageDemoPage = () => {
   return (
     <>
       {/* Fixed Navigation Bar */}
-      <nav className="fixed top-0 left-0 right-0 z-50 shadow-sm" style={{ backgroundColor: '#F2CB89', borderBottom: '1px solid #C6B9A3' }}>
+      <nav className="fixed top-0 left-0 right-0 z-50 shadow-sm" style={{ backgroundColor: '#D1D8E0', borderBottom: '1px solid #C1C7CF' }}>
         <div className="flex items-center justify-between px-6 py-4">
           <button
             onClick={() => navigateToPage(0)}
@@ -122,7 +122,7 @@ const FullPageDemoPage = () => {
               src={logo}
               alt="Local Effort Logo"
               className="h-7 w-auto rounded-md"
-              style={{ border: '1px solid #3A2F28' }}
+              style={{ border: '1px solid #2F2722' }}
               whileHover={{ scale: 1.03 }}
               transition={{ type: 'spring', stiffness: 300, damping: 20 }}
             />
@@ -135,17 +135,19 @@ const FullPageDemoPage = () => {
                 onClick={() => navigateToPage(index + 1)}
                 className="px-4 py-2 rounded-md text-sm font-medium transition-all"
                 style={{
-                  backgroundColor: activePage === index + 1 ? '#8A9877' : 'transparent',
-                  color: activePage === index + 1 ? '#F2CB89' : '#3A2F28',
+                  backgroundColor: activePage === index + 1 ? '#82CCDD' : 'transparent',
+                  color: activePage === index + 1 ? '#2F2722' : '#2F2722',
                 }}
                 onMouseEnter={(e) => {
                   if (activePage !== index + 1) {
-                    e.currentTarget.style.backgroundColor = '#B0E18D';
+                    e.currentTarget.style.backgroundColor = '#D47433';
+                    e.currentTarget.style.color = '#D1D8E0';
                   }
                 }}
                 onMouseLeave={(e) => {
                   if (activePage !== index + 1) {
                     e.currentTarget.style.backgroundColor = 'transparent';
+                    e.currentTarget.style.color = '#2F2722';
                   }
                 }}
               >
@@ -165,17 +167,17 @@ const FullPageDemoPage = () => {
         {/* Page 1: Home - Gallery */}
         <FullPageSection
           id="home"
-          style={{ backgroundColor: '#F2CB89' }}
+          style={{ backgroundColor: '#D1D8E0' }}
           animation="fadeScale"
         >
           <div className="w-full h-full overflow-y-auto pt-20">
             <div className="columns-4 md:columns-8 lg:columns-12 gap-0 p-0 m-0">
               {loading ? (
-                <div className="col-span-full text-center py-20" style={{ color: '#3A2F28' }}>
+                <div className="col-span-full text-center py-20" style={{ color: '#2F2722' }}>
                   Loading images...
                 </div>
               ) : images.length === 0 ? (
-                <div className="col-span-full text-center py-20" style={{ color: '#3A2F28' }}>
+                <div className="col-span-full text-center py-20" style={{ color: '#2F2722' }}>
                   No images found.
                 </div>
               ) : (
@@ -214,9 +216,9 @@ const FullPageDemoPage = () => {
         {/* Page 2: Weekly Meals */}
         <FullPageSection
           id="weekly-meals"
-          style={{ backgroundColor: '#F0BA8A' }}
+          style={{ backgroundColor: '#E6EBF2' }}
         >
-          <div className="flex items-center justify-center h-full pt-20" style={{ color: '#3A2F28' }}>
+          <div className="flex items-center justify-center h-full pt-20" style={{ color: '#2F2722' }}>
             <h2 className="text-4xl font-bold">Weekly Meals</h2>
           </div>
         </FullPageSection>
@@ -224,9 +226,9 @@ const FullPageDemoPage = () => {
         {/* Page 3: Small Events */}
         <FullPageSection
           id="small-events"
-          style={{ backgroundColor: '#F2CB89' }}
+          style={{ backgroundColor: '#D1D8E0' }}
         >
-          <div className="flex items-center justify-center h-full pt-20" style={{ color: '#3A2F28' }}>
+          <div className="flex items-center justify-center h-full pt-20" style={{ color: '#2F2722' }}>
             <h2 className="text-4xl font-bold">Small Events</h2>
           </div>
         </FullPageSection>
@@ -234,9 +236,9 @@ const FullPageDemoPage = () => {
         {/* Page 4: For Businesses */}
         <FullPageSection
           id="for-businesses"
-          style={{ backgroundColor: '#F0BA8A' }}
+          style={{ backgroundColor: '#E6EBF2' }}
         >
-          <div className="flex items-center justify-center h-full pt-20" style={{ color: '#3A2F28' }}>
+          <div className="flex items-center justify-center h-full pt-20" style={{ color: '#2F2722' }}>
             <h2 className="text-4xl font-bold">For Businesses</h2>
           </div>
         </FullPageSection>
@@ -244,9 +246,9 @@ const FullPageDemoPage = () => {
         {/* Page 5: About */}
         <FullPageSection
           id="about"
-          style={{ backgroundColor: '#F2CB89' }}
+          style={{ backgroundColor: '#D1D8E0' }}
         >
-          <div className="flex items-center justify-center h-full pt-20" style={{ color: '#3A2F28' }}>
+          <div className="flex items-center justify-center h-full pt-20" style={{ color: '#2F2722' }}>
             <h2 className="text-4xl font-bold">About</h2>
           </div>
         </FullPageSection>
@@ -254,9 +256,9 @@ const FullPageDemoPage = () => {
         {/* Page 6: Local Pizza */}
         <FullPageSection
           id="local-pizza"
-          style={{ backgroundColor: '#F0BA8A' }}
+          style={{ backgroundColor: '#E6EBF2' }}
         >
-          <div className="flex items-center justify-center h-full pt-20" style={{ color: '#3A2F28' }}>
+          <div className="flex items-center justify-center h-full pt-20" style={{ color: '#2F2722' }}>
             <h2 className="text-4xl font-bold">Local Pizza</h2>
           </div>
         </FullPageSection>
