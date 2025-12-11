@@ -18,6 +18,9 @@ const FullPageDemoPage = () => {
   const dragStartPos = useRef({ x: 0, y: 0 });
   const prefetched = useRef(new Set());
   const closeBtnRef = useRef(null);
+  const [imageOrder, setImageOrder] = useState([]);
+  const [positions, setPositions] = useState({});
+  const containerRef = useRef(null);
 
   const pages = [
     { id: 'home', label: 'Home' },
@@ -83,16 +86,147 @@ const FullPageDemoPage = () => {
     fetchImages();
   }, [fetchImages]);
 
-  // Lightbox controls
-  const openLightbox = useCallback((img, idx, event, info) => {
-    const dragDuration = Date.now() - dragStartTime.current;
-    const dragDistance = info ? Math.sqrt(info.offset.x ** 2 + info.offset.y ** 2) : 0;
-
-    // Only open lightbox if it was a click, not a drag
-    if (dragDuration < 300 && dragDistance < 10) {
-      setSelected({ img, idx });
+  // Initialize image order when images are loaded
+  useEffect(() => {
+    if (images.length > 0 && imageOrder.length === 0) {
+      setImageOrder(images.map(img => img.asset_id || img.public_id));
     }
+  }, [images, imageOrder.length]);
+
+  // Calculate positions based on order
+  useEffect(() => {
+    if (imageOrder.length === 0 || images.length === 0) return;
+
+    const calculatePositions = () => {
+      const newPositions = {};
+      const isMobile = window.innerWidth < 768;
+      const isDesktop = window.innerWidth >= 1024;
+      const columns = isMobile ? 3 : isDesktop ? 6 : 5;
+      const columnHeights = new Array(columns).fill(0);
+      const baseGap = 4;
+      const columnWidth = isMobile ? window.innerWidth / 3 : isDesktop ? window.innerWidth / 6 : window.innerWidth / 5;
+
+      imageOrder.forEach((imgId) => {
+        const img = images.find(i => (i.asset_id || i.public_id) === imgId);
+        if (!img) return;
+
+        // Find shortest column
+        const shortestCol = columnHeights.indexOf(Math.min(...columnHeights));
+
+        const x = shortestCol * columnWidth;
+        const y = columnHeights[shortestCol];
+
+        // Estimate height based on aspect ratio (or use fixed height)
+        const estimatedHeight = columnWidth * 1.2; // Approximate aspect ratio
+
+        newPositions[imgId] = { x, y, column: shortestCol };
+        columnHeights[shortestCol] += estimatedHeight + baseGap;
+      });
+
+      setPositions(newPositions);
+    };
+
+    calculatePositions();
+
+    // Recalculate on window resize
+    const handleResize = () => calculatePositions();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [imageOrder, images]);
+
+  // Drag handlers
+  const handleDragStart = useCallback((id) => {
+    setIsDragging(id);
+    dragStartTime.current = Date.now();
   }, []);
+
+  const handleDragEnd = useCallback((id, event, info) => {
+    const dragDuration = Date.now() - dragStartTime.current;
+    const dragDistance = Math.sqrt(info.offset.x ** 2 + info.offset.y ** 2);
+
+    setIsDragging(null);
+
+    // If it was a quick click (not a drag), open lightbox
+    if (dragDuration < 500 && dragDistance < 20) {
+      const img = images.find(i => (i.asset_id || i.public_id) === id);
+      if (img) {
+        const idx = images.findIndex(i => (i.asset_id || i.public_id) === id);
+        setSelected({ img, idx });
+        return;
+      }
+    }
+
+    // Otherwise, handle reordering
+    const currentPos = positions[id];
+    if (!currentPos) return;
+
+    const isMobile = window.innerWidth < 768;
+    const isDesktop = window.innerWidth >= 1024;
+    const columns = isMobile ? 3 : isDesktop ? 6 : 5;
+    const columnWidth = isMobile ? window.innerWidth / 3 : isDesktop ? window.innerWidth / 6 : window.innerWidth / 5;
+
+    // Calculate new position after drag
+    const newX = currentPos.x + info.offset.x;
+    const newY = currentPos.y + info.offset.y;
+
+    // Determine which column we're closest to
+    const targetColumn = Math.max(0, Math.min(columns - 1, Math.round(newX / columnWidth)));
+
+    // Find all images in each column (excluding the dragged one)
+    const columnImages = Array(columns).fill(null).map(() => []);
+    imageOrder.forEach(imgId => {
+      if (imgId === id) return;
+      const pos = positions[imgId];
+      if (pos && pos.column !== undefined) {
+        const img = images.find(i => (i.asset_id || i.public_id) === imgId);
+        columnImages[pos.column].push({
+          id: imgId,
+          y: pos.y,
+          height: columnWidth * 1.2
+        });
+      }
+    });
+
+    // Sort each column by Y position
+    columnImages.forEach(col => col.sort((a, b) => a.y - b.y));
+
+    // Find where in the target column this image should be inserted
+    const targetColumnImages = columnImages[targetColumn];
+    let insertIndex = targetColumnImages.length;
+
+    for (let i = 0; i < targetColumnImages.length; i++) {
+      if (newY < targetColumnImages[i].y) {
+        insertIndex = i;
+        break;
+      }
+    }
+
+    // Rebuild the order array with the moved image in its new position
+    const newOrder = [];
+    const columnsToProcess = Array(columns).fill(null).map(() => []);
+
+    // Distribute images back into columns
+    imageOrder.forEach(imgId => {
+      if (imgId === id) return;
+      const pos = positions[imgId];
+      if (pos && pos.column !== undefined) {
+        columnsToProcess[pos.column].push(imgId);
+      }
+    });
+
+    // Insert dragged image into target column at correct position
+    columnsToProcess[targetColumn].splice(insertIndex, 0, id);
+
+    // Interleave columns to rebuild order (for more natural flow)
+    const maxLength = Math.max(...columnsToProcess.map(col => col.length));
+    for (let i = 0; i < maxLength; i++) {
+      columnsToProcess.forEach(col => {
+        if (col[i]) newOrder.push(col[i]);
+      });
+    }
+
+    setImageOrder(newOrder);
+  }, [images, positions, imageOrder]);
 
   const closeLightbox = useCallback(() => setSelected(null), []);
 
@@ -198,53 +332,70 @@ const FullPageDemoPage = () => {
           animation="fadeScale"
         >
           <div className="w-full h-full overflow-y-auto pt-20">
-            <div className="columns-3 md:columns-5 lg:columns-6 gap-0 p-0 m-0">
-              {loading ? (
-                <div className="col-span-full text-center py-20" style={{ color: '#2F2722' }}>
-                  Loading images...
-                </div>
-              ) : images.length === 0 ? (
-                <div className="col-span-full text-center py-20" style={{ color: '#2F2722' }}>
-                  No images found.
-                </div>
-              ) : (
-                images.map((img, idx) => {
-                  // Make every 9th or 10th image larger (random)
-                  const isLarge = idx % 9 === 0 || idx % 10 === 0;
-                  const isBeingDragged = isDragging === img.asset_id;
+            {loading ? (
+              <div className="text-center py-20" style={{ color: '#2F2722' }}>
+                Loading images...
+              </div>
+            ) : images.length === 0 ? (
+              <div className="text-center py-20" style={{ color: '#2F2722' }}>
+                No images found.
+              </div>
+            ) : (
+              <div
+                ref={containerRef}
+                className="relative w-full"
+                style={{ minHeight: '2000px' }}
+              >
+                {images.map((img, idx) => {
+                  const imgId = img.asset_id || img.public_id;
+                  const pos = positions[imgId] || { x: 0, y: 0 };
+                  const isBeingDragged = isDragging === imgId;
+                  const isMobile = window.innerWidth < 768;
+                  const isDesktop = window.innerWidth >= 1024;
+                  const columnWidth = isMobile ? window.innerWidth / 3 : isDesktop ? window.innerWidth / 6 : window.innerWidth / 5;
 
                   return (
                     <motion.div
-                      key={img.asset_id || idx}
+                      key={imgId}
                       drag
                       dragMomentum={false}
                       dragElastic={0.05}
-                      onDragStart={() => {
-                        setIsDragging(img.asset_id);
-                        dragStartTime.current = Date.now();
-                      }}
-                      onDragEnd={(e, info) => {
-                        setIsDragging(null);
-                        openLightbox(img, idx, e, info);
-                      }}
+                      onDragStart={() => handleDragStart(imgId)}
+                      onDragEnd={(e, info) => handleDragEnd(imgId, e, info)}
                       onMouseEnter={() => img?.large_url && prefetchImage(img.large_url)}
-                      className={`block w-full break-inside-avoid mb-0 p-0 ${
-                        isLarge ? 'md:col-span-2' : ''
-                      }`}
                       style={{
+                        position: 'absolute',
+                        width: columnWidth,
                         cursor: isBeingDragged ? 'grabbing' : 'grab',
+                        zIndex: isBeingDragged ? 50 : 1,
+                      }}
+                      animate={{
+                        x: pos.x,
+                        y: pos.y,
                         opacity: 1,
-                        zIndex: isBeingDragged ? 10 : 1,
+                        scale: 1,
                       }}
                       whileHover={{
                         scale: 1.05,
-                        zIndex: 5,
+                        zIndex: 10,
                         transition: { type: "spring", stiffness: 400, damping: 25 }
                       }}
                       whileDrag={{
                         scale: 1.08,
-                        zIndex: 10,
+                        zIndex: 50,
                         transition: { type: "spring", stiffness: 400, damping: 25 }
+                      }}
+                      initial={{
+                        opacity: 0,
+                        scale: 0.8,
+                        x: pos.x,
+                        y: pos.y,
+                      }}
+                      transition={{
+                        type: "spring",
+                        stiffness: 260,
+                        damping: 26,
+                        delay: idx * 0.01,
                       }}
                     >
                       {img.thumbnail_url ? (
@@ -265,16 +416,16 @@ const FullPageDemoPage = () => {
                         <CloudinaryImage
                           publicId={img.public_id}
                           alt={img.context?.alt || 'Gallery image'}
-                          width={isLarge ? 800 : 400}
+                          width={Math.floor(columnWidth)}
                           className="w-full h-auto block select-none pointer-events-none"
                           disableLazy={idx < 20}
                         />
                       )}
                     </motion.div>
                   );
-                })
-              )}
-            </div>
+                })}
+              </div>
+            )}
           </div>
         </FullPageSection>
 
