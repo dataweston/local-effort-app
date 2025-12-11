@@ -13,6 +13,9 @@ const FullPageDemoPage = () => {
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState(null);
   const [imageLoadCount, setImageLoadCount] = useState(0);
+  const [isDragging, setIsDragging] = useState(null);
+  const dragStartTime = useRef(0);
+  const dragStartPos = useRef({ x: 0, y: 0 });
   const prefetched = useRef(new Set());
   const closeBtnRef = useRef(null);
 
@@ -27,6 +30,14 @@ const FullPageDemoPage = () => {
 
   const handlePageChange = (index) => {
     setActivePage(index);
+    // Reset all button styles when page changes
+    document.querySelectorAll('nav button[data-menu-btn]').forEach(btn => {
+      const pageIndex = parseInt(btn.getAttribute('data-page-index'));
+      if (pageIndex !== index) {
+        btn.style.backgroundColor = 'transparent';
+        btn.style.color = '#2F2722';
+      }
+    });
   };
 
   const navigateToPage = (index) => {
@@ -73,8 +84,14 @@ const FullPageDemoPage = () => {
   }, [fetchImages]);
 
   // Lightbox controls
-  const openLightbox = useCallback((img, idx) => {
-    setSelected({ img, idx });
+  const openLightbox = useCallback((img, idx, event, info) => {
+    const dragDuration = Date.now() - dragStartTime.current;
+    const dragDistance = info ? Math.sqrt(info.offset.x ** 2 + info.offset.y ** 2) : 0;
+
+    // Only open lightbox if it was a click, not a drag
+    if (dragDuration < 300 && dragDistance < 10) {
+      setSelected({ img, idx });
+    }
   }, []);
 
   const closeLightbox = useCallback(() => setSelected(null), []);
@@ -133,32 +150,37 @@ const FullPageDemoPage = () => {
           </button>
 
           <div className="flex gap-1">
-            {pages.slice(1).map((page, index) => (
-              <button
-                key={page.id}
-                onClick={() => navigateToPage(index + 1)}
-                className="px-4 py-2 rounded-md text-sm font-medium transition-all"
-                style={{
-                  backgroundColor: activePage === index + 1 ? '#82CCDD' : 'transparent',
-                  color: activePage === index + 1 ? '#2F2722' : '#2F2722',
-                  fontFamily: 'Work Sans, sans-serif',
-                }}
-                onMouseEnter={(e) => {
-                  if (activePage !== index + 1) {
-                    e.currentTarget.style.backgroundColor = '#D47433';
-                    e.currentTarget.style.color = '#D1D8E0';
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  if (activePage !== index + 1) {
-                    e.currentTarget.style.backgroundColor = 'transparent';
-                    e.currentTarget.style.color = '#2F2722';
-                  }
-                }}
-              >
-                {page.label}
-              </button>
-            ))}
+            {pages.slice(1).map((page, index) => {
+              const isActive = activePage === index + 1;
+              return (
+                <button
+                  key={page.id}
+                  data-menu-btn
+                  data-page-index={index + 1}
+                  onClick={() => navigateToPage(index + 1)}
+                  className="px-4 py-2 rounded-md text-sm font-medium transition-all group"
+                  style={{
+                    backgroundColor: isActive ? '#82CCDD' : 'transparent',
+                    color: isActive ? '#2F2722' : '#2F2722',
+                    fontFamily: 'Work Sans, sans-serif',
+                  }}
+                  onMouseEnter={(e) => {
+                    if (!isActive) {
+                      e.currentTarget.style.backgroundColor = '#D47433';
+                      e.currentTarget.style.color = '#D1D8E0';
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (!isActive) {
+                      e.currentTarget.style.backgroundColor = 'transparent';
+                      e.currentTarget.style.color = '#2F2722';
+                    }
+                  }}
+                >
+                  {page.label}
+                </button>
+              );
+            })}
           </div>
         </div>
       </nav>
@@ -189,27 +211,48 @@ const FullPageDemoPage = () => {
                 images.map((img, idx) => {
                   // Make every 9th or 10th image larger (random)
                   const isLarge = idx % 9 === 0 || idx % 10 === 0;
+                  const isBeingDragged = isDragging === img.asset_id;
 
                   return (
-                    <button
+                    <motion.div
                       key={img.asset_id || idx}
-                      type="button"
-                      onClick={() => openLightbox(img, idx)}
+                      drag
+                      dragMomentum={false}
+                      dragElastic={0.05}
+                      onDragStart={() => {
+                        setIsDragging(img.asset_id);
+                        dragStartTime.current = Date.now();
+                      }}
+                      onDragEnd={(e, info) => {
+                        setIsDragging(null);
+                        openLightbox(img, idx, e, info);
+                      }}
                       onMouseEnter={() => img?.large_url && prefetchImage(img.large_url)}
-                      className={`block w-full break-inside-avoid mb-0 p-0 transition-transform hover:scale-105 hover:z-10 ${
+                      className={`block w-full break-inside-avoid mb-0 p-0 ${
                         isLarge ? 'md:col-span-2' : ''
                       }`}
                       style={{
-                        cursor: 'pointer',
+                        cursor: isBeingDragged ? 'grabbing' : 'grab',
                         opacity: 1,
-                        transform: 'translateZ(0)', // Force GPU acceleration
+                        zIndex: isBeingDragged ? 10 : 1,
+                      }}
+                      whileHover={{
+                        scale: 1.05,
+                        zIndex: 5,
+                        transition: { type: "spring", stiffness: 400, damping: 25 }
+                      }}
+                      whileDrag={{
+                        scale: 1.08,
+                        zIndex: 10,
+                        transition: { type: "spring", stiffness: 400, damping: 25 }
                       }}
                     >
                       {img.thumbnail_url ? (
                         <img
                           src={img.thumbnail_url}
                           alt={img.context?.alt || 'Gallery image'}
-                          className="w-full h-auto block"
+                          className="w-full h-auto block select-none pointer-events-none"
+                          draggable={false}
                           loading="eager"
                           decoding="async"
                           fetchpriority={idx < 20 ? "high" : "auto"}
@@ -223,11 +266,11 @@ const FullPageDemoPage = () => {
                           publicId={img.public_id}
                           alt={img.context?.alt || 'Gallery image'}
                           width={isLarge ? 800 : 400}
-                          className="w-full h-auto block"
+                          className="w-full h-auto block select-none pointer-events-none"
                           disableLazy={idx < 20}
                         />
                       )}
-                    </button>
+                    </motion.div>
                   );
                 })
               )}
@@ -290,32 +333,27 @@ const FullPageDemoPage = () => {
       <AnimatePresence>
         {selected && (
           <motion.div
-            className="fixed inset-0 z-[60] flex items-center justify-center p-0 m-0"
-            style={{ backgroundColor: 'rgba(0, 0, 0, 0.95)' }}
+            className="fixed inset-0 z-[60] flex items-center justify-center p-4 cursor-pointer"
+            style={{ backgroundColor: 'rgba(0, 0, 0, 0.7)' }}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={closeLightbox}
           >
-            <button
-              ref={closeBtnRef}
-              className="absolute right-4 top-4 z-10 text-white text-4xl font-bold hover:scale-110 transition-transform"
-              onClick={closeLightbox}
-              aria-label="Close image"
-              style={{ background: 'none', border: 'none', cursor: 'pointer' }}
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="relative max-w-6xl max-h-[90vh]"
+              onClick={(e) => e.stopPropagation()}
             >
-              ×
-            </button>
-
-            <div className="w-full h-full flex items-center justify-center p-0 m-0" onClick={(e) => e.stopPropagation()}>
               {selected.img.large_url ? (
                 <img
                   src={selected.img.large_url}
                   alt={selected.img.context?.alt || 'Large gallery image'}
                   decoding="async"
                   fetchPriority="high"
-                  className="max-w-full max-h-full object-contain"
-                  style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+                  className="max-w-full max-h-full object-contain rounded-lg shadow-2xl"
                 />
               ) : (
                 <CloudinaryImage
@@ -325,10 +363,19 @@ const FullPageDemoPage = () => {
                   height={2000}
                   disableLazy
                   eager
-                  className="max-w-full max-h-full object-contain"
+                  className="max-w-full max-h-full object-contain rounded-lg shadow-2xl"
                 />
               )}
-            </div>
+
+              <button
+                ref={closeBtnRef}
+                onClick={closeLightbox}
+                className="absolute -top-4 -right-4 w-12 h-12 bg-white hover:bg-gray-100 rounded-full flex items-center justify-center text-gray-800 text-3xl font-light transition-colors shadow-lg"
+                aria-label="Close"
+              >
+                ×
+              </button>
+            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
