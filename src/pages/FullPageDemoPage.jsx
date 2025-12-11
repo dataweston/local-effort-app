@@ -103,24 +103,69 @@ const FullPageDemoPage = () => {
       const isDesktop = window.innerWidth >= 1024;
       const columns = isMobile ? 3 : isDesktop ? 6 : 5;
       const columnHeights = new Array(columns).fill(0);
-      const baseGap = 4;
-      const columnWidth = isMobile ? window.innerWidth / 3 : isDesktop ? window.innerWidth / 6 : window.innerWidth / 5;
+      const baseGap = 2;
+      const baseColumnWidth = isMobile ? window.innerWidth / 3 : isDesktop ? window.innerWidth / 6 : window.innerWidth / 5;
 
-      imageOrder.forEach((imgId) => {
+      imageOrder.forEach((imgId, idx) => {
         const img = images.find(i => (i.asset_id || i.public_id) === imgId);
         if (!img) return;
 
-        // Find shortest column
-        const shortestCol = columnHeights.indexOf(Math.min(...columnHeights));
+        // Get actual image dimensions or use defaults
+        const imgWidth = img.width || 400;
+        const imgHeight = img.height || 500;
+        const aspectRatio = imgWidth / imgHeight;
 
-        const x = shortestCol * columnWidth;
-        const y = columnHeights[shortestCol];
+        // Determine if image should span multiple columns
+        let spanColumns = 1;
+        let imageWidth = baseColumnWidth;
 
-        // Estimate height based on aspect ratio (or use fixed height)
-        const estimatedHeight = columnWidth * 1.2; // Approximate aspect ratio
+        // Horizontal images (wider than tall) span 2 columns
+        if (aspectRatio > 1.3) {
+          spanColumns = Math.min(2, columns);
+          imageWidth = baseColumnWidth * spanColumns;
+        }
+        // Very horizontal images span even more on desktop
+        else if (aspectRatio > 1.8 && !isMobile) {
+          spanColumns = Math.min(3, columns);
+          imageWidth = baseColumnWidth * spanColumns;
+        }
 
-        newPositions[imgId] = { x, y, column: shortestCol };
-        columnHeights[shortestCol] += estimatedHeight + baseGap;
+        // Calculate height based on actual aspect ratio
+        const imageHeight = imageWidth / aspectRatio;
+
+        // Find the best position (column with shortest height that can fit span)
+        let bestCol = 0;
+        let minHeight = Infinity;
+
+        for (let col = 0; col <= columns - spanColumns; col++) {
+          // Check max height of columns this image would span
+          let maxHeightInSpan = 0;
+          for (let i = 0; i < spanColumns; i++) {
+            maxHeightInSpan = Math.max(maxHeightInSpan, columnHeights[col + i]);
+          }
+
+          if (maxHeightInSpan < minHeight) {
+            minHeight = maxHeightInSpan;
+            bestCol = col;
+          }
+        }
+
+        const x = bestCol * baseColumnWidth;
+        const y = minHeight;
+
+        newPositions[imgId] = {
+          x,
+          y,
+          column: bestCol,
+          width: imageWidth,
+          height: imageHeight,
+          spanColumns
+        };
+
+        // Update all spanned columns
+        for (let i = 0; i < spanColumns; i++) {
+          columnHeights[bestCol + i] = y + imageHeight + baseGap;
+        }
       });
 
       setPositions(newPositions);
@@ -163,14 +208,14 @@ const FullPageDemoPage = () => {
     const isMobile = window.innerWidth < 768;
     const isDesktop = window.innerWidth >= 1024;
     const columns = isMobile ? 3 : isDesktop ? 6 : 5;
-    const columnWidth = isMobile ? window.innerWidth / 3 : isDesktop ? window.innerWidth / 6 : window.innerWidth / 5;
+    const baseColumnWidth = isMobile ? window.innerWidth / 3 : isDesktop ? window.innerWidth / 6 : window.innerWidth / 5;
 
     // Calculate new position after drag
     const newX = currentPos.x + info.offset.x;
     const newY = currentPos.y + info.offset.y;
 
-    // Determine which column we're closest to
-    const targetColumn = Math.max(0, Math.min(columns - 1, Math.round(newX / columnWidth)));
+    // Determine which column we're closest to (considering span)
+    const targetColumn = Math.max(0, Math.min(columns - (currentPos.spanColumns || 1), Math.round(newX / baseColumnWidth)));
 
     // Find all images in each column (excluding the dragged one)
     const columnImages = Array(columns).fill(null).map(() => []);
@@ -178,11 +223,10 @@ const FullPageDemoPage = () => {
       if (imgId === id) return;
       const pos = positions[imgId];
       if (pos && pos.column !== undefined) {
-        const img = images.find(i => (i.asset_id || i.public_id) === imgId);
         columnImages[pos.column].push({
           id: imgId,
           y: pos.y,
-          height: columnWidth * 1.2
+          height: pos.height || baseColumnWidth * 1.2
         });
       }
     });
@@ -348,11 +392,8 @@ const FullPageDemoPage = () => {
               >
                 {images.map((img, idx) => {
                   const imgId = img.asset_id || img.public_id;
-                  const pos = positions[imgId] || { x: 0, y: 0 };
+                  const pos = positions[imgId] || { x: 0, y: 0, width: 300, height: 400 };
                   const isBeingDragged = isDragging === imgId;
-                  const isMobile = window.innerWidth < 768;
-                  const isDesktop = window.innerWidth >= 1024;
-                  const columnWidth = isMobile ? window.innerWidth / 3 : isDesktop ? window.innerWidth / 6 : window.innerWidth / 5;
 
                   return (
                     <motion.div
@@ -365,7 +406,8 @@ const FullPageDemoPage = () => {
                       onMouseEnter={() => img?.large_url && prefetchImage(img.large_url)}
                       style={{
                         position: 'absolute',
-                        width: columnWidth,
+                        width: pos.width,
+                        height: pos.height,
                         cursor: isBeingDragged ? 'grabbing' : 'grab',
                         zIndex: isBeingDragged ? 50 : 1,
                       }}
@@ -376,12 +418,12 @@ const FullPageDemoPage = () => {
                         scale: 1,
                       }}
                       whileHover={{
-                        scale: 1.05,
+                        scale: 1.03,
                         zIndex: 10,
                         transition: { type: "spring", stiffness: 400, damping: 25 }
                       }}
                       whileDrag={{
-                        scale: 1.08,
+                        scale: 1.05,
                         zIndex: 50,
                         transition: { type: "spring", stiffness: 400, damping: 25 }
                       }}
@@ -402,7 +444,7 @@ const FullPageDemoPage = () => {
                         <img
                           src={img.thumbnail_url}
                           alt={img.context?.alt || 'Gallery image'}
-                          className="w-full h-auto block select-none pointer-events-none"
+                          className="w-full h-full block select-none pointer-events-none object-cover"
                           draggable={false}
                           loading="eager"
                           decoding="async"
@@ -416,8 +458,8 @@ const FullPageDemoPage = () => {
                         <CloudinaryImage
                           publicId={img.public_id}
                           alt={img.context?.alt || 'Gallery image'}
-                          width={Math.floor(columnWidth)}
-                          className="w-full h-auto block select-none pointer-events-none"
+                          width={Math.floor(pos.width)}
+                          className="w-full h-full block select-none pointer-events-none object-cover"
                           disableLazy={idx < 20}
                         />
                       )}
