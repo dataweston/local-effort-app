@@ -1,23 +1,27 @@
 // src/pages/FullPageDemoPage.jsx
-import React, { useState } from 'react';
-import { motion } from 'framer-motion';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import FullPageContainer from '../components/fullpage/FullPageContainer';
 import FullPageSection from '../components/fullpage/FullPageSection';
-import {
-  fadeInUp,
-  fullPageStagger,
-} from '../utils/animations';
+import CloudinaryImage from '../components/common/cloudinaryImage';
+
+const logo = '/gallery/logo.png?text=Local+Effort&font=mono';
 
 const FullPageDemoPage = () => {
   const [activePage, setActivePage] = useState(0);
+  const [images, setImages] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [selected, setSelected] = useState(null);
+  const prefetched = useRef(new Set());
+  const closeBtnRef = useRef(null);
 
   const pages = [
     { id: 'home', label: 'Home' },
+    { id: 'weekly-meals', label: 'Weekly Meals' },
+    { id: 'small-events', label: 'Small Events' },
+    { id: 'for-businesses', label: 'For Businesses' },
     { id: 'about', label: 'About' },
-    { id: 'services', label: 'Services' },
-    { id: 'work', label: 'Work' },
-    { id: 'contact', label: 'Contact' },
+    { id: 'local-pizza', label: 'Local Pizza' },
   ];
 
   const handlePageChange = (index) => {
@@ -30,25 +34,120 @@ const FullPageDemoPage = () => {
     }
   };
 
+  // Fetch images from Cloudinary API
+  const shuffle = useCallback((arr) => {
+    const a = arr.slice();
+    for (let i = a.length - 1; i > 0; i -= 1) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }, []);
+
+  const fetchImages = useCallback(async () => {
+    setLoading(true);
+    const apiUrl = '/api/search-images?per_page=100';
+    try {
+      const response = await fetch(apiUrl);
+      const contentType = response.headers.get('content-type') || '';
+      if (!contentType.includes('application/json')) {
+        throw new Error('API endpoint not found');
+      }
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(`Search failed (${response.status})`);
+      }
+      const imgs = Array.isArray(data.images) ? data.images : [];
+      setImages(shuffle(imgs));
+    } catch (err) {
+      console.error('Error fetching images:', err);
+      setImages([]);
+    } finally {
+      setLoading(false);
+    }
+  }, [shuffle]);
+
+  useEffect(() => {
+    fetchImages();
+  }, [fetchImages]);
+
+  // Lightbox controls
+  const openLightbox = useCallback((img, idx) => {
+    setSelected({ img, idx });
+  }, []);
+
+  const closeLightbox = useCallback(() => setSelected(null), []);
+
+  const prefetchImage = useCallback((url) => {
+    if (!url || typeof document === 'undefined') return;
+    if (prefetched.current.has(url)) return;
+    const img = new Image();
+    img.decoding = 'async';
+    img.src = url;
+    prefetched.current.add(url);
+  }, []);
+
+  // Keyboard navigation for lightbox
+  useEffect(() => {
+    const onKey = (e) => {
+      if (!selected) return;
+      if (e.key === 'Escape') closeLightbox();
+      if (e.key === 'ArrowRight') {
+        const next = (selected.idx + 1) % images.length;
+        setSelected({ img: images[next], idx: next });
+      }
+      if (e.key === 'ArrowLeft') {
+        const prev = (selected.idx - 1 + images.length) % images.length;
+        setSelected({ img: images[prev], idx: prev });
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [selected, images, closeLightbox]);
+
+  useEffect(() => {
+    if (selected && closeBtnRef.current) closeBtnRef.current.focus();
+  }, [selected]);
+
   return (
     <>
       {/* Fixed Navigation Bar */}
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-white border-b border-neutral-200 shadow-sm">
+      <nav className="fixed top-0 left-0 right-0 z-50 shadow-sm" style={{ backgroundColor: '#F2CB89', borderBottom: '1px solid #C6B9A3' }}>
         <div className="flex items-center justify-between px-6 py-4">
-          <Link to="/" className="text-xl font-bold text-neutral-900">
-            Demo Site
-          </Link>
+          <button
+            onClick={() => navigateToPage(0)}
+            className="flex items-center gap-2"
+          >
+            <motion.img
+              src={logo}
+              alt="Local Effort Logo"
+              className="h-7 w-auto rounded-md"
+              style={{ border: '1px solid #3A2F28' }}
+              whileHover={{ scale: 1.03 }}
+              transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+            />
+          </button>
 
           <div className="flex gap-1">
-            {pages.map((page, index) => (
+            {pages.slice(1).map((page, index) => (
               <button
                 key={page.id}
-                onClick={() => navigateToPage(index)}
-                className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${
-                  activePage === index
-                    ? 'bg-neutral-900 text-white'
-                    : 'text-neutral-600 hover:text-neutral-900 hover:bg-neutral-100'
-                }`}
+                onClick={() => navigateToPage(index + 1)}
+                className="px-4 py-2 rounded-md text-sm font-medium transition-all"
+                style={{
+                  backgroundColor: activePage === index + 1 ? '#8A9877' : 'transparent',
+                  color: activePage === index + 1 ? '#F2CB89' : '#3A2F28',
+                }}
+                onMouseEnter={(e) => {
+                  if (activePage !== index + 1) {
+                    e.currentTarget.style.backgroundColor = '#B0E18D';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (activePage !== index + 1) {
+                    e.currentTarget.style.backgroundColor = 'transparent';
+                  }
+                }}
               >
                 {page.label}
               </button>
@@ -63,333 +162,152 @@ const FullPageDemoPage = () => {
         enableKeyboard={true}
         onPageChange={handlePageChange}
       >
-        {/* Page 1: Home */}
+        {/* Page 1: Home - Gallery */}
         <FullPageSection
           id="home"
-          className="bg-gradient-to-br from-neutral-900 via-neutral-800 to-neutral-900"
+          style={{ backgroundColor: '#F2CB89' }}
           animation="fadeScale"
         >
-          <div className="flex flex-col items-center justify-center h-full text-white px-6 pt-20">
-            <motion.div
-              variants={fullPageStagger}
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true }}
-              className="text-center max-w-4xl"
-            >
-              <motion.h1
-                variants={fadeInUp}
-                className="heading-display text-white mb-6"
-              >
-                Horizontal Full-Page Navigation
-              </motion.h1>
-
-              <motion.p
-                variants={fadeInUp}
-                className="text-xl text-neutral-300 mb-8 max-w-2xl mx-auto"
-              >
-                Swipe horizontally or use the menu bar to navigate between pages.
-                Each page takes the full viewport width.
-              </motion.p>
-
-              <motion.div
-                variants={fadeInUp}
-                className="flex gap-4 justify-center"
-              >
-                <button
-                  onClick={() => navigateToPage(1)}
-                  className="btn btn-primary px-6 py-3 text-base"
-                >
-                  Explore Pages
-                </button>
-                <Link
-                  to="/"
-                  className="btn btn-secondary px-6 py-3 text-base bg-white text-neutral-900 hover:bg-neutral-100"
-                >
-                  Exit Demo
-                </Link>
-              </motion.div>
-
-              <motion.div
-                variants={fadeInUp}
-                className="mt-12 text-neutral-400 text-sm"
-              >
-                <p>Keyboard: ← → arrows • Trackpad: Swipe left/right • Click menu items</p>
-              </motion.div>
-            </motion.div>
+          <div className="w-full h-full overflow-y-auto pt-20">
+            <div className="columns-4 md:columns-8 lg:columns-12 gap-0 p-0 m-0">
+              {loading ? (
+                <div className="col-span-full text-center py-20" style={{ color: '#3A2F28' }}>
+                  Loading images...
+                </div>
+              ) : images.length === 0 ? (
+                <div className="col-span-full text-center py-20" style={{ color: '#3A2F28' }}>
+                  No images found.
+                </div>
+              ) : (
+                images.map((img, idx) => (
+                  <button
+                    key={img.asset_id || idx}
+                    type="button"
+                    onClick={() => openLightbox(img, idx)}
+                    onMouseEnter={() => img?.large_url && prefetchImage(img.large_url)}
+                    className="block w-full break-inside-avoid mb-0 p-0 transition-transform hover:scale-105 hover:z-10"
+                    style={{ cursor: 'pointer' }}
+                  >
+                    {img.thumbnail_url ? (
+                      <img
+                        src={img.thumbnail_url}
+                        alt={img.context?.alt || 'Gallery image'}
+                        className="w-full h-auto block"
+                        loading="lazy"
+                        decoding="async"
+                      />
+                    ) : (
+                      <CloudinaryImage
+                        publicId={img.public_id}
+                        alt={img.context?.alt || 'Gallery image'}
+                        width={400}
+                        className="w-full h-auto block"
+                      />
+                    )}
+                  </button>
+                ))
+              )}
+            </div>
           </div>
         </FullPageSection>
 
-        {/* Page 2: About */}
+        {/* Page 2: Weekly Meals */}
+        <FullPageSection
+          id="weekly-meals"
+          style={{ backgroundColor: '#F0BA8A' }}
+        >
+          <div className="flex items-center justify-center h-full pt-20" style={{ color: '#3A2F28' }}>
+            <h2 className="text-4xl font-bold">Weekly Meals</h2>
+          </div>
+        </FullPageSection>
+
+        {/* Page 3: Small Events */}
+        <FullPageSection
+          id="small-events"
+          style={{ backgroundColor: '#F2CB89' }}
+        >
+          <div className="flex items-center justify-center h-full pt-20" style={{ color: '#3A2F28' }}>
+            <h2 className="text-4xl font-bold">Small Events</h2>
+          </div>
+        </FullPageSection>
+
+        {/* Page 4: For Businesses */}
+        <FullPageSection
+          id="for-businesses"
+          style={{ backgroundColor: '#F0BA8A' }}
+        >
+          <div className="flex items-center justify-center h-full pt-20" style={{ color: '#3A2F28' }}>
+            <h2 className="text-4xl font-bold">For Businesses</h2>
+          </div>
+        </FullPageSection>
+
+        {/* Page 5: About */}
         <FullPageSection
           id="about"
-          className="bg-white"
-          animation="sectionReveal"
+          style={{ backgroundColor: '#F2CB89' }}
         >
-          <div className="flex flex-col items-center justify-center h-full px-6 pt-20">
-            <div className="max-w-4xl">
-              <motion.div
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.6 }}
-                className="mb-8"
-              >
-                <h2 className="heading-xl mb-6">About This Demo</h2>
-                <p className="text-lg text-neutral-600 mb-8">
-                  This is a horizontal full-page scroll navigation system. Each page takes
-                  the full viewport width, and you can navigate between them smoothly.
-                </p>
-              </motion.div>
-
-              <motion.div
-                variants={fullPageStagger}
-                initial="hidden"
-                whileInView="visible"
-                viewport={{ once: true }}
-                className="grid md:grid-cols-2 gap-8"
-              >
-                <motion.div variants={fadeInUp} className="card">
-                  <div className="text-4xl mb-4">⚡</div>
-                  <h3 className="text-xl font-bold mb-2">CSS Scroll-Snap</h3>
-                  <p className="text-neutral-600">
-                    Horizontal scroll-snap for smooth page-to-page navigation with
-                    native browser performance.
-                  </p>
-                </motion.div>
-
-                <motion.div variants={fadeInUp} className="card">
-                  <div className="text-4xl mb-4">🎯</div>
-                  <h3 className="text-xl font-bold mb-2">Menu Navigation</h3>
-                  <p className="text-neutral-600">
-                    Click any menu item to instantly jump to that page with smooth
-                    animated transitions.
-                  </p>
-                </motion.div>
-
-                <motion.div variants={fadeInUp} className="card">
-                  <div className="text-4xl mb-4">⌨️</div>
-                  <h3 className="text-xl font-bold mb-2">Keyboard Support</h3>
-                  <p className="text-neutral-600">
-                    Navigate with left/right arrow keys, or use trackpad gestures
-                    for a natural experience.
-                  </p>
-                </motion.div>
-
-                <motion.div variants={fadeInUp} className="card">
-                  <div className="text-4xl mb-4">📱</div>
-                  <h3 className="text-xl font-bold mb-2">Touch Friendly</h3>
-                  <p className="text-neutral-600">
-                    Swipe left or right on touch devices. Fully responsive and
-                    mobile-optimized.
-                  </p>
-                </motion.div>
-              </motion.div>
-            </div>
+          <div className="flex items-center justify-center h-full pt-20" style={{ color: '#3A2F28' }}>
+            <h2 className="text-4xl font-bold">About</h2>
           </div>
         </FullPageSection>
 
-        {/* Page 3: Services */}
+        {/* Page 6: Local Pizza */}
         <FullPageSection
-          id="services"
-          className="bg-gradient-to-br from-orange-50 to-rose-50"
-          animation="slideUp"
+          id="local-pizza"
+          style={{ backgroundColor: '#F0BA8A' }}
         >
-          <div className="flex flex-col items-center justify-center h-full px-6 pt-20">
-            <div className="max-w-4xl w-full">
-              <motion.div
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.6 }}
-                className="text-center mb-12"
-              >
-                <h2 className="heading-xl mb-6">Features</h2>
-                <p className="text-lg text-neutral-600 max-w-2xl mx-auto">
-                  Everything you need for horizontal page navigation
-                </p>
-              </motion.div>
-
-              <motion.div
-                variants={fullPageStagger}
-                initial="hidden"
-                whileInView="visible"
-                viewport={{ once: true }}
-                className="grid md:grid-cols-3 gap-6"
-              >
-                {[
-                  {
-                    title: 'Smooth Transitions',
-                    desc: 'CSS scroll-snap provides buttery smooth page transitions',
-                    icon: '✨',
-                  },
-                  {
-                    title: 'Active State Tracking',
-                    desc: 'Menu highlights the current page automatically',
-                    icon: '🎯',
-                  },
-                  {
-                    title: 'Full Viewport Pages',
-                    desc: 'Each page takes 100vw × 100vh for immersive experience',
-                    icon: '📐',
-                  },
-                  {
-                    title: 'Hash Navigation',
-                    desc: 'Deep link to specific pages with URL fragments',
-                    icon: '🔗',
-                  },
-                  {
-                    title: 'Customizable',
-                    desc: 'Easy to integrate into any React application',
-                    icon: '⚙️',
-                  },
-                  {
-                    title: 'Performant',
-                    desc: 'Zero JavaScript overhead for scrolling behavior',
-                    icon: '🚀',
-                  },
-                ].map((feature, index) => (
-                  <motion.div
-                    key={index}
-                    variants={fadeInUp}
-                    className="bg-white rounded-xl p-6 shadow-sm"
-                  >
-                    <div className="text-3xl mb-3">{feature.icon}</div>
-                    <h3 className="font-bold text-lg mb-2">{feature.title}</h3>
-                    <p className="text-sm text-neutral-600">{feature.desc}</p>
-                  </motion.div>
-                ))}
-              </motion.div>
-            </div>
-          </div>
-        </FullPageSection>
-
-        {/* Page 4: Work */}
-        <FullPageSection
-          id="work"
-          className="bg-gradient-to-br from-neutral-800 to-neutral-900"
-          animation="fadeScale"
-        >
-          <div className="flex flex-col items-center justify-center h-full px-6 text-white pt-20">
-            <div className="max-w-5xl w-full">
-              <motion.div
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.6 }}
-                className="text-center mb-12"
-              >
-                <h2 className="heading-xl text-white mb-4">
-                  How It Works
-                </h2>
-                <p className="text-neutral-300 text-lg">
-                  Simple, elegant, and built with modern web technologies
-                </p>
-              </motion.div>
-
-              <motion.div
-                variants={fullPageStagger}
-                initial="hidden"
-                whileInView="visible"
-                viewport={{ once: true }}
-                className="space-y-6"
-              >
-                <motion.div
-                  variants={fadeInUp}
-                  className="bg-white/10 backdrop-blur-sm rounded-xl p-8"
-                >
-                  <h3 className="text-2xl font-bold mb-4">1. CSS Scroll-Snap</h3>
-                  <p className="text-neutral-300">
-                    The container uses <code className="bg-black/30 px-2 py-1 rounded text-sm">scroll-snap-type: x mandatory</code> for
-                    horizontal scrolling with snap points at each page.
-                  </p>
-                </motion.div>
-
-                <motion.div
-                  variants={fadeInUp}
-                  className="bg-white/10 backdrop-blur-sm rounded-xl p-8"
-                >
-                  <h3 className="text-2xl font-bold mb-4">2. Menu Bar Navigation</h3>
-                  <p className="text-neutral-300">
-                    Clicking menu items triggers <code className="bg-black/30 px-2 py-1 rounded text-sm">scrollIntoView()</code> to
-                    smoothly scroll to the target page.
-                  </p>
-                </motion.div>
-
-                <motion.div
-                  variants={fadeInUp}
-                  className="bg-white/10 backdrop-blur-sm rounded-xl p-8"
-                >
-                  <h3 className="text-2xl font-bold mb-4">3. IntersectionObserver</h3>
-                  <p className="text-neutral-300">
-                    Tracks which page is currently in view and updates the active menu state automatically.
-                  </p>
-                </motion.div>
-              </motion.div>
-            </div>
-          </div>
-        </FullPageSection>
-
-        {/* Page 5: Contact */}
-        <FullPageSection
-          id="contact"
-          className="bg-gradient-to-br from-orange-500 via-rose-500 to-purple-600"
-          animation="sectionReveal"
-        >
-          <div className="flex flex-col items-center justify-center h-full px-6 text-white pt-20">
-            <motion.div
-              variants={fullPageStagger}
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true }}
-              className="text-center max-w-3xl"
-            >
-              <motion.h2
-                variants={fadeInUp}
-                className="heading-display text-white mb-6"
-              >
-                Ready to Build?
-              </motion.h2>
-
-              <motion.p
-                variants={fadeInUp}
-                className="text-xl text-white/90 mb-8 max-w-2xl mx-auto"
-              >
-                This horizontal navigation system is production-ready. Integrate it
-                into your project and customize to your needs.
-              </motion.p>
-
-              <motion.div
-                variants={fadeInUp}
-                className="flex flex-col sm:flex-row gap-4 justify-center mb-12"
-              >
-                <Link
-                  to="/"
-                  className="btn btn-primary bg-white text-neutral-900 hover:bg-neutral-100 px-8 py-4 text-base"
-                >
-                  Back to Home
-                </Link>
-                <button
-                  onClick={() => navigateToPage(0)}
-                  className="btn bg-white/10 backdrop-blur-sm text-white border-white/30 hover:bg-white/20 px-8 py-4 text-base"
-                >
-                  Back to Start
-                </button>
-              </motion.div>
-
-              <motion.div
-                variants={fadeInUp}
-                className="text-white/80 text-sm space-y-2"
-              >
-                <p>Built with React • Framer Motion • Tailwind CSS</p>
-                <p className="text-white/60">
-                  Keyboard: ← → arrows • Trackpad/Mouse: Swipe • Menu: Click to navigate
-                </p>
-              </motion.div>
-            </motion.div>
+          <div className="flex items-center justify-center h-full pt-20" style={{ color: '#3A2F28' }}>
+            <h2 className="text-4xl font-bold">Local Pizza</h2>
           </div>
         </FullPageSection>
       </FullPageContainer>
+
+      {/* Lightbox Modal */}
+      <AnimatePresence>
+        {selected && (
+          <motion.div
+            className="fixed inset-0 z-[60] flex items-center justify-center p-0 m-0"
+            style={{ backgroundColor: 'rgba(0, 0, 0, 0.95)' }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={closeLightbox}
+          >
+            <button
+              ref={closeBtnRef}
+              className="absolute right-4 top-4 z-10 text-white text-4xl font-bold hover:scale-110 transition-transform"
+              onClick={closeLightbox}
+              aria-label="Close image"
+              style={{ background: 'none', border: 'none', cursor: 'pointer' }}
+            >
+              ×
+            </button>
+
+            <div className="w-full h-full flex items-center justify-center p-0 m-0" onClick={(e) => e.stopPropagation()}>
+              {selected.img.large_url ? (
+                <img
+                  src={selected.img.large_url}
+                  alt={selected.img.context?.alt || 'Large gallery image'}
+                  decoding="async"
+                  fetchPriority="high"
+                  className="max-w-full max-h-full object-contain"
+                  style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+                />
+              ) : (
+                <CloudinaryImage
+                  publicId={selected.img.public_id}
+                  alt={selected.img.context?.alt || 'Large gallery image'}
+                  width={2000}
+                  height={2000}
+                  disableLazy
+                  eager
+                  className="max-w-full max-h-full object-contain"
+                />
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </>
   );
 };

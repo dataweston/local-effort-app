@@ -232,31 +232,14 @@ FROM public.happymonday_users
 WHERE email = 'hello@happymonday.company'
 ON CONFLICT (user_id) DO NOTHING;
 
--- Function to update balance after order creation
+-- Deprecated: balance changes happen when invoices are paid, not when they are drafted
 CREATE OR REPLACE FUNCTION update_credit_balance_after_order()
 RETURNS TRIGGER AS $$
 BEGIN
-  -- Only update balance if order is created by client (not admin)
-  IF NEW.created_by != NEW.user_id OR NEW.created_by IS NULL THEN
-    RETURN NEW;
-  END IF;
-
-  -- Update credit balance (add to balance, making it less negative or more positive)
-  UPDATE public.happymonday_credits
-  SET
-    balance_cents = balance_cents + NEW.total_cents,
-    updated_at = now()
-  WHERE user_id = NEW.user_id;
-
+  -- Intentionally a no-op
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
-
--- Trigger to update balance when order is created
-CREATE TRIGGER trigger_update_credit_balance_after_order
-AFTER INSERT ON public.happymonday_orders
-FOR EACH ROW
-EXECUTE FUNCTION update_credit_balance_after_order();
 
 -- Function to update balance after payment
 CREATE OR REPLACE FUNCTION update_credit_balance_after_payment()
