@@ -2138,6 +2138,7 @@ export default function JanuaryMealsPage() {
   const [saveStatus, setSaveStatus] = useState(null);
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const isAdmin = user?.email === 'dataweston@gmail.com';
   const [enrichmentProgress, setEnrichmentProgress] = useState(null);
   const [isEnriching, setIsEnriching] = useState(false);
   
@@ -2254,6 +2255,7 @@ export default function JanuaryMealsPage() {
     }
   };
 
+  // Load meal recipes from localStorage or global admin defaults
   useEffect(() => {
     if (typeof window === 'undefined') return;
     try {
@@ -2283,7 +2285,9 @@ export default function JanuaryMealsPage() {
     setMealRecipes((prev) => {
       const base = typeof updater === 'function' ? updater(prev) : updater;
       const next = cloneMealRecipes(base);
-      if (typeof window !== 'undefined') {
+
+      // Only persist recipe changes for admin as global defaults.
+      if (typeof window !== 'undefined' && isAdmin) {
         try {
           localStorage.setItem(MEAL_RECIPES_STORAGE_KEY, JSON.stringify(next));
         } catch (error) {
@@ -2292,7 +2296,7 @@ export default function JanuaryMealsPage() {
       }
       return next;
     });
-  }, []);
+  }, [isAdmin]);
 
   const handleSaveMealTemplate = useCallback(
     (mealType, code, recipe) => {
@@ -2328,7 +2332,8 @@ export default function JanuaryMealsPage() {
       Object.entries(nextGoals || {}).map(([key, goal]) => [key, { ...goal }])
     );
     setDietGoals(normalized);
-    if (typeof window !== 'undefined') {
+    // Only admin goal changes should become global defaults.
+    if (typeof window !== 'undefined' && isAdmin) {
       try {
         localStorage.setItem(GOALS_STORAGE_KEY, JSON.stringify(normalized));
       } catch (error) {
@@ -2393,23 +2398,12 @@ export default function JanuaryMealsPage() {
     };
     
     setCustomMeals(updated);
-    
-    // Save to localStorage always (as backup)
-    if (typeof window !== 'undefined') {
-      try {
-        localStorage.setItem('january-meal-plan', JSON.stringify(updated));
-      } catch (e) {
-        console.error('Local save failed');
-      }
-    }
-    
-    // Save to Supabase if logged in
+
+    // For logged-in users, persist per-user customizations to Supabase.
     if (user) {
       setSaveStatus('saving');
       const success = await saveToSupabase(updated);
       setSaveStatus(success ? 'saved' : 'error');
-    } else {
-      setSaveStatus('saved');
     }
     
     setTimeout(() => setSaveStatus(null), 2000);
