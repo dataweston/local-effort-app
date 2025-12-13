@@ -1387,7 +1387,8 @@ const DayDetail = ({ day, nutrition, customMeals, mealRecipes, goals, onUpdate, 
             </div>
             
             <div className="grid grid-cols-2 gap-x-8 gap-y-3">
-              <MicroBar label="Omega-3 (ALA + EPA/DHA)" value={nutrition.ala + nutrition.epa_dha} max={activeGoals.omega3.max} unit="g" color="#06b6d4" />
+              <MicroBar label="Omega-3 ALA" value={nutrition.ala} max={activeGoals.omega3.max} unit="g" color="#06b6d4" />
+              <MicroBar label="Omega-3 EPA + DHA" value={nutrition.epa_dha} max={activeGoals.omega3.max} unit="g" color="#0ea5e9" />
               <MicroBar label="Vitamin A" value={nutrition.vitA} max={900} unit=" mcg" color="#f97316" />
               <MicroBar label="Vitamin B12" value={nutrition.b12} max={2.4} unit=" mcg" color="#ec4899" />
               <MicroBar label="Folate" value={nutrition.folate} max={400} unit=" mcg" color="#14b8a6" />
@@ -1399,6 +1400,24 @@ const DayDetail = ({ day, nutrition, customMeals, mealRecipes, goals, onUpdate, 
               <MicroBar label="Potassium" value={nutrition.potassium} max={4700} unit=" mg" color="#0ea5e9" />
               <MicroBar label="Zinc" value={nutrition.zinc} max={11} unit=" mg" color="#d946ef" />
               <MicroBar label="Iron" value={nutrition.iron} max={18} unit=" mg" color="#ef4444" />
+            </div>
+
+            {/* Omega-3 ratio display */}
+            <div className="mt-4 text-xs text-slate-600">
+              {(() => {
+                const ala = nutrition.ala || 0;
+                const epaDha = nutrition.epa_dha || 0;
+                const total = ala + epaDha;
+                if (!total) return <span>Omega-3 ratio (ALA : EPA/DHA):    </span>;
+
+                const alaRatio = Math.round((ala / total) * 10) / 10;
+                const epaDhaRatio = Math.round((epaDha / total) * 10) / 10;
+                return (
+                  <span>
+                    Omega-3 ratio (ALA : EPA/DHA): {alaRatio} : {epaDhaRatio}
+                  </span>
+                );
+              })()}
             </div>
           </div>
           
