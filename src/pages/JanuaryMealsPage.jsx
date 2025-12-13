@@ -363,6 +363,34 @@ const NUTRITION_CSV_FIELDS = [
   { key: 'iron', label: 'Iron (mg)' },
 ];
 
+const MEAL_DETAIL_FIELDS = [
+  { key: 'day', label: 'Day' },
+  { key: 'dinnerType', label: 'Dinner Code' },
+  { key: 'mealType', label: 'Meal Type' },
+  { key: 'mealName', label: 'Meal Name' },
+  { key: 'ingredientName', label: 'Ingredient' },
+  { key: 'amount', label: 'Amount' },
+  { key: 'unit', label: 'Unit' },
+  { key: 'calories', label: 'Calories (kcal)' },
+  { key: 'protein', label: 'Protein (g)' },
+  { key: 'carbs', label: 'Carbs (g)' },
+  { key: 'fat', label: 'Fat (g)' },
+  { key: 'fiber', label: 'Fiber (g)' },
+  { key: 'ala', label: 'ALA (g)' },
+  { key: 'epa_dha', label: 'EPA + DHA (g)' },
+  { key: 'vitA', label: 'Vitamin A (mcg)' },
+  { key: 'b12', label: 'Vitamin B12 (mcg)' },
+  { key: 'folate', label: 'Folate (mcg)' },
+  { key: 'vitC', label: 'Vitamin C (mg)' },
+  { key: 'vitD', label: 'Vitamin D (mcg)' },
+  { key: 'vitK', label: 'Vitamin K (mcg)' },
+  { key: 'calcium', label: 'Calcium (mg)' },
+  { key: 'magnesium', label: 'Magnesium (mg)' },
+  { key: 'potassium', label: 'Potassium (mg)' },
+  { key: 'zinc', label: 'Zinc (mg)' },
+  { key: 'iron', label: 'Iron (mg)' },
+];
+
 const buildNutritionCsv = (dailyEntries, mealRecipes) => {
   const rows = dailyEntries.map((entry) =>
     NUTRITION_CSV_FIELDS.map((field) => {
@@ -397,8 +425,9 @@ const escapeXml = (value) => {
     .replace(/"/g, '&quot;');
 };
 
-const buildExcelXml = (dailyEntries, mealRecipes) => {
-  const rows = dailyEntries.map((entry) =>
+const buildExcelXml = (dailyEntries, mealRecipes, customMeals) => {
+  // Worksheet 1: Daily summary (aggregated nutrition)
+  const summaryRows = dailyEntries.map((entry) =>
     NUTRITION_CSV_FIELDS.map((field) => {
       if (field.key === 'dinnerName') {
         return mealRecipes?.dinner?.[entry.dinnerType]?.name || '';
@@ -407,11 +436,11 @@ const buildExcelXml = (dailyEntries, mealRecipes) => {
     })
   );
 
-  const headerRow = `<Row>${NUTRITION_CSV_FIELDS.map(
+  const summaryHeaderRow = `<Row>${NUTRITION_CSV_FIELDS.map(
     (field) => `<Cell><Data ss:Type="String">${escapeXml(field.label)}</Data></Cell>`
   ).join('')}</Row>`;
 
-  const bodyRows = rows
+  const summaryBodyRows = summaryRows
     .map(
       (row) =>
         `<Row>${row
@@ -424,15 +453,81 @@ const buildExcelXml = (dailyEntries, mealRecipes) => {
     )
     .join('');
 
+  // Worksheet 2: Meals & ingredients detail
+  const detailRows = [];
+  const mealTypes = ['breakfast', 'lunch', 'dinner', 'snacks'];
+
+  DAILY_PLAN.forEach(({ day, dinnerType }) => {
+    mealTypes.forEach((mealType) => {
+      const meal = getMealForDay(mealType, day, mealRecipes, customMeals || {}, dinnerType);
+      const mealName = meal?.name || '';
+      (meal?.ingredients || []).forEach((ingredient) => {
+        const rowObj = {
+          day,
+          dinnerType,
+          mealType,
+          mealName,
+          ingredientName: ingredient.name || '',
+          amount: ingredient.amount ?? '',
+          unit: ingredient.unit || '',
+          calories: ingredient.calories ?? '',
+          protein: ingredient.protein ?? '',
+          carbs: ingredient.carbs ?? '',
+          fat: ingredient.fat ?? '',
+          fiber: ingredient.fiber ?? '',
+          ala: ingredient.ala ?? '',
+          epa_dha: ingredient.epa_dha ?? '',
+          vitA: ingredient.vitA ?? '',
+          b12: ingredient.b12 ?? '',
+          folate: ingredient.folate ?? '',
+          vitC: ingredient.vitC ?? '',
+          vitD: ingredient.vitD ?? '',
+          vitK: ingredient.vitK ?? '',
+          calcium: ingredient.calcium ?? '',
+          magnesium: ingredient.magnesium ?? '',
+          potassium: ingredient.potassium ?? '',
+          zinc: ingredient.zinc ?? '',
+          iron: ingredient.iron ?? '',
+        };
+
+        detailRows.push(
+          MEAL_DETAIL_FIELDS.map((field) => rowObj[field.key] ?? '')
+        );
+      });
+    });
+  });
+
+  const detailHeaderRow = `<Row>${MEAL_DETAIL_FIELDS.map(
+    (field) => `<Cell><Data ss:Type="String">${escapeXml(field.label)}</Data></Cell>`
+  ).join('')}</Row>`;
+
+  const detailBodyRows = detailRows
+    .map((row) =>
+      `<Row>${row
+        .map((value) => {
+          const isNumber = typeof value === 'number' && !Number.isNaN(value);
+          const type = isNumber ? 'Number' : 'String';
+          return `<Cell><Data ss:Type="${type}">${escapeXml(value)}</Data></Cell>`;
+        })
+        .join('')}</Row>`
+    )
+    .join('');
+
   return `<?xml version="1.0"?>
 <Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet"
  xmlns:o="urn:schemas-microsoft-com:office:office"
  xmlns:x="urn:schemas-microsoft-com:office:excel"
  xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">
-  <Worksheet ss:Name="January Meals">
+  <Worksheet ss:Name="January Meals Summary">
     <Table>
-      ${headerRow}
-      ${bodyRows}
+      ${summaryHeaderRow}
+      ${summaryBodyRows}
+    </Table>
+  </Worksheet>
+  <Worksheet ss:Name="Meals &amp; Ingredients">
+    <Table>
+      ${detailHeaderRow}
+      ${detailBodyRows}
     </Table>
   </Worksheet>
 </Workbook>`;
@@ -2392,7 +2487,7 @@ export default function JanuaryMealsPage() {
   const handleOpenInGoogleSheets = useCallback(() => {
     if (typeof window === 'undefined' || typeof document === 'undefined') return;
 
-    const excelXml = buildExcelXml(dailyNutrition, mealRecipes);
+    const excelXml = buildExcelXml(dailyNutrition, mealRecipes, customMeals);
     const blob = new Blob([excelXml], { type: 'application/vnd.ms-excel' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
@@ -2404,7 +2499,7 @@ export default function JanuaryMealsPage() {
     setTimeout(() => URL.revokeObjectURL(url), 1000);
 
     window.open('https://docs.google.com/spreadsheets/u/0/create?usp=sheets_home', '_blank');
-  }, [dailyNutrition, mealRecipes]);
+  }, [dailyNutrition, mealRecipes, customMeals]);
   
   const handleUpdateMeal = useCallback(async (dayKey, mealKey, mealData) => {
     const updated = {
