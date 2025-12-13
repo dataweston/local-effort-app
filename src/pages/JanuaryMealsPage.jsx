@@ -2299,7 +2299,7 @@ export default function JanuaryMealsPage() {
   
   // Check auth state on mount
   useEffect(() => {
-    if (!supabase || !supabaseStorageAvailable) {
+    if (!supabase) {
       setLoading(false);
       return;
     }
@@ -2311,7 +2311,8 @@ export default function JanuaryMealsPage() {
         } = await supabase.auth.getSession();
         setUser(session?.user || null);
 
-        if (session?.user) {
+        // Only attempt to load per-user meal customizations if storage is enabled
+        if (session?.user && supabaseStorageAvailable) {
           await loadUserData(session.user.id);
         }
       } catch (error) {
@@ -2327,13 +2328,13 @@ export default function JanuaryMealsPage() {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
       setUser(session?.user || null);
-      if (session?.user) {
+      if (session?.user && supabaseStorageAvailable) {
         await loadUserData(session.user.id);
       }
     });
 
     return () => subscription?.unsubscribe();
-  }, [supabaseStorageAvailable]);
+  }, [supabase, supabaseStorageAvailable]);
   
   // Load from localStorage as fallback
   useEffect(() => {
@@ -2568,7 +2569,7 @@ export default function JanuaryMealsPage() {
   }, [customMeals, user]);
   
   const handleSignIn = async () => {
-    if (!supabase || !supabaseStorageAvailable) return;
+    if (!supabase) return;
     try {
       await supabase.auth.signInWithOAuth({
         provider: 'google',
@@ -2582,7 +2583,7 @@ export default function JanuaryMealsPage() {
   };
   
   const handleSignOut = async () => {
-    if (!supabase || !supabaseStorageAvailable) return;
+    if (!supabase) return;
     try {
       await supabase.auth.signOut();
       setUser(null);
