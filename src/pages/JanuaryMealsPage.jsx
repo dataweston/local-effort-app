@@ -1,6 +1,12 @@
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { supabase } from '../lib/supabaseClient';
 
+const SUPABASE_MEAL_SYNC_ENABLED = (
+  import.meta.env.VITE_ENABLE_MEAL_CUSTOMIZATIONS ||
+  import.meta.env.NEXT_PUBLIC_ENABLE_MEAL_CUSTOMIZATIONS ||
+  ''
+).toString().toLowerCase() === 'true';
+
 // ============================================================================
 // CONFIGURATION - Uses existing env vars inside the app shell
 // ============================================================================
@@ -2166,6 +2172,9 @@ export default function JanuaryMealsPage() {
   const [saveStatus, setSaveStatus] = useState(null);
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [supabaseStorageAvailable, setSupabaseStorageAvailable] = useState(
+    SUPABASE_MEAL_SYNC_ENABLED && !!supabase
+  );
   const isAdmin = user?.email === 'dataweston@gmail.com';
   const [enrichmentProgress, setEnrichmentProgress] = useState(null);
   const [isEnriching, setIsEnriching] = useState(false);
@@ -2195,7 +2204,7 @@ export default function JanuaryMealsPage() {
   
   // Check auth state on mount
   useEffect(() => {
-    if (!supabase) {
+    if (!supabase || !supabaseStorageAvailable) {
       setLoading(false);
       return;
     }
@@ -2229,7 +2238,7 @@ export default function JanuaryMealsPage() {
     });
 
     return () => subscription?.unsubscribe();
-  }, []);
+  }, [supabaseStorageAvailable]);
   
   // Load from localStorage as fallback
   useEffect(() => {
@@ -2246,15 +2255,29 @@ export default function JanuaryMealsPage() {
   }, [user]);
   
   const loadUserData = async (userId) => {
-    if (!supabase) return;
+    if (!supabase || !supabaseStorageAvailable) return;
     try {
-      const { data, error } = await supabase
+      const { data, error, status } = await supabase
         .from('meal_customizations')
         .select('data')
         .eq('user_id', userId)
         .single();
-      
-      if (data && !error) {
+
+      if (error) {
+        if (
+          status === 404 ||
+          error?.code === 'PGRST116' ||
+          (error?.message || '').toLowerCase().includes('does not exist')
+        ) {
+          console.warn('Disabling Supabase sync: meal_customizations table unavailable. Falling back to local storage.');
+          setSupabaseStorageAvailable(false);
+        } else {
+          console.log('Failed to load user data');
+        }
+        return;
+      }
+
+      if (data) {
         setCustomMeals(data.data || {});
       }
     } catch (error) {
@@ -2263,10 +2286,10 @@ export default function JanuaryMealsPage() {
   };
   
   const saveToSupabase = async (data) => {
-    if (!user || !supabase) return false;
-    
+    if (!user || !supabase || !supabaseStorageAvailable) return false;
+
     try {
-      const { error } = await supabase
+      const { error, status } = await supabase
         .from('meal_customizations')
         .upsert({
           user_id: user.id,
@@ -2275,8 +2298,20 @@ export default function JanuaryMealsPage() {
         }, {
           onConflict: 'user_id'
         });
-      
-      return !error;
+
+      if (error) {
+        if (
+          status === 404 ||
+          error?.code === 'PGRST116' ||
+          (error?.message || '').toLowerCase().includes('does not exist')
+        ) {
+          console.warn('Disabling Supabase sync: meal_customizations table unavailable. Falling back to local storage.');
+          setSupabaseStorageAvailable(false);
+        }
+        return false;
+      }
+
+      return true;
     } catch (error) {
       console.error('Save failed:', error);
       return false;
@@ -2428,7 +2463,7 @@ export default function JanuaryMealsPage() {
     setCustomMeals(updated);
 
     // For logged-in users, persist per-user customizations to Supabase.
-    if (user) {
+    if (user && supabaseStorageAvailable) {
       setSaveStatus('saving');
       const success = await saveToSupabase(updated);
       setSaveStatus(success ? 'saved' : 'error');
@@ -2438,7 +2473,7 @@ export default function JanuaryMealsPage() {
   }, [customMeals, user]);
   
   const handleSignIn = async () => {
-    if (!supabase) return;
+    if (!supabase || !supabaseStorageAvailable) return;
     try {
       await supabase.auth.signInWithOAuth({
         provider: 'google',
@@ -2452,7 +2487,7 @@ export default function JanuaryMealsPage() {
   };
   
   const handleSignOut = async () => {
-    if (!supabase) return;
+    if (!supabase || !supabaseStorageAvailable) return;
     try {
       await supabase.auth.signOut();
       setUser(null);
