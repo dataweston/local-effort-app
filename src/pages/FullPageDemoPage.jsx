@@ -191,8 +191,8 @@ const FullPageDemoPage = () => {
 
     setIsDragging(null);
 
-    // If it was a quick click (not a drag), open lightbox
-    if (dragDuration < 500 && dragDistance < 20) {
+    // If it was a quick click (not a drag), open lightbox - very sensitive thresholds
+    if (dragDuration < 800 && dragDistance < 30) {
       const img = images.find(i => (i.asset_id || i.public_id) === id);
       if (img) {
         const idx = images.findIndex(i => (i.asset_id || i.public_id) === id);
@@ -506,8 +506,16 @@ const FullPageDemoPage = () => {
           id="about"
           style={{ backgroundColor: '#D1D8E0' }}
         >
-          <div className="flex items-center justify-center h-full pt-20" style={{ color: '#2F2722' }}>
-            <h2 className="text-4xl font-bold" style={{ fontFamily: 'Work Sans, sans-serif' }}>About</h2>
+          <div className="relative w-full h-full">
+            <img
+              src="https://res.cloudinary.com/dokyhfvyd/image/upload/c_limit,f_auto,q_auto,w_1600/jo9pxtjng8zpt4yo4rcz?_a=BAMAK+eA0"
+              alt="About Local Effort"
+              className="w-full h-full object-cover"
+              style={{ objectPosition: 'center' }}
+            />
+            <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-20">
+              <h2 className="text-5xl font-bold text-white" style={{ fontFamily: 'Work Sans, sans-serif', textShadow: '2px 2px 4px rgba(0,0,0,0.5)' }}>About</h2>
+            </div>
           </div>
         </FullPageSection>
 

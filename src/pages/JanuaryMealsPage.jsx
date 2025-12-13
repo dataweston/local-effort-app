@@ -110,6 +110,176 @@ const extractNutrients = (foodNutrients) => {
 };
 
 // ============================================================================
+// INGREDIENT ENRICHMENT - Fetch USDA data for all ingredients
+// ============================================================================
+
+const USDA_CACHE_KEY = 'january-meals-usda-cache';
+const CACHE_VERSION = 1;
+
+// Load cached USDA data from localStorage
+const loadUsdaCache = () => {
+  if (typeof window === 'undefined') return {};
+  try {
+    const cached = localStorage.getItem(USDA_CACHE_KEY);
+    if (!cached) return {};
+    const parsed = JSON.parse(cached);
+    if (parsed.version !== CACHE_VERSION) return {};
+    return parsed.data || {};
+  } catch (e) {
+    console.error('Error loading USDA cache:', e);
+    return {};
+  }
+};
+
+// Save USDA cache to localStorage
+const saveUsdaCache = (cache) => {
+  if (typeof window === 'undefined') return;
+  try {
+    localStorage.setItem(USDA_CACHE_KEY, JSON.stringify({
+      version: CACHE_VERSION,
+      data: cache
+    }));
+  } catch (e) {
+    console.error('Error saving USDA cache:', e);
+  }
+};
+
+// Check if ingredient has all micronutrient data
+const hasCompleteNutrition = (ingredient) => {
+  const micronutrients = ['ala', 'epa_dha', 'vitA', 'b12', 'folate', 'vitC', 'vitD', 'vitK', 'calcium', 'magnesium', 'potassium', 'zinc', 'iron'];
+  return micronutrients.some(key => ingredient[key] !== undefined && ingredient[key] !== 0);
+};
+
+// Enrich a single ingredient with USDA data
+const enrichIngredient = async (ingredient, cache) => {
+  // If ingredient already has fdcId or complete nutrition, return as-is
+  if (ingredient.fdcId || hasCompleteNutrition(ingredient)) {
+    return ingredient;
+  }
+
+  // Check cache first
+  const cacheKey = ingredient.name.toLowerCase().trim();
+  if (cache[cacheKey]) {
+    const ratio = ingredient.amount / 100;
+    const nutrients = cache[cacheKey];
+    return {
+      ...ingredient,
+      fdcId: nutrients.fdcId,
+      ala: Math.round((nutrients.ala || 0) * ratio * 100) / 100,
+      epa: Math.round((nutrients.epa || 0) * ratio * 100) / 100,
+      dha: Math.round((nutrients.dha || 0) * ratio * 100) / 100,
+      epa_dha: Math.round((nutrients.epa_dha || 0) * ratio * 100) / 100,
+      vitA: Math.round((nutrients.vitA || 0) * ratio),
+      b12: Math.round((nutrients.b12 || 0) * ratio * 10) / 10,
+      folate: Math.round((nutrients.folate || 0) * ratio),
+      vitC: Math.round((nutrients.vitC || 0) * ratio),
+      vitD: Math.round((nutrients.vitD || 0) * ratio * 10) / 10,
+      vitK: Math.round((nutrients.vitK || 0) * ratio),
+      calcium: Math.round((nutrients.calcium || 0) * ratio),
+      magnesium: Math.round((nutrients.magnesium || 0) * ratio),
+      potassium: Math.round((nutrients.potassium || 0) * ratio),
+      zinc: Math.round((nutrients.zinc || 0) * ratio * 10) / 10,
+      iron: Math.round((nutrients.iron || 0) * ratio * 10) / 10
+    };
+  }
+
+  // Fetch from USDA API
+  if (!isUsdaConfigured) {
+    return ingredient;
+  }
+
+  try {
+    const foods = await searchFoods(ingredient.name);
+    if (!foods || foods.length === 0) {
+      console.warn(`No USDA data found for: ${ingredient.name}`);
+      return ingredient;
+    }
+
+    // Use the first result
+    const food = foods[0];
+    const nutrients = food.nutrients;
+
+    // Cache the per-100g nutrients
+    cache[cacheKey] = {
+      fdcId: food.fdcId,
+      ...nutrients
+    };
+
+    // Apply to this ingredient
+    const ratio = ingredient.amount / 100;
+    return {
+      ...ingredient,
+      fdcId: food.fdcId,
+      ala: Math.round((nutrients.ala || 0) * ratio * 100) / 100,
+      epa: Math.round((nutrients.epa || 0) * ratio * 100) / 100,
+      dha: Math.round((nutrients.dha || 0) * ratio * 100) / 100,
+      epa_dha: Math.round((nutrients.epa_dha || 0) * ratio * 100) / 100,
+      vitA: Math.round((nutrients.vitA || 0) * ratio),
+      b12: Math.round((nutrients.b12 || 0) * ratio * 10) / 10,
+      folate: Math.round((nutrients.folate || 0) * ratio),
+      vitC: Math.round((nutrients.vitC || 0) * ratio),
+      vitD: Math.round((nutrients.vitD || 0) * ratio * 10) / 10,
+      vitK: Math.round((nutrients.vitK || 0) * ratio),
+      calcium: Math.round((nutrients.calcium || 0) * ratio),
+      magnesium: Math.round((nutrients.magnesium || 0) * ratio),
+      potassium: Math.round((nutrients.potassium || 0) * ratio),
+      zinc: Math.round((nutrients.zinc || 0) * ratio * 10) / 10,
+      iron: Math.round((nutrients.iron || 0) * ratio * 10) / 10
+    };
+  } catch (error) {
+    console.error(`Error enriching ingredient ${ingredient.name}:`, error);
+    return ingredient;
+  }
+};
+
+// Enrich all ingredients in meal recipes
+const enrichMealRecipes = async (recipes, onProgress) => {
+  const cache = loadUsdaCache();
+  let enriched = 0;
+  let total = 0;
+
+  // Count total ingredients
+  for (const mealType of Object.values(recipes)) {
+    for (const meal of Object.values(mealType)) {
+      total += (meal.ingredients || []).length;
+    }
+  }
+
+  const enrichedRecipes = {};
+
+  for (const [mealTypeKey, mealType] of Object.entries(recipes)) {
+    enrichedRecipes[mealTypeKey] = {};
+    
+    for (const [mealKey, meal] of Object.entries(mealType)) {
+      const enrichedIngredients = [];
+      
+      for (const ingredient of (meal.ingredients || [])) {
+        const enrichedIngredient = await enrichIngredient(ingredient, cache);
+        enrichedIngredients.push(enrichedIngredient);
+        enriched++;
+        
+        if (onProgress) {
+          onProgress(enriched, total);
+        }
+        
+        // Small delay to avoid rate limiting
+        await new Promise(resolve => setTimeout(resolve, 50));
+      }
+      
+      enrichedRecipes[mealTypeKey][mealKey] = {
+        ...meal,
+        ingredients: enrichedIngredients
+      };
+    }
+  }
+
+  // Save updated cache
+  saveUsdaCache(cache);
+
+  return enrichedRecipes;
+};
+
+// ============================================================================
 // DATA: Complete meal plan with recipes, ingredients, and nutrition
 // ============================================================================
 
@@ -778,6 +948,10 @@ const IngredientSearch = ({ onSelect, onClose }) => {
       carbs: Math.round(nutrients.carbs * ratio * 10) / 10,
       fat: Math.round(nutrients.fat * ratio * 10) / 10,
       fiber: Math.round(nutrients.fiber * ratio * 10) / 10,
+      ala: Math.round(nutrients.ala * ratio * 100) / 100,
+      epa: Math.round(nutrients.epa * ratio * 100) / 100,
+      dha: Math.round(nutrients.dha * ratio * 100) / 100,
+      epa_dha: Math.round(nutrients.epa_dha * ratio * 100) / 100,
       vitA: Math.round(nutrients.vitA * ratio),
       b12: Math.round(nutrients.b12 * ratio * 10) / 10,
       folate: Math.round(nutrients.folate * ratio),
@@ -1964,6 +2138,31 @@ export default function JanuaryMealsPage() {
   const [saveStatus, setSaveStatus] = useState(null);
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [enrichmentProgress, setEnrichmentProgress] = useState(null);
+  const [isEnriching, setIsEnriching] = useState(false);
+  
+  // Enrich ingredients with USDA data on mount
+  useEffect(() => {
+    if (!isUsdaConfigured || isEnriching) return;
+    
+    const enrichData = async () => {
+      setIsEnriching(true);
+      try {
+        const enriched = await enrichMealRecipes(mealRecipes, (current, total) => {
+          setEnrichmentProgress({ current, total });
+        });
+        setMealRecipes(enriched);
+        setEnrichmentProgress(null);
+      } catch (error) {
+        console.error('Error enriching ingredients:', error);
+        setEnrichmentProgress(null);
+      } finally {
+        setIsEnriching(false);
+      }
+    };
+    
+    enrichData();
+  }, []); // Only run once on mount
   
   // Check auth state on mount
   useEffect(() => {
@@ -2270,6 +2469,26 @@ export default function JanuaryMealsPage() {
     return (
       <div className="min-h-screen bg-slate-50 flex items-center justify-center">
         <div className="text-[#9AA6B2]"><LoaderIcon /></div>
+      </div>
+    );
+  }
+  
+  if (enrichmentProgress) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-[#9AA6B2] mb-4"><LoaderIcon /></div>
+          <p className="text-slate-700 font-medium">Enriching ingredients with USDA nutrition data...</p>
+          <p className="text-sm text-slate-500 mt-2">
+            {enrichmentProgress.current} of {enrichmentProgress.total} ingredients
+          </p>
+          <div className="w-64 h-2 bg-slate-200 rounded-full mt-4 mx-auto overflow-hidden">
+            <div 
+              className="h-full bg-[#9AA6B2] transition-all duration-300"
+              style={{ width: `${(enrichmentProgress.current / enrichmentProgress.total) * 100}%` }}
+            />
+          </div>
+        </div>
       </div>
     );
   }
