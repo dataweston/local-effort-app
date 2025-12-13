@@ -300,6 +300,9 @@ const enrichMealRecipes = async (recipes, onProgress) => {
 
 const GOALS_STORAGE_KEY = 'january-meal-plan-goals';
 const MEAL_RECIPES_STORAGE_KEY = 'january-meal-plan-recipes';
+const GLOBAL_MEAL_CONFIG_TABLE = 'january_meal_config';
+const GLOBAL_MEAL_CONFIG_KEY = 'default';
+const USER_MEAL_CONFIG_TABLE = 'january_meal_user_config';
 
 const DEFAULT_DIET_GOALS = {
   calories: { min: 1500, max: 1800, label: 'Calories', unit: 'kcal' },
@@ -2273,19 +2276,32 @@ export default function JanuaryMealsPage() {
   const isAdmin = user?.email === 'dataweston@gmail.com';
   const [enrichmentProgress, setEnrichmentProgress] = useState(null);
   const [isEnriching, setIsEnriching] = useState(false);
+  const [recipesLoaded, setRecipesLoaded] = useState(false);
+  const [hasEnriched, setHasEnriched] = useState(false);
   
-  // Enrich ingredients with USDA data on mount
+  // Enrich ingredients with USDA data after recipes have been loaded (base/global/user)
   useEffect(() => {
-    if (!isUsdaConfigured || isEnriching) return;
-    
+    if (!isUsdaConfigured || isEnriching || hasEnriched || !recipesLoaded) return;
+
     const enrichData = async () => {
       setIsEnriching(true);
       try {
-        const enriched = await enrichMealRecipes(mealRecipes, (current, total) => {
-          setEnrichmentProgress({ current, total });
-        });
-        setMealRecipes(enriched);
-        setEnrichmentProgress(null);
+        // If everything already has an fdcId, skip enrichment entirely
+        const allHaveFdcId = Object.values(mealRecipes || {}).every((mealType) =>
+          Object.values(mealType || {}).every((meal) =>
+            (meal.ingredients || []).every((ingredient) => !!ingredient.fdcId)
+          )
+        );
+
+        if (!allHaveFdcId) {
+          const enriched = await enrichMealRecipes(mealRecipes, (current, total) => {
+            setEnrichmentProgress({ current, total });
+          });
+          setMealRecipes(enriched);
+          setEnrichmentProgress(null);
+        }
+
+        setHasEnriched(true);
       } catch (error) {
         console.error('Error enriching ingredients:', error);
         setEnrichmentProgress(null);
@@ -2293,9 +2309,9 @@ export default function JanuaryMealsPage() {
         setIsEnriching(false);
       }
     };
-    
+
     enrichData();
-  }, []); // Only run once on mount
+  }, [isUsdaConfigured, isEnriching, hasEnriched, recipesLoaded, mealRecipes]);
   
   // Check auth state on mount
   useEffect(() => {
@@ -2311,9 +2327,13 @@ export default function JanuaryMealsPage() {
         } = await supabase.auth.getSession();
         setUser(session?.user || null);
 
-        // Only attempt to load per-user meal customizations if storage is enabled
-        if (session?.user && supabaseStorageAvailable) {
-          await loadUserData(session.user.id);
+        if (session?.user) {
+          // Per-user daily customizations
+          if (supabaseStorageAvailable) {
+            await loadUserData(session.user.id);
+          }
+          // Per-user recipes/goals overrides
+          await loadUserMealConfig(session.user.id);
         }
       } catch (error) {
         console.log('Auth check failed, using local storage');
@@ -2328,8 +2348,11 @@ export default function JanuaryMealsPage() {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
       setUser(session?.user || null);
-      if (session?.user && supabaseStorageAvailable) {
-        await loadUserData(session.user.id);
+      if (session?.user) {
+        if (supabaseStorageAvailable) {
+          await loadUserData(session.user.id);
+        }
+        await loadUserMealConfig(session.user.id);
       }
     });
 
@@ -2380,6 +2403,38 @@ export default function JanuaryMealsPage() {
       console.log('Failed to load user data');
     }
   };
+
+  const loadUserMealConfig = async (userId) => {
+    if (!supabase || !userId) return;
+    try {
+      const { data, error, status } = await supabase
+        .from(USER_MEAL_CONFIG_TABLE)
+        .select('recipes, goals')
+        .eq('user_id', userId)
+        .single();
+
+      if (error) {
+        if (
+          status !== 406 &&
+          status !== 404 &&
+          (error.code || '').toString() !== 'PGRST116' &&
+          !(error.message || '').toLowerCase().includes('does not exist')
+        ) {
+          console.error('Failed to load user meal config from Supabase', error);
+        }
+        return;
+      }
+
+      if (data?.recipes) {
+        setMealRecipes(mergeMealRecipesWithDefaults(data.recipes));
+      }
+      if (data?.goals) {
+        setDietGoals(data.goals);
+      }
+    } catch (error) {
+      console.error('Failed to load user meal config from Supabase', error);
+    }
+  };
   
   const saveToSupabase = async (data) => {
     if (!user || !supabase || !supabaseStorageAvailable) return false;
@@ -2414,48 +2469,168 @@ export default function JanuaryMealsPage() {
     }
   };
 
-  // Load meal recipes from localStorage or global admin defaults
+  // Load global meal recipes/goals from Supabase if available, falling back to localStorage
   useEffect(() => {
-    if (typeof window === 'undefined') return;
-    try {
-      const storedRecipes = localStorage.getItem(MEAL_RECIPES_STORAGE_KEY);
-      if (storedRecipes) {
-        const parsed = JSON.parse(storedRecipes);
-        setMealRecipes(mergeMealRecipesWithDefaults(parsed));
-      }
-    } catch (error) {
-      console.error('Failed to load saved recipes', error);
-    }
-  }, []);
+    let cancelled = false;
 
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    try {
-      const storedGoals = localStorage.getItem(GOALS_STORAGE_KEY);
-      if (storedGoals) {
-        setDietGoals(JSON.parse(storedGoals));
-      }
-    } catch (error) {
-      console.error('Failed to load goals', error);
-    }
-  }, []);
-
-  const persistMealRecipes = useCallback((updater) => {
-    setMealRecipes((prev) => {
-      const base = typeof updater === 'function' ? updater(prev) : updater;
-      const next = cloneMealRecipes(base);
-
-      // Only persist recipe changes for admin as global defaults.
-      if (typeof window !== 'undefined' && isAdmin) {
+    const loadConfig = async () => {
+      // Fallback: load any locally stored admin recipes/goals first
+      if (typeof window !== 'undefined') {
         try {
-          localStorage.setItem(MEAL_RECIPES_STORAGE_KEY, JSON.stringify(next));
+          const storedRecipes = localStorage.getItem(MEAL_RECIPES_STORAGE_KEY);
+          if (storedRecipes && !cancelled) {
+            const parsed = JSON.parse(storedRecipes);
+            setMealRecipes(mergeMealRecipesWithDefaults(parsed));
+          }
+
+          const storedGoals = localStorage.getItem(GOALS_STORAGE_KEY);
+          if (storedGoals && !cancelled) {
+            setDietGoals(JSON.parse(storedGoals));
+          }
         } catch (error) {
-          console.error('Failed to save recipes', error);
+          console.error('Failed to load local meal config', error);
         }
       }
-      return next;
-    });
-  }, [isAdmin]);
+
+      // Preferred: load global config from Supabase (shared across devices)
+      if (supabase) {
+        try {
+          const { data, error, status } = await supabase
+            .from(GLOBAL_MEAL_CONFIG_TABLE)
+            .select('recipes, goals')
+            .eq('key', GLOBAL_MEAL_CONFIG_KEY)
+            .single();
+
+          if (error) {
+            // If table or row missing, fall back to local config silently
+            if (
+              status !== 406 && // Supabase "no rows" for single()
+              status !== 404 &&
+              (error.code || '').toString() !== 'PGRST116' &&
+              !(error.message || '').toLowerCase().includes('does not exist')
+            ) {
+              console.error('Failed to load global meal config from Supabase', error);
+            }
+          } else if (data && !cancelled) {
+            if (data.recipes) {
+              setMealRecipes(mergeMealRecipesWithDefaults(data.recipes));
+            }
+            if (data.goals) {
+              setDietGoals(data.goals);
+            }
+          }
+        } catch (error) {
+          console.error('Failed to load global meal config from Supabase', error);
+        }
+      }
+
+      if (!cancelled) {
+        setRecipesLoaded(true);
+      }
+    };
+
+    loadConfig();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const saveGlobalConfig = useCallback(
+    async (recipesToSave, goalsToSave) => {
+      if (!supabase || !isAdmin) return;
+
+      try {
+        const { error, status } = await supabase
+          .from(GLOBAL_MEAL_CONFIG_TABLE)
+          .upsert(
+            {
+              key: GLOBAL_MEAL_CONFIG_KEY,
+              recipes: recipesToSave,
+              goals: goalsToSave ?? null,
+              updated_at: new Date().toISOString(),
+              updated_by: user?.id || null,
+            },
+            { onConflict: 'key' }
+          );
+
+        if (error) {
+          if (
+            status !== 404 &&
+            (error.code || '').toString() !== 'PGRST116' &&
+            !(error.message || '').toLowerCase().includes('does not exist')
+          ) {
+            console.error('Failed to save global meal config to Supabase', error);
+          }
+        }
+      } catch (error) {
+        console.error('Failed to save global meal config to Supabase', error);
+      }
+    },
+    [supabase, isAdmin, user]
+  );
+
+  const saveUserMealConfig = useCallback(
+    async (recipesToSave, goalsToSave) => {
+      if (!supabase || !user) return;
+
+      try {
+        const { error, status } = await supabase
+          .from(USER_MEAL_CONFIG_TABLE)
+          .upsert(
+            {
+              user_id: user.id,
+              recipes: recipesToSave ?? null,
+              goals: goalsToSave ?? null,
+              updated_at: new Date().toISOString(),
+              updated_by: user.id,
+            },
+            { onConflict: 'user_id' }
+          );
+
+        if (error) {
+          if (
+            status !== 404 &&
+            (error.code || '').toString() !== 'PGRST116' &&
+            !(error.message || '').toLowerCase().includes('does not exist')
+          ) {
+            console.error('Failed to save user meal config to Supabase', error);
+          }
+        }
+      } catch (error) {
+        console.error('Failed to save user meal config to Supabase', error);
+      }
+    },
+    [supabase, user]
+  );
+
+  const persistMealRecipes = useCallback(
+    (updater) => {
+      setMealRecipes((prev) => {
+        const base = typeof updater === 'function' ? updater(prev) : updater;
+        const next = cloneMealRecipes(base);
+
+        // Admin: persist as global defaults
+        if (typeof window !== 'undefined' && isAdmin) {
+          try {
+            localStorage.setItem(MEAL_RECIPES_STORAGE_KEY, JSON.stringify(next));
+          } catch (error) {
+            console.error('Failed to save recipes', error);
+          }
+
+          saveGlobalConfig(next, dietGoals);
+        }
+
+        // Non-admin logged-in users: persist personal overrides
+        if (!isAdmin && user) {
+          saveUserMealConfig(next, dietGoals);
+        }
+
+        return next;
+      });
+    },
+    [isAdmin, dietGoals, saveGlobalConfig, user, saveUserMealConfig]
+  );
 
   const handleSaveMealTemplate = useCallback(
     (mealType, code, recipe) => {
@@ -2486,21 +2661,32 @@ export default function JanuaryMealsPage() {
     [persistMealRecipes]
   );
 
-  const handleSaveGoals = useCallback((nextGoals) => {
-    const normalized = Object.fromEntries(
-      Object.entries(nextGoals || {}).map(([key, goal]) => [key, { ...goal }])
-    );
-    setDietGoals(normalized);
-    // Only admin goal changes should become global defaults.
-    if (typeof window !== 'undefined' && isAdmin) {
-      try {
-        localStorage.setItem(GOALS_STORAGE_KEY, JSON.stringify(normalized));
-      } catch (error) {
-        console.error('Failed to save goals', error);
+  const handleSaveGoals = useCallback(
+    (nextGoals) => {
+      const normalized = Object.fromEntries(
+        Object.entries(nextGoals || {}).map(([key, goal]) => [key, { ...goal }])
+      );
+      setDietGoals(normalized);
+
+      if (typeof window !== 'undefined') {
+        if (isAdmin) {
+          // Admin: save as global defaults
+          try {
+            localStorage.setItem(GOALS_STORAGE_KEY, JSON.stringify(normalized));
+          } catch (error) {
+            console.error('Failed to save goals', error);
+          }
+          saveGlobalConfig(mealRecipes, normalized);
+        } else if (user) {
+          // Non-admin logged-in: save personal overrides
+          saveUserMealConfig(mealRecipes, normalized);
+        }
       }
-    }
-    setShowGoalSettings(false);
-  }, []);
+
+      setShowGoalSettings(false);
+    },
+    [isAdmin, mealRecipes, saveGlobalConfig, user, saveUserMealConfig]
+  );
   
   const dailyNutrition = useMemo(
     () => buildPlanNutrition(mealRecipes, customMeals),
