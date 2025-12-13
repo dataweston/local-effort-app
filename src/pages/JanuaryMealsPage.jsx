@@ -144,16 +144,15 @@ const saveUsdaCache = (cache) => {
   }
 };
 
-// Check if ingredient has all micronutrient data
-const hasCompleteNutrition = (ingredient) => {
-  const micronutrients = ['ala', 'epa_dha', 'vitA', 'b12', 'folate', 'vitC', 'vitD', 'vitK', 'calcium', 'magnesium', 'potassium', 'zinc', 'iron'];
-  return micronutrients.some(key => ingredient[key] !== undefined && ingredient[key] !== 0);
-};
+// We treat USDA as the single source of truth for micronutrients.
+// An ingredient is considered "complete" only if it already has an fdcId
+// (i.e., it was populated from USDA or cache previously).
+const hasCompleteNutrition = (ingredient) => !!ingredient.fdcId;
 
 // Enrich a single ingredient with USDA data
 const enrichIngredient = async (ingredient, cache) => {
-  // If ingredient already has fdcId or complete nutrition, return as-is
-  if (ingredient.fdcId || hasCompleteNutrition(ingredient)) {
+  // If ingredient already has fdcId (USDA-backed), return as-is
+  if (hasCompleteNutrition(ingredient)) {
     return ingredient;
   }
 
