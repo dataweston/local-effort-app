@@ -164,6 +164,11 @@ const enrichIngredient = async (ingredient, cache) => {
     return {
       ...ingredient,
       fdcId: nutrients.fdcId,
+      calories: Math.round((nutrients.calories || 0) * ratio * 10) / 10,
+      protein: Math.round((nutrients.protein || 0) * ratio * 10) / 10,
+      carbs: Math.round((nutrients.carbs || 0) * ratio * 10) / 10,
+      fat: Math.round((nutrients.fat || 0) * ratio * 10) / 10,
+      fiber: Math.round((nutrients.fiber || 0) * ratio * 10) / 10,
       ala: Math.round((nutrients.ala || 0) * ratio * 100) / 100,
       epa: Math.round((nutrients.epa || 0) * ratio * 100) / 100,
       dha: Math.round((nutrients.dha || 0) * ratio * 100) / 100,
@@ -209,6 +214,11 @@ const enrichIngredient = async (ingredient, cache) => {
     return {
       ...ingredient,
       fdcId: food.fdcId,
+      calories: Math.round((nutrients.calories || 0) * ratio * 10) / 10,
+      protein: Math.round((nutrients.protein || 0) * ratio * 10) / 10,
+      carbs: Math.round((nutrients.carbs || 0) * ratio * 10) / 10,
+      fat: Math.round((nutrients.fat || 0) * ratio * 10) / 10,
+      fiber: Math.round((nutrients.fiber || 0) * ratio * 10) / 10,
       ala: Math.round((nutrients.ala || 0) * ratio * 100) / 100,
       epa: Math.round((nutrients.epa || 0) * ratio * 100) / 100,
       dha: Math.round((nutrients.dha || 0) * ratio * 100) / 100,
