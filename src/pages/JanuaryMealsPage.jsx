@@ -2400,7 +2400,7 @@ export default function JanuaryMealsPage() {
         .from('meal_customizations')
         .select('data')
         .eq('user_id', userId)
-        .single();
+        .maybeSingle();
 
       if (error) {
         if (
@@ -2431,7 +2431,7 @@ export default function JanuaryMealsPage() {
         .from(USER_MEAL_CONFIG_TABLE)
         .select('recipes, goals')
         .eq('user_id', userId)
-        .single();
+        .maybeSingle();
 
       if (error) {
         if (
@@ -2519,7 +2519,7 @@ export default function JanuaryMealsPage() {
             .from(GLOBAL_MEAL_CONFIG_TABLE)
             .select('recipes, goals')
             .eq('key', GLOBAL_MEAL_CONFIG_KEY)
-            .single();
+            .maybeSingle();
 
           if (error) {
             // If table or row missing, fall back to local config silently
