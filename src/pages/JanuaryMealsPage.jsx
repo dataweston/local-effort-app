@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
-import { supabase } from '../lib/supabaseClient';
+import { supabase, isAdmin as isAdminEmail } from '../lib/supabaseClient';
 
 const SUPABASE_MEAL_SYNC_ENABLED = (
   import.meta.env.VITE_ENABLE_MEAL_CUSTOMIZATIONS ||
@@ -2293,7 +2293,7 @@ export default function JanuaryMealsPage() {
   const [supabaseStorageAvailable, setSupabaseStorageAvailable] = useState(
     SUPABASE_MEAL_SYNC_ENABLED && !!supabase
   );
-  const isAdmin = user?.email === 'dataweston@gmail.com';
+  const isAdmin = isAdminEmail(user?.email);
   const [enrichmentProgress, setEnrichmentProgress] = useState(null);
   const [isEnriching, setIsEnriching] = useState(false);
   const [recipesLoaded, setRecipesLoaded] = useState(false);
