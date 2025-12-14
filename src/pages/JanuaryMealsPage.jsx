@@ -1280,7 +1280,7 @@ const DinnerIngredientRow = ({ ingredient, onChange, onRemove }) => {
 // MEAL CARD COMPONENT
 // ============================================================================
 
-const MealCard = ({ title, meal, mealKey, dayKey, onUpdate, isEditing, setIsEditing }) => {
+const MealCard = ({ title, meal, mealKey, dayKey, onUpdate, onDelete, isEditing, setIsEditing }) => {
   const [localMeal, setLocalMeal] = useState(meal);
   const [expanded, setExpanded] = useState(false);
   const [showIngredientSearch, setShowIngredientSearch] = useState(false);
@@ -1393,12 +1393,20 @@ const MealCard = ({ title, meal, mealKey, dayKey, onUpdate, isEditing, setIsEdit
                   </button>
                 </div>
               ) : (
-                <button 
-                  onClick={(e) => { e.stopPropagation(); setIsEditing(true); }}
-                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-700 bg-[#BCCCDC] rounded-lg hover:bg-[#9AA6B2] transition-colors"
-                >
-                  <EditIcon /> Edit
-                </button>
+                <div className="flex gap-2">
+                  <button 
+                    onClick={(e) => { e.stopPropagation(); setIsEditing(true); }}
+                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-700 bg-[#BCCCDC] rounded-lg hover:bg-[#9AA6B2] transition-colors"
+                  >
+                    <EditIcon /> Edit
+                  </button>
+                  <button 
+                    onClick={(e) => { e.stopPropagation(); onDelete(dayKey, mealKey); }}
+                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-red-400 bg-red-500/10 rounded-lg hover:bg-red-500/20 transition-colors"
+                  >
+                    <TrashIcon /> Delete
+                  </button>
+                </div>
               )}
             </div>
             
@@ -1441,7 +1449,7 @@ const MealCard = ({ title, meal, mealKey, dayKey, onUpdate, isEditing, setIsEdit
 // DAY DETAIL MODAL
 // ============================================================================
 
-const DayDetail = ({ day, nutrition, customMeals, mealRecipes, goals, onUpdate, onClose }) => {
+const DayDetail = ({ day, nutrition, customMeals, mealRecipes, goals, onUpdate, onDelete, onClose }) => {
   const [editingMeal, setEditingMeal] = useState(null);
   
   const dinnerInfo =
@@ -1544,6 +1552,7 @@ const DayDetail = ({ day, nutrition, customMeals, mealRecipes, goals, onUpdate, 
               mealKey={`breakfast-${defaultMealKeys.breakfast}`}
               dayKey={dayKey}
               onUpdate={onUpdate}
+              onDelete={onDelete}
               isEditing={editingMeal === 'breakfast'}
               setIsEditing={(v) => setEditingMeal(v ? 'breakfast' : null)}
             />
@@ -1554,6 +1563,7 @@ const DayDetail = ({ day, nutrition, customMeals, mealRecipes, goals, onUpdate, 
               mealKey={`lunch-${defaultMealKeys.lunch}`}
               dayKey={dayKey}
               onUpdate={onUpdate}
+              onDelete={onDelete}
               isEditing={editingMeal === 'lunch'}
               setIsEditing={(v) => setEditingMeal(v ? 'lunch' : null)}
             />
@@ -1564,6 +1574,7 @@ const DayDetail = ({ day, nutrition, customMeals, mealRecipes, goals, onUpdate, 
               mealKey={`dinner-${nutrition.dinnerType}`}
               dayKey={dayKey}
               onUpdate={onUpdate}
+              onDelete={onDelete}
               isEditing={editingMeal === 'dinner'}
               setIsEditing={(v) => setEditingMeal(v ? 'dinner' : null)}
             />
@@ -1574,6 +1585,7 @@ const DayDetail = ({ day, nutrition, customMeals, mealRecipes, goals, onUpdate, 
               mealKey="snacks"
               dayKey={dayKey}
               onUpdate={onUpdate}
+              onDelete={onDelete}
               isEditing={editingMeal === 'snacks'}
               setIsEditing={(v) => setEditingMeal(v ? 'snacks' : null)}
             />
@@ -1829,7 +1841,7 @@ const GoalSettingsPanel = ({ isOpen, goals, onSave, onClose }) => {
 // RECIPES PANEL
 // ============================================================================
 
-const RecipesPanel = ({ isOpen, onClose, mealRecipes, onAddRecipe, onEditRecipe }) => {
+const RecipesPanel = ({ isOpen, onClose, mealRecipes, onAddRecipe, onEditRecipe, onDeleteRecipe }) => {
   if (!isOpen) return null;
 
   const sections = [
@@ -1876,12 +1888,20 @@ const RecipesPanel = ({ isOpen, onClose, mealRecipes, onAddRecipe, onEditRecipe 
                         <p className="text-base font-semibold text-slate-900">{meal.name}</p>
                         <p className="text-xs font-mono text-slate-500 mt-1">Key: {mealKey}</p>
                       </div>
-                      <button
-                        onClick={() => onEditRecipe(section.key, mealKey)}
-                        className="px-2 py-1 text-xs font-medium text-slate-700 bg-[#BCCCDC] rounded hover:bg-[#9AA6B2] transition-colors"
-                      >
-                        Edit
-                      </button>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => onEditRecipe(section.key, mealKey)}
+                          className="px-2 py-1 text-xs font-medium text-slate-700 bg-[#BCCCDC] rounded hover:bg-[#9AA6B2] transition-colors"
+                        >
+                          Edit
+                        </button>
+                        <button
+                          onClick={() => onDeleteRecipe(section.key, mealKey)}
+                          className="px-2 py-1 text-xs font-medium text-red-400 bg-red-500/10 rounded hover:bg-red-500/20 transition-colors"
+                        >
+                          Delete
+                        </button>
+                      </div>
                     </div>
                     <ul className="mt-3 space-y-1.5 text-xs text-slate-600">
                       {(meal.ingredients || []).map((ingredient, index) => (
@@ -2752,7 +2772,33 @@ export default function JanuaryMealsPage() {
     }
     
     setTimeout(() => setSaveStatus(null), 2000);
-  }, [customMeals, user]);
+  }, [customMeals, user, supabaseStorageAvailable, saveToSupabase]);
+
+  const handleDeleteMeal = useCallback(async (dayKey, mealKey) => {
+    if (!window.confirm('Are you sure you want to delete this meal?')) return;
+
+    // Create an empty meal to mark this meal as deleted for this day
+    const emptyMeal = { name: 'Deleted Meal', ingredients: [] };
+    
+    const updated = {
+      ...customMeals,
+      [dayKey]: {
+        ...(customMeals[dayKey] || {}),
+        [mealKey]: emptyMeal
+      }
+    };
+    
+    setCustomMeals(updated);
+
+    // For logged-in users, persist per-user customizations to Supabase.
+    if (user && supabaseStorageAvailable) {
+      setSaveStatus('saving');
+      const success = await saveToSupabase(updated);
+      setSaveStatus(success ? 'saved' : 'error');
+    }
+    
+    setTimeout(() => setSaveStatus(null), 2000);
+  }, [customMeals, user, supabaseStorageAvailable, saveToSupabase]);
   
   const handleSignIn = async () => {
     if (!supabase) return;
@@ -2976,6 +3022,7 @@ export default function JanuaryMealsPage() {
           mealRecipes={mealRecipes}
           goals={dietGoals}
           onUpdate={handleUpdateMeal}
+          onDelete={handleDeleteMeal}
           onClose={() => setSelectedDay(null)}
         />
       )}
@@ -2986,6 +3033,11 @@ export default function JanuaryMealsPage() {
         mealRecipes={mealRecipes}
         onAddRecipe={(mealType) => setActiveRecipeEditor({ mealType, mode: 'create' })}
         onEditRecipe={(mealType, code) => setActiveRecipeEditor({ mealType, mode: 'edit', code })}
+        onDeleteRecipe={(mealType, code) => {
+          if (window.confirm(`Are you sure you want to delete this recipe? This will ${isAdmin ? 'globally remove' : 'remove from your account'} the "${mealRecipes[mealType]?.[code]?.name}" recipe.`)) {
+            handleDeleteMealTemplate(mealType, code);
+          }
+        }}
       />
       <RecipeEditor
         isOpen={!!activeRecipeEditor}
