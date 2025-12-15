@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from "react";
-import { ShoppingCart, FileText, Plus, Minus, Send, ArrowLeft, Clock, MessageSquare, ClipboardList, CreditCard, BarChart2, Download, Filter, Search } from "lucide-react";
+import { ShoppingCart, FileText, Plus, Minus, Send, ArrowLeft, Clock, MessageSquare, ClipboardList, CreditCard, BarChart2, Download, Filter, Search, Printer, Mail } from "lucide-react";
 import { useSupabaseAuth } from "../../contexts/SupabaseAuthContext";
 import { supabase } from "../../lib/supabaseClient";
 import {
@@ -41,6 +41,15 @@ const toDateOnly = (value) => {
   if (parts.length < 3 || parts.some((n) => Number.isNaN(n))) return null;
   return new Date(parts[0], parts[1] - 1, parts[2]);
 };
+
+const escapeHtml = (value = '') =>
+  value
+    .toString()
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
 
 const App = () => {
   // Items for sale
@@ -150,6 +159,7 @@ const App = () => {
   const [editNotes, setEditNotes] = useState("");
   const [editOrderDate, setEditOrderDate] = useState("");
   const [reportFilters, setReportFilters] = useState(() => createDefaultReportFilters());
+  const [reportSending, setReportSending] = useState(false);
 
   // Load user data and orders
   useEffect(() => {
@@ -735,6 +745,19 @@ const App = () => {
     return `${prefix}$${Math.abs(value).toFixed(2)}`;
   };
 
+  const buildReportRangeLabel = () => {
+    if (reportFilters.startDate && reportFilters.endDate) {
+      return `${formatDate(reportFilters.startDate)} – ${formatDate(reportFilters.endDate)}`;
+    }
+    if (reportFilters.startDate) {
+      return `From ${formatDate(reportFilters.startDate)}`;
+    }
+    if (reportFilters.endDate) {
+      return `Through ${formatDate(reportFilters.endDate)}`;
+    }
+    return 'All Dates';
+  };
+
   const downloadReportCsv = () => {
     if (!reportData.detailedRows.length) {
       alert('No data to export for the selected filters.');
@@ -776,6 +799,329 @@ const App = () => {
     link.click();
     document.body.removeChild(link);
     setTimeout(() => URL.revokeObjectURL(url), 1000);
+  };
+
+  const generateReportDocumentHtml = ({ includePrintButton = false } = {}) => {
+    const rangeLabel = buildReportRangeLabel();
+    const statusLabel = reportFilters.status === 'all' ? 'All statuses' : reportFilters.status.toUpperCase();
+    const categoryLabel = reportFilters.category === 'all' ? 'All categories' : reportFilters.category;
+    const searchLabel = reportFilters.searchText ? escapeHtml(reportFilters.searchText) : '—';
+    const requestedBy = escapeHtml(hmUser?.email || 'Happy Monday user');
+    const generatedAt = escapeHtml(new Date().toLocaleString());
+
+    const summaryRows = reportData.itemSummary.length
+      ? reportData.itemSummary.map((item) => `
+        <tr>
+          <td>${escapeHtml(item.name)}</td>
+          <td>${escapeHtml(item.category)}</td>
+          <td style="text-align:right;">${item.quantity}</td>
+          <td style="text-align:right;">${formatCurrencyValue(item.total)}</td>
+          <td style="text-align:right;">${item.orderCount}</td>
+        </tr>
+      `).join('')
+      : '<tr><td colspan="5" style="text-align:center; color:#94a3b8; padding:16px;">No items match the selected filters.</td></tr>';
+
+    const lineRows = reportData.detailedRows.length
+      ? reportData.detailedRows.map((row) => `
+        <tr>
+          <td>${escapeHtml(row.orderNumber)}</td>
+          <td>${escapeHtml(formatDate(row.date))}</td>
+          <td>${escapeHtml(row.status.toUpperCase())}</td>
+          <td>
+            <div style="font-weight:600; color:#0f172a;">${escapeHtml(row.name)}</div>
+            <div style="font-size:12px; color:#64748b;">${escapeHtml(row.category)}</div>
+            ${row.notes ? `<div style="margin-top:4px; font-size:11px; color:#94a3b8;">${escapeHtml(row.notes)}</div>` : ''}
+          </td>
+          <td style="text-align:right; ${row.quantity < 0 ? 'color:#dc2626;' : ''}">${row.quantity}</td>
+          <td style="text-align:right;">${formatCurrencyValue(row.unitPrice)}</td>
+          <td style="text-align:right; ${row.total < 0 ? 'color:#dc2626;' : 'color:#0f172a;'}">${formatCurrencyValue(row.total)}</td>
+        </tr>
+      `).join('')
+      : '<tr><td colspan="7" style="text-align:center; color:#94a3b8; padding:16px;">No line items match the selected filters.</td></tr>';
+
+    const printButton = includePrintButton ? `
+      <button class="print-button" onclick="window.print()">🖨️ Save / Print</button>
+    ` : '';
+
+    return `<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Happy Monday Report</title>
+    <style>
+      @media print {
+        body { margin: 0; }
+        .print-button { display: none; }
+      }
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+        padding: 40px;
+        max-width: 900px;
+        margin: 0 auto;
+        background: #f1f5f9;
+        color: #0f172a;
+      }
+      .card {
+        background: #ffffff;
+        border-radius: 20px;
+        padding: 32px;
+        box-shadow: 0 20px 45px rgba(15, 23, 42, 0.12);
+      }
+      .header {
+        border-bottom: 3px solid #3b82f6;
+        padding-bottom: 24px;
+        margin-bottom: 24px;
+      }
+      .header h1 {
+        margin: 0;
+        font-size: 32px;
+        color: #0f172a;
+      }
+      .meta-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 16px;
+        margin-bottom: 24px;
+      }
+      .meta-tile {
+        background: #f8fafc;
+        border-radius: 12px;
+        padding: 16px;
+        border: 1px solid #e2e8f0;
+      }
+      .meta-tile span {
+        display: block;
+        font-size: 12px;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        color: #64748b;
+      }
+      .meta-tile strong {
+        display: block;
+        margin-top: 6px;
+        font-size: 16px;
+        color: #0f172a;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        border-radius: 16px;
+        overflow: hidden;
+        margin-bottom: 32px;
+      }
+      thead {
+        background: #eff6ff;
+        color: #1d4ed8;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        font-size: 12px;
+      }
+      th, td {
+        padding: 14px 16px;
+        border-bottom: 1px solid #e2e8f0;
+      }
+      th {
+        text-align: left;
+      }
+      tbody tr:last-child td {
+        border-bottom: none;
+      }
+      .summary-callout {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 20px;
+        margin-bottom: 32px;
+      }
+      .summary-callout .tile {
+        border-radius: 16px;
+        padding: 20px;
+        border: 1px solid #e2e8f0;
+        background: #f8fafc;
+      }
+      .summary-callout .tile h3 {
+        margin: 0;
+        font-size: 13px;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: #64748b;
+      }
+      .summary-callout .tile p {
+        margin: 8px 0 0;
+        font-size: 24px;
+        font-weight: 700;
+      }
+      .print-button {
+        background: #3b82f6;
+        color: white;
+        border: none;
+        padding: 12px 24px;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        margin-bottom: 20px;
+      }
+      .print-button:hover {
+        background: #2563eb;
+      }
+    </style>
+  </head>
+  <body>
+    ${printButton}
+    <div class="card">
+      <div class="header">
+        <h1>Local Effort ↔ Happy Monday</h1>
+        <p style="margin:8px 0 0; color:#475569;">Custom invoice-style report</p>
+      </div>
+
+      <div class="meta-grid">
+        <div class="meta-tile">
+          <span>Date Range</span>
+          <strong>${escapeHtml(rangeLabel)}</strong>
+        </div>
+        <div class="meta-tile">
+          <span>Status</span>
+          <strong>${escapeHtml(statusLabel)}</strong>
+        </div>
+        <div class="meta-tile">
+          <span>Category</span>
+          <strong>${escapeHtml(categoryLabel)}</strong>
+        </div>
+        <div class="meta-tile">
+          <span>Search</span>
+          <strong>${searchLabel}</strong>
+        </div>
+      </div>
+
+      <div class="meta-grid" style="margin-top:0;">
+        <div class="meta-tile">
+          <span>Requested By</span>
+          <strong>${requestedBy}</strong>
+        </div>
+        <div class="meta-tile">
+          <span>Generated</span>
+          <strong>${generatedAt}</strong>
+        </div>
+        <div class="meta-tile">
+          <span>Invoices Matched</span>
+          <strong>${reportData.filteredOrdersCount}</strong>
+        </div>
+        <div class="meta-tile">
+          <span>Line Items</span>
+          <strong>${reportData.detailedRows.length}</strong>
+        </div>
+      </div>
+
+      <div class="summary-callout">
+        <div class="tile">
+          <h3>Net Sales</h3>
+          <p>${formatCurrencyValue(reportData.totals.revenue)}</p>
+        </div>
+        <div class="tile">
+          <h3>Units Moved</h3>
+          <p>${reportData.totals.quantity}</p>
+        </div>
+        <div class="tile">
+          <h3>Pizza Sales</h3>
+          <p>${formatCurrencyValue(reportData.totals.pizzaRevenue)}</p>
+          <span style="font-size:12px; color:#64748b;">Units: ${reportData.totals.pizzaQuantity}</span>
+        </div>
+        <div class="tile">
+          <h3>Credits / Adjustments</h3>
+          <p style="color:#dc2626;">${formatCurrencyValue(reportData.totals.creditIssued)}</p>
+        </div>
+      </div>
+
+      <h2 style="margin-bottom:12px;">Item Breakdown</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Item</th>
+            <th>Category</th>
+            <th style="text-align:right;">Quantity</th>
+            <th style="text-align:right;">Net</th>
+            <th style="text-align:right;">Invoices</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${summaryRows}
+        </tbody>
+      </table>
+
+      <h2 style="margin-bottom:12px;">Line Items</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Order #</th>
+            <th>Date</th>
+            <th>Status</th>
+            <th>Item</th>
+            <th style="text-align:right;">Qty</th>
+            <th style="text-align:right;">Unit</th>
+            <th style="text-align:right;">Line Total</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${lineRows}
+        </tbody>
+      </table>
+    </div>
+  </body>
+</html>`;
+  };
+
+  const openReportPdfPreview = () => {
+    if (!reportData.detailedRows.length) {
+      alert('Add at least one line item by adjusting the filters before exporting.');
+      return;
+    }
+    if (typeof window === 'undefined') return;
+    const html = generateReportDocumentHtml({ includePrintButton: true });
+    const reportWindow = window.open('', '_blank');
+    if (!reportWindow) {
+      alert('Your browser blocked the PDF preview. Please allow pop-ups for this site.');
+      return;
+    }
+    reportWindow.document.write(html);
+    reportWindow.document.close();
+    reportWindow.focus();
+  };
+
+  const emailReport = async () => {
+    if (!reportData.detailedRows.length || reportSending) {
+      if (!reportData.detailedRows.length) {
+        alert('No data to send. Try widening your filters first.');
+      }
+      return;
+    }
+    setReportSending(true);
+    try {
+      const htmlContent = generateReportDocumentHtml();
+      const response = await fetch('/api/happymonday/send-report-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          htmlContent,
+          filters: reportFilters,
+          totals: reportData.totals,
+          lineItemCount: reportData.detailedRows.length,
+          invoiceCount: reportData.filteredOrdersCount,
+          requestedBy: hmUser?.email || null,
+        }),
+      });
+
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(payload?.error || 'Unable to send report email.');
+      }
+
+      alert('Report emailed to both partners. Check your inbox in a moment.');
+    } catch (error) {
+      console.error('[HappyMonday] Error emailing report:', error);
+      alert(error.message || 'Failed to email report.');
+    } finally {
+      setReportSending(false);
+    }
   };
 
   // Show loading while checking auth
@@ -1388,18 +1734,40 @@ const App = () => {
             <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-6">
               <div>
                 <h2 className="text-2xl font-bold text-slate-800">Custom Reports</h2>
-                <p className="text-sm text-slate-500">Build quick breakdowns like "Pizza sales for last week" and export them to a spreadsheet.</p>
+                <p className="text-sm text-slate-500">Build quick breakdowns like "Pizza sales for last week" and send/save them just like invoices.</p>
               </div>
-              <button
-                onClick={downloadReportCsv}
-                disabled={!reportData.detailedRows.length}
-                className={`px-4 py-2 rounded-lg font-medium flex items-center gap-2 transition-colors ${
-                  reportData.detailedRows.length ? 'bg-blue-500 hover:bg-blue-600 text-white' : 'bg-slate-200 text-slate-500 cursor-not-allowed'
-                }`}
-              >
-                <Download size={18} />
-                Export CSV
-              </button>
+              <div className="flex flex-wrap gap-2">
+                <button
+                  onClick={downloadReportCsv}
+                  disabled={!reportData.detailedRows.length}
+                  className={`px-4 py-2 rounded-lg font-medium flex items-center gap-2 transition-colors ${
+                    reportData.detailedRows.length ? 'bg-blue-500 hover:bg-blue-600 text-white' : 'bg-slate-200 text-slate-500 cursor-not-allowed'
+                  }`}
+                >
+                  <Download size={18} />
+                  Export CSV
+                </button>
+                <button
+                  onClick={openReportPdfPreview}
+                  disabled={!reportData.detailedRows.length}
+                  className={`px-4 py-2 rounded-lg font-medium flex items-center gap-2 transition-colors ${
+                    reportData.detailedRows.length ? 'bg-slate-900 hover:bg-slate-800 text-white' : 'bg-slate-200 text-slate-500 cursor-not-allowed'
+                  }`}
+                >
+                  <Printer size={18} />
+                  Download PDF
+                </button>
+                <button
+                  onClick={emailReport}
+                  disabled={!reportData.detailedRows.length || reportSending}
+                  className={`px-4 py-2 rounded-lg font-medium flex items-center gap-2 transition-colors ${
+                    !reportData.detailedRows.length || reportSending ? 'bg-slate-200 text-slate-500 cursor-not-allowed' : 'bg-green-600 hover:bg-green-700 text-white'
+                  }`}
+                >
+                  <Mail size={18} />
+                  {reportSending ? 'Emailing...' : 'Email Report'}
+                </button>
+              </div>
             </div>
 
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-6">
