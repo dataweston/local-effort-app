@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from "react";
-import { ShoppingCart, FileText, Plus, Minus, Send, ArrowLeft, Clock, MessageSquare, ClipboardList, CreditCard } from "lucide-react";
+import React, { useState, useEffect, useMemo } from "react";
+import { ShoppingCart, FileText, Plus, Minus, Send, ArrowLeft, Clock, MessageSquare, ClipboardList, CreditCard, BarChart2, Download, Filter, Search } from "lucide-react";
 import { useSupabaseAuth } from "../../contexts/SupabaseAuthContext";
 import { supabase } from "../../lib/supabaseClient";
 import {
@@ -22,6 +22,26 @@ const formatDate = (dateString) => {
   return date.toLocaleDateString();
 };
 
+const createDefaultReportFilters = () => {
+  const today = new Date();
+  const start = new Date(today);
+  start.setDate(start.getDate() - 6);
+  return {
+    startDate: start.toISOString().split('T')[0],
+    endDate: today.toISOString().split('T')[0],
+    status: 'all',
+    category: 'all',
+    searchText: '',
+  };
+};
+
+const toDateOnly = (value) => {
+  if (!value) return null;
+  const parts = value.split('T')[0].split('-').map(Number);
+  if (parts.length < 3 || parts.some((n) => Number.isNaN(n))) return null;
+  return new Date(parts[0], parts[1] - 1, parts[2]);
+};
+
 const App = () => {
   // Items for sale
   const [items] = useState([
@@ -33,8 +53,10 @@ const App = () => {
     { id: 6, name: "Vegetable", price: 6.1, category: "Sandwiches" },
     { id: 7, name: '12" Cheese', price: 7.1, category: "Pizza" },
     { id: 8, name: '4" Cheese', price: 3.6, category: "Pizza" },
+    { id: 8, name: '4" Pepperoni', price: 3.6, category: "Pizza" },
     { id: 9, name: '12" Pepperoni', price: 8.1, category: "Pizza" },
     { id: 10, name: '12" Seasonal', price: 8.1, category: "Pizza" },
+    { id: 10, name: '12" Supreme', price: 8.1, category: "Pizza" },
     { id: 11, name: '12" Gluten Free', price: 8.1, category: "Pizza" },
     { id: 12, name: "Beet Salad", price: 5.1, category: "Salads" },
     { id: 13, name: "Pasta Salad (gluten free)", price: 3.1, category: "Salads" },
@@ -127,6 +149,7 @@ const App = () => {
   const [editCart, setEditCart] = useState({});
   const [editNotes, setEditNotes] = useState("");
   const [editOrderDate, setEditOrderDate] = useState("");
+  const [reportFilters, setReportFilters] = useState(() => createDefaultReportFilters());
 
   // Load user data and orders
   useEffect(() => {
@@ -557,8 +580,203 @@ const App = () => {
   };
 
   const getItemById = (id) => items.find((item) => item.id === id);
+
+  const categoryOptions = useMemo(() => {
+    const unique = new Set(items.map((item) => item.category));
+    return Array.from(unique).sort();
+  }, [items]);
+
+  const reportData = useMemo(() => {
+    if (!orders?.length) {
+      return {
+        detailedRows: [],
+        itemSummary: [],
+        totals: { revenue: 0, quantity: 0, pizzaQuantity: 0, pizzaRevenue: 0, creditIssued: 0 },
+        filteredOrdersCount: 0,
+      };
+    }
+
+    const startDate = reportFilters.startDate ? toDateOnly(reportFilters.startDate) : null;
+    const endDate = reportFilters.endDate ? toDateOnly(reportFilters.endDate) : null;
+    if (endDate) {
+      endDate.setHours(23, 59, 59, 999);
+    }
+    const searchTerm = reportFilters.searchText.trim().toLowerCase();
+
+    const filteredOrders = orders.filter((order) => {
+      const orderDateObj = order.order_date ? toDateOnly(order.order_date) : null;
+      if (startDate && orderDateObj && orderDateObj < startDate) return false;
+      if (endDate && orderDateObj && orderDateObj > endDate) return false;
+      if (reportFilters.status !== 'all' && order.status !== reportFilters.status) return false;
+      return true;
+    });
+
+    const detailedRows = [];
+
+    filteredOrders.forEach((order) => {
+      if (!order?.items) return;
+      Object.entries(order.items).forEach(([itemId, qty]) => {
+        const numericQty = Number(qty) || 0;
+        if (numericQty === 0) return;
+
+        const catalogItem = getItemById(parseInt(itemId, 10));
+        const category = catalogItem?.category || 'Other';
+        const name = catalogItem?.name || `Item ${itemId}`;
+        const unitPrice = catalogItem?.price ?? 0;
+        const total = unitPrice * numericQty;
+
+        const matchesCategory = reportFilters.category === 'all' || category === reportFilters.category;
+        const matchesSearch = !searchTerm || [name, category, order.order_number, order.notes]
+          .some((field) => field?.toLowerCase().includes(searchTerm));
+
+        if (!matchesCategory || !matchesSearch) return;
+
+        detailedRows.push({
+          orderId: order.id,
+          orderNumber: order.order_number || order.id,
+          date: order.order_date,
+          status: order.status,
+          notes: order.notes,
+          itemId: parseInt(itemId, 10),
+          name,
+          category,
+          quantity: numericQty,
+          unitPrice,
+          total,
+        });
+      });
+    });
+
+    const itemSummaryMap = new Map();
+    detailedRows.forEach((row) => {
+      if (!itemSummaryMap.has(row.name)) {
+        itemSummaryMap.set(row.name, {
+          name: row.name,
+          category: row.category,
+          quantity: 0,
+          total: 0,
+          orderNumbers: new Set(),
+        });
+      }
+      const summary = itemSummaryMap.get(row.name);
+      summary.quantity += row.quantity;
+      summary.total += row.total;
+      summary.orderNumbers.add(row.orderNumber);
+    });
+
+    const itemSummary = Array.from(itemSummaryMap.values())
+      .map((entry) => ({
+        name: entry.name,
+        category: entry.category,
+        quantity: entry.quantity,
+        total: entry.total,
+        orderCount: entry.orderNumbers.size,
+      }))
+      .sort((a, b) => Math.abs(b.total) - Math.abs(a.total));
+
+    const totals = detailedRows.reduce((acc, row) => {
+      acc.revenue += row.total;
+      acc.quantity += row.quantity;
+      if (row.category === 'Pizza') {
+        acc.pizzaQuantity += row.quantity;
+        acc.pizzaRevenue += row.total;
+      }
+      if (row.total < 0) {
+        acc.creditIssued += row.total;
+      }
+      return acc;
+    }, { revenue: 0, quantity: 0, pizzaQuantity: 0, pizzaRevenue: 0, creditIssued: 0 });
+
+    return {
+      detailedRows,
+      itemSummary,
+      totals,
+      filteredOrdersCount: filteredOrders.length,
+    };
+  }, [orders, reportFilters, items]);
+
+  const statusOptions = ['all', 'unpaid', 'partial', 'paid', 'refunded'];
+
   const total = calculateTotal();
   const hasItems = Object.keys(cart).length > 0;
+
+  const updateReportFilter = (field, value) => {
+    setReportFilters((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const setLastNDays = (days) => {
+    const end = new Date();
+    const start = new Date(end);
+    start.setDate(end.getDate() - (days - 1));
+    setReportFilters((prev) => ({
+      ...prev,
+      startDate: start.toISOString().split('T')[0],
+      endDate: end.toISOString().split('T')[0],
+    }));
+  };
+
+  const setThisWeekRange = () => {
+    const today = new Date();
+    const start = new Date(today);
+    const day = today.getDay();
+    const diffToMonday = day === 0 ? 6 : day - 1;
+    start.setDate(today.getDate() - diffToMonday);
+    const end = new Date(start);
+    end.setDate(start.getDate() + 6);
+    setReportFilters((prev) => ({
+      ...prev,
+      startDate: start.toISOString().split('T')[0],
+      endDate: end.toISOString().split('T')[0],
+    }));
+  };
+
+  const formatCurrencyValue = (value) => {
+    const prefix = value < 0 ? '-' : '';
+    return `${prefix}$${Math.abs(value).toFixed(2)}`;
+  };
+
+  const downloadReportCsv = () => {
+    if (!reportData.detailedRows.length) {
+      alert('No data to export for the selected filters.');
+      return;
+    }
+
+    const escapeCsv = (value) => {
+      if (value === null || value === undefined) return '""';
+      const str = value.toString().replace(/"/g, '""');
+      return `"${str}"`;
+    };
+
+    if (typeof window === 'undefined' || typeof document === 'undefined') return;
+
+    const header = ['Order #', 'Date', 'Status', 'Item', 'Category', 'Quantity', 'Unit Price', 'Line Total', 'Notes'];
+    const rows = reportData.detailedRows.map((row) => [
+      row.orderNumber,
+      row.date ? row.date.split('T')[0] : '',
+      row.status,
+      row.name,
+      row.category,
+      row.quantity,
+      row.unitPrice.toFixed(2),
+      row.total.toFixed(2),
+      row.notes || '',
+    ].map(escapeCsv).join(','));
+
+    const csvContent = [header.map(escapeCsv).join(','), ...rows].join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const startLabel = reportFilters.startDate || 'start';
+    const endLabel = reportFilters.endDate || 'end';
+    const filename = `happy-monday-report-${startLabel}-to-${endLabel}.csv`;
+
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', filename);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  };
 
   // Show loading while checking auth
   if (authLoading) {
@@ -740,6 +958,9 @@ const App = () => {
             </button>
             <button onClick={() => setCurrentView("invoices")} className={`px-6 py-3 rounded-lg font-medium transition-all flex items-center gap-2 ${currentView === "invoices" ? "bg-blue-500 text-white shadow-md" : "text-slate-600 hover:text-blue-500"}`}>
               <FileText size={20} /> Past Orders
+            </button>
+            <button onClick={() => setCurrentView("reports")} className={`px-6 py-3 rounded-lg font-medium transition-all flex items-center gap-2 ${currentView === "reports" ? "bg-blue-500 text-white shadow-md" : "text-slate-600 hover:text-blue-500"}`}>
+              <BarChart2 size={20} /> Reports
             </button>
             {/* Hide costing for hello@happymonday.company */}
             {hmUser?.email !== 'hello@happymonday.company' && (
@@ -1160,6 +1381,217 @@ const App = () => {
                 </button>
               </div>
             )}
+          </div>
+        )}
+        {currentView === "reports" && (
+          <div className="bg-white rounded-2xl shadow-xl p-6">
+            <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-6">
+              <div>
+                <h2 className="text-2xl font-bold text-slate-800">Custom Reports</h2>
+                <p className="text-sm text-slate-500">Build quick breakdowns like "Pizza sales for last week" and export them to a spreadsheet.</p>
+              </div>
+              <button
+                onClick={downloadReportCsv}
+                disabled={!reportData.detailedRows.length}
+                className={`px-4 py-2 rounded-lg font-medium flex items-center gap-2 transition-colors ${
+                  reportData.detailedRows.length ? 'bg-blue-500 hover:bg-blue-600 text-white' : 'bg-slate-200 text-slate-500 cursor-not-allowed'
+                }`}
+              >
+                <Download size={18} />
+                Export CSV
+              </button>
+            </div>
+
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-6">
+              <div className="p-4 border border-slate-200 rounded-xl bg-slate-50">
+                <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Net Sales</p>
+                <p className="text-2xl font-bold text-slate-900">{formatCurrencyValue(reportData.totals.revenue)}</p>
+                <p className="text-xs text-slate-500 mt-1">Across {reportData.filteredOrdersCount} invoices</p>
+              </div>
+              <div className="p-4 border border-slate-200 rounded-xl bg-slate-50">
+                <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Units Moved</p>
+                <p className="text-2xl font-bold text-slate-900">{reportData.totals.quantity}</p>
+                <p className="text-xs text-slate-500 mt-1">Includes negative quantities for credits</p>
+              </div>
+              <div className="p-4 border border-slate-200 rounded-xl bg-slate-50">
+                <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Pizza Sales</p>
+                <p className="text-2xl font-bold text-slate-900">{formatCurrencyValue(reportData.totals.pizzaRevenue)}</p>
+                <p className="text-xs text-slate-500 mt-1">Pizza units: {reportData.totals.pizzaQuantity}</p>
+              </div>
+              <div className="p-4 border border-slate-200 rounded-xl bg-slate-50">
+                <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Credits / Adjustments</p>
+                <p className="text-2xl font-bold text-red-600">{formatCurrencyValue(reportData.totals.creditIssued)}</p>
+                <p className="text-xs text-slate-500 mt-1">Negative = credit back to client</p>
+              </div>
+            </div>
+
+            <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 mb-6">
+              <div className="flex items-center gap-2 mb-4 text-slate-700 font-semibold">
+                <Filter size={16} />
+                Filter invoices
+              </div>
+              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+                <div>
+                  <label htmlFor="hm-report-start" className="text-sm font-medium text-slate-600 mb-1 block">Start date</label>
+                  <input
+                    id="hm-report-start"
+                    type="date"
+                    value={reportFilters.startDate}
+                    onChange={(e) => updateReportFilter('startDate', e.target.value)}
+                    className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                </div>
+                <div>
+                  <label htmlFor="hm-report-end" className="text-sm font-medium text-slate-600 mb-1 block">End date</label>
+                  <input
+                    id="hm-report-end"
+                    type="date"
+                    value={reportFilters.endDate}
+                    onChange={(e) => updateReportFilter('endDate', e.target.value)}
+                    className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                </div>
+                <div>
+                  <label htmlFor="hm-report-status" className="text-sm font-medium text-slate-600 mb-1 block">Invoice status</label>
+                  <select
+                    id="hm-report-status"
+                    value={reportFilters.status}
+                    onChange={(e) => updateReportFilter('status', e.target.value)}
+                    className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
+                  >
+                    {statusOptions.map((status) => (
+                      <option key={status} value={status}>
+                        {status === 'all' ? 'All statuses' : status.charAt(0).toUpperCase() + status.slice(1)}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label htmlFor="hm-report-category" className="text-sm font-medium text-slate-600 mb-1 block">Menu category</label>
+                  <select
+                    id="hm-report-category"
+                    value={reportFilters.category}
+                    onChange={(e) => updateReportFilter('category', e.target.value)}
+                    className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
+                  >
+                    <option value="all">All categories</option>
+                    {categoryOptions.map((category) => (
+                      <option key={category} value={category}>{category}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+              <div className="grid gap-4 md:grid-cols-2 mt-4">
+                <div>
+                  <label htmlFor="hm-report-search" className="text-sm font-medium text-slate-600 mb-1 block">Keyword search</label>
+                  <div className="relative">
+                    <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                    <input
+                      id="hm-report-search"
+                      type="text"
+                      value={reportFilters.searchText}
+                      onChange={(e) => updateReportFilter('searchText', e.target.value)}
+                      placeholder="Pizza, sandwich, HM-123..."
+                      className="w-full pl-10 pr-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                  </div>
+                </div>
+                <div className="flex flex-col gap-2">
+                  <span className="text-sm font-medium text-slate-600">Quick ranges</span>
+                  <div className="flex flex-wrap gap-2">
+                    <button onClick={setThisWeekRange} className="px-3 py-1.5 rounded-full border border-slate-300 text-sm hover:border-blue-400 hover:text-blue-600 transition-colors">This Week</button>
+                    <button onClick={() => setLastNDays(7)} className="px-3 py-1.5 rounded-full border border-slate-300 text-sm hover:border-blue-400 hover:text-blue-600 transition-colors">Last 7 Days</button>
+                    <button onClick={() => setLastNDays(30)} className="px-3 py-1.5 rounded-full border border-slate-300 text-sm hover:border-blue-400 hover:text-blue-600 transition-colors">Last 30 Days</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="mb-6">
+              <h3 className="text-lg font-semibold text-slate-800 mb-2 flex items-center gap-2">
+                <BarChart2 size={18} /> Item breakdown
+              </h3>
+              {reportData.itemSummary.length === 0 ? (
+                <p className="text-sm text-slate-500">No items match the current filters.</p>
+              ) : (
+                <div className="overflow-x-auto border border-slate-100 rounded-xl">
+                  <table className="w-full text-sm">
+                    <thead className="bg-slate-50 text-slate-500 uppercase text-xs">
+                      <tr>
+                        <th className="text-left py-3 px-4">Item</th>
+                        <th className="text-left py-3 px-4">Category</th>
+                        <th className="text-right py-3 px-4">Quantity</th>
+                        <th className="text-right py-3 px-4">Net</th>
+                        <th className="text-right py-3 px-4">Invoices</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {reportData.itemSummary.map((item) => (
+                        <tr key={item.name} className="border-t border-slate-100">
+                          <td className="py-3 px-4">
+                            <p className="font-medium text-slate-800">{item.name}</p>
+                            <p className="text-xs text-slate-500">{formatCurrencyValue(item.total)}</p>
+                          </td>
+                          <td className="py-3 px-4 text-slate-600">{item.category}</td>
+                          <td className="py-3 px-4 text-right font-semibold">{item.quantity}</td>
+                          <td className="py-3 px-4 text-right font-semibold">{formatCurrencyValue(item.total)}</td>
+                          <td className="py-3 px-4 text-right text-slate-600">{item.orderCount}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+
+            <div>
+              <h3 className="text-lg font-semibold text-slate-800 mb-2">Line items ({reportData.detailedRows.length})</h3>
+              <p className="text-xs text-slate-500 mb-3">Showing {reportData.detailedRows.length} line items from {reportData.filteredOrdersCount} invoices.</p>
+              {reportData.detailedRows.length === 0 ? (
+                <p className="text-sm text-slate-500">Adjust your filters to see invoice lines.</p>
+              ) : (
+                <div className="overflow-x-auto border border-slate-100 rounded-xl">
+                  <table className="w-full text-sm">
+                    <thead className="bg-slate-50 text-slate-500 uppercase text-xs">
+                      <tr>
+                        <th className="text-left py-3 px-4">Order #</th>
+                        <th className="text-left py-3 px-4">Date</th>
+                        <th className="text-left py-3 px-4">Status</th>
+                        <th className="text-left py-3 px-4">Item</th>
+                        <th className="text-right py-3 px-4">Qty</th>
+                        <th className="text-right py-3 px-4">Unit</th>
+                        <th className="text-right py-3 px-4">Line total</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {reportData.detailedRows.map((row) => (
+                        <tr key={`${row.orderId}-${row.itemId}-${row.name}-${row.quantity}-${row.total}-${row.date}`} className="border-t border-slate-100">
+                          <td className="py-3 px-4 font-medium text-slate-800">{row.orderNumber}</td>
+                          <td className="py-3 px-4 text-slate-600">{formatDate(row.date)}</td>
+                          <td className="py-3 px-4">
+                            <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
+                              row.status === 'paid' ? 'bg-green-100 text-green-700' :
+                              row.status === 'partial' ? 'bg-yellow-100 text-yellow-700' :
+                              row.status === 'refunded' ? 'bg-red-100 text-red-700' :
+                              'bg-slate-100 text-slate-700'
+                            }`}>
+                              {row.status.toUpperCase()}
+                            </span>
+                          </td>
+                          <td className="py-3 px-4 text-slate-700">
+                            <p className="font-medium">{row.name}</p>
+                            <p className="text-xs text-slate-500">{row.category}</p>
+                          </td>
+                          <td className={`py-3 px-4 text-right font-semibold ${row.quantity < 0 ? 'text-red-600' : ''}`}>{row.quantity}</td>
+                          <td className="py-3 px-4 text-right">{formatCurrencyValue(row.unitPrice)}</td>
+                          <td className={`py-3 px-4 text-right font-semibold ${row.total < 0 ? 'text-red-600' : 'text-slate-900'}`}>{formatCurrencyValue(row.total)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
           </div>
         )}
         {currentView === "costing" && <CostingWorksheet items={items} />}
