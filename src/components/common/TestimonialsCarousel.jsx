@@ -44,7 +44,7 @@ export default function TestimonialsCarousel({ items = [], title = 'Testimonials
       itemReviewed: subj
     }));
     return { '@context': 'https://schema.org', '@graph': graph };
-  }, [items, business]);
+  }, [items]);
   const slides = useMemo(() => {
     if (!items.length) return [];
     const randomized = shuffle(items);
