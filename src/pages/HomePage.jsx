@@ -17,6 +17,7 @@ import GiftCardDialog from '../components/home/GiftCardDialog';
 import { generateEventListSchema } from '../utils/generateEventSchema';
 import lottie from 'lottie-web';
 import animationData from '../assets/Social-handle.json';
+import { businessInfo, thumbtackReviews } from '../data/staticContent';
 
 const HomePage = () => {
   const navigate = useNavigate();
@@ -87,43 +88,11 @@ const HomePage = () => {
 
   // No hero carousel — use single hero image only
 
-  const [reviews, setReviews] = useState([]);
+  const reviews = thumbtackReviews;
   const [events, setEvents] = useState([]);
   const [eventModal, setEventModal] = useState(null);
   const [showBooking, setShowBooking] = useState(false);
-  const [business, setBusiness] = useState(null);
-
-  // Load canonical business metadata
-  useEffect(() => {
-    let mounted = true;
-    fetch('/business.json')
-      .then((r) => (r.ok ? r.json() : null))
-      .then((data) => { if (mounted) setBusiness(data || null); })
-      .catch(() => {});
-    return () => { mounted = false; };
-  }, []);
-
-  // Load external Thumbtack reviews JSON (public/reviews/thumbtack.json)
-  useEffect(() => {
-    let mounted = true;
-    fetch('/reviews/thumbtack.json')
-      .then((r) => (r.ok ? r.json() : null))
-      .then((ext) => {
-        if (!mounted || !Array.isArray(ext) || !ext.length) return;
-        setReviews((prev) => {
-          const seen = new Set();
-          const merged = [...ext, ...prev].filter((t) => {
-            const k = `${(t.quote||'').trim()}|${(t.author||'').trim()}`;
-            if (seen.has(k)) return false;
-            seen.add(k);
-            return true;
-          });
-          return merged;
-        });
-      })
-      .catch(() => {});
-    return () => { mounted = false; };
-  }, []);
+  const business = businessInfo;
 
   // Load upcoming public events from calendar API (Supabase)
   useEffect(() => {
@@ -710,7 +679,7 @@ const HomePage = () => {
               imgClassName="w-full h-full object-cover object-center"
               fallbackSrc={heroFallbackSrc}
               sizes="(min-width: 1536px) 768px, (min-width: 1280px) 688px, (min-width: 1024px) 50vw, 100vw"
-              responsiveSteps={[600, 900, 1200, 1600, 2000, 2600, 3200]}
+              responsiveSteps={[600, 900, 1200, 1600, 2000]}
               eager
             />
           </motion.div>
@@ -796,5 +765,3 @@ const HomePage = () => {
 };
 
 export default HomePage;
-
-

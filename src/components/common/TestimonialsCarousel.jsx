@@ -1,5 +1,6 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import EmblaCarousel from './EmblaCarousel';
+import { businessInfo } from '../../data/staticContent';
 
 function shuffle(array) {
   const a = array.slice();
@@ -17,16 +18,6 @@ function chunk(arr, size) {
 }
 
 export default function TestimonialsCarousel({ items = [], title = 'Testimonials', headingExtra = null, maxLines = 5 }) {
-  const [business, setBusiness] = useState(null);
-  useEffect(() => {
-    let mounted = true;
-    fetch('/business.json')
-      .then((r) => (r.ok ? r.json() : null))
-      .then((data) => { if (mounted) setBusiness(data || null); })
-      .catch(() => {});
-    return () => { mounted = false; };
-  }, []);
-
   function parseDateFromContext(ctx) {
     if (!ctx) return undefined;
     const m = String(ctx).match(/[A-Za-z]{3,9} \d{1,2}, \d{4}/);
@@ -40,8 +31,8 @@ export default function TestimonialsCarousel({ items = [], title = 'Testimonials
     if (!items || !items.length) return null;
     const subj = {
       '@type': 'ProfessionalService',
-      name: (business && business.name) || 'Local Effort',
-      url: (business && business.url) || 'https://localeffortfood.com/'
+      name: businessInfo.name || 'Local Effort',
+      url: businessInfo.url || 'https://localeffortfood.com/'
     };
   const graph = items.slice(0, 20).map((t) => ({
       '@type': 'Review',
