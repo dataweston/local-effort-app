@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Helmet } from 'react-helmet-async';
 import { Link } from 'react-router-dom';
@@ -6,6 +6,7 @@ import { Home } from 'lucide-react';
 import DinnerRegistrationModal from '../components/WinterDinner/DinnerRegistrationModal';
 import Noise from '../components/ui/Noise';
 import { SITE_NAME, SITE_URL } from '../config/siteMetadata';
+import { loadExternalStylesheet } from '../utils/performance';
 
 // Helper component for positioning elements in background coordinate system
 const BgPositioned = ({ x, y, children, className = '', style = {}, ...props }) => {
@@ -102,6 +103,13 @@ const WinterDinnerPage = () => {
 
   const structuredData = [eventSchema, breadcrumbSchema];
 
+  useEffect(() => {
+    loadExternalStylesheet(
+      'https://fonts.googleapis.com/css2?family=Cardo:ital,wght@0,400;0,700;1,400&family=Special+Gothic+Expanded+One&display=swap',
+      { crossOrigin: 'anonymous' }
+    );
+  }, []);
+
   return (
     <>
       <Helmet>
@@ -112,7 +120,12 @@ const WinterDinnerPage = () => {
         {/* Google Fonts - Cardo & Special Gothic Expanded One */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link href="https://fonts.googleapis.com/css2?family=Cardo:ital,wght@0,400;0,700;1,400&family=Special+Gothic+Expanded+One&display=swap" rel="stylesheet" />
+        <noscript>
+          <link
+            href="https://fonts.googleapis.com/css2?family=Cardo:ital,wght@0,400;0,700;1,400&family=Special+Gothic+Expanded+One&display=swap"
+            rel="stylesheet"
+          />
+        </noscript>
 
         {/* Open Graph */}
         <meta property="og:title" content={pageTitle} />
