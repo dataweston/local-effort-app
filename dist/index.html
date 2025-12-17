@@ -11,18 +11,28 @@
       content="Local Effort | Personal Chef & Event Catering in Roseville, MN"
     />
     <!-- Development-friendly Content Security Policy: allow local dev servers and backend -->
-    <meta http-equiv="Content-Security-Policy" content="
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="
       default-src 'self' http: https: 'unsafe-inline' 'unsafe-eval';
       img-src 'self' data: http://localhost:3001 http://localhost:5173 https:;
       script-src 'self' 'unsafe-inline' 'unsafe-eval' http://localhost:5173 https:;
       connect-src 'self' ws://localhost:5173 http://localhost:3001 http://localhost:5173 https:;
+      font-src 'self' data: blob: http://localhost:5173 https://fonts.googleapis.com https://fonts.gstatic.com https://api.fontshare.com https:;
+      font-src 'self' data: http://localhost:5173 https://fonts.googleapis.com https://fonts.gstatic.com https://api.fontshare.com;
       style-src 'self' 'unsafe-inline' http://localhost:5173 https:;
-    ">
+    "
+    >
   <link rel="preconnect" href="https://api.fontshare.com">
-  <link href="https://api.fontshare.com/v2/css?f[]=general-sans@400,600,700&display=swap" rel="stylesheet">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;600&display=swap" rel="stylesheet">
+  <!-- Fonts are loaded asynchronously in src/index.jsx; keep <noscript> fallback for non-JS browsers -->
+  <noscript>
+    <link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=general-sans@400,600,700&display=swap">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;600&display=swap">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:wght@400;500;600;700&display=swap">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;500;600;700&display=swap">
+  </noscript>
     <title>Local Effort</title>
     <script type="application/ld+json">
       {
@@ -70,8 +80,8 @@ fbq('init', '1528653228301060');
 fbq('track', 'PageView');
 </script>
 <!-- End Meta Pixel Code -->
-    <script type="module" crossorigin src="/assets/index-BevwTttF.js"></script>
-    <link rel="stylesheet" crossorigin href="/assets/index-Bo6bQ2lG.css">
+    <script type="module" crossorigin src="/assets/index-gnjFPcBK.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-DrXaq4Hm.css">
   </head>
   <body>
   <!-- Meta Pixel (noscript) moved to body per HTML spec -->
@@ -85,7 +95,7 @@ fbq('track', 'PageView');
     />
   </noscript>
   <!-- Optional runtime Sanity config (generated at deploy-time) -->
-  <script src="/runtime-sanity-config.js"></script>
+  <script src="/runtime-sanity-config.js" defer></script>
   <div id="root"></div>
   <noscript>This site works best with JavaScript enabled. Key content is still visible above.</noscript>
 

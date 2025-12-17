@@ -19197,7 +19197,7 @@ var require_use_sync_external_store_shim_production = __commonJS({
     }
     var objectIs = "function" === typeof Object.is ? Object.is : is;
     var useState29 = React67.useState;
-    var useEffect28 = React67.useEffect;
+    var useEffect27 = React67.useEffect;
     var useLayoutEffect4 = React67.useLayoutEffect;
     var useDebugValue2 = React67.useDebugValue;
     function useSyncExternalStore$2(subscribe, getSnapshot) {
@@ -19210,7 +19210,7 @@ var require_use_sync_external_store_shim_production = __commonJS({
         },
         [subscribe, value2, getSnapshot]
       );
-      useEffect28(
+      useEffect27(
         function() {
           checkIfSnapshotChanged(inst) && forceUpdate({ inst });
           return subscribe(function() {
@@ -64544,7 +64544,7 @@ var cld = new import_url_gen.Cloudinary({
     cloudName: CLOUD_NAME
   }
 });
-var CloudinaryImage = ({ publicId, alt, width: width2, height: height2, className, containerClassName, imgClassName, containerStyle, disableLazy = false, fallbackSrc, resizeMode = "fill", placeholderMode = "blur", sizes, responsiveSteps = [480, 768, 1024, 1400, 2e3, 2600, 3200], eager = false, version }) => {
+var CloudinaryImage = ({ publicId, alt, width: width2, height: height2, className, containerClassName, imgClassName, containerStyle, disableLazy = false, fallbackSrc, resizeMode = "fill", placeholderMode = "blur", sizes, responsiveSteps = [480, 768, 1024, 1366, 1600, 1920], eager = false, version }) => {
   const [loaded, setLoaded] = (0, import_react7.useState)(false);
   const [error, setError] = (0, import_react7.useState)(false);
   const imgRef = (0, import_react7.useRef)(null);
@@ -66460,6 +66460,114 @@ function EmblaCarousel2({
   ] });
 }
 
+// public/business.json?raw
+var business_default = {
+  name: "Local Effort Food Co.",
+  description: "Personal chef and event catering serving Minneapolis, St. Paul, Roseville, and the Twin Cities. In-home private dinners, weekly meal prep, and small event catering.",
+  services: ["personal chef", "meal prep", "event catering"],
+  serviceArea: ["Minneapolis", "St. Paul", "Roseville", "Twin Cities", "Minnesota", "Western Wisconsin"],
+  telephone: "+1-612-555-XXXX",
+  url: "https://localeffortfood.com",
+  address: {
+    "@type": "PostalAddress",
+    streetAddress: "ENTER ACTUAL BUSINESS ADDRESS",
+    addressLocality: "Minneapolis",
+    addressRegion: "MN",
+    postalCode: "554xx",
+    addressCountry: "US"
+  },
+  geo: {
+    "@type": "GeoCoordinates",
+    latitude: 44.9778,
+    longitude: -93.265
+  },
+  sameAs: [
+    "https://www.instagram.com/localeffortfood",
+    "https://www.facebook.com/localeffortfood",
+    "https://www.tiktok.com/@localeffort"
+  ]
+};
+
+// public/reviews/thumbtack.json?raw
+var thumbtack_default = [
+  {
+    quote: "Weston freaking (he\u2019s going to make me curse) Smith!! Let me just start out by saying this review is an honest assessment. My wife and I do not know Weston outside of cooking. Aside from being responsive, attentive to our dietary restrictions (GF and DF) and punctual to the meet, Weston was the best decision I could\u2019ve made for my wife\u2019s birthday. He has a light presence to him and he\u2019s very thoughtful in his approach. Not only is he very easy to talk to, he uses local ingredients sourced from Minnesota and Wisconsin. He started out by making us a duck appetizer. We both have never had duck before and let me tell you, it definitely won\u2019t be our last time, either. We\u2019ve already made a couple phone calls to our immediate community to talk about the duck appetizer and to start planning our next visit with him. He then made a Hanger steak taco entree that was divine. Best tacos in town. The meat was extremely tender, the ingredients were fresh and to top it all off. . We had left overs. He followed up with some chicken wings as a special request from us and they were amazing! I wish we would have gotten a chance to try his homemade ranch, (I\u2019m a fan of ranch) but the chicken did not need it to be exactly what we wanted it to be. He made a chocolate cake to top off the night with his house blend whip cr\xE8me and my goodness it was delightful. I can\u2019t speak enough on how great he paired all of the flavors of every dish. He cleaned up after himself and there\u2019s a reason why Weston Smith is #1",
+    author: "PASTOR B.",
+    context: "Thumbtack \xB7 Verified \xB7 Feb 16, 2024 \xB7 5\u2605"
+  },
+  {
+    quote: "Had Weston over to cook a plated dinner for the family after our daughter\u2019s birthday. Prompt concise details to organize and we loved the local ingredients. Definitely recommend for intimate and delicious dinners",
+    author: "Alexander E.",
+    context: "Thumbtack \xB7 Verified \xB7 Jan 28, 2024 \xB7 5\u2605"
+  },
+  {
+    quote: "From the initial inquiry through to the final bite of delicious food every detail and expectation was exceeded. The menu was original and also appealing to our entire dinner party. The food and ingredients were sourced locally and of the best quality, every dish was prepared perfectly. It was not just a meal, but an experience and we were all so grateful for the wonderful evening! Many thanks! Picture of the delicious all scratch chocolate cake with butter cream frosting. Our wedding cake!",
+    author: "Melissa S.",
+    context: "Thumbtack \xB7 Verified \xB7 Sep 4, 2023 \xB7 5\u2605"
+  },
+  {
+    quote: "Weston was so gracious as to add our event to his schedule last minute despite already being booked earlier in the day. Everyone was impressed with the great menu, delicious food (kids included!) and friendly service.",
+    author: "Amanda W.",
+    context: "Thumbtack \xB7 Verified \xB7 Aug 22, 2023 \xB7 5\u2605"
+  },
+  {
+    quote: "I hired Weston as a gift to my partner for our anniversary. The experience could not have been more amazing! Weston was extremely responsive on Thumbtack, and quickly made adjustments to the menu based on our preferences. He was very fun to chat with while he was cooking, and had a lot of details to share about the ingredients he was using. We are excited to hire Weston again, and would recommend him to anyone!",
+    author: "Kendra W.",
+    context: "Thumbtack \xB7 Verified \xB7 Jul 28, 2023 \xB7 5\u2605"
+  },
+  {
+    quote: "Think of the Taste, Quality, Creativity and Service of the best restaurant in Minneapolis and then bring it to your home\u2026 that\u2019s what Weston delivers! I hired Weston for a small dinner party for my husbands birthday. He was very responsive, worked with me on planning a menu that exceeded expectations for my budget and taste, and helped with making excellent wine recommendations. He was a pleasure to have at my home and presented everything beautifully. He was efficient and thorough in cleaning up afterwards. Did I mention the FOOD WAS OUT OF THIS WORLD? Highly recommend! Hire him today! I\u2019m already trying to figure out when we can have him back again\u2026",
+    author: "Emily K.",
+    context: "Thumbtack \xB7 Verified \xB7 Mar 26, 2023 \xB7 5\u2605"
+  },
+  {
+    quote: "Weston with Local Effort Food Co is phenomenal! We hired him for our anniversary and the food was spectacular! He was incredibly responsive in the planning process and we enjoyed hearing his stories while he cooked. Plus, we scheduled him after the kids went to bed which was the perfect ending to our day! We will absolutely be hiring him again!",
+    author: "Ashley G.",
+    context: "Thumbtack \xB7 Verified \xB7 Oct 30, 2022 \xB7 5\u2605"
+  },
+  {
+    quote: "He was amazing -i picked wrong date accidentally and he accommodated.",
+    author: "Heidi s.",
+    context: "Thumbtack \xB7 Verified \xB7 Oct 22, 2022 \xB7 5\u2605"
+  },
+  {
+    quote: "We hired Weston to cook for a group of 10 for a couples shower we were hosting. He absolutely surpassed all our expectations! He was very responsive and easy to work with setting the menu. But best of all, his imagination and menus made for a yummy dining experience vs just a meal. We would definitely hire him again- and would highly recommend!",
+    author: "Susan B.",
+    context: "Thumbtack \xB7 Verified \xB7 Aug 30, 2022 \xB7 5\u2605"
+  },
+  {
+    quote: "We were looking for a special way to celebrate my wife\u2019s birthday. We found Weston through thumbtack and booked him to cook a special dinner for 6. It was amazing! His communication up front was excellent, he uses local fresh ingredients and the food was great! He is friendly, professional, and no mess to clean after. We will be booking Weston again.",
+    author: "Brad G.",
+    context: "Thumbtack \xB7 Verified \xB7 Jul 25, 2022 \xB7 5\u2605"
+  },
+  {
+    quote: "It\u2019s such a pleasure to work with people who not only have the necessary expertise for a great culinary experience but who also clearly care very deeply about what they are doing! Highest recommendation",
+    author: "Garett S.",
+    context: "Thumbtack \xB7 Verified \xB7 Jan 16, 2022 \xB7 5\u2605"
+  },
+  {
+    quote: "I hired Weston to cater the birthday party I was throwing for a close friend this summer. They wanted a tea party, thrown in my garden - and I had big dreams when it came to what I wanted that tea party to be. Weston not only brought my vision to life, but expanded on it. Every detail was perfect. The teas were sourced meticulously with my friend in mind - served on a gorgeous tea cart that he provided. Crumpets with jam and the most delicious clotted cream - all made from scratch. The carrot salad was truly the best I\u2019ve had. He made a selection of small desserts - macarons, matcha donuts, strawberries covered in chocolate he made himself. Fresh picked wildflowers on the table, and a birthday cake made from the same beloved recipe my friend\u2019s mother used. Weston worked from my kitchen with one person helping out. He was attentive and professional - talking through the teas, the menu, the wine with my guests. Both he and his staff were respectful of my home - and left my kitchen much cleaner than I had left it. I obviously can\u2019t say enough good things about my experience with Weston fine foods - I am so grateful for what they helped me achieve. No doubt I\u2019ll be hiring them again.",
+    author: "Catherine O.",
+    context: "Thumbtack \xB7 Verified \xB7 Jan 16, 2022 \xB7 5\u2605"
+  },
+  {
+    quote: "I've purchased as gifts many of Weston's fine foods and the response has universally been to ask, where the hell did I get these amazing eats. Can't go wrong with an anything made by Weston. I'm particularly partial to the hazelnut butter. Best part is that your purchase invariably includes the fascinating story behind the product (totally optional).",
+    author: "Jason S.",
+    context: "Thumbtack \xB7 Verified \xB7 Jan 16, 2022 \xB7 5\u2605"
+  }
+];
+
+// src/data/staticContent.js
+var safeParse = (jsonString, fallback) => {
+  try {
+    return JSON.parse(jsonString);
+  } catch {
+    return fallback;
+  }
+};
+var businessInfo = safeParse(business_default, {});
+var thumbtackReviews = safeParse(thumbtack_default, []);
+
 // src/components/common/TestimonialsCarousel.jsx
 var import_jsx_runtime19 = require("react/jsx-runtime");
 function shuffle(array) {
@@ -66476,17 +66584,6 @@ function chunk(arr, size) {
   return out;
 }
 function TestimonialsCarousel({ items: items2 = [], title = "Testimonials", headingExtra = null, maxLines = 5 }) {
-  const [business, setBusiness] = (0, import_react10.useState)(null);
-  (0, import_react10.useEffect)(() => {
-    let mounted = true;
-    fetch("/business.json").then((r) => r.ok ? r.json() : null).then((data2) => {
-      if (mounted) setBusiness(data2 || null);
-    }).catch(() => {
-    });
-    return () => {
-      mounted = false;
-    };
-  }, []);
   function parseDateFromContext(ctx) {
     if (!ctx) return void 0;
     const m = String(ctx).match(/[A-Za-z]{3,9} \d{1,2}, \d{4}/);
@@ -66499,8 +66596,8 @@ function TestimonialsCarousel({ items: items2 = [], title = "Testimonials", head
     if (!items2 || !items2.length) return null;
     const subj = {
       "@type": "ProfessionalService",
-      name: business && business.name || "Local Effort",
-      url: business && business.url || "https://localeffortfood.com/"
+      name: businessInfo.name || "Local Effort",
+      url: businessInfo.url || "https://localeffortfood.com/"
     };
     const graph = items2.slice(0, 20).map((t) => ({
       "@type": "Review",
@@ -66512,7 +66609,7 @@ function TestimonialsCarousel({ items: items2 = [], title = "Testimonials", head
       itemReviewed: subj
     }));
     return { "@context": "https://schema.org", "@graph": graph };
-  }, [items2, business]);
+  }, [items2]);
   const slides = (0, import_react10.useMemo)(() => {
     if (!items2.length) return [];
     const randomized = shuffle(items2);
@@ -69817,41 +69914,11 @@ var HomePage = () => {
       mounted = false;
     };
   }, []);
-  const [reviews, setReviews] = (0, import_react17.useState)([]);
+  const reviews = thumbtackReviews;
   const [events, setEvents] = (0, import_react17.useState)([]);
   const [eventModal, setEventModal] = (0, import_react17.useState)(null);
   const [showBooking, setShowBooking] = (0, import_react17.useState)(false);
-  const [business, setBusiness] = (0, import_react17.useState)(null);
-  (0, import_react18.useEffect)(() => {
-    let mounted = true;
-    fetch("/business.json").then((r) => r.ok ? r.json() : null).then((data2) => {
-      if (mounted) setBusiness(data2 || null);
-    }).catch(() => {
-    });
-    return () => {
-      mounted = false;
-    };
-  }, []);
-  (0, import_react18.useEffect)(() => {
-    let mounted = true;
-    fetch("/reviews/thumbtack.json").then((r) => r.ok ? r.json() : null).then((ext) => {
-      if (!mounted || !Array.isArray(ext) || !ext.length) return;
-      setReviews((prev) => {
-        const seen = /* @__PURE__ */ new Set();
-        const merged = [...ext, ...prev].filter((t) => {
-          const k = `${(t.quote || "").trim()}|${(t.author || "").trim()}`;
-          if (seen.has(k)) return false;
-          seen.add(k);
-          return true;
-        });
-        return merged;
-      });
-    }).catch(() => {
-    });
-    return () => {
-      mounted = false;
-    };
-  }, []);
+  const business = businessInfo;
   (0, import_react18.useEffect)(() => {
     let mounted = true;
     (async () => {
@@ -70384,7 +70451,7 @@ var HomePage = () => {
                 imgClassName: "w-full h-full object-cover object-center",
                 fallbackSrc: heroFallbackSrc,
                 sizes: "(min-width: 1536px) 768px, (min-width: 1280px) 688px, (min-width: 1024px) 50vw, 100vw",
-                responsiveSteps: [600, 900, 1200, 1600, 2e3, 2600, 3200],
+                responsiveSteps: [600, 900, 1200, 1600, 2e3],
                 eager: true
               }
             )
@@ -70925,23 +70992,13 @@ var ServicesPage = () => {
   const [form, setForm] = (0, import_react25.useState)(initialForm2);
   const [submitting, setSubmitting] = (0, import_react25.useState)(false);
   const [result, setResult] = (0, import_react25.useState)(null);
-  const [business, setBusiness] = (0, import_react25.useState)(null);
+  const business = businessInfo;
   const required = (v) => String(v || "").trim().length > 0;
   const handleChange = (e) => {
     const { name: name2, type, checked, value: value2 } = e.target;
     setForm((f) => ({ ...f, [name2]: type === "checkbox" ? checked : value2 }));
   };
   const reset = () => setForm(initialForm2);
-  (0, import_react25.useEffect)(() => {
-    let mounted = true;
-    fetch("/business.json").then((r) => r.ok ? r.json() : null).then((data2) => {
-      if (mounted) setBusiness(data2 || null);
-    }).catch(() => {
-    });
-    return () => {
-      mounted = false;
-    };
-  }, []);
   const handleSubmit = async (e) => {
     e.preventDefault();
     setResult(null);
