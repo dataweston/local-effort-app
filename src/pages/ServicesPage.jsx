@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import SectionHeader from '../components/ui/SectionHeader';
 import Separator from '../components/ui/Separator';
+import { businessInfo } from '../data/staticContent';
 
 const ServicesPage = () => {
   const navigate = useNavigate();
@@ -41,7 +42,7 @@ const ServicesPage = () => {
   const [submitting, setSubmitting] = useState(false);
   const [result, setResult] = useState(null);
   // const [serviceSlides, setServiceSlides] = useState([]);
-  const [business, setBusiness] = useState(null);
+  const business = businessInfo;
 
   const required = (v) => String(v || '').trim().length > 0;
   const handleChange = (e) => {
@@ -51,16 +52,6 @@ const ServicesPage = () => {
   const reset = () => setForm(initialForm);
 
   // Hero carousel removed per request
-
-  // Load canonical business metadata
-  useEffect(() => {
-    let mounted = true;
-    fetch('/business.json')
-      .then((r) => (r.ok ? r.json() : null))
-      .then((data) => { if (mounted) setBusiness(data || null); })
-      .catch(() => {});
-    return () => { mounted = false; };
-  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
