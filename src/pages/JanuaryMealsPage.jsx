@@ -793,6 +793,18 @@ const mergeCustomMealMaps = (globalMeals = {}, userMeals = {}) => {
   return merged;
 };
 
+const loadCustomMealsFromLocalStorage = (storageKey) => {
+  if (typeof window === 'undefined') return null;
+  try {
+    const saved = localStorage.getItem(storageKey);
+    if (!saved) return null;
+    return cloneCustomMeals(JSON.parse(saved));
+  } catch (error) {
+    console.error(`Failed to load ${storageKey} from localStorage`, error);
+    return null;
+  }
+};
+
 const MEAL_ROTATION = {
   breakfast: (day) => (day % 2 === 0 ? 'chia' : 'shake'),
   lunch: (day) => (day % 2 === 0 ? 'trout' : 'salmon'),
@@ -2417,14 +2429,22 @@ export default function JanuaryMealsPage() {
     if (typeof window === 'undefined' || user) return;
 
     try {
-      const saved = localStorage.getItem(USER_CUSTOM_MEALS_STORAGE_KEY);
-      if (saved) {
-        setUserCustomMeals(cloneCustomMeals(JSON.parse(saved)));
-      }
+      const localUserMeals = loadCustomMealsFromLocalStorage(USER_CUSTOM_MEALS_STORAGE_KEY);
+      if (localUserMeals) setUserCustomMeals(localUserMeals);
     } catch (e) {
       console.log('No local data found');
     }
   }, [user]);
+
+  // If Supabase per-user storage is unavailable, fall back to the local snapshot even when signed in.
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    if (!user) return;
+    if (supabaseStorageAvailable) return;
+
+    const localUserMeals = loadCustomMealsFromLocalStorage(USER_CUSTOM_MEALS_STORAGE_KEY);
+    if (localUserMeals) setUserCustomMeals(localUserMeals);
+  }, [user, supabaseStorageAvailable]);
   
   const loadUserData = async (userId) => {
     if (!supabase || !supabaseStorageAvailable) return;
@@ -2443,14 +2463,22 @@ export default function JanuaryMealsPage() {
         ) {
           console.warn('Disabling Supabase sync: meal_customizations table unavailable. Falling back to local storage.');
           setSupabaseStorageAvailable(false);
+          const localUserMeals = loadCustomMealsFromLocalStorage(USER_CUSTOM_MEALS_STORAGE_KEY);
+          if (localUserMeals) setUserCustomMeals(localUserMeals);
         } else {
           console.log('Failed to load user data');
         }
         return;
       }
 
-      if (data) {
-        setUserCustomMeals(cloneCustomMeals(data.data || {}));
+      if (data?.data) {
+        setUserCustomMeals(cloneCustomMeals(data.data));
+        return;
+      }
+
+      const localUserMeals = loadCustomMealsFromLocalStorage(USER_CUSTOM_MEALS_STORAGE_KEY);
+      if (localUserMeals) {
+        setUserCustomMeals(localUserMeals);
       } else {
         setUserCustomMeals({});
       }
@@ -2843,13 +2871,14 @@ export default function JanuaryMealsPage() {
       } else {
         const nextUser = applyUpdate(userCustomMeals);
         setUserCustomMeals(nextUser);
+        // Always keep a local snapshot so refreshes still work if Supabase is unavailable/misconfigured.
+        persistUserCustomMealsLocal(nextUser);
 
         if (user && supabaseStorageAvailable) {
           setSaveStatus('saving');
           const success = await saveUserCustomMeals(nextUser);
           setSaveStatus(success ? 'saved' : 'error');
         } else {
-          persistUserCustomMealsLocal(nextUser);
           setSaveStatus('saved');
         }
       }
@@ -2899,10 +2928,15 @@ export default function JanuaryMealsPage() {
   const handleSignOut = async () => {
     if (!supabase) return;
     try {
-      await supabase.auth.signOut();
+      await supabase.auth.signOut({ scope: 'global' });
       setUser(null);
+      setSelectedDay(null);
+      setUserCustomMeals({});
+      // Keep global config cached; just ensure auth session is cleared.
+      if (typeof window !== 'undefined') window.location.reload();
     } catch (error) {
       console.error('Sign out failed:', error);
+      alert('Sign out failed. Please refresh the page and try again.');
     }
   };
   
