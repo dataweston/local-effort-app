@@ -37,6 +37,7 @@
     "firebase": "^12.3.0",
     "firebase-admin": "^12.5.0",
     "framer-motion": "^12.23.12",
+    "idb-keyval": "^6.2.2",
     "jose": "^6.1.0",
     "lottie-web": "^5.13.0",
     "lucide-react": "^0.451.0",
