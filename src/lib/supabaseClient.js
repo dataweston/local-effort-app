@@ -33,5 +33,7 @@ export const ADMIN_EMAILS = ['dataweston@gmail.com', 'colsen03@gmail.com'];
 
 export const isAdmin = (email) => {
   if (!email) return false;
-  return ADMIN_EMAILS.includes(email.toLowerCase());
+  const normalized = email.toLowerCase();
+  if (ADMIN_EMAILS.includes(normalized)) return true;
+  return normalized.endsWith('@localeffortfood.com');
 };
