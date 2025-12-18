@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useRef } from 'react';
+import React, { useMemo, useState, useRef, lazy, Suspense, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import ServiceCard from '../components/common/ServiceCard';
@@ -13,11 +13,14 @@ import { TimeSlotPicker } from '../components/calendar/TimeSlotPicker';
 import { portableTextComponents } from '../utils/portableTextComponents';
 import SectionHeader from '../components/ui/SectionHeader';
 import Separator from '../components/ui/Separator';
-import GiftCardDialog from '../components/home/GiftCardDialog';
 import { generateEventListSchema } from '../utils/generateEventSchema';
 import lottie from 'lottie-web';
 import animationData from '../assets/Social-handle.json';
 import { businessInfo, thumbtackReviews } from '../data/staticContent';
+import { Gift } from 'lucide-react';
+
+const loadGiftCardDialog = () => import('../components/home/GiftCardDialog');
+const GiftCardDialogLazy = lazy(loadGiftCardDialog);
 
 const HomePage = () => {
   const navigate = useNavigate();
@@ -93,6 +96,32 @@ const HomePage = () => {
   const [eventModal, setEventModal] = useState(null);
   const [showBooking, setShowBooking] = useState(false);
   const business = businessInfo;
+  const [giftDialogMounted, setGiftDialogMounted] = useState(false);
+  const [giftDialogAutoOpen, setGiftDialogAutoOpen] = useState(false);
+  const [giftDialogLoading, setGiftDialogLoading] = useState(false);
+
+  const handleGiftCardClick = useCallback(() => {
+    if (!giftDialogMounted) {
+      setGiftDialogMounted(true);
+      setGiftDialogLoading(true);
+      loadGiftCardDialog();
+    }
+    setGiftDialogAutoOpen(true);
+  }, [giftDialogMounted]);
+
+  const handleGiftDialogReady = useCallback(() => {
+    setGiftDialogLoading(false);
+  }, []);
+
+  const handleGiftDialogClose = useCallback(() => {
+    setGiftDialogAutoOpen(false);
+  }, []);
+
+  const handleGiftDialogPrefetch = useCallback(() => {
+    if (!giftDialogMounted) {
+      loadGiftCardDialog();
+    }
+  }, [giftDialogMounted]);
 
   // Load upcoming public events from calendar API (Supabase)
   useEffect(() => {
@@ -647,21 +676,38 @@ const HomePage = () => {
 
             Think of us for special occasions and special events. Count on us for weekly home cooked meals. We're comfortable in homes, offices, bars and cafes, parks, vineyards, and uh.. anywhere, really.
             </motion.p>
-            <div className="mt-8 flex flex-wrap gap-3">
-              <motion.button
-                whileHover={{ scale: 1.03 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={() => navigate('/services#event-request')}
-                className="btn btn-primary text-lg"
-              >
-                Book an event
-              </motion.button>
-              <GiftCardDialog className="text-lg px-5 py-3" />
-              <span className="sr-only">
-                <a href="/personal-chef-minneapolis" className="btn">Personal Chef Minneapolis</a>
-                <a href="/personal-chef-st-paul" className="btn">Personal Chef St. Paul</a>
-                <a href="/personal-chef-twin-cities" className="btn">Twin Cities Personal Chef</a>
-              </span>
+        <div className="mt-8 flex flex-wrap gap-3">
+          <motion.button
+            whileHover={{ scale: 1.03 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={() => navigate('/services#event-request')}
+            className="btn btn-primary text-lg"
+          >
+            Book an event
+          </motion.button>
+          <motion.button
+            whileHover={{ scale: giftDialogLoading ? 1 : 1.03 }}
+            whileTap={{ scale: giftDialogLoading ? 1 : 0.98 }}
+            onClick={handleGiftCardClick}
+            onMouseEnter={handleGiftDialogPrefetch}
+            className="btn btn-primary flex items-center gap-2 text-lg px-5 py-3 shadow-sm"
+            type="button"
+            disabled={giftDialogLoading}
+          >
+            {giftDialogLoading ? (
+              'Loading…'
+            ) : (
+              <>
+                <Gift className="h-4 w-4" />
+                Buy Gift Card
+              </>
+            )}
+          </motion.button>
+          <span className="sr-only">
+            <a href="/personal-chef-minneapolis" className="btn">Personal Chef Minneapolis</a>
+            <a href="/personal-chef-st-paul" className="btn">Personal Chef St. Paul</a>
+            <a href="/personal-chef-twin-cities" className="btn">Twin Cities Personal Chef</a>
+          </span>
             </div>
           </div>
 
@@ -760,6 +806,16 @@ const HomePage = () => {
   />
   {FeedbackModal}
       </div>
+      {giftDialogMounted && (
+        <Suspense fallback={null}>
+          <GiftCardDialogLazy
+            autoOpen={giftDialogAutoOpen}
+            showTrigger={false}
+            onClose={handleGiftDialogClose}
+            onReady={handleGiftDialogReady}
+          />
+        </Suspense>
+      )}
     </>
   );
 };
