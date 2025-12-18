@@ -1,6 +1,6 @@
 // Script to apply January Meal Config migration to Supabase
 import { createClient } from '@supabase/supabase-js';
-import { readFileSync } from 'fs';
+import { readFileSync, readdirSync } from 'fs';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 
@@ -20,83 +20,91 @@ const supabase = createClient(supabaseUrl, supabaseServiceKey, {
 });
 
 async function applyMigration() {
-  console.log('Reading migration file...');
-  const migrationPath = join(__dirname, 'supabase', 'migrations', '20251213_january_meal_config.sql');
-  const migrationSQL = readFileSync(migrationPath, 'utf-8');
+  const migrationsDir = join(__dirname, 'supabase', 'migrations');
+  const migrationFiles = readdirSync(migrationsDir)
+    .filter((file) => file.endsWith('.sql'))
+    .sort();
 
-  console.log('Applying migration manually via SQL statements...');
+  if (migrationFiles.length === 0) {
+    console.log('No migration files found. Nothing to do.');
+    return;
+  }
 
-  // Split the SQL into individual statements and execute them
-  const statements = migrationSQL
-    .split(';')
-    .map(s => s.trim())
-    .filter(s => s.length > 0 && !s.startsWith('--'));
+  for (const file of migrationFiles) {
+    console.log(`\nReading migration file ${file}...`);
+    const migrationPath = join(migrationsDir, file);
+    const migrationSQL = readFileSync(migrationPath, 'utf-8');
 
-  for (let i = 0; i < statements.length; i++) {
-    const statement = statements[i] + ';';
-    console.log(`\nExecuting statement ${i + 1}/${statements.length}...`);
-    console.log(statement.substring(0, 100) + '...');
+    console.log(`Applying migration "${file}" via SQL statements...`);
 
-    const { data, error } = await supabase.rpc('exec_sql', { sql: statement });
+    const statements = migrationSQL
+      .split(';')
+      .map((s) => s.trim())
+      .filter((s) => s.length > 0 && !s.startsWith('--'));
 
-    if (error) {
-      // Try direct execution via the REST API as fallback
-      console.log('Trying alternative execution method...');
-      const response = await fetch(`${supabaseUrl}/rest/v1/rpc/exec`, {
-        method: 'POST',
-        headers: {
-          'apikey': supabaseServiceKey,
-          'Authorization': `Bearer ${supabaseServiceKey}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ query: statement })
-      });
+    for (let i = 0; i < statements.length; i++) {
+      const statement = statements[i] + ';';
+      console.log(`\nExecuting statement ${i + 1}/${statements.length} from ${file}...`);
+      console.log(statement.substring(0, 100) + '...');
 
-      if (!response.ok) {
-        console.error(`❌ Error executing statement ${i + 1}:`, error);
-        console.error('Statement:', statement);
-        // Continue anyway - some errors might be expected (like "already exists")
+      const { error } = await supabase.rpc('exec_sql', { sql: statement });
+
+      if (error) {
+        console.log('Trying alternative execution method...');
+        const response = await fetch(`${supabaseUrl}/rest/v1/rpc/exec`, {
+          method: 'POST',
+          headers: {
+            apikey: supabaseServiceKey,
+            Authorization: `Bearer ${supabaseServiceKey}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ query: statement })
+        });
+
+        if (!response.ok) {
+          console.error(`Error executing statement ${i + 1} from ${file}:`, error);
+          console.error('Statement:', statement);
+        } else {
+          console.log(`Statement ${i + 1} from ${file} executed successfully`);
+        }
       } else {
-        console.log(`✓ Statement ${i + 1} executed successfully`);
+        console.log(`Statement ${i + 1} from ${file} executed successfully`);
       }
-    } else {
-      console.log(`✓ Statement ${i + 1} executed successfully`);
     }
   }
 
-  console.log('\n✓ Migration applied successfully!');
+  console.log('\nAll migrations applied successfully!');
   console.log('\nVerifying tables...');
 
-  // Check if tables exist
-  const { data: globalConfig, error: globalError } = await supabase
+  const { error: globalError } = await supabase
     .from('january_meal_config')
     .select('*')
     .limit(1);
 
   if (globalError) {
-    console.error('❌ Error checking january_meal_config table:', globalError);
+    console.error('Error checking january_meal_config table:', globalError);
   } else {
-    console.log('✓ january_meal_config table exists');
+    console.log('january_meal_config table exists');
   }
 
-  const { data: userConfig, error: userError } = await supabase
+  const { error: userError } = await supabase
     .from('january_meal_user_config')
     .select('*')
     .limit(1);
 
   if (userError) {
-    console.error('❌ Error checking january_meal_user_config table:', userError);
+    console.error('Error checking january_meal_user_config table:', userError);
   } else {
-    console.log('✓ january_meal_user_config table exists');
+    console.log('january_meal_user_config table exists');
   }
 }
 
 applyMigration()
   .then(() => {
-    console.log('\n✅ Done!');
+    console.log('\nDone!');
     process.exit(0);
   })
   .catch((error) => {
-    console.error('\n❌ Migration failed:', error);
+    console.error('\nMigration failed:', error);
     process.exit(1);
   });

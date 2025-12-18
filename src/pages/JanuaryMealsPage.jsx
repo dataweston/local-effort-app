@@ -300,6 +300,8 @@ const enrichMealRecipes = async (recipes, onProgress) => {
 
 const GOALS_STORAGE_KEY = 'january-meal-plan-goals';
 const MEAL_RECIPES_STORAGE_KEY = 'january-meal-plan-recipes';
+const USER_CUSTOM_MEALS_STORAGE_KEY = 'january-meal-plan';
+const GLOBAL_CUSTOM_MEALS_STORAGE_KEY = 'january-meal-plan-global-custom';
 const GLOBAL_MEAL_CONFIG_TABLE = 'january_meal_config';
 const GLOBAL_MEAL_CONFIG_KEY = 'default';
 const USER_MEAL_CONFIG_TABLE = 'january_meal_user_config';
@@ -763,6 +765,32 @@ const mergeMealRecipesWithDefaults = (recipes) => {
     };
   });
   return cloneMealRecipes(merged);
+};
+
+const cloneMeal = (meal = {}) => ({
+  ...meal,
+  ingredients: (meal.ingredients || []).map((ingredient) => ({ ...ingredient })),
+});
+
+const cloneCustomMeals = (customMeals = {}) =>
+  Object.fromEntries(
+    Object.entries(customMeals || {}).map(([dayKey, meals]) => [
+      dayKey,
+      Object.fromEntries(
+        Object.entries(meals || {}).map(([mealKey, meal]) => [mealKey, cloneMeal(meal)])
+      ),
+    ])
+  );
+
+const mergeCustomMealMaps = (globalMeals = {}, userMeals = {}) => {
+  const merged = cloneCustomMeals(globalMeals);
+  Object.entries(userMeals || {}).forEach(([dayKey, meals]) => {
+    merged[dayKey] = { ...(merged[dayKey] || {}) };
+    Object.entries(meals || {}).forEach(([mealKey, meal]) => {
+      merged[dayKey][mealKey] = cloneMeal(meal);
+    });
+  });
+  return merged;
 };
 
 const MEAL_ROTATION = {
@@ -2280,7 +2308,8 @@ const WeekNav = ({ currentWeek, onWeekChange }) => {
 export default function JanuaryMealsPage() {
   const [currentWeek, setCurrentWeek] = useState(1);
   const [selectedDay, setSelectedDay] = useState(null);
-  const [customMeals, setCustomMeals] = useState({});
+  const [globalCustomMeals, setGlobalCustomMeals] = useState({});
+  const [userCustomMeals, setUserCustomMeals] = useState({});
   const [showMethodology, setShowMethodology] = useState(false);
   const [showRecipes, setShowRecipes] = useState(false);
   const [mealRecipes, setMealRecipes] = useState(() => cloneMealRecipes(BASE_MEALS));
@@ -2298,6 +2327,10 @@ export default function JanuaryMealsPage() {
   const [isEnriching, setIsEnriching] = useState(false);
   const [recipesLoaded, setRecipesLoaded] = useState(false);
   const [hasEnriched, setHasEnriched] = useState(false);
+  const combinedCustomMeals = useMemo(
+    () => mergeCustomMealMaps(globalCustomMeals, userCustomMeals),
+    [globalCustomMeals, userCustomMeals]
+  );
   
   // Enrich ingredients with USDA data after recipes have been loaded (base/global/user)
   useEffect(() => {
@@ -2384,9 +2417,9 @@ export default function JanuaryMealsPage() {
     if (typeof window === 'undefined' || user) return;
 
     try {
-      const saved = localStorage.getItem('january-meal-plan');
+      const saved = localStorage.getItem(USER_CUSTOM_MEALS_STORAGE_KEY);
       if (saved) {
-        setCustomMeals(JSON.parse(saved));
+        setUserCustomMeals(cloneCustomMeals(JSON.parse(saved)));
       }
     } catch (e) {
       console.log('No local data found');
@@ -2417,7 +2450,9 @@ export default function JanuaryMealsPage() {
       }
 
       if (data) {
-        setCustomMeals(data.data || {});
+        setUserCustomMeals(cloneCustomMeals(data.data || {}));
+      } else {
+        setUserCustomMeals({});
       }
     } catch (error) {
       console.log('Failed to load user data');
@@ -2456,7 +2491,7 @@ export default function JanuaryMealsPage() {
     }
   };
   
-  const saveToSupabase = async (data) => {
+  const saveUserCustomMeals = async (data) => {
     if (!user || !supabase || !supabaseStorageAvailable) return false;
 
     try {
@@ -2489,6 +2524,24 @@ export default function JanuaryMealsPage() {
     }
   };
 
+  const persistUserCustomMealsLocal = useCallback((data) => {
+    if (typeof window === 'undefined') return;
+    try {
+      localStorage.setItem(USER_CUSTOM_MEALS_STORAGE_KEY, JSON.stringify(data));
+    } catch (error) {
+      console.error('Failed to save local custom meals', error);
+    }
+  }, []);
+
+  const persistGlobalCustomMealsLocal = useCallback((data) => {
+    if (typeof window === 'undefined') return;
+    try {
+      localStorage.setItem(GLOBAL_CUSTOM_MEALS_STORAGE_KEY, JSON.stringify(data));
+    } catch (error) {
+      console.error('Failed to save global custom meals', error);
+    }
+  }, []);
+
   // Load global meal recipes/goals from Supabase if available, falling back to localStorage
   useEffect(() => {
     let cancelled = false;
@@ -2506,6 +2559,11 @@ export default function JanuaryMealsPage() {
           const storedGoals = localStorage.getItem(GOALS_STORAGE_KEY);
           if (storedGoals && !cancelled) {
             setDietGoals(JSON.parse(storedGoals));
+          }
+
+          const storedGlobalMeals = localStorage.getItem(GLOBAL_CUSTOM_MEALS_STORAGE_KEY);
+          if (storedGlobalMeals && !cancelled) {
+            setGlobalCustomMeals(cloneCustomMeals(JSON.parse(storedGlobalMeals)));
           }
         } catch (error) {
           console.error('Failed to load local meal config', error);
@@ -2538,6 +2596,9 @@ export default function JanuaryMealsPage() {
             if (data.goals) {
               setDietGoals(data.goals);
             }
+            if (data.custom_meals) {
+              setGlobalCustomMeals(cloneCustomMeals(data.custom_meals));
+            }
           }
         } catch (error) {
           console.error('Failed to load global meal config from Supabase', error);
@@ -2557,8 +2618,8 @@ export default function JanuaryMealsPage() {
   }, []);
 
   const saveGlobalConfig = useCallback(
-    async (recipesToSave, goalsToSave) => {
-      if (!supabase || !isAdmin) return;
+    async (recipesToSave, goalsToSave, customMealsToSave) => {
+      if (!supabase || !isAdmin) return false;
 
       try {
         const { error, status } = await supabase
@@ -2568,6 +2629,7 @@ export default function JanuaryMealsPage() {
               key: GLOBAL_MEAL_CONFIG_KEY,
               recipes: recipesToSave,
               goals: goalsToSave ?? null,
+              custom_meals: customMealsToSave ?? null,
               updated_at: new Date().toISOString(),
               updated_by: user?.id || null,
             },
@@ -2582,9 +2644,12 @@ export default function JanuaryMealsPage() {
           ) {
             console.error('Failed to save global meal config to Supabase', error);
           }
+          return false;
         }
+        return true;
       } catch (error) {
         console.error('Failed to save global meal config to Supabase', error);
+        return false;
       }
     },
     [supabase, isAdmin, user]
@@ -2638,7 +2703,7 @@ export default function JanuaryMealsPage() {
             console.error('Failed to save recipes', error);
           }
 
-          saveGlobalConfig(next, dietGoals);
+          saveGlobalConfig(next, dietGoals, globalCustomMeals);
         }
 
         // Non-admin logged-in users: persist personal overrides
@@ -2649,7 +2714,7 @@ export default function JanuaryMealsPage() {
         return next;
       });
     },
-    [isAdmin, dietGoals, saveGlobalConfig, user, saveUserMealConfig]
+    [isAdmin, dietGoals, saveGlobalConfig, user, saveUserMealConfig, globalCustomMeals]
   );
 
   const handleSaveMealTemplate = useCallback(
@@ -2696,7 +2761,7 @@ export default function JanuaryMealsPage() {
           } catch (error) {
             console.error('Failed to save goals', error);
           }
-          saveGlobalConfig(mealRecipes, normalized);
+          saveGlobalConfig(mealRecipes, normalized, globalCustomMeals);
         } else if (user) {
           // Non-admin logged-in: save personal overrides
           saveUserMealConfig(mealRecipes, normalized);
@@ -2705,12 +2770,12 @@ export default function JanuaryMealsPage() {
 
       setShowGoalSettings(false);
     },
-    [isAdmin, mealRecipes, saveGlobalConfig, user, saveUserMealConfig]
+    [isAdmin, mealRecipes, saveGlobalConfig, user, saveUserMealConfig, globalCustomMeals]
   );
   
   const dailyNutrition = useMemo(
-    () => buildPlanNutrition(mealRecipes, customMeals),
-    [mealRecipes, customMeals]
+    () => buildPlanNutrition(mealRecipes, combinedCustomMeals),
+    [mealRecipes, combinedCustomMeals]
   );
 
   const nutritionByDay = useMemo(() => {
@@ -2739,7 +2804,7 @@ export default function JanuaryMealsPage() {
   const handleOpenInGoogleSheets = useCallback(() => {
     if (typeof window === 'undefined' || typeof document === 'undefined') return;
 
-    const excelXml = buildExcelXml(dailyNutrition, mealRecipes, customMeals);
+    const excelXml = buildExcelXml(dailyNutrition, mealRecipes, combinedCustomMeals);
     const blob = new Blob([excelXml], { type: 'application/vnd.ms-excel' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
@@ -2751,54 +2816,71 @@ export default function JanuaryMealsPage() {
     setTimeout(() => URL.revokeObjectURL(url), 1000);
 
     window.open('https://docs.google.com/spreadsheets/u/0/create?usp=sheets_home', '_blank');
-  }, [dailyNutrition, mealRecipes, customMeals]);
+  }, [dailyNutrition, mealRecipes, combinedCustomMeals]);
   
-  const handleUpdateMeal = useCallback(async (dayKey, mealKey, mealData) => {
-    const updated = {
-      ...customMeals,
-      [dayKey]: {
-        ...(customMeals[dayKey] || {}),
-        [mealKey]: mealData
+  const handleUpdateMeal = useCallback(
+    async (dayKey, mealKey, mealData) => {
+      const applyUpdate = (source) => ({
+        ...source,
+        [dayKey]: {
+          ...(source[dayKey] || {}),
+          [mealKey]: mealData
+        }
+      });
+
+      if (isAdmin) {
+        const nextGlobal = applyUpdate(globalCustomMeals);
+        setGlobalCustomMeals(nextGlobal);
+        persistGlobalCustomMealsLocal(nextGlobal);
+
+        if (supabase) {
+          setSaveStatus('saving');
+          const success = await saveGlobalConfig(mealRecipes, dietGoals, nextGlobal);
+          setSaveStatus(success ? 'saved' : 'error');
+        } else {
+          setSaveStatus('saved');
+        }
+      } else {
+        const nextUser = applyUpdate(userCustomMeals);
+        setUserCustomMeals(nextUser);
+
+        if (user && supabaseStorageAvailable) {
+          setSaveStatus('saving');
+          const success = await saveUserCustomMeals(nextUser);
+          setSaveStatus(success ? 'saved' : 'error');
+        } else {
+          persistUserCustomMealsLocal(nextUser);
+          setSaveStatus('saved');
+        }
       }
-    };
-    
-    setCustomMeals(updated);
 
-    // For logged-in users, persist per-user customizations to Supabase.
-    if (user && supabaseStorageAvailable) {
-      setSaveStatus('saving');
-      const success = await saveToSupabase(updated);
-      setSaveStatus(success ? 'saved' : 'error');
-    }
-    
-    setTimeout(() => setSaveStatus(null), 2000);
-  }, [customMeals, user, supabaseStorageAvailable, saveToSupabase]);
+      setTimeout(() => setSaveStatus(null), 2000);
+    },
+    [
+      isAdmin,
+      globalCustomMeals,
+      userCustomMeals,
+      persistGlobalCustomMealsLocal,
+      persistUserCustomMealsLocal,
+      user,
+      supabaseStorageAvailable,
+      saveUserCustomMeals,
+      saveGlobalConfig,
+      mealRecipes,
+      dietGoals,
+      supabase
+    ]
+  );
 
-  const handleDeleteMeal = useCallback(async (dayKey, mealKey) => {
-    if (!window.confirm('Are you sure you want to delete this meal?')) return;
+  const handleDeleteMeal = useCallback(
+    async (dayKey, mealKey) => {
+      if (!window.confirm('Are you sure you want to delete this meal?')) return;
 
-    // Create an empty meal to mark this meal as deleted for this day
-    const emptyMeal = { name: 'Deleted Meal', ingredients: [] };
-    
-    const updated = {
-      ...customMeals,
-      [dayKey]: {
-        ...(customMeals[dayKey] || {}),
-        [mealKey]: emptyMeal
-      }
-    };
-    
-    setCustomMeals(updated);
-
-    // For logged-in users, persist per-user customizations to Supabase.
-    if (user && supabaseStorageAvailable) {
-      setSaveStatus('saving');
-      const success = await saveToSupabase(updated);
-      setSaveStatus(success ? 'saved' : 'error');
-    }
-    
-    setTimeout(() => setSaveStatus(null), 2000);
-  }, [customMeals, user, supabaseStorageAvailable, saveToSupabase]);
+      const emptyMeal = { name: 'Deleted Meal', ingredients: [] };
+      await handleUpdateMeal(dayKey, mealKey, emptyMeal);
+    },
+    [handleUpdateMeal]
+  );
   
   const handleSignIn = async () => {
     if (!supabase) return;
@@ -2990,7 +3072,7 @@ export default function JanuaryMealsPage() {
                 day={day}
                 nutrition={nutrition}
                 dinnerInfo={mealRecipes.dinner?.[nutrition.dinnerType]}
-                hasCustomization={!!customMeals[`day-${day}`]}
+                hasCustomization={!!combinedCustomMeals[`day-${day}`]}
                 onClick={() => setSelectedDay(day)}
               />
             );
@@ -3018,7 +3100,7 @@ export default function JanuaryMealsPage() {
         <DayDetail
           day={selectedDay}
           nutrition={selectedNutrition}
-          customMeals={customMeals}
+          customMeals={combinedCustomMeals}
           mealRecipes={mealRecipes}
           goals={dietGoals}
           onUpdate={handleUpdateMeal}
