@@ -1,12 +1,20 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { DayDetail } from '../components/january/DayDetail';
+import { IngredientSearch } from '../components/january/IngredientSearch';
+import { AuthButton } from '../components/january/AuthButton';
+import { RecipesPanel } from '../components/january/RecipesPanel';
+import { TargetsPanel } from '../components/january/TargetsPanel';
 import { useMealPlanState } from '../mealPlan/useMealPlanState';
-import type { Meal, EffectiveDay, MealType } from '../mealPlan/types';
+import type { Meal, EffectiveDay, MealType, Ingredient } from '../mealPlan/types';
 import {
   buildDailyNutrition,
   buildExcelXml,
   buildNutritionCsv,
+  type DailyNutritionEntry,
 } from '../mealPlan/export';
+import { BASE_MEALS } from '../mealPlan/baseMeals';
+import { scaleNutrients } from '../nutrition/calc';
+import { supabase } from '../lib/supabaseClient';
 
 type EditScope = 'anon' | 'user' | 'global';
 
@@ -29,9 +37,11 @@ const DEFAULT_DIET_GOALS: Record<string, DietGoal> = {
 const mealTypes: MealType[] = ['breakfast', 'lunch', 'dinner', 'snacks'];
 
 const planKey = 'january';
+const DAY_NAMES = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
 export default function JanuaryMealsPage() {
   const {
+    user,
     effectiveDays,
     mergedOverrides,
     isSignedIn,
@@ -53,7 +63,12 @@ export default function JanuaryMealsPage() {
   const [currentWeek, setCurrentWeek] = useState(1);
   const [selectedDay, setSelectedDay] = useState<number | null>(null);
   const [showMethodology, setShowMethodology] = useState(false);
+  const [showTargets, setShowTargets] = useState(false);
+  const [showRecipes, setShowRecipes] = useState(false);
+  const [showIngredientLookup, setShowIngredientLookup] = useState(false);
+  const [lookupIngredient, setLookupIngredient] = useState<Ingredient | null>(null);
   const [editScope, setEditScope] = useState<EditScope>('anon');
+  const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'success' | 'error' | null>(null);
 
   useEffect(() => {
     if (isAdmin) {
@@ -70,6 +85,17 @@ export default function JanuaryMealsPage() {
     [effectiveDays]
   );
 
+  const nutritionByDay = useMemo(() => {
+    const map = new Map<number, DailyNutritionEntry>();
+    dailyNutrition.forEach((entry) => map.set(entry.day, entry));
+    return map;
+  }, [dailyNutrition]);
+
+  const weekDays = useMemo(() => {
+    const start = (currentWeek - 1) * 7;
+    return effectiveDays.slice(start, start + 7);
+  }, [currentWeek, effectiveDays]);
+
   const selectedDayData = useMemo(
     () =>
       selectedDay
@@ -78,10 +104,37 @@ export default function JanuaryMealsPage() {
     [selectedDay, effectiveDays]
   );
 
-  const weekDays = useMemo(() => {
-    const start = (currentWeek - 1) * 7;
-    return effectiveDays.slice(start, start + 7);
-  }, [currentWeek, effectiveDays]);
+  const weekNutrition = useMemo(
+    () =>
+      weekDays
+        .map((day) => nutritionByDay.get(day.plan.day))
+        .filter((entry): entry is DailyNutritionEntry => Boolean(entry)),
+    [weekDays, nutritionByDay]
+  );
+
+  const weekAverages = useMemo(() => {
+    if (!weekNutrition.length) {
+      return { calories: 0, protein: 0, fiber: 0, fat: 0, carbs: 0 };
+    }
+    const totals = weekNutrition.reduce(
+      (acc, entry) => {
+        acc.calories += entry.calories;
+        acc.protein += entry.protein;
+        acc.fiber += entry.fiber;
+        acc.fat += entry.fat;
+        acc.carbs += entry.carbs;
+        return acc;
+      },
+      { calories: 0, protein: 0, fiber: 0, fat: 0, carbs: 0 }
+    );
+    return {
+      calories: Math.round(totals.calories / weekNutrition.length),
+      protein: Math.round(totals.protein / weekNutrition.length),
+      fiber: Math.round(totals.fiber / weekNutrition.length),
+      fat: Math.round(totals.fat / weekNutrition.length),
+      carbs: Math.round(totals.carbs / weekNutrition.length),
+    };
+  }, [weekNutrition]);
 
   const editHandlers = {
     anon: { update: updateAnon, remove: deleteAnon },
@@ -97,6 +150,30 @@ export default function JanuaryMealsPage() {
   const handleMealDelete = (dayKey: string, mealKey: string) => {
     const handler = editHandlers[editScope];
     handler?.remove(dayKey, mealKey);
+  };
+
+  const handleSignIn = async () => {
+    if (!supabase) return;
+    try {
+      await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: window.location.origin,
+        },
+      });
+    } catch (error) {
+      console.error('Sign in failed:', error);
+    }
+  };
+
+  const handleSignOut = async () => {
+    if (!supabase) return;
+    try {
+      await supabase.auth.signOut({ scope: 'global' });
+      window.location.reload();
+    } catch (error) {
+      console.error('Sign out failed:', error);
+    }
   };
 
   const handleExportCsv = () => {
@@ -140,13 +217,53 @@ export default function JanuaryMealsPage() {
     (isAdmin && editScope === 'global') ||
     (isSignedIn && editScope === 'user');
 
+  const handleSavePlan = async () => {
+    if (!canSave) return;
+    setSaveStatus('saving');
+    const success =
+      editScope === 'global' ? await saveGlobal() : await saveUser();
+    setSaveStatus(success ? 'success' : 'error');
+    setTimeout(() => setSaveStatus(null), 2500);
+  };
+
   const overrideDays = useMemo(() => Object.keys(mergedOverrides || {}), [mergedOverrides]);
+  const lastLookupStats = useMemo(() => {
+    if (!lookupIngredient) return null;
+    return scaleNutrients(
+      lookupIngredient.nutrientsPer100g,
+      lookupIngredient.amount
+    );
+  }, [lookupIngredient]);
+  const quickActions = [
+    {
+      label: 'Methodology',
+      icon: <InfoIcon />,
+      action: () => setShowMethodology(true),
+    },
+    {
+      label: 'Targets',
+      icon: <TargetIcon />,
+      action: () => setShowTargets(true),
+    },
+    {
+      label: 'View recipes',
+      icon: <BookIcon />,
+      action: () => setShowRecipes(true),
+    },
+    {
+      label: 'USDA lookup',
+      icon: <SearchIcon />,
+      action: () => setShowIngredientLookup(true),
+    },
+    { label: 'Open in Sheets', icon: <SheetsIcon />, action: handleExportExcel },
+    { label: 'Export CSV', icon: <DownloadIcon />, action: handleExportCsv },
+  ];
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#0f172a] via-[#0f172a] to-[#111827] text-white">
       <div className="max-w-6xl mx-auto px-4 py-12 space-y-10">
         <header className="space-y-6">
-          <div className="flex items-center justify-between flex-wrap gap-4">
+          <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
             <div>
               <p className="text-xs uppercase tracking-[0.3em] text-[#9AA6B2] mb-2">
                 January Meal Blueprint
@@ -160,19 +277,34 @@ export default function JanuaryMealsPage() {
                 days.
               </p>
             </div>
-            <div className="flex gap-3">
-              <button
-                onClick={handleExportCsv}
-                className="flex items-center gap-2 px-4 py-2 rounded-lg border border-white/20 hover:border-white/40"
-              >
-                <DownloadIcon /> CSV
-              </button>
-              <button
-                onClick={handleExportExcel}
-                className="flex items-center gap-2 px-4 py-2 rounded-lg border border-white/20 hover:border-white/40"
-              >
-                <SheetsIcon /> Sheets
-              </button>
+            <div className="flex flex-wrap items-center gap-3">
+              {quickActions.map((action) => (
+                <button
+                  key={action.label}
+                  onClick={action.action}
+                  className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-200 rounded-lg border border-white/10 hover:border-white/30 hover:bg-white/5 transition-colors"
+                >
+                  {action.icon} {action.label}
+                </button>
+              ))}
+              {saveStatus && (
+                <span
+                  className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-full ${
+                    saveStatus === 'saving'
+                      ? 'text-[#9AA6B2] bg-[#BCCCDC]/30'
+                      : saveStatus === 'success'
+                      ? 'text-green-300 bg-green-500/10'
+                      : 'text-red-300 bg-red-500/10'
+                  }`}
+                >
+                  {saveStatus === 'saving' ? 'Saving…' : saveStatus === 'success' ? 'Saved' : 'Error'}
+                </span>
+              )}
+              <AuthButton
+                user={user}
+                onSignIn={handleSignIn}
+                onSignOut={handleSignOut}
+              />
             </div>
           </div>
 
@@ -209,7 +341,7 @@ export default function JanuaryMealsPage() {
 
             {canSave && (
               <button
-                onClick={editScope === 'global' ? saveGlobal : saveUser}
+                onClick={handleSavePlan}
                 className="ml-auto px-4 py-2 rounded-lg bg-[#BCCCDC] text-slate-900 font-medium"
               >
                 {saveLabel}
@@ -237,11 +369,86 @@ export default function JanuaryMealsPage() {
         </header>
 
         <section className="bg-[#0B1120] rounded-3xl border border-white/10 p-6 space-y-6">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+            <div>
+              <p className="text-xs uppercase tracking-[0.3em] text-[#9AA6B2]">
+                Week {currentWeek} averages
+              </p>
+              <div className="flex items-center gap-6 mt-3 text-sm">
+                <SummaryStat label="Calories" value={`${weekAverages.calories} kcal`} tone="text-[#9AA6B2]" />
+                <SummaryStat label="Protein" value={`${weekAverages.protein} g`} tone="text-blue-300" />
+                <SummaryStat label="Fiber" value={`${weekAverages.fiber} g`} tone="text-purple-300" />
+              </div>
+            </div>
+            <WeekNav currentWeek={currentWeek} onWeekChange={setCurrentWeek} />
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+            {['calories', 'protein', 'carbs', 'fat', 'fiber'].map((key) => {
+              const goal = DEFAULT_DIET_GOALS[key];
+              const value = weekAverages[key as keyof typeof weekAverages];
+              const percent = goal ? Math.min((value / goal.max) * 100, 100) : 0;
+              return (
+                <div key={key} className="p-3 rounded-xl border border-white/10 bg-white/5">
+                  <p className="text-xs uppercase text-slate-300 flex items-center justify-between">
+                    <span>{goal?.label || key}</span>
+                    <span>{value} {goal?.unit || ''}</span>
+                  </p>
+                  <div className="h-2 mt-2 bg-white/10 rounded-full overflow-hidden">
+                    <div
+                      className="h-full rounded-full bg-gradient-to-r from-[#9AA6B2] to-white"
+                      style={{ width: `${percent}%` }}
+                    />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {lookupIngredient && lastLookupStats && (
+            <div className="p-4 rounded-xl border border-white/10 bg-white/5 text-sm text-slate-200">
+              <div className="flex items-center justify-between gap-3 mb-2">
+                <div>
+                  <p className="text-xs uppercase tracking-wide text-slate-400">
+                    Last USDA lookup
+                  </p>
+                  <p className="text-base font-semibold text-white">
+                    {lookupIngredient.name}
+                  </p>
+                </div>
+                <button
+                  className="text-xs text-slate-400 hover:text-white"
+                  onClick={() => setShowIngredientLookup(true)}
+                >
+                  Search again
+                </button>
+              </div>
+              <div className="flex flex-wrap gap-4 text-xs">
+                <span>{Math.round(lastLookupStats.calories)} kcal</span>
+                <span>{Math.round(lastLookupStats.protein)}g protein</span>
+                <span>{Math.round(lastLookupStats.fat)}g fat</span>
+                <span>{Math.round(lastLookupStats.carbs)}g carbs</span>
+              </div>
+            </div>
+          )}
+        </section>
+
+        <section className="bg-[#0B1120] rounded-3xl border border-white/10 p-6 space-y-6">
           <div className="flex items-center justify-between flex-wrap gap-4">
             <h2 className="text-lg font-semibold text-white/90">
               January calendar
             </h2>
-            <WeekNav currentWeek={currentWeek} onWeekChange={setCurrentWeek} />
+            <p className="text-xs text-slate-400">
+              Click any day to edit meals and view detailed nutrition.
+            </p>
+          </div>
+
+          <div className="hidden lg:grid grid-cols-7 gap-3 text-xs text-slate-400">
+            {DAY_NAMES.map((name) => (
+              <div key={name} className="text-center uppercase tracking-wide">
+                {name}
+              </div>
+            ))}
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3">
@@ -249,14 +456,32 @@ export default function JanuaryMealsPage() {
               <CalendarDay
                 key={day.plan.day}
                 day={day}
-                nutrition={
-                  dailyNutrition.find((entry) => entry.day === day.plan.day) ||
-                  null
-                }
+                weekdayLabel={DAY_NAMES[(day.plan.day - 1) % DAY_NAMES.length]}
+                nutrition={nutritionByDay.get(day.plan.day) || null}
                 hasCustomization={overrideDays.includes(day.dayKey)}
                 onClick={() => setSelectedDay(day.plan.day)}
               />
             ))}
+          </div>
+
+          <div className="mt-2 p-4 rounded-xl bg-white/5 border border-white/10">
+            <p className="text-xs uppercase tracking-wider text-slate-400 mb-3">
+              Dinner Rotation
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {Object.entries(BASE_MEALS.dinner || {}).map(([code, info]) => (
+                <span
+                  key={code}
+                  className="px-3 py-1.5 rounded-lg text-xs font-medium"
+                  style={{
+                    backgroundColor: `${info.color || '#94a3b8'}20`,
+                    color: info.color || '#e2e8f0',
+                  }}
+                >
+                  {info.name}
+                </span>
+              ))}
+            </div>
           </div>
         </section>
 
@@ -295,6 +520,28 @@ export default function JanuaryMealsPage() {
           onUpdateMeal={handleMealUpdate}
           onDeleteMeal={handleMealDelete}
           onClose={() => setSelectedDay(null)}
+        />
+      )}
+
+      <RecipesPanel
+        isOpen={showRecipes}
+        onClose={() => setShowRecipes(false)}
+        mealLibrary={BASE_MEALS}
+      />
+
+      <TargetsPanel
+        isOpen={showTargets}
+        onClose={() => setShowTargets(false)}
+        goals={DEFAULT_DIET_GOALS}
+      />
+
+      {showIngredientLookup && (
+        <IngredientSearch
+          onSelect={(ingredient) => {
+            setLookupIngredient(ingredient);
+            setShowIngredientLookup(false);
+          }}
+          onClose={() => setShowIngredientLookup(false)}
         />
       )}
     </div>
@@ -341,12 +588,14 @@ const WeekNav = ({
 
 const CalendarDay = ({
   day,
+  weekdayLabel,
   nutrition,
   hasCustomization,
   onClick,
 }: {
   day: EffectiveDay;
-  nutrition: { calories: number; protein: number } | null;
+  weekdayLabel?: string;
+  nutrition: DailyNutritionEntry | null;
   hasCustomization: boolean;
   onClick: () => void;
 }) => (
@@ -359,7 +608,7 @@ const CalendarDay = ({
     )}
     <div className="flex flex-col h-full">
       <div className="flex items-center justify-between mb-2 text-xs text-slate-300">
-        <span>Day</span>
+        <span>{weekdayLabel || 'Day'}</span>
         <span className="text-lg font-semibold text-white">
           {day.plan.day}
         </span>
@@ -373,9 +622,10 @@ const CalendarDay = ({
         </span>
       </div>
       {nutrition && (
-        <div className="mt-2 text-left text-xs text-slate-300">
+        <div className="mt-2 text-left text-xs text-slate-300 space-y-0.5">
           <p>{Math.round(nutrition.calories)} kcal</p>
-          <p>{Math.round(nutrition.protein)}g Protein</p>
+          <p>{Math.round(nutrition.protein)}g protein</p>
+          <p>{Math.round(nutrition.fiber)}g fiber</p>
         </div>
       )}
     </div>
@@ -436,6 +686,59 @@ const MethodologyPanel = ({
       </div>
     </div>
   </div>
+);
+
+const SummaryStat = ({
+  label,
+  value,
+  tone,
+}: {
+  label: string;
+  value: string;
+  tone: string;
+}) => (
+  <div>
+    <p className="text-[10px] uppercase tracking-wider text-slate-500">
+      {label}
+    </p>
+    <p className={`text-lg font-semibold ${tone}`}>{value}</p>
+  </div>
+);
+
+const InfoIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+    <circle cx="8" cy="8" r="6" stroke="currentColor" strokeWidth="1.5" />
+    <path d="M8 11V7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+    <path d="M8 5h.01" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+  </svg>
+);
+
+const TargetIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+    <circle cx="8" cy="8" r="6" stroke="currentColor" strokeWidth="1.5" />
+    <circle cx="8" cy="8" r="3" stroke="currentColor" strokeWidth="1.5" />
+    <path d="M8 2v2M8 12v2M2 8h2M12 8h2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+  </svg>
+);
+
+const BookIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+    <path
+      d="M3 4.5A1.5 1.5 0 014.5 3H13v10H4.5A1.5 1.5 0 013 11.5V4.5z"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+    <path d="M8 3v10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+  </svg>
+);
+
+const SearchIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+    <circle cx="7" cy="7" r="5" stroke="currentColor" strokeWidth="1.5" />
+    <path d="M11 11l4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+  </svg>
 );
 
 const DownloadIcon = () => (
