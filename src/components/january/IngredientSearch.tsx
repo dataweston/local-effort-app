@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import type { Ingredient } from '../../mealPlan/types';
 import { searchFoods, getFoodDetails } from '../../usda/usdaClient';
 import { scaleNutrients } from '../../nutrition/calc';

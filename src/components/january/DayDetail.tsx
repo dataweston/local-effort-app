@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import React, { useMemo } from 'react';
 import type { EffectiveDay, Meal, MealType } from '../../mealPlan/types';
 import { sumMeal } from '../../nutrition/calc';
 import { NUTRIENT_KEYS, type Nutrients } from '../../nutrition/nutrients';
