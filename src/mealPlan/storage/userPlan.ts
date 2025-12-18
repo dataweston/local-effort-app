@@ -1,4 +1,4 @@
-import { supabase } from '../../../lib/supabaseClient.js';
+import { supabase } from '../../lib/supabaseClient';
 import type { MealOverrideMap } from '../types';
 
 const TABLE = 'meal_plan_user';

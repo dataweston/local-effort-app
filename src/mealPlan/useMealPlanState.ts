@@ -7,7 +7,7 @@ import {
   type SetStateAction,
 } from 'react';
 import type { User } from '@supabase/supabase-js';
-import { supabase } from '../lib/supabaseClient.js';
+import { supabase } from '../lib/supabaseClient';
 import {
   DAILY_PLAN,
   cloneMeal,
