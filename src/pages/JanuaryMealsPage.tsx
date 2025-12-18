@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { DayDetail } from '../components/january/DayDetail';
 import { useMealPlanState } from '../mealPlan/useMealPlanState';
 import type { Meal, EffectiveDay, MealType } from '../mealPlan/types';
