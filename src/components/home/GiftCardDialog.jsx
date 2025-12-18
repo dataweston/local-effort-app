@@ -39,7 +39,7 @@ const normalizeAmount = (amount, customValue) => {
   return amount;
 };
 
-const GiftCardDialog = ({ className = "" }) => {
+const GiftCardDialog = ({ className = "", autoOpen = false, showTrigger = true, onClose, onReady }) => {
   const defaultSiteUrl = "https://localeffort.app";
   const siteUrl = typeof window !== "undefined" ? window.location.origin : defaultSiteUrl;
   const giftCardImage = heroFallbackSrc
@@ -66,7 +66,7 @@ const GiftCardDialog = ({ className = "" }) => {
     }
     return schema;
   }, [giftCardImage, siteUrl]);
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(autoOpen);
   const [form, setForm] = useState(initialForm);
   const [status, setStatus] = useState("idle");
   const [error, setError] = useState("");
@@ -84,9 +84,24 @@ const GiftCardDialog = ({ className = "" }) => {
       setStatus("idle");
       setError("");
       setSuccess(null);
+      if (typeof onClose === "function") {
+        onClose();
+      }
     }
     setOpen(nextOpen);
-  }, [resetSquare]);
+  }, [resetSquare, onClose]);
+
+  useEffect(() => {
+    if (autoOpen) {
+      setOpen(true);
+    }
+  }, [autoOpen]);
+
+  useEffect(() => {
+    if (typeof onReady === "function") {
+      onReady();
+    }
+  }, [onReady]);
 
   useEffect(() => {
     if (!canChoosePhysical && form.cardType === "physical") {
@@ -289,12 +304,14 @@ const GiftCardDialog = ({ className = "" }) => {
         <script type="application/ld+json">{JSON.stringify(productSchema)}</script>
       </Helmet>
       <Dialog open={open} onOpenChange={handleDialogOpenChange}>
-      <DialogTrigger asChild>
-        <button className={cn("btn btn-primary flex items-center gap-2 shadow-sm", className)}>
-          <Gift className="h-4 w-4" />
-          Buy Gift Card
-        </button>
-      </DialogTrigger>
+      {showTrigger && (
+        <DialogTrigger asChild>
+          <button className={cn("btn btn-primary flex items-center gap-2 shadow-sm", className)}>
+            <Gift className="h-4 w-4" />
+            Buy Gift Card
+          </button>
+        </DialogTrigger>
+      )}
       <DialogContent className="max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Gift a Local Effort experience</DialogTitle>
