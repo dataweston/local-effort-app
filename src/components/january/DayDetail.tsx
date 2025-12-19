@@ -24,6 +24,30 @@ type Props = {
 
 const macroGoalKeys = ['calories', 'protein', 'carbs', 'fat', 'fiber'];
 
+const microColorMap: Record<string, string> = {
+  ala: '#06b6d4',
+  epa_dha: '#0ea5e9',
+  vitA: '#f97316',
+  b12: '#ec4899',
+  folate: '#14b8a6',
+  vitC: '#eab308',
+  vitD: '#a855f7',
+  vitK: '#84cc16',
+  calcium: '#64748b',
+  magnesium: '#6366f1',
+  potassium: '#0ea5e9',
+  zinc: '#d946ef',
+  iron: '#ef4444',
+};
+
+const formatNutrientValue = (value: number, unit: string) => {
+  if (!Number.isFinite(value)) return `0 ${unit}`;
+  if (unit === 'kcal') return `${Math.round(value)} ${unit}`;
+  if (value > 100) return `${Math.round(value)} ${unit}`;
+  if (value >= 10) return `${Math.round(value)} ${unit}`;
+  return `${Math.round(value * 10) / 10} ${unit}`;
+};
+
 export const DayDetail = ({
   day,
   goals,
@@ -49,6 +73,20 @@ export const DayDetail = ({
   }, [day]);
 
   const dinnerInfo = day.meals.dinner.meal;
+
+  const microGoals = useMemo(() => {
+    const entries = Object.entries(goals || {})
+      .filter(([key]) => !macroGoalKeys.includes(key))
+      .filter(([key]) => (NUTRIENT_KEYS as readonly string[]).includes(key));
+
+    return entries.map(([key, goal]) => ({
+      key,
+      label: goal.label,
+      max: goal.max || 1,
+      unit: goal.unit,
+      color: microColorMap[key] || '#0ea5e9',
+    }));
+  }, [goals]);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
@@ -153,28 +191,6 @@ const macroColors: Record<string, string> = {
   fiber: '#8b5cf6',
 };
 
-const microGoals = [
-  { key: 'ala', label: 'Omega-3 ALA', max: 2, unit: ' g', color: '#06b6d4' },
-  {
-    key: 'epa_dha',
-    label: 'Omega-3 EPA + DHA',
-    max: 2,
-    unit: ' g',
-    color: '#0ea5e9',
-  },
-  { key: 'vitA', label: 'Vitamin A', max: 900, unit: ' mcg', color: '#f97316' },
-  { key: 'b12', label: 'Vitamin B12', max: 2.4, unit: ' mcg', color: '#ec4899' },
-  { key: 'folate', label: 'Folate', max: 400, unit: ' mcg', color: '#14b8a6' },
-  { key: 'vitC', label: 'Vitamin C', max: 90, unit: ' mg', color: '#eab308' },
-  { key: 'vitD', label: 'Vitamin D', max: 20, unit: ' mcg', color: '#a855f7' },
-  { key: 'vitK', label: 'Vitamin K', max: 120, unit: ' mcg', color: '#84cc16' },
-  { key: 'calcium', label: 'Calcium', max: 1000, unit: ' mg', color: '#64748b' },
-  { key: 'magnesium', label: 'Magnesium', max: 400, unit: ' mg', color: '#6366f1' },
-  { key: 'potassium', label: 'Potassium', max: 4700, unit: ' mg', color: '#0ea5e9' },
-  { key: 'zinc', label: 'Zinc', max: 11, unit: ' mg', color: '#d946ef' },
-  { key: 'iron', label: 'Iron', max: 18, unit: ' mg', color: '#ef4444' },
-];
-
 const CircularProgress = ({
   value,
   max,
@@ -239,7 +255,7 @@ const MicroBar = ({
       <div className="flex justify-between text-xs">
         <span className="text-slate-600">{label}</span>
         <span className="text-slate-700 font-medium">
-          {Math.round(value)} {unit}
+          {formatNutrientValue(value, unit)}
         </span>
       </div>
       <div className="h-1.5 bg-[#BCCCDC] rounded-full overflow-hidden">
