@@ -14,6 +14,7 @@ import {
 } from '../mealPlan/export';
 import { BASE_MEALS } from '../mealPlan/baseMeals';
 import { scaleNutrients } from '../nutrition/calc';
+import { createEmptyNutrients, NUTRIENT_KEYS } from '../nutrition/nutrients';
 import { supabase } from '../lib/supabaseClient';
 
 type EditScope = 'anon' | 'user' | 'global';
@@ -31,13 +32,77 @@ const DEFAULT_DIET_GOALS: Record<string, DietGoal> = {
   carbs: { min: 120, max: 200, label: 'Carbs', unit: 'g' },
   fat: { min: 60, max: 70, label: 'Fat', unit: 'g' },
   fiber: { min: 35, max: 45, label: 'Fiber', unit: 'g' },
-  omega3: { min: 2, max: 4, label: 'Omega-3', unit: 'g' },
+  ala: { min: 2, max: 2, label: 'Omega-3 ALA', unit: 'g' },
+  epa_dha: { min: 2, max: 2, label: 'Omega-3 EPA + DHA', unit: 'g' },
+  vitA: { min: 700, max: 900, label: 'Vitamin A', unit: 'mcg' },
+  b12: { min: 2.4, max: 2.4, label: 'Vitamin B12', unit: 'mcg' },
+  folate: { min: 400, max: 400, label: 'Folate', unit: 'mcg' },
+  vitC: { min: 75, max: 90, label: 'Vitamin C', unit: 'mg' },
+  vitD: { min: 15, max: 20, label: 'Vitamin D', unit: 'mcg' },
+  vitK: { min: 90, max: 120, label: 'Vitamin K', unit: 'mcg' },
+  calcium: { min: 1000, max: 1000, label: 'Calcium', unit: 'mg' },
+  magnesium: { min: 320, max: 400, label: 'Magnesium', unit: 'mg' },
+  potassium: { min: 2600, max: 4700, label: 'Potassium', unit: 'mg' },
+  zinc: { min: 8, max: 11, label: 'Zinc', unit: 'mg' },
+  iron: { min: 8, max: 18, label: 'Iron', unit: 'mg' },
 };
 
 const mealTypes: MealType[] = ['breakfast', 'lunch', 'dinner', 'snacks'];
 
 const planKey = 'january';
 const DAY_NAMES = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+
+const GOALS_STORAGE_KEY = `${planKey}-meal-plan-goals`;
+
+const loadDietGoals = (): Record<string, DietGoal> => {
+  try {
+    const raw = window.localStorage.getItem(GOALS_STORAGE_KEY);
+    if (!raw) return DEFAULT_DIET_GOALS;
+    const parsed = JSON.parse(raw) as Record<string, Partial<DietGoal>>;
+    const merged: Record<string, DietGoal> = { ...DEFAULT_DIET_GOALS };
+
+    Object.entries(parsed || {}).forEach(([key, value]) => {
+      const base = merged[key];
+      if (!base) return;
+      merged[key] = {
+        ...base,
+        ...(value || {}),
+        max: Number.isFinite(Number(value?.max)) ? Number(value?.max) : base.max,
+        min:
+          value?.min === undefined || value?.min === null
+            ? base.min
+            : Number(value?.min),
+      };
+    });
+
+    // Back-compat: legacy stored an `omega3` goal; map it into EPA+DHA if present.
+    const legacyOmega3 = (parsed as any)?.omega3;
+    if (legacyOmega3 && !parsed?.epa_dha) {
+      merged.epa_dha = {
+        ...merged.epa_dha,
+        max: Number.isFinite(Number(legacyOmega3.max))
+          ? Number(legacyOmega3.max)
+          : merged.epa_dha.max,
+        min:
+          legacyOmega3.min === undefined || legacyOmega3.min === null
+            ? merged.epa_dha.min
+            : Number(legacyOmega3.min),
+      };
+    }
+
+    return merged;
+  } catch {
+    return DEFAULT_DIET_GOALS;
+  }
+};
+
+const persistDietGoals = (goals: Record<string, DietGoal>) => {
+  try {
+    window.localStorage.setItem(GOALS_STORAGE_KEY, JSON.stringify(goals));
+  } catch {
+    // Ignore storage failures (private mode / quota)
+  }
+};
 
 export default function JanuaryMealsPage() {
   const {
@@ -69,6 +134,14 @@ export default function JanuaryMealsPage() {
   const [lookupIngredient, setLookupIngredient] = useState<Ingredient | null>(null);
   const [editScope, setEditScope] = useState<EditScope>('anon');
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'success' | 'error' | null>(null);
+  const [authStatus, setAuthStatus] = useState<string | null>(null);
+  const [dietGoals, setDietGoals] = useState<Record<string, DietGoal>>(() =>
+    typeof window === 'undefined' ? DEFAULT_DIET_GOALS : loadDietGoals()
+  );
+
+  useEffect(() => {
+    persistDietGoals(dietGoals);
+  }, [dietGoals]);
 
   useEffect(() => {
     if (isAdmin) {
@@ -113,27 +186,22 @@ export default function JanuaryMealsPage() {
   );
 
   const weekAverages = useMemo(() => {
+    const totals = createEmptyNutrients();
     if (!weekNutrition.length) {
-      return { calories: 0, protein: 0, fiber: 0, fat: 0, carbs: 0 };
+      return totals;
     }
-    const totals = weekNutrition.reduce(
-      (acc, entry) => {
-        acc.calories += entry.calories;
-        acc.protein += entry.protein;
-        acc.fiber += entry.fiber;
-        acc.fat += entry.fat;
-        acc.carbs += entry.carbs;
-        return acc;
-      },
-      { calories: 0, protein: 0, fiber: 0, fat: 0, carbs: 0 }
-    );
-    return {
-      calories: Math.round(totals.calories / weekNutrition.length),
-      protein: Math.round(totals.protein / weekNutrition.length),
-      fiber: Math.round(totals.fiber / weekNutrition.length),
-      fat: Math.round(totals.fat / weekNutrition.length),
-      carbs: Math.round(totals.carbs / weekNutrition.length),
-    };
+
+    weekNutrition.forEach((entry) => {
+      NUTRIENT_KEYS.forEach((key) => {
+        totals[key] += (entry[key] || 0) as number;
+      });
+    });
+
+    const averages = createEmptyNutrients();
+    NUTRIENT_KEYS.forEach((key) => {
+      averages[key] = totals[key] / weekNutrition.length;
+    });
+    return averages;
   }, [weekNutrition]);
 
   const editHandlers = {
@@ -153,26 +221,37 @@ export default function JanuaryMealsPage() {
   };
 
   const handleSignIn = async () => {
-    if (!supabase) return;
+    setAuthStatus(null);
+    if (!supabase) {
+      setAuthStatus('Sign-in is unavailable: Supabase is not configured.');
+      return;
+    }
     try {
       await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: window.location.origin,
+          // Return to the same page after OAuth.
+          redirectTo: `${window.location.origin}${window.location.pathname}`,
         },
       });
     } catch (error) {
       console.error('Sign in failed:', error);
+      setAuthStatus('Sign-in failed. Check OAuth redirect URLs and try again.');
     }
   };
 
   const handleSignOut = async () => {
-    if (!supabase) return;
+    setAuthStatus(null);
+    if (!supabase) {
+      setAuthStatus('Sign-out is unavailable: Supabase is not configured.');
+      return;
+    }
     try {
       await supabase.auth.signOut({ scope: 'global' });
       window.location.reload();
     } catch (error) {
       console.error('Sign out failed:', error);
+      setAuthStatus('Sign-out failed.');
     }
   };
 
@@ -308,6 +387,12 @@ export default function JanuaryMealsPage() {
             </div>
           </div>
 
+          {authStatus && (
+            <div className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-slate-200">
+              {authStatus}
+            </div>
+          )}
+
           <div className="flex flex-wrap items-center gap-3 text-sm text-slate-200">
             {isAdmin && (
               <div className="flex items-center gap-2 bg-white/10 rounded-full px-3 py-1">
@@ -375,24 +460,25 @@ export default function JanuaryMealsPage() {
                 Week {currentWeek} averages
               </p>
               <div className="flex items-center gap-6 mt-3 text-sm">
-                <SummaryStat label="Calories" value={`${weekAverages.calories} kcal`} tone="text-[#9AA6B2]" />
-                <SummaryStat label="Protein" value={`${weekAverages.protein} g`} tone="text-blue-300" />
-                <SummaryStat label="Fiber" value={`${weekAverages.fiber} g`} tone="text-purple-300" />
+                    <SummaryStat label="Calories" value={`${Math.round(weekAverages.calories)} kcal`} tone="text-[#9AA6B2]" />
+                    <SummaryStat label="Protein" value={`${Math.round(weekAverages.protein)} g`} tone="text-blue-300" />
+                    <SummaryStat label="Fiber" value={`${Math.round(weekAverages.fiber)} g`} tone="text-purple-300" />
               </div>
             </div>
             <WeekNav currentWeek={currentWeek} onWeekChange={setCurrentWeek} />
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
-            {['calories', 'protein', 'carbs', 'fat', 'fiber'].map((key) => {
-              const goal = DEFAULT_DIET_GOALS[key];
-              const value = weekAverages[key as keyof typeof weekAverages];
-              const percent = goal ? Math.min((value / goal.max) * 100, 100) : 0;
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+                {['calories', 'protein', 'carbs', 'fat', 'fiber'].map((key) => {
+                  const goal = dietGoals[key] || DEFAULT_DIET_GOALS[key];
+                  const value = weekAverages[key as keyof typeof weekAverages] as number;
+                  const max = goal?.max || 1;
+                  const percent = Math.min((value / max) * 100, 100);
               return (
                 <div key={key} className="p-3 rounded-xl border border-white/10 bg-white/5">
                   <p className="text-xs uppercase text-slate-300 flex items-center justify-between">
                     <span>{goal?.label || key}</span>
-                    <span>{value} {goal?.unit || ''}</span>
+                        <span>{Math.round(value)} {goal?.unit || ''}</span>
                   </p>
                   <div className="h-2 mt-2 bg-white/10 rounded-full overflow-hidden">
                     <div
@@ -404,6 +490,30 @@ export default function JanuaryMealsPage() {
               );
             })}
           </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3">
+                {['epa_dha', 'vitD', 'magnesium', 'potassium', 'iron', 'vitC'].map((key) => {
+                  const goal = dietGoals[key] || DEFAULT_DIET_GOALS[key];
+                  if (!goal) return null;
+                  const value = (weekAverages as any)[key] as number;
+                  const max = goal.max || 1;
+                  const percent = Math.min((value / max) * 100, 100);
+                  return (
+                    <div key={key} className="p-3 rounded-xl border border-white/10 bg-white/5">
+                      <p className="text-xs uppercase text-slate-300 flex items-center justify-between">
+                        <span>{goal.label}</span>
+                        <span>{Math.round(value)} {goal.unit}</span>
+                      </p>
+                      <div className="h-2 mt-2 bg-white/10 rounded-full overflow-hidden">
+                        <div
+                          className="h-full rounded-full bg-gradient-to-r from-[#3b82f6] to-[#22c55e]"
+                          style={{ width: `${percent}%` }}
+                        />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
 
           {lookupIngredient && lastLookupStats && (
             <div className="p-4 rounded-xl border border-white/10 bg-white/5 text-sm text-slate-200">
@@ -507,7 +617,7 @@ export default function JanuaryMealsPage() {
 
       {showMethodology && (
         <MethodologyPanel
-          goals={DEFAULT_DIET_GOALS}
+          goals={dietGoals}
           onClose={() => setShowMethodology(false)}
         />
       )}
@@ -515,7 +625,7 @@ export default function JanuaryMealsPage() {
       {selectedDayData && (
         <DayDetail
           day={selectedDayData}
-          goals={DEFAULT_DIET_GOALS}
+          goals={dietGoals}
           canEdit={editScope !== 'anon' || !isSignedIn}
           onUpdateMeal={handleMealUpdate}
           onDeleteMeal={handleMealDelete}
@@ -527,12 +637,15 @@ export default function JanuaryMealsPage() {
         isOpen={showRecipes}
         onClose={() => setShowRecipes(false)}
         mealLibrary={BASE_MEALS}
+        effectiveDays={effectiveDays}
       />
 
       <TargetsPanel
         isOpen={showTargets}
         onClose={() => setShowTargets(false)}
-        goals={DEFAULT_DIET_GOALS}
+        goals={dietGoals}
+        onChange={setDietGoals}
+        onReset={() => setDietGoals(DEFAULT_DIET_GOALS)}
       />
 
       {showIngredientLookup && (
