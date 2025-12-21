@@ -64,8 +64,8 @@ export const RecipesPanel = ({
   }, [effectiveDays]);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#2E5E67]/80 backdrop-blur-sm">
-      <div className="relative w-full max-w-4xl max-h-[90vh] overflow-hidden bg-white rounded-2xl border-2 border-[#66D3E7] shadow-2xl">
+    <div className="fixed inset-0 z-50 flex items-start justify-center p-4 pt-8 bg-[#2E5E67]/80 backdrop-blur-sm overflow-y-auto">
+      <div className="relative w-full max-w-4xl max-h-[90vh] overflow-hidden bg-white rounded-2xl border-2 border-[#66D3E7] shadow-2xl my-4">
           <div className="sticky top-0 z-10 flex items-center justify-between p-6 bg-gradient-to-r from-white to-[#66D3E7]/10 border-b-2 border-[#66D3E7]">
             <div>
               <h2 className="text-xl font-bold text-[#2E5E67]">

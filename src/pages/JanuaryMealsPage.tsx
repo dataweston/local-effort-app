@@ -255,10 +255,6 @@ export default function JanuaryMealsPage() {
   };
 
   const handleEditRecipe = async (mealType: MealType, code: string, recipe: Meal) => {
-    if (!isAdmin) {
-      alert('Only admins can edit recipes');
-      return;
-    }
     try {
       // Convert Meal to the format expected by saveRecipe
       const recipeData = {
@@ -285,10 +281,6 @@ export default function JanuaryMealsPage() {
   };
 
   const handleDeleteRecipe = async (mealType: MealType, code: string) => {
-    if (!isAdmin) {
-      alert('Only admins can delete recipes');
-      return;
-    }
     try {
       await deleteRecipe(mealType, code);
       await refreshLibrary();
@@ -743,7 +735,7 @@ END:VCALENDAR`;
         onClose={() => setShowRecipes(false)}
         mealLibrary={mealLibrary}
         effectiveDays={effectiveDays}
-        canEdit={isAdmin}
+        canEdit={true}
         onEditRecipe={handleEditRecipe}
         onDeleteRecipe={handleDeleteRecipe}
       />
@@ -875,8 +867,8 @@ const MethodologyPanel = ({
   };
 
   return (
-  <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#2E5E67]/80 backdrop-blur-sm">
-    <div className="relative w-full max-w-2xl max-h-[85vh] overflow-hidden bg-white rounded-2xl border-2 border-[#66D3E7] shadow-2xl">
+  <div className="fixed inset-0 z-50 flex items-start justify-center p-4 pt-8 bg-[#2E5E67]/80 backdrop-blur-sm overflow-y-auto">
+    <div className="relative w-full max-w-2xl max-h-[85vh] overflow-hidden bg-white rounded-2xl border-2 border-[#66D3E7] shadow-2xl my-4">
       <div className="sticky top-0 z-10 flex items-center justify-between p-6 bg-gradient-to-r from-white to-[#66D3E7]/10 border-b-2 border-[#66D3E7]">
         <h2 className="text-xl font-bold text-[#2E5E67]">Methodology</h2>
         <button
