@@ -3,8 +3,9 @@ import { DayDetail } from '../components/january/DayDetail';
 import { IngredientSearch } from '../components/january/IngredientSearch';
 import { AuthButton } from '../components/january/AuthButton';
 import { RecipesPanel } from '../components/january/RecipesPanel';
-import { TargetsPanel } from '../components/january/TargetsPanel';
 import { useMealPlanState } from '../mealPlan/useMealPlanState';
+import { useMealLibrary } from '../mealPlan/useMealLibrary';
+import { saveRecipe, deleteRecipe } from '../mealPlan/recipeStorage';
 import type { Meal, EffectiveDay, MealType, Ingredient } from '../mealPlan/types';
 import {
   buildDailyNutrition,
@@ -12,7 +13,6 @@ import {
   buildNutritionCsv,
   type DailyNutritionEntry,
 } from '../mealPlan/export';
-import { BASE_MEALS } from '../mealPlan/baseMeals';
 import { scaleNutrients } from '../nutrition/calc';
 import { createEmptyNutrients, NUTRIENT_KEYS } from '../nutrition/nutrients';
 import { supabase } from '../lib/supabaseClient';
@@ -32,19 +32,7 @@ const DEFAULT_DIET_GOALS: Record<string, DietGoal> = {
   carbs: { min: 120, max: 200, label: 'Carbs', unit: 'g' },
   fat: { min: 60, max: 70, label: 'Fat', unit: 'g' },
   fiber: { min: 35, max: 45, label: 'Fiber', unit: 'g' },
-  ala: { min: 2, max: 2, label: 'Omega-3 ALA', unit: 'g' },
   epa_dha: { min: 2, max: 2, label: 'Omega-3 EPA + DHA', unit: 'g' },
-  vitA: { min: 700, max: 900, label: 'Vitamin A', unit: 'mcg' },
-  b12: { min: 2.4, max: 2.4, label: 'Vitamin B12', unit: 'mcg' },
-  folate: { min: 400, max: 400, label: 'Folate', unit: 'mcg' },
-  vitC: { min: 75, max: 90, label: 'Vitamin C', unit: 'mg' },
-  vitD: { min: 15, max: 20, label: 'Vitamin D', unit: 'mcg' },
-  vitK: { min: 90, max: 120, label: 'Vitamin K', unit: 'mcg' },
-  calcium: { min: 1000, max: 1000, label: 'Calcium', unit: 'mg' },
-  magnesium: { min: 320, max: 400, label: 'Magnesium', unit: 'mg' },
-  potassium: { min: 2600, max: 4700, label: 'Potassium', unit: 'mg' },
-  zinc: { min: 8, max: 11, label: 'Zinc', unit: 'mg' },
-  iron: { min: 8, max: 18, label: 'Iron', unit: 'mg' },
 };
 
 const mealTypes: MealType[] = ['breakfast', 'lunch', 'dinner', 'snacks'];
@@ -105,6 +93,8 @@ const persistDietGoals = (goals: Record<string, DietGoal>) => {
 };
 
 export default function JanuaryMealsPage() {
+  const { library: mealLibrary, loading: libraryLoading, refresh: refreshLibrary } = useMealLibrary();
+
   const {
     user,
     effectiveDays,
@@ -123,12 +113,11 @@ export default function JanuaryMealsPage() {
     resetUserToGlobal,
     savingGlobal,
     savingUser,
-  } = useMealPlanState(planKey);
+  } = useMealPlanState(planKey, mealLibrary);
 
   const [currentWeek, setCurrentWeek] = useState(1);
   const [selectedDay, setSelectedDay] = useState<number | null>(null);
   const [showMethodology, setShowMethodology] = useState(false);
-  const [showTargets, setShowTargets] = useState(false);
   const [showRecipes, setShowRecipes] = useState(false);
   const [showIngredientLookup, setShowIngredientLookup] = useState(false);
   const [lookupIngredient, setLookupIngredient] = useState<Ingredient | null>(null);
@@ -138,6 +127,16 @@ export default function JanuaryMealsPage() {
   const [dietGoals, setDietGoals] = useState<Record<string, DietGoal>>(() =>
     typeof window === 'undefined' ? DEFAULT_DIET_GOALS : loadDietGoals()
   );
+
+  // Refs for smooth scrolling to sections
+  const overviewRef = React.useRef<HTMLElement>(null);
+  const weeklyStatsRef = React.useRef<HTMLElement>(null);
+  const calendarRef = React.useRef<HTMLElement>(null);
+  const recipesRef = React.useRef<HTMLElement>(null);
+
+  const scrollToSection = (ref: React.RefObject<HTMLElement | null>) => {
+    ref.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
 
   useEffect(() => {
     persistDietGoals(dietGoals);
@@ -255,6 +254,51 @@ export default function JanuaryMealsPage() {
     }
   };
 
+  const handleEditRecipe = async (mealType: MealType, code: string, recipe: Meal) => {
+    if (!isAdmin) {
+      alert('Only admins can edit recipes');
+      return;
+    }
+    try {
+      // Convert Meal to the format expected by saveRecipe
+      const recipeData = {
+        name: recipe.name,
+        color: recipe.color,
+        notes: recipe.notes,
+        ingredients: recipe.ingredients.map(ing => ({
+          name: ing.name,
+          fdcId: ing.fdcId || 0,
+          amount: ing.amount,
+          unit: ing.unit,
+          displayAmount: ing.displayAmount,
+          displayUnit: ing.displayUnit,
+          nutrientsPer100g: ing.nutrientsPer100g || createEmptyNutrients()
+        }))
+      };
+      await saveRecipe(mealType, code, recipeData);
+      await refreshLibrary();
+      alert('Recipe saved successfully!');
+    } catch (error) {
+      console.error('Error saving recipe:', error);
+      alert('Failed to save recipe');
+    }
+  };
+
+  const handleDeleteRecipe = async (mealType: MealType, code: string) => {
+    if (!isAdmin) {
+      alert('Only admins can delete recipes');
+      return;
+    }
+    try {
+      await deleteRecipe(mealType, code);
+      await refreshLibrary();
+      alert('Recipe deleted successfully!');
+    } catch (error) {
+      console.error('Error deleting recipe:', error);
+      alert('Failed to delete recipe');
+    }
+  };
+
   const handleExportCsv = () => {
     const csv = buildNutritionCsv(dailyNutrition);
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
@@ -277,6 +321,47 @@ export default function JanuaryMealsPage() {
     const link = document.createElement('a');
     link.href = url;
     link.setAttribute('download', 'january-meal-plan.xls');
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
+  const handleAddToGoogleCalendar = () => {
+    // Generate ICS file for all 30 days with meal plan
+    const startDate = new Date(new Date().getFullYear(), 0, 1); // January 1st
+    const events = effectiveDays.map((day) => {
+      const dayDate = new Date(startDate);
+      dayDate.setDate(startDate.getDate() + day.plan.day - 1);
+      
+      const dateStr = dayDate.toISOString().split('T')[0].replace(/-/g, '');
+      const dinnerMeal = day.meals.dinner.meal;
+      
+      return `BEGIN:VEVENT
+DTSTART:${dateStr}T180000Z
+DTEND:${dateStr}T190000Z
+SUMMARY:Day ${day.plan.day}: ${dinnerMeal.name}
+DESCRIPTION:January Meal Plan - ${dinnerMeal.name}\\n\\nBreakfast: ${day.meals.breakfast.meal.name}\\nLunch: ${day.meals.lunch.meal.name}\\nDinner: ${dinnerMeal.name}\\nSnacks: ${day.meals.snacks.meal.name}
+LOCATION:
+STATUS:CONFIRMED
+END:VEVENT`;
+    }).join('\\n');
+
+    const icsContent = `BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//Local Effort//January Meal Plan//EN
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:January Meal Plan
+X-WR-TIMEZONE:UTC
+${events}
+END:VCALENDAR`;
+
+    const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', 'january-meal-plan.ics');
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -320,96 +405,156 @@ export default function JanuaryMealsPage() {
       action: () => setShowMethodology(true),
     },
     {
-      label: 'Targets',
-      icon: <TargetIcon />,
-      action: () => setShowTargets(true),
-    },
-    {
       label: 'View recipes',
       icon: <BookIcon />,
       action: () => setShowRecipes(true),
-    },
-    {
-      label: 'USDA lookup',
-      icon: <SearchIcon />,
-      action: () => setShowIngredientLookup(true),
     },
     { label: 'Open in Sheets', icon: <SheetsIcon />, action: handleExportExcel },
     { label: 'Export CSV', icon: <DownloadIcon />, action: handleExportCsv },
   ];
 
+  if (libraryLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-[#0f172a] via-[#0f172a] to-[#111827] text-white flex items-center justify-center">
+        <div className="text-center">
+          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-white mb-4"></div>
+          <p className="text-slate-300">Loading meal library...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#0f172a] via-[#0f172a] to-[#111827] text-white">
-      <div className="max-w-6xl mx-auto px-4 py-12 space-y-10">
-        <header className="space-y-6">
-          <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
-            <div>
-              <p className="text-xs uppercase tracking-[0.3em] text-[#9AA6B2] mb-2">
-                January Meal Blueprint
-              </p>
-              <h1 className="text-3xl sm:text-4xl font-semibold">
-                The Local Effort January reset
-              </h1>
-              <p className="text-slate-300 mt-2 max-w-2xl">
-                Built around wild-caught fish, fermented foods, and structured
-                micronutrient targets to restore metabolic flexibility in 30
-                days.
-              </p>
+    <div 
+      className="min-h-screen bg-cover bg-center bg-fixed" 
+      style={{ backgroundImage: 'url(/images/2275660955_06cff8cbb4_o.jpg)' }}
+    >
+      <div className="min-h-screen bg-white/80 backdrop-blur-sm">
+        <div className="max-w-7xl mx-auto px-4 py-8 space-y-10">
+        {/* Hero Section with Video and Navigation */}
+        <header className="space-y-6" ref={overviewRef}>
+          <div className="grid lg:grid-cols-[400px_1fr] gap-6 items-start">
+            {/* Left: Founder Video */}
+            <div className="relative aspect-video lg:aspect-[9/12] rounded-2xl overflow-hidden bg-[#7F9FA8]/10 border-2 border-[#66D3E7]/30 shadow-lg">
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="text-center">
+                  <div className="w-16 h-16 rounded-full bg-[#21C8E7]/20 border-2 border-[#21C8E7] flex items-center justify-center mb-3 mx-auto">
+                    <svg className="w-8 h-8 text-[#2E5E67]" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M8 5v14l11-7z" />
+                    </svg>
+                  </div>
+                  <p className="text-sm text-[#2E5E67] font-medium">Founder Message</p>
+                  <p className="text-xs text-[#7F9FA8] mt-1">Coming Soon</p>
+                </div>
+              </div>
+              {/* Placeholder for actual video */}
+              {/* <video className="w-full h-full object-cover" controls>
+                <source src="/path-to-founder-video.mp4" type="video/mp4" />
+              </video> */}
             </div>
-            <div className="flex flex-wrap items-center gap-3">
-              {quickActions.map((action) => (
+
+            {/* Right: Title and Navigation */}
+            <div className="space-y-6">
+              <div>
+                <p className="text-xs uppercase tracking-[0.3em] text-[#7F9FA8] mb-2">
+                  January Meal Blueprint
+                </p>
+                <h1 className="text-3xl sm:text-4xl font-bold text-[#2E5E67]">
+                  The <span className="text-[#ffc697]">Local Effort</span> January reset
+                </h1>
+                <p className="text-[#2E5E67]/80 mt-2 max-w-2xl">
+                  Let's reset. Weston shares his diet plan for January, focusing on high fiber and fermented foods to build a strong metabolic base.
+                </p>
+                <p className="text-[#2E5E67]/80 mt-2 max-w-2xl">
+                  Sign in and you can make changes and edits to the diet to suit your needs. The ingredients pull data from the USDA Food Database.
+                </p>
+              </div>
+
+              {/* Animated Navigation Buttons */}
+              <div className="flex flex-wrap gap-2">
                 <button
-                  key={action.label}
-                  onClick={action.action}
-                  className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-200 rounded-lg border border-white/10 hover:border-white/30 hover:bg-white/5 transition-colors"
+                  onClick={() => setShowRecipes(true)}
+                  className="group relative px-4 py-2 text-sm font-medium text-[#2E5E67] bg-white rounded-lg border-2 border-[#66D3E7] hover:border-[#21C8E7] hover:bg-[#21C8E7]/5 transition-all duration-300 hover:scale-105 shadow-md hover:shadow-xl"
                 >
-                  {action.icon} {action.label}
+                  <BookIcon />
+                  <span className="relative z-10 ml-2">Recipes</span>
+                  <div className="absolute inset-0 bg-gradient-to-r from-[#ffc697]/0 via-[#ffc697]/10 to-[#ffc697]/0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-lg"></div>
                 </button>
-              ))}
-              {saveStatus && (
-                <span
-                  className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-full ${
-                    saveStatus === 'saving'
-                      ? 'text-[#9AA6B2] bg-[#BCCCDC]/30'
-                      : saveStatus === 'success'
-                      ? 'text-green-300 bg-green-500/10'
-                      : 'text-red-300 bg-red-500/10'
-                  }`}
+                <button
+                  onClick={() => setShowMethodology(true)}
+                  className="group relative px-4 py-2 text-sm font-medium text-[#2E5E67] bg-white rounded-lg border-2 border-[#66D3E7] hover:border-[#21C8E7] hover:bg-[#21C8E7]/5 transition-all duration-300 hover:scale-105 shadow-md hover:shadow-xl"
                 >
-                  {saveStatus === 'saving' ? 'Saving…' : saveStatus === 'success' ? 'Saved' : 'Error'}
-                </span>
-              )}
-              <AuthButton
-                user={user}
-                onSignIn={handleSignIn}
-                onSignOut={handleSignOut}
-              />
+                  <InfoIcon />
+                  <span className="relative z-10 ml-2">Methodology</span>
+                  <div className="absolute inset-0 bg-gradient-to-r from-[#66D3E7]/0 via-[#66D3E7]/15 to-[#66D3E7]/0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-lg"></div>
+                </button>
+              </div>
+
+              {/* Export and Auth Actions */}
+              <div className="flex flex-wrap items-center gap-3">
+                <button
+                  onClick={handleExportExcel}
+                  className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-[#7F9FA8] bg-white rounded-lg border border-[#7F9FA8]/30 hover:border-[#66D3E7] hover:bg-[#66D3E7]/5 hover:text-[#2E5E67] transition-colors shadow-sm"
+                >
+                  <SheetsIcon /> Export to Sheets
+                </button>
+                <button
+                  onClick={handleExportCsv}
+                  className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-[#7F9FA8] bg-white rounded-lg border border-[#7F9FA8]/30 hover:border-[#66D3E7] hover:bg-[#66D3E7]/5 hover:text-[#2E5E67] transition-colors shadow-sm"
+                >
+                  <DownloadIcon /> Export CSV
+                </button>
+                <button
+                  onClick={handleAddToGoogleCalendar}
+                  className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-[#7F9FA8] bg-white rounded-lg border border-[#7F9FA8]/30 hover:border-[#66D3E7] hover:bg-[#66D3E7]/5 hover:text-[#2E5E67] transition-colors shadow-sm"
+                >
+                  <CalendarIcon /> Add to Google Calendar
+                </button>
+                {saveStatus && (
+                  <span
+                    className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-full shadow-sm ${
+                      saveStatus === 'saving'
+                        ? 'text-[#7F9FA8] bg-[#7F9FA8]/10 border border-[#7F9FA8]/30'
+                        : saveStatus === 'success'
+                        ? 'text-[#21C8E7] bg-[#21C8E7]/10 border border-[#21C8E7]/30'
+                        : 'text-[#ffc697] bg-[#ffc697]/10 border border-[#ffc697]/30'
+                    }`}
+                  >
+                    {saveStatus === 'saving' ? 'Saving…' : saveStatus === 'success' ? 'Saved' : 'Error'}
+                  </span>
+                )}
+                <AuthButton
+                  user={user}
+                  onSignIn={handleSignIn}
+                  onSignOut={handleSignOut}
+                />
+              </div>
             </div>
           </div>
 
           {authStatus && (
-            <div className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-slate-200">
+            <div className="rounded-xl border-2 border-[#66D3E7]/50 bg-[#66D3E7]/10 px-4 py-3 text-sm text-[#2E5E67] shadow-md">
               {authStatus}
             </div>
           )}
 
-          <div className="flex flex-wrap items-center gap-3 text-sm text-slate-200">
+          <div className="flex flex-wrap items-center gap-3 text-sm">
             {isAdmin && (
-              <div className="flex items-center gap-2 bg-white/10 rounded-full px-3 py-1">
-                <span>Edit Scope:</span>
-                <span className="inline-flex overflow-hidden rounded-full border border-white/20">
+              <div className="flex items-center gap-2 bg-white rounded-full px-3 py-1 border-2 border-[#66D3E7] shadow-md">
+                <span className="text-[#2E5E67] font-medium">Edit Scope:</span>
+                <span className="inline-flex overflow-hidden rounded-full border-2 border-[#21C8E7]">
                   <button
                     onClick={() => setEditScope('global')}
-                    className={`px-3 py-1 ${
-                      editScope === 'global' ? 'bg-white/30' : ''
+                    className={`px-3 py-1 text-[#2E5E67] font-medium transition-colors ${
+                      editScope === 'global' ? 'bg-[#21C8E7] text-white' : 'bg-white hover:bg-[#21C8E7]/10'
                     }`}
                   >
                     Global
                   </button>
                   <button
                     onClick={() => setEditScope('user')}
-                    className={`px-3 py-1 ${
-                      editScope === 'user' ? 'bg-white/30' : ''
+                    className={`px-3 py-1 text-[#2E5E67] font-medium transition-colors ${
+                      editScope === 'user' ? 'bg-[#21C8E7] text-white' : 'bg-white hover:bg-[#21C8E7]/10'
                     }`}
                   >
                     My Plan
@@ -419,7 +564,7 @@ export default function JanuaryMealsPage() {
             )}
 
             {!isSignedIn && (
-              <span className="px-3 py-1 rounded-full bg-white/10 text-xs">
+              <span className="px-3 py-1 rounded-full bg-[#ffc697]/20 border border-[#ffc697]/50 text-[#2E5E67] text-xs font-medium shadow-sm">
                 Anonymous edits reset on refresh
               </span>
             )}
@@ -427,7 +572,7 @@ export default function JanuaryMealsPage() {
             {canSave && (
               <button
                 onClick={handleSavePlan}
-                className="ml-auto px-4 py-2 rounded-lg bg-[#BCCCDC] text-slate-900 font-medium"
+                className="ml-auto px-4 py-2 rounded-lg bg-[#21C8E7] text-white font-medium hover:bg-[#21C8E7]/90 shadow-md hover:shadow-lg transition-all"
               >
                 {saveLabel}
               </button>
@@ -436,7 +581,7 @@ export default function JanuaryMealsPage() {
             {!isSignedIn && (
               <button
                 onClick={resetAnon}
-                className="px-3 py-1 rounded-full border border-white/20 text-xs"
+                className="px-3 py-1 rounded-full border-2 border-[#7F9FA8] text-[#2E5E67] text-xs font-medium hover:bg-[#7F9FA8]/10 transition-colors shadow-sm"
               >
                 Reset Draft
               </button>
@@ -445,7 +590,7 @@ export default function JanuaryMealsPage() {
             {isSignedIn && editScope === 'user' && (
               <button
                 onClick={resetUserToGlobal}
-                className="px-3 py-1 rounded-full border border-white/20 text-xs"
+                className="px-3 py-1 rounded-full border-2 border-[#7F9FA8] text-[#2E5E67] text-xs font-medium hover:bg-[#7F9FA8]/10 transition-colors shadow-sm"
               >
                 Reset to Global
               </button>
@@ -453,16 +598,16 @@ export default function JanuaryMealsPage() {
           </div>
         </header>
 
-        <section className="bg-[#0B1120] rounded-3xl border border-white/10 p-6 space-y-6">
+        <section ref={weeklyStatsRef} className="bg-white rounded-3xl border-2 border-[#66D3E7] p-6 space-y-6 scroll-mt-20 shadow-xl">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div>
-              <p className="text-xs uppercase tracking-[0.3em] text-[#9AA6B2]">
+              <p className="text-xs uppercase tracking-[0.3em] text-[#7F9FA8] font-semibold">
                 Week {currentWeek} averages
               </p>
               <div className="flex items-center gap-6 mt-3 text-sm">
-                    <SummaryStat label="Calories" value={`${Math.round(weekAverages.calories)} kcal`} tone="text-[#9AA6B2]" />
-                    <SummaryStat label="Protein" value={`${Math.round(weekAverages.protein)} g`} tone="text-blue-300" />
-                    <SummaryStat label="Fiber" value={`${Math.round(weekAverages.fiber)} g`} tone="text-purple-300" />
+                    <SummaryStat label="Calories" value={`${Math.round(weekAverages.calories)} kcal`} tone="text-[#2E5E67]" />
+                    <SummaryStat label="Protein" value={`${Math.round(weekAverages.protein)} g`} tone="text-[#21C8E7]" />
+                    <SummaryStat label="Fiber" value={`${Math.round(weekAverages.fiber)} g`} tone="text-[#ffc697]" />
               </div>
             </div>
             <WeekNav currentWeek={currentWeek} onWeekChange={setCurrentWeek} />
@@ -475,14 +620,14 @@ export default function JanuaryMealsPage() {
                   const max = goal?.max || 1;
                   const percent = Math.min((value / max) * 100, 100);
               return (
-                <div key={key} className="p-3 rounded-xl border border-white/10 bg-white/5">
-                  <p className="text-xs uppercase text-slate-300 flex items-center justify-between">
+                <div key={key} className="p-3 rounded-xl border-2 border-[#66D3E7]/30 bg-gradient-to-br from-white to-[#66D3E7]/5 shadow-md">
+                  <p className="text-xs uppercase text-[#2E5E67] flex items-center justify-between font-medium">
                     <span>{goal?.label || key}</span>
-                        <span>{Math.round(value)} {goal?.unit || ''}</span>
+                        <span className="text-[#21C8E7] font-semibold">{Math.round(value)} {goal?.unit || ''}</span>
                   </p>
-                  <div className="h-2 mt-2 bg-white/10 rounded-full overflow-hidden">
+                  <div className="h-2 mt-2 bg-[#7F9FA8]/20 rounded-full overflow-hidden">
                     <div
-                      className="h-full rounded-full bg-gradient-to-r from-[#9AA6B2] to-white"
+                      className="h-full rounded-full bg-gradient-to-r from-[#21C8E7] to-[#66D3E7]"
                       style={{ width: `${percent}%` }}
                     />
                   </div>
@@ -491,43 +636,19 @@ export default function JanuaryMealsPage() {
             })}
           </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3">
-                {['epa_dha', 'vitD', 'magnesium', 'potassium', 'iron', 'vitC'].map((key) => {
-                  const goal = dietGoals[key] || DEFAULT_DIET_GOALS[key];
-                  if (!goal) return null;
-                  const value = (weekAverages as any)[key] as number;
-                  const max = goal.max || 1;
-                  const percent = Math.min((value / max) * 100, 100);
-                  return (
-                    <div key={key} className="p-3 rounded-xl border border-white/10 bg-white/5">
-                      <p className="text-xs uppercase text-slate-300 flex items-center justify-between">
-                        <span>{goal.label}</span>
-                        <span>{Math.round(value)} {goal.unit}</span>
-                      </p>
-                      <div className="h-2 mt-2 bg-white/10 rounded-full overflow-hidden">
-                        <div
-                          className="h-full rounded-full bg-gradient-to-r from-[#3b82f6] to-[#22c55e]"
-                          style={{ width: `${percent}%` }}
-                        />
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-
           {lookupIngredient && lastLookupStats && (
-            <div className="p-4 rounded-xl border border-white/10 bg-white/5 text-sm text-slate-200">
+            <div className="p-4 rounded-xl border-2 border-[#66D3E7] bg-gradient-to-br from-white to-[#66D3E7]/5 text-sm shadow-md">
               <div className="flex items-center justify-between gap-3 mb-2">
                 <div>
-                  <p className="text-xs uppercase tracking-wide text-slate-400">
+                  <p className="text-xs uppercase tracking-wide text-[#7F9FA8] font-semibold">
                     Last USDA lookup
                   </p>
-                  <p className="text-base font-semibold text-white">
+                  <p className="text-base font-semibold text-[#2E5E67]">
                     {lookupIngredient.name}
                   </p>
                 </div>
                 <button
-                  className="text-xs text-slate-400 hover:text-white"
+                  className="text-xs text-[#7F9FA8] hover:text-[#21C8E7] font-medium transition-colors"
                   onClick={() => setShowIngredientLookup(true)}
                 >
                   Search again
@@ -543,19 +664,19 @@ export default function JanuaryMealsPage() {
           )}
         </section>
 
-        <section className="bg-[#0B1120] rounded-3xl border border-white/10 p-6 space-y-6">
+        <section ref={calendarRef} className="bg-white rounded-3xl border-2 border-[#66D3E7] p-6 space-y-6 scroll-mt-20 shadow-xl">
           <div className="flex items-center justify-between flex-wrap gap-4">
-            <h2 className="text-lg font-semibold text-white/90">
+            <h2 className="text-lg font-semibold text-[#2E5E67]">
               January calendar
             </h2>
-            <p className="text-xs text-slate-400">
+            <p className="text-xs text-[#7F9FA8] font-medium">
               Click any day to edit meals and view detailed nutrition.
             </p>
           </div>
 
-          <div className="hidden lg:grid grid-cols-7 gap-3 text-xs text-slate-400">
+          <div className="hidden lg:grid grid-cols-7 gap-3 text-xs text-[#7F9FA8]">
             {DAY_NAMES.map((name) => (
-              <div key={name} className="text-center uppercase tracking-wide">
+              <div key={name} className="text-center uppercase tracking-wide font-semibold">
                 {name}
               </div>
             ))}
@@ -574,50 +695,34 @@ export default function JanuaryMealsPage() {
             ))}
           </div>
 
-          <div className="mt-2 p-4 rounded-xl bg-white/5 border border-white/10">
-            <p className="text-xs uppercase tracking-wider text-slate-400 mb-3">
+          <div className="mt-2 p-4 rounded-xl bg-gradient-to-br from-white to-[#66D3E7]/5 border-2 border-[#66D3E7]/30 shadow-md">
+            <p className="text-xs uppercase tracking-wider text-[#7F9FA8] mb-3 font-semibold">
               Dinner Rotation
             </p>
             <div className="flex flex-wrap gap-2">
-              {Object.entries(BASE_MEALS.dinner || {}).map(([code, info]) => (
+              {mealLibrary && Object.entries(mealLibrary.dinner || {}).map(([code, meal]) => (
                 <span
                   key={code}
                   className="px-3 py-1.5 rounded-lg text-xs font-medium"
                   style={{
-                    backgroundColor: `${info.color || '#94a3b8'}20`,
-                    color: info.color || '#e2e8f0',
+                    backgroundColor: `${meal.color || '#94a3b8'}20`,
+                    color: meal.color || '#e2e8f0',
                   }}
                 >
-                  {info.name}
+                  {meal.name}
                 </span>
               ))}
             </div>
           </div>
         </section>
 
-        <section className="bg-[#0B1120] rounded-3xl border border-white/10 p-6">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-lg font-semibold text-white/90">
-              Why this works
-            </h2>
-            <button
-              onClick={() => setShowMethodology(true)}
-              className="flex items-center gap-2 text-sm text-[#9AA6B2] hover:text-white"
-            >
-              Learn more <ChevronRight />
-            </button>
-          </div>
-          <p className="text-slate-300 text-sm">
-            Layered omega-3s, fermented foods, and weekly cycling built to
-            detoxify, rebuild, and stabilize mood. Click to see the underlying
-            research and nutritional scaffolding.
-          </p>
-        </section>
       </div>
 
       {showMethodology && (
         <MethodologyPanel
           goals={dietGoals}
+          onChange={setDietGoals}
+          onReset={() => setDietGoals(DEFAULT_DIET_GOALS)}
           onClose={() => setShowMethodology(false)}
         />
       )}
@@ -636,16 +741,11 @@ export default function JanuaryMealsPage() {
       <RecipesPanel
         isOpen={showRecipes}
         onClose={() => setShowRecipes(false)}
-        mealLibrary={BASE_MEALS}
+        mealLibrary={mealLibrary}
         effectiveDays={effectiveDays}
-      />
-
-      <TargetsPanel
-        isOpen={showTargets}
-        onClose={() => setShowTargets(false)}
-        goals={dietGoals}
-        onChange={setDietGoals}
-        onReset={() => setDietGoals(DEFAULT_DIET_GOALS)}
+        canEdit={isAdmin}
+        onEditRecipe={handleEditRecipe}
+        onDeleteRecipe={handleDeleteRecipe}
       />
 
       {showIngredientLookup && (
@@ -657,6 +757,7 @@ export default function JanuaryMealsPage() {
           onClose={() => setShowIngredientLookup(false)}
         />
       )}
+      </div>
     </div>
   );
 }
@@ -672,7 +773,7 @@ const WeekNav = ({
     <button
       onClick={() => onWeekChange(Math.max(1, currentWeek - 1))}
       disabled={currentWeek === 1}
-      className="p-2 rounded-lg bg-white/10 disabled:opacity-30"
+      className="p-2 rounded-lg bg-white border-2 border-[#66D3E7] text-[#21C8E7] disabled:opacity-30 disabled:bg-[#7F9FA8]/10 disabled:border-[#7F9FA8]/30 hover:bg-[#21C8E7]/10 transition-colors shadow-md"
     >
       <ChevronLeft />
     </button>
@@ -681,8 +782,8 @@ const WeekNav = ({
         <button
           key={week}
           onClick={() => onWeekChange(week)}
-          className={`w-8 h-8 rounded-lg text-sm font-medium ${
-            currentWeek === week ? 'bg-white/70 text-slate-900' : 'bg-white/10'
+          className={`w-8 h-8 rounded-lg text-sm font-semibold shadow-md transition-all ${
+            currentWeek === week ? 'bg-[#21C8E7] text-white scale-110' : 'bg-white border-2 border-[#66D3E7] text-[#2E5E67] hover:bg-[#66D3E7]/20'
           }`}
         >
           {week}
@@ -692,7 +793,7 @@ const WeekNav = ({
     <button
       onClick={() => onWeekChange(Math.min(5, currentWeek + 1))}
       disabled={currentWeek === 5}
-      className="p-2 rounded-lg bg-white/10 disabled:opacity-30"
+      className="p-2 rounded-lg bg-white border-2 border-[#66D3E7] text-[#21C8E7] disabled:opacity-30 disabled:bg-[#7F9FA8]/10 disabled:border-[#7F9FA8]/30 hover:bg-[#21C8E7]/10 transition-colors shadow-md"
     >
       <ChevronRight />
     </button>
@@ -714,31 +815,31 @@ const CalendarDay = ({
 }) => (
   <button
     onClick={onClick}
-    className="group relative aspect-square p-3 rounded-2xl border border-white/10 bg-white/5 hover:border-white/40 transition-all"
+    className="group relative aspect-square p-3 rounded-2xl border-2 border-[#66D3E7]/50 bg-white hover:border-[#21C8E7] hover:bg-[#21C8E7]/5 hover:scale-105 transition-all shadow-md hover:shadow-xl"
   >
     {hasCustomization && (
-      <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-[#BCCCDC]" />
+      <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-[#ffc697] border-2 border-white shadow-md" />
     )}
     <div className="flex flex-col h-full">
-      <div className="flex items-center justify-between mb-2 text-xs text-slate-300">
+      <div className="flex items-center justify-between mb-2 text-xs text-[#7F9FA8] font-medium">
         <span>{weekdayLabel || 'Day'}</span>
-        <span className="text-lg font-semibold text-white">
+        <span className="text-lg font-bold text-[#2E5E67]">
           {day.plan.day}
         </span>
       </div>
       <div
-        className="flex-1 flex items-center justify-center rounded-xl bg-white/10"
-        style={{ borderColor: day.meals.dinner.meal.color || '#94a3b8' }}
+        className="flex-1 flex items-center justify-center rounded-xl bg-gradient-to-br from-[#66D3E7]/10 to-[#21C8E7]/5 border border-[#66D3E7]/30"
+        style={{ borderColor: day.meals.dinner.meal.color || '#7F9FA8' }}
       >
-        <span className="text-xs font-medium text-white/90 px-2 text-center">
+        <span className="text-xs font-semibold text-[#2E5E67] px-2 text-center">
           {day.meals.dinner.meal.name}
         </span>
       </div>
       {nutrition && (
-        <div className="mt-2 text-left text-xs text-slate-300 space-y-0.5">
-          <p>{Math.round(nutrition.calories)} kcal</p>
+        <div className="mt-2 text-left text-xs text-[#2E5E67] space-y-0.5 font-medium">
+          <p className="text-[#21C8E7]">{Math.round(nutrition.calories)} kcal</p>
           <p>{Math.round(nutrition.protein)}g protein</p>
-          <p>{Math.round(nutrition.fiber)}g fiber</p>
+          <p className="text-[#ffc697]">{Math.round(nutrition.fiber)}g fiber</p>
         </div>
       )}
     </div>
@@ -747,59 +848,146 @@ const CalendarDay = ({
 
 const MethodologyPanel = ({
   goals,
+  onChange,
+  onReset,
   onClose,
 }: {
   goals: Record<string, DietGoal>;
+  onChange?: (next: Record<string, DietGoal>) => void;
+  onReset?: () => void;
   onClose: () => void;
-}) => (
-  <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-    <div className="relative w-full max-w-2xl max-h-[85vh] overflow-hidden bg-slate-50 rounded-2xl border border-[#9AA6B2] text-slate-900">
-      <div className="sticky top-0 z-10 flex items-center justify-between p-6 bg-slate-50 border-b border-[#9AA6B2]">
-        <h2 className="text-xl font-semibold text-slate-900">Methodology</h2>
+}) => {
+  const entries = Object.entries(goals);
+
+  const updateGoal = (key: string, field: 'min' | 'max', value: string) => {
+    if (!onChange) return;
+    const nextValue = value === '' ? undefined : Number(value);
+    if (nextValue !== undefined && Number.isNaN(nextValue)) return;
+    const current = goals[key];
+    if (!current) return;
+    onChange({
+      ...goals,
+      [key]: {
+        ...current,
+        [field]: nextValue,
+      },
+    });
+  };
+
+  return (
+  <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#2E5E67]/80 backdrop-blur-sm">
+    <div className="relative w-full max-w-2xl max-h-[85vh] overflow-hidden bg-white rounded-2xl border-2 border-[#66D3E7] shadow-2xl">
+      <div className="sticky top-0 z-10 flex items-center justify-between p-6 bg-gradient-to-r from-white to-[#66D3E7]/10 border-b-2 border-[#66D3E7]">
+        <h2 className="text-xl font-bold text-[#2E5E67]">Methodology</h2>
         <button
           onClick={onClose}
-          className="p-2 rounded-lg hover:bg-[#BCCCDC] text-slate-600 hover:text-slate-900"
+          className="p-2 rounded-lg hover:bg-[#21C8E7]/10 text-[#7F9FA8] hover:text-[#21C8E7] transition-colors"
         >
           <XIcon />
         </button>
       </div>
-      <div className="p-6 overflow-y-auto max-h-[calc(85vh-88px)] space-y-6 text-sm text-slate-700 leading-relaxed">
+      <div className="p-6 overflow-y-auto max-h-[calc(85vh-88px)] space-y-6 text-sm text-[#2E5E67] leading-relaxed">
         <section>
-          <h3 className="text-[#9AA6B2] font-medium mb-2">Core Goals</h3>
+          <h3 className="text-[#21C8E7] font-bold mb-2 text-base">Core Goals</h3>
           <ul className="space-y-1.5">
             <li className="flex items-start gap-2">
-              <CheckIcon /> Rebuild and restore gut health
+              <CheckIcon /> Increasing fiber and fermenteds, and reducing sugar, to improve digestion and appetite, and systematically reduce inflammation
             </li>
             <li className="flex items-start gap-2">
-              <CheckIcon /> Reset baseline nutritional needs
+              <CheckIcon /> Increasing food sources of omegas and seaweed to improve mineral profile and enhance winter mood
             </li>
             <li className="flex items-start gap-2">
-              <CheckIcon /> Elevate mitochondria with weekly seafood rotation
+              <CheckIcon /> Measuring protein and calorie intake for calibration
+            </li>
+            <li className="flex items-start gap-2">
+              <CheckIcon /> Leaving caloric room for additional meals and snacks that are more vibe based
             </li>
           </ul>
         </section>
         <section>
-          <h3 className="text-[#9AA6B2] font-medium mb-2">Targets</h3>
-          <div className="grid grid-cols-2 gap-3">
-            {Object.values(goals).map((goal) => (
-              <div
-                key={goal.label}
-                className="rounded-xl border border-[#9AA6B2]/40 p-3 bg-white"
+          <h3 className="text-[#21C8E7] font-bold mb-2 text-base">Targets</h3>
+          <div className="flex items-center justify-between mb-3">
+            <p className="text-xs text-[#7F9FA8]">
+              Update targets to match your personal goals.
+            </p>
+            {onReset && (
+              <button
+                onClick={onReset}
+                className="text-xs px-3 py-1.5 rounded-lg border-2 border-[#66D3E7] text-[#2E5E67] font-medium hover:bg-[#66D3E7]/10 transition-colors shadow-sm"
               >
-                <p className="text-xs uppercase text-slate-500">
+                Reset to defaults
+              </button>
+            )}
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {entries.map(([key, goal]) => (
+              <div
+                key={key}
+                className="rounded-xl border-2 border-[#66D3E7]/50 p-3 bg-gradient-to-br from-white to-[#66D3E7]/5 shadow-md"
+              >
+                <p className="text-xs uppercase text-[#7F9FA8] font-semibold">
                   {goal.label}
                 </p>
-                <p className="text-lg font-semibold text-slate-900">
-                  {goal.min ?? ''}-{goal.max} {goal.unit}
-                </p>
+                {onChange ? (
+                  <div className="mt-2 flex items-end gap-2">
+                    <label className="flex-1">
+                      <span className="block text-[11px] text-[#7F9FA8] mb-1">Min</span>
+                      <input
+                        type="number"
+                        inputMode="decimal"
+                        value={goal.min ?? ''}
+                        onChange={(e) => updateGoal(key, 'min', e.target.value)}
+                        className="w-full rounded-lg border-2 border-[#66D3E7]/50 px-2 py-1 text-sm text-[#2E5E67] focus:border-[#21C8E7] focus:outline-none"
+                      />
+                    </label>
+                    <label className="flex-1">
+                      <span className="block text-[11px] text-[#7F9FA8] mb-1">Max</span>
+                      <input
+                        type="number"
+                        inputMode="decimal"
+                        value={goal.max}
+                        onChange={(e) => updateGoal(key, 'max', e.target.value)}
+                        className="w-full rounded-lg border-2 border-[#66D3E7]/50 px-2 py-1 text-sm text-[#2E5E67] focus:border-[#21C8E7] focus:outline-none"
+                      />
+                    </label>
+                    <span className="pb-1 text-sm text-[#2E5E67] font-medium whitespace-nowrap">
+                      {goal.unit}
+                    </span>
+                  </div>
+                ) : (
+                  <p className="text-lg font-bold text-[#2E5E67] mt-2">
+                    {goal.min ?? ''}-{goal.max} {goal.unit}
+                  </p>
+                )}
               </div>
             ))}
           </div>
+        </section>
+        <section>
+          <h3 className="text-[#21C8E7] font-bold mb-2 text-base">Underlying Science</h3>
+          <ul className="list-disc pl-5 space-y-1 text-[#2E5E67]">
+            <li>
+              <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC9040132" className="text-[#21C8E7] hover:text-[#66D3E7] font-medium hover:underline" target="_blank" rel="noreferrer">
+                Gut microbiota modulation in metabolic health (PMC9040132)
+              </a>
+            </li>
+            <li>
+              <a href="https://onlinelibrary.wiley.com/doi/10.1111/jgh.16619" className="text-[#21C8E7] hover:text-[#66D3E7] font-medium hover:underline" target="_blank" rel="noreferrer">
+                Nutritional interventions for liver-gut axis (JGH.16619)
+              </a>
+            </li>
+            <li>
+              <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC9268559" className="text-[#21C8E7] hover:text-[#66D3E7] font-medium hover:underline" target="_blank" rel="noreferrer">
+                Dietary fiber's role in inflammation control (PMC9268559)
+              </a>
+            </li>
+          </ul>
         </section>
       </div>
     </div>
   </div>
 );
+};
 
 const SummaryStat = ({
   label,
@@ -811,10 +999,10 @@ const SummaryStat = ({
   tone: string;
 }) => (
   <div>
-    <p className="text-[10px] uppercase tracking-wider text-slate-500">
+    <p className="text-[10px] uppercase tracking-wider text-[#7F9FA8] font-semibold">
       {label}
     </p>
-    <p className={`text-lg font-semibold ${tone}`}>{value}</p>
+    <p className={`text-lg font-bold ${tone}`}>{value}</p>
   </div>
 );
 
@@ -892,7 +1080,7 @@ const ChevronRight = () => (
 );
 
 const CheckIcon = () => (
-  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="text-[#9AA6B2]">
+  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="text-[#21C8E7]">
     <path
       d="M3 8l3 3 7-7"
       stroke="currentColor"
@@ -906,5 +1094,12 @@ const CheckIcon = () => (
 const XIcon = () => (
   <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="2">
     <path d="M4 4l10 10M14 4L4 14" strokeLinecap="round" />
+  </svg>
+);
+
+const CalendarIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
+    <rect x="2" y="3" width="12" height="11" rx="1" />
+    <path d="M2 6h12M5 2v2M11 2v2" />
   </svg>
 );

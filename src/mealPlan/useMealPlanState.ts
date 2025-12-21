@@ -22,6 +22,7 @@ import type {
   EffectiveDay,
   Meal,
   MealType,
+  MealLibrary,
 } from './types';
 
 type SaveState = 'idle' | 'saving' | 'success' | 'error';
@@ -30,7 +31,7 @@ const mealTypes: MealType[] = ['breakfast', 'lunch', 'dinner', 'snacks'];
 
 const emptyOverrides: MealOverrideMap = {};
 
-export const useMealPlanState = (planKey: string) => {
+export const useMealPlanState = (planKey: string, mealLibrary: MealLibrary) => {
   const [user, setUser] = useState<User | null>(null);
   const [profileRole, setProfileRole] = useState<string | null>(null);
   const [globalOverrides, setGlobalOverrides] =
@@ -227,6 +228,7 @@ export const useMealPlanState = (planKey: string) => {
 
       mealTypes.forEach((mealType) => {
         const base = resolveBaseMealForDay(
+          mealLibrary,
           mealType,
           plan.day,
           plan.dinnerType
@@ -250,7 +252,7 @@ export const useMealPlanState = (planKey: string) => {
         meals,
       };
     });
-  }, [globalOverrides, userOverrides, anonDraft]);
+  }, [globalOverrides, userOverrides, anonDraft, mealLibrary]);
 
   return {
     user,

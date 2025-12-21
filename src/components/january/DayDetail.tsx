@@ -24,6 +24,23 @@ type Props = {
 
 const macroGoalKeys = ['calories', 'protein', 'carbs', 'fat', 'fiber'];
 
+// Default daily recommended values for micronutrients (used when no goal is set)
+const defaultMicroValues: Record<string, { max: number; unit: string; label: string }> = {
+  ala: { max: 1.6, unit: 'g', label: 'Omega-3 ALA' },
+  epa_dha: { max: 2, unit: 'g', label: 'Omega-3 EPA + DHA' },
+  vitA: { max: 900, unit: 'mcg', label: 'Vitamin A' },
+  b12: { max: 2.4, unit: 'mcg', label: 'Vitamin B12' },
+  folate: { max: 400, unit: 'mcg', label: 'Folate' },
+  vitC: { max: 90, unit: 'mg', label: 'Vitamin C' },
+  vitD: { max: 20, unit: 'mcg', label: 'Vitamin D' },
+  vitK: { max: 120, unit: 'mcg', label: 'Vitamin K' },
+  calcium: { max: 1000, unit: 'mg', label: 'Calcium' },
+  magnesium: { max: 400, unit: 'mg', label: 'Magnesium' },
+  potassium: { max: 3400, unit: 'mg', label: 'Potassium' },
+  zinc: { max: 11, unit: 'mg', label: 'Zinc' },
+  iron: { max: 18, unit: 'mg', label: 'Iron' },
+};
+
 const microColorMap: Record<string, string> = {
   ala: '#06b6d4',
   epa_dha: '#0ea5e9',
@@ -75,17 +92,25 @@ export const DayDetail = ({
   const dinnerInfo = day.meals.dinner.meal;
 
   const microGoals = useMemo(() => {
-    const entries = Object.entries(goals || {})
-      .filter(([key]) => !macroGoalKeys.includes(key))
-      .filter(([key]) => (NUTRIENT_KEYS as readonly string[]).includes(key));
+    // Get all micronutrient keys from NUTRIENT_KEYS that aren't macros
+    // Exclude individual epa and dha since we show them combined as epa_dha
+    const microKeys = (NUTRIENT_KEYS as readonly string[]).filter(
+      key => !macroGoalKeys.includes(key) && key !== 'epa' && key !== 'dha'
+    );
 
-    return entries.map(([key, goal]) => ({
-      key,
-      label: goal.label,
-      max: goal.max || 1,
-      unit: goal.unit,
-      color: microColorMap[key] || '#0ea5e9',
-    }));
+    return microKeys.map((key) => {
+      // Check if there's a goal defined for this nutrient
+      const goal = goals?.[key];
+      const defaultValue = defaultMicroValues[key];
+      
+      return {
+        key,
+        label: goal?.label || defaultValue?.label || key,
+        max: goal?.max || defaultValue?.max,
+        unit: goal?.unit || defaultValue?.unit || '',
+        color: microColorMap[key] || '#0ea5e9',
+      };
+    });
   }, [goals]);
 
   return (
@@ -205,27 +230,31 @@ const CircularProgress = ({
   unit: string;
 }) => {
   const percentage = Math.min((value / max) * 100, 100);
+  const circumference = 2 * Math.PI * 15.9155;
+  const offset = circumference - (percentage / 100) * circumference;
+  
   return (
     <div className="flex flex-col items-center bg-white/60 rounded-xl py-4">
-      <svg width="80" height="80" viewBox="0 0 36 36" className="mb-2">
-        <path
-          className="text-[#e2e8f0]"
-          strokeWidth="2.5"
-          stroke="currentColor"
+      <svg width="80" height="80" viewBox="0 0 36 36" className="mb-2" style={{ transform: 'rotate(-90deg)' }}>
+        <circle
+          cx="18"
+          cy="18"
+          r="15.9155"
           fill="none"
-          strokeLinecap="round"
-          d="M18 2.0845
-            a 15.9155 15.9155 0 0 1 0 31.831
-            a 15.9155 15.9155 0 0 1 0 -31.831"
+          stroke="#e2e8f0"
+          strokeWidth="2.5"
         />
-        <path
-          strokeWidth="2.5"
-          strokeLinecap="round"
-          stroke={color}
+        <circle
+          cx="18"
+          cy="18"
+          r="15.9155"
           fill="none"
-          d="M18 2.0845
-            a 15.9155 15.9155 0 0 1 0 31.831"
-          strokeDasharray={`${percentage}, 100`}
+          stroke={color}
+          strokeWidth="2.5"
+          strokeDasharray={circumference}
+          strokeDashoffset={offset}
+          strokeLinecap="round"
+          style={{ transition: 'stroke-dashoffset 0.5s ease' }}
         />
       </svg>
       <p className="text-xs uppercase tracking-wide text-slate-500">{label}</p>
@@ -245,11 +274,11 @@ const MicroBar = ({
 }: {
   label: string;
   value: number;
-  max: number;
+  max?: number;
   unit: string;
   color: string;
 }) => {
-  const percentage = Math.min((value / max) * 100, 100);
+  const percentage = max ? Math.min((value / max) * 100, 100) : 0;
   return (
     <div className="space-y-1">
       <div className="flex justify-between text-xs">
@@ -258,12 +287,14 @@ const MicroBar = ({
           {formatNutrientValue(value, unit)}
         </span>
       </div>
-      <div className="h-1.5 bg-[#BCCCDC] rounded-full overflow-hidden">
-        <div
-          className="h-full rounded-full transition-all duration-500"
-          style={{ width: `${percentage}%`, backgroundColor: color }}
-        />
-      </div>
+      {max && (
+        <div className="h-1.5 bg-[#BCCCDC] rounded-full overflow-hidden">
+          <div
+            className="h-full rounded-full transition-all duration-500"
+            style={{ width: `${percentage}%`, backgroundColor: color }}
+          />
+        </div>
+      )}
     </div>
   );
 };
