@@ -242,11 +242,13 @@ export const getMealInstanceKey = (
 ) => (mealType === 'snacks' ? 'snacks' : `${mealType}-${templateKey}`);
 
 export const resolveBaseMeal = (
+  library: MealLibrary,
   mealType: keyof MealLibrary,
   templateKey: string
-): Meal => cloneMeal(BASE_MEALS[mealType]?.[templateKey]);
+): Meal => cloneMeal(library[mealType]?.[templateKey]);
 
 export const resolveBaseMealForDay = (
+  library: MealLibrary,
   mealType: keyof MealLibrary,
   day: number,
   dinnerCode: string
@@ -254,7 +256,7 @@ export const resolveBaseMealForDay = (
   const templateKey = getDefaultMealKey(mealType, day, dinnerCode);
   const instanceKey = getMealInstanceKey(mealType, templateKey);
   return {
-    meal: resolveBaseMeal(mealType, templateKey),
+    meal: resolveBaseMeal(library, mealType, templateKey),
     instanceKey,
     templateKey,
   };
