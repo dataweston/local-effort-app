@@ -739,22 +739,6 @@ const BASE_MEALS = {
   }
 };
 
-const stableHash = (value) => {
-  const str = String(value ?? '');
-  let hash = 5381;
-  for (let i = 0; i < str.length; i += 1) {
-    hash = (hash * 33) ^ str.charCodeAt(i);
-  }
-  return (hash >>> 0).toString(36);
-};
-
-const buildDeterministicIngredientId = ({ mealType, recipeKey, index, name }) => {
-  const seed = `${mealType || ''}:${recipeKey || ''}:${index}:${(name || '')
-    .toLowerCase()
-    .trim()}`;
-  return `ing_${stableHash(seed)}`;
-};
-
 const cloneMealRecipes = (recipes) =>
   Object.fromEntries(
     Object.entries(recipes).map(([mealType, entries]) => [
@@ -764,64 +748,8 @@ const cloneMealRecipes = (recipes) =>
           code,
           {
             ...recipe,
-            ingredients: (recipe.ingredients || []).map((ingredient, index) => ({
-              ingredientId:
-                ingredient.ingredientId ||
-                buildDeterministicIngredientId({
-                  mealType,
-                  recipeKey: code,
-                  index,
-                  name: ingredient.name,
-                }),
-              ...ingredient,
-            })),
+            ingredients: (recipe.ingredients || []).map((ingredient) => ({ ...ingredient })),
           },
-        ])
-      ),
-    ])
-  );
-
-const createRandomId = () => {
-  try {
-    if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
-      return crypto.randomUUID();
-    }
-  } catch (e) {
-    // ignore
-  }
-  return `id_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 10)}`;
-};
-
-const cloneIngredient = (ingredient) => ({
-  ...ingredient,
-  ingredientId: ingredient?.ingredientId || `ing_${createRandomId()}`,
-});
-
-const isLegacyEmbeddedMeal = (value) =>
-  !!value && typeof value === 'object' && Array.isArray(value.ingredients);
-
-const cloneMeal = (meal = {}) => ({
-  ...meal,
-  ingredients: (meal.ingredients || []).map((ingredient) => cloneIngredient(ingredient)),
-});
-
-// Custom meals are stored as PATCHES (canonical templates live in mealRecipes).
-// Legacy format stored full embedded meals; we still clone that shape so we can migrate it later.
-const cloneMealPatch = (patch = {}) => ({
-  v: patch.v || 2,
-  amountOverrides: { ...(patch.amountOverrides || {}) },
-  removedIngredientIds: [...(patch.removedIngredientIds || [])],
-  addedIngredients: (patch.addedIngredients || []).map((ingredient) => cloneIngredient(ingredient)),
-});
-
-const cloneCustomMeals = (customMeals = {}) =>
-  Object.fromEntries(
-    Object.entries(customMeals || {}).map(([dayKey, meals]) => [
-      dayKey,
-      Object.fromEntries(
-        Object.entries(meals || {}).map(([mealKey, value]) => [
-          mealKey,
-          isLegacyEmbeddedMeal(value) ? cloneMeal(value) : cloneMealPatch(value),
         ])
       ),
     ])
@@ -839,235 +767,30 @@ const mergeMealRecipesWithDefaults = (recipes) => {
   return cloneMealRecipes(merged);
 };
 
+const cloneMeal = (meal = {}) => ({
+  ...meal,
+  ingredients: (meal.ingredients || []).map((ingredient) => ({ ...ingredient })),
+});
+
+const cloneCustomMeals = (customMeals = {}) =>
+  Object.fromEntries(
+    Object.entries(customMeals || {}).map(([dayKey, meals]) => [
+      dayKey,
+      Object.fromEntries(
+        Object.entries(meals || {}).map(([mealKey, meal]) => [mealKey, cloneMeal(meal)])
+      ),
+    ])
+  );
+
 const mergeCustomMealMaps = (globalMeals = {}, userMeals = {}) => {
   const merged = cloneCustomMeals(globalMeals);
   Object.entries(userMeals || {}).forEach(([dayKey, meals]) => {
     merged[dayKey] = { ...(merged[dayKey] || {}) };
-    Object.entries(meals || {}).forEach(([mealKey, value]) => {
-      merged[dayKey][mealKey] = isLegacyEmbeddedMeal(value)
-        ? cloneMeal(value)
-        : cloneMealPatch(value);
+    Object.entries(meals || {}).forEach(([mealKey, meal]) => {
+      merged[dayKey][mealKey] = cloneMeal(meal);
     });
   });
   return merged;
-};
-
-const parseMealKey = (mealKey) => {
-  if (mealKey === 'snacks') return { mealType: 'snacks', templateKey: 'default' };
-  const parts = String(mealKey || '').split('-');
-  const mealType = parts[0] || '';
-  const templateKey = parts.slice(1).join('-');
-  return { mealType, templateKey };
-};
-
-const scaleNumber = (value, precision = 0) => {
-  const num = Number(value);
-  if (Number.isNaN(num)) return 0;
-  const factor = 10 ** precision;
-  return Math.round(num * factor) / factor;
-};
-
-const NUTRIENT_PRECISION = {
-  calories: 1,
-  protein: 1,
-  carbs: 1,
-  fat: 1,
-  fiber: 1,
-  ala: 2,
-  epa: 2,
-  dha: 2,
-  epa_dha: 2,
-  b12: 1,
-  vitD: 1,
-  zinc: 1,
-  iron: 1,
-};
-
-const rescaleIngredientNutrition = (sourceIngredient, newAmount) => {
-  const prevAmount = Number(sourceIngredient?.amount ?? 0);
-  const nextAmount = Number(newAmount ?? 0);
-  if (!prevAmount || Number.isNaN(prevAmount) || Number.isNaN(nextAmount)) {
-    return { ...sourceIngredient, amount: nextAmount };
-  }
-  const ratio = nextAmount / prevAmount;
-  const next = { ...sourceIngredient, amount: nextAmount };
-  NUTRIENT_FIELDS.forEach((field) => {
-    const base = Number(sourceIngredient?.[field] ?? 0);
-    if (Number.isNaN(base)) return;
-    const precision = NUTRIENT_PRECISION[field] ?? 0;
-    next[field] = scaleNumber(base * ratio, precision);
-  });
-  return next;
-};
-
-const applyMealPatch = (templateMeal, patch) => {
-  if (!patch || isLegacyEmbeddedMeal(patch)) return templateMeal;
-  const amountOverrides = patch.amountOverrides || {};
-  const removed = new Set(patch.removedIngredientIds || []);
-  const addedIngredients = (patch.addedIngredients || []).map((ing) => cloneIngredient(ing));
-  const baseIngredients = (templateMeal?.ingredients || []).map((ingredient) => cloneIngredient(ingredient));
-
-  const nextIngredients = baseIngredients
-    .filter((ingredient) => !removed.has(ingredient.ingredientId))
-    .map((ingredient) => {
-      const overrideAmount = amountOverrides?.[ingredient.ingredientId];
-      if (overrideAmount === undefined || overrideAmount === null) return ingredient;
-      return rescaleIngredientNutrition(ingredient, overrideAmount);
-    });
-
-  return {
-    ...(templateMeal || { name: 'Custom Meal', ingredients: [] }),
-    ingredients: [...nextIngredients, ...addedIngredients],
-  };
-};
-
-const buildMealPatchFromEditedMeal = (templateMeal, editedMeal) => {
-  const templateIngredients = (templateMeal?.ingredients || []).map((i) => cloneIngredient(i));
-  const editedIngredients = (editedMeal?.ingredients || []).map((i) => cloneIngredient(i));
-
-  const templateById = new Map(templateIngredients.map((i) => [i.ingredientId, i]));
-  const editedById = new Map(editedIngredients.map((i) => [i.ingredientId, i]));
-
-  const amountOverrides = {};
-  const removedIngredientIds = [];
-  const addedIngredients = [];
-
-  templateIngredients.forEach((ingredient) => {
-    const edited = editedById.get(ingredient.ingredientId);
-    if (!edited) {
-      removedIngredientIds.push(ingredient.ingredientId);
-      return;
-    }
-    const templateAmount = Number(ingredient.amount ?? 0);
-    const editedAmount = Number(edited.amount ?? 0);
-    if (!Number.isNaN(templateAmount) && !Number.isNaN(editedAmount) && templateAmount !== editedAmount) {
-      amountOverrides[ingredient.ingredientId] = editedAmount;
-    }
-  });
-
-  editedIngredients.forEach((ingredient) => {
-    if (!templateById.has(ingredient.ingredientId)) {
-      addedIngredients.push(ingredient);
-    }
-  });
-
-  const hasChanges =
-    Object.keys(amountOverrides).length > 0 ||
-    removedIngredientIds.length > 0 ||
-    addedIngredients.length > 0;
-
-  if (!hasChanges) return null;
-  return {
-    v: 2,
-    amountOverrides,
-    removedIngredientIds,
-    addedIngredients,
-  };
-};
-
-const normalizeIngredientName = (value) =>
-  String(value || '')
-    .toLowerCase()
-    .trim()
-    .replace(/\s+/g, ' ');
-
-const hasLegacyEmbeddedMeals = (customMeals = {}) => {
-  try {
-    return Object.values(customMeals || {}).some((dayMeals) =>
-      Object.values(dayMeals || {}).some((value) => isLegacyEmbeddedMeal(value))
-    );
-  } catch (e) {
-    return false;
-  }
-};
-
-const migrateLegacyCustomMealsToPatches = (customMeals = {}, mealRecipes = {}) => {
-  if (!hasLegacyEmbeddedMeals(customMeals)) return customMeals;
-
-  const migrated = {};
-  Object.entries(customMeals || {}).forEach(([dayKey, dayMeals]) => {
-    const nextDayMeals = {};
-    Object.entries(dayMeals || {}).forEach(([mealKey, value]) => {
-      if (!isLegacyEmbeddedMeal(value)) {
-        nextDayMeals[mealKey] = cloneMealPatch(value);
-        return;
-      }
-
-      const { mealType, templateKey } = parseMealKey(mealKey);
-      const templateMeal = mealRecipes?.[mealType]?.[templateKey] || { name: 'Custom Meal', ingredients: [] };
-      const templateIngredients = (templateMeal.ingredients || []).map((i) => cloneIngredient(i));
-
-      const nameToTemplateId = new Map();
-      const duplicates = new Set();
-      templateIngredients.forEach((ingredient) => {
-        const normalized = normalizeIngredientName(ingredient.name);
-        if (!normalized) return;
-        if (nameToTemplateId.has(normalized)) {
-          duplicates.add(normalized);
-        } else {
-          nameToTemplateId.set(normalized, ingredient.ingredientId);
-        }
-      });
-
-      duplicates.forEach((name) => nameToTemplateId.delete(name));
-
-      const presentTemplateIds = new Set();
-      const amountOverrides = {};
-      const addedIngredients = [];
-
-      (value.ingredients || []).forEach((customIngredient, index) => {
-        const normalized = normalizeIngredientName(customIngredient.name);
-        const templateId = normalized ? nameToTemplateId.get(normalized) : null;
-        if (templateId) {
-          presentTemplateIds.add(templateId);
-          const templateIngredient = templateIngredients.find((t) => t.ingredientId === templateId);
-          const templateAmount = Number(templateIngredient?.amount ?? 0);
-          const customAmount = Number(customIngredient?.amount ?? 0);
-          if (!Number.isNaN(templateAmount) && !Number.isNaN(customAmount) && templateAmount !== customAmount) {
-            amountOverrides[templateId] = customAmount;
-          }
-        } else {
-          addedIngredients.push({
-            ...cloneIngredient(customIngredient),
-            ingredientId:
-              customIngredient.ingredientId ||
-              buildDeterministicIngredientId({
-                mealType,
-                recipeKey: `${dayKey}:${mealKey}`,
-                index,
-                name: customIngredient.name,
-              }),
-          });
-        }
-      });
-
-      const removedIngredientIds = templateIngredients
-        .map((i) => i.ingredientId)
-        .filter((id) => !presentTemplateIds.has(id));
-
-      const patch = {
-        v: 2,
-        amountOverrides,
-        removedIngredientIds,
-        addedIngredients,
-      };
-
-      const hasChanges =
-        Object.keys(amountOverrides).length > 0 ||
-        removedIngredientIds.length > 0 ||
-        addedIngredients.length > 0;
-
-      if (hasChanges) {
-        nextDayMeals[mealKey] = patch;
-      }
-    });
-
-    if (Object.keys(nextDayMeals).length > 0) {
-      migrated[dayKey] = nextDayMeals;
-    }
-  });
-
-  return migrated;
 };
 
 const loadCustomMealsFromLocalStorage = (storageKey) => {
@@ -1134,11 +857,11 @@ const getMealForDay = (mealType, day, mealRecipes, customMeals, dinnerCode) => {
   const templateKey = getDefaultMealKey(mealType, day, dinnerCode);
   const customKey = mealType === 'snacks' ? 'snacks' : `${mealType}-${templateKey}`;
 
-  const templateMeal = mealRecipes?.[mealType]?.[templateKey] || { name: 'Custom Meal', ingredients: [] };
-  const patch = dayCustomizations?.[customKey];
-  if (!patch) return cloneMeal(templateMeal);
-  if (isLegacyEmbeddedMeal(patch)) return cloneMeal(patch);
-  return applyMealPatch(templateMeal, patch);
+  return (
+    dayCustomizations[customKey] ||
+    mealRecipes?.[mealType]?.[templateKey] ||
+    { name: 'Custom Meal', ingredients: [] }
+  );
 };
 
 const buildDailyNutritionEntry = (day, dinnerType, mealRecipes, customMeals) => {
@@ -1779,7 +1502,12 @@ const DayDetail = ({ day, nutrition, customMeals, mealRecipes, goals, onUpdate, 
   };
 
   const getMeal = (mealType) => {
-    return getMealForDay(mealType, day, mealRecipes, customMeals, nutrition.dinnerType);
+    const templateKey = defaultMealKeys[mealType];
+    const customKey = mealType === 'snacks' ? 'snacks' : `${mealType}-${templateKey}`;
+    if (customMeals[dayKey] && customMeals[dayKey][customKey]) {
+      return customMeals[dayKey][customKey];
+    }
+    return mealRecipes[mealType]?.[templateKey] || { name: 'Custom Meal', ingredients: [] };
   };
 
   const activeGoals = goals || DEFAULT_DIET_GOALS;
@@ -2282,31 +2010,10 @@ const RecipeEditor = ({
   };
 
   const handleIngredientChange = (index, updated) => {
-    setLocalRecipe((prev) => {
-      const prevIngredient = prev.ingredients[index];
-      const nextIngredientBase = {
-        ...updated,
-        ingredientId: updated?.ingredientId || prevIngredient?.ingredientId || `ing_${createRandomId()}`,
-      };
-
-      const prevAmount = Number(prevIngredient?.amount ?? 0);
-      const nextAmount = Number(nextIngredientBase?.amount ?? 0);
-      const shouldRescale =
-        prevIngredient &&
-        !Number.isNaN(prevAmount) &&
-        !Number.isNaN(nextAmount) &&
-        prevAmount > 0 &&
-        nextAmount !== prevAmount;
-
-      const nextIngredient = shouldRescale
-        ? rescaleIngredientNutrition(prevIngredient, nextAmount)
-        : nextIngredientBase;
-
-      return {
-        ...prev,
-        ingredients: prev.ingredients.map((ing, idx) => (idx === index ? nextIngredient : ing)),
-      };
-    });
+    setLocalRecipe((prev) => ({
+      ...prev,
+      ingredients: prev.ingredients.map((ing, idx) => (idx === index ? updated : ing)),
+    }));
   };
 
   const handleRemoveIngredient = (index) => {
@@ -2319,14 +2026,14 @@ const RecipeEditor = ({
   const handleAddBlankIngredient = () => {
     setLocalRecipe((prev) => ({
       ...prev,
-      ingredients: [...prev.ingredients, { ingredientId: `ing_${createRandomId()}`, name: '', amount: 0, unit: 'g' }],
+      ingredients: [...prev.ingredients, { name: '', amount: 0, unit: 'g' }],
     }));
   };
 
   const handleAddIngredientFromSearch = (ingredient) => {
     setLocalRecipe((prev) => ({
       ...prev,
-      ingredients: [...prev.ingredients, cloneIngredient(ingredient)],
+      ingredients: [...prev.ingredients, ingredient],
     }));
     setShowIngredientSearch(false);
   };
@@ -2350,7 +2057,7 @@ const RecipeEditor = ({
       ...localRecipe,
       name: localRecipe.name.trim(),
       color: localRecipe.color || '#f97316',
-      ingredients: localRecipe.ingredients.map((ingredient) => cloneIngredient(ingredient)),
+      ingredients: localRecipe.ingredients.map((ingredient) => ({ ...ingredient })),
     });
   };
 
@@ -2457,7 +2164,7 @@ const RecipeEditor = ({
               )}
               {localRecipe.ingredients.map((ingredient, index) => (
                 <DinnerIngredientRow
-                  key={ingredient.ingredientId || `${ingredient.name}-${index}`}
+                  key={`${ingredient.name}-${index}`}
                   ingredient={ingredient}
                   onChange={(updated) => handleIngredientChange(index, updated)}
                   onRemove={() => handleRemoveIngredient(index)}
@@ -3093,45 +2800,6 @@ export default function JanuaryMealsPage() {
     },
     [isAdmin, mealRecipes, saveGlobalConfig, user, saveUserMealConfig, globalCustomMeals]
   );
-
-  // One-time migration: legacy custom meals stored full embedded recipes.
-  // Convert them into patch objects so templates (Recipes panel) become canonical.
-  useEffect(() => {
-    if (!recipesLoaded) return;
-    if (!hasLegacyEmbeddedMeals(globalCustomMeals) && !hasLegacyEmbeddedMeals(userCustomMeals)) return;
-
-    const migratedGlobal = migrateLegacyCustomMealsToPatches(globalCustomMeals, mealRecipes);
-    if (migratedGlobal !== globalCustomMeals) {
-      setGlobalCustomMeals(migratedGlobal);
-      persistGlobalCustomMealsLocal(migratedGlobal);
-      if (supabase && isAdmin) {
-        saveGlobalConfig(mealRecipes, dietGoals, migratedGlobal);
-      }
-    }
-
-    const migratedUser = migrateLegacyCustomMealsToPatches(userCustomMeals, mealRecipes);
-    if (migratedUser !== userCustomMeals) {
-      setUserCustomMeals(migratedUser);
-      persistUserCustomMealsLocal(migratedUser);
-      if (user && supabaseStorageAvailable) {
-        saveUserCustomMeals(migratedUser);
-      }
-    }
-  }, [
-    recipesLoaded,
-    mealRecipes,
-    globalCustomMeals,
-    userCustomMeals,
-    persistGlobalCustomMealsLocal,
-    persistUserCustomMealsLocal,
-    supabase,
-    isAdmin,
-    dietGoals,
-    saveGlobalConfig,
-    user,
-    supabaseStorageAvailable,
-    saveUserCustomMeals,
-  ]);
   
   const dailyNutrition = useMemo(
     () => buildPlanNutrition(mealRecipes, combinedCustomMeals),
@@ -3180,27 +2848,13 @@ export default function JanuaryMealsPage() {
   
   const handleUpdateMeal = useCallback(
     async (dayKey, mealKey, mealData) => {
-      const { mealType, templateKey } = parseMealKey(mealKey);
-      const templateMeal = mealRecipes?.[mealType]?.[templateKey] || { name: 'Custom Meal', ingredients: [] };
-      const patch = buildMealPatchFromEditedMeal(templateMeal, mealData);
-
-      const applyUpdate = (source) => {
-        const nextDay = { ...(source[dayKey] || {}) };
-        if (patch) {
-          nextDay[mealKey] = patch;
-        } else {
-          delete nextDay[mealKey];
+      const applyUpdate = (source) => ({
+        ...source,
+        [dayKey]: {
+          ...(source[dayKey] || {}),
+          [mealKey]: mealData
         }
-
-        const next = { ...source };
-        if (Object.keys(nextDay).length > 0) {
-          next[dayKey] = nextDay;
-        } else {
-          delete next[dayKey];
-        }
-
-        return next;
-      };
+      });
 
       if (isAdmin) {
         const nextGlobal = applyUpdate(globalCustomMeals);
@@ -3251,62 +2905,10 @@ export default function JanuaryMealsPage() {
     async (dayKey, mealKey) => {
       if (!window.confirm('Are you sure you want to delete this meal?')) return;
 
-      const applyDelete = (source) => {
-        const nextDay = { ...(source[dayKey] || {}) };
-        delete nextDay[mealKey];
-
-        const next = { ...source };
-        if (Object.keys(nextDay).length > 0) {
-          next[dayKey] = nextDay;
-        } else {
-          delete next[dayKey];
-        }
-
-        return next;
-      };
-
-      if (isAdmin) {
-        const nextGlobal = applyDelete(globalCustomMeals);
-        setGlobalCustomMeals(nextGlobal);
-        persistGlobalCustomMealsLocal(nextGlobal);
-
-        if (supabase) {
-          setSaveStatus('saving');
-          const success = await saveGlobalConfig(mealRecipes, dietGoals, nextGlobal);
-          setSaveStatus(success ? 'saved' : 'error');
-        } else {
-          setSaveStatus('saved');
-        }
-      } else {
-        const nextUser = applyDelete(userCustomMeals);
-        setUserCustomMeals(nextUser);
-        persistUserCustomMealsLocal(nextUser);
-
-        if (user && supabaseStorageAvailable) {
-          setSaveStatus('saving');
-          const success = await saveUserCustomMeals(nextUser);
-          setSaveStatus(success ? 'saved' : 'error');
-        } else {
-          setSaveStatus('saved');
-        }
-      }
-
-      setTimeout(() => setSaveStatus(null), 2000);
+      const emptyMeal = { name: 'Deleted Meal', ingredients: [] };
+      await handleUpdateMeal(dayKey, mealKey, emptyMeal);
     },
-    [
-      isAdmin,
-      globalCustomMeals,
-      userCustomMeals,
-      persistGlobalCustomMealsLocal,
-      persistUserCustomMealsLocal,
-      user,
-      supabaseStorageAvailable,
-      saveUserCustomMeals,
-      saveGlobalConfig,
-      mealRecipes,
-      dietGoals,
-      supabase,
-    ]
+    [handleUpdateMeal]
   );
   
   const handleSignIn = async () => {
@@ -3514,31 +3116,15 @@ export default function JanuaryMealsPage() {
         <div className="mt-8 p-4 rounded-xl bg-[#D9EAFD]/70 border border-[#9AA6B2]/30">
           <p className="text-xs uppercase tracking-wider text-slate-500 mb-3">Dinner Rotation</p>
           <div className="flex flex-wrap gap-2">
-            {Object.entries(mealRecipes.dinner || {}).length === 0 ? (
-              <div className="w-full flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                <p className="text-sm text-slate-600">No dinner recipes yet.</p>
-                <button
-                  onClick={() => {
-                    setShowRecipes(true);
-                    setActiveRecipeEditor({ mealType: 'dinner', mode: 'create' });
-                  }}
-                  className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-700 rounded-lg border transition-colors hover:bg-[#BCCCDC]"
-                  style={{ backgroundColor: THEME.panel, borderColor: THEME.accent }}
-                >
-                  <PlusIcon /> Add dinner recipe
-                </button>
+            {Object.entries(mealRecipes.dinner || {}).map(([code, info]) => (
+              <div 
+                key={code} 
+                className="px-3 py-1.5 rounded-lg text-xs"
+                style={{ backgroundColor: info.color + '20', color: info.color }}
+              >
+                {info.name}
               </div>
-            ) : (
-              Object.entries(mealRecipes.dinner || {}).map(([code, info]) => (
-                <div
-                  key={code}
-                  className="px-3 py-1.5 rounded-lg text-xs"
-                  style={{ backgroundColor: info.color + '20', color: info.color }}
-                >
-                  {info.name}
-                </div>
-              ))
-            )}
+            ))}
           </div>
         </div>
         
