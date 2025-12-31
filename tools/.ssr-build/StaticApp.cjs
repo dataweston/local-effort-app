@@ -656,6 +656,1042 @@ var require_lib = __commonJS({
   }
 });
 
+// node_modules/.pnpm/@radix-ui+primitive@1.1.3/node_modules/@radix-ui/primitive/dist/index.mjs
+function composeEventHandlers(originalEventHandler, ourEventHandler, { checkForDefaultPrevented = true } = {}) {
+  return function handleEvent(event) {
+    originalEventHandler?.(event);
+    if (checkForDefaultPrevented === false || !event.defaultPrevented) {
+      return ourEventHandler?.(event);
+    }
+  };
+}
+var canUseDOM;
+var init_dist = __esm({
+  "node_modules/.pnpm/@radix-ui+primitive@1.1.3/node_modules/@radix-ui/primitive/dist/index.mjs"() {
+    canUseDOM = !!(typeof window !== "undefined" && window.document && window.document.createElement);
+  }
+});
+
+// node_modules/.pnpm/@radix-ui+react-compose-refs@1.1.2_@types+react@19.2.0_react@18.2.0/node_modules/@radix-ui/react-compose-refs/dist/index.mjs
+function setRef(ref, value2) {
+  if (typeof ref === "function") {
+    return ref(value2);
+  } else if (ref !== null && ref !== void 0) {
+    ref.current = value2;
+  }
+}
+function composeRefs(...refs) {
+  return (node) => {
+    let hasCleanup = false;
+    const cleanups = refs.map((ref) => {
+      const cleanup = setRef(ref, node);
+      if (!hasCleanup && typeof cleanup == "function") {
+        hasCleanup = true;
+      }
+      return cleanup;
+    });
+    if (hasCleanup) {
+      return () => {
+        for (let i = 0; i < cleanups.length; i++) {
+          const cleanup = cleanups[i];
+          if (typeof cleanup == "function") {
+            cleanup();
+          } else {
+            setRef(refs[i], null);
+          }
+        }
+      };
+    }
+  };
+}
+function useComposedRefs(...refs) {
+  return React2.useCallback(composeRefs(...refs), refs);
+}
+var React2;
+var init_dist2 = __esm({
+  "node_modules/.pnpm/@radix-ui+react-compose-refs@1.1.2_@types+react@19.2.0_react@18.2.0/node_modules/@radix-ui/react-compose-refs/dist/index.mjs"() {
+    React2 = __toESM(require("react"), 1);
+  }
+});
+
+// node_modules/.pnpm/@radix-ui+react-context@1.1.2_@types+react@19.2.0_react@18.2.0/node_modules/@radix-ui/react-context/dist/index.mjs
+function createContext2(rootComponentName, defaultContext) {
+  const Context = React3.createContext(defaultContext);
+  const Provider = (props) => {
+    const { children, ...context } = props;
+    const value2 = React3.useMemo(() => context, Object.values(context));
+    return /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Context.Provider, { value: value2, children });
+  };
+  Provider.displayName = rootComponentName + "Provider";
+  function useContext22(consumerName) {
+    const context = React3.useContext(Context);
+    if (context) return context;
+    if (defaultContext !== void 0) return defaultContext;
+    throw new Error(`\`${consumerName}\` must be used within \`${rootComponentName}\``);
+  }
+  return [Provider, useContext22];
+}
+function createContextScope(scopeName, createContextScopeDeps = []) {
+  let defaultContexts = [];
+  function createContext32(rootComponentName, defaultContext) {
+    const BaseContext = React3.createContext(defaultContext);
+    const index2 = defaultContexts.length;
+    defaultContexts = [...defaultContexts, defaultContext];
+    const Provider = (props) => {
+      const { scope, children, ...context } = props;
+      const Context = scope?.[scopeName]?.[index2] || BaseContext;
+      const value2 = React3.useMemo(() => context, Object.values(context));
+      return /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Context.Provider, { value: value2, children });
+    };
+    Provider.displayName = rootComponentName + "Provider";
+    function useContext22(consumerName, scope) {
+      const Context = scope?.[scopeName]?.[index2] || BaseContext;
+      const context = React3.useContext(Context);
+      if (context) return context;
+      if (defaultContext !== void 0) return defaultContext;
+      throw new Error(`\`${consumerName}\` must be used within \`${rootComponentName}\``);
+    }
+    return [Provider, useContext22];
+  }
+  const createScope = () => {
+    const scopeContexts = defaultContexts.map((defaultContext) => {
+      return React3.createContext(defaultContext);
+    });
+    return function useScope(scope) {
+      const contexts = scope?.[scopeName] || scopeContexts;
+      return React3.useMemo(
+        () => ({ [`__scope${scopeName}`]: { ...scope, [scopeName]: contexts } }),
+        [scope, contexts]
+      );
+    };
+  };
+  createScope.scopeName = scopeName;
+  return [createContext32, composeContextScopes(createScope, ...createContextScopeDeps)];
+}
+function composeContextScopes(...scopes) {
+  const baseScope = scopes[0];
+  if (scopes.length === 1) return baseScope;
+  const createScope = () => {
+    const scopeHooks = scopes.map((createScope2) => ({
+      useScope: createScope2(),
+      scopeName: createScope2.scopeName
+    }));
+    return function useComposedScopes(overrideScopes) {
+      const nextScopes = scopeHooks.reduce((nextScopes2, { useScope, scopeName }) => {
+        const scopeProps = useScope(overrideScopes);
+        const currentScope = scopeProps[`__scope${scopeName}`];
+        return { ...nextScopes2, ...currentScope };
+      }, {});
+      return React3.useMemo(() => ({ [`__scope${baseScope.scopeName}`]: nextScopes }), [nextScopes]);
+    };
+  };
+  createScope.scopeName = baseScope.scopeName;
+  return createScope;
+}
+var React3, import_jsx_runtime2;
+var init_dist3 = __esm({
+  "node_modules/.pnpm/@radix-ui+react-context@1.1.2_@types+react@19.2.0_react@18.2.0/node_modules/@radix-ui/react-context/dist/index.mjs"() {
+    React3 = __toESM(require("react"), 1);
+    import_jsx_runtime2 = require("react/jsx-runtime");
+  }
+});
+
+// node_modules/.pnpm/@radix-ui+react-use-layout-effect@1.1.1_@types+react@19.2.0_react@18.2.0/node_modules/@radix-ui/react-use-layout-effect/dist/index.mjs
+var React4, useLayoutEffect2;
+var init_dist4 = __esm({
+  "node_modules/.pnpm/@radix-ui+react-use-layout-effect@1.1.1_@types+react@19.2.0_react@18.2.0/node_modules/@radix-ui/react-use-layout-effect/dist/index.mjs"() {
+    React4 = __toESM(require("react"), 1);
+    useLayoutEffect2 = globalThis?.document ? React4.useLayoutEffect : () => {
+    };
+  }
+});
+
+// node_modules/.pnpm/@radix-ui+react-id@1.1.1_@types+react@19.2.0_react@18.2.0/node_modules/@radix-ui/react-id/dist/index.mjs
+function useId(deterministicId) {
+  const [id, setId] = React5.useState(useReactId());
+  useLayoutEffect2(() => {
+    if (!deterministicId) setId((reactId) => reactId ?? String(count++));
+  }, [deterministicId]);
+  return deterministicId || (id ? `radix-${id}` : "");
+}
+var React5, useReactId, count;
+var init_dist5 = __esm({
+  "node_modules/.pnpm/@radix-ui+react-id@1.1.1_@types+react@19.2.0_react@18.2.0/node_modules/@radix-ui/react-id/dist/index.mjs"() {
+    React5 = __toESM(require("react"), 1);
+    init_dist4();
+    useReactId = React5[" useId ".trim().toString()] || (() => void 0);
+    count = 0;
+  }
+});
+
+// node_modules/.pnpm/@radix-ui+react-use-controllable-state@1.2.2_@types+react@19.2.0_react@18.2.0/node_modules/@radix-ui/react-use-controllable-state/dist/index.mjs
+function useControllableState({
+  prop,
+  defaultProp,
+  onChange = () => {
+  },
+  caller
+}) {
+  const [uncontrolledProp, setUncontrolledProp, onChangeRef] = useUncontrolledState({
+    defaultProp,
+    onChange
+  });
+  const isControlled = prop !== void 0;
+  const value2 = isControlled ? prop : uncontrolledProp;
+  if (true) {
+    const isControlledRef = React6.useRef(prop !== void 0);
+    React6.useEffect(() => {
+      const wasControlled = isControlledRef.current;
+      if (wasControlled !== isControlled) {
+        const from = wasControlled ? "controlled" : "uncontrolled";
+        const to = isControlled ? "controlled" : "uncontrolled";
+        console.warn(
+          `${caller} is changing from ${from} to ${to}. Components should not switch from controlled to uncontrolled (or vice versa). Decide between using a controlled or uncontrolled value for the lifetime of the component.`
+        );
+      }
+      isControlledRef.current = isControlled;
+    }, [isControlled, caller]);
+  }
+  const setValue = React6.useCallback(
+    (nextValue) => {
+      if (isControlled) {
+        const value22 = isFunction(nextValue) ? nextValue(prop) : nextValue;
+        if (value22 !== prop) {
+          onChangeRef.current?.(value22);
+        }
+      } else {
+        setUncontrolledProp(nextValue);
+      }
+    },
+    [isControlled, prop, setUncontrolledProp, onChangeRef]
+  );
+  return [value2, setValue];
+}
+function useUncontrolledState({
+  defaultProp,
+  onChange
+}) {
+  const [value2, setValue] = React6.useState(defaultProp);
+  const prevValueRef = React6.useRef(value2);
+  const onChangeRef = React6.useRef(onChange);
+  useInsertionEffect(() => {
+    onChangeRef.current = onChange;
+  }, [onChange]);
+  React6.useEffect(() => {
+    if (prevValueRef.current !== value2) {
+      onChangeRef.current?.(value2);
+      prevValueRef.current = value2;
+    }
+  }, [value2, prevValueRef]);
+  return [value2, setValue, onChangeRef];
+}
+function isFunction(value2) {
+  return typeof value2 === "function";
+}
+var React6, React22, useInsertionEffect, SYNC_STATE;
+var init_dist6 = __esm({
+  "node_modules/.pnpm/@radix-ui+react-use-controllable-state@1.2.2_@types+react@19.2.0_react@18.2.0/node_modules/@radix-ui/react-use-controllable-state/dist/index.mjs"() {
+    React6 = __toESM(require("react"), 1);
+    init_dist4();
+    React22 = __toESM(require("react"), 1);
+    useInsertionEffect = React6[" useInsertionEffect ".trim().toString()] || useLayoutEffect2;
+    SYNC_STATE = Symbol("RADIX:SYNC_STATE");
+  }
+});
+
+// node_modules/.pnpm/@radix-ui+react-slot@1.2.3_@types+react@19.2.0_react@18.2.0/node_modules/@radix-ui/react-slot/dist/index.mjs
+// @__NO_SIDE_EFFECTS__
+function createSlot(ownerName) {
+  const SlotClone = /* @__PURE__ */ createSlotClone(ownerName);
+  const Slot2 = React7.forwardRef((props, forwardedRef) => {
+    const { children, ...slotProps } = props;
+    const childrenArray = React7.Children.toArray(children);
+    const slottable = childrenArray.find(isSlottable);
+    if (slottable) {
+      const newElement = slottable.props.children;
+      const newChildren = childrenArray.map((child) => {
+        if (child === slottable) {
+          if (React7.Children.count(newElement) > 1) return React7.Children.only(null);
+          return React7.isValidElement(newElement) ? newElement.props.children : null;
+        } else {
+          return child;
+        }
+      });
+      return /* @__PURE__ */ (0, import_jsx_runtime3.jsx)(SlotClone, { ...slotProps, ref: forwardedRef, children: React7.isValidElement(newElement) ? React7.cloneElement(newElement, void 0, newChildren) : null });
+    }
+    return /* @__PURE__ */ (0, import_jsx_runtime3.jsx)(SlotClone, { ...slotProps, ref: forwardedRef, children });
+  });
+  Slot2.displayName = `${ownerName}.Slot`;
+  return Slot2;
+}
+// @__NO_SIDE_EFFECTS__
+function createSlotClone(ownerName) {
+  const SlotClone = React7.forwardRef((props, forwardedRef) => {
+    const { children, ...slotProps } = props;
+    if (React7.isValidElement(children)) {
+      const childrenRef = getElementRef(children);
+      const props2 = mergeProps(slotProps, children.props);
+      if (children.type !== React7.Fragment) {
+        props2.ref = forwardedRef ? composeRefs(forwardedRef, childrenRef) : childrenRef;
+      }
+      return React7.cloneElement(children, props2);
+    }
+    return React7.Children.count(children) > 1 ? React7.Children.only(null) : null;
+  });
+  SlotClone.displayName = `${ownerName}.SlotClone`;
+  return SlotClone;
+}
+function isSlottable(child) {
+  return React7.isValidElement(child) && typeof child.type === "function" && "__radixId" in child.type && child.type.__radixId === SLOTTABLE_IDENTIFIER;
+}
+function mergeProps(slotProps, childProps) {
+  const overrideProps = { ...childProps };
+  for (const propName in childProps) {
+    const slotPropValue = slotProps[propName];
+    const childPropValue = childProps[propName];
+    const isHandler = /^on[A-Z]/.test(propName);
+    if (isHandler) {
+      if (slotPropValue && childPropValue) {
+        overrideProps[propName] = (...args) => {
+          const result = childPropValue(...args);
+          slotPropValue(...args);
+          return result;
+        };
+      } else if (slotPropValue) {
+        overrideProps[propName] = slotPropValue;
+      }
+    } else if (propName === "style") {
+      overrideProps[propName] = { ...slotPropValue, ...childPropValue };
+    } else if (propName === "className") {
+      overrideProps[propName] = [slotPropValue, childPropValue].filter(Boolean).join(" ");
+    }
+  }
+  return { ...slotProps, ...overrideProps };
+}
+function getElementRef(element) {
+  let getter = Object.getOwnPropertyDescriptor(element.props, "ref")?.get;
+  let mayWarn = getter && "isReactWarning" in getter && getter.isReactWarning;
+  if (mayWarn) {
+    return element.ref;
+  }
+  getter = Object.getOwnPropertyDescriptor(element, "ref")?.get;
+  mayWarn = getter && "isReactWarning" in getter && getter.isReactWarning;
+  if (mayWarn) {
+    return element.props.ref;
+  }
+  return element.props.ref || element.ref;
+}
+var React7, import_jsx_runtime3, SLOTTABLE_IDENTIFIER;
+var init_dist7 = __esm({
+  "node_modules/.pnpm/@radix-ui+react-slot@1.2.3_@types+react@19.2.0_react@18.2.0/node_modules/@radix-ui/react-slot/dist/index.mjs"() {
+    React7 = __toESM(require("react"), 1);
+    init_dist2();
+    import_jsx_runtime3 = require("react/jsx-runtime");
+    SLOTTABLE_IDENTIFIER = Symbol("radix.slottable");
+  }
+});
+
+// node_modules/.pnpm/@radix-ui+react-primitive@2.1.3_@types+react-dom@18.3.1_@types+react@19.2.0_react-dom@18.2.0_react@18.2.0__react@18.2.0/node_modules/@radix-ui/react-primitive/dist/index.mjs
+function dispatchDiscreteCustomEvent(target, event) {
+  if (target) ReactDOM.flushSync(() => target.dispatchEvent(event));
+}
+var React8, ReactDOM, import_jsx_runtime4, NODES, Primitive;
+var init_dist8 = __esm({
+  "node_modules/.pnpm/@radix-ui+react-primitive@2.1.3_@types+react-dom@18.3.1_@types+react@19.2.0_react-dom@18.2.0_react@18.2.0__react@18.2.0/node_modules/@radix-ui/react-primitive/dist/index.mjs"() {
+    React8 = __toESM(require("react"), 1);
+    ReactDOM = __toESM(require("react-dom"), 1);
+    init_dist7();
+    import_jsx_runtime4 = require("react/jsx-runtime");
+    NODES = [
+      "a",
+      "button",
+      "div",
+      "form",
+      "h2",
+      "h3",
+      "img",
+      "input",
+      "label",
+      "li",
+      "nav",
+      "ol",
+      "p",
+      "select",
+      "span",
+      "svg",
+      "ul"
+    ];
+    Primitive = NODES.reduce((primitive, node) => {
+      const Slot2 = createSlot(`Primitive.${node}`);
+      const Node2 = React8.forwardRef((props, forwardedRef) => {
+        const { asChild, ...primitiveProps } = props;
+        const Comp = asChild ? Slot2 : node;
+        if (typeof window !== "undefined") {
+          window[Symbol.for("radix-ui")] = true;
+        }
+        return /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(Comp, { ...primitiveProps, ref: forwardedRef });
+      });
+      Node2.displayName = `Primitive.${node}`;
+      return { ...primitive, [node]: Node2 };
+    }, {});
+  }
+});
+
+// node_modules/.pnpm/@radix-ui+react-use-callback-ref@1.1.1_@types+react@19.2.0_react@18.2.0/node_modules/@radix-ui/react-use-callback-ref/dist/index.mjs
+function useCallbackRef(callback) {
+  const callbackRef = React9.useRef(callback);
+  React9.useEffect(() => {
+    callbackRef.current = callback;
+  });
+  return React9.useMemo(() => (...args) => callbackRef.current?.(...args), []);
+}
+var React9;
+var init_dist9 = __esm({
+  "node_modules/.pnpm/@radix-ui+react-use-callback-ref@1.1.1_@types+react@19.2.0_react@18.2.0/node_modules/@radix-ui/react-use-callback-ref/dist/index.mjs"() {
+    React9 = __toESM(require("react"), 1);
+  }
+});
+
+// node_modules/.pnpm/@radix-ui+react-use-escape-keydown@1.1.1_@types+react@19.2.0_react@18.2.0/node_modules/@radix-ui/react-use-escape-keydown/dist/index.mjs
+function useEscapeKeydown(onEscapeKeyDownProp, ownerDocument = globalThis?.document) {
+  const onEscapeKeyDown = useCallbackRef(onEscapeKeyDownProp);
+  React10.useEffect(() => {
+    const handleKeyDown = (event) => {
+      if (event.key === "Escape") {
+        onEscapeKeyDown(event);
+      }
+    };
+    ownerDocument.addEventListener("keydown", handleKeyDown, { capture: true });
+    return () => ownerDocument.removeEventListener("keydown", handleKeyDown, { capture: true });
+  }, [onEscapeKeyDown, ownerDocument]);
+}
+var React10;
+var init_dist10 = __esm({
+  "node_modules/.pnpm/@radix-ui+react-use-escape-keydown@1.1.1_@types+react@19.2.0_react@18.2.0/node_modules/@radix-ui/react-use-escape-keydown/dist/index.mjs"() {
+    React10 = __toESM(require("react"), 1);
+    init_dist9();
+  }
+});
+
+// node_modules/.pnpm/@radix-ui+react-dismissable-layer@1.1.11_@types+react-dom@18.3.1_@types+react@19.2.0_react-do_6egxp5znpyk3c7yb7fm5vbccse/node_modules/@radix-ui/react-dismissable-layer/dist/index.mjs
+function usePointerDownOutside(onPointerDownOutside, ownerDocument = globalThis?.document) {
+  const handlePointerDownOutside = useCallbackRef(onPointerDownOutside);
+  const isPointerInsideReactTreeRef = React11.useRef(false);
+  const handleClickRef = React11.useRef(() => {
+  });
+  React11.useEffect(() => {
+    const handlePointerDown = (event) => {
+      if (event.target && !isPointerInsideReactTreeRef.current) {
+        let handleAndDispatchPointerDownOutsideEvent2 = function() {
+          handleAndDispatchCustomEvent(
+            POINTER_DOWN_OUTSIDE,
+            handlePointerDownOutside,
+            eventDetail,
+            { discrete: true }
+          );
+        };
+        var handleAndDispatchPointerDownOutsideEvent = handleAndDispatchPointerDownOutsideEvent2;
+        const eventDetail = { originalEvent: event };
+        if (event.pointerType === "touch") {
+          ownerDocument.removeEventListener("click", handleClickRef.current);
+          handleClickRef.current = handleAndDispatchPointerDownOutsideEvent2;
+          ownerDocument.addEventListener("click", handleClickRef.current, { once: true });
+        } else {
+          handleAndDispatchPointerDownOutsideEvent2();
+        }
+      } else {
+        ownerDocument.removeEventListener("click", handleClickRef.current);
+      }
+      isPointerInsideReactTreeRef.current = false;
+    };
+    const timerId = window.setTimeout(() => {
+      ownerDocument.addEventListener("pointerdown", handlePointerDown);
+    }, 0);
+    return () => {
+      window.clearTimeout(timerId);
+      ownerDocument.removeEventListener("pointerdown", handlePointerDown);
+      ownerDocument.removeEventListener("click", handleClickRef.current);
+    };
+  }, [ownerDocument, handlePointerDownOutside]);
+  return {
+    // ensures we check React component tree (not just DOM tree)
+    onPointerDownCapture: () => isPointerInsideReactTreeRef.current = true
+  };
+}
+function useFocusOutside(onFocusOutside, ownerDocument = globalThis?.document) {
+  const handleFocusOutside = useCallbackRef(onFocusOutside);
+  const isFocusInsideReactTreeRef = React11.useRef(false);
+  React11.useEffect(() => {
+    const handleFocus = (event) => {
+      if (event.target && !isFocusInsideReactTreeRef.current) {
+        const eventDetail = { originalEvent: event };
+        handleAndDispatchCustomEvent(FOCUS_OUTSIDE, handleFocusOutside, eventDetail, {
+          discrete: false
+        });
+      }
+    };
+    ownerDocument.addEventListener("focusin", handleFocus);
+    return () => ownerDocument.removeEventListener("focusin", handleFocus);
+  }, [ownerDocument, handleFocusOutside]);
+  return {
+    onFocusCapture: () => isFocusInsideReactTreeRef.current = true,
+    onBlurCapture: () => isFocusInsideReactTreeRef.current = false
+  };
+}
+function dispatchUpdate() {
+  const event = new CustomEvent(CONTEXT_UPDATE);
+  document.dispatchEvent(event);
+}
+function handleAndDispatchCustomEvent(name2, handler, detail, { discrete }) {
+  const target = detail.originalEvent.target;
+  const event = new CustomEvent(name2, { bubbles: false, cancelable: true, detail });
+  if (handler) target.addEventListener(name2, handler, { once: true });
+  if (discrete) {
+    dispatchDiscreteCustomEvent(target, event);
+  } else {
+    target.dispatchEvent(event);
+  }
+}
+var React11, import_jsx_runtime5, DISMISSABLE_LAYER_NAME, CONTEXT_UPDATE, POINTER_DOWN_OUTSIDE, FOCUS_OUTSIDE, originalBodyPointerEvents, DismissableLayerContext, DismissableLayer, BRANCH_NAME, DismissableLayerBranch;
+var init_dist11 = __esm({
+  "node_modules/.pnpm/@radix-ui+react-dismissable-layer@1.1.11_@types+react-dom@18.3.1_@types+react@19.2.0_react-do_6egxp5znpyk3c7yb7fm5vbccse/node_modules/@radix-ui/react-dismissable-layer/dist/index.mjs"() {
+    "use client";
+    React11 = __toESM(require("react"), 1);
+    init_dist();
+    init_dist8();
+    init_dist2();
+    init_dist9();
+    init_dist10();
+    import_jsx_runtime5 = require("react/jsx-runtime");
+    DISMISSABLE_LAYER_NAME = "DismissableLayer";
+    CONTEXT_UPDATE = "dismissableLayer.update";
+    POINTER_DOWN_OUTSIDE = "dismissableLayer.pointerDownOutside";
+    FOCUS_OUTSIDE = "dismissableLayer.focusOutside";
+    DismissableLayerContext = React11.createContext({
+      layers: /* @__PURE__ */ new Set(),
+      layersWithOutsidePointerEventsDisabled: /* @__PURE__ */ new Set(),
+      branches: /* @__PURE__ */ new Set()
+    });
+    DismissableLayer = React11.forwardRef(
+      (props, forwardedRef) => {
+        const {
+          disableOutsidePointerEvents = false,
+          onEscapeKeyDown,
+          onPointerDownOutside,
+          onFocusOutside,
+          onInteractOutside,
+          onDismiss,
+          ...layerProps
+        } = props;
+        const context = React11.useContext(DismissableLayerContext);
+        const [node, setNode] = React11.useState(null);
+        const ownerDocument = node?.ownerDocument ?? globalThis?.document;
+        const [, force] = React11.useState({});
+        const composedRefs = useComposedRefs(forwardedRef, (node2) => setNode(node2));
+        const layers = Array.from(context.layers);
+        const [highestLayerWithOutsidePointerEventsDisabled] = [...context.layersWithOutsidePointerEventsDisabled].slice(-1);
+        const highestLayerWithOutsidePointerEventsDisabledIndex = layers.indexOf(highestLayerWithOutsidePointerEventsDisabled);
+        const index2 = node ? layers.indexOf(node) : -1;
+        const isBodyPointerEventsDisabled = context.layersWithOutsidePointerEventsDisabled.size > 0;
+        const isPointerEventsEnabled = index2 >= highestLayerWithOutsidePointerEventsDisabledIndex;
+        const pointerDownOutside = usePointerDownOutside((event) => {
+          const target = event.target;
+          const isPointerDownOnBranch = [...context.branches].some((branch) => branch.contains(target));
+          if (!isPointerEventsEnabled || isPointerDownOnBranch) return;
+          onPointerDownOutside?.(event);
+          onInteractOutside?.(event);
+          if (!event.defaultPrevented) onDismiss?.();
+        }, ownerDocument);
+        const focusOutside = useFocusOutside((event) => {
+          const target = event.target;
+          const isFocusInBranch = [...context.branches].some((branch) => branch.contains(target));
+          if (isFocusInBranch) return;
+          onFocusOutside?.(event);
+          onInteractOutside?.(event);
+          if (!event.defaultPrevented) onDismiss?.();
+        }, ownerDocument);
+        useEscapeKeydown((event) => {
+          const isHighestLayer = index2 === context.layers.size - 1;
+          if (!isHighestLayer) return;
+          onEscapeKeyDown?.(event);
+          if (!event.defaultPrevented && onDismiss) {
+            event.preventDefault();
+            onDismiss();
+          }
+        }, ownerDocument);
+        React11.useEffect(() => {
+          if (!node) return;
+          if (disableOutsidePointerEvents) {
+            if (context.layersWithOutsidePointerEventsDisabled.size === 0) {
+              originalBodyPointerEvents = ownerDocument.body.style.pointerEvents;
+              ownerDocument.body.style.pointerEvents = "none";
+            }
+            context.layersWithOutsidePointerEventsDisabled.add(node);
+          }
+          context.layers.add(node);
+          dispatchUpdate();
+          return () => {
+            if (disableOutsidePointerEvents && context.layersWithOutsidePointerEventsDisabled.size === 1) {
+              ownerDocument.body.style.pointerEvents = originalBodyPointerEvents;
+            }
+          };
+        }, [node, ownerDocument, disableOutsidePointerEvents, context]);
+        React11.useEffect(() => {
+          return () => {
+            if (!node) return;
+            context.layers.delete(node);
+            context.layersWithOutsidePointerEventsDisabled.delete(node);
+            dispatchUpdate();
+          };
+        }, [node, context]);
+        React11.useEffect(() => {
+          const handleUpdate = () => force({});
+          document.addEventListener(CONTEXT_UPDATE, handleUpdate);
+          return () => document.removeEventListener(CONTEXT_UPDATE, handleUpdate);
+        }, []);
+        return /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(
+          Primitive.div,
+          {
+            ...layerProps,
+            ref: composedRefs,
+            style: {
+              pointerEvents: isBodyPointerEventsDisabled ? isPointerEventsEnabled ? "auto" : "none" : void 0,
+              ...props.style
+            },
+            onFocusCapture: composeEventHandlers(props.onFocusCapture, focusOutside.onFocusCapture),
+            onBlurCapture: composeEventHandlers(props.onBlurCapture, focusOutside.onBlurCapture),
+            onPointerDownCapture: composeEventHandlers(
+              props.onPointerDownCapture,
+              pointerDownOutside.onPointerDownCapture
+            )
+          }
+        );
+      }
+    );
+    DismissableLayer.displayName = DISMISSABLE_LAYER_NAME;
+    BRANCH_NAME = "DismissableLayerBranch";
+    DismissableLayerBranch = React11.forwardRef((props, forwardedRef) => {
+      const context = React11.useContext(DismissableLayerContext);
+      const ref = React11.useRef(null);
+      const composedRefs = useComposedRefs(forwardedRef, ref);
+      React11.useEffect(() => {
+        const node = ref.current;
+        if (node) {
+          context.branches.add(node);
+          return () => {
+            context.branches.delete(node);
+          };
+        }
+      }, [context.branches]);
+      return /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(Primitive.div, { ...props, ref: composedRefs });
+    });
+    DismissableLayerBranch.displayName = BRANCH_NAME;
+  }
+});
+
+// node_modules/.pnpm/@radix-ui+react-focus-scope@1.1.7_@types+react-dom@18.3.1_@types+react@19.2.0_react-dom@18.2._dhkdyyxeakawqe2hoiycn4cg2m/node_modules/@radix-ui/react-focus-scope/dist/index.mjs
+function focusFirst(candidates, { select = false } = {}) {
+  const previouslyFocusedElement = document.activeElement;
+  for (const candidate of candidates) {
+    focus(candidate, { select });
+    if (document.activeElement !== previouslyFocusedElement) return;
+  }
+}
+function getTabbableEdges(container) {
+  const candidates = getTabbableCandidates(container);
+  const first = findVisible(candidates, container);
+  const last = findVisible(candidates.reverse(), container);
+  return [first, last];
+}
+function getTabbableCandidates(container) {
+  const nodes = [];
+  const walker = document.createTreeWalker(container, NodeFilter.SHOW_ELEMENT, {
+    acceptNode: (node) => {
+      const isHiddenInput = node.tagName === "INPUT" && node.type === "hidden";
+      if (node.disabled || node.hidden || isHiddenInput) return NodeFilter.FILTER_SKIP;
+      return node.tabIndex >= 0 ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_SKIP;
+    }
+  });
+  while (walker.nextNode()) nodes.push(walker.currentNode);
+  return nodes;
+}
+function findVisible(elements, container) {
+  for (const element of elements) {
+    if (!isHidden(element, { upTo: container })) return element;
+  }
+}
+function isHidden(node, { upTo }) {
+  if (getComputedStyle(node).visibility === "hidden") return true;
+  while (node) {
+    if (upTo !== void 0 && node === upTo) return false;
+    if (getComputedStyle(node).display === "none") return true;
+    node = node.parentElement;
+  }
+  return false;
+}
+function isSelectableInput(element) {
+  return element instanceof HTMLInputElement && "select" in element;
+}
+function focus(element, { select = false } = {}) {
+  if (element && element.focus) {
+    const previouslyFocusedElement = document.activeElement;
+    element.focus({ preventScroll: true });
+    if (element !== previouslyFocusedElement && isSelectableInput(element) && select)
+      element.select();
+  }
+}
+function createFocusScopesStack() {
+  let stack = [];
+  return {
+    add(focusScope) {
+      const activeFocusScope = stack[0];
+      if (focusScope !== activeFocusScope) {
+        activeFocusScope?.pause();
+      }
+      stack = arrayRemove(stack, focusScope);
+      stack.unshift(focusScope);
+    },
+    remove(focusScope) {
+      stack = arrayRemove(stack, focusScope);
+      stack[0]?.resume();
+    }
+  };
+}
+function arrayRemove(array, item) {
+  const updatedArray = [...array];
+  const index2 = updatedArray.indexOf(item);
+  if (index2 !== -1) {
+    updatedArray.splice(index2, 1);
+  }
+  return updatedArray;
+}
+function removeLinks(items2) {
+  return items2.filter((item) => item.tagName !== "A");
+}
+var React12, import_jsx_runtime6, AUTOFOCUS_ON_MOUNT, AUTOFOCUS_ON_UNMOUNT, EVENT_OPTIONS, FOCUS_SCOPE_NAME, FocusScope, focusScopesStack;
+var init_dist12 = __esm({
+  "node_modules/.pnpm/@radix-ui+react-focus-scope@1.1.7_@types+react-dom@18.3.1_@types+react@19.2.0_react-dom@18.2._dhkdyyxeakawqe2hoiycn4cg2m/node_modules/@radix-ui/react-focus-scope/dist/index.mjs"() {
+    "use client";
+    React12 = __toESM(require("react"), 1);
+    init_dist2();
+    init_dist8();
+    init_dist9();
+    import_jsx_runtime6 = require("react/jsx-runtime");
+    AUTOFOCUS_ON_MOUNT = "focusScope.autoFocusOnMount";
+    AUTOFOCUS_ON_UNMOUNT = "focusScope.autoFocusOnUnmount";
+    EVENT_OPTIONS = { bubbles: false, cancelable: true };
+    FOCUS_SCOPE_NAME = "FocusScope";
+    FocusScope = React12.forwardRef((props, forwardedRef) => {
+      const {
+        loop = false,
+        trapped = false,
+        onMountAutoFocus: onMountAutoFocusProp,
+        onUnmountAutoFocus: onUnmountAutoFocusProp,
+        ...scopeProps
+      } = props;
+      const [container, setContainer] = React12.useState(null);
+      const onMountAutoFocus = useCallbackRef(onMountAutoFocusProp);
+      const onUnmountAutoFocus = useCallbackRef(onUnmountAutoFocusProp);
+      const lastFocusedElementRef = React12.useRef(null);
+      const composedRefs = useComposedRefs(forwardedRef, (node) => setContainer(node));
+      const focusScope = React12.useRef({
+        paused: false,
+        pause() {
+          this.paused = true;
+        },
+        resume() {
+          this.paused = false;
+        }
+      }).current;
+      React12.useEffect(() => {
+        if (trapped) {
+          let handleFocusIn2 = function(event) {
+            if (focusScope.paused || !container) return;
+            const target = event.target;
+            if (container.contains(target)) {
+              lastFocusedElementRef.current = target;
+            } else {
+              focus(lastFocusedElementRef.current, { select: true });
+            }
+          }, handleFocusOut2 = function(event) {
+            if (focusScope.paused || !container) return;
+            const relatedTarget = event.relatedTarget;
+            if (relatedTarget === null) return;
+            if (!container.contains(relatedTarget)) {
+              focus(lastFocusedElementRef.current, { select: true });
+            }
+          }, handleMutations2 = function(mutations) {
+            const focusedElement = document.activeElement;
+            if (focusedElement !== document.body) return;
+            for (const mutation of mutations) {
+              if (mutation.removedNodes.length > 0) focus(container);
+            }
+          };
+          var handleFocusIn = handleFocusIn2, handleFocusOut = handleFocusOut2, handleMutations = handleMutations2;
+          document.addEventListener("focusin", handleFocusIn2);
+          document.addEventListener("focusout", handleFocusOut2);
+          const mutationObserver = new MutationObserver(handleMutations2);
+          if (container) mutationObserver.observe(container, { childList: true, subtree: true });
+          return () => {
+            document.removeEventListener("focusin", handleFocusIn2);
+            document.removeEventListener("focusout", handleFocusOut2);
+            mutationObserver.disconnect();
+          };
+        }
+      }, [trapped, container, focusScope.paused]);
+      React12.useEffect(() => {
+        if (container) {
+          focusScopesStack.add(focusScope);
+          const previouslyFocusedElement = document.activeElement;
+          const hasFocusedCandidate = container.contains(previouslyFocusedElement);
+          if (!hasFocusedCandidate) {
+            const mountEvent = new CustomEvent(AUTOFOCUS_ON_MOUNT, EVENT_OPTIONS);
+            container.addEventListener(AUTOFOCUS_ON_MOUNT, onMountAutoFocus);
+            container.dispatchEvent(mountEvent);
+            if (!mountEvent.defaultPrevented) {
+              focusFirst(removeLinks(getTabbableCandidates(container)), { select: true });
+              if (document.activeElement === previouslyFocusedElement) {
+                focus(container);
+              }
+            }
+          }
+          return () => {
+            container.removeEventListener(AUTOFOCUS_ON_MOUNT, onMountAutoFocus);
+            setTimeout(() => {
+              const unmountEvent = new CustomEvent(AUTOFOCUS_ON_UNMOUNT, EVENT_OPTIONS);
+              container.addEventListener(AUTOFOCUS_ON_UNMOUNT, onUnmountAutoFocus);
+              container.dispatchEvent(unmountEvent);
+              if (!unmountEvent.defaultPrevented) {
+                focus(previouslyFocusedElement ?? document.body, { select: true });
+              }
+              container.removeEventListener(AUTOFOCUS_ON_UNMOUNT, onUnmountAutoFocus);
+              focusScopesStack.remove(focusScope);
+            }, 0);
+          };
+        }
+      }, [container, onMountAutoFocus, onUnmountAutoFocus, focusScope]);
+      const handleKeyDown = React12.useCallback(
+        (event) => {
+          if (!loop && !trapped) return;
+          if (focusScope.paused) return;
+          const isTabKey = event.key === "Tab" && !event.altKey && !event.ctrlKey && !event.metaKey;
+          const focusedElement = document.activeElement;
+          if (isTabKey && focusedElement) {
+            const container2 = event.currentTarget;
+            const [first, last] = getTabbableEdges(container2);
+            const hasTabbableElementsInside = first && last;
+            if (!hasTabbableElementsInside) {
+              if (focusedElement === container2) event.preventDefault();
+            } else {
+              if (!event.shiftKey && focusedElement === last) {
+                event.preventDefault();
+                if (loop) focus(first, { select: true });
+              } else if (event.shiftKey && focusedElement === first) {
+                event.preventDefault();
+                if (loop) focus(last, { select: true });
+              }
+            }
+          }
+        },
+        [loop, trapped, focusScope.paused]
+      );
+      return /* @__PURE__ */ (0, import_jsx_runtime6.jsx)(Primitive.div, { tabIndex: -1, ...scopeProps, ref: composedRefs, onKeyDown: handleKeyDown });
+    });
+    FocusScope.displayName = FOCUS_SCOPE_NAME;
+    focusScopesStack = createFocusScopesStack();
+  }
+});
+
+// node_modules/.pnpm/@radix-ui+react-portal@1.1.9_@types+react-dom@18.3.1_@types+react@19.2.0_react-dom@18.2.0_react@18.2.0__react@18.2.0/node_modules/@radix-ui/react-portal/dist/index.mjs
+var React13, import_react_dom, import_jsx_runtime7, PORTAL_NAME, Portal;
+var init_dist13 = __esm({
+  "node_modules/.pnpm/@radix-ui+react-portal@1.1.9_@types+react-dom@18.3.1_@types+react@19.2.0_react-dom@18.2.0_react@18.2.0__react@18.2.0/node_modules/@radix-ui/react-portal/dist/index.mjs"() {
+    "use client";
+    React13 = __toESM(require("react"), 1);
+    import_react_dom = __toESM(require("react-dom"), 1);
+    init_dist8();
+    init_dist4();
+    import_jsx_runtime7 = require("react/jsx-runtime");
+    PORTAL_NAME = "Portal";
+    Portal = React13.forwardRef((props, forwardedRef) => {
+      const { container: containerProp, ...portalProps } = props;
+      const [mounted, setMounted] = React13.useState(false);
+      useLayoutEffect2(() => setMounted(true), []);
+      const container = containerProp || mounted && globalThis?.document?.body;
+      return container ? import_react_dom.default.createPortal(/* @__PURE__ */ (0, import_jsx_runtime7.jsx)(Primitive.div, { ...portalProps, ref: forwardedRef }), container) : null;
+    });
+    Portal.displayName = PORTAL_NAME;
+  }
+});
+
+// node_modules/.pnpm/@radix-ui+react-presence@1.1.5_@types+react-dom@18.3.1_@types+react@19.2.0_react-dom@18.2.0_react@18.2.0__react@18.2.0/node_modules/@radix-ui/react-presence/dist/index.mjs
+function useStateMachine(initialState, machine) {
+  return React14.useReducer((state, event) => {
+    const nextState = machine[state][event];
+    return nextState ?? state;
+  }, initialState);
+}
+function usePresence(present) {
+  const [node, setNode] = React23.useState();
+  const stylesRef = React23.useRef(null);
+  const prevPresentRef = React23.useRef(present);
+  const prevAnimationNameRef = React23.useRef("none");
+  const initialState = present ? "mounted" : "unmounted";
+  const [state, send] = useStateMachine(initialState, {
+    mounted: {
+      UNMOUNT: "unmounted",
+      ANIMATION_OUT: "unmountSuspended"
+    },
+    unmountSuspended: {
+      MOUNT: "mounted",
+      ANIMATION_END: "unmounted"
+    },
+    unmounted: {
+      MOUNT: "mounted"
+    }
+  });
+  React23.useEffect(() => {
+    const currentAnimationName = getAnimationName(stylesRef.current);
+    prevAnimationNameRef.current = state === "mounted" ? currentAnimationName : "none";
+  }, [state]);
+  useLayoutEffect2(() => {
+    const styles = stylesRef.current;
+    const wasPresent = prevPresentRef.current;
+    const hasPresentChanged = wasPresent !== present;
+    if (hasPresentChanged) {
+      const prevAnimationName = prevAnimationNameRef.current;
+      const currentAnimationName = getAnimationName(styles);
+      if (present) {
+        send("MOUNT");
+      } else if (currentAnimationName === "none" || styles?.display === "none") {
+        send("UNMOUNT");
+      } else {
+        const isAnimating = prevAnimationName !== currentAnimationName;
+        if (wasPresent && isAnimating) {
+          send("ANIMATION_OUT");
+        } else {
+          send("UNMOUNT");
+        }
+      }
+      prevPresentRef.current = present;
+    }
+  }, [present, send]);
+  useLayoutEffect2(() => {
+    if (node) {
+      let timeoutId;
+      const ownerWindow = node.ownerDocument.defaultView ?? window;
+      const handleAnimationEnd = (event) => {
+        const currentAnimationName = getAnimationName(stylesRef.current);
+        const isCurrentAnimation = currentAnimationName.includes(CSS.escape(event.animationName));
+        if (event.target === node && isCurrentAnimation) {
+          send("ANIMATION_END");
+          if (!prevPresentRef.current) {
+            const currentFillMode = node.style.animationFillMode;
+            node.style.animationFillMode = "forwards";
+            timeoutId = ownerWindow.setTimeout(() => {
+              if (node.style.animationFillMode === "forwards") {
+                node.style.animationFillMode = currentFillMode;
+              }
+            });
+          }
+        }
+      };
+      const handleAnimationStart = (event) => {
+        if (event.target === node) {
+          prevAnimationNameRef.current = getAnimationName(stylesRef.current);
+        }
+      };
+      node.addEventListener("animationstart", handleAnimationStart);
+      node.addEventListener("animationcancel", handleAnimationEnd);
+      node.addEventListener("animationend", handleAnimationEnd);
+      return () => {
+        ownerWindow.clearTimeout(timeoutId);
+        node.removeEventListener("animationstart", handleAnimationStart);
+        node.removeEventListener("animationcancel", handleAnimationEnd);
+        node.removeEventListener("animationend", handleAnimationEnd);
+      };
+    } else {
+      send("ANIMATION_END");
+    }
+  }, [node, send]);
+  return {
+    isPresent: ["mounted", "unmountSuspended"].includes(state),
+    ref: React23.useCallback((node2) => {
+      stylesRef.current = node2 ? getComputedStyle(node2) : null;
+      setNode(node2);
+    }, [])
+  };
+}
+function getAnimationName(styles) {
+  return styles?.animationName || "none";
+}
+function getElementRef2(element) {
+  let getter = Object.getOwnPropertyDescriptor(element.props, "ref")?.get;
+  let mayWarn = getter && "isReactWarning" in getter && getter.isReactWarning;
+  if (mayWarn) {
+    return element.ref;
+  }
+  getter = Object.getOwnPropertyDescriptor(element, "ref")?.get;
+  mayWarn = getter && "isReactWarning" in getter && getter.isReactWarning;
+  if (mayWarn) {
+    return element.props.ref;
+  }
+  return element.props.ref || element.ref;
+}
+var React23, React14, Presence;
+var init_dist14 = __esm({
+  "node_modules/.pnpm/@radix-ui+react-presence@1.1.5_@types+react-dom@18.3.1_@types+react@19.2.0_react-dom@18.2.0_react@18.2.0__react@18.2.0/node_modules/@radix-ui/react-presence/dist/index.mjs"() {
+    "use client";
+    React23 = __toESM(require("react"), 1);
+    init_dist2();
+    init_dist4();
+    React14 = __toESM(require("react"), 1);
+    Presence = (props) => {
+      const { present, children } = props;
+      const presence = usePresence(present);
+      const child = typeof children === "function" ? children({ present: presence.isPresent }) : React23.Children.only(children);
+      const ref = useComposedRefs(presence.ref, getElementRef2(child));
+      const forceMount = typeof children === "function";
+      return forceMount || presence.isPresent ? React23.cloneElement(child, { ref }) : null;
+    };
+    Presence.displayName = "Presence";
+  }
+});
+
+// node_modules/.pnpm/@radix-ui+react-focus-guards@1.1.3_@types+react@19.2.0_react@18.2.0/node_modules/@radix-ui/react-focus-guards/dist/index.mjs
+function useFocusGuards() {
+  React15.useEffect(() => {
+    const edgeGuards = document.querySelectorAll("[data-radix-focus-guard]");
+    document.body.insertAdjacentElement("afterbegin", edgeGuards[0] ?? createFocusGuard());
+    document.body.insertAdjacentElement("beforeend", edgeGuards[1] ?? createFocusGuard());
+    count2++;
+    return () => {
+      if (count2 === 1) {
+        document.querySelectorAll("[data-radix-focus-guard]").forEach((node) => node.remove());
+      }
+      count2--;
+    };
+  }, []);
+}
+function createFocusGuard() {
+  const element = document.createElement("span");
+  element.setAttribute("data-radix-focus-guard", "");
+  element.tabIndex = 0;
+  element.style.outline = "none";
+  element.style.opacity = "0";
+  element.style.position = "fixed";
+  element.style.pointerEvents = "none";
+  return element;
+}
+var React15, count2;
+var init_dist15 = __esm({
+  "node_modules/.pnpm/@radix-ui+react-focus-guards@1.1.3_@types+react@19.2.0_react@18.2.0/node_modules/@radix-ui/react-focus-guards/dist/index.mjs"() {
+    "use client";
+    React15 = __toESM(require("react"), 1);
+    count2 = 0;
+  }
+});
+
 // node_modules/.pnpm/tslib@2.8.1/node_modules/tslib/tslib.es6.mjs
 var tslib_es6_exports = {};
 __export(tslib_es6_exports, {
@@ -2621,6 +3657,435 @@ var require_es57 = __commonJS({
       return ((0, exports2.supportsInert)() ? exports2.inertOthers : exports2.hideOthers)(originalTarget, parentNode, markerName);
     };
     exports2.suppressOthers = suppressOthers;
+  }
+});
+
+// node_modules/.pnpm/@radix-ui+react-dialog@1.1.15_@types+react-dom@18.3.1_@types+react@19.2.0_react-dom@18.2.0_react@18.2.0__react@18.2.0/node_modules/@radix-ui/react-dialog/dist/index.mjs
+function getState(open) {
+  return open ? "open" : "closed";
+}
+var React16, import_react_remove_scroll, import_aria_hidden, import_jsx_runtime8, DIALOG_NAME, createDialogContext, createDialogScope, DialogProvider, useDialogContext, Dialog, TRIGGER_NAME, DialogTrigger, PORTAL_NAME2, PortalProvider, usePortalContext, DialogPortal, OVERLAY_NAME, DialogOverlay, Slot, DialogOverlayImpl, CONTENT_NAME, DialogContent, DialogContentModal, DialogContentNonModal, DialogContentImpl, TITLE_NAME, DialogTitle, DESCRIPTION_NAME, DialogDescription, CLOSE_NAME, DialogClose, TITLE_WARNING_NAME, WarningProvider, useWarningContext, TitleWarning, DESCRIPTION_WARNING_NAME, DescriptionWarning, Root, Trigger, Portal2, Overlay, Content, Title, Description, Close;
+var init_dist16 = __esm({
+  "node_modules/.pnpm/@radix-ui+react-dialog@1.1.15_@types+react-dom@18.3.1_@types+react@19.2.0_react-dom@18.2.0_react@18.2.0__react@18.2.0/node_modules/@radix-ui/react-dialog/dist/index.mjs"() {
+    "use client";
+    React16 = __toESM(require("react"), 1);
+    init_dist();
+    init_dist2();
+    init_dist3();
+    init_dist5();
+    init_dist6();
+    init_dist11();
+    init_dist12();
+    init_dist13();
+    init_dist14();
+    init_dist8();
+    init_dist15();
+    import_react_remove_scroll = __toESM(require_es56(), 1);
+    import_aria_hidden = __toESM(require_es57(), 1);
+    init_dist7();
+    import_jsx_runtime8 = require("react/jsx-runtime");
+    DIALOG_NAME = "Dialog";
+    [createDialogContext, createDialogScope] = createContextScope(DIALOG_NAME);
+    [DialogProvider, useDialogContext] = createDialogContext(DIALOG_NAME);
+    Dialog = (props) => {
+      const {
+        __scopeDialog,
+        children,
+        open: openProp,
+        defaultOpen,
+        onOpenChange,
+        modal: modal2 = true
+      } = props;
+      const triggerRef = React16.useRef(null);
+      const contentRef = React16.useRef(null);
+      const [open, setOpen] = useControllableState({
+        prop: openProp,
+        defaultProp: defaultOpen ?? false,
+        onChange: onOpenChange,
+        caller: DIALOG_NAME
+      });
+      return /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(
+        DialogProvider,
+        {
+          scope: __scopeDialog,
+          triggerRef,
+          contentRef,
+          contentId: useId(),
+          titleId: useId(),
+          descriptionId: useId(),
+          open,
+          onOpenChange: setOpen,
+          onOpenToggle: React16.useCallback(() => setOpen((prevOpen) => !prevOpen), [setOpen]),
+          modal: modal2,
+          children
+        }
+      );
+    };
+    Dialog.displayName = DIALOG_NAME;
+    TRIGGER_NAME = "DialogTrigger";
+    DialogTrigger = React16.forwardRef(
+      (props, forwardedRef) => {
+        const { __scopeDialog, ...triggerProps } = props;
+        const context = useDialogContext(TRIGGER_NAME, __scopeDialog);
+        const composedTriggerRef = useComposedRefs(forwardedRef, context.triggerRef);
+        return /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(
+          Primitive.button,
+          {
+            type: "button",
+            "aria-haspopup": "dialog",
+            "aria-expanded": context.open,
+            "aria-controls": context.contentId,
+            "data-state": getState(context.open),
+            ...triggerProps,
+            ref: composedTriggerRef,
+            onClick: composeEventHandlers(props.onClick, context.onOpenToggle)
+          }
+        );
+      }
+    );
+    DialogTrigger.displayName = TRIGGER_NAME;
+    PORTAL_NAME2 = "DialogPortal";
+    [PortalProvider, usePortalContext] = createDialogContext(PORTAL_NAME2, {
+      forceMount: void 0
+    });
+    DialogPortal = (props) => {
+      const { __scopeDialog, forceMount, children, container } = props;
+      const context = useDialogContext(PORTAL_NAME2, __scopeDialog);
+      return /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(PortalProvider, { scope: __scopeDialog, forceMount, children: React16.Children.map(children, (child) => /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(Presence, { present: forceMount || context.open, children: /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(Portal, { asChild: true, container, children: child }) })) });
+    };
+    DialogPortal.displayName = PORTAL_NAME2;
+    OVERLAY_NAME = "DialogOverlay";
+    DialogOverlay = React16.forwardRef(
+      (props, forwardedRef) => {
+        const portalContext = usePortalContext(OVERLAY_NAME, props.__scopeDialog);
+        const { forceMount = portalContext.forceMount, ...overlayProps } = props;
+        const context = useDialogContext(OVERLAY_NAME, props.__scopeDialog);
+        return context.modal ? /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(Presence, { present: forceMount || context.open, children: /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(DialogOverlayImpl, { ...overlayProps, ref: forwardedRef }) }) : null;
+      }
+    );
+    DialogOverlay.displayName = OVERLAY_NAME;
+    Slot = createSlot("DialogOverlay.RemoveScroll");
+    DialogOverlayImpl = React16.forwardRef(
+      (props, forwardedRef) => {
+        const { __scopeDialog, ...overlayProps } = props;
+        const context = useDialogContext(OVERLAY_NAME, __scopeDialog);
+        return (
+          // Make sure `Content` is scrollable even when it doesn't live inside `RemoveScroll`
+          // ie. when `Overlay` and `Content` are siblings
+          /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(import_react_remove_scroll.RemoveScroll, { as: Slot, allowPinchZoom: true, shards: [context.contentRef], children: /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(
+            Primitive.div,
+            {
+              "data-state": getState(context.open),
+              ...overlayProps,
+              ref: forwardedRef,
+              style: { pointerEvents: "auto", ...overlayProps.style }
+            }
+          ) })
+        );
+      }
+    );
+    CONTENT_NAME = "DialogContent";
+    DialogContent = React16.forwardRef(
+      (props, forwardedRef) => {
+        const portalContext = usePortalContext(CONTENT_NAME, props.__scopeDialog);
+        const { forceMount = portalContext.forceMount, ...contentProps } = props;
+        const context = useDialogContext(CONTENT_NAME, props.__scopeDialog);
+        return /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(Presence, { present: forceMount || context.open, children: context.modal ? /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(DialogContentModal, { ...contentProps, ref: forwardedRef }) : /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(DialogContentNonModal, { ...contentProps, ref: forwardedRef }) });
+      }
+    );
+    DialogContent.displayName = CONTENT_NAME;
+    DialogContentModal = React16.forwardRef(
+      (props, forwardedRef) => {
+        const context = useDialogContext(CONTENT_NAME, props.__scopeDialog);
+        const contentRef = React16.useRef(null);
+        const composedRefs = useComposedRefs(forwardedRef, context.contentRef, contentRef);
+        React16.useEffect(() => {
+          const content2 = contentRef.current;
+          if (content2) return (0, import_aria_hidden.hideOthers)(content2);
+        }, []);
+        return /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(
+          DialogContentImpl,
+          {
+            ...props,
+            ref: composedRefs,
+            trapFocus: context.open,
+            disableOutsidePointerEvents: true,
+            onCloseAutoFocus: composeEventHandlers(props.onCloseAutoFocus, (event) => {
+              event.preventDefault();
+              context.triggerRef.current?.focus();
+            }),
+            onPointerDownOutside: composeEventHandlers(props.onPointerDownOutside, (event) => {
+              const originalEvent = event.detail.originalEvent;
+              const ctrlLeftClick = originalEvent.button === 0 && originalEvent.ctrlKey === true;
+              const isRightClick = originalEvent.button === 2 || ctrlLeftClick;
+              if (isRightClick) event.preventDefault();
+            }),
+            onFocusOutside: composeEventHandlers(
+              props.onFocusOutside,
+              (event) => event.preventDefault()
+            )
+          }
+        );
+      }
+    );
+    DialogContentNonModal = React16.forwardRef(
+      (props, forwardedRef) => {
+        const context = useDialogContext(CONTENT_NAME, props.__scopeDialog);
+        const hasInteractedOutsideRef = React16.useRef(false);
+        const hasPointerDownOutsideRef = React16.useRef(false);
+        return /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(
+          DialogContentImpl,
+          {
+            ...props,
+            ref: forwardedRef,
+            trapFocus: false,
+            disableOutsidePointerEvents: false,
+            onCloseAutoFocus: (event) => {
+              props.onCloseAutoFocus?.(event);
+              if (!event.defaultPrevented) {
+                if (!hasInteractedOutsideRef.current) context.triggerRef.current?.focus();
+                event.preventDefault();
+              }
+              hasInteractedOutsideRef.current = false;
+              hasPointerDownOutsideRef.current = false;
+            },
+            onInteractOutside: (event) => {
+              props.onInteractOutside?.(event);
+              if (!event.defaultPrevented) {
+                hasInteractedOutsideRef.current = true;
+                if (event.detail.originalEvent.type === "pointerdown") {
+                  hasPointerDownOutsideRef.current = true;
+                }
+              }
+              const target = event.target;
+              const targetIsTrigger = context.triggerRef.current?.contains(target);
+              if (targetIsTrigger) event.preventDefault();
+              if (event.detail.originalEvent.type === "focusin" && hasPointerDownOutsideRef.current) {
+                event.preventDefault();
+              }
+            }
+          }
+        );
+      }
+    );
+    DialogContentImpl = React16.forwardRef(
+      (props, forwardedRef) => {
+        const { __scopeDialog, trapFocus, onOpenAutoFocus, onCloseAutoFocus, ...contentProps } = props;
+        const context = useDialogContext(CONTENT_NAME, __scopeDialog);
+        const contentRef = React16.useRef(null);
+        const composedRefs = useComposedRefs(forwardedRef, contentRef);
+        useFocusGuards();
+        return /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)(import_jsx_runtime8.Fragment, { children: [
+          /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(
+            FocusScope,
+            {
+              asChild: true,
+              loop: true,
+              trapped: trapFocus,
+              onMountAutoFocus: onOpenAutoFocus,
+              onUnmountAutoFocus: onCloseAutoFocus,
+              children: /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(
+                DismissableLayer,
+                {
+                  role: "dialog",
+                  id: context.contentId,
+                  "aria-describedby": context.descriptionId,
+                  "aria-labelledby": context.titleId,
+                  "data-state": getState(context.open),
+                  ...contentProps,
+                  ref: composedRefs,
+                  onDismiss: () => context.onOpenChange(false)
+                }
+              )
+            }
+          ),
+          /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)(import_jsx_runtime8.Fragment, { children: [
+            /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(TitleWarning, { titleId: context.titleId }),
+            /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(DescriptionWarning, { contentRef, descriptionId: context.descriptionId })
+          ] })
+        ] });
+      }
+    );
+    TITLE_NAME = "DialogTitle";
+    DialogTitle = React16.forwardRef(
+      (props, forwardedRef) => {
+        const { __scopeDialog, ...titleProps } = props;
+        const context = useDialogContext(TITLE_NAME, __scopeDialog);
+        return /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(Primitive.h2, { id: context.titleId, ...titleProps, ref: forwardedRef });
+      }
+    );
+    DialogTitle.displayName = TITLE_NAME;
+    DESCRIPTION_NAME = "DialogDescription";
+    DialogDescription = React16.forwardRef(
+      (props, forwardedRef) => {
+        const { __scopeDialog, ...descriptionProps } = props;
+        const context = useDialogContext(DESCRIPTION_NAME, __scopeDialog);
+        return /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(Primitive.p, { id: context.descriptionId, ...descriptionProps, ref: forwardedRef });
+      }
+    );
+    DialogDescription.displayName = DESCRIPTION_NAME;
+    CLOSE_NAME = "DialogClose";
+    DialogClose = React16.forwardRef(
+      (props, forwardedRef) => {
+        const { __scopeDialog, ...closeProps } = props;
+        const context = useDialogContext(CLOSE_NAME, __scopeDialog);
+        return /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(
+          Primitive.button,
+          {
+            type: "button",
+            ...closeProps,
+            ref: forwardedRef,
+            onClick: composeEventHandlers(props.onClick, () => context.onOpenChange(false))
+          }
+        );
+      }
+    );
+    DialogClose.displayName = CLOSE_NAME;
+    TITLE_WARNING_NAME = "DialogTitleWarning";
+    [WarningProvider, useWarningContext] = createContext2(TITLE_WARNING_NAME, {
+      contentName: CONTENT_NAME,
+      titleName: TITLE_NAME,
+      docsSlug: "dialog"
+    });
+    TitleWarning = ({ titleId }) => {
+      const titleWarningContext = useWarningContext(TITLE_WARNING_NAME);
+      const MESSAGE = `\`${titleWarningContext.contentName}\` requires a \`${titleWarningContext.titleName}\` for the component to be accessible for screen reader users.
+
+If you want to hide the \`${titleWarningContext.titleName}\`, you can wrap it with our VisuallyHidden component.
+
+For more information, see https://radix-ui.com/primitives/docs/components/${titleWarningContext.docsSlug}`;
+      React16.useEffect(() => {
+        if (titleId) {
+          const hasTitle = document.getElementById(titleId);
+          if (!hasTitle) console.error(MESSAGE);
+        }
+      }, [MESSAGE, titleId]);
+      return null;
+    };
+    DESCRIPTION_WARNING_NAME = "DialogDescriptionWarning";
+    DescriptionWarning = ({ contentRef, descriptionId }) => {
+      const descriptionWarningContext = useWarningContext(DESCRIPTION_WARNING_NAME);
+      const MESSAGE = `Warning: Missing \`Description\` or \`aria-describedby={undefined}\` for {${descriptionWarningContext.contentName}}.`;
+      React16.useEffect(() => {
+        const describedById = contentRef.current?.getAttribute("aria-describedby");
+        if (descriptionId && describedById) {
+          const hasDescription = document.getElementById(descriptionId);
+          if (!hasDescription) console.warn(MESSAGE);
+        }
+      }, [MESSAGE, contentRef, descriptionId]);
+      return null;
+    };
+    Root = Dialog;
+    Trigger = DialogTrigger;
+    Portal2 = DialogPortal;
+    Overlay = DialogOverlay;
+    Content = DialogContent;
+    Title = DialogTitle;
+    Description = DialogDescription;
+    Close = DialogClose;
+  }
+});
+
+// src/lib/utils.js
+function cx(...args) {
+  const classes = [];
+  const push = (v) => {
+    if (v) classes.push(String(v));
+  };
+  const walk = (a) => {
+    for (const x of a) {
+      const t = typeof x;
+      if (!x) continue;
+      if (t === "string" || t === "number") {
+        push(x);
+        continue;
+      }
+      if (Array.isArray(x)) {
+        walk(x);
+        continue;
+      }
+      if (t === "object") {
+        for (const k in x) if (Object.prototype.hasOwnProperty.call(x, k) && x[k]) push(k);
+      }
+    }
+  };
+  walk(args);
+  return classes.join(" ");
+}
+function cn(...inputs) {
+  return cx(...inputs);
+}
+var init_utils = __esm({
+  "src/lib/utils.js"() {
+  }
+});
+
+// src/components/ui/dialog.jsx
+var React17, import_lucide_react, import_jsx_runtime9, Dialog2, DialogTrigger2, DialogPortal2, DialogOverlay2, DialogContent2, DialogHeader, DialogFooter, DialogTitle2, DialogDescription2;
+var init_dialog = __esm({
+  "src/components/ui/dialog.jsx"() {
+    React17 = __toESM(require("react"));
+    init_dist16();
+    import_lucide_react = require("lucide-react");
+    init_utils();
+    import_jsx_runtime9 = require("react/jsx-runtime");
+    Dialog2 = Root;
+    DialogTrigger2 = Trigger;
+    DialogPortal2 = ({ className, children, ...props }) => /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(Portal2, { ...props, children: /* @__PURE__ */ (0, import_jsx_runtime9.jsx)("div", { className: cn("fixed inset-0 z-[999] flex items-start justify-center overflow-y-auto sm:items-center", className), children }) });
+    DialogPortal2.displayName = Portal2.displayName;
+    DialogOverlay2 = React17.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(
+      Overlay,
+      {
+        ref,
+        className: cn("fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity data-[state=open]:opacity-100 data-[state=closed]:opacity-0", className),
+        ...props
+      }
+    ));
+    DialogOverlay2.displayName = Overlay.displayName;
+    DialogContent2 = React17.forwardRef(({ className, children, ...props }, ref) => /* @__PURE__ */ (0, import_jsx_runtime9.jsxs)(DialogPortal2, { children: [
+      /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(DialogOverlay2, {}),
+      /* @__PURE__ */ (0, import_jsx_runtime9.jsxs)(
+        Content,
+        {
+          ref,
+          className: cn(
+            "relative z-[1000] m-4 w-full max-w-2xl origin-center scale-100 rounded-2xl border border-slate-200 bg-white p-6 shadow-xl transition-all duration-200 data-[state=open]:opacity-100 data-[state=closed]:opacity-0 sm:m-6",
+            className
+          ),
+          ...props,
+          children: [
+            children,
+            /* @__PURE__ */ (0, import_jsx_runtime9.jsxs)(Close, { className: "absolute right-5 top-5 rounded-full p-1 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:ring-offset-2", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime9.jsx)("span", { className: "sr-only", children: "Close" }),
+              /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(import_lucide_react.X, { className: "h-4 w-4" })
+            ] })
+          ]
+        }
+      )
+    ] }));
+    DialogContent2.displayName = Content.displayName;
+    DialogHeader = ({ className, ...props }) => /* @__PURE__ */ (0, import_jsx_runtime9.jsx)("div", { className: cn("flex flex-col space-y-2 text-center sm:text-left", className), ...props });
+    DialogHeader.displayName = "DialogHeader";
+    DialogFooter = ({ className, ...props }) => /* @__PURE__ */ (0, import_jsx_runtime9.jsx)("div", { className: cn("flex flex-col-reverse gap-2 sm:flex-row sm:justify-end", className), ...props });
+    DialogFooter.displayName = "DialogFooter";
+    DialogTitle2 = React17.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(Title, { ref, className: cn("text-left text-2xl font-semibold text-slate-900", className), ...props }));
+    DialogTitle2.displayName = Title.displayName;
+    DialogDescription2 = React17.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(Description, { ref, className: cn("text-left text-sm text-slate-600", className), ...props }));
+    DialogDescription2.displayName = Description.displayName;
+  }
+});
+
+// src/data/cloudinaryContent.js
+var import_meta2, cloudinaryConfig, heroPublicId, heroVersion, heroFallbackSrc;
+var init_cloudinaryContent = __esm({
+  "src/data/cloudinaryContent.js"() {
+    import_meta2 = {};
+    cloudinaryConfig = {
+      cloudName: typeof import_meta2 !== "undefined" && import_meta2.env?.VITE_CLOUDINARY_CLOUD_NAME || "dokyhfvyd"
+    };
+    heroPublicId = "vjuesai2mxfavpq9d2df";
+    heroVersion = "1759456148";
+    heroFallbackSrc = "/gallery/IMG_3145.jpg";
   }
 });
 
@@ -18929,6 +20394,961 @@ var require_lottie = __commonJS({
       registerEffect(35, CVTransformEffect);
       return lottie;
     });
+  }
+});
+
+// src/hooks/useSquareCard.js
+function useSquareCard(containerId, enabled, deps = []) {
+  const paymentsRef = (0, import_react15.useRef)(null);
+  const cardRef = (0, import_react15.useRef)(null);
+  const [cardLoaded, setCardLoaded] = (0, import_react15.useState)(false);
+  const [attempts, setAttempts] = (0, import_react15.useState)(0);
+  const attemptsRef = (0, import_react15.useRef)(0);
+  const [error, setError] = (0, import_react15.useState)("");
+  const [loadingScript, setLoadingScript] = (0, import_react15.useState)(false);
+  const attachStartedRef = (0, import_react15.useRef)(false);
+  const securityState = getSquareSecurityState();
+  const [envInfo, setEnvInfo] = (0, import_react15.useState)({
+    appId: null,
+    locationId: null,
+    sdkUrl: null,
+    sandbox: false,
+    mismatch: false,
+    environment: null,
+    attempts: 0,
+    secureContext: securityState.secureContext,
+    secureForSquare: securityState.secureForSquare,
+    hostname: securityState.hostname,
+    protocol: securityState.protocol
+  });
+  const cleanupContainer = (0, import_react15.useCallback)(() => {
+    if (typeof document === "undefined") return;
+    try {
+      const node = typeof containerId === "string" ? document.querySelector(containerId) : containerId;
+      if (node && node.childNodes && node.childNodes.length > 0) {
+        node.innerHTML = "";
+      }
+    } catch (_) {
+    }
+  }, [containerId]);
+  const destroyCardInstance = (0, import_react15.useCallback)(() => {
+    const card = cardRef.current;
+    cardRef.current = null;
+    attachStartedRef.current = false;
+    const finalize = () => {
+      cleanupContainer();
+      setCardLoaded(false);
+    };
+    if (!card) {
+      finalize();
+      return;
+    }
+    try {
+      const maybePromise = typeof card.destroy === "function" ? card.destroy() : void 0;
+      if (maybePromise && typeof maybePromise.then === "function") {
+        maybePromise.catch(() => {
+        }).finally(finalize);
+        return;
+      }
+    } catch (_) {
+    }
+    finalize();
+  }, [cleanupContainer]);
+  const reset = (0, import_react15.useCallback)(() => {
+    try {
+      destroyCardInstance();
+      paymentsRef.current = null;
+      setError("");
+      setAttempts(0);
+      attemptsRef.current = 0;
+    } catch (_) {
+    }
+  }, [destroyCardInstance]);
+  (0, import_react15.useEffect)(() => {
+    if (!enabled) return;
+    let cancelled = false;
+    const config = readSquareRuntimeConfig();
+    const security = getSquareSecurityState();
+    setEnvInfo((info) => ({
+      ...info,
+      appId: config.appId,
+      locationId: config.locationId,
+      sdkUrl: config.sdkUrl,
+      sandbox: config.isSandbox,
+      environment: config.environment,
+      mismatch: false,
+      secureContext: security.secureContext,
+      secureForSquare: security.secureForSquare,
+      hostname: security.hostname,
+      protocol: security.protocol
+    }));
+    if (!security.secureForSquare) {
+      setLoadingScript(false);
+      setError("Payments require HTTPS or running on http://localhost.");
+      return;
+    }
+    setLoadingScript(true);
+    ensureSquareSdkScript(config.sdkUrl, config.isSandbox).then(() => {
+      if (cancelled) return;
+      setLoadingScript(false);
+      setError((prev) => prev && prev.toLowerCase().includes("payment script") ? "" : prev);
+    }).catch((err) => {
+      if (cancelled) return;
+      setLoadingScript(false);
+      setError((prev) => prev || err?.message || "Failed to load payment script.");
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [enabled]);
+  (0, import_react15.useEffect)(() => {
+    if (!enabled) return;
+    const abortController = new AbortController();
+    const { signal } = abortController;
+    const config = readSquareRuntimeConfig();
+    const security = getSquareSecurityState();
+    setEnvInfo((info) => ({
+      ...info,
+      secureContext: security.secureContext,
+      secureForSquare: security.secureForSquare,
+      hostname: security.hostname,
+      protocol: security.protocol
+    }));
+    if (!security.secureForSquare) {
+      setError("Payments require HTTPS or running on http://localhost.");
+      return () => abortController.abort();
+    }
+    if (!config.appId || !config.locationId) {
+      setError("Payment not available: missing Square configuration.");
+      return () => abortController.abort();
+    }
+    const waitForSquare = async () => {
+      if (window.Square) return;
+      const start = Date.now();
+      while (!signal.aborted) {
+        if (window.Square) return;
+        if (Date.now() - start > 2e4) {
+          throw new Error("Payment form failed to load (script not ready).");
+        }
+        await new Promise((resolve) => setTimeout(resolve, 200));
+      }
+      throw new DOMException("Aborted", "AbortError");
+    };
+    const waitForContainer = () => new Promise((resolve, reject) => {
+      let observer;
+      let interval;
+      let timeout;
+      const resolveWith = (node) => {
+        if (signal.aborted) {
+          reject(new DOMException("Aborted", "AbortError"));
+          return;
+        }
+        resolve(node);
+      };
+      const rejectWith = (err) => {
+        if (signal.aborted) {
+          reject(new DOMException("Aborted", "AbortError"));
+        } else {
+          reject(err);
+        }
+      };
+      const cleanup = () => {
+        if (observer) observer.disconnect();
+        if (interval) clearInterval(interval);
+        if (timeout) clearTimeout(timeout);
+        if (signal) signal.removeEventListener("abort", onAbort);
+      };
+      const lookup = () => {
+        if (signal.aborted) {
+          cleanup();
+          reject(new DOMException("Aborted", "AbortError"));
+          return true;
+        }
+        const node = typeof containerId === "string" ? document.querySelector(containerId) : containerId;
+        if (node) {
+          cleanup();
+          resolveWith(node);
+          return true;
+        }
+        return false;
+      };
+      const onAbort = () => {
+        cleanup();
+        reject(new DOMException("Aborted", "AbortError"));
+      };
+      if (lookup()) return;
+      const observerRoot = document.body || document.documentElement;
+      try {
+        observer = new MutationObserver(() => {
+          lookup();
+        });
+        observer.observe(observerRoot, { childList: true, subtree: true });
+      } catch (_) {
+        observer = void 0;
+      }
+      interval = setInterval(() => {
+        lookup();
+      }, 150);
+      signal.addEventListener("abort", onAbort, { once: true });
+      timeout = setTimeout(() => {
+        cleanup();
+        rejectWith(new Error("Payment container not found (timed out)."));
+      }, 12e4);
+    });
+    const scheduleRetry = (delay = 800) => {
+      if (signal.aborted) return;
+      if (attemptsRef.current >= 5) return;
+      setTimeout(() => {
+        if (!signal.aborted) {
+          init();
+        }
+      }, delay);
+    };
+    const init = async () => {
+      try {
+        if (cardRef.current || attachStartedRef.current) return;
+        setAttempts((a) => {
+          const next = a + 1;
+          attemptsRef.current = next;
+          return next;
+        });
+        await ensureSquareSdkScript(config.sdkUrl, config.isSandbox);
+        await waitForSquare();
+        if (signal.aborted) return;
+        if (!window.Square || typeof window.Square.payments !== "function") {
+          throw new Error("Square payments API unavailable.");
+        }
+        const envUpper = typeof config.environment === "string" ? config.environment.toUpperCase() : "";
+        const isValidEnv = envUpper === "SANDBOX" || envUpper === "PRODUCTION";
+        const payments = isValidEnv ? window.Square.payments(config.appId, config.locationId, { environment: envUpper }) : window.Square.payments(config.appId, config.locationId);
+        paymentsRef.current = payments;
+        const card = await payments.card();
+        const container = await waitForContainer();
+        if (signal.aborted) return;
+        attachStartedRef.current = true;
+        cleanupContainer();
+        await card.attach(container);
+        if (!signal.aborted) {
+          cardRef.current = card;
+          setCardLoaded(true);
+          setError("");
+        }
+      } catch (e) {
+        if (signal.aborted) return;
+        if (false) {
+          console.debug("[Square:init:error]", e);
+        }
+        const msg = e?.message || "Payment initialization failed";
+        attachStartedRef.current = false;
+        if (msg.includes("secure context")) {
+          setError("Payments require HTTPS or running on http://localhost.");
+        } else if (msg.includes("Invalid App ID")) {
+          setError("Invalid Square App ID.");
+        } else if (msg.includes("Unexpected token")) {
+          setError("Payment script parse error.");
+          scheduleRetry(1500);
+        } else if (msg.includes("network")) {
+          setError("Network error initializing payment form.");
+          scheduleRetry(1200);
+        } else if (msg === "Payment container not found (timed out).") {
+          scheduleRetry(300);
+        } else if (msg === "Payment form failed to load (script not ready).") {
+          setError(msg);
+          scheduleRetry(500);
+        } else if (msg === "Square payments API unavailable.") {
+          setError("Square payments API unavailable.");
+          scheduleRetry(800);
+        } else {
+          setError(msg);
+          scheduleRetry(1500);
+        }
+      }
+    };
+    init();
+    return () => {
+      abortController.abort();
+      destroyCardInstance();
+      paymentsRef.current = null;
+    };
+  }, [enabled, containerId, destroyCardInstance, cleanupContainer, ...deps]);
+  (0, import_react15.useEffect)(() => {
+    setEnvInfo((info) => ({ ...info, attempts }));
+  }, [attempts]);
+  const tokenize = async () => {
+    if (!cardRef.current) throw new Error(error || "Card form not ready");
+    const result = await cardRef.current.tokenize();
+    if (result.status !== "OK") {
+      const first = result?.errors?.[0];
+      const msg = first?.message || first?.code || result.status || "Card details invalid";
+      throw new Error(msg);
+    }
+    return result.token;
+  };
+  return { cardLoaded, error, loadingScript, tokenize, reset, envInfo };
+}
+var import_react15, import_meta5, SQUARE_SCRIPT_ATTR, squareScriptState, readSquareRuntimeConfig, getSquareSecurityState, ensureSquareSdkScript;
+var init_useSquareCard = __esm({
+  "src/hooks/useSquareCard.js"() {
+    import_react15 = require("react");
+    import_meta5 = {};
+    SQUARE_SCRIPT_ATTR = "data-square-sdk";
+    squareScriptState = { url: null, promise: null };
+    readSquareRuntimeConfig = () => {
+      if (typeof window === "undefined") {
+        return {
+          appId: null,
+          locationId: null,
+          sdkUrl: "",
+          isSandbox: false,
+          environment: "production"
+        };
+      }
+      const runtimeAppId = window.__SQUARE_APP_ID__ || import_meta5?.env?.VITE_SQUARE_APP_ID || window.SQUARE_APPLICATION_ID || "";
+      const envHintRaw = (window.__SQUARE_ENV__ ?? import_meta5?.env?.VITE_SQUARE_ENV ?? "").toString().trim().toLowerCase();
+      const hostname = window.location?.hostname || "";
+      let isSandbox = false;
+      if (["sandbox", "dev", "development", "test"].includes(envHintRaw)) {
+        isSandbox = true;
+      } else if (["production", "prod", "live"].includes(envHintRaw)) {
+        isSandbox = false;
+      } else if (runtimeAppId.startsWith("sandbox-")) {
+        isSandbox = true;
+      } else if (/localhost$/i.test(hostname) || hostname === "127.0.0.1") {
+        isSandbox = true;
+      }
+      const sdkUrl = isSandbox ? "https://sandbox.web.squarecdn.com/v1/square.js" : "https://web.squarecdn.com/v1/square.js";
+      return {
+        appId: runtimeAppId || null,
+        locationId: window.__SQUARE_LOCATION_ID__ || import_meta5?.env?.VITE_SQUARE_LOCATION_ID || window.SQUARE_LOCATION_ID || null,
+        sdkUrl,
+        isSandbox,
+        environment: isSandbox ? "sandbox" : "production"
+      };
+    };
+    getSquareSecurityState = () => {
+      if (typeof window === "undefined") {
+        return {
+          secureContext: false,
+          secureForSquare: false,
+          hostname: "",
+          protocol: ""
+        };
+      }
+      const { protocol = "", hostname = "" } = window.location || {};
+      const normalizedProtocol = protocol.toLowerCase();
+      const secureContext = typeof window.isSecureContext === "boolean" ? window.isSecureContext : normalizedProtocol === "https:";
+      const secureForSquare = normalizedProtocol === "https:" || hostname === "localhost";
+      return {
+        secureContext,
+        secureForSquare,
+        hostname,
+        protocol: normalizedProtocol
+      };
+    };
+    ensureSquareSdkScript = (sdkUrl, isSandbox) => {
+      if (typeof window === "undefined" || typeof document === "undefined") {
+        return Promise.reject(new Error("Square SDK requires a browser environment."));
+      }
+      if (squareScriptState.promise && squareScriptState.url === sdkUrl) {
+        return squareScriptState.promise;
+      }
+      let script = document.querySelector(`script[${SQUARE_SCRIPT_ATTR}]`);
+      if (script && (script.getAttribute("src") || "") !== sdkUrl) {
+        script.parentElement?.removeChild(script);
+        script = null;
+      }
+      const promise = new Promise((resolve, reject) => {
+        let scriptEl = script;
+        const cleanup = () => {
+          if (!scriptEl) return;
+          scriptEl.removeEventListener("load", handleLoad);
+          scriptEl.removeEventListener("error", handleError);
+        };
+        const handleLoad = () => {
+          if (scriptEl) {
+            scriptEl.setAttribute("data-square-loaded", "true");
+          }
+          cleanup();
+          resolve();
+        };
+        const handleError = (event) => {
+          cleanup();
+          const err = event instanceof Error ? event : new Error("Failed to load Square SDK");
+          reject(err);
+        };
+        if (scriptEl) {
+          scriptEl.dataset.squareSdkEnv = isSandbox ? "sandbox" : "production";
+          const alreadyLoaded = scriptEl.getAttribute("data-square-loaded") === "true";
+          if (alreadyLoaded || window.Square) {
+            resolve();
+            return;
+          }
+          scriptEl.addEventListener("load", handleLoad, { once: true });
+          scriptEl.addEventListener("error", handleError, { once: true });
+        } else {
+          scriptEl = document.createElement("script");
+          scriptEl.src = sdkUrl;
+          scriptEl.async = true;
+          scriptEl.dataset.squareSdk = "true";
+          scriptEl.dataset.squareSdkEnv = isSandbox ? "sandbox" : "production";
+          scriptEl.addEventListener("load", handleLoad, { once: true });
+          scriptEl.addEventListener("error", handleError, { once: true });
+          document.head.appendChild(scriptEl);
+        }
+      }).catch((err) => {
+        if (squareScriptState.url === sdkUrl) {
+          squareScriptState = { url: null, promise: null };
+        }
+        throw err;
+      });
+      squareScriptState = { url: sdkUrl, promise };
+      return promise;
+    };
+  }
+});
+
+// src/components/home/GiftCardDialog.jsx
+var GiftCardDialog_exports = {};
+__export(GiftCardDialog_exports, {
+  default: () => GiftCardDialog_default
+});
+var import_react16, import_react_helmet_async, import_lucide_react3, import_jsx_runtime25, presetAmounts, initialForm, normalizeAmount, GiftCardDialog, GiftCardDialog_default;
+var init_GiftCardDialog = __esm({
+  "src/components/home/GiftCardDialog.jsx"() {
+    import_react16 = __toESM(require("react"));
+    import_react_helmet_async = __toESM(require_lib());
+    import_lucide_react3 = require("lucide-react");
+    init_dialog();
+    init_useSquareCard();
+    init_utils();
+    init_cloudinaryContent();
+    import_jsx_runtime25 = require("react/jsx-runtime");
+    presetAmounts = [100, 150, 200, 250, 350, 500];
+    initialForm = {
+      amount: 150,
+      customAmount: "",
+      cardType: "digital",
+      deliveryTarget: "recipient",
+      shipTo: "recipient",
+      sendOn: "",
+      buyerName: "",
+      buyerEmail: "",
+      buyerPhone: "",
+      recipientName: "",
+      recipientEmail: "",
+      recipientPhone: "",
+      note: "",
+      shippingLine1: "",
+      shippingLine2: "",
+      shippingCity: "",
+      shippingState: "",
+      shippingPostal: ""
+    };
+    normalizeAmount = (amount, customValue) => {
+      if (customValue) {
+        const value2 = Number(customValue);
+        if (!Number.isNaN(value2) && value2 > 0) {
+          return value2;
+        }
+      }
+      return amount;
+    };
+    GiftCardDialog = ({ className = "", autoOpen = false, showTrigger = true, onClose, onReady }) => {
+      const defaultSiteUrl = "https://localeffort.app";
+      const siteUrl = typeof window !== "undefined" ? window.location.origin : defaultSiteUrl;
+      const giftCardImage = heroFallbackSrc ? heroFallbackSrc.startsWith("http") ? heroFallbackSrc : `${siteUrl}${heroFallbackSrc}` : void 0;
+      const productSchema = (0, import_react16.useMemo)(() => {
+        const schema = {
+          "@context": "https://schema.org",
+          "@type": "Product",
+          name: "Local Effort Gift Card",
+          description: "Local Effort gift cards cover private chef dinners, pizza parties, and hospitality across Minneapolis-St. Paul.",
+          brand: { "@type": "Organization", name: "Local Effort" },
+          offers: {
+            "@type": "AggregateOffer",
+            priceCurrency: "USD",
+            lowPrice: "50",
+            highPrice: "500",
+            availability: "https://schema.org/InStock",
+            url: `${siteUrl}/#gift-cards`
+          }
+        };
+        if (giftCardImage) {
+          schema.image = [giftCardImage];
+        }
+        return schema;
+      }, [giftCardImage, siteUrl]);
+      const [open, setOpen] = (0, import_react16.useState)(autoOpen);
+      const [form, setForm] = (0, import_react16.useState)(initialForm);
+      const [status, setStatus] = (0, import_react16.useState)("idle");
+      const [error, setError] = (0, import_react16.useState)("");
+      const [success, setSuccess] = (0, import_react16.useState)(null);
+      const amountValue = (0, import_react16.useMemo)(() => normalizeAmount(form.amount, form.customAmount), [form.amount, form.customAmount]);
+      const canChoosePhysical = amountValue >= 250;
+      const { cardLoaded, error: squareError, tokenize, reset: resetSquare } = useSquareCard("#gift-card-card-container", open, [amountValue]);
+      const handleDialogOpenChange = (0, import_react16.useCallback)((nextOpen) => {
+        if (!nextOpen) {
+          resetSquare();
+          setForm(initialForm);
+          setStatus("idle");
+          setError("");
+          setSuccess(null);
+          if (typeof onClose === "function") {
+            onClose();
+          }
+        }
+        setOpen(nextOpen);
+      }, [resetSquare, onClose]);
+      (0, import_react16.useEffect)(() => {
+        if (autoOpen) {
+          setOpen(true);
+        }
+      }, [autoOpen]);
+      (0, import_react16.useEffect)(() => {
+        if (typeof onReady === "function") {
+          onReady();
+        }
+      }, [onReady]);
+      (0, import_react16.useEffect)(() => {
+        if (!canChoosePhysical && form.cardType === "physical") {
+          setForm((prev) => ({ ...prev, cardType: "digital" }));
+        }
+      }, [canChoosePhysical, form.cardType]);
+      (0, import_react16.useEffect)(() => {
+        if (form.cardType !== "digital" || form.deliveryTarget !== "recipient") {
+          setForm((prev) => prev.sendOn ? { ...prev, sendOn: "" } : prev);
+        }
+      }, [form.cardType, form.deliveryTarget]);
+      const handleAmountClick = (value2) => {
+        setForm((prev) => ({ ...prev, amount: value2, customAmount: "" }));
+      };
+      const handleInputChange = (field) => (event) => {
+        const { value: value2 } = event.target;
+        setForm((prev) => ({ ...prev, [field]: value2 }));
+      };
+      const handleSubmit = async (event) => {
+        event.preventDefault();
+        if (status === "processing") return;
+        const resolvedAmount = amountValue;
+        if (!resolvedAmount || resolvedAmount < 50) {
+          setError("Gift card must be at least $50.");
+          return;
+        }
+        const { buyerName, buyerEmail, recipientEmail, cardType, deliveryTarget, sendOn } = form;
+        if (!buyerName.trim() || !buyerEmail.trim()) {
+          setError("Buyer name and email are required.");
+          return;
+        }
+        if (deliveryTarget === "recipient" && !recipientEmail.trim()) {
+          setError("Recipient email is required when sending directly to them.");
+          return;
+        }
+        if (sendOn && cardType !== "digital") {
+          setError("Scheduled delivery is only available for digital gift cards.");
+          return;
+        }
+        let sendOnIso = null;
+        if (sendOn) {
+          const parsed = new Date(sendOn);
+          if (Number.isNaN(parsed.getTime())) {
+            setError("Please provide a valid send date.");
+            return;
+          }
+          const now = /* @__PURE__ */ new Date();
+          const minAhead = 5 * 60 * 1e3;
+          if (parsed.getTime() <= now.getTime() + minAhead) {
+            setError("Please choose a send time at least 5 minutes from now.");
+            return;
+          }
+          sendOnIso = parsed.toISOString();
+        }
+        if (cardType === "physical") {
+          if (!form.shippingLine1.trim() || !form.shippingCity.trim() || !form.shippingState.trim() || !form.shippingPostal.trim()) {
+            setError("Complete shipping details are required for physical cards.");
+            return;
+          }
+        }
+        try {
+          setStatus("processing");
+          setError("");
+          const token = await tokenize();
+          const payload = {
+            amount: resolvedAmount,
+            token,
+            cardType,
+            deliveryTarget,
+            note: form.note,
+            buyer: {
+              name: form.buyerName,
+              email: form.buyerEmail,
+              phone: form.buyerPhone
+            },
+            recipient: {
+              name: form.recipientName,
+              email: form.recipientEmail,
+              phone: form.recipientPhone
+            },
+            sendOn: sendOnIso,
+            shipping: cardType === "physical" ? {
+              shipTo: form.shipTo,
+              address: {
+                line1: form.shippingLine1,
+                line2: form.shippingLine2,
+                city: form.shippingCity,
+                state: form.shippingState,
+                postal: form.shippingPostal
+              }
+            } : null
+          };
+          const response = await fetch("/api/store/gift-card-checkout", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+          });
+          if (!response.ok) {
+            const body = await response.json().catch(() => ({}));
+            throw new Error(body?.error || "Checkout failed");
+          }
+          const data2 = await response.json();
+          setSuccess({
+            code: data2.code,
+            amount: data2.amount,
+            cardType: data2.cardType,
+            deliveryTarget,
+            sendOn: data2.sendOn || sendOnIso
+          });
+          setStatus("success");
+        } catch (err) {
+          setStatus("error");
+          setError(err?.message || "Something went wrong while processing your gift card.");
+        }
+      };
+      const amountLabel = (0, import_react16.useMemo)(() => `$${amountValue.toFixed(2)}`, [amountValue]);
+      const disableSubmit = !cardLoaded || status === "processing";
+      const minSendOn = (0, import_react16.useMemo)(() => {
+        const base = /* @__PURE__ */ new Date();
+        base.setMinutes(base.getMinutes() + 10);
+        return base.toISOString().slice(0, 16);
+      }, [open]);
+      const formatDateTime = (isoString) => {
+        if (!isoString) return "";
+        try {
+          const date = new Date(isoString);
+          if (Number.isNaN(date.getTime())) return "";
+          return new Intl.DateTimeFormat(void 0, {
+            dateStyle: "medium",
+            timeStyle: "short"
+          }).format(date);
+        } catch (err) {
+          return "";
+        }
+      };
+      const renderSuccess = () => {
+        const scheduledCopy = success?.sendOn ? formatDateTime(success.sendOn) : "";
+        return /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { className: "space-y-6", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { className: "rounded-2xl border border-emerald-100 bg-emerald-50/80 p-6 text-center", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(import_lucide_react3.Sparkles, { className: "mx-auto h-10 w-10 text-emerald-500" }),
+            /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("h3", { className: "mt-4 text-2xl font-semibold text-emerald-700", children: success?.sendOn ? "Gift card scheduled!" : "Gift card sent!" }),
+            /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("p", { className: "text-sm text-emerald-700", children: success?.sendOn ? `We'll deliver the gift card email to the ${success?.deliveryTarget === "recipient" ? "recipient" : "buyer"} on ${scheduledCopy}.` : "We just delivered the gift card email and a confirmation receipt. Save this code for your records." }),
+            /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { className: "mt-4 rounded-xl border border-emerald-200 bg-white px-4 py-3", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("p", { className: "text-xs font-semibold uppercase tracking-[0.32em] text-emerald-500", children: "Gift card code" }),
+              /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("p", { className: "mt-2 text-2xl font-mono font-bold tracking-widest text-slate-900", children: success?.code || "Pending" })
+            ] }),
+            /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("p", { className: "mt-4 text-sm text-slate-600", children: [
+              "Amount: ",
+              /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("span", { className: "font-semibold", children: amountLabel }),
+              " - Type: ",
+              success?.cardType === "physical" ? "Leather physical card + digital code" : "Digital"
+            ] }),
+            success?.sendOn && /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("p", { className: "text-xs text-slate-500", children: "You'll also get a reminder email when it goes out." }),
+            /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(
+              "button",
+              {
+                type: "button",
+                className: "mt-5 inline-flex items-center justify-center rounded-full border border-emerald-400 px-4 py-2 text-sm font-semibold text-emerald-600 transition hover:bg-emerald-100",
+                onClick: () => {
+                  if (success?.code) navigator.clipboard?.writeText(success.code).catch(() => {
+                  });
+                },
+                children: "Copy code"
+              }
+            )
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(DialogFooter, { children: /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(
+            "button",
+            {
+              type: "button",
+              className: "btn btn-primary",
+              onClick: () => handleDialogOpenChange(false),
+              children: "Close"
+            }
+          ) })
+        ] });
+      };
+      return /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)(import_jsx_runtime25.Fragment, { children: [
+        /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(import_react_helmet_async.Helmet, { children: /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("script", { type: "application/ld+json", children: JSON.stringify(productSchema) }) }),
+        /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)(Dialog2, { open, onOpenChange: handleDialogOpenChange, children: [
+          showTrigger && /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(DialogTrigger2, { asChild: true, children: /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("button", { className: cn("btn btn-primary flex items-center gap-2 shadow-sm", className), children: [
+            /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(import_lucide_react3.Gift, { className: "h-4 w-4" }),
+            "Buy Gift Card"
+          ] }) }),
+          /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)(DialogContent2, { className: "max-h-[90vh] overflow-y-auto", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)(DialogHeader, { children: [
+              /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(DialogTitle2, { children: "Gift a Local Effort experience" }),
+              /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(DialogDescription2, { children: "Choose the amount, pick digital or leather gift card, and we will send it instantly with all the right instructions." })
+            ] }),
+            status === "success" && success ? renderSuccess() : /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("form", { className: "space-y-6", onSubmit: handleSubmit, children: [
+              /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("section", { className: "space-y-3", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("p", { className: "text-sm font-semibold uppercase tracking-[0.24em] text-orange-500", children: "Amount" }),
+                /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { className: "flex flex-wrap gap-2", children: [
+                  presetAmounts.map((value2) => {
+                    const active2 = form.customAmount === "" && form.amount === value2;
+                    return /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)(
+                      "button",
+                      {
+                        type: "button",
+                        className: cn(
+                          "rounded-full border border-slate-200 px-4 py-2 text-sm font-semibold transition",
+                          active2 ? "border-orange-500 bg-orange-500 text-white" : "bg-white text-slate-700 hover:border-orange-400 hover:text-orange-500"
+                        ),
+                        onClick: () => handleAmountClick(value2),
+                        children: [
+                          "$",
+                          value2
+                        ]
+                      },
+                      value2
+                    );
+                  }),
+                  /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("label", { className: "flex items-center gap-2 rounded-full border border-dashed border-slate-300 bg-white px-3 py-2 text-sm shadow-sm transition hover:border-orange-300", children: [
+                    /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("span", { className: "text-slate-500", children: "Other" }),
+                    /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(
+                      "input",
+                      {
+                        type: "number",
+                        min: "50",
+                        step: "10",
+                        value: form.customAmount,
+                        onChange: (event) => {
+                          const { value: value2 } = event.target;
+                          setForm((prev) => ({ ...prev, customAmount: value2 }));
+                        },
+                        className: "w-24 border-none bg-transparent text-sm focus:outline-none focus:ring-0",
+                        placeholder: "250"
+                      }
+                    )
+                  ] })
+                ] }),
+                /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("p", { className: "text-xs text-slate-500", children: [
+                  amountLabel,
+                  " selected. Physical leather cards unlock at $250+."
+                ] })
+              ] }),
+              /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("section", { className: "grid gap-4 rounded-xl border border-slate-200 bg-slate-50/70 p-4", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("h4", { className: "text-sm font-semibold text-slate-700", children: "Delivery preferences" }),
+                /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("div", { className: "flex flex-wrap gap-2", children: [
+                  { value: "recipient", label: "Email recipient" },
+                  { value: "buyer", label: "Email me" }
+                ].map((option) => /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)(
+                  "button",
+                  {
+                    type: "button",
+                    onClick: () => setForm((prev) => ({ ...prev, deliveryTarget: option.value })),
+                    className: cn(
+                      "flex items-center gap-2 rounded-full border px-3 py-2 text-sm font-medium transition",
+                      form.deliveryTarget === option.value ? "border-orange-500 bg-orange-500/10 text-orange-600" : "border-slate-200 text-slate-600 hover:border-orange-300 hover:text-orange-500"
+                    ),
+                    children: [
+                      /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(import_lucide_react3.Mail, { className: "h-4 w-4" }),
+                      option.label
+                    ]
+                  },
+                  option.value
+                )) }),
+                /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { className: "flex flex-wrap gap-2", children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(
+                    "button",
+                    {
+                      type: "button",
+                      onClick: () => setForm((prev) => ({ ...prev, cardType: "digital" })),
+                      className: cn(
+                        "rounded-lg border px-3 py-2 text-sm font-medium transition",
+                        form.cardType === "digital" ? "border-emerald-500 bg-emerald-500/10 text-emerald-600" : "border-slate-200 text-slate-600 hover:border-emerald-300 hover:text-emerald-600"
+                      ),
+                      children: "Instant digital"
+                    }
+                  ),
+                  /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(
+                    "button",
+                    {
+                      type: "button",
+                      disabled: !canChoosePhysical,
+                      onClick: () => setForm((prev) => ({ ...prev, cardType: "physical" })),
+                      className: cn(
+                        "rounded-lg border px-3 py-2 text-sm font-medium transition",
+                        form.cardType === "physical" ? "border-amber-500 bg-amber-500/10 text-amber-600" : canChoosePhysical ? "border-slate-200 text-slate-600 hover:border-amber-300 hover:text-amber-600" : "border-dashed border-slate-200 text-slate-400"
+                      ),
+                      children: "Leather keepsake"
+                    }
+                  )
+                ] }),
+                !canChoosePhysical && /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("p", { className: "text-xs text-slate-500", children: "Select $250 or more to ship a physical leather card along with the digital code." }),
+                form.cardType === "physical" && /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { className: "space-y-3 rounded-xl border border-amber-100 bg-white p-4", children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("div", { className: "flex gap-3", children: [
+                    { value: "recipient", label: "Ship to recipient" },
+                    { value: "buyer", label: "Ship to me" }
+                  ].map((option) => /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)(
+                    "button",
+                    {
+                      type: "button",
+                      onClick: () => setForm((prev) => ({ ...prev, shipTo: option.value })),
+                      className: cn(
+                        "flex items-center gap-2 rounded-full border px-3 py-2 text-xs font-semibold uppercase tracking-[0.16em] transition",
+                        form.shipTo === option.value ? "border-amber-500 bg-amber-500/15 text-amber-700" : "border-amber-200 text-amber-500 hover:border-amber-300"
+                      ),
+                      children: [
+                        /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(import_lucide_react3.MapPin, { className: "h-3.5 w-3.5" }),
+                        option.label
+                      ]
+                    },
+                    option.value
+                  )) }),
+                  /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { className: "grid gap-3 md:grid-cols-2", children: [
+                    /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { className: "md:col-span-2", children: [
+                      /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("label", { className: "label", htmlFor: "gift-shipping-line1", children: "Street address" }),
+                      /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("input", { id: "gift-shipping-line1", className: "input", value: form.shippingLine1, onChange: handleInputChange("shippingLine1") })
+                    ] }),
+                    /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { className: "md:col-span-2", children: [
+                      /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("label", { className: "label", htmlFor: "gift-shipping-line2", children: "Apartment, suite (optional)" }),
+                      /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("input", { id: "gift-shipping-line2", className: "input", value: form.shippingLine2, onChange: handleInputChange("shippingLine2") })
+                    ] }),
+                    /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { children: [
+                      /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("label", { className: "label", htmlFor: "gift-shipping-city", children: "City" }),
+                      /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("input", { id: "gift-shipping-city", className: "input", value: form.shippingCity, onChange: handleInputChange("shippingCity") })
+                    ] }),
+                    /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { children: [
+                      /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("label", { className: "label", htmlFor: "gift-shipping-state", children: "State" }),
+                      /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("input", { id: "gift-shipping-state", className: "input", value: form.shippingState, onChange: handleInputChange("shippingState") })
+                    ] }),
+                    /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { children: [
+                      /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("label", { className: "label", htmlFor: "gift-shipping-postal", children: "Postal code" }),
+                      /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("input", { id: "gift-shipping-postal", className: "input", value: form.shippingPostal, onChange: handleInputChange("shippingPostal") })
+                    ] })
+                  ] })
+                ] })
+              ] }),
+              /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("section", { className: "grid gap-4 md:grid-cols-2", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { className: "space-y-3", children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("h4", { className: "text-sm font-semibold text-slate-700", children: "Buyer details" }),
+                  /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { children: [
+                    /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("label", { className: "label", htmlFor: "gift-buyer-name", children: "Your name" }),
+                    /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("input", { id: "gift-buyer-name", className: "input", value: form.buyerName, onChange: handleInputChange("buyerName"), required: true })
+                  ] }),
+                  /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { children: [
+                    /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("label", { className: "label", htmlFor: "gift-buyer-email", children: "Email" }),
+                    /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("input", { id: "gift-buyer-email", className: "input", type: "email", value: form.buyerEmail, onChange: handleInputChange("buyerEmail"), required: true })
+                  ] }),
+                  /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { children: [
+                    /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("label", { className: "label", htmlFor: "gift-buyer-phone", children: "Phone (optional)" }),
+                    /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("input", { id: "gift-buyer-phone", className: "input", value: form.buyerPhone, onChange: handleInputChange("buyerPhone") })
+                  ] })
+                ] }),
+                /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { className: "space-y-3", children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("h4", { className: "text-sm font-semibold text-slate-700", children: "Recipient details" }),
+                  /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { children: [
+                    /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("label", { className: "label", htmlFor: "gift-recipient-name", children: "Recipient name" }),
+                    /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("input", { id: "gift-recipient-name", className: "input", value: form.recipientName, onChange: handleInputChange("recipientName") })
+                  ] }),
+                  /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { children: [
+                    /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("label", { className: "label", htmlFor: "gift-recipient-email", children: "Recipient email" }),
+                    /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("input", { id: "gift-recipient-email", className: "input", type: "email", value: form.recipientEmail, onChange: handleInputChange("recipientEmail"), placeholder: "hello@friend.com" })
+                  ] }),
+                  form.cardType === "digital" && form.deliveryTarget === "recipient" && /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { children: [
+                    /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("label", { className: "label", htmlFor: "gift-send-on", children: "Send on (optional)" }),
+                    /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(
+                      "input",
+                      {
+                        id: "gift-send-on",
+                        type: "datetime-local",
+                        className: "input",
+                        value: form.sendOn,
+                        onChange: handleInputChange("sendOn"),
+                        min: minSendOn
+                      }
+                    ),
+                    /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("p", { className: "mt-1 text-xs text-slate-500", children: "Choose a future date and time (your local timezone) to deliver the email automatically. Leave blank to send it right away." })
+                  ] }),
+                  /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { children: [
+                    /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("label", { className: "label", htmlFor: "gift-recipient-phone", children: "Recipient phone (optional)" }),
+                    /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("input", { id: "gift-recipient-phone", className: "input", value: form.recipientPhone, onChange: handleInputChange("recipientPhone") })
+                  ] })
+                ] })
+              ] }),
+              /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("section", { className: "space-y-2", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("label", { className: "label", htmlFor: "gift-note", children: "Note for the recipient (optional)" }),
+                /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(
+                  "textarea",
+                  {
+                    id: "gift-note",
+                    className: "input min-h-[90px]",
+                    value: form.note,
+                    onChange: handleInputChange("note"),
+                    placeholder: "Add a short note to appear inside the gift email."
+                  }
+                )
+              ] }),
+              /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("section", { className: "space-y-3", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("h4", { className: "text-sm font-semibold text-slate-700", children: "Gift card FAQ" }),
+                /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("details", { className: "group rounded-xl border border-slate-200 bg-white p-4", children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("summary", { className: "flex cursor-pointer items-center justify-between text-sm font-semibold text-slate-700", children: [
+                    /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("span", { children: "How much should I buy?" }),
+                    /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("span", { className: "text-xl leading-none text-slate-400 transition group-open:rotate-45", children: "+" })
+                  ] }),
+                  /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("p", { className: "mt-2 text-sm text-slate-600", children: "A simple dinner family style is around $65/person. A super fancy coursed dinner with wine and scallops is $115/person plus a discretionary wine budget (an additional $50-$150/person recommended). Pizzas are usually around $15 and pies are around $30. That's the range." })
+                ] }),
+                /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("details", { className: "group rounded-xl border border-slate-200 bg-white p-4", children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("summary", { className: "flex cursor-pointer items-center justify-between text-sm font-semibold text-slate-700", children: [
+                    /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("span", { children: "Leather???" }),
+                    /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("span", { className: "text-xl leading-none text-slate-400 transition group-open:rotate-45", children: "+" })
+                  ] }),
+                  /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("p", { className: "mt-2 text-sm text-slate-600", children: "We hand-letter a short note into leather from Tandy Leather. It's a souvenir that makes a big impact as a gift." })
+                ] })
+              ] }),
+              /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("section", { className: "space-y-2", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("p", { className: "text-sm font-semibold text-slate-700", children: "Payment details" }),
+                /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { className: "min-h-[96px] rounded-lg border border-slate-200 bg-white p-3", children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("div", { id: "gift-card-card-container", className: "min-h-[64px]" }),
+                  !cardLoaded && !squareError && /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("p", { className: "mt-2 text-sm text-slate-500", children: "Loading secure card entry..." }),
+                  squareError && /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("p", { className: "mt-2 text-sm text-red-600", children: squareError })
+                ] }),
+                /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("p", { className: "text-xs text-slate-400", children: "We use Square to process payments securely. The card is charged immediately and refunds are available on request within 14 days (if unused)." })
+              ] }),
+              error && /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("p", { className: "rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-600", children: error }),
+              /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)(DialogFooter, { className: "items-center justify-between gap-3 sm:flex-row", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { className: "text-xs text-slate-500", children: [
+                  amountLabel,
+                  " - ",
+                  form.cardType === "physical" ? "Digital + leather card" : "Instant digital card"
+                ] }),
+                /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)(
+                  "button",
+                  {
+                    type: "submit",
+                    className: cn("btn btn-primary flex items-center gap-2", disableSubmit && "opacity-60"),
+                    disabled: disableSubmit,
+                    children: [
+                      status === "processing" ? /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(import_lucide_react3.Loader2, { className: "h-4 w-4 animate-spin" }) : /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(import_lucide_react3.Gift, { className: "h-4 w-4" }),
+                      status === "processing" ? "Processing..." : "Send gift card"
+                    ]
+                  }
+                )
+              ] })
+            ] })
+          ] })
+        ] })
+      ] });
+    };
+    GiftCardDialog_default = GiftCardDialog;
   }
 });
 
@@ -62844,1347 +65264,11 @@ var import_react3 = __toESM(require("react"));
 
 // src/components/forms/AskChefForm.jsx
 var import_react2 = __toESM(require("react"));
-
-// src/components/ui/dialog.jsx
-var React17 = __toESM(require("react"));
-
-// node_modules/.pnpm/@radix-ui+react-dialog@1.1.15_@types+react-dom@18.3.1_@types+react@19.2.0_react-dom@18.2.0_react@18.2.0__react@18.2.0/node_modules/@radix-ui/react-dialog/dist/index.mjs
-var React16 = __toESM(require("react"), 1);
-
-// node_modules/.pnpm/@radix-ui+primitive@1.1.3/node_modules/@radix-ui/primitive/dist/index.mjs
-var canUseDOM = !!(typeof window !== "undefined" && window.document && window.document.createElement);
-function composeEventHandlers(originalEventHandler, ourEventHandler, { checkForDefaultPrevented = true } = {}) {
-  return function handleEvent(event) {
-    originalEventHandler?.(event);
-    if (checkForDefaultPrevented === false || !event.defaultPrevented) {
-      return ourEventHandler?.(event);
-    }
-  };
-}
-
-// node_modules/.pnpm/@radix-ui+react-compose-refs@1.1.2_@types+react@19.2.0_react@18.2.0/node_modules/@radix-ui/react-compose-refs/dist/index.mjs
-var React2 = __toESM(require("react"), 1);
-function setRef(ref, value2) {
-  if (typeof ref === "function") {
-    return ref(value2);
-  } else if (ref !== null && ref !== void 0) {
-    ref.current = value2;
-  }
-}
-function composeRefs(...refs) {
-  return (node) => {
-    let hasCleanup = false;
-    const cleanups = refs.map((ref) => {
-      const cleanup = setRef(ref, node);
-      if (!hasCleanup && typeof cleanup == "function") {
-        hasCleanup = true;
-      }
-      return cleanup;
-    });
-    if (hasCleanup) {
-      return () => {
-        for (let i = 0; i < cleanups.length; i++) {
-          const cleanup = cleanups[i];
-          if (typeof cleanup == "function") {
-            cleanup();
-          } else {
-            setRef(refs[i], null);
-          }
-        }
-      };
-    }
-  };
-}
-function useComposedRefs(...refs) {
-  return React2.useCallback(composeRefs(...refs), refs);
-}
-
-// node_modules/.pnpm/@radix-ui+react-context@1.1.2_@types+react@19.2.0_react@18.2.0/node_modules/@radix-ui/react-context/dist/index.mjs
-var React3 = __toESM(require("react"), 1);
-var import_jsx_runtime2 = require("react/jsx-runtime");
-function createContext2(rootComponentName, defaultContext) {
-  const Context = React3.createContext(defaultContext);
-  const Provider = (props) => {
-    const { children, ...context } = props;
-    const value2 = React3.useMemo(() => context, Object.values(context));
-    return /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Context.Provider, { value: value2, children });
-  };
-  Provider.displayName = rootComponentName + "Provider";
-  function useContext22(consumerName) {
-    const context = React3.useContext(Context);
-    if (context) return context;
-    if (defaultContext !== void 0) return defaultContext;
-    throw new Error(`\`${consumerName}\` must be used within \`${rootComponentName}\``);
-  }
-  return [Provider, useContext22];
-}
-function createContextScope(scopeName, createContextScopeDeps = []) {
-  let defaultContexts = [];
-  function createContext32(rootComponentName, defaultContext) {
-    const BaseContext = React3.createContext(defaultContext);
-    const index2 = defaultContexts.length;
-    defaultContexts = [...defaultContexts, defaultContext];
-    const Provider = (props) => {
-      const { scope, children, ...context } = props;
-      const Context = scope?.[scopeName]?.[index2] || BaseContext;
-      const value2 = React3.useMemo(() => context, Object.values(context));
-      return /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Context.Provider, { value: value2, children });
-    };
-    Provider.displayName = rootComponentName + "Provider";
-    function useContext22(consumerName, scope) {
-      const Context = scope?.[scopeName]?.[index2] || BaseContext;
-      const context = React3.useContext(Context);
-      if (context) return context;
-      if (defaultContext !== void 0) return defaultContext;
-      throw new Error(`\`${consumerName}\` must be used within \`${rootComponentName}\``);
-    }
-    return [Provider, useContext22];
-  }
-  const createScope = () => {
-    const scopeContexts = defaultContexts.map((defaultContext) => {
-      return React3.createContext(defaultContext);
-    });
-    return function useScope(scope) {
-      const contexts = scope?.[scopeName] || scopeContexts;
-      return React3.useMemo(
-        () => ({ [`__scope${scopeName}`]: { ...scope, [scopeName]: contexts } }),
-        [scope, contexts]
-      );
-    };
-  };
-  createScope.scopeName = scopeName;
-  return [createContext32, composeContextScopes(createScope, ...createContextScopeDeps)];
-}
-function composeContextScopes(...scopes) {
-  const baseScope = scopes[0];
-  if (scopes.length === 1) return baseScope;
-  const createScope = () => {
-    const scopeHooks = scopes.map((createScope2) => ({
-      useScope: createScope2(),
-      scopeName: createScope2.scopeName
-    }));
-    return function useComposedScopes(overrideScopes) {
-      const nextScopes = scopeHooks.reduce((nextScopes2, { useScope, scopeName }) => {
-        const scopeProps = useScope(overrideScopes);
-        const currentScope = scopeProps[`__scope${scopeName}`];
-        return { ...nextScopes2, ...currentScope };
-      }, {});
-      return React3.useMemo(() => ({ [`__scope${baseScope.scopeName}`]: nextScopes }), [nextScopes]);
-    };
-  };
-  createScope.scopeName = baseScope.scopeName;
-  return createScope;
-}
-
-// node_modules/.pnpm/@radix-ui+react-id@1.1.1_@types+react@19.2.0_react@18.2.0/node_modules/@radix-ui/react-id/dist/index.mjs
-var React5 = __toESM(require("react"), 1);
-
-// node_modules/.pnpm/@radix-ui+react-use-layout-effect@1.1.1_@types+react@19.2.0_react@18.2.0/node_modules/@radix-ui/react-use-layout-effect/dist/index.mjs
-var React4 = __toESM(require("react"), 1);
-var useLayoutEffect2 = globalThis?.document ? React4.useLayoutEffect : () => {
-};
-
-// node_modules/.pnpm/@radix-ui+react-id@1.1.1_@types+react@19.2.0_react@18.2.0/node_modules/@radix-ui/react-id/dist/index.mjs
-var useReactId = React5[" useId ".trim().toString()] || (() => void 0);
-var count = 0;
-function useId(deterministicId) {
-  const [id, setId] = React5.useState(useReactId());
-  useLayoutEffect2(() => {
-    if (!deterministicId) setId((reactId) => reactId ?? String(count++));
-  }, [deterministicId]);
-  return deterministicId || (id ? `radix-${id}` : "");
-}
-
-// node_modules/.pnpm/@radix-ui+react-use-controllable-state@1.2.2_@types+react@19.2.0_react@18.2.0/node_modules/@radix-ui/react-use-controllable-state/dist/index.mjs
-var React6 = __toESM(require("react"), 1);
-var React22 = __toESM(require("react"), 1);
-var useInsertionEffect = React6[" useInsertionEffect ".trim().toString()] || useLayoutEffect2;
-function useControllableState({
-  prop,
-  defaultProp,
-  onChange = () => {
-  },
-  caller
-}) {
-  const [uncontrolledProp, setUncontrolledProp, onChangeRef] = useUncontrolledState({
-    defaultProp,
-    onChange
-  });
-  const isControlled = prop !== void 0;
-  const value2 = isControlled ? prop : uncontrolledProp;
-  if (true) {
-    const isControlledRef = React6.useRef(prop !== void 0);
-    React6.useEffect(() => {
-      const wasControlled = isControlledRef.current;
-      if (wasControlled !== isControlled) {
-        const from = wasControlled ? "controlled" : "uncontrolled";
-        const to = isControlled ? "controlled" : "uncontrolled";
-        console.warn(
-          `${caller} is changing from ${from} to ${to}. Components should not switch from controlled to uncontrolled (or vice versa). Decide between using a controlled or uncontrolled value for the lifetime of the component.`
-        );
-      }
-      isControlledRef.current = isControlled;
-    }, [isControlled, caller]);
-  }
-  const setValue = React6.useCallback(
-    (nextValue) => {
-      if (isControlled) {
-        const value22 = isFunction(nextValue) ? nextValue(prop) : nextValue;
-        if (value22 !== prop) {
-          onChangeRef.current?.(value22);
-        }
-      } else {
-        setUncontrolledProp(nextValue);
-      }
-    },
-    [isControlled, prop, setUncontrolledProp, onChangeRef]
-  );
-  return [value2, setValue];
-}
-function useUncontrolledState({
-  defaultProp,
-  onChange
-}) {
-  const [value2, setValue] = React6.useState(defaultProp);
-  const prevValueRef = React6.useRef(value2);
-  const onChangeRef = React6.useRef(onChange);
-  useInsertionEffect(() => {
-    onChangeRef.current = onChange;
-  }, [onChange]);
-  React6.useEffect(() => {
-    if (prevValueRef.current !== value2) {
-      onChangeRef.current?.(value2);
-      prevValueRef.current = value2;
-    }
-  }, [value2, prevValueRef]);
-  return [value2, setValue, onChangeRef];
-}
-function isFunction(value2) {
-  return typeof value2 === "function";
-}
-var SYNC_STATE = Symbol("RADIX:SYNC_STATE");
-
-// node_modules/.pnpm/@radix-ui+react-dismissable-layer@1.1.11_@types+react-dom@18.3.1_@types+react@19.2.0_react-do_6egxp5znpyk3c7yb7fm5vbccse/node_modules/@radix-ui/react-dismissable-layer/dist/index.mjs
-var React11 = __toESM(require("react"), 1);
-
-// node_modules/.pnpm/@radix-ui+react-primitive@2.1.3_@types+react-dom@18.3.1_@types+react@19.2.0_react-dom@18.2.0_react@18.2.0__react@18.2.0/node_modules/@radix-ui/react-primitive/dist/index.mjs
-var React8 = __toESM(require("react"), 1);
-var ReactDOM = __toESM(require("react-dom"), 1);
-
-// node_modules/.pnpm/@radix-ui+react-slot@1.2.3_@types+react@19.2.0_react@18.2.0/node_modules/@radix-ui/react-slot/dist/index.mjs
-var React7 = __toESM(require("react"), 1);
-var import_jsx_runtime3 = require("react/jsx-runtime");
-// @__NO_SIDE_EFFECTS__
-function createSlot(ownerName) {
-  const SlotClone = /* @__PURE__ */ createSlotClone(ownerName);
-  const Slot2 = React7.forwardRef((props, forwardedRef) => {
-    const { children, ...slotProps } = props;
-    const childrenArray = React7.Children.toArray(children);
-    const slottable = childrenArray.find(isSlottable);
-    if (slottable) {
-      const newElement = slottable.props.children;
-      const newChildren = childrenArray.map((child) => {
-        if (child === slottable) {
-          if (React7.Children.count(newElement) > 1) return React7.Children.only(null);
-          return React7.isValidElement(newElement) ? newElement.props.children : null;
-        } else {
-          return child;
-        }
-      });
-      return /* @__PURE__ */ (0, import_jsx_runtime3.jsx)(SlotClone, { ...slotProps, ref: forwardedRef, children: React7.isValidElement(newElement) ? React7.cloneElement(newElement, void 0, newChildren) : null });
-    }
-    return /* @__PURE__ */ (0, import_jsx_runtime3.jsx)(SlotClone, { ...slotProps, ref: forwardedRef, children });
-  });
-  Slot2.displayName = `${ownerName}.Slot`;
-  return Slot2;
-}
-// @__NO_SIDE_EFFECTS__
-function createSlotClone(ownerName) {
-  const SlotClone = React7.forwardRef((props, forwardedRef) => {
-    const { children, ...slotProps } = props;
-    if (React7.isValidElement(children)) {
-      const childrenRef = getElementRef(children);
-      const props2 = mergeProps(slotProps, children.props);
-      if (children.type !== React7.Fragment) {
-        props2.ref = forwardedRef ? composeRefs(forwardedRef, childrenRef) : childrenRef;
-      }
-      return React7.cloneElement(children, props2);
-    }
-    return React7.Children.count(children) > 1 ? React7.Children.only(null) : null;
-  });
-  SlotClone.displayName = `${ownerName}.SlotClone`;
-  return SlotClone;
-}
-var SLOTTABLE_IDENTIFIER = Symbol("radix.slottable");
-function isSlottable(child) {
-  return React7.isValidElement(child) && typeof child.type === "function" && "__radixId" in child.type && child.type.__radixId === SLOTTABLE_IDENTIFIER;
-}
-function mergeProps(slotProps, childProps) {
-  const overrideProps = { ...childProps };
-  for (const propName in childProps) {
-    const slotPropValue = slotProps[propName];
-    const childPropValue = childProps[propName];
-    const isHandler = /^on[A-Z]/.test(propName);
-    if (isHandler) {
-      if (slotPropValue && childPropValue) {
-        overrideProps[propName] = (...args) => {
-          const result = childPropValue(...args);
-          slotPropValue(...args);
-          return result;
-        };
-      } else if (slotPropValue) {
-        overrideProps[propName] = slotPropValue;
-      }
-    } else if (propName === "style") {
-      overrideProps[propName] = { ...slotPropValue, ...childPropValue };
-    } else if (propName === "className") {
-      overrideProps[propName] = [slotPropValue, childPropValue].filter(Boolean).join(" ");
-    }
-  }
-  return { ...slotProps, ...overrideProps };
-}
-function getElementRef(element) {
-  let getter = Object.getOwnPropertyDescriptor(element.props, "ref")?.get;
-  let mayWarn = getter && "isReactWarning" in getter && getter.isReactWarning;
-  if (mayWarn) {
-    return element.ref;
-  }
-  getter = Object.getOwnPropertyDescriptor(element, "ref")?.get;
-  mayWarn = getter && "isReactWarning" in getter && getter.isReactWarning;
-  if (mayWarn) {
-    return element.props.ref;
-  }
-  return element.props.ref || element.ref;
-}
-
-// node_modules/.pnpm/@radix-ui+react-primitive@2.1.3_@types+react-dom@18.3.1_@types+react@19.2.0_react-dom@18.2.0_react@18.2.0__react@18.2.0/node_modules/@radix-ui/react-primitive/dist/index.mjs
-var import_jsx_runtime4 = require("react/jsx-runtime");
-var NODES = [
-  "a",
-  "button",
-  "div",
-  "form",
-  "h2",
-  "h3",
-  "img",
-  "input",
-  "label",
-  "li",
-  "nav",
-  "ol",
-  "p",
-  "select",
-  "span",
-  "svg",
-  "ul"
-];
-var Primitive = NODES.reduce((primitive, node) => {
-  const Slot2 = createSlot(`Primitive.${node}`);
-  const Node2 = React8.forwardRef((props, forwardedRef) => {
-    const { asChild, ...primitiveProps } = props;
-    const Comp = asChild ? Slot2 : node;
-    if (typeof window !== "undefined") {
-      window[Symbol.for("radix-ui")] = true;
-    }
-    return /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(Comp, { ...primitiveProps, ref: forwardedRef });
-  });
-  Node2.displayName = `Primitive.${node}`;
-  return { ...primitive, [node]: Node2 };
-}, {});
-function dispatchDiscreteCustomEvent(target, event) {
-  if (target) ReactDOM.flushSync(() => target.dispatchEvent(event));
-}
-
-// node_modules/.pnpm/@radix-ui+react-use-callback-ref@1.1.1_@types+react@19.2.0_react@18.2.0/node_modules/@radix-ui/react-use-callback-ref/dist/index.mjs
-var React9 = __toESM(require("react"), 1);
-function useCallbackRef(callback) {
-  const callbackRef = React9.useRef(callback);
-  React9.useEffect(() => {
-    callbackRef.current = callback;
-  });
-  return React9.useMemo(() => (...args) => callbackRef.current?.(...args), []);
-}
-
-// node_modules/.pnpm/@radix-ui+react-use-escape-keydown@1.1.1_@types+react@19.2.0_react@18.2.0/node_modules/@radix-ui/react-use-escape-keydown/dist/index.mjs
-var React10 = __toESM(require("react"), 1);
-function useEscapeKeydown(onEscapeKeyDownProp, ownerDocument = globalThis?.document) {
-  const onEscapeKeyDown = useCallbackRef(onEscapeKeyDownProp);
-  React10.useEffect(() => {
-    const handleKeyDown = (event) => {
-      if (event.key === "Escape") {
-        onEscapeKeyDown(event);
-      }
-    };
-    ownerDocument.addEventListener("keydown", handleKeyDown, { capture: true });
-    return () => ownerDocument.removeEventListener("keydown", handleKeyDown, { capture: true });
-  }, [onEscapeKeyDown, ownerDocument]);
-}
-
-// node_modules/.pnpm/@radix-ui+react-dismissable-layer@1.1.11_@types+react-dom@18.3.1_@types+react@19.2.0_react-do_6egxp5znpyk3c7yb7fm5vbccse/node_modules/@radix-ui/react-dismissable-layer/dist/index.mjs
-var import_jsx_runtime5 = require("react/jsx-runtime");
-var DISMISSABLE_LAYER_NAME = "DismissableLayer";
-var CONTEXT_UPDATE = "dismissableLayer.update";
-var POINTER_DOWN_OUTSIDE = "dismissableLayer.pointerDownOutside";
-var FOCUS_OUTSIDE = "dismissableLayer.focusOutside";
-var originalBodyPointerEvents;
-var DismissableLayerContext = React11.createContext({
-  layers: /* @__PURE__ */ new Set(),
-  layersWithOutsidePointerEventsDisabled: /* @__PURE__ */ new Set(),
-  branches: /* @__PURE__ */ new Set()
-});
-var DismissableLayer = React11.forwardRef(
-  (props, forwardedRef) => {
-    const {
-      disableOutsidePointerEvents = false,
-      onEscapeKeyDown,
-      onPointerDownOutside,
-      onFocusOutside,
-      onInteractOutside,
-      onDismiss,
-      ...layerProps
-    } = props;
-    const context = React11.useContext(DismissableLayerContext);
-    const [node, setNode] = React11.useState(null);
-    const ownerDocument = node?.ownerDocument ?? globalThis?.document;
-    const [, force] = React11.useState({});
-    const composedRefs = useComposedRefs(forwardedRef, (node2) => setNode(node2));
-    const layers = Array.from(context.layers);
-    const [highestLayerWithOutsidePointerEventsDisabled] = [...context.layersWithOutsidePointerEventsDisabled].slice(-1);
-    const highestLayerWithOutsidePointerEventsDisabledIndex = layers.indexOf(highestLayerWithOutsidePointerEventsDisabled);
-    const index2 = node ? layers.indexOf(node) : -1;
-    const isBodyPointerEventsDisabled = context.layersWithOutsidePointerEventsDisabled.size > 0;
-    const isPointerEventsEnabled = index2 >= highestLayerWithOutsidePointerEventsDisabledIndex;
-    const pointerDownOutside = usePointerDownOutside((event) => {
-      const target = event.target;
-      const isPointerDownOnBranch = [...context.branches].some((branch) => branch.contains(target));
-      if (!isPointerEventsEnabled || isPointerDownOnBranch) return;
-      onPointerDownOutside?.(event);
-      onInteractOutside?.(event);
-      if (!event.defaultPrevented) onDismiss?.();
-    }, ownerDocument);
-    const focusOutside = useFocusOutside((event) => {
-      const target = event.target;
-      const isFocusInBranch = [...context.branches].some((branch) => branch.contains(target));
-      if (isFocusInBranch) return;
-      onFocusOutside?.(event);
-      onInteractOutside?.(event);
-      if (!event.defaultPrevented) onDismiss?.();
-    }, ownerDocument);
-    useEscapeKeydown((event) => {
-      const isHighestLayer = index2 === context.layers.size - 1;
-      if (!isHighestLayer) return;
-      onEscapeKeyDown?.(event);
-      if (!event.defaultPrevented && onDismiss) {
-        event.preventDefault();
-        onDismiss();
-      }
-    }, ownerDocument);
-    React11.useEffect(() => {
-      if (!node) return;
-      if (disableOutsidePointerEvents) {
-        if (context.layersWithOutsidePointerEventsDisabled.size === 0) {
-          originalBodyPointerEvents = ownerDocument.body.style.pointerEvents;
-          ownerDocument.body.style.pointerEvents = "none";
-        }
-        context.layersWithOutsidePointerEventsDisabled.add(node);
-      }
-      context.layers.add(node);
-      dispatchUpdate();
-      return () => {
-        if (disableOutsidePointerEvents && context.layersWithOutsidePointerEventsDisabled.size === 1) {
-          ownerDocument.body.style.pointerEvents = originalBodyPointerEvents;
-        }
-      };
-    }, [node, ownerDocument, disableOutsidePointerEvents, context]);
-    React11.useEffect(() => {
-      return () => {
-        if (!node) return;
-        context.layers.delete(node);
-        context.layersWithOutsidePointerEventsDisabled.delete(node);
-        dispatchUpdate();
-      };
-    }, [node, context]);
-    React11.useEffect(() => {
-      const handleUpdate = () => force({});
-      document.addEventListener(CONTEXT_UPDATE, handleUpdate);
-      return () => document.removeEventListener(CONTEXT_UPDATE, handleUpdate);
-    }, []);
-    return /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(
-      Primitive.div,
-      {
-        ...layerProps,
-        ref: composedRefs,
-        style: {
-          pointerEvents: isBodyPointerEventsDisabled ? isPointerEventsEnabled ? "auto" : "none" : void 0,
-          ...props.style
-        },
-        onFocusCapture: composeEventHandlers(props.onFocusCapture, focusOutside.onFocusCapture),
-        onBlurCapture: composeEventHandlers(props.onBlurCapture, focusOutside.onBlurCapture),
-        onPointerDownCapture: composeEventHandlers(
-          props.onPointerDownCapture,
-          pointerDownOutside.onPointerDownCapture
-        )
-      }
-    );
-  }
-);
-DismissableLayer.displayName = DISMISSABLE_LAYER_NAME;
-var BRANCH_NAME = "DismissableLayerBranch";
-var DismissableLayerBranch = React11.forwardRef((props, forwardedRef) => {
-  const context = React11.useContext(DismissableLayerContext);
-  const ref = React11.useRef(null);
-  const composedRefs = useComposedRefs(forwardedRef, ref);
-  React11.useEffect(() => {
-    const node = ref.current;
-    if (node) {
-      context.branches.add(node);
-      return () => {
-        context.branches.delete(node);
-      };
-    }
-  }, [context.branches]);
-  return /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(Primitive.div, { ...props, ref: composedRefs });
-});
-DismissableLayerBranch.displayName = BRANCH_NAME;
-function usePointerDownOutside(onPointerDownOutside, ownerDocument = globalThis?.document) {
-  const handlePointerDownOutside = useCallbackRef(onPointerDownOutside);
-  const isPointerInsideReactTreeRef = React11.useRef(false);
-  const handleClickRef = React11.useRef(() => {
-  });
-  React11.useEffect(() => {
-    const handlePointerDown = (event) => {
-      if (event.target && !isPointerInsideReactTreeRef.current) {
-        let handleAndDispatchPointerDownOutsideEvent2 = function() {
-          handleAndDispatchCustomEvent(
-            POINTER_DOWN_OUTSIDE,
-            handlePointerDownOutside,
-            eventDetail,
-            { discrete: true }
-          );
-        };
-        var handleAndDispatchPointerDownOutsideEvent = handleAndDispatchPointerDownOutsideEvent2;
-        const eventDetail = { originalEvent: event };
-        if (event.pointerType === "touch") {
-          ownerDocument.removeEventListener("click", handleClickRef.current);
-          handleClickRef.current = handleAndDispatchPointerDownOutsideEvent2;
-          ownerDocument.addEventListener("click", handleClickRef.current, { once: true });
-        } else {
-          handleAndDispatchPointerDownOutsideEvent2();
-        }
-      } else {
-        ownerDocument.removeEventListener("click", handleClickRef.current);
-      }
-      isPointerInsideReactTreeRef.current = false;
-    };
-    const timerId = window.setTimeout(() => {
-      ownerDocument.addEventListener("pointerdown", handlePointerDown);
-    }, 0);
-    return () => {
-      window.clearTimeout(timerId);
-      ownerDocument.removeEventListener("pointerdown", handlePointerDown);
-      ownerDocument.removeEventListener("click", handleClickRef.current);
-    };
-  }, [ownerDocument, handlePointerDownOutside]);
-  return {
-    // ensures we check React component tree (not just DOM tree)
-    onPointerDownCapture: () => isPointerInsideReactTreeRef.current = true
-  };
-}
-function useFocusOutside(onFocusOutside, ownerDocument = globalThis?.document) {
-  const handleFocusOutside = useCallbackRef(onFocusOutside);
-  const isFocusInsideReactTreeRef = React11.useRef(false);
-  React11.useEffect(() => {
-    const handleFocus = (event) => {
-      if (event.target && !isFocusInsideReactTreeRef.current) {
-        const eventDetail = { originalEvent: event };
-        handleAndDispatchCustomEvent(FOCUS_OUTSIDE, handleFocusOutside, eventDetail, {
-          discrete: false
-        });
-      }
-    };
-    ownerDocument.addEventListener("focusin", handleFocus);
-    return () => ownerDocument.removeEventListener("focusin", handleFocus);
-  }, [ownerDocument, handleFocusOutside]);
-  return {
-    onFocusCapture: () => isFocusInsideReactTreeRef.current = true,
-    onBlurCapture: () => isFocusInsideReactTreeRef.current = false
-  };
-}
-function dispatchUpdate() {
-  const event = new CustomEvent(CONTEXT_UPDATE);
-  document.dispatchEvent(event);
-}
-function handleAndDispatchCustomEvent(name2, handler, detail, { discrete }) {
-  const target = detail.originalEvent.target;
-  const event = new CustomEvent(name2, { bubbles: false, cancelable: true, detail });
-  if (handler) target.addEventListener(name2, handler, { once: true });
-  if (discrete) {
-    dispatchDiscreteCustomEvent(target, event);
-  } else {
-    target.dispatchEvent(event);
-  }
-}
-
-// node_modules/.pnpm/@radix-ui+react-focus-scope@1.1.7_@types+react-dom@18.3.1_@types+react@19.2.0_react-dom@18.2._dhkdyyxeakawqe2hoiycn4cg2m/node_modules/@radix-ui/react-focus-scope/dist/index.mjs
-var React12 = __toESM(require("react"), 1);
-var import_jsx_runtime6 = require("react/jsx-runtime");
-var AUTOFOCUS_ON_MOUNT = "focusScope.autoFocusOnMount";
-var AUTOFOCUS_ON_UNMOUNT = "focusScope.autoFocusOnUnmount";
-var EVENT_OPTIONS = { bubbles: false, cancelable: true };
-var FOCUS_SCOPE_NAME = "FocusScope";
-var FocusScope = React12.forwardRef((props, forwardedRef) => {
-  const {
-    loop = false,
-    trapped = false,
-    onMountAutoFocus: onMountAutoFocusProp,
-    onUnmountAutoFocus: onUnmountAutoFocusProp,
-    ...scopeProps
-  } = props;
-  const [container, setContainer] = React12.useState(null);
-  const onMountAutoFocus = useCallbackRef(onMountAutoFocusProp);
-  const onUnmountAutoFocus = useCallbackRef(onUnmountAutoFocusProp);
-  const lastFocusedElementRef = React12.useRef(null);
-  const composedRefs = useComposedRefs(forwardedRef, (node) => setContainer(node));
-  const focusScope = React12.useRef({
-    paused: false,
-    pause() {
-      this.paused = true;
-    },
-    resume() {
-      this.paused = false;
-    }
-  }).current;
-  React12.useEffect(() => {
-    if (trapped) {
-      let handleFocusIn2 = function(event) {
-        if (focusScope.paused || !container) return;
-        const target = event.target;
-        if (container.contains(target)) {
-          lastFocusedElementRef.current = target;
-        } else {
-          focus(lastFocusedElementRef.current, { select: true });
-        }
-      }, handleFocusOut2 = function(event) {
-        if (focusScope.paused || !container) return;
-        const relatedTarget = event.relatedTarget;
-        if (relatedTarget === null) return;
-        if (!container.contains(relatedTarget)) {
-          focus(lastFocusedElementRef.current, { select: true });
-        }
-      }, handleMutations2 = function(mutations) {
-        const focusedElement = document.activeElement;
-        if (focusedElement !== document.body) return;
-        for (const mutation of mutations) {
-          if (mutation.removedNodes.length > 0) focus(container);
-        }
-      };
-      var handleFocusIn = handleFocusIn2, handleFocusOut = handleFocusOut2, handleMutations = handleMutations2;
-      document.addEventListener("focusin", handleFocusIn2);
-      document.addEventListener("focusout", handleFocusOut2);
-      const mutationObserver = new MutationObserver(handleMutations2);
-      if (container) mutationObserver.observe(container, { childList: true, subtree: true });
-      return () => {
-        document.removeEventListener("focusin", handleFocusIn2);
-        document.removeEventListener("focusout", handleFocusOut2);
-        mutationObserver.disconnect();
-      };
-    }
-  }, [trapped, container, focusScope.paused]);
-  React12.useEffect(() => {
-    if (container) {
-      focusScopesStack.add(focusScope);
-      const previouslyFocusedElement = document.activeElement;
-      const hasFocusedCandidate = container.contains(previouslyFocusedElement);
-      if (!hasFocusedCandidate) {
-        const mountEvent = new CustomEvent(AUTOFOCUS_ON_MOUNT, EVENT_OPTIONS);
-        container.addEventListener(AUTOFOCUS_ON_MOUNT, onMountAutoFocus);
-        container.dispatchEvent(mountEvent);
-        if (!mountEvent.defaultPrevented) {
-          focusFirst(removeLinks(getTabbableCandidates(container)), { select: true });
-          if (document.activeElement === previouslyFocusedElement) {
-            focus(container);
-          }
-        }
-      }
-      return () => {
-        container.removeEventListener(AUTOFOCUS_ON_MOUNT, onMountAutoFocus);
-        setTimeout(() => {
-          const unmountEvent = new CustomEvent(AUTOFOCUS_ON_UNMOUNT, EVENT_OPTIONS);
-          container.addEventListener(AUTOFOCUS_ON_UNMOUNT, onUnmountAutoFocus);
-          container.dispatchEvent(unmountEvent);
-          if (!unmountEvent.defaultPrevented) {
-            focus(previouslyFocusedElement ?? document.body, { select: true });
-          }
-          container.removeEventListener(AUTOFOCUS_ON_UNMOUNT, onUnmountAutoFocus);
-          focusScopesStack.remove(focusScope);
-        }, 0);
-      };
-    }
-  }, [container, onMountAutoFocus, onUnmountAutoFocus, focusScope]);
-  const handleKeyDown = React12.useCallback(
-    (event) => {
-      if (!loop && !trapped) return;
-      if (focusScope.paused) return;
-      const isTabKey = event.key === "Tab" && !event.altKey && !event.ctrlKey && !event.metaKey;
-      const focusedElement = document.activeElement;
-      if (isTabKey && focusedElement) {
-        const container2 = event.currentTarget;
-        const [first, last] = getTabbableEdges(container2);
-        const hasTabbableElementsInside = first && last;
-        if (!hasTabbableElementsInside) {
-          if (focusedElement === container2) event.preventDefault();
-        } else {
-          if (!event.shiftKey && focusedElement === last) {
-            event.preventDefault();
-            if (loop) focus(first, { select: true });
-          } else if (event.shiftKey && focusedElement === first) {
-            event.preventDefault();
-            if (loop) focus(last, { select: true });
-          }
-        }
-      }
-    },
-    [loop, trapped, focusScope.paused]
-  );
-  return /* @__PURE__ */ (0, import_jsx_runtime6.jsx)(Primitive.div, { tabIndex: -1, ...scopeProps, ref: composedRefs, onKeyDown: handleKeyDown });
-});
-FocusScope.displayName = FOCUS_SCOPE_NAME;
-function focusFirst(candidates, { select = false } = {}) {
-  const previouslyFocusedElement = document.activeElement;
-  for (const candidate of candidates) {
-    focus(candidate, { select });
-    if (document.activeElement !== previouslyFocusedElement) return;
-  }
-}
-function getTabbableEdges(container) {
-  const candidates = getTabbableCandidates(container);
-  const first = findVisible(candidates, container);
-  const last = findVisible(candidates.reverse(), container);
-  return [first, last];
-}
-function getTabbableCandidates(container) {
-  const nodes = [];
-  const walker = document.createTreeWalker(container, NodeFilter.SHOW_ELEMENT, {
-    acceptNode: (node) => {
-      const isHiddenInput = node.tagName === "INPUT" && node.type === "hidden";
-      if (node.disabled || node.hidden || isHiddenInput) return NodeFilter.FILTER_SKIP;
-      return node.tabIndex >= 0 ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_SKIP;
-    }
-  });
-  while (walker.nextNode()) nodes.push(walker.currentNode);
-  return nodes;
-}
-function findVisible(elements, container) {
-  for (const element of elements) {
-    if (!isHidden(element, { upTo: container })) return element;
-  }
-}
-function isHidden(node, { upTo }) {
-  if (getComputedStyle(node).visibility === "hidden") return true;
-  while (node) {
-    if (upTo !== void 0 && node === upTo) return false;
-    if (getComputedStyle(node).display === "none") return true;
-    node = node.parentElement;
-  }
-  return false;
-}
-function isSelectableInput(element) {
-  return element instanceof HTMLInputElement && "select" in element;
-}
-function focus(element, { select = false } = {}) {
-  if (element && element.focus) {
-    const previouslyFocusedElement = document.activeElement;
-    element.focus({ preventScroll: true });
-    if (element !== previouslyFocusedElement && isSelectableInput(element) && select)
-      element.select();
-  }
-}
-var focusScopesStack = createFocusScopesStack();
-function createFocusScopesStack() {
-  let stack = [];
-  return {
-    add(focusScope) {
-      const activeFocusScope = stack[0];
-      if (focusScope !== activeFocusScope) {
-        activeFocusScope?.pause();
-      }
-      stack = arrayRemove(stack, focusScope);
-      stack.unshift(focusScope);
-    },
-    remove(focusScope) {
-      stack = arrayRemove(stack, focusScope);
-      stack[0]?.resume();
-    }
-  };
-}
-function arrayRemove(array, item) {
-  const updatedArray = [...array];
-  const index2 = updatedArray.indexOf(item);
-  if (index2 !== -1) {
-    updatedArray.splice(index2, 1);
-  }
-  return updatedArray;
-}
-function removeLinks(items2) {
-  return items2.filter((item) => item.tagName !== "A");
-}
-
-// node_modules/.pnpm/@radix-ui+react-portal@1.1.9_@types+react-dom@18.3.1_@types+react@19.2.0_react-dom@18.2.0_react@18.2.0__react@18.2.0/node_modules/@radix-ui/react-portal/dist/index.mjs
-var React13 = __toESM(require("react"), 1);
-var import_react_dom = __toESM(require("react-dom"), 1);
-var import_jsx_runtime7 = require("react/jsx-runtime");
-var PORTAL_NAME = "Portal";
-var Portal = React13.forwardRef((props, forwardedRef) => {
-  const { container: containerProp, ...portalProps } = props;
-  const [mounted, setMounted] = React13.useState(false);
-  useLayoutEffect2(() => setMounted(true), []);
-  const container = containerProp || mounted && globalThis?.document?.body;
-  return container ? import_react_dom.default.createPortal(/* @__PURE__ */ (0, import_jsx_runtime7.jsx)(Primitive.div, { ...portalProps, ref: forwardedRef }), container) : null;
-});
-Portal.displayName = PORTAL_NAME;
-
-// node_modules/.pnpm/@radix-ui+react-presence@1.1.5_@types+react-dom@18.3.1_@types+react@19.2.0_react-dom@18.2.0_react@18.2.0__react@18.2.0/node_modules/@radix-ui/react-presence/dist/index.mjs
-var React23 = __toESM(require("react"), 1);
-var React14 = __toESM(require("react"), 1);
-function useStateMachine(initialState, machine) {
-  return React14.useReducer((state, event) => {
-    const nextState = machine[state][event];
-    return nextState ?? state;
-  }, initialState);
-}
-var Presence = (props) => {
-  const { present, children } = props;
-  const presence = usePresence(present);
-  const child = typeof children === "function" ? children({ present: presence.isPresent }) : React23.Children.only(children);
-  const ref = useComposedRefs(presence.ref, getElementRef2(child));
-  const forceMount = typeof children === "function";
-  return forceMount || presence.isPresent ? React23.cloneElement(child, { ref }) : null;
-};
-Presence.displayName = "Presence";
-function usePresence(present) {
-  const [node, setNode] = React23.useState();
-  const stylesRef = React23.useRef(null);
-  const prevPresentRef = React23.useRef(present);
-  const prevAnimationNameRef = React23.useRef("none");
-  const initialState = present ? "mounted" : "unmounted";
-  const [state, send] = useStateMachine(initialState, {
-    mounted: {
-      UNMOUNT: "unmounted",
-      ANIMATION_OUT: "unmountSuspended"
-    },
-    unmountSuspended: {
-      MOUNT: "mounted",
-      ANIMATION_END: "unmounted"
-    },
-    unmounted: {
-      MOUNT: "mounted"
-    }
-  });
-  React23.useEffect(() => {
-    const currentAnimationName = getAnimationName(stylesRef.current);
-    prevAnimationNameRef.current = state === "mounted" ? currentAnimationName : "none";
-  }, [state]);
-  useLayoutEffect2(() => {
-    const styles = stylesRef.current;
-    const wasPresent = prevPresentRef.current;
-    const hasPresentChanged = wasPresent !== present;
-    if (hasPresentChanged) {
-      const prevAnimationName = prevAnimationNameRef.current;
-      const currentAnimationName = getAnimationName(styles);
-      if (present) {
-        send("MOUNT");
-      } else if (currentAnimationName === "none" || styles?.display === "none") {
-        send("UNMOUNT");
-      } else {
-        const isAnimating = prevAnimationName !== currentAnimationName;
-        if (wasPresent && isAnimating) {
-          send("ANIMATION_OUT");
-        } else {
-          send("UNMOUNT");
-        }
-      }
-      prevPresentRef.current = present;
-    }
-  }, [present, send]);
-  useLayoutEffect2(() => {
-    if (node) {
-      let timeoutId;
-      const ownerWindow = node.ownerDocument.defaultView ?? window;
-      const handleAnimationEnd = (event) => {
-        const currentAnimationName = getAnimationName(stylesRef.current);
-        const isCurrentAnimation = currentAnimationName.includes(CSS.escape(event.animationName));
-        if (event.target === node && isCurrentAnimation) {
-          send("ANIMATION_END");
-          if (!prevPresentRef.current) {
-            const currentFillMode = node.style.animationFillMode;
-            node.style.animationFillMode = "forwards";
-            timeoutId = ownerWindow.setTimeout(() => {
-              if (node.style.animationFillMode === "forwards") {
-                node.style.animationFillMode = currentFillMode;
-              }
-            });
-          }
-        }
-      };
-      const handleAnimationStart = (event) => {
-        if (event.target === node) {
-          prevAnimationNameRef.current = getAnimationName(stylesRef.current);
-        }
-      };
-      node.addEventListener("animationstart", handleAnimationStart);
-      node.addEventListener("animationcancel", handleAnimationEnd);
-      node.addEventListener("animationend", handleAnimationEnd);
-      return () => {
-        ownerWindow.clearTimeout(timeoutId);
-        node.removeEventListener("animationstart", handleAnimationStart);
-        node.removeEventListener("animationcancel", handleAnimationEnd);
-        node.removeEventListener("animationend", handleAnimationEnd);
-      };
-    } else {
-      send("ANIMATION_END");
-    }
-  }, [node, send]);
-  return {
-    isPresent: ["mounted", "unmountSuspended"].includes(state),
-    ref: React23.useCallback((node2) => {
-      stylesRef.current = node2 ? getComputedStyle(node2) : null;
-      setNode(node2);
-    }, [])
-  };
-}
-function getAnimationName(styles) {
-  return styles?.animationName || "none";
-}
-function getElementRef2(element) {
-  let getter = Object.getOwnPropertyDescriptor(element.props, "ref")?.get;
-  let mayWarn = getter && "isReactWarning" in getter && getter.isReactWarning;
-  if (mayWarn) {
-    return element.ref;
-  }
-  getter = Object.getOwnPropertyDescriptor(element, "ref")?.get;
-  mayWarn = getter && "isReactWarning" in getter && getter.isReactWarning;
-  if (mayWarn) {
-    return element.props.ref;
-  }
-  return element.props.ref || element.ref;
-}
-
-// node_modules/.pnpm/@radix-ui+react-focus-guards@1.1.3_@types+react@19.2.0_react@18.2.0/node_modules/@radix-ui/react-focus-guards/dist/index.mjs
-var React15 = __toESM(require("react"), 1);
-var count2 = 0;
-function useFocusGuards() {
-  React15.useEffect(() => {
-    const edgeGuards = document.querySelectorAll("[data-radix-focus-guard]");
-    document.body.insertAdjacentElement("afterbegin", edgeGuards[0] ?? createFocusGuard());
-    document.body.insertAdjacentElement("beforeend", edgeGuards[1] ?? createFocusGuard());
-    count2++;
-    return () => {
-      if (count2 === 1) {
-        document.querySelectorAll("[data-radix-focus-guard]").forEach((node) => node.remove());
-      }
-      count2--;
-    };
-  }, []);
-}
-function createFocusGuard() {
-  const element = document.createElement("span");
-  element.setAttribute("data-radix-focus-guard", "");
-  element.tabIndex = 0;
-  element.style.outline = "none";
-  element.style.opacity = "0";
-  element.style.position = "fixed";
-  element.style.pointerEvents = "none";
-  return element;
-}
-
-// node_modules/.pnpm/@radix-ui+react-dialog@1.1.15_@types+react-dom@18.3.1_@types+react@19.2.0_react-dom@18.2.0_react@18.2.0__react@18.2.0/node_modules/@radix-ui/react-dialog/dist/index.mjs
-var import_react_remove_scroll = __toESM(require_es56(), 1);
-var import_aria_hidden = __toESM(require_es57(), 1);
-var import_jsx_runtime8 = require("react/jsx-runtime");
-var DIALOG_NAME = "Dialog";
-var [createDialogContext, createDialogScope] = createContextScope(DIALOG_NAME);
-var [DialogProvider, useDialogContext] = createDialogContext(DIALOG_NAME);
-var Dialog = (props) => {
-  const {
-    __scopeDialog,
-    children,
-    open: openProp,
-    defaultOpen,
-    onOpenChange,
-    modal: modal2 = true
-  } = props;
-  const triggerRef = React16.useRef(null);
-  const contentRef = React16.useRef(null);
-  const [open, setOpen] = useControllableState({
-    prop: openProp,
-    defaultProp: defaultOpen ?? false,
-    onChange: onOpenChange,
-    caller: DIALOG_NAME
-  });
-  return /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(
-    DialogProvider,
-    {
-      scope: __scopeDialog,
-      triggerRef,
-      contentRef,
-      contentId: useId(),
-      titleId: useId(),
-      descriptionId: useId(),
-      open,
-      onOpenChange: setOpen,
-      onOpenToggle: React16.useCallback(() => setOpen((prevOpen) => !prevOpen), [setOpen]),
-      modal: modal2,
-      children
-    }
-  );
-};
-Dialog.displayName = DIALOG_NAME;
-var TRIGGER_NAME = "DialogTrigger";
-var DialogTrigger = React16.forwardRef(
-  (props, forwardedRef) => {
-    const { __scopeDialog, ...triggerProps } = props;
-    const context = useDialogContext(TRIGGER_NAME, __scopeDialog);
-    const composedTriggerRef = useComposedRefs(forwardedRef, context.triggerRef);
-    return /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(
-      Primitive.button,
-      {
-        type: "button",
-        "aria-haspopup": "dialog",
-        "aria-expanded": context.open,
-        "aria-controls": context.contentId,
-        "data-state": getState(context.open),
-        ...triggerProps,
-        ref: composedTriggerRef,
-        onClick: composeEventHandlers(props.onClick, context.onOpenToggle)
-      }
-    );
-  }
-);
-DialogTrigger.displayName = TRIGGER_NAME;
-var PORTAL_NAME2 = "DialogPortal";
-var [PortalProvider, usePortalContext] = createDialogContext(PORTAL_NAME2, {
-  forceMount: void 0
-});
-var DialogPortal = (props) => {
-  const { __scopeDialog, forceMount, children, container } = props;
-  const context = useDialogContext(PORTAL_NAME2, __scopeDialog);
-  return /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(PortalProvider, { scope: __scopeDialog, forceMount, children: React16.Children.map(children, (child) => /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(Presence, { present: forceMount || context.open, children: /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(Portal, { asChild: true, container, children: child }) })) });
-};
-DialogPortal.displayName = PORTAL_NAME2;
-var OVERLAY_NAME = "DialogOverlay";
-var DialogOverlay = React16.forwardRef(
-  (props, forwardedRef) => {
-    const portalContext = usePortalContext(OVERLAY_NAME, props.__scopeDialog);
-    const { forceMount = portalContext.forceMount, ...overlayProps } = props;
-    const context = useDialogContext(OVERLAY_NAME, props.__scopeDialog);
-    return context.modal ? /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(Presence, { present: forceMount || context.open, children: /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(DialogOverlayImpl, { ...overlayProps, ref: forwardedRef }) }) : null;
-  }
-);
-DialogOverlay.displayName = OVERLAY_NAME;
-var Slot = createSlot("DialogOverlay.RemoveScroll");
-var DialogOverlayImpl = React16.forwardRef(
-  (props, forwardedRef) => {
-    const { __scopeDialog, ...overlayProps } = props;
-    const context = useDialogContext(OVERLAY_NAME, __scopeDialog);
-    return (
-      // Make sure `Content` is scrollable even when it doesn't live inside `RemoveScroll`
-      // ie. when `Overlay` and `Content` are siblings
-      /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(import_react_remove_scroll.RemoveScroll, { as: Slot, allowPinchZoom: true, shards: [context.contentRef], children: /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(
-        Primitive.div,
-        {
-          "data-state": getState(context.open),
-          ...overlayProps,
-          ref: forwardedRef,
-          style: { pointerEvents: "auto", ...overlayProps.style }
-        }
-      ) })
-    );
-  }
-);
-var CONTENT_NAME = "DialogContent";
-var DialogContent = React16.forwardRef(
-  (props, forwardedRef) => {
-    const portalContext = usePortalContext(CONTENT_NAME, props.__scopeDialog);
-    const { forceMount = portalContext.forceMount, ...contentProps } = props;
-    const context = useDialogContext(CONTENT_NAME, props.__scopeDialog);
-    return /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(Presence, { present: forceMount || context.open, children: context.modal ? /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(DialogContentModal, { ...contentProps, ref: forwardedRef }) : /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(DialogContentNonModal, { ...contentProps, ref: forwardedRef }) });
-  }
-);
-DialogContent.displayName = CONTENT_NAME;
-var DialogContentModal = React16.forwardRef(
-  (props, forwardedRef) => {
-    const context = useDialogContext(CONTENT_NAME, props.__scopeDialog);
-    const contentRef = React16.useRef(null);
-    const composedRefs = useComposedRefs(forwardedRef, context.contentRef, contentRef);
-    React16.useEffect(() => {
-      const content2 = contentRef.current;
-      if (content2) return (0, import_aria_hidden.hideOthers)(content2);
-    }, []);
-    return /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(
-      DialogContentImpl,
-      {
-        ...props,
-        ref: composedRefs,
-        trapFocus: context.open,
-        disableOutsidePointerEvents: true,
-        onCloseAutoFocus: composeEventHandlers(props.onCloseAutoFocus, (event) => {
-          event.preventDefault();
-          context.triggerRef.current?.focus();
-        }),
-        onPointerDownOutside: composeEventHandlers(props.onPointerDownOutside, (event) => {
-          const originalEvent = event.detail.originalEvent;
-          const ctrlLeftClick = originalEvent.button === 0 && originalEvent.ctrlKey === true;
-          const isRightClick = originalEvent.button === 2 || ctrlLeftClick;
-          if (isRightClick) event.preventDefault();
-        }),
-        onFocusOutside: composeEventHandlers(
-          props.onFocusOutside,
-          (event) => event.preventDefault()
-        )
-      }
-    );
-  }
-);
-var DialogContentNonModal = React16.forwardRef(
-  (props, forwardedRef) => {
-    const context = useDialogContext(CONTENT_NAME, props.__scopeDialog);
-    const hasInteractedOutsideRef = React16.useRef(false);
-    const hasPointerDownOutsideRef = React16.useRef(false);
-    return /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(
-      DialogContentImpl,
-      {
-        ...props,
-        ref: forwardedRef,
-        trapFocus: false,
-        disableOutsidePointerEvents: false,
-        onCloseAutoFocus: (event) => {
-          props.onCloseAutoFocus?.(event);
-          if (!event.defaultPrevented) {
-            if (!hasInteractedOutsideRef.current) context.triggerRef.current?.focus();
-            event.preventDefault();
-          }
-          hasInteractedOutsideRef.current = false;
-          hasPointerDownOutsideRef.current = false;
-        },
-        onInteractOutside: (event) => {
-          props.onInteractOutside?.(event);
-          if (!event.defaultPrevented) {
-            hasInteractedOutsideRef.current = true;
-            if (event.detail.originalEvent.type === "pointerdown") {
-              hasPointerDownOutsideRef.current = true;
-            }
-          }
-          const target = event.target;
-          const targetIsTrigger = context.triggerRef.current?.contains(target);
-          if (targetIsTrigger) event.preventDefault();
-          if (event.detail.originalEvent.type === "focusin" && hasPointerDownOutsideRef.current) {
-            event.preventDefault();
-          }
-        }
-      }
-    );
-  }
-);
-var DialogContentImpl = React16.forwardRef(
-  (props, forwardedRef) => {
-    const { __scopeDialog, trapFocus, onOpenAutoFocus, onCloseAutoFocus, ...contentProps } = props;
-    const context = useDialogContext(CONTENT_NAME, __scopeDialog);
-    const contentRef = React16.useRef(null);
-    const composedRefs = useComposedRefs(forwardedRef, contentRef);
-    useFocusGuards();
-    return /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)(import_jsx_runtime8.Fragment, { children: [
-      /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(
-        FocusScope,
-        {
-          asChild: true,
-          loop: true,
-          trapped: trapFocus,
-          onMountAutoFocus: onOpenAutoFocus,
-          onUnmountAutoFocus: onCloseAutoFocus,
-          children: /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(
-            DismissableLayer,
-            {
-              role: "dialog",
-              id: context.contentId,
-              "aria-describedby": context.descriptionId,
-              "aria-labelledby": context.titleId,
-              "data-state": getState(context.open),
-              ...contentProps,
-              ref: composedRefs,
-              onDismiss: () => context.onOpenChange(false)
-            }
-          )
-        }
-      ),
-      /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)(import_jsx_runtime8.Fragment, { children: [
-        /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(TitleWarning, { titleId: context.titleId }),
-        /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(DescriptionWarning, { contentRef, descriptionId: context.descriptionId })
-      ] })
-    ] });
-  }
-);
-var TITLE_NAME = "DialogTitle";
-var DialogTitle = React16.forwardRef(
-  (props, forwardedRef) => {
-    const { __scopeDialog, ...titleProps } = props;
-    const context = useDialogContext(TITLE_NAME, __scopeDialog);
-    return /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(Primitive.h2, { id: context.titleId, ...titleProps, ref: forwardedRef });
-  }
-);
-DialogTitle.displayName = TITLE_NAME;
-var DESCRIPTION_NAME = "DialogDescription";
-var DialogDescription = React16.forwardRef(
-  (props, forwardedRef) => {
-    const { __scopeDialog, ...descriptionProps } = props;
-    const context = useDialogContext(DESCRIPTION_NAME, __scopeDialog);
-    return /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(Primitive.p, { id: context.descriptionId, ...descriptionProps, ref: forwardedRef });
-  }
-);
-DialogDescription.displayName = DESCRIPTION_NAME;
-var CLOSE_NAME = "DialogClose";
-var DialogClose = React16.forwardRef(
-  (props, forwardedRef) => {
-    const { __scopeDialog, ...closeProps } = props;
-    const context = useDialogContext(CLOSE_NAME, __scopeDialog);
-    return /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(
-      Primitive.button,
-      {
-        type: "button",
-        ...closeProps,
-        ref: forwardedRef,
-        onClick: composeEventHandlers(props.onClick, () => context.onOpenChange(false))
-      }
-    );
-  }
-);
-DialogClose.displayName = CLOSE_NAME;
-function getState(open) {
-  return open ? "open" : "closed";
-}
-var TITLE_WARNING_NAME = "DialogTitleWarning";
-var [WarningProvider, useWarningContext] = createContext2(TITLE_WARNING_NAME, {
-  contentName: CONTENT_NAME,
-  titleName: TITLE_NAME,
-  docsSlug: "dialog"
-});
-var TitleWarning = ({ titleId }) => {
-  const titleWarningContext = useWarningContext(TITLE_WARNING_NAME);
-  const MESSAGE = `\`${titleWarningContext.contentName}\` requires a \`${titleWarningContext.titleName}\` for the component to be accessible for screen reader users.
-
-If you want to hide the \`${titleWarningContext.titleName}\`, you can wrap it with our VisuallyHidden component.
-
-For more information, see https://radix-ui.com/primitives/docs/components/${titleWarningContext.docsSlug}`;
-  React16.useEffect(() => {
-    if (titleId) {
-      const hasTitle = document.getElementById(titleId);
-      if (!hasTitle) console.error(MESSAGE);
-    }
-  }, [MESSAGE, titleId]);
-  return null;
-};
-var DESCRIPTION_WARNING_NAME = "DialogDescriptionWarning";
-var DescriptionWarning = ({ contentRef, descriptionId }) => {
-  const descriptionWarningContext = useWarningContext(DESCRIPTION_WARNING_NAME);
-  const MESSAGE = `Warning: Missing \`Description\` or \`aria-describedby={undefined}\` for {${descriptionWarningContext.contentName}}.`;
-  React16.useEffect(() => {
-    const describedById = contentRef.current?.getAttribute("aria-describedby");
-    if (descriptionId && describedById) {
-      const hasDescription = document.getElementById(descriptionId);
-      if (!hasDescription) console.warn(MESSAGE);
-    }
-  }, [MESSAGE, contentRef, descriptionId]);
-  return null;
-};
-var Root = Dialog;
-var Trigger = DialogTrigger;
-var Portal2 = DialogPortal;
-var Overlay = DialogOverlay;
-var Content = DialogContent;
-var Title = DialogTitle;
-var Description = DialogDescription;
-var Close = DialogClose;
-
-// src/components/ui/dialog.jsx
-var import_lucide_react = require("lucide-react");
-
-// src/lib/utils.js
-function cx(...args) {
-  const classes = [];
-  const push = (v) => {
-    if (v) classes.push(String(v));
-  };
-  const walk = (a) => {
-    for (const x of a) {
-      const t = typeof x;
-      if (!x) continue;
-      if (t === "string" || t === "number") {
-        push(x);
-        continue;
-      }
-      if (Array.isArray(x)) {
-        walk(x);
-        continue;
-      }
-      if (t === "object") {
-        for (const k in x) if (Object.prototype.hasOwnProperty.call(x, k) && x[k]) push(k);
-      }
-    }
-  };
-  walk(args);
-  return classes.join(" ");
-}
-function cn(...inputs) {
-  return cx(...inputs);
-}
-
-// src/components/ui/dialog.jsx
-var import_jsx_runtime9 = require("react/jsx-runtime");
-var Dialog2 = Root;
-var DialogTrigger2 = Trigger;
-var DialogPortal2 = ({ className, children, ...props }) => /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(Portal2, { ...props, children: /* @__PURE__ */ (0, import_jsx_runtime9.jsx)("div", { className: cn("fixed inset-0 z-[999] flex items-start justify-center overflow-y-auto sm:items-center", className), children }) });
-DialogPortal2.displayName = Portal2.displayName;
-var DialogOverlay2 = React17.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(
-  Overlay,
-  {
-    ref,
-    className: cn("fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity data-[state=open]:opacity-100 data-[state=closed]:opacity-0", className),
-    ...props
-  }
-));
-DialogOverlay2.displayName = Overlay.displayName;
-var DialogContent2 = React17.forwardRef(({ className, children, ...props }, ref) => /* @__PURE__ */ (0, import_jsx_runtime9.jsxs)(DialogPortal2, { children: [
-  /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(DialogOverlay2, {}),
-  /* @__PURE__ */ (0, import_jsx_runtime9.jsxs)(
-    Content,
-    {
-      ref,
-      className: cn(
-        "relative z-[1000] m-4 w-full max-w-2xl origin-center scale-100 rounded-2xl border border-slate-200 bg-white p-6 shadow-xl transition-all duration-200 data-[state=open]:opacity-100 data-[state=closed]:opacity-0 sm:m-6",
-        className
-      ),
-      ...props,
-      children: [
-        children,
-        /* @__PURE__ */ (0, import_jsx_runtime9.jsxs)(Close, { className: "absolute right-5 top-5 rounded-full p-1 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:ring-offset-2", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime9.jsx)("span", { className: "sr-only", children: "Close" }),
-          /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(import_lucide_react.X, { className: "h-4 w-4" })
-        ] })
-      ]
-    }
-  )
-] }));
-DialogContent2.displayName = Content.displayName;
-var DialogHeader = ({ className, ...props }) => /* @__PURE__ */ (0, import_jsx_runtime9.jsx)("div", { className: cn("flex flex-col space-y-2 text-center sm:text-left", className), ...props });
-DialogHeader.displayName = "DialogHeader";
-var DialogFooter = ({ className, ...props }) => /* @__PURE__ */ (0, import_jsx_runtime9.jsx)("div", { className: cn("flex flex-col-reverse gap-2 sm:flex-row sm:justify-end", className), ...props });
-DialogFooter.displayName = "DialogFooter";
-var DialogTitle2 = React17.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(Title, { ref, className: cn("text-left text-2xl font-semibold text-slate-900", className), ...props }));
-DialogTitle2.displayName = Title.displayName;
-var DialogDescription2 = React17.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(Description, { ref, className: cn("text-left text-sm text-slate-600", className), ...props }));
-DialogDescription2.displayName = Description.displayName;
+init_dialog();
 
 // src/components/ui/button.jsx
 var React18 = __toESM(require("react"));
+init_utils();
 var import_jsx_runtime10 = require("react/jsx-runtime");
 var baseClasses = "inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-60";
 var variantClasses = {
@@ -64215,6 +65299,7 @@ Button.displayName = "Button";
 
 // src/components/ui/input.jsx
 var React19 = __toESM(require("react"));
+init_utils();
 var import_jsx_runtime11 = require("react/jsx-runtime");
 var Input = React19.forwardRef(({ className = "", type = "text", ...props }, ref) => /* @__PURE__ */ (0, import_jsx_runtime11.jsx)(
   "input",
@@ -64232,6 +65317,7 @@ Input.displayName = "Input";
 
 // src/components/ui/textarea.jsx
 var React20 = __toESM(require("react"));
+init_utils();
 var import_jsx_runtime12 = require("react/jsx-runtime");
 var Textarea = React20.forwardRef(({ className = "", rows = 3, ...props }, ref) => /* @__PURE__ */ (0, import_jsx_runtime12.jsx)(
   "textarea",
@@ -64249,6 +65335,7 @@ Textarea.displayName = "Textarea";
 
 // src/components/ui/label.jsx
 var React21 = __toESM(require("react"));
+init_utils();
 var import_jsx_runtime13 = require("react/jsx-runtime");
 var Label = React21.forwardRef(({ className = "", children, ...props }, ref) => /* @__PURE__ */ (0, import_jsx_runtime13.jsx)("label", { ref, className: cn("text-sm font-semibold text-slate-700", className), ...props, children }));
 Label.displayName = "Label";
@@ -64676,15 +65763,7 @@ var cloudinaryImage_default = CloudinaryImage;
 
 // src/pages/HomePage.jsx
 var import_react18 = require("react");
-
-// src/data/cloudinaryContent.js
-var import_meta2 = {};
-var cloudinaryConfig = {
-  cloudName: typeof import_meta2 !== "undefined" && import_meta2.env?.VITE_CLOUDINARY_CLOUD_NAME || "dokyhfvyd"
-};
-var heroPublicId = "vjuesai2mxfavpq9d2df";
-var heroVersion = "1759456148";
-var heroFallbackSrc = "/gallery/IMG_3145.jpg";
+init_cloudinaryContent();
 
 // src/components/common/TestimonialsCarousel.jsx
 var import_react10 = __toESM(require("react"));
@@ -68414,6 +69493,7 @@ var import_lucide_react2 = require("lucide-react");
 
 // src/components/ui/card.jsx
 var React30 = __toESM(require("react"));
+init_utils();
 var import_jsx_runtime20 = require("react/jsx-runtime");
 var Card = React30.forwardRef(({ className = "", children, ...props }, ref) => /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
   "div",
@@ -68837,932 +69917,6 @@ function Separator({ className = "", orientation = "horizontal", decorative = tr
   return /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("div", { role: decorative ? "none" : "separator", "aria-orientation": orientation, className: classes, ...props });
 }
 
-// src/components/home/GiftCardDialog.jsx
-var import_react16 = __toESM(require("react"));
-var import_react_helmet_async = __toESM(require_lib());
-var import_lucide_react3 = require("lucide-react");
-
-// src/hooks/useSquareCard.js
-var import_react15 = require("react");
-var import_meta5 = {};
-var SQUARE_SCRIPT_ATTR = "data-square-sdk";
-var squareScriptState = { url: null, promise: null };
-var readSquareRuntimeConfig = () => {
-  if (typeof window === "undefined") {
-    return {
-      appId: null,
-      locationId: null,
-      sdkUrl: "",
-      isSandbox: false,
-      environment: "production"
-    };
-  }
-  const runtimeAppId = window.__SQUARE_APP_ID__ || import_meta5?.env?.VITE_SQUARE_APP_ID || window.SQUARE_APPLICATION_ID || "";
-  const envHintRaw = (window.__SQUARE_ENV__ ?? import_meta5?.env?.VITE_SQUARE_ENV ?? "").toString().trim().toLowerCase();
-  const hostname = window.location?.hostname || "";
-  let isSandbox = false;
-  if (["sandbox", "dev", "development", "test"].includes(envHintRaw)) {
-    isSandbox = true;
-  } else if (["production", "prod", "live"].includes(envHintRaw)) {
-    isSandbox = false;
-  } else if (runtimeAppId.startsWith("sandbox-")) {
-    isSandbox = true;
-  } else if (/localhost$/i.test(hostname) || hostname === "127.0.0.1") {
-    isSandbox = true;
-  }
-  const sdkUrl = isSandbox ? "https://sandbox.web.squarecdn.com/v1/square.js" : "https://web.squarecdn.com/v1/square.js";
-  return {
-    appId: runtimeAppId || null,
-    locationId: window.__SQUARE_LOCATION_ID__ || import_meta5?.env?.VITE_SQUARE_LOCATION_ID || window.SQUARE_LOCATION_ID || null,
-    sdkUrl,
-    isSandbox,
-    environment: isSandbox ? "sandbox" : "production"
-  };
-};
-var getSquareSecurityState = () => {
-  if (typeof window === "undefined") {
-    return {
-      secureContext: false,
-      secureForSquare: false,
-      hostname: "",
-      protocol: ""
-    };
-  }
-  const { protocol = "", hostname = "" } = window.location || {};
-  const normalizedProtocol = protocol.toLowerCase();
-  const secureContext = typeof window.isSecureContext === "boolean" ? window.isSecureContext : normalizedProtocol === "https:";
-  const secureForSquare = normalizedProtocol === "https:" || hostname === "localhost";
-  return {
-    secureContext,
-    secureForSquare,
-    hostname,
-    protocol: normalizedProtocol
-  };
-};
-var ensureSquareSdkScript = (sdkUrl, isSandbox) => {
-  if (typeof window === "undefined" || typeof document === "undefined") {
-    return Promise.reject(new Error("Square SDK requires a browser environment."));
-  }
-  if (squareScriptState.promise && squareScriptState.url === sdkUrl) {
-    return squareScriptState.promise;
-  }
-  let script = document.querySelector(`script[${SQUARE_SCRIPT_ATTR}]`);
-  if (script && (script.getAttribute("src") || "") !== sdkUrl) {
-    script.parentElement?.removeChild(script);
-    script = null;
-  }
-  const promise = new Promise((resolve, reject) => {
-    let scriptEl = script;
-    const cleanup = () => {
-      if (!scriptEl) return;
-      scriptEl.removeEventListener("load", handleLoad);
-      scriptEl.removeEventListener("error", handleError);
-    };
-    const handleLoad = () => {
-      if (scriptEl) {
-        scriptEl.setAttribute("data-square-loaded", "true");
-      }
-      cleanup();
-      resolve();
-    };
-    const handleError = (event) => {
-      cleanup();
-      const err = event instanceof Error ? event : new Error("Failed to load Square SDK");
-      reject(err);
-    };
-    if (scriptEl) {
-      scriptEl.dataset.squareSdkEnv = isSandbox ? "sandbox" : "production";
-      const alreadyLoaded = scriptEl.getAttribute("data-square-loaded") === "true";
-      if (alreadyLoaded || window.Square) {
-        resolve();
-        return;
-      }
-      scriptEl.addEventListener("load", handleLoad, { once: true });
-      scriptEl.addEventListener("error", handleError, { once: true });
-    } else {
-      scriptEl = document.createElement("script");
-      scriptEl.src = sdkUrl;
-      scriptEl.async = true;
-      scriptEl.dataset.squareSdk = "true";
-      scriptEl.dataset.squareSdkEnv = isSandbox ? "sandbox" : "production";
-      scriptEl.addEventListener("load", handleLoad, { once: true });
-      scriptEl.addEventListener("error", handleError, { once: true });
-      document.head.appendChild(scriptEl);
-    }
-  }).catch((err) => {
-    if (squareScriptState.url === sdkUrl) {
-      squareScriptState = { url: null, promise: null };
-    }
-    throw err;
-  });
-  squareScriptState = { url: sdkUrl, promise };
-  return promise;
-};
-function useSquareCard(containerId, enabled, deps = []) {
-  const paymentsRef = (0, import_react15.useRef)(null);
-  const cardRef = (0, import_react15.useRef)(null);
-  const [cardLoaded, setCardLoaded] = (0, import_react15.useState)(false);
-  const [attempts, setAttempts] = (0, import_react15.useState)(0);
-  const attemptsRef = (0, import_react15.useRef)(0);
-  const [error, setError] = (0, import_react15.useState)("");
-  const [loadingScript, setLoadingScript] = (0, import_react15.useState)(false);
-  const attachStartedRef = (0, import_react15.useRef)(false);
-  const securityState = getSquareSecurityState();
-  const [envInfo, setEnvInfo] = (0, import_react15.useState)({
-    appId: null,
-    locationId: null,
-    sdkUrl: null,
-    sandbox: false,
-    mismatch: false,
-    environment: null,
-    attempts: 0,
-    secureContext: securityState.secureContext,
-    secureForSquare: securityState.secureForSquare,
-    hostname: securityState.hostname,
-    protocol: securityState.protocol
-  });
-  const cleanupContainer = (0, import_react15.useCallback)(() => {
-    if (typeof document === "undefined") return;
-    try {
-      const node = typeof containerId === "string" ? document.querySelector(containerId) : containerId;
-      if (node && node.childNodes && node.childNodes.length > 0) {
-        node.innerHTML = "";
-      }
-    } catch (_) {
-    }
-  }, [containerId]);
-  const destroyCardInstance = (0, import_react15.useCallback)(() => {
-    const card = cardRef.current;
-    cardRef.current = null;
-    attachStartedRef.current = false;
-    const finalize = () => {
-      cleanupContainer();
-      setCardLoaded(false);
-    };
-    if (!card) {
-      finalize();
-      return;
-    }
-    try {
-      const maybePromise = typeof card.destroy === "function" ? card.destroy() : void 0;
-      if (maybePromise && typeof maybePromise.then === "function") {
-        maybePromise.catch(() => {
-        }).finally(finalize);
-        return;
-      }
-    } catch (_) {
-    }
-    finalize();
-  }, [cleanupContainer]);
-  const reset = (0, import_react15.useCallback)(() => {
-    try {
-      destroyCardInstance();
-      paymentsRef.current = null;
-      setError("");
-      setAttempts(0);
-      attemptsRef.current = 0;
-    } catch (_) {
-    }
-  }, [destroyCardInstance]);
-  (0, import_react15.useEffect)(() => {
-    if (!enabled) return;
-    let cancelled = false;
-    const config = readSquareRuntimeConfig();
-    const security = getSquareSecurityState();
-    setEnvInfo((info) => ({
-      ...info,
-      appId: config.appId,
-      locationId: config.locationId,
-      sdkUrl: config.sdkUrl,
-      sandbox: config.isSandbox,
-      environment: config.environment,
-      mismatch: false,
-      secureContext: security.secureContext,
-      secureForSquare: security.secureForSquare,
-      hostname: security.hostname,
-      protocol: security.protocol
-    }));
-    if (!security.secureForSquare) {
-      setLoadingScript(false);
-      setError("Payments require HTTPS or running on http://localhost.");
-      return;
-    }
-    setLoadingScript(true);
-    ensureSquareSdkScript(config.sdkUrl, config.isSandbox).then(() => {
-      if (cancelled) return;
-      setLoadingScript(false);
-      setError((prev) => prev && prev.toLowerCase().includes("payment script") ? "" : prev);
-    }).catch((err) => {
-      if (cancelled) return;
-      setLoadingScript(false);
-      setError((prev) => prev || err?.message || "Failed to load payment script.");
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, [enabled]);
-  (0, import_react15.useEffect)(() => {
-    if (!enabled) return;
-    const abortController = new AbortController();
-    const { signal } = abortController;
-    const config = readSquareRuntimeConfig();
-    const security = getSquareSecurityState();
-    setEnvInfo((info) => ({
-      ...info,
-      secureContext: security.secureContext,
-      secureForSquare: security.secureForSquare,
-      hostname: security.hostname,
-      protocol: security.protocol
-    }));
-    if (!security.secureForSquare) {
-      setError("Payments require HTTPS or running on http://localhost.");
-      return () => abortController.abort();
-    }
-    if (!config.appId || !config.locationId) {
-      setError("Payment not available: missing Square configuration.");
-      return () => abortController.abort();
-    }
-    const waitForSquare = async () => {
-      if (window.Square) return;
-      const start = Date.now();
-      while (!signal.aborted) {
-        if (window.Square) return;
-        if (Date.now() - start > 2e4) {
-          throw new Error("Payment form failed to load (script not ready).");
-        }
-        await new Promise((resolve) => setTimeout(resolve, 200));
-      }
-      throw new DOMException("Aborted", "AbortError");
-    };
-    const waitForContainer = () => new Promise((resolve, reject) => {
-      let observer;
-      let interval;
-      let timeout;
-      const resolveWith = (node) => {
-        if (signal.aborted) {
-          reject(new DOMException("Aborted", "AbortError"));
-          return;
-        }
-        resolve(node);
-      };
-      const rejectWith = (err) => {
-        if (signal.aborted) {
-          reject(new DOMException("Aborted", "AbortError"));
-        } else {
-          reject(err);
-        }
-      };
-      const cleanup = () => {
-        if (observer) observer.disconnect();
-        if (interval) clearInterval(interval);
-        if (timeout) clearTimeout(timeout);
-        if (signal) signal.removeEventListener("abort", onAbort);
-      };
-      const lookup = () => {
-        if (signal.aborted) {
-          cleanup();
-          reject(new DOMException("Aborted", "AbortError"));
-          return true;
-        }
-        const node = typeof containerId === "string" ? document.querySelector(containerId) : containerId;
-        if (node) {
-          cleanup();
-          resolveWith(node);
-          return true;
-        }
-        return false;
-      };
-      const onAbort = () => {
-        cleanup();
-        reject(new DOMException("Aborted", "AbortError"));
-      };
-      if (lookup()) return;
-      const observerRoot = document.body || document.documentElement;
-      try {
-        observer = new MutationObserver(() => {
-          lookup();
-        });
-        observer.observe(observerRoot, { childList: true, subtree: true });
-      } catch (_) {
-        observer = void 0;
-      }
-      interval = setInterval(() => {
-        lookup();
-      }, 150);
-      signal.addEventListener("abort", onAbort, { once: true });
-      timeout = setTimeout(() => {
-        cleanup();
-        rejectWith(new Error("Payment container not found (timed out)."));
-      }, 12e4);
-    });
-    const scheduleRetry = (delay = 800) => {
-      if (signal.aborted) return;
-      if (attemptsRef.current >= 5) return;
-      setTimeout(() => {
-        if (!signal.aborted) {
-          init();
-        }
-      }, delay);
-    };
-    const init = async () => {
-      try {
-        if (cardRef.current || attachStartedRef.current) return;
-        setAttempts((a) => {
-          const next = a + 1;
-          attemptsRef.current = next;
-          return next;
-        });
-        await ensureSquareSdkScript(config.sdkUrl, config.isSandbox);
-        await waitForSquare();
-        if (signal.aborted) return;
-        if (!window.Square || typeof window.Square.payments !== "function") {
-          throw new Error("Square payments API unavailable.");
-        }
-        const envUpper = typeof config.environment === "string" ? config.environment.toUpperCase() : "";
-        const isValidEnv = envUpper === "SANDBOX" || envUpper === "PRODUCTION";
-        const payments = isValidEnv ? window.Square.payments(config.appId, config.locationId, { environment: envUpper }) : window.Square.payments(config.appId, config.locationId);
-        paymentsRef.current = payments;
-        const card = await payments.card();
-        const container = await waitForContainer();
-        if (signal.aborted) return;
-        attachStartedRef.current = true;
-        cleanupContainer();
-        await card.attach(container);
-        if (!signal.aborted) {
-          cardRef.current = card;
-          setCardLoaded(true);
-          setError("");
-        }
-      } catch (e) {
-        if (signal.aborted) return;
-        if (false) {
-          console.debug("[Square:init:error]", e);
-        }
-        const msg = e?.message || "Payment initialization failed";
-        attachStartedRef.current = false;
-        if (msg.includes("secure context")) {
-          setError("Payments require HTTPS or running on http://localhost.");
-        } else if (msg.includes("Invalid App ID")) {
-          setError("Invalid Square App ID.");
-        } else if (msg.includes("Unexpected token")) {
-          setError("Payment script parse error.");
-          scheduleRetry(1500);
-        } else if (msg.includes("network")) {
-          setError("Network error initializing payment form.");
-          scheduleRetry(1200);
-        } else if (msg === "Payment container not found (timed out).") {
-          scheduleRetry(300);
-        } else if (msg === "Payment form failed to load (script not ready).") {
-          setError(msg);
-          scheduleRetry(500);
-        } else if (msg === "Square payments API unavailable.") {
-          setError("Square payments API unavailable.");
-          scheduleRetry(800);
-        } else {
-          setError(msg);
-          scheduleRetry(1500);
-        }
-      }
-    };
-    init();
-    return () => {
-      abortController.abort();
-      destroyCardInstance();
-      paymentsRef.current = null;
-    };
-  }, [enabled, containerId, destroyCardInstance, cleanupContainer, ...deps]);
-  (0, import_react15.useEffect)(() => {
-    setEnvInfo((info) => ({ ...info, attempts }));
-  }, [attempts]);
-  const tokenize = async () => {
-    if (!cardRef.current) throw new Error(error || "Card form not ready");
-    const result = await cardRef.current.tokenize();
-    if (result.status !== "OK") {
-      const first = result?.errors?.[0];
-      const msg = first?.message || first?.code || result.status || "Card details invalid";
-      throw new Error(msg);
-    }
-    return result.token;
-  };
-  return { cardLoaded, error, loadingScript, tokenize, reset, envInfo };
-}
-
-// src/components/home/GiftCardDialog.jsx
-var import_jsx_runtime25 = require("react/jsx-runtime");
-var presetAmounts = [100, 150, 200, 250, 350, 500];
-var initialForm = {
-  amount: 150,
-  customAmount: "",
-  cardType: "digital",
-  deliveryTarget: "recipient",
-  shipTo: "recipient",
-  sendOn: "",
-  buyerName: "",
-  buyerEmail: "",
-  buyerPhone: "",
-  recipientName: "",
-  recipientEmail: "",
-  recipientPhone: "",
-  note: "",
-  shippingLine1: "",
-  shippingLine2: "",
-  shippingCity: "",
-  shippingState: "",
-  shippingPostal: ""
-};
-var normalizeAmount = (amount, customValue) => {
-  if (customValue) {
-    const value2 = Number(customValue);
-    if (!Number.isNaN(value2) && value2 > 0) {
-      return value2;
-    }
-  }
-  return amount;
-};
-var GiftCardDialog = ({ className = "" }) => {
-  const defaultSiteUrl = "https://localeffort.app";
-  const siteUrl = typeof window !== "undefined" ? window.location.origin : defaultSiteUrl;
-  const giftCardImage = heroFallbackSrc ? heroFallbackSrc.startsWith("http") ? heroFallbackSrc : `${siteUrl}${heroFallbackSrc}` : void 0;
-  const productSchema = (0, import_react16.useMemo)(() => {
-    const schema = {
-      "@context": "https://schema.org",
-      "@type": "Product",
-      name: "Local Effort Gift Card",
-      description: "Local Effort gift cards cover private chef dinners, pizza parties, and hospitality across Minneapolis-St. Paul.",
-      brand: { "@type": "Organization", name: "Local Effort" },
-      offers: {
-        "@type": "AggregateOffer",
-        priceCurrency: "USD",
-        lowPrice: "50",
-        highPrice: "500",
-        availability: "https://schema.org/InStock",
-        url: `${siteUrl}/#gift-cards`
-      }
-    };
-    if (giftCardImage) {
-      schema.image = [giftCardImage];
-    }
-    return schema;
-  }, [giftCardImage, siteUrl]);
-  const [open, setOpen] = (0, import_react16.useState)(false);
-  const [form, setForm] = (0, import_react16.useState)(initialForm);
-  const [status, setStatus] = (0, import_react16.useState)("idle");
-  const [error, setError] = (0, import_react16.useState)("");
-  const [success, setSuccess] = (0, import_react16.useState)(null);
-  const amountValue = (0, import_react16.useMemo)(() => normalizeAmount(form.amount, form.customAmount), [form.amount, form.customAmount]);
-  const canChoosePhysical = amountValue >= 250;
-  const { cardLoaded, error: squareError, tokenize, reset: resetSquare } = useSquareCard("#gift-card-card-container", open, [amountValue]);
-  const handleDialogOpenChange = (0, import_react16.useCallback)((nextOpen) => {
-    if (!nextOpen) {
-      resetSquare();
-      setForm(initialForm);
-      setStatus("idle");
-      setError("");
-      setSuccess(null);
-    }
-    setOpen(nextOpen);
-  }, [resetSquare]);
-  (0, import_react16.useEffect)(() => {
-    if (!canChoosePhysical && form.cardType === "physical") {
-      setForm((prev) => ({ ...prev, cardType: "digital" }));
-    }
-  }, [canChoosePhysical, form.cardType]);
-  (0, import_react16.useEffect)(() => {
-    if (form.cardType !== "digital" || form.deliveryTarget !== "recipient") {
-      setForm((prev) => prev.sendOn ? { ...prev, sendOn: "" } : prev);
-    }
-  }, [form.cardType, form.deliveryTarget]);
-  const handleAmountClick = (value2) => {
-    setForm((prev) => ({ ...prev, amount: value2, customAmount: "" }));
-  };
-  const handleInputChange = (field) => (event) => {
-    const { value: value2 } = event.target;
-    setForm((prev) => ({ ...prev, [field]: value2 }));
-  };
-  const handleSubmit = async (event) => {
-    event.preventDefault();
-    if (status === "processing") return;
-    const resolvedAmount = amountValue;
-    if (!resolvedAmount || resolvedAmount < 50) {
-      setError("Gift card must be at least $50.");
-      return;
-    }
-    const { buyerName, buyerEmail, recipientEmail, cardType, deliveryTarget, sendOn } = form;
-    if (!buyerName.trim() || !buyerEmail.trim()) {
-      setError("Buyer name and email are required.");
-      return;
-    }
-    if (deliveryTarget === "recipient" && !recipientEmail.trim()) {
-      setError("Recipient email is required when sending directly to them.");
-      return;
-    }
-    if (sendOn && cardType !== "digital") {
-      setError("Scheduled delivery is only available for digital gift cards.");
-      return;
-    }
-    let sendOnIso = null;
-    if (sendOn) {
-      const parsed = new Date(sendOn);
-      if (Number.isNaN(parsed.getTime())) {
-        setError("Please provide a valid send date.");
-        return;
-      }
-      const now = /* @__PURE__ */ new Date();
-      const minAhead = 5 * 60 * 1e3;
-      if (parsed.getTime() <= now.getTime() + minAhead) {
-        setError("Please choose a send time at least 5 minutes from now.");
-        return;
-      }
-      sendOnIso = parsed.toISOString();
-    }
-    if (cardType === "physical") {
-      if (!form.shippingLine1.trim() || !form.shippingCity.trim() || !form.shippingState.trim() || !form.shippingPostal.trim()) {
-        setError("Complete shipping details are required for physical cards.");
-        return;
-      }
-    }
-    try {
-      setStatus("processing");
-      setError("");
-      const token = await tokenize();
-      const payload = {
-        amount: resolvedAmount,
-        token,
-        cardType,
-        deliveryTarget,
-        note: form.note,
-        buyer: {
-          name: form.buyerName,
-          email: form.buyerEmail,
-          phone: form.buyerPhone
-        },
-        recipient: {
-          name: form.recipientName,
-          email: form.recipientEmail,
-          phone: form.recipientPhone
-        },
-        sendOn: sendOnIso,
-        shipping: cardType === "physical" ? {
-          shipTo: form.shipTo,
-          address: {
-            line1: form.shippingLine1,
-            line2: form.shippingLine2,
-            city: form.shippingCity,
-            state: form.shippingState,
-            postal: form.shippingPostal
-          }
-        } : null
-      };
-      const response = await fetch("/api/store/gift-card-checkout", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
-      });
-      if (!response.ok) {
-        const body = await response.json().catch(() => ({}));
-        throw new Error(body?.error || "Checkout failed");
-      }
-      const data2 = await response.json();
-      setSuccess({
-        code: data2.code,
-        amount: data2.amount,
-        cardType: data2.cardType,
-        deliveryTarget,
-        sendOn: data2.sendOn || sendOnIso
-      });
-      setStatus("success");
-    } catch (err) {
-      setStatus("error");
-      setError(err?.message || "Something went wrong while processing your gift card.");
-    }
-  };
-  const amountLabel = (0, import_react16.useMemo)(() => `$${amountValue.toFixed(2)}`, [amountValue]);
-  const disableSubmit = !cardLoaded || status === "processing";
-  const minSendOn = (0, import_react16.useMemo)(() => {
-    const base = /* @__PURE__ */ new Date();
-    base.setMinutes(base.getMinutes() + 10);
-    return base.toISOString().slice(0, 16);
-  }, [open]);
-  const formatDateTime = (isoString) => {
-    if (!isoString) return "";
-    try {
-      const date = new Date(isoString);
-      if (Number.isNaN(date.getTime())) return "";
-      return new Intl.DateTimeFormat(void 0, {
-        dateStyle: "medium",
-        timeStyle: "short"
-      }).format(date);
-    } catch (err) {
-      return "";
-    }
-  };
-  const renderSuccess = () => {
-    const scheduledCopy = success?.sendOn ? formatDateTime(success.sendOn) : "";
-    return /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { className: "space-y-6", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { className: "rounded-2xl border border-emerald-100 bg-emerald-50/80 p-6 text-center", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(import_lucide_react3.Sparkles, { className: "mx-auto h-10 w-10 text-emerald-500" }),
-        /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("h3", { className: "mt-4 text-2xl font-semibold text-emerald-700", children: success?.sendOn ? "Gift card scheduled!" : "Gift card sent!" }),
-        /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("p", { className: "text-sm text-emerald-700", children: success?.sendOn ? `We'll deliver the gift card email to the ${success?.deliveryTarget === "recipient" ? "recipient" : "buyer"} on ${scheduledCopy}.` : "We just delivered the gift card email and a confirmation receipt. Save this code for your records." }),
-        /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { className: "mt-4 rounded-xl border border-emerald-200 bg-white px-4 py-3", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("p", { className: "text-xs font-semibold uppercase tracking-[0.32em] text-emerald-500", children: "Gift card code" }),
-          /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("p", { className: "mt-2 text-2xl font-mono font-bold tracking-widest text-slate-900", children: success?.code || "Pending" })
-        ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("p", { className: "mt-4 text-sm text-slate-600", children: [
-          "Amount: ",
-          /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("span", { className: "font-semibold", children: amountLabel }),
-          " - Type: ",
-          success?.cardType === "physical" ? "Leather physical card + digital code" : "Digital"
-        ] }),
-        success?.sendOn && /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("p", { className: "text-xs text-slate-500", children: "You'll also get a reminder email when it goes out." }),
-        /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(
-          "button",
-          {
-            type: "button",
-            className: "mt-5 inline-flex items-center justify-center rounded-full border border-emerald-400 px-4 py-2 text-sm font-semibold text-emerald-600 transition hover:bg-emerald-100",
-            onClick: () => {
-              if (success?.code) navigator.clipboard?.writeText(success.code).catch(() => {
-              });
-            },
-            children: "Copy code"
-          }
-        )
-      ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(DialogFooter, { children: /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(
-        "button",
-        {
-          type: "button",
-          className: "btn btn-primary",
-          onClick: () => handleDialogOpenChange(false),
-          children: "Close"
-        }
-      ) })
-    ] });
-  };
-  return /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)(import_jsx_runtime25.Fragment, { children: [
-    /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(import_react_helmet_async.Helmet, { children: /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("script", { type: "application/ld+json", children: JSON.stringify(productSchema) }) }),
-    /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)(Dialog2, { open, onOpenChange: handleDialogOpenChange, children: [
-      /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(DialogTrigger2, { asChild: true, children: /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("button", { className: cn("btn btn-primary flex items-center gap-2 shadow-sm", className), children: [
-        /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(import_lucide_react3.Gift, { className: "h-4 w-4" }),
-        "Buy Gift Card"
-      ] }) }),
-      /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)(DialogContent2, { className: "max-h-[90vh] overflow-y-auto", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)(DialogHeader, { children: [
-          /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(DialogTitle2, { children: "Gift a Local Effort experience" }),
-          /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(DialogDescription2, { children: "Choose the amount, pick digital or leather gift card, and we will send it instantly with all the right instructions." })
-        ] }),
-        status === "success" && success ? renderSuccess() : /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("form", { className: "space-y-6", onSubmit: handleSubmit, children: [
-          /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("section", { className: "space-y-3", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("p", { className: "text-sm font-semibold uppercase tracking-[0.24em] text-orange-500", children: "Amount" }),
-            /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { className: "flex flex-wrap gap-2", children: [
-              presetAmounts.map((value2) => {
-                const active2 = form.customAmount === "" && form.amount === value2;
-                return /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)(
-                  "button",
-                  {
-                    type: "button",
-                    className: cn(
-                      "rounded-full border border-slate-200 px-4 py-2 text-sm font-semibold transition",
-                      active2 ? "border-orange-500 bg-orange-500 text-white" : "bg-white text-slate-700 hover:border-orange-400 hover:text-orange-500"
-                    ),
-                    onClick: () => handleAmountClick(value2),
-                    children: [
-                      "$",
-                      value2
-                    ]
-                  },
-                  value2
-                );
-              }),
-              /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("label", { className: "flex items-center gap-2 rounded-full border border-dashed border-slate-300 bg-white px-3 py-2 text-sm shadow-sm transition hover:border-orange-300", children: [
-                /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("span", { className: "text-slate-500", children: "Other" }),
-                /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(
-                  "input",
-                  {
-                    type: "number",
-                    min: "50",
-                    step: "10",
-                    value: form.customAmount,
-                    onChange: (event) => {
-                      const { value: value2 } = event.target;
-                      setForm((prev) => ({ ...prev, customAmount: value2 }));
-                    },
-                    className: "w-24 border-none bg-transparent text-sm focus:outline-none focus:ring-0",
-                    placeholder: "250"
-                  }
-                )
-              ] })
-            ] }),
-            /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("p", { className: "text-xs text-slate-500", children: [
-              amountLabel,
-              " selected. Physical leather cards unlock at $250+."
-            ] })
-          ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("section", { className: "grid gap-4 rounded-xl border border-slate-200 bg-slate-50/70 p-4", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("h4", { className: "text-sm font-semibold text-slate-700", children: "Delivery preferences" }),
-            /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("div", { className: "flex flex-wrap gap-2", children: [
-              { value: "recipient", label: "Email recipient" },
-              { value: "buyer", label: "Email me" }
-            ].map((option) => /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)(
-              "button",
-              {
-                type: "button",
-                onClick: () => setForm((prev) => ({ ...prev, deliveryTarget: option.value })),
-                className: cn(
-                  "flex items-center gap-2 rounded-full border px-3 py-2 text-sm font-medium transition",
-                  form.deliveryTarget === option.value ? "border-orange-500 bg-orange-500/10 text-orange-600" : "border-slate-200 text-slate-600 hover:border-orange-300 hover:text-orange-500"
-                ),
-                children: [
-                  /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(import_lucide_react3.Mail, { className: "h-4 w-4" }),
-                  option.label
-                ]
-              },
-              option.value
-            )) }),
-            /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { className: "flex flex-wrap gap-2", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(
-                "button",
-                {
-                  type: "button",
-                  onClick: () => setForm((prev) => ({ ...prev, cardType: "digital" })),
-                  className: cn(
-                    "rounded-lg border px-3 py-2 text-sm font-medium transition",
-                    form.cardType === "digital" ? "border-emerald-500 bg-emerald-500/10 text-emerald-600" : "border-slate-200 text-slate-600 hover:border-emerald-300 hover:text-emerald-600"
-                  ),
-                  children: "Instant digital"
-                }
-              ),
-              /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(
-                "button",
-                {
-                  type: "button",
-                  disabled: !canChoosePhysical,
-                  onClick: () => setForm((prev) => ({ ...prev, cardType: "physical" })),
-                  className: cn(
-                    "rounded-lg border px-3 py-2 text-sm font-medium transition",
-                    form.cardType === "physical" ? "border-amber-500 bg-amber-500/10 text-amber-600" : canChoosePhysical ? "border-slate-200 text-slate-600 hover:border-amber-300 hover:text-amber-600" : "border-dashed border-slate-200 text-slate-400"
-                  ),
-                  children: "Leather keepsake"
-                }
-              )
-            ] }),
-            !canChoosePhysical && /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("p", { className: "text-xs text-slate-500", children: "Select $250 or more to ship a physical leather card along with the digital code." }),
-            form.cardType === "physical" && /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { className: "space-y-3 rounded-xl border border-amber-100 bg-white p-4", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("div", { className: "flex gap-3", children: [
-                { value: "recipient", label: "Ship to recipient" },
-                { value: "buyer", label: "Ship to me" }
-              ].map((option) => /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)(
-                "button",
-                {
-                  type: "button",
-                  onClick: () => setForm((prev) => ({ ...prev, shipTo: option.value })),
-                  className: cn(
-                    "flex items-center gap-2 rounded-full border px-3 py-2 text-xs font-semibold uppercase tracking-[0.16em] transition",
-                    form.shipTo === option.value ? "border-amber-500 bg-amber-500/15 text-amber-700" : "border-amber-200 text-amber-500 hover:border-amber-300"
-                  ),
-                  children: [
-                    /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(import_lucide_react3.MapPin, { className: "h-3.5 w-3.5" }),
-                    option.label
-                  ]
-                },
-                option.value
-              )) }),
-              /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { className: "grid gap-3 md:grid-cols-2", children: [
-                /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { className: "md:col-span-2", children: [
-                  /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("label", { className: "label", htmlFor: "gift-shipping-line1", children: "Street address" }),
-                  /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("input", { id: "gift-shipping-line1", className: "input", value: form.shippingLine1, onChange: handleInputChange("shippingLine1") })
-                ] }),
-                /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { className: "md:col-span-2", children: [
-                  /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("label", { className: "label", htmlFor: "gift-shipping-line2", children: "Apartment, suite (optional)" }),
-                  /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("input", { id: "gift-shipping-line2", className: "input", value: form.shippingLine2, onChange: handleInputChange("shippingLine2") })
-                ] }),
-                /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { children: [
-                  /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("label", { className: "label", htmlFor: "gift-shipping-city", children: "City" }),
-                  /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("input", { id: "gift-shipping-city", className: "input", value: form.shippingCity, onChange: handleInputChange("shippingCity") })
-                ] }),
-                /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { children: [
-                  /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("label", { className: "label", htmlFor: "gift-shipping-state", children: "State" }),
-                  /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("input", { id: "gift-shipping-state", className: "input", value: form.shippingState, onChange: handleInputChange("shippingState") })
-                ] }),
-                /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { children: [
-                  /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("label", { className: "label", htmlFor: "gift-shipping-postal", children: "Postal code" }),
-                  /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("input", { id: "gift-shipping-postal", className: "input", value: form.shippingPostal, onChange: handleInputChange("shippingPostal") })
-                ] })
-              ] })
-            ] })
-          ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("section", { className: "grid gap-4 md:grid-cols-2", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { className: "space-y-3", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("h4", { className: "text-sm font-semibold text-slate-700", children: "Buyer details" }),
-              /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { children: [
-                /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("label", { className: "label", htmlFor: "gift-buyer-name", children: "Your name" }),
-                /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("input", { id: "gift-buyer-name", className: "input", value: form.buyerName, onChange: handleInputChange("buyerName"), required: true })
-              ] }),
-              /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { children: [
-                /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("label", { className: "label", htmlFor: "gift-buyer-email", children: "Email" }),
-                /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("input", { id: "gift-buyer-email", className: "input", type: "email", value: form.buyerEmail, onChange: handleInputChange("buyerEmail"), required: true })
-              ] }),
-              /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { children: [
-                /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("label", { className: "label", htmlFor: "gift-buyer-phone", children: "Phone (optional)" }),
-                /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("input", { id: "gift-buyer-phone", className: "input", value: form.buyerPhone, onChange: handleInputChange("buyerPhone") })
-              ] })
-            ] }),
-            /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { className: "space-y-3", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("h4", { className: "text-sm font-semibold text-slate-700", children: "Recipient details" }),
-              /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { children: [
-                /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("label", { className: "label", htmlFor: "gift-recipient-name", children: "Recipient name" }),
-                /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("input", { id: "gift-recipient-name", className: "input", value: form.recipientName, onChange: handleInputChange("recipientName") })
-              ] }),
-              /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { children: [
-                /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("label", { className: "label", htmlFor: "gift-recipient-email", children: "Recipient email" }),
-                /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("input", { id: "gift-recipient-email", className: "input", type: "email", value: form.recipientEmail, onChange: handleInputChange("recipientEmail"), placeholder: "hello@friend.com" })
-              ] }),
-              form.cardType === "digital" && form.deliveryTarget === "recipient" && /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { children: [
-                /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("label", { className: "label", htmlFor: "gift-send-on", children: "Send on (optional)" }),
-                /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(
-                  "input",
-                  {
-                    id: "gift-send-on",
-                    type: "datetime-local",
-                    className: "input",
-                    value: form.sendOn,
-                    onChange: handleInputChange("sendOn"),
-                    min: minSendOn
-                  }
-                ),
-                /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("p", { className: "mt-1 text-xs text-slate-500", children: "Choose a future date and time (your local timezone) to deliver the email automatically. Leave blank to send it right away." })
-              ] }),
-              /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { children: [
-                /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("label", { className: "label", htmlFor: "gift-recipient-phone", children: "Recipient phone (optional)" }),
-                /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("input", { id: "gift-recipient-phone", className: "input", value: form.recipientPhone, onChange: handleInputChange("recipientPhone") })
-              ] })
-            ] })
-          ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("section", { className: "space-y-2", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("label", { className: "label", htmlFor: "gift-note", children: "Note for the recipient (optional)" }),
-            /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(
-              "textarea",
-              {
-                id: "gift-note",
-                className: "input min-h-[90px]",
-                value: form.note,
-                onChange: handleInputChange("note"),
-                placeholder: "Add a short note to appear inside the gift email."
-              }
-            )
-          ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("section", { className: "space-y-3", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("h4", { className: "text-sm font-semibold text-slate-700", children: "Gift card FAQ" }),
-            /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("details", { className: "group rounded-xl border border-slate-200 bg-white p-4", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("summary", { className: "flex cursor-pointer items-center justify-between text-sm font-semibold text-slate-700", children: [
-                /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("span", { children: "How much should I buy?" }),
-                /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("span", { className: "text-xl leading-none text-slate-400 transition group-open:rotate-45", children: "+" })
-              ] }),
-              /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("p", { className: "mt-2 text-sm text-slate-600", children: "A simple dinner family style is around $65/person. A super fancy coursed dinner with wine and scallops is $115/person plus a discretionary wine budget (an additional $50-$150/person recommended). Pizzas are usually around $15 and pies are around $30. That's the range." })
-            ] }),
-            /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("details", { className: "group rounded-xl border border-slate-200 bg-white p-4", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("summary", { className: "flex cursor-pointer items-center justify-between text-sm font-semibold text-slate-700", children: [
-                /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("span", { children: "Leather???" }),
-                /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("span", { className: "text-xl leading-none text-slate-400 transition group-open:rotate-45", children: "+" })
-              ] }),
-              /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("p", { className: "mt-2 text-sm text-slate-600", children: "We hand-letter a short note into leather from Tandy Leather. It's a souvenir that makes a big impact as a gift." })
-            ] })
-          ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("section", { className: "space-y-2", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("p", { className: "text-sm font-semibold text-slate-700", children: "Payment details" }),
-            /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { className: "min-h-[96px] rounded-lg border border-slate-200 bg-white p-3", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("div", { id: "gift-card-card-container", className: "min-h-[64px]" }),
-              !cardLoaded && !squareError && /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("p", { className: "mt-2 text-sm text-slate-500", children: "Loading secure card entry..." }),
-              squareError && /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("p", { className: "mt-2 text-sm text-red-600", children: squareError })
-            ] }),
-            /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("p", { className: "text-xs text-slate-400", children: "We use Square to process payments securely. The card is charged immediately and refunds are available on request within 14 days (if unused)." })
-          ] }),
-          error && /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("p", { className: "rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-600", children: error }),
-          /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)(DialogFooter, { className: "items-center justify-between gap-3 sm:flex-row", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { className: "text-xs text-slate-500", children: [
-              amountLabel,
-              " - ",
-              form.cardType === "physical" ? "Digital + leather card" : "Instant digital card"
-            ] }),
-            /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)(
-              "button",
-              {
-                type: "submit",
-                className: cn("btn btn-primary flex items-center gap-2", disableSubmit && "opacity-60"),
-                disabled: disableSubmit,
-                children: [
-                  status === "processing" ? /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(import_lucide_react3.Loader2, { className: "h-4 w-4 animate-spin" }) : /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(import_lucide_react3.Gift, { className: "h-4 w-4" }),
-                  status === "processing" ? "Processing..." : "Send gift card"
-                ]
-              }
-            )
-          ] })
-        ] })
-      ] })
-    ] })
-  ] });
-};
-var GiftCardDialog_default = GiftCardDialog;
-
 // src/utils/generateEventSchema.js
 function parseEventDate(value2) {
   if (!value2) return null;
@@ -69858,7 +70012,10 @@ var import_lottie_web = __toESM(require_lottie());
 var Social_handle_default = { assets: [{ h: 240, id: "0", p: "data:image/png;base64,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", u: "", w: 240, e: 1 }, { id: "10", layers: [{ ind: 9, ty: 4, parent: 8, ks: {}, ip: 0, op: 241, st: 0, shapes: [{ ty: "sh", ks: { a: 0, k: { c: true, i: [[0, 0], [0, 0], [0, 0], [0, 0], [0, 0]], v: [[0.5, 15.3], [16, 15.3], [16, 20.6], [0.5, 20.6], [0.5, 15.3]], o: [[0, 0], [0, 0], [0, 0], [0, 0], [0, 0]] } } }, { ty: "sh", ks: { a: 0, k: { c: true, i: [[0, 0], [0, 0], [0, 0], [0, 0], [-0.4, -0.4], [-0.9, 0], [0, 0], [-0.5, 0.1], [-0.2, 0.1], [0, 0], [0, 0], [0.8, -0.1], [0.7, 0], [0, 0], [1.4, 1.3], [0, 2.4], [0, 0]], v: [[4.1, 34.4], [4.1, 9], [11.1, 9], [11.1, 33.8], [11.7, 35.6], [13.5, 36.2], [13.5, 36.2], [14.6, 36.1], [15.7, 35.9], [15.7, 35.9], [16.7, 41.2], [14.4, 41.7], [12.2, 41.8], [12.2, 41.8], [6.2, 39.9], [4.1, 34.4], [4.1, 34.4]], o: [[0, 0], [0, 0], [0, 0], [0, 0.8], [0.4, 0.4], [0, 0], [0.3, 0], [0.5, -0.1], [0, 0], [0, 0], [-0.8, 0.2], [-0.8, 0.1], [0, 0], [-2.6, 0], [-1.4, -1.3], [0, 0], [0, 0]] } } }, { ty: "fl", c: { a: 0, k: [0.4, 0.4, 0.4] }, o: { a: 0, k: 100 } }] }, { ind: 8, ty: 3, ks: { p: { a: 0, k: [0, -9] } }, ip: 0, op: 241, st: 0 }] }, { id: "15", layers: [{ ind: 14, ty: 4, parent: 13, ks: {}, ip: 0, op: 241, st: 0, shapes: [{ ty: "sh", ks: { a: 0, k: { c: true, i: [[0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [-1.1, 0.8], [-1.5, 0], [0, 0], [-0.4, 0], [-0.3, -0.1], [0, 0], [0, 0], [0.6, 0.1], [0.5, 0], [0, 0], [0.9, -0.5], [0.5, -0.8], [0, -1.1], [0, 0], [0, 0]], v: [[10, 41.5], [3, 41.5], [3, 15.3], [9.8, 15.3], [9.8, 19.8], [10.1, 19.8], [12.5, 16.1], [16.4, 14.9], [16.4, 14.9], [17.6, 15], [18.7, 15.1], [18.7, 15.1], [18.7, 21.4], [17.3, 21.2], [15.6, 21.1], [15.6, 21.1], [12.8, 21.8], [10.7, 23.7], [10, 26.6], [10, 26.6], [10, 41.5]], o: [[0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0.5, -1.6], [1.1, -0.8], [0, 0], [0.4, 0], [0.4, 0], [0, 0], [0, 0], [-0.3, -0.1], [-0.6, -0.1], [0, 0], [-1.1, 0], [-0.9, 0.5], [-0.5, 0.8], [0, 0], [0, 0], [0, 0]] } } }, { ty: "fl", c: { a: 0, k: [0.4, 0.4, 0.4] }, o: { a: 0, k: 100 } }] }, { ind: 13, ty: 3, ks: { p: { a: 0, k: [-3, -14] } }, ip: 0, op: 241, st: 0 }] }, { id: "20", layers: [{ ind: 19, ty: 4, parent: 18, ks: {}, ip: 0, op: 241, st: 0, shapes: [{ ty: "sh", ks: { a: 0, k: { c: true, i: [[0, 0], [0, 0], [1.9, 1.1], [1, 2], [0, 2.7], [0, 0], [-1, 2], [-1.9, 1.1], [-2.6, 0], [0, 0], [-1.9, -1.1], [-1, -2], [0, -2.7], [0, 0], [1, -2], [1.9, -1.1], [2.6, 0]], v: [[14.7, 42], [14.7, 42], [7.9, 40.3], [3.5, 35.5], [1.9, 28.5], [1.9, 28.5], [3.5, 21.4], [7.9, 16.6], [14.7, 14.9], [14.7, 14.9], [21.6, 16.6], [26, 21.4], [27.5, 28.5], [27.5, 28.5], [26, 35.5], [21.6, 40.3], [14.7, 42]], o: [[0, 0], [-2.6, 0], [-1.9, -1.1], [-1, -2], [0, 0], [0, -2.7], [1, -2], [1.9, -1.1], [0, 0], [2.6, 0], [1.9, 1.1], [1, 2], [0, 0], [0, 2.7], [-1, 2], [-1.9, 1.1], [0, 0]] } } }, { ty: "sh", ks: { a: 0, k: { c: true, i: [[0, 0], [0, 0], [-0.8, 0.7], [-0.4, 1.2], [0, 1.5], [0, 0], [0.4, 1.2], [0.8, 0.7], [1.3, 0], [0, 0], [0.8, -0.7], [0.4, -1.2], [0, -1.5], [0, 0], [-0.4, -1.2], [-0.8, -0.7], [-1.2, 0]], v: [[14.7, 36.4], [14.7, 36.4], [17.9, 35.4], [19.8, 32.5], [20.4, 28.5], [20.4, 28.5], [19.8, 24.3], [17.9, 21.5], [14.7, 20.5], [14.7, 20.5], [11.6, 21.5], [9.7, 24.3], [9.1, 28.5], [9.1, 28.5], [9.7, 32.5], [11.6, 35.4], [14.7, 36.4]], o: [[0, 0], [1.3, 0], [0.8, -0.7], [0.4, -1.2], [0, 0], [0, -1.5], [-0.4, -1.2], [-0.8, -0.7], [0, 0], [-1.2, 0], [-0.8, 0.7], [-0.4, 1.2], [0, 0], [0, 1.5], [0.4, 1.2], [0.8, 0.7], [0, 0]] } } }, { ty: "fl", c: { a: 0, k: [0.4, 0.4, 0.4] }, o: { a: 0, k: 100 } }] }, { ind: 18, ty: 3, ks: { p: { a: 0, k: [-1, -14] } }, ip: 0, op: 241, st: 0 }] }, { id: "25", layers: [{ ind: 24, ty: 4, parent: 23, ks: {}, ip: 0, op: 241, st: 0, shapes: [{ ty: "sh", ks: { a: 0, k: { c: true, i: [[0, 0], [0, 0], [0, 0], [0, 0], [0, 0]], v: [[0.5, 15.3], [17.6, 15.3], [17.6, 20.6], [0.5, 20.6], [0.5, 15.3]], o: [[0, 0], [0, 0], [0, 0], [0, 0], [0, 0]] } } }, { ty: "sh", ks: { a: 0, k: { c: true, i: [[0, 0], [0, 0], [0, 0], [-0.7, 1.2], [-1.3, 0.6], [-1.6, 0], [0, 0], [-0.9, -0.2], [-0.4, -0.1], [0, 0], [0, 0], [0.4, 0.1], [0.5, 0], [0, 0], [0.4, -0.5], [0, -0.9], [0, 0], [0, 0]], v: [[12.1, 41.5], [5.1, 41.5], [5.1, 13.2], [6.2, 8.6], [9.2, 5.8], [13.6, 4.9], [13.6, 4.9], [16.6, 5.2], [18.6, 5.6], [18.6, 5.6], [17.4, 10.9], [16.3, 10.7], [15, 10.6], [15, 10.6], [12.8, 11.3], [12.1, 13.5], [12.1, 13.5], [12.1, 41.5]], o: [[0, 0], [0, 0], [0, -1.9], [0.7, -1.2], [1.3, -0.6], [0, 0], [1.1, 0], [0.9, 0.2], [0, 0], [0, 0], [-0.3, -0.1], [-0.4, -0.1], [0, 0], [-1.1, 0], [-0.4, 0.5], [0, 0], [0, 0], [0, 0]] } } }, { ty: "fl", c: { a: 0, k: [0.4, 0.4, 0.4] }, o: { a: 0, k: 100 } }] }, { ind: 23, ty: 3, ks: { p: { a: 0, k: [0, -4] } }, ip: 0, op: 241, st: 0 }] }, { id: "30", layers: [{ ind: 29, ty: 4, parent: 28, ks: {}, ip: 0, op: 241, st: 0, shapes: [{ ty: "sh", ks: { a: 0, k: { c: true, i: [[0, 0], [0, 0], [0, 0], [0, 0], [0, 0]], v: [[0.5, 15.3], [17.6, 15.3], [17.6, 20.6], [0.5, 20.6], [0.5, 15.3]], o: [[0, 0], [0, 0], [0, 0], [0, 0], [0, 0]] } } }, { ty: "sh", ks: { a: 0, k: { c: true, i: [[0, 0], [0, 0], [0, 0], [-0.7, 1.2], [-1.3, 0.6], [-1.6, 0], [0, 0], [-0.9, -0.2], [-0.4, -0.1], [0, 0], [0, 0], [0.4, 0.1], [0.5, 0], [0, 0], [0.4, -0.5], [0, -0.9], [0, 0], [0, 0]], v: [[12.1, 41.5], [5.1, 41.5], [5.1, 13.2], [6.2, 8.6], [9.2, 5.8], [13.6, 4.9], [13.6, 4.9], [16.6, 5.2], [18.6, 5.6], [18.6, 5.6], [17.4, 10.9], [16.3, 10.7], [15, 10.6], [15, 10.6], [12.8, 11.3], [12.1, 13.5], [12.1, 13.5], [12.1, 41.5]], o: [[0, 0], [0, 0], [0, -1.9], [0.7, -1.2], [1.3, -0.6], [0, 0], [1.1, 0], [0.9, 0.2], [0, 0], [0, 0], [-0.3, -0.1], [-0.4, -0.1], [0, 0], [-1.1, 0], [-0.4, 0.5], [0, 0], [0, 0], [0, 0]] } } }, { ty: "fl", c: { a: 0, k: [0.4, 0.4, 0.4] }, o: { a: 0, k: 100 } }] }, { ind: 28, ty: 3, ks: { p: { a: 0, k: [0, -4] } }, ip: 0, op: 241, st: 0 }] }, { id: "35", layers: [{ ind: 34, ty: 4, parent: 33, ks: {}, ip: 0, op: 241, st: 0, shapes: [{ ty: "sh", ks: { a: 0, k: { c: true, i: [[0, 0], [0, 0], [1.9, 1.1], [1, 2], [0, 2.8], [0, 0], [-1, 2], [-1.9, 1.1], [-2.5, 0], [0, 0], [-1.5, -0.5], [-1.1, -1.1], [-0.6, -1.7], [0, -2.2], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0.4, 1], [0.8, 0.6], [1.2, 0], [0, 0], [0.9, -0.6], [0.4, -1], [0, -1.2], [0, 0], [0, 0], [-0.5, -1], [-0.9, -0.5], [-1.2, 0], [0, 0], [-0.7, 0.2], [-0.5, 0.5], [-0.2, 0.7], [0, 0], [0, 0], [1, -1.1], [1.6, -0.6], [2, 0]], v: [[14.8, 42], [14.8, 42], [7.9, 40.3], [3.5, 35.7], [1.9, 28.5], [1.9, 28.5], [3.4, 21.4], [7.8, 16.6], [14.5, 14.9], [14.5, 14.9], [19.3, 15.8], [23.2, 18.2], [25.8, 22.4], [26.8, 28.2], [26.8, 28.2], [26.8, 30.2], [4.8, 30.2], [4.8, 25.8], [23.3, 25.8], [20.1, 27], [19.4, 23.4], [17.6, 21.1], [14.5, 20.2], [14.5, 20.2], [11.4, 21.1], [9.5, 23.4], [8.9, 26.6], [8.9, 26.6], [8.9, 29.8], [9.6, 33.6], [11.8, 35.9], [15, 36.7], [15, 36.7], [17.2, 36.3], [18.9, 35.3], [20, 33.6], [20, 33.6], [26.4, 34.8], [24.2, 38.6], [20.3, 41.1], [14.8, 42]], o: [[0, 0], [-2.7, 0], [-1.9, -1.1], [-1, -2], [0, 0], [0, -2.7], [1, -2], [1.9, -1.1], [0, 0], [1.7, 0], [1.5, 0.5], [1.1, 1.1], [0.6, 1.7], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, -1.4], [-0.4, -1], [-0.8, -0.6], [0, 0], [-1.2, 0], [-0.9, 0.6], [-0.4, 1], [0, 0], [0, 0], [0, 1.5], [0.5, 1], [0.9, 0.5], [0, 0], [0.8, 0], [0.7, -0.2], [0.5, -0.5], [0, 0], [0, 0], [-0.4, 1.4], [-1, 1.1], [-1.6, 0.6], [0, 0]] } } }, { ty: "fl", c: { a: 0, k: [0.4, 0.4, 0.4] }, o: { a: 0, k: 100 } }] }, { ind: 33, ty: 3, ks: { p: { a: 0, k: [-1, -14] } }, ip: 0, op: 241, st: 0 }] }, { id: "40", layers: [{ ind: 39, ty: 4, parent: 38, ks: {}, ip: 0, op: 241, st: 0, shapes: [{ ty: "sh", ks: { a: 0, k: { c: true, i: [[0, 0], [0, 0], [0, 0], [0, 0], [0, 0]], v: [[3, 6.5], [10, 6.5], [10, 41.5], [3, 41.5], [3, 6.5]], o: [[0, 0], [0, 0], [0, 0], [0, 0], [0, 0]] } } }, { ty: "fl", c: { a: 0, k: [0.4, 0.4, 0.4] }, o: { a: 0, k: 100 } }] }, { ind: 38, ty: 3, ks: { p: { a: 0, k: [-3, -6] } }, ip: 0, op: 241, st: 0 }] }, { id: "45", layers: [{ ind: 44, ty: 4, parent: 43, ks: {}, ip: 0, op: 241, st: 0, shapes: [{ ty: "sh", ks: { a: 0, k: { c: true, i: [[0, 0], [0, 0], [1.3, 0.6], [0.8, 1.2], [0, 1.7], [0, 0], [-0.5, 1], [-0.9, 0.6], [-1.2, 0.3], [-1.3, 0.1], [0, 0], [-0.9, 0.1], [-0.4, 0.3], [0, 0.6], [0, 0], [0, 0], [0.3, 0.5], [0.6, 0.3], [0.9, 0], [0, 0], [0.7, -0.3], [0.4, -0.5], [0.2, -0.6], [0, 0], [0, 0], [-1, 1.1], [-1.6, 0.6], [-1.9, 0], [0, 0], [-1.3, -0.3], [-1.1, -0.7], [-0.6, -1.1], [0, -1.6], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0.7, -0.6], [1, -0.4], [1.3, 0]], v: [[10.3, 42], [10.3, 42], [5.8, 41.1], [2.7, 38.5], [1.6, 34.1], [1.6, 34.1], [2.4, 30.5], [4.6, 28.1], [7.8, 26.7], [11.5, 26.1], [11.5, 26.1], [15.2, 25.7], [17.2, 25], [17.8, 23.7], [17.8, 23.7], [17.8, 23.6], [17.4, 21.7], [16, 20.5], [13.7, 20.1], [13.7, 20.1], [11.4, 20.5], [9.7, 21.6], [8.8, 23.2], [8.8, 23.2], [2.3, 22.1], [4.6, 18.2], [8.5, 15.8], [13.7, 14.9], [13.7, 14.9], [17.9, 15.4], [21.4, 17], [23.9, 19.7], [24.9, 23.8], [24.9, 23.8], [24.9, 41.5], [18.2, 41.5], [18.2, 37.8], [18, 37.8], [16.3, 40], [13.7, 41.4], [10.3, 42]], o: [[0, 0], [-1.7, 0], [-1.3, -0.6], [-0.8, -1.2], [0, 0], [0, -1.5], [0.5, -1], [0.9, -0.6], [1.2, -0.3], [0, 0], [1.5, -0.2], [0.9, -0.1], [0.4, -0.3], [0, 0], [0, 0], [0, -0.7], [-0.3, -0.5], [-0.6, -0.3], [0, 0], [-0.9, 0], [-0.7, 0.3], [-0.4, 0.5], [0, 0], [0, 0], [0.5, -1.5], [1, -1.1], [1.6, -0.6], [0, 0], [1.4, 0], [1.3, 0.3], [1.1, 0.7], [0.6, 1.1], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [-0.4, 0.8], [-0.7, 0.6], [-1, 0.4], [0, 0]] } } }, { ty: "sh", ks: { a: 0, k: { c: true, i: [[0, 0], [0, 0], [-0.8, 0.4], [-0.5, 0.8], [0, 0.9], [0, 0], [0, 0], [0.4, -0.1], [0.5, -0.1], [0.5, -0.1], [0.4, 0], [0, 0], [0.7, -0.3], [0.4, -0.5], [0, -0.7], [0, 0], [-0.3, -0.5], [-0.6, -0.2], [-0.8, 0]], v: [[12.3, 37], [12.3, 37], [15.2, 36.4], [17.2, 34.6], [17.9, 32.1], [17.9, 32.1], [17.9, 29.3], [16.9, 29.7], [15.5, 30], [14, 30.3], [12.7, 30.4], [12.7, 30.4], [10.4, 31.1], [8.9, 32.2], [8.3, 33.9], [8.3, 33.9], [8.9, 35.6], [10.3, 36.7], [12.3, 37]], o: [[0, 0], [1.1, 0], [0.8, -0.4], [0.5, -0.7], [0, 0], [0, 0], [-0.2, 0.2], [-0.4, 0.1], [-0.5, 0.1], [-0.5, 0.1], [0, 0], [-0.9, 0.1], [-0.7, 0.3], [-0.4, 0.5], [0, 0], [0, 0.7], [0.3, 0.5], [0.6, 0.2], [0, 0]] } } }, { ty: "fl", c: { a: 0, k: [0.4, 0.4, 0.4] }, o: { a: 0, k: 100 } }] }, { ind: 43, ty: 3, ks: { p: { a: 0, k: [-1, -14] } }, ip: 0, op: 241, st: 0 }] }, { id: "50", layers: [{ ind: 49, ty: 4, parent: 48, ks: {}, ip: 0, op: 241, st: 0, shapes: [{ ty: "sh", ks: { a: 0, k: { c: true, i: [[0, 0], [0, 0], [1.9, 1.1], [1, 2], [0, 2.7], [0, 0], [-1, 2], [-1.9, 1.1], [-2.6, 0], [0, 0], [-1.3, -0.4], [-1, -0.7], [-0.7, -1.1], [-0.2, -1.3], [0, 0], [0, 0], [0.3, 0.5], [0.4, 0.4], [0.6, 0.2], [0.7, 0], [0, 0], [0.9, -0.7], [0.4, -1.2], [0, -1.6], [0, 0], [-0.4, -1.2], [-0.9, -0.7], [-1.2, 0], [0, 0], [-0.6, 0.2], [-0.4, 0.4], [-0.3, 0.6], [-0.1, 0.7], [0, 0], [0, 0], [0.7, -1.1], [1, -0.8], [1.3, -0.4], [1.6, 0]], v: [[14.7, 42], [14.7, 42], [7.9, 40.3], [3.5, 35.5], [1.9, 28.5], [1.9, 28.5], [3.5, 21.4], [7.9, 16.6], [14.7, 14.9], [14.7, 14.9], [19, 15.5], [22.5, 17.3], [25, 20], [26.4, 23.6], [26.4, 23.6], [19.8, 24.9], [19.2, 23], [18.1, 21.6], [16.6, 20.8], [14.8, 20.5], [14.8, 20.5], [11.6, 21.5], [9.7, 24.3], [9.1, 28.5], [9.1, 28.5], [9.7, 32.6], [11.6, 35.4], [14.8, 36.4], [14.8, 36.4], [16.6, 36.1], [18.1, 35.2], [19.2, 33.8], [19.9, 31.9], [19.9, 31.9], [26.4, 33.1], [25.1, 36.8], [22.5, 39.6], [19, 41.4], [14.7, 42]], o: [[0, 0], [-2.6, 0], [-1.9, -1.1], [-1, -2], [0, 0], [0, -2.7], [1, -2], [1.9, -1.1], [0, 0], [1.5, 0], [1.3, 0.4], [1, 0.8], [0.7, 1.1], [0, 0], [0, 0], [-0.1, -0.7], [-0.3, -0.5], [-0.4, -0.4], [-0.6, -0.2], [0, 0], [-1.2, 0], [-0.9, 0.7], [-0.4, 1.2], [0, 0], [0, 1.6], [0.4, 1.2], [0.9, 0.7], [0, 0], [0.7, 0], [0.6, -0.2], [0.4, -0.4], [0.3, -0.6], [0, 0], [0, 0], [-0.2, 1.4], [-0.7, 1.1], [-1, 0.8], [-1.3, 0.4], [0, 0]] } } }, { ty: "fl", c: { a: 0, k: [0.4, 0.4, 0.4] }, o: { a: 0, k: 100 } }] }, { ind: 48, ty: 3, ks: { p: { a: 0, k: [-1, -14] } }, ip: 0, op: 241, st: 0 }] }, { id: "55", layers: [{ ind: 54, ty: 4, parent: 53, ks: {}, ip: 0, op: 241, st: 0, shapes: [{ ty: "sh", ks: { a: 0, k: { c: true, i: [[0, 0], [0, 0], [1.9, 1.1], [1, 2], [0, 2.7], [0, 0], [-1, 2], [-1.9, 1.1], [-2.6, 0], [0, 0], [-1.9, -1.1], [-1, -2], [0, -2.7], [0, 0], [1, -2], [1.9, -1.1], [2.6, 0]], v: [[14.7, 42], [14.7, 42], [7.9, 40.3], [3.5, 35.5], [1.9, 28.5], [1.9, 28.5], [3.5, 21.4], [7.9, 16.6], [14.7, 14.9], [14.7, 14.9], [21.6, 16.6], [26, 21.4], [27.5, 28.5], [27.5, 28.5], [26, 35.5], [21.6, 40.3], [14.7, 42]], o: [[0, 0], [-2.6, 0], [-1.9, -1.1], [-1, -2], [0, 0], [0, -2.7], [1, -2], [1.9, -1.1], [0, 0], [2.6, 0], [1.9, 1.1], [1, 2], [0, 0], [0, 2.7], [-1, 2], [-1.9, 1.1], [0, 0]] } } }, { ty: "sh", ks: { a: 0, k: { c: true, i: [[0, 0], [0, 0], [-0.8, 0.7], [-0.4, 1.2], [0, 1.5], [0, 0], [0.4, 1.2], [0.8, 0.7], [1.3, 0], [0, 0], [0.8, -0.7], [0.4, -1.2], [0, -1.5], [0, 0], [-0.4, -1.2], [-0.8, -0.7], [-1.2, 0]], v: [[14.7, 36.4], [14.7, 36.4], [17.9, 35.4], [19.8, 32.5], [20.4, 28.5], [20.4, 28.5], [19.8, 24.3], [17.9, 21.5], [14.7, 20.5], [14.7, 20.5], [11.6, 21.5], [9.7, 24.3], [9.1, 28.5], [9.1, 28.5], [9.7, 32.5], [11.6, 35.4], [14.7, 36.4]], o: [[0, 0], [1.3, 0], [0.8, -0.7], [0.4, -1.2], [0, 0], [0, -1.5], [-0.4, -1.2], [-0.8, -0.7], [0, 0], [-1.2, 0], [-0.8, 0.7], [-0.4, 1.2], [0, 0], [0, 1.5], [0.4, 1.2], [0.8, 0.7], [0, 0]] } } }, { ty: "fl", c: { a: 0, k: [0.4, 0.4, 0.4] }, o: { a: 0, k: 100 } }] }, { ind: 53, ty: 3, ks: { p: { a: 0, k: [-1, -14] } }, ip: 0, op: 241, st: 0 }] }, { id: "60", layers: [{ ind: 59, ty: 4, parent: 58, ks: {}, ip: 0, op: 241, st: 0, shapes: [{ ty: "sh", ks: { a: 0, k: { c: true, i: [[0, 0], [0, 0], [0, 0], [0, 0], [0, 0]], v: [[3, 6.5], [10, 6.5], [10, 41.5], [3, 41.5], [3, 6.5]], o: [[0, 0], [0, 0], [0, 0], [0, 0], [0, 0]] } } }, { ty: "fl", c: { a: 0, k: [0.4, 0.4, 0.4] }, o: { a: 0, k: 100 } }] }, { ind: 58, ty: 3, ks: { p: { a: 0, k: [-3, -6] } }, ip: 0, op: 241, st: 0 }] }, { id: "66", layers: [{ ind: 65, ty: 2, parent: 64, ks: { s: { a: 0, k: [133.33, 133.33] } }, ip: 0, op: 241, st: 0, refId: "0" }, { ind: 64, ty: 3, ks: { s: { a: 0, k: [25, 25] } }, ip: 0, op: 241, st: 0 }] }, { id: "69", layers: [{ ind: 68, ty: 0, ks: {}, w: 80, h: 80, ip: 0, op: 241, st: 0, refId: "66" }] }, { id: "74", layers: [{ ind: 73, ty: 4, parent: 72, ks: {}, ip: 0, op: 241, st: 0, shapes: [{ ty: "rc", p: { a: 1, k: [{ t: 0, s: [60, 60], i: { x: [1, 1], y: [1, 1] }, o: { x: [0, 0], y: [0, 0] } }, { t: 18.6, s: [60, 60], i: { x: [0.25, 1], y: [1, 1] }, o: { x: [0.25, 0], y: [0.1, 0] } }, { t: 54.6, s: [208, 60], i: { x: [1, 1], y: [1, 1] }, o: { x: [0, 0], y: [0, 0] } }, { t: 240, s: [208, 60], h: 1 }] }, r: { a: 0, k: 40 }, s: { a: 1, k: [{ t: 0, s: [120, 120], i: { x: [1, 1], y: [1, 1] }, o: { x: [0, 0], y: [0, 0] } }, { t: 18.6, s: [120, 120], i: { x: [0.25, 1], y: [1, 1] }, o: { x: [0.25, 0], y: [0.1, 0] } }, { t: 54.6, s: [416, 120], i: { x: [1, 1], y: [1, 1] }, o: { x: [0, 0], y: [0, 0] } }, { t: 240, s: [416, 120], h: 1 }] } }, { ty: "fl", c: { a: 0, k: [1, 1, 1] }, o: { a: 0, k: 100 } }] }, { ind: 72, ty: 3, ks: { p: { a: 0, k: [148, 0] } }, ip: 0, op: 241, st: 0 }] }, { id: "77", layers: [{ ind: 12, ty: 0, parent: 7, ks: { a: { a: 0, k: [0, -9] }, o: { a: 1, k: [{ t: 0, s: [0], h: 1 }, { t: 24.6, s: [0], i: { x: 1, y: 1 }, o: { x: 0, y: 0 } }, { t: 32.82438, s: [100], h: 1 }, { t: 240, s: [100], h: 1 }] }, p: { a: 0, k: [227.344, 0] } }, w: 17, h: 33, ip: 0, op: 241, st: 0, refId: "10" }, { ind: 17, ty: 0, parent: 7, ks: { a: { a: 0, k: [-3, -14] }, o: { a: 1, k: [{ t: 0, s: [0], h: 1 }, { t: 28.119502, s: [0], i: { x: 1, y: 1 }, o: { x: 0, y: 0 } }, { t: 34.138303, s: [100], h: 1 }, { t: 240, s: [100], h: 1 }] }, p: { a: 0, k: [207.797, 0] } }, w: 16, h: 28, ip: 0, op: 241, st: 0, refId: "15" }, { ind: 22, ty: 0, parent: 7, ks: { a: { a: 0, k: [-1, -14] }, o: { a: 1, k: [{ t: 0, s: [0], h: 1 }, { t: 29.986357, s: [0], i: { x: 1, y: 1 }, o: { x: 0, y: 0 } }, { t: 35.484673, s: [100], h: 1 }, { t: 240, s: [100], h: 1 }] }, p: { a: 0, k: [178.359, 0] } }, w: 27, h: 28, ip: 0, op: 241, st: 0, refId: "20" }, { ind: 27, ty: 0, parent: 7, ks: { a: { a: 0, k: [0, -4] }, o: { a: 1, k: [{ t: 0, s: [0], h: 1 }, { t: 31.475689, s: [0], i: { x: 1, y: 1 }, o: { x: 0, y: 0 } }, { t: 36.918628, s: [100], h: 1 }, { t: 240, s: [100], h: 1 }] }, p: { a: 0, k: [159.258, 0] } }, w: 19, h: 38, ip: 0, op: 241, st: 0, refId: "25" }, { ind: 32, ty: 0, parent: 7, ks: { a: { a: 0, k: [0, -4] }, o: { a: 1, k: [{ t: 0, s: [0], h: 1 }, { t: 32.82438, s: [0], i: { x: 1, y: 1 }, o: { x: 0, y: 0 } }, { t: 38.495948, s: [100], h: 1 }, { t: 240, s: [100], h: 1 }] }, p: { a: 0, k: [140.156, 0] } }, w: 19, h: 38, ip: 0, op: 241, st: 0, refId: "30" }, { ind: 37, ty: 0, parent: 7, ks: { a: { a: 0, k: [-1, -14] }, o: { a: 1, k: [{ t: 0, s: [0], h: 1 }, { t: 34.138303, s: [0], i: { x: 1, y: 1 }, o: { x: 0, y: 0 } }, { t: 40.283564, s: [100], h: 1 }, { t: 240, s: [100], h: 1 }] }, p: { a: 0, k: [111.563, 0] } }, w: 26, h: 28, ip: 0, op: 241, st: 0, refId: "35" }, { ind: 42, ty: 0, parent: 7, ks: { a: { a: 0, k: [-3, -6] }, o: { a: 1, k: [{ t: 0, s: [0], h: 1 }, { t: 35.484673, s: [0], i: { x: 1, y: 1 }, o: { x: 0, y: 0 } }, { t: 42.374233, s: [100], h: 1 }, { t: 240, s: [100], h: 1 }] }, p: { a: 0, k: [98.555, 0] } }, w: 8, h: 36, ip: 0, op: 241, st: 0, refId: "40" }, { ind: 47, ty: 0, parent: 7, ks: { a: { a: 0, k: [-1, -14] }, o: { a: 1, k: [{ t: 0, s: [0], h: 1 }, { t: 36.918628, s: [0], i: { x: 1, y: 1 }, o: { x: 0, y: 0 } }, { t: 44.915869, s: [100], h: 1 }, { t: 240, s: [100], h: 1 }] }, p: { a: 0, k: [70.688, 0] } }, w: 24, h: 28, ip: 0, op: 241, st: 0, refId: "45" }, { ind: 52, ty: 0, parent: 7, ks: { a: { a: 0, k: [-1, -14] }, o: { a: 1, k: [{ t: 0, s: [0], h: 1 }, { t: 38.495948, s: [0], i: { x: 1, y: 1 }, o: { x: 0, y: 0 } }, { t: 48.189263, s: [100], h: 1 }, { t: 240, s: [100], h: 1 }] }, p: { a: 0, k: [42.445, 0] } }, w: 26, h: 28, ip: 0, op: 241, st: 0, refId: "50" }, { ind: 57, ty: 0, parent: 7, ks: { a: { a: 0, k: [-1, -14] }, o: { a: 1, k: [{ t: 0, s: [0], h: 1 }, { t: 40.283564, s: [0], i: { x: 1, y: 1 }, o: { x: 0, y: 0 } }, { t: 52.910912, s: [100], h: 1 }, { t: 240, s: [100], h: 1 }] }, p: { a: 0, k: [13.008, 0] } }, w: 27, h: 28, ip: 0, op: 241, st: 0, refId: "55" }, { ind: 62, ty: 0, parent: 7, ks: { a: { a: 0, k: [-3, -6] }, o: { a: 1, k: [{ t: 0, s: [0], h: 1 }, { t: 42.374233, s: [0], i: { x: 1, y: 1 }, o: { x: 0, y: 0 } }, { t: 66.6, s: [100], h: 1 }, { t: 240, s: [100], h: 1 }] } }, w: 8, h: 36, ip: 0, op: 241, st: 0, refId: "60" }, { ind: 7, ty: 3, parent: 6, ks: {}, ip: 0, op: 241, st: 0 }, { ind: 6, ty: 3, parent: 5, ks: {}, ip: 0, op: 241, st: 0 }, { ind: 5, ty: 3, parent: 4, ks: { p: { a: 1, k: [{ t: 0, s: [-28, 36], i: { x: [1, 1], y: [1, 1] }, o: { x: [0, 0], y: [0, 0] } }, { t: 18.6, s: [-28, 36], i: { x: [0.25, 1], y: [1, 1] }, o: { x: [0.25, 0], y: [0.1, 0] } }, { t: 54.6, s: [120, 36], i: { x: [1, 1], y: [1, 1] }, o: { x: [0, 0], y: [0, 0] } }, { t: 240, s: [120, 36], h: 1 }] } }, ip: 0, op: 241, st: 0 }, { ind: 71, ty: 0, parent: 63, ks: { a: { a: 0, k: [40, 40] }, o: { a: 1, k: [{ t: 0, s: [0], h: 1 }, { t: 6, s: [0], i: { x: 0.25, y: 1 }, o: { x: 0.25, y: 0.1 } }, { t: 24, s: [100], h: 1 }, { t: 240, s: [100], h: 1 }] }, p: { a: 0, k: [40, 40] }, s: { a: 1, k: [{ t: 0, s: [0, 0], i: { x: [1, 1], y: [1, 1] }, o: { x: [0, 0], y: [0, 0] } }, { t: 6, s: [0, 0], i: { x: [0.25, 0.25], y: [1, 1] }, o: { x: [0.25, 0.25], y: [0.1, 0.1] } }, { t: 24, s: [100, 100], i: { x: [1, 1], y: [1, 1] }, o: { x: [0, 0], y: [0, 0] } }, { t: 240, s: [100, 100], h: 1 }] } }, w: 80, h: 80, ip: 0, op: 241, st: 0, refId: "69" }, { ind: 63, ty: 3, parent: 4, ks: { p: { a: 1, k: [{ t: 0, s: [168, 20], i: { x: [1, 1], y: [1, 1] }, o: { x: [0, 0], y: [0, 0] } }, { t: 18.6, s: [168, 20], i: { x: [0.25, 1], y: [1, 1] }, o: { x: [0.25, 0], y: [0.1, 0] } }, { t: 54.6, s: [20, 20], i: { x: [1, 1], y: [1, 1] }, o: { x: [0, 0], y: [0, 0] } }, { t: 240, s: [20, 20], h: 1 }] } }, ip: 0, op: 241, st: 0 }, { ind: 76, ty: 0, parent: 4, ks: { a: { a: 0, k: [148, 0] }, o: { a: 0, k: 80 }, p: { a: 1, k: [{ t: 0, s: [148, 0], i: { x: [1, 1], y: [1, 1] }, o: { x: [0, 0], y: [0, 0] } }, { t: 18.6, s: [148, 0], i: { x: [0.25, 1], y: [1, 1] }, o: { x: [0.25, 0], y: [0.1, 0] } }, { t: 54.6, s: [0, 0], i: { x: [1, 1], y: [1, 1] }, o: { x: [0, 0], y: [0, 0] } }, { t: 240, s: [0, 0], h: 1 }] } }, w: 564, h: 120, ip: 0, op: 241, st: 0, refId: "74" }, { ind: 4, ty: 3, ks: { p: { a: 0, k: [148, 0] } }, ip: 0, op: 241, st: 0 }] }], fr: 60, h: 160, ip: 0, layers: [{ ind: 79, ty: 0, parent: 3, ks: { a: { a: 0, k: [356, 60] }, o: { a: 1, k: [{ t: 0, s: [0], i: { x: 0.666, y: 1 }, o: { x: 0.333, y: 0.999 } }, { t: 18, s: [100], h: 1 }, { t: 240, s: [100], h: 1 }] }, p: { a: 0, k: [208, 60] }, s: { a: 1, k: [{ t: 0, s: [0, 0], i: { x: [0.666, 0.666], y: [1, 1] }, o: { x: [0.333, 0.333], y: [0.999, 0.999] } }, { t: 18, s: [100, 100], i: { x: [1, 1], y: [1, 1] }, o: { x: [0, 0], y: [0, 0] } }, { t: 240, s: [100, 100], h: 1 }] } }, w: 712, h: 120, ip: 0, op: 241, st: 0, refId: "77" }, { ind: 3, ty: 3, parent: 2, ks: { p: { a: 0, k: [20, 20] } }, ip: 0, op: 241, st: 0 }, { ind: 2, ty: 3, parent: 1, ks: {}, ip: 0, op: 241, st: 0 }, { ind: 1, ty: 3, ks: {}, ip: 0, op: 241, st: 0 }], meta: { g: "https://jitter.video" }, op: 240, v: "5.7.4", w: 456 };
 
 // src/pages/HomePage.jsx
+var import_lucide_react4 = require("lucide-react");
 var import_jsx_runtime26 = require("react/jsx-runtime");
+var loadGiftCardDialog = () => Promise.resolve().then(() => (init_GiftCardDialog(), GiftCardDialog_exports));
+var GiftCardDialogLazy = (0, import_react17.lazy)(loadGiftCardDialog);
 var HomePage = () => {
   const navigate = (0, import_react_router_dom3.useNavigate)();
   const animationContainer = (0, import_react17.useRef)(null);
@@ -69919,6 +70076,28 @@ var HomePage = () => {
   const [eventModal, setEventModal] = (0, import_react17.useState)(null);
   const [showBooking, setShowBooking] = (0, import_react17.useState)(false);
   const business = businessInfo;
+  const [giftDialogMounted, setGiftDialogMounted] = (0, import_react17.useState)(false);
+  const [giftDialogAutoOpen, setGiftDialogAutoOpen] = (0, import_react17.useState)(false);
+  const [giftDialogLoading, setGiftDialogLoading] = (0, import_react17.useState)(false);
+  const handleGiftCardClick = (0, import_react17.useCallback)(() => {
+    if (!giftDialogMounted) {
+      setGiftDialogMounted(true);
+      setGiftDialogLoading(true);
+      loadGiftCardDialog();
+    }
+    setGiftDialogAutoOpen(true);
+  }, [giftDialogMounted]);
+  const handleGiftDialogReady = (0, import_react17.useCallback)(() => {
+    setGiftDialogLoading(false);
+  }, []);
+  const handleGiftDialogClose = (0, import_react17.useCallback)(() => {
+    setGiftDialogAutoOpen(false);
+  }, []);
+  const handleGiftDialogPrefetch = (0, import_react17.useCallback)(() => {
+    if (!giftDialogMounted) {
+      loadGiftCardDialog();
+    }
+  }, [giftDialogMounted]);
   (0, import_react18.useEffect)(() => {
     let mounted = true;
     (async () => {
@@ -70426,7 +70605,22 @@ var HomePage = () => {
                 children: "Book an event"
               }
             ),
-            /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(GiftCardDialog_default, { className: "text-lg px-5 py-3" }),
+            /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(
+              import_framer_motion3.motion.button,
+              {
+                whileHover: { scale: giftDialogLoading ? 1 : 1.03 },
+                whileTap: { scale: giftDialogLoading ? 1 : 0.98 },
+                onClick: handleGiftCardClick,
+                onMouseEnter: handleGiftDialogPrefetch,
+                className: "btn btn-primary flex items-center gap-2 text-lg px-5 py-3 shadow-sm",
+                type: "button",
+                disabled: giftDialogLoading,
+                children: giftDialogLoading ? "Loading\u2026" : /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)(import_jsx_runtime26.Fragment, { children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(import_lucide_react4.Gift, { className: "h-4 w-4" }),
+                  "Buy Gift Card"
+                ] })
+              }
+            ),
             /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("span", { className: "sr-only", children: [
               /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("a", { href: "/personal-chef-minneapolis", className: "btn", children: "Personal Chef Minneapolis" }),
               /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("a", { href: "/personal-chef-st-paul", className: "btn", children: "Personal Chef St. Paul" }),
@@ -70524,7 +70718,16 @@ var HomePage = () => {
         }
       ),
       FeedbackModal
-    ] })
+    ] }),
+    giftDialogMounted && /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(import_react17.Suspense, { fallback: null, children: /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(
+      GiftCardDialogLazy,
+      {
+        autoOpen: giftDialogAutoOpen,
+        showTrigger: false,
+        onClose: handleGiftDialogClose,
+        onReady: handleGiftDialogReady
+      }
+    ) })
   ] });
 };
 var HomePage_default = HomePage;
@@ -75159,6 +75362,9 @@ var useSquarePayments = () => {
   };
 };
 
+// src/pages/CrowdfundingPage.jsx
+init_dialog();
+
 // src/components/crowdfunding/PrioritiesPie.jsx
 var import_react47 = __toESM(require("react"));
 var import_recharts = __toESM(require_lib4());
@@ -75285,6 +75491,9 @@ var PrioritiesPie = () => {
 };
 var PrioritiesPie_default = PrioritiesPie;
 
+// src/pages/CrowdfundingPage.jsx
+init_utils();
+
 // src/components/common/ToastProvider.jsx
 var import_react48 = __toESM(require("react"));
 var import_jsx_runtime51 = require("react/jsx-runtime");
@@ -75295,7 +75504,7 @@ function useToast() {
 }
 
 // src/pages/CrowdfundingPage.jsx
-var import_lucide_react4 = require("lucide-react");
+var import_lucide_react5 = require("lucide-react");
 
 // src/lib/firebaseCrowdfunding.js
 var import_app2 = require("firebase/app");
@@ -75671,7 +75880,7 @@ var EventListSection = ({ title, description, events, onSelect, formatDateLabel 
               /* @__PURE__ */ (0, import_jsx_runtime52.jsx)("p", { className: "text-base font-semibold text-slate-900", children: event?.location }),
               event?.timingNote && /* @__PURE__ */ (0, import_jsx_runtime52.jsx)("p", { className: "text-sm text-slate-600", children: event.timingNote })
             ] }),
-            /* @__PURE__ */ (0, import_jsx_runtime52.jsx)(import_lucide_react4.ChevronRight, { className: "h-5 w-5 text-slate-400 transition group-hover:text-[var(--color-accent)]", "aria-hidden": "true" })
+            /* @__PURE__ */ (0, import_jsx_runtime52.jsx)(import_lucide_react5.ChevronRight, { className: "h-5 w-5 text-slate-400 transition group-hover:text-[var(--color-accent)]", "aria-hidden": "true" })
           ]
         }
       ) }, event?._key || event?._id || dateLabel);
