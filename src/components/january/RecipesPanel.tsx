@@ -214,28 +214,69 @@ export const RecipesPanel = ({
                           <div className="space-y-2">
                             <div className="text-xs font-semibold text-[#2E5E67] mb-2">Ingredients:</div>
                             {currentMeal.ingredients.map((ingredient, index) => (
-                              <div key={index} className="flex items-center gap-2 text-xs">
-                                <span className="flex-1 text-[#2E5E67] font-medium">{ingredient.name}</span>
-                                <input
-                                  type="number"
-                                  value={ingredient.amount}
-                                  onChange={(e) => {
-                                    const newIngredients = [...currentMeal.ingredients];
-                                    newIngredients[index] = { ...ingredient, amount: parseFloat(e.target.value) || 0 };
-                                    setEditedMeal({ ...currentMeal, ingredients: newIngredients });
-                                  }}
-                                  className="w-16 px-1 py-0.5 text-xs border border-[#66D3E7] rounded"
-                                />
-                                <span className="text-[#7F9FA8]">{ingredient.unit}</span>
-                                <button
-                                  onClick={() => {
-                                    const newIngredients = currentMeal.ingredients.filter((_, i) => i !== index);
-                                    setEditedMeal({ ...currentMeal, ingredients: newIngredients });
-                                  }}
-                                  className="text-red-500 hover:text-red-700"
-                                >
-                                  <XIcon />
-                                </button>
+                              <div key={index} className="space-y-2 text-xs">
+                                <div className="flex items-center gap-2">
+                                  <input
+                                    type="text"
+                                    value={ingredient.name}
+                                    onChange={(e) => {
+                                      const newIngredients = [...currentMeal.ingredients];
+                                      newIngredients[index] = { ...ingredient, name: e.target.value };
+                                      setEditedMeal({ ...currentMeal, ingredients: newIngredients });
+                                    }}
+                                    className="flex-1 px-2 py-1 text-xs border border-[#66D3E7] rounded"
+                                  />
+                                  <button
+                                    onClick={() => {
+                                      const newIngredients = currentMeal.ingredients.filter((_, i) => i !== index);
+                                      setEditedMeal({ ...currentMeal, ingredients: newIngredients });
+                                    }}
+                                    className="text-red-500 hover:text-red-700"
+                                  >
+                                    <XIcon />
+                                  </button>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <input
+                                    type="number"
+                                    value={ingredient.amount}
+                                    onChange={(e) => {
+                                      const newIngredients = [...currentMeal.ingredients];
+                                      newIngredients[index] = {
+                                        ...ingredient,
+                                        amount: parseFloat(e.target.value) || 0,
+                                      };
+                                      setEditedMeal({ ...currentMeal, ingredients: newIngredients });
+                                    }}
+                                    className="w-20 px-2 py-1 text-xs border border-[#66D3E7] rounded"
+                                  />
+                                  <span className="text-[#7F9FA8]">g</span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <input
+                                    type="number"
+                                    value={ingredient.displayAmount ?? ''}
+                                    onChange={(e) => {
+                                      const newIngredients = [...currentMeal.ingredients];
+                                      const nextValue =
+                                        e.target.value === '' ? undefined : parseFloat(e.target.value);
+                                      newIngredients[index] = { ...ingredient, displayAmount: nextValue };
+                                      setEditedMeal({ ...currentMeal, ingredients: newIngredients });
+                                    }}
+                                    className="w-20 px-2 py-1 text-xs border border-[#66D3E7] rounded"
+                                  />
+                                  <input
+                                    type="text"
+                                    value={ingredient.displayUnit ?? ''}
+                                    onChange={(e) => {
+                                      const newIngredients = [...currentMeal.ingredients];
+                                      newIngredients[index] = { ...ingredient, displayUnit: e.target.value };
+                                      setEditedMeal({ ...currentMeal, ingredients: newIngredients });
+                                    }}
+                                    className="w-16 px-2 py-1 text-xs border border-[#66D3E7] rounded"
+                                  />
+                                  <span className="text-[#7F9FA8]">Portion</span>
+                                </div>
                               </div>
                             ))}
                             <button
@@ -245,6 +286,8 @@ export const RecipesPanel = ({
                                   name: 'New Ingredient',
                                   amount: 100,
                                   unit: 'g',
+                                  displayAmount: undefined,
+                                  displayUnit: '',
                                   fdcId: 0,
                                   nutrientsPer100g: {}
                                 };
