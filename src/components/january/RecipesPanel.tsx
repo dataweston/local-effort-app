@@ -30,8 +30,6 @@ export const RecipesPanel = ({
   const [editingRecipe, setEditingRecipe] = useState<{ mealType: MealType; code: string } | null>(null);
   const [editedMeal, setEditedMeal] = useState<Meal | null>(null);
 
-  if (!isOpen) return null;
-
   const formatAmount = (value?: number, unit?: string) => {
     if (!value) return unit || '';
     return `${value}${unit ? ` ${unit}` : ''}`;
@@ -65,6 +63,8 @@ export const RecipesPanel = ({
 
     return result;
   }, [effectiveDays]);
+
+  if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-start justify-center p-4 pt-8 bg-[#2E5E67]/80 backdrop-blur-sm overflow-y-auto">
