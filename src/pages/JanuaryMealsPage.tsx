@@ -330,14 +330,14 @@ export default function JanuaryMealsPage() {
       const dinnerMeal = day.meals.dinner.meal;
       
       return `BEGIN:VEVENT
-DTSTART:${dateStr}T180000Z
-DTEND:${dateStr}T190000Z
-SUMMARY:Day ${day.plan.day}: ${dinnerMeal.name}
-DESCRIPTION:January Meal Plan - ${dinnerMeal.name}\\n\\nBreakfast: ${day.meals.breakfast.meal.name}\\nLunch: ${day.meals.lunch.meal.name}\\nDinner: ${dinnerMeal.name}\\nSnacks: ${day.meals.snacks.meal.name}
-LOCATION:
-STATUS:CONFIRMED
-END:VEVENT`;
-    }).join('\\n');
+ DTSTART:${dateStr}T180000Z
+ DTEND:${dateStr}T190000Z
+ SUMMARY:Day ${day.plan.day}: ${dinnerMeal.name}
+ DESCRIPTION:January Meal Plan - ${dinnerMeal.name}\n\nBreakfast: ${day.meals.breakfast.meal.name}\nLunch: ${day.meals.lunch.meal.name}\nDinner: ${dinnerMeal.name}\nSnacks: ${day.meals.snacks.meal.name}
+ LOCATION:
+ STATUS:CONFIRMED
+ END:VEVENT`;
+    }).join('\n');
 
     const icsContent = `BEGIN:VCALENDAR
 VERSION:2.0

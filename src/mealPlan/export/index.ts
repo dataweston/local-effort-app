@@ -100,11 +100,11 @@ export const buildNutritionCsv = (rows: DailyNutritionEntry[]) => {
         .map((value) => {
           if (value === null || value === undefined) return '';
           const str = String(value);
-          return /[\",\\n]/.test(str) ? `"${str.replace(/\"/g, '\"\"')}"` : str;
+          return /[",\n]/.test(str) ? `"${str.replace(/\"/g, '\"\"')}"` : str;
         })
         .join(',')
     )
-    .join('\\r\\n');
+    .join('\r\n');
 };
 
 const escapeXml = (value: unknown) => {

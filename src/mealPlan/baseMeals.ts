@@ -220,7 +220,7 @@ export const DAILY_PLAN: DayPlan[] = [
   { day: 28, dinnerType: 'MC' },
   { day: 29, dinnerType: 'KB' },
   { day: 30, dinnerType: 'PB' }
-];;
+];
 
 export const BASE_MEALS: MealLibrary = normalizeMealLibrary(LEGACY_BASE_MEALS);
 
