@@ -322,32 +322,42 @@ export default function JanuaryMealsPage() {
   const handleAddToGoogleCalendar = () => {
     // Generate ICS file for all 30 days with meal plan
     const startDate = new Date(new Date().getFullYear(), 0, 1); // January 1st
-    const events = effectiveDays.map((day) => {
-      const dayDate = new Date(startDate);
-      dayDate.setDate(startDate.getDate() + day.plan.day - 1);
-      
-      const dateStr = dayDate.toISOString().split('T')[0].replace(/-/g, '');
-      const dinnerMeal = day.meals.dinner.meal;
-      
-      return `BEGIN:VEVENT
- DTSTART:${dateStr}T180000Z
- DTEND:${dateStr}T190000Z
- SUMMARY:Day ${day.plan.day}: ${dinnerMeal.name}
- DESCRIPTION:January Meal Plan - ${dinnerMeal.name}\n\nBreakfast: ${day.meals.breakfast.meal.name}\nLunch: ${day.meals.lunch.meal.name}\nDinner: ${dinnerMeal.name}\nSnacks: ${day.meals.snacks.meal.name}
- LOCATION:
- STATUS:CONFIRMED
- END:VEVENT`;
-    }).join('\n');
+    const events = effectiveDays
+      .map((day) => {
+        const dayDate = new Date(startDate);
+        dayDate.setDate(startDate.getDate() + day.plan.day - 1);
 
-    const icsContent = `BEGIN:VCALENDAR
-VERSION:2.0
-PRODID:-//Local Effort//January Meal Plan//EN
-CALSCALE:GREGORIAN
-METHOD:PUBLISH
-X-WR-CALNAME:January Meal Plan
-X-WR-TIMEZONE:UTC
-${events}
-END:VCALENDAR`;
+        const dateStr = dayDate.toISOString().split('T')[0].replace(/-/g, '');
+        const dinnerMeal = day.meals.dinner.meal;
+
+        const lines = [
+          'BEGIN:VEVENT',
+          `DTSTART:${dateStr}T180000Z`,
+          `DTEND:${dateStr}T190000Z`,
+          `SUMMARY:Day ${day.plan.day}: ${dinnerMeal.name}`,
+          `DESCRIPTION:January Meal Plan - ${dinnerMeal.name}\n\nBreakfast: ${day.meals.breakfast.meal.name}\nLunch: ${day.meals.lunch.meal.name}\nDinner: ${dinnerMeal.name}\nSnacks: ${day.meals.snacks.meal.name}`,
+          'LOCATION:',
+          'STATUS:CONFIRMED',
+          'END:VEVENT',
+        ];
+
+        return lines.join('\r\n');
+      })
+      .join('\r\n');
+
+    const icsLines = [
+      'BEGIN:VCALENDAR',
+      'VERSION:2.0',
+      'PRODID:-//Local Effort//January Meal Plan//EN',
+      'CALSCALE:GREGORIAN',
+      'METHOD:PUBLISH',
+      'X-WR-CALNAME:January Meal Plan',
+      'X-WR-TIMEZONE:UTC',
+      events,
+      'END:VCALENDAR',
+    ];
+
+    const icsContent = icsLines.join('\r\n');
 
     const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
     const url = URL.createObjectURL(blob);
