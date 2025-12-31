@@ -7,7 +7,7 @@
       "use": "@vercel/static-build",
       "config": {
         "distDir": "dist",
-        "buildCommand": "pnpm vite build"
+        "buildCommand": "pnpm run build"
       }
     },
     {
