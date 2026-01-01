@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from 'react';
-import type { EffectiveDay, MealLibrary, MealType, Meal } from '../../mealPlan/types';
+import type { EffectiveDay, MealLibrary, MealType, Meal, Ingredient } from '../../mealPlan/types';
+import { IngredientSearch } from './IngredientSearch';
 
 type Props = {
   isOpen: boolean;
@@ -29,10 +30,33 @@ export const RecipesPanel = ({
 }: Props) => {
   const [editingRecipe, setEditingRecipe] = useState<{ mealType: MealType; code: string } | null>(null);
   const [editedMeal, setEditedMeal] = useState<Meal | null>(null);
+  const [showIngredientSearch, setShowIngredientSearch] = useState(false);
+  const [ingredientSearchContext, setIngredientSearchContext] = useState<{ mealType: MealType; code: string } | null>(null);
 
   const formatAmount = (value?: number, unit?: string) => {
     if (!value) return unit || '';
     return `${value}${unit ? ` ${unit}` : ''}`;
+  };
+
+  const handleAddIngredient = (ingredient: Ingredient) => {
+    if (!editedMeal) return;
+    
+    const newIngredients = [
+      ...editedMeal.ingredients,
+      {
+        ...ingredient,
+        displayAmount: undefined,
+        displayUnit: '',
+      },
+    ];
+    
+    setEditedMeal({
+      ...editedMeal,
+      ingredients: newIngredients,
+    });
+    
+    setShowIngredientSearch(false);
+    setIngredientSearchContext(null);
   };
 
   const usedRecipesByType = useMemo(() => {
@@ -281,20 +305,8 @@ export const RecipesPanel = ({
                             ))}
                             <button
                               onClick={() => {
-                                // For now, just add a placeholder ingredient. In a real app, you'd open an ingredient search.
-                                const newIngredient = {
-                                  name: 'New Ingredient',
-                                  amount: 100,
-                                  unit: 'g',
-                                  displayAmount: undefined,
-                                  displayUnit: '',
-                                  fdcId: 0,
-                                  nutrientsPer100g: {}
-                                };
-                                setEditedMeal({
-                                  ...currentMeal,
-                                  ingredients: [...currentMeal.ingredients, newIngredient]
-                                });
+                                setIngredientSearchContext({ mealType: section.key as MealType, code });
+                                setShowIngredientSearch(true);
                               }}
                               className="text-xs text-[#21C8E7] hover:text-[#1e9bc8] font-medium"
                             >
@@ -382,6 +394,16 @@ export const RecipesPanel = ({
           ))}
         </div>
       </div>
+      
+      {showIngredientSearch && (
+        <IngredientSearch
+          onSelect={handleAddIngredient}
+          onClose={() => {
+            setShowIngredientSearch(false);
+            setIngredientSearchContext(null);
+          }}
+        />
+      )}
     </div>
   );
 };
