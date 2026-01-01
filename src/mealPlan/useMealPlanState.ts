@@ -1,3 +1,32 @@
+/**
+ * useMealPlanState - Core state management for meal plan calendar
+ * 
+ * Architecture:
+ * ┌─────────────────────────────────────────────────────────────┐
+ * │                    Data Flow                                 │
+ * ├─────────────────────────────────────────────────────────────┤
+ * │ 1. meal_recipes (DB) → useMealLibrary → mealLibrary         │
+ * │    Source of truth for all recipes                          │
+ * │                                                              │
+ * │ 2. DAILY_PLAN (rotation) + mealLibrary → base days          │
+ * │    Defines which recipe appears on which day                 │
+ * │                                                              │
+ * │ 3. globalOverrides + userOverrides + anonDraft → merged     │
+ * │    Layered overrides applied on top of base meals            │
+ * │                                                              │
+ * │ 4. merged overrides → effectiveDays (final view)            │
+ * │    What the user sees in the calendar                        │
+ * └─────────────────────────────────────────────────────────────┘
+ * 
+ * Override Layers (priority: anon > user > global):
+ * - globalOverrides: Admin defaults (meal_plan_global table)
+ * - userOverrides: Per-user customizations (meal_plan_user table)
+ * - anonDraft: Ephemeral local edits (in-memory, lost on refresh)
+ * 
+ * Admin Note:
+ * Admins should edit recipes directly in RecipesPanel (updates meal_recipes).
+ * Global overrides are for per-day customizations only, not recipe edits.
+ */
 import {
   useCallback,
   useEffect,

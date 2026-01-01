@@ -1,8 +1,34 @@
+/**
+ * JanuaryMealsPage - 30-day meal planning calendar
+ * 
+ * Architecture:
+ * - Recipes are stored in DB (meal_recipes table) and edited via RecipesPanel
+ * - Calendar displays meals based on rotation schedule (DAILY_PLAN in baseMeals.ts)
+ * - Users can customize meals with personal overrides (saved to meal_plan_user)
+ * - Admins edit recipes directly in RecipesPanel (affects everyone)
+ * 
+ * Data Flow:
+ * 1. useMealLibrary() loads recipes from DB → mealLibrary
+ * 2. useMealPlanState() applies rotation + overrides → effectiveDays
+ * 3. Calendar displays effectiveDays, modals edit individual meals
+ */
 import React, { useEffect, useMemo, useState } from 'react';
 import { DayDetail } from '../components/january/DayDetail';
 import { IngredientSearch } from '../components/january/IngredientSearch';
 import { AuthButton } from '../components/january/AuthButton';
 import { RecipesPanel } from '../components/january/RecipesPanel';
+import {
+  WeekNav,
+  CalendarDay,
+  SummaryStat,
+  MethodologyPanel,
+  InfoIcon,
+  BookIcon,
+  DownloadIcon,
+  SheetsIcon,
+  CalendarIcon,
+  type DietGoal,
+} from '../components/meals';
 import { useMealPlanState } from '../mealPlan/useMealPlanState';
 import { useMealLibrary } from '../mealPlan/useMealLibrary';
 import { saveRecipe, deleteRecipe } from '../mealPlan/recipeStorage';
@@ -17,14 +43,7 @@ import { scaleNutrients } from '../nutrition/calc';
 import { createEmptyNutrients, NUTRIENT_KEYS } from '../nutrition/nutrients';
 import { supabase } from '../lib/supabaseClient';
 
-type EditScope = 'anon' | 'user' | 'global';
-
-type DietGoal = {
-  min?: number;
-  max: number;
-  label: string;
-  unit: string;
-};
+type EditScope = 'anon' | 'user';
 
 const DEFAULT_DIET_GOALS: Record<string, DietGoal> = {
   calories: { min: 1500, max: 1800, label: 'Calories', unit: 'kcal' },
@@ -103,15 +122,11 @@ export default function JanuaryMealsPage() {
     isAdmin,
     updateAnon,
     updateUserDraft,
-    updateGlobalDraft,
     deleteAnon,
     deleteUserDraft,
-    deleteGlobalDraft,
     saveUser,
-    saveGlobal,
     resetAnon,
     resetUserToGlobal,
-    savingGlobal,
     savingUser,
   } = useMealPlanState(planKey, mealLibrary);
 
@@ -142,15 +157,14 @@ export default function JanuaryMealsPage() {
     persistDietGoals(dietGoals);
   }, [dietGoals]);
 
+  // Simplified: admins edit recipes in RecipesPanel, users have personal overrides
   useEffect(() => {
-    if (isAdmin) {
-      setEditScope('global');
-    } else if (isSignedIn) {
+    if (isSignedIn) {
       setEditScope('user');
     } else {
       setEditScope('anon');
     }
-  }, [isAdmin, isSignedIn]);
+  }, [isSignedIn]);
 
   const dailyNutrition = useMemo(
     () => buildDailyNutrition(effectiveDays),
@@ -206,7 +220,6 @@ export default function JanuaryMealsPage() {
   const editHandlers = {
     anon: { update: updateAnon, remove: deleteAnon },
     user: { update: updateUserDraft, remove: deleteUserDraft },
-    global: { update: updateGlobalDraft, remove: deleteGlobalDraft },
   } as const;
 
   const handleMealUpdate = (dayKey: string, mealKey: string, meal: Meal) => {
@@ -360,24 +373,14 @@ END:VCALENDAR`;
     URL.revokeObjectURL(url);
   };
 
-  const saveLabel =
-    editScope === 'global'
-      ? savingGlobal === 'saving'
-        ? 'Saving Global...'
-        : 'Save Global Plan'
-      : savingUser === 'saving'
-      ? 'Saving Plan...'
-      : 'Save My Plan';
+  const saveLabel = savingUser === 'saving' ? 'Saving Plan...' : 'Save My Plan';
 
-  const canSave =
-    (isAdmin && editScope === 'global') ||
-    (isSignedIn && editScope === 'user');
+  const canSave = isSignedIn && editScope === 'user';
 
   const handleSavePlan = async () => {
     if (!canSave) return;
     setSaveStatus('saving');
-    const success =
-      editScope === 'global' ? await saveGlobal() : await saveUser();
+    const success = await saveUser();
     setSaveStatus(success ? 'success' : 'error');
     setTimeout(() => setSaveStatus(null), 2500);
   };
@@ -532,27 +535,9 @@ END:VCALENDAR`;
 
           <div className="flex flex-wrap items-center gap-3 text-sm">
             {isAdmin && (
-              <div className="flex items-center gap-2 bg-white rounded-full px-3 py-1 border-2 border-[#66D3E7] shadow-md">
-                <span className="text-[#2E5E67] font-medium">Edit Scope:</span>
-                <span className="inline-flex overflow-hidden rounded-full border-2 border-[#21C8E7]">
-                  <button
-                    onClick={() => setEditScope('global')}
-                    className={`px-3 py-1 text-[#2E5E67] font-medium transition-colors ${
-                      editScope === 'global' ? 'bg-[#21C8E7] text-white' : 'bg-white hover:bg-[#21C8E7]/10'
-                    }`}
-                  >
-                    Global
-                  </button>
-                  <button
-                    onClick={() => setEditScope('user')}
-                    className={`px-3 py-1 text-[#2E5E67] font-medium transition-colors ${
-                      editScope === 'user' ? 'bg-[#21C8E7] text-white' : 'bg-white hover:bg-[#21C8E7]/10'
-                    }`}
-                  >
-                    My Plan
-                  </button>
-                </span>
-              </div>
+              <span className="px-3 py-1 rounded-full bg-[#21C8E7]/20 border border-[#21C8E7]/50 text-[#2E5E67] text-xs font-medium shadow-sm">
+                Admin: Edit recipes in Recipes panel
+              </span>
             )}
 
             {!isSignedIn && (
@@ -753,345 +738,3 @@ END:VCALENDAR`;
     </div>
   );
 }
-
-const WeekNav = ({
-  currentWeek,
-  onWeekChange,
-}: {
-  currentWeek: number;
-  onWeekChange: (week: number) => void;
-}) => (
-  <div className="flex items-center gap-3">
-    <button
-      onClick={() => onWeekChange(Math.max(1, currentWeek - 1))}
-      disabled={currentWeek === 1}
-      className="p-2 rounded-lg bg-white border-2 border-[#66D3E7] text-[#21C8E7] disabled:opacity-30 disabled:bg-[#7F9FA8]/10 disabled:border-[#7F9FA8]/30 hover:bg-[#21C8E7]/10 transition-colors shadow-md"
-    >
-      <ChevronLeft />
-    </button>
-    <div className="flex gap-1">
-      {[1, 2, 3, 4, 5].map((week) => (
-        <button
-          key={week}
-          onClick={() => onWeekChange(week)}
-          className={`w-8 h-8 rounded-lg text-sm font-semibold shadow-md transition-all ${
-            currentWeek === week ? 'bg-[#21C8E7] text-white scale-110' : 'bg-white border-2 border-[#66D3E7] text-[#2E5E67] hover:bg-[#66D3E7]/20'
-          }`}
-        >
-          {week}
-        </button>
-      ))}
-    </div>
-    <button
-      onClick={() => onWeekChange(Math.min(5, currentWeek + 1))}
-      disabled={currentWeek === 5}
-      className="p-2 rounded-lg bg-white border-2 border-[#66D3E7] text-[#21C8E7] disabled:opacity-30 disabled:bg-[#7F9FA8]/10 disabled:border-[#7F9FA8]/30 hover:bg-[#21C8E7]/10 transition-colors shadow-md"
-    >
-      <ChevronRight />
-    </button>
-  </div>
-);
-
-const CalendarDay = ({
-  day,
-  weekdayLabel,
-  nutrition,
-  hasCustomization,
-  onClick,
-}: {
-  day: EffectiveDay;
-  weekdayLabel?: string;
-  nutrition: DailyNutritionEntry | null;
-  hasCustomization: boolean;
-  onClick: () => void;
-}) => (
-  <button
-    onClick={onClick}
-    className="group relative aspect-square p-3 rounded-2xl border-2 border-[#66D3E7]/50 bg-white hover:border-[#21C8E7] hover:bg-[#21C8E7]/5 hover:scale-105 transition-all shadow-md hover:shadow-xl"
-  >
-    {hasCustomization && (
-      <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-[#ffc697] border-2 border-white shadow-md" />
-    )}
-    <div className="flex flex-col h-full">
-      <div className="flex items-center justify-between mb-2 text-xs text-[#7F9FA8] font-medium">
-        <span>{weekdayLabel || 'Day'}</span>
-        <span className="text-lg font-bold text-[#2E5E67]">
-          {day.plan.day}
-        </span>
-      </div>
-      <div
-        className="flex-1 flex items-center justify-center rounded-xl bg-gradient-to-br from-[#66D3E7]/10 to-[#21C8E7]/5 border border-[#66D3E7]/30"
-        style={{ borderColor: day.meals.dinner.meal.color || '#7F9FA8' }}
-      >
-        <span className="text-xs font-semibold text-[#2E5E67] px-2 text-center">
-          {day.meals.dinner.meal.name}
-        </span>
-      </div>
-      {nutrition && (
-        <div className="mt-2 text-left text-xs text-[#2E5E67] space-y-0.5 font-medium">
-          <p className="text-[#21C8E7]">{Math.round(nutrition.calories)} kcal</p>
-          <p>{Math.round(nutrition.protein)}g protein</p>
-          <p className="text-[#ffc697]">{Math.round(nutrition.fiber)}g fiber</p>
-        </div>
-      )}
-    </div>
-  </button>
-);
-
-const MethodologyPanel = ({
-  goals,
-  onChange,
-  onReset,
-  onClose,
-}: {
-  goals: Record<string, DietGoal>;
-  onChange?: (next: Record<string, DietGoal>) => void;
-  onReset?: () => void;
-  onClose: () => void;
-}) => {
-  const entries = Object.entries(goals);
-
-  const updateGoal = (key: string, field: 'min' | 'max', value: string) => {
-    if (!onChange) return;
-    const nextValue = value === '' ? undefined : Number(value);
-    if (nextValue !== undefined && Number.isNaN(nextValue)) return;
-    const current = goals[key];
-    if (!current) return;
-    onChange({
-      ...goals,
-      [key]: {
-        ...current,
-        [field]: nextValue,
-      },
-    });
-  };
-
-  return (
-  <div className="fixed inset-0 z-50 flex items-start justify-center p-4 pt-8 bg-[#2E5E67]/80 backdrop-blur-sm overflow-y-auto">
-    <div className="relative w-full max-w-2xl max-h-[85vh] overflow-hidden bg-white rounded-2xl border-2 border-[#66D3E7] shadow-2xl my-4">
-      <div className="sticky top-0 z-10 flex items-center justify-between p-6 bg-gradient-to-r from-white to-[#66D3E7]/10 border-b-2 border-[#66D3E7]">
-        <h2 className="text-xl font-bold text-[#2E5E67]">Methodology</h2>
-        <button
-          onClick={onClose}
-          className="p-2 rounded-lg hover:bg-[#21C8E7]/10 text-[#7F9FA8] hover:text-[#21C8E7] transition-colors"
-        >
-          <XIcon />
-        </button>
-      </div>
-      <div className="p-6 overflow-y-auto max-h-[calc(85vh-88px)] space-y-6 text-sm text-[#2E5E67] leading-relaxed">
-        <section>
-          <h3 className="text-[#21C8E7] font-bold mb-2 text-base">Core Goals</h3>
-          <ul className="space-y-1.5">
-            <li className="flex items-start gap-2">
-              <CheckIcon /> Increasing fiber and fermenteds, and reducing sugar, to improve digestion and appetite, and systematically reduce inflammation
-            </li>
-            <li className="flex items-start gap-2">
-              <CheckIcon /> Increasing food sources of omegas and seaweed to improve mineral profile and enhance winter mood
-            </li>
-            <li className="flex items-start gap-2">
-              <CheckIcon /> Measuring protein and calorie intake for calibration
-            </li>
-            <li className="flex items-start gap-2">
-              <CheckIcon /> Leaving caloric room for additional meals and snacks that are more vibe based
-            </li>
-          </ul>
-        </section>
-        <section>
-          <h3 className="text-[#21C8E7] font-bold mb-2 text-base">Targets</h3>
-          <div className="flex items-center justify-between mb-3">
-            <p className="text-xs text-[#7F9FA8]">
-              Update targets to match your personal goals.
-            </p>
-            {onReset && (
-              <button
-                onClick={onReset}
-                className="text-xs px-3 py-1.5 rounded-lg border-2 border-[#66D3E7] text-[#2E5E67] font-medium hover:bg-[#66D3E7]/10 transition-colors shadow-sm"
-              >
-                Reset to defaults
-              </button>
-            )}
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {entries.map(([key, goal]) => (
-              <div
-                key={key}
-                className="rounded-xl border-2 border-[#66D3E7]/50 p-3 bg-gradient-to-br from-white to-[#66D3E7]/5 shadow-md"
-              >
-                <p className="text-xs uppercase text-[#7F9FA8] font-semibold">
-                  {goal.label}
-                </p>
-                {onChange ? (
-                  <div className="mt-2 flex items-end gap-2">
-                    <label className="flex-1">
-                      <span className="block text-[11px] text-[#7F9FA8] mb-1">Min</span>
-                      <input
-                        type="number"
-                        inputMode="decimal"
-                        value={goal.min ?? ''}
-                        onChange={(e) => updateGoal(key, 'min', e.target.value)}
-                        className="w-full rounded-lg border-2 border-[#66D3E7]/50 px-2 py-1 text-sm text-[#2E5E67] focus:border-[#21C8E7] focus:outline-none"
-                      />
-                    </label>
-                    <label className="flex-1">
-                      <span className="block text-[11px] text-[#7F9FA8] mb-1">Max</span>
-                      <input
-                        type="number"
-                        inputMode="decimal"
-                        value={goal.max}
-                        onChange={(e) => updateGoal(key, 'max', e.target.value)}
-                        className="w-full rounded-lg border-2 border-[#66D3E7]/50 px-2 py-1 text-sm text-[#2E5E67] focus:border-[#21C8E7] focus:outline-none"
-                      />
-                    </label>
-                    <span className="pb-1 text-sm text-[#2E5E67] font-medium whitespace-nowrap">
-                      {goal.unit}
-                    </span>
-                  </div>
-                ) : (
-                  <p className="text-lg font-bold text-[#2E5E67] mt-2">
-                    {goal.min ?? ''}-{goal.max} {goal.unit}
-                  </p>
-                )}
-              </div>
-            ))}
-          </div>
-        </section>
-        <section>
-          <h3 className="text-[#21C8E7] font-bold mb-2 text-base">Underlying Science</h3>
-          <ul className="list-disc pl-5 space-y-1 text-[#2E5E67]">
-            <li>
-              <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC9040132" className="text-[#21C8E7] hover:text-[#66D3E7] font-medium hover:underline" target="_blank" rel="noreferrer">
-                Gut microbiota modulation in metabolic health (PMC9040132)
-              </a>
-            </li>
-            <li>
-              <a href="https://onlinelibrary.wiley.com/doi/10.1111/jgh.16619" className="text-[#21C8E7] hover:text-[#66D3E7] font-medium hover:underline" target="_blank" rel="noreferrer">
-                Nutritional interventions for liver-gut axis (JGH.16619)
-              </a>
-            </li>
-            <li>
-              <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC9268559" className="text-[#21C8E7] hover:text-[#66D3E7] font-medium hover:underline" target="_blank" rel="noreferrer">
-                Dietary fiber's role in inflammation control (PMC9268559)
-              </a>
-            </li>
-          </ul>
-        </section>
-      </div>
-    </div>
-  </div>
-);
-};
-
-const SummaryStat = ({
-  label,
-  value,
-  tone,
-}: {
-  label: string;
-  value: string;
-  tone: string;
-}) => (
-  <div>
-    <p className="text-[10px] uppercase tracking-wider text-[#7F9FA8] font-semibold">
-      {label}
-    </p>
-    <p className={`text-lg font-bold ${tone}`}>{value}</p>
-  </div>
-);
-
-const InfoIcon = () => (
-  <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-    <circle cx="8" cy="8" r="6" stroke="currentColor" strokeWidth="1.5" />
-    <path d="M8 11V7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-    <path d="M8 5h.01" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-  </svg>
-);
-
-const TargetIcon = () => (
-  <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-    <circle cx="8" cy="8" r="6" stroke="currentColor" strokeWidth="1.5" />
-    <circle cx="8" cy="8" r="3" stroke="currentColor" strokeWidth="1.5" />
-    <path d="M8 2v2M8 12v2M2 8h2M12 8h2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-  </svg>
-);
-
-const BookIcon = () => (
-  <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-    <path
-      d="M3 4.5A1.5 1.5 0 014.5 3H13v10H4.5A1.5 1.5 0 013 11.5V4.5z"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-    <path d="M8 3v10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-  </svg>
-);
-
-const SearchIcon = () => (
-  <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-    <circle cx="7" cy="7" r="5" stroke="currentColor" strokeWidth="1.5" />
-    <path d="M11 11l4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-  </svg>
-);
-
-const DownloadIcon = () => (
-  <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-    <path
-      d="M8 3v7m0 0l3-3M8 10L5 7M3 13h10"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-  </svg>
-);
-
-const SheetsIcon = () => (
-  <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-    <path
-      d="M3 4.5A1.5 1.5 0 014.5 3H13v10H4.5A1.5 1.5 0 013 11.5V4.5z"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-    <path d="M8 3v10" stroke="currentColor" strokeWidth="1.5" />
-  </svg>
-);
-
-const ChevronLeft = () => (
-  <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2">
-    <path d="M12 4l-6 6 6 6" strokeLinecap="round" strokeLinejoin="round" />
-  </svg>
-);
-
-const ChevronRight = () => (
-  <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2">
-    <path d="M8 4l6 6-6 6" strokeLinecap="round" strokeLinejoin="round" />
-  </svg>
-);
-
-const CheckIcon = () => (
-  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="text-[#21C8E7]">
-    <path
-      d="M3 8l3 3 7-7"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-  </svg>
-);
-
-const XIcon = () => (
-  <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="2">
-    <path d="M4 4l10 10M14 4L4 14" strokeLinecap="round" />
-  </svg>
-);
-
-const CalendarIcon = () => (
-  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
-    <rect x="2" y="3" width="12" height="11" rx="1" />
-    <path d="M2 6h12M5 2v2M11 2v2" />
-  </svg>
-);
