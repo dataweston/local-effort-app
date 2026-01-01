@@ -79,13 +79,15 @@ export async function saveRecipe(
     throw new Error('Supabase not configured');
   }
 
-  // Check if recipe exists
-  const { data: existing } = await supabase
+  // Check if recipe exists (use maybeSingle to handle 0 rows without error)
+  const { data: existing, error: lookupError } = await supabase
     .from('meal_recipes')
     .select('id')
     .eq('meal_type', mealType)
     .eq('code', code)
-    .single();
+    .maybeSingle();
+
+  if (lookupError) throw lookupError;
 
   let recipeId: string;
 
@@ -106,11 +108,13 @@ export async function saveRecipe(
     if (error) throw error;
     recipeId = data.id;
 
-    // Delete old ingredients
-    await supabase
+    // Delete old ingredients (check for errors - RLS may block this)
+    const { error: deleteError } = await supabase
       .from('meal_recipe_ingredients')
       .delete()
       .eq('recipe_id', recipeId);
+
+    if (deleteError) throw deleteError;
   } else {
     // Create new recipe
     const { data, error } = await supabase

@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import type { EffectiveDay, MealLibrary, MealType, Meal, Ingredient } from '../../mealPlan/types';
 import { IngredientSearch } from './IngredientSearch';
 
@@ -10,6 +10,7 @@ type Props = {
   canEdit?: boolean;
   onEditRecipe?: (mealType: MealType, code: string, recipe: Meal) => void;
   onDeleteRecipe?: (mealType: MealType, code: string) => void;
+  isSaving?: boolean;
 };
 
 const sections = [
@@ -27,11 +28,25 @@ export const RecipesPanel = ({
   canEdit = false,
   onEditRecipe,
   onDeleteRecipe,
+  isSaving = false,
 }: Props) => {
   const [editingRecipe, setEditingRecipe] = useState<{ mealType: MealType; code: string } | null>(null);
   const [editedMeal, setEditedMeal] = useState<Meal | null>(null);
   const [showIngredientSearch, setShowIngredientSearch] = useState(false);
   const [ingredientSearchContext, setIngredientSearchContext] = useState<{ mealType: MealType; code: string } | null>(null);
+
+  // Track previous saving state to detect when save completes
+  const prevIsSaving = useRef(isSaving);
+  
+  // Clear editing state when save completes (isSaving transitions from true to false)
+  useEffect(() => {
+    if (prevIsSaving.current && !isSaving) {
+      // Save just completed - clear editing state
+      setEditingRecipe(null);
+      setEditedMeal(null);
+    }
+    prevIsSaving.current = isSaving;
+  }, [isSaving]);
 
   const formatAmount = (value?: number, unit?: string) => {
     if (!value) return unit || '';
@@ -318,21 +333,32 @@ export const RecipesPanel = ({
                                     setEditingRecipe(null);
                                     setEditedMeal(null);
                                   }}
-                                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-[#7F9FA8] bg-white border-2 border-[#7F9FA8] rounded-lg hover:bg-[#7F9FA8]/10 transition-all"
+                                  disabled={isSaving}
+                                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-[#7F9FA8] bg-white border-2 border-[#7F9FA8] rounded-lg hover:bg-[#7F9FA8]/10 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
                                   Cancel
                                 </button>
                                 <button
                                   onClick={() => {
-                                    if (editedMeal) {
+                                    if (editedMeal && onEditRecipe) {
                                       onEditRecipe(section.key as MealType, code, editedMeal);
+                                      // Keep editing state until save completes - isSaving will disable buttons
                                     }
-                                    setEditingRecipe(null);
-                                    setEditedMeal(null);
                                   }}
-                                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-white bg-[#21C8E7] border-2 border-[#21C8E7] rounded-lg hover:bg-[#1e9bc8] hover:border-[#1e9bc8] transition-all shadow-md hover:shadow-lg"
+                                  disabled={isSaving}
+                                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-white bg-[#21C8E7] border-2 border-[#21C8E7] rounded-lg hover:bg-[#1e9bc8] hover:border-[#1e9bc8] transition-all shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
-                                  <SaveIcon /> Save
+                                  {isSaving ? (
+                                    <>
+                                      <svg className="w-3.5 h-3.5 animate-spin" viewBox="0 0 24 24" fill="none">
+                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/>
+                                      </svg>
+                                      Saving...
+                                    </>
+                                  ) : (
+                                    <><SaveIcon /> Save</>
+                                  )}
                                 </button>
                               </>
                             ) : (

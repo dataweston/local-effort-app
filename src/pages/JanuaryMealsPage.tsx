@@ -138,6 +138,7 @@ export default function JanuaryMealsPage() {
   const [lookupIngredient, setLookupIngredient] = useState<Ingredient | null>(null);
   const [editScope, setEditScope] = useState<EditScope>('anon');
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'success' | 'error' | null>(null);
+  const [recipeToast, setRecipeToast] = useState<{ type: 'saving' | 'success' | 'error'; message: string } | null>(null);
   const [authStatus, setAuthStatus] = useState<string | null>(null);
   const [dietGoals, setDietGoals] = useState<Record<string, DietGoal>>(() =>
     typeof window === 'undefined' ? DEFAULT_DIET_GOALS : loadDietGoals()
@@ -268,6 +269,19 @@ export default function JanuaryMealsPage() {
   };
 
   const handleEditRecipe = async (mealType: MealType, code: string, recipe: Meal) => {
+    // Optimistic UI: immediately show the updated recipe
+    const previousLibrary = { ...mealLibrary };
+    const optimisticLibrary = {
+      ...mealLibrary,
+      [mealType]: {
+        ...mealLibrary[mealType],
+        [code]: recipe
+      }
+    };
+    
+    // Show saving state
+    setRecipeToast({ type: 'saving', message: 'Saving recipe...' });
+    
     try {
       // Convert Meal to the format expected by saveRecipe
       const recipeData = {
@@ -286,21 +300,29 @@ export default function JanuaryMealsPage() {
       };
       await saveRecipe(mealType, code, recipeData);
       await refreshLibrary();
-      alert('Recipe saved successfully!');
+      setRecipeToast({ type: 'success', message: 'Recipe saved successfully!' });
+      setTimeout(() => setRecipeToast(null), 3000);
     } catch (error) {
       console.error('Error saving recipe:', error);
-      alert('Failed to save recipe');
+      // Rollback on error - refresh to get actual state
+      await refreshLibrary();
+      setRecipeToast({ type: 'error', message: 'Failed to save recipe. Please try again.' });
+      setTimeout(() => setRecipeToast(null), 5000);
     }
   };
 
   const handleDeleteRecipe = async (mealType: MealType, code: string) => {
+    setRecipeToast({ type: 'saving', message: 'Deleting recipe...' });
+    
     try {
       await deleteRecipe(mealType, code);
       await refreshLibrary();
-      alert('Recipe deleted successfully!');
+      setRecipeToast({ type: 'success', message: 'Recipe deleted successfully!' });
+      setTimeout(() => setRecipeToast(null), 3000);
     } catch (error) {
       console.error('Error deleting recipe:', error);
-      alert('Failed to delete recipe');
+      setRecipeToast({ type: 'error', message: 'Failed to delete recipe. Please try again.' });
+      setTimeout(() => setRecipeToast(null), 5000);
     }
   };
 
@@ -723,10 +745,52 @@ END:VCALENDAR`;
         onClose={() => setShowRecipes(false)}
         mealLibrary={mealLibrary}
         effectiveDays={effectiveDays}
-        canEdit={true}
+        canEdit={isAdmin}
         onEditRecipe={handleEditRecipe}
         onDeleteRecipe={handleDeleteRecipe}
+        isSaving={recipeToast?.type === 'saving'}
       />
+
+      {/* Recipe Toast Notification */}
+      {recipeToast && (
+        <div className="fixed bottom-6 right-6 z-[100] animate-in slide-in-from-bottom-2 fade-in duration-300">
+          <div className={`flex items-center gap-3 px-4 py-3 rounded-xl shadow-lg border-2 ${
+            recipeToast.type === 'saving' 
+              ? 'bg-blue-50 border-blue-200 text-blue-700'
+              : recipeToast.type === 'success'
+              ? 'bg-green-50 border-green-200 text-green-700'
+              : 'bg-red-50 border-red-200 text-red-700'
+          }`}>
+            {recipeToast.type === 'saving' && (
+              <svg className="w-5 h-5 animate-spin" viewBox="0 0 24 24" fill="none">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/>
+              </svg>
+            )}
+            {recipeToast.type === 'success' && (
+              <svg className="w-5 h-5" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd"/>
+              </svg>
+            )}
+            {recipeToast.type === 'error' && (
+              <svg className="w-5 h-5" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd"/>
+              </svg>
+            )}
+            <span className="font-medium text-sm">{recipeToast.message}</span>
+            {recipeToast.type !== 'saving' && (
+              <button 
+                onClick={() => setRecipeToast(null)}
+                className="ml-2 opacity-70 hover:opacity-100"
+              >
+                <svg className="w-4 h-4" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M4 4l8 8M12 4L4 12"/>
+                </svg>
+              </button>
+            )}
+          </div>
+        </div>
+      )}
 
       {showIngredientLookup && (
         <IngredientSearch
