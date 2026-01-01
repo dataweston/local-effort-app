@@ -276,31 +276,6 @@ export const RecipesPanel = ({
                                   />
                                   <span className="text-[#7F9FA8]">g</span>
                                 </div>
-                                <div className="flex items-center gap-2">
-                                  <input
-                                    type="number"
-                                    value={ingredient.displayAmount ?? ''}
-                                    onChange={(e) => {
-                                      const newIngredients = [...currentMeal.ingredients];
-                                      const nextValue =
-                                        e.target.value === '' ? undefined : parseFloat(e.target.value);
-                                      newIngredients[index] = { ...ingredient, displayAmount: nextValue };
-                                      setEditedMeal({ ...currentMeal, ingredients: newIngredients });
-                                    }}
-                                    className="w-20 px-2 py-1 text-xs border border-[#66D3E7] rounded"
-                                  />
-                                  <input
-                                    type="text"
-                                    value={ingredient.displayUnit ?? ''}
-                                    onChange={(e) => {
-                                      const newIngredients = [...currentMeal.ingredients];
-                                      newIngredients[index] = { ...ingredient, displayUnit: e.target.value };
-                                      setEditedMeal({ ...currentMeal, ingredients: newIngredients });
-                                    }}
-                                    className="w-16 px-2 py-1 text-xs border border-[#66D3E7] rounded"
-                                  />
-                                  <span className="text-[#7F9FA8]">Portion</span>
-                                </div>
                               </div>
                             ))}
                             <button

@@ -427,7 +427,10 @@ END:VCALENDAR`;
       <div className="min-h-screen bg-white/80 backdrop-blur-sm">
         <div className="max-w-7xl mx-auto px-4 py-8 space-y-10">
         {/* Hero Section with Video and Navigation */}
-        <header className="space-y-6" ref={overviewRef}>
+        <header
+          className="space-y-6 bg-white rounded-3xl border-2 border-[#66D3E7] p-6 scroll-mt-20 shadow-xl"
+          ref={overviewRef}
+        >
           <div className="grid lg:grid-cols-[400px_1fr] gap-6 items-start">
             {/* Left: Founder Video */}
             <div className="relative aspect-video lg:aspect-[9/12] rounded-2xl overflow-hidden bg-[#7F9FA8]/10 border-2 border-[#66D3E7]/30 shadow-lg">
@@ -457,10 +460,10 @@ END:VCALENDAR`;
                 <h1 className="text-3xl sm:text-4xl font-bold text-[#2E5E67]">
                   The <span className="text-[#ffc697]">Local Effort</span> January reset
                 </h1>
-                <p className="text-[#2E5E67]/80 mt-2 max-w-2xl">
+                <p className="text-sm text-[#7F9FA8] font-medium mt-2 max-w-2xl">
                   Let's reset. Weston shares his diet plan for January, focusing on high fiber and fermented foods to build a strong metabolic base.
                 </p>
-                <p className="text-[#2E5E67]/80 mt-2 max-w-2xl">
+                <p className="text-sm text-[#7F9FA8] font-medium mt-2 max-w-2xl">
                   Sign in and you can make changes and edits to the diet to suit your needs. The ingredients pull data from the USDA Food Database.
                 </p>
               </div>
