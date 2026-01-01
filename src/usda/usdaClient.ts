@@ -49,13 +49,18 @@ export const searchFoods = async (
   if (!isConfigured || !query || query.length < 2) return [];
 
   try {
-    const response = await fetch(
-      withKey(
-        `/foods/search?query=${encodeURIComponent(
-          query
-        )}&pageSize=10&dataType=Foundation,SR%20Legacy,Survey%20(FNDDS)`
-      )
-    );
+    const params = new URLSearchParams({
+      query,
+      pageSize: '10',
+    });
+    ['Foundation', 'SR Legacy', 'Survey (FNDDS)'].forEach((type) => {
+      params.append('dataType', type);
+    });
+
+    const response = await fetch(withKey(`/foods/search?${params.toString()}`));
+    if (!response.ok) {
+      throw new Error(`USDA responded with ${response.status}`);
+    }
     const data = await response.json();
     return (data.foods || []).map((food: any) => ({
       fdcId: food.fdcId,
