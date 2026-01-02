@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from "react";
-import { ShoppingCart, FileText, Plus, Minus, Send, ArrowLeft, Clock, MessageSquare, ClipboardList, CreditCard, BarChart2, Download, Filter, Search, Printer, Mail } from "lucide-react";
+import { ShoppingCart, FileText, Plus, Minus, Send, ArrowLeft, Clock, MessageSquare, ClipboardList, CreditCard, BarChart2, Download, Filter, Search, Printer, Mail, Settings, Package, RefreshCw } from "lucide-react";
 import { useSupabaseAuth } from "../../contexts/SupabaseAuthContext";
 import { supabase } from "../../lib/supabaseClient";
 import {
@@ -12,6 +12,7 @@ import {
 } from "./supabaseClient";
 import CostingWorksheet from "./CostingWorksheet.jsx";
 import SquarePaymentButton from "./SquarePaymentButton.jsx";
+import IntegrationsSettings from "./IntegrationsSettings.jsx";
 
 // Helper function to format dates correctly without timezone conversion
 const formatDate = (dateString) => {
@@ -160,6 +161,43 @@ const App = () => {
   const [editOrderDate, setEditOrderDate] = useState("");
   const [reportFilters, setReportFilters] = useState(() => createDefaultReportFilters());
   const [reportSending, setReportSending] = useState(false);
+  const [syncingInventory, setSyncingInventory] = useState(false);
+
+  // Sync inventory to Square
+  const handleSyncInventory = async (orderId) => {
+    if (!confirm("Sync this order to Square inventory? This will INCREASE inventory counts for the mapped items.")) return;
+    setSyncingInventory(true);
+    try {
+      const res = await fetch('/api/happymonday/sync-inventory', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          orderId,
+          triggeredBy: hmUser?.id 
+        }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        let message = `✅ Inventory synced for order ${data.orderNumber}\n\nItems synced: ${data.changesApplied}`;
+        if (data.itemsSkipped?.length > 0) {
+          message += `\n\nSkipped items:\n${data.itemsSkipped.map(s => `• ${s.item_name}: ${s.reason}`).join('\n')}`;
+        }
+        alert(message);
+        await loadOrdersData();
+        if (selectedInvoice?.id === orderId) {
+          const updated = orders.find(o => o.id === orderId);
+          if (updated) setSelectedInvoice(updated);
+        }
+      } else {
+        alert('Error syncing inventory: ' + (data.error || 'Unknown error'));
+      }
+    } catch (err) {
+      console.error('Sync inventory error:', err);
+      alert('Error syncing inventory');
+    } finally {
+      setSyncingInventory(false);
+    }
+  };
 
   // Load user data and orders
   useEffect(() => {
@@ -1314,6 +1352,12 @@ const App = () => {
                 <ClipboardList size={20} /> Costing
               </button>
             )}
+            {/* Settings/Integrations - visible to hello@happymonday.company */}
+            {hmUser?.email === 'hello@happymonday.company' && (
+              <button onClick={() => setCurrentView("settings")} className={`px-6 py-3 rounded-lg font-medium transition-all flex items-center gap-2 ${currentView === "settings" ? "bg-blue-500 text-white shadow-md" : "text-slate-600 hover:text-blue-500"}`}>
+                <Settings size={20} /> Settings
+              </button>
+            )}
           </div>
         </div>
         {currentView === "order" && (
@@ -1520,6 +1564,11 @@ const App = () => {
                 <h2 className="text-2xl font-bold text-slate-800">
                   {isEditingInvoice ? "Edit Invoice" : "Invoice"} {selectedInvoice.order_number || selectedInvoice.id}
                 </h2>
+                {selectedInvoice.inventory_sync_status === 'synced' && (
+                  <span className="flex items-center gap-1 text-xs font-medium text-green-700 bg-green-100 px-2 py-1 rounded-full">
+                    <Package size={12} /> Synced to Square
+                  </span>
+                )}
               </div>
               <div className="flex gap-2">
                 {!isEditingInvoice && (
@@ -1531,6 +1580,17 @@ const App = () => {
                       <FileText size={18} />
                       Print
                     </button>
+                    {/* Sync to Square button - only for Happy Monday and not already synced */}
+                    {hmUser?.email === 'hello@happymonday.company' && selectedInvoice.inventory_sync_status !== 'synced' && (
+                      <button
+                        onClick={() => handleSyncInventory(selectedInvoice.id)}
+                        disabled={syncingInventory}
+                        className="px-4 py-2 bg-purple-500 hover:bg-purple-600 text-white rounded-lg font-medium transition-colors flex items-center gap-2 disabled:opacity-50"
+                      >
+                        {syncingInventory ? <RefreshCw size={18} className="animate-spin" /> : <Package size={18} />}
+                        Sync to Square
+                      </button>
+                    )}
                     {isAdmin && selectedInvoice.status === 'unpaid' && !selectedInvoice.is_closed && (
                       <button
                         onClick={startEditingInvoice}
@@ -1963,6 +2023,7 @@ const App = () => {
           </div>
         )}
         {currentView === "costing" && <CostingWorksheet items={items} />}
+        {currentView === "settings" && <IntegrationsSettings />}
 
         {/* Square Payment Modal */}
         {showPaymentModal && clientUserId && creditBalance && (
