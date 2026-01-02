@@ -1,8 +1,9 @@
-import React, { useMemo } from 'react';
-import type { EffectiveDay, Meal, MealType } from '../../mealPlan/types';
+import React, { useMemo, useState } from 'react';
+import type { EffectiveDay, Meal, MealLibrary, MealType } from '../../mealPlan/types';
 import { sumMeal } from '../../nutrition/calc';
 import { NUTRIENT_KEYS, type Nutrients } from '../../nutrition/nutrients';
 import { MealCard } from './MealCard';
+import { MealSwapSelector } from './MealSwapSelector';
 
 type Goal = {
   min?: number;
@@ -17,7 +18,9 @@ type Props = {
   day: EffectiveDay;
   goals: GoalMap;
   canEdit: boolean;
+  mealLibrary: MealLibrary;
   onUpdateMeal: (dayKey: string, mealKey: string, meal: Meal) => void;
+  onSwapMeal: (dayKey: string, mealType: MealType, newMealKey: string, meal: Meal) => void;
   onDeleteMeal: (dayKey: string, mealKey: string) => void;
   onClose: () => void;
 };
@@ -69,10 +72,14 @@ export const DayDetail = ({
   day,
   goals,
   canEdit,
+  mealLibrary,
   onUpdateMeal,
+  onSwapMeal,
   onDeleteMeal,
   onClose,
 }: Props) => {
+  const [swapMealType, setSwapMealType] = useState<MealType | null>(null);
+
   const nutrition = useMemo(() => {
     const totals = NUTRIENT_KEYS.reduce((acc, key) => {
       acc[key] = 0;
@@ -184,23 +191,53 @@ export const DayDetail = ({
 
             {mealTypes.map((type) => {
               const instance = day.meals[type];
+              const availableOptions = Object.keys(mealLibrary[type] || {}).length;
               return (
-                <MealCard
-                  key={type}
-                  title={type.charAt(0).toUpperCase() + type.slice(1)}
-                  meal={instance.meal}
-                  canEdit={canEdit}
-                  onUpdate={(next) =>
-                    onUpdateMeal(day.dayKey, instance.instanceKey, next)
-                  }
-                  onDelete={() =>
-                    onDeleteMeal(day.dayKey, instance.instanceKey)
-                  }
-                />
+                <div key={type} className="space-y-2">
+                  {/* Meal swap header */}
+                  {canEdit && availableOptions > 1 && (
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-[#7F9FA8] font-medium">
+                        {availableOptions} {type} options available
+                      </span>
+                      <button
+                        onClick={() => setSwapMealType(type)}
+                        className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-[#21C8E7] bg-[#21C8E7]/10 rounded-lg hover:bg-[#21C8E7]/20 transition-colors"
+                      >
+                        <SwapIcon /> Switch {type}
+                      </button>
+                    </div>
+                  )}
+                  <MealCard
+                    title={type.charAt(0).toUpperCase() + type.slice(1)}
+                    meal={instance.meal}
+                    canEdit={canEdit}
+                    onUpdate={(next) =>
+                      onUpdateMeal(day.dayKey, instance.instanceKey, next)
+                    }
+                    onDelete={() =>
+                      onDeleteMeal(day.dayKey, instance.instanceKey)
+                    }
+                  />
+                </div>
               );
             })}
           </div>
         </div>
+
+        {/* Meal Swap Modal */}
+        {swapMealType && (
+          <MealSwapSelector
+            mealType={swapMealType}
+            currentMealKey={day.meals[swapMealType].templateKey}
+            mealLibrary={mealLibrary}
+            onSelect={(mealKey, meal) => {
+              onSwapMeal(day.dayKey, swapMealType, mealKey, meal);
+              setSwapMealType(null);
+            }}
+            onClose={() => setSwapMealType(null)}
+          />
+        )}
       </div>
     </div>
   );
@@ -302,5 +339,14 @@ const MicroBar = ({
 const XIcon = () => (
   <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="2">
     <path d="M4 4l10 10M14 4L4 14" />
+  </svg>
+);
+
+const SwapIcon = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M16 3h5v5" />
+    <path d="M21 3l-7 7" />
+    <path d="M8 21H3v-5" />
+    <path d="M3 21l7-7" />
   </svg>
 );

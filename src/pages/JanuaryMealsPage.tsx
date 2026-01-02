@@ -233,6 +233,17 @@ export default function JanuaryMealsPage() {
     handler?.remove(dayKey, mealKey);
   };
 
+  /**
+   * Handle swapping a meal to a different option from the library.
+   * This creates an override with the new meal at the appropriate instance key.
+   */
+  const handleMealSwap = (dayKey: string, mealType: MealType, newMealKey: string, meal: Meal) => {
+    // Generate the instance key for this meal type and new template
+    const instanceKey = mealType === 'snacks' ? 'snacks' : `${mealType}-${newMealKey}`;
+    const handler = editHandlers[editScope];
+    handler?.update(dayKey, instanceKey, meal);
+  };
+
   const handleSignIn = async () => {
     setAuthStatus(null);
     if (!supabase) {
@@ -734,7 +745,9 @@ END:VCALENDAR`;
           day={selectedDayData}
           goals={dietGoals}
           canEdit={editScope !== 'anon' || !isSignedIn}
+          mealLibrary={mealLibrary}
           onUpdateMeal={handleMealUpdate}
+          onSwapMeal={handleMealSwap}
           onDeleteMeal={handleMealDelete}
           onClose={() => setSelectedDay(null)}
         />
