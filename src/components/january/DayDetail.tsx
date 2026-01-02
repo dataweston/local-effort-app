@@ -20,7 +20,7 @@ type Props = {
   canEdit: boolean;
   mealLibrary: MealLibrary;
   onUpdateMeal: (dayKey: string, mealKey: string, meal: Meal) => void;
-  onSwapMeal: (dayKey: string, mealType: MealType, newMealKey: string, meal: Meal) => void;
+  onSwapMeal: (dayKey: string, mealType: MealType, currentInstanceKey: string, meal: Meal) => void;
   onDeleteMeal: (dayKey: string, mealKey: string) => void;
   onClose: () => void;
 };
@@ -194,11 +194,11 @@ export const DayDetail = ({
               const availableOptions = Object.keys(mealLibrary[type] || {}).length;
               return (
                 <div key={type} className="space-y-2">
-                  {/* Meal swap header */}
-                  {canEdit && availableOptions > 1 && (
+                  {/* Meal swap header - show if there are any options to choose from */}
+                  {canEdit && availableOptions > 0 && (
                     <div className="flex items-center justify-between">
                       <span className="text-xs text-[#7F9FA8] font-medium">
-                        {availableOptions} {type} options available
+                        {availableOptions} {type} option{availableOptions !== 1 ? 's' : ''} available
                       </span>
                       <button
                         onClick={() => setSwapMealType(type)}
@@ -232,7 +232,8 @@ export const DayDetail = ({
             currentMealKey={day.meals[swapMealType].templateKey}
             mealLibrary={mealLibrary}
             onSelect={(mealKey, meal) => {
-              onSwapMeal(day.dayKey, swapMealType, mealKey, meal);
+              // Pass the CURRENT instance key so the override is saved to the correct slot
+              onSwapMeal(day.dayKey, swapMealType, day.meals[swapMealType].instanceKey, meal);
               setSwapMealType(null);
             }}
             onClose={() => setSwapMealType(null)}

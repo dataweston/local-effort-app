@@ -235,13 +235,13 @@ export default function JanuaryMealsPage() {
 
   /**
    * Handle swapping a meal to a different option from the library.
-   * This creates an override with the new meal at the appropriate instance key.
+   * This creates an override at the current instance key with the new meal content.
+   * The override replaces what's shown for that meal slot on that day.
    */
-  const handleMealSwap = (dayKey: string, mealType: MealType, newMealKey: string, meal: Meal) => {
-    // Generate the instance key for this meal type and new template
-    const instanceKey = mealType === 'snacks' ? 'snacks' : `${mealType}-${newMealKey}`;
+  const handleMealSwap = (dayKey: string, mealType: MealType, currentInstanceKey: string, meal: Meal) => {
+    // Use the CURRENT instance key - we're replacing the meal at this position
     const handler = editHandlers[editScope];
-    handler?.update(dayKey, instanceKey, meal);
+    handler?.update(dayKey, currentInstanceKey, meal);
   };
 
   const handleSignIn = async () => {
