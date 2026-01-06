@@ -27,6 +27,7 @@ const FullPageDemoPage = () => {
   const [positions, setPositions] = useState({});
   const containerRef = useRef(null);
   const [orderOpen, setOrderOpen] = useState(false);
+  const [smallEventsDialog, setSmallEventsDialog] = useState(null);
   const [showWaitlistForm, setShowWaitlistForm] = useState(false);
   const [waitlistStatus, setWaitlistStatus] = useState('idle');
   const [waitlist, setWaitlist] = useState({
@@ -724,9 +725,51 @@ const FullPageDemoPage = () => {
             <img
               src="https://res.cloudinary.com/dokyhfvyd/image/upload/c_limit,f_auto,q_auto,w_1600/vjuesai2mxfavpq9d2df"
               alt="Small Events"
-              className="w-full h-full object-contain"
-              style={{ objectPosition: 'center', backgroundColor: '#D1D8E0' }}
+              className="absolute inset-0 w-full h-full object-cover"
+              style={{ objectPosition: 'center' }}
             />
+            <div className="relative z-10 flex items-start justify-center h-full pt-24">
+              <div
+                style={{
+                  display: 'table',
+                  borderCollapse: 'separate',
+                  borderSpacing: '16px',
+                }}
+              >
+                <div style={{ display: 'table-row' }}>
+                  <div style={{ display: 'table-cell' }}>
+                    <button
+                      type="button"
+                      onClick={() => setSmallEventsDialog('dinner')}
+                      className="px-6 py-5 rounded-md border border-white/70 bg-white/80 text-left text-base font-semibold text-slate-900 hover:bg-white"
+                      style={{ fontFamily: "'Office Code Pro', monospace" }}
+                    >
+                      dinner party in my home
+                    </button>
+                  </div>
+                  <div style={{ display: 'table-cell' }}>
+                    <button
+                      type="button"
+                      onClick={() => setSmallEventsDialog('weddings')}
+                      className="px-6 py-5 rounded-md border border-white/70 bg-white/80 text-left text-base font-semibold text-slate-900 hover:bg-white"
+                      style={{ fontFamily: "'Office Code Pro', monospace" }}
+                    >
+                      weddings
+                    </button>
+                  </div>
+                  <div style={{ display: 'table-cell' }}>
+                    <button
+                      type="button"
+                      onClick={() => setSmallEventsDialog('holiday')}
+                      className="px-6 py-5 rounded-md border border-white/70 bg-white/80 text-left text-base font-semibold text-slate-900 hover:bg-white"
+                      style={{ fontFamily: "'Office Code Pro', monospace" }}
+                    >
+                      small events and holiday parties
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </FullPageSection>
 
@@ -850,6 +893,48 @@ const FullPageDemoPage = () => {
             >
               Place demo order
             </button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={smallEventsDialog === 'dinner'} onOpenChange={(open) => setSmallEventsDialog(open ? 'dinner' : null)}>
+        <DialogContent className="sm:max-w-[520px]">
+          <DialogHeader>
+          <DialogTitle>Dinner party in my home</DialogTitle>
+            <DialogDescription>
+              Demo info for a private in-home dinner. We&apos;ll customize this later.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="text-sm text-slate-700">
+            Chef-led, multi-course dinner for small groups with seasonal menus and on-site service.
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={smallEventsDialog === 'weddings'} onOpenChange={(open) => setSmallEventsDialog(open ? 'weddings' : null)}>
+        <DialogContent className="sm:max-w-[520px]">
+          <DialogHeader>
+            <DialogTitle>Weddings</DialogTitle>
+            <DialogDescription>
+              Demo info for wedding catering. We&apos;ll refine details later.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="text-sm text-slate-700">
+            Flexible packages for rehearsal dinners, plated service, and late-night bites.
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={smallEventsDialog === 'holiday'} onOpenChange={(open) => setSmallEventsDialog(open ? 'holiday' : null)}>
+        <DialogContent className="sm:max-w-[520px]">
+          <DialogHeader>
+            <DialogTitle>Small events and holiday parties</DialogTitle>
+            <DialogDescription>
+              Demo info for seasonal gatherings. We&apos;ll personalize later.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="text-sm text-slate-700">
+            Drop-off or staffed menus for work parties, milestones, and holiday hosting.
           </div>
         </DialogContent>
       </Dialog>
