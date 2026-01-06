@@ -1,3 +1,5 @@
+@import url('/fonts/fonts.css');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -58,6 +60,9 @@
 :root {
   --font-display: 'General Sans', sans-serif;
   --font-body: 'Source Sans 3', sans-serif;
+  --font-national-park: 'National Park', 'General Sans', sans-serif;
+  --font-office-code: 'Office Code Pro', 'Source Code Pro', monospace;
+  --font-yomogi: 'Yomogi', cursive;
   --color-bg: #fafafa;
   --color-text: #1a1a1a;
   --color-accent: #f35c2b;

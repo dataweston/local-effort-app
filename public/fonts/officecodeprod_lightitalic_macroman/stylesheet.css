@@ -1,0 +1,13 @@
+@font-face {
+    font-family: 'office_code_pro_dlight_italic';
+    src: url('officecodeprod-lightitalic-webfont.eot');
+    src: url('officecodeprod-lightitalic-webfont.eot?#iefix') format('embedded-opentype'),
+         url('officecodeprod-lightitalic-webfont.woff2') format('woff2'),
+         url('officecodeprod-lightitalic-webfont.woff') format('woff'),
+         url('officecodeprod-lightitalic-webfont.ttf') format('truetype'),
+         url('officecodeprod-lightitalic-webfont.svg#office_code_pro_dlight_italic') format('svg');
+    font-weight: normal;
+    font-style: normal;
+
+}
+

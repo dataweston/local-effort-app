@@ -4,8 +4,13 @@ import { motion, AnimatePresence } from 'framer-motion';
 import FullPageContainer from '../components/fullpage/FullPageContainer';
 import FullPageSection from '../components/fullpage/FullPageSection';
 import CloudinaryImage from '../components/common/cloudinaryImage';
-
-const logo = '/gallery/logo.png?text=Local+Effort&font=mono';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '../components/ui/dialog';
 
 const FullPageDemoPage = () => {
   const [activePage, setActivePage] = useState(0);
@@ -21,12 +26,29 @@ const FullPageDemoPage = () => {
   const [imageOrder, setImageOrder] = useState([]);
   const [positions, setPositions] = useState({});
   const containerRef = useRef(null);
+  const [orderOpen, setOrderOpen] = useState(false);
+  const [showWaitlistForm, setShowWaitlistForm] = useState(false);
+  const [waitlistStatus, setWaitlistStatus] = useState('idle');
+  const [waitlist, setWaitlist] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    familySize: '',
+    children: '',
+    daysPerWeek: '',
+    mealsPerDay: '',
+    allergies: '',
+    questions: '',
+  });
+  const [mealPlanImages, setMealPlanImages] = useState([]);
+  const [mealPlanLoading, setMealPlanLoading] = useState(false);
+  const [mealPlanError, setMealPlanError] = useState(null);
 
   const pages = [
     { id: 'home', label: 'Home' },
     { id: 'weekly-meals', label: 'Weekly Meals' },
     { id: 'small-events', label: 'Small Events' },
-    { id: 'for-businesses', label: 'For Businesses' },
+    { id: 'for-businesses', label: 'For Business' },
     { id: 'about', label: 'About' },
     { id: 'local-pizza', label: 'Local Pizza' },
   ];
@@ -85,6 +107,32 @@ const FullPageDemoPage = () => {
   useEffect(() => {
     fetchImages();
   }, [fetchImages]);
+
+  useEffect(() => {
+    let abort = false;
+    const controller = new AbortController();
+
+    (async () => {
+      setMealPlanLoading(true);
+      setMealPlanError(null);
+      try {
+        const res = await fetch('/api/search-images?query=mealplan&per_page=24', { signal: controller.signal });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(data.error || 'Failed loading meal plan photos');
+        const imgs = Array.isArray(data.images) ? data.images : [];
+        if (!abort) setMealPlanImages(imgs);
+      } catch (e) {
+        if (!abort) setMealPlanError(e.message || String(e));
+      } finally {
+        if (!abort) setMealPlanLoading(false);
+      }
+    })();
+
+    return () => {
+      abort = true;
+      controller.abort();
+    };
+  }, []);
 
   // Initialize image order when images are loaded
   useEffect(() => {
@@ -283,6 +331,63 @@ const FullPageDemoPage = () => {
     prefetched.current.add(url);
   }, []);
 
+  const resetWaitlist = () =>
+    setWaitlist({
+      name: '',
+      email: '',
+      phone: '',
+      familySize: '',
+      children: '',
+      daysPerWeek: '',
+      mealsPerDay: '',
+      allergies: '',
+      questions: '',
+    });
+
+  const handleWaitlistChange = (field, value) => {
+    setWaitlist((prev) => ({ ...prev, [field]: value }));
+    if (waitlistStatus !== 'idle') setWaitlistStatus('idle');
+  };
+
+  const handleWaitlistSubmit = async (event) => {
+    event.preventDefault();
+    setWaitlistStatus('sending');
+    try {
+      const lines = [
+        'Weekly Meal Prep Waitlist signup',
+        `Name: ${waitlist.name}`,
+        `Email: ${waitlist.email}`,
+        `Phone: ${waitlist.phone || '(not provided)'}`,
+        `Family size: ${waitlist.familySize || '(not provided)'}`,
+        `Children & ages: ${waitlist.children || '(not provided)'}`,
+        `Days per week: ${waitlist.daysPerWeek || '(not provided)'}`,
+        `Meals per day: ${waitlist.mealsPerDay || '(not provided)'}`,
+        `Allergies or medical comments: ${waitlist.allergies || '(none noted)'}`,
+        '',
+        'Questions or notes:',
+        waitlist.questions || '(none provided)',
+      ];
+      const payload = {
+        name: waitlist.name,
+        email: waitlist.email,
+        phone: waitlist.phone,
+        subject: 'Meal Prep Waitlist signup',
+        type: 'meal-prep-waitlist',
+        message: lines.join('\n'),
+      };
+      const res = await fetch('/api/messages/submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) throw new Error(await res.text());
+      setWaitlistStatus('success');
+      resetWaitlist();
+    } catch (_error) {
+      setWaitlistStatus('error');
+    }
+  };
+
   // Keyboard navigation for lightbox
   useEffect(() => {
     const onKey = (e) => {
@@ -314,15 +419,20 @@ const FullPageDemoPage = () => {
             onClick={() => navigateToPage(0)}
             className="flex items-center gap-3"
           >
-            <motion.img
-              src={logo}
-              alt="Local Effort Logo"
-              className="h-7 w-auto rounded-md"
-              style={{ border: '1px solid #2F2722' }}
+            <motion.span
+              className="text-2xl font-bold tracking-tight"
+              style={{ 
+                color: '#2F2722', 
+                fontFamily: "'National Park', 'General Sans', sans-serif",
+                fontWeight: 700,
+                letterSpacing: '-0.02em'
+              }}
               whileHover={{ scale: 1.03 }}
               transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-            />
-            <span className="text-sm font-medium" style={{ color: '#2F2722', fontFamily: 'Fraunces, serif' }}>
+            >
+              Local Effort
+            </motion.span>
+            <span className="text-sm font-medium" style={{ color: '#2F2722', fontFamily: "'Office Code Pro', monospace" }}>
               always mostly local
             </span>
           </button>
@@ -338,20 +448,20 @@ const FullPageDemoPage = () => {
                   onClick={() => navigateToPage(index + 1)}
                   className="px-4 py-2 rounded-md text-sm font-medium transition-all group"
                   style={{
-                    backgroundColor: isActive ? '#82CCDD' : 'transparent',
-                    color: isActive ? '#2F2722' : '#2F2722',
-                    fontFamily: 'Work Sans, sans-serif',
+                    backgroundColor: isActive ? '#1a1a1a' : 'transparent',
+                    color: isActive ? '#ffffff' : '#1a1a1a',
+                    fontFamily: "'Office Code Pro', monospace",
                   }}
                   onMouseEnter={(e) => {
                     if (!isActive) {
-                      e.currentTarget.style.backgroundColor = '#D47433';
-                      e.currentTarget.style.color = '#D1D8E0';
+                      e.currentTarget.style.backgroundColor = '#2F2722';
+                      e.currentTarget.style.color = '#ffffff';
                     }
                   }}
                   onMouseLeave={(e) => {
                     if (!isActive) {
                       e.currentTarget.style.backgroundColor = 'transparent';
-                      e.currentTarget.style.color = '#2F2722';
+                      e.currentTarget.style.color = '#1a1a1a';
                     }
                   }}
                 >
@@ -476,8 +586,132 @@ const FullPageDemoPage = () => {
           id="weekly-meals"
           style={{ backgroundColor: '#E6EBF2' }}
         >
-          <div className="flex items-center justify-center h-full pt-20" style={{ color: '#2F2722' }}>
-            <h2 className="text-4xl font-bold" style={{ fontFamily: 'Work Sans, sans-serif' }}>Weekly Meals</h2>
+          <div className="relative h-full pt-20">
+            <div className="flex items-start">
+              <div
+                className="group"
+                style={{
+                  marginTop: '50px',
+                  marginLeft: '50px',
+                  padding: '12px 16px',
+                  backgroundColor: 'rgba(128, 128, 128, 0.2)',
+                  borderRadius: '6px',
+                }}
+              >
+                <div
+                  className="line-through group-hover:italic"
+                  style={{
+                    color: '#2F2722',
+                    fontFamily: "'Office Code Pro', monospace",
+                    fontSize: '18px',
+                    fontWeight: 600,
+                  }}
+                >
+                  Pickup on Sundays
+                </div>
+                <button
+                  type="button"
+                  className="inline-block line-through group-hover:italic"
+                  disabled
+                  aria-disabled="true"
+                  style={{
+                    marginTop: '12px',
+                    color: '#1a1a1a',
+                    fontFamily: "'Office Code Pro', monospace",
+                    fontSize: '16px',
+                    fontWeight: 600,
+                    textDecoration: 'underline',
+                    cursor: 'not-allowed',
+                    opacity: 0.6,
+                  }}
+                >
+                  order here
+                </button>
+              </div>
+              <motion.span
+                aria-hidden="true"
+                style={{
+                  marginTop: '72px',
+                  marginLeft: '24px',
+                  marginRight: '24px',
+                  color: '#2F2722',
+                  fontSize: '24px',
+                }}
+                animate={{ x: [0, 10, 0] }}
+                transition={{ duration: 1.6, repeat: Infinity, ease: 'easeInOut' }}
+              >
+                →
+              </motion.span>
+              <div
+                style={{
+                  marginTop: '50px',
+                  marginLeft: '50px',
+                }}
+              >
+                <div
+                  className="rounded-md border border-slate-300 bg-white/80 px-4 py-3"
+                  style={{ fontFamily: "'Office Code Pro', monospace" }}
+                >
+                  <div className="text-sm font-semibold text-slate-900">Waiting list</div>
+                  <div className="mt-1 text-xs text-slate-600">We&apos;ll let you know when space opens up.</div>
+                  <button
+                    type="button"
+                    className="mt-3 w-full rounded-md bg-slate-900 px-3 py-2 text-xs font-semibold text-white hover:bg-slate-800"
+                    onClick={() => {
+                      resetWaitlist();
+                      setWaitlistStatus('idle');
+                      setShowWaitlistForm(true);
+                    }}
+                  >
+                    Join the waitlist
+                  </button>
+                </div>
+              </div>
+            </div>
+            <div className="mt-12 px-[50px]">
+              {mealPlanLoading ? (
+                <div className="text-sm text-gray-600">Loading photos...</div>
+              ) : mealPlanError ? (
+                <div className="text-sm text-red-700">{mealPlanError}</div>
+              ) : (
+                <div className="columns-2 md:columns-3 lg:columns-4 gap-4 [column-fill:_balance]">
+                  <div className="mb-4 break-inside-avoid border p-4 bg-white/70 rounded-lg">
+                    <div
+                      style={{
+                        fontFamily: "'Yomogi', cursive",
+                        color: '#2F2722',
+                        fontSize: '22px',
+                        lineHeight: 1.5,
+                      }}
+                    >
+                      From a few meals a week to complete meal replacement. We make wholesome home cooked meals from high integrity local ingredients. We ensure that you eat real food all week.
+                    </div>
+                  </div>
+                  {mealPlanImages.map((img, idx) => (
+                    <div
+                      key={(img.asset_id || img.public_id || idx) + ':' + idx}
+                      className="mb-4 break-inside-avoid border p-2 bg-white rounded-lg overflow-hidden"
+                    >
+                      {img.thumbnail_url ? (
+                        <img
+                          src={img.thumbnail_url}
+                          alt={img.context?.alt || 'Meal prep image'}
+                          className="rounded-lg w-full h-auto"
+                          loading="lazy"
+                        />
+                      ) : (
+                        <CloudinaryImage
+                          publicId={img.public_id || img.publicId}
+                          alt={img.context?.alt || 'Meal prep image'}
+                          width={800}
+                          className="rounded-lg w-full h-auto"
+                        />
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         </FullPageSection>
 
@@ -486,8 +720,13 @@ const FullPageDemoPage = () => {
           id="small-events"
           style={{ backgroundColor: '#D1D8E0' }}
         >
-          <div className="flex items-center justify-center h-full pt-20" style={{ color: '#2F2722' }}>
-            <h2 className="text-4xl font-bold" style={{ fontFamily: 'Work Sans, sans-serif' }}>Small Events</h2>
+          <div className="relative w-full h-full">
+            <img
+              src="https://res.cloudinary.com/dokyhfvyd/image/upload/c_limit,f_auto,q_auto,w_1600/vjuesai2mxfavpq9d2df"
+              alt="Small Events"
+              className="w-full h-full object-contain"
+              style={{ objectPosition: 'center', backgroundColor: '#D1D8E0' }}
+            />
           </div>
         </FullPageSection>
 
@@ -496,9 +735,7 @@ const FullPageDemoPage = () => {
           id="for-businesses"
           style={{ backgroundColor: '#E6EBF2' }}
         >
-          <div className="flex items-center justify-center h-full pt-20" style={{ color: '#2F2722' }}>
-            <h2 className="text-4xl font-bold" style={{ fontFamily: 'Work Sans, sans-serif' }}>For Businesses</h2>
-          </div>
+          <div className="h-full pt-20" />
         </FullPageSection>
 
         {/* Page 5: About */}
@@ -510,12 +747,9 @@ const FullPageDemoPage = () => {
             <img
               src="https://res.cloudinary.com/dokyhfvyd/image/upload/c_limit,f_auto,q_auto,w_1600/jo9pxtjng8zpt4yo4rcz?_a=BAMAK+eA0"
               alt="About Local Effort"
-              className="w-full h-full object-cover"
-              style={{ objectPosition: 'center' }}
+              className="w-full h-full object-contain"
+              style={{ objectPosition: 'center', backgroundColor: '#D1D8E0' }}
             />
-            <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-20">
-              <h2 className="text-5xl font-bold text-white" style={{ fontFamily: 'Work Sans, sans-serif', textShadow: '2px 2px 4px rgba(0,0,0,0.5)' }}>About</h2>
-            </div>
           </div>
         </FullPageSection>
 
@@ -524,9 +758,7 @@ const FullPageDemoPage = () => {
           id="local-pizza"
           style={{ backgroundColor: '#E6EBF2' }}
         >
-          <div className="flex items-center justify-center h-full pt-20" style={{ color: '#2F2722' }}>
-            <h2 className="text-4xl font-bold" style={{ fontFamily: 'Work Sans, sans-serif' }}>Local Pizza</h2>
-          </div>
+          <div className="h-full pt-20" />
         </FullPageSection>
       </FullPageContainer>
 
@@ -580,6 +812,187 @@ const FullPageDemoPage = () => {
           </motion.div>
         )}
       </AnimatePresence>
+
+      <Dialog open={orderOpen} onOpenChange={setOrderOpen}>
+        <DialogContent className="sm:max-w-[520px]">
+          <DialogHeader>
+            <DialogTitle>Weekly Meals Ordering</DialogTitle>
+            <DialogDescription>
+              Demo menu and ordering flow. We will replace this with the real system.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 text-slate-900">
+            <div className="rounded-lg border border-slate-200 bg-white p-4">
+              <div className="text-sm font-semibold">Small Menu</div>
+              <div className="mt-3 space-y-2 text-sm">
+                <div className="flex items-center justify-between">
+                  <span>Roasted lemon chicken</span>
+                  <span>$14</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span>Herb tofu bowl</span>
+                  <span>$12</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span>Seasonal veggie lasagna</span>
+                  <span>$13</span>
+                </div>
+              </div>
+            </div>
+            <div className="rounded-lg border border-slate-200 bg-slate-50 p-4 text-sm">
+              <div className="font-semibold">Pickup window</div>
+              <div className="mt-1 text-slate-700">Sundays, 4:00-6:00 PM</div>
+            </div>
+            <button
+              type="button"
+              className="w-full rounded-md bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800"
+              onClick={() => setOrderOpen(false)}
+            >
+              Place demo order
+            </button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {showWaitlistForm && (
+        <div
+          className="fixed inset-0 z-[70] flex items-start justify-center bg-black/60 px-4 py-8 overflow-y-auto"
+          role="dialog"
+          aria-modal="true"
+        >
+          <div className="form-card w-full max-w-xl max-h-[90vh] overflow-y-auto relative">
+            <button
+              type="button"
+              className="absolute right-4 top-4 text-sm underline z-10"
+              onClick={() => {
+                setShowWaitlistForm(false);
+                setWaitlistStatus('idle');
+                resetWaitlist();
+              }}
+            >
+              Close
+            </button>
+            <h2 className="text-2xl font-bold mb-2">Join the waiting list</h2>
+            <p className="text-sm text-gray-600 mb-4">
+              We&apos;ll reach out when weekly meal pickup slots reopen.
+            </p>
+            <form onSubmit={handleWaitlistSubmit} className="space-y-4">
+              <div>
+                <label className="label" htmlFor="weekly-waitlist-name">Name</label>
+                <input
+                  id="weekly-waitlist-name"
+                  className="input"
+                  value={waitlist.name}
+                  onChange={(e) => handleWaitlistChange('name', e.target.value)}
+                  required
+                />
+              </div>
+              <div className="grid md:grid-cols-2 gap-4">
+                <div>
+                  <label className="label" htmlFor="weekly-waitlist-email">Email</label>
+                  <input
+                    id="weekly-waitlist-email"
+                    type="email"
+                    className="input"
+                    value={waitlist.email}
+                    onChange={(e) => handleWaitlistChange('email', e.target.value)}
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="label" htmlFor="weekly-waitlist-phone">Phone number</label>
+                  <input
+                    id="weekly-waitlist-phone"
+                    className="input"
+                    value={waitlist.phone}
+                    onChange={(e) => handleWaitlistChange('phone', e.target.value)}
+                    required
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="label" htmlFor="weekly-waitlist-family">Family size</label>
+                <input
+                  id="weekly-waitlist-family"
+                  className="input"
+                  placeholder="e.g. 2 adults, 2 kids"
+                  value={waitlist.familySize}
+                  onChange={(e) => handleWaitlistChange('familySize', e.target.value)}
+                  required
+                />
+              </div>
+              <div>
+                <label className="label" htmlFor="weekly-waitlist-children">Children &amp; ages</label>
+                <textarea
+                  id="weekly-waitlist-children"
+                  className="textarea"
+                  rows={2}
+                  value={waitlist.children}
+                  onChange={(e) => handleWaitlistChange('children', e.target.value)}
+                  placeholder="Tell us about school schedules, toddlers, or teens."
+                />
+              </div>
+              <div className="grid md:grid-cols-2 gap-4">
+                <div>
+                  <label className="label" htmlFor="weekly-waitlist-days">Days per week</label>
+                  <input
+                    id="weekly-waitlist-days"
+                    className="input"
+                    placeholder="How many days should we cover?"
+                    value={waitlist.daysPerWeek}
+                    onChange={(e) => handleWaitlistChange('daysPerWeek', e.target.value)}
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="label" htmlFor="weekly-waitlist-meals">Meals per day</label>
+                  <input
+                    id="weekly-waitlist-meals"
+                    className="input"
+                    placeholder="Breakfast, lunch, dinner?"
+                    value={waitlist.mealsPerDay}
+                    onChange={(e) => handleWaitlistChange('mealsPerDay', e.target.value)}
+                    required
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="label" htmlFor="weekly-waitlist-allergies">Allergies or medical comments</label>
+                <textarea
+                  id="weekly-waitlist-allergies"
+                  className="textarea"
+                  rows={3}
+                  value={waitlist.allergies}
+                  onChange={(e) => handleWaitlistChange('allergies', e.target.value)}
+                  placeholder="Include any dietary restrictions, allergies, or doctor notes."
+                />
+              </div>
+              <div>
+                <label className="label" htmlFor="weekly-waitlist-questions">Questions for the team</label>
+                <textarea
+                  id="weekly-waitlist-questions"
+                  className="textarea"
+                  rows={3}
+                  value={waitlist.questions}
+                  onChange={(e) => handleWaitlistChange('questions', e.target.value)}
+                  placeholder="Anything else we should know?"
+                />
+              </div>
+              <div className="flex flex-wrap items-center gap-3">
+                <button type="submit" className="btn btn-primary" disabled={waitlistStatus === 'sending'}>
+                  {waitlistStatus === 'sending' ? 'Submitting...' : 'Join waitlist'}
+                </button>
+                {waitlistStatus === 'success' && (
+                  <span className="text-green-700 text-sm">Thanks! We&apos;ll be in touch.</span>
+                )}
+                {waitlistStatus === 'error' && (
+                  <span className="text-red-700 text-sm">We couldn&apos;t submit your request. Please try again.</span>
+                )}
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </>
   );
 };

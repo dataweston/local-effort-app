@@ -9,6 +9,9 @@ module.exports = {
       fontFamily: {
         display: ['General Sans', 'sans-serif'],
         body: ['Source Sans 3', 'sans-serif'],
+        'national-park': ['National Park', 'General Sans', 'sans-serif'],
+        'office-code': ['Office Code Pro', 'Source Code Pro', 'monospace'],
+        'yomogi': ['Yomogi', 'cursive'],
       },
       colors: {
         accent: '#f35c2b',
