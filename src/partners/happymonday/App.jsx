@@ -1580,8 +1580,8 @@ const App = () => {
                       <FileText size={18} />
                       Print
                     </button>
-                    {/* Sync to Square button - only for Happy Monday and not already synced */}
-                    {hmUser?.email === 'hello@happymonday.company' && selectedInvoice.inventory_sync_status !== 'synced' && (
+                    {/* Sync to Square button - only for admin and not already synced */}
+                    {isAdmin && selectedInvoice.inventory_sync_status !== 'synced' && (
                       <button
                         onClick={() => handleSyncInventory(selectedInvoice.id)}
                         disabled={syncingInventory}
