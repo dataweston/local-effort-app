@@ -192,7 +192,7 @@ const IntegrationsSettings = () => {
         </div>
 
         <p className="text-slate-600 mb-6">
-          Connect your QuickBooks and Square accounts to automate invoice syncing and inventory management.
+          Connect QuickBooks for bookkeeping exports and Square for inventory updates.
         </p>
 
         {/* QuickBooks Section */}
@@ -207,7 +207,7 @@ const IntegrationsSettings = () => {
               </div>
               <div className="text-left">
                 <h3 className="font-semibold text-slate-800">QuickBooks Online</h3>
-                <p className="text-sm text-slate-500">Receive invoices and pay directly in QuickBooks</p>
+                <p className="text-sm text-slate-500">Export invoices to QuickBooks for bookkeeping</p>
               </div>
             </div>
             <div className="flex items-center gap-3">
@@ -247,9 +247,9 @@ const IntegrationsSettings = () => {
                   <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                     <h4 className="font-medium text-blue-800 mb-2">How it works</h4>
                     <ul className="text-sm text-blue-700 space-y-1 list-disc list-inside">
-                      <li>When Local Effort creates an invoice, it appears in your QuickBooks</li>
-                      <li>Pay the invoice directly from QuickBooks using any payment method</li>
-                      <li>Payment status syncs automatically</li>
+                      <li>Send Local Effort invoices to QuickBooks for your accounting records</li>
+                      <li>QuickBooks mirrors the invoice details for bookkeeping</li>
+                      <li>Payments stay in Local Effort (Square/ACH/check)</li>
                     </ul>
                   </div>
                   <button
@@ -266,7 +266,7 @@ const IntegrationsSettings = () => {
                       <AlertCircle className="w-4 h-4" /> Setup Required
                     </h4>
                     <p className="text-sm text-amber-700 mb-3">
-                      Connect your QuickBooks account to receive invoices from Local Effort and pay them directly in QuickBooks.
+                      Connect your QuickBooks account to export Local Effort invoices for bookkeeping only. Payments stay in Local Effort.
                     </p>
                     <button
                       onClick={connectQuickBooks}

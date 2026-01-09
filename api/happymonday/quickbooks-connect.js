@@ -26,7 +26,7 @@ const QB_AUTH_BASE = QB_ENVIRONMENT === 'sandbox'
   : 'https://appcenter.intuit.com/connect/oauth2';
 
 const QB_SCOPES = [
-  'com.intuit.quickbooks.accounting',  // Full accounting access (invoices, payments, customers)
+  'com.intuit.quickbooks.accounting',  // Full accounting access (invoices, customers)
 ].join(' ');
 
 module.exports = async function handler(req, res) {

@@ -162,6 +162,25 @@ const App = () => {
   const [reportFilters, setReportFilters] = useState(() => createDefaultReportFilters());
   const [reportSending, setReportSending] = useState(false);
   const [syncingInventory, setSyncingInventory] = useState(false);
+  const [syncingQuickBooks, setSyncingQuickBooks] = useState(false);
+
+  const getQuickBooksSyncStatus = (invoice) => {
+    if (!invoice) return 'not_sent';
+    if (invoice.qb_sync_status) return invoice.qb_sync_status;
+    if (invoice.qb_invoice_id) return 'sent';
+    return 'not_sent';
+  };
+
+  const getQuickBooksStatusBadge = (status) => {
+    switch (status) {
+      case 'sent':
+        return { label: 'Sent', className: 'bg-green-100 text-green-700' };
+      case 'error':
+        return { label: 'Error', className: 'bg-red-100 text-red-700' };
+      default:
+        return { label: 'Not sent', className: 'bg-slate-100 text-slate-700' };
+    }
+  };
 
   // Sync inventory to Square
   const handleSyncInventory = async (orderId) => {
@@ -183,9 +202,9 @@ const App = () => {
           message += `\n\nSkipped items:\n${data.itemsSkipped.map(s => `• ${s.item_name}: ${s.reason}`).join('\n')}`;
         }
         alert(message);
-        await loadOrdersData();
+        const refreshedOrders = await loadOrdersData();
         if (selectedInvoice?.id === orderId) {
-          const updated = orders.find(o => o.id === orderId);
+          const updated = refreshedOrders.find(o => o.id === orderId);
           if (updated) setSelectedInvoice(updated);
         }
       } else {
@@ -196,6 +215,37 @@ const App = () => {
       alert('Error syncing inventory');
     } finally {
       setSyncingInventory(false);
+    }
+  };
+
+  const handleSendToQuickBooks = async (orderId) => {
+    if (!isAdmin || !orderId || syncingQuickBooks) return;
+    if (!confirm("Send this invoice to QuickBooks? This creates a bookkeeping-only copy for the client's records.")) return;
+    setSyncingQuickBooks(true);
+    try {
+      const res = await fetch('/api/happymonday/quickbooks-invoice', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ orderId }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        const invoiceSuffix = data.invoiceId ? ` (ID ${data.invoiceId})` : '';
+        alert(`QuickBooks invoice created for ${data.orderNumber || 'this order'}${invoiceSuffix}.`);
+      } else {
+        alert('Error sending to QuickBooks: ' + (data.message || data.error || 'Unknown error'));
+      }
+
+      const refreshedOrders = await loadOrdersData();
+      if (selectedInvoice?.id === orderId) {
+        const updated = refreshedOrders.find(o => o.id === orderId);
+        if (updated) setSelectedInvoice(updated);
+      }
+    } catch (err) {
+      console.error('QuickBooks sync error:', err);
+      alert('Error sending to QuickBooks');
+    } finally {
+      setSyncingQuickBooks(false);
     }
   };
 
@@ -252,9 +302,11 @@ const App = () => {
     try {
       const loadedOrders = await loadOrders();
       setOrders(loadedOrders);
+      return loadedOrders || [];
     } catch (error) {
       console.error("Error loading orders:", error);
     }
+    return [];
   };
 
   // Calculate total
@@ -1284,6 +1336,8 @@ const App = () => {
 
   const balanceColor = (creditBalance?.balance_cents || 0) < 0 ? 'text-green-600' : 'text-red-600';
   const balanceLabel = (creditBalance?.balance_cents || 0) < 0 ? 'Credit Available' : 'Balance Due';
+  const quickBooksSyncStatus = getQuickBooksSyncStatus(selectedInvoice);
+  const quickBooksBadge = getQuickBooksStatusBadge(quickBooksSyncStatus);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
@@ -1569,6 +1623,11 @@ const App = () => {
                     <Package size={12} /> Synced to Square
                   </span>
                 )}
+                {isAdmin && (
+                  <span className={`flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-full ${quickBooksBadge.className}`}>
+                    <FileText size={12} /> {quickBooksBadge.label}
+                  </span>
+                )}
               </div>
               <div className="flex gap-2">
                 {!isEditingInvoice && (
@@ -1580,6 +1639,20 @@ const App = () => {
                       <FileText size={18} />
                       Print
                     </button>
+                    {isAdmin && (
+                      <button
+                        onClick={() => handleSendToQuickBooks(selectedInvoice.id)}
+                        disabled={syncingQuickBooks || quickBooksSyncStatus === 'sent'}
+                        className={`px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2 ${
+                          quickBooksSyncStatus === 'sent'
+                            ? 'bg-slate-200 text-slate-500 cursor-not-allowed'
+                            : 'bg-emerald-600 hover:bg-emerald-700 text-white'
+                        } ${syncingQuickBooks ? 'opacity-50' : ''}`}
+                      >
+                        {syncingQuickBooks ? <RefreshCw size={18} className="animate-spin" /> : <Send size={18} />}
+                        Send to QuickBooks
+                      </button>
+                    )}
                     {/* Sync to Square button - only for admin and not already synced */}
                     {isAdmin && selectedInvoice.inventory_sync_status !== 'synced' && (
                       <button

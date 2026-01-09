@@ -1,6 +1,6 @@
 /**
  * Create QuickBooks Invoice
- * Creates an invoice in Happy Monday's QuickBooks when an order is created
+ * Creates a bookkeeping-only invoice in Happy Monday's QuickBooks when requested
  */
 
 const QB_ENVIRONMENT = process.env.QUICKBOOKS_ENVIRONMENT || 'production';
@@ -96,6 +96,17 @@ async function getValidAccessToken(integration) {
   return integration.access_token;
 }
 
+async function updateOrderQuickBooksSync(orderId, updates) {
+  if (!supabase || !orderId) return;
+  await supabase
+    .from('happymonday_orders')
+    .update({
+      ...updates,
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', orderId);
+}
+
 module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
@@ -120,21 +131,6 @@ module.exports = async function handler(req, res) {
       return res.status(400).json({ error: 'Order ID is required' });
     }
 
-    // Get QuickBooks integration
-    const { data: integration, error: integrationError } = await supabase
-      .from('happymonday_integrations')
-      .select('*')
-      .eq('provider', 'quickbooks')
-      .eq('is_active', true)
-      .single();
-
-    if (integrationError || !integration) {
-      return res.status(400).json({ 
-        error: 'QuickBooks not connected',
-        message: 'Please connect QuickBooks in the Settings tab first'
-      });
-    }
-
     // Get order details
     const { data: order, error: orderError } = await supabase
       .from('happymonday_orders')
@@ -144,6 +140,34 @@ module.exports = async function handler(req, res) {
 
     if (orderError || !order) {
       return res.status(404).json({ error: 'Order not found' });
+    }
+
+    // Prevent duplicate sends
+    if (order.qb_sync_status === 'sent' || order.qb_invoice_id) {
+      return res.status(400).json({
+        error: 'Already sent',
+        message: 'This invoice has already been sent to QuickBooks.',
+      });
+    }
+
+    // Get QuickBooks integration
+    const { data: integration, error: integrationError } = await supabase
+      .from('happymonday_integrations')
+      .select('*')
+      .eq('provider', 'quickbooks')
+      .eq('is_active', true)
+      .single();
+
+    if (integrationError || !integration) {
+      await updateOrderQuickBooksSync(orderId, {
+        qb_sync_status: 'error',
+        qb_sync_error: 'QuickBooks not connected',
+      });
+
+      return res.status(400).json({
+        error: 'QuickBooks not connected',
+        message: 'Please connect QuickBooks in the Settings tab first'
+      });
     }
 
     // Get valid access token
@@ -183,9 +207,9 @@ module.exports = async function handler(req, res) {
       BillEmail: {
         Address: 'hello@localeffortfood.com',
       },
-      AllowOnlinePayment: true,
-      AllowOnlineCreditCardPayment: true,
-      AllowOnlineACHPayment: true,
+      AllowOnlinePayment: false,
+      AllowOnlineCreditCardPayment: false,
+      AllowOnlineACHPayment: false,
     };
 
     const qbResponse = await fetch(
@@ -205,6 +229,11 @@ module.exports = async function handler(req, res) {
       const errorData = await qbResponse.json();
       console.error('[HappyMonday] QuickBooks invoice creation failed:', errorData);
       
+      await updateOrderQuickBooksSync(orderId, {
+        qb_sync_status: 'error',
+        qb_sync_error: JSON.stringify(errorData),
+      });
+
       // Update integration with error
       await supabase
         .from('happymonday_integrations')
@@ -223,14 +252,24 @@ module.exports = async function handler(req, res) {
     const qbInvoice = await qbResponse.json();
     const invoiceId = qbInvoice.Invoice?.Id;
 
+    if (!invoiceId) {
+      await updateOrderQuickBooksSync(orderId, {
+        qb_sync_status: 'error',
+        qb_sync_error: 'QuickBooks invoice ID missing from response',
+      });
+
+      return res.status(500).json({
+        error: 'QuickBooks invoice ID missing from response',
+      });
+    }
+
     // Update order with QuickBooks invoice ID
-    await supabase
-      .from('happymonday_orders')
-      .update({
-        qb_invoice_id: invoiceId,
-        updated_at: new Date().toISOString(),
-      })
-      .eq('id', orderId);
+    await updateOrderQuickBooksSync(orderId, {
+      qb_invoice_id: invoiceId,
+      qb_sync_status: 'sent',
+      qb_synced_at: new Date().toISOString(),
+      qb_sync_error: null,
+    });
 
     // Update last sync time
     await supabase
@@ -251,6 +290,12 @@ module.exports = async function handler(req, res) {
 
   } catch (error) {
     console.error('[HappyMonday] QuickBooks invoice error:', error);
+    if (supabase && req?.body?.orderId) {
+      await updateOrderQuickBooksSync(req.body.orderId, {
+        qb_sync_status: 'error',
+        qb_sync_error: error.message,
+      });
+    }
     return res.status(500).json({ error: error.message });
   }
 };

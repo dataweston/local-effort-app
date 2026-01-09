@@ -6,7 +6,7 @@ This guide explains how to connect your QuickBooks and Square accounts to the Lo
 
 The integration provides two key features:
 
-1. **QuickBooks Integration** - Receive invoices from Local Effort directly in your QuickBooks, and pay them using any QuickBooks payment method
+1. **QuickBooks Integration** - Receive bookkeeping copies of Local Effort invoices in QuickBooks
 2. **Square Inventory Sync** - Automatically update your Square POS inventory when you receive products from Local Effort
 
 ---
@@ -41,10 +41,10 @@ For invoices to sync properly, you should have a customer set up in QuickBooks:
 ### How It Works
 
 Once connected:
-- When Local Effort creates an invoice for you, it automatically appears in your QuickBooks
+- When Local Effort creates an invoice for you, it can be sent to your QuickBooks
 - The invoice includes all line items, quantities, and prices
-- You can pay the invoice directly from QuickBooks using any payment method (ACH, card, check, etc.)
-- Payment status syncs automatically
+- QuickBooks is for bookkeeping only; payments stay in Local Effort (Square/ACH/check)
+- Payment status does not sync from QuickBooks
 
 ---
 
