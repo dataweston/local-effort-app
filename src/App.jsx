@@ -68,6 +68,8 @@ const WinterDinnerPage = lazy(() => import('./pages/WinterDinnerPage'));
 const WinterPizzaPage = lazy(() => import('./pages/WinterPizzaPage'));
 const JanuaryMealsPage = lazy(() => import('./pages/JanuaryMealsPage'));
 const FullPageDemoPage = lazy(() => import('./pages/FullPageDemoPage'));
+const SmallEventsAdminRequestsPage = lazy(() => import('./pages/SmallEventsAdminRequestsPage'));
+const SmallEventsAdminAvailabilityPage = lazy(() => import('./pages/SmallEventsAdminAvailabilityPage'));
 
 const AppContent = () => {
   const location = useLocation();
@@ -223,6 +225,22 @@ const AppContent = () => {
                   element={
                     <AnimatedPage>
                       <FullPageDemoPage />
+                    </AnimatedPage>
+                  }
+                />
+                <Route
+                  path="/admin/small-events/requests"
+                  element={
+                    <AnimatedPage>
+                      <SmallEventsAdminRequestsPage />
+                    </AnimatedPage>
+                  }
+                />
+                <Route
+                  path="/admin/small-events/availability"
+                  element={
+                    <AnimatedPage>
+                      <SmallEventsAdminAvailabilityPage />
                     </AnimatedPage>
                   }
                 />

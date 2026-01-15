@@ -12,6 +12,143 @@ import {
   DialogTitle,
 } from '../components/ui/dialog';
 
+const SMALL_EVENT_CONFIG = {
+  dinner: {
+    label: 'Dinner party',
+    baseRate: 95,
+    minimumTotal: 850,
+    staffingGuestsPer: 8,
+    staffingHourly: 45,
+    staffingHours: 4,
+    rangeMin: 0.9,
+    rangeMax: 1.2,
+  },
+  weddings: {
+    label: 'Weddings',
+    baseRate: 140,
+    minimumTotal: 3200,
+    staffingGuestsPer: 12,
+    staffingHourly: 55,
+    staffingHours: 6,
+    rangeMin: 0.92,
+    rangeMax: 1.25,
+  },
+  holiday: {
+    label: 'Small events',
+    baseRate: 70,
+    minimumTotal: 1200,
+    staffingGuestsPer: 15,
+    staffingHourly: 40,
+    staffingHours: 4,
+    rangeMin: 0.9,
+    rangeMax: 1.18,
+  },
+};
+
+const EVENT_TYPES = Object.keys(SMALL_EVENT_CONFIG);
+const DEFAULT_DEPOSIT_PERCENT = 0.15;
+const ESTIMATE_LIFESPAN_DAYS = 5;
+const HOLD_WINDOW_HOURS = 24;
+
+const formatCurrency = (value, options = {}) => {
+  const {
+    minimumFractionDigits = 0,
+    maximumFractionDigits = 0,
+  } = options;
+  const safeValue = Number.isFinite(value) ? value : 0;
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    minimumFractionDigits,
+    maximumFractionDigits,
+  }).format(safeValue);
+};
+
+const centsToDollars = (value) => {
+  const cents = Number(value);
+  if (!Number.isFinite(cents)) return 0;
+  return cents / 100;
+};
+
+const toDateInputValue = (date) => {
+  if (!date) return '';
+  return new Date(date.getTime() - (date.getTimezoneOffset() * 60000)).toISOString().slice(0, 10);
+};
+
+const addDays = (date, days) => {
+  const next = new Date(date);
+  next.setDate(next.getDate() + days);
+  return next;
+};
+
+const createSmallEventDefaults = (type) => ({
+  type,
+  estimateId: '',
+  contactName: '',
+  contactEmail: '',
+  contactPhone: '',
+  eventDate: '',
+  eventTime: '',
+  alternateDates: '',
+  guestCount: '',
+  location: '',
+  serviceStyle: '',
+  menuNotes: '',
+  dietary: '',
+  rentals: '',
+  budgetRange: '',
+  notes: '',
+  courses: '',
+  plannerInfo: '',
+  celebrationType: '',
+  kitchenAccess: '',
+  wantsAccount: false,
+  accountEmail: '',
+  accountPassword: '',
+  expiresAt: '',
+  holdId: '',
+  holdSlotId: '',
+  holdUntil: '',
+  holdStatus: '',
+  depositOverridePercent: '',
+  depositOverrideAmount: '',
+  depositStatus: 'unpaid',
+  serverEstimate: null,
+  lastEditedAt: new Date().toISOString(),
+});
+
+const buildInitialAvailability = () => {
+  const today = new Date();
+  const makeSlot = (daysOut, type, status, notes = '') => ({
+    id: `slot-${type}-${daysOut}`,
+    date: toDateInputValue(addDays(today, daysOut)),
+    type,
+    status,
+    notes,
+    source: 'manual',
+  });
+
+  return [
+    makeSlot(4, 'dinner', 'open', 'Weeknight availability'),
+    makeSlot(6, 'holiday', 'open', 'Weeknight availability'),
+    makeSlot(8, 'dinner', 'blocked', 'Staffing hold'),
+    makeSlot(10, 'weddings', 'open', 'Preferred Saturday'),
+    makeSlot(12, 'holiday', 'open', 'Corporate-friendly'),
+    makeSlot(15, 'weddings', 'blocked', 'Venue conflict'),
+    makeSlot(18, 'dinner', 'open', 'Weekend window'),
+    makeSlot(21, 'holiday', 'open', 'Holiday week'),
+    makeSlot(24, 'weddings', 'open', 'Saturday or Sunday'),
+  ];
+};
+
+const SEMANTIC_UI_PALETTE = {
+  primary: '#FFC697',
+  secondary: '#66D3E7',
+  accent: '#21C8E7',
+  deep: '#2E5E67',
+  muted: '#7F9FA8',
+};
+
 const FullPageDemoPage = () => {
   const [activePage, setActivePage] = useState(0);
   const [images, setImages] = useState([]);
@@ -28,6 +165,25 @@ const FullPageDemoPage = () => {
   const containerRef = useRef(null);
   const [orderOpen, setOrderOpen] = useState(false);
   const [smallEventsDialog, setSmallEventsDialog] = useState(null);
+  const [smallEventForms, setSmallEventForms] = useState(() => ({
+    dinner: createSmallEventDefaults('dinner'),
+    weddings: createSmallEventDefaults('weddings'),
+    holiday: createSmallEventDefaults('holiday'),
+  }));
+  const [availabilitySlots, setAvailabilitySlots] = useState(() => buildInitialAvailability());
+  const [calendarHolds, setCalendarHolds] = useState([]);
+  const [isCalendarAdmin, setIsCalendarAdmin] = useState(false);
+  const [adminSlotDraft, setAdminSlotDraft] = useState({
+    date: '',
+    type: 'dinner',
+    status: 'open',
+    notes: '',
+    applyToAllTypes: false,
+  });
+  const [smallEventsSessionToken, setSmallEventsSessionToken] = useState('');
+  const [smallEventsSaving, setSmallEventsSaving] = useState(false);
+  const [smallEventsNotice, setSmallEventsNotice] = useState('');
+  const [availabilityLoading, setAvailabilityLoading] = useState(false);
   const [showWaitlistForm, setShowWaitlistForm] = useState(false);
   const [waitlistStatus, setWaitlistStatus] = useState('idle');
   const [waitlist, setWaitlist] = useState({
@@ -54,6 +210,964 @@ const FullPageDemoPage = () => {
     { id: 'local-pizza', label: 'Local Pizza' },
   ];
 
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const stored = window.localStorage.getItem('smallEventsSessionToken') || '';
+    if (stored) setSmallEventsSessionToken(stored);
+  }, []);
+
+  const getStoredAdminToken = () => {
+    if (typeof window === 'undefined') return '';
+    return window.localStorage.getItem('smallEventsAdminToken') || '';
+  };
+
+  const buildSmallEventsHeaders = (overrides = {}) => {
+    const headers = { 'Content-Type': 'application/json', ...overrides };
+    if (smallEventsSessionToken) {
+      headers.Authorization = `Bearer ${smallEventsSessionToken}`;
+    }
+    const adminToken = getStoredAdminToken();
+    if (adminToken) {
+      headers['x-admin-token'] = adminToken;
+    }
+    return headers;
+  };
+
+  const loadSmallEventsAvailability = async (type) => {
+    setAvailabilityLoading(true);
+    try {
+      const query = type ? `?type=${encodeURIComponent(type)}` : '';
+      const res = await fetch(`/api/small-events/availability${query}`);
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.error || 'Failed loading availability');
+      setAvailabilitySlots(Array.isArray(data?.slots) ? data.slots : []);
+      setCalendarHolds(Array.isArray(data?.holds) ? data.holds : []);
+    } catch (error) {
+      console.error('Small events availability load error:', error);
+    } finally {
+      setAvailabilityLoading(false);
+    }
+  };
+
+  const updateSmallEventForm = (type, field, value) => {
+    setSmallEventForms((prev) => ({
+      ...prev,
+      [type]: {
+        ...prev[type],
+        [field]: value,
+        lastEditedAt: new Date().toISOString(),
+      },
+    }));
+  };
+
+  const getSmallEventForm = (type) => smallEventForms[type] || createSmallEventDefaults(type);
+
+  const parseGuestCount = (value) => {
+    const parsed = parseInt(value, 10);
+    return Number.isNaN(parsed) ? 0 : parsed;
+  };
+
+  const getDepositPercent = (form) => {
+    const override = parseFloat(form.depositOverridePercent);
+    if (!Number.isNaN(override) && override > 0) return override / 100;
+    return DEFAULT_DEPOSIT_PERCENT;
+  };
+
+  const getEstimateExpiry = (form) => {
+    if (form?.expiresAt) {
+      const parsed = new Date(form.expiresAt);
+      if (!Number.isNaN(parsed.getTime())) return parsed;
+    }
+    const base = form?.lastEditedAt ? new Date(form.lastEditedAt) : new Date();
+    return addDays(base, ESTIMATE_LIFESPAN_DAYS);
+  };
+
+  const getEstimateForType = (type) => {
+    const config = SMALL_EVENT_CONFIG[type];
+    const form = getSmallEventForm(type);
+    if (!config) return null;
+    if (form.serverEstimate) return form.serverEstimate;
+
+    const guestCount = parseGuestCount(form.guestCount);
+    const staffingCount = guestCount ? Math.max(1, Math.ceil(guestCount / config.staffingGuestsPer)) : 0;
+    const staffingCost = staffingCount * config.staffingHourly * config.staffingHours;
+    const foodCost = guestCount * config.baseRate;
+    const subtotal = Math.max(foodCost + staffingCost, config.minimumTotal);
+    const estimateMin = subtotal * config.rangeMin;
+    const estimateMax = subtotal * config.rangeMax;
+    const depositPercent = getDepositPercent(form);
+    const depositAmount = form.depositOverrideAmount
+      ? Number(form.depositOverrideAmount)
+      : subtotal * depositPercent;
+
+    return {
+      guestCount,
+      staffingCount,
+      staffingCost,
+      subtotal,
+      estimateMin,
+      estimateMax,
+      depositPercent,
+      depositAmount,
+    };
+  };
+
+  const applyEstimateResponse = (type, estimate, hold) => {
+    if (!estimate) return;
+    const serverEstimate = {
+      guestCount: estimate.guestCount || 0,
+      staffingCount: estimate.staffingCount || 0,
+      staffingCost: centsToDollars(estimate.staffingCostCents || 0),
+      subtotal: centsToDollars(estimate.subtotalCents || 0),
+      estimateMin: centsToDollars(estimate.estimateMinCents || 0),
+      estimateMax: centsToDollars(estimate.estimateMaxCents || 0),
+      depositPercent: estimate.depositPercent ? estimate.depositPercent / 100 : DEFAULT_DEPOSIT_PERCENT,
+      depositAmount: centsToDollars(estimate.depositAmountCents || 0),
+    };
+    setSmallEventForms((prev) => ({
+      ...prev,
+      [type]: {
+        ...prev[type],
+        estimateId: estimate.id,
+        depositStatus: estimate.depositStatus || prev[type].depositStatus,
+        lastEditedAt: estimate.lastEditedAt || prev[type].lastEditedAt,
+        expiresAt: estimate.expiresAt || prev[type].expiresAt,
+        holdSlotId: hold?.slotId || prev[type].holdSlotId,
+        holdUntil: hold?.holdUntil || prev[type].holdUntil,
+        holdStatus: hold?.status || prev[type].holdStatus,
+        serverEstimate,
+      },
+    }));
+  };
+
+  const applyEstimateToForm = (type, estimate) => {
+    if (!estimate) return;
+    const serverEstimate = {
+      guestCount: estimate.guestCount || 0,
+      staffingCount: estimate.staffingCount || 0,
+      staffingCost: centsToDollars(estimate.staffingCostCents || 0),
+      subtotal: centsToDollars(estimate.subtotalCents || 0),
+      estimateMin: centsToDollars(estimate.estimateMinCents || 0),
+      estimateMax: centsToDollars(estimate.estimateMaxCents || 0),
+      depositPercent: estimate.depositPercent ? estimate.depositPercent / 100 : DEFAULT_DEPOSIT_PERCENT,
+      depositAmount: centsToDollars(estimate.depositAmountCents || 0),
+    };
+    setSmallEventForms((prev) => ({
+      ...prev,
+      [type]: {
+        ...prev[type],
+        estimateId: estimate.id,
+        contactName: estimate.contactName || '',
+        contactEmail: estimate.contactEmail || '',
+        contactPhone: estimate.contactPhone || '',
+        guestCount: estimate.guestCount || '',
+        eventDate: estimate.eventDate || '',
+        eventTime: estimate.eventTime || '',
+        alternateDates: estimate.alternateDates || '',
+        location: estimate.location || '',
+        serviceStyle: estimate.serviceStyle || '',
+        budgetRange: estimate.budgetRange || '',
+        menuNotes: estimate.menuNotes || '',
+        dietary: estimate.dietary || '',
+        rentals: estimate.rentals || '',
+        notes: estimate.notes || '',
+        courses: estimate.courses || '',
+        plannerInfo: estimate.plannerInfo || '',
+        celebrationType: estimate.celebrationType || '',
+        kitchenAccess: estimate.kitchenAccess || '',
+        depositStatus: estimate.depositStatus || prev[type].depositStatus,
+        lastEditedAt: estimate.lastEditedAt || prev[type].lastEditedAt,
+        expiresAt: estimate.expiresAt || prev[type].expiresAt,
+        holdSlotId: estimate.hold?.slotId || prev[type].holdSlotId,
+        holdUntil: estimate.hold?.holdUntil || prev[type].holdUntil,
+        holdStatus: estimate.hold?.status || prev[type].holdStatus,
+        serverEstimate,
+      },
+    }));
+  };
+
+  const saveEstimate = async (type, options = {}) => {
+    const form = getSmallEventForm(type);
+    setSmallEventsSaving(true);
+    setSmallEventsNotice('');
+    try {
+      const payload = {
+        estimateId: form.estimateId || undefined,
+        type,
+        contactName: form.contactName,
+        contactEmail: form.contactEmail,
+        contactPhone: form.contactPhone,
+        guestCount: form.guestCount,
+        eventDate: form.eventDate,
+        eventTime: form.eventTime,
+        alternateDates: form.alternateDates,
+        location: form.location,
+        serviceStyle: form.serviceStyle,
+        budgetRange: form.budgetRange,
+        menuNotes: form.menuNotes,
+        dietary: form.dietary,
+        rentals: form.rentals,
+        notes: form.notes,
+        courses: form.courses,
+        plannerInfo: form.plannerInfo,
+        celebrationType: form.celebrationType,
+        kitchenAccess: form.kitchenAccess,
+        depositOverridePercent: form.depositOverridePercent,
+        depositOverrideAmount: form.depositOverrideAmount,
+        accountEmail: form.accountEmail,
+        accountPassword: form.accountPassword,
+        wantsAccount: form.wantsAccount,
+        extend: options.extend || false,
+      };
+
+      const res = await fetch('/api/small-events/estimates', {
+        method: 'POST',
+        headers: buildSmallEventsHeaders(),
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.error || 'Failed to save estimate');
+
+      if (data?.sessionToken && typeof window !== 'undefined') {
+        window.localStorage.setItem('smallEventsSessionToken', data.sessionToken);
+        setSmallEventsSessionToken(data.sessionToken);
+      }
+
+      applyEstimateResponse(type, data?.estimate, data?.hold);
+      setSmallEventsNotice('Estimate saved.');
+      return data?.estimate || null;
+    } catch (error) {
+      console.error('Small events save error:', error);
+      setSmallEventsNotice(error.message || 'Unable to save estimate.');
+      return null;
+    } finally {
+      setSmallEventsSaving(false);
+    }
+  };
+
+  const loadLatestEstimate = async (type) => {
+    setSmallEventsNotice('');
+    try {
+      const res = await fetch('/api/small-events/estimates', {
+        headers: buildSmallEventsHeaders(),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.error || 'Failed to load saved estimates');
+      const items = Array.isArray(data?.items) ? data.items : [];
+      const match = items.find((item) => item.type === type);
+      if (!match) {
+        setSmallEventsNotice('No saved estimate found for this event type.');
+        return;
+      }
+      applyEstimateToForm(type, match);
+      setSmallEventsNotice('Loaded your saved estimate.');
+    } catch (error) {
+      console.error('Load estimate error:', error);
+      setSmallEventsNotice(error.message || 'Unable to load estimate.');
+    }
+  };
+
+  const getHoldForSlot = (slotId) => {
+    if (!slotId) return null;
+    const hold = calendarHolds.find((item) => item.slotId === slotId);
+    if (!hold) return null;
+    const holdTime = new Date(hold.holdUntil).getTime();
+    if (hold.status !== 'confirmed' && holdTime < Date.now()) return null;
+    return hold;
+  };
+
+  const holdSlot = async (slotId, type) => {
+    if (!slotId) return;
+    const form = getSmallEventForm(type);
+    let estimateId = form.estimateId;
+    if (!estimateId) {
+      const saved = await saveEstimate(type);
+      estimateId = saved?.id || '';
+    }
+    if (!estimateId) {
+      setSmallEventsNotice('Save the estimate before holding a date.');
+      return;
+    }
+
+    try {
+      const res = await fetch('/api/small-events/holds', {
+        method: 'POST',
+        headers: buildSmallEventsHeaders(),
+        body: JSON.stringify({ estimateId, slotId }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.error || 'Unable to hold slot');
+      applyEstimateResponse(type, data?.estimate, data?.hold);
+      await loadSmallEventsAvailability();
+    } catch (error) {
+      console.error('Hold slot error:', error);
+      setSmallEventsNotice(error.message || 'Unable to hold slot.');
+    }
+  };
+
+  const releaseHold = async (_slotId, type) => {
+    const form = getSmallEventForm(type);
+    if (!form.estimateId) return;
+    try {
+      const res = await fetch(`/api/small-events/holds?estimateId=${encodeURIComponent(form.estimateId)}`, {
+        method: 'DELETE',
+        headers: buildSmallEventsHeaders(),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.error || 'Unable to release hold');
+      applyEstimateResponse(type, data?.estimate, null);
+      await loadSmallEventsAvailability();
+    } catch (error) {
+      console.error('Release hold error:', error);
+      setSmallEventsNotice(error.message || 'Unable to release hold.');
+    }
+  };
+
+  const startDepositCheckout = async (type) => {
+    const form = getSmallEventForm(type);
+    if (!form.estimateId) {
+      setSmallEventsNotice('Save the estimate before paying a deposit.');
+      return;
+    }
+    try {
+      const res = await fetch('/api/small-events/checkout', {
+        method: 'POST',
+        headers: buildSmallEventsHeaders(),
+        body: JSON.stringify({ estimateId: form.estimateId }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.error || 'Failed to start checkout');
+      if (data?.url) {
+        window.open(data.url, '_blank', 'noopener');
+      }
+      setSmallEventForms((prev) => ({
+        ...prev,
+        [type]: {
+          ...prev[type],
+          depositStatus: 'pending',
+        },
+      }));
+    } catch (error) {
+      console.error('Deposit checkout error:', error);
+      setSmallEventsNotice(error.message || 'Unable to start deposit checkout.');
+    }
+  };
+
+  const extendEstimate = async (type) => {
+    await saveEstimate(type, { extend: true });
+  };
+
+  const updateAdminDraft = (field, value) => {
+    setAdminSlotDraft((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const applyAdminAvailability = async () => {
+    if (!adminSlotDraft.date) return;
+    try {
+      const res = await fetch('/api/small-events/availability', {
+        method: 'POST',
+        headers: buildSmallEventsHeaders(),
+        body: JSON.stringify(adminSlotDraft),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.error || 'Failed to update availability');
+      await loadSmallEventsAvailability();
+    } catch (error) {
+      console.error('Admin availability update error:', error);
+      setSmallEventsNotice(error.message || 'Unable to update availability.');
+    }
+  };
+
+  const clearExpiredHolds = async () => {
+    try {
+      const res = await fetch('/api/small-events/holds/cleanup', {
+        method: 'POST',
+        headers: buildSmallEventsHeaders(),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.error || 'Failed to clear holds');
+      await loadSmallEventsAvailability();
+    } catch (error) {
+      console.error('Hold cleanup error:', error);
+      setSmallEventsNotice(error.message || 'Unable to clear holds.');
+    }
+  };
+
+  const formatSlotDate = (value) => {
+    if (!value) return 'TBD';
+    const [year, month, day] = value.split('-').map(Number);
+    if (!year || !month || !day) return value;
+    const date = new Date(year, month - 1, day);
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  };
+
+  const renderSmallEventDialogContent = (type) => {
+    const config = SMALL_EVENT_CONFIG[type];
+    const form = getSmallEventForm(type);
+    const estimate = getEstimateForType(type);
+    const expiresAt = getEstimateExpiry(form);
+    const fallbackHold = form.estimateId
+      ? calendarHolds.find((hold) => hold.estimateId === form.estimateId)
+      : null;
+    const holdsOnSlot = getHoldForSlot(form.holdSlotId) || fallbackHold;
+    const slots = availabilitySlots
+      .filter((slot) => slot.type === type)
+      .sort((a, b) => a.date.localeCompare(b.date));
+    const depositPercent = getDepositPercent(form);
+    const depositLabel = form.depositOverrideAmount
+      ? `${formatCurrency(Number(form.depositOverrideAmount), { minimumFractionDigits: 2, maximumFractionDigits: 2 })} flat`
+      : `${Math.round(depositPercent * 100)}%`;
+
+    if (!config) return null;
+
+    return (
+      <div className="grid gap-6 md:grid-cols-[minmax(0,1fr)_260px]">
+        <div className="space-y-6">
+          <div className="rounded-lg border border-slate-200 bg-white p-4">
+            <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">Contact</div>
+            <div className="mt-3 grid gap-3 md:grid-cols-2">
+              <div>
+                <label className="text-xs font-semibold text-slate-600">Name</label>
+                <input
+                  type="text"
+                  className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
+                  value={form.contactName}
+                  onChange={(e) => updateSmallEventForm(type, 'contactName', e.target.value)}
+                  placeholder="Full name"
+                />
+              </div>
+              <div>
+                <label className="text-xs font-semibold text-slate-600">Email</label>
+                <input
+                  type="email"
+                  className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
+                  value={form.contactEmail}
+                  onChange={(e) => updateSmallEventForm(type, 'contactEmail', e.target.value)}
+                  placeholder="name@example.com"
+                />
+              </div>
+              <div>
+                <label className="text-xs font-semibold text-slate-600">Phone</label>
+                <input
+                  type="tel"
+                  className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
+                  value={form.contactPhone}
+                  onChange={(e) => updateSmallEventForm(type, 'contactPhone', e.target.value)}
+                  placeholder="(555) 555-5555"
+                />
+              </div>
+              <div>
+                <label className="text-xs font-semibold text-slate-600">Guest count</label>
+                <input
+                  type="number"
+                  min="1"
+                  className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
+                  value={form.guestCount}
+                  onChange={(e) => updateSmallEventForm(type, 'guestCount', e.target.value)}
+                  placeholder="ex: 18"
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="rounded-lg border border-slate-200 bg-white p-4">
+            <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">Event basics</div>
+            <div className="mt-3 grid gap-3 md:grid-cols-2">
+              <div>
+                <label className="text-xs font-semibold text-slate-600">Preferred date</label>
+                <input
+                  type="date"
+                  className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
+                  value={form.eventDate}
+                  onChange={(e) => updateSmallEventForm(type, 'eventDate', e.target.value)}
+                />
+              </div>
+              <div>
+                <label className="text-xs font-semibold text-slate-600">Preferred time window</label>
+                <input
+                  type="text"
+                  className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
+                  value={form.eventTime}
+                  onChange={(e) => updateSmallEventForm(type, 'eventTime', e.target.value)}
+                  placeholder="ex: 6:30-9:30 PM"
+                />
+              </div>
+              <div className="md:col-span-2">
+                <label className="text-xs font-semibold text-slate-600">Alternate dates</label>
+                <input
+                  type="text"
+                  className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
+                  value={form.alternateDates}
+                  onChange={(e) => updateSmallEventForm(type, 'alternateDates', e.target.value)}
+                  placeholder="Add 2-3 backups"
+                />
+              </div>
+              <div className="md:col-span-2">
+                <label className="text-xs font-semibold text-slate-600">Location</label>
+                <input
+                  type="text"
+                  className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
+                  value={form.location}
+                  onChange={(e) => updateSmallEventForm(type, 'location', e.target.value)}
+                  placeholder="Address or venue name"
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="rounded-lg border border-slate-200 bg-white p-4">
+            <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">Menu and service</div>
+            <div className="mt-3 grid gap-3 md:grid-cols-2">
+              <div>
+                <label className="text-xs font-semibold text-slate-600">Service style</label>
+                <select
+                  className="mt-1 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm"
+                  value={form.serviceStyle}
+                  onChange={(e) => updateSmallEventForm(type, 'serviceStyle', e.target.value)}
+                >
+                  <option value="">Select style</option>
+                  <option value="plated">Plated</option>
+                  <option value="family">Family-style</option>
+                  <option value="buffet">Buffet</option>
+                  <option value="dropoff">Drop-off</option>
+                </select>
+              </div>
+              <div>
+                <label className="text-xs font-semibold text-slate-600">Budget range</label>
+                <select
+                  className="mt-1 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm"
+                  value={form.budgetRange}
+                  onChange={(e) => updateSmallEventForm(type, 'budgetRange', e.target.value)}
+                >
+                  <option value="">Select range</option>
+                  <option value="low">$ - value-focused</option>
+                  <option value="mid">$$ - mid-range</option>
+                  <option value="high">$$$ - premium</option>
+                </select>
+              </div>
+              <div className="md:col-span-2">
+                <label className="text-xs font-semibold text-slate-600">Menu notes</label>
+                <textarea
+                  className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
+                  rows={2}
+                  value={form.menuNotes}
+                  onChange={(e) => updateSmallEventForm(type, 'menuNotes', e.target.value)}
+                  placeholder="Cuisine, courses, favorite ingredients"
+                />
+              </div>
+              <div className="md:col-span-2">
+                <label className="text-xs font-semibold text-slate-600">Dietary notes</label>
+                <textarea
+                  className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
+                  rows={2}
+                  value={form.dietary}
+                  onChange={(e) => updateSmallEventForm(type, 'dietary', e.target.value)}
+                  placeholder="Allergies, restrictions, medical notes"
+                />
+              </div>
+              <div className="md:col-span-2">
+                <label className="text-xs font-semibold text-slate-600">Rentals or staffing needs</label>
+                <textarea
+                  className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
+                  rows={2}
+                  value={form.rentals}
+                  onChange={(e) => updateSmallEventForm(type, 'rentals', e.target.value)}
+                  placeholder="Rentals, bar service, cleanup, extra staff"
+                />
+              </div>
+            </div>
+          </div>
+
+          {type === 'dinner' && (
+            <div className="rounded-lg border border-slate-200 bg-white p-4">
+              <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">Dinner specifics</div>
+              <div className="mt-3 grid gap-3 md:grid-cols-2">
+                <div>
+                  <label className="text-xs font-semibold text-slate-600">Course count</label>
+                  <select
+                    className="mt-1 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm"
+                    value={form.courses}
+                    onChange={(e) => updateSmallEventForm(type, 'courses', e.target.value)}
+                  >
+                    <option value="">Select</option>
+                    <option value="3">3 courses</option>
+                    <option value="4">4 courses</option>
+                    <option value="5">5+ courses</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="text-xs font-semibold text-slate-600">Kitchen access</label>
+                  <input
+                    type="text"
+                    className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
+                    value={form.kitchenAccess}
+                    onChange={(e) => updateSmallEventForm(type, 'kitchenAccess', e.target.value)}
+                    placeholder="Full kitchen, limited oven, etc."
+                  />
+                </div>
+              </div>
+            </div>
+          )}
+
+          {type === 'weddings' && (
+            <div className="rounded-lg border border-slate-200 bg-white p-4">
+              <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">Wedding details</div>
+              <div className="mt-3 grid gap-3 md:grid-cols-2">
+                <div>
+                  <label className="text-xs font-semibold text-slate-600">Planner or point of contact</label>
+                  <input
+                    type="text"
+                    className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
+                    value={form.plannerInfo}
+                    onChange={(e) => updateSmallEventForm(type, 'plannerInfo', e.target.value)}
+                    placeholder="Planner name or role"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-semibold text-slate-600">Celebration type</label>
+                  <input
+                    type="text"
+                    className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
+                    value={form.celebrationType}
+                    onChange={(e) => updateSmallEventForm(type, 'celebrationType', e.target.value)}
+                    placeholder="Rehearsal, reception, late-night bites"
+                  />
+                </div>
+              </div>
+            </div>
+          )}
+
+          {type === 'holiday' && (
+            <div className="rounded-lg border border-slate-200 bg-white p-4">
+              <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">Event details</div>
+              <div className="mt-3 grid gap-3 md:grid-cols-2">
+                <div>
+                  <label className="text-xs font-semibold text-slate-600">Event type</label>
+                  <input
+                    type="text"
+                    className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
+                    value={form.celebrationType}
+                    onChange={(e) => updateSmallEventForm(type, 'celebrationType', e.target.value)}
+                    placeholder="Holiday party, corporate event, birthday"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-semibold text-slate-600">Setup needs</label>
+                  <input
+                    type="text"
+                    className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
+                    value={form.kitchenAccess}
+                    onChange={(e) => updateSmallEventForm(type, 'kitchenAccess', e.target.value)}
+                    placeholder="Buffet table, heating, power"
+                  />
+                </div>
+              </div>
+            </div>
+          )}
+
+          <div className="rounded-lg border border-slate-200 bg-white p-4">
+            <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">Save estimate</div>
+            <div className="mt-3 grid gap-3 md:grid-cols-2">
+              <div className="md:col-span-2">
+                <label className="text-xs font-semibold text-slate-600">Send me a save link</label>
+                <input
+                  type="email"
+                  className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
+                  value={form.accountEmail}
+                  onChange={(e) => updateSmallEventForm(type, 'accountEmail', e.target.value)}
+                  placeholder="email for save link"
+                />
+              </div>
+              <label className="md:col-span-2 flex items-center gap-2 text-xs text-slate-600">
+                <input
+                  type="checkbox"
+                  checked={form.wantsAccount}
+                  onChange={(e) => updateSmallEventForm(type, 'wantsAccount', e.target.checked)}
+                />
+                Create an account now to edit anytime
+              </label>
+              {form.wantsAccount && (
+                <>
+                  <div>
+                    <label className="text-xs font-semibold text-slate-600">Account email</label>
+                    <input
+                      type="email"
+                      className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
+                      value={form.accountEmail}
+                      onChange={(e) => updateSmallEventForm(type, 'accountEmail', e.target.value)}
+                      placeholder="name@example.com"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs font-semibold text-slate-600">Password</label>
+                    <input
+                      type="password"
+                      className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
+                      value={form.accountPassword}
+                      onChange={(e) => updateSmallEventForm(type, 'accountPassword', e.target.value)}
+                      placeholder="Create a password"
+                    />
+                  </div>
+                </>
+              )}
+            </div>
+            <div className="mt-4 flex flex-wrap gap-2">
+              <button
+                type="button"
+                className="rounded-md bg-slate-900 px-4 py-2 text-xs font-semibold text-white hover:bg-slate-800 disabled:bg-slate-300"
+                onClick={() => saveEstimate(type)}
+                disabled={smallEventsSaving}
+              >
+                {smallEventsSaving ? 'Saving...' : 'Save estimate'}
+              </button>
+              <button
+                type="button"
+                className="rounded-md border border-slate-300 px-4 py-2 text-xs font-semibold text-slate-700 hover:border-slate-400"
+                onClick={() => extendEstimate(type)}
+              >
+                Extend 5 days
+              </button>
+              <button
+                type="button"
+                className="rounded-md border border-slate-300 px-4 py-2 text-xs font-semibold text-slate-700 hover:border-slate-400"
+                onClick={() => loadLatestEstimate(type)}
+              >
+                Load saved estimate
+              </button>
+            </div>
+            {smallEventsNotice && (
+              <div className="mt-2 text-xs text-slate-600">{smallEventsNotice}</div>
+            )}
+            <div className="mt-2 text-xs text-slate-500">
+              Estimate expires on {expiresAt.toLocaleDateString()} (5 days from last update).
+            </div>
+          </div>
+        </div>
+
+        <div className="space-y-4">
+          <div className="rounded-lg border border-slate-200 bg-white p-4">
+            <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">Estimate range</div>
+            <div className="mt-2 text-2xl font-bold text-slate-900">
+              {estimate
+                ? `${formatCurrency(estimate.estimateMin)} - ${formatCurrency(estimate.estimateMax)}`
+                : formatCurrency(0)}
+            </div>
+            <div className="mt-2 text-xs text-slate-600">
+              Based on {estimate?.guestCount || 0} guests, {estimate?.staffingCount || 0} staff.
+            </div>
+            <div className="text-xs text-slate-500">
+              Rentals, tax, and bar packages are estimated separately.
+            </div>
+          </div>
+
+          <div className="rounded-lg border border-slate-200 bg-white p-4">
+            <div className="text-sm font-semibold text-slate-900">Deposit and booking</div>
+            <div className="mt-2 text-xs text-slate-600">
+              {depositLabel} deposit holds your date for {HOLD_WINDOW_HOURS} hours.
+            </div>
+            <div className="mt-2 text-lg font-semibold text-slate-900">
+              Deposit due:{' '}
+              {estimate
+                ? formatCurrency(estimate.depositAmount, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+                : formatCurrency(0, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            </div>
+            <button
+              type="button"
+              className="mt-3 w-full rounded-md bg-slate-900 px-4 py-2 text-xs font-semibold text-white hover:bg-slate-800 disabled:bg-slate-300"
+              onClick={() => startDepositCheckout(type)}
+              disabled={!holdsOnSlot || form.depositStatus === 'paid'}
+            >
+              {form.depositStatus === 'paid'
+                ? 'Deposit received'
+                : form.depositStatus === 'pending'
+                  ? 'Deposit started'
+                  : 'Pay deposit via Square'}
+            </button>
+            <div className="mt-2 text-xs text-slate-500">
+              {holdsOnSlot
+                ? holdsOnSlot.status === 'confirmed'
+                  ? 'Date confirmed. Final balance due before service.'
+                  : `Hold active until ${new Date(holdsOnSlot.holdUntil).toLocaleString()}.`
+                : 'No date hold yet. Select an available slot below.'}
+            </div>
+          </div>
+
+          <div className="rounded-lg border border-slate-200 bg-white p-4">
+            <div className="text-sm font-semibold text-slate-900">Availability</div>
+            <div className="mt-3 space-y-2 text-xs text-slate-700">
+              {availabilityLoading && <div>Loading availability...</div>}
+              {!availabilityLoading && slots.length === 0 && <div>No slots listed yet.</div>}
+              {!availabilityLoading && slots.map((slot) => {
+                const hold = getHoldForSlot(slot.id);
+                const status = hold ? hold.status : slot.status;
+                const holdIsMine = hold && form.estimateId && hold.estimateId === form.estimateId;
+                return (
+                  <div
+                    key={slot.id}
+                    className="flex items-center justify-between rounded-md border border-slate-200 bg-slate-50 px-3 py-2"
+                  >
+                    <div>
+                      <div className="font-semibold text-slate-900">{formatSlotDate(slot.date)}</div>
+                      <div className="text-xs text-slate-500">
+                        {status === 'open' && 'Open'}
+                        {status === 'blocked' && 'Blocked'}
+                        {status === 'held' && (holdIsMine ? 'Hold pending (your request)' : 'Hold pending')}
+                        {status === 'confirmed' && 'Confirmed'}
+                        {slot.notes ? ` · ${slot.notes}` : ''}
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {status === 'open' && (
+                        <button
+                          type="button"
+                          className="rounded-md border border-slate-300 px-2 py-1 text-xs font-semibold text-slate-700 hover:border-slate-400"
+                          onClick={() => holdSlot(slot.id, type)}
+                        >
+                          Hold 24h
+                        </button>
+                      )}
+                      {holdIsMine && status !== 'confirmed' && (
+                        <button
+                          type="button"
+                          className="rounded-md border border-slate-300 px-2 py-1 text-xs font-semibold text-slate-700 hover:border-slate-400"
+                          onClick={() => releaseHold(slot.id, type)}
+                        >
+                          Release
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+            <div className="mt-2 text-xs text-slate-500">
+              Manual availability (future sync to Google or other calendars).
+            </div>
+          </div>
+
+          <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
+            <div className="flex items-center justify-between">
+              <div className="text-sm font-semibold text-slate-900">Admin controls</div>
+              <label className="flex items-center gap-2 text-xs text-slate-600">
+                <input
+                  type="checkbox"
+                  checked={isCalendarAdmin}
+                  onChange={(e) => setIsCalendarAdmin(e.target.checked)}
+                />
+                Admin mode
+              </label>
+            </div>
+            {isCalendarAdmin && (
+              <div className="mt-3 space-y-3 text-xs text-slate-700">
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="font-semibold text-slate-600">Date</label>
+                    <input
+                      type="date"
+                      className="mt-1 w-full rounded-md border border-slate-300 bg-white px-2 py-1 text-xs"
+                      value={adminSlotDraft.date}
+                      onChange={(e) => updateAdminDraft('date', e.target.value)}
+                    />
+                  </div>
+                  <div>
+                    <label className="font-semibold text-slate-600">Type</label>
+                    <select
+                      className="mt-1 w-full rounded-md border border-slate-300 bg-white px-2 py-1 text-xs"
+                      value={adminSlotDraft.type}
+                      onChange={(e) => updateAdminDraft('type', e.target.value)}
+                    >
+                      {EVENT_TYPES.map((eventType) => (
+                        <option key={eventType} value={eventType}>
+                          {SMALL_EVENT_CONFIG[eventType].label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="font-semibold text-slate-600">Status</label>
+                    <select
+                      className="mt-1 w-full rounded-md border border-slate-300 bg-white px-2 py-1 text-xs"
+                      value={adminSlotDraft.status}
+                      onChange={(e) => updateAdminDraft('status', e.target.value)}
+                    >
+                      <option value="open">Open</option>
+                      <option value="blocked">Blocked</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="font-semibold text-slate-600">Notes</label>
+                    <input
+                      type="text"
+                      className="mt-1 w-full rounded-md border border-slate-300 bg-white px-2 py-1 text-xs"
+                      value={adminSlotDraft.notes}
+                      onChange={(e) => updateAdminDraft('notes', e.target.value)}
+                      placeholder="Reason or label"
+                    />
+                  </div>
+                </div>
+                <label className="flex items-center gap-2 text-xs text-slate-600">
+                  <input
+                    type="checkbox"
+                    checked={adminSlotDraft.applyToAllTypes}
+                    onChange={(e) => updateAdminDraft('applyToAllTypes', e.target.checked)}
+                  />
+                  Apply to all event types
+                </label>
+                <button
+                  type="button"
+                  className="w-full rounded-md bg-slate-900 px-3 py-2 text-xs font-semibold text-white hover:bg-slate-800"
+                  onClick={applyAdminAvailability}
+                >
+                  Save availability update
+                </button>
+                <button
+                  type="button"
+                  className="w-full rounded-md border border-slate-300 px-3 py-2 text-xs font-semibold text-slate-700 hover:border-slate-400"
+                  onClick={clearExpiredHolds}
+                >
+                  Clear expired holds
+                </button>
+                <div className="rounded-md border border-slate-200 bg-white px-3 py-2">
+                  <div className="text-xs font-semibold text-slate-600">Deposit override</div>
+                  <div className="mt-2 grid grid-cols-2 gap-2">
+                    <div>
+                      <label className="text-[11px] text-slate-500">Percent</label>
+                      <input
+                        type="number"
+                        min="1"
+                        max="100"
+                        className="mt-1 w-full rounded-md border border-slate-300 px-2 py-1 text-xs"
+                        value={form.depositOverridePercent}
+                        onChange={(e) => updateSmallEventForm(type, 'depositOverridePercent', e.target.value)}
+                        placeholder="15"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-[11px] text-slate-500">Flat amount</label>
+                      <input
+                        type="number"
+                        min="0"
+                        className="mt-1 w-full rounded-md border border-slate-300 px-2 py-1 text-xs"
+                        value={form.depositOverrideAmount}
+                        onChange={(e) => updateSmallEventForm(type, 'depositOverrideAmount', e.target.value)}
+                        placeholder="1500"
+                      />
+                    </div>
+                  </div>
+                </div>
+                <div className="text-[11px] text-slate-500">
+                  Manual slots now. Ready for Google calendar sync later.
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   const handlePageChange = (index) => {
     setActivePage(index);
     // Reset all button styles when page changes
@@ -61,7 +1175,7 @@ const FullPageDemoPage = () => {
       const pageIndex = parseInt(btn.getAttribute('data-page-index'));
       if (pageIndex !== index) {
         btn.style.backgroundColor = 'transparent';
-        btn.style.color = '#2F2722';
+        btn.style.color = SEMANTIC_UI_PALETTE.deep;
       }
     });
   };
@@ -108,6 +1222,13 @@ const FullPageDemoPage = () => {
   useEffect(() => {
     fetchImages();
   }, [fetchImages]);
+
+  useEffect(() => {
+    if (smallEventsDialog) {
+      loadSmallEventsAvailability();
+      setSmallEventsNotice('');
+    }
+  }, [smallEventsDialog]);
 
   useEffect(() => {
     let abort = false;
@@ -414,7 +1535,7 @@ const FullPageDemoPage = () => {
   return (
     <>
       {/* Fixed Navigation Bar */}
-      <nav className="fixed top-0 left-0 right-0 z-50 shadow-sm" style={{ backgroundColor: '#D1D8E0', borderBottom: '1px solid #C1C7CF' }}>
+      <nav className="fixed top-0 left-0 right-0 z-50 shadow-sm" style={{ backgroundColor: SEMANTIC_UI_PALETTE.primary, borderBottom: `1px solid ${SEMANTIC_UI_PALETTE.muted}` }}>
         <div className="flex items-center justify-between px-6 py-4">
           <button
             onClick={() => navigateToPage(0)}
@@ -423,7 +1544,7 @@ const FullPageDemoPage = () => {
             <motion.span
               className="text-2xl font-bold tracking-tight"
               style={{ 
-                color: '#2F2722', 
+                color: SEMANTIC_UI_PALETTE.deep, 
                 fontFamily: "'National Park', 'General Sans', sans-serif",
                 fontWeight: 700,
                 letterSpacing: '-0.02em'
@@ -433,7 +1554,7 @@ const FullPageDemoPage = () => {
             >
               Local Effort
             </motion.span>
-            <span className="text-sm font-medium" style={{ color: '#2F2722', fontFamily: "'Office Code Pro', monospace" }}>
+            <span className="text-sm font-medium" style={{ color: SEMANTIC_UI_PALETTE.deep, fontFamily: "'Office Code Pro', monospace" }}>
               always mostly local
             </span>
           </button>
@@ -449,20 +1570,20 @@ const FullPageDemoPage = () => {
                   onClick={() => navigateToPage(index + 1)}
                   className="px-4 py-2 rounded-md text-sm font-medium transition-all group"
                   style={{
-                    backgroundColor: isActive ? '#1a1a1a' : 'transparent',
-                    color: isActive ? '#ffffff' : '#1a1a1a',
+                    backgroundColor: isActive ? SEMANTIC_UI_PALETTE.deep : 'transparent',
+                    color: isActive ? SEMANTIC_UI_PALETTE.primary : SEMANTIC_UI_PALETTE.deep,
                     fontFamily: "'Office Code Pro', monospace",
                   }}
                   onMouseEnter={(e) => {
                     if (!isActive) {
-                      e.currentTarget.style.backgroundColor = '#2F2722';
-                      e.currentTarget.style.color = '#ffffff';
+                      e.currentTarget.style.backgroundColor = SEMANTIC_UI_PALETTE.accent;
+                      e.currentTarget.style.color = SEMANTIC_UI_PALETTE.deep;
                     }
                   }}
                   onMouseLeave={(e) => {
                     if (!isActive) {
                       e.currentTarget.style.backgroundColor = 'transparent';
-                      e.currentTarget.style.color = '#1a1a1a';
+                      e.currentTarget.style.color = SEMANTIC_UI_PALETTE.deep;
                     }
                   }}
                 >
@@ -483,16 +1604,16 @@ const FullPageDemoPage = () => {
         {/* Page 1: Home - Gallery */}
         <FullPageSection
           id="home"
-          style={{ backgroundColor: '#D1D8E0' }}
+          style={{ backgroundColor: SEMANTIC_UI_PALETTE.primary }}
           animation="fadeScale"
         >
           <div className="w-full h-full overflow-y-auto pt-20">
             {loading ? (
-              <div className="text-center py-20" style={{ color: '#2F2722' }}>
+              <div className="text-center py-20" style={{ color: SEMANTIC_UI_PALETTE.deep }}>
                 Loading images...
               </div>
             ) : images.length === 0 ? (
-              <div className="text-center py-20" style={{ color: '#2F2722' }}>
+              <div className="text-center py-20" style={{ color: SEMANTIC_UI_PALETTE.deep }}>
                 No images found.
               </div>
             ) : (
@@ -585,7 +1706,7 @@ const FullPageDemoPage = () => {
         {/* Page 2: Weekly Meals */}
         <FullPageSection
           id="weekly-meals"
-          style={{ backgroundColor: '#E6EBF2' }}
+          style={{ backgroundColor: SEMANTIC_UI_PALETTE.secondary }}
         >
           <div className="relative h-full pt-20">
             <div className="flex items-start">
@@ -602,7 +1723,7 @@ const FullPageDemoPage = () => {
                 <div
                   className="line-through group-hover:italic"
                   style={{
-                    color: '#2F2722',
+                    color: SEMANTIC_UI_PALETTE.deep,
                     fontFamily: "'Office Code Pro', monospace",
                     fontSize: '18px',
                     fontWeight: 600,
@@ -617,7 +1738,7 @@ const FullPageDemoPage = () => {
                   aria-disabled="true"
                   style={{
                     marginTop: '12px',
-                    color: '#1a1a1a',
+                    color: SEMANTIC_UI_PALETTE.deep,
                     fontFamily: "'Office Code Pro', monospace",
                     fontSize: '16px',
                     fontWeight: 600,
@@ -635,7 +1756,7 @@ const FullPageDemoPage = () => {
                   marginTop: '72px',
                   marginLeft: '24px',
                   marginRight: '24px',
-                  color: '#2F2722',
+                  color: SEMANTIC_UI_PALETTE.deep,
                   fontSize: '24px',
                 }}
                 animate={{ x: [0, 10, 0] }}
@@ -680,7 +1801,7 @@ const FullPageDemoPage = () => {
                     <div
                       style={{
                         fontFamily: "'Yomogi', cursive",
-                        color: '#2F2722',
+                        color: SEMANTIC_UI_PALETTE.deep,
                         fontSize: '22px',
                         lineHeight: 1.5,
                       }}
@@ -719,7 +1840,7 @@ const FullPageDemoPage = () => {
         {/* Page 3: Small Events */}
         <FullPageSection
           id="small-events"
-          style={{ backgroundColor: '#D1D8E0' }}
+          style={{ backgroundColor: SEMANTIC_UI_PALETTE.accent }}
         >
           <div className="relative w-full h-full">
             <img
@@ -776,7 +1897,7 @@ const FullPageDemoPage = () => {
         {/* Page 4: For Businesses */}
         <FullPageSection
           id="for-businesses"
-          style={{ backgroundColor: '#E6EBF2' }}
+          style={{ backgroundColor: SEMANTIC_UI_PALETTE.deep }}
         >
           <div className="h-full pt-20" />
         </FullPageSection>
@@ -784,14 +1905,14 @@ const FullPageDemoPage = () => {
         {/* Page 5: About */}
         <FullPageSection
           id="about"
-          style={{ backgroundColor: '#D1D8E0' }}
+          style={{ backgroundColor: SEMANTIC_UI_PALETTE.muted }}
         >
           <div className="relative w-full h-full">
             <img
               src="https://res.cloudinary.com/dokyhfvyd/image/upload/c_limit,f_auto,q_auto,w_1600/jo9pxtjng8zpt4yo4rcz?_a=BAMAK+eA0"
               alt="About Local Effort"
               className="w-full h-full object-contain"
-              style={{ objectPosition: 'center', backgroundColor: '#D1D8E0' }}
+              style={{ objectPosition: 'center', backgroundColor: SEMANTIC_UI_PALETTE.muted }}
             />
           </div>
         </FullPageSection>
@@ -799,9 +1920,29 @@ const FullPageDemoPage = () => {
         {/* Page 6: Local Pizza */}
         <FullPageSection
           id="local-pizza"
-          style={{ backgroundColor: '#E6EBF2' }}
+          style={{ backgroundColor: SEMANTIC_UI_PALETTE.primary }}
         >
-          <div className="h-full pt-20" />
+          <div className="relative w-full h-full pt-20">
+            <img
+              src="/gallery/5Z0A5737-Edit.jpg"
+              alt="Local pizza"
+              className="absolute inset-0 h-full w-full object-cover"
+              style={{ objectPosition: 'center' }}
+            />
+            <div className="relative z-10 flex h-full items-end px-8 pb-16">
+              <div
+                className="max-w-lg rounded-lg border border-white/60 bg-white/85 p-5 text-slate-900 shadow-lg"
+                style={{ fontFamily: "'Office Code Pro', monospace" }}
+              >
+                <div className="text-xs font-semibold uppercase tracking-wide text-slate-600">Local pizza</div>
+                <div className="mt-2 text-lg font-semibold">Wood-fired pizza for parties and pop-ups.</div>
+                <div className="mt-2 text-sm text-slate-700">
+                  We bring the oven, the local ingredients, and the crew. Perfect for birthdays, patios, and
+                  neighborhood gatherings.
+                </div>
+              </div>
+            </div>
+          </div>
         </FullPageSection>
       </FullPageContainer>
 
@@ -898,44 +2039,38 @@ const FullPageDemoPage = () => {
       </Dialog>
 
       <Dialog open={smallEventsDialog === 'dinner'} onOpenChange={(open) => setSmallEventsDialog(open ? 'dinner' : null)}>
-        <DialogContent className="sm:max-w-[520px]">
+        <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-[980px]">
           <DialogHeader>
           <DialogTitle>Dinner party in my home</DialogTitle>
             <DialogDescription>
-              Demo info for a private in-home dinner. We&apos;ll customize this later.
+              Chef-led, multi-course dinners with seasonal menus, staffing, and a 15% deposit to hold the date.
             </DialogDescription>
           </DialogHeader>
-          <div className="text-sm text-slate-700">
-            Chef-led, multi-course dinner for small groups with seasonal menus and on-site service.
-          </div>
+          {renderSmallEventDialogContent('dinner')}
         </DialogContent>
       </Dialog>
 
       <Dialog open={smallEventsDialog === 'weddings'} onOpenChange={(open) => setSmallEventsDialog(open ? 'weddings' : null)}>
-        <DialogContent className="sm:max-w-[520px]">
+        <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-[980px]">
           <DialogHeader>
             <DialogTitle>Weddings</DialogTitle>
             <DialogDescription>
-              Demo info for wedding catering. We&apos;ll refine details later.
+              Flexible packages for rehearsal dinners, receptions, and late-night bites with deposit holds.
             </DialogDescription>
           </DialogHeader>
-          <div className="text-sm text-slate-700">
-            Flexible packages for rehearsal dinners, plated service, and late-night bites.
-          </div>
+          {renderSmallEventDialogContent('weddings')}
         </DialogContent>
       </Dialog>
 
       <Dialog open={smallEventsDialog === 'holiday'} onOpenChange={(open) => setSmallEventsDialog(open ? 'holiday' : null)}>
-        <DialogContent className="sm:max-w-[520px]">
+        <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-[980px]">
           <DialogHeader>
             <DialogTitle>Small events and holiday parties</DialogTitle>
             <DialogDescription>
-              Demo info for seasonal gatherings. We&apos;ll personalize later.
+              Drop-off or staffed menus for work parties, milestones, and holiday hosting.
             </DialogDescription>
           </DialogHeader>
-          <div className="text-sm text-slate-700">
-            Drop-off or staffed menus for work parties, milestones, and holiday hosting.
-          </div>
+          {renderSmallEventDialogContent('holiday')}
         </DialogContent>
       </Dialog>
 

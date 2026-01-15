@@ -40,6 +40,7 @@ const pizzaPartyLinkHandler = require('../../api/store/pizza-party-link');
 const pizzaPartyBookingsHandler = require('../../api/store/pizza-party-bookings');
 const storeProductsHandler = require('../../api/store/products');
 const { createMessagesRouter } = require('./routes/messages');
+const { createSmallEventsRouter } = require('./routes/smallEvents');
 const {
   verifySquareSignature,
   applyCompletedPayment,
@@ -47,6 +48,7 @@ const {
   createFeedback,
   listFeedback,
 } = require('../../packages/lib/crowdfundingPipeline');
+const { applySmallEventPayment } = require('./utils/smallEventsPayments');
 const {
   loadPublishedCrowdfundingSummary,
 } = require('../../packages/lib/crowdfundingFallbacks');
@@ -190,6 +192,11 @@ app.post('/api/square/webhook', express.raw({ type: '*/*', limit: '2mb' }), asyn
     const status = String(payment.status || '').toUpperCase();
     if (status !== 'COMPLETED') {
       return res.status(200).json({ ok: true, ignored: true });
+    }
+
+    const handledSmallEvent = await applySmallEventPayment(payment, { logger });
+    if (handledSmallEvent) {
+      return res.status(200).json({ ok: true, handled: 'small-events' });
     }
 
     await applyCompletedPayment(payment, { db });
@@ -346,6 +353,7 @@ try {
 // --- API ENDPOINTS ---
 
 app.use('/api/crowdfund', createCrowdfundingRouter({ db, squareClient, logger }));
+app.use('/api/small-events', createSmallEventsRouter({ logger }));
 app.all('/api/crowdfund/checkout', async (req, res, next) => {
   try {
     await crowdfundCheckoutHandler(req, res);
