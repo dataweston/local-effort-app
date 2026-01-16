@@ -1,6 +1,9 @@
 // src/pages/FullPageDemoPage.jsx
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { DndContext, PointerSensor, closestCenter, useSensor, useSensors } from '@dnd-kit/core';
+import { SortableContext, arrayMove, useSortable } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 import FullPageContainer from '../components/fullpage/FullPageContainer';
 import FullPageSection from '../components/fullpage/FullPageSection';
 import CloudinaryImage from '../components/common/cloudinaryImage';
@@ -11,12 +14,15 @@ import {
   DialogHeader,
   DialogTitle,
 } from '../components/ui/dialog';
+import '../styles/fullpage-demo-theme.css';
 
 const SMALL_EVENT_CONFIG = {
   dinner: {
     label: 'Dinner party',
-    baseRate: 95,
-    minimumTotal: 850,
+    baseRate: 85,
+    minimumTotal: 0,
+    minGuests: 4,
+    maxGuests: 16,
     staffingGuestsPer: 8,
     staffingHourly: 45,
     staffingHours: 4,
@@ -25,8 +31,9 @@ const SMALL_EVENT_CONFIG = {
   },
   weddings: {
     label: 'Weddings',
-    baseRate: 140,
-    minimumTotal: 3200,
+    baseRate: 45,
+    minimumTotal: 0,
+    maxGuests: 50,
     staffingGuestsPer: 12,
     staffingHourly: 55,
     staffingHours: 6,
@@ -35,8 +42,9 @@ const SMALL_EVENT_CONFIG = {
   },
   holiday: {
     label: 'Small events',
-    baseRate: 70,
-    minimumTotal: 1200,
+    baseRate: 45,
+    minimumTotal: 0,
+    maxGuests: 75,
     staffingGuestsPer: 15,
     staffingHourly: 40,
     staffingHours: 4,
@@ -49,6 +57,13 @@ const EVENT_TYPES = Object.keys(SMALL_EVENT_CONFIG);
 const DEFAULT_DEPOSIT_PERCENT = 0.15;
 const ESTIMATE_LIFESPAN_DAYS = 5;
 const HOLD_WINDOW_HOURS = 24;
+const WHOLESALE_MENU_ITEMS = [
+  { name: 'Market bread + cultured butter', price: '$4.50 / portion' },
+  { name: 'Roasted vegetable lasagna', price: '$12.00 / portion' },
+  { name: 'Herb chicken + lemon jus', price: '$13.50 / portion' },
+  { name: 'Seasonal grain salad', price: '$9.00 / portion' },
+  { name: 'House pickles + condiments', price: '$3.50 / portion' },
+];
 
 const formatCurrency = (value, options = {}) => {
   const {
@@ -141,12 +156,90 @@ const buildInitialAvailability = () => {
   ];
 };
 
-const SEMANTIC_UI_PALETTE = {
-  primary: '#FFC697',
-  secondary: '#66D3E7',
-  accent: '#21C8E7',
-  deep: '#2E5E67',
-  muted: '#7F9FA8',
+const BRAND_TOKENS = {
+  bgPage: 'var(--color-bg-page)',
+  bgSection: 'var(--color-bg-section)',
+  bgSecondary: 'var(--color-bg-secondary)',
+  bgStrong: 'var(--color-border-strong)',
+  textPrimary: 'var(--color-text-primary)',
+  textInverse: 'var(--color-text-inverse)',
+  borderDefault: 'var(--color-border-default)',
+  surfaceMuted: 'var(--color-surface-muted)',
+  overlayStrong: 'var(--color-overlay-strong)',
+};
+
+const getImageId = (img) => img.asset_id || img.public_id;
+
+const GalleryItem = ({
+  id,
+  img,
+  index,
+  pos,
+  layoutReady,
+  onSelect,
+  onPrefetch,
+  disableDrag,
+}) => {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id, disabled: disableDrag });
+
+  const dragOffset = transform || { x: 0, y: 0 };
+  const style = {
+    position: 'absolute',
+    width: pos.width,
+    height: pos.height,
+    transform: CSS.Translate.toString({
+      x: pos.x + dragOffset.x,
+      y: pos.y + dragOffset.y,
+    }),
+    transition: isDragging ? 'none' : transition || 'transform 220ms ease',
+    opacity: layoutReady ? 1 : 0,
+    cursor: isDragging ? 'grabbing' : 'grab',
+    zIndex: isDragging ? 50 : 1,
+    willChange: 'transform',
+    pointerEvents: layoutReady ? 'auto' : 'none',
+  };
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      onMouseEnter={() => img?.large_url && onPrefetch(img.large_url)}
+      onClick={() => onSelect(id)}
+      {...attributes}
+      {...listeners}
+    >
+      {img.thumbnail_url ? (
+        <img
+          src={img.thumbnail_url}
+          alt={img.context?.alt || 'Gallery image'}
+          className="w-full h-full block select-none pointer-events-none object-cover"
+          draggable={false}
+          loading="eager"
+          decoding="async"
+          fetchpriority={index < 20 ? 'high' : 'auto'}
+          style={{
+            transition: 'none',
+            display: 'block',
+          }}
+        />
+      ) : (
+        <CloudinaryImage
+          publicId={img.public_id}
+          alt={img.context?.alt || 'Gallery image'}
+          width={Math.floor(pos.width)}
+          className="w-full h-full block select-none pointer-events-none object-cover"
+          disableLazy={index < 20}
+        />
+      )}
+    </div>
+  );
 };
 
 const FullPageDemoPage = () => {
@@ -154,15 +247,14 @@ const FullPageDemoPage = () => {
   const [images, setImages] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState(null);
-  const [imageLoadCount, setImageLoadCount] = useState(0);
-  const [isDragging, setIsDragging] = useState(null);
-  const dragStartTime = useRef(0);
-  const dragStartPos = useRef({ x: 0, y: 0 });
+  const [activeDragId, setActiveDragId] = useState(null);
   const prefetched = useRef(new Set());
   const closeBtnRef = useRef(null);
+  const lastDragEndRef = useRef(0);
   const [imageOrder, setImageOrder] = useState([]);
   const [positions, setPositions] = useState({});
   const containerRef = useRef(null);
+  const [layoutReady, setLayoutReady] = useState(false);
   const [orderOpen, setOrderOpen] = useState(false);
   const [smallEventsDialog, setSmallEventsDialog] = useState(null);
   const [smallEventForms, setSmallEventForms] = useState(() => ({
@@ -200,6 +292,17 @@ const FullPageDemoPage = () => {
   const [mealPlanImages, setMealPlanImages] = useState([]);
   const [mealPlanLoading, setMealPlanLoading] = useState(false);
   const [mealPlanError, setMealPlanError] = useState(null);
+  const [businessPanel, setBusinessPanel] = useState(null);
+  const [wholesaleEmail, setWholesaleEmail] = useState('');
+  const [wholesaleSubmitted, setWholesaleSubmitted] = useState(false);
+  const [officeLunchesOpen, setOfficeLunchesOpen] = useState(false);
+  const [quoteDialogOpen, setQuoteDialogOpen] = useState(false);
+  const [quoteDialogType, setQuoteDialogType] = useState('');
+  const [quoteName, setQuoteName] = useState('');
+  const [quoteEmail, setQuoteEmail] = useState('');
+  const [quoteMessage, setQuoteMessage] = useState('');
+  const [quoteStatus, setQuoteStatus] = useState('idle');
+  const [quoteError, setQuoteError] = useState('');
 
   const pages = [
     { id: 'home', label: 'Home' },
@@ -209,6 +312,10 @@ const FullPageDemoPage = () => {
     { id: 'about', label: 'About' },
     { id: 'local-pizza', label: 'Local Pizza' },
   ];
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 8 } })
+  );
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -262,10 +369,19 @@ const FullPageDemoPage = () => {
 
   const getSmallEventForm = (type) => smallEventForms[type] || createSmallEventDefaults(type);
 
-  const parseGuestCount = (value) => {
-    const parsed = parseInt(value, 10);
-    return Number.isNaN(parsed) ? 0 : parsed;
-  };
+const parseGuestCount = (value) => {
+  const parsed = parseInt(value, 10);
+  return Number.isNaN(parsed) ? 0 : parsed;
+};
+
+const clampGuestCount = (value, config) => {
+  if (value === '' || value === null || value === undefined) return 0;
+  let count = parseGuestCount(value);
+  if (count <= 0) return 0;
+  if (config?.minGuests && count < config.minGuests) count = config.minGuests;
+  if (config?.maxGuests && count > config.maxGuests) count = config.maxGuests;
+  return count;
+};
 
   const getDepositPercent = (form) => {
     const override = parseFloat(form.depositOverridePercent);
@@ -282,17 +398,153 @@ const FullPageDemoPage = () => {
     return addDays(base, ESTIMATE_LIFESPAN_DAYS);
   };
 
+  const handleBusinessSelect = (panel) => {
+    setBusinessPanel(panel);
+    if (panel === 'office') {
+      setOfficeLunchesOpen(true);
+    }
+  };
+
+  const handleWholesaleSubmit = (event) => {
+    event.preventDefault();
+    if (!wholesaleEmail) return;
+    setWholesaleSubmitted(true);
+  };
+
+  const openQuoteDialog = (type) => {
+    const form = getSmallEventForm(type);
+    setQuoteDialogType(type);
+    setQuoteName(form.contactName || '');
+    setQuoteEmail(form.contactEmail || '');
+    setQuoteMessage('');
+    setQuoteStatus('idle');
+    setQuoteError('');
+    setQuoteDialogOpen(true);
+  };
+
+  const buildQuoteMessage = (type) => {
+    const config = SMALL_EVENT_CONFIG[type];
+    const form = getSmallEventForm(type);
+    const estimate = getEstimateForType(type);
+    const depositPercent = getDepositPercent(form);
+    const depositLabel = form.depositOverrideAmount
+      ? `${formatCurrency(Number(form.depositOverrideAmount), { minimumFractionDigits: 2, maximumFractionDigits: 2 })} flat`
+      : `${Math.round(depositPercent * 100)}%`;
+    const guestCount = clampGuestCount(form.guestCount, config);
+    const fallbackHold = form.estimateId
+      ? calendarHolds.find((hold) => hold.estimateId === form.estimateId)
+      : null;
+    const hold = getHoldForSlot(form.holdSlotId) || fallbackHold;
+
+    const lines = [];
+    const addLine = (label, value) => {
+      if (value === undefined || value === null || value === '') return;
+      lines.push(`${label}: ${value}`);
+    };
+
+    addLine('Event type', config?.label || type);
+    addLine('Guest count', guestCount || form.guestCount);
+    addLine('Contact name', form.contactName || quoteName);
+    addLine('Contact email', form.contactEmail || quoteEmail);
+    addLine('Contact phone', form.contactPhone);
+    addLine('Event date', form.eventDate);
+    addLine('Event time', form.eventTime);
+    addLine('Location', form.location);
+    addLine('Service style', form.serviceStyle);
+    addLine('Menu notes', form.menuNotes);
+    addLine('Dietary notes', form.dietary);
+    addLine('Rentals or staffing', form.rentals);
+
+    if (type === 'dinner') {
+      addLine('Course count', form.courses);
+      addLine('Kitchen access', form.kitchenAccess);
+    }
+
+    if (type === 'weddings') {
+      addLine('Planner or contact', form.plannerInfo);
+      addLine('Meal moments', form.celebrationType);
+    }
+
+    if (type === 'holiday') {
+      addLine('Occasion', form.celebrationType);
+      addLine('Setup needs', form.kitchenAccess);
+    }
+
+    if (estimate && (guestCount || form.guestCount)) {
+      addLine('Estimate range', `${formatCurrency(estimate.estimateMin)} - ${formatCurrency(estimate.estimateMax)}`);
+      if (type === 'weddings' && estimate.coordinationFee) {
+        addLine('Event coordination (5%)', formatCurrency(estimate.coordinationFee));
+      }
+      addLine(
+        'Deposit',
+        `${depositLabel} (${formatCurrency(estimate.depositAmount, { minimumFractionDigits: 2, maximumFractionDigits: 2 })})`
+      );
+    }
+
+    if (hold) {
+      addLine('Hold status', hold.status || 'hold');
+      if (hold.holdUntil) {
+        addLine('Hold until', new Date(hold.holdUntil).toLocaleString());
+      }
+      if (hold.slotId) {
+        addLine('Hold slot', hold.slotId);
+      }
+    }
+
+    const note = quoteMessage.trim();
+    if (note) {
+      lines.push('');
+      lines.push('Customer note:');
+      lines.push(note);
+    }
+
+    return lines.join('\n');
+  };
+
+  const submitQuoteMessage = async (event) => {
+    event.preventDefault();
+    const type = quoteDialogType;
+    if (!type) return;
+    setQuoteStatus('sending');
+    setQuoteError('');
+    try {
+      const config = SMALL_EVENT_CONFIG[type];
+      const payload = {
+        name: quoteName || undefined,
+        email: quoteEmail || undefined,
+        subject: `Small events quote request: ${config?.label || type}`,
+        category: 'small-events',
+        type,
+        message: buildQuoteMessage(type),
+      };
+
+      const res = await fetch('/api/messages/submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data?.error || 'Unable to send message');
+      setQuoteStatus('success');
+    } catch (error) {
+      setQuoteStatus('error');
+      setQuoteError(error.message || 'Unable to send message');
+    }
+  };
+
   const getEstimateForType = (type) => {
     const config = SMALL_EVENT_CONFIG[type];
     const form = getSmallEventForm(type);
     if (!config) return null;
     if (form.serverEstimate) return form.serverEstimate;
 
-    const guestCount = parseGuestCount(form.guestCount);
+    const guestCount = clampGuestCount(form.guestCount, config);
     const staffingCount = guestCount ? Math.max(1, Math.ceil(guestCount / config.staffingGuestsPer)) : 0;
     const staffingCost = staffingCount * config.staffingHourly * config.staffingHours;
     const foodCost = guestCount * config.baseRate;
-    const subtotal = Math.max(foodCost + staffingCost, config.minimumTotal);
+    const baseSubtotal = Math.max(foodCost + staffingCost, config.minimumTotal);
+    const coordinationFee = type === 'weddings' ? baseSubtotal * 0.05 : 0;
+    const subtotal = baseSubtotal + coordinationFee;
     const estimateMin = subtotal * config.rangeMin;
     const estimateMax = subtotal * config.rangeMax;
     const depositPercent = getDepositPercent(form);
@@ -304,6 +556,7 @@ const FullPageDemoPage = () => {
       guestCount,
       staffingCount,
       staffingCost,
+      coordinationFee,
       subtotal,
       estimateMin,
       estimateMax,
@@ -318,6 +571,7 @@ const FullPageDemoPage = () => {
       guestCount: estimate.guestCount || 0,
       staffingCount: estimate.staffingCount || 0,
       staffingCost: centsToDollars(estimate.staffingCostCents || 0),
+      coordinationFee: centsToDollars(estimate.coordinationFeeCents || 0),
       subtotal: centsToDollars(estimate.subtotalCents || 0),
       estimateMin: centsToDollars(estimate.estimateMinCents || 0),
       estimateMax: centsToDollars(estimate.estimateMaxCents || 0),
@@ -346,6 +600,7 @@ const FullPageDemoPage = () => {
       guestCount: estimate.guestCount || 0,
       staffingCount: estimate.staffingCount || 0,
       staffingCost: centsToDollars(estimate.staffingCostCents || 0),
+      coordinationFee: centsToDollars(estimate.coordinationFeeCents || 0),
       subtotal: centsToDollars(estimate.subtotalCents || 0),
       estimateMin: centsToDollars(estimate.estimateMinCents || 0),
       estimateMax: centsToDollars(estimate.estimateMaxCents || 0),
@@ -613,55 +868,97 @@ const FullPageDemoPage = () => {
     const slots = availabilitySlots
       .filter((slot) => slot.type === type)
       .sort((a, b) => a.date.localeCompare(b.date));
+    const holdsBySlot = new Map(calendarHolds.map((hold) => [hold.slotId, hold]));
     const depositPercent = getDepositPercent(form);
     const depositLabel = form.depositOverrideAmount
       ? `${formatCurrency(Number(form.depositOverrideAmount), { minimumFractionDigits: 2, maximumFractionDigits: 2 })} flat`
       : `${Math.round(depositPercent * 100)}%`;
+    const introCopy = {
+      dinner: {
+        title: 'Plan a cozy dinner party',
+        subtitle: 'Share what you can, and we will fill in the details together.',
+      },
+      weddings: {
+        title: 'Plan the celebration feast',
+        subtitle: 'From welcome bites to late-night snacks, we help map the flow.',
+      },
+      holiday: {
+        title: 'Plan your small event',
+        subtitle: 'Tell us the vibe and we will craft the menu around it.',
+      },
+    };
+    const intro = introCopy[type] || introCopy.holiday;
+    const guestMin = config?.minGuests || 1;
+    const guestMax = config?.maxGuests;
+    const guestLimitLabel = [
+      config?.minGuests ? `min ${config.minGuests}` : null,
+      config?.maxGuests ? `max ${config.maxGuests}` : null,
+    ].filter(Boolean).join(', ');
+    const selectedSlot = form.holdSlotId
+      ? slots.find((slot) => slot.id === form.holdSlotId)
+      : null;
+    const selectedSlotLabel = selectedSlot ? formatSlotDate(selectedSlot.date) : '';
+    const selectAvailabilitySlot = (slot) => {
+      updateSmallEventForm(type, 'eventDate', slot.date);
+      updateSmallEventForm(type, 'holdSlotId', slot.id);
+    };
 
     if (!config) return null;
 
     return (
       <div className="grid gap-6 md:grid-cols-[minmax(0,1fr)_260px]">
         <div className="space-y-6">
-          <div className="rounded-lg border border-slate-200 bg-white p-4">
-            <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">Contact</div>
+          <div className="form-fun-banner">
+            <div className="form-fun-title">{intro.title}</div>
+            <p className="form-fun-help">{intro.subtitle}</p>
+          </div>
+
+          <div className="form-fun-card">
+            <div className="form-fun-header">
+              <div className="form-fun-title">Say hello</div>
+              <span className="form-fun-tag">2 min</span>
+            </div>
+            <p className="form-fun-help">Tell us who to follow up with.</p>
             <div className="mt-3 grid gap-3 md:grid-cols-2">
               <div>
-                <label className="text-xs font-semibold text-slate-600">Name</label>
+                <label className="form-fun-label">Your name</label>
                 <input
                   type="text"
-                  className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
+                  className="mt-1"
                   value={form.contactName}
                   onChange={(e) => updateSmallEventForm(type, 'contactName', e.target.value)}
                   placeholder="Full name"
                 />
               </div>
               <div>
-                <label className="text-xs font-semibold text-slate-600">Email</label>
+                <label className="form-fun-label">Best email</label>
                 <input
                   type="email"
-                  className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
+                  className="mt-1"
                   value={form.contactEmail}
                   onChange={(e) => updateSmallEventForm(type, 'contactEmail', e.target.value)}
                   placeholder="name@example.com"
                 />
               </div>
               <div>
-                <label className="text-xs font-semibold text-slate-600">Phone</label>
+                <label className="form-fun-label">Phone (optional)</label>
                 <input
                   type="tel"
-                  className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
+                  className="mt-1"
                   value={form.contactPhone}
                   onChange={(e) => updateSmallEventForm(type, 'contactPhone', e.target.value)}
                   placeholder="(555) 555-5555"
                 />
               </div>
               <div>
-                <label className="text-xs font-semibold text-slate-600">Guest count</label>
+                <label className="form-fun-label">
+                  Guest count{guestLimitLabel ? ` (${guestLimitLabel})` : ''}
+                </label>
                 <input
                   type="number"
-                  min="1"
-                  className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
+                  min={guestMin}
+                  max={guestMax}
+                  className="mt-1"
                   value={form.guestCount}
                   onChange={(e) => updateSmallEventForm(type, 'guestCount', e.target.value)}
                   placeholder="ex: 18"
@@ -670,58 +967,116 @@ const FullPageDemoPage = () => {
             </div>
           </div>
 
-          <div className="rounded-lg border border-slate-200 bg-white p-4">
-            <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">Event basics</div>
-            <div className="mt-3 grid gap-3 md:grid-cols-2">
-              <div>
-                <label className="text-xs font-semibold text-slate-600">Preferred date</label>
-                <input
-                  type="date"
-                  className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
-                  value={form.eventDate}
-                  onChange={(e) => updateSmallEventForm(type, 'eventDate', e.target.value)}
-                />
+          {type === 'dinner' && (
+            <div className="form-fun-card">
+              <div className="form-fun-header">
+                <div className="form-fun-title">Dinner details</div>
+                <span className="form-fun-tag">In-home</span>
               </div>
-              <div>
-                <label className="text-xs font-semibold text-slate-600">Preferred time window</label>
-                <input
-                  type="text"
-                  className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
-                  value={form.eventTime}
-                  onChange={(e) => updateSmallEventForm(type, 'eventTime', e.target.value)}
-                  placeholder="ex: 6:30-9:30 PM"
-                />
-              </div>
-              <div className="md:col-span-2">
-                <label className="text-xs font-semibold text-slate-600">Alternate dates</label>
-                <input
-                  type="text"
-                  className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
-                  value={form.alternateDates}
-                  onChange={(e) => updateSmallEventForm(type, 'alternateDates', e.target.value)}
-                  placeholder="Add 2-3 backups"
-                />
-              </div>
-              <div className="md:col-span-2">
-                <label className="text-xs font-semibold text-slate-600">Location</label>
-                <input
-                  type="text"
-                  className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
-                  value={form.location}
-                  onChange={(e) => updateSmallEventForm(type, 'location', e.target.value)}
-                  placeholder="Address or venue name"
-                />
+              <p className="form-fun-help">Share your kitchen setup and course count.</p>
+              <div className="mt-3 grid gap-3 md:grid-cols-2">
+                <div>
+                  <label className="form-fun-label">Course count</label>
+                  <select
+                    className="mt-1"
+                    value={form.courses}
+                    onChange={(e) => updateSmallEventForm(type, 'courses', e.target.value)}
+                  >
+                    <option value="">Select</option>
+                    <option value="3">3 courses</option>
+                    <option value="4">4 courses</option>
+                    <option value="5">5+ courses</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="form-fun-label">Kitchen setup</label>
+                  <input
+                    type="text"
+                    className="mt-1"
+                    value={form.kitchenAccess}
+                    onChange={(e) => updateSmallEventForm(type, 'kitchenAccess', e.target.value)}
+                    placeholder="Full kitchen, limited oven, etc."
+                  />
+                </div>
               </div>
             </div>
-          </div>
+          )}
 
-          <div className="rounded-lg border border-slate-200 bg-white p-4">
-            <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">Menu and service</div>
+          {type === 'weddings' && (
+            <div className="form-fun-card">
+              <div className="form-fun-header">
+                <div className="form-fun-title">Wedding details</div>
+                <span className="form-fun-tag">Celebrate</span>
+              </div>
+              <p className="form-fun-help">Let us know who is coordinating and the flow.</p>
+              <div className="mt-3 grid gap-3 md:grid-cols-2">
+                <div>
+                  <label className="form-fun-label">Planner or point of contact</label>
+                  <input
+                    type="text"
+                    className="mt-1"
+                    value={form.plannerInfo}
+                    onChange={(e) => updateSmallEventForm(type, 'plannerInfo', e.target.value)}
+                    placeholder="Planner name or role"
+                  />
+                </div>
+                <div>
+                  <label className="form-fun-label">Meal moments</label>
+                  <input
+                    type="text"
+                    className="mt-1"
+                    value={form.celebrationType}
+                    onChange={(e) => updateSmallEventForm(type, 'celebrationType', e.target.value)}
+                    placeholder="Rehearsal, reception, late-night bites"
+                  />
+                </div>
+              </div>
+            </div>
+          )}
+
+          {type === 'holiday' && (
+            <div className="form-fun-card">
+              <div className="form-fun-header">
+                <div className="form-fun-title">Event details</div>
+                <span className="form-fun-tag">Vibe</span>
+              </div>
+              <p className="form-fun-help">Tell us the occasion and setup.</p>
+              <div className="mt-3 grid gap-3 md:grid-cols-2">
+                <div>
+                  <label className="form-fun-label">Occasion</label>
+                  <input
+                    type="text"
+                    className="mt-1"
+                    value={form.celebrationType}
+                    onChange={(e) => updateSmallEventForm(type, 'celebrationType', e.target.value)}
+                    placeholder="Holiday party, corporate event, birthday"
+                  />
+                </div>
+                <div>
+                  <label className="form-fun-label">Setup needs</label>
+                  <input
+                    type="text"
+                    className="mt-1"
+                    value={form.kitchenAccess}
+                    onChange={(e) => updateSmallEventForm(type, 'kitchenAccess', e.target.value)}
+                    placeholder="Buffet table, heating, power"
+                  />
+                </div>
+              </div>
+            </div>
+          )}
+
+          <div className="form-fun-card">
+            <div className="form-fun-header">
+              <div className="form-fun-title">Menu vibes</div>
+              <span className="form-fun-tag">Food</span>
+            </div>
+            <p className="form-fun-help">Pick a style and any must-haves.</p>
             <div className="mt-3 grid gap-3 md:grid-cols-2">
               <div>
-                <label className="text-xs font-semibold text-slate-600">Service style</label>
+                <label className="form-fun-label">Serving style</label>
                 <select
-                  className="mt-1 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm"
+                  className="mt-1"
                   value={form.serviceStyle}
                   onChange={(e) => updateSmallEventForm(type, 'serviceStyle', e.target.value)}
                 >
@@ -733,22 +1088,9 @@ const FullPageDemoPage = () => {
                 </select>
               </div>
               <div>
-                <label className="text-xs font-semibold text-slate-600">Budget range</label>
-                <select
-                  className="mt-1 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm"
-                  value={form.budgetRange}
-                  onChange={(e) => updateSmallEventForm(type, 'budgetRange', e.target.value)}
-                >
-                  <option value="">Select range</option>
-                  <option value="low">$ - value-focused</option>
-                  <option value="mid">$$ - mid-range</option>
-                  <option value="high">$$$ - premium</option>
-                </select>
-              </div>
-              <div className="md:col-span-2">
-                <label className="text-xs font-semibold text-slate-600">Menu notes</label>
+                <label className="form-fun-label">Menu wishes</label>
                 <textarea
-                  className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
+                  className="mt-1"
                   rows={2}
                   value={form.menuNotes}
                   onChange={(e) => updateSmallEventForm(type, 'menuNotes', e.target.value)}
@@ -756,9 +1098,9 @@ const FullPageDemoPage = () => {
                 />
               </div>
               <div className="md:col-span-2">
-                <label className="text-xs font-semibold text-slate-600">Dietary notes</label>
+                <label className="form-fun-label">Allergies or needs</label>
                 <textarea
-                  className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
+                  className="mt-1"
                   rows={2}
                   value={form.dietary}
                   onChange={(e) => updateSmallEventForm(type, 'dietary', e.target.value)}
@@ -766,9 +1108,9 @@ const FullPageDemoPage = () => {
                 />
               </div>
               <div className="md:col-span-2">
-                <label className="text-xs font-semibold text-slate-600">Rentals or staffing needs</label>
+                <label className="form-fun-label">Extras to plan for</label>
                 <textarea
-                  className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
+                  className="mt-1"
                   rows={2}
                   value={form.rentals}
                   onChange={(e) => updateSmallEventForm(type, 'rentals', e.target.value)}
@@ -778,131 +1120,48 @@ const FullPageDemoPage = () => {
             </div>
           </div>
 
-          {type === 'dinner' && (
-            <div className="rounded-lg border border-slate-200 bg-white p-4">
-              <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">Dinner specifics</div>
-              <div className="mt-3 grid gap-3 md:grid-cols-2">
-                <div>
-                  <label className="text-xs font-semibold text-slate-600">Course count</label>
-                  <select
-                    className="mt-1 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm"
-                    value={form.courses}
-                    onChange={(e) => updateSmallEventForm(type, 'courses', e.target.value)}
-                  >
-                    <option value="">Select</option>
-                    <option value="3">3 courses</option>
-                    <option value="4">4 courses</option>
-                    <option value="5">5+ courses</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="text-xs font-semibold text-slate-600">Kitchen access</label>
-                  <input
-                    type="text"
-                    className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
-                    value={form.kitchenAccess}
-                    onChange={(e) => updateSmallEventForm(type, 'kitchenAccess', e.target.value)}
-                    placeholder="Full kitchen, limited oven, etc."
-                  />
-                </div>
-              </div>
+          <div className="form-fun-card">
+            <div className="form-fun-header">
+              <div className="form-fun-title">Save your progress</div>
+              <span className="form-fun-tag">Optional</span>
             </div>
-          )}
-
-          {type === 'weddings' && (
-            <div className="rounded-lg border border-slate-200 bg-white p-4">
-              <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">Wedding details</div>
-              <div className="mt-3 grid gap-3 md:grid-cols-2">
-                <div>
-                  <label className="text-xs font-semibold text-slate-600">Planner or point of contact</label>
-                  <input
-                    type="text"
-                    className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
-                    value={form.plannerInfo}
-                    onChange={(e) => updateSmallEventForm(type, 'plannerInfo', e.target.value)}
-                    placeholder="Planner name or role"
-                  />
-                </div>
-                <div>
-                  <label className="text-xs font-semibold text-slate-600">Celebration type</label>
-                  <input
-                    type="text"
-                    className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
-                    value={form.celebrationType}
-                    onChange={(e) => updateSmallEventForm(type, 'celebrationType', e.target.value)}
-                    placeholder="Rehearsal, reception, late-night bites"
-                  />
-                </div>
-              </div>
-            </div>
-          )}
-
-          {type === 'holiday' && (
-            <div className="rounded-lg border border-slate-200 bg-white p-4">
-              <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">Event details</div>
-              <div className="mt-3 grid gap-3 md:grid-cols-2">
-                <div>
-                  <label className="text-xs font-semibold text-slate-600">Event type</label>
-                  <input
-                    type="text"
-                    className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
-                    value={form.celebrationType}
-                    onChange={(e) => updateSmallEventForm(type, 'celebrationType', e.target.value)}
-                    placeholder="Holiday party, corporate event, birthday"
-                  />
-                </div>
-                <div>
-                  <label className="text-xs font-semibold text-slate-600">Setup needs</label>
-                  <input
-                    type="text"
-                    className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
-                    value={form.kitchenAccess}
-                    onChange={(e) => updateSmallEventForm(type, 'kitchenAccess', e.target.value)}
-                    placeholder="Buffet table, heating, power"
-                  />
-                </div>
-              </div>
-            </div>
-          )}
-
-          <div className="rounded-lg border border-slate-200 bg-white p-4">
-            <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">Save estimate</div>
+            <p className="form-fun-help">We can email a save link so you can return later.</p>
             <div className="mt-3 grid gap-3 md:grid-cols-2">
               <div className="md:col-span-2">
-                <label className="text-xs font-semibold text-slate-600">Send me a save link</label>
+                <label className="form-fun-label">Where should we send the link?</label>
                 <input
                   type="email"
-                  className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
+                  className="mt-1"
                   value={form.accountEmail}
                   onChange={(e) => updateSmallEventForm(type, 'accountEmail', e.target.value)}
                   placeholder="email for save link"
                 />
               </div>
-              <label className="md:col-span-2 flex items-center gap-2 text-xs text-slate-600">
+              <label className="form-fun-label md:col-span-2 flex items-center gap-2">
                 <input
                   type="checkbox"
                   checked={form.wantsAccount}
                   onChange={(e) => updateSmallEventForm(type, 'wantsAccount', e.target.checked)}
                 />
-                Create an account now to edit anytime
+                Create an account so you can edit anytime (we&apos;ll save your date for 24 hours)
               </label>
               {form.wantsAccount && (
                 <>
                   <div>
-                    <label className="text-xs font-semibold text-slate-600">Account email</label>
+                    <label className="form-fun-label">Account email</label>
                     <input
                       type="email"
-                      className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
+                      className="mt-1"
                       value={form.accountEmail}
                       onChange={(e) => updateSmallEventForm(type, 'accountEmail', e.target.value)}
                       placeholder="name@example.com"
                     />
                   </div>
                   <div>
-                    <label className="text-xs font-semibold text-slate-600">Password</label>
+                    <label className="form-fun-label">Password</label>
                     <input
                       type="password"
-                      className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
+                      className="mt-1"
                       value={form.accountPassword}
                       onChange={(e) => updateSmallEventForm(type, 'accountPassword', e.target.value)}
                       placeholder="Create a password"
@@ -911,10 +1170,10 @@ const FullPageDemoPage = () => {
                 </>
               )}
             </div>
-            <div className="mt-4 flex flex-wrap gap-2">
+            <div className="mt-4 form-fun-actions">
               <button
                 type="button"
-                className="rounded-md bg-slate-900 px-4 py-2 text-xs font-semibold text-white hover:bg-slate-800 disabled:bg-slate-300"
+                className="form-fun-cta rounded-md bg-slate-900 px-4 py-2 text-xs font-semibold text-white hover:bg-slate-800 disabled:bg-slate-300"
                 onClick={() => saveEstimate(type)}
                 disabled={smallEventsSaving}
               >
@@ -922,14 +1181,14 @@ const FullPageDemoPage = () => {
               </button>
               <button
                 type="button"
-                className="rounded-md border border-slate-300 px-4 py-2 text-xs font-semibold text-slate-700 hover:border-slate-400"
+                className="form-fun-chip-btn rounded-md border border-slate-300 px-4 py-2 text-xs font-semibold text-slate-700 hover:border-slate-400"
                 onClick={() => extendEstimate(type)}
               >
                 Extend 5 days
               </button>
               <button
                 type="button"
-                className="rounded-md border border-slate-300 px-4 py-2 text-xs font-semibold text-slate-700 hover:border-slate-400"
+                className="form-fun-chip-btn rounded-md border border-slate-300 px-4 py-2 text-xs font-semibold text-slate-700 hover:border-slate-400"
                 onClick={() => loadLatestEstimate(type)}
               >
                 Load saved estimate
@@ -941,12 +1200,22 @@ const FullPageDemoPage = () => {
             <div className="mt-2 text-xs text-slate-500">
               Estimate expires on {expiresAt.toLocaleDateString()} (5 days from last update).
             </div>
+            <button
+              type="button"
+              className="form-fun-link mt-3"
+              onClick={() => openQuoteDialog(type)}
+            >
+              contact us about your quote
+            </button>
           </div>
         </div>
 
         <div className="space-y-4">
-          <div className="rounded-lg border border-slate-200 bg-white p-4">
-            <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">Estimate range</div>
+          <div className="form-fun-card">
+            <div className="form-fun-header">
+              <div className="form-fun-title">Estimate range</div>
+              <span className="form-fun-tag">Live</span>
+            </div>
             <div className="mt-2 text-2xl font-bold text-slate-900">
               {estimate
                 ? `${formatCurrency(estimate.estimateMin)} - ${formatCurrency(estimate.estimateMax)}`
@@ -955,15 +1224,23 @@ const FullPageDemoPage = () => {
             <div className="mt-2 text-xs text-slate-600">
               Based on {estimate?.guestCount || 0} guests, {estimate?.staffingCount || 0} staff.
             </div>
+            {type === 'weddings' && estimate?.coordinationFee > 0 && (
+              <div className="text-xs text-slate-600">
+                Includes a 5% event coordination line item ({formatCurrency(estimate.coordinationFee)}).
+              </div>
+            )}
             <div className="text-xs text-slate-500">
               Rentals, tax, and bar packages are estimated separately.
             </div>
           </div>
 
-          <div className="rounded-lg border border-slate-200 bg-white p-4">
-            <div className="text-sm font-semibold text-slate-900">Deposit and booking</div>
+          <div className="form-fun-card">
+            <div className="form-fun-header">
+              <div className="form-fun-title">Hold your date</div>
+              <span className="form-fun-tag">24h</span>
+            </div>
             <div className="mt-2 text-xs text-slate-600">
-              {depositLabel} deposit holds your date for {HOLD_WINDOW_HOURS} hours.
+              {depositLabel} deposit holds your date.
             </div>
             <div className="mt-2 text-lg font-semibold text-slate-900">
               Deposit due:{' '}
@@ -973,7 +1250,7 @@ const FullPageDemoPage = () => {
             </div>
             <button
               type="button"
-              className="mt-3 w-full rounded-md bg-slate-900 px-4 py-2 text-xs font-semibold text-white hover:bg-slate-800 disabled:bg-slate-300"
+              className="form-fun-cta mt-3 w-full rounded-md bg-slate-900 px-4 py-2 text-xs font-semibold text-white hover:bg-slate-800 disabled:bg-slate-300"
               onClick={() => startDepositCheckout(type)}
               disabled={!holdsOnSlot || form.depositStatus === 'paid'}
             >
@@ -988,60 +1265,137 @@ const FullPageDemoPage = () => {
                 ? holdsOnSlot.status === 'confirmed'
                   ? 'Date confirmed. Final balance due before service.'
                   : `Hold active until ${new Date(holdsOnSlot.holdUntil).toLocaleString()}.`
-                : 'No date hold yet. Select an available slot below.'}
+                : 'No date hold yet. We will confirm availability after we connect.'}
             </div>
           </div>
 
-          <div className="rounded-lg border border-slate-200 bg-white p-4">
-            <div className="text-sm font-semibold text-slate-900">Availability</div>
-            <div className="mt-3 space-y-2 text-xs text-slate-700">
-              {availabilityLoading && <div>Loading availability...</div>}
-              {!availabilityLoading && slots.length === 0 && <div>No slots listed yet.</div>}
-              {!availabilityLoading && slots.map((slot) => {
-                const hold = getHoldForSlot(slot.id);
-                const status = hold ? hold.status : slot.status;
-                const holdIsMine = hold && form.estimateId && hold.estimateId === form.estimateId;
-                return (
-                  <div
-                    key={slot.id}
-                    className="flex items-center justify-between rounded-md border border-slate-200 bg-slate-50 px-3 py-2"
-                  >
-                    <div>
-                      <div className="font-semibold text-slate-900">{formatSlotDate(slot.date)}</div>
-                      <div className="text-xs text-slate-500">
-                        {status === 'open' && 'Open'}
-                        {status === 'blocked' && 'Blocked'}
-                        {status === 'held' && (holdIsMine ? 'Hold pending (your request)' : 'Hold pending')}
-                        {status === 'confirmed' && 'Confirmed'}
-                        {slot.notes ? ` · ${slot.notes}` : ''}
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      {status === 'open' && (
-                        <button
-                          type="button"
-                          className="rounded-md border border-slate-300 px-2 py-1 text-xs font-semibold text-slate-700 hover:border-slate-400"
-                          onClick={() => holdSlot(slot.id, type)}
-                        >
-                          Hold 24h
-                        </button>
-                      )}
-                      {holdIsMine && status !== 'confirmed' && (
-                        <button
-                          type="button"
-                          className="rounded-md border border-slate-300 px-2 py-1 text-xs font-semibold text-slate-700 hover:border-slate-400"
-                          onClick={() => releaseHold(slot.id, type)}
-                        >
-                          Release
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
+          <div className="form-fun-card">
+            <div className="form-fun-header">
+              <div className="form-fun-title">When and where</div>
+              <span className="form-fun-tag">Dates</span>
             </div>
-            <div className="mt-2 text-xs text-slate-500">
-              Manual availability (future sync to Google or other calendars).
+            <p className="form-fun-help">
+              Choose from shared availability or tell us your ideal date, time, and location.
+            </p>
+            <div className="availability-calendar">
+              <div className="availability-header">
+                <div className="availability-title">Shared availability</div>
+                <button
+                  type="button"
+                  className="availability-refresh"
+                  onClick={() => loadSmallEventsAvailability()}
+                >
+                  Refresh
+                </button>
+              </div>
+              {availabilityLoading ? (
+                <div className="availability-empty">Loading shared dates...</div>
+              ) : slots.length === 0 ? (
+                <div className="availability-empty">No shared dates yet. Add your ideal date below.</div>
+              ) : (
+                <div className="availability-grid">
+                  {slots.map((slot) => {
+                    const hold = holdsBySlot.get(slot.id);
+                    const isHeldByCurrent = hold?.estimateId && hold.estimateId === form.estimateId;
+                    const isUnavailable = slot.status === 'blocked' || (!isHeldByCurrent && slot.status !== 'open');
+                    const isSelected = selectedSlot?.id === slot.id;
+                    const statusKey = slot.status === 'open'
+                      ? 'open'
+                      : slot.status === 'blocked'
+                        ? 'blocked'
+                        : isHeldByCurrent
+                          ? 'held'
+                          : slot.status;
+                    const statusLabel = slot.status === 'open'
+                      ? 'Open'
+                      : slot.status === 'blocked'
+                        ? 'Blocked'
+                        : isHeldByCurrent
+                          ? 'Your hold'
+                          : slot.status === 'confirmed'
+                            ? 'Confirmed'
+                            : 'Held';
+                    return (
+                      <button
+                        key={slot.id}
+                        type="button"
+                        className={`availability-slot ${isSelected ? 'is-selected' : ''}`}
+                        data-status={statusKey}
+                        disabled={isUnavailable}
+                        onClick={() => selectAvailabilitySlot(slot)}
+                        title={slot.notes || undefined}
+                      >
+                        <span className="availability-date">{formatSlotDate(slot.date)}</span>
+                        <span className="availability-status">{statusLabel}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+              <div className="availability-footer">
+                <div className="availability-selected">
+                  {selectedSlotLabel ? `Selected: ${selectedSlotLabel}` : 'Select an open date above.'}
+                </div>
+                {selectedSlot?.notes && (
+                  <div className="availability-notes">{selectedSlot.notes}</div>
+                )}
+                <div className="availability-actions">
+                  {holdsOnSlot && selectedSlot?.id === holdsOnSlot.slotId ? (
+                    <button
+                      type="button"
+                      className="form-fun-chip-btn rounded-md border border-slate-300 px-4 py-2 text-xs font-semibold text-slate-700 hover:border-slate-400"
+                      onClick={() => releaseHold(holdsOnSlot.slotId, type)}
+                    >
+                      Release hold
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      className="form-fun-chip-btn rounded-md border border-slate-300 px-4 py-2 text-xs font-semibold text-slate-700 hover:border-slate-400"
+                      onClick={() => selectedSlot && holdSlot(selectedSlot.id, type)}
+                      disabled={!selectedSlot || selectedSlot.status !== 'open' || !form.estimateId}
+                    >
+                      {holdsOnSlot ? 'Move hold here' : 'Hold this date'}
+                    </button>
+                  )}
+                </div>
+                {!form.estimateId && selectedSlot && (
+                  <div className="availability-note">
+                    Save your estimate before placing a 24-hour hold.
+                  </div>
+                )}
+              </div>
+            </div>
+            <div className="mt-3 grid gap-3 md:grid-cols-2">
+              <div>
+                <label className="form-fun-label">Ideal date</label>
+                <input
+                  type="date"
+                  className="mt-1"
+                  value={form.eventDate}
+                  onChange={(e) => updateSmallEventForm(type, 'eventDate', e.target.value)}
+                />
+              </div>
+              <div>
+                <label className="form-fun-label">Ideal time</label>
+                <input
+                  type="text"
+                  className="mt-1"
+                  value={form.eventTime}
+                  onChange={(e) => updateSmallEventForm(type, 'eventTime', e.target.value)}
+                  placeholder="ex: 6:30-9:30 PM"
+                />
+              </div>
+              <div className="md:col-span-2">
+                <label className="form-fun-label">Location or venue</label>
+                <input
+                  type="text"
+                  className="mt-1"
+                  value={form.location}
+                  onChange={(e) => updateSmallEventForm(type, 'location', e.target.value)}
+                  placeholder="Address or venue name"
+                />
+              </div>
             </div>
           </div>
 
@@ -1175,7 +1529,7 @@ const FullPageDemoPage = () => {
       const pageIndex = parseInt(btn.getAttribute('data-page-index'));
       if (pageIndex !== index) {
         btn.style.backgroundColor = 'transparent';
-        btn.style.color = SEMANTIC_UI_PALETTE.deep;
+        btn.style.color = BRAND_TOKENS.textPrimary;
       }
     });
   };
@@ -1256,12 +1610,45 @@ const FullPageDemoPage = () => {
     };
   }, []);
 
+  const imageById = useMemo(() => {
+    const map = new Map();
+    images.forEach((img) => {
+      map.set(getImageId(img), img);
+    });
+    return map;
+  }, [images]);
+
+  const imageIndexById = useMemo(() => {
+    const map = new Map();
+    images.forEach((img, idx) => {
+      map.set(getImageId(img), idx);
+    });
+    return map;
+  }, [images]);
+
+  const orderedImages = useMemo(() => (
+    imageOrder.map((id) => imageById.get(id)).filter(Boolean)
+  ), [imageOrder, imageById]);
+
   // Initialize image order when images are loaded
   useEffect(() => {
-    if (images.length > 0 && imageOrder.length === 0) {
-      setImageOrder(images.map(img => img.asset_id || img.public_id));
+    if (images.length === 0) {
+      setImageOrder([]);
+      setLayoutReady(false);
+      return;
     }
-  }, [images, imageOrder.length]);
+
+    setLayoutReady(false);
+    const nextOrder = images.map(getImageId);
+    setImageOrder((prev) => {
+      if (prev.length === 0) return nextOrder;
+      const nextSet = new Set(nextOrder);
+      const filtered = prev.filter((id) => nextSet.has(id));
+      const filteredSet = new Set(filtered);
+      const appended = nextOrder.filter((id) => !filteredSet.has(id));
+      return [...filtered, ...appended];
+    });
+  }, [images]);
 
   // Calculate positions based on order
   useEffect(() => {
@@ -1276,8 +1663,8 @@ const FullPageDemoPage = () => {
       const baseGap = 2;
       const baseColumnWidth = isMobile ? window.innerWidth / 3 : isDesktop ? window.innerWidth / 6 : window.innerWidth / 5;
 
-      imageOrder.forEach((imgId, idx) => {
-        const img = images.find(i => (i.asset_id || i.public_id) === imgId);
+      imageOrder.forEach((imgId) => {
+        const img = imageById.get(imgId);
         if (!img) return;
 
         // Get actual image dimensions or use defaults
@@ -1339,6 +1726,7 @@ const FullPageDemoPage = () => {
       });
 
       setPositions(newPositions);
+      setLayoutReady((prev) => prev || Object.keys(newPositions).length > 0);
     };
 
     calculatePositions();
@@ -1347,100 +1735,38 @@ const FullPageDemoPage = () => {
     const handleResize = () => calculatePositions();
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
-  }, [imageOrder, images]);
+  }, [imageOrder, images, imageById]);
 
-  // Drag handlers
-  const handleDragStart = useCallback((id) => {
-    setIsDragging(id);
-    dragStartTime.current = Date.now();
+  const handleDragStart = useCallback((event) => {
+    setActiveDragId(event.active.id);
   }, []);
 
-  const handleDragEnd = useCallback((id, event, info) => {
-    const dragDuration = Date.now() - dragStartTime.current;
-    const dragDistance = Math.sqrt(info.offset.x ** 2 + info.offset.y ** 2);
+  const handleDragCancel = useCallback(() => {
+    setActiveDragId(null);
+  }, []);
 
-    setIsDragging(null);
+  const handleDragEnd = useCallback((event) => {
+    const { active, over } = event;
+    setActiveDragId(null);
+    lastDragEndRef.current = Date.now();
 
-    // If it was a quick click (not a drag), open lightbox - very sensitive thresholds
-    if (dragDuration < 800 && dragDistance < 30) {
-      const img = images.find(i => (i.asset_id || i.public_id) === id);
-      if (img) {
-        const idx = images.findIndex(i => (i.asset_id || i.public_id) === id);
-        setSelected({ img, idx });
-        return;
-      }
-    }
-
-    // Otherwise, handle reordering
-    const currentPos = positions[id];
-    if (!currentPos) return;
-
-    const isMobile = window.innerWidth < 768;
-    const isDesktop = window.innerWidth >= 1024;
-    const columns = isMobile ? 3 : isDesktop ? 6 : 5;
-    const baseColumnWidth = isMobile ? window.innerWidth / 3 : isDesktop ? window.innerWidth / 6 : window.innerWidth / 5;
-
-    // Calculate new position after drag
-    const newX = currentPos.x + info.offset.x;
-    const newY = currentPos.y + info.offset.y;
-
-    // Determine which column we're closest to (considering span)
-    const targetColumn = Math.max(0, Math.min(columns - (currentPos.spanColumns || 1), Math.round(newX / baseColumnWidth)));
-
-    // Find all images in each column (excluding the dragged one)
-    const columnImages = Array(columns).fill(null).map(() => []);
-    imageOrder.forEach(imgId => {
-      if (imgId === id) return;
-      const pos = positions[imgId];
-      if (pos && pos.column !== undefined) {
-        columnImages[pos.column].push({
-          id: imgId,
-          y: pos.y,
-          height: pos.height || baseColumnWidth * 1.2
-        });
-      }
+    if (!over || active.id === over.id) return;
+    setImageOrder((items) => {
+      const oldIndex = items.indexOf(active.id);
+      const newIndex = items.indexOf(over.id);
+      if (oldIndex === -1 || newIndex === -1) return items;
+      return arrayMove(items, oldIndex, newIndex);
     });
+  }, []);
 
-    // Sort each column by Y position
-    columnImages.forEach(col => col.sort((a, b) => a.y - b.y));
-
-    // Find where in the target column this image should be inserted
-    const targetColumnImages = columnImages[targetColumn];
-    let insertIndex = targetColumnImages.length;
-
-    for (let i = 0; i < targetColumnImages.length; i++) {
-      if (newY < targetColumnImages[i].y) {
-        insertIndex = i;
-        break;
-      }
-    }
-
-    // Rebuild the order array with the moved image in its new position
-    const newOrder = [];
-    const columnsToProcess = Array(columns).fill(null).map(() => []);
-
-    // Distribute images back into columns
-    imageOrder.forEach(imgId => {
-      if (imgId === id) return;
-      const pos = positions[imgId];
-      if (pos && pos.column !== undefined) {
-        columnsToProcess[pos.column].push(imgId);
-      }
-    });
-
-    // Insert dragged image into target column at correct position
-    columnsToProcess[targetColumn].splice(insertIndex, 0, id);
-
-    // Interleave columns to rebuild order (for more natural flow)
-    const maxLength = Math.max(...columnsToProcess.map(col => col.length));
-    for (let i = 0; i < maxLength; i++) {
-      columnsToProcess.forEach(col => {
-        if (col[i]) newOrder.push(col[i]);
-      });
-    }
-
-    setImageOrder(newOrder);
-  }, [images, positions, imageOrder]);
+  const handleSelectImage = useCallback((id) => {
+    if (activeDragId) return;
+    if (Date.now() - lastDragEndRef.current < 200) return;
+    const img = imageById.get(id);
+    const idx = imageIndexById.get(id);
+    if (!img || idx === undefined) return;
+    setSelected({ img, idx });
+  }, [activeDragId, imageById, imageIndexById]);
 
   const closeLightbox = useCallback(() => setSelected(null), []);
 
@@ -1533,31 +1859,33 @@ const FullPageDemoPage = () => {
   }, [selected]);
 
   return (
-    <>
+    <div className="fullpage-demo">
       {/* Fixed Navigation Bar */}
-      <nav className="fixed top-0 left-0 right-0 z-50 shadow-sm" style={{ backgroundColor: SEMANTIC_UI_PALETTE.primary, borderBottom: `1px solid ${SEMANTIC_UI_PALETTE.muted}` }}>
+      <nav className="fixed top-0 left-0 right-0 z-50 shadow-sm" style={{ backgroundColor: BRAND_TOKENS.bgPage, borderBottom: `1px solid ${BRAND_TOKENS.borderDefault}` }}>
         <div className="flex items-center justify-between px-6 py-4">
-          <button
-            onClick={() => navigateToPage(0)}
-            className="flex items-center gap-3"
-          >
-            <motion.span
-              className="text-2xl font-bold tracking-tight"
-              style={{ 
-                color: SEMANTIC_UI_PALETTE.deep, 
-                fontFamily: "'National Park', 'General Sans', sans-serif",
-                fontWeight: 700,
-                letterSpacing: '-0.02em'
-              }}
-              whileHover={{ scale: 1.03 }}
-              transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+          <div className="flex flex-col items-start gap-2">
+            <button
+              onClick={() => navigateToPage(0)}
+              className="flex items-center gap-3"
             >
-              Local Effort
-            </motion.span>
-            <span className="text-sm font-medium" style={{ color: SEMANTIC_UI_PALETTE.deep, fontFamily: "'Office Code Pro', monospace" }}>
-              always mostly local
-            </span>
-          </button>
+              <motion.span
+                className="text-2xl font-bold tracking-tight"
+                style={{ 
+                  color: BRAND_TOKENS.textPrimary, 
+                  fontFamily: "'National Park', 'General Sans', sans-serif",
+                  fontWeight: 700,
+                  letterSpacing: '-0.02em'
+                }}
+                whileHover={{ scale: 1.03 }}
+                transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+              >
+                Local Effort
+              </motion.span>
+              <span className="text-sm font-medium" style={{ color: BRAND_TOKENS.textPrimary, fontFamily: "'Office Code Pro', monospace" }}>
+                always mostly local
+              </span>
+            </button>
+          </div>
 
           <div className="flex gap-1">
             {pages.slice(1).map((page, index) => {
@@ -1570,20 +1898,20 @@ const FullPageDemoPage = () => {
                   onClick={() => navigateToPage(index + 1)}
                   className="px-4 py-2 rounded-md text-sm font-medium transition-all group"
                   style={{
-                    backgroundColor: isActive ? SEMANTIC_UI_PALETTE.deep : 'transparent',
-                    color: isActive ? SEMANTIC_UI_PALETTE.primary : SEMANTIC_UI_PALETTE.deep,
+                    backgroundColor: isActive ? BRAND_TOKENS.bgStrong : 'transparent',
+                    color: isActive ? BRAND_TOKENS.textInverse : BRAND_TOKENS.textPrimary,
                     fontFamily: "'Office Code Pro', monospace",
                   }}
                   onMouseEnter={(e) => {
                     if (!isActive) {
-                      e.currentTarget.style.backgroundColor = SEMANTIC_UI_PALETTE.accent;
-                      e.currentTarget.style.color = SEMANTIC_UI_PALETTE.deep;
+                      e.currentTarget.style.backgroundColor = BRAND_TOKENS.bgSecondary;
+                      e.currentTarget.style.color = BRAND_TOKENS.textPrimary;
                     }
                   }}
                   onMouseLeave={(e) => {
                     if (!isActive) {
                       e.currentTarget.style.backgroundColor = 'transparent';
-                      e.currentTarget.style.color = SEMANTIC_UI_PALETTE.deep;
+                      e.currentTarget.style.color = BRAND_TOKENS.textPrimary;
                     }
                   }}
                 >
@@ -1604,101 +1932,57 @@ const FullPageDemoPage = () => {
         {/* Page 1: Home - Gallery */}
         <FullPageSection
           id="home"
-          style={{ backgroundColor: SEMANTIC_UI_PALETTE.primary }}
+          style={{ backgroundColor: BRAND_TOKENS.bgPage }}
           animation="fadeScale"
         >
           <div className="w-full h-full overflow-y-auto pt-20">
             {loading ? (
-              <div className="text-center py-20" style={{ color: SEMANTIC_UI_PALETTE.deep }}>
+              <div className="text-center py-20" style={{ color: BRAND_TOKENS.textPrimary }}>
                 Loading images...
               </div>
             ) : images.length === 0 ? (
-              <div className="text-center py-20" style={{ color: SEMANTIC_UI_PALETTE.deep }}>
+              <div className="text-center py-20" style={{ color: BRAND_TOKENS.textPrimary }}>
                 No images found.
               </div>
-            ) : (
-              <div
-                ref={containerRef}
-                className="relative w-full"
-                style={{ minHeight: '2000px' }}
-              >
-                {images.map((img, idx) => {
-                  const imgId = img.asset_id || img.public_id;
-                  const pos = positions[imgId] || { x: 0, y: 0, width: 300, height: 400 };
-                  const isBeingDragged = isDragging === imgId;
-
-                  return (
-                    <motion.div
-                      key={imgId}
-                      drag
-                      dragMomentum={false}
-                      dragElastic={0.05}
-                      onDragStart={() => handleDragStart(imgId)}
-                      onDragEnd={(e, info) => handleDragEnd(imgId, e, info)}
-                      onMouseEnter={() => img?.large_url && prefetchImage(img.large_url)}
-                      style={{
-                        position: 'absolute',
-                        width: pos.width,
-                        height: pos.height,
-                        cursor: isBeingDragged ? 'grabbing' : 'grab',
-                        zIndex: isBeingDragged ? 50 : 1,
-                      }}
-                      animate={{
-                        x: pos.x,
-                        y: pos.y,
-                        opacity: 1,
-                        scale: 1,
-                      }}
-                      whileHover={{
-                        scale: 1.03,
-                        zIndex: 10,
-                        transition: { type: "spring", stiffness: 400, damping: 25 }
-                      }}
-                      whileDrag={{
-                        scale: 1.05,
-                        zIndex: 50,
-                        transition: { type: "spring", stiffness: 400, damping: 25 }
-                      }}
-                      initial={{
-                        opacity: 0,
-                        scale: 0.8,
-                        x: pos.x,
-                        y: pos.y,
-                      }}
-                      transition={{
-                        type: "spring",
-                        stiffness: 260,
-                        damping: 26,
-                        delay: idx * 0.01,
-                      }}
-                    >
-                      {img.thumbnail_url ? (
-                        <img
-                          src={img.thumbnail_url}
-                          alt={img.context?.alt || 'Gallery image'}
-                          className="w-full h-full block select-none pointer-events-none object-cover"
-                          draggable={false}
-                          loading="eager"
-                          decoding="async"
-                          fetchpriority={idx < 20 ? "high" : "auto"}
-                          style={{
-                            transition: 'none',
-                            display: 'block',
-                          }}
-                        />
-                      ) : (
-                        <CloudinaryImage
-                          publicId={img.public_id}
-                          alt={img.context?.alt || 'Gallery image'}
-                          width={Math.floor(pos.width)}
-                          className="w-full h-full block select-none pointer-events-none object-cover"
-                          disableLazy={idx < 20}
-                        />
-                      )}
-                    </motion.div>
-                  );
-                })}
+            ) : !layoutReady ? (
+              <div className="text-center py-20" style={{ color: BRAND_TOKENS.textPrimary }}>
+                Loading images...
               </div>
+            ) : (
+              <DndContext
+                sensors={sensors}
+                collisionDetection={closestCenter}
+                onDragStart={handleDragStart}
+                onDragEnd={handleDragEnd}
+                onDragCancel={handleDragCancel}
+              >
+                <SortableContext items={imageOrder}>
+                  <div
+                    ref={containerRef}
+                    className="relative w-full"
+                    style={{ minHeight: '2000px' }}
+                  >
+                    {orderedImages.map((img, idx) => {
+                      const imgId = getImageId(img);
+                      const pos = positions[imgId] || { x: 0, y: 0, width: 300, height: 400 };
+
+                      return (
+                        <GalleryItem
+                          key={imgId}
+                          id={imgId}
+                          img={img}
+                          index={idx}
+                          pos={pos}
+                          layoutReady={layoutReady}
+                          onSelect={handleSelectImage}
+                          onPrefetch={prefetchImage}
+                          disableDrag={!layoutReady}
+                        />
+                      );
+                    })}
+                  </div>
+                </SortableContext>
+              </DndContext>
             )}
           </div>
         </FullPageSection>
@@ -1706,7 +1990,7 @@ const FullPageDemoPage = () => {
         {/* Page 2: Weekly Meals */}
         <FullPageSection
           id="weekly-meals"
-          style={{ backgroundColor: SEMANTIC_UI_PALETTE.secondary }}
+          style={{ backgroundColor: BRAND_TOKENS.bgSection }}
         >
           <div className="relative h-full pt-20">
             <div className="flex items-start">
@@ -1716,14 +2000,14 @@ const FullPageDemoPage = () => {
                   marginTop: '50px',
                   marginLeft: '50px',
                   padding: '12px 16px',
-                  backgroundColor: 'rgba(128, 128, 128, 0.2)',
+                  backgroundColor: BRAND_TOKENS.surfaceMuted,
                   borderRadius: '6px',
                 }}
               >
                 <div
                   className="line-through group-hover:italic"
                   style={{
-                    color: SEMANTIC_UI_PALETTE.deep,
+                    color: BRAND_TOKENS.textPrimary,
                     fontFamily: "'Office Code Pro', monospace",
                     fontSize: '18px',
                     fontWeight: 600,
@@ -1738,7 +2022,7 @@ const FullPageDemoPage = () => {
                   aria-disabled="true"
                   style={{
                     marginTop: '12px',
-                    color: SEMANTIC_UI_PALETTE.deep,
+                    color: BRAND_TOKENS.textPrimary,
                     fontFamily: "'Office Code Pro', monospace",
                     fontSize: '16px',
                     fontWeight: 600,
@@ -1756,7 +2040,7 @@ const FullPageDemoPage = () => {
                   marginTop: '72px',
                   marginLeft: '24px',
                   marginRight: '24px',
-                  color: SEMANTIC_UI_PALETTE.deep,
+                  color: BRAND_TOKENS.textPrimary,
                   fontSize: '24px',
                 }}
                 animate={{ x: [0, 10, 0] }}
@@ -1801,7 +2085,7 @@ const FullPageDemoPage = () => {
                     <div
                       style={{
                         fontFamily: "'Yomogi', cursive",
-                        color: SEMANTIC_UI_PALETTE.deep,
+                        color: BRAND_TOKENS.textPrimary,
                         fontSize: '22px',
                         lineHeight: 1.5,
                       }}
@@ -1840,7 +2124,7 @@ const FullPageDemoPage = () => {
         {/* Page 3: Small Events */}
         <FullPageSection
           id="small-events"
-          style={{ backgroundColor: SEMANTIC_UI_PALETTE.accent }}
+          style={{ backgroundColor: BRAND_TOKENS.bgSection }}
         >
           <div className="relative w-full h-full">
             <img
@@ -1897,22 +2181,184 @@ const FullPageDemoPage = () => {
         {/* Page 4: For Businesses */}
         <FullPageSection
           id="for-businesses"
-          style={{ backgroundColor: SEMANTIC_UI_PALETTE.deep }}
+          style={{ backgroundColor: BRAND_TOKENS.bgSection }}
         >
-          <div className="h-full pt-20" />
+          <div className="business-tab">
+            <div
+              className="business-hero"
+              style={{
+                backgroundImage: "url('https://res.cloudinary.com/dokyhfvyd/image/upload/c_limit,f_auto,q_auto,w_1600/n4xtzathcmkkqdzq5im4?_a=BAMAK+eA0')",
+              }}
+              role="img"
+              aria-label="Local Effort for businesses"
+            >
+              <div className="business-hero-scrim" aria-hidden="true" />
+              <div className="business-hero-content">
+                <div className="partner-login-card">
+                  <a href="/partner-portal" target="_blank" rel="noreferrer">
+                    partner log in
+                  </a>
+                </div>
+                <div className="business-panel">
+                  <div className="business-eyebrow">For businesses</div>
+                  <div className="business-heading">Partner with Local Effort</div>
+                  <div className="business-subtitle">
+                    Choose a path below and we&apos;ll share the right next steps.
+                  </div>
+                  <div className="business-actions">
+                    <button
+                      type="button"
+                      className={`business-link ${businessPanel === 'wholesale' ? 'is-active' : ''}`}
+                      onClick={() => handleBusinessSelect('wholesale')}
+                    >
+                      cafes, bars, restaurants interested in wholesale
+                    </button>
+                    <button
+                      type="button"
+                      className={`business-link ${businessPanel === 'office' ? 'is-active' : ''}`}
+                      onClick={() => handleBusinessSelect('office')}
+                    >
+                      office lunches (coming soon)
+                    </button>
+                    <button
+                      type="button"
+                      className={`business-link ${businessPanel === 'pizza' ? 'is-active' : ''}`}
+                      onClick={() => handleBusinessSelect('pizza')}
+                    >
+                      open a pizza shop
+                    </button>
+                  </div>
+                </div>
+                {businessPanel && businessPanel !== 'office' && (
+                  <div className="business-reveal">
+                    {businessPanel === 'wholesale' && (
+                      <div className="business-stack">
+                        {!wholesaleSubmitted ? (
+                          <form className="business-form" onSubmit={handleWholesaleSubmit}>
+                            <label className="business-label" htmlFor="wholesale-email">
+                              Email for menu access
+                            </label>
+                            <input
+                              id="wholesale-email"
+                              type="email"
+                              className="business-input"
+                              placeholder="you@company.com"
+                              value={wholesaleEmail}
+                              onChange={(e) => setWholesaleEmail(e.target.value)}
+                              required
+                            />
+                            <button type="submit" className="business-btn">
+                              Get menu + pricing
+                            </button>
+                            <div className="business-note">
+                              We&apos;ll send a copy of the pricing sheet too.
+                            </div>
+                          </form>
+                        ) : (
+                          <div className="business-menu">
+                            <div className="business-menu-title">Wholesale menu unlocked</div>
+                            <div className="business-note">Here is a starter list with partner pricing.</div>
+                            <div className="business-menu-list">
+                              {WHOLESALE_MENU_ITEMS.map((item) => (
+                                <div key={item.name} className="business-menu-row">
+                                  <span>{item.name}</span>
+                                  <span className="business-price">{item.price}</span>
+                                </div>
+                              ))}
+                            </div>
+                            <button
+                              type="button"
+                              className="business-btn business-btn-secondary"
+                              onClick={() => setWholesaleSubmitted(false)}
+                            >
+                              Use a different email
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                    {businessPanel === 'pizza' && (
+                      <div className="business-stack">
+                        <div className="business-menu-title">Open a pizza shop</div>
+                        <div className="business-note">Reach Weston directly to start the conversation.</div>
+                        <a className="business-email" href="mailto:weston@localeffortfood.com">
+                          weston@localeffortfood.com
+                        </a>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <section className="case-study-section">
+              <div className="case-study-header">
+                <div className="case-study-title">case study: customer portal for happy monday</div>
+                <div className="case-study-subtitle">
+                  A lightweight portal that lets customers manage accounts, reorder favorites, and keep tabs on
+                  delivery days.
+                </div>
+              </div>
+              <div className="case-study-scroll" role="region" aria-label="Happy Monday case study">
+                <div className="case-study-grid">
+                  <div className="case-study-card case-study-text">
+                    <div className="case-study-tag">Goal</div>
+                    <div className="case-study-copy">
+                      Give subscribers a single place to pause, swap meals, and update delivery notes without
+                      emailing the team.
+                    </div>
+                  </div>
+                  <div className="case-study-card case-study-image">
+                    <img
+                      src="/gallery/Screenshot%20(168).png"
+                      alt="Happy Monday portal preview"
+                      loading="lazy"
+                    />
+                  </div>
+                  <div className="case-study-card case-study-text">
+                    <div className="case-study-tag">Experience</div>
+                    <div className="case-study-copy">
+                      Customers see upcoming menus, swap meals in seconds, and get instant updates on pickup
+                      windows.
+                    </div>
+                  </div>
+                  <div className="case-study-card case-study-image">
+                    <img
+                      src="/gallery/IMG_9148.jpg"
+                      alt="Happy Monday meals grid"
+                      loading="lazy"
+                    />
+                  </div>
+                  <div className="case-study-card case-study-text">
+                    <div className="case-study-tag">Built with</div>
+                    <div className="case-study-copy">
+                      Role-based access, live pricing tables, and a concierge channel for quick question replies.
+                    </div>
+                  </div>
+                  <div className="case-study-card case-study-image">
+                    <img
+                      src="/gallery/IMG_9305.jpg"
+                      alt="Happy Monday meal prep detail"
+                      loading="lazy"
+                    />
+                  </div>
+                </div>
+              </div>
+            </section>
+          </div>
         </FullPageSection>
 
         {/* Page 5: About */}
         <FullPageSection
           id="about"
-          style={{ backgroundColor: SEMANTIC_UI_PALETTE.muted }}
+          style={{ backgroundColor: BRAND_TOKENS.bgSection }}
         >
           <div className="relative w-full h-full">
             <img
               src="https://res.cloudinary.com/dokyhfvyd/image/upload/c_limit,f_auto,q_auto,w_1600/jo9pxtjng8zpt4yo4rcz?_a=BAMAK+eA0"
               alt="About Local Effort"
               className="w-full h-full object-contain"
-              style={{ objectPosition: 'center', backgroundColor: SEMANTIC_UI_PALETTE.muted }}
+              style={{ objectPosition: 'center', backgroundColor: BRAND_TOKENS.bgSection }}
             />
           </div>
         </FullPageSection>
@@ -1920,7 +2366,7 @@ const FullPageDemoPage = () => {
         {/* Page 6: Local Pizza */}
         <FullPageSection
           id="local-pizza"
-          style={{ backgroundColor: SEMANTIC_UI_PALETTE.primary }}
+          style={{ backgroundColor: BRAND_TOKENS.bgSection }}
         >
           <div className="relative w-full h-full pt-20">
             <img
@@ -1951,7 +2397,7 @@ const FullPageDemoPage = () => {
         {selected && (
           <motion.div
             className="fixed inset-0 z-[60] flex items-center justify-center p-4 cursor-pointer"
-            style={{ backgroundColor: 'rgba(0, 0, 0, 0.7)' }}
+            style={{ backgroundColor: BRAND_TOKENS.overlayStrong }}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -1998,7 +2444,7 @@ const FullPageDemoPage = () => {
       </AnimatePresence>
 
       <Dialog open={orderOpen} onOpenChange={setOrderOpen}>
-        <DialogContent className="sm:max-w-[520px]">
+        <DialogContent className="fullpage-demo-scope sm:max-w-[520px]">
           <DialogHeader>
             <DialogTitle>Weekly Meals Ordering</DialogTitle>
             <DialogDescription>
@@ -2039,10 +2485,10 @@ const FullPageDemoPage = () => {
       </Dialog>
 
       <Dialog open={smallEventsDialog === 'dinner'} onOpenChange={(open) => setSmallEventsDialog(open ? 'dinner' : null)}>
-        <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-[980px]">
+        <DialogContent className="fullpage-demo-scope small-events-dialog max-h-[85vh] overflow-y-auto sm:max-w-[980px]">
           <DialogHeader>
-          <DialogTitle>Dinner party in my home</DialogTitle>
-            <DialogDescription>
+            <DialogTitle className="small-events-title">Dinner party in my home</DialogTitle>
+            <DialogDescription className="small-events-description">
               Chef-led, multi-course dinners with seasonal menus, staffing, and a 15% deposit to hold the date.
             </DialogDescription>
           </DialogHeader>
@@ -2051,10 +2497,10 @@ const FullPageDemoPage = () => {
       </Dialog>
 
       <Dialog open={smallEventsDialog === 'weddings'} onOpenChange={(open) => setSmallEventsDialog(open ? 'weddings' : null)}>
-        <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-[980px]">
+        <DialogContent className="fullpage-demo-scope small-events-dialog max-h-[85vh] overflow-y-auto sm:max-w-[980px]">
           <DialogHeader>
-            <DialogTitle>Weddings</DialogTitle>
-            <DialogDescription>
+            <DialogTitle className="small-events-title">Weddings</DialogTitle>
+            <DialogDescription className="small-events-description">
               Flexible packages for rehearsal dinners, receptions, and late-night bites with deposit holds.
             </DialogDescription>
           </DialogHeader>
@@ -2063,14 +2509,115 @@ const FullPageDemoPage = () => {
       </Dialog>
 
       <Dialog open={smallEventsDialog === 'holiday'} onOpenChange={(open) => setSmallEventsDialog(open ? 'holiday' : null)}>
-        <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-[980px]">
+        <DialogContent className="fullpage-demo-scope small-events-dialog max-h-[85vh] overflow-y-auto sm:max-w-[980px]">
           <DialogHeader>
-            <DialogTitle>Small events and holiday parties</DialogTitle>
-            <DialogDescription>
+            <DialogTitle className="small-events-title">Small events and holiday parties</DialogTitle>
+            <DialogDescription className="small-events-description">
               Drop-off or staffed menus for work parties, milestones, and holiday hosting.
             </DialogDescription>
           </DialogHeader>
           {renderSmallEventDialogContent('holiday')}
+        </DialogContent>
+      </Dialog>
+
+      <Dialog
+        open={quoteDialogOpen}
+        onOpenChange={(open) => {
+          setQuoteDialogOpen(open);
+          if (!open) {
+            setQuoteStatus('idle');
+            setQuoteError('');
+          }
+        }}
+      >
+        <DialogContent className="fullpage-demo-scope sm:max-w-[600px]">
+          <DialogHeader>
+            <DialogTitle>Contact us about your quote</DialogTitle>
+            <DialogDescription>
+              We&apos;ll send your note plus the current quote details to our team.
+            </DialogDescription>
+          </DialogHeader>
+          {quoteStatus === 'success' ? (
+            <div className="space-y-4">
+              <div className="text-sm text-slate-700">
+                Message sent. We&apos;ll reply soon.
+              </div>
+              <button
+                type="button"
+                className="form-fun-cta w-full rounded-md bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800"
+                onClick={() => setQuoteDialogOpen(false)}
+              >
+                Close
+              </button>
+            </div>
+          ) : (
+            <form className="form-fun-card space-y-4" onSubmit={submitQuoteMessage}>
+              <div className="text-xs text-slate-600">
+                Quote type: {SMALL_EVENT_CONFIG[quoteDialogType]?.label || 'Small events'}
+              </div>
+              <div className="grid gap-4 md:grid-cols-2">
+                <div>
+                  <label className="form-fun-label" htmlFor="quote-name">Name</label>
+                  <input
+                    id="quote-name"
+                    type="text"
+                    className="mt-1 w-full"
+                    value={quoteName}
+                    onChange={(e) => setQuoteName(e.target.value)}
+                    placeholder="Your name"
+                  />
+                </div>
+                <div>
+                  <label className="form-fun-label" htmlFor="quote-email">Email</label>
+                  <input
+                    id="quote-email"
+                    type="email"
+                    className="mt-1 w-full"
+                    value={quoteEmail}
+                    onChange={(e) => setQuoteEmail(e.target.value)}
+                    placeholder="you@company.com"
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="form-fun-label" htmlFor="quote-message">Message</label>
+                <textarea
+                  id="quote-message"
+                  className="mt-1 w-full"
+                  rows={4}
+                  value={quoteMessage}
+                  onChange={(e) => setQuoteMessage(e.target.value)}
+                  placeholder="What would you like to clarify or adjust?"
+                />
+              </div>
+              {quoteStatus === 'error' && (
+                <div className="text-sm text-red-700">{quoteError}</div>
+              )}
+              <button
+                type="submit"
+                className="form-fun-cta w-full rounded-md bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800"
+                disabled={quoteStatus === 'sending'}
+              >
+                {quoteStatus === 'sending' ? 'Sending...' : 'Send message'}
+              </button>
+            </form>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={officeLunchesOpen} onOpenChange={setOfficeLunchesOpen}>
+        <DialogContent className="fullpage-demo-scope sm:max-w-[900px]">
+          <DialogHeader>
+            <DialogTitle>Office lunches (coming soon)</DialogTitle>
+          </DialogHeader>
+          <div className="overflow-hidden rounded-xl border border-slate-200 bg-white">
+            <img
+              src="/gallery/Screenshot%20(168).png"
+              alt="Office lunches preview"
+              className="h-auto w-full object-cover"
+              loading="lazy"
+            />
+          </div>
         </DialogContent>
       </Dialog>
 
@@ -2213,7 +2760,7 @@ const FullPageDemoPage = () => {
           </div>
         </div>
       )}
-    </>
+    </div>
   );
 };
 

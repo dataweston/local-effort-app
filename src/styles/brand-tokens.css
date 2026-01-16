@@ -1,0 +1,47 @@
+:root {
+  --brand-linen: #F1E3D8;
+  --brand-bridge: #DEC0B7;
+  --brand-neutral-1: #C1B8CD;
+  --brand-neutral-2: #C0BECF;
+  --brand-rose: #C66C78;
+  --brand-olive: #7A846E;
+  --brand-ink: #3A2E3F;
+
+  --color-bg-page: var(--brand-linen);
+  --color-bg-section: var(--brand-bridge);
+  --color-bg-card: #E2C7BE;
+  --color-bg-secondary: var(--brand-neutral-1);
+  --color-bg-subtle: var(--brand-neutral-2);
+
+  --color-text-primary: var(--brand-ink);
+  --color-text-secondary: rgba(58, 46, 63, 0.78);
+  --color-text-muted: rgba(58, 46, 63, 0.6);
+  --color-text-inverse: var(--brand-linen);
+
+  --color-border-default: var(--brand-neutral-2);
+  --color-border-strong: var(--brand-ink);
+  --color-border-focus: var(--brand-olive);
+
+  --color-action-primary-bg: #D28D93;
+  --color-action-primary-hover-bg: #D18A90;
+  --color-action-primary-active-bg: #CF868D;
+  --color-action-primary-text: var(--brand-ink);
+  --color-action-primary-border: var(--brand-rose);
+  --color-action-primary-disabled-bg: var(--brand-neutral-1);
+
+  --color-action-secondary-bg: transparent;
+  --color-action-secondary-hover-bg: var(--brand-neutral-1);
+  --color-action-secondary-active-bg: var(--brand-neutral-2);
+  --color-action-secondary-text: var(--brand-ink);
+  --color-action-secondary-border: var(--brand-neutral-2);
+
+  --color-state-success: var(--brand-olive);
+  --color-state-warning: #D29698;
+  --color-state-danger: var(--brand-rose);
+  --color-state-info: var(--brand-neutral-1);
+
+  --color-overlay: rgba(58, 46, 63, 0.6);
+  --color-overlay-strong: rgba(58, 46, 63, 0.72);
+  --color-surface-muted: rgba(58, 46, 63, 0.12);
+  --color-focus-ring: rgba(122, 132, 110, 0.35);
+}
