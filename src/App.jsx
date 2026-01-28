@@ -51,8 +51,6 @@ const PlacemakerEmbeddedApp = lazy(() => import('./partners/placemaker'));
 const AACRMEmbeddedApp = lazy(() => import('./partners/aacrm'));
 const TinyDinerEmbeddedApp = lazy(() => import('./partners/tiny-diner'));
 const WeddingsEmbeddedApp = lazy(() => import('./partners/weddings'));
-const CookbookSearchPage = lazy(() => import('./pages/CookbookSearchPage'));
-const CookbookRecipePage = lazy(() => import('./pages/CookbookRecipePage'));
 // City landing pages
 const PersonalChefMinneapolisPage = lazy(() => import('./pages/PersonalChefMinneapolis'));
 const PersonalChefStPaulPage = lazy(() => import('./pages/PersonalChefStPaul'));
@@ -472,22 +470,6 @@ const AppContent = () => {
                   element={
                     <AnimatedPage>
                       <WeddingsEmbeddedApp />
-                    </AnimatedPage>
-                  }
-                />
-                <Route
-                  path="/cookbook"
-                  element={
-                    <AnimatedPage>
-                      <CookbookSearchPage />
-                    </AnimatedPage>
-                  }
-                />
-                <Route
-                  path="/recipes/:id"
-                  element={
-                    <AnimatedPage>
-                      <CookbookRecipePage />
                     </AnimatedPage>
                   }
                 />
