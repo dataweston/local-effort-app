@@ -33,6 +33,7 @@ CREATE TABLE IF NOT EXISTS public.happymonday_orders (
   created_by uuid REFERENCES public.happymonday_users(id) ON DELETE SET NULL,
   order_date date NOT NULL,
   items jsonb NOT NULL DEFAULT '{}', -- {itemId: quantity}
+  adjustments jsonb NOT NULL DEFAULT '[]', -- [{id, description, amount_cents}]
   total_cents integer NOT NULL,
   notes text,
   status text NOT NULL DEFAULT 'unpaid' CHECK (status IN ('unpaid', 'paid', 'partial', 'refunded')),

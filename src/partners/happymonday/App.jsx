@@ -576,6 +576,19 @@ const App = () => {
         </tr>
       `;
     }).join('');
+    const adjustmentsHtml = Array.isArray(invoice.adjustments)
+      ? invoice.adjustments.map((adj) => {
+        const amount = (adj.amount_cents || 0) / 100;
+        return `
+          <tr>
+            <td style="padding: 12px; border-bottom: 1px solid #e2e8f0; color: #b91c1c;">${adj.description || 'Credit Adjustment'}</td>
+            <td style="padding: 12px; border-bottom: 1px solid #e2e8f0; text-align: center; color: #b91c1c;">1</td>
+            <td style="padding: 12px; border-bottom: 1px solid #e2e8f0; text-align: right; color: #b91c1c;">$${amount.toFixed(2)}</td>
+            <td style="padding: 12px; border-bottom: 1px solid #e2e8f0; text-align: right; font-weight: 600; color: #b91c1c;">$${amount.toFixed(2)}</td>
+          </tr>
+        `;
+      }).join('')
+      : '';
 
     const printWindow = window.open('', '_blank');
     printWindow.document.write(`
@@ -733,6 +746,7 @@ const App = () => {
             </thead>
             <tbody>
               ${itemsHtml}
+              ${adjustmentsHtml}
               <tr class="total-row">
                 <td colspan="3" style="text-align: right;">Total Amount:</td>
                 <td style="text-align: right; color: #3b82f6;">$${(invoice.total_cents / 100).toFixed(2)}</td>
@@ -756,6 +770,7 @@ const App = () => {
 
   const categoryOptions = useMemo(() => {
     const unique = new Set(items.map((item) => item.category));
+    unique.add('Adjustments');
     return Array.from(unique).sort();
   }, [items]);
 
@@ -787,17 +802,45 @@ const App = () => {
     const detailedRows = [];
 
     filteredOrders.forEach((order) => {
-      if (!order?.items) return;
-      Object.entries(order.items).forEach(([itemId, qty]) => {
-        const numericQty = Number(qty) || 0;
-        if (numericQty === 0) return;
+      if (order?.items) {
+        Object.entries(order.items).forEach(([itemId, qty]) => {
+          const numericQty = Number(qty) || 0;
+          if (numericQty === 0) return;
 
-        const catalogItem = getItemById(parseInt(itemId, 10));
-        const category = catalogItem?.category || 'Other';
-        const name = catalogItem?.name || `Item ${itemId}`;
-        const unitPrice = catalogItem?.price ?? 0;
-        const total = unitPrice * numericQty;
+          const catalogItem = getItemById(parseInt(itemId, 10));
+          const category = catalogItem?.category || 'Other';
+          const name = catalogItem?.name || `Item ${itemId}`;
+          const unitPrice = catalogItem?.price ?? 0;
+          const total = unitPrice * numericQty;
 
+          const matchesCategory = reportFilters.category === 'all' || category === reportFilters.category;
+          const matchesSearch = !searchTerm || [name, category, order.order_number, order.notes]
+            .some((field) => field?.toLowerCase().includes(searchTerm));
+
+          if (!matchesCategory || !matchesSearch) return;
+
+          detailedRows.push({
+            orderId: order.id,
+            orderNumber: order.order_number || order.id,
+            date: order.order_date,
+            status: order.status,
+            notes: order.notes,
+            itemId: parseInt(itemId, 10),
+            name,
+            category,
+            quantity: numericQty,
+            unitPrice,
+            total,
+          });
+        });
+      }
+
+      const adjustments = Array.isArray(order.adjustments) ? order.adjustments : [];
+      adjustments.forEach((adj, index) => {
+        const amount = (adj.amount_cents || 0) / 100;
+        if (!amount) return;
+        const name = adj.description?.trim() || 'Credit Adjustment';
+        const category = 'Adjustments';
         const matchesCategory = reportFilters.category === 'all' || category === reportFilters.category;
         const matchesSearch = !searchTerm || [name, category, order.order_number, order.notes]
           .some((field) => field?.toLowerCase().includes(searchTerm));
@@ -810,12 +853,12 @@ const App = () => {
           date: order.order_date,
           status: order.status,
           notes: order.notes,
-          itemId: parseInt(itemId, 10),
+          itemId: adj.id || `adjustment-${index}`,
           name,
           category,
-          quantity: numericQty,
-          unitPrice,
-          total,
+          quantity: 1,
+          unitPrice: amount,
+          total: amount,
         });
       });
     });
@@ -848,11 +891,14 @@ const App = () => {
       .sort((a, b) => Math.abs(b.total) - Math.abs(a.total));
 
     const totals = detailedRows.reduce((acc, row) => {
+      const isAdjustment = row.category === 'Adjustments';
       acc.revenue += row.total;
-      acc.quantity += row.quantity;
-      if (row.category === 'Pizza') {
-        acc.pizzaQuantity += row.quantity;
-        acc.pizzaRevenue += row.total;
+      if (!isAdjustment) {
+        acc.quantity += row.quantity;
+        if (row.category === 'Pizza') {
+          acc.pizzaQuantity += row.quantity;
+          acc.pizzaRevenue += row.total;
+        }
       }
       if (row.total < 0) {
         acc.creditIssued += row.total;
@@ -1544,7 +1590,7 @@ const App = () => {
                       return (
                         <div key={itemId} className="flex justify-between text-sm">
                           <span className={quantity < 0 ? 'text-red-600' : ''}>
-                            {item.name} × {quantity}
+                            {item.name} x {quantity}
                           </span>
                           <span className={lineTotal < 0 ? 'text-red-600' : ''}>
                             ${lineTotal.toFixed(2)}
@@ -1552,9 +1598,60 @@ const App = () => {
                         </div>
                       );
                     })}
+                    {orderAdjustments.map((adj) => (
+                      <div key={adj.id} className="flex justify-between text-sm text-red-600">
+                        <span>{adj.description}</span>
+                        <div className="flex items-center gap-2">
+                          <span>{formatCurrencyValue((adj.amount_cents || 0) / 100)}</span>
+                          <button
+                            type="button"
+                            onClick={() => removeOrderAdjustment(adj.id)}
+                            className="text-xs text-slate-400 hover:text-slate-600"
+                          >
+                            Remove
+                          </button>
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 ) : (
-                  <p className="text-slate-500 text-center py-4">No items selected</p>
+                  <p className="text-slate-500 text-center py-4">No items or credits added</p>
+                )}
+                {isAdmin && (
+                  <div className="mb-4 p-3 bg-slate-50 border border-slate-200 rounded-lg">
+                    <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">Add Credit / Adjustment</p>
+                    <div className="space-y-2">
+                      <input
+                        type="text"
+                        value={adjustmentDraft.description}
+                        onChange={(e) => setAdjustmentDraft((prev) => ({ ...prev, description: e.target.value }))}
+                        placeholder="Description"
+                        className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                      />
+                      <input
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        value={adjustmentDraft.amount}
+                        onChange={(e) => setAdjustmentDraft((prev) => ({ ...prev, amount: e.target.value }))}
+                        placeholder="Amount (credit)"
+                        className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                      />
+                      <button
+                        type="button"
+                        onClick={addOrderAdjustment}
+                        disabled={!adjustmentDraft.description.trim() || Number(adjustmentDraft.amount) <= 0}
+                        className={`w-full py-2 rounded-lg text-sm font-medium ${
+                          adjustmentDraft.description.trim() && Number(adjustmentDraft.amount) > 0
+                            ? 'bg-slate-900 text-white hover:bg-slate-800'
+                            : 'bg-slate-200 text-slate-500 cursor-not-allowed'
+                        }`}
+                      >
+                        Add Credit
+                      </button>
+                      <p className="text-xs text-slate-500">Credits subtract from the invoice total.</p>
+                    </div>
+                  </div>
                 )}
                 <div className="border-t pt-4 mb-6">
                   <div className="flex justify-between items-start">
@@ -1822,6 +1919,19 @@ const App = () => {
                       );
                     })}
                   </div>
+                  {Array.isArray(selectedInvoice.adjustments) && selectedInvoice.adjustments.length > 0 && (
+                    <div className="mt-4 space-y-2">
+                      <h4 className="text-sm font-semibold text-slate-600 uppercase tracking-wide">Credits / Adjustments</h4>
+                      {selectedInvoice.adjustments.map((adj) => (
+                        <div key={adj.id} className="flex justify-between p-3 bg-red-50 rounded-lg">
+                          <div>
+                            <p className="font-medium text-red-700">{adj.description || 'Credit Adjustment'}</p>
+                          </div>
+                          <p className="font-medium text-red-700">{formatCurrencyValue((adj.amount_cents || 0) / 100)}</p>
+                        </div>
+                      ))}
+                    </div>
+                  ))}
                 </div>
               </>
             ) : (
@@ -1894,6 +2004,78 @@ const App = () => {
                         </div>
                       );
                     })}
+                  </div>
+
+                  <h3 className="font-semibold text-slate-800 mb-4">Credits / Adjustments</h3>
+                  <div className="space-y-3 mb-6">
+                    {editAdjustments.length === 0 ? (
+                      <p className="text-sm text-slate-500">No credit adjustments added yet.</p>
+                    ) : (
+                      editAdjustments.map((adj) => (
+                        <div key={adj.id} className="grid gap-2 md:grid-cols-[1fr_140px_auto] items-center p-3 border border-slate-200 rounded-lg">
+                          <input
+                            type="text"
+                            value={adj.description || ''}
+                            onChange={(e) => updateEditAdjustment(adj.id, { description: e.target.value })}
+                            placeholder="Description"
+                            className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm"
+                          />
+                          <input
+                            type="number"
+                            step="0.01"
+                            min="0"
+                            value={Math.abs((adj.amount_cents || 0) / 100).toFixed(2)}
+                            onChange={(e) => {
+                              const amountCents = normalizeAdjustmentAmount(e.target.value);
+                              updateEditAdjustment(adj.id, { amount_cents: amountCents ?? 0 });
+                            }}
+                            className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => removeEditAdjustment(adj.id)}
+                            className="text-xs text-slate-500 hover:text-slate-700"
+                          >
+                            Remove
+                          </button>
+                        </div>
+                      ))
+                    )}
+                  </div>
+
+                  <div className="mb-6 p-3 bg-slate-50 border border-slate-200 rounded-lg">
+                    <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">Add Credit / Adjustment</p>
+                    <div className="grid gap-2 md:grid-cols-[1fr_160px_auto] items-center">
+                      <input
+                        type="text"
+                        value={editAdjustmentDraft.description}
+                        onChange={(e) => setEditAdjustmentDraft((prev) => ({ ...prev, description: e.target.value }))}
+                        placeholder="Description"
+                        className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm"
+                      />
+                      <input
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        value={editAdjustmentDraft.amount}
+                        onChange={(e) => setEditAdjustmentDraft((prev) => ({ ...prev, amount: e.target.value }))}
+                        placeholder="Amount (credit)"
+                        className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm"
+                      />
+                      <button
+                        type="button"
+                        onClick={addEditAdjustment}
+                        disabled={!editAdjustmentDraft.description.trim() || Number(editAdjustmentDraft.amount) <= 0}
+                        className={`px-4 py-2 rounded-lg text-sm font-medium ${
+                          editAdjustmentDraft.description.trim() && Number(editAdjustmentDraft.amount) > 0
+                            ? 'bg-slate-900 text-white hover:bg-slate-800'
+                            : 'bg-slate-200 text-slate-500 cursor-not-allowed'
+                        }`}
+                      >
+                        Add
+                      </button>
+                    </div>
+                    <p className="text-xs text-slate-500 mt-2">Credits subtract from the invoice total.</p>
                   </div>
 
                   <div className="mb-6">

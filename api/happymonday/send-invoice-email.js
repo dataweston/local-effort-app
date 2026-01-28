@@ -90,6 +90,17 @@ module.exports = async function handler(req, res) {
         quantity,
       };
     });
+    const adjustments = Array.isArray(order.adjustments) ? order.adjustments : [];
+    const adjustmentItems = adjustments
+      .filter(adj => (adj?.amount_cents || 0) !== 0)
+      .map((adj, index) => ({
+        id: adj.id || `adjustment-${index}`,
+        name: adj.description?.trim() || 'Credit Adjustment',
+        category: 'Adjustments',
+        price: (adj.amount_cents || 0) / 100,
+        quantity: 1,
+      }));
+    const mergedItems = [...itemsArray, ...adjustmentItems];
 
     // Get current balance for the user
     const { data: snapshot } = await supabase.rpc('happymonday_financial_snapshot', {
@@ -108,7 +119,7 @@ module.exports = async function handler(req, res) {
     await sendInvoiceNotification({
       orderNumber: order.order_number,
       orderDate: order.order_date,
-      items: itemsArray,
+      items: mergedItems,
       totalCents: order.total_cents,
       notes: order.notes,
       clientName: order.user?.name || order.user?.email || 'Happy Monday',

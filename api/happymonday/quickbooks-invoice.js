@@ -189,6 +189,20 @@ module.exports = async function handler(req, res) {
         },
       });
     }
+    const adjustments = Array.isArray(order.adjustments) ? order.adjustments : [];
+    adjustments.forEach((adj, index) => {
+      const amount = (adj.amount_cents || 0) / 100;
+      if (!amount) return;
+      lineItems.push({
+        DetailType: 'SalesItemLineDetail',
+        Amount: amount,
+        Description: adj.description?.trim() || 'Credit Adjustment',
+        SalesItemLineDetail: {
+          Qty: 1,
+          UnitPrice: amount,
+        },
+      });
+    });
 
     // Create QuickBooks invoice
     // Note: In production, you'd need to set up a Customer in QuickBooks for "Local Effort"
