@@ -50,6 +50,8 @@ END;
 $$;
 
 -- Update order editing function to include adjustments
+DROP FUNCTION IF EXISTS public.update_happymonday_order(uuid, jsonb, integer, text, date, uuid);
+
 CREATE OR REPLACE FUNCTION public.update_happymonday_order(
   p_order_id uuid,
   p_items jsonb,
@@ -126,6 +128,22 @@ BEGIN
 END;
 $$;
 
-GRANT EXECUTE ON FUNCTION public.update_happymonday_order TO authenticated;
+GRANT EXECUTE ON FUNCTION public.update_happymonday_order(
+  uuid,
+  jsonb,
+  jsonb,
+  integer,
+  text,
+  date,
+  uuid
+) TO authenticated;
 
-COMMENT ON FUNCTION public.update_happymonday_order IS 'Updates an unpaid order with new items, adjustments, total, notes, and date. Supports negative quantities and custom adjustments.';
+COMMENT ON FUNCTION public.update_happymonday_order(
+  uuid,
+  jsonb,
+  jsonb,
+  integer,
+  text,
+  date,
+  uuid
+) IS 'Updates an unpaid order with new items, adjustments, total, notes, and date. Supports negative quantities and custom adjustments.';
