@@ -1732,4 +1732,13 @@ if (sentryEnabled) {
 }
 
 // Ensure JSON error responses for unhandled errors.
-app.use((err, req, res, 
+app.use((err, req, res, next) => {
+  if (res.headersSent) return next(err);
+  const message = err && err.message ? String(err.message).slice(0, 200) : 'internal-error';
+  res.status(500).json({ error: 'internal-error', message });
+});
+
+const createApiApp = () => app;
+
+module.exports = { createApiApp };
+
