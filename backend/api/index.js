@@ -475,6 +475,24 @@ app.all('/api/store/products', async (req, res, next) => {
   }
 });
 
+app.all('/api/weekly-order/active', async (req, res, next) => {
+  try {
+    await require('../../api/weekly-order/active')(req, res);
+  } catch (err) {
+    logger.error({ err, method: req.method }, 'weekly order active handler failed');
+    next(err);
+  }
+});
+
+app.all('/api/weekly-order/checkout', async (req, res, next) => {
+  try {
+    await require('../../api/weekly-order/checkout')(req, res);
+  } catch (err) {
+    logger.error({ err, method: req.method }, 'weekly order checkout handler failed');
+    next(err);
+  }
+});
+
 // --- Calendar API Routes ---
 app.all('/api/calendar/events', async (req, res, next) => {
   try {
@@ -1713,7 +1731,5 @@ if (sentryEnabled) {
   app.use(Sentry.Handlers.errorHandler());
 }
 
-const createApiApp = () => app;
-
-module.exports = { createApiApp };
-
+// Ensure JSON error responses for unhandled errors.
+app.use((err, req, res, 

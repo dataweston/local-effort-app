@@ -9,7 +9,7 @@ import './styles/semantic-ui.css';
 import { loadFonts } from './utils/performance';
 
 const GLOBAL_FONT_STYLES = [
-  'https://api.fontshare.com/v2/css?f[]=general-sans@400,600,700&display=swap',
+  { href: 'https://api.fontshare.com/v2/css?f[]=general-sans@400,600,700&display=swap', crossOrigin: null },
   'https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;600&display=swap',
   'https://fonts.googleapis.com/css2?family=Fraunces:wght@400;500;600;700&display=swap',
   'https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;500;600;700&display=swap',

@@ -1,4 +1,9 @@
-const { PrismaClient } = require('@prisma/client');
+let PrismaClient = null;
+try {
+  ({ PrismaClient } = require('@prisma/client'));
+} catch (error) {
+  console.warn('[prisma] @prisma/client unavailable:', error && error.message ? error.message : error);
+}
 
 const resolveDatabaseUrl = () =>
   process.env.DATABASE_URL ||
@@ -22,8 +27,13 @@ const globalRef = globalThis;
 
 const createPrismaClient = () => {
   const resolved = ensureDatabaseUrl();
-  if (!resolved) return null;
-  return new PrismaClient();
+  if (!resolved || !PrismaClient) return null;
+  try {
+    return new PrismaClient();
+  } catch (error) {
+    console.warn('[prisma] failed to initialize client:', error && error.message ? error.message : error);
+    return null;
+  }
 };
 
 const prisma = globalRef.__localEffortPrisma || createPrismaClient();

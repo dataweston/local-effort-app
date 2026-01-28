@@ -66,9 +66,13 @@ const normalizeFontEntry = (entry) => {
   if (typeof entry === 'string') {
     return { href: entry, crossOrigin: 'anonymous' };
   }
+  if (!entry || typeof entry !== 'object') {
+    return { href: null, crossOrigin: null };
+  }
+  const hasCrossOrigin = Object.prototype.hasOwnProperty.call(entry, 'crossOrigin');
   return {
     href: entry.href,
-    crossOrigin: entry.crossOrigin ?? 'anonymous',
+    crossOrigin: hasCrossOrigin ? entry.crossOrigin : 'anonymous',
   };
 };
 

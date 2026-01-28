@@ -8,12 +8,12 @@ datasource db {
 }
 
 model SmallEventUser {
-  id           String             @id @default(uuid())
-  email        String             @unique
+  id           String               @id @default(uuid())
+  email        String               @unique
   passwordHash String
-  isAdmin      Boolean            @default(false)
-  createdAt    DateTime           @default(now())
-  updatedAt    DateTime           @updatedAt
+  isAdmin      Boolean              @default(false)
+  createdAt    DateTime             @default(now())
+  updatedAt    DateTime             @updatedAt
   sessions     SmallEventSession[]
   estimates    SmallEventEstimate[]
 }
@@ -28,42 +28,42 @@ model SmallEventSession {
 }
 
 model SmallEventEstimate {
-  id                String             @id @default(uuid())
-  type              String
-  status            String             @default("draft")
-  contactName       String?
-  contactEmail      String?
-  contactPhone      String?
-  guestCount        Int?
-  eventDate         String?
-  eventTime         String?
-  alternateDates    String?
-  location          String?
-  serviceStyle      String?
-  budgetRange       String?
-  menuNotes         String?
-  dietary           String?
-  rentals           String?
-  notes             String?
-  courses           String?
-  plannerInfo       String?
-  celebrationType   String?
-  kitchenAccess     String?
-  estimateMinCents  Int?
-  estimateMaxCents  Int?
-  subtotalCents     Int?
-  depositPercent    Int?
+  id                 String              @id @default(uuid())
+  type               String
+  status             String              @default("draft")
+  contactName        String?
+  contactEmail       String?
+  contactPhone       String?
+  guestCount         Int?
+  eventDate          String?
+  eventTime          String?
+  alternateDates     String?
+  location           String?
+  serviceStyle       String?
+  budgetRange        String?
+  menuNotes          String?
+  dietary            String?
+  rentals            String?
+  notes              String?
+  courses            String?
+  plannerInfo        String?
+  celebrationType    String?
+  kitchenAccess      String?
+  estimateMinCents   Int?
+  estimateMaxCents   Int?
+  subtotalCents      Int?
+  depositPercent     Int?
   depositAmountCents Int?
-  depositStatus     String             @default("unpaid")
-  lastEditedAt      DateTime?
-  expiresAt         DateTime?
-  claimToken        String?            @unique
-  userId            String?
-  createdAt         DateTime           @default(now())
-  updatedAt         DateTime           @updatedAt
-  user              SmallEventUser?    @relation(fields: [userId], references: [id])
-  hold              SmallEventHold?
-  payments          SmallEventPayment[]
+  depositStatus      String              @default("unpaid")
+  lastEditedAt       DateTime?
+  expiresAt          DateTime?
+  claimToken         String?             @unique
+  userId             String?
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+  user               SmallEventUser?     @relation(fields: [userId], references: [id])
+  hold               SmallEventHold?
+  payments           SmallEventPayment[]
 }
 
 model SmallEventAvailability {
@@ -81,26 +81,199 @@ model SmallEventAvailability {
 }
 
 model SmallEventHold {
-  id         String                @id @default(uuid())
-  estimateId String                @unique
+  id         String                 @id @default(uuid())
+  estimateId String                 @unique
   slotId     String
-  status     String                @default("held")
+  status     String                 @default("held")
   holdUntil  DateTime
-  createdAt  DateTime              @default(now())
-  updatedAt  DateTime              @updatedAt
-  estimate   SmallEventEstimate    @relation(fields: [estimateId], references: [id])
+  createdAt  DateTime               @default(now())
+  updatedAt  DateTime               @updatedAt
+  estimate   SmallEventEstimate     @relation(fields: [estimateId], references: [id])
   slot       SmallEventAvailability @relation(fields: [slotId], references: [id])
 }
 
 model SmallEventPayment {
-  id                String           @id @default(uuid())
-  estimateId        String
-  amountCents       Int
-  status            String           @default("pending")
-  squarePaymentId   String?          @unique
+  id                  String             @id @default(uuid())
+  estimateId          String
+  amountCents         Int
+  status              String             @default("pending")
+  squarePaymentId     String?            @unique
   squarePaymentLinkId String?
-  squareOrderId     String?
-  createdAt         DateTime         @default(now())
-  updatedAt         DateTime         @updatedAt
-  estimate          SmallEventEstimate @relation(fields: [estimateId], references: [id])
+  squareOrderId       String?
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
+  estimate            SmallEventEstimate @relation(fields: [estimateId], references: [id])
+}
+
+enum PriceTier {
+  subscriber
+  member
+}
+
+enum UserRole {
+  subscriber
+  member
+  admin
+}
+
+model User {
+  id         String    @id @default(uuid())
+  email      String    @unique
+  role       UserRole  @default(member)
+  customerId String?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  customer   Customer? @relation(fields: [customerId], references: [id])
+}
+
+model Customer {
+  id               String                  @id @default(uuid())
+  slug             String                  @unique
+  planRulesJson    Json?
+  priceTierDefault PriceTier?
+  createdAt        DateTime                @default(now())
+  updatedAt        DateTime                @updatedAt
+  users            User[]
+  orders           Order[]
+  overrides        CustomerPriceOverride[]
+  visibility       DishVisibility[]
+}
+
+model Dish {
+  id          String                  @id @default(uuid())
+  title       String
+  description String?
+  tags        String[]
+  allergens   String[]
+  status      String                  @default("draft")
+  createdAt   DateTime                @default(now())
+  updatedAt   DateTime                @updatedAt
+  menuItems   MenuWeekItem[]
+  prices      DishPrice[]
+  overrides   CustomerPriceOverride[]
+  visibility  DishVisibility[]
+  sourceLinks DishSourceLink[]
+  orderItems  OrderItem[]
+}
+
+model MenuWeek {
+  id         String                  @id @default(uuid())
+  weekStart  DateTime
+  cutoffAt   DateTime
+  status     String                  @default("draft")
+  createdAt  DateTime                @default(now())
+  updatedAt  DateTime                @updatedAt
+  items      MenuWeekItem[]
+  prices     DishPrice[]
+  overrides  CustomerPriceOverride[]
+  visibility DishVisibility[]
+  orders     Order[]
+}
+
+model MenuWeekItem {
+  id            String   @id @default(uuid())
+  menuWeekId    String
+  dishId        String
+  isVisible     Boolean  @default(true)
+  isAddon       Boolean  @default(false)
+  sortOrder     Int      @default(0)
+  capacityLimit Int?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  menuWeek      MenuWeek @relation(fields: [menuWeekId], references: [id])
+  dish          Dish     @relation(fields: [dishId], references: [id])
+
+  @@unique([menuWeekId, dishId])
+}
+
+model DishVisibility {
+  id         String   @id @default(uuid())
+  menuWeekId String
+  dishId     String
+  customerId String
+  canView    Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  menuWeek   MenuWeek @relation(fields: [menuWeekId], references: [id])
+  dish       Dish     @relation(fields: [dishId], references: [id])
+  customer   Customer @relation(fields: [customerId], references: [id])
+
+  @@unique([menuWeekId, dishId, customerId])
+}
+
+model DishPrice {
+  id         String    @id @default(uuid())
+  menuWeekId String
+  dishId     String
+  tier       PriceTier
+  priceCents Int
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  menuWeek   MenuWeek  @relation(fields: [menuWeekId], references: [id])
+  dish       Dish      @relation(fields: [dishId], references: [id])
+
+  @@unique([menuWeekId, dishId, tier])
+}
+
+model CustomerPriceOverride {
+  id         String   @id @default(uuid())
+  customerId String
+  menuWeekId String
+  dishId     String
+  priceCents Int
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  customer   Customer @relation(fields: [customerId], references: [id])
+  menuWeek   MenuWeek @relation(fields: [menuWeekId], references: [id])
+  dish       Dish     @relation(fields: [dishId], references: [id])
+
+  @@unique([customerId, menuWeekId, dishId])
+}
+
+model Order {
+  id              String      @id @default(uuid())
+  menuWeekId      String
+  customerId      String
+  submittedAt     DateTime?
+  status          String      @default("draft")
+  squarePaymentId String?
+  totalsCents     Int?
+  notes           String?
+  tier            PriceTier?
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  menuWeek        MenuWeek    @relation(fields: [menuWeekId], references: [id])
+  customer        Customer    @relation(fields: [customerId], references: [id])
+  items           OrderItem[]
+}
+
+model OrderItem {
+  id             String   @id @default(uuid())
+  orderId        String
+  dishId         String
+  quantity       Int
+  unitPriceCents Int
+  isAddon        Boolean  @default(false)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  order          Order    @relation(fields: [orderId], references: [id])
+  dish           Dish     @relation(fields: [dishId], references: [id])
+}
+
+model RecipeIngest {
+  id             String   @id @default(uuid())
+  source         String
+  rawPayloadJson Json
+  receivedAt     DateTime @default(now())
+}
+
+model DishSourceLink {
+  id          String   @id @default(uuid())
+  dishId      String
+  sourceId    String
+  externalKey String
+  createdAt   DateTime @default(now())
+  dish        Dish     @relation(fields: [dishId], references: [id])
+
+  @@unique([sourceId, externalKey])
 }
