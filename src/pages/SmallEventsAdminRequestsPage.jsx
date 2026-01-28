@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 
 const STATUS_OPTIONS = ['all', 'draft', 'held', 'confirmed', 'expired'];
-const TYPE_OPTIONS = ['all', 'dinner', 'weddings', 'holiday'];
+const TYPE_OPTIONS = ['all', 'dinner', 'pizza', 'weddings', 'holiday'];
 
 const formatCurrency = (value) => {
   const num = Number(value || 0) / 100;

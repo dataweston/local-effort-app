@@ -18,6 +18,16 @@ const SMALL_EVENT_CONFIG = {
     rangeMin: 0.9,
     rangeMax: 1.2,
   },
+  pizza: {
+    label: 'Pizza Party',
+    baseRate: 95,
+    minimumTotal: 850,
+    staffingGuestsPer: 8,
+    staffingHourly: 45,
+    staffingHours: 4,
+    rangeMin: 0.9,
+    rangeMax: 1.2,
+  },
   weddings: {
     label: 'Weddings',
     baseRate: 140,

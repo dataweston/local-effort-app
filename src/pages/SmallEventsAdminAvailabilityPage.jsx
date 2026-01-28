@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 
-const EVENT_TYPES = ['dinner', 'weddings', 'holiday'];
+const EVENT_TYPES = ['dinner', 'pizza', 'weddings', 'holiday'];
 
 const formatDate = (value) => {
   if (!value) return 'TBD';

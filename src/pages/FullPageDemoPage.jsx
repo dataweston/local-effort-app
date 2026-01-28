@@ -2,11 +2,12 @@
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { DndContext, PointerSensor, closestCenter, useSensor, useSensors } from '@dnd-kit/core';
-import { SortableContext, arrayMove, useSortable } from '@dnd-kit/sortable';
+import { SortableContext, useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import FullPageContainer from '../components/fullpage/FullPageContainer';
 import FullPageSection from '../components/fullpage/FullPageSection';
 import CloudinaryImage from '../components/common/cloudinaryImage';
+import SectionHeader from '../components/ui/SectionHeader';
 import {
   Dialog,
   DialogContent,
@@ -19,6 +20,18 @@ import '../styles/fullpage-demo-theme.css';
 const SMALL_EVENT_CONFIG = {
   dinner: {
     label: 'Dinner party',
+    baseRate: 85,
+    minimumTotal: 0,
+    minGuests: 4,
+    maxGuests: 16,
+    staffingGuestsPer: 8,
+    staffingHourly: 45,
+    staffingHours: 4,
+    rangeMin: 0.9,
+    rangeMax: 1.2,
+  },
+  pizza: {
+    label: 'Pizza Party',
     baseRate: 85,
     minimumTotal: 0,
     minGuests: 4,
@@ -57,6 +70,7 @@ const EVENT_TYPES = Object.keys(SMALL_EVENT_CONFIG);
 const DEFAULT_DEPOSIT_PERCENT = 0.15;
 const ESTIMATE_LIFESPAN_DAYS = 5;
 const HOLD_WINDOW_HOURS = 24;
+const ANNOUNCEMENT_HEIGHT = 40;
 const WHOLESALE_MENU_ITEMS = [
   { name: 'Market bread + cultured butter', price: '$4.50 / portion' },
   { name: 'Roasted vegetable lasagna', price: '$12.00 / portion' },
@@ -145,12 +159,15 @@ const buildInitialAvailability = () => {
 
   return [
     makeSlot(4, 'dinner', 'open', 'Weeknight availability'),
+    makeSlot(5, 'pizza', 'open', 'Oven ready'),
     makeSlot(6, 'holiday', 'open', 'Weeknight availability'),
     makeSlot(8, 'dinner', 'blocked', 'Staffing hold'),
+    makeSlot(9, 'pizza', 'open', 'Friday night'),
     makeSlot(10, 'weddings', 'open', 'Preferred Saturday'),
     makeSlot(12, 'holiday', 'open', 'Corporate-friendly'),
     makeSlot(15, 'weddings', 'blocked', 'Venue conflict'),
     makeSlot(18, 'dinner', 'open', 'Weekend window'),
+    makeSlot(19, 'pizza', 'blocked', 'Private event'),
     makeSlot(21, 'holiday', 'open', 'Holiday week'),
     makeSlot(24, 'weddings', 'open', 'Saturday or Sunday'),
   ];
@@ -189,7 +206,7 @@ const GalleryItem = ({
     isDragging,
   } = useSortable({ id, disabled: disableDrag });
 
-  const dragOffset = transform || { x: 0, y: 0 };
+  const dragOffset = isDragging && transform ? transform : { x: 0, y: 0 };
   const style = {
     position: 'absolute',
     width: pos.width,
@@ -198,18 +215,20 @@ const GalleryItem = ({
       x: pos.x + dragOffset.x,
       y: pos.y + dragOffset.y,
     }),
-    transition: isDragging ? 'none' : transition || 'transform 220ms ease',
+    transition: isDragging ? 'none' : transition || 'transform 260ms cubic-bezier(0.22, 1, 0.36, 1)',
     opacity: layoutReady ? 1 : 0,
     cursor: isDragging ? 'grabbing' : 'grab',
     zIndex: isDragging ? 50 : 1,
     willChange: 'transform',
     pointerEvents: layoutReady ? 'auto' : 'none',
+    touchAction: 'none',
   };
 
   return (
     <div
       ref={setNodeRef}
       style={style}
+      className={`gallery-tile ${isDragging ? 'is-dragging' : ''}`}
       onMouseEnter={() => img?.large_url && onPrefetch(img.large_url)}
       onClick={() => onSelect(id)}
       {...attributes}
@@ -219,7 +238,7 @@ const GalleryItem = ({
         <img
           src={img.thumbnail_url}
           alt={img.context?.alt || 'Gallery image'}
-          className="w-full h-full block select-none pointer-events-none object-cover"
+          className="gallery-image w-full h-full block select-none pointer-events-none object-cover"
           draggable={false}
           loading="eager"
           decoding="async"
@@ -234,7 +253,7 @@ const GalleryItem = ({
           publicId={img.public_id}
           alt={img.context?.alt || 'Gallery image'}
           width={Math.floor(pos.width)}
-          className="w-full h-full block select-none pointer-events-none object-cover"
+          className="gallery-image w-full h-full block select-none pointer-events-none object-cover"
           disableLazy={index < 20}
         />
       )}
@@ -251,14 +270,17 @@ const FullPageDemoPage = () => {
   const prefetched = useRef(new Set());
   const closeBtnRef = useRef(null);
   const lastDragEndRef = useRef(0);
-  const [imageOrder, setImageOrder] = useState([]);
+  const [columnOrder, setColumnOrder] = useState([]);
   const [positions, setPositions] = useState({});
+  const [galleryHeight, setGalleryHeight] = useState(2000);
+  const [layoutConfig, setLayoutConfig] = useState({ columns: 0, columnWidth: 0, gap: 10 });
   const containerRef = useRef(null);
   const [layoutReady, setLayoutReady] = useState(false);
   const [orderOpen, setOrderOpen] = useState(false);
   const [smallEventsDialog, setSmallEventsDialog] = useState(null);
   const [smallEventForms, setSmallEventForms] = useState(() => ({
     dinner: createSmallEventDefaults('dinner'),
+    pizza: createSmallEventDefaults('pizza'),
     weddings: createSmallEventDefaults('weddings'),
     holiday: createSmallEventDefaults('holiday'),
   }));
@@ -292,6 +314,10 @@ const FullPageDemoPage = () => {
   const [mealPlanImages, setMealPlanImages] = useState([]);
   const [mealPlanLoading, setMealPlanLoading] = useState(false);
   const [mealPlanError, setMealPlanError] = useState(null);
+  const [pizzaImages, setPizzaImages] = useState([]);
+  const [pizzaLoading, setPizzaLoading] = useState(false);
+  const [pizzaError, setPizzaError] = useState(null);
+  const [partners, setPartners] = useState([]);
   const [businessPanel, setBusinessPanel] = useState(null);
   const [wholesaleEmail, setWholesaleEmail] = useState('');
   const [wholesaleSubmitted, setWholesaleSubmitted] = useState(false);
@@ -303,6 +329,10 @@ const FullPageDemoPage = () => {
   const [quoteMessage, setQuoteMessage] = useState('');
   const [quoteStatus, setQuoteStatus] = useState('idle');
   const [quoteError, setQuoteError] = useState('');
+  const [announcementVisible, setAnnouncementVisible] = useState(false);
+  const [announcementOpen, setAnnouncementOpen] = useState(false);
+  const [caseStudyImage, setCaseStudyImage] = useState(null);
+  const [aboutFaqOpen, setAboutFaqOpen] = useState(0);
 
   const pages = [
     { id: 'home', label: 'Home' },
@@ -455,7 +485,7 @@ const clampGuestCount = (value, config) => {
     addLine('Dietary notes', form.dietary);
     addLine('Rentals or staffing', form.rentals);
 
-    if (type === 'dinner') {
+    if (type === 'dinner' || type === 'pizza') {
       addLine('Course count', form.courses);
       addLine('Kitchen access', form.kitchenAccess);
     }
@@ -878,6 +908,10 @@ const clampGuestCount = (value, config) => {
         title: 'Plan a cozy dinner party',
         subtitle: 'Share what you can, and we will fill in the details together.',
       },
+      pizza: {
+        title: 'Plan a Pizza Party',
+        subtitle: 'Tell us the basics and we will bring the pizza party plan.',
+      },
       weddings: {
         title: 'Plan the celebration feast',
         subtitle: 'From welcome bites to late-night snacks, we help map the flow.',
@@ -902,6 +936,82 @@ const clampGuestCount = (value, config) => {
       updateSmallEventForm(type, 'eventDate', slot.date);
       updateSmallEventForm(type, 'holdSlotId', slot.id);
     };
+    const slotsByDate = new Map(slots.map((slot) => [slot.date, slot]));
+    const getSlotStatusMeta = (slot) => {
+      const hold = holdsBySlot.get(slot.id);
+      const isHeldByCurrent = hold?.estimateId && hold.estimateId === form.estimateId;
+      const isUnavailable = slot.status === 'blocked' || (!isHeldByCurrent && slot.status !== 'open');
+      const statusKey = slot.status === 'open'
+        ? 'open'
+        : slot.status === 'blocked'
+          ? 'blocked'
+          : isHeldByCurrent
+            ? 'held'
+            : slot.status;
+      const statusLabel = slot.status === 'open'
+        ? 'Open'
+        : slot.status === 'blocked'
+          ? 'Blocked'
+          : isHeldByCurrent
+            ? 'Your hold'
+            : slot.status === 'confirmed'
+              ? 'Confirmed'
+              : 'Held';
+      return { hold, isHeldByCurrent, isUnavailable, statusKey, statusLabel };
+    };
+    const buildCalendarMonths = (count = 2) => {
+      const today = new Date();
+      const firstSlotDate = slots.length ? new Date(slots[0].date) : today;
+      const base = firstSlotDate > today ? firstSlotDate : today;
+      const cursor = new Date(base.getFullYear(), base.getMonth(), 1);
+      const months = [];
+
+      for (let i = 0; i < count; i += 1) {
+        const year = cursor.getFullYear();
+        const month = cursor.getMonth();
+        const monthStart = new Date(year, month, 1);
+        const daysInMonth = new Date(year, month + 1, 0).getDate();
+        const startDay = monthStart.getDay();
+        const totalCells = Math.ceil((startDay + daysInMonth) / 7) * 7;
+        const cells = [];
+
+        for (let cell = 0; cell < totalCells; cell += 1) {
+          const dayNumber = cell - startDay + 1;
+          if (dayNumber < 1 || dayNumber > daysInMonth) {
+            cells.push({ key: `empty-${year}-${month}-${cell}`, isOutside: true });
+            continue;
+          }
+          const dateValue = new Date(year, month, dayNumber);
+          const dateString = toDateInputValue(dateValue);
+          cells.push({
+            key: dateString,
+            date: dateString,
+            day: dayNumber,
+            slot: slotsByDate.get(dateString) || null,
+          });
+        }
+
+        months.push({
+          key: `${year}-${month}`,
+          label: monthStart.toLocaleDateString('en-US', { month: 'long', year: 'numeric' }),
+          cells,
+        });
+        cursor.setMonth(month + 1);
+      }
+
+      return months;
+    };
+    const calendarSpan = (() => {
+      if (slots.length === 0) return 2;
+      const today = new Date();
+      const firstSlotDate = new Date(slots[0].date);
+      const base = firstSlotDate > today ? firstSlotDate : today;
+      const lastSlotDate = new Date(slots[slots.length - 1].date);
+      const monthDiff = (lastSlotDate.getFullYear() - base.getFullYear()) * 12
+        + (lastSlotDate.getMonth() - base.getMonth());
+      return Math.min(4, Math.max(2, monthDiff + 1));
+    })();
+    const calendarMonths = buildCalendarMonths(calendarSpan);
 
     if (!config) return null;
 
@@ -967,16 +1077,20 @@ const clampGuestCount = (value, config) => {
             </div>
           </div>
 
-          {type === 'dinner' && (
+          {(type === 'dinner' || type === 'pizza') && (
             <div className="form-fun-card">
               <div className="form-fun-header">
-                <div className="form-fun-title">Dinner details</div>
-                <span className="form-fun-tag">In-home</span>
+                <div className="form-fun-title">{type === 'pizza' ? 'Pizza party details' : 'Dinner details'}</div>
+                <span className="form-fun-tag">{type === 'pizza' ? 'Pizza' : 'In-home'}</span>
               </div>
-              <p className="form-fun-help">Share your kitchen setup and course count.</p>
+              <p className="form-fun-help">
+                Share your kitchen setup and service flow.
+              </p>
               <div className="mt-3 grid gap-3 md:grid-cols-2">
                 <div>
-                  <label className="form-fun-label">Course count</label>
+                  <label className="form-fun-label">
+                    {type === 'pizza' ? 'Rounds or courses' : 'Course count'}
+                  </label>
                   <select
                     className="mt-1"
                     value={form.courses}
@@ -1275,11 +1389,11 @@ const clampGuestCount = (value, config) => {
               <span className="form-fun-tag">Dates</span>
             </div>
             <p className="form-fun-help">
-              Choose from shared availability or tell us your ideal date, time, and location.
+              Select an open date on the calendar. Admins set open and blocked dates by event type.
             </p>
             <div className="availability-calendar">
               <div className="availability-header">
-                <div className="availability-title">Shared availability</div>
+                <div className="availability-title">Available dates</div>
                 <button
                   type="button"
                   className="availability-refresh"
@@ -1289,49 +1403,62 @@ const clampGuestCount = (value, config) => {
                 </button>
               </div>
               {availabilityLoading ? (
-                <div className="availability-empty">Loading shared dates...</div>
+                <div className="availability-empty">Loading available dates...</div>
               ) : slots.length === 0 ? (
-                <div className="availability-empty">No shared dates yet. Add your ideal date below.</div>
+                <div className="availability-empty">No open dates yet. Add your ideal date below.</div>
               ) : (
-                <div className="availability-grid">
-                  {slots.map((slot) => {
-                    const hold = holdsBySlot.get(slot.id);
-                    const isHeldByCurrent = hold?.estimateId && hold.estimateId === form.estimateId;
-                    const isUnavailable = slot.status === 'blocked' || (!isHeldByCurrent && slot.status !== 'open');
-                    const isSelected = selectedSlot?.id === slot.id;
-                    const statusKey = slot.status === 'open'
-                      ? 'open'
-                      : slot.status === 'blocked'
-                        ? 'blocked'
-                        : isHeldByCurrent
-                          ? 'held'
-                          : slot.status;
-                    const statusLabel = slot.status === 'open'
-                      ? 'Open'
-                      : slot.status === 'blocked'
-                        ? 'Blocked'
-                        : isHeldByCurrent
-                          ? 'Your hold'
-                          : slot.status === 'confirmed'
-                            ? 'Confirmed'
-                            : 'Held';
-                    return (
-                      <button
-                        key={slot.id}
-                        type="button"
-                        className={`availability-slot ${isSelected ? 'is-selected' : ''}`}
-                        data-status={statusKey}
-                        disabled={isUnavailable}
-                        onClick={() => selectAvailabilitySlot(slot)}
-                        title={slot.notes || undefined}
-                      >
-                        <span className="availability-date">{formatSlotDate(slot.date)}</span>
-                        <span className="availability-status">{statusLabel}</span>
-                      </button>
-                    );
-                  })}
+                <div className="availability-calendar-grid">
+                  {calendarMonths.map((month) => (
+                    <div key={month.key} className="availability-month">
+                      <div className="availability-month-title">{month.label}</div>
+                      <div className="availability-weekdays">
+                        {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((label) => (
+                          <span key={label}>{label}</span>
+                        ))}
+                      </div>
+                      <div className="availability-days">
+                        {month.cells.map((cell) => {
+                          if (cell.isOutside) {
+                            return <div key={cell.key} className="availability-day is-outside" />;
+                          }
+                          const slot = cell.slot;
+                          if (!slot) {
+                            return (
+                              <div
+                                key={cell.key}
+                                className="availability-day is-unlisted"
+                                title="No availability set"
+                              >
+                                <span>{cell.day}</span>
+                              </div>
+                            );
+                          }
+                          const meta = getSlotStatusMeta(slot);
+                          const isSelected = selectedSlot?.id === slot.id;
+                          return (
+                            <button
+                              key={cell.key}
+                              type="button"
+                              className={`availability-day ${isSelected ? 'is-selected' : ''}`}
+                              data-status={meta.statusKey}
+                              disabled={meta.isUnavailable}
+                              onClick={() => selectAvailabilitySlot(slot)}
+                              title={slot.notes || meta.statusLabel}
+                            >
+                              <span>{cell.day}</span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  ))}
                 </div>
               )}
+              <div className="availability-legend">
+                <span data-status="open">Open</span>
+                <span data-status="held">Held</span>
+                <span data-status="blocked">Blocked</span>
+              </div>
               <div className="availability-footer">
                 <div className="availability-selected">
                   {selectedSlotLabel ? `Selected: ${selectedSlotLabel}` : 'Select an open date above.'}
@@ -1424,7 +1551,7 @@ const clampGuestCount = (value, config) => {
                     />
                   </div>
                   <div>
-                    <label className="font-semibold text-slate-600">Type</label>
+                    <label className="font-semibold text-slate-600">Event type</label>
                     <select
                       className="mt-1 w-full rounded-md border border-slate-300 bg-white px-2 py-1 text-xs"
                       value={adminSlotDraft.type}
@@ -1578,6 +1705,11 @@ const clampGuestCount = (value, config) => {
   }, [fetchImages]);
 
   useEffect(() => {
+    const timer = setTimeout(() => setAnnouncementVisible(true), 1200);
+    return () => clearTimeout(timer);
+  }, []);
+
+  useEffect(() => {
     if (smallEventsDialog) {
       loadSmallEventsAvailability();
       setSmallEventsNotice('');
@@ -1610,6 +1742,52 @@ const clampGuestCount = (value, config) => {
     };
   }, []);
 
+  useEffect(() => {
+    let abort = false;
+    const controller = new AbortController();
+
+    (async () => {
+      setPizzaLoading(true);
+      setPizzaError(null);
+      try {
+        const res = await fetch('/api/search-images?query=pizza&per_page=24', { signal: controller.signal });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(data.error || 'Failed loading pizza photos');
+        const imgs = Array.isArray(data.images) ? data.images : [];
+        if (!abort) setPizzaImages(imgs);
+      } catch (e) {
+        if (!abort) setPizzaError(e.message || String(e));
+      } finally {
+        if (!abort) setPizzaLoading(false);
+      }
+    })();
+
+    return () => {
+      abort = true;
+      controller.abort();
+    };
+  }, []);
+
+  useEffect(() => {
+    let mounted = true;
+    fetch('/api/search-images?query=partner&per_page=48')
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        if (!mounted || !data || !Array.isArray(data.images)) return;
+        const items = data.images.map((img) => {
+          const ctx = img.context && (img.context.custom || img.context);
+          return {
+            publicId: img.public_id || img.publicId,
+            name: (ctx && (ctx.name || ctx.title || ctx.alt)) || img.public_id || 'Partner',
+            url: ctx && (ctx.url || ctx.link || ctx.href),
+          };
+        }).filter((p) => p.publicId);
+        setPartners(items);
+      })
+      .catch(() => {});
+    return () => { mounted = false; };
+  }, []);
+
   const imageById = useMemo(() => {
     const map = new Map();
     images.forEach((img) => {
@@ -1626,116 +1804,126 @@ const clampGuestCount = (value, config) => {
     return map;
   }, [images]);
 
-  const orderedImages = useMemo(() => (
-    imageOrder.map((id) => imageById.get(id)).filter(Boolean)
-  ), [imageOrder, imageById]);
+  const flatOrder = useMemo(() => columnOrder.flat(), [columnOrder]);
 
-  // Initialize image order when images are loaded
+  const orderedImages = useMemo(() => (
+    flatOrder.map((id) => imageById.get(id)).filter(Boolean)
+  ), [flatOrder, imageById]);
+
+  const getColumnCount = useCallback((width) => {
+    if (width < 768) return 3;
+    if (width >= 1024) return 6;
+    return 5;
+  }, []);
+
+  const buildColumnOrder = useCallback((ids, config) => {
+    const { columns, columnWidth, gap } = config;
+    const nextColumns = Array.from({ length: columns }, () => []);
+    const columnHeights = new Array(columns).fill(0);
+
+    ids.forEach((imgId) => {
+      const img = imageById.get(imgId);
+      if (!img) return;
+      const imgWidth = img.width || 400;
+      const imgHeight = img.height || 500;
+      const aspectRatio = imgWidth / imgHeight;
+      const height = columnWidth / aspectRatio;
+
+      const targetColumn = columnHeights.indexOf(Math.min(...columnHeights));
+      nextColumns[targetColumn].push(imgId);
+      columnHeights[targetColumn] += height + gap;
+    });
+
+    return nextColumns;
+  }, [imageById]);
+
+  useEffect(() => {
+    const updateLayoutConfig = () => {
+      const containerWidth = containerRef.current?.clientWidth || window.innerWidth;
+      const columns = getColumnCount(containerWidth);
+      const gap = 10;
+      const columnWidth = Math.floor((containerWidth - gap * (columns - 1)) / columns);
+      setLayoutConfig((prev) => {
+        if (
+          prev.columns === columns
+          && prev.columnWidth === columnWidth
+          && prev.gap === gap
+        ) {
+          return prev;
+        }
+        return { columns, columnWidth, gap };
+      });
+    };
+
+    updateLayoutConfig();
+    window.addEventListener('resize', updateLayoutConfig);
+    return () => window.removeEventListener('resize', updateLayoutConfig);
+  }, [getColumnCount]);
+
   useEffect(() => {
     if (images.length === 0) {
-      setImageOrder([]);
+      setColumnOrder([]);
       setLayoutReady(false);
       return;
     }
+    if (!layoutConfig.columns) return;
 
-    setLayoutReady(false);
     const nextOrder = images.map(getImageId);
-    setImageOrder((prev) => {
-      if (prev.length === 0) return nextOrder;
+    setColumnOrder((prev) => {
+      const prevFlat = prev.flat();
       const nextSet = new Set(nextOrder);
-      const filtered = prev.filter((id) => nextSet.has(id));
+      const filtered = prevFlat.filter((id) => nextSet.has(id));
       const filteredSet = new Set(filtered);
       const appended = nextOrder.filter((id) => !filteredSet.has(id));
-      return [...filtered, ...appended];
+      const merged = [...filtered, ...appended];
+
+      if (
+        prev.length === layoutConfig.columns
+        && appended.length === 0
+        && filtered.length === prevFlat.length
+      ) {
+        return prev;
+      }
+
+      return buildColumnOrder(merged, layoutConfig);
     });
-  }, [images]);
+  }, [images, layoutConfig, buildColumnOrder]);
 
-  // Calculate positions based on order
   useEffect(() => {
-    if (imageOrder.length === 0 || images.length === 0) return;
+    if (columnOrder.length === 0 || !layoutConfig.columns) return;
 
-    const calculatePositions = () => {
-      const newPositions = {};
-      const isMobile = window.innerWidth < 768;
-      const isDesktop = window.innerWidth >= 1024;
-      const columns = isMobile ? 3 : isDesktop ? 6 : 5;
-      const columnHeights = new Array(columns).fill(0);
-      const baseGap = 2;
-      const baseColumnWidth = isMobile ? window.innerWidth / 3 : isDesktop ? window.innerWidth / 6 : window.innerWidth / 5;
+    const { columns, columnWidth, gap } = layoutConfig;
+    const newPositions = {};
+    const columnHeights = new Array(columns).fill(0);
 
-      imageOrder.forEach((imgId) => {
+    columnOrder.forEach((column, columnIndex) => {
+      let y = 0;
+      column.forEach((imgId) => {
         const img = imageById.get(imgId);
         if (!img) return;
-
-        // Get actual image dimensions or use defaults
         const imgWidth = img.width || 400;
         const imgHeight = img.height || 500;
         const aspectRatio = imgWidth / imgHeight;
-
-        // Determine if image should span multiple columns
-        let spanColumns = 1;
-        let imageWidth = baseColumnWidth;
-
-        // Horizontal images (wider than tall) span 2 columns
-        if (aspectRatio > 1.3) {
-          spanColumns = Math.min(2, columns);
-          imageWidth = baseColumnWidth * spanColumns;
-        }
-        // Very horizontal images span even more on desktop
-        else if (aspectRatio > 1.8 && !isMobile) {
-          spanColumns = Math.min(3, columns);
-          imageWidth = baseColumnWidth * spanColumns;
-        }
-
-        // Calculate height based on actual aspect ratio
-        const imageHeight = imageWidth / aspectRatio;
-
-        // Find the best position (column with shortest height that can fit span)
-        let bestCol = 0;
-        let minHeight = Infinity;
-
-        for (let col = 0; col <= columns - spanColumns; col++) {
-          // Check max height of columns this image would span
-          let maxHeightInSpan = 0;
-          for (let i = 0; i < spanColumns; i++) {
-            maxHeightInSpan = Math.max(maxHeightInSpan, columnHeights[col + i]);
-          }
-
-          if (maxHeightInSpan < minHeight) {
-            minHeight = maxHeightInSpan;
-            bestCol = col;
-          }
-        }
-
-        const x = bestCol * baseColumnWidth;
-        const y = minHeight;
+        const height = columnWidth / aspectRatio;
+        const x = columnIndex * (columnWidth + gap);
 
         newPositions[imgId] = {
           x,
           y,
-          column: bestCol,
-          width: imageWidth,
-          height: imageHeight,
-          spanColumns
+          column: columnIndex,
+          width: columnWidth,
+          height,
         };
-
-        // Update all spanned columns
-        for (let i = 0; i < spanColumns; i++) {
-          columnHeights[bestCol + i] = y + imageHeight + baseGap;
-        }
+        y += height + gap;
       });
+      columnHeights[columnIndex] = y;
+    });
 
-      setPositions(newPositions);
-      setLayoutReady((prev) => prev || Object.keys(newPositions).length > 0);
-    };
-
-    calculatePositions();
-
-    // Recalculate on window resize
-    const handleResize = () => calculatePositions();
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, [imageOrder, images, imageById]);
+    setPositions(newPositions);
+    const nextHeight = columnHeights.length ? Math.max(...columnHeights) : 0;
+    setGalleryHeight(Math.max(nextHeight, 400));
+    setLayoutReady(Object.keys(newPositions).length > 0);
+  }, [columnOrder, layoutConfig, imageById]);
 
   const handleDragStart = useCallback((event) => {
     setActiveDragId(event.active.id);
@@ -1746,18 +1934,56 @@ const clampGuestCount = (value, config) => {
   }, []);
 
   const handleDragEnd = useCallback((event) => {
-    const { active, over } = event;
+    const { active, delta } = event;
     setActiveDragId(null);
     lastDragEndRef.current = Date.now();
+    if (!active?.id) return;
+    if (!layoutConfig.columns) return;
+    if (layoutConfig.columnWidth <= 0) return;
+    if (!positions[active.id]) return;
 
-    if (!over || active.id === over.id) return;
-    setImageOrder((items) => {
-      const oldIndex = items.indexOf(active.id);
-      const newIndex = items.indexOf(over.id);
-      if (oldIndex === -1 || newIndex === -1) return items;
-      return arrayMove(items, oldIndex, newIndex);
+    const startPos = positions[active.id];
+    const nextX = startPos.x + (delta?.x || 0);
+    const nextY = startPos.y + (delta?.y || 0);
+    const columnWidth = layoutConfig.columnWidth;
+    const columnGap = layoutConfig.gap;
+    const columnStride = columnWidth + columnGap;
+    let targetColumn = Math.round(nextX / columnStride);
+    targetColumn = Math.max(0, Math.min(layoutConfig.columns - 1, targetColumn));
+
+    setColumnOrder((prev) => {
+      if (prev.length === 0) return prev;
+      let sourceColumn = -1;
+      let sourceIndex = -1;
+      prev.forEach((column, colIndex) => {
+        const idx = column.indexOf(active.id);
+        if (idx !== -1) {
+          sourceColumn = colIndex;
+          sourceIndex = idx;
+        }
+      });
+      if (sourceColumn === -1) return prev;
+
+      const nextColumns = prev.map((column) => column.slice());
+      nextColumns[sourceColumn].splice(sourceIndex, 1);
+      const targetItems = nextColumns[targetColumn] || [];
+
+      let insertIndex = targetItems.length;
+      for (let i = 0; i < targetItems.length; i += 1) {
+        const itemId = targetItems[i];
+        const itemPos = positions[itemId];
+        if (!itemPos) continue;
+        if (nextY < itemPos.y + itemPos.height * 0.5) {
+          insertIndex = i;
+          break;
+        }
+      }
+      targetItems.splice(insertIndex, 0, active.id);
+      nextColumns[targetColumn] = targetItems;
+
+      return nextColumns;
     });
-  }, []);
+  }, [layoutConfig, positions]);
 
   const handleSelectImage = useCallback((id) => {
     if (activeDragId) return;
@@ -1858,10 +2084,144 @@ const clampGuestCount = (value, config) => {
     if (selected && closeBtnRef.current) closeBtnRef.current.focus();
   }, [selected]);
 
+  const aboutFaqItems = [
+    {
+      question: 'What is Local Effort?',
+      answer:
+        'Local Effort is a Minnesota-based team focused on seasonal, ingredient-forward food for homes, events, and partner businesses.',
+    },
+    {
+      question: 'Where do you serve?',
+      answer:
+        'We are based in the Twin Cities and travel across Minnesota for select events. Share your location and we will confirm availability.',
+    },
+    {
+      question: 'What services do you offer?',
+      answer:
+        'In-home dinners, small events, weddings, weekly meals (when openings are available), and pizza parties with our mobile setup.',
+    },
+    {
+      question: 'How do weekly meals work?',
+      answer:
+        'Weekly meals are released in limited windows. Join the waitlist and we will reach out when pickup slots reopen.',
+    },
+    {
+      question: 'What is included in a pizza party?',
+      answer:
+        'We bring the oven, ingredients, and crew. Service is tailored to your guest count, timing, and space.',
+    },
+    {
+      question: 'How far in advance should we book?',
+      answer:
+        'Two to six weeks is ideal for most dinners and small events. For weddings and larger events, earlier is better.',
+    },
+    {
+      question: 'How many guests can you serve?',
+      answer:
+        'In-home dinners are typically 4 to 16 guests. Small events scale higher, and weddings can be larger. Tell us your guest count and we will confirm the right format.',
+    },
+    {
+      question: 'Do you accommodate dietary needs and allergies?',
+      answer:
+        'Yes. Share allergies and preferences and we will design a menu that works for your group.',
+    },
+    {
+      question: 'How do menus get set?',
+      answer:
+        'We build menus around seasonal ingredients and your preferences. You can share notes, dietary needs, and any must-haves in the request form.',
+    },
+    {
+      question: 'What is the deposit and hold policy?',
+      answer:
+        'A 15% deposit holds a date, and holds are time-limited while we confirm final details. Deposit payment is handled through Square.',
+    },
+    {
+      question: 'Can you help with rentals or staffing?',
+      answer:
+        'Yes. Let us know what you need and we will coordinate rentals, staffing, and service details in the estimate.',
+    },
+    {
+      question: 'How do I request a quote or booking?',
+      answer:
+        'Use the small events forms on this page or email yum@localeffortfood.com with your date, location, guest count, and event type.',
+    },
+  ];
+
+  const PartnerGrid = () => {
+    const items = (partners || []).filter((p) => p && p.publicId);
+    if (!items.length) return null;
+    return (
+      <div className="max-w-6xl mx-auto grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-5 items-center px-4">
+        {items.map((p, i) => (
+          <motion.a
+            key={(p.publicId || i) + i}
+            href={p.url || '#'}
+            onClick={(e) => {
+              if (!p.url) e.preventDefault();
+              if (typeof window !== 'undefined' && window.gtag) {
+                window.gtag('event', 'partner_click', { partner: p.name || p.publicId });
+              }
+            }}
+            className="flex items-center justify-center p-3 bg-white rounded-lg shadow-sm"
+            aria-label={p.name || `Partner ${i + 1}`}
+            rel="noopener noreferrer"
+            target={p.url ? '_blank' : undefined}
+            initial={{ opacity: 0, scale: 0.98 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.25, ease: 'easeOut', delay: i * 0.03 }}
+          >
+            <div className="w-full">
+              <div className="relative w-full" style={{ paddingTop: '18.2%' }}>
+                <CloudinaryImage
+                  publicId={p.publicId}
+                  alt={p.name || `Partner ${i + 1}`}
+                  width={1000}
+                  height={250}
+                  containerClassName="absolute inset-0"
+                  imgClassName="w-full h-full grayscale hover:grayscale-0 transition-all"
+                  resizeMode="fit"
+                  placeholderMode="solid"
+                  containerStyle={{ backgroundImage: 'none', backgroundColor: 'transparent' }}
+                  sizes="(max-width: 640px) 32vw, (max-width: 1024px) 20vw, 16vw"
+                  responsiveSteps={[320, 560, 820, 1000]}
+                />
+              </div>
+            </div>
+          </motion.a>
+        ))}
+      </div>
+    );
+  };
+
   return (
     <div className="fullpage-demo">
+      {/* Announcement Bar */}
+      <AnimatePresence>
+        {announcementVisible && activePage === 0 && (
+          <motion.button
+            type="button"
+            className="announcement-bar"
+            initial={{ opacity: 0, y: -12 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -12 }}
+            transition={{ duration: 0.35, ease: 'easeOut' }}
+            onClick={() => setAnnouncementOpen(true)}
+          >
+            try <span className="announcement-highlight">local pizza</span> and more at Happy Monday Coffee in Roseville
+          </motion.button>
+        )}
+      </AnimatePresence>
+
       {/* Fixed Navigation Bar */}
-      <nav className="fixed top-0 left-0 right-0 z-50 shadow-sm" style={{ backgroundColor: BRAND_TOKENS.bgPage, borderBottom: `1px solid ${BRAND_TOKENS.borderDefault}` }}>
+      <nav
+        className="fixed left-0 right-0 z-50 shadow-sm"
+        style={{
+          top: announcementVisible && activePage === 0 ? `${ANNOUNCEMENT_HEIGHT}px` : 0,
+          backgroundColor: BRAND_TOKENS.bgPage,
+          borderBottom: `1px solid ${BRAND_TOKENS.borderDefault}`,
+        }}
+      >
         <div className="flex items-center justify-between px-6 py-4">
           <div className="flex flex-col items-start gap-2">
             <button
@@ -1935,7 +2295,14 @@ const clampGuestCount = (value, config) => {
           style={{ backgroundColor: BRAND_TOKENS.bgPage }}
           animation="fadeScale"
         >
-          <div className="w-full h-full overflow-y-auto pt-20">
+          <div
+            className="w-full h-full overflow-y-auto"
+            style={{
+              paddingTop: announcementVisible && activePage === 0
+                ? `calc(5rem + ${ANNOUNCEMENT_HEIGHT}px)`
+                : '5rem',
+            }}
+          >
             {loading ? (
               <div className="text-center py-20" style={{ color: BRAND_TOKENS.textPrimary }}>
                 Loading images...
@@ -1956,11 +2323,11 @@ const clampGuestCount = (value, config) => {
                 onDragEnd={handleDragEnd}
                 onDragCancel={handleDragCancel}
               >
-                <SortableContext items={imageOrder}>
+                <SortableContext items={flatOrder}>
                   <div
                     ref={containerRef}
                     className="relative w-full"
-                    style={{ minHeight: '2000px' }}
+                    style={{ minHeight: `${galleryHeight}px` }}
                   >
                     {orderedImages.map((img, idx) => {
                       const imgId = getImageId(img);
@@ -2126,52 +2493,68 @@ const clampGuestCount = (value, config) => {
           id="small-events"
           style={{ backgroundColor: BRAND_TOKENS.bgSection }}
         >
-          <div className="relative w-full h-full">
-            <img
-              src="https://res.cloudinary.com/dokyhfvyd/image/upload/c_limit,f_auto,q_auto,w_1600/vjuesai2mxfavpq9d2df"
-              alt="Small Events"
-              className="absolute inset-0 w-full h-full object-cover"
-              style={{ objectPosition: 'center' }}
-            />
-            <div className="relative z-10 flex items-start justify-center h-full pt-24">
-              <div
-                style={{
-                  display: 'table',
-                  borderCollapse: 'separate',
-                  borderSpacing: '16px',
-                }}
-              >
-                <div style={{ display: 'table-row' }}>
-                  <div style={{ display: 'table-cell' }}>
-                    <button
-                      type="button"
-                      onClick={() => setSmallEventsDialog('dinner')}
-                      className="px-6 py-5 rounded-md border border-white/70 bg-white/80 text-left text-base font-semibold text-slate-900 hover:bg-white"
-                      style={{ fontFamily: "'Office Code Pro', monospace" }}
-                    >
-                      dinner party in my home
-                    </button>
+          <div className="relative w-full h-full pt-20 overflow-y-auto">
+            <div className="relative min-h-[520px] h-[70vh]">
+              <img
+                src="https://res.cloudinary.com/dokyhfvyd/image/upload/c_limit,f_auto,q_auto,w_1600/vjuesai2mxfavpq9d2df"
+                alt="Small Events"
+                className="absolute inset-0 w-full h-full object-cover"
+                style={{ objectPosition: 'center' }}
+              />
+              <div className="relative z-10 flex items-start justify-center h-full pt-24">
+                <div
+                  style={{
+                    display: 'table',
+                    borderCollapse: 'separate',
+                    borderSpacing: '16px',
+                  }}
+                >
+                  <div style={{ display: 'table-row' }}>
+                    <div style={{ display: 'table-cell' }}>
+                      <button
+                        type="button"
+                        onClick={() => setSmallEventsDialog('dinner')}
+                        className="px-6 py-5 rounded-md border border-white/70 bg-white/80 text-left text-base font-semibold text-slate-900 hover:bg-white"
+                        style={{ fontFamily: "'Office Code Pro', monospace" }}
+                      >
+                        dinner party in my home
+                      </button>
+                    </div>
+                    <div style={{ display: 'table-cell' }}>
+                      <button
+                        type="button"
+                        onClick={() => setSmallEventsDialog('weddings')}
+                        className="px-6 py-5 rounded-md border border-white/70 bg-white/80 text-left text-base font-semibold text-slate-900 hover:bg-white"
+                        style={{ fontFamily: "'Office Code Pro', monospace" }}
+                      >
+                        weddings
+                      </button>
+                    </div>
+                    <div style={{ display: 'table-cell' }}>
+                      <button
+                        type="button"
+                        onClick={() => setSmallEventsDialog('holiday')}
+                        className="px-6 py-5 rounded-md border border-white/70 bg-white/80 text-left text-base font-semibold text-slate-900 hover:bg-white"
+                        style={{ fontFamily: "'Office Code Pro', monospace" }}
+                      >
+                        small events and holiday parties
+                      </button>
+                    </div>
                   </div>
-                  <div style={{ display: 'table-cell' }}>
-                    <button
-                      type="button"
-                      onClick={() => setSmallEventsDialog('weddings')}
-                      className="px-6 py-5 rounded-md border border-white/70 bg-white/80 text-left text-base font-semibold text-slate-900 hover:bg-white"
-                      style={{ fontFamily: "'Office Code Pro', monospace" }}
-                    >
-                      weddings
-                    </button>
-                  </div>
-                  <div style={{ display: 'table-cell' }}>
-                    <button
-                      type="button"
-                      onClick={() => setSmallEventsDialog('holiday')}
-                      className="px-6 py-5 rounded-md border border-white/70 bg-white/80 text-left text-base font-semibold text-slate-900 hover:bg-white"
-                      style={{ fontFamily: "'Office Code Pro', monospace" }}
-                    >
-                      small events and holiday parties
-                    </button>
-                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="px-8 pb-16 pt-10">
+              <div className="small-events-testimonial">
+                "Local Effort is truly top tier."
+                <div className="small-events-testimonial-author">
+                  <a
+                    href="https://soupsistersmn.com"
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    Alyssa Andes
+                  </a>
                 </div>
               </div>
             </div>
@@ -2194,11 +2577,6 @@ const clampGuestCount = (value, config) => {
             >
               <div className="business-hero-scrim" aria-hidden="true" />
               <div className="business-hero-content">
-                <div className="partner-login-card">
-                  <a href="/partner-portal" target="_blank" rel="noreferrer">
-                    partner log in
-                  </a>
-                </div>
                 <div className="business-panel">
                   <div className="business-eyebrow">For businesses</div>
                   <div className="business-heading">Partner with Local Effort</div>
@@ -2295,8 +2673,8 @@ const clampGuestCount = (value, config) => {
               <div className="case-study-header">
                 <div className="case-study-title">case study: customer portal for happy monday</div>
                 <div className="case-study-subtitle">
-                  A lightweight portal that lets customers manage accounts, reorder favorites, and keep tabs on
-                  delivery days.
+                  a lightweight portal where customers can get more information, like ingredients and nutrition, as
+                  well as provide feedback and make custom requests.
                 </div>
               </div>
               <div className="case-study-scroll" role="region" aria-label="Happy Monday case study">
@@ -2304,17 +2682,32 @@ const clampGuestCount = (value, config) => {
                   <div className="case-study-card case-study-text">
                     <div className="case-study-tag">Goal</div>
                     <div className="case-study-copy">
-                      Give subscribers a single place to pause, swap meals, and update delivery notes without
-                      emailing the team.
+                      create a way for a cafe food vendor to have a direct relationship with end customers.{' '}
+                      <a
+                        href="https://www.localeffortfood.com/happymonday"
+                        target="_blank"
+                        rel="noreferrer"
+                        className="underline underline-offset-4"
+                      >
+                        see it in action
+                      </a>
+                      .
                     </div>
                   </div>
-                  <div className="case-study-card case-study-image">
+                  <button
+                    type="button"
+                    className="case-study-card case-study-image case-study-expand"
+                    onClick={() => setCaseStudyImage({
+                      src: '/gallery/hmw%20(1).png',
+                      alt: 'Happy Monday portal preview',
+                    })}
+                  >
                     <img
-                      src="/gallery/Screenshot%20(168).png"
+                      src="/gallery/hmw%20(1).png"
                       alt="Happy Monday portal preview"
                       loading="lazy"
                     />
-                  </div>
+                  </button>
                   <div className="case-study-card case-study-text">
                     <div className="case-study-tag">Experience</div>
                     <div className="case-study-copy">
@@ -2322,26 +2715,49 @@ const clampGuestCount = (value, config) => {
                       windows.
                     </div>
                   </div>
-                  <div className="case-study-card case-study-image">
+                  <button
+                    type="button"
+                    className="case-study-card case-study-image case-study-expand"
+                    onClick={() => setCaseStudyImage({
+                      src: '/gallery/hmw%20(2).png',
+                      alt: 'Happy Monday meals grid',
+                    })}
+                  >
                     <img
-                      src="/gallery/IMG_9148.jpg"
+                      src="/gallery/hmw%20(2).png"
                       alt="Happy Monday meals grid"
                       loading="lazy"
                     />
-                  </div>
+                  </button>
                   <div className="case-study-card case-study-text">
                     <div className="case-study-tag">Built with</div>
                     <div className="case-study-copy">
                       Role-based access, live pricing tables, and a concierge channel for quick question replies.
                     </div>
                   </div>
-                  <div className="case-study-card case-study-image">
+                  <button
+                    type="button"
+                    className="case-study-card case-study-image case-study-expand"
+                    onClick={() => setCaseStudyImage({
+                      src: '/gallery/hmw%20(3).png',
+                      alt: 'Happy Monday meal prep detail',
+                    })}
+                  >
                     <img
-                      src="/gallery/IMG_9305.jpg"
+                      src="/gallery/hmw%20(3).png"
                       alt="Happy Monday meal prep detail"
                       loading="lazy"
                     />
-                  </div>
+                  </button>
+                </div>
+              </div>
+            </section>
+
+            <section className="partnerships-section">
+              <div className="partnerships-card">
+                <div className="partnerships-title">Partnerships</div>
+                <div className="partnerships-copy">
+                  To be filled in with information about the types of partnerships we offer with other businesses.
                 </div>
               </div>
             </section>
@@ -2353,13 +2769,57 @@ const clampGuestCount = (value, config) => {
           id="about"
           style={{ backgroundColor: BRAND_TOKENS.bgSection }}
         >
-          <div className="relative w-full h-full">
-            <img
-              src="https://res.cloudinary.com/dokyhfvyd/image/upload/c_limit,f_auto,q_auto,w_1600/jo9pxtjng8zpt4yo4rcz?_a=BAMAK+eA0"
-              alt="About Local Effort"
-              className="w-full h-full object-contain"
-              style={{ objectPosition: 'center', backgroundColor: BRAND_TOKENS.bgSection }}
-            />
+          <div className="relative w-full h-full pt-20 overflow-y-auto">
+            <div className="relative w-full h-[70vh] min-h-[420px]">
+              <img
+                src="https://res.cloudinary.com/dokyhfvyd/image/upload/c_limit,f_auto,q_auto,w_1600/jo9pxtjng8zpt4yo4rcz?_a=BAMAK+eA0"
+                alt="About Local Effort"
+                className="w-full h-full object-contain"
+                style={{ objectPosition: 'center', backgroundColor: BRAND_TOKENS.bgSection }}
+              />
+            </div>
+            <div className="px-8 py-12">
+              <div className="about-bio">
+                <div className="about-bio-eyebrow">Bio</div>
+                <div className="about-bio-title">
+                  Local Effort is a small team focused on food with a clear point of view.
+                </div>
+                <div className="about-bio-copy">
+                  We build menus and experiences around seasonal ingredients, thoughtful sourcing, and the people who
+                  show up hungry. Our work spans intimate dinners, small events, and collaborations with local
+                  businesses.
+                </div>
+              </div>
+              <section className="py-12">
+                <div className="max-w-6xl mx-auto px-4 md:px-6 lg:px-8">
+                  <SectionHeader overline="Community" title="Our Partners" />
+                </div>
+                <PartnerGrid />
+              </section>
+              <div className="about-faq">
+                <div className="about-faq-title">FAQ</div>
+                <div className="about-faq-list">
+                  {aboutFaqItems.map((item, idx) => {
+                    const isOpen = aboutFaqOpen === idx;
+                    return (
+                      <div key={item.question} className={`about-faq-item ${isOpen ? 'is-open' : ''}`}>
+                        <button
+                          type="button"
+                          className="about-faq-question"
+                          onClick={() => setAboutFaqOpen(isOpen ? null : idx)}
+                        >
+                          <span>{item.question}</span>
+                          <span className="about-faq-icon">{isOpen ? '-' : '+'}</span>
+                        </button>
+                        {isOpen && (
+                          <div className="about-faq-answer">{item.answer}</div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
           </div>
         </FullPageSection>
 
@@ -2368,25 +2828,113 @@ const clampGuestCount = (value, config) => {
           id="local-pizza"
           style={{ backgroundColor: BRAND_TOKENS.bgSection }}
         >
-          <div className="relative w-full h-full pt-20">
-            <img
-              src="/gallery/5Z0A5737-Edit.jpg"
-              alt="Local pizza"
-              className="absolute inset-0 h-full w-full object-cover"
-              style={{ objectPosition: 'center' }}
-            />
-            <div className="relative z-10 flex h-full items-end px-8 pb-16">
-              <div
-                className="max-w-lg rounded-lg border border-white/60 bg-white/85 p-5 text-slate-900 shadow-lg"
-                style={{ fontFamily: "'Office Code Pro', monospace" }}
-              >
-                <div className="text-xs font-semibold uppercase tracking-wide text-slate-600">Local pizza</div>
-                <div className="mt-2 text-lg font-semibold">Wood-fired pizza for parties and pop-ups.</div>
-                <div className="mt-2 text-sm text-slate-700">
-                  We bring the oven, the local ingredients, and the crew. Perfect for birthdays, patios, and
-                  neighborhood gatherings.
+          <div className="relative w-full h-full pt-20 overflow-y-auto">
+            <div className="relative min-h-[520px] h-[70vh]">
+              <img
+                src="/gallery/5Z0A5737-Edit.jpg"
+                alt="Local pizza"
+                className="absolute inset-0 h-full w-full object-cover"
+                style={{ objectPosition: 'center' }}
+              />
+              <div className="relative z-10 flex h-full flex-col items-start justify-end gap-6 px-8 pb-16 md:flex-row md:items-end md:justify-between">
+                <div
+                  className="max-w-lg rounded-lg border border-white/60 bg-white/85 p-5 text-slate-900 shadow-lg"
+                  style={{ fontFamily: "'Office Code Pro', monospace" }}
+                >
+                  <div className="text-xs font-semibold uppercase tracking-wide text-slate-600">Local pizza</div>
+                  <div className="mt-2 text-lg font-semibold">Local Pizza in your freezer</div>
+                  <div className="mt-2 text-sm text-slate-700">
+                    Local Pizza is 100% midwest ingredients. Find us at Happy Monday in Roseville, and soon on{' '}
+                    <a
+                      href="https://www.mnfood.club"
+                      target="_blank"
+                      rel="noreferrer"
+                      className="underline underline-offset-4"
+                    >
+                      MN Food Club
+                    </a>
+                    . Host a pizza party at your home, office, or business today.
+                  </div>
                 </div>
+                <button
+                  type="button"
+                  className="pizza-cta"
+                  onClick={() => setSmallEventsDialog('pizza')}
+                >
+                  book a pizza party
+                </button>
               </div>
+            </div>
+            <div className="relative z-10 px-8 pb-16 pt-10">
+              {pizzaLoading ? (
+                <div className="text-sm text-gray-600">Loading photos...</div>
+              ) : pizzaError ? (
+                <div className="text-sm text-red-700">{pizzaError}</div>
+              ) : (
+                <div className="columns-2 md:columns-3 lg:columns-4 gap-4 [column-fill:_balance]">
+                  <div className="mb-4 break-inside-avoid border p-4 bg-white/70 rounded-lg">
+                    <div
+                      style={{
+                        fontFamily: "'Yomogi', cursive",
+                        color: BRAND_TOKENS.textPrimary,
+                        fontSize: '22px',
+                        lineHeight: 1.5,
+                      }}
+                    >
+                      cheese:{' '}
+                      <a
+                        href="https://grandecheese.com/cheeses/mozzarella/"
+                        target="_blank"
+                        rel="noreferrer"
+                        className="underline underline-offset-4"
+                      >
+                        grande mozzarella
+                      </a>
+                      . grain:{' '}
+                      <a
+                        href="https://www.bakersfieldflourandbread.com/"
+                        target="_blank"
+                        rel="noreferrer"
+                        className="underline underline-offset-4"
+                      >
+                        bakers field
+                      </a>
+                      . tomato:{' '}
+                      <a
+                        href="https://deifratelli.com/"
+                        target="_blank"
+                        rel="noreferrer"
+                        className="underline underline-offset-4"
+                      >
+                        dei fratelli
+                      </a>
+                      . pepperoni: many.
+                    </div>
+                  </div>
+                  {pizzaImages.map((img, idx) => (
+                    <div
+                      key={(img.asset_id || img.public_id || idx) + ':' + idx}
+                      className="mb-4 break-inside-avoid border p-2 bg-white rounded-lg overflow-hidden"
+                    >
+                      {img.thumbnail_url ? (
+                        <img
+                          src={img.thumbnail_url}
+                          alt={img.context?.alt || 'Pizza image'}
+                          className="rounded-lg w-full h-auto"
+                          loading="lazy"
+                        />
+                      ) : (
+                        <CloudinaryImage
+                          publicId={img.public_id || img.publicId}
+                          alt={img.context?.alt || 'Pizza image'}
+                          width={800}
+                          className="rounded-lg w-full h-auto"
+                        />
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         </FullPageSection>
@@ -2484,6 +3032,38 @@ const clampGuestCount = (value, config) => {
         </DialogContent>
       </Dialog>
 
+      <Dialog open={announcementOpen} onOpenChange={setAnnouncementOpen}>
+        <DialogContent className="fullpage-demo-scope sm:max-w-[520px]">
+          <DialogHeader>
+            <DialogTitle>Happy Monday Coffee</DialogTitle>
+            <DialogDescription>
+              Our favorite coffee shop,{' '}
+              <a
+                href="https://www.happymonday.company"
+                target="_blank"
+                rel="noreferrer"
+                className="underline underline-offset-4"
+              >
+                Happy Monday Coffee
+              </a>
+              , has our sandwiches and salads in their grab-and-go fridge, and our frozen pizzas in their freezer.
+              Drop in and try one out.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="announcement-map">
+            <div className="announcement-map-title">Google Maps</div>
+            <a
+              href="https://www.google.com/maps/search/?api=1&query=Happy%20Monday%20Coffee%2C%202420%20Cleveland%20Ave%20N%2C%20Roseville%2C%20MN%2055113"
+              target="_blank"
+              rel="noreferrer"
+              className="announcement-map-link"
+            >
+              2420 Cleveland Ave N, Roseville, MN 55113
+            </a>
+          </div>
+        </DialogContent>
+      </Dialog>
+
       <Dialog open={smallEventsDialog === 'dinner'} onOpenChange={(open) => setSmallEventsDialog(open ? 'dinner' : null)}>
         <DialogContent className="fullpage-demo-scope small-events-dialog max-h-[85vh] overflow-y-auto sm:max-w-[980px]">
           <DialogHeader>
@@ -2493,6 +3073,18 @@ const clampGuestCount = (value, config) => {
             </DialogDescription>
           </DialogHeader>
           {renderSmallEventDialogContent('dinner')}
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={smallEventsDialog === 'pizza'} onOpenChange={(open) => setSmallEventsDialog(open ? 'pizza' : null)}>
+        <DialogContent className="fullpage-demo-scope small-events-dialog max-h-[85vh] overflow-y-auto sm:max-w-[980px]">
+          <DialogHeader>
+            <DialogTitle className="small-events-title">Pizza Party</DialogTitle>
+            <DialogDescription className="small-events-description">
+              Wood-fired pizza parties with full service, staffing, and a 15% deposit to hold the date.
+            </DialogDescription>
+          </DialogHeader>
+          {renderSmallEventDialogContent('pizza')}
         </DialogContent>
       </Dialog>
 
@@ -2618,6 +3210,24 @@ const clampGuestCount = (value, config) => {
               loading="lazy"
             />
           </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog
+        open={Boolean(caseStudyImage)}
+        onOpenChange={(open) => {
+          if (!open) setCaseStudyImage(null);
+        }}
+      >
+        <DialogContent className="fullpage-demo-scope case-study-lightbox sm:max-w-[900px]">
+          {caseStudyImage && (
+            <img
+              src={caseStudyImage.src}
+              alt={caseStudyImage.alt}
+              className="w-full h-auto"
+              loading="eager"
+            />
+          )}
         </DialogContent>
       </Dialog>
 
