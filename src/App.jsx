@@ -50,7 +50,7 @@ const HMEmbeddedApp = lazy(() => import('./partners/happymonday'));
 const PlacemakerEmbeddedApp = lazy(() => import('./partners/placemaker'));
 const AACRMEmbeddedApp = lazy(() => import('./partners/aacrm'));
 const TinyDinerEmbeddedApp = lazy(() => import('./partners/tiny-diner'));
-const TinyWeddingsEmbeddedApp = lazy(() => import('./partners/tiny-weddings'));
+const WeddingsEmbeddedApp = lazy(() => import('./partners/weddings'));
 const CookbookSearchPage = lazy(() => import('./pages/CookbookSearchPage'));
 const CookbookRecipePage = lazy(() => import('./pages/CookbookRecipePage'));
 // City landing pages
@@ -75,7 +75,7 @@ const AppContent = () => {
   const location = useLocation();
   const hideHeader =
     location.pathname.startsWith('/partners/aacrm') ||
-    location.pathname === '/tiny-weddings' ||
+    location.pathname === '/weddings' ||
     location.pathname === '/winterdinner' ||
     location.pathname === '/winterpizza' ||
     location.pathname === '/januarymeals';
@@ -465,9 +465,13 @@ const AppContent = () => {
                 /> */}
                 <Route
                   path="/tiny-weddings"
+                  element={<Navigate to="/weddings" replace />}
+                />
+                <Route
+                  path="/weddings"
                   element={
                     <AnimatedPage>
-                      <TinyWeddingsEmbeddedApp />
+                      <WeddingsEmbeddedApp />
                     </AnimatedPage>
                   }
                 />

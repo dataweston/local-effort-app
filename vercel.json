@@ -61,6 +61,12 @@
   ],
   "routes": [
     {
+      "src": "/(.*)",
+      "has": [{ "type": "host", "value": "tiny-weddings.localeffortfood.com" }],
+      "dest": "https://weddings.localeffortfood.com/$1",
+      "status": 308
+    },
+    {
       "src": "/sales/(?<slug>[^/]+)$",
       "dest": "/api/sales-proxy.js?path=/$1"
     },
@@ -157,13 +163,23 @@
       "dest": "/prerender/paikka/index.html"
     },
     {
+      "src": "^/weddings$",
+      "dest": "https://weddings.localeffortfood.com",
+      "status": 308
+    },
+    {
+      "src": "^/weddings/(.*)",
+      "dest": "https://weddings.localeffortfood.com/$1",
+      "status": 308
+    },
+    {
       "src": "^/tiny-weddings$",
-      "dest": "https://tiny-weddings.localeffortfood.com",
+      "dest": "https://weddings.localeffortfood.com",
       "status": 308
     },
     {
       "src": "^/tiny-weddings/(.*)",
-      "dest": "https://tiny-weddings.localeffortfood.com/$1",
+      "dest": "https://weddings.localeffortfood.com/$1",
       "status": 308
     },
     {

@@ -147,6 +147,8 @@ const App = () => {
   // State management
   const [currentView, setCurrentView] = useState("order");
   const [cart, setCart] = useState({});
+  const [orderAdjustments, setOrderAdjustments] = useState([]);
+  const [adjustmentDraft, setAdjustmentDraft] = useState({ description: "", amount: "" });
   const [orderConfirmed, setOrderConfirmed] = useState(false);
   const [notes, setNotes] = useState("");
   const [orderDate, setOrderDate] = useState(new Date().toISOString().split("T")[0]);
@@ -159,6 +161,8 @@ const App = () => {
   const [editCart, setEditCart] = useState({});
   const [editNotes, setEditNotes] = useState("");
   const [editOrderDate, setEditOrderDate] = useState("");
+  const [editAdjustments, setEditAdjustments] = useState([]);
+  const [editAdjustmentDraft, setEditAdjustmentDraft] = useState({ description: "", amount: "" });
   const [reportFilters, setReportFilters] = useState(() => createDefaultReportFilters());
   const [reportSending, setReportSending] = useState(false);
   const [syncingInventory, setSyncingInventory] = useState(false);
@@ -309,11 +313,55 @@ const App = () => {
     return [];
   };
 
+  const normalizeAdjustmentAmount = (value) => {
+    const parsed = Number(value);
+    if (!Number.isFinite(parsed) || parsed === 0) return null;
+    const cents = Math.round(Math.abs(parsed) * 100);
+    if (cents === 0) return null;
+    return -cents;
+  };
+
+  const buildAdjustment = ({ description, amountCents }) => ({
+    id: `adj-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+    description: description.trim(),
+    amount_cents: amountCents,
+  });
+
+  const addOrderAdjustment = () => {
+    const amountCents = normalizeAdjustmentAmount(adjustmentDraft.amount);
+    const description = adjustmentDraft.description.trim();
+    if (!description || amountCents === null) return;
+    setOrderAdjustments((prev) => [...prev, buildAdjustment({ description, amountCents })]);
+    setAdjustmentDraft({ description: "", amount: "" });
+  };
+
+  const removeOrderAdjustment = (id) => {
+    setOrderAdjustments((prev) => prev.filter((adj) => adj.id !== id));
+  };
+
+  const addEditAdjustment = () => {
+    const amountCents = normalizeAdjustmentAmount(editAdjustmentDraft.amount);
+    const description = editAdjustmentDraft.description.trim();
+    if (!description || amountCents === null) return;
+    setEditAdjustments((prev) => [...prev, buildAdjustment({ description, amountCents })]);
+    setEditAdjustmentDraft({ description: "", amount: "" });
+  };
+
+  const updateEditAdjustment = (id, updates) => {
+    setEditAdjustments((prev) =>
+      prev.map((adj) => (adj.id === id ? { ...adj, ...updates } : adj))
+    );
+  };
+
+  const removeEditAdjustment = (id) => {
+    setEditAdjustments((prev) => prev.filter((adj) => adj.id !== id));
+  };
+
   // Calculate total
   const calculateTotal = () => Object.entries(cart).reduce((total, [itemId, quantity]) => {
     const item = items.find((i) => i.id === parseInt(itemId));
     return total + (item ? item.price * quantity : 0);
-  }, 0);
+  }, 0) + orderAdjustments.reduce((sum, adj) => sum + ((adj.amount_cents || 0) / 100), 0);
 
   const updateCart = (itemId, change) => {
     setCart((prev) => {
@@ -342,12 +390,14 @@ const App = () => {
   const calculateEditTotal = () => Object.entries(editCart).reduce((total, [itemId, quantity]) => {
     const item = items.find((i) => i.id === parseInt(itemId));
     return total + (item ? item.price * quantity : 0);
-  }, 0);
+  }, 0) + editAdjustments.reduce((sum, adj) => sum + ((adj.amount_cents || 0) / 100), 0);
 
   const startEditingInvoice = () => {
     if (!selectedInvoice) return;
     setEditCart({ ...selectedInvoice.items });
     setEditNotes(selectedInvoice.notes || "");
+    setEditAdjustments(Array.isArray(selectedInvoice.adjustments) ? selectedInvoice.adjustments : []);
+    setEditAdjustmentDraft({ description: "", amount: "" });
     // Normalize date to YYYY-MM-DD format for date input
     const dateOnly = selectedInvoice.order_date.split('T')[0];
     setEditOrderDate(dateOnly);
@@ -359,16 +409,27 @@ const App = () => {
     setEditCart({});
     setEditNotes("");
     setEditOrderDate("");
+    setEditAdjustments([]);
+    setEditAdjustmentDraft({ description: "", amount: "" });
   };
 
   const saveInvoiceEdits = async () => {
     if (!selectedInvoice || !hmUser || loading) return;
     setLoading(true);
     try {
+      const invalidAdjustment = editAdjustments.find(
+        (adj) => !adj?.description?.trim() || !adj?.amount_cents
+      );
+      if (invalidAdjustment) {
+        alert("Each credit adjustment needs a description and amount.");
+        setLoading(false);
+        return;
+      }
       const totalCents = Math.round(calculateEditTotal() * 100);
 
       await updateOrder(selectedInvoice.id, {
         items: editCart,
+        adjustments: editAdjustments,
         totalCents,
         notes: editNotes,
         orderDate: editOrderDate,
@@ -396,9 +457,18 @@ const App = () => {
   };
 
   const submitOrder = async () => {
-    if (!orderConfirmed || Object.keys(cart).length === 0 || loading || !hmUser) return;
+    const hasLineItems = Object.keys(cart).length > 0 || orderAdjustments.length > 0;
+    if (!orderConfirmed || !hasLineItems || loading || !hmUser) return;
     setLoading(true);
     try {
+      const invalidAdjustment = orderAdjustments.find(
+        (adj) => !adj?.description?.trim() || !adj?.amount_cents
+      );
+      if (invalidAdjustment) {
+        alert("Each credit adjustment needs a description and amount.");
+        setLoading(false);
+        return;
+      }
       const totalCents = Math.round(calculateTotal() * 100);
       const orderNumber = `HM-${Date.now()}`;
       const isClientOrder = !isAdmin; // Client orders trigger email
@@ -408,12 +478,15 @@ const App = () => {
         orderNumber,
         orderDate,
         items: cart,
+        adjustments: orderAdjustments,
         totalCents,
         notes,
         isClientOrder,
       });
 
       setCart({});
+      setOrderAdjustments([]);
+      setAdjustmentDraft({ description: "", amount: "" });
       setOrderConfirmed(false);
       setNotes("");
       setOrderDate(new Date().toISOString().split("T")[0]);
@@ -798,7 +871,7 @@ const App = () => {
   const statusOptions = ['all', 'unpaid', 'partial', 'paid', 'refunded'];
 
   const total = calculateTotal();
-  const hasItems = Object.keys(cart).length > 0;
+  const hasItems = Object.keys(cart).length > 0 || orderAdjustments.length > 0;
 
   const updateReportFilter = (field, value) => {
     setReportFilters((prev) => ({ ...prev, [field]: value }));

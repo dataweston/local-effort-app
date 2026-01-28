@@ -14,7 +14,7 @@ const links = [
   { path: '/about', name: 'About' },
   // { path: '/happy-monday', name: 'Happy Monday' }, // temporarily hidden
   { path: '/gallery', name: 'Gallery' },
-  { name: 'Tiny Weddings', external: true, href: 'https://tiny-weddings.localeffortfood.com' },
+  { name: 'Weddings', external: true, href: 'https://weddings.localeffortfood.com' },
   { path: '/sale', name: '🥧 Holiday Pie Sale', isRedLink: true },
   // { path: '/releases', name: 'Releases' }, // temporarily hidden
 ];
@@ -307,4 +307,3 @@ export const Header = () => {
     </header>
   );
 };
-
