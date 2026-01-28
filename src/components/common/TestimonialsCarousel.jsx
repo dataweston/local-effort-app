@@ -2,6 +2,60 @@ import React, { useMemo, useState } from 'react';
 import EmblaCarousel from './EmblaCarousel';
 import { businessInfo } from '../../data/staticContent';
 
+const INLINE_MARKUP_RE = /\[\/?[bi]\]/;
+const INLINE_MARKUP_GLOBAL_RE = /\[\/?[bi]\]/g;
+
+function stripInlineMarkup(text) {
+  return String(text || '').replace(INLINE_MARKUP_GLOBAL_RE, '');
+}
+
+function renderInlineMarkup(text) {
+  if (!text) return null;
+  const raw = String(text);
+  if (!INLINE_MARKUP_RE.test(raw)) return raw;
+  const tokens = raw.split(/(\[\/?b\]|\[\/?i\])/);
+  const root = { type: null, children: [] };
+  const stack = [root];
+
+  tokens.forEach((token) => {
+    if (!token) return;
+    if (token === '[b]') {
+      const node = { type: 'b', children: [] };
+      stack[stack.length - 1].children.push(node);
+      stack.push(node);
+      return;
+    }
+    if (token === '[/b]') {
+      if (stack.length > 1) stack.pop();
+      return;
+    }
+    if (token === '[i]') {
+      const node = { type: 'i', children: [] };
+      stack[stack.length - 1].children.push(node);
+      stack.push(node);
+      return;
+    }
+    if (token === '[/i]') {
+      if (stack.length > 1) stack.pop();
+      return;
+    }
+    stack[stack.length - 1].children.push(token);
+  });
+
+  let key = 0;
+  const renderNodes = (node) => node.children.map((child) => {
+    if (typeof child === 'string') return child;
+    const Tag = child.type === 'b' ? 'strong' : 'em';
+    return (
+      <Tag key={`inline-${key++}`}>
+        {renderNodes(child)}
+      </Tag>
+    );
+  });
+
+  return renderNodes(root);
+}
+
 function shuffle(array) {
   const a = array.slice();
   for (let i = a.length - 1; i > 0; i--) {
@@ -36,7 +90,7 @@ export default function TestimonialsCarousel({ items = [], title = 'Testimonials
     };
   const graph = items.slice(0, 20).map((t) => ({
       '@type': 'Review',
-      reviewBody: String(t.quote || '').trim(),
+      reviewBody: stripInlineMarkup(String(t.quote || '')).trim(),
       author: { '@type': 'Person', name: t.author || 'Customer' },
       reviewRating: /5★/.test(String(t.context || '')) ? { '@type': 'Rating', ratingValue: 5, bestRating: 5 } : undefined,
       publisher: t.context ? { '@type': 'Organization', name: String(t.context).split('·')[0].trim() } : undefined,
@@ -79,7 +133,8 @@ export default function TestimonialsCarousel({ items = [], title = 'Testimonials
 
 function TestimonialCard({ t, maxLines = 5 }) {
   const [expanded, setExpanded] = useState(false);
-  const quote = String(t.quote || '').trim();
+  const rawQuote = String(t.quote || '').trim();
+  const plainQuote = stripInlineMarkup(rawQuote);
   const author = t.author || 'Anonymous';
   const context = t.context;
   return (
@@ -88,9 +143,9 @@ function TestimonialCard({ t, maxLines = 5 }) {
         className={`text-body italic ${expanded ? '' : 'line-clamp-' + maxLines}`}
         style={!expanded ? { display: '-webkit-box', WebkitLineClamp: maxLines, WebkitBoxOrient: 'vertical', overflow: 'hidden' } : undefined}
       >
-        “{quote}”
+        "{renderInlineMarkup(rawQuote)}"
       </p>
-      {quote.length > 220 && (
+      {plainQuote.length > 220 && (
         <button className="mt-2 text-sm underline self-start" onClick={() => setExpanded((v) => !v)} aria-expanded={expanded}>
           {expanded ? 'See less' : 'See more'}
         </button>

@@ -8,6 +8,7 @@ import FullPageContainer from '../components/fullpage/FullPageContainer';
 import FullPageSection from '../components/fullpage/FullPageSection';
 import CloudinaryImage from '../components/common/cloudinaryImage';
 import SectionHeader from '../components/ui/SectionHeader';
+import { thumbtackReviews } from '../data/staticContent';
 import {
   Dialog,
   DialogContent,
@@ -187,6 +188,16 @@ const BRAND_TOKENS = {
 
 const getImageId = (img) => img.asset_id || img.public_id;
 
+const getImageScale = (id) => {
+  if (!id) return 1;
+  let hash = 0;
+  for (let i = 0; i < id.length; i += 1) {
+    hash = (hash * 31 + id.charCodeAt(i)) % 1000;
+  }
+  const normalized = hash / 1000;
+  return 0.85 + normalized * 0.45;
+};
+
 const GalleryItem = ({
   id,
   img,
@@ -333,6 +344,10 @@ const FullPageDemoPage = () => {
   const [announcementOpen, setAnnouncementOpen] = useState(false);
   const [caseStudyImage, setCaseStudyImage] = useState(null);
   const [aboutFaqOpen, setAboutFaqOpen] = useState(0);
+  const [showFeedback, setShowFeedback] = useState(false);
+  const [fb, setFb] = useState({ name: '', email: '', sentiment: 'positive', message: '' });
+  const [fbStatus, setFbStatus] = useState('idle');
+  const [liveFeedback, setLiveFeedback] = useState([]);
 
   const pages = [
     { id: 'home', label: 'Home' },
@@ -1788,6 +1803,7 @@ const clampGuestCount = (value, config) => {
     return () => { mounted = false; };
   }, []);
 
+
   const imageById = useMemo(() => {
     const map = new Map();
     images.forEach((img) => {
@@ -1827,7 +1843,7 @@ const clampGuestCount = (value, config) => {
       const imgWidth = img.width || 400;
       const imgHeight = img.height || 500;
       const aspectRatio = imgWidth / imgHeight;
-      const height = columnWidth / aspectRatio;
+      const height = (columnWidth / aspectRatio) * getImageScale(imgId);
 
       const targetColumn = columnHeights.indexOf(Math.min(...columnHeights));
       nextColumns[targetColumn].push(imgId);
@@ -1904,7 +1920,7 @@ const clampGuestCount = (value, config) => {
         const imgWidth = img.width || 400;
         const imgHeight = img.height || 500;
         const aspectRatio = imgWidth / imgHeight;
-        const height = columnWidth / aspectRatio;
+        const height = (columnWidth / aspectRatio) * getImageScale(imgId);
         const x = columnIndex * (columnWidth + gap);
 
         newPositions[imgId] = {
@@ -2146,6 +2162,256 @@ const clampGuestCount = (value, config) => {
         'Use the small events forms on this page or email yum@localeffortfood.com with your date, location, guest count, and event type.',
     },
   ];
+
+  const renderInlineMarkup = (text) => {
+    if (!text) return null;
+    const raw = String(text);
+    if (!/\[(?:\/)?[bi]\]/.test(raw)) return raw;
+    const tokens = raw.split(/(\[\/?b\]|\[\/?i\])/);
+    const root = { type: null, children: [] };
+    const stack = [root];
+    tokens.forEach((token) => {
+      if (!token) return;
+      if (token === '[b]') {
+        const node = { type: 'b', children: [] };
+        stack[stack.length - 1].children.push(node);
+        stack.push(node);
+        return;
+      }
+      if (token === '[/b]') {
+        if (stack.length > 1) stack.pop();
+        return;
+      }
+      if (token === '[i]') {
+        const node = { type: 'i', children: [] };
+        stack[stack.length - 1].children.push(node);
+        stack.push(node);
+        return;
+      }
+      if (token === '[/i]') {
+        if (stack.length > 1) stack.pop();
+        return;
+      }
+      stack[stack.length - 1].children.push(token);
+    });
+
+    let key = 0;
+    const renderNodes = (node) => node.children.map((child) => {
+      if (typeof child === 'string') return child;
+      const Tag = child.type === 'b' ? 'strong' : 'em';
+      return (
+        <Tag key={`inline-${key++}`}>
+          {renderNodes(child)}
+        </Tag>
+      );
+    });
+
+    return renderNodes(root);
+  };
+
+  const formatFeedbackDate = useCallback((value) => {
+    if (!value) return null;
+    if (value instanceof Date && !Number.isNaN(value.getTime())) return value;
+    if (typeof value === 'string' || typeof value === 'number') {
+      const parsed = new Date(value);
+      if (!Number.isNaN(parsed.getTime())) return parsed;
+    }
+    if (typeof value === 'object') {
+      if (typeof value.toDate === 'function') {
+        const parsed = value.toDate();
+        if (!Number.isNaN(parsed.getTime())) return parsed;
+      }
+      const seconds = value.seconds ?? value._seconds;
+      if (typeof seconds === 'number') {
+        const parsed = new Date(seconds * 1000);
+        if (!Number.isNaN(parsed.getTime())) return parsed;
+      }
+    }
+    return null;
+  }, []);
+
+  const formatFeedbackContext = useCallback((entry) => {
+    const date = formatFeedbackDate(entry?.createdAt);
+    if (!date) return 'Feedback';
+    const label = date.toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+    });
+    return `Feedback · ${label}`;
+  }, [formatFeedbackDate]);
+
+  const normalizeFeedbackEntry = useCallback((entry) => {
+    if (!entry) return null;
+    const quote = entry.comment || entry.quote || '';
+    if (!quote) return null;
+    return {
+      id: entry.id || `feedback-${Date.now()}`,
+      quote,
+      author: entry.customerId || entry.author || 'Guest',
+      context: entry.context || formatFeedbackContext(entry),
+    };
+  }, [formatFeedbackContext]);
+
+  const reviews = thumbtackReviews;
+  const feedbackItems = useMemo(() => {
+    const dynamic = Array.isArray(liveFeedback) ? liveFeedback : [];
+    const staticReviews = Array.isArray(reviews) ? reviews : [];
+    return [...dynamic, ...staticReviews];
+  }, [liveFeedback, reviews]);
+
+  useEffect(() => {
+    let mounted = true;
+    const controller = new AbortController();
+
+    (async () => {
+      try {
+        const res = await fetch('/api/feedback?limit=50', { signal: controller.signal });
+        const data = await res.json().catch(() => ({}));
+        if (!mounted || !res.ok) return;
+        const items = Array.isArray(data.items) ? data.items : [];
+        const normalized = items.map(normalizeFeedbackEntry).filter(Boolean);
+        if (mounted) setLiveFeedback(normalized);
+      } catch (_err) {
+        // Swallow fetch errors; static reviews still render.
+      }
+    })();
+
+    return () => {
+      mounted = false;
+      controller.abort();
+    };
+  }, [normalizeFeedbackEntry]);
+
+  const faqStructuredData = useMemo(
+    () => JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'FAQPage',
+      mainEntity: aboutFaqItems.map((item) => ({
+        '@type': 'Question',
+        name: item.question,
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: item.answer,
+        },
+      })),
+    }),
+    [aboutFaqItems],
+  );
+
+  const FeedbackModal = useMemo(() => {
+    if (!showFeedback) return null;
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4" role="dialog" aria-modal="true">
+        <div className="form-card w-full max-w-lg relative">
+          <button
+            className="absolute right-4 top-4 text-sm underline"
+            onClick={() => setShowFeedback(false)}
+            aria-label="Close feedback"
+          >
+            Close
+          </button>
+          <h4 className="text-xl font-bold mb-2">Send Feedback</h4>
+          <p className="text-sm text-gray-600 mb-4">We read every note. Thanks for helping us improve.</p>
+          <form
+            onSubmit={async (e) => {
+              e.preventDefault();
+              setFbStatus('sending');
+              try {
+                const rating = fb.sentiment === 'positive' ? 5 : fb.sentiment === 'neutral' ? 3 : 1;
+                const feedbackPayload = {
+                  rating,
+                  comment: fb.message,
+                  customerId: fb.name || 'Guest',
+                  orderId: fb.email || null,
+                };
+                const messagePayload = {
+                  name: fb.name,
+                  email: fb.email,
+                  subject: `Website feedback (${fb.sentiment})`,
+                  message: fb.message,
+                  type: 'feedback',
+                };
+
+                const [feedbackResult, messageResult] = await Promise.allSettled([
+                  fetch('/api/feedback', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(feedbackPayload),
+                  }),
+                  fetch('/api/messages/submit', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(messagePayload),
+                  }),
+                ]);
+
+                if (feedbackResult.status !== 'fulfilled') {
+                  throw new Error('Failed to save feedback');
+                }
+
+                const feedbackRes = feedbackResult.value;
+                const feedbackData = await feedbackRes.json().catch(() => ({}));
+                if (!feedbackRes.ok) throw new Error(feedbackData.error || 'Failed to save feedback');
+
+                if (messageResult.status === 'fulfilled' && !messageResult.value.ok) {
+                  const messageText = await messageResult.value.text().catch(() => '');
+                  console.warn('Feedback email failed:', messageText || messageResult.value.status);
+                }
+
+                const newEntry = normalizeFeedbackEntry({
+                  id: feedbackData.id,
+                  comment: fb.message,
+                  customerId: fb.name || 'Guest',
+                  createdAt: new Date(),
+                });
+                if (newEntry) {
+                  setLiveFeedback((prev) => [newEntry, ...prev.filter((item) => item?.id !== newEntry.id)]);
+                }
+                setFbStatus('sent');
+                setFb({ name: '', email: '', sentiment: 'positive', message: '' });
+                setTimeout(() => setShowFeedback(false), 900);
+              } catch (_e) {
+                setFbStatus('error');
+              }
+            }}
+            className="space-y-3"
+          >
+            <div>
+              <label className="label" htmlFor="fb-name">Name</label>
+              <input id="fb-name" className="input" value={fb.name} onChange={(e) => setFb({ ...fb, name: e.target.value })} required />
+            </div>
+            <div>
+              <label className="label" htmlFor="fb-email">Email</label>
+              <input id="fb-email" type="email" className="input" value={fb.email} onChange={(e) => setFb({ ...fb, email: e.target.value })} required />
+            </div>
+            <div>
+              <label className="label" htmlFor="fb-sentiment">Type</label>
+              <div className="flex gap-4" id="fb-sentiment">
+                {['positive', 'neutral', 'negative'].map((s) => (
+                  <label key={s} className="inline-flex items-center gap-2">
+                    <input type="radio" name="sentiment" value={s} checked={fb.sentiment === s} onChange={() => setFb({ ...fb, sentiment: s })} />
+                    <span className="capitalize">{s}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+            <div>
+              <label className="label" htmlFor="fb-message">Message</label>
+              <textarea id="fb-message" className="textarea" value={fb.message} onChange={(e) => setFb({ ...fb, message: e.target.value })} rows={5} required />
+            </div>
+            <div className="flex items-center gap-3">
+              <button type="submit" className="btn btn-primary" disabled={fbStatus === 'sending'}>
+                {fbStatus === 'sending' ? 'Sending...' : 'Send feedback'}
+              </button>
+              {fbStatus === 'sent' && <span className="text-green-700 text-sm">Thanks! Sent.</span>}
+              {fbStatus === 'error' && <span className="text-red-700 text-sm">Could not send. Try again.</span>}
+            </div>
+          </form>
+        </div>
+      </div>
+    );
+  }, [showFeedback, fb, fbStatus, normalizeFeedbackEntry]);
 
   const PartnerGrid = () => {
     const items = (partners || []).filter((p) => p && p.publicId);
@@ -2589,7 +2855,7 @@ const clampGuestCount = (value, config) => {
                       className={`business-link ${businessPanel === 'wholesale' ? 'is-active' : ''}`}
                       onClick={() => handleBusinessSelect('wholesale')}
                     >
-                      cafes, bars, restaurants interested in wholesale
+                      cafes, bars, grocery stores and other retail settings interested in wholesale
                     </button>
                     <button
                       type="button"
@@ -2630,6 +2896,11 @@ const clampGuestCount = (value, config) => {
                             </button>
                             <div className="business-note">
                               We&apos;ll send a copy of the pricing sheet too.
+                            </div>
+                            <div className="business-note">
+                              fridge and freezer-friendly foods for display cases, grab and go fridges, and menus,
+                              delivered fresh. available within approx. 15 miles of 55449, or anywhere in metro along
+                              Highway 35w.
                             </div>
                           </form>
                         ) : (
@@ -2711,8 +2982,8 @@ const clampGuestCount = (value, config) => {
                   <div className="case-study-card case-study-text">
                     <div className="case-study-tag">Experience</div>
                     <div className="case-study-copy">
-                      Customers see upcoming menus, swap meals in seconds, and get instant updates on pickup
-                      windows.
+                      customers are empowered to chat directly with the chef about their dietary needs and
+                      preferences, and have the opportunity to customize their experience at their favorite place.
                     </div>
                   </div>
                   <button
@@ -2730,9 +3001,11 @@ const clampGuestCount = (value, config) => {
                     />
                   </button>
                   <div className="case-study-card case-study-text">
-                    <div className="case-study-tag">Built with</div>
+                    <div className="case-study-tag">What&apos;s next</div>
                     <div className="case-study-copy">
-                      Role-based access, live pricing tables, and a concierge channel for quick question replies.
+                      b2c pre-ordering, subscriptions and notifications for &apos;DROPS&apos; or new products,
+                      discounts and loyalty features, and more ideas about improving vendor-customer relationships in
+                      cafe settings.
                     </div>
                   </div>
                   <button
@@ -2754,10 +3027,32 @@ const clampGuestCount = (value, config) => {
             </section>
 
             <section className="partnerships-section">
-              <div className="partnerships-card">
-                <div className="partnerships-title">Partnerships</div>
-                <div className="partnerships-copy">
-                  To be filled in with information about the types of partnerships we offer with other businesses.
+              <div className="partnerships-grid">
+                <div className="partnerships-card">
+                  <div className="partnerships-title">wholesale</div>
+                  <div className="partnerships-copy">
+                    pizza, sandwiches, salads, and other standbys, with the same commitments to local and high-integrity
+                    ingredients. always minnesotan made, always midwest ingredients, always delicious and nutritionally
+                    sound.
+                  </div>
+                </div>
+                <div className="partnerships-card">
+                  <div className="partnerships-title">restaurant consulting</div>
+                  <div className="partnerships-copy">
+                    front-of-house and back-of-house solutions. improve your restaurant group&apos;s tech stack,
+                    ingredient sourcing, menu design, service feel, and more. we are restaurant veterans with
+                    substantial experience in every dimension of this weird business. we&apos;re here to help you make
+                    your vision sharper, crisper, cooler, higher impact.
+                  </div>
+                </div>
+                <div className="partnerships-card">
+                  <div className="partnerships-title">collaborations</div>
+                  <div className="partnerships-copy">
+                    always very open and interested in working with other creatives and businesses from all domains:
+                    political organizers, artists, bakers, farmers and ag workers, event coordinators, small and large
+                    businesses - we want to bring <span className="partnerships-highlight">local food</span> to your
+                    audience.
+                  </div>
                 </div>
               </div>
             </section>
@@ -2796,24 +3091,68 @@ const clampGuestCount = (value, config) => {
                 </div>
                 <PartnerGrid />
               </section>
+              <section className="about-feedback">
+                <div className="max-w-6xl mx-auto px-4 md:px-6 lg:px-8">
+                  <div className="about-feedback-header">
+                    <div className="about-feedback-title">Feedback</div>
+                    <div className="about-feedback-extra">
+                      Want to{' '}
+                      <button type="button" className="about-feedback-link" onClick={() => setShowFeedback(true)}>
+                        provide feedback
+                      </button>
+                      ?
+                    </div>
+                  </div>
+                  <div className="feedback-grid columns-2 md:columns-3 lg:columns-4 [column-fill:_balance]">
+                    {feedbackItems.map((review, idx) => (
+                      <figure key={review.id || `${review.author || 'review'}-${idx}`} className="feedback-quote break-inside-avoid">
+                        <blockquote className="feedback-quote-text">
+                          "{renderInlineMarkup(String(review.quote || '').trim())}"
+                        </blockquote>
+                        <figcaption className="feedback-quote-footer">
+                          <div className="feedback-quote-author">{review.author || 'Customer'}</div>
+                          {review.context && (
+                            <div className="feedback-quote-context">{review.context}</div>
+                          )}
+                        </figcaption>
+                      </figure>
+                    ))}
+                  </div>
+                </div>
+              </section>
+              <script
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{ __html: faqStructuredData }}
+              />
               <div className="about-faq">
                 <div className="about-faq-title">FAQ</div>
                 <div className="about-faq-list">
                   {aboutFaqItems.map((item, idx) => {
                     const isOpen = aboutFaqOpen === idx;
+                    const questionId = `about-faq-question-${idx}`;
+                    const answerId = `about-faq-answer-${idx}`;
                     return (
                       <div key={item.question} className={`about-faq-item ${isOpen ? 'is-open' : ''}`}>
                         <button
                           type="button"
                           className="about-faq-question"
                           onClick={() => setAboutFaqOpen(isOpen ? null : idx)}
+                          id={questionId}
+                          aria-expanded={isOpen}
+                          aria-controls={answerId}
                         >
                           <span>{item.question}</span>
                           <span className="about-faq-icon">{isOpen ? '-' : '+'}</span>
                         </button>
-                        {isOpen && (
-                          <div className="about-faq-answer">{item.answer}</div>
-                        )}
+                        <div
+                          id={answerId}
+                          className="about-faq-answer"
+                          role="region"
+                          aria-labelledby={questionId}
+                          aria-hidden={!isOpen}
+                        >
+                          {item.answer}
+                        </div>
                       </div>
                     );
                   })}
@@ -2940,6 +3279,8 @@ const clampGuestCount = (value, config) => {
         </FullPageSection>
       </FullPageContainer>
 
+      {FeedbackModal}
+
       {/* Lightbox Modal */}
       <AnimatePresence>
         {selected && (
@@ -2955,28 +3296,30 @@ const clampGuestCount = (value, config) => {
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
-              className="relative max-w-6xl max-h-[90vh]"
+              className="relative w-full max-w-[92vw] max-h-[85vh]"
               onClick={(e) => e.stopPropagation()}
             >
-              {selected.img.large_url ? (
-                <img
-                  src={selected.img.large_url}
-                  alt={selected.img.context?.alt || 'Large gallery image'}
-                  decoding="async"
-                  fetchPriority="high"
-                  className="max-w-full max-h-full object-contain rounded-lg shadow-2xl"
-                />
-              ) : (
-                <CloudinaryImage
-                  publicId={selected.img.public_id}
-                  alt={selected.img.context?.alt || 'Large gallery image'}
-                  width={2000}
-                  height={2000}
-                  disableLazy
-                  eager
-                  className="max-w-full max-h-full object-contain rounded-lg shadow-2xl"
-                />
-              )}
+              <div className="lightbox-scroll">
+                {selected.img.large_url ? (
+                  <img
+                    src={selected.img.large_url}
+                    alt={selected.img.context?.alt || 'Large gallery image'}
+                    decoding="async"
+                    fetchPriority="high"
+                    className="lightbox-image object-contain rounded-lg shadow-2xl"
+                  />
+                ) : (
+                  <CloudinaryImage
+                    publicId={selected.img.public_id}
+                    alt={selected.img.context?.alt || 'Large gallery image'}
+                    width={2000}
+                    height={2000}
+                    disableLazy
+                    eager
+                    className="lightbox-image object-contain rounded-lg shadow-2xl"
+                  />
+                )}
+              </div>
 
               <button
                 ref={closeBtnRef}

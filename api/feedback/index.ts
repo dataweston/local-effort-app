@@ -64,36 +64,37 @@ export default async function handler(request: Req, response: ServerResponse): P
           return;
         }
       }
-    const body = parseJsonBody(req) ?? {};
-    const rating = Number(body.rating);
-    const comment = sanitizeString(body.comment, MAX_COMMENT_LENGTH);
-    const customerId = typeof body.customerId === 'string' && body.customerId.trim() ? body.customerId.trim() : null;
-    const orderId = typeof body.orderId === 'string' && body.orderId.trim() ? body.orderId.trim() : null;
+      const body = parseJsonBody(req) ?? {};
+      const rating = Number(body.rating);
+      const comment = sanitizeString(body.comment, MAX_COMMENT_LENGTH);
+      const customerId = typeof body.customerId === 'string' && body.customerId.trim() ? body.customerId.trim() : null;
+      const orderId = typeof body.orderId === 'string' && body.orderId.trim() ? body.orderId.trim() : null;
 
-    if (!Number.isInteger(rating) || rating < 1 || rating > 5) {
-      res.status(400).json({ ok: false, error: 'invalid-rating' });
-      return;
-    }
+      if (!Number.isInteger(rating) || rating < 1 || rating > 5) {
+        res.status(400).json({ ok: false, error: 'invalid-rating' });
+        return;
+      }
 
-    if (!comment) {
-      res.status(400).json({ ok: false, error: 'missing-comment' });
-      return;
-    }
+      if (!comment) {
+        res.status(400).json({ ok: false, error: 'missing-comment' });
+        return;
+      }
 
-    try {
-      const ref = db.collection('feedback').doc();
-      const doc = {
-        rating,
-        comment,
-        customerId,
-        orderId,
-        createdAt: new Date(),
-      };
-      await ref.set(doc);
-      res.status(200).json({ ok: true, id: ref.id });
-    } catch (error) {
-      console.error('[feedback.post] failed to persist feedback', error);
-      res.status(500).json({ ok: false, error: 'internal-error' });
+      try {
+        const ref = db.collection('feedback').doc();
+        const doc = {
+          rating,
+          comment,
+          customerId,
+          orderId,
+          createdAt: new Date(),
+        };
+        await ref.set(doc);
+        res.status(200).json({ ok: true, id: ref.id });
+      } catch (error) {
+        console.error('[feedback.post] failed to persist feedback', error);
+        res.status(500).json({ ok: false, error: 'internal-error' });
+      }
     }
     return;
   }
@@ -126,18 +127,6 @@ export default async function handler(request: Req, response: ServerResponse): P
         },
         { db: defaultDb },
       );
-      const since = sinceParam ? new Date(sinceParam) : new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
-      const limitValue = limitParam ? Number(limitParam) : 200;
-      const limit = Number.isFinite(limitValue) ? Math.min(Math.max(limitValue, 1), 500) : 200;
-
-      const snapshot = await db
-        .collection('feedback')
-        .where('createdAt', '>=', since)
-        .orderBy('createdAt', 'desc')
-        .limit(limit)
-        .get();
-
-      const items = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
       res.status(200).json({ ok: true, items });
     } catch (error) {
       console.error('[feedback.get] failed to load feedback', error);
