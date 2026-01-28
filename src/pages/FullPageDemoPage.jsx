@@ -79,6 +79,16 @@ const WHOLESALE_MENU_ITEMS = [
   { name: 'Seasonal grain salad', price: '$9.00 / portion' },
   { name: 'House pickles + condiments', price: '$3.50 / portion' },
 ];
+const BUSINESS_CONTACT_OPTIONS = {
+  wholesale: 'Wholesale',
+  consulting: 'Restaurant consulting',
+  collaborations: 'Collaborations',
+};
+const SMALL_EVENTS_CONTACT_OPTIONS = {
+  dinner: 'Dinner at your home',
+  weddings: 'Weddings and showers',
+  holiday: 'Small events and holiday parties',
+};
 
 const formatCurrency = (value, options = {}) => {
   const {
@@ -348,6 +358,23 @@ const FullPageDemoPage = () => {
   const [fb, setFb] = useState({ name: '', email: '', sentiment: 'positive', message: '' });
   const [fbStatus, setFbStatus] = useState('idle');
   const [liveFeedback, setLiveFeedback] = useState([]);
+  const [businessContactOpen, setBusinessContactOpen] = useState(false);
+  const [businessContactType, setBusinessContactType] = useState('wholesale');
+  const [businessContactName, setBusinessContactName] = useState('');
+  const [businessContactEmail, setBusinessContactEmail] = useState('');
+  const [businessContactPhone, setBusinessContactPhone] = useState('');
+  const [businessContactOrg, setBusinessContactOrg] = useState('');
+  const [businessContactMessage, setBusinessContactMessage] = useState('');
+  const [businessContactStatus, setBusinessContactStatus] = useState('idle');
+  const [businessContactError, setBusinessContactError] = useState('');
+  const [smallEventsContactOpen, setSmallEventsContactOpen] = useState(false);
+  const [smallEventsContactType, setSmallEventsContactType] = useState('dinner');
+  const [smallEventsContactName, setSmallEventsContactName] = useState('');
+  const [smallEventsContactEmail, setSmallEventsContactEmail] = useState('');
+  const [smallEventsContactPhone, setSmallEventsContactPhone] = useState('');
+  const [smallEventsContactMessage, setSmallEventsContactMessage] = useState('');
+  const [smallEventsContactStatus, setSmallEventsContactStatus] = useState('idle');
+  const [smallEventsContactError, setSmallEventsContactError] = useState('');
 
   const pages = [
     { id: 'home', label: 'Home' },
@@ -2104,62 +2131,72 @@ const clampGuestCount = (value, config) => {
     {
       question: 'What is Local Effort?',
       answer:
-        'Local Effort is a Minnesota-based team focused on seasonal, ingredient-forward food for homes, events, and partner businesses.',
+        'Local Effort is a Minnesota-based food team focused on seasonal, ingredient-forward cooking for homes, events, and partner businesses.',
     },
     {
       question: 'Where do you serve?',
       answer:
-        'We are based in the Twin Cities and travel across Minnesota for select events. Share your location and we will confirm availability.',
+        "We're based in Minneapolis-St. Paul (Twin Cities). For select events we travel across Minnesota. Share your address and we'll confirm availability and any travel considerations.",
     },
     {
-      question: 'What services do you offer?',
+      question: 'What kinds of services do you offer?',
       answer:
-        'In-home dinners, small events, weddings, weekly meals (when openings are available), and pizza parties with our mobile setup.',
+        'In-home dinners, small events, weddings, limited-availability weekly meals (when openings exist), and pizza parties using our mobile setup.',
     },
     {
       question: 'How do weekly meals work?',
       answer:
-        'Weekly meals are released in limited windows. Join the waitlist and we will reach out when pickup slots reopen.',
+        "Weekly meals open in limited windows. Join the waitlist and we'll reach out when pickup slots reopen.",
     },
     {
-      question: 'What is included in a pizza party?',
+      question: "What's included in a pizza party?",
       answer:
-        'We bring the oven, ingredients, and crew. Service is tailored to your guest count, timing, and space.',
+        'We bring the oven, dough, ingredients, and crew. We tailor service to your guest count, timing, and space so it runs smooth and feels hosted, not chaotic.',
     },
     {
       question: 'How far in advance should we book?',
       answer:
-        'Two to six weeks is ideal for most dinners and small events. For weddings and larger events, earlier is better.',
+        'Two to six weeks is ideal for most dinners and small events. For weddings and larger events, earlier is better, especially if you have a specific date or venue constraints.',
     },
     {
       question: 'How many guests can you serve?',
       answer:
-        'In-home dinners are typically 4 to 16 guests. Small events scale higher, and weddings can be larger. Tell us your guest count and we will confirm the right format.',
+        "In-home dinners are typically 4-16 guests. Small events scale higher, and weddings can be larger. Tell us the guest count and service style and we'll confirm the right format and staffing.",
     },
     {
-      question: 'Do you accommodate dietary needs and allergies?',
+      question: 'Do you accommodate allergies and dietary preferences?',
       answer:
-        'Yes. Share allergies and preferences and we will design a menu that works for your group.',
+        "Yes. Share allergies, restrictions, and preferences in the request form. We'll build a menu that works for your group and confirm any constraints during planning.",
     },
     {
       question: 'How do menus get set?',
       answer:
-        'We build menus around seasonal ingredients and your preferences. You can share notes, dietary needs, and any must-haves in the request form.',
+        "We build menus around seasonal ingredients and your preferences. You can share must-haves, dislikes, dietary needs, and the vibe in the request form, then we finalize details together.",
+    },
+    {
+      question: 'How does pricing work?',
+      answer:
+        'Pricing depends on guest count, staffing, and service style. This page generates a ballpark range; we confirm the final quote after details are aligned. (If you want benchmarks, check the Pricing page.)',
     },
     {
       question: 'What is the deposit and hold policy?',
       answer:
-        'A 15% deposit holds a date, and holds are time-limited while we confirm final details. Deposit payment is handled through Square.',
+        'A deposit holds your date while we confirm final details. Deposits are handled through Square. Holds are time-limited during confirmation, and the remaining balance is due before service.',
+    },
+    {
+      question: 'How long is an estimate valid?',
+      answer:
+        `Estimates are time-limited so we can keep ingredient and staffing assumptions accurate. On this page, estimates default to ${ESTIMATE_LIFESPAN_DAYS} days, and date holds default to ${HOLD_WINDOW_HOURS} hours while we confirm details.`,
     },
     {
       question: 'Can you help with rentals or staffing?',
       answer:
-        'Yes. Let us know what you need and we will coordinate rentals, staffing, and service details in the estimate.',
+        "Yes. If your event needs rentals (tables/chairs/linens) or additional service staff, tell us what you already have and what you need, and we can coordinate recommendations and plan the service flow.",
     },
     {
-      question: 'How do I request a quote or booking?',
+      question: 'What should we do next to get started?',
       answer:
-        'Use the small events forms on this page or email yum@localeffortfood.com with your date, location, guest count, and event type.',
+        "Pick a service type, share the basics (date, guest count, location), then save the estimate. If you're ready to reserve a date, place the deposit via Square and we'll follow up to confirm details.",
     },
   ];
 
@@ -2252,6 +2289,39 @@ const clampGuestCount = (value, config) => {
       context: entry.context || formatFeedbackContext(entry),
     };
   }, [formatFeedbackContext]);
+
+  const resetBusinessContact = useCallback(() => {
+    setBusinessContactName('');
+    setBusinessContactEmail('');
+    setBusinessContactPhone('');
+    setBusinessContactOrg('');
+    setBusinessContactMessage('');
+    setBusinessContactStatus('idle');
+    setBusinessContactError('');
+  }, []);
+
+  const openBusinessContact = useCallback((type) => {
+    setBusinessContactType(type);
+    setBusinessContactOpen(true);
+    setBusinessContactStatus('idle');
+    setBusinessContactError('');
+  }, []);
+
+  const resetSmallEventsContact = useCallback(() => {
+    setSmallEventsContactName('');
+    setSmallEventsContactEmail('');
+    setSmallEventsContactPhone('');
+    setSmallEventsContactMessage('');
+    setSmallEventsContactStatus('idle');
+    setSmallEventsContactError('');
+  }, []);
+
+  const openSmallEventsContact = useCallback((type) => {
+    setSmallEventsContactType(type);
+    setSmallEventsContactOpen(true);
+    setSmallEventsContactStatus('idle');
+    setSmallEventsContactError('');
+  }, []);
 
   const reviews = thumbtackReviews;
   const feedbackItems = useMemo(() => {
@@ -2768,43 +2838,49 @@ const clampGuestCount = (value, config) => {
                 style={{ objectPosition: 'center' }}
               />
               <div className="relative z-10 flex items-start justify-center h-full pt-24">
-                <div
-                  style={{
-                    display: 'table',
-                    borderCollapse: 'separate',
-                    borderSpacing: '16px',
-                  }}
-                >
-                  <div style={{ display: 'table-row' }}>
-                    <div style={{ display: 'table-cell' }}>
-                      <button
-                        type="button"
-                        onClick={() => setSmallEventsDialog('dinner')}
-                        className="px-6 py-5 rounded-md border border-white/70 bg-white/80 text-left text-base font-semibold text-slate-900 hover:bg-white"
-                        style={{ fontFamily: "'Office Code Pro', monospace" }}
-                      >
-                        dinner party in my home
-                      </button>
-                    </div>
-                    <div style={{ display: 'table-cell' }}>
-                      <button
-                        type="button"
-                        onClick={() => setSmallEventsDialog('weddings')}
-                        className="px-6 py-5 rounded-md border border-white/70 bg-white/80 text-left text-base font-semibold text-slate-900 hover:bg-white"
-                        style={{ fontFamily: "'Office Code Pro', monospace" }}
-                      >
-                        weddings
-                      </button>
-                    </div>
-                    <div style={{ display: 'table-cell' }}>
-                      <button
-                        type="button"
-                        onClick={() => setSmallEventsDialog('holiday')}
-                        className="px-6 py-5 rounded-md border border-white/70 bg-white/80 text-left text-base font-semibold text-slate-900 hover:bg-white"
-                        style={{ fontFamily: "'Office Code Pro', monospace" }}
-                      >
-                        small events and holiday parties
-                      </button>
+                <div className="small-events-cta">
+                  <div className="small-events-guide" aria-hidden="true">
+                    <div className="small-events-guide-text">BOOK TODAY</div>
+                    <span className="small-events-guide-arrow" />
+                  </div>
+                  <div
+                    style={{
+                      display: 'table',
+                      borderCollapse: 'separate',
+                      borderSpacing: '16px',
+                    }}
+                  >
+                    <div style={{ display: 'table-row' }}>
+                      <div style={{ display: 'table-cell' }}>
+                        <button
+                          type="button"
+                          onClick={() => setSmallEventsDialog('dinner')}
+                          className="px-6 py-5 rounded-md border border-white/70 bg-white/80 text-left text-base font-semibold text-slate-900 hover:bg-white"
+                          style={{ fontFamily: "'Office Code Pro', monospace" }}
+                        >
+                          dinner party in my home
+                        </button>
+                      </div>
+                      <div style={{ display: 'table-cell' }}>
+                        <button
+                          type="button"
+                          onClick={() => setSmallEventsDialog('weddings')}
+                          className="px-6 py-5 rounded-md border border-white/70 bg-white/80 text-left text-base font-semibold text-slate-900 hover:bg-white"
+                          style={{ fontFamily: "'Office Code Pro', monospace" }}
+                        >
+                          weddings
+                        </button>
+                      </div>
+                      <div style={{ display: 'table-cell' }}>
+                        <button
+                          type="button"
+                          onClick={() => setSmallEventsDialog('holiday')}
+                          className="px-6 py-5 rounded-md border border-white/70 bg-white/80 text-left text-base font-semibold text-slate-900 hover:bg-white"
+                          style={{ fontFamily: "'Office Code Pro', monospace" }}
+                        >
+                          small events and holiday parties
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -2821,6 +2897,40 @@ const clampGuestCount = (value, config) => {
                   >
                     Alyssa Andes
                   </a>
+                </div>
+              </div>
+              <div className="mt-10">
+                <div className="partnerships-grid columns-2 md:columns-3 lg:columns-4 [column-fill:_balance]">
+                  <div className="partnerships-card break-inside-avoid">
+                    <button
+                      type="button"
+                      className="partnerships-title partnerships-title-link"
+                      onClick={() => openSmallEventsContact('dinner')}
+                    >
+                      dinner at your home
+                    </button>
+                    <div className="partnerships-copy" />
+                  </div>
+                  <div className="partnerships-card break-inside-avoid">
+                    <button
+                      type="button"
+                      className="partnerships-title partnerships-title-link"
+                      onClick={() => openSmallEventsContact('weddings')}
+                    >
+                      weddings and showers
+                    </button>
+                    <div className="partnerships-copy" />
+                  </div>
+                  <div className="partnerships-card break-inside-avoid">
+                    <button
+                      type="button"
+                      className="partnerships-title partnerships-title-link"
+                      onClick={() => openSmallEventsContact('holiday')}
+                    >
+                      small events and holiday parties
+                    </button>
+                    <div className="partnerships-copy" />
+                  </div>
                 </div>
               </div>
             </div>
@@ -3029,7 +3139,13 @@ const clampGuestCount = (value, config) => {
             <section className="partnerships-section">
               <div className="partnerships-grid">
                 <div className="partnerships-card">
-                  <div className="partnerships-title">wholesale</div>
+                  <button
+                    type="button"
+                    className="partnerships-title partnerships-title-link"
+                    onClick={() => openBusinessContact('wholesale')}
+                  >
+                    wholesale
+                  </button>
                   <div className="partnerships-copy">
                     pizza, sandwiches, salads, and other standbys, with the same commitments to local and high-integrity
                     ingredients. always minnesotan made, always midwest ingredients, always delicious and nutritionally
@@ -3037,7 +3153,13 @@ const clampGuestCount = (value, config) => {
                   </div>
                 </div>
                 <div className="partnerships-card">
-                  <div className="partnerships-title">restaurant consulting</div>
+                  <button
+                    type="button"
+                    className="partnerships-title partnerships-title-link"
+                    onClick={() => openBusinessContact('consulting')}
+                  >
+                    restaurant consulting
+                  </button>
                   <div className="partnerships-copy">
                     front-of-house and back-of-house solutions. improve your restaurant group&apos;s tech stack,
                     ingredient sourcing, menu design, service feel, and more. we are restaurant veterans with
@@ -3046,7 +3168,13 @@ const clampGuestCount = (value, config) => {
                   </div>
                 </div>
                 <div className="partnerships-card">
-                  <div className="partnerships-title">collaborations</div>
+                  <button
+                    type="button"
+                    className="partnerships-title partnerships-title-link"
+                    onClick={() => openBusinessContact('collaborations')}
+                  >
+                    collaborations
+                  </button>
                   <div className="partnerships-copy">
                     always very open and interested in working with other creatives and businesses from all domains:
                     political organizers, artists, bakers, farmers and ag workers, event coordinators, small and large
@@ -3185,7 +3313,7 @@ const clampGuestCount = (value, config) => {
                   <div className="mt-2 text-sm text-slate-700">
                     Local Pizza is 100% midwest ingredients. Find us at Happy Monday in Roseville, and soon on{' '}
                     <a
-                      href="https://www.mnfood.club"
+                      href="https://mnfood.club/?afmc=1y"
                       target="_blank"
                       rel="noreferrer"
                       className="underline underline-offset-4"
@@ -3537,6 +3665,261 @@ const clampGuestCount = (value, config) => {
               </button>
             </form>
           )}
+        </DialogContent>
+      </Dialog>
+
+      <Dialog
+        open={businessContactOpen}
+        onOpenChange={(open) => {
+          setBusinessContactOpen(open);
+          if (!open) resetBusinessContact();
+        }}
+      >
+        <DialogContent className="fullpage-demo-scope sm:max-w-[560px]">
+          <DialogHeader>
+            <DialogTitle>
+              Contact us about {BUSINESS_CONTACT_OPTIONS[businessContactType] || 'partnerships'}
+            </DialogTitle>
+            <DialogDescription>
+              Share a few details and we&apos;ll follow up with next steps.
+            </DialogDescription>
+          </DialogHeader>
+          <form
+            className="space-y-4"
+            onSubmit={async (e) => {
+              e.preventDefault();
+              if (businessContactStatus === 'sending') return;
+              setBusinessContactStatus('sending');
+              setBusinessContactError('');
+              try {
+                const typeLabel = BUSINESS_CONTACT_OPTIONS[businessContactType] || 'Partnerships';
+                const lines = [
+                  `Partnership type: ${typeLabel}`,
+                  businessContactOrg ? `Organization: ${businessContactOrg}` : null,
+                  businessContactPhone ? `Phone: ${businessContactPhone}` : null,
+                  businessContactMessage ? `Message: ${businessContactMessage}` : null,
+                ].filter(Boolean);
+                const payload = {
+                  name: businessContactName,
+                  email: businessContactEmail,
+                  subject: `Business inquiry: ${typeLabel}`,
+                  message: lines.join('\n'),
+                  type: 'business-partnership',
+                };
+                const res = await fetch('/api/messages/submit', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify(payload),
+                });
+                if (!res.ok) throw new Error(await res.text());
+                setBusinessContactStatus('sent');
+                resetBusinessContact();
+                setTimeout(() => setBusinessContactOpen(false), 800);
+              } catch (error) {
+                setBusinessContactError(error?.message || 'Unable to send message.');
+                setBusinessContactStatus('error');
+              }
+            }}
+          >
+            <div>
+              <label className="label" htmlFor="business-contact-type">Partnership type</label>
+              <select
+                id="business-contact-type"
+                className="input"
+                value={businessContactType}
+                onChange={(e) => setBusinessContactType(e.target.value)}
+              >
+                {Object.entries(BUSINESS_CONTACT_OPTIONS).map(([value, label]) => (
+                  <option key={value} value={value}>{label}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="label" htmlFor="business-contact-name">Name</label>
+              <input
+                id="business-contact-name"
+                className="input"
+                value={businessContactName}
+                onChange={(e) => setBusinessContactName(e.target.value)}
+                required
+              />
+            </div>
+            <div>
+              <label className="label" htmlFor="business-contact-email">Email</label>
+              <input
+                id="business-contact-email"
+                type="email"
+                className="input"
+                value={businessContactEmail}
+                onChange={(e) => setBusinessContactEmail(e.target.value)}
+                required
+              />
+            </div>
+            <div>
+              <label className="label" htmlFor="business-contact-org">Organization</label>
+              <input
+                id="business-contact-org"
+                className="input"
+                value={businessContactOrg}
+                onChange={(e) => setBusinessContactOrg(e.target.value)}
+                placeholder="Optional"
+              />
+            </div>
+            <div>
+              <label className="label" htmlFor="business-contact-phone">Phone (optional)</label>
+              <input
+                id="business-contact-phone"
+                type="tel"
+                className="input"
+                value={businessContactPhone}
+                onChange={(e) => setBusinessContactPhone(e.target.value)}
+                placeholder="Optional"
+              />
+            </div>
+            <div>
+              <label className="label" htmlFor="business-contact-message">Message</label>
+              <textarea
+                id="business-contact-message"
+                className="textarea"
+                rows={5}
+                value={businessContactMessage}
+                onChange={(e) => setBusinessContactMessage(e.target.value)}
+                required
+              />
+            </div>
+            {businessContactError && (
+              <div className="text-sm text-red-700">{businessContactError}</div>
+            )}
+            <button
+              type="submit"
+              className="btn btn-primary w-full"
+              disabled={businessContactStatus === 'sending'}
+            >
+              {businessContactStatus === 'sending' ? 'Sending...' : 'Send request'}
+            </button>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog
+        open={smallEventsContactOpen}
+        onOpenChange={(open) => {
+          setSmallEventsContactOpen(open);
+          if (!open) resetSmallEventsContact();
+        }}
+      >
+        <DialogContent className="fullpage-demo-scope sm:max-w-[560px]">
+          <DialogHeader>
+            <DialogTitle>
+              Contact us about {SMALL_EVENTS_CONTACT_OPTIONS[smallEventsContactType] || 'small events'}
+            </DialogTitle>
+            <DialogDescription>
+              Share a few details and we&apos;ll follow up with next steps.
+            </DialogDescription>
+          </DialogHeader>
+          <form
+            className="space-y-4"
+            onSubmit={async (e) => {
+              e.preventDefault();
+              if (smallEventsContactStatus === 'sending') return;
+              setSmallEventsContactStatus('sending');
+              setSmallEventsContactError('');
+              try {
+                const typeLabel = SMALL_EVENTS_CONTACT_OPTIONS[smallEventsContactType] || 'Small events';
+                const lines = [
+                  `Event type: ${typeLabel}`,
+                  smallEventsContactPhone ? `Phone: ${smallEventsContactPhone}` : null,
+                  smallEventsContactMessage ? `Message: ${smallEventsContactMessage}` : null,
+                ].filter(Boolean);
+                const payload = {
+                  name: smallEventsContactName,
+                  email: smallEventsContactEmail,
+                  subject: `Small events inquiry: ${typeLabel}`,
+                  message: lines.join('\n'),
+                  type: 'small-events-inquiry',
+                };
+                const res = await fetch('/api/messages/submit', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify(payload),
+                });
+                if (!res.ok) throw new Error(await res.text());
+                setSmallEventsContactStatus('sent');
+                resetSmallEventsContact();
+                setTimeout(() => setSmallEventsContactOpen(false), 800);
+              } catch (error) {
+                setSmallEventsContactError(error?.message || 'Unable to send message.');
+                setSmallEventsContactStatus('error');
+              }
+            }}
+          >
+            <div>
+              <label className="label" htmlFor="small-events-contact-type">Event type</label>
+              <select
+                id="small-events-contact-type"
+                className="input"
+                value={smallEventsContactType}
+                onChange={(e) => setSmallEventsContactType(e.target.value)}
+              >
+                {Object.entries(SMALL_EVENTS_CONTACT_OPTIONS).map(([value, label]) => (
+                  <option key={value} value={value}>{label}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="label" htmlFor="small-events-contact-name">Name</label>
+              <input
+                id="small-events-contact-name"
+                className="input"
+                value={smallEventsContactName}
+                onChange={(e) => setSmallEventsContactName(e.target.value)}
+                required
+              />
+            </div>
+            <div>
+              <label className="label" htmlFor="small-events-contact-email">Email</label>
+              <input
+                id="small-events-contact-email"
+                type="email"
+                className="input"
+                value={smallEventsContactEmail}
+                onChange={(e) => setSmallEventsContactEmail(e.target.value)}
+                required
+              />
+            </div>
+            <div>
+              <label className="label" htmlFor="small-events-contact-phone">Phone (optional)</label>
+              <input
+                id="small-events-contact-phone"
+                type="tel"
+                className="input"
+                value={smallEventsContactPhone}
+                onChange={(e) => setSmallEventsContactPhone(e.target.value)}
+                placeholder="Optional"
+              />
+            </div>
+            <div>
+              <label className="label" htmlFor="small-events-contact-message">Message</label>
+              <textarea
+                id="small-events-contact-message"
+                className="textarea"
+                rows={5}
+                value={smallEventsContactMessage}
+                onChange={(e) => setSmallEventsContactMessage(e.target.value)}
+                required
+              />
+            </div>
+            {smallEventsContactError && (
+              <div className="text-sm text-red-700">{smallEventsContactError}</div>
+            )}
+            <button
+              type="submit"
+              className="btn btn-primary w-full"
+              disabled={smallEventsContactStatus === 'sending'}
+            >
+              {smallEventsContactStatus === 'sending' ? 'Sending...' : 'Send request'}
+            </button>
+          </form>
         </DialogContent>
       </Dialog>
 
