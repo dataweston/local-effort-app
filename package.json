@@ -169,7 +169,10 @@
     "sale:smoke:extract": "cross-env TS_NODE_PROJECT=tsconfig.ts-node.json node -r ts-node/register/transpile-only scripts/webhook-smoke-test.ts --extract-only",
     "sale:links:dry": "cross-env TS_NODE_PROJECT=tsconfig.ts-node.json node -r ts-node/register/transpile-only scripts/square-create-links.ts --dry-run",
     "sale:links": "cross-env TS_NODE_PROJECT=tsconfig.ts-node.json node -r ts-node/register/transpile-only scripts/square-create-links.ts",
-    "supabase:verify": "cross-env TS_NODE_PROJECT=tsconfig.ts-node.json node -r ts-node/register/transpile-only scripts/supabase-verify.ts"
+    "supabase:verify": "cross-env TS_NODE_PROJECT=tsconfig.ts-node.json node -r ts-node/register/transpile-only scripts/supabase-verify.ts",
+    "weekly-order:import": "node scripts/weekly-order-import.js",
+    "weekly-order:seed": "node scripts/weekly-order-seed.js",
+    "weekly-order:prices": "node scripts/weekly-order-prices.js"
   },
   "browserslist": {
     "production": [

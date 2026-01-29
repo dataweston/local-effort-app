@@ -493,6 +493,78 @@ app.all('/api/weekly-order/checkout', async (req, res, next) => {
   }
 });
 
+app.all('/api/recipes/ingest', async (req, res, next) => {
+  try {
+    await require('../../api/recipes/ingest')(req, res);
+  } catch (err) {
+    logger.error({ err, method: req.method }, 'recipe ingest handler failed');
+    next(err);
+  }
+});
+
+app.all('/api/weekly-order/admin/ingests', async (req, res, next) => {
+  try {
+    await require('../../api/weekly-order/admin/ingests')(req, res);
+  } catch (err) {
+    logger.error({ err, method: req.method }, 'weekly order ingests handler failed');
+    next(err);
+  }
+});
+
+app.all('/api/weekly-order/admin/drafts', async (req, res, next) => {
+  try {
+    await require('../../api/weekly-order/admin/drafts')(req, res);
+  } catch (err) {
+    logger.error({ err, method: req.method }, 'weekly order drafts handler failed');
+    next(err);
+  }
+});
+
+app.all('/api/weekly-order/admin/dishes', async (req, res, next) => {
+  try {
+    await require('../../api/weekly-order/admin/dishes')(req, res);
+  } catch (err) {
+    logger.error({ err, method: req.method }, 'weekly order dishes handler failed');
+    next(err);
+  }
+});
+
+app.all('/api/weekly-order/admin/menu-weeks', async (req, res, next) => {
+  try {
+    await require('../../api/weekly-order/admin/menu-weeks')(req, res);
+  } catch (err) {
+    logger.error({ err, method: req.method }, 'weekly order menu weeks handler failed');
+    next(err);
+  }
+});
+
+app.all('/api/weekly-order/admin/pricing', async (req, res, next) => {
+  try {
+    await require('../../api/weekly-order/admin/pricing')(req, res);
+  } catch (err) {
+    logger.error({ err, method: req.method }, 'weekly order pricing handler failed');
+    next(err);
+  }
+});
+
+app.all('/api/weekly-order/admin/customers', async (req, res, next) => {
+  try {
+    await require('../../api/weekly-order/admin/customers')(req, res);
+  } catch (err) {
+    logger.error({ err, method: req.method }, 'weekly order customers handler failed');
+    next(err);
+  }
+});
+
+app.all('/api/weekly-order/admin/overrides', async (req, res, next) => {
+  try {
+    await require('../../api/weekly-order/admin/overrides')(req, res);
+  } catch (err) {
+    logger.error({ err, method: req.method }, 'weekly order overrides handler failed');
+    next(err);
+  }
+});
+
 // --- Calendar API Routes ---
 app.all('/api/calendar/events', async (req, res, next) => {
   try {

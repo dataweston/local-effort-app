@@ -69,6 +69,7 @@ const FullPageDemoPage = lazy(() => import('./pages/FullPageDemoPage'));
 const SmallEventsAdminRequestsPage = lazy(() => import('./pages/SmallEventsAdminRequestsPage'));
 const SmallEventsAdminAvailabilityPage = lazy(() => import('./pages/SmallEventsAdminAvailabilityPage'));
 const WeeklyOrderPage = lazy(() => import('./pages/WeeklyOrderPage'));
+const AdminWeeklyOrderPage = lazy(() => import('./pages/AdminWeeklyOrderPage'));
 
 const AppContent = () => {
   const location = useLocation();
@@ -240,6 +241,14 @@ const AppContent = () => {
                   element={
                     <AnimatedPage>
                       <WeeklyOrderPage />
+                    </AnimatedPage>
+                  }
+                />
+                <Route
+                  path="/admin/weekly-order"
+                  element={
+                    <AnimatedPage>
+                      <AdminWeeklyOrderPage />
                     </AnimatedPage>
                   }
                 />

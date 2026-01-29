@@ -143,8 +143,9 @@ model Dish {
   id          String                  @id @default(uuid())
   title       String
   description String?
-  tags        String[]
-  allergens   String[]
+  tags        String[]                @default([])
+  categories  String[]                @default([])
+  allergens   String[]                @default([])
   status      String                  @default("draft")
   createdAt   DateTime                @default(now())
   updatedAt   DateTime                @updatedAt
@@ -154,6 +155,7 @@ model Dish {
   visibility  DishVisibility[]
   sourceLinks DishSourceLink[]
   orderItems  OrderItem[]
+  drafts      DishDraft[]
 }
 
 model MenuWeek {
@@ -261,10 +263,32 @@ model OrderItem {
 }
 
 model RecipeIngest {
-  id             String   @id @default(uuid())
+  id             String      @id @default(uuid())
   source         String
+  externalKey    String?     @unique
+  text           String?
   rawPayloadJson Json
-  receivedAt     DateTime @default(now())
+  metadata       Json?
+  receivedAt     DateTime    @default(now())
+  drafts         DishDraft[]
+}
+
+model DishDraft {
+  id             String       @id @default(uuid())
+  sourceIngestId String
+  title          String
+  description    String?
+  categories     String[]     @default([])
+  tags           String[]     @default([])
+  allergens      String[]     @default([])
+  confidence     Float?
+  status         String       @default("pending")
+  matchedDishId  String?
+  notes          String?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  ingest         RecipeIngest @relation(fields: [sourceIngestId], references: [id])
+  matchedDish    Dish?        @relation(fields: [matchedDishId], references: [id])
 }
 
 model DishSourceLink {

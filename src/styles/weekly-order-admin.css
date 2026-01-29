@@ -1,0 +1,229 @@
+.weekly-order-admin {
+  min-height: 100vh;
+  padding: 3.5rem 0 6rem;
+  background:
+    radial-gradient(circle at 15% 12%, color-mix(in srgb, var(--color-bg-secondary) 50%, transparent) 0 240px, transparent 320px),
+    radial-gradient(circle at 85% 12%, color-mix(in srgb, var(--color-bg-section) 45%, transparent) 0 220px, transparent 320px),
+    linear-gradient(180deg, color-mix(in srgb, var(--color-bg-page) 92%, var(--color-bg-card) 8%) 0%, var(--color-bg-page) 100%);
+}
+
+.weekly-order-admin-shell {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.weekly-order-admin-hero {
+  padding: 2rem 2.5rem;
+  border-radius: 1.8rem;
+  border: 1px solid var(--color-border-default);
+  background: color-mix(in srgb, var(--color-bg-card) 92%, transparent);
+  box-shadow: 0 18px 32px rgba(58, 46, 63, 0.14);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  align-items: flex-end;
+  justify-content: space-between;
+}
+
+.weekly-order-admin-eyebrow {
+  font-size: 0.7rem;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+  font-weight: 700;
+}
+
+.weekly-order-admin-subtitle {
+  margin-top: 0.5rem;
+  color: var(--color-text-secondary);
+  font-size: 0.95rem;
+}
+
+.weekly-order-admin-status {
+  font-size: 0.85rem;
+  color: var(--color-text-secondary);
+}
+
+.weekly-order-admin-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.weekly-order-admin-tabs button {
+  border: 1px solid var(--color-border-default);
+  border-radius: 999px;
+  padding: 0.35rem 0.9rem;
+  background: transparent;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  cursor: pointer;
+  color: var(--color-text-primary);
+}
+
+.weekly-order-admin-tabs button.is-active {
+  background: var(--color-action-primary-bg);
+  color: var(--color-action-primary-text);
+}
+
+.weekly-order-admin-section {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.weekly-order-admin-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.weekly-order-admin-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+}
+
+.weekly-order-admin-chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.weekly-order-admin-chip {
+  border: 1px solid var(--color-border-default);
+  border-radius: 999px;
+  padding: 0.2rem 0.6rem;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.weekly-order-admin-chip.is-muted {
+  color: var(--color-text-secondary);
+}
+
+.weekly-order-admin-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.weekly-order-admin-merge-row {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.weekly-order-admin-merge-row select {
+  flex: 1;
+  border-radius: 0.8rem;
+  border: 1px solid var(--color-border-default);
+  padding: 0.4rem 0.6rem;
+}
+
+.weekly-order-admin-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.weekly-order-admin-form input,
+.weekly-order-admin-form select,
+.weekly-order-admin-search input {
+  border-radius: 0.8rem;
+  border: 1px solid var(--color-border-default);
+  padding: 0.45rem 0.7rem;
+}
+
+.weekly-order-admin-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.8rem;
+}
+
+.weekly-order-admin-search {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.weekly-order-admin-pricing {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.weekly-order-admin-menu-items {
+  display: grid;
+  gap: 0.6rem;
+}
+
+.weekly-order-admin-menu-item-row {
+  display: grid;
+  grid-template-columns: minmax(180px, 1fr) repeat(3, auto);
+  gap: 0.75rem;
+  align-items: center;
+  padding: 0.6rem 0.8rem;
+  border-radius: 1rem;
+  border: 1px solid var(--color-border-default);
+  background: color-mix(in srgb, var(--color-bg-card) 92%, transparent);
+}
+
+.weekly-order-admin-menu-item-row input[type='number'] {
+  width: 110px;
+}
+
+.weekly-order-admin-pricing-row {
+  display: grid;
+  grid-template-columns: minmax(200px, 1fr) 1fr;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.6rem 0.8rem;
+  border-radius: 1rem;
+  border: 1px solid var(--color-border-default);
+  background: color-mix(in srgb, var(--color-bg-card) 92%, transparent);
+}
+
+.weekly-order-admin-pricing-row.is-override {
+  grid-template-columns: minmax(200px, 1fr) 140px auto;
+}
+
+.weekly-order-admin-tier-inputs {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.weekly-order-admin-tier-inputs label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  font-size: 0.78rem;
+}
+
+.weekly-order-admin-tier-inputs input {
+  width: 110px;
+  border-radius: 0.6rem;
+  border: 1px solid var(--color-border-default);
+  padding: 0.35rem 0.5rem;
+}
+
+.weekly-order-admin-draft-card {
+  border: 1px solid var(--color-border-strong);
+}
+
+@media (max-width: 720px) {
+  .weekly-order-admin-pricing-row {
+    grid-template-columns: 1fr;
+  }
+
+  .weekly-order-admin-menu-item-row {
+    grid-template-columns: 1fr;
+  }
+}
