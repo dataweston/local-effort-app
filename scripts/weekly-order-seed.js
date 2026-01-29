@@ -5,6 +5,12 @@ const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 
 const normalize = (value) => (value || '').toLowerCase().trim();
+const slugify = (value) => (value || '')
+  .toString()
+  .trim()
+  .toLowerCase()
+  .replace(/[^a-z0-9]+/g, '-')
+  .replace(/(^-|-$)/g, '');
 
 const findDishByTitle = async (title) => {
   const items = await prisma.dish.findMany({
@@ -56,6 +62,28 @@ const main = async () => {
     ? { id: 'dry-run' }
     : await prisma.menuWeek.create({ data: menuWeekPayload });
 
+  const sectionMap = new Map();
+  const sections = data.sections || [];
+  if (!dryRun && sections.length) {
+    for (const section of sections) {
+      const slug = section.slug || slugify(section.title);
+      const record = await prisma.menuWeekSection.create({
+        data: {
+          menuWeekId: menuWeek.id,
+          title: section.title,
+          slug,
+          sortOrder: section.sortOrder ?? 0,
+        },
+      });
+      sectionMap.set(slug, record.id);
+    }
+  } else if (dryRun && sections.length) {
+    sections.forEach((section) => {
+      const slug = section.slug || slugify(section.title);
+      sectionMap.set(slug, slug);
+    });
+  }
+
   for (const dish of dishes) {
     const existing = await findDishByTitle(dish.title);
     const dishPayload = {
@@ -77,6 +105,8 @@ const main = async () => {
         update: {
           isVisible: dish.isVisible ?? true,
           isAddon: dish.isAddon ?? false,
+          includedInPlan: dish.includedInPlan ?? false,
+          sectionId: dish.sectionSlug ? sectionMap.get(dish.sectionSlug) || null : null,
           sortOrder: dish.sortOrder ?? 0,
           capacityLimit: dish.capacityLimit ?? null,
         },
@@ -85,6 +115,8 @@ const main = async () => {
           dishId: dishRecord.id,
           isVisible: dish.isVisible ?? true,
           isAddon: dish.isAddon ?? false,
+          includedInPlan: dish.includedInPlan ?? false,
+          sectionId: dish.sectionSlug ? sectionMap.get(dish.sectionSlug) || null : null,
           sortOrder: dish.sortOrder ?? 0,
           capacityLimit: dish.capacityLimit ?? null,
         },

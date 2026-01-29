@@ -124,11 +124,13 @@ model User {
   createdAt  DateTime  @default(now())
   updatedAt  DateTime  @updatedAt
   customer   Customer? @relation(fields: [customerId], references: [id])
+  overrides  UserPriceOverride[]
 }
 
 model Customer {
   id               String                  @id @default(uuid())
   slug             String                  @unique
+  name             String?
   planRulesJson    Json?
   priceTierDefault PriceTier?
   createdAt        DateTime                @default(now())
@@ -137,6 +139,7 @@ model Customer {
   orders           Order[]
   overrides        CustomerPriceOverride[]
   visibility       DishVisibility[]
+  plans            CustomerPlan[]
 }
 
 model Dish {
@@ -152,6 +155,7 @@ model Dish {
   menuItems   MenuWeekItem[]
   prices      DishPrice[]
   overrides   CustomerPriceOverride[]
+  userOverrides UserPriceOverride[]
   visibility  DishVisibility[]
   sourceLinks DishSourceLink[]
   orderItems  OrderItem[]
@@ -166,24 +170,30 @@ model MenuWeek {
   createdAt  DateTime                @default(now())
   updatedAt  DateTime                @updatedAt
   items      MenuWeekItem[]
+  sections   MenuWeekSection[]
   prices     DishPrice[]
   overrides  CustomerPriceOverride[]
   visibility DishVisibility[]
   orders     Order[]
+  plans      CustomerPlan[]
+  userOverrides UserPriceOverride[]
 }
 
 model MenuWeekItem {
   id            String   @id @default(uuid())
   menuWeekId    String
   dishId        String
+  sectionId     String?
   isVisible     Boolean  @default(true)
   isAddon       Boolean  @default(false)
+  includedInPlan Boolean @default(false)
   sortOrder     Int      @default(0)
   capacityLimit Int?
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
   menuWeek      MenuWeek @relation(fields: [menuWeekId], references: [id])
   dish          Dish     @relation(fields: [dishId], references: [id])
+  section       MenuWeekSection? @relation(fields: [sectionId], references: [id])
 
   @@unique([menuWeekId, dishId])
 }
@@ -232,6 +242,50 @@ model CustomerPriceOverride {
   @@unique([customerId, menuWeekId, dishId])
 }
 
+model UserPriceOverride {
+  id         String   @id @default(uuid())
+  userId     String
+  menuWeekId String
+  dishId     String
+  priceCents Int
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  user       User     @relation(fields: [userId], references: [id])
+  menuWeek   MenuWeek @relation(fields: [menuWeekId], references: [id])
+  dish       Dish     @relation(fields: [dishId], references: [id])
+
+  @@unique([userId, menuWeekId, dishId])
+}
+
+model MenuWeekSection {
+  id         String       @id @default(uuid())
+  menuWeekId String
+  title      String
+  slug       String
+  sortOrder  Int          @default(0)
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+  menuWeek   MenuWeek     @relation(fields: [menuWeekId], references: [id])
+  items      MenuWeekItem[]
+
+  @@unique([menuWeekId, slug])
+}
+
+model CustomerPlan {
+  id               String    @id @default(uuid())
+  customerId       String
+  menuWeekId       String
+  basePriceCents   Int
+  deliveryFeeCents Int       @default(0)
+  notes            String?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  customer         Customer  @relation(fields: [customerId], references: [id])
+  menuWeek         MenuWeek  @relation(fields: [menuWeekId], references: [id])
+
+  @@unique([customerId, menuWeekId])
+}
+
 model Order {
   id              String      @id @default(uuid())
   menuWeekId      String
@@ -240,6 +294,8 @@ model Order {
   status          String      @default("draft")
   squarePaymentId String?
   totalsCents     Int?
+  basePriceCents  Int?
+  deliveryFeeCents Int?
   notes           String?
   tier            PriceTier?
   createdAt       DateTime    @default(now())
@@ -256,6 +312,7 @@ model OrderItem {
   quantity       Int
   unitPriceCents Int
   isAddon        Boolean  @default(false)
+  includedInPlan Boolean  @default(false)
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
   order          Order    @relation(fields: [orderId], references: [id])

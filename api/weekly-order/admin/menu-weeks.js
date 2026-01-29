@@ -17,6 +17,13 @@ const checkAdmin = (req) => {
   return header === ADMIN_TOKEN || bearer === ADMIN_TOKEN;
 };
 
+const slugify = (value) => (value || '')
+  .toString()
+  .trim()
+  .toLowerCase()
+  .replace(/[^a-z0-9]+/g, '-')
+  .replace(/(^-|-$)/g, '');
+
 module.exports = async (req, res) => {
   if (!prisma) {
     return res.status(500).json({ error: 'Database not configured' });
@@ -29,14 +36,32 @@ module.exports = async (req, res) => {
     const items = await prisma.menuWeek.findMany({
       orderBy: { weekStart: 'desc' },
       include: {
-        items: { include: { dish: true } },
+        items: { include: { dish: true, section: true } },
+        sections: { orderBy: { sortOrder: 'asc' } },
       },
     });
     return res.status(200).json({ items });
   }
 
   if (req.method === 'POST') {
-    const { action, id, weekStart, cutoffAt, status, dishId, isVisible, isAddon, sortOrder, capacityLimit } = req.body || {};
+    const {
+      action,
+      id,
+      weekStart,
+      cutoffAt,
+      status,
+      dishId,
+      isVisible,
+      isAddon,
+      includedInPlan,
+      sectionId,
+      sortOrder,
+      capacityLimit,
+      title,
+      slug,
+      sectionOrder,
+      sectionIdTarget,
+    } = req.body || {};
 
     if (action === 'create') {
       if (!weekStart || !cutoffAt) {
@@ -72,6 +97,8 @@ module.exports = async (req, res) => {
         update: {
           isVisible: isVisible ?? true,
           isAddon: isAddon ?? false,
+          includedInPlan: includedInPlan ?? false,
+          sectionId: sectionId ?? null,
           sortOrder: sortOrder ?? 0,
           capacityLimit: capacityLimit ?? null,
         },
@@ -80,6 +107,8 @@ module.exports = async (req, res) => {
           dishId,
           isVisible: isVisible ?? true,
           isAddon: isAddon ?? false,
+          includedInPlan: includedInPlan ?? false,
+          sectionId: sectionId ?? null,
           sortOrder: sortOrder ?? 0,
           capacityLimit: capacityLimit ?? null,
         },
@@ -94,6 +123,8 @@ module.exports = async (req, res) => {
         data: {
           isVisible: isVisible ?? undefined,
           isAddon: isAddon ?? undefined,
+          includedInPlan: includedInPlan ?? undefined,
+          sectionId: sectionId ?? undefined,
           sortOrder: sortOrder ?? undefined,
           capacityLimit: capacityLimit ?? undefined,
         },
@@ -106,6 +137,42 @@ module.exports = async (req, res) => {
       await prisma.menuWeekItem.delete({
         where: { menuWeekId_dishId: { menuWeekId: id, dishId } },
       });
+      return res.status(200).json({ ok: true });
+    }
+
+    if (action === 'add-section') {
+      if (!id || !title) return res.status(400).json({ error: 'Missing menu week id or title' });
+      const section = await prisma.menuWeekSection.create({
+        data: {
+          menuWeekId: id,
+          title,
+          slug: slugify(slug || title),
+          sortOrder: Number(sectionOrder) || 0,
+        },
+      });
+      return res.status(200).json({ section });
+    }
+
+    if (action === 'update-section') {
+      if (!sectionIdTarget) return res.status(400).json({ error: 'Missing sectionId' });
+      const section = await prisma.menuWeekSection.update({
+        where: { id: sectionIdTarget },
+        data: {
+          title: title ?? undefined,
+          slug: slug ? slugify(slug) : undefined,
+          sortOrder: sectionOrder !== undefined ? Number(sectionOrder) || 0 : undefined,
+        },
+      });
+      return res.status(200).json({ section });
+    }
+
+    if (action === 'remove-section') {
+      if (!sectionIdTarget) return res.status(400).json({ error: 'Missing sectionId' });
+      await prisma.menuWeekItem.updateMany({
+        where: { sectionId: sectionIdTarget },
+        data: { sectionId: null },
+      });
+      await prisma.menuWeekSection.delete({ where: { id: sectionIdTarget } });
       return res.status(200).json({ ok: true });
     }
 

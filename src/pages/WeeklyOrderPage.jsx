@@ -79,11 +79,32 @@ const parsePlanRules = (raw) => {
     const n = typeof value === 'string' ? Number(value) : value;
     return Number.isFinite(n) ? n : fallback;
   };
+  const sectionRules = {};
+  const rawSectionRules = parsed?.sectionRules || parsed?.sections;
+  if (Array.isArray(rawSectionRules)) {
+    rawSectionRules.forEach((entry) => {
+      if (!entry?.slug) return;
+      sectionRules[entry.slug] = {
+        min: pickNumber(entry.min, 0),
+        max: pickNumber(entry.max, 0),
+        label: entry.label || entry.slug,
+      };
+    });
+  } else if (rawSectionRules && typeof rawSectionRules === 'object') {
+    Object.entries(rawSectionRules).forEach(([slug, entry]) => {
+      sectionRules[slug] = {
+        min: pickNumber(entry?.min, 0),
+        max: pickNumber(entry?.max, 0),
+        label: entry?.label || slug,
+      };
+    });
+  }
   return {
     requiredEntrees: pickNumber(parsed?.requiredEntrees, DEFAULT_RULES.requiredEntrees),
     addOnMax: pickNumber(parsed?.addOnMax, DEFAULT_RULES.addOnMax),
     maxTotalItems: pickNumber(parsed?.maxTotalItems, DEFAULT_RULES.maxTotalItems),
     allowDuplicates: parsed?.allowDuplicates !== false,
+    sectionRules,
   };
 };
 
@@ -285,7 +306,7 @@ const WeeklyOrderPage = () => {
     signOut,
   } = useSupabaseAuth();
   const [data, setData] = useState(null);
-  const [loadingData, setLoadingData] = useState(true);
+  const [loadingData, setLoadingData] = useState(false);
   const [error, setError] = useState('');
   const [quantities, setQuantities] = useState({});
   const [selectedDish, setSelectedDish] = useState(null);
@@ -307,7 +328,11 @@ const WeeklyOrderPage = () => {
     setLoadingData(true);
     setError('');
     try {
-      const query = new URLSearchParams({ customerSlug: effectiveSlug, tier }).toString();
+      const query = new URLSearchParams({
+        customerSlug: effectiveSlug,
+        tier,
+        userEmail: user?.email || '',
+      }).toString();
       const response = await fetch(`/api/weekly-order/active?${query}`);
       if (!response.ok) {
         throw new Error('Unable to load weekly menu.');
@@ -353,9 +378,8 @@ const WeeklyOrderPage = () => {
     return items
       .filter((item) => item.isVisible && item.canView !== false)
       .map((item) => {
-        const override = data?.customer?.priceOverrides?.[item.dishId];
         const basePrice = item.prices?.[tier];
-        const priceCents = Number.isFinite(override) ? override : basePrice ?? null;
+        const priceCents = Number.isFinite(item.priceCents) ? item.priceCents : basePrice ?? null;
         return {
           ...item,
           priceCents,
@@ -363,10 +387,32 @@ const WeeklyOrderPage = () => {
         };
       })
       .sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0));
-  }, [data?.customer?.priceOverrides, data?.menuItems, tier]);
+  }, [data?.menuItems, tier]);
 
-  const entrees = pricedMenuItems.filter((item) => !item.isAddon);
-  const addOns = pricedMenuItems.filter((item) => item.isAddon);
+  const sections = useMemo(() => {
+    const items = pricedMenuItems;
+    const byDish = new Map(items.map((item) => [item.dishId, item]));
+    if (Array.isArray(data?.sections) && data.sections.length) {
+      return data.sections
+        .map((section) => ({
+          ...section,
+          items: (section.items || [])
+            .map((item) => byDish.get(item.dishId) || item)
+            .filter(Boolean),
+        }))
+        .sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0));
+    }
+    const map = new Map();
+    items.forEach((item) => {
+      const slug = item.section?.slug || (item.isAddon ? 'add-ons' : 'entrees');
+      const title = item.section?.title || (item.isAddon ? 'Add-ons' : 'Entrees');
+      if (!map.has(slug)) {
+        map.set(slug, { id: slug, slug, title, sortOrder: 0, items: [] });
+      }
+      map.get(slug).items.push(item);
+    });
+    return Array.from(map.values());
+  }, [data?.sections, pricedMenuItems]);
 
   const lineItems = useMemo(() => {
     return pricedMenuItems
@@ -386,28 +432,51 @@ const WeeklyOrderPage = () => {
           acc.entrees += item.quantity;
         }
         acc.total += item.quantity;
+        const slug = item.section?.slug || (item.isAddon ? 'add-ons' : 'entrees');
+        acc.bySection[slug] = (acc.bySection[slug] || 0) + item.quantity;
         return acc;
       },
-      { entrees: 0, addOns: 0, total: 0 }
+      { entrees: 0, addOns: 0, total: 0, bySection: {} }
     );
   }, [lineItems]);
 
-  const subtotalCents = lineItems.reduce(
+  const basePriceCents = Number(data?.plan?.basePriceCents) || 0;
+  const deliveryFeeCents = Number(data?.plan?.deliveryFeeCents) || 0;
+  const itemsSubtotalCents = lineItems.reduce(
     (sum, item) => sum + (item.priceCents || 0) * item.quantity,
     0
   );
+  const subtotalCents = basePriceCents + deliveryFeeCents + itemsSubtotalCents;
 
   const cutoffPassed = data?.menuWeek?.cutoffAt
     ? new Date(data.menuWeek.cutoffAt) < new Date()
     : false;
   const hasOrderLocked = !!data?.currentOrder && data.currentOrder.status !== 'draft';
+  const sectionEntries = Object.entries(planRules.sectionRules || {});
+  const sectionChecks = sectionEntries.map(([slug, rule]) => {
+    const count = counts.bySection[slug] || 0;
+    const min = Number(rule.min) || 0;
+    const max = Number(rule.max) || 0;
+    const meetsMin = !min || count >= min;
+    const meetsMax = !max || count <= max;
+    return {
+      slug,
+      label: rule.label || slug,
+      count,
+      min,
+      max,
+      isValid: meetsMin && meetsMax,
+    };
+  });
+  const sectionsValid = sectionChecks.length ? sectionChecks.every((check) => check.isValid) : true;
   const minEntreesMet = counts.entrees >= planRules.requiredEntrees;
   const addOnWithinLimit = counts.addOns <= planRules.addOnMax;
   const totalWithinLimit = counts.total <= planRules.maxTotalItems;
   const hasSelections = counts.total > 0;
+  const meetsEntreeRules = sectionChecks.length ? sectionsValid : minEntreesMet;
   const canCheckout =
     hasSelections &&
-    minEntreesMet &&
+    meetsEntreeRules &&
     addOnWithinLimit &&
     totalWithinLimit &&
     !cutoffPassed &&
@@ -425,6 +494,12 @@ const WeeklyOrderPage = () => {
     const nextTotal = counts.total + 1;
     if (nextTotal > planRules.maxTotalItems) return;
     if (item.isAddon && counts.addOns + 1 > planRules.addOnMax) return;
+    const sectionSlug = item.section?.slug || (item.isAddon ? 'add-ons' : 'entrees');
+    const sectionRule = planRules.sectionRules?.[sectionSlug];
+    if (sectionRule?.max) {
+      const nextSectionCount = (counts.bySection?.[sectionSlug] || 0) + 1;
+      if (nextSectionCount > sectionRule.max) return;
+    }
     updateQuantity(item.dishId, (quantities[item.dishId] || 0) + 1);
   };
 
@@ -457,6 +532,7 @@ const WeeklyOrderPage = () => {
           customerId: data?.customer?.id,
           customerSlug: data?.customer?.slug,
           tier,
+          userEmail: user?.email || '',
           rules: planRules,
           items: lineItems.map((item) => ({
             dishId: item.dishId,
@@ -464,8 +540,12 @@ const WeeklyOrderPage = () => {
             quantity: item.quantity,
             unitPriceCents: item.priceCents,
             isAddon: item.isAddon,
+            includedInPlan: item.includedInPlan,
+            sectionSlug: item.section?.slug || (item.isAddon ? 'add-ons' : 'entrees'),
           })),
           totalsCents: subtotalCents,
+          basePriceCents,
+          deliveryFeeCents,
           paymentToken: token,
         }),
       });
@@ -482,7 +562,7 @@ const WeeklyOrderPage = () => {
     }
   };
 
-  if (authLoading || loadingData) {
+  if (authLoading) {
     return (
       <div className="weekly-order fullpage-demo-scope">
         <div className="weekly-order-shell">
@@ -507,6 +587,16 @@ const WeeklyOrderPage = () => {
               <Button onClick={signInWithGoogle}>Sign in with Google</Button>
             </CardContent>
           </Card>
+        </div>
+      </div>
+    );
+  }
+
+  if (loadingData) {
+    return (
+      <div className="weekly-order fullpage-demo-scope">
+        <div className="weekly-order-shell">
+          <div className="weekly-order-loading">Loading weekly menu...</div>
         </div>
       </div>
     );
@@ -575,65 +665,60 @@ const WeeklyOrderPage = () => {
 
         <section className="weekly-order-layout">
           <div className="weekly-order-main">
-            <section className="weekly-order-section">
-              <div className="weekly-order-section-header">
-                <div>
-                  <h2>Entrees</h2>
-                  <p>Select {planRules.requiredEntrees} entrees each week.</p>
-                </div>
-                <div className="weekly-order-rule-pill">
-                  {counts.entrees}/{planRules.requiredEntrees} selected
-                </div>
-              </div>
-              <div className="weekly-order-grid">
-                {entrees.map((item) => (
-                  <MenuCard
-                    key={item.id}
-                    item={item}
-                    quantity={quantities[item.dishId] || 0}
-                    onIncrement={() => handleIncrement(item)}
-                    onDecrement={() => handleDecrement(item)}
-                    onDetails={() => setSelectedDish(item)}
-                    planRules={planRules}
-                    counts={counts}
-                    disabled={hasOrderLocked || cutoffPassed}
-                  />
-                ))}
-              </div>
-            </section>
-
-            <section className="weekly-order-section">
-              <div className="weekly-order-section-header">
-                <div>
-                  <h2>Add-ons</h2>
-                  <p>Optional sides and snacks. Add up to {planRules.addOnMax}.</p>
-                </div>
-                <button
-                  type="button"
-                  className="weekly-order-toggle"
-                  onClick={() => setShowAddOns((prev) => !prev)}
-                >
-                  {showAddOns ? 'Hide add-ons' : 'Show add-ons'}
-                </button>
-              </div>
-              {showAddOns && (
-                <div className="weekly-order-grid">
-                  {addOns.map((item) => (
-                    <MenuCard
-                      key={item.id}
-                      item={item}
-                      quantity={quantities[item.dishId] || 0}
-                      onIncrement={() => handleIncrement(item)}
-                      onDecrement={() => handleDecrement(item)}
-                      onDetails={() => setSelectedDish(item)}
-                      planRules={planRules}
-                      counts={counts}
-                      disabled={hasOrderLocked || cutoffPassed}
-                    />
-                  ))}
-                </div>
-              )}
-            </section>
+            {sections.map((section) => {
+              const sectionRule = planRules.sectionRules?.[section.slug];
+              const count = counts.bySection?.[section.slug] || 0;
+              const isAddonSection = section.items?.every((item) => item.isAddon);
+              const rangeLabel = sectionRule
+                ? sectionRule.min && sectionRule.max && sectionRule.min !== sectionRule.max
+                  ? `${sectionRule.min}-${sectionRule.max}`
+                  : `${sectionRule.min || sectionRule.max || 0}`
+                : null;
+              const showSection = !isAddonSection || showAddOns;
+              return (
+                <section key={section.id || section.slug} className="weekly-order-section">
+                  <div className="weekly-order-section-header">
+                    <div>
+                      <h2>{section.title}</h2>
+                      {sectionRule ? (
+                        <p>Select {rangeLabel} from this section.</p>
+                      ) : (
+                        <p>{isAddonSection ? `Optional add-ons. Add up to ${planRules.addOnMax}.` : 'Choose your favorites for the week.'}</p>
+                      )}
+                    </div>
+                    <div className="weekly-order-rule-pill">
+                      {sectionRule ? `${count}/${rangeLabel}` : `${count}`}
+                    </div>
+                    {isAddonSection && (
+                      <button
+                        type="button"
+                        className="weekly-order-toggle"
+                        onClick={() => setShowAddOns((prev) => !prev)}
+                      >
+                        {showAddOns ? 'Hide add-ons' : 'Show add-ons'}
+                      </button>
+                    )}
+                  </div>
+                  {showSection && (
+                    <div className="weekly-order-grid">
+                      {(section.items || []).map((item) => (
+                        <MenuCard
+                          key={item.id}
+                          item={item}
+                          quantity={quantities[item.dishId] || 0}
+                          onIncrement={() => handleIncrement(item)}
+                          onDecrement={() => handleDecrement(item)}
+                          onDetails={() => setSelectedDish(item)}
+                          planRules={planRules}
+                          counts={counts}
+                          disabled={hasOrderLocked || cutoffPassed}
+                        />
+                      ))}
+                    </div>
+                  )}
+                </section>
+              );
+            })}
 
             {data?.orderHistory?.length ? (
               <section className="weekly-order-section">
@@ -672,8 +757,11 @@ const WeeklyOrderPage = () => {
             <SummaryPanel
               counts={counts}
               planRules={planRules}
+              sectionChecks={sectionChecks}
               lineItems={lineItems}
               subtotalCents={subtotalCents}
+              basePriceCents={basePriceCents}
+              deliveryFeeCents={deliveryFeeCents}
               cutoffPassed={cutoffPassed}
               hasOrderLocked={hasOrderLocked}
               canCheckout={canCheckout}
@@ -689,8 +777,11 @@ const WeeklyOrderPage = () => {
           <SummaryPanel
             counts={counts}
             planRules={planRules}
+            sectionChecks={sectionChecks}
             lineItems={lineItems}
             subtotalCents={subtotalCents}
+            basePriceCents={basePriceCents}
+            deliveryFeeCents={deliveryFeeCents}
             cutoffPassed={cutoffPassed}
             hasOrderLocked={hasOrderLocked}
             canCheckout={canCheckout}
@@ -719,7 +810,11 @@ const WeeklyOrderPage = () => {
                     {selectedDish.isAddon ? 'Add-on' : 'Entree'}
                   </span>
                   <span className="weekly-order-chip">
-                    {selectedDish.priceCents ? formatCurrency(selectedDish.priceCents) : 'Price TBD'}
+                    {selectedDish.includedInPlan
+                      ? 'Included'
+                      : Number.isFinite(selectedDish.priceCents)
+                        ? formatCurrency(selectedDish.priceCents)
+                        : 'Price TBD'}
                   </span>
                   {selectedDish.isSoldOut && <span className="weekly-order-chip">Sold out</span>}
                 </div>
@@ -756,7 +851,14 @@ const WeeklyOrderPage = () => {
                       selectedDish.isSoldOut ||
                       (!planRules.allowDuplicates && (quantities[selectedDish.dishId] || 0) >= 1) ||
                       counts.total + 1 > planRules.maxTotalItems ||
-                      (selectedDish.isAddon && counts.addOns + 1 > planRules.addOnMax)
+                      (selectedDish.isAddon && counts.addOns + 1 > planRules.addOnMax) ||
+                      (() => {
+                        const sectionSlug = selectedDish.section?.slug || (selectedDish.isAddon ? 'add-ons' : 'entrees');
+                        const sectionRule = planRules.sectionRules?.[sectionSlug];
+                        if (!sectionRule?.max) return false;
+                        const next = (counts.bySection?.[sectionSlug] || 0) + 1;
+                        return next > sectionRule.max;
+                      })()
                     }
                   />
                 </div>
@@ -784,10 +886,22 @@ const WeeklyOrderPage = () => {
           ) : (
             <div className="weekly-order-checkout-body">
               <div className="weekly-order-checkout-summary">
+                {basePriceCents ? (
+                  <div className="weekly-order-checkout-row">
+                    <span>Plan base</span>
+                    <span>{formatCurrency(basePriceCents)}</span>
+                  </div>
+                ) : null}
+                {deliveryFeeCents ? (
+                  <div className="weekly-order-checkout-row">
+                    <span>Delivery</span>
+                    <span>{formatCurrency(deliveryFeeCents)}</span>
+                  </div>
+                ) : null}
                 {lineItems.map((item) => (
                   <div key={item.dishId} className="weekly-order-checkout-row">
                     <span>{item.quantity}x {item.dish?.title}</span>
-                    <span>{formatCurrency((item.priceCents || 0) * item.quantity)}</span>
+                    <span>{item.includedInPlan ? 'Included' : formatCurrency((item.priceCents || 0) * item.quantity)}</span>
                   </div>
                 ))}
                 <div className="weekly-order-checkout-total">
@@ -827,7 +941,14 @@ const MenuCard = ({
   counts,
   disabled,
 }) => {
-  const priceLabel = item.priceCents ? formatCurrency(item.priceCents) : 'Price TBD';
+  const priceLabel = item.includedInPlan
+    ? 'Included'
+    : Number.isFinite(item.priceCents)
+      ? formatCurrency(item.priceCents)
+      : 'Price TBD';
+  const sectionSlug = item.section?.slug || (item.isAddon ? 'add-ons' : 'entrees');
+  const sectionRule = planRules.sectionRules?.[sectionSlug];
+  const sectionLimitReached = sectionRule?.max ? (counts.bySection?.[sectionSlug] || 0) >= sectionRule.max : false;
   const limitReached =
     counts.total >= planRules.maxTotalItems ||
     (item.isAddon && counts.addOns >= planRules.addOnMax);
@@ -835,6 +956,7 @@ const MenuCard = ({
     disabled ||
     item.isSoldOut ||
     limitReached ||
+    sectionLimitReached ||
     (!planRules.allowDuplicates && quantity >= 1) ||
     item.priceCents === null;
 
@@ -859,6 +981,7 @@ const MenuCard = ({
               <span key={tag} className="weekly-order-tag">{tag}</span>
             ))}
             {item.isAddon && <span className="weekly-order-tag is-addon">Add-on</span>}
+            {item.includedInPlan && <span className="weekly-order-tag">Included</span>}
           </div>
           {item.dish?.allergens?.length ? (
             <p className="weekly-order-allergen">Allergens: {item.dish.allergens.join(', ')}</p>
@@ -926,8 +1049,11 @@ const QuantityControl = ({
 const SummaryPanel = ({
   counts,
   planRules,
+  sectionChecks,
   lineItems,
   subtotalCents,
+  basePriceCents,
+  deliveryFeeCents,
   cutoffPassed,
   hasOrderLocked,
   canCheckout,
@@ -935,6 +1061,10 @@ const SummaryPanel = ({
   onCheckout,
 }) => {
   const missingEntrees = Math.max(0, planRules.requiredEntrees - counts.entrees);
+  const hasSectionRules = Array.isArray(sectionChecks) && sectionChecks.length > 0;
+  const missingSection = hasSectionRules
+    ? sectionChecks.find((check) => !check.isValid && check.min && check.count < check.min)
+    : null;
   return (
     <div className={`weekly-order-summary ${compact ? 'is-compact' : ''}`}>
       <div className="weekly-order-summary-header">
@@ -942,9 +1072,17 @@ const SummaryPanel = ({
         <span>{formatCurrency(subtotalCents)}</span>
       </div>
       <div className="weekly-order-summary-rules">
-        <div className={missingEntrees ? 'is-warning' : ''}>
-          Entrees: {counts.entrees}/{planRules.requiredEntrees}
-        </div>
+        {hasSectionRules ? (
+          sectionChecks.map((check) => (
+            <div key={check.slug} className={check.isValid ? '' : 'is-warning'}>
+              {check.label}: {check.count}/{check.min && check.max && check.min !== check.max ? `${check.min}-${check.max}` : check.min || check.max || 0}
+            </div>
+          ))
+        ) : (
+          <div className={missingEntrees ? 'is-warning' : ''}>
+            Entrees: {counts.entrees}/{planRules.requiredEntrees}
+          </div>
+        )}
         <div className={counts.addOns > planRules.addOnMax ? 'is-warning' : ''}>
           Add-ons: {counts.addOns}/{planRules.addOnMax}
         </div>
@@ -952,12 +1090,24 @@ const SummaryPanel = ({
           Total: {counts.total}/{planRules.maxTotalItems}
         </div>
       </div>
-      {!compact && lineItems.length ? (
+      {!compact && (lineItems.length || basePriceCents || deliveryFeeCents) ? (
         <div className="weekly-order-summary-items">
+          {basePriceCents ? (
+            <div className="weekly-order-summary-row">
+              <span>Plan base</span>
+              <span>{formatCurrency(basePriceCents)}</span>
+            </div>
+          ) : null}
+          {deliveryFeeCents ? (
+            <div className="weekly-order-summary-row">
+              <span>Delivery</span>
+              <span>{formatCurrency(deliveryFeeCents)}</span>
+            </div>
+          ) : null}
           {lineItems.map((item) => (
             <div key={item.dishId} className="weekly-order-summary-row">
               <span>{item.quantity}x {item.dish?.title}</span>
-              <span>{formatCurrency((item.priceCents || 0) * item.quantity)}</span>
+              <span>{item.includedInPlan ? 'Included' : formatCurrency((item.priceCents || 0) * item.quantity)}</span>
             </div>
           ))}
         </div>
@@ -973,9 +1123,11 @@ const SummaryPanel = ({
       </Button>
       {!canCheckout && !cutoffPassed && !hasOrderLocked && (
         <p className="weekly-order-helper">
-          {missingEntrees
-            ? `Select ${missingEntrees} more entree${missingEntrees === 1 ? '' : 's'} to continue.`
-            : 'Add items to reach your weekly plan.'}
+          {missingSection
+            ? `Select ${missingSection.min - missingSection.count} more from ${missingSection.label}.`
+            : missingEntrees
+              ? `Select ${missingEntrees} more entree${missingEntrees === 1 ? '' : 's'} to continue.`
+              : 'Add items to reach your weekly plan.'}
         </p>
       )}
     </div>

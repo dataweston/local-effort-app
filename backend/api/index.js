@@ -565,6 +565,24 @@ app.all('/api/weekly-order/admin/overrides', async (req, res, next) => {
   }
 });
 
+app.all('/api/weekly-order/admin/plans', async (req, res, next) => {
+  try {
+    await require('../../api/weekly-order/admin/plans')(req, res);
+  } catch (err) {
+    logger.error({ err, method: req.method }, 'weekly order plans handler failed');
+    next(err);
+  }
+});
+
+app.all('/api/weekly-order/admin/user-overrides', async (req, res, next) => {
+  try {
+    await require('../../api/weekly-order/admin/user-overrides')(req, res);
+  } catch (err) {
+    logger.error({ err, method: req.method }, 'weekly order user overrides handler failed');
+    next(err);
+  }
+});
+
 // --- Calendar API Routes ---
 app.all('/api/calendar/events', async (req, res, next) => {
   try {

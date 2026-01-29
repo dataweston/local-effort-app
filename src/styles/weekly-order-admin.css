@@ -136,10 +136,23 @@
 
 .weekly-order-admin-form input,
 .weekly-order-admin-form select,
+.weekly-order-admin-form textarea,
 .weekly-order-admin-search input {
   border-radius: 0.8rem;
   border: 1px solid var(--color-border-default);
   padding: 0.45rem 0.7rem;
+}
+
+.weekly-order-admin-form--stack {
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.weekly-order-admin-form textarea {
+  resize: vertical;
+  min-height: 140px;
+  font-family: inherit;
+  font-size: 0.85rem;
 }
 
 .weekly-order-admin-toggle {
@@ -166,7 +179,7 @@
 
 .weekly-order-admin-menu-item-row {
   display: grid;
-  grid-template-columns: minmax(180px, 1fr) repeat(3, auto);
+  grid-template-columns: minmax(180px, 1fr) repeat(6, auto);
   gap: 0.75rem;
   align-items: center;
   padding: 0.6rem 0.8rem;
@@ -177,6 +190,12 @@
 
 .weekly-order-admin-menu-item-row input[type='number'] {
   width: 110px;
+}
+
+.weekly-order-admin-menu-item-row select {
+  border-radius: 0.8rem;
+  border: 1px solid var(--color-border-default);
+  padding: 0.35rem 0.6rem;
 }
 
 .weekly-order-admin-pricing-row {
@@ -192,6 +211,31 @@
 
 .weekly-order-admin-pricing-row.is-override {
   grid-template-columns: minmax(200px, 1fr) 140px auto;
+}
+
+.weekly-order-admin-section-list {
+  display: grid;
+  gap: 0.6rem;
+}
+
+.weekly-order-admin-section-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.6rem 0.8rem;
+  border-radius: 1rem;
+  border: 1px solid var(--color-border-default);
+  background: color-mix(in srgb, var(--color-bg-card) 92%, transparent);
+}
+
+.weekly-order-admin-section-title {
+  font-weight: 700;
+}
+
+.weekly-order-admin-section-meta {
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
 }
 
 .weekly-order-admin-tier-inputs {

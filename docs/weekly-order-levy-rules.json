@@ -1,0 +1,18 @@
+{
+  "requiredEntrees": 0,
+  "addOnMax": 6,
+  "maxTotalItems": 12,
+  "allowDuplicates": true,
+  "sectionRules": {
+    "family-dinners": {
+      "min": 3,
+      "max": 3,
+      "label": "Family Dinners"
+    },
+    "kids-food": {
+      "min": 3,
+      "max": 5,
+      "label": "Kids Food"
+    }
+  }
+}

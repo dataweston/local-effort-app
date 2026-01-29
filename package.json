@@ -172,7 +172,8 @@
     "supabase:verify": "cross-env TS_NODE_PROJECT=tsconfig.ts-node.json node -r ts-node/register/transpile-only scripts/supabase-verify.ts",
     "weekly-order:import": "node scripts/weekly-order-import.js",
     "weekly-order:seed": "node scripts/weekly-order-seed.js",
-    "weekly-order:prices": "node scripts/weekly-order-prices.js"
+    "weekly-order:prices": "node scripts/weekly-order-prices.js",
+    "weekly-order:customer-setup": "node scripts/weekly-order-customer-setup.js"
   },
   "browserslist": {
     "production": [
