@@ -7,6 +7,7 @@ import { CSS } from '@dnd-kit/utilities';
 import FullPageContainer from '../components/fullpage/FullPageContainer';
 import FullPageSection from '../components/fullpage/FullPageSection';
 import CloudinaryImage from '../components/common/cloudinaryImage';
+import PhotoGrid from '../components/common/PhotoGrid';
 import SectionHeader from '../components/ui/SectionHeader';
 import { thumbtackReviews } from '../data/staticContent';
 import {
@@ -89,6 +90,55 @@ const SMALL_EVENTS_CONTACT_OPTIONS = {
   weddings: 'Weddings and showers',
   holiday: 'Small events and holiday parties',
 };
+const ABOUT_INFO_BLOCKS = [
+  {
+    title: 'At a glance',
+    items: [
+      'Founded in 2022',
+      'Based in Minneapolis, MN',
+      '100% locally sourced focus',
+    ],
+  },
+  {
+    title: 'Foods we specialize in',
+    items: [
+      'Seasonal vegetables and composed salads',
+      'Fresh pastas, grains, and hearty soups',
+      'Local, from-scratch pizzas',
+      'Thoughtful braises and shared plates',
+      'Breads and simple, elegant desserts',
+    ],
+  },
+  {
+    title: 'Services we offer',
+    items: [
+      'Meal planning and nutrition support for families',
+      'Sourcing and shopping directly from Minnesota producers',
+      'Catering and events built around local ingredients',
+      'Completely local pizzas - our specialty',
+    ],
+  },
+  {
+    title: 'Principles',
+    items: [
+      'Celebrating home cooks',
+      'Supporting family nutrition',
+      'Spending with local producers',
+      'Collaborating with Minnesota organizations',
+      'Sharing and shaping Minnesota food culture',
+    ],
+  },
+  {
+    title: 'How we apply it',
+    items: [
+      'Minnesota-first sourcing; regional when sensible',
+      'Seasonal menus; preserve when possible',
+      'Direct relationships with farms and mills',
+      'Reasonable exceptions for essentials (e.g., spices)',
+      'Transparency: ask us about any ingredient',
+    ],
+  },
+];
 
 const formatCurrency = (value, options = {}) => {
   const {
@@ -2933,6 +2983,14 @@ const clampGuestCount = (value, config) => {
                   </div>
                 </div>
               </div>
+              <div className="mt-12">
+                <PhotoGrid
+                  tags={['event', 'dinner']}
+                  perPage={8}
+                  layout="masonry"
+                  className="small-events-gallery"
+                />
+              </div>
             </div>
           </div>
         </FullPageSection>
@@ -3203,15 +3261,41 @@ const clampGuestCount = (value, config) => {
             </div>
             <div className="px-8 py-12">
               <div className="about-bio">
-                <div className="about-bio-eyebrow">Bio</div>
+                <div className="about-bio-eyebrow">Who we are</div>
                 <div className="about-bio-title">
-                  Local Effort is a small team focused on food with a clear point of view.
+                  We&apos;re a knockout team of widely experienced kitchen professionals.
                 </div>
                 <div className="about-bio-copy">
-                  We build menus and experiences around seasonal ingredients, thoughtful sourcing, and the people who
-                  show up hungry. Our work spans intimate dinners, small events, and collaborations with local
-                  businesses.
+                  <p>
+                    We bring Minnesotan and Midwest ingredients into everyday meals and special events. We care about
+                    flavor and nutrition in equal measure. We cook with care, spend with purpose, and work for long-term
+                    relationships with families who invite us in, partners and supporting businesses, and with
+                    producers who grow the food we serve.
+                  </p>
+                  <p>
+                    We love platters and cassoulets and juleps and celery and croque monsieur and white rice, we love
+                    vegetables and meats and grain and nuts and grapes and HAZELNUTS and ducks and lamb and the weird
+                    great awesome people who make them and keep making them. We love meeting our growers. We love
+                    living in an city where shopping locally is valued and not hard to do.
+                  </p>
+                  <p>
+                    We feel strongly about choosing food grown and produced closer to home. It&apos;s a duty, and a
+                    gift, and it&apos;s at the center of our practice and culture.{' '}
+                    <strong>We&apos;re the realest people make the localest food.</strong>
+                  </p>
                 </div>
+              </div>
+              <div className="about-info-grid">
+                {ABOUT_INFO_BLOCKS.map((block) => (
+                  <div key={block.title} className="about-info-card">
+                    <div className="about-info-title">{block.title}</div>
+                    <ul className="about-info-list">
+                      {block.items.map((item) => (
+                        <li key={item}>{item}</li>
+                      ))}
+                    </ul>
+                  </div>
+                ))}
               </div>
               <section className="py-12">
                 <div className="max-w-6xl mx-auto px-4 md:px-6 lg:px-8">
@@ -3523,6 +3607,24 @@ const clampGuestCount = (value, config) => {
           </DialogHeader>
           <div className="announcement-map">
             <div className="announcement-map-title">Google Maps</div>
+            <div className="announcement-map-media">
+              <img
+                src="/gallery/hmw%20(1).png"
+                alt="Happy Monday Coffee"
+                className="announcement-map-image"
+                loading="lazy"
+              />
+              <div className="announcement-map-embed">
+                <iframe
+                  title="Happy Monday Coffee on Google Maps"
+                  src="https://www.google.com/maps?q=Happy%20Monday%20Coffee%2C%202420%20Cleveland%20Ave%20N%2C%20Roseville%2C%20MN%2055113&output=embed"
+                  loading="lazy"
+                  allowFullScreen
+                  referrerPolicy="no-referrer-when-downgrade"
+                  className="announcement-map-iframe"
+                />
+              </div>
+            </div>
             <a
               href="https://www.google.com/maps/search/?api=1&query=Happy%20Monday%20Coffee%2C%202420%20Cleveland%20Ave%20N%2C%20Roseville%2C%20MN%2055113"
               target="_blank"

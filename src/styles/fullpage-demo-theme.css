@@ -879,6 +879,46 @@ div:has(> .fullpage-demo-scope) > .bg-black\/60 {
   line-height: 1.6;
 }
 
+:where(.fullpage-demo, .fullpage-demo-scope) .about-bio-copy p + p {
+  margin-top: 0.9rem;
+}
+
+:where(.fullpage-demo, .fullpage-demo-scope) .about-info-grid {
+  margin: 2.5rem auto 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1.5rem;
+  max-width: 980px;
+}
+
+:where(.fullpage-demo, .fullpage-demo-scope) .about-info-card {
+  border-radius: 1.25rem;
+  padding: 1.35rem 1.5rem;
+  border: 1px solid color-mix(in srgb, var(--color-border-default) 80%, transparent);
+  background: color-mix(in srgb, var(--color-bg-card) 90%, transparent);
+  box-shadow: 0 16px 28px rgba(58, 46, 63, 0.1);
+}
+
+:where(.fullpage-demo, .fullpage-demo-scope) .about-info-title {
+  font-size: 0.7rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+  font-family: var(--font-office-code);
+  font-weight: 700;
+}
+
+:where(.fullpage-demo, .fullpage-demo-scope) .about-info-list {
+  margin-top: 0.75rem;
+  padding-left: 1.1rem;
+  display: grid;
+  gap: 0.45rem;
+  color: var(--color-text-primary);
+  font-size: 0.95rem;
+  line-height: 1.5;
+  list-style: disc;
+}
+
 :where(.fullpage-demo, .fullpage-demo-scope) .about-feedback {
   padding: 0 0 2.5rem;
 }
@@ -1400,6 +1440,37 @@ div:has(> .fullpage-demo-scope) > .bg-black\/60 {
   background: color-mix(in srgb, var(--color-bg-secondary) 70%, transparent);
   display: grid;
   gap: 0.4rem;
+}
+
+:where(.fullpage-demo, .fullpage-demo-scope) .announcement-map-media {
+  display: grid;
+  gap: 0.75rem;
+}
+
+:where(.fullpage-demo, .fullpage-demo-scope) .announcement-map-image {
+  width: 100%;
+  height: auto;
+  border-radius: 0.75rem;
+  border: 1px solid color-mix(in srgb, var(--color-border-default) 85%, transparent);
+  object-fit: cover;
+}
+
+:where(.fullpage-demo, .fullpage-demo-scope) .announcement-map-embed {
+  position: relative;
+  width: 100%;
+  border-radius: 0.75rem;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--color-border-default) 85%, transparent);
+  background: color-mix(in srgb, var(--color-bg-page) 85%, transparent);
+  aspect-ratio: 16 / 9;
+}
+
+:where(.fullpage-demo, .fullpage-demo-scope) .announcement-map-iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
 }
 
 :where(.fullpage-demo, .fullpage-demo-scope) .announcement-map-title {
