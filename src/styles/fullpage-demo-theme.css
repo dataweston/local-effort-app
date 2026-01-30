@@ -879,16 +879,22 @@ div:has(> .fullpage-demo-scope) > .bg-black\/60 {
   line-height: 1.6;
 }
 
+:where(.fullpage-demo, .fullpage-demo-scope) .about-tab {
+  font-family: var(--font-office-code);
+}
+
+:where(.fullpage-demo, .fullpage-demo-scope) .about-tab .heading-xl,
+:where(.fullpage-demo, .fullpage-demo-scope) .about-tab .heading-overline {
+  font-family: var(--font-display);
+}
+
 :where(.fullpage-demo, .fullpage-demo-scope) .about-bio-copy p + p {
   margin-top: 0.9rem;
 }
 
-:where(.fullpage-demo, .fullpage-demo-scope) .about-info-grid {
+:where(.fullpage-demo, .fullpage-demo-scope) .about-info-masonry {
   margin: 2.5rem auto 0;
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 1.5rem;
-  max-width: 980px;
+  max-width: 1200px;
 }
 
 :where(.fullpage-demo, .fullpage-demo-scope) .about-info-card {
@@ -917,6 +923,30 @@ div:has(> .fullpage-demo-scope) > .bg-black\/60 {
   font-size: 0.95rem;
   line-height: 1.5;
   list-style: disc;
+}
+
+:where(.fullpage-demo, .fullpage-demo-scope) .about-info-lines {
+  margin-top: 0.75rem;
+  color: var(--color-text-primary);
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
+:where(.fullpage-demo, .fullpage-demo-scope) .about-info-status {
+  margin-bottom: 0.75rem;
+  font-size: 0.85rem;
+  color: var(--color-text-secondary);
+}
+
+:where(.fullpage-demo, .fullpage-demo-scope) .about-info-status-error {
+  color: #b91c1c;
+}
+
+:where(.fullpage-demo, .fullpage-demo-scope) .about-tab .feedback-quote,
+:where(.fullpage-demo, .fullpage-demo-scope) .about-tab .feedback-quote-text,
+:where(.fullpage-demo, .fullpage-demo-scope) .about-tab .feedback-quote-author,
+:where(.fullpage-demo, .fullpage-demo-scope) .about-tab .feedback-quote-context {
+  font-family: var(--font-office-code);
 }
 
 :where(.fullpage-demo, .fullpage-demo-scope) .about-feedback {

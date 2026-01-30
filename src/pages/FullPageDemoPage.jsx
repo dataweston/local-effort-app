@@ -102,18 +102,19 @@ const ABOUT_INFO_BLOCKS = [
   {
     title: 'Foods we specialize in',
     items: [
-      'Seasonal vegetables and composed salads',
-      'Fresh pastas, grains, and hearty soups',
-      'Local, from-scratch pizzas',
-      'Thoughtful braises and shared plates',
-      'Breads and simple, elegant desserts',
+      'sourdough breads from local grain',
+      'fresh pasta',
+      'pies, cakes, pastry and patisserie',
+      'braised meat, smoked meat, cured meat',
+      "kid's food",
+      'bean-to-bar chocolate',
+      '100% local pizza',
     ],
   },
   {
     title: 'Services we offer',
     items: [
       'Meal planning and nutrition support for families',
-      'Sourcing and shopping directly from Minnesota producers',
       'Catering and events built around local ingredients',
       'Completely local pizzas - our specialty',
     ],
@@ -129,12 +130,12 @@ const ABOUT_INFO_BLOCKS = [
     ],
   },
   {
-    title: 'How we apply it',
+    title: 'How we stay local',
     items: [
       'Minnesota-first sourcing; regional when sensible',
       'Seasonal menus; preserve when possible',
       'Direct relationships with farms and mills',
-      'Reasonable exceptions for essentials (e.g., spices)',
+      'Reasonable exceptions for essentials (like olive oil)',
       'Transparency: ask us about any ingredient',
     ],
   },
@@ -385,6 +386,9 @@ const FullPageDemoPage = () => {
   const [mealPlanImages, setMealPlanImages] = useState([]);
   const [mealPlanLoading, setMealPlanLoading] = useState(false);
   const [mealPlanError, setMealPlanError] = useState(null);
+  const [aboutGalleryImages, setAboutGalleryImages] = useState([]);
+  const [aboutGalleryLoading, setAboutGalleryLoading] = useState(false);
+  const [aboutGalleryError, setAboutGalleryError] = useState(null);
   const [pizzaImages, setPizzaImages] = useState([]);
   const [pizzaLoading, setPizzaLoading] = useState(false);
   const [pizzaError, setPizzaError] = useState(null);
@@ -1839,6 +1843,32 @@ const clampGuestCount = (value, config) => {
     const controller = new AbortController();
 
     (async () => {
+      setAboutGalleryLoading(true);
+      setAboutGalleryError(null);
+      try {
+        const res = await fetch('/api/search-images?query=event&per_page=12', { signal: controller.signal });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(data.error || 'Failed loading about photos');
+        const imgs = Array.isArray(data.images) ? data.images : [];
+        if (!abort) setAboutGalleryImages(imgs);
+      } catch (e) {
+        if (!abort) setAboutGalleryError(e.message || String(e));
+      } finally {
+        if (!abort) setAboutGalleryLoading(false);
+      }
+    })();
+
+    return () => {
+      abort = true;
+      controller.abort();
+    };
+  }, []);
+
+  useEffect(() => {
+    let abort = false;
+    const controller = new AbortController();
+
+    (async () => {
       setPizzaLoading(true);
       setPizzaError(null);
       try {
@@ -1896,6 +1926,18 @@ const clampGuestCount = (value, config) => {
     });
     return map;
   }, [images]);
+
+  const aboutMasonryItems = useMemo(() => {
+    const mixed = [];
+    const blocks = ABOUT_INFO_BLOCKS;
+    const gallery = aboutGalleryImages;
+    const total = Math.max(blocks.length, gallery.length);
+    for (let i = 0; i < total; i += 1) {
+      if (blocks[i]) mixed.push({ type: 'info', block: blocks[i], key: `info-${blocks[i].title}` });
+      if (gallery[i]) mixed.push({ type: 'image', img: gallery[i], key: `img-${gallery[i].asset_id || gallery[i].public_id || i}` });
+    }
+    return mixed;
+  }, [aboutGalleryImages]);
 
   const flatOrder = useMemo(() => columnOrder.flat(), [columnOrder]);
 
@@ -3015,7 +3057,7 @@ const clampGuestCount = (value, config) => {
                   <div className="business-eyebrow">For businesses</div>
                   <div className="business-heading">Partner with Local Effort</div>
                   <div className="business-subtitle">
-                    Choose a path below and we&apos;ll share the right next steps.
+                    You&apos;re working directly with the chefs. We&apos;re here to support your local food needs.
                   </div>
                   <div className="business-actions">
                     <button
@@ -3250,7 +3292,7 @@ const clampGuestCount = (value, config) => {
           id="about"
           style={{ backgroundColor: BRAND_TOKENS.bgSection }}
         >
-          <div className="relative w-full h-full pt-20 overflow-y-auto">
+          <div className="about-tab relative w-full h-full pt-20 overflow-y-auto">
             <div className="relative w-full h-[70vh] min-h-[420px]">
               <img
                 src="https://res.cloudinary.com/dokyhfvyd/image/upload/c_limit,f_auto,q_auto,w_1600/jo9pxtjng8zpt4yo4rcz?_a=BAMAK+eA0"
@@ -3262,15 +3304,13 @@ const clampGuestCount = (value, config) => {
             <div className="px-8 py-12">
               <div className="about-bio">
                 <div className="about-bio-eyebrow">Who we are</div>
-                <div className="about-bio-title">
-                  We&apos;re a knockout team of widely experienced kitchen professionals.
-                </div>
                 <div className="about-bio-copy">
                   <p>
-                    We bring Minnesotan and Midwest ingredients into everyday meals and special events. We care about
-                    flavor and nutrition in equal measure. We cook with care, spend with purpose, and work for long-term
-                    relationships with families who invite us in, partners and supporting businesses, and with
-                    producers who grow the food we serve.
+                    We&apos;re a knockout team of widely experienced kitchen professionals. We bring Minnesotan and
+                    Midwest ingredients into everyday meals and special events. We care about flavor and nutrition in
+                    equal measure. We cook with care, spend with purpose, and work for long-term relationships with
+                    families who invite us in, partners and supporting businesses, and with producers who grow the food
+                    we serve.
                   </p>
                   <p>
                     We love platters and cassoulets and juleps and celery and croque monsieur and white rice, we love
@@ -3285,17 +3325,62 @@ const clampGuestCount = (value, config) => {
                   </p>
                 </div>
               </div>
-              <div className="about-info-grid">
-                {ABOUT_INFO_BLOCKS.map((block) => (
-                  <div key={block.title} className="about-info-card">
-                    <div className="about-info-title">{block.title}</div>
-                    <ul className="about-info-list">
-                      {block.items.map((item) => (
-                        <li key={item}>{item}</li>
-                      ))}
-                    </ul>
-                  </div>
-                ))}
+              <div className="about-info-masonry">
+                {aboutGalleryLoading && (
+                  <div className="about-info-status">Loading photos...</div>
+                )}
+                {aboutGalleryError && (
+                  <div className="about-info-status about-info-status-error">{aboutGalleryError}</div>
+                )}
+                <div className="columns-2 md:columns-3 lg:columns-4 gap-4 [column-fill:_balance]">
+                  {aboutMasonryItems.map((item, idx) => {
+                    if (item.type === 'image') {
+                      const img = item.img;
+                      return (
+                        <div
+                          key={item.key || `about-image-${idx}`}
+                          className="mb-4 break-inside-avoid border p-2 bg-white rounded-lg overflow-hidden"
+                        >
+                          {img.thumbnail_url ? (
+                            <img
+                              src={img.thumbnail_url}
+                              alt={img.context?.alt || 'About gallery image'}
+                              className="rounded-lg w-full h-auto"
+                              loading="lazy"
+                            />
+                          ) : (
+                            <CloudinaryImage
+                              publicId={img.public_id || img.publicId}
+                              alt={img.context?.alt || 'About gallery image'}
+                              width={800}
+                              className="rounded-lg w-full h-auto"
+                            />
+                          )}
+                        </div>
+                      );
+                    }
+
+                    const block = item.block;
+                    const isHtml = block.type === 'html' && block.content;
+                    return (
+                      <div key={item.key || `about-info-${idx}`} className="about-info-card mb-4 break-inside-avoid">
+                        <div className="about-info-title">{block.title}</div>
+                        {isHtml ? (
+                          <div
+                            className="about-info-lines"
+                            dangerouslySetInnerHTML={{ __html: block.content }}
+                          />
+                        ) : (
+                          <ul className="about-info-list">
+                            {(block.items || []).map((text) => (
+                              <li key={text}>{text}</li>
+                            ))}
+                          </ul>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
               <section className="py-12">
                 <div className="max-w-6xl mx-auto px-4 md:px-6 lg:px-8">
