@@ -2009,8 +2009,8 @@ div:has(> .fullpage-demo-scope) > .bg-black\/60 {
   padding: 0.5rem 0.85rem;
   min-height: 44px; /* iOS touch target minimum */
   font-family: var(--font-office-code);
-  font-size: 0.65rem;
-  letter-spacing: 0.12em;
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--color-text-secondary);
   display: inline-flex;
