@@ -13,7 +13,7 @@ Q: What's included in a pizza party?
 A: We bring the high-temperature oven, dough, ingredients, and crew. We can also use your in-home oven. We tailor service to your guest count, timing, and space so it runs smooth and feels hosted, not chaotic. We'll bring some extra food like salads or desserts, if you'd like.  
 
 Q: How many guests can you serve?
-A: We specialize in smaller events, like home-dinners for 2-16 people, or platters and apps for parties 50-100. We're open to larger events in some situations. 
+A: We specialize in smaller events, like home-dinners for 2-16 people, or platters and appetizers for parties 50-100. We're open to larger events in some situations. 
 
 Q: Do you accommodate allergies and dietary preferences?
 A: Of course. Full accomodation. As custom as possible. We don't have a gluten free crust yet. 
