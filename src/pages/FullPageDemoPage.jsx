@@ -2888,6 +2888,15 @@ const clampGuestCount = (value, config) => {
                   </div>
                 </div>
               </div>
+              <div className="absolute bottom-8 left-0 right-0 z-10 flex justify-center">
+                <a
+                  href="/february"
+                  className="px-8 py-5 rounded-md border-2 border-rose-400 bg-rose-500/90 text-white text-lg font-semibold hover:bg-rose-600 transition-colors shadow-lg"
+                  style={{ fontFamily: "'Office Code Pro', monospace" }}
+                >
+                  home dinners in february
+                </a>
+              </div>
             </div>
             <div className="px-8 pb-16 pt-10">
               <div className="small-events-testimonial">

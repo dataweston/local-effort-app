@@ -1715,6 +1715,30 @@ div:has(> .fullpage-demo-scope) > .bg-black\/60 {
   z-index: 0;
 }
 
+.fullpage-demo.february-page .february-breadcrumb {
+  max-width: 1100px;
+  margin: 0 auto 1.5rem;
+  position: relative;
+  z-index: 1;
+}
+
+.fullpage-demo.february-page .february-breadcrumb a {
+  font-family: var(--font-office-code);
+  font-size: 0.85rem;
+  color: var(--color-text-secondary);
+  text-decoration: none;
+  padding: 0.35rem 0.75rem;
+  border-radius: 0.5rem;
+  background: color-mix(in srgb, var(--color-bg-card) 60%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-border-default) 50%, transparent);
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.fullpage-demo.february-page .february-breadcrumb a:hover {
+  background: var(--color-bg-card);
+  color: var(--color-text-primary);
+}
+
 :where(.fullpage-demo, .fullpage-demo-scope) .february-hero {
   max-width: 1100px;
   margin: 0 auto 2rem;

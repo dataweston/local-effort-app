@@ -253,6 +253,10 @@ const FebruaryPage = () => {
         <link rel="canonical" href={`${SITE_URL}/february`} />
       </Helmet>
 
+      <nav className="february-breadcrumb">
+        <a href="/#small-events">← Small Events</a>
+      </nav>
+
       <div className="february-grid">
         <div className="february-col february-col-left">
           <div className="february-hero-media">
