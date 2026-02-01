@@ -1,9 +1,8 @@
 import React from 'react';
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, useLocation } from 'react-router-dom';
 import { HelmetProvider } from 'react-helmet-async';
 import { Header } from '../components/layout/Header';
-import { Footer } from '../components/layout/Footer';
-import HomePage from '../pages/HomePage';
+import FullPageDemoPage from '../pages/FullPageDemoPage';
 import AboutUsPage from '../pages/AboutUsPage';
 import ServicesPage from '../pages/ServicesPage';
 import PricingPage from '../pages/PricingPage';
@@ -16,13 +15,15 @@ import PartnerPortalPage from '../pages/PartnerPortalPage';
 import CrowdfundingPage from '../pages/CrowdfundingPage';
 
 export default function StaticApp({ helmetContext }) {
+  const location = useLocation();
+  const isFullPageHome = location.pathname === '/';
   return (
     <HelmetProvider context={helmetContext}>
       <div className="app-root min-h-screen flex flex-col">
         <Header />
-        <main className="flex-1">
+        <main className="flex-1" style={{ paddingTop: isFullPageHome ? 0 : '5rem' }}>
           <Routes>
-            <Route path="/" element={<HomePage />} />
+            <Route path="/" element={<FullPageDemoPage />} />
             <Route path="/about" element={<AboutUsPage />} />
             <Route path="/services" element={<ServicesPage />} />
             <Route path="/pricing" element={<PricingPage />} />
@@ -35,7 +36,6 @@ export default function StaticApp({ helmetContext }) {
             <Route path="/crowdfunding" element={<CrowdfundingPage />} />
           </Routes>
         </main>
-        <Footer />
       </div>
     </HelmetProvider>
   );

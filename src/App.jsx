@@ -15,7 +15,6 @@ import { SupabaseAuthProvider } from './contexts/SupabaseAuthContext';
 // Auth guards removed for public access to partner tools and partner portal
 
 // Lazily import page components using the default export pattern
-const HomePage = lazy(() => import('./pages/HomePage'));
 const AboutUsPage = lazy(() => import('./pages/AboutUsPage'));
 const ServicesPage = lazy(() => import('./pages/ServicesPage'));
 const PricingPage = lazy(() => import('./pages/PricingPage'));
@@ -73,6 +72,7 @@ const AdminWeeklyOrderPage = lazy(() => import('./pages/AdminWeeklyOrderPage'));
 
 const AppContent = () => {
   const location = useLocation();
+  const isFullPageHome = location.pathname === '/';
   const hideHeader =
     location.pathname.startsWith('/partners/aacrm') ||
     location.pathname === '/weddings' ||
@@ -80,6 +80,7 @@ const AppContent = () => {
     location.pathname === '/winterpizza' ||
     location.pathname === '/januarymeals';
   const hideFooter =
+    location.pathname === '/' ||
     location.pathname === '/sale' ||
     location.pathname === '/winterdinner' ||
     location.pathname === '/winterpizza' ||
@@ -97,7 +98,12 @@ const AppContent = () => {
           <ToastProvider>
         <div className="min-h-screen flex flex-col bg-white">
           {!hideHeader && <Header />}
-          <main className="flex-1">
+          <main
+            className="flex-1"
+            style={{
+              paddingTop: !hideHeader && !isFullPageHome ? '5rem' : 0,
+            }}
+          >
           <Suspense fallback={<LoadingSpinner />}>
             <AnimatePresence mode="wait">
               <Routes location={location} key={location.pathname}>
@@ -105,7 +111,7 @@ const AppContent = () => {
                   path="/"
                   element={
                     <AnimatedPage>
-                      <HomePage />
+                      <FullPageDemoPage />
                     </AnimatedPage>
                   }
                 />
@@ -220,14 +226,7 @@ const AppContent = () => {
                     </AnimatedPage>
                   }
                 />
-                <Route
-                  path="/fullpage-demo"
-                  element={
-                    <AnimatedPage>
-                      <FullPageDemoPage />
-                    </AnimatedPage>
-                  }
-                />
+                <Route path="/fullpage-demo" element={<Navigate to="/" replace />} />
                 <Route
                   path="/weekly-order"
                   element={

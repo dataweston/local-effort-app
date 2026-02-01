@@ -17,6 +17,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '../components/ui/dialog';
+import { FULLPAGE_PAGES } from '../config/fullPageNav';
 import '../styles/fullpage-demo-theme.css';
 
 const SMALL_EVENT_CONFIG = {
@@ -430,14 +431,7 @@ const FullPageDemoPage = () => {
   const [smallEventsContactStatus, setSmallEventsContactStatus] = useState('idle');
   const [smallEventsContactError, setSmallEventsContactError] = useState('');
 
-  const pages = [
-    { id: 'home', label: 'Home' },
-    { id: 'weekly-meals', label: 'Weekly Meals' },
-    { id: 'small-events', label: 'Small Events' },
-    { id: 'for-businesses', label: 'For Business' },
-    { id: 'about', label: 'About' },
-    { id: 'local-pizza', label: 'Local Pizza' },
-  ];
+  const pages = FULLPAGE_PAGES;
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } })
@@ -1747,20 +1741,14 @@ const clampGuestCount = (value, config) => {
 
   const handlePageChange = (index) => {
     setActivePage(index);
-    // Reset all button styles when page changes
-    document.querySelectorAll('nav button[data-menu-btn]').forEach(btn => {
-      const pageIndex = parseInt(btn.getAttribute('data-page-index'));
-      if (pageIndex !== index) {
-        btn.style.backgroundColor = 'transparent';
-        btn.style.color = BRAND_TOKENS.textPrimary;
-      }
+    // Sync active styling on the universal header buttons
+    document.querySelectorAll('nav button[data-menu-btn]').forEach((btn) => {
+      const pageIndex = parseInt(btn.getAttribute('data-page-index'), 10);
+      const isActive = Number.isFinite(pageIndex) && pageIndex === index;
+      btn.dataset.active = isActive ? 'true' : 'false';
+      btn.style.backgroundColor = isActive ? BRAND_TOKENS.bgStrong : 'transparent';
+      btn.style.color = isActive ? BRAND_TOKENS.textInverse : BRAND_TOKENS.textPrimary;
     });
-  };
-
-  const navigateToPage = (index) => {
-    if (window.scrollToPage) {
-      window.scrollToPage(index);
-    }
   };
 
   // Fetch images from Cloudinary API
@@ -1804,6 +1792,17 @@ const clampGuestCount = (value, config) => {
     const timer = setTimeout(() => setAnnouncementVisible(true), 1200);
     return () => clearTimeout(timer);
   }, []);
+
+  useEffect(() => {
+    if (typeof document === 'undefined') return;
+    const offset = announcementVisible && activePage === 0
+      ? `${ANNOUNCEMENT_HEIGHT}px`
+      : '0px';
+    document.documentElement.style.setProperty('--announcement-offset', offset);
+    return () => {
+      document.documentElement.style.removeProperty('--announcement-offset');
+    };
+  }, [announcementVisible, activePage]);
 
   useEffect(() => {
     if (smallEventsDialog) {
@@ -2223,42 +2222,32 @@ const clampGuestCount = (value, config) => {
     {
       question: 'What is Local Effort?',
       answer:
-        'Local Effort is a Minnesota-based food team focused on seasonal, ingredient-forward cooking for homes, events, and partner businesses.',
+        'Local Effort is a Minnesota-based team of chefs focused on seasonal high-integrity cooking for homes, events, and partner businesses.',
     },
     {
       question: 'Where do you serve?',
       answer:
-        "We're based in Minneapolis-St. Paul (Twin Cities). For select events we travel across Minnesota. Share your address and we'll confirm availability and any travel considerations.",
+        'Most of our services are available all across the Twin Cities metro. Our pizzas can be enjoyed at Happy Monday Coffee in Roseville.',
     },
     {
       question: 'What kinds of services do you offer?',
       answer:
-        'In-home dinners, small events, weddings, limited-availability weekly meals (when openings exist), and pizza parties using our mobile setup.',
-    },
-    {
-      question: 'How do weekly meals work?',
-      answer:
-        "Weekly meals open in limited windows. Join the waitlist and we'll reach out when pickup slots reopen.",
+        "Fancy home dinners, food for small events and weddings, weekly prepared meal plans (when openings exist), and pizza parties using our mobile setup. Those are the main products. More abstractly, we're private chefs open to most situations where seriously good food is needed.",
     },
     {
       question: "What's included in a pizza party?",
       answer:
-        'We bring the oven, dough, ingredients, and crew. We tailor service to your guest count, timing, and space so it runs smooth and feels hosted, not chaotic.',
-    },
-    {
-      question: 'How far in advance should we book?',
-      answer:
-        'Two to six weeks is ideal for most dinners and small events. For weddings and larger events, earlier is better, especially if you have a specific date or venue constraints.',
+        "We bring the high-temperature oven, dough, ingredients, and crew. We can also use your in-home oven. We tailor service to your guest count, timing, and space so it runs smooth and feels hosted, not chaotic. We'll bring some extra food like salads or desserts, if you'd like.",
     },
     {
       question: 'How many guests can you serve?',
       answer:
-        "In-home dinners are typically 4-16 guests. Small events scale higher, and weddings can be larger. Tell us the guest count and service style and we'll confirm the right format and staffing.",
+        "We specialize in smaller events, like home-dinners for 2-16 people, or platters and apps for parties 50-100. We're open to larger events in some situations.",
     },
     {
       question: 'Do you accommodate allergies and dietary preferences?',
       answer:
-        "Yes. Share allergies, restrictions, and preferences in the request form. We'll build a menu that works for your group and confirm any constraints during planning.",
+        "Of course. Full accomodation. As custom as possible. We don't have a gluten free crust yet.",
     },
     {
       question: 'How do menus get set?',
@@ -2266,29 +2255,19 @@ const clampGuestCount = (value, config) => {
         "We build menus around seasonal ingredients and your preferences. You can share must-haves, dislikes, dietary needs, and the vibe in the request form, then we finalize details together.",
     },
     {
-      question: 'How does pricing work?',
+      question: 'How does event pricing work?',
       answer:
-        'Pricing depends on guest count, staffing, and service style. This page generates a ballpark range; we confirm the final quote after details are aligned. (If you want benchmarks, check the Pricing page.)',
+        'Pricing depends on guest count, staffing, service style, and final ingredients. The event page generates a ballpark range and sets a cost for a deposit, to hold the date. We confirm the final quote with you after details are verified. Email us directly if you prefer.',
     },
     {
       question: 'What is the deposit and hold policy?',
       answer:
-        'A deposit holds your date while we confirm final details. Deposits are handled through Square. Holds are time-limited during confirmation, and the remaining balance is due before service.',
-    },
-    {
-      question: 'How long is an estimate valid?',
-      answer:
-        `Estimates are time-limited so we can keep ingredient and staffing assumptions accurate. On this page, estimates default to ${ESTIMATE_LIFESPAN_DAYS} days, and date holds default to ${HOLD_WINDOW_HOURS} hours while we confirm details.`,
+        'A 15% deposit holds your date. Deposits are handled through Square.',
     },
     {
       question: 'Can you help with rentals or staffing?',
       answer:
-        "Yes. If your event needs rentals (tables/chairs/linens) or additional service staff, tell us what you already have and what you need, and we can coordinate recommendations and plan the service flow.",
-    },
-    {
-      question: 'What should we do next to get started?',
-      answer:
-        "Pick a service type, share the basics (date, guest count, location), then save the estimate. If you're ready to reserve a date, place the deposit via Square and we'll follow up to confirm details.",
+        'Yes, usually. We will utilize a coordinator if your event needs rentals (tables/chairs/linens/kitchen equipment) or additional service staff.',
     },
   ];
 
@@ -2640,76 +2619,6 @@ const clampGuestCount = (value, config) => {
           </motion.button>
         )}
       </AnimatePresence>
-
-      {/* Fixed Navigation Bar */}
-      <nav
-        className="fixed left-0 right-0 z-50 shadow-sm"
-        style={{
-          top: announcementVisible && activePage === 0 ? `${ANNOUNCEMENT_HEIGHT}px` : 0,
-          backgroundColor: BRAND_TOKENS.bgPage,
-          borderBottom: `1px solid ${BRAND_TOKENS.borderDefault}`,
-        }}
-      >
-        <div className="flex items-center justify-between px-6 py-4">
-          <div className="flex flex-col items-start gap-2">
-            <button
-              onClick={() => navigateToPage(0)}
-              className="flex items-center gap-3"
-            >
-              <motion.span
-                className="text-2xl font-bold tracking-tight"
-                style={{ 
-                  color: BRAND_TOKENS.textPrimary, 
-                  fontFamily: "'National Park', 'General Sans', sans-serif",
-                  fontWeight: 700,
-                  letterSpacing: '-0.02em'
-                }}
-                whileHover={{ scale: 1.03 }}
-                transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-              >
-                Local Effort
-              </motion.span>
-              <span className="text-sm font-medium" style={{ color: BRAND_TOKENS.textPrimary, fontFamily: "'Office Code Pro', monospace" }}>
-                always mostly local
-              </span>
-            </button>
-          </div>
-
-          <div className="flex gap-1">
-            {pages.slice(1).map((page, index) => {
-              const isActive = activePage === index + 1;
-              return (
-                <button
-                  key={page.id}
-                  data-menu-btn
-                  data-page-index={index + 1}
-                  onClick={() => navigateToPage(index + 1)}
-                  className="px-4 py-2 rounded-md text-sm font-medium transition-all group"
-                  style={{
-                    backgroundColor: isActive ? BRAND_TOKENS.bgStrong : 'transparent',
-                    color: isActive ? BRAND_TOKENS.textInverse : BRAND_TOKENS.textPrimary,
-                    fontFamily: "'Office Code Pro', monospace",
-                  }}
-                  onMouseEnter={(e) => {
-                    if (!isActive) {
-                      e.currentTarget.style.backgroundColor = BRAND_TOKENS.bgSecondary;
-                      e.currentTarget.style.color = BRAND_TOKENS.textPrimary;
-                    }
-                  }}
-                  onMouseLeave={(e) => {
-                    if (!isActive) {
-                      e.currentTarget.style.backgroundColor = 'transparent';
-                      e.currentTarget.style.color = BRAND_TOKENS.textPrimary;
-                    }
-                  }}
-                >
-                  {page.label}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-      </nav>
 
       {/* Full Page Container */}
       <FullPageContainer
