@@ -1846,7 +1846,7 @@ const clampGuestCount = (value, config) => {
       setAboutGalleryLoading(true);
       setAboutGalleryError(null);
       try {
-        const res = await fetch('/api/search-images?query=event&per_page=12', { signal: controller.signal });
+        const res = await fetch('/api/search-images?query=aboutus&per_page=12', { signal: controller.signal });
         const data = await res.json().catch(() => ({}));
         if (!res.ok) throw new Error(data.error || 'Failed loading about photos');
         const imgs = Array.isArray(data.images) ? data.images : [];
@@ -3306,11 +3306,9 @@ const clampGuestCount = (value, config) => {
                 <div className="about-bio-eyebrow">Who we are</div>
                 <div className="about-bio-copy">
                   <p>
-                    We&apos;re a knockout team of widely experienced kitchen professionals. We bring Minnesotan and
-                    Midwest ingredients into everyday meals and special events. We care about flavor and nutrition in
-                    equal measure. We cook with care, spend with purpose, and work for long-term relationships with
-                    families who invite us in, partners and supporting businesses, and with producers who grow the food
-                    we serve.
+                    <strong>We&apos;re a knockout team of experienced kitchen professionals</strong> offering our
+                    services as personal chefs and value-added producers. We bring Minnesotan and Midwest ingredients
+                    to everyday meals and special events with a farm-to-table ethic.
                   </p>
                   <p>
                     We love platters and cassoulets and juleps and celery and croque monsieur and white rice, we love
@@ -3320,8 +3318,8 @@ const clampGuestCount = (value, config) => {
                   </p>
                   <p>
                     We feel strongly about choosing food grown and produced closer to home. It&apos;s a duty, and a
-                    gift, and it&apos;s at the center of our practice and culture.{' '}
-                    <strong>We&apos;re the realest people make the localest food.</strong>
+                    gift, and it&apos;s at the center of our practice and culture. We care about flavor and nutrition
+                    in equal measure. We&apos;re the realest people make the localest food.
                   </p>
                 </div>
               </div>
@@ -3676,6 +3674,12 @@ const clampGuestCount = (value, config) => {
         <DialogContent className="fullpage-demo-scope sm:max-w-[520px]">
           <DialogHeader>
             <DialogTitle>Happy Monday Coffee</DialogTitle>
+            <img
+              src="/gallery/hmw%20(1).png"
+              alt="Happy Monday Coffee"
+              className="announcement-map-image"
+              loading="lazy"
+            />
             <DialogDescription>
               Our favorite coffee shop,{' '}
               <a
@@ -3693,12 +3697,6 @@ const clampGuestCount = (value, config) => {
           <div className="announcement-map">
             <div className="announcement-map-title">Google Maps</div>
             <div className="announcement-map-media">
-              <img
-                src="/gallery/hmw%20(1).png"
-                alt="Happy Monday Coffee"
-                className="announcement-map-image"
-                loading="lazy"
-              />
               <div className="announcement-map-embed">
                 <iframe
                   title="Happy Monday Coffee on Google Maps"
