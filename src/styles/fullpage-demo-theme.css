@@ -1689,7 +1689,7 @@ div:has(> .fullpage-demo-scope) > .bg-black\/60 {
   }
 }
 
-:where(.fullpage-demo, .fullpage-demo-scope) .february-page {
+.fullpage-demo.february-page {
   min-height: 100vh;
   padding: clamp(2.5rem, 4vw, 4rem) clamp(1.25rem, 4vw, 3rem) 4.5rem;
   background-color: var(--color-bg-page);
@@ -1701,16 +1701,16 @@ div:has(> .fullpage-demo-scope) > .bg-black\/60 {
   position: relative;
 }
 
-:where(.fullpage-demo, .fullpage-demo-scope) .february-page::before {
+.fullpage-demo.february-page::before {
   content: '';
   position: absolute;
   inset: 0;
   background-image:
-    radial-gradient(circle at 20% 30%, rgba(0,0,0,0.015) 1px, transparent 1px),
-    radial-gradient(circle at 70% 80%, rgba(0,0,0,0.01) 1px, transparent 1px),
-    radial-gradient(circle at 40% 60%, rgba(0,0,0,0.012) 1px, transparent 1px),
-    radial-gradient(circle at 80% 20%, rgba(0,0,0,0.01) 1px, transparent 1px);
-  background-size: 7px 7px, 11px 11px, 13px 13px, 9px 9px;
+    radial-gradient(circle at 20% 30%, rgba(0,0,0,0.06) 1px, transparent 1px),
+    radial-gradient(circle at 70% 80%, rgba(0,0,0,0.05) 1px, transparent 1px),
+    radial-gradient(circle at 40% 60%, rgba(0,0,0,0.055) 1px, transparent 1px),
+    radial-gradient(circle at 80% 20%, rgba(0,0,0,0.05) 1px, transparent 1px);
+  background-size: 5px 5px, 7px 7px, 9px 9px, 6px 6px;
   pointer-events: none;
   z-index: 0;
 }
@@ -1753,9 +1753,19 @@ div:has(> .fullpage-demo-scope) > .bg-black\/60 {
   margin: 0;
   justify-self: start;
   border-radius: 1.5rem;
-  overflow: visible;
+  overflow: hidden;
   border: 2px solid var(--color-border-default);
   padding: 0.4rem;
+  background: var(--color-bg-card);
+}
+
+:where(.fullpage-demo, .fullpage-demo-scope) .february-hero-media > div,
+:where(.fullpage-demo, .fullpage-demo-scope) .february-hero-media figure,
+:where(.fullpage-demo, .fullpage-demo-scope) .february-hero-media [data-rmiz-wrap],
+:where(.fullpage-demo, .fullpage-demo-scope) .february-hero-media [class*="zoom"] {
+  display: block;
+  border-radius: calc(1.5rem - 0.4rem);
+  overflow: hidden;
   background: var(--color-bg-card);
 }
 
@@ -1766,7 +1776,7 @@ div:has(> .fullpage-demo-scope) > .bg-black\/60 {
   max-height: 60vh;
   display: block;
   object-fit: contain;
-  background: color-mix(in srgb, var(--color-bg-page) 85%, var(--color-bg-card) 15%);
+  background: var(--color-bg-card);
   border-radius: calc(1.5rem - 0.4rem);
 }
 
