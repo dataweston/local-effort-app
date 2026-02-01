@@ -251,6 +251,20 @@ const FebruaryPage = () => {
           content="Reserve a private chef dinner in your home this February. Thursday and Saturday dates available."
         />
         <link rel="canonical" href={`${SITE_URL}/february`} />
+        {/* Open Graph / iMessage / Facebook */}
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content={`${SITE_URL}/february`} />
+        <meta property="og:title" content={`February Chef Dinner | ${SITE_NAME}`} />
+        <meta property="og:description" content="Reserve a private chef dinner in your home this February. Thursday and Saturday dates available." />
+        <meta property="og:image" content="https://res.cloudinary.com/dokyhfvyd/image/upload/v1769975355/jo5t7cv3zuvuuvsyuh8c.jpg" />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
+        {/* Twitter */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:url" content={`${SITE_URL}/february`} />
+        <meta name="twitter:title" content={`February Chef Dinner | ${SITE_NAME}`} />
+        <meta name="twitter:description" content="Reserve a private chef dinner in your home this February. Thursday and Saturday dates available." />
+        <meta name="twitter:image" content="https://res.cloudinary.com/dokyhfvyd/image/upload/v1769975355/jo5t7cv3zuvuuvsyuh8c.jpg" />
       </Helmet>
 
       <nav className="february-breadcrumb">
