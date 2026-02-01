@@ -2,13 +2,31 @@ import React, { useMemo, useRef, useState, useEffect, useCallback } from 'react'
 import { Helmet } from 'react-helmet-async';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
+import ImageZoom from 'react-image-zooom';
 import { useSquareCard } from '../hooks/useSquareCard';
 import { SITE_NAME, SITE_URL } from '../config/siteMetadata';
 import '../styles/fullpage-demo-theme.css';
 
 const MIN_GUESTS = 4;
-const MAX_GUESTS = 16;
-const PRICE_PER_GUEST_CENTS = 12500;
+const MAX_GUESTS = 12;
+
+// Tiered pricing: party of 4 = $300, 6 = $420, 8+ = $65/person
+const PARTY_PRICES_CENTS = {
+  4: 30000,
+  5: 36000,
+  6: 42000,
+  7: 49000,
+  8: 52000,
+  9: 58500,
+  10: 65000,
+  11: 71500,
+  12: 78000,
+};
+
+const getPartyPrice = (guests) => {
+  const clamped = Math.min(MAX_GUESTS, Math.max(MIN_GUESTS, guests));
+  return PARTY_PRICES_CENTS[clamped] || PARTY_PRICES_CENTS[MIN_GUESTS];
+};
 
 const getFebruaryYear = () => {
   const now = new Date();
@@ -64,9 +82,26 @@ const FebruaryPage = () => {
   const [error, setError] = useState('');
   const [paymentId, setPaymentId] = useState('');
   const [emailStatus, setEmailStatus] = useState(null);
+  const [bookedDates, setBookedDates] = useState([]);
   const stepLabels = ['Pick a date', 'Name + address', 'Dietary + notes', 'Reserve'];
   const [activeStep, setActiveStep] = useState(0);
   const trackRef = useRef(null);
+
+  // Fetch booked dates on mount
+  useEffect(() => {
+    const fetchBookedDates = async () => {
+      try {
+        const resp = await fetch('/api/february/booked-dates');
+        if (resp.ok) {
+          const data = await resp.json();
+          setBookedDates(data.bookedDates || []);
+        }
+      } catch (err) {
+        console.warn('Failed to fetch booked dates', err);
+      }
+    };
+    fetchBookedDates();
+  }, []);
 
   const { cardLoaded, error: cardError, loadingScript, tokenize } = useSquareCard(
     '#february-card-container',
@@ -75,16 +110,34 @@ const FebruaryPage = () => {
   );
 
   const totalGuests = clampGuests(guestCount);
-  const totalCents = totalGuests * PRICE_PER_GUEST_CENTS;
+  const totalCents = getPartyPrice(totalGuests);
   const selectedIso = selectedDate
     ? `${selectedDate.getFullYear()}-${pad2(selectedDate.getMonth() + 1)}-${pad2(selectedDate.getDate())}`
     : '';
-  const isAvailableDate = (date) => {
+
+  const isDateBooked = useCallback((date) => {
+    if (!date) return false;
+    const iso = `${date.getFullYear()}-${pad2(date.getMonth() + 1)}-${pad2(date.getDate())}`;
+    return bookedDates.includes(iso);
+  }, [bookedDates]);
+
+  const isAvailableDate = useCallback((date) => {
     if (!date) return false;
     if (date.getMonth() !== 1) return false;
     const day = date.getDay();
-    return day === 4 || day === 6;
-  };
+    if (day !== 4 && day !== 6) return false;
+    // Check if already booked
+    if (isDateBooked(date)) return false;
+    return true;
+  }, [isDateBooked]);
+
+  const getDayClassName = useCallback((date) => {
+    if (!date || date.getMonth() !== 1) return 'february-date-unavailable';
+    const day = date.getDay();
+    if (day !== 4 && day !== 6) return 'february-date-unavailable';
+    if (isDateBooked(date)) return 'february-date-soldout';
+    return 'february-date-available';
+  }, [isDateBooked]);
 
   const canSubmit = () => {
     if (!selectedDate) return false;
@@ -201,15 +254,29 @@ const FebruaryPage = () => {
       </Helmet>
 
       <div className="february-grid">
-        <div className="february-hero-media">
-          <img
-            src="https://res.cloudinary.com/dokyhfvyd/image/upload/v1769975355/jo5t7cv3zuvuuvsyuh8c.jpg"
-            alt="Chef-prepared dinner served in a home setting"
-            loading="eager"
-          />
+        <div className="february-col february-col-left">
+          <div className="february-hero-media">
+            <ImageZoom
+              src="https://res.cloudinary.com/dokyhfvyd/image/upload/v1769975355/jo5t7cv3zuvuuvsyuh8c.jpg"
+              alt="Chef-prepared dinner served in a home setting"
+              zoom="200"
+            />
+          </div>
+          <div className="february-hero-text">
+            <p>
+              Dinners in February are the toughest, from a farm-to-table perspective. This menu is comfort-food forward, and focuses on a seasonal preoccupation: dairy.
+            </p>
+            <p>
+              We're making our own ricotta, cottage cheese, labneh, butter, marscapone, and ranch dressing from milk by Autumnwood Farm in Forest Lake.
+            </p>
+            <p>
+              Meanwhile, citrus is fully in season in Southern California.
+            </p>
+          </div>
         </div>
 
-        <section className="february-reservation">
+        <div className="february-col february-col-right">
+          <section className="february-reservation">
           <div className="february-step-nav">
             <div className="february-step-tabs" role="tablist" aria-label="Reservation steps">
               {stepLabels.map((label, index) => (
@@ -287,18 +354,20 @@ const FebruaryPage = () => {
                   inline
                   selected={selectedDate}
                   onChange={(date) => {
-                    setSelectedDate(date);
-                    resetStatus();
+                    if (isAvailableDate(date)) {
+                      setSelectedDate(date);
+                      resetStatus();
+                    }
                   }}
                   minDate={febStart}
                   maxDate={febEnd}
                   filterDate={isAvailableDate}
-                  dayClassName={(date) => (isAvailableDate(date) ? 'february-date-available' : 'february-date-unavailable')}
+                  dayClassName={getDayClassName}
                 />
               </div>
             </section>
 
-            <section className="february-card february-step">
+            <section className="february-card february-step february-step-compact">
               <div className="february-step-title">2. Name + address</div>
               <div className="february-form-grid">
                 <div>
@@ -499,6 +568,22 @@ const FebruaryPage = () => {
             </section>
           </form>
         </section>
+
+          <div className="february-info-box">
+            <h2>Dinner in your Home</h2>
+            <p>
+              We'll come over an hour before dinner time and prepare the meal in your kitchen. We'll use your pots and pans, and we'll bring anything specialized that we need. Your dinner price includes dishware and flatware, service, and cleanup when we're done. The experience is intended to feel like your home has transformed into a restaurant.
+            </p>
+            <div className="february-pricing">
+              <h3>Pricing</h3>
+              <ul>
+                <li>Party of 4 — $300</li>
+                <li>Party of 6 — $420</li>
+                <li>Party of 8+ — $65/person</li>
+              </ul>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );

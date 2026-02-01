@@ -4,10 +4,28 @@
 
 const { getSquareClient } = require('../_lib/squareClient');
 const { createBrevoService } = require('../../backend/api/services/brevo');
+const { getSupabase } = require('../../backend/api/supabaseClient');
 
 const MIN_GUESTS = 4;
-const MAX_GUESTS = 16;
-const PRICE_PER_GUEST_CENTS = 12500;
+const MAX_GUESTS = 12;
+
+// Tiered pricing: party of 4 = $300, 6 = $420, 8+ = $65/person
+const PARTY_PRICES_CENTS = {
+  4: 30000,
+  5: 36000,
+  6: 42000,
+  7: 49000,
+  8: 52000,
+  9: 58500,
+  10: 65000,
+  11: 71500,
+  12: 78000,
+};
+
+const getPartyPrice = (guests) => {
+  const clamped = Math.min(MAX_GUESTS, Math.max(MIN_GUESTS, guests));
+  return PARTY_PRICES_CENTS[clamped] || PARTY_PRICES_CENTS[MIN_GUESTS];
+};
 
 const TEAM_EMAIL = process.env.SUPPORT_INBOX_EMAIL || process.env.TEAM_INBOX_EMAIL || process.env.SENDER_EMAIL;
 const SENDER_EMAIL = process.env.SENDER_EMAIL || TEAM_EMAIL;
@@ -73,8 +91,23 @@ module.exports = async (req, res) => {
     return res.status(400).json({ error: 'Selected date is unavailable' });
   }
 
+  // Check if date is already booked
+  const supabase = getSupabase();
+  if (supabase) {
+    const { data: existingBooking } = await supabase
+      .from('february_bookings')
+      .select('id')
+      .eq('booking_date', date)
+      .eq('status', 'confirmed')
+      .single();
+
+    if (existingBooking) {
+      return res.status(409).json({ error: 'This date is already booked. Please select another date.' });
+    }
+  }
+
   const guests = clampGuests(guestCount);
-  const amountCents = guests * PRICE_PER_GUEST_CENTS;
+  const amountCents = getPartyPrice(guests);
   const idempotencyKey = `february-${Date.now()}-${Math.random().toString(36).slice(2)}`;
 
   try {
@@ -101,6 +134,35 @@ module.exports = async (req, res) => {
 
     if (!paymentId) {
       throw new Error('Payment failed');
+    }
+
+    // Save booking to Supabase
+    if (supabase) {
+      try {
+        const { error: insertError } = await supabase.from('february_bookings').insert({
+          booking_date: date,
+          guest_count: guests,
+          amount_cents: amountCents,
+          customer_name: customer.name,
+          customer_email: customer.email,
+          customer_phone: customer.phone,
+          address_line1: address.line1,
+          address_line2: address.line2 || null,
+          address_city: address.city,
+          address_state: address.state,
+          address_postal: address.postal,
+          preferred_time: preferredTime || null,
+          dietary_notes: dietaryNotes || null,
+          notes: notes || null,
+          square_payment_id: paymentId,
+          status: 'confirmed',
+        });
+        if (insertError) {
+          console.warn('[february.checkout] booking insert failed', insertError);
+        }
+      } catch (dbErr) {
+        console.warn('[february.checkout] booking insert error', dbErr?.message);
+      }
     }
 
     const emailStatus = { customer: false, admin: false, contact: false };
