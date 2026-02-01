@@ -2701,10 +2701,8 @@ const clampGuestCount = (value, config) => {
           <div className="relative h-full pt-20">
             <div className="flex items-start">
               <div
-                className="group"
+                className="group mt-6 ml-4 md:mt-8 md:ml-8 lg:mt-[50px] lg:ml-[50px]"
                 style={{
-                  marginTop: '50px',
-                  marginLeft: '50px',
                   padding: '12px 16px',
                   backgroundColor: BRAND_TOKENS.surfaceMuted,
                   borderRadius: '6px',
@@ -2754,12 +2752,7 @@ const clampGuestCount = (value, config) => {
               >
                 →
               </motion.span>
-              <div
-                style={{
-                  marginTop: '50px',
-                  marginLeft: '50px',
-                }}
-              >
+              <div className="mt-6 ml-4 md:mt-8 md:ml-8 lg:mt-[50px] lg:ml-[50px]">
                 <div
                   className="rounded-md border border-slate-300 bg-white/80 px-4 py-3"
                   style={{ fontFamily: "'Office Code Pro', monospace" }}
@@ -2780,7 +2773,7 @@ const clampGuestCount = (value, config) => {
                 </div>
               </div>
             </div>
-            <div className="mt-12 px-[50px]">
+            <div className="mt-12 px-4 md:px-8 lg:px-[50px]">
               {mealPlanLoading ? (
                 <div className="text-sm text-gray-600">Loading photos...</div>
               ) : mealPlanError ? (
