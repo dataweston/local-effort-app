@@ -263,6 +263,11 @@ const FebruaryPage = () => {
             />
           </div>
           <div className="february-hero-text">
+            <div className="february-pricing">
+              <h2>Party of 4 — $300</h2>
+              <h2>Party of 6 — $420</h2>
+              <h2>Party of 8+ — $65/person</h2>
+            </div>
             <p>
               Dinners in February are the toughest, from a farm-to-table perspective. This menu is comfort-food forward, and focuses on a seasonal preoccupation: dairy.
             </p>
@@ -574,14 +579,6 @@ const FebruaryPage = () => {
             <p>
               We'll come over an hour before dinner time and prepare the meal in your kitchen. We'll use your pots and pans, and we'll bring anything specialized that we need. Your dinner price includes dishware and flatware, service, and cleanup when we're done. The experience is intended to feel like your home has transformed into a restaurant.
             </p>
-            <div className="february-pricing">
-              <h3>Pricing</h3>
-              <ul>
-                <li>Party of 4 — $300</li>
-                <li>Party of 6 — $420</li>
-                <li>Party of 8+ — $65/person</li>
-              </ul>
-            </div>
           </div>
         </div>
       </div>

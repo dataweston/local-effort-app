@@ -2436,39 +2436,20 @@ div:has(> .fullpage-demo-scope) > .bg-black\/60 {
 }
 
 :where(.fullpage-demo, .fullpage-demo-scope) .february-pricing {
-  margin-top: 1rem;
-  padding-top: 1rem;
-  border-top: 1px solid color-mix(in srgb, var(--color-border-default) 60%, transparent);
+  margin-bottom: 1.25rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid color-mix(in srgb, var(--color-border-default) 60%, transparent);
 }
 
-:where(.fullpage-demo, .fullpage-demo-scope) .february-pricing h3 {
+:where(.fullpage-demo, .fullpage-demo-scope) .february-pricing h2 {
   font-family: var(--font-office-code);
-  font-size: 0.85rem;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--color-text-primary);
-  margin: 0 0 0.5rem;
-}
-
-:where(.fullpage-demo, .fullpage-demo-scope) .february-pricing ul {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-}
-
-:where(.fullpage-demo, .fullpage-demo-scope) .february-pricing li {
-  font-family: var(--font-office-code);
-  font-size: 0.72rem;
+  font-size: 1.1rem;
   font-weight: 600;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.02em;
   color: var(--color-text-primary);
-  background: color-mix(in srgb, var(--color-bg-page) 80%, var(--color-bg-card) 20%);
-  border: 1px solid color-mix(in srgb, var(--color-border-default) 70%, transparent);
-  border-radius: 999px;
-  padding: 0.4rem 0.85rem;
-  white-space: nowrap;
+  margin: 0 0 0.35rem;
+}
+
+:where(.fullpage-demo, .fullpage-demo-scope) .february-pricing h2:last-child {
+  margin-bottom: 0;
 }
