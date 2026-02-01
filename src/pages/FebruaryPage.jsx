@@ -266,6 +266,12 @@ const FebruaryPage = () => {
               zoom="200"
             />
           </div>
+          <div className="february-info-box february-info-box-mobile">
+            <h2>Dinner in your Home</h2>
+            <p>
+              We'll come over an hour before dinner time and prepare the meal in your kitchen. We'll use your pots and pans, and we'll bring anything specialized that we need. Your dinner price includes dishware and flatware, service, and cleanup when we're done. The experience is intended to feel like your home has transformed into a restaurant.
+            </p>
+          </div>
           <div className="february-hero-text">
             <div className="february-pricing">
               <h2>Party of 4 — $300</h2>
@@ -578,7 +584,7 @@ const FebruaryPage = () => {
           </form>
         </section>
 
-          <div className="february-info-box">
+          <div className="february-info-box february-info-box-desktop">
             <h2>Dinner in your Home</h2>
             <p>
               We'll come over an hour before dinner time and prepare the meal in your kitchen. We'll use your pots and pans, and we'll bring anything specialized that we need. Your dinner price includes dishware and flatware, service, and cleanup when we're done. The experience is intended to feel like your home has transformed into a restaurant.

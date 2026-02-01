@@ -74,7 +74,7 @@ const EVENT_TYPES = Object.keys(SMALL_EVENT_CONFIG);
 const DEFAULT_DEPOSIT_PERCENT = 0.15;
 const ESTIMATE_LIFESPAN_DAYS = 5;
 const HOLD_WINDOW_HOURS = 24;
-const ANNOUNCEMENT_HEIGHT = 40;
+const ANNOUNCEMENT_HEIGHT = 56; // Increased for mobile two-line support
 const WHOLESALE_MENU_ITEMS = [
   { name: 'Market bread + cultured butter', price: '$4.50 / portion' },
   { name: 'Roasted vegetable lasagna', price: '$12.00 / portion' },
