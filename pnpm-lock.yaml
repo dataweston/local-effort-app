@@ -147,6 +147,9 @@ importers:
       pino-http:
         specifier: ^10.1.0
         version: 10.5.0
+      prisma:
+        specifier: ^5.20.0
+        version: 5.20.0
       prop-types:
         specifier: ^15.8.1
         version: 15.8.1
@@ -262,9 +265,6 @@ importers:
       prettier:
         specifier: ^3.6.2
         version: 3.6.2
-      prisma:
-        specifier: ^5.20.0
-        version: 5.20.0
       supertest:
         specifier: ^6.3.4
         version: 6.3.4
