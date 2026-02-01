@@ -9,6 +9,7 @@ import FullPageSection from '../components/fullpage/FullPageSection';
 import CloudinaryImage from '../components/common/cloudinaryImage';
 import PhotoGrid from '../components/common/PhotoGrid';
 import SectionHeader from '../components/ui/SectionHeader';
+import { AskChefForm } from '../components/forms/AskChefForm';
 import { thumbtackReviews } from '../data/staticContent';
 import {
   Dialog,
@@ -430,6 +431,7 @@ const FullPageDemoPage = () => {
   const [smallEventsContactMessage, setSmallEventsContactMessage] = useState('');
   const [smallEventsContactStatus, setSmallEventsContactStatus] = useState('idle');
   const [smallEventsContactError, setSmallEventsContactError] = useState('');
+  const [askChefOpen, setAskChefOpen] = useState(false);
 
   const pages = FULLPAGE_PAGES;
 
@@ -3482,6 +3484,35 @@ const clampGuestCount = (value, config) => {
           </div>
         </FullPageSection>
       </FullPageContainer>
+
+      <footer className="fullpage-demo-footer">
+        <div className="fullpage-demo-footer-inner">
+          <div className="fullpage-demo-footer-brand">
+            <div className="fullpage-demo-footer-name">Local Effort Inc.</div>
+            <div className="fullpage-demo-footer-location">Roseville, MN</div>
+          </div>
+          <nav className="fullpage-demo-footer-links" aria-label="Footer">
+            <a href="#about" className="fullpage-demo-footer-link">About</a>
+            <a href="/releases" className="fullpage-demo-footer-link">Press</a>
+            <a href="/happymonday" className="fullpage-demo-footer-link">For Happy Monday</a>
+          </nav>
+          <div className="fullpage-demo-footer-actions">
+            <button
+              type="button"
+              className="fullpage-demo-footer-button"
+              onClick={() => setAskChefOpen(true)}
+            >
+              Ask a chef
+            </button>
+          </div>
+        </div>
+      </footer>
+
+      <AskChefForm
+        open={askChefOpen}
+        onOpenChange={setAskChefOpen}
+        dialogClassName="fullpage-demo-scope"
+      />
 
       {FeedbackModal}
 

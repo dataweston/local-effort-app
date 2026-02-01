@@ -64,6 +64,9 @@ const SchedulePage = lazy(() => import('./pages/SchedulePage'));
 const WinterDinnerPage = lazy(() => import('./pages/WinterDinnerPage'));
 const WinterPizzaPage = lazy(() => import('./pages/WinterPizzaPage'));
 const JanuaryMealsPage = lazy(() => import('./pages/JanuaryMealsPage'));
+const FebruaryPage = lazy(() => import('./pages/FebruaryPage'));
+const IntakeForKaraPage = lazy(() => import('./pages/IntakeForKaraPage'));
+const IntakeForKaraQuestionsPage = lazy(() => import('./pages/IntakeForKaraQuestionsPage'));
 const FullPageDemoPage = lazy(() => import('./pages/FullPageDemoPage'));
 const SmallEventsAdminRequestsPage = lazy(() => import('./pages/SmallEventsAdminRequestsPage'));
 const SmallEventsAdminAvailabilityPage = lazy(() => import('./pages/SmallEventsAdminAvailabilityPage'));
@@ -223,6 +226,30 @@ const AppContent = () => {
                   element={
                     <AnimatedPage>
                       <JanuaryMealsPage />
+                    </AnimatedPage>
+                  }
+                />
+                <Route
+                  path="/february"
+                  element={
+                    <AnimatedPage>
+                      <FebruaryPage />
+                    </AnimatedPage>
+                  }
+                />
+                <Route
+                  path="/intake-for-kara"
+                  element={
+                    <AnimatedPage>
+                      <IntakeForKaraPage />
+                    </AnimatedPage>
+                  }
+                />
+                <Route
+                  path="/intake-for-kara-questions"
+                  element={
+                    <AnimatedPage>
+                      <IntakeForKaraQuestionsPage />
                     </AnimatedPage>
                   }
                 />

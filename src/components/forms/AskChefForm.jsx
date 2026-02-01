@@ -11,7 +11,7 @@ import { Input } from '../ui/input';
 import { Textarea } from '../ui/textarea';
 import { Label } from '../ui/label';
 
-export const AskChefForm = ({ open, onOpenChange }) => {
+export const AskChefForm = ({ open, onOpenChange, dialogClassName = '' }) => {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -20,6 +20,7 @@ export const AskChefForm = ({ open, onOpenChange }) => {
     message: '',
   });
   const [status, setStatus] = useState('idle'); // 'idle' | 'submitting' | 'success' | 'error'
+  const dialogClasses = ['sm:max-w-[500px]', dialogClassName].filter(Boolean).join(' ');
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -71,7 +72,7 @@ export const AskChefForm = ({ open, onOpenChange }) => {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className={dialogClasses}>
         <DialogHeader>
           <DialogTitle>Ask a Chef</DialogTitle>
           <DialogDescription>

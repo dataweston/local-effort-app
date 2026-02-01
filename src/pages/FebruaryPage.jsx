@@ -1,0 +1,507 @@
+import React, { useMemo, useRef, useState, useEffect, useCallback } from 'react';
+import { Helmet } from 'react-helmet-async';
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
+import { useSquareCard } from '../hooks/useSquareCard';
+import { SITE_NAME, SITE_URL } from '../config/siteMetadata';
+import '../styles/fullpage-demo-theme.css';
+
+const MIN_GUESTS = 4;
+const MAX_GUESTS = 16;
+const PRICE_PER_GUEST_CENTS = 12500;
+
+const getFebruaryYear = () => {
+  const now = new Date();
+  const month = now.getMonth();
+  const year = now.getFullYear();
+  return month > 1 ? year + 1 : year;
+};
+
+const pad2 = (value) => String(value).padStart(2, '0');
+
+const formatDateLabel = (date) => {
+  if (!date) return '';
+  return date.toLocaleDateString('en-US', {
+    weekday: 'long',
+    month: 'long',
+    day: 'numeric',
+    year: 'numeric',
+  });
+};
+
+const formatMoney = (cents) => (cents / 100).toFixed(2);
+
+const clampGuests = (value) => {
+  const parsed = parseInt(value, 10);
+  if (Number.isNaN(parsed)) return MIN_GUESTS;
+  return Math.min(MAX_GUESTS, Math.max(MIN_GUESTS, parsed));
+};
+
+const isValidEmail = (value) => /.+@.+\..+/.test(value.trim());
+const normalizePhone = (value) => value.replace(/\D/g, '').slice(0, 10);
+const formatPhone = (value) => {
+  const digits = normalizePhone(value);
+  if (digits.length <= 3) return digits;
+  if (digits.length <= 6) return `(${digits.slice(0, 3)}) ${digits.slice(3)}`;
+  return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
+};
+const formatPostal = (value) => value.replace(/\D/g, '').slice(0, 5);
+
+const FebruaryPage = () => {
+  const year = useMemo(() => getFebruaryYear(), []);
+  const monthLabel = useMemo(() => `February ${year}`, [year]);
+  const febStart = useMemo(() => new Date(year, 1, 1, 12, 0, 0), [year]);
+  const febEnd = useMemo(() => new Date(year, 2, 0, 12, 0, 0), [year]);
+
+  const [selectedDate, setSelectedDate] = useState(null);
+  const [guestCount, setGuestCount] = useState(MIN_GUESTS);
+  const [customer, setCustomer] = useState({ name: '', email: '', phone: '' });
+  const [address, setAddress] = useState({ line1: '', line2: '', city: '', state: 'MN', postal: '' });
+  const [preferredTime, setPreferredTime] = useState('6:00 PM');
+  const [dietaryNotes, setDietaryNotes] = useState('');
+  const [notes, setNotes] = useState('');
+  const [status, setStatus] = useState('idle');
+  const [error, setError] = useState('');
+  const [paymentId, setPaymentId] = useState('');
+  const [emailStatus, setEmailStatus] = useState(null);
+  const stepLabels = ['Pick a date', 'Name + address', 'Dietary + notes', 'Reserve'];
+  const [activeStep, setActiveStep] = useState(0);
+  const trackRef = useRef(null);
+
+  const { cardLoaded, error: cardError, loadingScript, tokenize } = useSquareCard(
+    '#february-card-container',
+    true,
+    [selectedDate]
+  );
+
+  const totalGuests = clampGuests(guestCount);
+  const totalCents = totalGuests * PRICE_PER_GUEST_CENTS;
+  const selectedIso = selectedDate
+    ? `${selectedDate.getFullYear()}-${pad2(selectedDate.getMonth() + 1)}-${pad2(selectedDate.getDate())}`
+    : '';
+  const isAvailableDate = (date) => {
+    if (!date) return false;
+    if (date.getMonth() !== 1) return false;
+    const day = date.getDay();
+    return day === 4 || day === 6;
+  };
+
+  const canSubmit = () => {
+    if (!selectedDate) return false;
+    if (!customer.name.trim()) return false;
+    if (!isValidEmail(customer.email)) return false;
+    if (normalizePhone(customer.phone).length !== 10) return false;
+    if (!address.line1.trim() || !address.city.trim() || address.postal.trim().length < 5) return false;
+    if (!cardLoaded) return false;
+    return true;
+  };
+
+  const resetStatus = () => {
+    if (status !== 'idle') {
+      setStatus('idle');
+      setError('');
+    }
+  };
+
+  const scrollToStep = useCallback((index, behavior = 'smooth') => {
+    const track = trackRef.current;
+    if (!track) return;
+    const width = track.clientWidth || 1;
+    track.scrollTo({ left: index * width, behavior });
+    setActiveStep(index);
+  }, []);
+
+  useEffect(() => {
+    const track = trackRef.current;
+    if (!track) return undefined;
+    let rafId = null;
+
+    const handleScroll = () => {
+      if (rafId) return;
+      rafId = requestAnimationFrame(() => {
+        rafId = null;
+        const width = track.clientWidth || 1;
+        const nextIndex = Math.round(track.scrollLeft / width);
+        if (nextIndex !== activeStep) {
+          setActiveStep(nextIndex);
+        }
+      });
+    };
+
+    track.addEventListener('scroll', handleScroll, { passive: true });
+    return () => {
+      track.removeEventListener('scroll', handleScroll);
+      if (rafId) cancelAnimationFrame(rafId);
+    };
+  }, [activeStep]);
+
+  useEffect(() => {
+    const handleResize = () => scrollToStep(activeStep, 'auto');
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [activeStep, scrollToStep]);
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    if (status === 'submitting') return;
+    setError('');
+
+    if (!selectedDate) {
+      setError('Select an available February date first.');
+      return;
+    }
+    if (!canSubmit()) {
+      setError('Please complete all required fields before booking.');
+      return;
+    }
+
+    setStatus('submitting');
+
+    try {
+      const token = await tokenize();
+      const payload = {
+        date: selectedIso,
+        guestCount: totalGuests,
+        preferredTime,
+        dietaryNotes,
+        notes,
+        customer,
+        address,
+        token,
+      };
+
+      const response = await fetch('/api/february/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(data?.error || 'Payment failed.');
+      }
+
+      setPaymentId(data?.paymentId || '');
+      setEmailStatus(data?.emailStatus || null);
+      setStatus('success');
+    } catch (err) {
+      setStatus('error');
+      setError(err?.message || 'Unable to complete booking.');
+    }
+  };
+
+  return (
+    <div className="fullpage-demo february-page">
+      <Helmet>
+        <title>February Chef Dinner | {SITE_NAME}</title>
+        <meta
+          name="description"
+          content="Reserve a private chef dinner in your home this February. Thursday and Saturday dates available."
+        />
+        <link rel="canonical" href={`${SITE_URL}/february`} />
+      </Helmet>
+
+      <div className="february-grid">
+        <div className="february-hero-media">
+          <img
+            src="https://res.cloudinary.com/dokyhfvyd/image/upload/v1769975355/jo5t7cv3zuvuuvsyuh8c.jpg"
+            alt="Chef-prepared dinner served in a home setting"
+            loading="eager"
+          />
+        </div>
+
+        <section className="february-reservation">
+          <div className="february-step-nav">
+            <div className="february-step-tabs" role="tablist" aria-label="Reservation steps">
+              {stepLabels.map((label, index) => (
+                <button
+                  key={label}
+                  type="button"
+                  role="tab"
+                  aria-selected={activeStep === index}
+                  className={`february-step-tab ${activeStep === index ? 'is-active' : ''}`}
+                  onClick={() => scrollToStep(index)}
+                >
+                  <span className="february-step-index">{index + 1}</span>
+                  {label}
+                </button>
+              ))}
+            </div>
+            <div className="february-step-actions">
+              <button
+                type="button"
+                className="february-step-arrow"
+                onClick={() => scrollToStep(Math.max(0, activeStep - 1))}
+                disabled={activeStep === 0}
+                aria-label="Previous step"
+              >
+                ‹
+              </button>
+              <button
+                type="button"
+                className="february-step-button"
+                onClick={() => scrollToStep(Math.max(0, activeStep - 1))}
+                disabled={activeStep === 0}
+              >
+                Back
+              </button>
+              <button
+                type="button"
+                className="february-step-button is-primary"
+                onClick={() => scrollToStep(Math.min(stepLabels.length - 1, activeStep + 1))}
+                disabled={activeStep === stepLabels.length - 1}
+              >
+                Next
+              </button>
+              <button
+                type="button"
+                className="february-step-arrow"
+                onClick={() => scrollToStep(Math.min(stepLabels.length - 1, activeStep + 1))}
+                disabled={activeStep === stepLabels.length - 1}
+                aria-label="Next step"
+              >
+                ›
+              </button>
+            </div>
+          </div>
+
+          {status === 'success' && (
+            <div className="february-success">
+              <div className="february-success-title">Booking confirmed</div>
+              <div className="february-success-copy">
+                Payment received. A confirmation email is on the way with your details.
+              </div>
+              {paymentId && (
+                <div className="february-success-meta">Payment ID: {paymentId}</div>
+              )}
+              {emailStatus?.customer === false && (
+                <div className="february-warning">We could not send the customer email. Please contact us.</div>
+              )}
+            </div>
+          )}
+
+          <form className="february-reservation-track" onSubmit={handleSubmit} ref={trackRef}>
+            <section className="february-card february-step february-step-calendar february-step-compact">
+              <div className="february-step-title">1. Pick a date</div>
+              <div className="february-datepicker">
+                <DatePicker
+                  inline
+                  selected={selectedDate}
+                  onChange={(date) => {
+                    setSelectedDate(date);
+                    resetStatus();
+                  }}
+                  minDate={febStart}
+                  maxDate={febEnd}
+                  filterDate={isAvailableDate}
+                  dayClassName={(date) => (isAvailableDate(date) ? 'february-date-available' : 'february-date-unavailable')}
+                />
+              </div>
+            </section>
+
+            <section className="february-card february-step">
+              <div className="february-step-title">2. Name + address</div>
+              <div className="february-form-grid">
+                <div>
+                  <label className="form-fun-label" htmlFor="feb-name">Name</label>
+                  <input
+                    id="feb-name"
+                    className="input"
+                    value={customer.name}
+                    onChange={(e) => {
+                      setCustomer((prev) => ({ ...prev, name: e.target.value }));
+                      resetStatus();
+                    }}
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="form-fun-label" htmlFor="feb-email">Email</label>
+                  <input
+                    id="feb-email"
+                    type="email"
+                    className="input"
+                    value={customer.email}
+                    onChange={(e) => {
+                      setCustomer((prev) => ({ ...prev, email: e.target.value }));
+                      resetStatus();
+                    }}
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="form-fun-label" htmlFor="feb-phone">Phone</label>
+                  <input
+                    id="feb-phone"
+                    type="tel"
+                    className="input"
+                    value={customer.phone}
+                    onChange={(e) => {
+                      setCustomer((prev) => ({ ...prev, phone: formatPhone(e.target.value) }));
+                      resetStatus();
+                    }}
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="form-fun-label" htmlFor="feb-guests">Guest count</label>
+                  <input
+                    id="feb-guests"
+                    type="number"
+                    className="input"
+                    min={MIN_GUESTS}
+                    max={MAX_GUESTS}
+                    value={guestCount}
+                    onChange={(e) => {
+                      setGuestCount(clampGuests(e.target.value));
+                      resetStatus();
+                    }}
+                    required
+                  />
+                </div>
+                <div className="february-form-span">
+                  <label className="form-fun-label" htmlFor="feb-address1">Address</label>
+                  <input
+                    id="feb-address1"
+                    className="input"
+                    value={address.line1}
+                    onChange={(e) => {
+                      setAddress((prev) => ({ ...prev, line1: e.target.value }));
+                      resetStatus();
+                    }}
+                    placeholder="Street address"
+                    required
+                  />
+                </div>
+                <div className="february-form-span">
+                  <input
+                    id="feb-address2"
+                    className="input"
+                    value={address.line2}
+                    onChange={(e) => {
+                      setAddress((prev) => ({ ...prev, line2: e.target.value }));
+                      resetStatus();
+                    }}
+                    placeholder="Unit, suite, etc. (optional)"
+                  />
+                </div>
+                <div>
+                  <label className="form-fun-label" htmlFor="feb-city">City</label>
+                  <input
+                    id="feb-city"
+                    className="input"
+                    value={address.city}
+                    onChange={(e) => {
+                      setAddress((prev) => ({ ...prev, city: e.target.value }));
+                      resetStatus();
+                    }}
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="form-fun-label" htmlFor="feb-state">State</label>
+                  <input
+                    id="feb-state"
+                    className="input"
+                    value={address.state}
+                    onChange={(e) => {
+                      setAddress((prev) => ({ ...prev, state: e.target.value }));
+                      resetStatus();
+                    }}
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="form-fun-label" htmlFor="feb-postal">ZIP</label>
+                  <input
+                    id="feb-postal"
+                    className="input"
+                    value={address.postal}
+                    onChange={(e) => {
+                      setAddress((prev) => ({ ...prev, postal: formatPostal(e.target.value) }));
+                      resetStatus();
+                    }}
+                    required
+                  />
+                </div>
+                <div className="february-form-span">
+                  <label className="form-fun-label" htmlFor="feb-time">Preferred start time</label>
+                  <input
+                    id="feb-time"
+                    className="input"
+                    value={preferredTime}
+                    onChange={(e) => {
+                      setPreferredTime(e.target.value);
+                      resetStatus();
+                    }}
+                    placeholder="6:00 PM"
+                  />
+                </div>
+              </div>
+            </section>
+
+            <section className="february-card february-step february-step-notes february-step-compact">
+              <div className="february-step-title">3. Dietary + notes</div>
+              <div className="february-form-grid">
+                <div className="february-form-span">
+                  <label className="form-fun-label" htmlFor="feb-dietary">Dietary notes</label>
+                  <textarea
+                    id="feb-dietary"
+                    className="textarea february-textarea-lg"
+                    rows={6}
+                    value={dietaryNotes}
+                    onChange={(e) => {
+                      setDietaryNotes(e.target.value);
+                      resetStatus();
+                    }}
+                    placeholder="Allergies, restrictions, preferences"
+                  />
+                </div>
+                <div className="february-form-span">
+                  <label className="form-fun-label" htmlFor="feb-notes">Additional notes</label>
+                  <textarea
+                    id="feb-notes"
+                    className="textarea february-textarea-lg"
+                    rows={6}
+                    value={notes}
+                    onChange={(e) => {
+                      setNotes(e.target.value);
+                      resetStatus();
+                    }}
+                    placeholder="Parking details, kitchen notes, celebrations"
+                  />
+                </div>
+              </div>
+            </section>
+
+            <section className="february-card february-step february-step-compact">
+              <div className="february-step-title">4. Reserve</div>
+              <div className="february-form-grid">
+                <div className="february-form-span">
+                  <label className="form-fun-label">Payment</label>
+                  <div className="february-payment">
+                    <div id="february-card-container" className="february-card-container" />
+                    {loadingScript && <div className="february-payment-status">Loading secure payment form...</div>}
+                    {cardError && <div className="february-payment-error">{cardError}</div>}
+                  </div>
+                </div>
+                {error && <div className="february-error">{error}</div>}
+                <button
+                  type="submit"
+                  className="february-submit"
+                  disabled={!canSubmit() || status === 'submitting' || status === 'success'}
+                >
+                  {status === 'submitting' ? 'Processing...' : `Book dinner for $${formatMoney(totalCents)}`}
+                </button>
+                <div className="february-form-footnote">
+                  Payments are processed securely by Square. You will receive a confirmation email after booking.
+                </div>
+              </div>
+            </section>
+          </form>
+        </section>
+      </div>
+    </div>
+  );
+};
+
+export default FebruaryPage;

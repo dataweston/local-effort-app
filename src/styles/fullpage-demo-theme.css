@@ -1593,3 +1593,613 @@ div:has(> .fullpage-demo-scope) > .bg-black\/60 {
     max-height: 68vh;
   }
 }
+
+:where(.fullpage-demo, .fullpage-demo-scope) .fullpage-demo-footer {
+  border-top: 1px solid var(--color-border-default);
+  background:
+    radial-gradient(circle at 20% 0%, color-mix(in srgb, var(--color-bg-secondary) 35%, transparent) 0 220px, transparent 240px),
+    linear-gradient(180deg, color-mix(in srgb, var(--color-bg-section) 85%, var(--color-bg-page) 15%) 0%, var(--color-bg-section) 100%);
+  padding: 2.5rem 1.5rem;
+}
+
+:where(.fullpage-demo, .fullpage-demo-scope) .fullpage-demo-footer-inner {
+  max-width: 1100px;
+  margin: 0 auto;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+}
+
+:where(.fullpage-demo, .fullpage-demo-scope) .fullpage-demo-footer-brand {
+  display: grid;
+  gap: 0.35rem;
+}
+
+:where(.fullpage-demo, .fullpage-demo-scope) .fullpage-demo-footer-name {
+  font-family: 'National Park', 'General Sans', sans-serif;
+  font-size: 1.1rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--color-text-primary);
+}
+
+:where(.fullpage-demo, .fullpage-demo-scope) .fullpage-demo-footer-location {
+  font-family: var(--font-office-code);
+  font-size: 0.9rem;
+  color: var(--color-text-secondary);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+:where(.fullpage-demo, .fullpage-demo-scope) .fullpage-demo-footer-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.25rem;
+  font-family: var(--font-office-code);
+}
+
+:where(.fullpage-demo, .fullpage-demo-scope) .fullpage-demo-footer-link {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--color-text-primary);
+  text-decoration: none;
+}
+
+:where(.fullpage-demo, .fullpage-demo-scope) .fullpage-demo-footer-link:hover {
+  color: var(--color-action-primary-bg);
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+:where(.fullpage-demo, .fullpage-demo-scope) .fullpage-demo-footer-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+:where(.fullpage-demo, .fullpage-demo-scope) .fullpage-demo-footer-button {
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--color-border-strong) 70%, transparent);
+  background: var(--color-action-primary-bg);
+  color: var(--color-action-primary-text);
+  font-family: var(--font-office-code);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 0.75rem 1.4rem;
+  box-shadow: 0 12px 20px rgba(58, 46, 63, 0.14);
+}
+
+:where(.fullpage-demo, .fullpage-demo-scope) .fullpage-demo-footer-button:hover {
+  background: var(--color-action-primary-hover-bg);
+}
+
+@media (max-width: 720px) {
+  :where(.fullpage-demo, .fullpage-demo-scope) .fullpage-demo-footer-inner {
+    align-items: flex-start;
+  }
+
+  :where(.fullpage-demo, .fullpage-demo-scope) .fullpage-demo-footer-links {
+    width: 100%;
+  }
+}
+
+:where(.fullpage-demo, .fullpage-demo-scope) .february-page {
+  min-height: 100vh;
+  padding: clamp(2.5rem, 4vw, 4rem) clamp(1.25rem, 4vw, 3rem) 4.5rem;
+  background:
+    radial-gradient(circle at 15% 10%, color-mix(in srgb, var(--color-bg-secondary) 40%, transparent) 0 220px, transparent 240px),
+    radial-gradient(circle at 85% 20%, color-mix(in srgb, var(--color-bg-card) 40%, transparent) 0 180px, transparent 200px),
+    linear-gradient(180deg, color-mix(in srgb, var(--color-bg-page) 92%, var(--color-bg-section) 8%) 0%, var(--color-bg-section) 100%);
+}
+
+:where(.fullpage-demo, .fullpage-demo-scope) .february-hero {
+  max-width: 1100px;
+  margin: 0 auto 2rem;
+  display: grid;
+  gap: 0.85rem;
+  text-align: left;
+}
+
+:where(.fullpage-demo, .fullpage-demo-scope) .february-hero-badge {
+  align-self: start;
+  justify-self: start;
+  padding: 0.35rem 1rem;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--color-border-strong) 70%, transparent);
+  background: color-mix(in srgb, var(--color-bg-card) 90%, transparent);
+  font-family: var(--font-office-code);
+  font-size: 0.7rem;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--color-text-primary);
+}
+
+:where(.fullpage-demo, .fullpage-demo-scope) .february-hero-title {
+  font-family: var(--font-display);
+  font-size: clamp(2.2rem, 4.5vw, 3.4rem);
+  color: var(--color-text-primary);
+  letter-spacing: -0.02em;
+}
+
+:where(.fullpage-demo, .fullpage-demo-scope) .february-hero-media {
+  display: inline-block;
+  width: auto;
+  max-width: 100%;
+  margin: 0;
+  justify-self: start;
+  border-radius: 1.5rem;
+  overflow: visible;
+  border: 2px solid var(--color-border-default);
+  padding: 0.4rem;
+  background: var(--color-bg-card);
+}
+
+:where(.fullpage-demo, .fullpage-demo-scope) .february-hero-media img {
+  width: 100%;
+  height: auto;
+  max-width: 100%;
+  max-height: 60vh;
+  display: block;
+  object-fit: contain;
+  background: color-mix(in srgb, var(--color-bg-page) 85%, var(--color-bg-card) 15%);
+  border-radius: calc(1.5rem - 0.4rem);
+}
+
+:where(.fullpage-demo, .fullpage-demo-scope) .february-hero-subtitle {
+  font-size: 1.05rem;
+  color: var(--color-text-secondary);
+  line-height: 1.6;
+}
+
+:where(.fullpage-demo, .fullpage-demo-scope) .february-hero-meta {
+  font-family: var(--font-office-code);
+  font-size: 0.85rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+:where(.fullpage-demo, .fullpage-demo-scope) .february-grid {
+  max-width: 1100px;
+  margin: 0 auto;
+  display: grid;
+  gap: 2rem;
+  align-items: start;
+  grid-template-columns: minmax(280px, 0.9fr) minmax(420px, 1.4fr);
+}
+
+@media (max-width: 1100px) {
+  :where(.fullpage-demo, .fullpage-demo-scope) .february-grid {
+    grid-template-columns: 1fr;
+  }
+
+  :where(.fullpage-demo, .fullpage-demo-scope) .february-hero-media {
+    justify-self: center;
+    margin: 0 auto;
+  }
+}
+
+:where(.fullpage-demo, .fullpage-demo-scope) .february-card {
+  border-radius: 1.5rem;
+  border: 1px solid color-mix(in srgb, var(--color-border-default) 80%, transparent);
+  background: color-mix(in srgb, var(--color-bg-card) 90%, transparent);
+  box-shadow: 0 16px 30px rgba(58, 46, 63, 0.12);
+  padding: 1.75rem;
+  display: grid;
+  gap: 1.25rem;
+}
+
+:where(.fullpage-demo, .fullpage-demo-scope) .february-reservation {
+  display: grid;
+  gap: 1.2rem;
+}
+
+:where(.fullpage-demo, .fullpage-demo-scope) .february-step-nav {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+:where(.fullpage-demo, .fullpage-demo-scope) .february-step-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+
+:where(.fullpage-demo, .fullpage-demo-scope) .february-step-tab {
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--color-border-default) 70%, transparent);
+  background: color-mix(in srgb, var(--color-bg-card) 92%, transparent);
+  padding: 0.4rem 0.85rem;
+  font-family: var(--font-office-code);
+  font-size: 0.7rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-text-secondary);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  cursor: pointer;
+}
+
+:where(.fullpage-demo, .fullpage-demo-scope) .february-step-tab.is-active {
+  border-color: var(--color-action-primary-bg);
+  color: var(--color-text-primary);
+  background: color-mix(in srgb, var(--color-action-primary-bg) 16%, var(--color-bg-card) 84%);
+}
+
+:where(.fullpage-demo, .fullpage-demo-scope) .february-step-index {
+  width: 1.2rem;
+  height: 1.2rem;
+  border-radius: 999px;
+  background: var(--color-bg-page);
+  display: grid;
+  place-items: center;
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+:where(.fullpage-demo, .fullpage-demo-scope) .february-step-actions {
+  display: flex;
+  gap: 0.6rem;
+}
+
+:where(.fullpage-demo, .fullpage-demo-scope) .february-step-arrow {
+  width: 2.2rem;
+  height: 2.2rem;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--color-border-default) 70%, transparent);
+  background: color-mix(in srgb, var(--color-bg-card) 92%, transparent);
+  color: var(--color-text-primary);
+  font-size: 1.2rem;
+  line-height: 1;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+
+:where(.fullpage-demo, .fullpage-demo-scope) .february-step-arrow:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+:where(.fullpage-demo, .fullpage-demo-scope) .february-step-button {
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--color-border-default) 70%, transparent);
+  background: transparent;
+  color: var(--color-text-primary);
+  font-family: var(--font-office-code);
+  font-size: 0.68rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  padding: 0.5rem 0.9rem;
+  cursor: pointer;
+}
+
+:where(.fullpage-demo, .fullpage-demo-scope) .february-step-button.is-primary {
+  border-color: var(--color-action-primary-bg);
+  background: var(--color-action-primary-bg);
+  color: var(--color-action-primary-text);
+}
+
+:where(.fullpage-demo, .fullpage-demo-scope) .february-step-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+:where(.fullpage-demo, .fullpage-demo-scope) .february-reservation-track {
+  display: flex;
+  gap: 1.25rem;
+  overflow-x: auto;
+  padding-bottom: 0.5rem;
+  scroll-snap-type: x mandatory;
+  scroll-padding: 1rem;
+  scroll-behavior: smooth;
+}
+
+:where(.fullpage-demo, .fullpage-demo-scope) .february-reservation-track::-webkit-scrollbar {
+  height: 8px;
+}
+
+:where(.fullpage-demo, .fullpage-demo-scope) .february-reservation-track::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--color-border-strong) 50%, transparent);
+  border-radius: 999px;
+}
+
+:where(.fullpage-demo, .fullpage-demo-scope) .february-step {
+  flex: 0 0 100%;
+  max-width: 100%;
+  scroll-snap-align: start;
+}
+
+:where(.fullpage-demo, .fullpage-demo-scope) .february-step > :first-child {
+  margin-top: 0;
+}
+
+:where(.fullpage-demo, .fullpage-demo-scope) .february-step-compact {
+  padding-top: 0.2rem;
+  padding-bottom: 1rem;
+}
+
+:where(.fullpage-demo, .fullpage-demo-scope) .february-step-notes {
+  align-content: start;
+  gap: 0.85rem;
+}
+
+:where(.fullpage-demo, .fullpage-demo-scope) .february-step-calendar {
+  gap: 0.7rem;
+  padding-top: 0;
+  padding-bottom: 0.2rem;
+}
+
+:where(.fullpage-demo, .fullpage-demo-scope) .february-textarea-lg {
+  min-height: 160px;
+}
+
+:where(.fullpage-demo, .fullpage-demo-scope) .february-step-title {
+  font-family: var(--font-office-code);
+  font-size: 0.75rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+:where(.fullpage-demo, .fullpage-demo-scope) .february-calendar {
+  gap: 0.9rem;
+}
+
+:where(.fullpage-demo, .fullpage-demo-scope) .february-card-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+:where(.fullpage-demo, .fullpage-demo-scope) .february-card-title {
+  font-family: var(--font-display);
+  font-size: 1.35rem;
+  color: var(--color-text-primary);
+}
+
+:where(.fullpage-demo, .fullpage-demo-scope) .february-card-subtitle {
+  font-size: 0.9rem;
+  color: var(--color-text-secondary);
+}
+
+:where(.fullpage-demo, .fullpage-demo-scope) .february-card-total {
+  text-align: right;
+}
+
+:where(.fullpage-demo, .fullpage-demo-scope) .february-card-total-label {
+  font-size: 0.65rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+  font-family: var(--font-office-code);
+}
+
+:where(.fullpage-demo, .fullpage-demo-scope) .february-card-total-value {
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+:where(.fullpage-demo, .fullpage-demo-scope) .february-datepicker {
+  border-radius: 1.25rem;
+  border: 1px solid color-mix(in srgb, var(--color-border-default) 80%, transparent);
+  background: color-mix(in srgb, var(--color-bg-page) 90%, var(--color-bg-card) 10%);
+  padding: 0.75rem;
+}
+
+:where(.fullpage-demo, .fullpage-demo-scope) .february-datepicker .react-datepicker {
+  border: none;
+  background: transparent;
+  font-family: var(--font-office-code);
+  width: 100%;
+  font-size: 1rem;
+}
+
+:where(.fullpage-demo, .fullpage-demo-scope) .february-datepicker .react-datepicker__header {
+  background: transparent;
+  border-bottom: 1px solid color-mix(in srgb, var(--color-border-default) 70%, transparent);
+  padding: 0.45rem 0.4rem 0.2rem;
+}
+
+:where(.fullpage-demo, .fullpage-demo-scope) .february-datepicker .react-datepicker__month-container {
+  width: 100%;
+}
+
+:where(.fullpage-demo, .fullpage-demo-scope) .february-datepicker .react-datepicker__day-names,
+:where(.fullpage-demo, .fullpage-demo-scope) .february-datepicker .react-datepicker__week {
+  display: flex;
+  justify-content: space-between;
+}
+
+:where(.fullpage-demo, .fullpage-demo-scope) .february-datepicker .react-datepicker__current-month,
+:where(.fullpage-demo, .fullpage-demo-scope) .february-datepicker .react-datepicker__day-name {
+  color: var(--color-text-secondary);
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  font-size: 0.62rem;
+}
+
+:where(.fullpage-demo, .fullpage-demo-scope) .february-datepicker .react-datepicker__day-name {
+  margin: 0.35rem 0.3rem;
+  width: 2.8rem;
+  line-height: 2.1rem;
+  font-size: 0.65rem;
+}
+
+:where(.fullpage-demo, .fullpage-demo-scope) .february-datepicker .react-datepicker__month {
+  margin: 0.35rem 0.15rem 0;
+  width: 100%;
+}
+
+:where(.fullpage-demo, .fullpage-demo-scope) .february-datepicker .react-datepicker__day {
+  margin: 0.22rem;
+  border-radius: 0.85rem;
+  color: var(--color-text-primary);
+  width: 2.8rem;
+  line-height: 2.8rem;
+  font-size: 0.95rem;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+:where(.fullpage-demo, .fullpage-demo-scope) .february-datepicker .react-datepicker__day--disabled {
+  color: var(--color-text-muted);
+  opacity: 0.45;
+}
+
+:where(.fullpage-demo, .fullpage-demo-scope) .february-datepicker .react-datepicker__day--selected,
+:where(.fullpage-demo, .fullpage-demo-scope) .february-datepicker .react-datepicker__day--keyboard-selected {
+  background: var(--color-action-primary-bg);
+  color: var(--color-action-primary-text);
+  box-shadow: 0 12px 20px rgba(58, 46, 63, 0.2);
+  border: 1px solid color-mix(in srgb, var(--color-action-primary-bg) 70%, var(--color-border-strong) 30%);
+}
+
+:where(.fullpage-demo, .fullpage-demo-scope) .february-datepicker .react-datepicker__day:hover {
+  transform: translateY(-1px);
+  background: color-mix(in srgb, var(--color-bg-card) 90%, var(--color-bg-page) 10%);
+}
+
+:where(.fullpage-demo, .fullpage-demo-scope) .february-datepicker .february-date-available {
+  background: color-mix(in srgb, var(--color-state-success) 18%, var(--color-bg-card) 82%);
+  border: 1px solid color-mix(in srgb, var(--color-state-success) 40%, var(--color-border-default) 60%);
+}
+
+:where(.fullpage-demo, .fullpage-demo-scope) .february-datepicker .react-datepicker__day--selected.february-date-available,
+:where(.fullpage-demo, .fullpage-demo-scope) .february-datepicker .react-datepicker__day--keyboard-selected.february-date-available {
+  background: var(--color-action-primary-bg);
+  color: var(--color-action-primary-text);
+  border-color: var(--color-action-primary-bg);
+}
+
+:where(.fullpage-demo, .fullpage-demo-scope) .february-calendar-note {
+  font-size: 0.95rem;
+  color: var(--color-text-secondary);
+  margin-top: -0.25rem;
+  padding: 0.75rem 0.9rem;
+  border-radius: 0.85rem;
+  border: 1px solid color-mix(in srgb, var(--color-border-default) 70%, transparent);
+  background: color-mix(in srgb, var(--color-bg-card) 86%, transparent);
+}
+
+:where(.fullpage-demo, .fullpage-demo-scope) .february-calendar-note strong {
+  color: var(--color-text-primary);
+  font-weight: 700;
+}
+
+:where(.fullpage-demo, .fullpage-demo-scope) .february-form {
+  align-content: start;
+}
+
+:where(.fullpage-demo, .fullpage-demo-scope) .february-form-grid {
+  display: grid;
+  gap: 0.85rem;
+}
+
+:where(.fullpage-demo, .fullpage-demo-scope) .february-form-span {
+  grid-column: 1 / -1;
+}
+
+:where(.fullpage-demo, .fullpage-demo-scope) .february-payment {
+  border-radius: 1rem;
+  border: 1px solid color-mix(in srgb, var(--color-border-default) 80%, transparent);
+  background: color-mix(in srgb, var(--color-bg-page) 88%, var(--color-bg-card) 12%);
+  padding: 0.75rem;
+  display: grid;
+  gap: 0.4rem;
+}
+
+:where(.fullpage-demo, .fullpage-demo-scope) .february-card-container {
+  min-height: 110px;
+}
+
+:where(.fullpage-demo, .fullpage-demo-scope) .february-payment-status {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+}
+
+:where(.fullpage-demo, .fullpage-demo-scope) .february-payment-error {
+  font-size: 0.75rem;
+  color: var(--color-state-danger);
+}
+
+:where(.fullpage-demo, .fullpage-demo-scope) .february-submit {
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--color-border-strong) 70%, transparent);
+  background: var(--color-action-primary-bg);
+  color: var(--color-action-primary-text);
+  font-family: var(--font-office-code);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0.85rem 1.5rem;
+  box-shadow: 0 12px 20px rgba(58, 46, 63, 0.16);
+}
+
+:where(.fullpage-demo, .fullpage-demo-scope) .february-submit:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+:where(.fullpage-demo, .fullpage-demo-scope) .february-form-footnote {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+}
+
+:where(.fullpage-demo, .fullpage-demo-scope) .february-error {
+  color: var(--color-state-danger);
+  font-size: 0.85rem;
+}
+
+:where(.fullpage-demo, .fullpage-demo-scope) .february-success {
+  border-radius: 1rem;
+  border: 1px solid color-mix(in srgb, var(--color-state-success) 45%, var(--color-border-default) 55%);
+  background: color-mix(in srgb, var(--color-state-success) 18%, var(--color-bg-card) 82%);
+  padding: 1rem;
+  display: grid;
+  gap: 0.4rem;
+}
+
+:where(.fullpage-demo, .fullpage-demo-scope) .february-success-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+:where(.fullpage-demo, .fullpage-demo-scope) .february-success-copy {
+  font-size: 0.85rem;
+  color: var(--color-text-secondary);
+}
+
+:where(.fullpage-demo, .fullpage-demo-scope) .february-success-meta {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  font-family: var(--font-office-code);
+}
+
+:where(.fullpage-demo, .fullpage-demo-scope) .february-warning {
+  font-size: 0.8rem;
+  color: var(--color-state-danger);
+}
+
+@media (max-width: 720px) {
+  :where(.fullpage-demo, .fullpage-demo-scope) .february-card-total {
+    text-align: left;
+  }
+}
