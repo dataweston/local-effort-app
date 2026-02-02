@@ -296,7 +296,7 @@ const FebruaryPage = () => {
               Dinners in February are the toughest, from a farm-to-table perspective. This menu is comfort-food forward, and focuses on a seasonal preoccupation: dairy.
             </p>
             <p>
-              We're making our own ricotta, cottage cheese, labneh, butter, marscapone, and ranch dressing from milk by Autumnwood Farm in Forest Lake.
+              We're making our own ricotta, cottage cheese, labneh, butter, marscapone, and ranch dressing from milk and cream by Autumnwood Farm in Forest Lake. We've also got lamb neck from Petersen Meats in Porter, and confit mushrooms from R&R, which are grown year-round in tents.
             </p>
             <p>
               Meanwhile, citrus is fully in season in Southern California.
