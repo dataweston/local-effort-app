@@ -412,7 +412,7 @@ const FebruaryPage = () => {
               <div className="february-step-title">2. Name + address</div>
               <div className="february-form-grid">
                 <div>
-                  <label className="form-fun-label" htmlFor="feb-name">Name</label>
+                  <label className="form-fun-label" htmlFor="feb-name">Name <span className="required-indicator">*</span></label>
                   <input
                     id="feb-name"
                     className="input"
@@ -421,11 +421,12 @@ const FebruaryPage = () => {
                       setCustomer((prev) => ({ ...prev, name: e.target.value }));
                       resetStatus();
                     }}
+                    placeholder="Your full name"
                     required
                   />
                 </div>
                 <div>
-                  <label className="form-fun-label" htmlFor="feb-email">Email</label>
+                  <label className="form-fun-label" htmlFor="feb-email">Email <span className="required-indicator">*</span></label>
                   <input
                     id="feb-email"
                     type="email"
@@ -435,11 +436,12 @@ const FebruaryPage = () => {
                       setCustomer((prev) => ({ ...prev, email: e.target.value }));
                       resetStatus();
                     }}
+                    placeholder="you@example.com"
                     required
                   />
                 </div>
                 <div>
-                  <label className="form-fun-label" htmlFor="feb-phone">Phone</label>
+                  <label className="form-fun-label" htmlFor="feb-phone">Phone <span className="required-indicator">*</span></label>
                   <input
                     id="feb-phone"
                     type="tel"
@@ -453,7 +455,7 @@ const FebruaryPage = () => {
                   />
                 </div>
                 <div>
-                  <label className="form-fun-label" htmlFor="feb-guests">Guest count</label>
+                  <label className="form-fun-label" htmlFor="feb-guests">Guest count <span className="required-indicator">*</span></label>
                   <input
                     id="feb-guests"
                     type="number"
@@ -469,7 +471,7 @@ const FebruaryPage = () => {
                   />
                 </div>
                 <div className="february-form-span">
-                  <label className="form-fun-label" htmlFor="feb-address1">Address</label>
+                  <label className="form-fun-label" htmlFor="feb-address1">Address <span className="required-indicator">*</span></label>
                   <input
                     id="feb-address1"
                     className="input"
@@ -495,7 +497,7 @@ const FebruaryPage = () => {
                   />
                 </div>
                 <div>
-                  <label className="form-fun-label" htmlFor="feb-city">City</label>
+                  <label className="form-fun-label" htmlFor="feb-city">City <span className="required-indicator">*</span></label>
                   <input
                     id="feb-city"
                     className="input"
@@ -504,11 +506,12 @@ const FebruaryPage = () => {
                       setAddress((prev) => ({ ...prev, city: e.target.value }));
                       resetStatus();
                     }}
+                    placeholder="Minneapolis"
                     required
                   />
                 </div>
                 <div>
-                  <label className="form-fun-label" htmlFor="feb-state">State</label>
+                  <label className="form-fun-label" htmlFor="feb-state">State <span className="required-indicator">*</span></label>
                   <input
                     id="feb-state"
                     className="input"
@@ -521,7 +524,7 @@ const FebruaryPage = () => {
                   />
                 </div>
                 <div>
-                  <label className="form-fun-label" htmlFor="feb-postal">ZIP</label>
+                  <label className="form-fun-label" htmlFor="feb-postal">ZIP <span className="required-indicator">*</span></label>
                   <input
                     id="feb-postal"
                     className="input"
@@ -530,6 +533,7 @@ const FebruaryPage = () => {
                       setAddress((prev) => ({ ...prev, postal: formatPostal(e.target.value) }));
                       resetStatus();
                     }}
+                    placeholder="55401"
                     required
                   />
                 </div>
@@ -602,6 +606,9 @@ const FebruaryPage = () => {
                 >
                   {status === 'submitting' ? 'Processing...' : `Book dinner for $${formatMoney(totalCents)}`}
                 </button>
+                <div className="required-note">
+                  <span className="required-indicator">*</span>Required fields
+                </div>
                 <div className="february-form-footnote">
                   Payments are processed securely by Square. You will receive a confirmation email after booking.
                 </div>

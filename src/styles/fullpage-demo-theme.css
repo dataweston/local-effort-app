@@ -2450,6 +2450,24 @@ div:has(> .fullpage-demo-scope) > .bg-black\/60 {
   background: color-mix(in srgb, var(--color-state-danger) 10%, transparent);
 }
 
+:where(.fullpage-demo, .fullpage-demo-scope) .required-indicator {
+  color: var(--color-state-danger);
+  font-weight: 600;
+  margin-left: 0.15em;
+}
+
+:where(.fullpage-demo, .fullpage-demo-scope) .required-note {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  text-align: left;
+  margin-top: 0.5rem;
+}
+
+:where(.fullpage-demo, .fullpage-demo-scope) .required-note .required-indicator {
+  margin-left: 0;
+  margin-right: 0.25em;
+}
+
 :where(.fullpage-demo, .fullpage-demo-scope) .february-success {
   border-radius: 1rem;
   border: 1px solid color-mix(in srgb, var(--color-state-success) 45%, var(--color-border-default) 55%);

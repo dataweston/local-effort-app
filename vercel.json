@@ -55,6 +55,14 @@
       "use": "@vercel/node"
     },
     {
+      "src": "api/february/booked-dates.js",
+      "use": "@vercel/node"
+    },
+    {
+      "src": "api/february/checkout.js",
+      "use": "@vercel/node"
+    },
+    {
       "src": "backend/api/server.js",
       "use": "@vercel/node"
     }
@@ -113,6 +121,14 @@
     {
       "src": "/api/winter-dinner/checkout",
       "dest": "/api/winter-dinner/checkout.js"
+    },
+    {
+      "src": "/api/february/booked-dates",
+      "dest": "/api/february/booked-dates.js"
+    },
+    {
+      "src": "/api/february/checkout",
+      "dest": "/api/february/checkout.js"
     },
     {
       "src": "/api/(.*)",
