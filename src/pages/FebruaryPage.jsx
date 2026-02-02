@@ -118,7 +118,7 @@ const FebruaryPage = () => {
   const { cardLoaded, error: cardError, loadingScript, tokenize } = useSquareCard(
     '#february-card-container',
     true,
-    [selectedDate]
+    [] // Don't reinitialize card when date changes
   );
 
   const totalGuests = clampGuests(guestCount);
