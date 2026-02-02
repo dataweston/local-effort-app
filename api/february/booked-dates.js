@@ -32,7 +32,13 @@ module.exports = async (req, res) => {
       return res.status(500).json({ error: 'Failed to fetch booked dates' });
     }
 
-    const bookedDates = (data || []).map((row) => row.booking_date);
+    // Ensure dates are in YYYY-MM-DD format (strip any time component)
+    const bookedDates = (data || []).map((row) => {
+      const d = row.booking_date;
+      if (!d) return null;
+      // Handle both "2026-02-05" and "2026-02-05T00:00:00.000Z" formats
+      return typeof d === 'string' ? d.slice(0, 10) : d;
+    }).filter(Boolean);
 
     return res.status(200).json({ bookedDates });
   } catch (err) {

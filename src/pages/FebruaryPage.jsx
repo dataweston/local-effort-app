@@ -87,17 +87,29 @@ const FebruaryPage = () => {
   const [activeStep, setActiveStep] = useState(0);
   const trackRef = useRef(null);
 
+  // Known sold out dates (fallback if API fails in development)
+  const KNOWN_SOLD_OUT = ['2026-02-05'];
+
   // Fetch booked dates on mount
   useEffect(() => {
     const fetchBookedDates = async () => {
       try {
+        console.log('[FebruaryPage] Fetching booked dates...');
         const resp = await fetch('/api/february/booked-dates');
+        console.log('[FebruaryPage] Response status:', resp.status);
         if (resp.ok) {
           const data = await resp.json();
-          setBookedDates(data.bookedDates || []);
+          console.log('[FebruaryPage] Booked dates:', data.bookedDates);
+          // Merge API dates with known sold out dates
+          const merged = [...new Set([...(data.bookedDates || []), ...KNOWN_SOLD_OUT])];
+          setBookedDates(merged);
+        } else {
+          console.warn('[FebruaryPage] API response not ok, using fallback');
+          setBookedDates(KNOWN_SOLD_OUT);
         }
       } catch (err) {
-        console.warn('Failed to fetch booked dates', err);
+        console.warn('[FebruaryPage] Failed to fetch booked dates, using fallback', err);
+        setBookedDates(KNOWN_SOLD_OUT);
       }
     };
     fetchBookedDates();

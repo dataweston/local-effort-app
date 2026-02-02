@@ -2305,22 +2305,24 @@ div:has(> .fullpage-demo-scope) > .bg-black\/60 {
 }
 
 :where(.fullpage-demo, .fullpage-demo-scope) .february-datepicker .february-date-soldout {
-  background: color-mix(in srgb, var(--color-state-danger) 12%, var(--color-bg-card) 88%);
-  border: 1px solid color-mix(in srgb, var(--color-state-danger) 30%, var(--color-border-default) 70%);
+  background: color-mix(in srgb, var(--color-state-danger) 15%, var(--color-bg-card) 85%);
+  border: 2px solid color-mix(in srgb, var(--color-state-danger) 50%, var(--color-border-default) 50%);
   color: var(--color-text-muted);
   cursor: not-allowed;
   position: relative;
+  opacity: 0.7;
 }
 
 :where(.fullpage-demo, .fullpage-demo-scope) .february-datepicker .february-date-soldout::after {
   content: '';
   position: absolute;
   top: 50%;
-  left: 20%;
-  right: 20%;
+  left: 10%;
+  right: 10%;
   height: 2px;
-  background: color-mix(in srgb, var(--color-state-danger) 50%, transparent);
-  transform: rotate(-12deg);
+  background: var(--color-state-danger);
+  transform: translateY(-50%) rotate(-45deg);
+  border-radius: 2px;
 }
 
 :where(.fullpage-demo, .fullpage-demo-scope) .february-datepicker .february-date-soldout:hover {

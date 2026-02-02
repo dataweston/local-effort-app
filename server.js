@@ -19,6 +19,8 @@ const crowdfundCheckoutHandler = require('./api/crowdfund/checkout');
 const squareWebhookHandler = require('./api/square/webhook').default;
 const crowdfundingSummaryHandler = require('./api/crowdfunding/summary').default;
 const feedbackHandler = require('./api/feedback/index').default;
+const februaryBookedDatesHandler = require('./api/february/booked-dates');
+// Note: february/checkout not loaded in dev server due to TS dependencies - use Vercel for full testing
 // Sentry (backend light server)
 let Sentry;
 try {
@@ -139,6 +141,16 @@ app.all('/api/feedback', async (req, res, next) => {
     await feedbackHandler(req, res);
   } catch (err) {
     console.error('[server] feedback handler error', err);
+    next(err);
+  }
+});
+
+// February dinner booking routes
+app.get('/api/february/booked-dates', async (req, res, next) => {
+  try {
+    await februaryBookedDatesHandler(req, res);
+  } catch (err) {
+    console.error('[server] february booked-dates error', err);
     next(err);
   }
 });
