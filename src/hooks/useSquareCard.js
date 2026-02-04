@@ -152,6 +152,9 @@ const ensureSquareSdkScript = (sdkUrl, isSandbox) => {
 export function useSquareCard(containerId, enabled, deps = []) {
   const paymentsRef = useRef(null);
   const cardRef = useRef(null);
+  const cardInstanceIdRef = useRef(0);
+  const activeCardInstanceIdRef = useRef(0);
+  const lastTokenRef = useRef({ token: null, cardInstanceId: 0, at: 0 });
   const [cardLoaded, setCardLoaded] = useState(false);
   const [attempts, setAttempts] = useState(0);
   const attemptsRef = useRef(0);
@@ -190,6 +193,8 @@ export function useSquareCard(containerId, enabled, deps = []) {
     const card = cardRef.current;
     cardRef.current = null;
     attachStartedRef.current = false;
+    activeCardInstanceIdRef.current = 0;
+    lastTokenRef.current = { token: null, cardInstanceId: 0, at: 0 };
 
     const finalize = () => {
       cleanupContainer();
@@ -419,6 +424,8 @@ export function useSquareCard(containerId, enabled, deps = []) {
         await card.attach(container);
         if (!signal.aborted) {
           cardRef.current = card;
+          cardInstanceIdRef.current += 1;
+          activeCardInstanceIdRef.current = cardInstanceIdRef.current;
           setCardLoaded(true);
           setError('');
         }
@@ -467,16 +474,64 @@ export function useSquareCard(containerId, enabled, deps = []) {
     setEnvInfo(info => ({ ...info, attempts }));
   }, [attempts]);
 
+  const withTimeout = async (promise, ms, message) => {
+    let timer;
+    try {
+      const timeout = new Promise((_, reject) => {
+        timer = setTimeout(() => reject(new Error(message)), ms);
+      });
+      return await Promise.race([promise, timeout]);
+    } finally {
+      if (timer) clearTimeout(timer);
+    }
+  };
+
   const tokenize = async () => {
     if (!cardRef.current) throw new Error(error || 'Card form not ready');
-    const result = await cardRef.current.tokenize();
+    const result = await withTimeout(
+      cardRef.current.tokenize(),
+      20000,
+      'Card verification timed out. Please try again.'
+    );
     if (result.status !== 'OK') {
       const first = result?.errors?.[0];
       const msg = first?.message || first?.code || result.status || 'Card details invalid';
+      lastTokenRef.current = { token: null, cardInstanceId: 0, at: 0 };
       throw new Error(msg);
     }
+    const activeId = activeCardInstanceIdRef.current;
+    lastTokenRef.current = { token: result.token, cardInstanceId: activeId, at: Date.now() };
     return result.token;
   };
 
-  return { cardLoaded, error, loadingScript, tokenize, reset, envInfo };
+  const verifyBuyer = async (token, details) => {
+    const payments = paymentsRef.current;
+    if (!payments || typeof payments.verifyBuyer !== 'function') {
+      throw new Error('Buyer verification is unavailable. Please try hosted checkout.');
+    }
+    const activeId = activeCardInstanceIdRef.current;
+    const last = lastTokenRef.current;
+    if (!token || !last.token || last.token !== token || last.cardInstanceId !== activeId) {
+      throw new Error('Card details expired. Please re-enter your card information.');
+    }
+    try {
+      const result = await withTimeout(
+        payments.verifyBuyer(token, details),
+        20000,
+        'Buyer verification timed out. Please try again.'
+      );
+      const verificationToken = result?.token || result?.verificationToken;
+      if (!verificationToken) {
+        const first = result?.errors?.[0];
+        const msg = first?.message || first?.code || 'Buyer verification failed.';
+        throw new Error(msg);
+      }
+      return verificationToken;
+    } catch (err) {
+      lastTokenRef.current = { token: null, cardInstanceId: 0, at: 0 };
+      throw err;
+    }
+  };
+
+  return { cardLoaded, error, loadingScript, tokenize, verifyBuyer, reset, envInfo };
 }

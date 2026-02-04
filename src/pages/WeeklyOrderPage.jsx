@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
@@ -18,6 +18,7 @@ import {
 import { Button } from '../components/ui/button';
 import { useSupabaseAuth } from '../contexts/SupabaseAuthContext';
 import { useSquareCard } from '../hooks/useSquareCard';
+import { getOrCreateCheckoutAttemptId, clearCheckoutAttemptId } from '../lib/checkoutAttemptId';
 import '../styles/fullpage-demo-theme.css';
 import '../styles/weekly-order.css';
 
@@ -512,11 +513,66 @@ const WeeklyOrderPage = () => {
     setCheckoutError('');
   };
 
-  const { cardLoaded, error: cardError, loadingScript, tokenize, reset } = useSquareCard(
+  const { cardLoaded, error: cardError, loadingScript, tokenize, verifyBuyer, reset } = useSquareCard(
     '#weekly-order-card-container',
     checkoutOpen,
     [checkoutOpen]
   );
+  const checkoutAttemptRef = useRef('');
+  const [fallbackLink, setFallbackLink] = useState('');
+  const [fallbackStatus, setFallbackStatus] = useState({ loading: false, error: '' });
+  const attemptStorageKey = 'le:checkoutAttempt:weekly-order';
+
+  const resolveCheckoutAttemptId = useCallback(() => {
+    if (checkoutAttemptRef.current) return checkoutAttemptRef.current;
+    const next = getOrCreateCheckoutAttemptId(attemptStorageKey);
+    checkoutAttemptRef.current = next;
+    return next;
+  }, []);
+
+  const clearCheckoutAttempt = useCallback(() => {
+    checkoutAttemptRef.current = '';
+    clearCheckoutAttemptId(attemptStorageKey);
+  }, []);
+
+  const buildHostedCheckout = useCallback(async () => {
+    if (fallbackStatus.loading) return;
+    setFallbackStatus({ loading: true, error: '' });
+    try {
+      const response = await fetch('/api/weekly-order/checkout-link', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          menuWeekId: data?.menuWeek?.id,
+          customerId: data?.customer?.id,
+          customerSlug: data?.customer?.slug,
+          tier,
+          userEmail: user?.email || '',
+          rules: planRules,
+          items: lineItems.map((item) => ({
+            dishId: item.dishId,
+            title: item.dish?.title,
+            quantity: item.quantity,
+            unitPriceCents: item.priceCents,
+            isAddon: item.isAddon,
+            includedInPlan: item.includedInPlan,
+            sectionSlug: item.section?.slug || (item.isAddon ? 'add-ons' : 'entrees'),
+          })),
+          totalsCents: subtotalCents,
+          basePriceCents,
+          deliveryFeeCents,
+        }),
+      });
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(result?.error || 'Unable to create hosted checkout.');
+      }
+      setFallbackLink(result?.url || '');
+      setFallbackStatus({ loading: false, error: '' });
+    } catch (err) {
+      setFallbackStatus({ loading: false, error: err?.message || 'Unable to create hosted checkout.' });
+    }
+  }, [fallbackStatus.loading, data, tier, user, planRules, lineItems, subtotalCents, basePriceCents, deliveryFeeCents]);
 
   const handleCheckout = async () => {
     if (!canCheckout) return;
@@ -524,6 +580,20 @@ const WeeklyOrderPage = () => {
     setCheckoutError('');
     try {
       const token = await tokenize();
+      const verificationDetails = {
+        amount: (subtotalCents / 100).toFixed(2),
+        currencyCode: 'USD',
+        intent: 'CHARGE',
+        billingContact: {
+          givenName: user?.displayName?.split(' ')?.[0] || undefined,
+          familyName: user?.displayName?.split(' ')?.slice(1).join(' ') || undefined,
+          email: user?.email || undefined,
+          phone: user?.phoneNumber || undefined,
+          countryCode: 'US',
+        },
+      };
+      const verificationToken = await verifyBuyer(token, verificationDetails);
+      const checkoutAttemptId = resolveCheckoutAttemptId();
       const response = await fetch('/api/weekly-order/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -547,6 +617,8 @@ const WeeklyOrderPage = () => {
           basePriceCents,
           deliveryFeeCents,
           paymentToken: token,
+          verificationToken,
+          checkoutAttemptId,
         }),
       });
       const result = await response.json();
@@ -554,6 +626,7 @@ const WeeklyOrderPage = () => {
         throw new Error(result?.error || 'Checkout failed.');
       }
       setCheckoutStatus('success');
+      clearCheckoutAttempt();
       reset();
     } catch (err) {
       console.error('[weekly-order] checkout error', err);
@@ -870,7 +943,10 @@ const WeeklyOrderPage = () => {
 
       <Dialog open={checkoutOpen} onOpenChange={(open) => {
         setCheckoutOpen(open);
-        if (!open) resetCheckoutState();
+        if (!open) {
+          resetCheckoutState();
+          clearCheckoutAttempt();
+        }
       }}>
         <DialogContent className="fullpage-demo-scope weekly-order-dialog sm:max-w-[680px]">
           <DialogHeader>
@@ -914,6 +990,24 @@ const WeeklyOrderPage = () => {
                 <div id="weekly-order-card-container" className="weekly-order-card-container" />
                 {loadingScript && <p className="weekly-order-helper">Loading payment form...</p>}
                 {cardError && <p className="weekly-order-error">{cardError}</p>}
+                {(cardError || checkoutStatus === 'error') && (
+                  <div className="weekly-order-helper">
+                    <button
+                      type="button"
+                      className="weekly-order-link-button"
+                      onClick={buildHostedCheckout}
+                      disabled={fallbackStatus.loading}
+                    >
+                      {fallbackStatus.loading ? 'Building hosted checkout...' : 'Use hosted Square checkout'}
+                    </button>
+                    {fallbackStatus.error && <p className="weekly-order-error">{fallbackStatus.error}</p>}
+                    {fallbackLink && (
+                      <p>
+                        <a href={fallbackLink} target="_blank" rel="noopener noreferrer">Open hosted checkout</a>
+                      </p>
+                    )}
+                  </div>
+                )}
               </div>
               {checkoutError && <p className="weekly-order-error">{checkoutError}</p>}
               <Button

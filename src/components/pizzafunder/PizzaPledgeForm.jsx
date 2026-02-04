@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import PropTypes from 'prop-types';
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '../ui/card';
 import { Button } from '../ui/button';
@@ -8,6 +8,7 @@ import { Textarea } from '../ui/textarea';
 import { Minus, Plus } from 'lucide-react';
 import { useSquarePayments } from '../../lib/useSquarePayments';
 import { useToast } from '../common/ToastProvider';
+import { getOrCreateCheckoutAttemptId, clearCheckoutAttemptId } from '../../lib/checkoutAttemptId';
 
 /**
  * PizzaPledgeForm - Pledge form with Square payment integration
@@ -25,10 +26,15 @@ export const PizzaPledgeForm = ({ onPledge, loading = false, selectedTier }) => 
   // Square payment state
   const [cardReady, setCardReady] = useState(false);
   const [cardError, setCardError] = useState('');
+  const [paymentError, setPaymentError] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [fallbackUrl, setFallbackUrl] = useState('');
+  const [fallbackStatus, setFallbackStatus] = useState({ loading: false, error: '' });
   const cardContainerRef = useRef(null);
   const cardInstanceRef = useRef(null);
   const cardInitRef = useRef(false);
+  const checkoutAttemptRef = useRef('');
+  const attemptStorageKey = 'le:checkoutAttempt:pizzafunder';
 
   const { toast } = useToast();
   const { payments, loading: paymentsLoading, error: paymentsError } = useSquarePayments();
@@ -60,6 +66,28 @@ export const PizzaPledgeForm = ({ onPledge, loading = false, selectedTier }) => 
     }
   };
 
+  const withTimeout = (promise, ms, message) => {
+    let timer;
+    const timeout = new Promise((_, reject) => {
+      timer = setTimeout(() => reject(new Error(message)), ms);
+    });
+    return Promise.race([promise, timeout]).finally(() => {
+      if (timer) clearTimeout(timer);
+    });
+  };
+
+  const resolveCheckoutAttemptId = useCallback(() => {
+    if (checkoutAttemptRef.current) return checkoutAttemptRef.current;
+    const next = getOrCreateCheckoutAttemptId(attemptStorageKey);
+    checkoutAttemptRef.current = next;
+    return next;
+  }, []);
+
+  const clearCheckoutAttempt = useCallback(() => {
+    checkoutAttemptRef.current = '';
+    clearCheckoutAttemptId(attemptStorageKey);
+  }, []);
+
   // Destroy card instance
   const destroyCard = () => {
     if (cardInstanceRef.current) {
@@ -72,6 +100,34 @@ export const PizzaPledgeForm = ({ onPledge, loading = false, selectedTier }) => 
     }
     cardInitRef.current = false;
   };
+
+  const buildFallbackLink = useCallback(async () => {
+    if (fallbackStatus.loading) return;
+    setFallbackStatus({ loading: true, error: '' });
+    try {
+      const response = await fetch('/api/pizzafunder/payment-link', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          pizzaCount,
+          funderName: funderName.trim(),
+          email: email.trim(),
+          phone: phone.trim(),
+          notes: notes.trim(),
+          rewardPreference,
+          totalCents: Math.round(total * 100),
+          baseTotalCents: Math.round(baseTotal * 100),
+          discountCode: isDiscountValid ? discountCode.trim() : null,
+        }),
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(data?.error || 'Unable to create hosted checkout.');
+      setFallbackUrl(data?.url || '');
+      setFallbackStatus({ loading: false, error: '' });
+    } catch (err) {
+      setFallbackStatus({ loading: false, error: err?.message || 'Unable to create hosted checkout.' });
+    }
+  }, [fallbackStatus.loading, pizzaCount, funderName, email, phone, notes, rewardPreference, total, baseTotal, isDiscountValid, discountCode]);
 
   // Initialize Square card when payments SDK is ready
   useEffect(() => {
@@ -150,16 +206,49 @@ export const PizzaPledgeForm = ({ onPledge, loading = false, selectedTier }) => 
     }
 
     setSubmitting(true);
+    setPaymentError('');
 
     try {
       // Tokenize the card
-      const result = await cardInstanceRef.current.tokenize();
+      const result = await withTimeout(
+        cardInstanceRef.current.tokenize(),
+        20000,
+        'Card verification timed out. Please try again.'
+      );
       
       if (result.status !== 'OK') {
         const errorMsg = result.errors?.[0]?.message || 'Payment tokenization failed';
         showToast('Card validation failed', errorMsg, 'destructive');
         return;
       }
+
+      if (!payments || typeof payments.verifyBuyer !== 'function') {
+        throw new Error('Buyer verification unavailable. Please try hosted checkout.');
+      }
+
+      const nameParts = funderName.trim().split(' ');
+      const verificationDetails = {
+        amount: total.toFixed(2),
+        currencyCode: 'USD',
+        intent: 'CHARGE',
+        billingContact: {
+          givenName: nameParts[0] || undefined,
+          familyName: nameParts.slice(1).join(' ') || undefined,
+          email: email.trim() || undefined,
+          phone: phone.trim() || undefined,
+          countryCode: 'US',
+        },
+      };
+      const verificationResult = await withTimeout(
+        payments.verifyBuyer(result.token, verificationDetails),
+        20000,
+        'Buyer verification timed out. Please try again.'
+      );
+      const verificationToken = verificationResult?.token || verificationResult?.verificationToken;
+      if (!verificationToken) {
+        throw new Error('Buyer verification failed. Please try again.');
+      }
+      const checkoutAttemptId = resolveCheckoutAttemptId();
 
       // Call the parent's onPledge with the token
       await onPledge({
@@ -174,12 +263,16 @@ export const PizzaPledgeForm = ({ onPledge, loading = false, selectedTier }) => 
         discountCode: isDiscountValid ? discountCode.trim() : null,
         discountAmount: isDiscountValid ? Math.round(discountAmount * 100) : 0,
         sourceId: result.token,
+        verificationToken,
+        checkoutAttemptId,
         selectedTier: selectedTier || null,
       });
+      clearCheckoutAttempt();
 
       // Success - parent will handle the toast and reset
     } catch (error) {
       console.error('Payment error:', error);
+      setPaymentError(error.message || 'Payment failed. Please try again.');
       showToast('Payment failed', error.message || 'Please try again', 'destructive');
     } finally {
       setSubmitting(false);
@@ -351,8 +444,26 @@ export const PizzaPledgeForm = ({ onPledge, loading = false, selectedTier }) => 
                     : 'Preparing secure payment form...'}
                 </p>
               )}
-              {(cardError || paymentsError) && (
-                <p className="text-sm text-red-600">{cardError || paymentsError}</p>
+              {(cardError || paymentsError || paymentError) && (
+                <div className="space-y-2 text-sm text-red-600">
+                  <p>{cardError || paymentsError || paymentError}</p>
+                  <button
+                    type="button"
+                    className="underline text-xs"
+                    onClick={buildFallbackLink}
+                    disabled={fallbackStatus.loading}
+                  >
+                    {fallbackStatus.loading ? 'Building hosted checkout...' : 'Use hosted Square checkout'}
+                  </button>
+                  {fallbackStatus.error && (
+                    <p className="text-xs text-red-600">{fallbackStatus.error}</p>
+                  )}
+                  {fallbackUrl && (
+                    <p className="text-xs">
+                      <a href={fallbackUrl} target="_blank" rel="noopener noreferrer">Open hosted checkout</a>
+                    </p>
+                  )}
+                </div>
               )}
             </div>
           </div>

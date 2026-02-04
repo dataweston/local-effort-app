@@ -14,6 +14,11 @@ type SquareCard = {
 
 type SquarePayments = {
   card: (options?: Record<string, unknown>) => Promise<SquareCard>;
+  verifyBuyer?: (token: string, details: Record<string, unknown>) => Promise<{
+    token?: string;
+    verificationToken?: string;
+    errors?: Array<{ message?: string; code?: string }>;
+  }>;
 };
 
 type SquareEnvironment = 'sandbox' | 'production';

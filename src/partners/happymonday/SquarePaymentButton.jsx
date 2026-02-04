@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { X, CreditCard, AlertCircle } from 'lucide-react';
 import { useSquarePayments } from '../../lib/useSquarePayments';
 import { recordSquarePayment } from './supabaseClient';
+import { getOrCreateCheckoutAttemptId, clearCheckoutAttemptId } from '../../lib/checkoutAttemptId';
 
 const SquarePaymentButton = ({ userId, currentBalance, onClose, onSuccess }) => {
   const { payments, loading: sdkLoading, error: sdkError } = useSquarePayments();
@@ -9,6 +10,10 @@ const SquarePaymentButton = ({ userId, currentBalance, onClose, onSuccess }) => 
   const [amount, setAmount] = useState('');
   const [processing, setProcessing] = useState(false);
   const [error, setError] = useState(null);
+  const [fallbackUrl, setFallbackUrl] = useState('');
+  const [fallbackStatus, setFallbackStatus] = useState({ loading: false, error: '' });
+  const checkoutAttemptRef = useRef('');
+  const attemptStorageKey = 'le:checkoutAttempt:happymonday';
 
   // Calculate suggested payment amount (balance due)
   const balanceDue = Math.max(0, currentBalance);
@@ -37,6 +42,47 @@ const SquarePaymentButton = ({ userId, currentBalance, onClose, onSuccess }) => 
     };
   }, [payments]);
 
+  const withTimeout = useCallback((promise, ms, message) => {
+    let timer;
+    const timeout = new Promise((_, reject) => {
+      timer = setTimeout(() => reject(new Error(message)), ms);
+    });
+    return Promise.race([promise, timeout]).finally(() => {
+      if (timer) clearTimeout(timer);
+    });
+  }, []);
+
+  const resolveCheckoutAttemptId = useCallback(() => {
+    if (checkoutAttemptRef.current) return checkoutAttemptRef.current;
+    const next = getOrCreateCheckoutAttemptId(attemptStorageKey);
+    checkoutAttemptRef.current = next;
+    return next;
+  }, []);
+
+  const clearCheckoutAttempt = useCallback(() => {
+    checkoutAttemptRef.current = '';
+    clearCheckoutAttemptId(attemptStorageKey);
+  }, []);
+
+  const buildFallbackLink = useCallback(async () => {
+    if (fallbackStatus.loading) return;
+    setFallbackStatus({ loading: true, error: '' });
+    try {
+      const amountCents = Math.round(parseFloat(amount || suggestedAmount) * 100);
+      const response = await fetch('/api/happymonday/payment-link', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId, amountCents }),
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(data?.error || 'Unable to create hosted checkout.');
+      setFallbackUrl(data?.url || '');
+      setFallbackStatus({ loading: false, error: '' });
+    } catch (err) {
+      setFallbackStatus({ loading: false, error: err?.message || 'Unable to create hosted checkout.' });
+    }
+  }, [fallbackStatus.loading, amount, suggestedAmount, userId]);
+
   const handlePayment = async () => {
     if (!card || !amount || parseFloat(amount) <= 0) {
       setError('Please enter a valid payment amount');
@@ -48,11 +94,37 @@ const SquarePaymentButton = ({ userId, currentBalance, onClose, onSuccess }) => 
 
     try {
       // Tokenize card
-      const tokenResult = await card.tokenize();
+      const tokenResult = await withTimeout(
+        card.tokenize(),
+        20000,
+        'Card verification timed out. Please try again.'
+      );
 
       if (tokenResult.status === 'OK') {
         const token = tokenResult.token;
         const amountCents = Math.round(parseFloat(amount) * 100);
+        if (!payments || typeof payments.verifyBuyer !== 'function') {
+          throw new Error('Buyer verification unavailable. Please try hosted checkout.');
+        }
+        const verificationDetails = {
+          amount: (amountCents / 100).toFixed(2),
+          currencyCode: 'USD',
+          intent: 'CHARGE',
+          billingContact: {
+            email: '',
+            countryCode: 'US',
+          },
+        };
+        const verificationResult = await withTimeout(
+          payments.verifyBuyer(token, verificationDetails),
+          20000,
+          'Buyer verification timed out. Please try again.'
+        );
+        const verificationToken = verificationResult?.token || verificationResult?.verificationToken;
+        if (!verificationToken) {
+          throw new Error('Buyer verification failed. Please try again.');
+        }
+        const checkoutAttemptId = resolveCheckoutAttemptId();
 
         // Send payment to backend
         const response = await fetch('/api/happymonday/process-payment', {
@@ -62,6 +134,8 @@ const SquarePaymentButton = ({ userId, currentBalance, onClose, onSuccess }) => 
             userId,
             token,
             amountCents,
+            verificationToken,
+            checkoutAttemptId,
           }),
         });
 
@@ -73,6 +147,7 @@ const SquarePaymentButton = ({ userId, currentBalance, onClose, onSuccess }) => 
 
         // Payment successful
         alert(`Payment of $${amount} processed successfully!`);
+        clearCheckoutAttempt();
         onSuccess();
       } else {
         const errorMessages = (tokenResult.errors || [])
@@ -151,6 +226,22 @@ const SquarePaymentButton = ({ userId, currentBalance, onClose, onSuccess }) => 
             <div>
               <p className="text-sm font-medium text-red-800">Payment Form Error</p>
               <p className="text-sm text-red-700">{sdkError}</p>
+              <button
+                type="button"
+                className="mt-2 text-xs text-red-700 underline"
+                onClick={buildFallbackLink}
+                disabled={fallbackStatus.loading}
+              >
+                {fallbackStatus.loading ? 'Building hosted checkout...' : 'Use hosted Square checkout'}
+              </button>
+              {fallbackStatus.error && (
+                <p className="text-xs text-red-700">{fallbackStatus.error}</p>
+              )}
+              {fallbackUrl && (
+                <p className="text-xs">
+                  <a href={fallbackUrl} target="_blank" rel="noopener noreferrer">Open hosted checkout</a>
+                </p>
+              )}
             </div>
           </div>
         )}
@@ -171,7 +262,25 @@ const SquarePaymentButton = ({ userId, currentBalance, onClose, onSuccess }) => 
         {error && (
           <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg flex items-start gap-2">
             <AlertCircle size={20} className="text-red-600 flex-shrink-0 mt-0.5" />
-            <p className="text-sm text-red-700">{error}</p>
+            <div>
+              <p className="text-sm text-red-700">{error}</p>
+              <button
+                type="button"
+                className="mt-2 text-xs text-red-700 underline"
+                onClick={buildFallbackLink}
+                disabled={fallbackStatus.loading}
+              >
+                {fallbackStatus.loading ? 'Building hosted checkout...' : 'Use hosted Square checkout'}
+              </button>
+              {fallbackStatus.error && (
+                <p className="text-xs text-red-700">{fallbackStatus.error}</p>
+              )}
+              {fallbackUrl && (
+                <p className="text-xs">
+                  <a href={fallbackUrl} target="_blank" rel="noopener noreferrer">Open hosted checkout</a>
+                </p>
+              )}
+            </div>
           </div>
         )}
 

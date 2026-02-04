@@ -10,7 +10,7 @@
  */
 
 require('dotenv').config();
-const { addPizzaBackerToBrevo } = require('../api/_lib/brevo');
+const { addPizzaBackerToBrevo } = require('../api-handlers/_lib/brevo');
 
 // Test data (simulates a pizza pledge)
 const testPledgeData = {

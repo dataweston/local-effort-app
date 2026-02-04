@@ -1,4 +1,4 @@
-const handler = require('../api/crowdfund/pizza-feedback');
+const handler = require('../api-handlers/crowdfund/pizza-feedback');
 
 const makeRes = () => {
   const res = {};

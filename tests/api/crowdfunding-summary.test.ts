@@ -27,7 +27,7 @@ describe('crowdfunding summary api', () => {
     const firebaseAdmin = await import('../../packages/lib/firebaseAdmin');
     firebaseAdmin.__setDb(fakeDb);
 
-    const module = await import('../../api/crowdfunding/summary');
+    const module = await import('../../api-handlers/crowdfunding/summary');
     handler = module.default;
 
     app = express();

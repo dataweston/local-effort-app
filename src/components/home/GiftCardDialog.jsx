@@ -1,8 +1,9 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Helmet } from "react-helmet-async";
 import { Gift, Loader2, Mail, MapPin, Sparkles } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "../ui/dialog";
 import { useSquareCard } from "../../hooks/useSquareCard";
+import { getOrCreateCheckoutAttemptId, clearCheckoutAttemptId } from "../../lib/checkoutAttemptId";
 import { cn } from "../../lib/utils";
 import { heroFallbackSrc } from "../../data/cloudinaryContent";
 
@@ -75,11 +76,75 @@ const GiftCardDialog = ({ className = "", autoOpen = false, showTrigger = true, 
   const amountValue = useMemo(() => normalizeAmount(form.amount, form.customAmount), [form.amount, form.customAmount]);
   const canChoosePhysical = amountValue >= 250;
 
-  const { cardLoaded, error: squareError, tokenize, reset: resetSquare } = useSquareCard("#gift-card-card-container", open, [amountValue]);
+  const { cardLoaded, error: squareError, tokenize, verifyBuyer, reset: resetSquare } = useSquareCard("#gift-card-card-container", open, [amountValue]);
+  const checkoutAttemptRef = useRef("");
+  const attemptStorageKey = "le:checkoutAttempt:gift-card";
+  const [fallbackUrl, setFallbackUrl] = useState("");
+  const [fallbackStatus, setFallbackStatus] = useState({ loading: false, error: "" });
+
+  const resolveCheckoutAttemptId = useCallback(() => {
+    if (checkoutAttemptRef.current) return checkoutAttemptRef.current;
+    const next = getOrCreateCheckoutAttemptId(attemptStorageKey);
+    checkoutAttemptRef.current = next;
+    return next;
+  }, []);
+
+  const clearCheckoutAttempt = useCallback(() => {
+    checkoutAttemptRef.current = "";
+    clearCheckoutAttemptId(attemptStorageKey);
+  }, []);
+
+  const buildFallbackLink = useCallback(async () => {
+    if (fallbackStatus.loading) return;
+    setFallbackStatus({ loading: true, error: "" });
+    try {
+      const resolvedAmount = amountValue;
+      const response = await fetch("/api/store/gift-card-link", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          amount: resolvedAmount,
+          cardType: form.cardType,
+          deliveryTarget: form.deliveryTarget,
+          note: form.note,
+          buyer: {
+            name: form.buyerName,
+            email: form.buyerEmail,
+            phone: form.buyerPhone,
+          },
+          recipient: {
+            name: form.recipientName,
+            email: form.recipientEmail,
+            phone: form.recipientPhone,
+          },
+          sendOn: form.sendOn,
+          shipping: form.cardType === "physical"
+            ? {
+                shipTo: form.shipTo,
+                address: {
+                  line1: form.shippingLine1,
+                  line2: form.shippingLine2,
+                  city: form.shippingCity,
+                  state: form.shippingState,
+                  postal: form.shippingPostal,
+                },
+              }
+            : null,
+        }),
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(data?.error || "Unable to create hosted checkout.");
+      setFallbackUrl(data?.url || "");
+      setFallbackStatus({ loading: false, error: "" });
+    } catch (err) {
+      setFallbackStatus({ loading: false, error: err?.message || "Unable to create hosted checkout." });
+    }
+  }, [fallbackStatus.loading, amountValue, form]);
 
   const handleDialogOpenChange = useCallback((nextOpen) => {
     if (!nextOpen) {
       resetSquare();
+      clearCheckoutAttempt();
       setForm(initialForm);
       setStatus("idle");
       setError("");
@@ -174,9 +239,32 @@ const GiftCardDialog = ({ className = "", autoOpen = false, showTrigger = true, 
       setStatus("processing");
       setError("");
       const token = await tokenize();
+      const nameParts = form.buyerName.trim().split(" ");
+      const verificationDetails = {
+        amount: amountValue.toFixed(2),
+        currencyCode: "USD",
+        intent: "CHARGE",
+        billingContact: {
+          givenName: nameParts[0] || undefined,
+          familyName: nameParts.slice(1).join(" ") || undefined,
+          email: form.buyerEmail || undefined,
+          phone: form.buyerPhone || undefined,
+          addressLines: form.cardType === "physical"
+            ? [form.shippingLine1, form.shippingLine2].filter(Boolean)
+            : undefined,
+          city: form.cardType === "physical" ? form.shippingCity || undefined : undefined,
+          state: form.cardType === "physical" ? form.shippingState || undefined : undefined,
+          postalCode: form.cardType === "physical" ? form.shippingPostal || undefined : undefined,
+          countryCode: "US",
+        },
+      };
+      const verificationToken = await verifyBuyer(token, verificationDetails);
+      const checkoutAttemptId = resolveCheckoutAttemptId();
       const payload = {
         amount: resolvedAmount,
         token,
+        verificationToken,
+        checkoutAttemptId,
         cardType,
         deliveryTarget,
         note: form.note,
@@ -225,6 +313,7 @@ const GiftCardDialog = ({ className = "", autoOpen = false, showTrigger = true, 
         sendOn: data.sendOn || sendOnIso,
       });
       setStatus("success");
+      clearCheckoutAttempt();
     } catch (err) {
       setStatus("error");
       setError(err?.message || "Something went wrong while processing your gift card.");
@@ -553,6 +642,28 @@ const GiftCardDialog = ({ className = "", autoOpen = false, showTrigger = true, 
                 <div id="gift-card-card-container" className="min-h-[64px]" />
                 {!cardLoaded && !squareError && <p className="mt-2 text-sm text-slate-500">Loading secure card entry...</p>}
                 {squareError && <p className="mt-2 text-sm text-red-600">{squareError}</p>}
+                {(squareError || status === "error") && (
+                  <div className="mt-2 text-xs text-slate-600 space-y-1">
+                    <button
+                      type="button"
+                      className="underline"
+                      onClick={buildFallbackLink}
+                      disabled={fallbackStatus.loading}
+                    >
+                      {fallbackStatus.loading ? "Building hosted checkout..." : "Use hosted Square checkout"}
+                    </button>
+                    {fallbackStatus.error && (
+                      <p className="text-sm text-red-600">{fallbackStatus.error}</p>
+                    )}
+                    {fallbackUrl && (
+                      <p>
+                        <a href={fallbackUrl} target="_blank" rel="noopener noreferrer">
+                          Open hosted checkout
+                        </a>
+                      </p>
+                    )}
+                  </div>
+                )}
               </div>
               <p className="text-xs text-slate-400">We use Square to process payments securely. The card is charged immediately and refunds are available on request within 14 days (if unused).</p>
             </section>

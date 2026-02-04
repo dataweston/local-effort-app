@@ -1,10 +1,11 @@
-import React, { useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
 import clsx from 'clsx';
 
 import { Button } from '../../components/ui/button';
 import { GROUPED_MENU, MENU_ITEMS, formatCurrency } from './menu';
 import { TIP_OPTIONS, base64UrlEncode, isValidEmail } from './utils';
 import { useSquareCard } from '../../hooks/useSquareCard';
+import { getOrCreateCheckoutAttemptId, clearCheckoutAttemptId } from '../../lib/checkoutAttemptId';
 
 const inputClassName =
   'w-full rounded-md border border-neutral-300 px-3 py-2 text-sm shadow-sm focus:border-accent focus:outline-none focus:ring-2 focus:ring-orange-200';
@@ -72,7 +73,24 @@ const PaikkaCheckout = () => {
     [quantities]
   );
 
-  const { cardLoaded, error: cardError, loadingScript, tokenize } = useSquareCard('#paikka-card-container', true, []);
+  const { cardLoaded, error: cardError, loadingScript, tokenize, verifyBuyer } = useSquareCard('#paikka-card-container', true, []);
+  const checkoutAttemptRef = useRef('');
+  const attemptStorageKey = 'le:checkoutAttempt:paikka';
+  const [fallbackUrl, setFallbackUrl] = useState('');
+  const [fallbackStatus, setFallbackStatus] = useState({ loading: false, error: '' });
+
+  const resolveCheckoutAttemptId = useCallback(() => {
+    if (checkoutAttemptRef.current) return checkoutAttemptRef.current;
+    const next = getOrCreateCheckoutAttemptId(attemptStorageKey);
+    checkoutAttemptRef.current = next;
+    return next;
+  }, []);
+
+  const clearCheckoutAttempt = useCallback(() => {
+    checkoutAttemptRef.current = '';
+    clearCheckoutAttemptId(attemptStorageKey);
+  }, []);
+
   const handleQuantityChange = (sku, delta) => {
     setQuantities((prev) => {
       const current = prev[sku] ?? 0;
@@ -101,6 +119,24 @@ const PaikkaCheckout = () => {
     tipCents,
     discountCode: isDiscountApplied ? validDiscountCode : undefined,
   });
+
+  const buildFallbackLink = useCallback(async () => {
+    if (fallbackStatus.loading) return;
+    setFallbackStatus({ loading: true, error: '' });
+    try {
+      const response = await fetch('/api/paikka/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(buildCheckoutPayload()),
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(data?.error || 'Unable to create hosted checkout.');
+      setFallbackUrl(data?.checkoutUrl || data?.checkout_url || '');
+      setFallbackStatus({ loading: false, error: '' });
+    } catch (err) {
+      setFallbackStatus({ loading: false, error: err?.message || 'Unable to create hosted checkout.' });
+    }
+  }, [fallbackStatus.loading, buildCheckoutPayload]);
 
   const buildEncodedState = () =>
     base64UrlEncode({
@@ -145,11 +181,24 @@ const PaikkaCheckout = () => {
       } catch (tokenErr) {
         throw new Error(tokenErr?.message || 'Unable to verify your card details.');
       }
+      const verificationDetails = {
+        amount: (totalCents / 100).toFixed(2),
+        currencyCode: 'USD',
+        intent: 'CHARGE',
+        billingContact: {
+          givenName: firstName.trim() || undefined,
+          familyName: lastName.trim() || undefined,
+          email: email.trim() || undefined,
+          countryCode: 'US',
+        },
+      };
+      const verificationToken = await verifyBuyer(token, verificationDetails);
+      const checkoutAttemptId = resolveCheckoutAttemptId();
 
       const response = await fetch('/api/paikka/pay', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...buildCheckoutPayload(), token }),
+        body: JSON.stringify({ ...buildCheckoutPayload(), token, verificationToken, checkoutAttemptId }),
       });
 
       const data = await response.json().catch(() => ({}));
@@ -172,6 +221,7 @@ const PaikkaCheckout = () => {
       params.set('state', buildEncodedState());
       params.set('paymentId', paymentReference);
       window.location.href = `/paikka/success?${params.toString()}`;
+      clearCheckoutAttempt();
     } catch (err) {
       console.error('Paikka checkout failed', err);
       setError(err instanceof Error ? err.message : 'Checkout failed. Please try again.');
@@ -453,6 +503,24 @@ const PaikkaCheckout = () => {
                 <p className="text-xs text-neutral-500">Loading secure Square card entry…</p>
               )}
               {cardError && <p className="text-xs text-red-600">{cardError}</p>}
+              {(cardError || error) && (
+                <div className="text-xs text-neutral-600 space-y-1">
+                  <button
+                    type="button"
+                    className="underline"
+                    onClick={buildFallbackLink}
+                    disabled={fallbackStatus.loading}
+                  >
+                    {fallbackStatus.loading ? 'Building hosted checkout...' : 'Use hosted Square checkout'}
+                  </button>
+                  {fallbackStatus.error && <p className="text-xs text-red-600">{fallbackStatus.error}</p>}
+                  {fallbackUrl && (
+                    <p>
+                      <a href={fallbackUrl} target="_blank" rel="noopener noreferrer">Open hosted checkout</a>
+                    </p>
+                  )}
+                </div>
+              )}
             </div>
 
             <div className="space-y-1 text-sm text-neutral-600">

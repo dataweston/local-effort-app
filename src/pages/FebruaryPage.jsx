@@ -4,6 +4,7 @@ import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import ImageZoom from 'react-image-zooom';
 import { useSquareCard } from '../hooks/useSquareCard';
+import { getOrCreateCheckoutAttemptId, clearCheckoutAttemptId } from '../lib/checkoutAttemptId';
 import { SITE_NAME, SITE_URL } from '../config/siteMetadata';
 import '../styles/fullpage-demo-theme.css';
 
@@ -89,6 +90,7 @@ const FebruaryPage = () => {
 
   // Known sold out dates (fallback if API fails in development)
   const KNOWN_SOLD_OUT = ['2026-02-05', '2026-02-26'];
+  const FORCE_AVAILABLE = useMemo(() => [`${year}-02-12`], [year]);
 
   // Fetch booked dates on mount
   useEffect(() => {
@@ -102,24 +104,72 @@ const FebruaryPage = () => {
           console.log('[FebruaryPage] Booked dates:', data.bookedDates);
           // Merge API dates with known sold out dates
           const merged = [...new Set([...(data.bookedDates || []), ...KNOWN_SOLD_OUT])];
-          setBookedDates(merged);
+          const filtered = merged.filter((date) => !FORCE_AVAILABLE.includes(date));
+          setBookedDates(filtered);
         } else {
           console.warn('[FebruaryPage] API response not ok, using fallback');
-          setBookedDates(KNOWN_SOLD_OUT);
+          setBookedDates(KNOWN_SOLD_OUT.filter((date) => !FORCE_AVAILABLE.includes(date)));
         }
       } catch (err) {
         console.warn('[FebruaryPage] Failed to fetch booked dates, using fallback', err);
-        setBookedDates(KNOWN_SOLD_OUT);
+        setBookedDates(KNOWN_SOLD_OUT.filter((date) => !FORCE_AVAILABLE.includes(date)));
       }
     };
     fetchBookedDates();
   }, []);
 
-  const { cardLoaded, error: cardError, loadingScript, tokenize } = useSquareCard(
+  const { cardLoaded, error: cardError, loadingScript, tokenize, verifyBuyer } = useSquareCard(
     '#february-card-container',
     true,
     [] // Don't reinitialize card when date changes
   );
+  const [fallbackUrl, setFallbackUrl] = useState('');
+  const [fallbackStatus, setFallbackStatus] = useState({ loading: false, error: '' });
+  const checkoutAttemptRef = useRef('');
+  const attemptStorageKey = 'le:checkoutAttempt:february';
+
+  const resolveCheckoutAttemptId = useCallback(() => {
+    if (checkoutAttemptRef.current) return checkoutAttemptRef.current;
+    const next = getOrCreateCheckoutAttemptId(attemptStorageKey);
+    checkoutAttemptRef.current = next;
+    return next;
+  }, []);
+
+  const clearCheckoutAttempt = useCallback(() => {
+    checkoutAttemptRef.current = '';
+    clearCheckoutAttemptId(attemptStorageKey);
+  }, []);
+
+  const buildFallbackLink = useCallback(async () => {
+    if (fallbackStatus.loading) return;
+    if (!selectedIso) {
+      setFallbackStatus({ loading: false, error: 'Select a date to build hosted checkout.' });
+      return;
+    }
+    setFallbackStatus({ loading: true, error: '' });
+    try {
+      const response = await fetch('/api/february/payment-link', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          date: selectedIso,
+          guestCount: totalGuests,
+          preferredTime,
+          customer,
+          address,
+          dietaryNotes,
+          notes,
+        }),
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(data?.error || 'Unable to create hosted checkout.');
+      setFallbackUrl(data?.url || '');
+    } catch (err) {
+      setFallbackStatus({ loading: false, error: err?.message || 'Unable to create hosted checkout.' });
+      return;
+    }
+    setFallbackStatus({ loading: false, error: '' });
+  }, [fallbackStatus.loading, selectedIso, totalGuests, preferredTime, customer, address, dietaryNotes, notes]);
 
   const totalGuests = clampGuests(guestCount);
   const totalCents = getPartyPrice(totalGuests);
@@ -224,6 +274,24 @@ const FebruaryPage = () => {
 
     try {
       const token = await tokenize();
+      const verificationDetails = {
+        amount: (totalCents / 100).toFixed(2),
+        currencyCode: 'USD',
+        intent: 'CHARGE',
+        billingContact: {
+          givenName: customer?.name?.split(' ')?.[0] || undefined,
+          familyName: customer?.name?.split(' ')?.slice(1).join(' ') || undefined,
+          email: customer?.email || undefined,
+          phone: customer?.phone || undefined,
+          addressLines: [address?.line1, address?.line2].filter(Boolean),
+          city: address?.city || undefined,
+          state: address?.state || undefined,
+          postalCode: address?.postal || undefined,
+          countryCode: 'US',
+        },
+      };
+      const verificationToken = await verifyBuyer(token, verificationDetails);
+      const checkoutAttemptId = resolveCheckoutAttemptId();
       const payload = {
         date: selectedIso,
         guestCount: totalGuests,
@@ -233,6 +301,8 @@ const FebruaryPage = () => {
         customer,
         address,
         token,
+        verificationToken,
+        checkoutAttemptId,
       };
 
       const response = await fetch('/api/february/checkout', {
@@ -248,6 +318,7 @@ const FebruaryPage = () => {
       setPaymentId(data?.paymentId || '');
       setEmailStatus(data?.emailStatus || null);
       setStatus('success');
+      clearCheckoutAttempt();
     } catch (err) {
       setStatus('error');
       setError(err?.message || 'Unable to complete booking.');
@@ -596,6 +667,24 @@ const FebruaryPage = () => {
                     <div id="february-card-container" className="february-card-container" />
                     {loadingScript && <div className="february-payment-status">Loading secure payment form...</div>}
                     {cardError && <div className="february-payment-error">{cardError}</div>}
+                    {(cardError || status === 'error') && (
+                      <div className="february-payment-status">
+                        <button
+                          type="button"
+                          className="february-link-button"
+                          onClick={buildFallbackLink}
+                          disabled={fallbackStatus.loading}
+                        >
+                          {fallbackStatus.loading ? 'Building hosted checkout...' : 'Use hosted Square checkout'}
+                        </button>
+                        {fallbackStatus.error && <div className="february-payment-error">{fallbackStatus.error}</div>}
+                        {fallbackUrl && (
+                          <div>
+                            <a href={fallbackUrl} target="_blank" rel="noopener noreferrer">Open hosted checkout</a>
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </div>
                 {error && <div className="february-error">{error}</div>}

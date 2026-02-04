@@ -33,7 +33,7 @@ describe('square webhook handler', () => {
     const firebaseAdmin = await import('../../packages/lib/firebaseAdmin');
     firebaseAdmin.__setDb(fakeDb);
 
-    const module = await import('../../api/square/webhook');
+    const module = await import('../../api-handlers/square/webhook');
     handler = module.default;
 
     app = express();

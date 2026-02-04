@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import { X, Check, Loader2 } from 'lucide-react';
 import { useSquareCard } from '../../hooks/useSquareCard';
+import { getOrCreateCheckoutAttemptId, clearCheckoutAttemptId } from '../../lib/checkoutAttemptId';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import { Textarea } from '../ui/textarea';
@@ -33,11 +34,55 @@ const DinnerRegistrationModal = ({ isOpen, onClose }) => {
   const [showSuccess, setShowSuccess] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
 
-  const { cardLoaded, error: cardError, loadingScript, tokenize, reset } = useSquareCard(
+  const { cardLoaded, error: cardError, loadingScript, tokenize, verifyBuyer, reset } = useSquareCard(
     '#winter-dinner-card-container',
     isOpen && !showSuccess,
     [isOpen, showSuccess]
   );
+  const checkoutAttemptRef = useRef('');
+  const attemptStorageKey = 'le:checkoutAttempt:winter-dinner';
+  const [fallbackUrl, setFallbackUrl] = useState('');
+  const [fallbackStatus, setFallbackStatus] = useState({ loading: false, error: '' });
+
+  const resolveCheckoutAttemptId = useCallback(() => {
+    if (checkoutAttemptRef.current) return checkoutAttemptRef.current;
+    const next = getOrCreateCheckoutAttemptId(attemptStorageKey);
+    checkoutAttemptRef.current = next;
+    return next;
+  }, []);
+
+  const clearCheckoutAttempt = useCallback(() => {
+    checkoutAttemptRef.current = '';
+    clearCheckoutAttemptId(attemptStorageKey);
+  }, []);
+
+  const buildFallbackLink = useCallback(async () => {
+    if (fallbackStatus.loading) return;
+    setFallbackStatus({ loading: true, error: '' });
+    try {
+      const response = await fetch('/api/winter-dinner/payment-link', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          customer: {
+            name: formData.name,
+            email: formData.email,
+            phone: formData.phone,
+          },
+          dietaryRestrictions: formData.dietaryRestrictions,
+          drinkMenu: formData.drinkMenu,
+          quantity: formData.quantity,
+          amount: totalAmount,
+        }),
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(data?.error || 'Unable to create hosted checkout.');
+      setFallbackUrl(data?.url || '');
+      setFallbackStatus({ loading: false, error: '' });
+    } catch (err) {
+      setFallbackStatus({ loading: false, error: err?.message || 'Unable to create hosted checkout.' });
+    }
+  }, [fallbackStatus.loading, formData, totalAmount]);
 
   useEffect(() => {
     if (!isOpen) {
@@ -111,6 +156,21 @@ const DinnerRegistrationModal = ({ isOpen, onClose }) => {
     try {
       // Tokenize the card
       const token = await tokenize();
+      const nameParts = formData.name.trim().split(' ');
+      const verificationDetails = {
+        amount: (totalAmount / 100).toFixed(2),
+        currencyCode: 'USD',
+        intent: 'CHARGE',
+        billingContact: {
+          givenName: nameParts[0] || undefined,
+          familyName: nameParts.slice(1).join(' ') || undefined,
+          email: formData.email || undefined,
+          phone: formData.phone || undefined,
+          countryCode: 'US',
+        },
+      };
+      const verificationToken = await verifyBuyer(token, verificationDetails);
+      const checkoutAttemptId = resolveCheckoutAttemptId();
 
       // Submit to backend
       const response = await fetch('/api/winter-dinner/checkout', {
@@ -125,6 +185,8 @@ const DinnerRegistrationModal = ({ isOpen, onClose }) => {
           dietaryRestrictions: formData.dietaryRestrictions,
           drinkMenu: formData.drinkMenu,
           token,
+          verificationToken,
+          checkoutAttemptId,
           quantity: formData.quantity,
           amount: totalAmount,
         }),
@@ -138,6 +200,7 @@ const DinnerRegistrationModal = ({ isOpen, onClose }) => {
 
       // Show success
       setShowSuccess(true);
+      clearCheckoutAttempt();
     } catch (err) {
       console.error('Payment error:', err);
       setErrorMessage(err.message || 'Payment failed. Please try again.');
@@ -148,6 +211,7 @@ const DinnerRegistrationModal = ({ isOpen, onClose }) => {
   const handleClose = () => {
     if (!isProcessing) {
       reset();
+      clearCheckoutAttempt();
       onClose();
     }
   };
@@ -376,6 +440,28 @@ const DinnerRegistrationModal = ({ isOpen, onClose }) => {
                   )}
                   {cardError && (
                     <p className="text-sm text-red-600">{cardError}</p>
+                  )}
+                  {(cardError || errorMessage) && (
+                    <div className="text-xs text-gray-600 space-y-1">
+                      <button
+                        type="button"
+                        className="underline"
+                        onClick={buildFallbackLink}
+                        disabled={fallbackStatus.loading}
+                      >
+                        {fallbackStatus.loading ? 'Building hosted checkout...' : 'Use hosted Square checkout'}
+                      </button>
+                      {fallbackStatus.error && (
+                        <p className="text-sm text-red-600">{fallbackStatus.error}</p>
+                      )}
+                      {fallbackUrl && (
+                        <p>
+                          <a href={fallbackUrl} target="_blank" rel="noopener noreferrer">
+                            Open hosted checkout
+                          </a>
+                        </p>
+                      )}
+                    </div>
                   )}
                 </div>
               </div>

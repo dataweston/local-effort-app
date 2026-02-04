@@ -6,7 +6,7 @@
 import 'dotenv/config';
 import assert from 'node:assert';
 import http from 'node:http';
-import { processSaleOrder, extractSaleOrder, type PaymentObject } from '../api/square/webhook';
+import { processSaleOrder, extractSaleOrder, type PaymentObject } from '../api-handlers/square/webhook';
 
 async function tryRevalidateDirect(saleSlug: string): Promise<boolean> {
   const target = process.env.SALE_REVALIDATE_URL;

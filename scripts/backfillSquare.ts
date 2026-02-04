@@ -1,6 +1,6 @@
 import fetch from 'node-fetch';
 import { applyCompletedPayment } from '../packages/lib/crowdfundingPipeline';
-import { applyCompletedPayment } from '../api/square/webhook';
+import { applyCompletedPayment } from '../api-handlers/square/webhook';
 import { db } from '../packages/lib/firebaseAdmin';
 
 const BASE_URL = process.env.SQUARE_ENV === 'production'

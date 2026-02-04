@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSquareCard } from '../hooks/useSquareCard';
+import { getOrCreateCheckoutAttemptId, clearCheckoutAttemptId } from '../lib/checkoutAttemptId';
 
 // Fetch up to 8 images tagged 'pizza' using existing API (uses tag expansion logic)
 async function fetchPizzaImages(setter, setError, setLoading) {
@@ -159,7 +160,19 @@ const PizzaPartyPage = () => {
   const [showModal, setShowModal] = useState(false);
   const [selectedDate, setSelectedDate] = useState(null);
   const squareEnabled = showModal; // we initialize after modal mounts
-  const { cardLoaded, error: cardError, loadingScript, tokenize, reset, envInfo } = useSquareCard('#pp-card-container', squareEnabled, [squareEnabled]);
+  const { cardLoaded, error: cardError, loadingScript, tokenize, verifyBuyer, reset, envInfo } = useSquareCard('#pp-card-container', squareEnabled, [squareEnabled]);
+  const checkoutAttemptRef = useRef('');
+  const attemptStorageKey = 'le:checkoutAttempt:pizza-party';
+  const resolveCheckoutAttemptId = useCallback(() => {
+    if (checkoutAttemptRef.current) return checkoutAttemptRef.current;
+    const next = getOrCreateCheckoutAttemptId(attemptStorageKey);
+    checkoutAttemptRef.current = next;
+    return next;
+  }, []);
+  const clearCheckoutAttempt = useCallback(() => {
+    checkoutAttemptRef.current = '';
+    clearCheckoutAttemptId(attemptStorageKey);
+  }, []);
   const [bookedDate, setBookedDate] = useState(null);
   const [justBooked, setJustBooked] = useState(false); // differentiate newly booked success for banner animation
   const [email, setEmail] = useState('');
@@ -325,6 +338,7 @@ const PizzaPartyPage = () => {
     setEmail('');
     setAddOnEnabled(false);
     setGuestCount(10);
+    clearCheckoutAttempt();
   };
   const submitBooking = async () => {
     if (!selectedDate) return;
@@ -341,6 +355,29 @@ const PizzaPartyPage = () => {
     try {
       let token;
       try { token = await tokenize(); } catch (e) { throw new Error(e?.message || 'Card not ready'); }
+      const basePriceCents = 30000;
+      const addOnPricePerGuestCents = 900;
+      const guestsInt = addOnEnabled ? guestCount : 0;
+      const amountCents = basePriceCents + (guestsInt > 0 ? guestsInt * addOnPricePerGuestCents : 0);
+      const nameParts = fullName.trim().split(' ');
+      const verificationDetails = {
+        amount: (amountCents / 100).toFixed(2),
+        currencyCode: 'USD',
+        intent: 'CHARGE',
+        billingContact: {
+          givenName: nameParts[0] || undefined,
+          familyName: nameParts.slice(1).join(' ') || undefined,
+          email: email.trim() || undefined,
+          phone: phone.trim() || undefined,
+          addressLines: [address?.line1, address?.line2].filter(Boolean),
+          city: address?.city || undefined,
+          state: address?.state || undefined,
+          postalCode: address?.postal || undefined,
+          countryCode: 'US',
+        },
+      };
+      const verificationToken = await verifyBuyer(token, verificationDetails);
+      const checkoutAttemptId = resolveCheckoutAttemptId();
       const res = await fetch('/api/store/pizza-party-checkout', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
@@ -351,11 +388,13 @@ const PizzaPartyPage = () => {
             phone: phone.trim(),
             address,
             mealTime,
-            pizzaRequests,
+          pizzaRequests,
           addOnGuests: addOnEnabled ? guestCount : 0,
           token,
-          basePriceCents: 30000,
-          addOnPricePerGuestCents: 900
+          verificationToken,
+          checkoutAttemptId,
+          basePriceCents,
+          addOnPricePerGuestCents
         })
       });
       const data = await res.json().catch(() => ({}));
@@ -364,6 +403,7 @@ const PizzaPartyPage = () => {
       setBookedDate(date);
       setJustBooked(true);
       closeModal();
+      clearCheckoutAttempt();
       // Fire-and-forget receipt email
       try {
         fetch('/api/store/pizza-party-receipt', {
@@ -675,12 +715,12 @@ const PizzaPartyPage = () => {
                     {loadingScript ? 'Loading payment library…' : 'Initializing secure payment form…'}
                   </p>
                 )}
-                {cardError && (
-                  <div className="mt-2 text-[10px] text-rose-600 space-y-1">
-                    <p>{cardError}</p>
-                    <FallbackLink date={selectedDate} email={email} addOnGuests={addOnEnabled ? guestCount : 0} />
-                  </div>
-                )}
+              {(cardError || (selectedDate && bookingState[selectedDate]?.error)) && (
+                <div className="mt-2 text-[10px] text-rose-600 space-y-1">
+                  {cardError && <p>{cardError}</p>}
+                  <FallbackLink date={selectedDate} email={email} addOnGuests={addOnEnabled ? guestCount : 0} />
+                </div>
+              )}
               </div>
             </motion.div>
           </motion.div>

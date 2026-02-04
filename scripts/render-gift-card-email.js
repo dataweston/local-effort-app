@@ -4,7 +4,7 @@ const path = require('path');
 
 const {
   buildRecipientHtml,
-} = require('../api/store/gift-card-email');
+} = require('../api-handlers/store/gift-card-email');
 
 const outputPath = path.resolve(__dirname, '../emails/digital-gift-card-demo.html');
 

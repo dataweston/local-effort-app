@@ -2,7 +2,7 @@ import express from 'express';
 import request from 'supertest';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { createCrowdfundingRouter } from '../crowdfunding';
-import { __dangerous__clearSquareDiscountCache } from '../../../../api/crowdfund/_lib/discountCodes';
+import { __dangerous__clearSquareDiscountCache } from '../../../../api-handlers/crowdfund/_lib/discountCodes';
 
 describe('crowdfunding router', () => {
   beforeEach(() => {

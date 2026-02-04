@@ -29,25 +29,33 @@ const path = require('path');
 const { logger } = require('./logger');
 const { createBrevoService } = require('./services/brevo');
 const { createCrowdfundingRouter } = require('./routes/crowdfunding');
-const crowdfundCheckoutHandler = require('../../api/crowdfund/checkout');
-const crowdfundFeedbackHandler = require('../../api/crowdfund/feedback');
-const storeCheckoutHandler = require('../../api/store/checkout');
-const giftCardCheckoutHandler = require('../../api/store/gift-card-checkout');
-const pizzaPartyCheckoutHandler = require('../../api/store/pizza-party-checkout');
-const pizzaPartyStatusHandler = require('../../api/store/pizza-party-status');
-const pizzaPartyReceiptHandler = require('../../api/store/pizza-party-receipt');
-const pizzaPartyLinkHandler = require('../../api/store/pizza-party-link');
-const pizzaPartyBookingsHandler = require('../../api/store/pizza-party-bookings');
-const storeProductsHandler = require('../../api/store/products');
-const storeSyncSquareHandler = require('../../api/store/sync-square');
-const salesProxyHandler = require('../../api/sales-proxy');
-const paikkaCheckoutHandler = require('../../api/paikka/checkout');
-const paikkaPayHandler = require('../../api/paikka/pay');
-const paikkaFinalizeHandler = require('../../api/paikka/finalize');
-const paikkaResendHandler = require('../../api/paikka/resend');
-const winterDinnerCheckoutHandler = require('../../api/winter-dinner/checkout');
-const februaryBookedDatesHandler = require('../../api/february/booked-dates');
-const februaryCheckoutHandler = require('../../api/february/checkout');
+const crowdfundCheckoutHandler = require('../../api-handlers/crowdfund/checkout');
+const crowdfundFeedbackHandler = require('../../api-handlers/crowdfund/feedback');
+const storeCheckoutHandler = require('../../api-handlers/store/checkout');
+const giftCardCheckoutHandler = require('../../api-handlers/store/gift-card-checkout');
+const pizzaPartyCheckoutHandler = require('../../api-handlers/store/pizza-party-checkout');
+const pizzaPartyStatusHandler = require('../../api-handlers/store/pizza-party-status');
+const pizzaPartyReceiptHandler = require('../../api-handlers/store/pizza-party-receipt');
+const pizzaPartyLinkHandler = require('../../api-handlers/store/pizza-party-link');
+const pizzaPartyBookingsHandler = require('../../api-handlers/store/pizza-party-bookings');
+const storeProductsHandler = require('../../api-handlers/store/products');
+const storeSyncSquareHandler = require('../../api-handlers/store/sync-square');
+const giftCardLinkHandler = require('../../api-handlers/store/gift-card-link');
+const salesProxyHandler = require('../../api-handlers/sales-proxy');
+const paikkaCheckoutHandler = require('../../api-handlers/paikka/checkout');
+const paikkaPayHandler = require('../../api-handlers/paikka/pay');
+const paikkaFinalizeHandler = require('../../api-handlers/paikka/finalize');
+const paikkaResendHandler = require('../../api-handlers/paikka/resend');
+const winterDinnerCheckoutHandler = require('../../api-handlers/winter-dinner/checkout');
+const winterDinnerPaymentLinkHandler = require('../../api-handlers/winter-dinner/payment-link');
+const februaryBookedDatesHandler = require('../../api-handlers/february/booked-dates');
+const februaryCheckoutHandler = require('../../api-handlers/february/checkout');
+const februaryPaymentLinkHandler = require('../../api-handlers/february/payment-link');
+const weeklyOrderCheckoutLinkHandler = require('../../api-handlers/weekly-order/checkout-link');
+const pizzafunderPaymentLinkHandler = require('../../api-handlers/pizzafunder/payment-link');
+const foodTruckDepositLinkHandler = require('../../api-handlers/food-truck/deposit-link');
+const happymondayProcessPaymentHandler = require('../../api-handlers/happymonday/process-payment');
+const happymondayPaymentLinkHandler = require('../../api-handlers/happymonday/payment-link');
 const { createMessagesRouter } = require('./routes/messages');
 const { createSmallEventsRouter } = require('./routes/smallEvents');
 const {
@@ -81,7 +89,7 @@ try {
 } catch (err) {
   console.warn('Square SDK not available or failed to load:', err && err.message);
 }
-const { getFirebaseAdmin } = require('../../api/_lib/firebaseAdmin');
+const { getFirebaseAdmin } = require('../../api-handlers/_lib/firebaseAdmin');
 const firebaseAdminResources = (() => {
   try {
     return getFirebaseAdmin();
@@ -381,9 +389,9 @@ app.all('/api/crowdfund/feedback', async (req, res, next) => {
 });
 
 // --- PizzaFunder Routes ---
-const pizzafunderPledgeHandler = require('../../api/pizzafunder/pledge');
-const pizzafunderStatusHandler = require('../../api/pizzafunder/status');
-const pizzafunderFeedbackHandler = require('../../api/pizzafunder/feedback');
+const pizzafunderPledgeHandler = require('../../api-handlers/pizzafunder/pledge');
+const pizzafunderStatusHandler = require('../../api-handlers/pizzafunder/status');
+const pizzafunderFeedbackHandler = require('../../api-handlers/pizzafunder/feedback');
 
 app.all('/api/pizzafunder/pledge', async (req, res, next) => {
   try {
@@ -412,6 +420,15 @@ app.all('/api/pizzafunder/feedback', async (req, res, next) => {
   }
 });
 
+app.all('/api/pizzafunder/payment-link', async (req, res, next) => {
+  try {
+    await pizzafunderPaymentLinkHandler(req, res);
+  } catch (err) {
+    logger.error({ err, method: req.method }, 'pizzafunder payment link handler failed');
+    next(err);
+  }
+});
+
 app.all('/api/sales-proxy', async (req, res, next) => {
   try {
     await salesProxyHandler(req, res);
@@ -435,6 +452,15 @@ app.all('/api/store/gift-card-checkout', async (req, res, next) => {
     await giftCardCheckoutHandler(req, res);
   } catch (err) {
     logger.error({ err, method: req.method }, 'gift-card checkout handler failed');
+    next(err);
+  }
+});
+
+app.all('/api/store/gift-card-link', async (req, res, next) => {
+  try {
+    await giftCardLinkHandler(req, res);
+  } catch (err) {
+    logger.error({ err, method: req.method }, 'gift-card link handler failed');
     next(err);
   }
 });
@@ -502,6 +528,24 @@ app.all('/api/store/sync-square', async (req, res, next) => {
   }
 });
 
+app.all('/api/happymonday/process-payment', async (req, res, next) => {
+  try {
+    await happymondayProcessPaymentHandler(req, res);
+  } catch (err) {
+    logger.error({ err, method: req.method }, 'happymonday process-payment handler failed');
+    next(err);
+  }
+});
+
+app.all('/api/happymonday/payment-link', async (req, res, next) => {
+  try {
+    await happymondayPaymentLinkHandler(req, res);
+  } catch (err) {
+    logger.error({ err, method: req.method }, 'happymonday payment-link handler failed');
+    next(err);
+  }
+});
+
 app.all('/api/paikka/checkout', async (req, res, next) => {
   try {
     await paikkaCheckoutHandler(req, res);
@@ -547,6 +591,15 @@ app.all('/api/winter-dinner/checkout', async (req, res, next) => {
   }
 });
 
+app.all('/api/winter-dinner/payment-link', async (req, res, next) => {
+  try {
+    await winterDinnerPaymentLinkHandler(req, res);
+  } catch (err) {
+    logger.error({ err, method: req.method }, 'winter dinner payment link handler failed');
+    next(err);
+  }
+});
+
 app.all('/api/february/booked-dates', async (req, res, next) => {
   try {
     await februaryBookedDatesHandler(req, res);
@@ -561,6 +614,15 @@ app.all('/api/february/checkout', async (req, res, next) => {
     await februaryCheckoutHandler(req, res);
   } catch (err) {
     logger.error({ err, method: req.method }, 'february checkout handler failed');
+    next(err);
+  }
+});
+
+app.all('/api/february/payment-link', async (req, res, next) => {
+  try {
+    await februaryPaymentLinkHandler(req, res);
+  } catch (err) {
+    logger.error({ err, method: req.method }, 'february payment link handler failed');
     next(err);
   }
 });
@@ -604,7 +666,7 @@ app.all('/api/sanity-query', async (req, res) => {
 
 app.all('/api/weekly-order/active', async (req, res, next) => {
   try {
-    await require('../../api/weekly-order/active')(req, res);
+    await require('../../api-handlers/weekly-order/active')(req, res);
   } catch (err) {
     logger.error({ err, method: req.method }, 'weekly order active handler failed');
     next(err);
@@ -613,16 +675,25 @@ app.all('/api/weekly-order/active', async (req, res, next) => {
 
 app.all('/api/weekly-order/checkout', async (req, res, next) => {
   try {
-    await require('../../api/weekly-order/checkout')(req, res);
+    await require('../../api-handlers/weekly-order/checkout')(req, res);
   } catch (err) {
     logger.error({ err, method: req.method }, 'weekly order checkout handler failed');
     next(err);
   }
 });
 
+app.all('/api/weekly-order/checkout-link', async (req, res, next) => {
+  try {
+    await weeklyOrderCheckoutLinkHandler(req, res);
+  } catch (err) {
+    logger.error({ err, method: req.method }, 'weekly order checkout link handler failed');
+    next(err);
+  }
+});
+
 app.all('/api/recipes/ingest', async (req, res, next) => {
   try {
-    await require('../../api/recipes/ingest')(req, res);
+    await require('../../api-handlers/recipes/ingest')(req, res);
   } catch (err) {
     logger.error({ err, method: req.method }, 'recipe ingest handler failed');
     next(err);
@@ -631,7 +702,7 @@ app.all('/api/recipes/ingest', async (req, res, next) => {
 
 app.all('/api/weekly-order/admin/ingests', async (req, res, next) => {
   try {
-    await require('../../api/weekly-order/admin/ingests')(req, res);
+    await require('../../api-handlers/weekly-order/admin/ingests')(req, res);
   } catch (err) {
     logger.error({ err, method: req.method }, 'weekly order ingests handler failed');
     next(err);
@@ -640,7 +711,7 @@ app.all('/api/weekly-order/admin/ingests', async (req, res, next) => {
 
 app.all('/api/weekly-order/admin/drafts', async (req, res, next) => {
   try {
-    await require('../../api/weekly-order/admin/drafts')(req, res);
+    await require('../../api-handlers/weekly-order/admin/drafts')(req, res);
   } catch (err) {
     logger.error({ err, method: req.method }, 'weekly order drafts handler failed');
     next(err);
@@ -649,7 +720,7 @@ app.all('/api/weekly-order/admin/drafts', async (req, res, next) => {
 
 app.all('/api/weekly-order/admin/dishes', async (req, res, next) => {
   try {
-    await require('../../api/weekly-order/admin/dishes')(req, res);
+    await require('../../api-handlers/weekly-order/admin/dishes')(req, res);
   } catch (err) {
     logger.error({ err, method: req.method }, 'weekly order dishes handler failed');
     next(err);
@@ -658,7 +729,7 @@ app.all('/api/weekly-order/admin/dishes', async (req, res, next) => {
 
 app.all('/api/weekly-order/admin/menu-weeks', async (req, res, next) => {
   try {
-    await require('../../api/weekly-order/admin/menu-weeks')(req, res);
+    await require('../../api-handlers/weekly-order/admin/menu-weeks')(req, res);
   } catch (err) {
     logger.error({ err, method: req.method }, 'weekly order menu weeks handler failed');
     next(err);
@@ -667,7 +738,7 @@ app.all('/api/weekly-order/admin/menu-weeks', async (req, res, next) => {
 
 app.all('/api/weekly-order/admin/pricing', async (req, res, next) => {
   try {
-    await require('../../api/weekly-order/admin/pricing')(req, res);
+    await require('../../api-handlers/weekly-order/admin/pricing')(req, res);
   } catch (err) {
     logger.error({ err, method: req.method }, 'weekly order pricing handler failed');
     next(err);
@@ -676,7 +747,7 @@ app.all('/api/weekly-order/admin/pricing', async (req, res, next) => {
 
 app.all('/api/weekly-order/admin/customers', async (req, res, next) => {
   try {
-    await require('../../api/weekly-order/admin/customers')(req, res);
+    await require('../../api-handlers/weekly-order/admin/customers')(req, res);
   } catch (err) {
     logger.error({ err, method: req.method }, 'weekly order customers handler failed');
     next(err);
@@ -685,7 +756,7 @@ app.all('/api/weekly-order/admin/customers', async (req, res, next) => {
 
 app.all('/api/weekly-order/admin/overrides', async (req, res, next) => {
   try {
-    await require('../../api/weekly-order/admin/overrides')(req, res);
+    await require('../../api-handlers/weekly-order/admin/overrides')(req, res);
   } catch (err) {
     logger.error({ err, method: req.method }, 'weekly order overrides handler failed');
     next(err);
@@ -694,7 +765,7 @@ app.all('/api/weekly-order/admin/overrides', async (req, res, next) => {
 
 app.all('/api/weekly-order/admin/plans', async (req, res, next) => {
   try {
-    await require('../../api/weekly-order/admin/plans')(req, res);
+    await require('../../api-handlers/weekly-order/admin/plans')(req, res);
   } catch (err) {
     logger.error({ err, method: req.method }, 'weekly order plans handler failed');
     next(err);
@@ -703,7 +774,7 @@ app.all('/api/weekly-order/admin/plans', async (req, res, next) => {
 
 app.all('/api/weekly-order/admin/user-overrides', async (req, res, next) => {
   try {
-    await require('../../api/weekly-order/admin/user-overrides')(req, res);
+    await require('../../api-handlers/weekly-order/admin/user-overrides')(req, res);
   } catch (err) {
     logger.error({ err, method: req.method }, 'weekly order user overrides handler failed');
     next(err);
@@ -713,7 +784,7 @@ app.all('/api/weekly-order/admin/user-overrides', async (req, res, next) => {
 // --- Calendar API Routes ---
 app.all('/api/calendar/events', async (req, res, next) => {
   try {
-    await require('../../api/calendar/events')(req, res);
+    await require('../../api-handlers/calendar/events')(req, res);
   } catch (err) {
     logger.error({ err, method: req.method }, 'calendar events handler failed');
     next(err);
@@ -722,7 +793,7 @@ app.all('/api/calendar/events', async (req, res, next) => {
 
 app.all('/api/calendar/receipts', async (req, res, next) => {
   try {
-    await require('../../api/calendar/receipts')(req, res);
+    await require('../../api-handlers/calendar/receipts')(req, res);
   } catch (err) {
     logger.error({ err, method: req.method }, 'calendar receipts handler failed');
     next(err);
@@ -732,7 +803,7 @@ app.all('/api/calendar/receipts', async (req, res, next) => {
 app.all('/api/calendar/sync-sanity', async (req, res) => {
   try {
     logger.info({ method: req.method }, 'calendar sync-sanity request received');
-    const handler = require('../../api/calendar/sync-sanity');
+    const handler = require('../../api-handlers/calendar/sync-sanity');
     logger.info('handler loaded');
     await handler(req, res);
     logger.info('handler completed');
@@ -746,7 +817,7 @@ app.all('/api/calendar/sync-sanity', async (req, res) => {
 
 app.all('/api/calendar/time-slots', async (req, res, next) => {
   try {
-    await require('../../api/calendar/time-slots')(req, res);
+    await require('../../api-handlers/calendar/time-slots')(req, res);
   } catch (err) {
     logger.error({ err, method: req.method }, 'calendar time-slots handler failed');
     next(err);
@@ -755,7 +826,7 @@ app.all('/api/calendar/time-slots', async (req, res, next) => {
 
 app.all('/api/calendar/public-events', async (req, res, next) => {
   try {
-    await require('../../api/calendar/public-events')(req, res);
+    await require('../../api-handlers/calendar/public-events')(req, res);
   } catch (err) {
     logger.error({ err, method: req.method }, 'calendar public-events handler failed');
     next(err);
@@ -764,7 +835,7 @@ app.all('/api/calendar/public-events', async (req, res, next) => {
 
 app.all('/api/calendar/generate-invite', async (req, res, next) => {
   try {
-    await require('../../api/calendar/generate-invite')(req, res);
+    await require('../../api-handlers/calendar/generate-invite')(req, res);
   } catch (err) {
     logger.error({ err, method: req.method }, 'calendar generate-invite handler failed');
     next(err);
@@ -773,7 +844,7 @@ app.all('/api/calendar/generate-invite', async (req, res, next) => {
 
 app.all('/api/calendar/validate-invite', async (req, res, next) => {
   try {
-    await require('../../api/calendar/validate-invite')(req, res);
+    await require('../../api-handlers/calendar/validate-invite')(req, res);
   } catch (err) {
     logger.error({ err, method: req.method }, 'calendar validate-invite handler failed');
     next(err);
@@ -782,7 +853,7 @@ app.all('/api/calendar/validate-invite', async (req, res, next) => {
 
 app.all('/api/calendar/mark-invite-used', async (req, res, next) => {
   try {
-    await require('../../api/calendar/mark-invite-used')(req, res);
+    await require('../../api-handlers/calendar/mark-invite-used')(req, res);
   } catch (err) {
     logger.error({ err, method: req.method }, 'calendar mark-invite-used handler failed');
     next(err);
@@ -791,7 +862,7 @@ app.all('/api/calendar/mark-invite-used', async (req, res, next) => {
 
 app.all('/api/calendar/book', async (req, res, next) => {
   try {
-    await require('../../api/calendar/book')(req, res);
+    await require('../../api-handlers/calendar/book')(req, res);
   } catch (err) {
     logger.error({ err, method: req.method }, 'calendar book handler failed');
     next(err);
@@ -800,7 +871,7 @@ app.all('/api/calendar/book', async (req, res, next) => {
 
 app.all('/api/calendar/availability', async (req, res, next) => {
   try {
-    await require('../../api/calendar/availability')(req, res);
+    await require('../../api-handlers/calendar/availability')(req, res);
   } catch (err) {
     logger.error({ err, method: req.method }, 'calendar availability handler failed');
     next(err);
@@ -809,7 +880,7 @@ app.all('/api/calendar/availability', async (req, res, next) => {
 
 app.all('/api/calendar/check-conflicts', async (req, res, next) => {
   try {
-    await require('../../api/calendar/check-conflicts')(req, res);
+    await require('../../api-handlers/calendar/check-conflicts')(req, res);
   } catch (err) {
     logger.error({ err, method: req.method }, 'calendar check-conflicts handler failed');
     next(err);
@@ -917,11 +988,11 @@ app.get('/api/_diag', async (req, res) => {
 // backend will serve /api/search-images when deployed via Vercel.
 try {
   // require the handler from the repository root api/search-images.js
-  // path relative to this file: ../../api/search-images.js
+  // path relative to this file: ../../api-handlers/search-images.js
   // The handler exports a function (req, res)
   // We mount it at GET /api/search-images to preserve the original behavior.
   // eslint-disable-next-line global-require
-  const searchImagesHandler = require('../../api/search-images.js');
+  const searchImagesHandler = require('../../api-handlers/search-images.js');
   if (typeof searchImagesHandler === 'function') {
     app.get('/api/search-images', async (req, res) => {
       try {
@@ -1001,6 +1072,15 @@ try {
 // }
 
 
+app.post('/api/food-truck/deposit-link', async (req, res, next) => {
+  try {
+    await foodTruckDepositLinkHandler(req, res);
+  } catch (err) {
+    logger.error({ err, method: req.method }, 'food-truck deposit link handler failed');
+    next(err);
+  }
+});
+
 app.post('/api/food-truck/deposit', async (req, res) => {
   try {
     if (!squareClient) {
@@ -1009,6 +1089,8 @@ app.post('/api/food-truck/deposit', async (req, res) => {
 
     const {
       token,
+      verificationToken,
+      checkoutAttemptId,
       amount,
       name,
       email,
@@ -1041,7 +1123,9 @@ app.post('/api/food-truck/deposit', async (req, res) => {
       return res.status(500).json({ error: 'square-location-missing' });
     }
 
-    const idempotencyKey = uuidv4();
+    const idempotencyKey = typeof checkoutAttemptId === 'string' && checkoutAttemptId.trim()
+      ? checkoutAttemptId.trim().slice(0, 45)
+      : uuidv4();
     const referenceId = `ft-${Date.now().toString(36)}-${idempotencyKey.slice(0, 8)}`.slice(0, 40);
     const paymentBody = {
       sourceId: token,
@@ -1054,6 +1138,9 @@ app.post('/api/food-truck/deposit', async (req, res) => {
       buyerEmailAddress: trimmedEmail,
       buyerPhoneNumber: trimmedPhone,
     };
+    if (verificationToken) {
+      paymentBody.verificationToken = verificationToken;
+    }
 
     logger.info({
       email: trimmedEmail,

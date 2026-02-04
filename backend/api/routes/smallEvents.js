@@ -1,7 +1,7 @@
 const crypto = require('crypto');
 const express = require('express');
 const { prisma } = require('../utils/prisma');
-const { getSquareClient } = require('../../../api/_lib/squareClient');
+const { getSquareClient } = require('../../../api-handlers/_lib/squareClient');
 
 const DEFAULT_DEPOSIT_PERCENT = 0.15;
 const ESTIMATE_LIFESPAN_DAYS = 5;

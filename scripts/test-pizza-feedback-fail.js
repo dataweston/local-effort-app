@@ -1,6 +1,6 @@
 // Simulate Firestore unavailable by monkey-patching the helper
 const path = require('path');
-const modPath = path.resolve(__dirname, '../api/crowdfund/pizza-feedback.js');
+const modPath = path.resolve(__dirname, '../api-handlers/crowdfund/pizza-feedback.js');
 
 // require the original, but we will monkey-patch the firebase helper it imports
 const proxyquire = require('proxyquire').noCallThru();

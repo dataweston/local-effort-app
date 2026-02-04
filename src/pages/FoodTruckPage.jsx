@@ -8,6 +8,7 @@ import { Label } from "../components/ui/label";
 import { Textarea } from "../components/ui/textarea";
 import { useToast } from "../components/common/ToastProvider";
 import { useSquarePayments } from "../lib/useSquarePayments";
+import { getOrCreateCheckoutAttemptId, clearCheckoutAttemptId } from "../lib/checkoutAttemptId";
 import devConsole from "../lib/devConsole.js";
 
 const fade = {
@@ -127,6 +128,10 @@ const FoodTruckPage = () => {
   const cardInitRef = useRef(false);
   const [cardReady, setCardReady] = useState(false);
   const [cardError, setCardError] = useState("");
+  const [fallbackUrl, setFallbackUrl] = useState("");
+  const [fallbackStatus, setFallbackStatus] = useState({ loading: false, error: "" });
+  const checkoutAttemptRef = useRef("");
+  const attemptStorageKey = "le:checkoutAttempt:food-truck";
 
   const handleDepositChange = useCallback(
     (field) => (event) => {
@@ -156,6 +161,45 @@ const FoodTruckPage = () => {
     cardInitRef.current = false;
     setCardReady(false);
   }, []);
+
+  const resolveCheckoutAttemptId = useCallback(() => {
+    if (checkoutAttemptRef.current) return checkoutAttemptRef.current;
+    const next = getOrCreateCheckoutAttemptId(attemptStorageKey);
+    checkoutAttemptRef.current = next;
+    return next;
+  }, []);
+
+  const clearCheckoutAttempt = useCallback(() => {
+    checkoutAttemptRef.current = "";
+    clearCheckoutAttemptId(attemptStorageKey);
+  }, []);
+
+  const buildFallbackLink = useCallback(async () => {
+    if (fallbackStatus.loading) return;
+    setFallbackStatus({ loading: true, error: "" });
+    try {
+      const response = await fetch("/api/food-truck/deposit-link", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          amount: depositAmount,
+          name: depositForm.name.trim(),
+          email: depositForm.email.trim(),
+          phone: depositForm.phone.trim(),
+          eventDate: depositForm.eventDate,
+          notes: depositForm.notes.trim()
+        })
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(data?.error || "Unable to create hosted checkout.");
+      }
+      setFallbackUrl(data?.url || "");
+      setFallbackStatus({ loading: false, error: "" });
+    } catch (err) {
+      setFallbackStatus({ loading: false, error: err?.message || "Unable to create hosted checkout." });
+    }
+  }, [fallbackStatus.loading, depositAmount, depositForm]);
 
   useEffect(() => {
     if (paymentsError) {
@@ -229,6 +273,16 @@ const FoodTruckPage = () => {
     destroyCard();
   }, [destroyCard]);
 
+  const withTimeout = useCallback((promise, ms, message) => {
+    let timer;
+    const timeout = new Promise((_, reject) => {
+      timer = setTimeout(() => reject(new Error(message)), ms);
+    });
+    return Promise.race([promise, timeout]).finally(() => {
+      if (timer) clearTimeout(timer);
+    });
+  }, []);
+
   const tokenizeCard = useCallback(async () => {
     const card = cardInstanceRef.current;
     if (!card) {
@@ -236,7 +290,11 @@ const FoodTruckPage = () => {
       notifyToast(message, { type: "error" });
       throw new Error(message);
     }
-    const result = await card.tokenize();
+    const result = await withTimeout(
+      card.tokenize(),
+      20000,
+      "Card verification timed out. Please try again."
+    );
     devConsole.log("[square] [food-truck] tokenize result", result);
     if (result.status !== "OK" || !result.token) {
       const message =
@@ -246,7 +304,7 @@ const FoodTruckPage = () => {
       throw new Error(message);
     }
     return result.token;
-  }, [notifyToast]);
+  }, [notifyToast, withTimeout]);
 
   const handleDepositSubmit = useCallback(
     async (event) => {
@@ -292,8 +350,36 @@ const FoodTruckPage = () => {
       try {
         setDepositStatus("loading");
         const token = await tokenizeCard();
+        if (!payments || typeof payments.verifyBuyer !== "function") {
+          throw new Error("Buyer verification unavailable. Please try hosted checkout.");
+        }
+        const nameParts = depositForm.name.trim().split(" ");
+        const verificationDetails = {
+          amount: depositAmount.toFixed(2),
+          currencyCode: "USD",
+          intent: "CHARGE",
+          billingContact: {
+            givenName: nameParts[0] || undefined,
+            familyName: nameParts.slice(1).join(" ") || undefined,
+            email: depositForm.email.trim() || undefined,
+            phone: depositForm.phone.trim() || undefined,
+            countryCode: "US"
+          }
+        };
+        const verificationResult = await withTimeout(
+          payments.verifyBuyer(token, verificationDetails),
+          20000,
+          "Buyer verification timed out. Please try again."
+        );
+        const verificationToken = verificationResult?.token || verificationResult?.verificationToken;
+        if (!verificationToken) {
+          throw new Error("Buyer verification failed. Please try again.");
+        }
+        const checkoutAttemptId = resolveCheckoutAttemptId();
         const payload = {
           token,
+          verificationToken,
+          checkoutAttemptId,
           amount: depositAmount,
           name: depositForm.name.trim(),
           email: depositForm.email.trim(),
@@ -320,6 +406,7 @@ const FoodTruckPage = () => {
         setDepositStatus("success");
         setDepositForm({ ...initialDepositForm });
         setDepositError("");
+        clearCheckoutAttempt();
         destroyCard();
       } catch (err) {
         devConsole.error("[square] [food-truck] deposit submission failed", err);
@@ -344,7 +431,9 @@ const FoodTruckPage = () => {
       depositAmount,
       tokenizeCard,
       notifyToast,
-      destroyCard
+      destroyCard,
+      payments,
+      withTimeout
     ]
   );
 
@@ -590,8 +679,26 @@ const FoodTruckPage = () => {
                       {paymentsLoading ? 'Loading secure payment form…' : 'Preparing secure payment form…'}
                     </p>
                   )}
-                  {(cardError || paymentsError) && (
-                    <p className="text-sm text-red-600">{cardError || paymentsError}</p>
+                  {(cardError || paymentsError || depositError) && (
+                    <div className="space-y-2 text-sm text-red-600">
+                      <p>{cardError || paymentsError || depositError}</p>
+                      <button
+                        type="button"
+                        className="underline text-xs"
+                        onClick={buildFallbackLink}
+                        disabled={fallbackStatus.loading}
+                      >
+                        {fallbackStatus.loading ? "Building hosted checkout..." : "Use hosted Square checkout"}
+                      </button>
+                      {fallbackStatus.error && (
+                        <p className="text-xs text-red-600">{fallbackStatus.error}</p>
+                      )}
+                      {fallbackUrl && (
+                        <p className="text-xs">
+                          <a href={fallbackUrl} target="_blank" rel="noopener noreferrer">Open hosted checkout</a>
+                        </p>
+                      )}
+                    </div>
                   )}
                 </div>
               </div>

@@ -31,6 +31,7 @@ import { cn } from '../lib/utils';
 import { useToast } from '../components/common/ToastProvider';
 import { ChevronRight } from 'lucide-react';
 import Separator from '../components/ui/Separator';
+import { getOrCreateCheckoutAttemptId, clearCheckoutAttemptId } from '../lib/checkoutAttemptId';
 
 import devConsole from '../lib/devConsole.js';
 import { watchCrowdfundingTotals, watchPizzaFeedback, getFirebaseAppInstance } from '../lib/firebaseCrowdfunding';
@@ -556,6 +557,8 @@ const CrowdfundingPage = () => {
   const [activeTab, setActiveTab] = useState('story');
   const [paying, setPaying] = useState(false);
   const [payError, setPayError] = useState('');
+  const [hostedFallbackUrl, setHostedFallbackUrl] = useState('');
+  const [hostedFallbackStatus, setHostedFallbackStatus] = useState({ loading: false, error: '' });
   const [processingMessage, setProcessingMessage] = useState('');
   const [funderName, setFunderName] = useState('');
   const [email, setEmail] = useState('');
@@ -605,6 +608,9 @@ const CrowdfundingPage = () => {
   const feedbackFallbackStatusRef = useRef(null);
   const galleryLoadedRef = useRef(false);
   const [activeEvent, setActiveEvent] = useState(null);
+  const hostedFallbackRef = useRef({ items: [], discountCode: '' });
+  const checkoutAttemptRef = useRef('');
+  const attemptStorageKey = 'le:checkoutAttempt:crowdfund';
 
   const { data: summaryData, error: summaryError } = useSWR(
     'crowdfund-summary',
@@ -1646,6 +1652,16 @@ const CrowdfundingPage = () => {
     }
   }, [clearPendingContribution, setCheckoutComplete, setReceiptInfo]);
 
+  const withTimeout = useCallback((promise, ms, message) => {
+    let timer;
+    const timeout = new Promise((_, reject) => {
+      timer = setTimeout(() => reject(new Error(message)), ms);
+    });
+    return Promise.race([promise, timeout]).finally(() => {
+      if (timer) clearTimeout(timer);
+    });
+  }, []);
+
   const tokenizeCard = useCallback(async () => {
     const card = cardInstanceRef.current;
     if (!card) {
@@ -1653,7 +1669,11 @@ const CrowdfundingPage = () => {
       notifyToast(message, { type: 'error' });
       throw new Error(message);
     }
-    const result = await card.tokenize();
+    const result = await withTimeout(
+      card.tokenize(),
+      20000,
+      'Card verification timed out. Please try again.'
+    );
     devConsole.log('[square] [crowdfunding] tokenize result', result);
     if (result.status !== 'OK' || !result.token) {
       const message =
@@ -1663,7 +1683,47 @@ const CrowdfundingPage = () => {
       throw new Error(message);
     }
     return result.token;
-  }, [notifyToast]);
+  }, [notifyToast, withTimeout]);
+
+  const resolveCheckoutAttemptId = useCallback(() => {
+    if (checkoutAttemptRef.current) return checkoutAttemptRef.current;
+    const next = getOrCreateCheckoutAttemptId(attemptStorageKey);
+    checkoutAttemptRef.current = next;
+    return next;
+  }, []);
+
+  const clearCheckoutAttempt = useCallback(() => {
+    checkoutAttemptRef.current = '';
+    clearCheckoutAttemptId(attemptStorageKey);
+  }, []);
+
+  const buildHostedCheckoutFallback = useCallback(async () => {
+    if (hostedFallbackStatus.loading) return;
+    setHostedFallbackStatus({ loading: true, error: '' });
+    try {
+      const payload = hostedFallbackRef.current || { items: [], discountCode: '' };
+      if (!payload.items || payload.items.length === 0) {
+        throw new Error('No items selected for hosted checkout.');
+      }
+      const linkRes = await fetch('/api/crowdfund/contribute', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          items: payload.items,
+          funderName: funderName || undefined,
+          discountCode: payload.discountCode || undefined,
+        }),
+      });
+      const linkData = await linkRes.json().catch(() => ({}));
+      if (!linkRes.ok || !linkData?.url) {
+        throw new Error(linkData?.error || 'Unable to create hosted checkout.');
+      }
+      setHostedFallbackUrl(linkData.url);
+      setHostedFallbackStatus({ loading: false, error: '' });
+    } catch (err) {
+      setHostedFallbackStatus({ loading: false, error: err?.message || 'Unable to create hosted checkout.' });
+    }
+  }, [hostedFallbackStatus.loading, funderName]);
 
   const contribute = async (items) => {
     setPayError('');
@@ -1753,6 +1813,7 @@ const CrowdfundingPage = () => {
           type: item.type,
           pizzaCount: item.pizzaCount,
         }));
+        hostedFallbackRef.current = { items: linkItems, discountCode: trimmedDiscount };
         const linkRes = await fetch('/api/crowdfund/contribute', {
           method: 'POST',
           headers: { 'content-type': 'application/json' },
@@ -1806,6 +1867,33 @@ const CrowdfundingPage = () => {
         throw new Error(tokErr?.message || 'Card not ready');
       }
 
+      if (!payments || typeof payments.verifyBuyer !== 'function') {
+        throw new Error('Buyer verification unavailable. Please try hosted checkout.');
+      }
+      const nameParts = funderName.trim().split(' ');
+      const verificationDetails = {
+        amount: (totalAfterLocalDiscount / 100).toFixed(2),
+        currencyCode: 'USD',
+        intent: 'CHARGE',
+        billingContact: {
+          givenName: nameParts[0] || undefined,
+          familyName: nameParts.slice(1).join(' ') || undefined,
+          email: email.trim() || undefined,
+          phone: phone.trim() || undefined,
+          countryCode: 'US',
+        },
+      };
+      const verificationResult = await withTimeout(
+        payments.verifyBuyer(token, verificationDetails),
+        20000,
+        'Buyer verification timed out. Please try again.'
+      );
+      const verificationToken = verificationResult?.token || verificationResult?.verificationToken;
+      if (!verificationToken) {
+        throw new Error('Buyer verification failed. Please try again.');
+      }
+      const checkoutAttemptId = resolveCheckoutAttemptId();
+
       setProcessingMessage('Completing your payment...');
       const payload = {
         items: checkoutItemsPayload,
@@ -1816,6 +1904,8 @@ const CrowdfundingPage = () => {
         rewardPreference,
         notify,
         token,
+        verificationToken,
+        checkoutAttemptId,
         pizzaQty,
         discountCode: trimmedDiscount || undefined,
       };
@@ -1864,6 +1954,7 @@ const CrowdfundingPage = () => {
       setDiscountState({ status: 'idle', code: '', discount: null, message: '' });
       notifyToast(successMessage, { type: 'success' });
       clearPendingContribution();
+      clearCheckoutAttempt();
     } catch (e) {
       setPayError(e?.message || 'Payment failed');
       notifyToast(e?.message || 'Payment failed', { type: 'error' });
@@ -2388,7 +2479,27 @@ const CrowdfundingPage = () => {
                 </p>
               )}
               {confirmMsg && <p className="text-sm text-emerald-700">{confirmMsg}</p>}
-              {payError && <p className="text-sm text-red-600">{payError}</p>}
+              {payError && (
+                <div className="space-y-2 text-sm text-red-600">
+                  <p>{payError}</p>
+                  <button
+                    type="button"
+                    className="underline text-xs"
+                    onClick={buildHostedCheckoutFallback}
+                    disabled={hostedFallbackStatus.loading}
+                  >
+                    {hostedFallbackStatus.loading ? 'Building hosted checkout...' : 'Use hosted Square checkout'}
+                  </button>
+                  {hostedFallbackStatus.error && (
+                    <p className="text-xs text-red-600">{hostedFallbackStatus.error}</p>
+                  )}
+                  {hostedFallbackUrl && (
+                    <p className="text-xs">
+                      <a href={hostedFallbackUrl} target="_blank" rel="noopener noreferrer">Open hosted checkout</a>
+                    </p>
+                  )}
+                </div>
+              )}
               {/* CTA button when form hidden */}
               {!showForm && (
                 <Button
