@@ -11,58 +11,6 @@
       }
     },
     {
-      "src": "api/sales-proxy.js",
-      "use": "@vercel/node"
-    },
-    {
-      "src": "api/store/products.js",
-      "use": "@vercel/node"
-    },
-    {
-      "src": "api/store/checkout.js",
-      "use": "@vercel/node"
-    },
-    {
-      "src": "api/store/sync-square.js",
-      "use": "@vercel/node"
-    },
-    {
-      "src": "api/search-images.js",
-      "use": "@vercel/node"
-    },
-    {
-      "src": "api/sanity-query.ts",
-      "use": "@vercel/node"
-    },
-    {
-      "src": "api/paikka/pay.js",
-      "use": "@vercel/node"
-    },
-    {
-      "src": "api/paikka/checkout.js",
-      "use": "@vercel/node"
-    },
-    {
-      "src": "api/paikka/finalize.js",
-      "use": "@vercel/node"
-    },
-    {
-      "src": "api/paikka/resend.js",
-      "use": "@vercel/node"
-    },
-    {
-      "src": "api/winter-dinner/checkout.js",
-      "use": "@vercel/node"
-    },
-    {
-      "src": "api/february/booked-dates.js",
-      "use": "@vercel/node"
-    },
-    {
-      "src": "api/february/checkout.js",
-      "use": "@vercel/node"
-    },
-    {
       "src": "backend/api/server.js",
       "use": "@vercel/node"
     }
@@ -76,59 +24,11 @@
     },
     {
       "src": "/sales/(?<slug>[^/]+)$",
-      "dest": "/api/sales-proxy.js?path=/$1"
+      "dest": "/api/sales-proxy?path=/$1"
     },
     {
       "src": "/sales/(?<slug>[^/]+)/(?<rest>.*)",
-      "dest": "/api/sales-proxy.js?path=/$1/$2"
-    },
-    {
-      "src": "/api/search-images",
-      "dest": "/api/search-images.js"
-    },
-    {
-      "src": "/api/sanity-query",
-      "dest": "/api/sanity-query.ts"
-    },
-    {
-      "src": "/api/store/products",
-      "dest": "/api/store/products.js"
-    },
-    {
-      "src": "/api/store/checkout",
-      "dest": "/api/store/checkout.js"
-    },
-    {
-      "src": "/api/store/sync-square",
-      "dest": "/api/store/sync-square.js"
-    },
-    {
-      "src": "/api/paikka/pay",
-      "dest": "/api/paikka/pay.js"
-    },
-    {
-      "src": "/api/paikka/checkout",
-      "dest": "/api/paikka/checkout.js"
-    },
-    {
-      "src": "/api/paikka/finalize",
-      "dest": "/api/paikka/finalize.js"
-    },
-    {
-      "src": "/api/paikka/resend",
-      "dest": "/api/paikka/resend.js"
-    },
-    {
-      "src": "/api/winter-dinner/checkout",
-      "dest": "/api/winter-dinner/checkout.js"
-    },
-    {
-      "src": "/api/february/booked-dates",
-      "dest": "/api/february/booked-dates.js"
-    },
-    {
-      "src": "/api/february/checkout",
-      "dest": "/api/february/checkout.js"
+      "dest": "/api/sales-proxy?path=/$1/$2"
     },
     {
       "src": "/api/(.*)",

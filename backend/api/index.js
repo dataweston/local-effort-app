@@ -39,6 +39,15 @@ const pizzaPartyReceiptHandler = require('../../api/store/pizza-party-receipt');
 const pizzaPartyLinkHandler = require('../../api/store/pizza-party-link');
 const pizzaPartyBookingsHandler = require('../../api/store/pizza-party-bookings');
 const storeProductsHandler = require('../../api/store/products');
+const storeSyncSquareHandler = require('../../api/store/sync-square');
+const salesProxyHandler = require('../../api/sales-proxy');
+const paikkaCheckoutHandler = require('../../api/paikka/checkout');
+const paikkaPayHandler = require('../../api/paikka/pay');
+const paikkaFinalizeHandler = require('../../api/paikka/finalize');
+const paikkaResendHandler = require('../../api/paikka/resend');
+const winterDinnerCheckoutHandler = require('../../api/winter-dinner/checkout');
+const februaryBookedDatesHandler = require('../../api/february/booked-dates');
+const februaryCheckoutHandler = require('../../api/february/checkout');
 const { createMessagesRouter } = require('./routes/messages');
 const { createSmallEventsRouter } = require('./routes/smallEvents');
 const {
@@ -403,6 +412,15 @@ app.all('/api/pizzafunder/feedback', async (req, res, next) => {
   }
 });
 
+app.all('/api/sales-proxy', async (req, res, next) => {
+  try {
+    await salesProxyHandler(req, res);
+  } catch (err) {
+    logger.error({ err, method: req.method }, 'sales proxy handler failed');
+    next(err);
+  }
+});
+
 app.all('/api/store/checkout', async (req, res, next) => {
   try {
     await storeCheckoutHandler(req, res);
@@ -472,6 +490,115 @@ app.all('/api/store/products', async (req, res, next) => {
   } catch (err) {
     logger.error({ err, method: req.method }, 'store products handler failed');
     next(err);
+  }
+});
+
+app.all('/api/store/sync-square', async (req, res, next) => {
+  try {
+    await storeSyncSquareHandler(req, res);
+  } catch (err) {
+    logger.error({ err, method: req.method }, 'store sync-square handler failed');
+    next(err);
+  }
+});
+
+app.all('/api/paikka/checkout', async (req, res, next) => {
+  try {
+    await paikkaCheckoutHandler(req, res);
+  } catch (err) {
+    logger.error({ err, method: req.method }, 'paikka checkout handler failed');
+    next(err);
+  }
+});
+
+app.all('/api/paikka/pay', async (req, res, next) => {
+  try {
+    await paikkaPayHandler(req, res);
+  } catch (err) {
+    logger.error({ err, method: req.method }, 'paikka pay handler failed');
+    next(err);
+  }
+});
+
+app.all('/api/paikka/finalize', async (req, res, next) => {
+  try {
+    await paikkaFinalizeHandler(req, res);
+  } catch (err) {
+    logger.error({ err, method: req.method }, 'paikka finalize handler failed');
+    next(err);
+  }
+});
+
+app.all('/api/paikka/resend', async (req, res, next) => {
+  try {
+    await paikkaResendHandler(req, res);
+  } catch (err) {
+    logger.error({ err, method: req.method }, 'paikka resend handler failed');
+    next(err);
+  }
+});
+
+app.all('/api/winter-dinner/checkout', async (req, res, next) => {
+  try {
+    await winterDinnerCheckoutHandler(req, res);
+  } catch (err) {
+    logger.error({ err, method: req.method }, 'winter dinner checkout handler failed');
+    next(err);
+  }
+});
+
+app.all('/api/february/booked-dates', async (req, res, next) => {
+  try {
+    await februaryBookedDatesHandler(req, res);
+  } catch (err) {
+    logger.error({ err, method: req.method }, 'february booked-dates handler failed');
+    next(err);
+  }
+});
+
+app.all('/api/february/checkout', async (req, res, next) => {
+  try {
+    await februaryCheckoutHandler(req, res);
+  } catch (err) {
+    logger.error({ err, method: req.method }, 'february checkout handler failed');
+    next(err);
+  }
+});
+
+app.all('/api/sanity-query', async (req, res) => {
+  if (req.method !== 'POST') {
+    res.setHeader('Allow', 'POST');
+    return res.status(405).json({ ok: false, error: 'method-not-allowed' });
+  }
+
+  res.setHeader('Cache-Control', 'no-store');
+
+  const client = getSanityClient();
+  if (!client) {
+    return res.status(500).json({ ok: false, error: 'sanity-not-configured' });
+  }
+
+  let body = req.body || {};
+  if (typeof body === 'string') {
+    try {
+      body = JSON.parse(body);
+    } catch (err) {
+      return res.status(400).json({ ok: false, error: 'invalid-body' });
+    }
+  }
+
+  if (!body || typeof body !== 'object' || typeof body.query !== 'string') {
+    return res.status(400).json({ ok: false, error: 'missing-query' });
+  }
+
+  const params = body.params && typeof body.params === 'object' ? body.params : {};
+
+  try {
+    const result = await client.fetch(body.query, params);
+    return res.status(200).json({ ok: true, result });
+  } catch (err) {
+    logger.error({ err }, 'sanity query fetch failed');
+    return res.status(500).json({ ok: false, error: 'sanity-fetch-failed' });
   }
 });
 

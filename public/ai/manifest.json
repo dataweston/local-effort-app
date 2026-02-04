@@ -30,7 +30,7 @@
     }
   ],
   "llmNotes": [
-    "Core routes are rendered without authentication and hydrate client-side; HTML contains primary content for crawlers.",
+    "Core routes are public and the HTML contains primary content for crawlers.",
     "Use /api/support/search?q=QUERY for semantic answers sourced from Supabase content chunks and public FAQs.",
     "Static JSON exports at /api/public/* provide pricing FAQs, estimator guidance, and machine-readable site metadata.",
     "Image library is accessible via Cloudinary-backed /api/search-images with descriptive context metadata.",

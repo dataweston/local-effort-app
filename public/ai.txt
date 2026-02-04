@@ -1,5 +1,5 @@
 # AI crawling hints for Local Effort
-# Purpose: Provide basic, JS-free summaries and key endpoints for LLMs and machine readers.
+# Purpose: Provide basic summaries and key endpoints for LLMs and machine readers.
 
 site: https://localeffortfood.com/
 manifest: https://localeffortfood.com/ai/manifest.json
