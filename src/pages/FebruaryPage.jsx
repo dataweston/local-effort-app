@@ -140,6 +140,12 @@ const FebruaryPage = () => {
     clearCheckoutAttemptId(attemptStorageKey);
   }, []);
 
+  const totalGuests = clampGuests(guestCount);
+  const totalCents = getPartyPrice(totalGuests);
+  const selectedIso = selectedDate
+    ? `${selectedDate.getFullYear()}-${pad2(selectedDate.getMonth() + 1)}-${pad2(selectedDate.getDate())}`
+    : '';
+
   const buildFallbackLink = useCallback(async () => {
     if (fallbackStatus.loading) return;
     if (!selectedIso) {
@@ -170,12 +176,6 @@ const FebruaryPage = () => {
     }
     setFallbackStatus({ loading: false, error: '' });
   }, [fallbackStatus.loading, selectedIso, totalGuests, preferredTime, customer, address, dietaryNotes, notes]);
-
-  const totalGuests = clampGuests(guestCount);
-  const totalCents = getPartyPrice(totalGuests);
-  const selectedIso = selectedDate
-    ? `${selectedDate.getFullYear()}-${pad2(selectedDate.getMonth() + 1)}-${pad2(selectedDate.getDate())}`
-    : '';
 
   const isDateBooked = useCallback((date) => {
     if (!date) return false;
