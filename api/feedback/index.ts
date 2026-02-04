@@ -1,8 +1,19 @@
+/**
+ * GET /api/feedback
+ * Returns recent feedback from Supabase
+ * POST /api/feedback
+ * Saves new feedback to Supabase
+ * 
+ * ⚠️ IMPORTANT - USES SUPABASE (not Firebase)
+ * This endpoint uses Supabase PostgreSQL
+ * Database: public.crowdfund_feedback table
+ */
+
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import { URL } from 'node:url';
-import { createFeedback, listFeedback } from '../../packages/lib/crowdfundingPipeline';
-import { db as defaultDb } from '../../packages/lib/firebaseAdmin';
-import { db } from '../../packages/lib/firebaseAdmin';
+
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const { getSupabase } = require('../../backend/api/supabaseClient');
 
 type Req = IncomingMessage & { method?: string; body?: any; url?: string };
 type Res = ServerResponse & {
@@ -12,19 +23,7 @@ type Res = ServerResponse & {
 };
 
 const MAX_COMMENT_LENGTH = 2000;
-const MAX_FALLBACK_ENTRIES = 50;
-const FALLBACK_WINDOW_MS = 7 * 24 * 60 * 60 * 1000;
-
-type FeedbackEntry = {
-  id: string;
-  rating: number;
-  comment: string;
-  customerId: string | null;
-  orderId: string | null;
-  createdAt: Date;
-};
-
-const fallbackFeedbackEntries: FeedbackEntry[] = [];
+const MAX_NAME_LENGTH = 200;
 
 function withHelpers(res: ServerResponse): Res {
   const enhanced = res as Res;
@@ -49,53 +48,10 @@ function sanitizeString(value: unknown, limit: number): string | null {
   return trimmed.slice(0, limit);
 }
 
-function isFirestoreUnavailable(error: unknown): boolean {
-  if (!error || typeof error !== 'object') return false;
-  return 'code' in error && (error as { code?: string }).code === 'firestore-unavailable';
-}
-
 function resolveLimit(limitParam: string | null): number {
   let limit = Number(limitParam ?? 200);
   if (!Number.isFinite(limit) || limit <= 0) limit = 200;
   return Math.min(Math.max(Math.floor(limit), 1), 500);
-}
-
-function resolveSince(sinceParam: string | null): Date {
-  if (sinceParam) {
-    const parsed = new Date(sinceParam);
-    if (!Number.isNaN(parsed.getTime())) {
-      return parsed;
-    }
-  }
-  return new Date(Date.now() - FALLBACK_WINDOW_MS);
-}
-
-function listFallbackEntries(sinceParam: string | null, limitParam: string | null): FeedbackEntry[] {
-  const since = resolveSince(sinceParam);
-  const limit = resolveLimit(limitParam);
-  return fallbackFeedbackEntries
-    .filter((entry) => entry.createdAt >= since)
-    .slice(0, limit);
-}
-
-function addFallbackEntry(entry: Omit<FeedbackEntry, 'id' | 'createdAt'>): FeedbackEntry {
-  const next: FeedbackEntry = {
-    ...entry,
-    id: `feedback-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-    createdAt: new Date(),
-  };
-  fallbackFeedbackEntries.unshift(next);
-  if (fallbackFeedbackEntries.length > MAX_FALLBACK_ENTRIES) {
-    fallbackFeedbackEntries.length = MAX_FALLBACK_ENTRIES;
-  }
-  return next;
-}
-
-function parseJsonBody(req: Req): any {
-  if (req.body !== undefined) {
-    return req.body;
-  }
-  return undefined;
 }
 
 export default async function handler(request: Req, response: ServerResponse): Promise<void> {
@@ -107,101 +63,105 @@ export default async function handler(request: Req, response: ServerResponse): P
     return;
   }
 
+  const supabase = getSupabase();
+  if (!supabase) {
+    console.error('[feedback] Supabase not configured');
+    res.status(503).json({ ok: false, error: 'database-unavailable' });
+    return;
+  }
+
+  // POST: Submit new feedback
   if (req.method === 'POST') {
     try {
-      const result = await createFeedback(req.body ?? {}, { db: defaultDb });
-      res.status(200).json({ ok: true, id: result.id });
-    } catch (error) {
-      if (error && typeof error === 'object' && 'code' in error) {
-        const code = (error as { code?: string }).code;
-        if (code === 'invalid-rating' || code === 'missing-comment') {
-          res.status(400).json({ ok: false, error: code });
-          return;
-        }
-      }
-      const body = parseJsonBody(req) ?? {};
-      const rating = Number(body.rating);
+      const body = req.body ?? {};
+      const name = sanitizeString(body.name, MAX_NAME_LENGTH) || 'Anonymous';
       const comment = sanitizeString(body.comment, MAX_COMMENT_LENGTH);
-      const customerId = typeof body.customerId === 'string' && body.customerId.trim() ? body.customerId.trim() : null;
-      const orderId = typeof body.orderId === 'string' && body.orderId.trim() ? body.orderId.trim() : null;
+      const rating = Number(body.rating);
+
+      // Validation
+      if (!comment) {
+        res.status(400).json({ ok: false, error: 'missing-comment' });
+        return;
+      }
 
       if (!Number.isInteger(rating) || rating < 1 || rating > 5) {
         res.status(400).json({ ok: false, error: 'invalid-rating' });
         return;
       }
 
-      if (!comment) {
-        res.status(400).json({ ok: false, error: 'missing-comment' });
-        return;
-      }
-
-      if (isFirestoreUnavailable(error) || !db) {
-        const fallback = addFallbackEntry({
-          rating,
+      // Insert feedback into Supabase
+      const { data, error } = await supabase
+        .from('crowdfund_feedback')
+        .insert({
+          name,
           comment,
-          customerId,
-          orderId,
-        });
-        res.status(200).json({ ok: true, id: fallback.id, warning: 'firestore-unavailable' });
-        return;
-      }
-
-      try {
-        const ref = db.collection('feedback').doc();
-        const doc = {
           rating,
-          comment,
-          customerId,
-          orderId,
-          createdAt: new Date(),
-        };
-        await ref.set(doc);
-        res.status(200).json({ ok: true, id: ref.id });
-      } catch (error) {
-        console.error('[feedback.post] failed to persist feedback', error);
+        })
+        .select()
+        .single();
+
+      if (error) {
+        console.error('[feedback.post] Error inserting:', error.message);
         res.status(500).json({ ok: false, error: 'internal-error' });
+        return;
       }
+
+      res.status(200).json({ 
+        ok: true, 
+        id: data.id,
+        feedback: {
+          id: data.id,
+          name: data.name,
+          comment: data.comment,
+          rating: data.rating,
+          timestamp: data.created_at,
+        }
+      });
+    } catch (error) {
+      console.error('[feedback.post] failed to persist feedback', error);
+      res.status(500).json({ ok: false, error: 'internal-error' });
     }
     return;
   }
 
+  // GET: Fetch recent feedback
   if (req.method === 'GET') {
-    let sinceParam: string | null = null;
-    let limitParam: string | null = null;
     try {
-      sinceParam = (() => {
-        if (!req.url) return null;
-        try {
+      let limitParam: string | null = null;
+      try {
+        if (req.url) {
           const url = new URL(req.url, 'http://localhost');
-          return url.searchParams.get('since');
-        } catch (error) {
-          return null;
+          limitParam = url.searchParams.get('limit');
         }
-      })();
-      limitParam = (() => {
-        if (!req.url) return null;
-        try {
-          const url = new URL(req.url, 'http://localhost');
-          return url.searchParams.get('limit');
-        } catch (error) {
-          return null;
-        }
-      })();
+      } catch {
+        // ignore URL parsing errors
+      }
 
-      const items = await listFeedback(
-        {
-          since: sinceParam ?? undefined,
-          limit: limitParam ? Number(limitParam) : undefined,
-        },
-        { db: defaultDb },
-      );
-      res.status(200).json({ ok: true, items });
-    } catch (error) {
-      if (isFirestoreUnavailable(error) || !defaultDb) {
-        const items = listFallbackEntries(sinceParam, limitParam);
-        res.status(200).json({ ok: true, items, warning: 'firestore-unavailable' });
+      const limit = resolveLimit(limitParam);
+
+      const { data, error } = await supabase
+        .from('crowdfund_feedback')
+        .select('id, name, comment, rating, created_at')
+        .order('created_at', { ascending: false })
+        .limit(limit);
+
+      if (error) {
+        console.error('[feedback.get] Error fetching:', error.message);
+        res.status(500).json({ ok: false, error: 'internal-error' });
         return;
       }
+
+      // Transform to expected format
+      const items = (data || []).map((item: { id: string; name: string; comment: string; rating: number; created_at: string }) => ({
+        id: item.id,
+        name: item.name,
+        comment: item.comment,
+        rating: item.rating,
+        createdAt: item.created_at,
+      }));
+
+      res.status(200).json({ ok: true, items });
+    } catch (error) {
       console.error('[feedback.get] failed to load feedback', error);
       res.status(500).json({ ok: false, error: 'internal-error' });
     }

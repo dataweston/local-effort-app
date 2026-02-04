@@ -985,23 +985,36 @@ const parseFeedbackBody = (body) => {
 
 app.get('/api/feedback', async (req, res) => {
   try {
-    const sinceRaw = Array.isArray(req.query.since) ? req.query.since[0] : req.query.since;
+    const supabase = getSupabase();
+    if (!supabase) {
+      return res.status(503).json({ ok: false, error: 'database-unavailable' });
+    }
+
     const limitRaw = Array.isArray(req.query.limit) ? req.query.limit[0] : req.query.limit;
-    const items = await listFeedback(
-      {
-        since: sinceRaw ?? undefined,
-        limit: limitRaw ? Number(limitRaw) : undefined,
-      },
-      { db },
-    );
+    let limit = parseInt(limitRaw) || 200;
+    limit = Math.min(Math.max(limit, 1), 500);
+
+    const { data, error } = await supabase
+      .from('crowdfund_feedback')
+      .select('id, name, comment, rating, created_at')
+      .order('created_at', { ascending: false })
+      .limit(limit);
+
+    if (error) {
+      console.error('[feedback.get] Supabase error:', error.message);
+      return res.status(500).json({ ok: false, error: 'internal-error' });
+    }
+
+    const items = (data || []).map(item => ({
+      id: item.id,
+      name: item.name,
+      comment: item.comment,
+      rating: item.rating,
+      createdAt: item.created_at,
+    }));
+
     res.json({ ok: true, items });
   } catch (err) {
-    if (isFirestoreUnavailable(err) || !db) {
-      const sinceRaw = Array.isArray(req.query.since) ? req.query.since[0] : req.query.since;
-      const limitRaw = Array.isArray(req.query.limit) ? req.query.limit[0] : req.query.limit;
-      const items = listFallbackFeedback(sinceRaw, limitRaw);
-      return res.json({ ok: true, items, warning: 'firestore-unavailable' });
-    }
     if (logger?.error) logger.error({ err }, 'feedback list error');
     res.status(500).json({ ok: false, error: 'internal-error' });
   }
@@ -1009,21 +1022,36 @@ app.get('/api/feedback', async (req, res) => {
 
 app.post('/api/feedback', async (req, res) => {
   try {
-    const result = await createFeedback(req.body ?? {}, { db });
-    res.json({ ok: true, id: result.id });
+    const supabase = getSupabase();
+    if (!supabase) {
+      return res.status(503).json({ ok: false, error: 'database-unavailable' });
+    }
+
+    const body = req.body ?? {};
+    const name = typeof body.name === 'string' ? body.name.trim().substring(0, 200) : 'Anonymous';
+    const comment = typeof body.comment === 'string' ? body.comment.trim().substring(0, 2000) : '';
+    const rating = Number(body.rating);
+
+    if (!comment) {
+      return res.status(400).json({ ok: false, error: 'missing-comment' });
+    }
+    if (!Number.isInteger(rating) || rating < 1 || rating > 5) {
+      return res.status(400).json({ ok: false, error: 'invalid-rating' });
+    }
+
+    const { data, error } = await supabase
+      .from('crowdfund_feedback')
+      .insert({ name, comment, rating })
+      .select()
+      .single();
+
+    if (error) {
+      console.error('[feedback.post] Supabase error:', error.message);
+      return res.status(500).json({ ok: false, error: 'internal-error' });
+    }
+
+    res.json({ ok: true, id: data.id });
   } catch (err) {
-    const code = err && typeof err === 'object' ? err.code : null;
-    if (code === 'invalid-rating' || code === 'missing-comment') {
-      return res.status(400).json({ ok: false, error: code });
-    }
-    if (isFirestoreUnavailable(err) || !db) {
-      const parsed = parseFeedbackBody(req.body ?? {});
-      if (parsed.error) {
-        return res.status(400).json({ ok: false, error: parsed.error });
-      }
-      const fallback = addFallbackFeedback(parsed);
-      return res.json({ ok: true, id: fallback.id, warning: 'firestore-unavailable' });
-    }
     if (logger?.error) logger.error({ err }, 'feedback create error');
     res.status(500).json({ ok: false, error: 'internal-error' });
   }
