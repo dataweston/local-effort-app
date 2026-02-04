@@ -88,7 +88,7 @@ const FebruaryPage = () => {
   const trackRef = useRef(null);
 
   // Known sold out dates (fallback if API fails in development)
-  const KNOWN_SOLD_OUT = ['2026-02-05'];
+  const KNOWN_SOLD_OUT = ['2026-02-05', '2026-02-26'];
 
   // Fetch booked dates on mount
   useEffect(() => {

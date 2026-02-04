@@ -1,6 +1,17 @@
 // Serverless proxy for sales pages to Next app
 // Env: SALES_NEXT_BASE (e.g., https://sales-next.vercel.app)
-const fetch = require('node-fetch');
+let cachedFetch = null;
+
+const resolveFetch = async () => {
+  if (cachedFetch) return cachedFetch;
+  if (typeof fetch === 'function') {
+    cachedFetch = fetch;
+    return cachedFetch;
+  }
+  const mod = await import('node-fetch');
+  cachedFetch = mod.default;
+  return cachedFetch;
+};
 
 module.exports = async (req, res) => {
   try {
@@ -21,7 +32,8 @@ module.exports = async (req, res) => {
       qsObj.forEach((v, k) => target.searchParams.set(k, v));
     }
 
-    const upstream = await fetch(target.toString(), {
+    const fetcher = await resolveFetch();
+    const upstream = await fetcher(target.toString(), {
       method: 'GET',
       headers: {
         'x-forwarded-host': req.headers['host'] || '',
@@ -34,7 +46,7 @@ module.exports = async (req, res) => {
       if (key.toLowerCase() === 'transfer-encoding') return;
       res.setHeader(key, value);
     });
-    const buf = await upstream.buffer();
+    const buf = Buffer.from(await upstream.arrayBuffer());
     res.end(buf);
   } catch (err) {
     console.error('[sales-proxy] error', err);

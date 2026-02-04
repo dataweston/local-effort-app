@@ -10,7 +10,7 @@ module.exports = async (req, res) => {
 
   const supabase = getSupabase();
   if (!supabase) {
-    return res.status(500).json({ error: 'Database not configured' });
+    return res.status(200).json({ bookedDates: [], warning: 'Database not configured' });
   }
 
   try {
