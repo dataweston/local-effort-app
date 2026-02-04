@@ -12,6 +12,19 @@ type Res = ServerResponse & {
 };
 
 const MAX_COMMENT_LENGTH = 2000;
+const MAX_FALLBACK_ENTRIES = 50;
+const FALLBACK_WINDOW_MS = 7 * 24 * 60 * 60 * 1000;
+
+type FeedbackEntry = {
+  id: string;
+  rating: number;
+  comment: string;
+  customerId: string | null;
+  orderId: string | null;
+  createdAt: Date;
+};
+
+const fallbackFeedbackEntries: FeedbackEntry[] = [];
 
 function withHelpers(res: ServerResponse): Res {
   const enhanced = res as Res;
@@ -34,6 +47,48 @@ function sanitizeString(value: unknown, limit: number): string | null {
   const trimmed = value.replace(/\r/g, '').trim();
   if (!trimmed) return null;
   return trimmed.slice(0, limit);
+}
+
+function isFirestoreUnavailable(error: unknown): boolean {
+  if (!error || typeof error !== 'object') return false;
+  return 'code' in error && (error as { code?: string }).code === 'firestore-unavailable';
+}
+
+function resolveLimit(limitParam: string | null): number {
+  let limit = Number(limitParam ?? 200);
+  if (!Number.isFinite(limit) || limit <= 0) limit = 200;
+  return Math.min(Math.max(Math.floor(limit), 1), 500);
+}
+
+function resolveSince(sinceParam: string | null): Date {
+  if (sinceParam) {
+    const parsed = new Date(sinceParam);
+    if (!Number.isNaN(parsed.getTime())) {
+      return parsed;
+    }
+  }
+  return new Date(Date.now() - FALLBACK_WINDOW_MS);
+}
+
+function listFallbackEntries(sinceParam: string | null, limitParam: string | null): FeedbackEntry[] {
+  const since = resolveSince(sinceParam);
+  const limit = resolveLimit(limitParam);
+  return fallbackFeedbackEntries
+    .filter((entry) => entry.createdAt >= since)
+    .slice(0, limit);
+}
+
+function addFallbackEntry(entry: Omit<FeedbackEntry, 'id' | 'createdAt'>): FeedbackEntry {
+  const next: FeedbackEntry = {
+    ...entry,
+    id: `feedback-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+    createdAt: new Date(),
+  };
+  fallbackFeedbackEntries.unshift(next);
+  if (fallbackFeedbackEntries.length > MAX_FALLBACK_ENTRIES) {
+    fallbackFeedbackEntries.length = MAX_FALLBACK_ENTRIES;
+  }
+  return next;
 }
 
 function parseJsonBody(req: Req): any {
@@ -80,6 +135,17 @@ export default async function handler(request: Req, response: ServerResponse): P
         return;
       }
 
+      if (isFirestoreUnavailable(error) || !db) {
+        const fallback = addFallbackEntry({
+          rating,
+          comment,
+          customerId,
+          orderId,
+        });
+        res.status(200).json({ ok: true, id: fallback.id, warning: 'firestore-unavailable' });
+        return;
+      }
+
       try {
         const ref = db.collection('feedback').doc();
         const doc = {
@@ -100,8 +166,10 @@ export default async function handler(request: Req, response: ServerResponse): P
   }
 
   if (req.method === 'GET') {
+    let sinceParam: string | null = null;
+    let limitParam: string | null = null;
     try {
-      const sinceParam = (() => {
+      sinceParam = (() => {
         if (!req.url) return null;
         try {
           const url = new URL(req.url, 'http://localhost');
@@ -110,7 +178,7 @@ export default async function handler(request: Req, response: ServerResponse): P
           return null;
         }
       })();
-      const limitParam = (() => {
+      limitParam = (() => {
         if (!req.url) return null;
         try {
           const url = new URL(req.url, 'http://localhost');
@@ -129,6 +197,11 @@ export default async function handler(request: Req, response: ServerResponse): P
       );
       res.status(200).json({ ok: true, items });
     } catch (error) {
+      if (isFirestoreUnavailable(error) || !defaultDb) {
+        const items = listFallbackEntries(sinceParam, limitParam);
+        res.status(200).json({ ok: true, items, warning: 'firestore-unavailable' });
+        return;
+      }
       console.error('[feedback.get] failed to load feedback', error);
       res.status(500).json({ ok: false, error: 'internal-error' });
     }

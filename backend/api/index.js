@@ -915,6 +915,74 @@ const handleCrowdfundingSummary = async (req, res) => {
 app.get('/api/crowdfunding/summary', handleCrowdfundingSummary);
 app.get('/api/crowdfund/summary', handleCrowdfundingSummary);
 
+const FEEDBACK_FALLBACK_MAX = 50;
+const FEEDBACK_FALLBACK_WINDOW_MS = 7 * 24 * 60 * 60 * 1000;
+const FEEDBACK_COMMENT_LIMIT = 2000;
+const feedbackFallbackEntries = [];
+
+const isFirestoreUnavailable = (err) =>
+  !!(err && typeof err === 'object' && err.code === 'firestore-unavailable');
+
+const resolveFeedbackLimit = (value) => {
+  let limit = Number(value ?? 200);
+  if (!Number.isFinite(limit) || limit <= 0) limit = 200;
+  return Math.min(Math.max(Math.floor(limit), 1), 500);
+};
+
+const resolveFeedbackSince = (value) => {
+  if (value) {
+    const parsed = new Date(value);
+    if (!Number.isNaN(parsed.getTime())) return parsed;
+  }
+  return new Date(Date.now() - FEEDBACK_FALLBACK_WINDOW_MS);
+};
+
+const listFallbackFeedback = (sinceRaw, limitRaw) => {
+  const since = resolveFeedbackSince(sinceRaw);
+  const limit = resolveFeedbackLimit(limitRaw);
+  return feedbackFallbackEntries
+    .filter((entry) => entry.createdAt >= since)
+    .slice(0, limit);
+};
+
+const addFallbackFeedback = ({ rating, comment, customerId, orderId }) => {
+  const entry = {
+    id: `feedback-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+    rating,
+    comment,
+    customerId: customerId || null,
+    orderId: orderId || null,
+    createdAt: new Date(),
+  };
+  feedbackFallbackEntries.unshift(entry);
+  if (feedbackFallbackEntries.length > FEEDBACK_FALLBACK_MAX) {
+    feedbackFallbackEntries.length = FEEDBACK_FALLBACK_MAX;
+  }
+  return entry;
+};
+
+const parseFeedbackBody = (body) => {
+  const rating = Number(body?.rating);
+  const comment = typeof body?.comment === 'string'
+    ? body.comment.replace(/\r/g, '').trim().slice(0, FEEDBACK_COMMENT_LIMIT)
+    : '';
+  const customerId = typeof body?.customerId === 'string' && body.customerId.trim()
+    ? body.customerId.trim()
+    : null;
+  const orderId = typeof body?.orderId === 'string' && body.orderId.trim()
+    ? body.orderId.trim()
+    : null;
+
+  if (!Number.isInteger(rating) || rating < 1 || rating > 5) {
+    return { error: 'invalid-rating' };
+  }
+  if (!comment) {
+    return { error: 'missing-comment' };
+  }
+
+  return { rating, comment, customerId, orderId };
+};
+
 app.get('/api/feedback', async (req, res) => {
   try {
     const sinceRaw = Array.isArray(req.query.since) ? req.query.since[0] : req.query.since;
@@ -928,6 +996,12 @@ app.get('/api/feedback', async (req, res) => {
     );
     res.json({ ok: true, items });
   } catch (err) {
+    if (isFirestoreUnavailable(err) || !db) {
+      const sinceRaw = Array.isArray(req.query.since) ? req.query.since[0] : req.query.since;
+      const limitRaw = Array.isArray(req.query.limit) ? req.query.limit[0] : req.query.limit;
+      const items = listFallbackFeedback(sinceRaw, limitRaw);
+      return res.json({ ok: true, items, warning: 'firestore-unavailable' });
+    }
     if (logger?.error) logger.error({ err }, 'feedback list error');
     res.status(500).json({ ok: false, error: 'internal-error' });
   }
@@ -941,6 +1015,14 @@ app.post('/api/feedback', async (req, res) => {
     const code = err && typeof err === 'object' ? err.code : null;
     if (code === 'invalid-rating' || code === 'missing-comment') {
       return res.status(400).json({ ok: false, error: code });
+    }
+    if (isFirestoreUnavailable(err) || !db) {
+      const parsed = parseFeedbackBody(req.body ?? {});
+      if (parsed.error) {
+        return res.status(400).json({ ok: false, error: parsed.error });
+      }
+      const fallback = addFallbackFeedback(parsed);
+      return res.json({ ok: true, id: fallback.id, warning: 'firestore-unavailable' });
     }
     if (logger?.error) logger.error({ err }, 'feedback create error');
     res.status(500).json({ ok: false, error: 'internal-error' });
