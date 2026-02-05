@@ -25,7 +25,10 @@
 .fullpage-demo-scope textarea,
 .february-page input,
 .february-page select,
-.february-page textarea {
+.february-page textarea,
+.psyche-page input,
+.psyche-page select,
+.psyche-page textarea {
   font-size: 16px;
 }
 
@@ -1886,6 +1889,29 @@ div:has(> .fullpage-demo-scope) > .bg-black\/60 {
   object-fit: contain;
   background: var(--color-bg-card);
   border-radius: calc(1.5rem - 0.4rem);
+}
+
+:where(.fullpage-demo, .fullpage-demo-scope) .psyche-hero-media-image {
+  display: block;
+  width: 100%;
+  max-width: 420px;
+  height: 560px;
+  max-height: 70vh;
+  background-color: var(--color-bg-secondary);
+  background-size: contain;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+:where(.fullpage-demo, .fullpage-demo-scope) .psyche-quote {
+  margin: 1rem 0;
+  padding: 0.75rem 1rem;
+  border-left: 3px solid color-mix(in srgb, var(--color-border-strong) 70%, transparent);
+  background: color-mix(in srgb, var(--color-bg-card) 80%, transparent);
+  font-family: var(--font-office-code);
+  font-size: 0.95rem;
+  line-height: 1.65;
+  color: var(--color-text-secondary);
 }
 
 :where(.fullpage-demo, .fullpage-demo-scope) .february-hero-subtitle {

@@ -65,6 +65,7 @@ const WinterDinnerPage = lazy(() => import('./pages/WinterDinnerPage'));
 const WinterPizzaPage = lazy(() => import('./pages/WinterPizzaPage'));
 const JanuaryMealsPage = lazy(() => import('./pages/JanuaryMealsPage'));
 const FebruaryPage = lazy(() => import('./pages/FebruaryPage'));
+const PsychePage = lazy(() => import('./pages/PsychePage'));
 const IntakeForKaraPage = lazy(() => import('./pages/IntakeForKaraPage'));
 const IntakeForKaraQuestionsPage = lazy(() => import('./pages/IntakeForKaraQuestionsPage'));
 const FullPageDemoPage = lazy(() => import('./pages/FullPageDemoPage'));
@@ -234,6 +235,14 @@ const AppContent = () => {
                   element={
                     <AnimatedPage>
                       <FebruaryPage />
+                    </AnimatedPage>
+                  }
+                />
+                <Route
+                  path="/psyche"
+                  element={
+                    <AnimatedPage>
+                      <PsychePage />
                     </AnimatedPage>
                   }
                 />
