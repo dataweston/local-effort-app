@@ -1,11 +1,12 @@
 // POST /api/psyche/checkout
-// Body: { token, verificationToken, checkoutAttemptId, fulfillment, deliveryZone, deliveryNotes, customer, address }
+// Body: { token, verificationToken, checkoutAttemptId, fulfillment, deliveryZone, deliveryNotes, quantity, customer, address }
 // Processes a Square payment and sends Brevo emails to customer and admin.
 
 const { getSquareClient } = require('../_lib/squareClient');
 const { createBrevoService } = require('../../backend/api/services/brevo');
 
 const PRODUCT_PRICE_CENTS = 9000;
+const MAX_QUANTITY = 4;
 const DELIVERY_FEE_CENTS = 1000;
 const SHIPPING_FEE_CENTS = 1000;
 
@@ -30,6 +31,12 @@ const resolveFeeCents = (fulfillment, deliveryZone) => {
   return null;
 };
 
+const parseQuantity = (value) => {
+  const parsed = Number.isInteger(value) ? value : Number.parseInt(value, 10);
+  if (!Number.isInteger(parsed)) return 1;
+  return parsed;
+};
+
 module.exports = async (req, res) => {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
@@ -46,6 +53,7 @@ module.exports = async (req, res) => {
     fulfillment,
     deliveryZone,
     deliveryNotes,
+    quantity: rawQuantity,
     customer,
     address,
   } = req.body || {};
@@ -63,7 +71,12 @@ module.exports = async (req, res) => {
     return res.status(400).json({ error: 'Invalid fulfillment option' });
   }
 
-  const amountCents = PRODUCT_PRICE_CENTS + feeCents;
+  const quantity = parseQuantity(rawQuantity);
+  if (quantity < 1 || quantity > MAX_QUANTITY) {
+    return res.status(400).json({ error: `Quantity must be between 1 and ${MAX_QUANTITY}.` });
+  }
+
+  const amountCents = PRODUCT_PRICE_CENTS * quantity + feeCents;
   const idempotencyKey =
     sanitizeIdempotencyKey(checkoutAttemptId) ||
     `psyche-${Date.now()}-${Math.random().toString(36).slice(2)}`;
@@ -83,11 +96,12 @@ module.exports = async (req, res) => {
       locationId,
       autocomplete: true,
       buyerEmailAddress: customer.email,
-      note: `Psyche olive oil - ${fulfillmentLabel}`.slice(0, 500),
+      note: `Psyche olive oil x${quantity} - ${fulfillmentLabel}`.slice(0, 500),
       referenceId: `psyche-${Date.now()}`,
       metadata: {
         fulfillment: fulfillment || 'delivery',
         delivery_zone: deliveryZone || '',
+        quantity: String(quantity),
         customer_name: customer.name.slice(0, 80),
         customer_phone: customer.phone.slice(0, 30),
         city: address.city.slice(0, 60),
@@ -116,8 +130,8 @@ module.exports = async (req, res) => {
           `Address: ${fullAddress}`,
           `Delivery/shipping notes: ${deliveryNotes || 'None'}`,
           '',
-          `Product: Psyche olive oil`,
-          `Subtotal: $${(PRODUCT_PRICE_CENTS / 100).toFixed(2)}`,
+          `Product: Psyche olive oil (x${quantity})`,
+          `Subtotal: $${((PRODUCT_PRICE_CENTS * quantity) / 100).toFixed(2)}`,
           `Fulfillment fee: $${(feeCents / 100).toFixed(2)}`,
           `Total: $${(amountCents / 100).toFixed(2)}`,
           '',
@@ -142,7 +156,8 @@ module.exports = async (req, res) => {
           'NEW PSYCHE OLIVE OIL ORDER',
           '',
           `Fulfillment: ${fulfillmentLabel}`,
-          `Subtotal: $${(PRODUCT_PRICE_CENTS / 100).toFixed(2)}`,
+          `Quantity: ${quantity}`,
+          `Subtotal: $${((PRODUCT_PRICE_CENTS * quantity) / 100).toFixed(2)}`,
           `Fulfillment fee: $${(feeCents / 100).toFixed(2)}`,
           `Total: $${(amountCents / 100).toFixed(2)}`,
           '',

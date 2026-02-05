@@ -8,6 +8,7 @@ import '../styles/fullpage-demo-theme.css';
 
 const HERO_IMAGE = '/gallery/Screenshot%20%28172%29.png';
 const PRODUCT_PRICE_CENTS = 9000;
+const MAX_QUANTITY = 4;
 const DELIVERY_FEE_CENTS = 1000;
 const SHIPPING_FEE_CENTS = 1000;
 
@@ -25,6 +26,7 @@ const formatPostal = (value) => value.replace(/\D/g, '').slice(0, 5);
 const PsychePage = () => {
   const [fulfillment, setFulfillment] = useState('delivery');
   const [deliveryZone, setDeliveryZone] = useState('local');
+  const [quantity, setQuantity] = useState(1);
   const [customer, setCustomer] = useState({ name: '', email: '', phone: '' });
   const [address, setAddress] = useState({ line1: '', line2: '', city: '', state: 'MN', postal: '' });
   const [deliveryNotes, setDeliveryNotes] = useState('');
@@ -38,9 +40,13 @@ const PsychePage = () => {
     return deliveryZone === 'extended' ? DELIVERY_FEE_CENTS : 0;
   }, [fulfillment, deliveryZone]);
 
+  const subtotalCents = useMemo(
+    () => PRODUCT_PRICE_CENTS * quantity,
+    [quantity]
+  );
   const totalCents = useMemo(
-    () => PRODUCT_PRICE_CENTS + fulfillmentFeeCents,
-    [fulfillmentFeeCents]
+    () => subtotalCents + fulfillmentFeeCents,
+    [subtotalCents, fulfillmentFeeCents]
   );
 
   const { cardLoaded, error: cardError, loadingScript, tokenize, verifyBuyer } = useSquareCard(
@@ -122,6 +128,7 @@ const PsychePage = () => {
           fulfillment,
           deliveryZone,
           deliveryNotes,
+          quantity,
           customer,
           address,
         }),
@@ -243,7 +250,10 @@ const PsychePage = () => {
               <div>
                 <div className="february-card-title">Buy Psyche olive oil</div>
                 <div className="february-card-subtitle">
-                  Single bottle price: $90.00
+                  Price per bottle: $90.00
+                </div>
+                <div className="february-card-subtitle">
+                  Quantity: {quantity} (max {MAX_QUANTITY})
                 </div>
                 <div className="february-card-subtitle">
                   {fulfillment === 'shipping'
@@ -257,13 +267,35 @@ const PsychePage = () => {
                 <div className="february-card-total-label">Total</div>
                 <div className="february-card-total-value">${formatMoney(totalCents)}</div>
                 <div className="february-card-subtitle">
-                  $90.00 + ${formatMoney(fulfillmentFeeCents)}
+                  ${formatMoney(subtotalCents)} + ${formatMoney(fulfillmentFeeCents)}
                 </div>
               </div>
             </div>
 
             <form className="february-form" onSubmit={handleSubmit}>
               <div className="february-form-grid">
+                <div>
+                  <label className="form-fun-label" htmlFor="psyche-quantity">Quantity <span className="required-indicator">*</span></label>
+                  <select
+                    id="psyche-quantity"
+                    className="input"
+                    value={quantity}
+                    onChange={(e) => {
+                      const next = Math.min(MAX_QUANTITY, Math.max(1, Number(e.target.value) || 1));
+                      setQuantity(next);
+                      resetStatus();
+                    }}
+                  >
+                    {Array.from({ length: MAX_QUANTITY }, (_, idx) => {
+                      const value = idx + 1;
+                      return (
+                        <option key={value} value={value}>
+                          {value}
+                        </option>
+                      );
+                    })}
+                  </select>
+                </div>
                 <div>
                   <label className="form-fun-label" htmlFor="psyche-name">Name <span className="required-indicator">*</span></label>
                   <input

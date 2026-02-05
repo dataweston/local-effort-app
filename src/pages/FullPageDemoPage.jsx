@@ -75,13 +75,6 @@ const DEFAULT_DEPOSIT_PERCENT = 0.15;
 const ESTIMATE_LIFESPAN_DAYS = 5;
 const HOLD_WINDOW_HOURS = 24;
 const ANNOUNCEMENT_HEIGHT = 56; // Increased for mobile two-line support
-const WHOLESALE_MENU_ITEMS = [
-  { name: 'Market bread + cultured butter', price: '$4.50 / portion' },
-  { name: 'Roasted vegetable lasagna', price: '$12.00 / portion' },
-  { name: 'Herb chicken + lemon jus', price: '$13.50 / portion' },
-  { name: 'Seasonal grain salad', price: '$9.00 / portion' },
-  { name: 'House pickles + condiments', price: '$3.50 / portion' },
-];
 const BUSINESS_CONTACT_OPTIONS = {
   wholesale: 'Wholesale',
   consulting: 'Restaurant consulting',
@@ -398,6 +391,9 @@ const FullPageDemoPage = () => {
   const [businessPanel, setBusinessPanel] = useState(null);
   const [wholesaleEmail, setWholesaleEmail] = useState('');
   const [wholesaleSubmitted, setWholesaleSubmitted] = useState(false);
+  const [wholesaleMenuItems, setWholesaleMenuItems] = useState([]);
+  const [wholesaleMenuLoading, setWholesaleMenuLoading] = useState(false);
+  const [wholesaleMenuError, setWholesaleMenuError] = useState('');
   const [officeLunchesOpen, setOfficeLunchesOpen] = useState(false);
   const [quoteDialogOpen, setQuoteDialogOpen] = useState(false);
   const [quoteDialogType, setQuoteDialogType] = useState('');
@@ -1904,11 +1900,51 @@ const clampGuestCount = (value, config) => {
             name: (ctx && (ctx.name || ctx.title || ctx.alt)) || img.public_id || 'Partner',
             url: ctx && (ctx.url || ctx.link || ctx.href),
           };
-        }).filter((p) => p.publicId);
+      }).filter((p) => p.publicId);
         setPartners(items);
       })
       .catch(() => {});
     return () => { mounted = false; };
+  }, []);
+
+  useEffect(() => {
+    let abort = false;
+    const controller = new AbortController();
+
+    (async () => {
+      setWholesaleMenuLoading(true);
+      setWholesaleMenuError('');
+      try {
+        const res = await fetch('/api/store/products?store=happy-monday', { signal: controller.signal });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(data?.error || 'Failed loading wholesale menu');
+        const products = Array.isArray(data.products) ? data.products : [];
+        const mapped = products.map((product, index) => {
+          const basePrice = typeof product.salePrice === 'number' ? product.salePrice : product.price;
+          const priceCents = Number.isFinite(basePrice) ? basePrice : 0;
+          return {
+            id: product.id || product._id || `${product.title || 'item'}-${index}`,
+            name: product.title || 'Menu item',
+            price: formatCurrency(centsToDollars(priceCents), {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+            }),
+          };
+        });
+        if (!abort) setWholesaleMenuItems(mapped);
+      } catch (err) {
+        if (abort) return;
+        setWholesaleMenuItems([]);
+        setWholesaleMenuError(err?.message || 'Unable to load wholesale menu');
+      } finally {
+        if (!abort) setWholesaleMenuLoading(false);
+      }
+    })();
+
+    return () => {
+      abort = true;
+      controller.abort();
+    };
   }, []);
 
 
@@ -3031,8 +3067,17 @@ const clampGuestCount = (value, config) => {
                             <div className="business-menu-title">Wholesale menu unlocked</div>
                             <div className="business-note">Here is a starter list with partner pricing.</div>
                             <div className="business-menu-list">
-                              {WHOLESALE_MENU_ITEMS.map((item) => (
-                                <div key={item.name} className="business-menu-row">
+                              {wholesaleMenuLoading && (
+                                <div className="business-note">Loading menu...</div>
+                              )}
+                              {!wholesaleMenuLoading && wholesaleMenuError && (
+                                <div className="business-note">{wholesaleMenuError}</div>
+                              )}
+                              {!wholesaleMenuLoading && !wholesaleMenuError && wholesaleMenuItems.length === 0 && (
+                                <div className="business-note">Menu updates are in progress. Email us for current pricing.</div>
+                              )}
+                              {!wholesaleMenuLoading && !wholesaleMenuError && wholesaleMenuItems.map((item) => (
+                                <div key={item.id || item.name} className="business-menu-row">
                                   <span>{item.name}</span>
                                   <span className="business-price">{item.price}</span>
                                 </div>
