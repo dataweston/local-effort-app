@@ -2167,11 +2167,13 @@ app.post('/api/intake/submit', async (req, res) => {
     }
     htmlContent += '</table>';
 
+    const senderEmail = process.env.SENDER_EMAIL || 'yum@localeffortfood.com';
     await brevoService.sendEmail({
-      sender: { name: 'Local Effort', email: 'hello@localeffort.com' },
+      sender: { name: 'Local Effort', email: senderEmail },
       to: [{ email: 'dataweston@gmail.com', name: 'Admin' }],
-      subject: 'New Meal Plan Intake: ' + (formData.client_name || 'Unknown'),
+      subject: 'New Meal Plan Intake: ' + (formData.client_name || formData.email || 'New Client'),
       htmlContent,
+      tags: ['intake', 'meal-plan'],
     });
 
     logger.info({ client: formData.client_name }, 'intake form submitted');

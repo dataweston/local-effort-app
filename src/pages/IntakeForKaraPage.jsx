@@ -436,7 +436,21 @@ const IntakeForKaraPage = () => {
           </div>
           <div className="intake-kara-summary">
             <h3>Your Responses</h3>
-            <pre>{JSON.stringify(answers, null, 2)}</pre>
+            <dl className="intake-kara-responses">
+              {Object.entries(answers).map(([key, value]) => {
+                const label = key.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+                let display = value;
+                if (Array.isArray(value)) display = value.join(', ');
+                else if (typeof value === 'object' && value !== null) display = Object.entries(value).map(([k, v]) => `${k}: ${Array.isArray(v) ? v.join(', ') : v}`).join('; ');
+                else display = String(value || '—');
+                return (
+                  <div key={key} className="intake-kara-response-row">
+                    <dt>{label}</dt>
+                    <dd>{display}</dd>
+                  </div>
+                );
+              })}
+            </dl>
           </div>
         </div>
       </div>
