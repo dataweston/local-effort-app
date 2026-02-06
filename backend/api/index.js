@@ -2140,6 +2140,48 @@ app.post('/api/square/customers/import', async (req, res) => {
   }
 });
 
+// Intake form submission - sends email to admin
+app.post('/api/intake/submit', async (req, res) => {
+  try {
+    const formData = req.body;
+    if (!formData) {
+      return res.status(400).json({ error: 'No form data provided' });
+    }
+
+    // Build email content
+    const formatValue = (value) => {
+      if (Array.isArray(value)) return value.join(', ');
+      if (typeof value === 'object' && value !== null) return JSON.stringify(value, null, 2);
+      return String(value || '');
+    };
+
+    let htmlContent = '<h2>New Meal Plan Intake Submission</h2>';
+    htmlContent += '<table style="border-collapse: collapse; width: 100%;">';
+    
+    for (const [key, value] of Object.entries(formData)) {
+      const displayKey = key.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+      htmlContent += `<tr style="border-bottom: 1px solid #eee;">`;
+      htmlContent += `<td style="padding: 8px; font-weight: bold; vertical-align: top;">${displayKey}</td>`;
+      htmlContent += `<td style="padding: 8px;">${formatValue(value)}</td>`;
+      htmlContent += `</tr>`;
+    }
+    htmlContent += '</table>';
+
+    await brevoService.sendEmail({
+      sender: { name: 'Local Effort', email: 'hello@localeffort.com' },
+      to: [{ email: 'dataweston@gmail.com', name: 'Admin' }],
+      subject: 'New Meal Plan Intake: ' + (formData.client_name || 'Unknown'),
+      htmlContent,
+    });
+
+    logger.info({ client: formData.client_name }, 'intake form submitted');
+    return res.json({ success: true, message: 'Form submitted successfully' });
+  } catch (err) {
+    logger.error({ err }, 'intake form submission error');
+    return res.status(500).json({ error: 'Failed to submit form', details: err.message });
+  }
+});
+
 // Sentry error handler should be before any custom error handlers (none at bottom yet)
 if (sentryEnabled) {
   app.use(Sentry.Handlers.errorHandler());
