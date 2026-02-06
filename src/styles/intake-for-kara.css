@@ -5,7 +5,7 @@
     radial-gradient(circle at 88% 20%, color-mix(in srgb, var(--color-bg-card) 45%, transparent) 0 200px, transparent 220px),
     linear-gradient(180deg, color-mix(in srgb, var(--color-bg-page) 92%, var(--color-bg-section) 8%) 0%, var(--color-bg-section) 100%);
   color: var(--color-text-primary);
-  font-family: var(--font-display);
+  font-family: var(--font-office-pro-mono), 'Office Pro Mono', monospace;
   padding: clamp(2.5rem, 4vw, 4rem) clamp(1.5rem, 4vw, 3.5rem);
 }
 
@@ -145,6 +145,15 @@
   transition: border-color 150ms ease, box-shadow 150ms ease;
 }
 
+.intake-date {
+  cursor: pointer;
+}
+
+.intake-date::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  filter: invert(0.5);
+}
+
 .intake-textarea {
   resize: vertical;
 }
@@ -235,12 +244,28 @@
   text-align: center;
 }
 
+.intake-kara-error {
+  color: #b91c1c;
+  background: #fef2f2;
+  padding: 1rem;
+  border-radius: 0.75rem;
+  border: 1px solid #fecaca;
+}
+
 .intake-kara-summary {
   background: color-mix(in srgb, var(--color-bg-card) 90%, transparent);
   border-radius: 1.5rem;
   padding: 1.5rem;
   border: 1px solid color-mix(in srgb, var(--color-border-default) 70%, transparent);
   box-shadow: 0 18px 30px rgba(30, 24, 18, 0.08);
+}
+
+.intake-kara-summary h3 {
+  margin: 0 0 1rem 0;
+  font-size: 0.8rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
 }
 
 .intake-kara-summary pre {
@@ -315,6 +340,162 @@
   color: var(--color-text-muted);
 }
 
+/* ═══════════════════════════════════════════════════════════════════════════
+   Group Fields
+   ═══════════════════════════════════════════════════════════════════════════ */
+.intake-group {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.intake-group-field {
+  display: grid;
+  gap: 0.4rem;
+}
+
+.intake-field-label {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--color-text-primary);
+}
+
+.intake-choices-compact {
+  gap: 0.4rem;
+}
+
+.intake-choices-compact .intake-choice {
+  padding: 0.5rem 0.9rem;
+  font-size: 0.8rem;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Protein Picker
+   ═══════════════════════════════════════════════════════════════════════════ */
+.intake-protein-picker {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.intake-protein-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.6rem 0.9rem;
+  background: color-mix(in srgb, var(--color-bg-section) 50%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-border-default) 60%, transparent);
+  border-radius: 0.75rem;
+  transition: background 150ms ease, border-color 150ms ease;
+}
+
+.intake-protein-row-main {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.intake-protein-row.is-selected {
+  background: color-mix(in srgb, var(--color-action-primary-bg) 10%, var(--color-bg-card) 90%);
+  border-color: color-mix(in srgb, var(--color-action-primary-bg) 40%, transparent);
+}
+
+.intake-protein-check {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.95rem;
+  color: var(--color-text-primary);
+  flex: 1;
+}
+
+.intake-protein-checkbox {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.25rem;
+  height: 1.25rem;
+  border-radius: 0.3rem;
+  border: 2px solid var(--color-border-strong);
+  background: var(--color-bg-card);
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--color-action-primary-bg);
+  transition: border-color 120ms ease, background 120ms ease;
+}
+
+.intake-protein-check.is-checked .intake-protein-checkbox {
+  background: var(--color-action-primary-bg);
+  border-color: var(--color-action-primary-bg);
+  color: #fff;
+}
+
+.intake-protein-label {
+  font-weight: 500;
+}
+
+.intake-protein-everyday {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.35rem 0.7rem;
+  background: color-mix(in srgb, var(--color-bg-section) 70%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-border-default) 50%, transparent);
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-family: inherit;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: background 120ms ease, border-color 120ms ease, color 120ms ease;
+}
+
+.intake-protein-everyday:hover {
+  background: color-mix(in srgb, var(--color-action-primary-bg) 15%, transparent);
+  border-color: color-mix(in srgb, var(--color-action-primary-bg) 30%, transparent);
+}
+
+.intake-protein-everyday.is-everyday {
+  background: var(--color-action-primary-bg);
+  border-color: var(--color-action-primary-bg);
+  color: #fff;
+  font-weight: 600;
+}
+
+/* Protein sub-options */
+.intake-protein-sub-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  padding-left: 1.85rem;
+}
+
+.intake-protein-sub {
+  padding: 0.35rem 0.65rem;
+  background: color-mix(in srgb, var(--color-bg-card) 80%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-border-default) 50%, transparent);
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-family: inherit;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: background 120ms ease, border-color 120ms ease, color 120ms ease;
+}
+
+.intake-protein-sub:hover {
+  background: color-mix(in srgb, var(--color-action-primary-bg) 12%, var(--color-bg-card) 88%);
+  border-color: color-mix(in srgb, var(--color-action-primary-bg) 35%, transparent);
+}
+
+.intake-protein-sub.is-selected {
+  background: color-mix(in srgb, var(--color-action-primary-bg) 18%, var(--color-bg-card) 82%);
+  border-color: var(--color-action-primary-bg);
+  color: var(--color-text-primary);
+  font-weight: 500;
+}
+
 @media (max-width: 900px) {
   .intake-kara-shell {
     grid-template-columns: 1fr;
@@ -323,13 +504,21 @@
   .intake-kara-aside {
     position: static;
   }
+
+  .intake-protein-row {
+    flex-wrap: wrap;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .intake-kara-progress-fill,
   .intake-choice,
   .intake-input,
-  .intake-textarea {
+  .intake-textarea,
+  .intake-protein-row,
+  .intake-protein-checkbox,
+  .intake-protein-everyday,
+  .intake-protein-sub {
     transition: none;
   }
 }
