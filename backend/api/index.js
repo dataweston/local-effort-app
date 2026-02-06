@@ -2148,24 +2148,123 @@ app.post('/api/intake/submit', async (req, res) => {
       return res.status(400).json({ error: 'No form data provided' });
     }
 
-    // Build email content
-    const formatValue = (value) => {
-      if (Array.isArray(value)) return value.join(', ');
-      if (typeof value === 'object' && value !== null) return JSON.stringify(value, null, 2);
-      return String(value || '');
+    // Helper to format field labels nicely
+    const formatLabel = (key) => key.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+
+    // Helper to format values for email display
+    const formatValue = (value, indent = 0) => {
+      if (value === null || value === undefined || value === '') return '<em style="color:#999;">—</em>';
+      if (Array.isArray(value)) {
+        if (value.length === 0) return '<em style="color:#999;">None selected</em>';
+        return value.join(', ');
+      }
+      if (typeof value === 'object') {
+        // Handle nested objects like protein sub-options
+        const entries = Object.entries(value);
+        if (entries.length === 0) return '<em style="color:#999;">—</em>';
+        return entries.map(([k, v]) => {
+          const label = formatLabel(k);
+          if (Array.isArray(v) && v.length > 0) {
+            return `<strong>${label}:</strong> ${v.join(', ')}`;
+          } else if (typeof v === 'object' && v !== null) {
+            // Deep nested object (e.g., proteins with sub-options)
+            const subItems = Object.entries(v)
+              .filter(([, sv]) => Array.isArray(sv) ? sv.length > 0 : sv)
+              .map(([sk, sv]) => `${formatLabel(sk)}: ${Array.isArray(sv) ? sv.join(', ') : sv}`)
+              .join('; ');
+            return `<strong>${label}:</strong> ${subItems || '—'}`;
+          }
+          return `<strong>${label}:</strong> ${v || '—'}`;
+        }).join('<br>');
+      }
+      return String(value);
     };
 
-    let htmlContent = '<h2>New Meal Plan Intake Submission</h2>';
-    htmlContent += '<table style="border-collapse: collapse; width: 100%;">';
-    
-    for (const [key, value] of Object.entries(formData)) {
-      const displayKey = key.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
-      htmlContent += `<tr style="border-bottom: 1px solid #eee;">`;
-      htmlContent += `<td style="padding: 8px; font-weight: bold; vertical-align: top;">${displayKey}</td>`;
-      htmlContent += `<td style="padding: 8px;">${formatValue(value)}</td>`;
-      htmlContent += `</tr>`;
+    // Group fields by category for better organization
+    const sections = {
+      'Contact & Timing': ['email', 'phone', 'address', 'due_date', 'first_delivery'],
+      'Kara\'s Preferences': ['kara_proteins', 'kara_favorites', 'kara_dislikes', 'kara_allergies'],
+      'Dad\'s Preferences': ['dad_proteins', 'dad_favorites', 'dad_dislikes', 'dad_allergies'],
+      'Meal Logistics': ['servings_per_meal', 'meals_per_week', 'dietary_notes', 'fridge_freezer'],
+      'Cuisine & Cooking': ['cuisines', 'spice_level', 'cooking_equipment'],
+      'Breakfast & Snacks': ['breakfast_options', 'snack_options', 'other_requests'],
+      'Delivery & Billing': ['preferred_delivery_day', 'billing_preference', 'additional_notes'],
+    };
+
+    let htmlContent = `
+      <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto;">
+        <h1 style="color: #2d2a26; border-bottom: 2px solid #e8e4df; padding-bottom: 12px;">
+          New Meal Plan Intake
+        </h1>
+        <p style="color: #666; margin-bottom: 24px;">
+          Submitted on ${new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+        </p>
+    `;
+
+    const usedKeys = new Set();
+
+    for (const [sectionName, keys] of Object.entries(sections)) {
+      const sectionData = keys.filter(k => formData[k] !== undefined && formData[k] !== '');
+      if (sectionData.length === 0) continue;
+
+      htmlContent += `
+        <h2 style="color: #5c5650; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; margin: 24px 0 12px; border-bottom: 1px solid #e8e4df; padding-bottom: 8px;">
+          ${sectionName}
+        </h2>
+        <table style="width: 100%; border-collapse: collapse;">
+      `;
+
+      for (const key of keys) {
+        if (formData[key] === undefined) continue;
+        usedKeys.add(key);
+        const label = formatLabel(key);
+        const value = formatValue(formData[key]);
+        htmlContent += `
+          <tr>
+            <td style="padding: 8px 12px 8px 0; vertical-align: top; width: 140px; color: #888; font-size: 13px;">
+              ${label}
+            </td>
+            <td style="padding: 8px 0; color: #333; font-size: 14px; line-height: 1.5;">
+              ${value}
+            </td>
+          </tr>
+        `;
+      }
+      htmlContent += '</table>';
     }
-    htmlContent += '</table>';
+
+    // Include any fields not in predefined sections
+    const remainingKeys = Object.keys(formData).filter(k => !usedKeys.has(k));
+    if (remainingKeys.length > 0) {
+      htmlContent += `
+        <h2 style="color: #5c5650; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; margin: 24px 0 12px; border-bottom: 1px solid #e8e4df; padding-bottom: 8px;">
+          Other Information
+        </h2>
+        <table style="width: 100%; border-collapse: collapse;">
+      `;
+      for (const key of remainingKeys) {
+        const label = formatLabel(key);
+        const value = formatValue(formData[key]);
+        htmlContent += `
+          <tr>
+            <td style="padding: 8px 12px 8px 0; vertical-align: top; width: 140px; color: #888; font-size: 13px;">
+              ${label}
+            </td>
+            <td style="padding: 8px 0; color: #333; font-size: 14px; line-height: 1.5;">
+              ${value}
+            </td>
+          </tr>
+        `;
+      }
+      htmlContent += '</table>';
+    }
+
+    htmlContent += `
+        <p style="margin-top: 32px; padding-top: 16px; border-top: 1px solid #e8e4df; color: #999; font-size: 12px;">
+          This intake form was submitted via the Local Effort website.
+        </p>
+      </div>
+    `;
 
     const senderEmail = process.env.SENDER_EMAIL || 'yum@localeffortfood.com';
     await brevoService.sendEmail({
