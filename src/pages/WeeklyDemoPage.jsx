@@ -43,6 +43,12 @@ export default function WeeklyDemoPage() {
 
   const overheadTotal = planner.overheads.reduce((sum, o) => sum + (o.monthlyCost || 0), 0);
 
+  // Use monthly totals when on monthly view, otherwise weekly
+  const isMonthly = view === 'monthly';
+  const displayTotals = isMonthly
+    ? { revenue: planner.monthlyTotals.revenue, cost: planner.monthlyTotals.labor, net: planner.monthlyTotals.net }
+    : planner.totals;
+
   const handleDayClick = (date) => {
     selectDayFromWeek(date);
   };
@@ -94,7 +100,7 @@ export default function WeeklyDemoPage() {
                     Rev
                   </div>
                   <div className="text-sm font-bold flex items-center gap-0.5" style={{ color: 'var(--color-state-success)' }}>
-                    <DollarSign size={11} />{planner.totals.revenue}
+                    <DollarSign size={11} />{displayTotals.revenue}
                   </div>
                 </div>
                 <div className="w-px h-7" style={{ backgroundColor: 'var(--color-border-default)' }} />
@@ -103,7 +109,7 @@ export default function WeeklyDemoPage() {
                     Labor
                   </div>
                   <div className="text-sm font-bold flex items-center gap-0.5" style={{ color: 'var(--color-state-danger)' }}>
-                    <DollarSign size={11} />{planner.totals.cost}
+                    <DollarSign size={11} />{displayTotals.cost}
                   </div>
                 </div>
                 {view === 'monthly' && overheadTotal > 0 && (
@@ -126,9 +132,9 @@ export default function WeeklyDemoPage() {
                   </div>
                   <div
                     className="text-sm font-bold flex items-center gap-0.5"
-                    style={{ color: planner.totals.net >= 0 ? 'var(--color-state-success)' : 'var(--color-state-danger)' }}
+                    style={{ color: displayTotals.net >= 0 ? 'var(--color-state-success)' : 'var(--color-state-danger)' }}
                   >
-                    <DollarSign size={11} />{planner.totals.net}
+                    <DollarSign size={11} />{displayTotals.net}
                   </div>
                 </div>
               </div>
@@ -187,10 +193,10 @@ export default function WeeklyDemoPage() {
             }}
           >
             <span className="text-xs font-bold" style={{ color: 'var(--color-state-success)' }}>
-              +${planner.totals.revenue}
+              +${displayTotals.revenue}
             </span>
             <span className="text-xs font-bold" style={{ color: 'var(--color-state-danger)' }}>
-              −${planner.totals.cost} labor
+              −${displayTotals.cost} labor
             </span>
             {view === 'monthly' && overheadTotal > 0 && (
               <span className="text-xs font-bold" style={{ color: 'var(--color-state-danger)' }}>
@@ -199,9 +205,9 @@ export default function WeeklyDemoPage() {
             )}
             <span
               className="text-xs font-bold"
-              style={{ color: planner.totals.net >= 0 ? 'var(--color-state-success)' : 'var(--color-state-danger)' }}
+              style={{ color: displayTotals.net >= 0 ? 'var(--color-state-success)' : 'var(--color-state-danger)' }}
             >
-              Net ${planner.totals.net}
+              Net ${displayTotals.net}
             </span>
           </div>
         </div>

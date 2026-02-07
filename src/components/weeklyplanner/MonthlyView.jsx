@@ -240,7 +240,13 @@ export function MonthlyView({
       )}
 
       {/* What-if panel */}
-      <WhatIfPanel cards={monthCards} onToggle={planner.handlers.handleToggle} />
+      <WhatIfPanel
+        cards={monthCards}
+        onToggle={planner.handlers.handleToggle}
+        onAdd={planner.handlers.handleAddWhatIf}
+        onRemove={planner.handlers.handleRemoveWhatIf}
+        onApply={planner.handlers.handleApplyWhatIf}
+      />
     </div>
   );
 }

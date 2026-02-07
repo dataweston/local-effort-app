@@ -1,8 +1,8 @@
 import { useState, useCallback, useMemo, useEffect, useRef } from 'react';
 import { arrayMove } from '@dnd-kit/sortable';
 import { generateCardsForRange } from './defaultSchedule';
-import { getWeekDates, getWeekStart, getToday, getDayOfWeek } from './dateUtils';
-import { weekTotals } from './financials';
+import { getWeekDates, getWeekStart, getToday, getDayOfWeek, addWeeks, getMonthWeeks } from './dateUtils';
+import { weekTotals, monthTotals as computeMonthTotals } from './financials';
 
 let _nextCardId = 5000;
 
@@ -110,6 +110,23 @@ export function usePlannerState({ mode = 'demo', accessToken = null, weekStart, 
 
   const totals = useMemo(() => weekTotals(weekCards), [weekCards]);
 
+  // Month-level cards and totals (for monthly view top bar)
+  const monthCards = useMemo(() => {
+    if (!selectedMonth) return [];
+    const [y, m] = selectedMonth.split('-').map(Number);
+    const weekStarts = getMonthWeeks(y, m);
+    const allDates = new Set();
+    for (const ws of weekStarts) {
+      for (const d of getWeekDates(ws)) allDates.add(d);
+    }
+    return cards.filter((c) => allDates.has(c.date));
+  }, [cards, selectedMonth]);
+
+  const monthlyTotals = useMemo(
+    () => computeMonthTotals(monthCards, overheads, cogs),
+    [monthCards, overheads, cogs]
+  );
+
   // Debounced save
   const persistCards = useCallback(
     (nextCards) => {
@@ -155,11 +172,49 @@ export function usePlannerState({ mode = 'demo', accessToken = null, weekStart, 
 
   const handleSave = useCallback(
     (updatedCard) => {
+      // If "repeat weekly" was toggled on a new card, generate weekly copies
+      if (updatedCard._repeatWeekly && !updatedCard.templateId) {
+        const { _repeatWeekly, ...cardData } = updatedCard;
+        const templateKey = `custom-${cardData.id}`;
+        const today = getToday();
+        const year = parseInt(today.split('-')[0], 10);
+        const endDate = `${year}-12-31`;
+
+        // Assign a templateId to the original
+        const baseCard = { ...cardData, templateId: templateKey };
+
+        // Generate copies for future weeks on the same day of week
+        const copies = [baseCard];
+        let ws = addWeeks(getWeekStart(baseCard.date), 1);
+        const lastWeek = getWeekStart(endDate);
+        while (ws <= lastWeek) {
+          const weekDts = getWeekDates(ws);
+          const dayIndex = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].indexOf(baseCard.dayOfWeek);
+          if (dayIndex >= 0 && weekDts[dayIndex]) {
+            copies.push({
+              ...baseCard,
+              id: String(++_nextCardId),
+              date: weekDts[dayIndex],
+            });
+          }
+          ws = addWeeks(ws, 1);
+        }
+
+        updateCards((prev) => {
+          // Replace original card with base + add copies
+          const without = prev.filter((c) => c.id !== cardData.id);
+          return [...without, ...copies];
+        });
+        setEditingCard(null);
+        return;
+      }
+
       if (updatedCard.templateId) {
         setPendingChange({ type: 'save', card: updatedCard });
       } else {
+        const { _repeatWeekly, ...clean } = updatedCard;
         updateCards((prev) =>
-          prev.map((c) => (c.id === updatedCard.id ? updatedCard : c))
+          prev.map((c) => (c.id === clean.id ? clean : c))
         );
         setEditingCard(null);
       }
@@ -359,6 +414,78 @@ export function usePlannerState({ mode = 'demo', accessToken = null, weekStart, 
     [mode, accessToken]
   );
 
+  // What-If handlers
+  const handleAddWhatIf = useCallback(
+    ({ title, dayOfWeek, costPerHour, startTime, endTime }) => {
+      const today = getToday();
+      const ws = getWeekStart(today);
+      const weekDts = getWeekDates(ws);
+      const dayIndex = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].indexOf(dayOfWeek);
+      const baseDate = dayIndex >= 0 ? weekDts[dayIndex] : weekDts[0];
+      const templateKey = `whatif-${++_nextCardId}`;
+
+      const year = parseInt(today.split('-')[0], 10);
+      const endDate = `${year}-12-31`;
+      const copies = [];
+
+      let currWs = ws;
+      const lastWeek = getWeekStart(endDate);
+      while (currWs <= lastWeek) {
+        const dates = getWeekDates(currWs);
+        if (dayIndex >= 0 && dates[dayIndex]) {
+          copies.push({
+            id: String(++_nextCardId),
+            templateId: templateKey,
+            title,
+            date: dates[dayIndex],
+            dayOfWeek,
+            zone: 'timed',
+            people: [],
+            startTime: startTime || null,
+            endTime: endTime || null,
+            revenue: 0,
+            cost: 0,
+            costPerHour: Number(costPerHour) || 0,
+            optional: true,
+            enabled: false,
+            effectTarget: null,
+            effectType: null,
+            order: 99,
+          });
+        }
+        currWs = addWeeks(currWs, 1);
+      }
+
+      updateCards((prev) => [...prev, ...copies]);
+    },
+    [updateCards]
+  );
+
+  const handleRemoveWhatIf = useCallback(
+    (cardId) => {
+      const card = cards.find((c) => c.id === cardId);
+      if (!card) return;
+      if (card.templateId) {
+        // Remove all instances of this recurring what-if
+        updateCards((prev) => prev.filter((c) => c.templateId !== card.templateId));
+      } else {
+        updateCards((prev) => prev.filter((c) => c.id !== cardId));
+      }
+    },
+    [cards, updateCards]
+  );
+
+  const handleApplyWhatIf = useCallback(
+    (cardId) => {
+      updateCards((prev) =>
+        prev.map((c) =>
+          c.id === cardId ? { ...c, optional: false, enabled: true } : c
+        )
+      );
+    },
+    [updateCards]
+  );
+
   // Drag & Drop
   const parseDroppable = (id) => {
     if (!id) return null;
@@ -456,8 +583,10 @@ export function usePlannerState({ mode = 'demo', accessToken = null, weekStart, 
   return {
     cards,
     weekCards,
+    monthCards,
     cardsByDate,
     totals,
+    monthlyTotals,
     editingCard,
     activeId,
     activeCard,
@@ -482,6 +611,9 @@ export function usePlannerState({ mode = 'demo', accessToken = null, weekStart, 
       handleDeleteOverhead,
       handleAddCOGS,
       handleDeleteCOGS,
+      handleAddWhatIf,
+      handleRemoveWhatIf,
+      handleApplyWhatIf,
     },
   };
 }
