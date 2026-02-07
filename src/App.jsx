@@ -84,13 +84,15 @@ const AppContent = () => {
     location.pathname === '/weddings' ||
     location.pathname === '/winterdinner' ||
     location.pathname === '/winterpizza' ||
-    location.pathname === '/januarymeals';
+    location.pathname === '/januarymeals' ||
+    location.pathname === '/catherine-schedule';
   const hideFooter =
     location.pathname === '/' ||
     location.pathname === '/sale' ||
     location.pathname === '/winterdinner' ||
     location.pathname === '/winterpizza' ||
-    location.pathname === '/januarymeals';
+    location.pathname === '/januarymeals' ||
+    location.pathname === '/catherine-schedule';
 
   useEffect(() => {
     document.fonts?.ready?.then(() => document.body.classList.add('fonts-loaded'));

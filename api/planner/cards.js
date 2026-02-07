@@ -20,28 +20,11 @@ module.exports = async (req, res) => {
 
   const uid = user.id;
 
-  // GET — fetch cards, optionally filtered by date range
+  // GET — fetch all cards for this user
   if (req.method === 'GET') {
     try {
-      const { weekStart, month } = req.query;
-      let where = { supabaseUid: uid };
-
-      if (weekStart) {
-        const start = weekStart;
-        const d = new Date(start + 'T00:00:00Z');
-        d.setUTCDate(d.getUTCDate() + 6);
-        const end = d.toISOString().slice(0, 10);
-        where.date = { gte: start, lte: end };
-      } else if (month) {
-        const [y, m] = month.split('-').map(Number);
-        const start = `${y}-${String(m).padStart(2, '0')}-01`;
-        const lastDay = new Date(Date.UTC(y, m, 0)).getUTCDate();
-        const end = `${y}-${String(m).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`;
-        where.date = { gte: start, lte: end };
-      }
-
       const cards = await prisma.plannerCard.findMany({
-        where,
+        where: { supabaseUid: uid },
         orderBy: [{ date: 'asc' }, { sortOrder: 'asc' }],
       });
 
@@ -78,44 +61,47 @@ module.exports = async (req, res) => {
 
     if (action === 'save-all' && Array.isArray(bulkCards)) {
       try {
-        const idMap = {};
+        const clientIds = new Set(bulkCards.map((c) => c.id).filter(Boolean));
 
         await prisma.$transaction(async (tx) => {
-          await tx.plannerCard.deleteMany({ where: { supabaseUid: uid } });
+          // Find existing cards for this user
+          const existing = await tx.plannerCard.findMany({
+            where: { supabaseUid: uid },
+            select: { id: true },
+          });
 
-          for (const c of bulkCards) {
-            const oldId = c.id;
-            const created = await tx.plannerCard.create({
-              data: {
-                supabaseUid: uid,
-                templateId: c.templateId || null,
-                title: c.title || 'Untitled',
-                date: c.date || '',
-                dayOfWeek: c.dayOfWeek || '',
-                zone: c.zone || 'timed',
-                people: c.people || [],
-                startTime: c.startTime || null,
-                endTime: c.endTime || null,
-                revenue: c.revenue || 0,
-                cost: c.cost || 0,
-                costPerHour: c.costPerHour || null,
-                optional: c.optional || false,
-                enabled: c.enabled !== false,
-                effectTarget: c.effectTarget || null,
-                effectType: c.effectType || null,
-                sortOrder: c.order ?? c.sortOrder ?? 0,
-              },
-            });
-            idMap[oldId] = created.id;
+          // Delete only cards the client no longer has
+          const toDelete = existing.filter((e) => !clientIds.has(e.id)).map((e) => e.id);
+          if (toDelete.length > 0) {
+            await tx.plannerCard.deleteMany({ where: { id: { in: toDelete }, supabaseUid: uid } });
           }
 
+          // Upsert each card — preserves IDs across saves
           for (const c of bulkCards) {
-            if (c.effectTarget && idMap[c.effectTarget] && idMap[c.id]) {
-              await tx.plannerCard.update({
-                where: { id: idMap[c.id] },
-                data: { effectTarget: idMap[c.effectTarget] },
-              });
-            }
+            const data = {
+              supabaseUid: uid,
+              templateId: c.templateId ?? null,
+              title: c.title || 'Untitled',
+              date: c.date || '',
+              dayOfWeek: c.dayOfWeek || '',
+              zone: c.zone || 'timed',
+              people: c.people || [],
+              startTime: c.startTime ?? null,
+              endTime: c.endTime ?? null,
+              revenue: c.revenue ?? 0,
+              cost: c.cost ?? 0,
+              costPerHour: c.costPerHour ?? null,
+              optional: c.optional ?? false,
+              enabled: c.enabled ?? true,
+              effectTarget: c.effectTarget ?? null,
+              effectType: c.effectType ?? null,
+              sortOrder: c.order ?? c.sortOrder ?? 0,
+            };
+            await tx.plannerCard.upsert({
+              where: { id: c.id || '' },
+              update: data,
+              create: { id: c.id || undefined, ...data },
+            });
           }
         });
 
@@ -138,14 +124,15 @@ module.exports = async (req, res) => {
             title: card.title,
             zone: card.zone,
             people: card.people || [],
-            startTime: card.startTime || null,
-            endTime: card.endTime || null,
-            revenue: card.revenue || 0,
-            cost: card.cost || 0,
-            costPerHour: card.costPerHour || null,
-            optional: card.optional || false,
-            enabled: card.enabled !== false,
-            effectType: card.effectType || null,
+            startTime: card.startTime ?? null,
+            endTime: card.endTime ?? null,
+            revenue: card.revenue ?? 0,
+            cost: card.cost ?? 0,
+            costPerHour: card.costPerHour ?? null,
+            optional: card.optional ?? false,
+            enabled: card.enabled ?? true,
+            effectType: card.effectType ?? null,
+            effectTarget: card.effectTarget ?? null,
           },
         });
         return res.status(200).json({ ok: true });
