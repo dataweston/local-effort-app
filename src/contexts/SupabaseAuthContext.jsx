@@ -63,6 +63,14 @@ export const SupabaseAuthProvider = ({ children }) => {
           console.error('Error processing Supabase auth redirect', err);
         } finally {
           removeHashFragment();
+          // Redirect to saved path if OAuth landed on the wrong page
+          const savedPath = localStorage.getItem('auth_redirect_path');
+          if (savedPath && savedPath !== window.location.pathname) {
+            localStorage.removeItem('auth_redirect_path');
+            window.location.replace(savedPath);
+            return;
+          }
+          localStorage.removeItem('auth_redirect_path');
         }
       }
 
@@ -105,6 +113,14 @@ export const SupabaseAuthProvider = ({ children }) => {
     // Build the full redirect URL including the path
     const origin = window.location.origin;
     const redirectUrl = redirectTo || `${origin}/calendar`;
+
+    // Save intended destination so we can restore it after OAuth callback
+    try {
+      const dest = redirectTo ? new URL(redirectTo).pathname : window.location.pathname;
+      localStorage.setItem('auth_redirect_path', dest);
+    } catch (_e) {
+      localStorage.setItem('auth_redirect_path', window.location.pathname);
+    }
 
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',

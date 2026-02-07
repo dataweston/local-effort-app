@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { DollarSign, RotateCcw, Calendar, LayoutGrid, BarChart3, LogIn, LogOut } from 'lucide-react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '../components/ui/tabs';
 import { usePlannerState } from '../components/weeklyplanner/usePlannerState';
@@ -12,6 +12,18 @@ import { GoogleCalendarSync } from '../components/weeklyplanner/GoogleCalendarSy
 import { useSupabaseAuth } from '../contexts/SupabaseAuthContext';
 
 export default function WeeklyDemoPage() {
+  // Prevent search engines from indexing this page
+  useEffect(() => {
+    let meta = document.querySelector('meta[name="robots"]');
+    if (!meta) {
+      meta = document.createElement('meta');
+      meta.setAttribute('name', 'robots');
+      document.head.appendChild(meta);
+    }
+    meta.setAttribute('content', 'noindex, nofollow');
+    return () => { meta.setAttribute('content', ''); };
+  }, []);
+
   const nav = usePlannerNav();
   const {
     view, setView,

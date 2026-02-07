@@ -20,14 +20,11 @@ export function usePlannerState({ mode = 'demo', accessToken = null, weekStart, 
   const effectiveWeekStart = weekStart || getWeekStart(getToday());
   const weekDates = useMemo(() => getWeekDates(effectiveWeekStart), [effectiveWeekStart]);
 
-  // Initialize cards for demo mode
+  // Demo mode: start with an empty calendar (public visitors see blank)
   useEffect(() => {
     if (mode === 'demo' && !initRef.current) {
       initRef.current = true;
-      const today = getToday();
-      const year = parseInt(today.split('-')[0], 10);
-      const allCards = generateCardsForRange(today, `${year}-12-31`);
-      setCards(allCards);
+      setCards([]);
       setLoaded(true);
     }
   }, [mode]);
@@ -291,12 +288,16 @@ export function usePlannerState({ mode = 'demo', accessToken = null, weekStart, 
   );
 
   const handleReset = useCallback(() => {
-    const today = getToday();
-    const year = parseInt(today.split('-')[0], 10);
-    const defaults = generateCardsForRange(today, `${year}-12-31`);
-    updateCards(defaults);
+    if (mode === 'demo') {
+      updateCards([]);
+    } else {
+      const today = getToday();
+      const year = parseInt(today.split('-')[0], 10);
+      const defaults = generateCardsForRange(today, `${year}-12-31`);
+      updateCards(defaults);
+    }
     setEditingCard(null);
-  }, [updateCards]);
+  }, [mode, updateCards]);
 
   // Overhead handlers
   const handleAddOverhead = useCallback(
