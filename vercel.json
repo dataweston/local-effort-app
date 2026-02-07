@@ -13,6 +13,22 @@
     {
       "src": "backend/api/server.js",
       "use": "@vercel/node"
+    },
+    {
+      "src": "api/planner/cards.js",
+      "use": "@vercel/node"
+    },
+    {
+      "src": "api/planner/overhead.js",
+      "use": "@vercel/node"
+    },
+    {
+      "src": "api/planner/cogs.js",
+      "use": "@vercel/node"
+    },
+    {
+      "src": "api/planner/google-sync.js",
+      "use": "@vercel/node"
     }
   ],
   "routes": [
@@ -29,6 +45,22 @@
     {
       "src": "/sales/(?<slug>[^/]+)/(?<rest>.*)",
       "dest": "/api/sales-proxy?path=/$1/$2"
+    },
+    {
+      "src": "/api/planner/cards(.*)",
+      "dest": "/api/planner/cards.js"
+    },
+    {
+      "src": "/api/planner/overhead(.*)",
+      "dest": "/api/planner/overhead.js"
+    },
+    {
+      "src": "/api/planner/cogs(.*)",
+      "dest": "/api/planner/cogs.js"
+    },
+    {
+      "src": "/api/planner/google-sync(.*)",
+      "dest": "/api/planner/google-sync.js"
     },
     {
       "src": "/api/(.*)",
