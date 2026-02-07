@@ -58,6 +58,7 @@ const happymondayProcessPaymentHandler = require('../../api-handlers/happymonday
 const happymondayPaymentLinkHandler = require('../../api-handlers/happymonday/payment-link');
 const { createMessagesRouter } = require('./routes/messages');
 const { createSmallEventsRouter } = require('./routes/smallEvents');
+const { createPlannerRouter } = require('./routes/planner');
 const {
   verifySquareSignature,
   applyCompletedPayment,
@@ -371,6 +372,7 @@ try {
 
 app.use('/api/crowdfund', createCrowdfundingRouter({ db, squareClient, logger }));
 app.use('/api/small-events', createSmallEventsRouter({ logger }));
+app.use('/api/planner', createPlannerRouter());
 app.all('/api/crowdfund/checkout', async (req, res, next) => {
   try {
     await crowdfundCheckoutHandler(req, res);
