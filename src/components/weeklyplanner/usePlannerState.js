@@ -20,6 +20,7 @@ export function usePlannerState({ mode = 'demo', accessToken = null, weekStart, 
   const effectiveWeekStart = weekStart || getWeekStart(getToday());
   const weekDates = useMemo(() => getWeekDates(effectiveWeekStart), [effectiveWeekStart]);
 
+  // Wait for auth to resolve before doing anything — mode is null while loading
   // Demo mode: start with an empty calendar (public visitors see blank)
   useEffect(() => {
     if (mode === 'demo' && !initRef.current) {
@@ -137,53 +138,71 @@ export function usePlannerState({ mode = 'demo', accessToken = null, weekStart, 
     [monthCards, overheads, monthCogs]
   );
 
-  // Debounced save — flushes on page unload to prevent data loss
-  const persistCards = useCallback(
-    (nextCards) => {
-      if (mode !== 'persisted' || !accessToken) return;
-      if (saveTimer.current) clearTimeout(saveTimer.current);
+  // Track save state for flush-on-unload
+  const latestCardsRef = useRef(cards);
+  latestCardsRef.current = cards;
+  const dirtyRef = useRef(false);
+  const savingRef = useRef(false);
 
-      const doSave = () => {
-        saveTimer.current = null;
-        fetch('/api/planner/cards', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${accessToken}`,
-          },
-          body: JSON.stringify({ action: 'save-all', cards: nextCards }),
-        }).catch(() => {});
-      };
-
-      saveTimer.current = setTimeout(doSave, 800);
+  // Core save function (no debounce) — used by both debounced path and flush
+  const doSaveNow = useCallback(
+    (cardsToSave) => {
+      if (mode !== 'persisted' || !accessToken) return Promise.resolve();
+      dirtyRef.current = false;
+      savingRef.current = true;
+      return fetch('/api/planner/cards', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify({ action: 'save-all', cards: cardsToSave }),
+      })
+        .then((r) => {
+          savingRef.current = false;
+          if (!r.ok) console.error('Save failed:', r.status);
+        })
+        .catch((err) => {
+          savingRef.current = false;
+          console.error('Save error:', err);
+        });
     },
     [mode, accessToken]
   );
 
-  // Flush pending save on page unload using sendBeacon (survives navigation)
-  const latestCardsRef = useRef(cards);
-  latestCardsRef.current = cards;
+  // Debounced save
+  const persistCards = useCallback(
+    (nextCards) => {
+      if (mode !== 'persisted' || !accessToken) return;
+      dirtyRef.current = true;
+      if (saveTimer.current) clearTimeout(saveTimer.current);
+      saveTimer.current = setTimeout(() => {
+        saveTimer.current = null;
+        doSaveNow(nextCards);
+      }, 800);
+    },
+    [mode, accessToken, doSaveNow]
+  );
 
+  // Flush pending save on page unload — synchronous XHR as last resort
   useEffect(() => {
     const handleBeforeUnload = () => {
-      if (saveTimer.current && mode === 'persisted' && accessToken) {
+      if (!dirtyRef.current || mode !== 'persisted' || !accessToken) return;
+      if (saveTimer.current) {
         clearTimeout(saveTimer.current);
         saveTimer.current = null;
-        const blob = new Blob(
-          [JSON.stringify({ action: 'save-all', cards: latestCardsRef.current })],
-          { type: 'application/json' }
-        );
-        // sendBeacon doesn't support auth headers, so use keepalive fetch
-        fetch('/api/planner/cards', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${accessToken}`,
-          },
-          body: JSON.stringify({ action: 'save-all', cards: latestCardsRef.current }),
-          keepalive: true,
-        }).catch(() => {});
       }
+      // Use synchronous XMLHttpRequest — the only reliable way to save on unload
+      try {
+        const xhr = new XMLHttpRequest();
+        xhr.open('POST', '/api/planner/cards', false); // synchronous
+        xhr.setRequestHeader('Content-Type', 'application/json');
+        xhr.setRequestHeader('Authorization', `Bearer ${accessToken}`);
+        xhr.send(JSON.stringify({ action: 'save-all', cards: latestCardsRef.current }));
+      } catch (e) {
+        // Best effort — page is unloading
+      }
+      dirtyRef.current = false;
     };
     window.addEventListener('beforeunload', handleBeforeUnload);
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
@@ -581,12 +600,14 @@ export function usePlannerState({ mode = 'demo', accessToken = null, weekStart, 
       setActiveId(null);
 
       if (!over || active.id === over.id) {
-        persistCards(cards);
+        // Persist the current state (drag-over may have changed date/zone)
+        persistCards(latestCardsRef.current);
         return;
       }
 
-      const activeCard = cards.find((c) => c.id === active.id);
-      const overCard = cards.find((c) => c.id === over.id);
+      const currentCards = latestCardsRef.current;
+      const activeCard = currentCards.find((c) => c.id === active.id);
+      const overCard = currentCards.find((c) => c.id === over.id);
 
       if (
         activeCard &&
@@ -615,10 +636,11 @@ export function usePlannerState({ mode = 'demo', accessToken = null, weekStart, 
           );
         });
       } else {
-        persistCards(cards);
+        // Card was dragged to a different container — persist current state
+        persistCards(latestCardsRef.current);
       }
     },
-    [cards, updateCards, persistCards]
+    [updateCards, persistCards]
   );
 
   const activeCard = activeId ? cards.find((c) => c.id === activeId) : null;

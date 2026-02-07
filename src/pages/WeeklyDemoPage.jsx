@@ -38,7 +38,7 @@ export default function WeeklyDemoPage() {
   } = nav;
 
   const auth = useSupabaseAuth();
-  const mode = auth.user ? 'persisted' : 'demo';
+  const mode = auth.loading ? null : (auth.user ? 'persisted' : 'demo');
   const planner = usePlannerState({ mode, accessToken: auth.accessToken, weekStart, selectedMonth });
 
   const overheadTotal = planner.overheads.reduce((sum, o) => sum + (o.monthlyCost || 0), 0);
