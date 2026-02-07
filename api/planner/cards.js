@@ -61,46 +61,31 @@ module.exports = async (req, res) => {
 
     if (action === 'save-all' && Array.isArray(bulkCards)) {
       try {
-        const clientIds = new Set(bulkCards.map((c) => c.id).filter(Boolean));
-
         await prisma.$transaction(async (tx) => {
-          // Find existing cards for this user
-          const existing = await tx.plannerCard.findMany({
-            where: { supabaseUid: uid },
-            select: { id: true },
-          });
+          // Delete all existing cards for this user, then recreate
+          await tx.plannerCard.deleteMany({ where: { supabaseUid: uid } });
 
-          // Delete only cards the client no longer has
-          const toDelete = existing.filter((e) => !clientIds.has(e.id)).map((e) => e.id);
-          if (toDelete.length > 0) {
-            await tx.plannerCard.deleteMany({ where: { id: { in: toDelete }, supabaseUid: uid } });
-          }
-
-          // Upsert each card — preserves IDs across saves
           for (const c of bulkCards) {
-            const data = {
-              supabaseUid: uid,
-              templateId: c.templateId ?? null,
-              title: c.title || 'Untitled',
-              date: c.date || '',
-              dayOfWeek: c.dayOfWeek || '',
-              zone: c.zone || 'timed',
-              people: c.people || [],
-              startTime: c.startTime ?? null,
-              endTime: c.endTime ?? null,
-              revenue: c.revenue ?? 0,
-              cost: c.cost ?? 0,
-              costPerHour: c.costPerHour ?? null,
-              optional: c.optional ?? false,
-              enabled: c.enabled ?? true,
-              effectTarget: c.effectTarget ?? null,
-              effectType: c.effectType ?? null,
-              sortOrder: c.order ?? c.sortOrder ?? 0,
-            };
-            await tx.plannerCard.upsert({
-              where: { id: c.id || '' },
-              update: data,
-              create: { id: c.id || undefined, ...data },
+            await tx.plannerCard.create({
+              data: {
+                supabaseUid: uid,
+                templateId: c.templateId ?? null,
+                title: c.title || 'Untitled',
+                date: c.date || '',
+                dayOfWeek: c.dayOfWeek || '',
+                zone: c.zone || 'timed',
+                people: c.people || [],
+                startTime: c.startTime ?? null,
+                endTime: c.endTime ?? null,
+                revenue: c.revenue ?? 0,
+                cost: c.cost ?? 0,
+                costPerHour: c.costPerHour ?? null,
+                optional: c.optional ?? false,
+                enabled: c.enabled ?? true,
+                effectTarget: c.effectTarget ?? null,
+                effectType: c.effectType ?? null,
+                sortOrder: c.order ?? c.sortOrder ?? 0,
+              },
             });
           }
         });
