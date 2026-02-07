@@ -228,7 +228,7 @@ app.post('/api/square/webhook', express.raw({ type: '*/*', limit: '2mb' }), asyn
     return res.status(500).json({ ok: false, error: 'internal-error' });
   }
 });
-app.use(express.json());
+app.use(express.json({ limit: '2mb' }));
 
 // MCP HTTP bridge removed (mcpTransport not initialized in this process). If needed, reintroduce with proper import.
 // --- MCP STREAMABLE HTTP BRIDGE ---
