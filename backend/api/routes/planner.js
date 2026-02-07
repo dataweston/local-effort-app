@@ -93,41 +93,48 @@ router.post('/cards', async (req, res) => {
 
   if (action === 'save-all' && Array.isArray(bulkCards)) {
     try {
-      const idMap = {};
+      // Collect the IDs the client is sending so we can detect deletions
+      const clientIds = new Set(bulkCards.map((c) => c.id).filter(Boolean));
+
       await prisma.$transaction(async (tx) => {
-        await tx.plannerCard.deleteMany({ where: { supabaseUid: uid } });
-        for (const c of bulkCards) {
-          const oldId = c.id;
-          const created = await tx.plannerCard.create({
-            data: {
-              supabaseUid: uid,
-              templateId: c.templateId || null,
-              title: c.title || 'Untitled',
-              date: c.date || '',
-              dayOfWeek: c.dayOfWeek || '',
-              zone: c.zone || 'timed',
-              people: c.people || [],
-              startTime: c.startTime || null,
-              endTime: c.endTime || null,
-              revenue: c.revenue || 0,
-              cost: c.cost || 0,
-              costPerHour: c.costPerHour || null,
-              optional: c.optional || false,
-              enabled: c.enabled !== false,
-              effectTarget: c.effectTarget || null,
-              effectType: c.effectType || null,
-              sortOrder: c.order ?? c.sortOrder ?? 0,
-            },
-          });
-          idMap[oldId] = created.id;
+        // Fetch all existing card IDs for this user
+        const existing = await tx.plannerCard.findMany({
+          where: { supabaseUid: uid },
+          select: { id: true },
+        });
+
+        // Delete cards that the client no longer has (user deleted them)
+        const toDelete = existing.filter((e) => !clientIds.has(e.id)).map((e) => e.id);
+        if (toDelete.length > 0) {
+          await tx.plannerCard.deleteMany({ where: { id: { in: toDelete }, supabaseUid: uid } });
         }
+
+        // Upsert each card from the client
         for (const c of bulkCards) {
-          if (c.effectTarget && idMap[c.effectTarget] && idMap[c.id]) {
-            await tx.plannerCard.update({
-              where: { id: idMap[c.id] },
-              data: { effectTarget: idMap[c.effectTarget] },
-            });
-          }
+          const data = {
+            supabaseUid: uid,
+            templateId: c.templateId || null,
+            title: c.title || 'Untitled',
+            date: c.date || '',
+            dayOfWeek: c.dayOfWeek || '',
+            zone: c.zone || 'timed',
+            people: c.people || [],
+            startTime: c.startTime || null,
+            endTime: c.endTime || null,
+            revenue: c.revenue || 0,
+            cost: c.cost || 0,
+            costPerHour: c.costPerHour || null,
+            optional: c.optional || false,
+            enabled: c.enabled !== false,
+            effectTarget: c.effectTarget || null,
+            effectType: c.effectType || null,
+            sortOrder: c.order ?? c.sortOrder ?? 0,
+          };
+          await tx.plannerCard.upsert({
+            where: { id: c.id || '' },
+            update: data,
+            create: { id: c.id || undefined, ...data },
+          });
         }
       });
       return res.status(200).json({ ok: true, count: bulkCards.length });

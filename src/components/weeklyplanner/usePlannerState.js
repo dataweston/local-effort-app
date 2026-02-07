@@ -29,16 +29,12 @@ export function usePlannerState({ mode = 'demo', accessToken = null, weekStart, 
     }
   }, [mode]);
 
-  // Load cards from API in persisted mode
+  // Load ALL cards from API in persisted mode (no date filter — keep full set in memory)
   useEffect(() => {
     if (mode !== 'persisted' || !accessToken) return;
     let cancelled = false;
 
-    const params = new URLSearchParams();
-    if (selectedMonth) params.set('month', selectedMonth);
-    else if (weekStart) params.set('weekStart', weekStart);
-
-    fetch(`/api/planner/cards?${params}`, {
+    fetch('/api/planner/cards', {
       headers: { Authorization: `Bearer ${accessToken}` },
     })
       .then((r) => r.json())
