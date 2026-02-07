@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { X, Trash2 } from 'lucide-react';
-import { DAYS, PEOPLE } from './defaultSchedule';
+import { PEOPLE } from './defaultSchedule';
+import { getDayOfWeek } from './dateUtils';
 
 export function EditPanel({ card, onSave, onDelete, onClose }) {
   const [form, setForm] = useState(card);
@@ -12,6 +13,14 @@ export function EditPanel({ card, onSave, onDelete, onClose }) {
   if (!card) return null;
 
   const set = (field, value) => setForm((prev) => ({ ...prev, [field]: value }));
+
+  const handleDateChange = (newDate) => {
+    setForm((prev) => ({
+      ...prev,
+      date: newDate,
+      dayOfWeek: getDayOfWeek(newDate),
+    }));
+  };
 
   const togglePerson = (person) => {
     setForm((prev) => ({
@@ -75,22 +84,22 @@ export function EditPanel({ card, onSave, onDelete, onClose }) {
           />
         </div>
 
-        {/* Day */}
+        {/* Date */}
         <div>
           <label className="block text-xs font-medium mb-1" style={{ color: 'var(--color-text-secondary)' }}>
-            Day
+            Date
           </label>
-          <select
-            value={form.day}
-            onChange={(e) => set('day', e.target.value)}
+          <input
+            type="date"
+            value={form.date || ''}
+            onChange={(e) => handleDateChange(e.target.value)}
             className={inputClass}
-          >
-            {DAYS.map((d) => (
-              <option key={d} value={d}>
-                {d}
-              </option>
-            ))}
-          </select>
+          />
+          {form.dayOfWeek && (
+            <div className="text-xs mt-1" style={{ color: 'var(--color-text-muted)' }}>
+              {form.dayOfWeek}
+            </div>
+          )}
         </div>
 
         {/* Zone */}
@@ -195,11 +204,11 @@ export function EditPanel({ card, onSave, onDelete, onClose }) {
           />
         </div>
 
-        {/* Cost */}
+        {/* Labor */}
         <div className="grid grid-cols-2 gap-3">
           <div>
             <label className="block text-xs font-medium mb-1" style={{ color: 'var(--color-text-secondary)' }}>
-              Flat cost ($)
+              Flat labor ($)
             </label>
             <input
               type="number"
@@ -211,7 +220,7 @@ export function EditPanel({ card, onSave, onDelete, onClose }) {
           </div>
           <div>
             <label className="block text-xs font-medium mb-1" style={{ color: 'var(--color-text-secondary)' }}>
-              Cost/hr ($)
+              Labor/hr ($)
             </label>
             <input
               type="number"

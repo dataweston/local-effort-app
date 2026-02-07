@@ -1,46 +1,114 @@
 import { useSearchParams } from 'react-router-dom';
-import { useCallback } from 'react';
-import { DAYS } from './defaultSchedule';
+import { useCallback, useMemo } from 'react';
+import { getToday, getWeekStart, getWeekDates, addDays, addWeeks } from './dateUtils';
 
 export function usePlannerNav() {
   const [searchParams, setSearchParams] = useSearchParams();
 
-  const view = searchParams.get('view') || 'weekly';
-  const selectedDay = searchParams.get('day') || 'Monday';
+  const today = getToday();
 
-  const setView = useCallback(
-    (v) => {
+  const view = searchParams.get('view') || 'weekly';
+  const weekStart = searchParams.get('week') || getWeekStart(today);
+  const selectedDate = searchParams.get('date') || today;
+  const selectedMonth = searchParams.get('month') || today.slice(0, 7);
+
+  const selectedYear = useMemo(() => parseInt(selectedMonth.split('-')[0], 10), [selectedMonth]);
+  const selectedMonthNum = useMemo(() => parseInt(selectedMonth.split('-')[1], 10), [selectedMonth]);
+
+  const weekDates = useMemo(() => getWeekDates(weekStart), [weekStart]);
+
+  const updateParams = useCallback(
+    (updates) => {
       setSearchParams((prev) => {
         const next = new URLSearchParams(prev);
-        next.set('view', v);
+        for (const [key, value] of Object.entries(updates)) {
+          if (value != null) {
+            next.set(key, value);
+          } else {
+            next.delete(key);
+          }
+        }
         return next;
       }, { replace: true });
     },
     [setSearchParams]
   );
 
-  const setSelectedDay = useCallback(
-    (d) => {
-      setSearchParams((prev) => {
-        const next = new URLSearchParams(prev);
-        next.set('day', d);
-        return next;
-      }, { replace: true });
-    },
-    [setSearchParams]
+  const setView = useCallback((v) => updateParams({ view: v }), [updateParams]);
+
+  const setSelectedDate = useCallback(
+    (d) => updateParams({ date: d }),
+    [updateParams]
+  );
+
+  const setWeekStart = useCallback(
+    (w) => updateParams({ week: w }),
+    [updateParams]
   );
 
   const goNextDay = useCallback(() => {
-    const idx = DAYS.indexOf(selectedDay);
-    const next = DAYS[(idx + 1) % DAYS.length];
-    setSelectedDay(next);
-  }, [selectedDay, setSelectedDay]);
+    const next = addDays(selectedDate, 1);
+    updateParams({ date: next, week: getWeekStart(next) });
+  }, [selectedDate, updateParams]);
 
   const goPrevDay = useCallback(() => {
-    const idx = DAYS.indexOf(selectedDay);
-    const prev = DAYS[(idx - 1 + DAYS.length) % DAYS.length];
-    setSelectedDay(prev);
-  }, [selectedDay, setSelectedDay]);
+    const prev = addDays(selectedDate, -1);
+    updateParams({ date: prev, week: getWeekStart(prev) });
+  }, [selectedDate, updateParams]);
 
-  return { view, selectedDay, setView, setSelectedDay, goNextDay, goPrevDay };
+  const goNextWeek = useCallback(() => {
+    const next = addWeeks(weekStart, 1);
+    updateParams({ week: next });
+  }, [weekStart, updateParams]);
+
+  const goPrevWeek = useCallback(() => {
+    const prev = addWeeks(weekStart, -1);
+    updateParams({ week: prev });
+  }, [weekStart, updateParams]);
+
+  const goNextMonth = useCallback(() => {
+    let y = selectedYear;
+    let m = selectedMonthNum + 1;
+    if (m > 12) { m = 1; y++; }
+    updateParams({ month: `${y}-${String(m).padStart(2, '0')}` });
+  }, [selectedYear, selectedMonthNum, updateParams]);
+
+  const goPrevMonth = useCallback(() => {
+    let y = selectedYear;
+    let m = selectedMonthNum - 1;
+    if (m < 1) { m = 12; y--; }
+    updateParams({ month: `${y}-${String(m).padStart(2, '0')}` });
+  }, [selectedYear, selectedMonthNum, updateParams]);
+
+  const selectWeekFromMonth = useCallback(
+    (ws) => updateParams({ view: 'weekly', week: ws }),
+    [updateParams]
+  );
+
+  const selectDayFromWeek = useCallback(
+    (date) => updateParams({ view: 'daily', date, week: getWeekStart(date) }),
+    [updateParams]
+  );
+
+  return {
+    view,
+    weekStart,
+    weekDates,
+    selectedDate,
+    selectedMonth,
+    selectedYear,
+    selectedMonthNum,
+    today,
+    setView,
+    setSelectedDate,
+    setWeekStart,
+    goNextDay,
+    goPrevDay,
+    goNextWeek,
+    goPrevWeek,
+    goNextMonth,
+    goPrevMonth,
+    selectWeekFromMonth,
+    selectDayFromWeek,
+  };
 }

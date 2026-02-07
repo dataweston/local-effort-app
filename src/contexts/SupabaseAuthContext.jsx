@@ -97,15 +97,15 @@ export const SupabaseAuthProvider = ({ children }) => {
     };
   }, []);
 
-  const signInWithGoogle = async () => {
+  const signInWithGoogle = async (redirectTo) => {
     if (!supabase) {
       throw new Error('Supabase not configured');
     }
-    
+
     // Build the full redirect URL including the path
     const origin = window.location.origin;
-    const redirectUrl = `${origin}/calendar`;
-    
+    const redirectUrl = redirectTo || `${origin}/calendar`;
+
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {

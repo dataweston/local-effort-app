@@ -2,12 +2,33 @@ import React from 'react';
 import { DollarSign, Clock, Users, ToggleLeft, ToggleRight } from 'lucide-react';
 import { cardCost, cardBaseRevenue, hoursFromTimes } from './financials';
 
+const CARD_COLORS = {
+  'Co-op': '#bf501b',
+  'Cook': '#8b6d2e',
+  'Pizza': '#b5442e',
+  'Admin': '#9e6b3a',
+  'Babysitter for Teddy': '#c47a2a',
+  'Catherine off with Teddy': '#7a846e',
+  'Second cook': '#a85d34',
+  'Substitute cook': '#8a5a3c',
+  'Teddy with Weston': '#6b7d5e',
+};
+
+function getCardColor(title) {
+  if (CARD_COLORS[title]) return CARD_COLORS[title];
+  for (const [key, color] of Object.entries(CARD_COLORS)) {
+    if (title.toLowerCase().includes(key.toLowerCase())) return color;
+  }
+  return 'var(--color-border-default)';
+}
+
 export function DailyCardExpanded({ card, onToggle, onClick, effectMultiplier }) {
   const isDisabled = card.optional && !card.enabled;
   const baseRev = cardBaseRevenue(card);
   const effectiveRevenue = baseRev * (effectMultiplier || 1);
   const cost = cardCost(card);
   const duration = hoursFromTimes(card.startTime, card.endTime);
+  const accentColor = getCardColor(card.title);
 
   return (
     <div
@@ -15,6 +36,8 @@ export function DailyCardExpanded({ card, onToggle, onClick, effectMultiplier })
       style={{
         backgroundColor: 'var(--color-bg-card)',
         borderColor: 'var(--color-border-default)',
+        borderLeftColor: accentColor,
+        borderLeftWidth: '3px',
         opacity: isDisabled ? 0.55 : 1,
       }}
       onClick={() => onClick(card)}
@@ -88,7 +111,7 @@ export function DailyCardExpanded({ card, onToggle, onClick, effectMultiplier })
             <div className="flex items-center gap-1">
               <DollarSign size={14} style={{ color: 'var(--color-state-danger)' }} />
               <span className="text-sm font-semibold" style={{ color: 'var(--color-state-danger)' }}>
-                −${cost}
+                −${cost} labor
               </span>
               {card.costPerHour > 0 && (
                 <span className="text-xs opacity-60 ml-0.5">(${card.costPerHour}/hr)</span>

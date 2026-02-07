@@ -1,15 +1,15 @@
 import React from 'react';
 import { ChevronLeft, ChevronRight, Plus } from 'lucide-react';
-import { DAYS } from './defaultSchedule';
 import { dayTotals, teddyCoverage } from './financials';
 import { DayTotalsBar } from './DayTotalsBar';
 import { DailyCardExpanded } from './DailyCardExpanded';
 import { useSwipe } from '../../hooks/useSwipe';
+import { formatDateFull, formatDateShort } from './dateUtils';
 
-export function DailyView({ day, planner, onNextDay, onPrevDay, onDaySelect }) {
-  const dayCards = planner.cardsByDay[day] || [];
-  const totals = dayTotals(planner.cards, day);
-  const coverage = teddyCoverage(planner.cards, day);
+export function DailyView({ selectedDate, weekDates, planner, onNextDay, onPrevDay, onDaySelect }) {
+  const dayCards = planner.cardsByDate[selectedDate] || [];
+  const totals = dayTotals(planner.cards, selectedDate);
+  const coverage = teddyCoverage(planner.cards, selectedDate);
 
   const timedCards = dayCards
     .filter((c) => c.zone === 'timed')
@@ -47,10 +47,10 @@ export function DailyView({ day, planner, onNextDay, onPrevDay, onDaySelect }) {
           <ChevronLeft size={24} />
         </button>
         <h2
-          className="text-xl font-bold font-display"
+          className="text-xl font-bold font-display text-center"
           style={{ color: 'var(--color-text-primary)' }}
         >
-          {day}
+          {formatDateFull(selectedDate)}
         </h2>
         <button
           onClick={onNextDay}
@@ -63,13 +63,13 @@ export function DailyView({ day, planner, onNextDay, onPrevDay, onDaySelect }) {
 
       {/* Day selector pills */}
       <div className="flex justify-center gap-1 mb-4">
-        {DAYS.map((d) => (
+        {weekDates.map((d) => (
           <button
             key={d}
             onClick={() => onDaySelect(d)}
             className="px-2 py-1 text-xs font-medium rounded-full transition-colors"
             style={
-              d === day
+              d === selectedDate
                 ? {
                     backgroundColor: 'var(--color-action-primary-bg)',
                     color: 'var(--color-action-primary-text)',
@@ -79,7 +79,7 @@ export function DailyView({ day, planner, onNextDay, onPrevDay, onDaySelect }) {
                   }
             }
           >
-            {d.slice(0, 3)}
+            {formatDateShort(d)}
           </button>
         ))}
       </div>
@@ -167,7 +167,7 @@ export function DailyView({ day, planner, onNextDay, onPrevDay, onDaySelect }) {
 
       {/* Add card */}
       <button
-        onClick={() => planner.handlers.handleAddCard(day)}
+        onClick={() => planner.handlers.handleAddCard(selectedDate)}
         className="w-full mt-4 flex items-center justify-center gap-2 py-3 text-sm font-medium rounded-xl border border-dashed transition-colors touch-target-ios"
         style={{
           color: 'var(--color-text-muted)',

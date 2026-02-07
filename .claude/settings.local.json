@@ -30,7 +30,9 @@
       "Bash(git fetch:*)",
       "Bash(git pull:*)",
       "Bash(find:*)",
-      "Bash(timeout:*)"
+      "Bash(timeout:*)",
+      "Bash(npx vite build:*)",
+      "Bash(npx prisma validate:*)"
     ],
     "deny": [],
     "ask": []

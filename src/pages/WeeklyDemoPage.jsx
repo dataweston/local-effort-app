@@ -1,297 +1,289 @@
-import React, { useState, useCallback, useMemo } from 'react';
-import {
-  DndContext,
-  DragOverlay,
-  PointerSensor,
-  KeyboardSensor,
-  useSensor,
-  useSensors,
-  closestCenter,
-} from '@dnd-kit/core';
-import { arrayMove } from '@dnd-kit/sortable';
-import { Plus, DollarSign, RotateCcw } from 'lucide-react';
-import { DAYS, createDefaultCards } from '../components/weeklyplanner/defaultSchedule';
-import { weekTotals } from '../components/weeklyplanner/financials';
-import { DayLane } from '../components/weeklyplanner/DayLane';
+import React from 'react';
+import { DollarSign, RotateCcw, Calendar, LayoutGrid, BarChart3, LogIn, LogOut } from 'lucide-react';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '../components/ui/tabs';
+import { usePlannerState } from '../components/weeklyplanner/usePlannerState';
+import { usePlannerNav } from '../components/weeklyplanner/usePlannerNav';
+import { WeeklyView } from '../components/weeklyplanner/WeeklyView';
+import { DailyView } from '../components/weeklyplanner/DailyView';
+import { MonthlyView } from '../components/weeklyplanner/MonthlyView';
 import { EditPanel } from '../components/weeklyplanner/EditPanel';
-
-let _nextCardId = 100;
+import { RecurringChangeDialog } from '../components/weeklyplanner/RecurringChangeDialog';
+import { GoogleCalendarSync } from '../components/weeklyplanner/GoogleCalendarSync';
+import { useSupabaseAuth } from '../contexts/SupabaseAuthContext';
 
 export default function WeeklyDemoPage() {
-  const [cards, setCards] = useState(() => createDefaultCards());
-  const [editingCard, setEditingCard] = useState(null);
-  const [activeId, setActiveId] = useState(null);
+  const nav = usePlannerNav();
+  const {
+    view, setView,
+    weekStart, weekDates,
+    selectedDate,
+    selectedYear, selectedMonthNum, selectedMonth,
+    goNextDay, goPrevDay,
+    goNextWeek, goPrevWeek,
+    goNextMonth, goPrevMonth,
+    selectWeekFromMonth,
+    selectDayFromWeek,
+  } = nav;
 
-  // ── Sensors ────────────────────────────────────────────
-  const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
-    useSensor(KeyboardSensor)
-  );
+  const auth = useSupabaseAuth();
+  const mode = auth.user ? 'persisted' : 'demo';
+  const planner = usePlannerState({ mode, accessToken: auth.accessToken, weekStart, selectedMonth });
 
-  // ── Grouped cards by day ────────────────────────────────
-  const cardsByDay = useMemo(() => {
-    const map = {};
-    for (const day of DAYS) map[day] = [];
-    for (const card of cards) {
-      if (map[card.day]) map[card.day].push(card);
-    }
-    return map;
-  }, [cards]);
+  const overheadTotal = planner.overheads.reduce((sum, o) => sum + (o.monthlyCost || 0), 0);
 
-  // ── Week totals ─────────────────────────────────────────
-  const totals = useMemo(() => weekTotals(cards), [cards]);
-
-  // ── Toggle optional card ────────────────────────────────
-  const handleToggle = useCallback((cardId) => {
-    setCards((prev) =>
-      prev.map((c) => (c.id === cardId ? { ...c, enabled: !c.enabled } : c))
-    );
-  }, []);
-
-  // ── Open edit panel ─────────────────────────────────────
-  const handleCardClick = useCallback((card) => {
-    setEditingCard(card);
-  }, []);
-
-  // ── Save edited card ────────────────────────────────────
-  const handleSave = useCallback((updatedCard) => {
-    setCards((prev) =>
-      prev.map((c) => (c.id === updatedCard.id ? updatedCard : c))
-    );
-    setEditingCard(null);
-  }, []);
-
-  // ── Delete card ─────────────────────────────────────────
-  const handleDelete = useCallback((cardId) => {
-    setCards((prev) => prev.filter((c) => c.id !== cardId));
-    setEditingCard(null);
-  }, []);
-
-  // ── Add new card ────────────────────────────────────────
-  const handleAddCard = useCallback((day) => {
-    const newCard = {
-      id: String(++_nextCardId),
-      title: 'New card',
-      day,
-      zone: 'timed',
-      people: [],
-      startTime: null,
-      endTime: null,
-      revenue: 0,
-      cost: 0,
-      costPerHour: null,
-      optional: false,
-      enabled: true,
-      effectTarget: null,
-      effectType: null,
-      order: 99,
-    };
-    setCards((prev) => [...prev, newCard]);
-    setEditingCard(newCard);
-  }, []);
-
-  // ── Reset to defaults ──────────────────────────────────
-  const handleReset = useCallback(() => {
-    setCards(createDefaultCards());
-    setEditingCard(null);
-  }, []);
-
-  // ── Drag & Drop handlers ───────────────────────────────
-  // Parse a droppable ID like "Monday:timed" → { day, zone }
-  const parseDroppable = (id) => {
-    if (!id) return null;
-    const str = String(id);
-    const sep = str.lastIndexOf(':');
-    if (sep === -1) return null;
-    return { day: str.slice(0, sep), zone: str.slice(sep + 1) };
+  const handleDayClick = (date) => {
+    selectDayFromWeek(date);
   };
 
-  // Find which droppable container a card belongs to
-  const findContainer = (cardId) => {
-    const card = cards.find((c) => c.id === cardId);
-    if (card) return `${card.day}:${card.zone}`;
-    return null;
+  const handleSignIn = async () => {
+    try {
+      await auth.signInWithGoogle(`${window.location.origin}/weeklydemo`);
+    } catch (err) {
+      // Auth redirect will happen
+    }
   };
-
-  const handleDragStart = useCallback((event) => {
-    setActiveId(event.active.id);
-  }, []);
-
-  const handleDragOver = useCallback((event) => {
-    const { active, over } = event;
-    if (!over) return;
-
-    const activeCard = cards.find((c) => c.id === active.id);
-    if (!activeCard) return;
-
-    // Determine the target container
-    let targetContainer = null;
-
-    // Check if dropped over a droppable zone
-    const parsed = parseDroppable(over.id);
-    if (parsed && DAYS.includes(parsed.day)) {
-      targetContainer = parsed;
-    } else {
-      // Dropped over another card — find that card's container
-      const overCard = cards.find((c) => c.id === over.id);
-      if (overCard) {
-        targetContainer = { day: overCard.day, zone: overCard.zone };
-      }
-    }
-
-    if (!targetContainer) return;
-    if (activeCard.day === targetContainer.day && activeCard.zone === targetContainer.zone) return;
-
-    // Move to new container
-    setCards((prev) =>
-      prev.map((c) =>
-        c.id === active.id
-          ? { ...c, day: targetContainer.day, zone: targetContainer.zone }
-          : c
-      )
-    );
-  }, [cards]);
-
-  const handleDragEnd = useCallback((event) => {
-    const { active, over } = event;
-    setActiveId(null);
-
-    if (!over || active.id === over.id) return;
-
-    // If dropped on another card in the same container, reorder
-    const activeCard = cards.find((c) => c.id === active.id);
-    const overCard = cards.find((c) => c.id === over.id);
-
-    if (activeCard && overCard && activeCard.day === overCard.day && activeCard.zone === overCard.zone) {
-      setCards((prev) => {
-        const containerCards = prev
-          .filter((c) => c.day === activeCard.day && c.zone === activeCard.zone)
-          .sort((a, b) => (a.order || 0) - (b.order || 0));
-
-        const oldIndex = containerCards.findIndex((c) => c.id === active.id);
-        const newIndex = containerCards.findIndex((c) => c.id === over.id);
-
-        if (oldIndex === -1 || newIndex === -1) return prev;
-
-        const reordered = arrayMove(containerCards, oldIndex, newIndex);
-        const orderMap = {};
-        reordered.forEach((c, i) => {
-          orderMap[c.id] = i;
-        });
-
-        return prev.map((c) =>
-          orderMap[c.id] != null ? { ...c, order: orderMap[c.id] } : c
-        );
-      });
-    }
-  }, [cards]);
-
-  const activeCard = activeId ? cards.find((c) => c.id === activeId) : null;
 
   return (
-    <div className="min-h-screen bg-gray-100">
-      {/* Top bar */}
-      <div className="sticky top-0 z-30 bg-white border-b border-gray-200 shadow-sm">
-        <div className="max-w-[1800px] mx-auto px-4 py-3 flex items-center justify-between">
-          <div>
-            <h1 className="text-lg font-bold text-gray-900">Weekly Planner</h1>
-            <p className="text-xs text-gray-500">Drag cards between days. Toggle optional labor to see financial impact.</p>
-          </div>
+    <div className="fullpage-demo-scope min-h-screen" style={{ backgroundColor: 'var(--color-bg-page)' }}>
+      {/* Sticky top bar */}
+      <div
+        className="sticky top-0 z-30 shadow-sm safe-area-top"
+        style={{
+          backgroundColor: 'var(--color-bg-card)',
+          borderBottom: '1px solid var(--color-border-default)',
+        }}
+      >
+        <div className="max-w-[1800px] mx-auto px-4 py-3">
+          {/* Title row */}
+          <div className="flex items-center justify-between gap-3">
+            <div className="min-w-0">
+              <h1
+                className="text-lg font-bold font-display truncate"
+                style={{ color: 'var(--color-text-primary)' }}
+              >
+                Weekly Planner
+              </h1>
+              <p className="text-xs hidden sm:block" style={{ color: 'var(--color-text-muted)' }}>
+                {mode === 'persisted' ? 'Changes saved automatically' : 'Sign in to save your plan'}
+              </p>
+            </div>
 
-          {/* Week totals */}
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-4 bg-gray-50 rounded-lg px-4 py-2 border border-gray-200">
-              <div className="text-center">
-                <div className="text-[10px] uppercase tracking-wider text-gray-400">Revenue</div>
-                <div className="text-sm font-bold text-emerald-700 flex items-center justify-center gap-0.5">
-                  <DollarSign size={12} />{totals.revenue}
+            {/* Week totals - hidden on very small screens */}
+            <div className="hidden sm:flex items-center gap-3">
+              <div
+                className="flex items-center gap-3 rounded-lg px-3 py-1.5 border"
+                style={{
+                  backgroundColor: 'var(--color-bg-page)',
+                  borderColor: 'var(--color-border-default)',
+                }}
+              >
+                <div className="text-center">
+                  <div className="text-[10px] uppercase tracking-wider" style={{ color: 'var(--color-text-muted)' }}>
+                    Rev
+                  </div>
+                  <div className="text-sm font-bold flex items-center gap-0.5" style={{ color: 'var(--color-state-success)' }}>
+                    <DollarSign size={11} />{planner.totals.revenue}
+                  </div>
                 </div>
-              </div>
-              <div className="w-px h-8 bg-gray-200" />
-              <div className="text-center">
-                <div className="text-[10px] uppercase tracking-wider text-gray-400">Cost</div>
-                <div className="text-sm font-bold text-red-600 flex items-center justify-center gap-0.5">
-                  <DollarSign size={12} />{totals.cost}
+                <div className="w-px h-7" style={{ backgroundColor: 'var(--color-border-default)' }} />
+                <div className="text-center">
+                  <div className="text-[10px] uppercase tracking-wider" style={{ color: 'var(--color-text-muted)' }}>
+                    Labor
+                  </div>
+                  <div className="text-sm font-bold flex items-center gap-0.5" style={{ color: 'var(--color-state-danger)' }}>
+                    <DollarSign size={11} />{planner.totals.cost}
+                  </div>
                 </div>
-              </div>
-              <div className="w-px h-8 bg-gray-200" />
-              <div className="text-center">
-                <div className="text-[10px] uppercase tracking-wider text-gray-400">Net</div>
-                <div className={`text-sm font-bold flex items-center justify-center gap-0.5 ${totals.net >= 0 ? 'text-emerald-800' : 'text-red-700'}`}>
-                  <DollarSign size={12} />{totals.net}
+                {view === 'monthly' && overheadTotal > 0 && (
+                  <>
+                    <div className="w-px h-7" style={{ backgroundColor: 'var(--color-border-default)' }} />
+                    <div className="text-center">
+                      <div className="text-[10px] uppercase tracking-wider" style={{ color: 'var(--color-text-muted)' }}>
+                        Overhead
+                      </div>
+                      <div className="text-sm font-bold flex items-center gap-0.5" style={{ color: 'var(--color-state-danger)' }}>
+                        <DollarSign size={11} />{overheadTotal}
+                      </div>
+                    </div>
+                  </>
+                )}
+                <div className="w-px h-7" style={{ backgroundColor: 'var(--color-border-default)' }} />
+                <div className="text-center">
+                  <div className="text-[10px] uppercase tracking-wider" style={{ color: 'var(--color-text-muted)' }}>
+                    Net
+                  </div>
+                  <div
+                    className="text-sm font-bold flex items-center gap-0.5"
+                    style={{ color: planner.totals.net >= 0 ? 'var(--color-state-success)' : 'var(--color-state-danger)' }}
+                  >
+                    <DollarSign size={11} />{planner.totals.net}
+                  </div>
                 </div>
               </div>
             </div>
-            <button
-              onClick={handleReset}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-100 rounded-md border border-gray-300 transition-colors"
-              title="Reset to defaults"
+
+            {/* Actions */}
+            <div className="flex items-center gap-2">
+              {auth.user && (
+                <GoogleCalendarSync
+                  accessToken={auth.accessToken}
+                  weekStart={weekStart}
+                />
+              )}
+              <button
+                onClick={planner.handlers.handleReset}
+                className="p-2 rounded-lg transition-colors touch-target-ios"
+                style={{ color: 'var(--color-text-secondary)' }}
+                title="Reset to defaults"
+              >
+                <RotateCcw size={16} />
+              </button>
+              {auth.user ? (
+                <button
+                  onClick={auth.signOut}
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg border transition-colors touch-target-ios"
+                  style={{
+                    color: 'var(--color-text-secondary)',
+                    borderColor: 'var(--color-border-default)',
+                  }}
+                >
+                  <LogOut size={14} />
+                  <span className="hidden sm:inline">Sign out</span>
+                </button>
+              ) : (
+                <button
+                  onClick={handleSignIn}
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg transition-colors touch-target-ios"
+                  style={{
+                    backgroundColor: 'var(--color-action-primary-bg)',
+                    color: 'var(--color-action-primary-text)',
+                  }}
+                >
+                  <LogIn size={14} />
+                  <span className="hidden sm:inline">Sign in to save</span>
+                </button>
+              )}
+            </div>
+          </div>
+
+          {/* Mobile totals bar */}
+          <div
+            className="sm:hidden flex items-center justify-around mt-2 rounded-lg px-2 py-1.5 border"
+            style={{
+              backgroundColor: 'var(--color-bg-page)',
+              borderColor: 'var(--color-border-default)',
+            }}
+          >
+            <span className="text-xs font-bold" style={{ color: 'var(--color-state-success)' }}>
+              +${planner.totals.revenue}
+            </span>
+            <span className="text-xs font-bold" style={{ color: 'var(--color-state-danger)' }}>
+              −${planner.totals.cost} labor
+            </span>
+            {view === 'monthly' && overheadTotal > 0 && (
+              <span className="text-xs font-bold" style={{ color: 'var(--color-state-danger)' }}>
+                −${overheadTotal} overhead
+              </span>
+            )}
+            <span
+              className="text-xs font-bold"
+              style={{ color: planner.totals.net >= 0 ? 'var(--color-state-success)' : 'var(--color-state-danger)' }}
             >
-              <RotateCcw size={14} />
-              Reset
-            </button>
+              Net ${planner.totals.net}
+            </span>
           </div>
         </div>
       </div>
 
-      {/* Board */}
-      <div className="max-w-[1800px] mx-auto p-4">
-        <DndContext
-          sensors={sensors}
-          collisionDetection={closestCenter}
-          onDragStart={handleDragStart}
-          onDragOver={handleDragOver}
-          onDragEnd={handleDragEnd}
-        >
-          <div className="grid grid-cols-7 gap-3">
-            {DAYS.map((day) => (
-              <div key={day} className="flex flex-col gap-2">
-                <DayLane
-                  day={day}
-                  cards={cardsByDay[day]}
-                  allCards={cards}
-                  onToggle={handleToggle}
-                  onCardClick={handleCardClick}
-                />
-                <button
-                  onClick={() => handleAddCard(day)}
-                  className="flex items-center justify-center gap-1.5 py-2 text-xs font-medium text-gray-400 hover:text-gray-600 hover:bg-white rounded-lg border border-dashed border-gray-300 hover:border-gray-400 transition-colors"
-                >
-                  <Plus size={14} />
-                  Add card
-                </button>
-              </div>
-            ))}
-          </div>
+      {/* View tabs + content */}
+      <div className="max-w-[1800px] mx-auto px-4 py-4">
+        <Tabs value={view} onValueChange={setView}>
+          <TabsList
+            className="inline-flex h-10 items-center justify-center rounded-lg p-1 mb-4"
+            style={{ backgroundColor: 'color-mix(in srgb, var(--color-bg-card) 80%, var(--color-border-default))' }}
+          >
+            <TabsTrigger
+              value="daily"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-md transition-all data-[state=active]:shadow-sm"
+              style={{ '--tw-shadow-color': 'var(--color-border-default)' }}
+            >
+              <Calendar size={14} />
+              <span className="hidden sm:inline">Daily</span>
+            </TabsTrigger>
+            <TabsTrigger
+              value="weekly"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-md transition-all data-[state=active]:shadow-sm"
+            >
+              <LayoutGrid size={14} />
+              <span className="hidden sm:inline">Weekly</span>
+            </TabsTrigger>
+            <TabsTrigger
+              value="monthly"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-md transition-all data-[state=active]:shadow-sm"
+            >
+              <BarChart3 size={14} />
+              <span className="hidden sm:inline">Monthly</span>
+            </TabsTrigger>
+          </TabsList>
 
-          <DragOverlay>
-            {activeCard && (
-              <div className="bg-white border border-amber-300 rounded-lg px-3 py-2.5 shadow-lg opacity-90 max-w-[220px]">
-                <div className="text-sm font-medium text-gray-900">{activeCard.title}</div>
-                {activeCard.people.length > 0 && (
-                  <div className="text-xs text-gray-500 mt-0.5">{activeCard.people.join(', ')}</div>
-                )}
-              </div>
-            )}
-          </DragOverlay>
-        </DndContext>
+          <TabsContent value="daily">
+            <DailyView
+              selectedDate={selectedDate}
+              weekDates={weekDates}
+              planner={planner}
+              onNextDay={goNextDay}
+              onPrevDay={goPrevDay}
+              onDaySelect={selectDayFromWeek}
+            />
+          </TabsContent>
+
+          <TabsContent value="weekly">
+            <WeeklyView
+              planner={planner}
+              weekDates={weekDates}
+              weekStart={weekStart}
+              onDayClick={handleDayClick}
+              onNextWeek={goNextWeek}
+              onPrevWeek={goPrevWeek}
+            />
+          </TabsContent>
+
+          <TabsContent value="monthly">
+            <MonthlyView
+              planner={planner}
+              year={selectedYear}
+              month={selectedMonthNum}
+              onNextMonth={goNextMonth}
+              onPrevMonth={goPrevMonth}
+              onSelectWeek={selectWeekFromMonth}
+            />
+          </TabsContent>
+        </Tabs>
       </div>
 
-      {/* Edit side panel */}
-      {editingCard && (
+      {/* Edit side panel (shared across all views) */}
+      {planner.editingCard && (
         <>
           <div
-            className="fixed inset-0 bg-black/20 z-40"
-            onClick={() => setEditingCard(null)}
+            className="fixed inset-0 z-40"
+            style={{ backgroundColor: 'var(--color-overlay)' }}
+            onClick={() => planner.handlers.setEditingCard(null)}
           />
           <EditPanel
-            card={editingCard}
-            onSave={handleSave}
-            onDelete={handleDelete}
-            onClose={() => setEditingCard(null)}
+            card={planner.editingCard}
+            onSave={planner.handlers.handleSave}
+            onDelete={planner.handlers.handleDelete}
+            onClose={() => planner.handlers.setEditingCard(null)}
           />
         </>
       )}
+
+      {/* Recurring change dialog */}
+      <RecurringChangeDialog
+        pendingChange={planner.pendingChange}
+        onConfirm={planner.handlers.confirmChange}
+        onCancel={planner.handlers.cancelChange}
+      />
     </div>
   );
 }

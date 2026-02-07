@@ -11,7 +11,7 @@ export function DayTotalsBar({ totals }) {
       )}
       {totals.cost > 0 && (
         <span className="flex items-center gap-0.5" style={{ color: 'var(--color-state-danger)' }}>
-          <DollarSign size={10} />−{totals.cost}
+          <DollarSign size={10} />−{totals.cost} labor
         </span>
       )}
       <span

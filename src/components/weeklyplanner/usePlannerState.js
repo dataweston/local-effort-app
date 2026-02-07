@@ -1,23 +1,47 @@
 import { useState, useCallback, useMemo, useEffect, useRef } from 'react';
 import { arrayMove } from '@dnd-kit/sortable';
-import { DAYS, createDefaultCards } from './defaultSchedule';
+import { generateCardsForRange } from './defaultSchedule';
+import { getWeekDates, getWeekStart, getToday, getDayOfWeek } from './dateUtils';
 import { weekTotals } from './financials';
 
-let _nextCardId = 100;
+let _nextCardId = 5000;
 
-export function usePlannerState({ mode = 'demo', accessToken = null }) {
-  const [cards, setCards] = useState(() => createDefaultCards());
+export function usePlannerState({ mode = 'demo', accessToken = null, weekStart, selectedMonth }) {
+  const [cards, setCards] = useState([]);
   const [editingCard, setEditingCard] = useState(null);
   const [activeId, setActiveId] = useState(null);
-  const [loaded, setLoaded] = useState(mode === 'demo');
+  const [loaded, setLoaded] = useState(false);
+  const [overheads, setOverheads] = useState([]);
+  const [cogs, setCogs] = useState([]);
+  const [pendingChange, setPendingChange] = useState(null);
   const saveTimer = useRef(null);
+  const initRef = useRef(false);
+
+  const effectiveWeekStart = weekStart || getWeekStart(getToday());
+  const weekDates = useMemo(() => getWeekDates(effectiveWeekStart), [effectiveWeekStart]);
+
+  // Initialize cards for demo mode
+  useEffect(() => {
+    if (mode === 'demo' && !initRef.current) {
+      initRef.current = true;
+      const today = getToday();
+      const year = parseInt(today.split('-')[0], 10);
+      const allCards = generateCardsForRange(today, `${year}-12-31`);
+      setCards(allCards);
+      setLoaded(true);
+    }
+  }, [mode]);
 
   // Load cards from API in persisted mode
   useEffect(() => {
     if (mode !== 'persisted' || !accessToken) return;
     let cancelled = false;
 
-    fetch('/api/planner/cards', {
+    const params = new URLSearchParams();
+    if (selectedMonth) params.set('month', selectedMonth);
+    else if (weekStart) params.set('weekStart', weekStart);
+
+    fetch(`/api/planner/cards?${params}`, {
       headers: { Authorization: `Bearer ${accessToken}` },
     })
       .then((r) => r.json())
@@ -25,6 +49,12 @@ export function usePlannerState({ mode = 'demo', accessToken = null }) {
         if (cancelled) return;
         if (data.cards && data.cards.length > 0) {
           setCards(data.cards);
+        } else {
+          const today = getToday();
+          const year = parseInt(today.split('-')[0], 10);
+          const defaults = generateCardsForRange(today, `${year}-12-31`);
+          setCards(defaults);
+          persistCards(defaults);
         }
         setLoaded(true);
       })
@@ -35,7 +65,55 @@ export function usePlannerState({ mode = 'demo', accessToken = null }) {
     return () => { cancelled = true; };
   }, [mode, accessToken]);
 
-  // Debounced save for persisted mode
+  // Load overheads in persisted mode
+  useEffect(() => {
+    if (mode !== 'persisted' || !accessToken) return;
+    let cancelled = false;
+    fetch('/api/planner/overhead', {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    })
+      .then((r) => r.json())
+      .then((data) => {
+        if (!cancelled && data.items) setOverheads(data.items);
+      })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, [mode, accessToken]);
+
+  // Load COGS for current week in persisted mode
+  useEffect(() => {
+    if (mode !== 'persisted' || !accessToken || !weekStart) return;
+    let cancelled = false;
+    fetch(`/api/planner/cogs?weekStart=${weekStart}`, {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    })
+      .then((r) => r.json())
+      .then((data) => {
+        if (!cancelled && data.items) setCogs(data.items);
+      })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, [mode, accessToken, weekStart]);
+
+  // Cards for the current week
+  const weekCards = useMemo(() => {
+    const dateSet = new Set(weekDates);
+    return cards.filter((c) => dateSet.has(c.date));
+  }, [cards, weekDates]);
+
+  // Cards grouped by date
+  const cardsByDate = useMemo(() => {
+    const map = {};
+    for (const date of weekDates) map[date] = [];
+    for (const card of cards) {
+      if (map[card.date]) map[card.date].push(card);
+    }
+    return map;
+  }, [cards, weekDates]);
+
+  const totals = useMemo(() => weekTotals(weekCards), [weekCards]);
+
+  // Debounced save
   const persistCards = useCallback(
     (nextCards) => {
       if (mode !== 'persisted' || !accessToken) return;
@@ -54,20 +132,6 @@ export function usePlannerState({ mode = 'demo', accessToken = null }) {
     [mode, accessToken]
   );
 
-  // Grouped cards by day
-  const cardsByDay = useMemo(() => {
-    const map = {};
-    for (const day of DAYS) map[day] = [];
-    for (const card of cards) {
-      if (map[card.day]) map[card.day].push(card);
-    }
-    return map;
-  }, [cards]);
-
-  // Week totals
-  const totals = useMemo(() => weekTotals(cards), [cards]);
-
-  // Helper: update cards and persist
   const updateCards = useCallback(
     (updater) => {
       setCards((prev) => {
@@ -94,28 +158,119 @@ export function usePlannerState({ mode = 'demo', accessToken = null }) {
 
   const handleSave = useCallback(
     (updatedCard) => {
-      updateCards((prev) =>
-        prev.map((c) => (c.id === updatedCard.id ? updatedCard : c))
-      );
-      setEditingCard(null);
+      if (updatedCard.templateId) {
+        setPendingChange({ type: 'save', card: updatedCard });
+      } else {
+        updateCards((prev) =>
+          prev.map((c) => (c.id === updatedCard.id ? updatedCard : c))
+        );
+        setEditingCard(null);
+      }
     },
     [updateCards]
   );
 
   const handleDelete = useCallback(
     (cardId) => {
-      updateCards((prev) => prev.filter((c) => c.id !== cardId));
-      setEditingCard(null);
+      const card = cards.find((c) => c.id === cardId);
+      if (card?.templateId) {
+        setPendingChange({ type: 'delete', cardId, templateId: card.templateId, date: card.date });
+      } else {
+        updateCards((prev) => prev.filter((c) => c.id !== cardId));
+        setEditingCard(null);
+      }
     },
-    [updateCards]
+    [cards, updateCards]
   );
 
+  const confirmChange = useCallback(
+    (changeMode) => {
+      if (!pendingChange) return;
+
+      if (pendingChange.type === 'save') {
+        const { card } = pendingChange;
+        if (changeMode === 'single') {
+          updateCards((prev) =>
+            prev.map((c) => (c.id === card.id ? card : c))
+          );
+        } else {
+          updateCards((prev) =>
+            prev.map((c) => {
+              if (c.id === card.id) return card;
+              if (c.templateId === card.templateId && c.date >= card.date) {
+                return {
+                  ...c,
+                  title: card.title,
+                  zone: card.zone,
+                  people: [...card.people],
+                  startTime: card.startTime,
+                  endTime: card.endTime,
+                  revenue: card.revenue,
+                  cost: card.cost,
+                  costPerHour: card.costPerHour,
+                  optional: card.optional,
+                  enabled: card.enabled,
+                  effectType: card.effectType,
+                };
+              }
+              return c;
+            })
+          );
+
+          if (mode === 'persisted' && accessToken) {
+            fetch('/api/planner/cards', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${accessToken}`,
+              },
+              body: JSON.stringify({ action: 'update-recurring', card, mode: 'future' }),
+            }).catch(() => {});
+          }
+        }
+        setEditingCard(null);
+      }
+
+      if (pendingChange.type === 'delete') {
+        const { cardId, templateId, date } = pendingChange;
+        if (changeMode === 'single') {
+          updateCards((prev) => prev.filter((c) => c.id !== cardId));
+        } else {
+          updateCards((prev) =>
+            prev.filter((c) => !(c.templateId === templateId && c.date >= date))
+          );
+
+          if (mode === 'persisted' && accessToken) {
+            fetch('/api/planner/cards', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${accessToken}`,
+              },
+              body: JSON.stringify({ action: 'delete-recurring', templateId, date, mode: 'future' }),
+            }).catch(() => {});
+          }
+        }
+        setEditingCard(null);
+      }
+
+      setPendingChange(null);
+    },
+    [pendingChange, updateCards, mode, accessToken]
+  );
+
+  const cancelChange = useCallback(() => {
+    setPendingChange(null);
+  }, []);
+
   const handleAddCard = useCallback(
-    (day) => {
+    (date) => {
       const newCard = {
         id: String(++_nextCardId),
+        templateId: null,
         title: 'New card',
-        day,
+        date,
+        dayOfWeek: getDayOfWeek(date),
         zone: 'timed',
         people: [],
         startTime: null,
@@ -136,18 +291,80 @@ export function usePlannerState({ mode = 'demo', accessToken = null }) {
   );
 
   const handleReset = useCallback(() => {
-    const defaults = createDefaultCards();
+    const today = getToday();
+    const year = parseInt(today.split('-')[0], 10);
+    const defaults = generateCardsForRange(today, `${year}-12-31`);
     updateCards(defaults);
     setEditingCard(null);
   }, [updateCards]);
 
-  // Drag & Drop handlers
+  // Overhead handlers
+  const handleAddOverhead = useCallback(
+    (item) => {
+      const newItem = { ...item, id: item.id || String(++_nextCardId) };
+      setOverheads((prev) => [...prev, newItem]);
+      if (mode === 'persisted' && accessToken) {
+        fetch('/api/planner/overhead', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${accessToken}` },
+          body: JSON.stringify({ action: 'upsert', item: newItem }),
+        }).catch(() => {});
+      }
+    },
+    [mode, accessToken]
+  );
+
+  const handleDeleteOverhead = useCallback(
+    (id) => {
+      setOverheads((prev) => prev.filter((o) => o.id !== id));
+      if (mode === 'persisted' && accessToken) {
+        fetch('/api/planner/overhead', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${accessToken}` },
+          body: JSON.stringify({ action: 'delete', id }),
+        }).catch(() => {});
+      }
+    },
+    [mode, accessToken]
+  );
+
+  // COGS handlers
+  const handleAddCOGS = useCallback(
+    (item) => {
+      const newItem = { ...item, id: item.id || String(++_nextCardId), weekStart: effectiveWeekStart };
+      setCogs((prev) => [...prev, newItem]);
+      if (mode === 'persisted' && accessToken) {
+        fetch('/api/planner/cogs', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${accessToken}` },
+          body: JSON.stringify({ action: 'upsert', item: newItem }),
+        }).catch(() => {});
+      }
+    },
+    [mode, accessToken, effectiveWeekStart]
+  );
+
+  const handleDeleteCOGS = useCallback(
+    (id) => {
+      setCogs((prev) => prev.filter((c) => c.id !== id));
+      if (mode === 'persisted' && accessToken) {
+        fetch('/api/planner/cogs', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${accessToken}` },
+          body: JSON.stringify({ action: 'delete', id }),
+        }).catch(() => {});
+      }
+    },
+    [mode, accessToken]
+  );
+
+  // Drag & Drop
   const parseDroppable = (id) => {
     if (!id) return null;
     const str = String(id);
     const sep = str.lastIndexOf(':');
     if (sep === -1) return null;
-    return { day: str.slice(0, sep), zone: str.slice(sep + 1) };
+    return { date: str.slice(0, sep), zone: str.slice(sep + 1) };
   };
 
   const handleDragStart = useCallback((event) => {
@@ -164,22 +381,22 @@ export function usePlannerState({ mode = 'demo', accessToken = null }) {
 
       let targetContainer = null;
       const parsed = parseDroppable(over.id);
-      if (parsed && DAYS.includes(parsed.day)) {
+      if (parsed) {
         targetContainer = parsed;
       } else {
         const overCard = cards.find((c) => c.id === over.id);
         if (overCard) {
-          targetContainer = { day: overCard.day, zone: overCard.zone };
+          targetContainer = { date: overCard.date, zone: overCard.zone };
         }
       }
 
       if (!targetContainer) return;
-      if (activeCard.day === targetContainer.day && activeCard.zone === targetContainer.zone) return;
+      if (activeCard.date === targetContainer.date && activeCard.zone === targetContainer.zone) return;
 
       setCards((prev) =>
         prev.map((c) =>
           c.id === active.id
-            ? { ...c, day: targetContainer.day, zone: targetContainer.zone }
+            ? { ...c, date: targetContainer.date, zone: targetContainer.zone, dayOfWeek: getDayOfWeek(targetContainer.date) }
             : c
         )
       );
@@ -193,7 +410,6 @@ export function usePlannerState({ mode = 'demo', accessToken = null }) {
       setActiveId(null);
 
       if (!over || active.id === over.id) {
-        // Still persist any container changes from dragOver
         persistCards(cards);
         return;
       }
@@ -204,12 +420,12 @@ export function usePlannerState({ mode = 'demo', accessToken = null }) {
       if (
         activeCard &&
         overCard &&
-        activeCard.day === overCard.day &&
+        activeCard.date === overCard.date &&
         activeCard.zone === overCard.zone
       ) {
         updateCards((prev) => {
           const containerCards = prev
-            .filter((c) => c.day === activeCard.day && c.zone === activeCard.zone)
+            .filter((c) => c.date === activeCard.date && c.zone === activeCard.zone)
             .sort((a, b) => (a.order || 0) - (b.order || 0));
 
           const oldIndex = containerCards.findIndex((c) => c.id === active.id);
@@ -238,12 +454,16 @@ export function usePlannerState({ mode = 'demo', accessToken = null }) {
 
   return {
     cards,
-    cardsByDay,
+    weekCards,
+    cardsByDate,
     totals,
     editingCard,
     activeId,
     activeCard,
     loaded,
+    overheads,
+    cogs,
+    pendingChange,
     handlers: {
       handleToggle,
       handleCardClick,
@@ -255,6 +475,12 @@ export function usePlannerState({ mode = 'demo', accessToken = null }) {
       handleDragOver,
       handleDragEnd,
       setEditingCard,
+      confirmChange,
+      cancelChange,
+      handleAddOverhead,
+      handleDeleteOverhead,
+      handleAddCOGS,
+      handleDeleteCOGS,
     },
   };
 }

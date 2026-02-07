@@ -11,7 +11,7 @@ export function hoursFromTimes(start, end) {
 }
 
 /**
- * Compute the effective cost of a single card.
+ * Compute the effective cost (labor) of a single card.
  * If the card has costPerHour, cost = costPerHour × duration.
  * Otherwise cost is the flat `cost` field.
  * Disabled optional cards contribute 0.
@@ -35,10 +35,9 @@ export function cardBaseRevenue(card) {
 
 /**
  * Build a map of effectTarget → multiplier from enabled effect cards.
- * Currently the only effect is "double_revenue" (multiplier = 2).
  */
 function buildEffectsMap(cards) {
-  const effects = {}; // targetId → multiplier
+  const effects = {};
   for (const c of cards) {
     if (c.effectTarget && c.effectType === 'double_revenue' && (!c.optional || c.enabled)) {
       effects[c.effectTarget] = (effects[c.effectTarget] || 1) * 2;
@@ -48,10 +47,11 @@ function buildEffectsMap(cards) {
 }
 
 /**
- * Compute day totals: { revenue, cost, net } for cards in a given day.
+ * Compute day totals: { revenue, cost, net } for cards matching a given date.
+ * Accepts ISO date string ("2026-02-09") — matches on `c.date`.
  */
-export function dayTotals(cards, day) {
-  const dayCards = cards.filter((c) => c.day === day);
+export function dayTotals(cards, date) {
+  const dayCards = cards.filter((c) => c.date === date);
   const effects = buildEffectsMap(dayCards);
 
   let revenue = 0;
@@ -68,7 +68,8 @@ export function dayTotals(cards, day) {
 }
 
 /**
- * Compute week totals: { revenue, cost, net } across all cards.
+ * Compute totals across all cards passed in: { revenue, cost, net }.
+ * Works for any subset (week, range, etc).
  */
 export function weekTotals(cards) {
   const effects = buildEffectsMap(cards);
@@ -87,11 +88,28 @@ export function weekTotals(cards) {
 }
 
 /**
- * Summarize Teddy's coverage for a given day.
- * Returns an array of strings like "Babysitter 8:00–14:00" or "With Weston".
+ * Compute monthly totals factoring in overheads and COGS.
+ * @param {Array} monthCards - all cards for the month's weeks
+ * @param {Array} overheads - array of { monthlyCost } objects
+ * @param {Array} cogsItems - array of { amount } objects (all COGS for the month)
+ * @param {number} _weeksInMonth - unused, kept for API compat
  */
-export function teddyCoverage(cards, day) {
-  const dayCards = cards.filter((c) => c.day === day && c.people.includes('Teddy'));
+export function monthTotals(monthCards, overheads = [], cogsItems = [], _weeksInMonth = 4) {
+  const cardTotals = weekTotals(monthCards);
+  const revenue = cardTotals.revenue;
+  const labor = cardTotals.cost;
+  const overhead = overheads.reduce((sum, o) => sum + (o.monthlyCost || 0), 0);
+  const cogs = cogsItems.reduce((sum, c) => sum + (c.amount || 0), 0);
+  const net = revenue - labor - overhead - cogs;
+
+  return { revenue, labor, overhead, cogs, net };
+}
+
+/**
+ * Summarize Teddy's coverage for a given date.
+ */
+export function teddyCoverage(cards, date) {
+  const dayCards = cards.filter((c) => c.date === date && c.people.includes('Teddy'));
   if (dayCards.length === 0) return [];
   return dayCards
     .filter((c) => !c.optional || c.enabled)

@@ -358,3 +358,65 @@ model DishSourceLink {
 
   @@unique([sourceId, externalKey])
 }
+
+model PlannerCard {
+  id           String   @id @default(uuid())
+  supabaseUid  String
+  templateId   String?
+  title        String
+  date         String
+  dayOfWeek    String
+  zone         String   @default("timed")
+  people       String[] @default([])
+  startTime    String?
+  endTime      String?
+  revenue      Int      @default(0)
+  cost         Int      @default(0)
+  costPerHour  Int?
+  optional     Boolean  @default(false)
+  enabled      Boolean  @default(true)
+  effectTarget String?
+  effectType   String?
+  sortOrder    Float    @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([supabaseUid])
+  @@index([supabaseUid, date])
+  @@index([supabaseUid, templateId])
+}
+
+model PlannerOverhead {
+  id          String   @id @default(uuid())
+  supabaseUid String
+  name        String
+  monthlyCost Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([supabaseUid])
+}
+
+model PlannerCOGS {
+  id          String   @id @default(uuid())
+  supabaseUid String
+  weekStart   String
+  name        String
+  amount      Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([supabaseUid])
+  @@index([supabaseUid, weekStart])
+}
+
+model GoogleCalendarToken {
+  id           String   @id @default(uuid())
+  supabaseUid  String   @unique
+  accessToken  String
+  refreshToken String
+  expiresAt    DateTime
+  calendarId   String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
