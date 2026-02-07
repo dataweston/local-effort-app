@@ -73,11 +73,11 @@ export function usePlannerState({ mode = 'demo', accessToken = null, weekStart, 
     return () => { cancelled = true; };
   }, [mode, accessToken]);
 
-  // Load COGS for current week in persisted mode
+  // Load ALL COGS in persisted mode (full set in memory, filtered by view)
   useEffect(() => {
-    if (mode !== 'persisted' || !accessToken || !weekStart) return;
+    if (mode !== 'persisted' || !accessToken) return;
     let cancelled = false;
-    fetch(`/api/planner/cogs?weekStart=${weekStart}`, {
+    fetch('/api/planner/cogs', {
       headers: { Authorization: `Bearer ${accessToken}` },
     })
       .then((r) => r.json())
@@ -86,7 +86,7 @@ export function usePlannerState({ mode = 'demo', accessToken = null, weekStart, 
       })
       .catch(() => {});
     return () => { cancelled = true; };
-  }, [mode, accessToken, weekStart]);
+  }, [mode, accessToken]);
 
   // Cards for the current week
   const weekCards = useMemo(() => {
@@ -104,6 +104,11 @@ export function usePlannerState({ mode = 'demo', accessToken = null, weekStart, 
     return map;
   }, [cards, weekDates]);
 
+  // COGS filtered to current week
+  const weekCogs = useMemo(() => {
+    return cogs.filter((c) => c.weekStart === effectiveWeekStart);
+  }, [cogs, effectiveWeekStart]);
+
   const totals = useMemo(() => weekTotals(weekCards), [weekCards]);
 
   // Month-level cards and totals (for monthly view top bar)
@@ -118,17 +123,28 @@ export function usePlannerState({ mode = 'demo', accessToken = null, weekStart, 
     return cards.filter((c) => allDates.has(c.date));
   }, [cards, selectedMonth]);
 
+  // COGS filtered to month's weeks
+  const monthCogs = useMemo(() => {
+    if (!selectedMonth) return [];
+    const [y, m] = selectedMonth.split('-').map(Number);
+    const weekStartsForMonth = getMonthWeeks(y, m);
+    const wsSet = new Set(weekStartsForMonth);
+    return cogs.filter((c) => wsSet.has(c.weekStart));
+  }, [cogs, selectedMonth]);
+
   const monthlyTotals = useMemo(
-    () => computeMonthTotals(monthCards, overheads, cogs),
-    [monthCards, overheads, cogs]
+    () => computeMonthTotals(monthCards, overheads, monthCogs),
+    [monthCards, overheads, monthCogs]
   );
 
-  // Debounced save
+  // Debounced save — flushes on page unload to prevent data loss
   const persistCards = useCallback(
     (nextCards) => {
       if (mode !== 'persisted' || !accessToken) return;
       if (saveTimer.current) clearTimeout(saveTimer.current);
-      saveTimer.current = setTimeout(() => {
+
+      const doSave = () => {
+        saveTimer.current = null;
         fetch('/api/planner/cards', {
           method: 'POST',
           headers: {
@@ -137,10 +153,41 @@ export function usePlannerState({ mode = 'demo', accessToken = null, weekStart, 
           },
           body: JSON.stringify({ action: 'save-all', cards: nextCards }),
         }).catch(() => {});
-      }, 800);
+      };
+
+      saveTimer.current = setTimeout(doSave, 800);
     },
     [mode, accessToken]
   );
+
+  // Flush pending save on page unload using sendBeacon (survives navigation)
+  const latestCardsRef = useRef(cards);
+  latestCardsRef.current = cards;
+
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      if (saveTimer.current && mode === 'persisted' && accessToken) {
+        clearTimeout(saveTimer.current);
+        saveTimer.current = null;
+        const blob = new Blob(
+          [JSON.stringify({ action: 'save-all', cards: latestCardsRef.current })],
+          { type: 'application/json' }
+        );
+        // sendBeacon doesn't support auth headers, so use keepalive fetch
+        fetch('/api/planner/cards', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${accessToken}`,
+          },
+          body: JSON.stringify({ action: 'save-all', cards: latestCardsRef.current }),
+          keepalive: true,
+        }).catch(() => {});
+      }
+    };
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [mode, accessToken]);
 
   const updateCards = useCallback(
     (updater) => {
@@ -589,6 +636,8 @@ export function usePlannerState({ mode = 'demo', accessToken = null, weekStart, 
     loaded,
     overheads,
     cogs,
+    weekCogs,
+    monthCogs,
     pendingChange,
     handlers: {
       handleToggle,

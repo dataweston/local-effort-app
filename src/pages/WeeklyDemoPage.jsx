@@ -42,12 +42,13 @@ export default function WeeklyDemoPage() {
   const planner = usePlannerState({ mode, accessToken: auth.accessToken, weekStart, selectedMonth });
 
   const overheadTotal = planner.overheads.reduce((sum, o) => sum + (o.monthlyCost || 0), 0);
+  const weeklyCogs = planner.weekCogs.reduce((sum, c) => sum + (c.amount || 0), 0);
 
   // Use monthly totals when on monthly view, otherwise weekly
   const isMonthly = view === 'monthly';
   const displayTotals = isMonthly
-    ? { revenue: planner.monthlyTotals.revenue, cost: planner.monthlyTotals.labor, net: planner.monthlyTotals.net }
-    : planner.totals;
+    ? { revenue: planner.monthlyTotals.revenue, cost: planner.monthlyTotals.labor, cogs: planner.monthlyTotals.cogs, net: planner.monthlyTotals.net }
+    : { ...planner.totals, cogs: weeklyCogs, net: planner.totals.revenue - planner.totals.cost - weeklyCogs };
 
   const handleDayClick = (date) => {
     selectDayFromWeek(date);
@@ -112,6 +113,19 @@ export default function WeeklyDemoPage() {
                     <DollarSign size={11} />{displayTotals.cost}
                   </div>
                 </div>
+                {displayTotals.cogs > 0 && (
+                  <>
+                    <div className="w-px h-7" style={{ backgroundColor: 'var(--color-border-default)' }} />
+                    <div className="text-center">
+                      <div className="text-[10px] uppercase tracking-wider" style={{ color: 'var(--color-text-muted)' }}>
+                        COGS
+                      </div>
+                      <div className="text-sm font-bold flex items-center gap-0.5" style={{ color: 'var(--color-state-danger)' }}>
+                        <DollarSign size={11} />{displayTotals.cogs}
+                      </div>
+                    </div>
+                  </>
+                )}
                 {view === 'monthly' && overheadTotal > 0 && (
                   <>
                     <div className="w-px h-7" style={{ backgroundColor: 'var(--color-border-default)' }} />
@@ -198,6 +212,11 @@ export default function WeeklyDemoPage() {
             <span className="text-xs font-bold" style={{ color: 'var(--color-state-danger)' }}>
               −${displayTotals.cost} labor
             </span>
+            {displayTotals.cogs > 0 && (
+              <span className="text-xs font-bold" style={{ color: 'var(--color-state-danger)' }}>
+                −${displayTotals.cogs} cogs
+              </span>
+            )}
             {view === 'monthly' && overheadTotal > 0 && (
               <span className="text-xs font-bold" style={{ color: 'var(--color-state-danger)' }}>
                 −${overheadTotal} overhead

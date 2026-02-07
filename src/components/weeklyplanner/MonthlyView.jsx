@@ -107,8 +107,8 @@ export function MonthlyView({
   }, [monthCards]);
 
   const totals = useMemo(
-    () => monthTotals(weekCards, planner.overheads, planner.cogs, weekStarts.length),
-    [weekCards, planner.overheads, planner.cogs, weekStarts.length]
+    () => monthTotals(weekCards, planner.overheads, planner.monthCogs || planner.cogs, weekStarts.length),
+    [weekCards, planner.overheads, planner.monthCogs, planner.cogs, weekStarts.length]
   );
 
   const brandSuccess = '#7A846E';
@@ -215,7 +215,7 @@ export function MonthlyView({
       />
 
       {/* COGS monthly summary */}
-      {planner.cogs.length > 0 && (
+      {(planner.monthCogs || planner.cogs).length > 0 && (
         <div
           className="rounded-xl p-4 border"
           style={{
@@ -234,7 +234,7 @@ export function MonthlyView({
           </p>
           <div className="text-lg font-bold flex items-center gap-1" style={{ color: 'var(--color-state-danger)' }}>
             <DollarSign size={16} />
-            {planner.cogs.reduce((s, c) => s + (c.amount || 0), 0)}
+            {(planner.monthCogs || planner.cogs).reduce((s, c) => s + (c.amount || 0), 0)}
           </div>
         </div>
       )}
