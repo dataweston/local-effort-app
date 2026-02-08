@@ -68,7 +68,11 @@ function buildTimeBlocks(cards) {
 
   for (const row of timed) {
     const { card, start, end } = row;
-    if (start <= cursor && end <= cursor) continue;
+    // Fully overlapped cards should still be visible in fallback untimed rendering.
+    if (start <= cursor && end <= cursor) {
+      untimed.push(card);
+      continue;
+    }
 
     const effectiveStart = Math.max(start, cursor);
     if (effectiveStart > cursor) {
