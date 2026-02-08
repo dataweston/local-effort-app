@@ -197,11 +197,6 @@ export default function CatherineSchedulePage() {
 
       {/* Content area */}
       <div className="flex-1 px-3 pb-4 safe-area-bottom overflow-auto" style={{ minHeight: 0 }}>
-        {!planner.loaded ? (
-          <div className="text-center py-8 text-sm" style={{ color: '#3A2E3F' }}>Loading schedule...</div>
-        ) : catherineCards.length === 0 ? (
-          <div className="text-center py-8 text-sm" style={{ color: '#3A2E3F' }}>No cards found ({planner.cards.length} total)</div>
-        ) : null}
         <AnimatePresence mode="wait">
           {activeView === 'weekly' ? (
             <motion.div

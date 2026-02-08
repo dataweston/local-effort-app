@@ -62,24 +62,16 @@ export function ColorBlob({ card, heightPx, index = 0, total = 1, daily = false 
         zIndex: 1,
         willChange: 'transform',
       }}
-      initial={{
-        borderRadius: shape.br,
-        opacity: 0,
-        scale: 0.92,
-      }}
+      initial={false}
       animate={{
         y: [0, -4, 1, 5, 0],
         x: [0, 2, -1, -2, 0],
         borderRadius: [shape.br, shape.br2, shape.br3, shape.br2, shape.br],
-        opacity: 1,
-        scale: 1,
       }}
       transition={{
         y: { duration, delay, repeat: Infinity, ease: 'easeInOut' },
         x: { duration: duration * 1.3, delay: delay + 0.4, repeat: Infinity, ease: 'easeInOut' },
         borderRadius: { duration: duration * 1.6, delay, repeat: Infinity, ease: 'easeInOut' },
-        opacity: { duration: 0.8, delay: delay * 0.3 },
-        scale: { duration: 0.8, delay: delay * 0.3 },
       }}
       whileHover={{
         scale: 1.06,
