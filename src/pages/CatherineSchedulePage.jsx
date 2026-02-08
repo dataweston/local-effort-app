@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { ChevronLeft, ChevronRight, LogIn } from 'lucide-react';
+import { AlertTriangle, ChevronLeft, ChevronRight, LogIn } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSupabaseAuth } from '../contexts/SupabaseAuthContext';
 import { usePlannerNav } from '../components/weeklyplanner/usePlannerNav';
@@ -75,6 +75,7 @@ export default function CatherineSchedulePage() {
   } = nav;
 
   const [activeView, setActiveView] = useState('weekly');
+  const [errorDialog, setErrorDialog] = useState(null);
   const hasAutoAlignedWeekRef = useRef(false);
 
   const mode = auth.loading ? null : (auth.user ? 'persisted' : 'demo');
@@ -228,13 +229,16 @@ export default function CatherineSchedulePage() {
     nav.setSelectedDate(today);
   };
 
+  const openErrorDialog = (message) => setErrorDialog(message);
+  const closeErrorDialog = () => setErrorDialog(null);
+
   return (
     <div
       className="fullpage-demo-scope min-h-screen flex flex-col"
       style={{ backgroundColor: '#F1E3D8' }}
     >
       {/* Minimal navigation */}
-      <div className="flex items-center justify-between px-4 py-3 safe-area-top">
+      <div className="flex items-center justify-between px-3 sm:px-4 py-3 safe-area-top gap-2">
         {/* Week nav */}
         <div className="flex items-center gap-2">
           <button
@@ -245,7 +249,7 @@ export default function CatherineSchedulePage() {
             <ChevronLeft size={18} />
           </button>
           <span
-            className="text-sm font-display font-medium min-w-[140px] text-center"
+            className="text-xs sm:text-sm font-display font-medium min-w-[112px] sm:min-w-[140px] text-center"
             style={{ color: '#3A2E3F' }}
           >
             {activeView === 'weekly' ? weekLabel : formatDateFull(selectedDate)}
@@ -260,34 +264,54 @@ export default function CatherineSchedulePage() {
         </div>
 
         {/* Today + view toggle */}
-        <div className="flex items-center gap-3">
-          <button
-            onClick={handleToday}
-            className="text-[11px] font-medium px-3 py-1 rounded-full transition-colors"
-            style={{
-              color: 'rgba(58,46,63,0.6)',
-              backgroundColor: 'rgba(58,46,63,0.06)',
-            }}
-          >
-            Today
-          </button>
-          <div
-            className="flex rounded-full overflow-hidden"
-            style={{ backgroundColor: 'rgba(58,46,63,0.08)' }}
-          >
-            {['weekly', 'daily'].map((v) => (
-              <button
-                key={v}
-                onClick={() => setActiveView(v)}
-                className="text-[11px] font-medium px-3 py-1 transition-colors capitalize"
-                style={{
-                  backgroundColor: activeView === v ? 'rgba(58,46,63,0.15)' : 'transparent',
-                  color: activeView === v ? '#3A2E3F' : 'rgba(58,46,63,0.5)',
-                }}
-              >
-                {v === 'weekly' ? 'Week' : 'Day'}
-              </button>
-            ))}
+        <div className="flex flex-col items-end gap-1 sm:flex-row sm:items-center sm:gap-2">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <button
+              onClick={handleToday}
+              className="text-[11px] font-medium px-3 py-1 rounded-full transition-colors"
+              style={{
+                color: 'rgba(58,46,63,0.6)',
+                backgroundColor: 'rgba(58,46,63,0.06)',
+              }}
+            >
+              Today
+            </button>
+            <div
+              className="flex rounded-full overflow-hidden"
+              style={{ backgroundColor: 'rgba(58,46,63,0.08)' }}
+            >
+              {['weekly', 'daily'].map((v) => (
+                <button
+                  key={v}
+                  onClick={() => setActiveView(v)}
+                  className="text-[11px] font-medium px-3 py-1 transition-colors capitalize"
+                  style={{
+                    backgroundColor: activeView === v ? 'rgba(58,46,63,0.15)' : 'transparent',
+                    color: activeView === v ? '#3A2E3F' : 'rgba(58,46,63,0.5)',
+                  }}
+                >
+                  {v === 'weekly' ? 'Week' : 'Day'}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div className="flex items-center gap-3 text-[11px] sm:text-[12px]">
+            <button
+              type="button"
+              onClick={() => openErrorDialog('ask your husband')}
+              className="underline underline-offset-2"
+              style={{ color: '#9a4f5b' }}
+            >
+              make changes
+            </button>
+            <button
+              type="button"
+              onClick={() => openErrorDialog("don't worry about it honey")}
+              className="underline underline-offset-2"
+              style={{ color: '#9a4f5b' }}
+            >
+              financials
+            </button>
           </div>
         </div>
       </div>
@@ -309,8 +333,8 @@ export default function CatherineSchedulePage() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.3 }}
-              className="flex gap-1"
-              style={{ minHeight: 'calc(100vh - 80px)' }}
+              className="flex gap-2 min-w-max pr-1 pb-2 sm:min-w-0"
+              style={{ minHeight: 'calc(100dvh - 84px)' }}
             >
               {weekDates.map((date) => (
                 <BlobColumn
@@ -327,8 +351,8 @@ export default function CatherineSchedulePage() {
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -30 }}
               transition={{ duration: 0.25 }}
-              className="max-w-lg mx-auto"
-              style={{ minHeight: 'calc(100vh - 80px)' }}
+              className="max-w-lg mx-auto w-full"
+              style={{ minHeight: 'calc(100dvh - 84px)' }}
             >
               {/* Day pills */}
               <div className="flex justify-center gap-1 mb-4">
@@ -360,6 +384,51 @@ export default function CatherineSchedulePage() {
           )}
         </AnimatePresence>
       </div>
+
+      <AnimatePresence>
+        {errorDialog ? (
+          <motion.div
+            className="fixed inset-0 z-50 flex items-center justify-center p-4"
+            style={{ backgroundColor: 'rgba(41,31,35,0.55)' }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <motion.div
+              role="dialog"
+              aria-modal="true"
+              className="w-full max-w-sm rounded-2xl p-4 sm:p-5 text-center"
+              style={{
+                backgroundColor: '#F8E9E8',
+                border: '1px solid rgba(167,56,76,0.38)',
+                boxShadow: '0 14px 28px rgba(58,46,63,0.22)',
+              }}
+              initial={{ opacity: 0, y: 14, scale: 0.97 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 12, scale: 0.97 }}
+              transition={{ duration: 0.16 }}
+            >
+              <div className="flex justify-center mb-2">
+                <AlertTriangle size={18} style={{ color: '#A7384C' }} />
+              </div>
+              <p className="text-sm font-display mb-4" style={{ color: '#6b2733' }}>
+                {errorDialog}
+              </p>
+              <button
+                type="button"
+                onClick={closeErrorDialog}
+                className="px-5 py-1.5 rounded-full text-sm font-medium"
+                style={{
+                  backgroundColor: '#A7384C',
+                  color: '#F8E9E8',
+                }}
+              >
+                OK
+              </button>
+            </motion.div>
+          </motion.div>
+        ) : null}
+      </AnimatePresence>
     </div>
   );
 }

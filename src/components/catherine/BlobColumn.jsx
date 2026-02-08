@@ -142,7 +142,9 @@ export function BlobColumn({ date, cards, daily = false }) {
   const pxPerHour = daily ? 72 : PX_PER_HOUR;
 
   return (
-    <div className="flex-1 min-w-0 flex flex-col items-center">
+    <div
+      className={`${daily ? 'w-full max-w-xl' : 'flex-none w-[88px] sm:flex-1 sm:w-auto'} min-w-0 flex flex-col items-center snap-start`}
+    >
       {/* Day label */}
       <div className="text-center py-2">
         <span

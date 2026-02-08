@@ -1,5 +1,5 @@
-import React, { useState, useMemo } from 'react';
-import { motion } from 'framer-motion';
+import React, { useEffect, useMemo, useState } from 'react';
+import { motion, useReducedMotion } from 'framer-motion';
 
 export function getCategoryInfo(card) {
   if (!card) return { color: '#C1B8CD', category: 'Free' };
@@ -44,6 +44,8 @@ function rgba(hex, alpha) {
 
 export function ColorBlob({ card, heightPx, index = 0, total = 1, daily = false }) {
   const [tapped, setTapped] = useState(false);
+  const [isCoarsePointer, setIsCoarsePointer] = useState(false);
+  const prefersReducedMotion = useReducedMotion();
   const { color, category } = getCategoryInfo(card);
   const isUnscheduled = !card;
   const title = card?.title || '';
@@ -52,6 +54,20 @@ export function ColorBlob({ card, heightPx, index = 0, total = 1, daily = false 
   const shape = useMemo(() => blobShape(index), [index]);
   const duration = 6 + (index % 4) * 1.5;
   const delay = (index % 5) * 0.7;
+  const reduceVisualMotion = Boolean(prefersReducedMotion) || isCoarsePointer;
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return;
+    const mediaQuery = window.matchMedia('(hover: none), (pointer: coarse)');
+    const apply = () => setIsCoarsePointer(mediaQuery.matches);
+    apply();
+    if (typeof mediaQuery.addEventListener === 'function') {
+      mediaQuery.addEventListener('change', apply);
+      return () => mediaQuery.removeEventListener('change', apply);
+    }
+    mediaQuery.addListener(apply);
+    return () => mediaQuery.removeListener(apply);
+  }, []);
 
   // Unscheduled gaps: nearly invisible, just a faint hint
   if (isUnscheduled) {
@@ -73,7 +89,7 @@ export function ColorBlob({ card, heightPx, index = 0, total = 1, daily = false 
         height: heightPx,
         width: daily ? '94%' : '88%',
         maxWidth: daily ? '680px' : 'none',
-        minHeight: 28,
+        minHeight: daily ? 52 : 34,
         marginTop: index > 0 ? -8 : 0,
         marginLeft: daily ? '3%' : '6%',
         marginRight: daily ? '3%' : '6%',
@@ -83,21 +99,21 @@ export function ColorBlob({ card, heightPx, index = 0, total = 1, daily = false 
         border: `1px solid ${rgba(color, 0.55)}`,
       }}
       initial={false}
-      animate={{
+      animate={reduceVisualMotion ? { borderRadius: shape.br } : {
         y: [0, -4, 1, 5, 0],
         x: [0, 2, -1, -2, 0],
         borderRadius: [shape.br, shape.br2, shape.br3, shape.br2, shape.br],
       }}
-      transition={{
+      transition={reduceVisualMotion ? { duration: 0.2 } : {
         y: { duration, delay, repeat: Infinity, ease: 'easeInOut' },
         x: { duration: duration * 1.3, delay: delay + 0.4, repeat: Infinity, ease: 'easeInOut' },
         borderRadius: { duration: duration * 1.6, delay, repeat: Infinity, ease: 'easeInOut' },
       }}
-      whileHover={{
+      whileHover={!isCoarsePointer ? {
         scale: 1.06,
         zIndex: 10,
         transition: { duration: 0.3 },
-      }}
+      } : undefined}
       onClick={() => setTapped((p) => !p)}
     >
       {/* Main blob body — radial gradient for soft hazy center */}
@@ -113,7 +129,7 @@ export function ColorBlob({ card, heightPx, index = 0, total = 1, daily = false 
             ${rgba(color, 0.14)} 85%,
             transparent 100%
           )`,
-          filter: daily ? 'blur(1px)' : 'blur(2px)',
+          filter: reduceVisualMotion ? 'none' : daily ? 'blur(1px)' : 'blur(2px)',
         }}
       />
 
