@@ -7,25 +7,52 @@ const DAY_END = '21:00';
 const PX_PER_HOUR = 56;
 
 function timeToMinutes(t) {
-  if (!t) return 0;
-  const [h, m] = t.split(':').map(Number);
+  if (!t) return null;
+  const raw = String(t).trim();
+  if (!raw) return null;
+
+  // Supports "07:00", "07:00:00", and "7:00 AM"/"7:00PM" legacy formats.
+  const ampm = raw.match(/^(\d{1,2})(?::(\d{2}))?(?::\d{2})?\s*([AaPp][Mm])$/);
+  if (ampm) {
+    let h = Number(ampm[1]);
+    const m = Number(ampm[2] || '0');
+    if (!Number.isFinite(h) || !Number.isFinite(m) || m < 0 || m > 59) return null;
+    const isPM = ampm[3].toLowerCase() === 'pm';
+    if (h === 12) h = isPM ? 12 : 0;
+    else if (isPM) h += 12;
+    return h * 60 + m;
+  }
+
+  const parts = raw.split(':');
+  if (parts.length < 2) return null;
+  const h = Number(parts[0]);
+  const m = Number(parts[1]);
+  if (!Number.isFinite(h) || !Number.isFinite(m) || h < 0 || h > 23 || m < 0 || m > 59) {
+    return null;
+  }
   return h * 60 + m;
 }
 
 function buildTimeBlocks(cards) {
-  const timed = cards
-    .filter((c) => c.startTime && c.endTime)
-    .sort((a, b) => timeToMinutes(a.startTime) - timeToMinutes(b.startTime));
-
-  const untimed = cards.filter((c) => !c.startTime || !c.endTime);
+  const timed = [];
+  const untimed = [];
+  for (const c of cards) {
+    const start = timeToMinutes(c.startTime);
+    const end = timeToMinutes(c.endTime);
+    if (Number.isFinite(start) && Number.isFinite(end)) {
+      timed.push({ card: c, start, end });
+    } else {
+      untimed.push(c);
+    }
+  }
+  timed.sort((a, b) => a.start - b.start);
 
   const blocks = [];
-  let cursor = timeToMinutes(DAY_START);
-  const dayEnd = timeToMinutes(DAY_END);
+  let cursor = timeToMinutes(DAY_START) ?? 360;
+  const dayEnd = timeToMinutes(DAY_END) ?? 1260;
 
-  for (const card of timed) {
-    const start = timeToMinutes(card.startTime);
-    const end = timeToMinutes(card.endTime);
+  for (const row of timed) {
+    const { card, start, end } = row;
     if (start <= cursor && end <= cursor) continue;
 
     const effectiveStart = Math.max(start, cursor);
@@ -47,8 +74,8 @@ function buildTimeBlocks(cards) {
     if (hours > 0) {
       blocks.push({
         card,
-        startTime: card.startTime,
-        endTime: card.endTime,
+        startTime: minutesToTime(effectiveStart),
+        endTime: minutesToTime(cardEnd),
         hours,
       });
     }
@@ -88,6 +115,7 @@ export function BlobColumn({ date, cards, daily = false }) {
   const today = isToday(date);
   const label = formatDateShort(date);
   const blocks = useMemo(() => buildTimeBlocks(cards), [cards]);
+  const fallbackCards = useMemo(() => (Array.isArray(cards) ? cards.filter(Boolean) : []), [cards]);
 
   const pxPerHour = daily ? 72 : PX_PER_HOUR;
 
@@ -105,16 +133,29 @@ export function BlobColumn({ date, cards, daily = false }) {
 
       {/* Blobs float freely — no container, no clipping */}
       <div className="flex-1 relative w-full flex flex-col items-center">
-        {blocks.map((block, i) => (
-          <ColorBlob
-            key={`${date}-${i}`}
-            card={block.card}
-            heightPx={Math.max(block.hours * pxPerHour, 24)}
-            index={i}
-            total={blocks.length}
-            daily={daily}
-          />
-        ))}
+        {blocks.length > 0 ? (
+          blocks.map((block, i) => (
+            <ColorBlob
+              key={`${date}-${i}`}
+              card={block.card}
+              heightPx={Math.max(block.hours * pxPerHour, 24)}
+              index={i}
+              total={blocks.length}
+              daily={daily}
+            />
+          ))
+        ) : (
+          fallbackCards.map((card, i) => (
+            <ColorBlob
+              key={`${date}-fallback-${card.id || i}`}
+              card={card}
+              heightPx={Math.max(pxPerHour * 0.85, 28)}
+              index={i}
+              total={fallbackCards.length}
+              daily={daily}
+            />
+          ))
+        )}
       </div>
     </div>
   );

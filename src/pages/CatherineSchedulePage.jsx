@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { ChevronLeft, ChevronRight, LogIn } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSupabaseAuth } from '../contexts/SupabaseAuthContext';
@@ -75,6 +75,7 @@ export default function CatherineSchedulePage() {
   } = nav;
 
   const [activeView, setActiveView] = useState('weekly');
+  const hasAutoAlignedWeekRef = useRef(false);
 
   const mode = auth.loading ? null : (auth.user ? 'persisted' : 'demo');
   const planner = usePlannerState({ mode, accessToken: auth.accessToken, weekStart });
@@ -108,6 +109,42 @@ export default function CatherineSchedulePage() {
     () => weekDates.some((date) => (cardsByDate[date] || []).length > 0),
     [weekDates, cardsByDate]
   );
+
+  useEffect(() => {
+    if (!planner.loaded) return;
+    if (hasAnyCards) return;
+    if (hasAutoAlignedWeekRef.current) return;
+
+    // Respect explicit week query if user intentionally navigated to a specific week.
+    const hasExplicitWeek = typeof window !== 'undefined'
+      && new URLSearchParams(window.location.search).has('week');
+    if (hasExplicitWeek) {
+      hasAutoAlignedWeekRef.current = true;
+      return;
+    }
+
+    const sourceCards = catherineCards.length > 0 ? catherineCards : planner.cards;
+    const candidateDates = sourceCards
+      .map((card) => normalizeDateKey(card.date))
+      .filter((d) => /^\d{4}-\d{2}-\d{2}$/.test(d));
+    if (candidateDates.length === 0) {
+      hasAutoAlignedWeekRef.current = true;
+      return;
+    }
+
+    const today = getToday();
+    const future = candidateDates.filter((d) => d >= today).sort();
+    const past = candidateDates.filter((d) => d < today).sort();
+    const targetDate = future[0] || past[past.length - 1];
+    if (!targetDate) {
+      hasAutoAlignedWeekRef.current = true;
+      return;
+    }
+
+    hasAutoAlignedWeekRef.current = true;
+    nav.setWeekStart(getWeekStart(targetDate));
+    nav.setSelectedDate(targetDate);
+  }, [planner.loaded, planner.cards, catherineCards, hasAnyCards, nav]);
 
   // Week label
   const weekLabel = weekDates.length >= 7
