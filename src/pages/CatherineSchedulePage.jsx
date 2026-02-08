@@ -51,6 +51,11 @@ export default function CatherineSchedulePage() {
   const mode = auth.loading ? null : (auth.user ? 'persisted' : 'demo');
   const planner = usePlannerState({ mode, accessToken: auth.accessToken, weekStart });
 
+  // Debug — remove after confirming
+  useEffect(() => {
+    console.log('[catherine] mode:', mode, 'loaded:', planner.loaded, 'cards:', planner.cards.length);
+  }, [mode, planner.loaded, planner.cards.length]);
+
   // Filter to Catherine-relevant cards
   const catherineCards = useMemo(
     () => planner.cards.filter(isCatherineRelevant),
@@ -196,7 +201,7 @@ export default function CatherineSchedulePage() {
       </div>
 
       {/* Content area */}
-      <div className="flex-1 px-3 pb-4 safe-area-bottom overflow-hidden">
+      <div className="flex-1 px-3 pb-4 safe-area-bottom overflow-auto min-h-0">
         <AnimatePresence mode="wait">
           {activeView === 'weekly' ? (
             <motion.div
