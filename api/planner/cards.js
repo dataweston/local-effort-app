@@ -61,34 +61,30 @@ module.exports = async (req, res) => {
 
     if (action === 'save-all' && Array.isArray(bulkCards)) {
       try {
-        await prisma.$transaction(async (tx) => {
-          // Delete all existing cards for this user, then recreate
-          await tx.plannerCard.deleteMany({ where: { supabaseUid: uid } });
+        const rows = bulkCards.map((c) => ({
+          supabaseUid: uid,
+          templateId: c.templateId ?? null,
+          title: c.title || 'Untitled',
+          date: c.date || '',
+          dayOfWeek: c.dayOfWeek || '',
+          zone: c.zone || 'timed',
+          people: c.people || [],
+          startTime: c.startTime ?? null,
+          endTime: c.endTime ?? null,
+          revenue: c.revenue ?? 0,
+          cost: c.cost ?? 0,
+          costPerHour: c.costPerHour ?? null,
+          optional: c.optional ?? false,
+          enabled: c.enabled ?? true,
+          effectTarget: c.effectTarget ?? null,
+          effectType: c.effectType ?? null,
+          sortOrder: c.order ?? c.sortOrder ?? 0,
+        }));
 
-          for (const c of bulkCards) {
-            await tx.plannerCard.create({
-              data: {
-                supabaseUid: uid,
-                templateId: c.templateId ?? null,
-                title: c.title || 'Untitled',
-                date: c.date || '',
-                dayOfWeek: c.dayOfWeek || '',
-                zone: c.zone || 'timed',
-                people: c.people || [],
-                startTime: c.startTime ?? null,
-                endTime: c.endTime ?? null,
-                revenue: c.revenue ?? 0,
-                cost: c.cost ?? 0,
-                costPerHour: c.costPerHour ?? null,
-                optional: c.optional ?? false,
-                enabled: c.enabled ?? true,
-                effectTarget: c.effectTarget ?? null,
-                effectType: c.effectType ?? null,
-                sortOrder: c.order ?? c.sortOrder ?? 0,
-              },
-            });
-          }
-        });
+        await prisma.$transaction(async (tx) => {
+          await tx.plannerCard.deleteMany({ where: { supabaseUid: uid } });
+          await tx.plannerCard.createMany({ data: rows });
+        }, { timeout: 30000 });
 
         return res.status(200).json({ ok: true, count: bulkCards.length });
       } catch (err) {
