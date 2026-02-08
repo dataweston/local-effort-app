@@ -26,6 +26,22 @@ function blobShape(index) {
   return shapes[index % shapes.length];
 }
 
+function hexToRgb(hex) {
+  const clean = String(hex || '').trim().replace('#', '');
+  if (!/^[0-9a-fA-F]{6}$/.test(clean)) return null;
+  return {
+    r: parseInt(clean.slice(0, 2), 16),
+    g: parseInt(clean.slice(2, 4), 16),
+    b: parseInt(clean.slice(4, 6), 16),
+  };
+}
+
+function rgba(hex, alpha) {
+  const rgb = hexToRgb(hex);
+  if (!rgb) return `rgba(198,108,120,${alpha})`;
+  return `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${alpha})`;
+}
+
 export function ColorBlob({ card, heightPx, index = 0, total = 1, daily = false }) {
   const [tapped, setTapped] = useState(false);
   const { color, category } = getCategoryInfo(card);
@@ -55,12 +71,16 @@ export function ColorBlob({ card, heightPx, index = 0, total = 1, daily = false 
       className="relative cursor-default select-none"
       style={{
         height: heightPx,
+        width: daily ? '94%' : '88%',
+        maxWidth: daily ? '680px' : 'none',
         minHeight: 28,
         marginTop: index > 0 ? -8 : 0,
-        marginLeft: daily ? '4%' : '6%',
-        marginRight: daily ? '4%' : '6%',
+        marginLeft: daily ? '3%' : '6%',
+        marginRight: daily ? '3%' : '6%',
         zIndex: 1,
         willChange: 'transform',
+        backgroundColor: rgba(color, daily ? 0.36 : 0.3),
+        border: `1px solid ${rgba(color, 0.55)}`,
       }}
       initial={false}
       animate={{
@@ -87,10 +107,10 @@ export function ColorBlob({ card, heightPx, index = 0, total = 1, daily = false 
           borderRadius: 'inherit',
           background: `radial-gradient(
             ellipse 80% 70% at 50% 45%,
-            ${color}B0 0%,
-            ${color}88 35%,
-            ${color}55 65%,
-            ${color}20 85%,
+            ${rgba(color, 0.7)} 0%,
+            ${rgba(color, 0.53)} 35%,
+            ${rgba(color, 0.33)} 65%,
+            ${rgba(color, 0.14)} 85%,
             transparent 100%
           )`,
           filter: daily ? 'blur(1px)' : 'blur(2px)',
@@ -104,8 +124,8 @@ export function ColorBlob({ card, heightPx, index = 0, total = 1, daily = false 
           borderRadius: 'inherit',
           background: `radial-gradient(
             ellipse 45% 40% at 48% 42%,
-            ${color}90 0%,
-            ${color}40 50%,
+            ${rgba(color, 0.56)} 0%,
+            ${rgba(color, 0.25)} 50%,
             transparent 100%
           )`,
         }}
@@ -119,8 +139,8 @@ export function ColorBlob({ card, heightPx, index = 0, total = 1, daily = false 
           borderRadius: 'inherit',
           background: `radial-gradient(
             ellipse at 50% 50%,
-            ${color}18 0%,
-            ${color}0C 40%,
+            ${rgba(color, 0.12)} 0%,
+            ${rgba(color, 0.06)} 40%,
             transparent 70%
           )`,
           pointerEvents: 'none',

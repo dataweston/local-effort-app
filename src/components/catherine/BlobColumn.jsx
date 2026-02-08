@@ -34,11 +34,27 @@ function timeToMinutes(t) {
 }
 
 function buildTimeBlocks(cards) {
+  const dayStart = timeToMinutes(DAY_START) ?? 360;
+  const dayEnd = timeToMinutes(DAY_END) ?? 1260;
   const timed = [];
   const untimed = [];
   for (const c of cards) {
+    if (!c) continue;
+    if (String(c.zone || '').toLowerCase() === 'untimed') {
+      untimed.push(c);
+      continue;
+    }
     const start = timeToMinutes(c.startTime);
     const end = timeToMinutes(c.endTime);
+    if (!Number.isFinite(start) || !Number.isFinite(end) || end <= start) {
+      untimed.push(c);
+      continue;
+    }
+    // Keep cards visible when their times are outside the displayed day window.
+    if (end <= dayStart || start >= dayEnd) {
+      untimed.push(c);
+      continue;
+    }
     if (Number.isFinite(start) && Number.isFinite(end)) {
       timed.push({ card: c, start, end });
     } else {
@@ -48,8 +64,7 @@ function buildTimeBlocks(cards) {
   timed.sort((a, b) => a.start - b.start);
 
   const blocks = [];
-  let cursor = timeToMinutes(DAY_START) ?? 360;
-  const dayEnd = timeToMinutes(DAY_END) ?? 1260;
+  let cursor = dayStart;
 
   for (const row of timed) {
     const { card, start, end } = row;
@@ -78,6 +93,8 @@ function buildTimeBlocks(cards) {
         endTime: minutesToTime(cardEnd),
         hours,
       });
+    } else {
+      untimed.push(card);
     }
     cursor = Math.max(cursor, cardEnd);
   }
@@ -115,6 +132,7 @@ export function BlobColumn({ date, cards, daily = false }) {
   const today = isToday(date);
   const label = formatDateShort(date);
   const blocks = useMemo(() => buildTimeBlocks(cards), [cards]);
+  const hasRenderableBlocks = useMemo(() => blocks.some((b) => Boolean(b?.card)), [blocks]);
   const fallbackCards = useMemo(() => (Array.isArray(cards) ? cards.filter(Boolean) : []), [cards]);
 
   const pxPerHour = daily ? 72 : PX_PER_HOUR;
@@ -133,7 +151,7 @@ export function BlobColumn({ date, cards, daily = false }) {
 
       {/* Blobs float freely — no container, no clipping */}
       <div className="flex-1 relative w-full flex flex-col items-center">
-        {blocks.length > 0 ? (
+        {hasRenderableBlocks ? (
           blocks.map((block, i) => (
             <ColorBlob
               key={`${date}-${i}`}
