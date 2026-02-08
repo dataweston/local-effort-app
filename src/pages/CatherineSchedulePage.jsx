@@ -7,6 +7,31 @@ import { usePlannerState } from '../components/weeklyplanner/usePlannerState';
 import { formatDateShort, formatDateFull, isToday, getWeekStart, getToday } from '../components/weeklyplanner/dateUtils';
 import { BlobColumn } from '../components/catherine/BlobColumn';
 
+function normalizeDateKey(value) {
+  if (!value || typeof value !== 'string') return '';
+  const trimmed = value.trim();
+  const isoMatch = trimmed.match(/^(\d{4}-\d{2}-\d{2})/);
+  if (isoMatch) return isoMatch[1];
+  const parsed = new Date(trimmed);
+  if (!Number.isNaN(parsed.getTime())) {
+    return parsed.toISOString().slice(0, 10);
+  }
+  return trimmed;
+}
+
+function normalizePeople(people) {
+  if (Array.isArray(people)) {
+    return people.map((p) => String(p).trim().toLowerCase()).filter(Boolean);
+  }
+  if (typeof people === 'string') {
+    return people
+      .split(/[,;|]/)
+      .map((p) => p.trim().toLowerCase())
+      .filter(Boolean);
+  }
+  return [];
+}
+
 /**
  * Filter cards relevant to Catherine's schedule:
  * - Cards where Catherine is in the people array
@@ -14,9 +39,12 @@ import { BlobColumn } from '../components/catherine/BlobColumn';
  * - Babysitter cards (childcare she needs to know about)
  */
 function isCatherineRelevant(card) {
-  if (card.people?.includes('Catherine')) return true;
+  const people = normalizePeople(card?.people);
+  if (people.some((p) => p === 'catherine' || p.includes('catherine'))) return true;
+  if (people.some((p) => p === 'teddy' || p.includes('teddy'))) return true;
   const t = (card.title || '').toLowerCase();
   if (t.includes('catherine')) return true;
+  if (t.includes('teddy')) return true;
   if (t.includes('babysitter')) return true;
   if (t.includes('teddy with weston') || t.includes('with weston')) return true;
   return false;
@@ -57,15 +85,29 @@ export default function CatherineSchedulePage() {
     [planner.cards]
   );
 
+  const weekCards = useMemo(() => {
+    const weekSet = new Set(weekDates);
+    return planner.cards.filter((card) => weekSet.has(normalizeDateKey(card.date)));
+  }, [planner.cards, weekDates]);
+
+  // If strict Catherine tagging yields nothing, show week cards rather than a blank page.
+  const visibleCards = catherineCards.length > 0 ? catherineCards : weekCards;
+
   // Group cards by date
   const cardsByDate = useMemo(() => {
     const map = {};
     for (const date of weekDates) map[date] = [];
-    for (const card of catherineCards) {
-      if (map[card.date]) map[card.date].push(card);
+    for (const card of visibleCards) {
+      const key = normalizeDateKey(card.date);
+      if (map[key]) map[key].push(card);
     }
     return map;
-  }, [catherineCards, weekDates]);
+  }, [visibleCards, weekDates]);
+
+  const hasAnyCards = useMemo(
+    () => weekDates.some((date) => (cardsByDate[date] || []).length > 0),
+    [weekDates, cardsByDate]
+  );
 
   // Week label
   const weekLabel = weekDates.length >= 7
@@ -119,6 +161,24 @@ export default function CatherineSchedulePage() {
             <LogIn size={16} />
             Sign in with Google
           </button>
+        </motion.div>
+      </div>
+    );
+  }
+
+  if (!planner.loaded) {
+    return (
+      <div
+        className="fullpage-demo-scope min-h-screen flex items-center justify-center"
+        style={{ backgroundColor: '#F1E3D8' }}
+      >
+        <motion.div
+          animate={{ opacity: [0.4, 1, 0.4] }}
+          transition={{ duration: 2, repeat: Infinity }}
+          className="text-sm font-display"
+          style={{ color: 'rgba(58,46,63,0.5)' }}
+        >
+          Loading schedule...
         </motion.div>
       </div>
     );
@@ -197,6 +257,13 @@ export default function CatherineSchedulePage() {
 
       {/* Content area */}
       <div className="flex-1 px-3 pb-4 safe-area-bottom overflow-auto" style={{ minHeight: 0 }}>
+        {!hasAnyCards && (
+          <div className="max-w-md mx-auto mt-10 text-center">
+            <p className="text-sm font-display" style={{ color: 'rgba(58,46,63,0.6)' }}>
+              No schedule cards found for this week.
+            </p>
+          </div>
+        )}
         <AnimatePresence mode="wait">
           {activeView === 'weekly' ? (
             <motion.div

@@ -38,7 +38,18 @@ export function usePlannerState({ mode = 'demo', accessToken = null, weekStart, 
     fetch('/api/planner/cards', {
       headers: { Authorization: `Bearer ${accessToken}` },
     })
-      .then((r) => r.json())
+      .then(async (r) => {
+        if (!r.ok) {
+          let details = '';
+          try {
+            details = await r.text();
+          } catch (_err) {
+            details = '';
+          }
+          throw new Error(`Planner cards request failed (${r.status}) ${details.slice(0, 160)}`);
+        }
+        return r.json();
+      })
       .then((data) => {
         if (cancelled) return;
         if (data.cards && data.cards.length > 0) {
@@ -52,8 +63,15 @@ export function usePlannerState({ mode = 'demo', accessToken = null, weekStart, 
         }
         setLoaded(true);
       })
-      .catch(() => {
-        if (!cancelled) setLoaded(true);
+      .catch((err) => {
+        if (cancelled) return;
+        // Keep schedule usable when API responses are malformed/unavailable.
+        console.error('Failed to load planner cards, using default schedule fallback.', err);
+        const today = getToday();
+        const year = parseInt(today.split('-')[0], 10);
+        const defaults = generateCardsForRange(today, `${year}-12-31`);
+        setCards(defaults);
+        setLoaded(true);
       });
 
     return () => { cancelled = true; };
