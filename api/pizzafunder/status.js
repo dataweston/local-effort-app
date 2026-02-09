@@ -11,6 +11,8 @@
 
 const { getSupabase } = require('../../backend/api/supabaseClient');
 
+const MANUAL_PIZZA_BOOST = 100;
+
 module.exports = async (req, res) => {
   if (req.method !== 'GET') {
     res.setHeader('Allow', 'GET');
@@ -22,7 +24,7 @@ module.exports = async (req, res) => {
   if (!supabase) {
     // Graceful fallback - return safe defaults
     return res.status(200).json({
-      pizzas: 0,
+      pizzas: MANUAL_PIZZA_BOOST,
       backers: 0,
       goal: 1000,
       source: 'fallback',
@@ -51,8 +53,10 @@ module.exports = async (req, res) => {
       });
     }
     
+    const pizzas = (Number(data.pizzas) || 0) + MANUAL_PIZZA_BOOST;
+
     return res.status(200).json({
-      pizzas: Number(data.pizzas) || 0,
+      pizzas,
       backers: Number(data.backers) || 0,
       goal: Number(data.goal) || 1000,
       lastUpdated: data.last_updated || null,
@@ -63,7 +67,7 @@ module.exports = async (req, res) => {
     
     // Still return graceful fallback
     return res.status(200).json({
-      pizzas: 0,
+      pizzas: MANUAL_PIZZA_BOOST,
       backers: 0,
       goal: 1000,
       source: 'error-fallback',
