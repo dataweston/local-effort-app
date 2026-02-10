@@ -71,6 +71,29 @@ export function EditPanel({ card, onSave, onDelete, onClose }) {
 
       {/* Form */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
+        {/* Card identifiers (read-only) */}
+        <div>
+          <label className="block text-xs font-medium mb-1" style={{ color: 'var(--color-text-secondary)' }}>
+            Card ID
+          </label>
+          <div
+            className="w-full rounded-lg px-3 py-2 text-[13px] font-mono"
+            style={{
+              backgroundColor: 'var(--color-bg-card)',
+              border: '1px solid var(--color-border-default)',
+              color: 'var(--color-text-primary)',
+              wordBreak: 'break-all',
+            }}
+          >
+            {String(card.id)}
+          </div>
+          {card.templateId && (
+            <div className="text-[11px] mt-1" style={{ color: 'var(--color-text-muted)' }}>
+              Template: {card.templateId}
+            </div>
+          )}
+        </div>
+
         {/* Title */}
         <div>
           <label className="block text-xs font-medium mb-1" style={{ color: 'var(--color-text-secondary)' }}>
