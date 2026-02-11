@@ -24,8 +24,11 @@ const buildOgImageUrl = () => {
   return `${SITE_URL}/gallery/logo.png`;
 };
 
+const NOINDEX_PATHS = ['/auth', '/inbox', '/campaigns', '/admin/', '/weeklydemo', '/weekly-order', '/catherine-schedule', '/partners/'];
+
 export const DefaultSeo = () => {
   const location = useLocation();
+  const shouldNoindex = NOINDEX_PATHS.some(p => location.pathname === p || location.pathname.startsWith(p));
 
   const canonicalUrl = useMemo(() => {
     const path = location.pathname || '/';
@@ -124,7 +127,7 @@ export const DefaultSeo = () => {
       <meta name="twitter:site" content="@localeffortfood" />
       <meta
         name="robots"
-        content="index,follow,max-snippet:-1,max-image-preview:large,max-video-preview:-1"
+        content={shouldNoindex ? "noindex, nofollow" : "index,follow,max-snippet:-1,max-image-preview:large,max-video-preview:-1"}
       />
       <link rel="canonical" href={canonicalUrl} />
       <link rel="alternate" type="text/plain" href={`${SITE_URL}/ai.txt`} />

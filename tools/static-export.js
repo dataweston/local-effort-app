@@ -82,21 +82,6 @@ const template = fs.readFileSync(templatePath, 'utf8');
 
 const routes = [
   '/',
-  '/about',
-  '/services',
-  '/pricing',
-  '/menu',
-  '/happy-monday',
-  '/gallery',
-  '/meal-prep',
-  '/paikka',
-  '/partner-portal',
-  '/crowdfunding',
-  '/personal-chef-minneapolis',
-  '/personal-chef-st-paul',
-  '/personal-chef-twin-cities',
-  '/personal-chef-minnesota',
-  '/personal-chef-wisconsin',
 ];
 
 function inject(html, body, head) {

@@ -6,7 +6,7 @@
   "mcpServers": [
     {
       "name": "local-effort-mcp",
-      "description": "Streamable HTTP MCP server exposing support search and read-only Sanity resources.",
+      "description": "Streamable HTTP MCP server exposing support search, Sanity query, and authenticated UCP checkout tools/resources.",
       "url": "https://localeffortfood.com/.well-known/mcp",
       "transport": {
         "type": "streamable-http",
@@ -14,18 +14,47 @@
         "sse": "https://localeffortfood.com/.well-known/mcp"
       },
       "capabilities": {
-        "tools": ["support.search", "sanity.query"],
+        "tools": [
+          "support.search",
+          "sanity.query",
+          "ucp.profile",
+          "ucp.checkout.create",
+          "ucp.checkout.get",
+          "ucp.checkout.update",
+          "ucp.checkout.complete",
+          "ucp.checkout.cancel"
+        ],
         "resources": [
           "support-chunk://{chunkId}",
           "support-cache://{cacheKey}",
           "support-source://{sourceId}",
-          "sanity-document://{docId}"
+          "sanity-document://{docId}",
+          "ucp-checkout://{checkoutSessionId}"
         ]
       },
       "notes": [
         "Send POST requests with application/json JSON-RPC payloads; keep a GET connection open with Accept: text/event-stream for streaming responses.",
         "Session identifiers are issued automatically and must be echoed via the Mcp-Session-Id header on follow-up requests.",
-        "Server enforces optional host/origin allowlists via MCP_ALLOWED_HOSTS/MCP_ALLOWED_ORIGINS environment variables."
+        "Server enforces optional host/origin allowlists via MCP_ALLOWED_HOSTS/MCP_ALLOWED_ORIGINS environment variables.",
+        "UCP checkout tools require auth and scope checks. Use Authorization: Bearer <token> with MCP_AUTH_BEARER_TOKEN or MCP_AUTH_TOKENS_JSON, or pass explicit auth in tool arguments.",
+        "Set MCP_REQUIRE_BEARER_FOR_UCP=true to require bearer auth for all ucp.checkout.* calls and ucp-checkout:// resource reads."
+      ]
+    }
+  ],
+  "ucpServers": [
+    {
+      "name": "local-effort-ucp",
+      "description": "Universal Commerce Protocol profile and REST checkout-session binding for Local Effort product flows.",
+      "profile": "https://localeffortfood.com/.well-known/ucp",
+      "rest": "https://localeffortfood.com/ucp/v1",
+      "service": "dev.ucp.shopping",
+      "capabilities": ["dev.ucp.shopping.checkout"],
+      "products": [
+        { "id": "psyche", "title": "Psyche Olive Oil", "url": "https://localeffortfood.com/psyche" },
+        { "id": "february", "title": "February Home Dinner", "url": "https://localeffortfood.com/february" },
+        { "id": "weekly-order", "title": "Weekly Order", "url": "https://localeffortfood.com/weekly-order" },
+        { "id": "small-events", "title": "Small Events", "url": "https://localeffortfood.com/fullpage-demo#small-events" },
+        { "id": "local-pizza", "title": "Local Pizza Party", "url": "https://localeffortfood.com/fullpage-demo#local-pizza" }
       ]
     }
   ],

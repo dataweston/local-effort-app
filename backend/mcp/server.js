@@ -5,6 +5,21 @@ const { z } = require('zod');
 const { searchSupport, normalizeKey } = require('../api/utils/supportSearchService');
 const { getSupabase } = require('../api/supabaseClient');
 const { getSanityClient } = require('../api/sanityClient');
+const {
+  buildBusinessProfile,
+  createCheckoutSession,
+  getCheckoutSession,
+  updateCheckoutSession,
+  completeCheckoutSession,
+  cancelCheckoutSession,
+} = require('../api/routes/ucp');
+
+const mcpAuthSchema = z.object({
+  actorId: z.string().min(1, 'auth.actorId is required'),
+  actorType: z.string().optional(),
+  sessionId: z.string().optional(),
+  scopes: z.array(z.string().min(1)).min(1, 'auth.scopes must include at least one scope'),
+});
 
 function registerSupportResources(server) {
   const chunkTemplate = new ResourceTemplate('support-chunk://{chunkId}', { list: undefined });
@@ -194,12 +209,226 @@ function registerSanityTools(server) {
   );
 }
 
+function registerUcpResources(server) {
+  const checkoutTemplate = new ResourceTemplate('ucp-checkout://{checkoutSessionId}', { list: undefined });
+  server.registerResource(
+    'ucp.checkout-session',
+    checkoutTemplate,
+    {
+      title: 'UCP checkout session',
+      description: 'Load a UCP checkout session by checkoutSessionId.',
+      mimeType: 'application/json',
+    },
+    async (uri, { checkoutSessionId }, context = {}) => {
+      const result = await getCheckoutSession(checkoutSessionId, {
+        auth: context.auth,
+        requireAuth: Boolean(context.requireAuth),
+      });
+      if (result.statusCode >= 400) {
+        throw new Error(result.body?.error || 'ucp-checkout-not-found');
+      }
+      return {
+        contents: [
+          {
+            uri: uri.href,
+            json: result.body,
+          },
+        ],
+      };
+    }
+  );
+}
+
+function registerUcpTools(server) {
+  server.registerTool(
+    'ucp.profile',
+    {
+      title: 'Get UCP business profile',
+      description: 'Return Local Effort UCP capability/profile metadata.',
+      inputSchema: z.object({
+        siteUrl: z.string().url().optional(),
+      }),
+    },
+    async ({ siteUrl }) => {
+      const profile = buildBusinessProfile(siteUrl);
+      return {
+        content: [
+          {
+            type: 'json',
+            json: profile,
+          },
+        ],
+      };
+    }
+  );
+
+  server.registerTool(
+    'ucp.checkout.create',
+    {
+      title: 'Create checkout session',
+      description: 'Create a UCP checkout session for Local Effort product flows.',
+      inputSchema: z.object({
+        auth: mcpAuthSchema,
+        flow: z.string().optional(),
+        lineItems: z.array(z.any()).optional(),
+        buyer: z.record(z.any()).optional(),
+        metadata: z.record(z.any()).optional(),
+        expiresAt: z.string().optional(),
+      }),
+    },
+    async ({ auth, flow, lineItems, buyer, metadata, expiresAt }) => {
+      const result = await createCheckoutSession({
+        flow,
+        line_items: lineItems || [],
+        buyer,
+        metadata,
+        expires_at: expiresAt,
+      }, {
+        platformAgent: 'mcp-tool',
+        auth,
+        requireAuth: true,
+      });
+      return {
+        content: [
+          {
+            type: 'json',
+            json: { statusCode: result.statusCode, body: result.body },
+          },
+        ],
+      };
+    }
+  );
+
+  server.registerTool(
+    'ucp.checkout.get',
+    {
+      title: 'Get checkout session',
+      description: 'Retrieve a UCP checkout session by ID.',
+      inputSchema: z.object({
+        auth: mcpAuthSchema,
+        checkoutSessionId: z.string().min(1, 'checkoutSessionId is required'),
+      }),
+    },
+    async ({ auth, checkoutSessionId }) => {
+      const result = await getCheckoutSession(checkoutSessionId, {
+        auth,
+        requireAuth: true,
+      });
+      return {
+        content: [
+          {
+            type: 'json',
+            json: { statusCode: result.statusCode, body: result.body },
+          },
+        ],
+      };
+    }
+  );
+
+  server.registerTool(
+    'ucp.checkout.update',
+    {
+      title: 'Update checkout session',
+      description: 'Update mutable fields on a UCP checkout session.',
+      inputSchema: z.object({
+        auth: mcpAuthSchema,
+        checkoutSessionId: z.string().min(1, 'checkoutSessionId is required'),
+        lineItems: z.array(z.any()).optional(),
+        buyer: z.record(z.any()).optional(),
+        metadata: z.record(z.any()).optional(),
+        expiresAt: z.string().optional(),
+      }),
+    },
+    async ({ auth, checkoutSessionId, lineItems, buyer, metadata, expiresAt }) => {
+      const result = await updateCheckoutSession(checkoutSessionId, {
+        line_items: lineItems,
+        buyer,
+        metadata,
+        expires_at: expiresAt,
+      }, {
+        auth,
+        requireAuth: true,
+      });
+      return {
+        content: [
+          {
+            type: 'json',
+            json: { statusCode: result.statusCode, body: result.body },
+          },
+        ],
+      };
+    }
+  );
+
+  server.registerTool(
+    'ucp.checkout.complete',
+    {
+      title: 'Complete checkout session',
+      description: 'Attempt to complete payment for a UCP checkout session.',
+      inputSchema: z.object({
+        auth: mcpAuthSchema,
+        checkoutSessionId: z.string().min(1, 'checkoutSessionId is required'),
+        checkoutPayload: z.record(z.any()).optional(),
+        idempotencyKey: z.string().optional(),
+      }),
+    },
+    async ({ auth, checkoutSessionId, checkoutPayload, idempotencyKey }) => {
+      const result = await completeCheckoutSession(
+        checkoutSessionId,
+        { checkout_payload: checkoutPayload },
+        {
+          idempotencyKey,
+          logger: console,
+          auth,
+          requireAuth: true,
+        }
+      );
+      return {
+        content: [
+          {
+            type: 'json',
+            json: { statusCode: result.statusCode, body: result.body },
+          },
+        ],
+      };
+    }
+  );
+
+  server.registerTool(
+    'ucp.checkout.cancel',
+    {
+      title: 'Cancel checkout session',
+      description: 'Cancel an incomplete UCP checkout session.',
+      inputSchema: z.object({
+        auth: mcpAuthSchema,
+        checkoutSessionId: z.string().min(1, 'checkoutSessionId is required'),
+      }),
+    },
+    async ({ auth, checkoutSessionId }) => {
+      const result = await cancelCheckoutSession(checkoutSessionId, {
+        auth,
+        requireAuth: true,
+      });
+      return {
+        content: [
+          {
+            type: 'json',
+            json: { statusCode: result.statusCode, body: result.body },
+          },
+        ],
+      };
+    }
+  );
+}
+
 function createMcpServer({ name = 'local-effort-mcp', version = '0.1.0' } = {}) {
   const server = new McpServer({ name, version });
   registerSupportResources(server);
   registerSupportTools(server);
   registerSanityResources(server);
   registerSanityTools(server);
+  registerUcpResources(server);
+  registerUcpTools(server);
   return server;
 }
 

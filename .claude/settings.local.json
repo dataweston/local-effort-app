@@ -32,7 +32,10 @@
       "Bash(find:*)",
       "Bash(timeout:*)",
       "Bash(npx vite build:*)",
-      "Bash(npx prisma validate:*)"
+      "Bash(npx prisma validate:*)",
+      "Bash(for d in about services pricing menu gallery meal-prep paikka partner-portal crowdfunding personal-chef-minneapolis personal-chef-st-paul personal-chef-twin-cities personal-chef-minnesota personal-chef-wisconsin)",
+      "Bash(do rm -rf \"prerender/$d\")",
+      "Bash(done)"
     ],
     "deny": [],
     "ask": []

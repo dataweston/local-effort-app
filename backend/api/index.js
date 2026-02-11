@@ -42,16 +42,13 @@ const storeProductsHandler = require('../../api-handlers/store/products');
 const storeSyncSquareHandler = require('../../api-handlers/store/sync-square');
 const giftCardLinkHandler = require('../../api-handlers/store/gift-card-link');
 const salesProxyHandler = require('../../api-handlers/sales-proxy');
-const paikkaCheckoutHandler = require('../../api-handlers/paikka/checkout');
-const paikkaPayHandler = require('../../api-handlers/paikka/pay');
-const paikkaFinalizeHandler = require('../../api-handlers/paikka/finalize');
-const paikkaResendHandler = require('../../api-handlers/paikka/resend');
 const winterDinnerCheckoutHandler = require('../../api-handlers/winter-dinner/checkout');
 const winterDinnerPaymentLinkHandler = require('../../api-handlers/winter-dinner/payment-link');
 const februaryBookedDatesHandler = require('../../api-handlers/february/booked-dates');
 const februaryCheckoutHandler = require('../../api-handlers/february/checkout');
 const februaryPaymentLinkHandler = require('../../api-handlers/february/payment-link');
 const weeklyOrderCheckoutLinkHandler = require('../../api-handlers/weekly-order/checkout-link');
+const psycheCheckoutHandler = require('../../api/psyche/checkout');
 const pizzafunderPaymentLinkHandler = require('../../api-handlers/pizzafunder/payment-link');
 const foodTruckDepositLinkHandler = require('../../api-handlers/food-truck/deposit-link');
 const happymondayProcessPaymentHandler = require('../../api-handlers/happymonday/process-payment');
@@ -59,6 +56,11 @@ const happymondayPaymentLinkHandler = require('../../api-handlers/happymonday/pa
 const { createMessagesRouter } = require('./routes/messages');
 const { createSmallEventsRouter } = require('./routes/smallEvents');
 const { createPlannerRouter } = require('./routes/planner');
+const {
+  CHECKOUT_SCOPES,
+  createUcpRouter,
+  buildBusinessProfile: buildUcpBusinessProfile,
+} = require('./routes/ucp');
 const {
   verifySquareSignature,
   applyCompletedPayment,
@@ -230,6 +232,19 @@ app.post('/api/square/webhook', express.raw({ type: '*/*', limit: '2mb' }), asyn
 });
 app.use(express.json({ limit: '2mb' }));
 
+const sendUcpProfile = (res) => {
+  try {
+    const siteUrl = process.env.PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_SITE_URL || process.env.PUBLIC_URL || 'https://localeffortfood.com';
+    return res.status(200).json(buildUcpBusinessProfile(siteUrl));
+  } catch (err) {
+    logger.error({ err }, 'ucp profile route failed');
+    return res.status(500).json({ error: 'ucp-profile-failed' });
+  }
+};
+
+app.get('/.well-known/ucp', (req, res) => sendUcpProfile(res));
+app.get('/.well-known/ucp.json', (req, res) => sendUcpProfile(res));
+
 // MCP HTTP bridge removed (mcpTransport not initialized in this process). If needed, reintroduce with proper import.
 // --- MCP STREAMABLE HTTP BRIDGE ---
 // Provides a lightweight HTTP/SSE surface for the MCP server that normally runs via stdio.
@@ -260,6 +275,165 @@ try {
 
   const allowOrigins = (process.env.MCP_ALLOWED_ORIGINS || '').split(',').map(s=>s.trim()).filter(Boolean);
   const allowHosts = (process.env.MCP_ALLOWED_HOSTS || '').split(',').map(s=>s.trim()).filter(Boolean);
+  const ucpCheckoutTools = new Set([
+    'ucp.checkout.create',
+    'ucp.checkout.get',
+    'ucp.checkout.update',
+    'ucp.checkout.complete',
+    'ucp.checkout.cancel',
+  ]);
+  const ucpRequiredScopes = {
+    'ucp.checkout.create': CHECKOUT_SCOPES.create,
+    'ucp.checkout.get': CHECKOUT_SCOPES.read,
+    'ucp.checkout.update': CHECKOUT_SCOPES.update,
+    'ucp.checkout.complete': CHECKOUT_SCOPES.complete,
+    'ucp.checkout.cancel': CHECKOUT_SCOPES.cancel,
+  };
+  const requireBearerForUcp = /^(1|true|yes)$/i.test(process.env.MCP_REQUIRE_BEARER_FOR_UCP || '');
+
+  const normalizeMcpScopes = (value) => {
+    if (Array.isArray(value)) {
+      return value
+        .map((scope) => (scope == null ? '' : String(scope).trim()))
+        .filter(Boolean);
+    }
+    if (typeof value === 'string') {
+      return value
+        .split(',')
+        .map((scope) => scope.trim())
+        .filter(Boolean);
+    }
+    return [];
+  };
+
+  const normalizeMcpAuth = (raw, fallbackSessionId = null) => {
+    if (!raw || typeof raw !== 'object') return null;
+    const actorId = (raw.actorId || raw.actor_id || '').toString().trim();
+    if (!actorId) return null;
+    const actorType = (raw.actorType || raw.actor_type || 'agent').toString().trim() || 'agent';
+    const sessionId = (
+      raw.sessionId ||
+      raw.session_id ||
+      fallbackSessionId ||
+      null
+    );
+    const scopes = normalizeMcpScopes(raw.scopes || raw.scope);
+    return {
+      actorId,
+      actorType,
+      sessionId: sessionId == null ? null : String(sessionId).trim() || null,
+      scopes,
+    };
+  };
+
+  const configuredAuthTokens = (() => {
+    const map = new Map();
+    const defaultScopes = (
+      process.env.MCP_AUTH_DEFAULT_SCOPES ||
+      [
+        CHECKOUT_SCOPES.create,
+        CHECKOUT_SCOPES.read,
+        CHECKOUT_SCOPES.update,
+        CHECKOUT_SCOPES.complete,
+        CHECKOUT_SCOPES.cancel,
+      ].join(',')
+    );
+    const addToken = (token, config) => {
+      const normalizedToken = (token || '').toString().trim();
+      if (!normalizedToken) return;
+      const baseConfig = (config && typeof config === 'object') ? config : {};
+      const auth = normalizeMcpAuth({
+        actorId: baseConfig.actorId || baseConfig.actor_id || `mcp:${normalizedToken.slice(0, 8)}`,
+        actorType: baseConfig.actorType || baseConfig.actor_type || 'mcp-client',
+        sessionId: baseConfig.sessionId || baseConfig.session_id || null,
+        scopes: baseConfig.scopes || baseConfig.scope || defaultScopes,
+      });
+      if (!auth) return;
+      map.set(normalizedToken, auth);
+    };
+
+    if (process.env.MCP_AUTH_BEARER_TOKEN) {
+      addToken(process.env.MCP_AUTH_BEARER_TOKEN, {
+        actorId: process.env.MCP_AUTH_BEARER_ACTOR_ID || 'mcp-bearer-client',
+        actorType: process.env.MCP_AUTH_BEARER_ACTOR_TYPE || 'mcp-client',
+        scopes: process.env.MCP_AUTH_BEARER_SCOPES || defaultScopes,
+      });
+    }
+
+    const rawJson = process.env.MCP_AUTH_TOKENS_JSON;
+    if (rawJson) {
+      try {
+        const parsed = JSON.parse(rawJson);
+        if (Array.isArray(parsed)) {
+          for (const entry of parsed) {
+            if (!entry || typeof entry !== 'object') continue;
+            addToken(entry.token || entry.bearer || entry.value, entry);
+          }
+        } else if (parsed && typeof parsed === 'object') {
+          for (const [token, config] of Object.entries(parsed)) {
+            addToken(token, config);
+          }
+        }
+      } catch (err) {
+        logger.warn({ err }, 'invalid MCP_AUTH_TOKENS_JSON');
+      }
+    }
+    return map;
+  })();
+
+  const resolveMcpToolAuth = (req, params, requiredScope) => {
+    const sessionId = (req.headers['mcp-session-id'] || '').toString().trim() || null;
+    const explicitAuthFromParams = normalizeMcpAuth(params?.auth, sessionId);
+    const explicitAuthFromHeaders = normalizeMcpAuth({
+      actorId: req.headers['x-ucp-actor-id'],
+      actorType: req.headers['x-ucp-actor-type'],
+      sessionId: req.headers['x-ucp-session-id'] || sessionId,
+      scopes: req.headers['x-ucp-scopes'],
+    }, sessionId);
+    const explicitAuth = explicitAuthFromParams || explicitAuthFromHeaders;
+    const authHeader = (req.headers.authorization || '').toString().trim();
+    const bearerToken = authHeader.startsWith('Bearer ') ? authHeader.slice(7).trim() : '';
+    let tokenAuth = null;
+
+    if (bearerToken) {
+      const configured = configuredAuthTokens.get(bearerToken);
+      if (!configured) {
+        return { ok: false, statusCode: 401, error: 'mcp-invalid-bearer-token' };
+      }
+      tokenAuth = {
+        ...configured,
+        sessionId: configured.sessionId || sessionId,
+      };
+    }
+
+    if (requireBearerForUcp && !tokenAuth) {
+      return { ok: false, statusCode: 401, error: 'mcp-bearer-token-required' };
+    }
+
+    const auth = tokenAuth || explicitAuth;
+    if (!auth) {
+      return { ok: false, statusCode: 401, error: 'mcp-auth-required' };
+    }
+    if (!requiredScope) {
+      return { ok: true, auth };
+    }
+
+    const scopes = Array.isArray(auth.scopes) ? auth.scopes : [];
+    const hasScope = (
+      scopes.includes('*') ||
+      scopes.includes(requiredScope) ||
+      scopes.some((scope) => scope.endsWith('*') && requiredScope.startsWith(scope.slice(0, -1)))
+    );
+    if (!hasScope) {
+      return {
+        ok: false,
+        statusCode: 403,
+        error: 'mcp-scope-required',
+        requiredScope,
+      };
+    }
+    return { ok: true, auth };
+  };
 
   const checkAllowed = (req) => {
     if (allowOrigins.length) {
@@ -275,7 +449,10 @@ try {
 
   const mcpHeaders = (res) => {
     res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Mcp-Session-Id, Authorization');
+    res.setHeader(
+      'Access-Control-Allow-Headers',
+      'Content-Type, Mcp-Session-Id, Authorization, X-Ucp-Actor-Id, X-Ucp-Actor-Type, X-Ucp-Session-Id, X-Ucp-Scopes'
+    );
     res.setHeader('Access-Control-Allow-Methods', 'GET,POST,DELETE,OPTIONS');
   };
 
@@ -286,13 +463,35 @@ try {
       name: 'local-effort-mcp',
       transport: 'streamable-http',
       endpoints: { primary: '/.well-known/mcp' },
-      tools: ['support.search','sanity.query'],
+      auth: {
+        type: 'bearer-or-explicit',
+        header: 'Authorization: Bearer <token>',
+        env: ['MCP_AUTH_BEARER_TOKEN', 'MCP_AUTH_TOKENS_JSON'],
+      },
+      tools: [
+        'support.search',
+        'sanity.query',
+        'ucp.profile',
+        'ucp.checkout.create',
+        'ucp.checkout.get',
+        'ucp.checkout.update',
+        'ucp.checkout.complete',
+        'ucp.checkout.cancel',
+      ],
       resources: [
         'support-chunk://{chunkId}',
         'support-cache://{cacheKey}',
         'support-source://{sourceId}',
-        'sanity-document://{docId}'
+        'sanity-document://{docId}',
+        'ucp-checkout://{checkoutSessionId}',
       ],
+      toolAuth: {
+        'ucp.checkout.create': CHECKOUT_SCOPES.create,
+        'ucp.checkout.get': CHECKOUT_SCOPES.read,
+        'ucp.checkout.update': CHECKOUT_SCOPES.update,
+        'ucp.checkout.complete': CHECKOUT_SCOPES.complete,
+        'ucp.checkout.cancel': CHECKOUT_SCOPES.cancel,
+      },
     });
   });
 
@@ -343,16 +542,73 @@ try {
       if (method === 'tool.call') {
         const toolName = params?.name;
         const toolParams = params?.arguments || {};
-        const tool = mcpServer.tools.get(toolName);
-        if (!tool) return res.status(404).json({ error: 'tool-not-found' });
-        const result = await tool.invoke(toolParams);
+        const tool = mcpServer?._registeredTools?.[toolName];
+        if (!tool || tool.enabled === false) return res.status(404).json({ error: 'tool-not-found' });
+        let finalToolParams = toolParams;
+        if (ucpCheckoutTools.has(toolName)) {
+          const requiredScope = ucpRequiredScopes[toolName] || null;
+          const authResult = resolveMcpToolAuth(req, toolParams, requiredScope);
+          if (!authResult.ok) {
+            return res.status(authResult.statusCode || 401).json({
+              error: authResult.error || 'mcp-auth-failed',
+              requiredScope: authResult.requiredScope || requiredScope || undefined,
+            });
+          }
+          finalToolParams = {
+            ...toolParams,
+            auth: authResult.auth,
+          };
+        }
+        const result = await tool.callback(finalToolParams);
         return res.json({ id, result });
       }
       if (method === 'resource.get') {
         const uri = params?.uri;
         if (!uri) return res.status(400).json({ error: 'missing-uri' });
-        const resource = await mcpServer.getResource(uri);
-        return res.json({ id, resource });
+        const resourceUrl = new URL(uri);
+        const isUcpCheckoutResource = resourceUrl.protocol === 'ucp-checkout:';
+        let resourceAuth = null;
+        if (isUcpCheckoutResource) {
+          const authResult = resolveMcpToolAuth(req, params, CHECKOUT_SCOPES.read);
+          if (!authResult.ok) {
+            return res.status(authResult.statusCode || 401).json({
+              error: authResult.error || 'mcp-auth-failed',
+              requiredScope: authResult.requiredScope || CHECKOUT_SCOPES.read,
+            });
+          }
+          resourceAuth = authResult.auth;
+        }
+
+        // First check exact registered resources (no templates).
+        const directEntries = Object.values(mcpServer?._registeredResources || {});
+        for (const entry of directEntries) {
+          const resourceUri = entry?.resource?.uri;
+          if (resourceUri === resourceUrl.href && typeof entry?.readCallback === 'function') {
+            const resource = await entry.readCallback(resourceUrl, {
+              auth: resourceAuth,
+              requireAuth: isUcpCheckoutResource,
+            });
+            return res.json({ id, resource });
+          }
+        }
+
+        // Then check URI templates.
+        const templateEntries = Object.values(mcpServer?._registeredResourceTemplates || {});
+        for (const entry of templateEntries) {
+          const matcher = entry?.resourceTemplate?._uriTemplate;
+          const matched = matcher && typeof matcher.match === 'function'
+            ? matcher.match(resourceUrl.href)
+            : null;
+          if (matched && typeof entry?.readCallback === 'function') {
+            const resource = await entry.readCallback(resourceUrl, matched, {
+              auth: resourceAuth,
+              requireAuth: isUcpCheckoutResource,
+            });
+            return res.json({ id, resource });
+          }
+        }
+
+        return res.status(404).json({ error: 'resource-not-found' });
       }
       if (method === 'ping') {
         return res.json({ id, result: { pong: true, ts: Date.now() } });
@@ -373,6 +629,7 @@ try {
 app.use('/api/crowdfund', createCrowdfundingRouter({ db, squareClient, logger }));
 app.use('/api/small-events', createSmallEventsRouter({ logger }));
 app.use('/api/planner', createPlannerRouter());
+app.use('/ucp/v1', createUcpRouter({ logger }));
 app.all('/api/crowdfund/checkout', async (req, res, next) => {
   try {
     await crowdfundCheckoutHandler(req, res);
@@ -548,41 +805,10 @@ app.all('/api/happymonday/payment-link', async (req, res, next) => {
   }
 });
 
-app.all('/api/paikka/checkout', async (req, res, next) => {
-  try {
-    await paikkaCheckoutHandler(req, res);
-  } catch (err) {
-    logger.error({ err, method: req.method }, 'paikka checkout handler failed');
-    next(err);
-  }
-});
-
-app.all('/api/paikka/pay', async (req, res, next) => {
-  try {
-    await paikkaPayHandler(req, res);
-  } catch (err) {
-    logger.error({ err, method: req.method }, 'paikka pay handler failed');
-    next(err);
-  }
-});
-
-app.all('/api/paikka/finalize', async (req, res, next) => {
-  try {
-    await paikkaFinalizeHandler(req, res);
-  } catch (err) {
-    logger.error({ err, method: req.method }, 'paikka finalize handler failed');
-    next(err);
-  }
-});
-
-app.all('/api/paikka/resend', async (req, res, next) => {
-  try {
-    await paikkaResendHandler(req, res);
-  } catch (err) {
-    logger.error({ err, method: req.method }, 'paikka resend handler failed');
-    next(err);
-  }
-});
+app.all('/api/paikka/checkout', (req, res) => res.status(410).json({ error: 'paikka-retired' }));
+app.all('/api/paikka/pay', (req, res) => res.status(410).json({ error: 'paikka-retired' }));
+app.all('/api/paikka/finalize', (req, res) => res.status(410).json({ error: 'paikka-retired' }));
+app.all('/api/paikka/resend', (req, res) => res.status(410).json({ error: 'paikka-retired' }));
 
 app.all('/api/winter-dinner/checkout', async (req, res, next) => {
   try {
@@ -625,6 +851,15 @@ app.all('/api/february/payment-link', async (req, res, next) => {
     await februaryPaymentLinkHandler(req, res);
   } catch (err) {
     logger.error({ err, method: req.method }, 'february payment link handler failed');
+    next(err);
+  }
+});
+
+app.all('/api/psyche/checkout', async (req, res, next) => {
+  try {
+    await psycheCheckoutHandler(req, res);
+  } catch (err) {
+    logger.error({ err, method: req.method }, 'psyche checkout handler failed');
     next(err);
   }
 });
@@ -1945,6 +2180,7 @@ app.get('/api/public/site', (req, res) => {
     const trimmedSite = siteUrl.replace(/\/$/, '');
     const navigation = Array.isArray(manifest?.navigation) ? manifest.navigation : [];
     const mcp = Array.isArray(manifest?.mcpServers) ? manifest.mcpServers : [];
+    const ucp = Array.isArray(manifest?.ucpServers) ? manifest.ucpServers : [];
     const apis = Array.isArray(manifest?.apis)
       ? manifest.apis
       : [
@@ -1969,6 +2205,7 @@ app.get('/api/public/site', (req, res) => {
       feeds,
       support: manifest?.support || { email: 'yum@localeffortfood.com' },
       mcp,
+      ucp,
       sitemap: `${trimmedSite}/sitemap.xml`,
       aiTxt: `${trimmedSite}/ai.txt`,
       manifest: `${trimmedSite}/ai/manifest.json`,

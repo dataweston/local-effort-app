@@ -14,7 +14,6 @@ export const Footer = () => {
             <div className="fullpage-demo-footer-location">Roseville, MN</div>
           </div>
           <nav className="fullpage-demo-footer-links" aria-label="Footer">
-            <a href="/about" className="fullpage-demo-footer-link">About</a>
             <a href="/releases" className="fullpage-demo-footer-link">Press</a>
             <a href="/happymonday" className="fullpage-demo-footer-link">For Happy Monday</a>
           </nav>

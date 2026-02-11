@@ -52,6 +52,8 @@ const AdminWeeklyOrderPage = () => {
   const [sectionForm, setSectionForm] = useState({ title: '', slug: '', sortOrder: '' });
   const [planRulesText, setPlanRulesText] = useState('');
   const [mergeTargets, setMergeTargets] = useState({});
+  const [editingDish, setEditingDish] = useState(null);
+  const [dishEditForm, setDishEditForm] = useState({});
   const [populateIngestId, setPopulateIngestId] = useState('');
   const [populateSectionId, setPopulateSectionId] = useState('');
   const [signingIn, setSigningIn] = useState(false);
@@ -142,6 +144,49 @@ const AdminWeeklyOrderPage = () => {
     const params = new URLSearchParams({ menuWeekId, userId }).toString();
     const data = await fetchJson(`/api/weekly-order/admin/user-overrides?${params}`, { headers: authHeaders });
     setUserOverrides(data.items || []);
+  };
+
+  const fmtDollars = (cents) => {
+    if (cents == null || cents === '') return '';
+    return `$${(Number(cents) / 100).toFixed(2)}`;
+  };
+
+  const parseDollars = (value) => {
+    const cleaned = value.replace(/[$,]/g, '').trim();
+    if (!cleaned) return 0;
+    return Math.round(parseFloat(cleaned) * 100) || 0;
+  };
+
+  const startEditDish = (dish) => {
+    setEditingDish(dish.id);
+    setDishEditForm({
+      title: dish.title || '',
+      description: dish.description || '',
+      categories: (dish.categories || []).join(', '),
+      tags: (dish.tags || []).join(', '),
+      allergens: (dish.allergens || []).join(', '),
+      status: dish.status || 'approved',
+    });
+  };
+
+  const saveDishEdit = async (dishId) => {
+    setStatus('Saving dish...');
+    await fetchJson('/api/weekly-order/admin/dishes', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', ...authHeaders },
+      body: JSON.stringify({
+        id: dishId,
+        title: dishEditForm.title,
+        description: dishEditForm.description || null,
+        categories: dishEditForm.categories.split(',').map((s) => s.trim()).filter(Boolean),
+        tags: dishEditForm.tags.split(',').map((s) => s.trim()).filter(Boolean),
+        allergens: dishEditForm.allergens.split(',').map((s) => s.trim()).filter(Boolean),
+        status: dishEditForm.status,
+      }),
+    });
+    setEditingDish(null);
+    await loadDishes();
+    setStatus('Dish saved');
   };
 
   const isAdmin = adminUser?.role === 'admin';
@@ -499,17 +544,89 @@ const AdminWeeklyOrderPage = () => {
             <div className="weekly-order-admin-grid">
               {dishes.map((dish) => (
                 <Card key={dish.id}>
-                  <CardHeader>
-                    <CardTitle>{dish.title}</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-sm text-slate-600">{dish.description || 'No description'}</div>
-                    <div className="weekly-order-admin-chip-row">
-                      {(dish.categories || []).map((cat) => (
-                        <span key={cat} className="weekly-order-admin-chip">{cat}</span>
-                      ))}
-                    </div>
-                  </CardContent>
+                  {editingDish === dish.id ? (
+                    <>
+                      <CardHeader>
+                        <input
+                          type="text"
+                          value={dishEditForm.title}
+                          onChange={(e) => setDishEditForm((prev) => ({ ...prev, title: e.target.value }))}
+                          className="weekly-order-admin-edit-input"
+                          placeholder="Title"
+                        />
+                      </CardHeader>
+                      <CardContent className="space-y-2">
+                        <textarea
+                          rows={2}
+                          value={dishEditForm.description}
+                          onChange={(e) => setDishEditForm((prev) => ({ ...prev, description: e.target.value }))}
+                          className="weekly-order-admin-edit-input"
+                          placeholder="Description"
+                        />
+                        <input
+                          type="text"
+                          value={dishEditForm.categories}
+                          onChange={(e) => setDishEditForm((prev) => ({ ...prev, categories: e.target.value }))}
+                          className="weekly-order-admin-edit-input"
+                          placeholder="Categories (comma-separated)"
+                        />
+                        <input
+                          type="text"
+                          value={dishEditForm.tags}
+                          onChange={(e) => setDishEditForm((prev) => ({ ...prev, tags: e.target.value }))}
+                          className="weekly-order-admin-edit-input"
+                          placeholder="Tags (comma-separated)"
+                        />
+                        <input
+                          type="text"
+                          value={dishEditForm.allergens}
+                          onChange={(e) => setDishEditForm((prev) => ({ ...prev, allergens: e.target.value }))}
+                          className="weekly-order-admin-edit-input"
+                          placeholder="Allergens (comma-separated)"
+                        />
+                        <select
+                          value={dishEditForm.status}
+                          onChange={(e) => setDishEditForm((prev) => ({ ...prev, status: e.target.value }))}
+                        >
+                          <option value="draft">Draft</option>
+                          <option value="approved">Approved</option>
+                          <option value="archived">Archived</option>
+                        </select>
+                        <div className="weekly-order-admin-actions">
+                          <Button size="sm" onClick={() => saveDishEdit(dish.id)}>Save</Button>
+                          <Button size="sm" variant="outline" onClick={() => setEditingDish(null)}>Cancel</Button>
+                        </div>
+                      </CardContent>
+                    </>
+                  ) : (
+                    <>
+                      <CardHeader>
+                        <CardTitle>{dish.title}</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="text-sm text-slate-600">{dish.description || 'No description'}</div>
+                        <div className="weekly-order-admin-chip-row">
+                          {(dish.categories || []).map((cat) => (
+                            <span key={cat} className="weekly-order-admin-chip">{cat}</span>
+                          ))}
+                        </div>
+                        {(dish.tags || []).length > 0 && (
+                          <div className="weekly-order-admin-chip-row">
+                            {dish.tags.map((tag) => (
+                              <span key={tag} className="weekly-order-admin-chip is-muted">{tag}</span>
+                            ))}
+                          </div>
+                        )}
+                        {(dish.allergens || []).length > 0 && (
+                          <div className="text-xs text-slate-500">Allergens: {dish.allergens.join(', ')}</div>
+                        )}
+                        <div className="text-xs text-slate-500">Status: {dish.status}</div>
+                        <Button size="sm" variant="outline" onClick={() => startEditDish(dish)} className="mt-2">
+                          Edit
+                        </Button>
+                      </CardContent>
+                    </>
+                  )}
                 </Card>
               ))}
             </div>
@@ -911,10 +1028,11 @@ const AdminWeeklyOrderPage = () => {
                     <label>
                       <span>Subscriber</span>
                       <input
-                        type="number"
-                        defaultValue={row.prices?.subscriber ?? ''}
+                        type="text"
+                        defaultValue={row.prices?.subscriber != null ? (row.prices.subscriber / 100).toFixed(2) : ''}
+                        placeholder="0.00"
                         onBlur={async (e) => {
-                          const priceCents = Number(e.target.value || 0);
+                          const priceCents = parseDollars(e.target.value);
                           await fetchJson('/api/weekly-order/admin/pricing', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json', ...authHeaders },
@@ -927,10 +1045,11 @@ const AdminWeeklyOrderPage = () => {
                     <label>
                       <span>Member</span>
                       <input
-                        type="number"
-                        defaultValue={row.prices?.member ?? ''}
+                        type="text"
+                        defaultValue={row.prices?.member != null ? (row.prices.member / 100).toFixed(2) : ''}
+                        placeholder="0.00"
                         onBlur={async (e) => {
-                          const priceCents = Number(e.target.value || 0);
+                          const priceCents = parseDollars(e.target.value);
                           await fetchJson('/api/weekly-order/admin/pricing', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json', ...authHeaders },
@@ -969,14 +1088,14 @@ const AdminWeeklyOrderPage = () => {
                 ))}
               </select>
               <input
-                type="number"
-                placeholder="Base price (cents)"
+                type="text"
+                placeholder="Base price ($)"
                 value={planForm.basePriceCents}
                 onChange={(e) => setPlanForm((prev) => ({ ...prev, basePriceCents: e.target.value }))}
               />
               <input
-                type="number"
-                placeholder="Delivery fee (cents)"
+                type="text"
+                placeholder="Delivery fee ($)"
                 value={planForm.deliveryFeeCents}
                 onChange={(e) => setPlanForm((prev) => ({ ...prev, deliveryFeeCents: e.target.value }))}
               />
@@ -996,8 +1115,8 @@ const AdminWeeklyOrderPage = () => {
                     body: JSON.stringify({
                       menuWeekId: selectedWeek,
                       customerId: selectedCustomer,
-                      basePriceCents: Number(planForm.basePriceCents || 0),
-                      deliveryFeeCents: Number(planForm.deliveryFeeCents || 0),
+                      basePriceCents: parseDollars(planForm.basePriceCents),
+                      deliveryFeeCents: parseDollars(planForm.deliveryFeeCents),
                       notes: planForm.notes || null,
                     }),
                   });
@@ -1050,10 +1169,11 @@ const AdminWeeklyOrderPage = () => {
                     <label>
                       <span>Base</span>
                       <input
-                        type="number"
-                        defaultValue={row.basePriceCents}
+                        type="text"
+                        defaultValue={row.basePriceCents != null ? (row.basePriceCents / 100).toFixed(2) : ''}
+                        placeholder="0.00"
                         onBlur={async (e) => {
-                          const basePriceCents = Number(e.target.value || 0);
+                          const basePriceCents = parseDollars(e.target.value);
                           await fetchJson('/api/weekly-order/admin/plans', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json', ...authHeaders },
@@ -1072,10 +1192,11 @@ const AdminWeeklyOrderPage = () => {
                     <label>
                       <span>Delivery</span>
                       <input
-                        type="number"
-                        defaultValue={row.deliveryFeeCents}
+                        type="text"
+                        defaultValue={row.deliveryFeeCents != null ? (row.deliveryFeeCents / 100).toFixed(2) : ''}
+                        placeholder="0.00"
                         onBlur={async (e) => {
-                          const deliveryFeeCents = Number(e.target.value || 0);
+                          const deliveryFeeCents = parseDollars(e.target.value);
                           await fetchJson('/api/weekly-order/admin/plans', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json', ...authHeaders },
@@ -1131,8 +1252,8 @@ const AdminWeeklyOrderPage = () => {
                 ))}
               </select>
               <input
-                type="number"
-                placeholder="Price (cents)"
+                type="text"
+                placeholder="Price ($)"
                 value={overrideForm.priceCents}
                 onChange={(e) => setOverrideForm((prev) => ({ ...prev, priceCents: e.target.value }))}
               />
@@ -1147,7 +1268,7 @@ const AdminWeeklyOrderPage = () => {
                       customerId: selectedCustomer,
                       menuWeekId: selectedWeek,
                       dishId: overrideForm.dishId,
-                      priceCents: Number(overrideForm.priceCents || 0),
+                      priceCents: parseDollars(overrideForm.priceCents),
                     }),
                   });
                   setOverrideForm({ dishId: '', priceCents: '' });
@@ -1163,10 +1284,11 @@ const AdminWeeklyOrderPage = () => {
                 <div key={row.id} className="weekly-order-admin-pricing-row">
                   <span>{row.dish?.title}</span>
                   <input
-                    type="number"
-                    defaultValue={row.priceCents}
+                    type="text"
+                    defaultValue={row.priceCents != null ? (row.priceCents / 100).toFixed(2) : ''}
+                    placeholder="0.00"
                     onBlur={async (e) => {
-                      const priceCents = Number(e.target.value || 0);
+                      const priceCents = parseDollars(e.target.value);
                       await fetchJson('/api/weekly-order/admin/overrides', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json', ...authHeaders },
@@ -1228,8 +1350,8 @@ const AdminWeeklyOrderPage = () => {
                 ))}
               </select>
               <input
-                type="number"
-                placeholder="Price (cents)"
+                type="text"
+                placeholder="Price ($)"
                 value={userOverrideForm.priceCents}
                 onChange={(e) => setUserOverrideForm((prev) => ({ ...prev, priceCents: e.target.value }))}
               />
@@ -1244,7 +1366,7 @@ const AdminWeeklyOrderPage = () => {
                       userId: selectedUser,
                       menuWeekId: selectedWeek,
                       dishId: userOverrideForm.dishId,
-                      priceCents: Number(userOverrideForm.priceCents || 0),
+                      priceCents: parseDollars(userOverrideForm.priceCents),
                     }),
                   });
                   setUserOverrideForm({ dishId: '', priceCents: '' });
@@ -1260,10 +1382,11 @@ const AdminWeeklyOrderPage = () => {
                 <div key={row.id} className="weekly-order-admin-pricing-row">
                   <span>{row.user?.email || row.userId} · {row.dish?.title}</span>
                   <input
-                    type="number"
-                    defaultValue={row.priceCents}
+                    type="text"
+                    defaultValue={row.priceCents != null ? (row.priceCents / 100).toFixed(2) : ''}
+                    placeholder="0.00"
                     onBlur={async (e) => {
-                      const priceCents = Number(e.target.value || 0);
+                      const priceCents = parseDollars(e.target.value);
                       await fetchJson('/api/weekly-order/admin/user-overrides', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json', ...authHeaders },
