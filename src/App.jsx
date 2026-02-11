@@ -18,7 +18,7 @@ const ReleasesPage = lazy(() => import('./pages/ReleasesPage'));
 const WeeklyList = lazy(() => import('./pages/WeeklyList'));
 const WeeklyPost = lazy(() => import('./pages/WeeklyPost'));
 const SalePage = lazy(() => import('./pages/SalePage'));
-const HappyMondayPage = lazy(() => import('./pages/HappyMondayPage'));
+const HappyMondayPage = lazy(() => import('./pages/happymondaypage'));
 const ProductPage = lazy(() => import('./pages/ProductPage'));
 const InboxPage = lazy(() => import('./pages/InboxPage'));
 const CampaignsPage = lazy(() => import('./pages/CampaignsPage'));
