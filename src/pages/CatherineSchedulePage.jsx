@@ -1,10 +1,10 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { AlertTriangle, ChevronLeft, ChevronRight, LogIn } from 'lucide-react';
+import { AlertTriangle, ChevronLeft, ChevronRight, Copy, ExternalLink, LogIn, Smartphone } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSupabaseAuth } from '../contexts/SupabaseAuthContext';
 import { usePlannerNav } from '../components/weeklyplanner/usePlannerNav';
 import { usePlannerState } from '../components/weeklyplanner/usePlannerState';
-import { formatDateShort, formatDateFull, isToday, getWeekStart, getToday } from '../components/weeklyplanner/dateUtils';
+import { formatDateShort, formatDateFull, getWeekStart, getToday } from '../components/weeklyplanner/dateUtils';
 import { BlobColumn } from '../components/catherine/BlobColumn';
 
 function normalizeDateKey(value) {
@@ -66,7 +66,6 @@ export default function CatherineSchedulePage() {
   const auth = useSupabaseAuth();
   const nav = usePlannerNav();
   const {
-    view, setView,
     weekStart, weekDates,
     selectedDate,
     goNextDay, goPrevDay,
@@ -76,6 +75,9 @@ export default function CatherineSchedulePage() {
 
   const [activeView, setActiveView] = useState('weekly');
   const [errorDialog, setErrorDialog] = useState(null);
+  const [feedLinks, setFeedLinks] = useState(null);
+  const [feedStatus, setFeedStatus] = useState('idle');
+  const [feedMessage, setFeedMessage] = useState('');
   const hasAutoAlignedWeekRef = useRef(false);
 
   const mode = auth.loading ? null : (auth.user ? 'persisted' : 'demo');
@@ -232,6 +234,54 @@ export default function CatherineSchedulePage() {
   const openErrorDialog = (message) => setErrorDialog(message);
   const closeErrorDialog = () => setErrorDialog(null);
 
+  const fetchFeedLinks = async () => {
+    if (!auth.accessToken) {
+      throw new Error('Sign in required to generate calendar feed.');
+    }
+    const res = await fetch('/api/planner/catherine-feed-token', {
+      headers: { Authorization: `Bearer ${auth.accessToken}` },
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      throw new Error(data.error || 'Failed to generate calendar feed link.');
+    }
+    setFeedLinks(data);
+    return data;
+  };
+
+  const handleCopyFeedLink = async () => {
+    setFeedStatus('loading');
+    setFeedMessage('');
+    try {
+      const links = feedLinks || (await fetchFeedLinks());
+      if (!links?.httpsUrl) throw new Error('Calendar feed URL is missing.');
+      if (navigator?.clipboard?.writeText) {
+        await navigator.clipboard.writeText(links.httpsUrl);
+        setFeedMessage('Feed link copied. In iPhone Calendar: Add Account > Other > Add Subscribed Calendar.');
+      } else {
+        setFeedMessage(links.httpsUrl);
+      }
+      setFeedStatus('success');
+    } catch (err) {
+      setFeedStatus('error');
+      setFeedMessage(err.message || 'Failed to copy feed link.');
+    }
+  };
+
+  const handleOpenWebcal = async () => {
+    setFeedStatus('loading');
+    setFeedMessage('');
+    try {
+      const links = feedLinks || (await fetchFeedLinks());
+      if (!links?.webcalUrl) throw new Error('Calendar subscription URL is missing.');
+      setFeedStatus('success');
+      window.location.href = links.webcalUrl;
+    } catch (err) {
+      setFeedStatus('error');
+      setFeedMessage(err.message || 'Failed to open subscription URL.');
+    }
+  };
+
   return (
     <div
       className="fullpage-demo-scope min-h-screen flex flex-col"
@@ -318,6 +368,68 @@ export default function CatherineSchedulePage() {
 
       {/* Content area */}
       <div className="flex-1 px-3 pb-4 safe-area-bottom overflow-auto" style={{ minHeight: 0 }}>
+        <div className="max-w-2xl mx-auto mb-4">
+          <div
+            className="rounded-2xl p-3 sm:p-4"
+            style={{
+              backgroundColor: 'rgba(248,233,232,0.9)',
+              border: '1px solid rgba(58,46,63,0.14)',
+            }}
+          >
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <p
+                  className="text-xs font-medium uppercase tracking-wide mb-1"
+                  style={{ color: 'rgba(58,46,63,0.62)' }}
+                >
+                  iPhone Lock Screen
+                </p>
+                <p className="text-xs sm:text-sm font-display" style={{ color: '#3A2E3F' }}>
+                  Subscribe to this schedule in Apple Calendar, then add the Calendar widget to your lock screen.
+                </p>
+              </div>
+              <Smartphone size={18} style={{ color: '#7A846E', flex: '0 0 auto' }} />
+            </div>
+            <div className="flex flex-wrap gap-2 mt-3">
+              <button
+                type="button"
+                onClick={handleCopyFeedLink}
+                disabled={feedStatus === 'loading'}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-full transition-colors disabled:opacity-60"
+                style={{
+                  backgroundColor: 'rgba(58,46,63,0.1)',
+                  color: '#3A2E3F',
+                }}
+              >
+                <Copy size={13} />
+                Copy feed link
+              </button>
+              <button
+                type="button"
+                onClick={handleOpenWebcal}
+                disabled={feedStatus === 'loading'}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-full transition-colors disabled:opacity-60"
+                style={{
+                  backgroundColor: '#D28D93',
+                  color: '#3A2E3F',
+                }}
+              >
+                <ExternalLink size={13} />
+                Open in Calendar
+              </button>
+            </div>
+            {feedMessage ? (
+              <p
+                className="text-[11px] mt-2 break-all"
+                style={{
+                  color: feedStatus === 'error' ? '#A7384C' : 'rgba(58,46,63,0.72)',
+                }}
+              >
+                {feedMessage}
+              </p>
+            ) : null}
+          </div>
+        </div>
         {!hasAnyCards && (
           <div className="max-w-md mx-auto mt-10 text-center">
             <p className="text-sm font-display" style={{ color: 'rgba(58,46,63,0.6)' }}>

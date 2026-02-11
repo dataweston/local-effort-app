@@ -359,6 +359,12 @@
   gap: 0.75rem;
 }
 
+.weekly-order-summary-note {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  margin: -0.25rem 0 0;
+}
+
 .weekly-order-checkout-btn {
   width: 100%;
 }

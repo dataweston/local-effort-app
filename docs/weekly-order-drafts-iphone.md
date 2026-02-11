@@ -40,8 +40,8 @@ Notes:
 - `text` is the full draft content.
 - `metadata` is optional but helpful for debugging.
 
-## 4) Optional: Script Action (Recommended)
-If you use a Script step instead of URL, paste this:
+## 4) Script Action (Recommended)
+Use a Script step instead of URL for response handling. Paste this:
 
 ```javascript
 const endpoint = "https://YOUR_DOMAIN/api/recipes/ingest";
@@ -63,6 +63,31 @@ const req = new XMLHttpRequest();
 req.open("POST", endpoint);
 req.setRequestHeader("Content-Type", "application/json");
 req.setRequestHeader("Authorization", `Bearer ${token}`);
+
+req.onload = function () {
+  try {
+    const data = JSON.parse(req.responseText);
+    if (req.status >= 200 && req.status < 300 && data.ok) {
+      const msg = data.reused
+        ? `Already ingested (${data.draftCount} drafts)`
+        : `Uploaded: ${data.draftCount} dish${data.draftCount === 1 ? "" : "es"} parsed`;
+      if (data.warnings && data.warnings.length) {
+        app.displayWarningMessage(`${msg} — ${data.warnings.join(", ")}`);
+      } else {
+        app.displayInfoMessage(msg);
+      }
+    } else {
+      app.displayErrorMessage(data.error || `Upload failed (${req.status})`);
+    }
+  } catch (e) {
+    app.displayErrorMessage(`Upload error: ${e.message}`);
+  }
+};
+
+req.onerror = function () {
+  app.displayErrorMessage("Network error — check connection");
+};
+
 req.send(JSON.stringify(payload));
 ```
 

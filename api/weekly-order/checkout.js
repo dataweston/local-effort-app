@@ -1,6 +1,7 @@
 const crypto = require('crypto');
 const { Client, Environment } = require('square');
 const { PrismaClient } = require('@prisma/client');
+const { verifySupabaseToken } = require('./_auth');
 
 const ACCESS_TOKEN = process.env.SQUARE_ACCESS_TOKEN;
 const LOCATION_ID = process.env.SQUARE_LOCATION_ID;
@@ -75,6 +76,11 @@ module.exports = async (req, res) => {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
+  const supabaseUser = await verifySupabaseToken(req);
+  if (!supabaseUser) {
+    return res.status(401).json({ error: 'Authentication required' });
+  }
+
   if (!squareClient) {
     return res.status(500).json({ error: 'Square not configured' });
   }
@@ -94,7 +100,6 @@ module.exports = async (req, res) => {
     checkoutAttemptId,
     basePriceCents,
     deliveryFeeCents,
-    userEmail,
   } = req.body || {};
 
   if (!menuWeekId || !customerId) {
@@ -168,15 +173,30 @@ module.exports = async (req, res) => {
       overrideMap.set(row.dishId, row.priceCents);
     });
 
+    const authEmail = supabaseUser.email;
+    const authUser = authEmail
+      ? await prisma.user.findFirst({ where: { email: authEmail.toLowerCase() } })
+      : null;
+
+    // Check for existing paid/submitted order (duplicate prevention)
+    const existingOrder = await prisma.order.findFirst({
+      where: {
+        menuWeekId,
+        customerId,
+        ...(authUser ? { userId: authUser.id } : {}),
+        status: { in: ['paid', 'submitted'] },
+      },
+    });
+    if (existingOrder) {
+      return res.status(409).json({ error: 'An order has already been submitted for this week.' });
+    }
+
     let userOverrideMap = new Map();
-    if (userEmail) {
-      const user = await prisma.user.findFirst({ where: { email: userEmail.toLowerCase() } });
-      if (user) {
-        const userOverrides = await prisma.userPriceOverride.findMany({
-          where: { menuWeekId, userId: user.id, dishId: { in: dishIds } },
-        });
-        userOverrideMap = new Map(userOverrides.map((row) => [row.dishId, row.priceCents]));
-      }
+    if (authUser) {
+      const userOverrides = await prisma.userPriceOverride.findMany({
+        where: { menuWeekId, userId: authUser.id, dishId: { in: dishIds } },
+      });
+      userOverrideMap = new Map(userOverrides.map((row) => [row.dishId, row.priceCents]));
     }
 
     const menuItemMap = new Map(menuWeekItems.map((item) => [item.dishId, item]));
@@ -267,6 +287,7 @@ module.exports = async (req, res) => {
           data: {
             menuWeekId,
             customerId,
+            userId: authUser?.id || null,
             submittedAt: new Date(),
             status: 'paid',
             squarePaymentId: paymentId,

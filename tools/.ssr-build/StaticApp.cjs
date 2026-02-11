@@ -50076,6 +50076,29 @@ var safeParse = (jsonString, fallback) => {
 var businessInfo = safeParse(business_default, {});
 var thumbtackReviews = safeParse(thumbtack_default, []);
 
+// src/partners/happymonday/menuItems.js
+var HAPPY_MONDAY_MENU_ITEMS = [
+  { id: 1, name: "Egg Salad Sandwich", price: 5.1, category: "Sandwiches" },
+  { id: 2, name: "Turkey Breast", price: 6.1, category: "Sandwiches" },
+  { id: 3, name: "Roast Beef", price: 7.1, category: "Sandwiches" },
+  { id: 4, name: "Pastrami", price: 7.1, category: "Sandwiches" },
+  { id: 5, name: "Mortadella", price: 7.1, category: "Sandwiches" },
+  { id: 6, name: "Vegetable", price: 6.1, category: "Sandwiches" },
+  { id: 7, name: '12" Cheese', price: 7.1, category: "Pizza" },
+  { id: 8, name: '4" Cheese', price: 3.6, category: "Pizza" },
+  { id: 9, name: '4" Pepperoni', price: 3.6, category: "Pizza" },
+  { id: 10, name: '12" Pepperoni', price: 8.1, category: "Pizza" },
+  { id: 11, name: '12" Seasonal', price: 8.1, category: "Pizza" },
+  { id: 12, name: '12" Supreme', price: 8.1, category: "Pizza" },
+  { id: 13, name: '12" Gluten Free', price: 8.1, category: "Pizza" },
+  { id: 14, name: "Beet Salad", price: 5.1, category: "Salads" },
+  { id: 15, name: "Pasta Salad (gluten free)", price: 3.1, category: "Salads" },
+  { id: 16, name: "Yogurt & Granola (gluten free)", price: 3.1, category: "Breakfast" },
+  { id: 17, name: "Yogurt & Granola with chocolate (gluten free)", price: 4.1, category: "Breakfast" },
+  { id: 18, name: "Chia Pudding", price: 3.1, category: "Breakfast" },
+  { id: 19, name: "Chia Pudding (dairy free)", price: 4.1, category: "Breakfast" }
+];
+
 // src/pages/FullPageDemoPage.jsx
 var import_jsx_runtime20 = require("react/jsx-runtime");
 var SMALL_EVENT_CONFIG = {
@@ -51880,42 +51903,43 @@ var FullPageDemoPage = () => {
     };
   }, []);
   (0, import_react11.useEffect)(() => {
-    let abort = false;
-    const controller = new AbortController();
-    (async () => {
-      setWholesaleMenuLoading(true);
-      setWholesaleMenuError("");
-      try {
-        const res = await fetch("/api/store/products?store=happy-monday", { signal: controller.signal });
-        const data = await res.json().catch(() => ({}));
-        if (!res.ok) throw new Error(data?.error || "Failed loading wholesale menu");
-        const products = Array.isArray(data.products) ? data.products : [];
-        const mapped = products.map((product, index) => {
-          const basePrice = typeof product.salePrice === "number" ? product.salePrice : product.price;
-          const priceCents = Number.isFinite(basePrice) ? basePrice : 0;
-          return {
-            id: product.id || product._id || `${product.title || "item"}-${index}`,
-            name: product.title || "Menu item",
-            price: formatCurrency(centsToDollars(priceCents), {
-              minimumFractionDigits: 2,
-              maximumFractionDigits: 2
-            })
-          };
-        });
-        if (!abort) setWholesaleMenuItems(mapped);
-      } catch (err) {
-        if (abort) return;
-        setWholesaleMenuItems([]);
-        setWholesaleMenuError(err?.message || "Unable to load wholesale menu");
-      } finally {
-        if (!abort) setWholesaleMenuLoading(false);
-      }
-    })();
-    return () => {
-      abort = true;
-      controller.abort();
-    };
+    setWholesaleMenuLoading(true);
+    setWholesaleMenuError("");
+    try {
+      const mapped = HAPPY_MONDAY_MENU_ITEMS.map((item, index) => {
+        const priceValue = Number(item.price);
+        return {
+          id: item.id || `${item.name || "item"}-${index}`,
+          name: item.name || "Menu item",
+          category: item.category || "Menu",
+          price: formatCurrency(Number.isFinite(priceValue) ? priceValue : 0, {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+          })
+        };
+      });
+      setWholesaleMenuItems(mapped);
+    } catch (err) {
+      setWholesaleMenuItems([]);
+      setWholesaleMenuError(err?.message || "Unable to load wholesale menu");
+    } finally {
+      setWholesaleMenuLoading(false);
+    }
   }, []);
+  const wholesaleMenuSections = (0, import_react11.useMemo)(() => {
+    const sections = [];
+    const categoryMap = /* @__PURE__ */ new Map();
+    wholesaleMenuItems.forEach((item) => {
+      const category = item.category || "Menu";
+      if (!categoryMap.has(category)) {
+        const section = { category, items: [] };
+        categoryMap.set(category, section);
+        sections.push(section);
+      }
+      categoryMap.get(category).items.push(item);
+    });
+    return sections;
+  }, [wholesaleMenuItems]);
   const imageById = (0, import_react11.useMemo)(() => {
     const map = /* @__PURE__ */ new Map();
     images.forEach((img) => {
@@ -52939,10 +52963,13 @@ var FullPageDemoPage = () => {
                               wholesaleMenuLoading && /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "business-note", children: "Loading menu..." }),
                               !wholesaleMenuLoading && wholesaleMenuError && /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "business-note", children: wholesaleMenuError }),
                               !wholesaleMenuLoading && !wholesaleMenuError && wholesaleMenuItems.length === 0 && /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "business-note", children: "Menu updates are in progress. Email us for current pricing." }),
-                              !wholesaleMenuLoading && !wholesaleMenuError && wholesaleMenuItems.map((item) => /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "business-menu-row", children: [
-                                /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("span", { children: item.name }),
-                                /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("span", { className: "business-price", children: item.price })
-                              ] }, item.id || item.name))
+                              !wholesaleMenuLoading && !wholesaleMenuError && wholesaleMenuSections.map((section) => /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "business-menu-section", children: [
+                                /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "business-menu-category", children: section.category }),
+                                section.items.map((item) => /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "business-menu-row", children: [
+                                  /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("span", { children: item.name }),
+                                  /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("span", { className: "business-price", children: item.price })
+                                ] }, item.id || item.name))
+                              ] }, section.category))
                             ] }),
                             /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
                               "button",

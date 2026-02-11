@@ -301,6 +301,7 @@ const WeeklyOrderPage = () => {
   const { customerSlug } = useParams();
   const {
     user,
+    accessToken,
     loading: authLoading,
     isAdmin,
     signInWithGoogle,
@@ -332,9 +333,10 @@ const WeeklyOrderPage = () => {
       const query = new URLSearchParams({
         customerSlug: effectiveSlug,
         tier,
-        userEmail: user?.email || '',
       }).toString();
-      const response = await fetch(`/api/weekly-order/active?${query}`);
+      const response = await fetch(`/api/weekly-order/active?${query}`, {
+        headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : {},
+      });
       if (!response.ok) {
         throw new Error('Unable to load weekly menu.');
       }
@@ -347,7 +349,7 @@ const WeeklyOrderPage = () => {
     } finally {
       setLoadingData(false);
     }
-  }, [effectiveSlug, hasSlugAccess, tier, user]);
+  }, [accessToken, effectiveSlug, hasSlugAccess, tier, user]);
 
   useEffect(() => {
     if (!user || !hasSlugAccess) return;
@@ -541,13 +543,15 @@ const WeeklyOrderPage = () => {
     try {
       const response = await fetch('/api/weekly-order/checkout-link', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
+        },
         body: JSON.stringify({
           menuWeekId: data?.menuWeek?.id,
           customerId: data?.customer?.id,
           customerSlug: data?.customer?.slug,
           tier,
-          userEmail: user?.email || '',
           rules: planRules,
           items: lineItems.map((item) => ({
             dishId: item.dishId,
@@ -572,7 +576,7 @@ const WeeklyOrderPage = () => {
     } catch (err) {
       setFallbackStatus({ loading: false, error: err?.message || 'Unable to create hosted checkout.' });
     }
-  }, [fallbackStatus.loading, data, tier, user, planRules, lineItems, subtotalCents, basePriceCents, deliveryFeeCents]);
+  }, [accessToken, fallbackStatus.loading, data, tier, planRules, lineItems, subtotalCents, basePriceCents, deliveryFeeCents]);
 
   const handleCheckout = async () => {
     if (!canCheckout) return;
@@ -596,13 +600,15 @@ const WeeklyOrderPage = () => {
       const checkoutAttemptId = resolveCheckoutAttemptId();
       const response = await fetch('/api/weekly-order/checkout', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
+        },
         body: JSON.stringify({
           menuWeekId: data?.menuWeek?.id,
           customerId: data?.customer?.id,
           customerSlug: data?.customer?.slug,
           tier,
-          userEmail: user?.email || '',
           rules: planRules,
           items: lineItems.map((item) => ({
             dishId: item.dishId,
@@ -628,6 +634,7 @@ const WeeklyOrderPage = () => {
       setCheckoutStatus('success');
       clearCheckoutAttempt();
       reset();
+      loadData();
     } catch (err) {
       console.error('[weekly-order] checkout error', err);
       setCheckoutStatus('error');
@@ -835,6 +842,7 @@ const WeeklyOrderPage = () => {
               subtotalCents={subtotalCents}
               basePriceCents={basePriceCents}
               deliveryFeeCents={deliveryFeeCents}
+              planNotes={data?.plan?.notes}
               cutoffPassed={cutoffPassed}
               hasOrderLocked={hasOrderLocked}
               canCheckout={canCheckout}
@@ -855,6 +863,7 @@ const WeeklyOrderPage = () => {
             subtotalCents={subtotalCents}
             basePriceCents={basePriceCents}
             deliveryFeeCents={deliveryFeeCents}
+            planNotes={data?.plan?.notes}
             cutoffPassed={cutoffPassed}
             hasOrderLocked={hasOrderLocked}
             canCheckout={canCheckout}
@@ -968,6 +977,9 @@ const WeeklyOrderPage = () => {
                     <span>{formatCurrency(basePriceCents)}</span>
                   </div>
                 ) : null}
+                {data?.plan?.notes && (
+                  <p className="weekly-order-summary-note">{data.plan.notes}</p>
+                )}
                 {deliveryFeeCents ? (
                   <div className="weekly-order-checkout-row">
                     <span>Delivery</span>
@@ -1148,6 +1160,7 @@ const SummaryPanel = ({
   subtotalCents,
   basePriceCents,
   deliveryFeeCents,
+  planNotes,
   cutoffPassed,
   hasOrderLocked,
   canCheckout,
@@ -1192,6 +1205,9 @@ const SummaryPanel = ({
               <span>{formatCurrency(basePriceCents)}</span>
             </div>
           ) : null}
+          {planNotes && (
+            <p className="weekly-order-summary-note">{planNotes}</p>
+          )}
           {deliveryFeeCents ? (
             <div className="weekly-order-summary-row">
               <span>Delivery</span>

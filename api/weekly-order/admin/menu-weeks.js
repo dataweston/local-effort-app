@@ -176,6 +176,48 @@ module.exports = async (req, res) => {
       return res.status(200).json({ ok: true });
     }
 
+    if (action === 'populate-from-ingest') {
+      if (!id) return res.status(400).json({ error: 'Missing menu week id' });
+      const { ingestId, sectionId: targetSectionId } = req.body;
+      if (!ingestId) return res.status(400).json({ error: 'Missing ingestId' });
+
+      const drafts = await prisma.dishDraft.findMany({
+        where: {
+          sourceIngestId: ingestId,
+          status: { in: ['approved', 'merged'] },
+          matchedDishId: { not: null },
+        },
+      });
+
+      if (!drafts.length) {
+        return res.status(400).json({ error: 'No approved drafts with matched dishes in this ingest' });
+      }
+
+      const results = [];
+      for (const draft of drafts) {
+        try {
+          await prisma.menuWeekItem.upsert({
+            where: { menuWeekId_dishId: { menuWeekId: id, dishId: draft.matchedDishId } },
+            update: {},
+            create: {
+              menuWeekId: id,
+              dishId: draft.matchedDishId,
+              isVisible: true,
+              isAddon: false,
+              includedInPlan: false,
+              sectionId: targetSectionId || null,
+              sortOrder: 0,
+            },
+          });
+          results.push({ dishId: draft.matchedDishId, title: draft.title, added: true });
+        } catch (err) {
+          results.push({ dishId: draft.matchedDishId, title: draft.title, added: false, error: err.message });
+        }
+      }
+
+      return res.status(200).json({ ok: true, results, added: results.filter((r) => r.added).length });
+    }
+
     return res.status(400).json({ error: 'Unsupported action' });
   }
 

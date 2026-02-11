@@ -1,4 +1,5 @@
 const { PrismaClient } = require('@prisma/client');
+const { verifySupabaseToken } = require('./_auth');
 
 let prisma = null;
 try {
@@ -135,7 +136,11 @@ module.exports = async (req, res) => {
 
   const slug = (req.query?.customerSlug || 'weekly-order').toString();
   const tier = (req.query?.tier || 'member').toString().toLowerCase();
-  const userEmail = req.query?.userEmail ? req.query.userEmail.toString().toLowerCase() : null;
+
+  // Prefer authenticated user; fall back to query param for backward compat
+  const supabaseUser = await verifySupabaseToken(req);
+  const userEmail = supabaseUser?.email
+    || (req.query?.userEmail ? req.query.userEmail.toString().toLowerCase() : null);
 
   if (!prisma) {
     return res.status(200).json(buildSampleWeeklyOrder(slug));
@@ -182,6 +187,21 @@ module.exports = async (req, res) => {
         : Promise.resolve([]),
     ]);
 
+    // Compute capacity remaining from paid/submitted orders
+    const orderItemCounts = await prisma.orderItem.groupBy({
+      by: ['dishId'],
+      where: {
+        order: {
+          menuWeekId: menuWeek.id,
+          status: { in: ['paid', 'submitted'] },
+        },
+      },
+      _sum: { quantity: true },
+    });
+    const capacityUsed = new Map(
+      orderItemCounts.map((row) => [row.dishId, row._sum.quantity || 0])
+    );
+
     const priceMap = buildPriceMap(priceRows);
     const overrideMap = buildOverrideMap(overrideRows);
     const userOverrideMap = buildOverrideMap(userOverrideRows);
@@ -194,6 +214,8 @@ module.exports = async (req, res) => {
       const basePrice = priceMap.get(`${item.dishId}-${tier}`);
       const priceCents = item.includedInPlan ? 0 : (Number.isFinite(override) ? override : basePrice ?? null);
       const canView = visibilityMap.has(item.dishId) ? visibilityMap.get(item.dishId) : true;
+      const used = capacityUsed.get(item.dishId) || 0;
+      const remaining = Number.isFinite(item.capacityLimit) ? Math.max(0, item.capacityLimit - used) : null;
       return {
         id: item.id,
         dishId: item.dishId,
@@ -202,6 +224,7 @@ module.exports = async (req, res) => {
         includedInPlan: item.includedInPlan,
         sortOrder: item.sortOrder,
         capacityLimit: item.capacityLimit,
+        remaining,
         section: item.section
           ? { id: item.section.id, slug: item.section.slug, title: item.section.title, sortOrder: item.section.sortOrder }
           : null,
@@ -217,6 +240,50 @@ module.exports = async (req, res) => {
     });
 
     const sections = buildSections(menuWeek.sections || [], enrichedItems);
+
+    // Resolve current order and order history scoped by user when available
+    const orderWhere = { menuWeekId: menuWeek.id, customerId: customer.id };
+    if (user) orderWhere.userId = user.id;
+
+    const currentWeekOrders = await prisma.order.findMany({
+      where: orderWhere,
+      include: {
+        items: { include: { dish: { select: { title: true } } } },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    const historyOrders = await prisma.order.findMany({
+      where: {
+        customerId: customer.id,
+        ...(user ? { userId: user.id } : {}),
+        status: { in: ['paid', 'submitted'] },
+        menuWeekId: { not: menuWeek.id },
+      },
+      include: {
+        items: { include: { dish: { select: { title: true } } } },
+        menuWeek: { select: { weekStart: true } },
+      },
+      orderBy: { createdAt: 'desc' },
+      take: 10,
+    });
+
+    const currentOrder =
+      currentWeekOrders.find((o) => o.status === 'paid' || o.status === 'submitted') ||
+      currentWeekOrders.find((o) => o.status === 'draft') ||
+      null;
+
+    const orderHistory = historyOrders.map((o) => ({
+      id: o.id,
+      weekStart: o.menuWeek.weekStart,
+      status: o.status,
+      totalCents: o.totalsCents,
+      submittedAt: o.submittedAt,
+      items: o.items.map((item) => ({
+        dish: item.dish?.title || 'Unknown',
+        quantity: item.quantity,
+      })),
+    }));
 
     return res.status(200).json({
       menuWeek: {
@@ -239,8 +306,16 @@ module.exports = async (req, res) => {
       },
       menuItems: enrichedItems,
       sections,
-      orderHistory: [],
-      currentOrder: null,
+      orderHistory,
+      currentOrder: currentOrder ? {
+        id: currentOrder.id,
+        status: currentOrder.status,
+        items: currentOrder.items.map((item) => ({
+          dishId: item.dishId,
+          dish: item.dish?.title,
+          quantity: item.quantity,
+        })),
+      } : null,
     });
   } catch (err) {
     console.error('[weekly-order] active error', err);

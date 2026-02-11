@@ -125,6 +125,7 @@ model User {
   updatedAt  DateTime  @updatedAt
   customer   Customer? @relation(fields: [customerId], references: [id])
   overrides  UserPriceOverride[]
+  orders     Order[]
 }
 
 model Customer {
@@ -290,6 +291,7 @@ model Order {
   id              String      @id @default(uuid())
   menuWeekId      String
   customerId      String
+  userId          String?
   submittedAt     DateTime?
   status          String      @default("draft")
   squarePaymentId String?
@@ -302,6 +304,7 @@ model Order {
   updatedAt       DateTime    @updatedAt
   menuWeek        MenuWeek    @relation(fields: [menuWeekId], references: [id])
   customer        Customer    @relation(fields: [customerId], references: [id])
+  user            User?       @relation(fields: [userId], references: [id])
   items           OrderItem[]
 }
 

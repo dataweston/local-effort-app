@@ -52,6 +52,8 @@ const AdminWeeklyOrderPage = () => {
   const [sectionForm, setSectionForm] = useState({ title: '', slug: '', sortOrder: '' });
   const [planRulesText, setPlanRulesText] = useState('');
   const [mergeTargets, setMergeTargets] = useState({});
+  const [populateIngestId, setPopulateIngestId] = useState('');
+  const [populateSectionId, setPopulateSectionId] = useState('');
   const [signingIn, setSigningIn] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -654,6 +656,54 @@ const AdminWeeklyOrderPage = () => {
                 }}
               >
                 Add dish
+              </Button>
+            </div>
+            <div className="weekly-order-admin-form">
+              <select
+                value={populateIngestId}
+                onChange={(e) => setPopulateIngestId(e.target.value)}
+              >
+                <option value="">Populate from ingest...</option>
+                {ingests.map((ingest) => (
+                  <option key={ingest.id} value={ingest.id}>
+                    {ingest.source} — {new Date(ingest.receivedAt).toLocaleDateString()} ({ingest._count?.drafts || '?'} drafts)
+                  </option>
+                ))}
+              </select>
+              <select
+                value={populateSectionId}
+                onChange={(e) => setPopulateSectionId(e.target.value)}
+              >
+                <option value="">No section (unassigned)</option>
+                {(selectedWeekRecord?.sections || []).map((section) => (
+                  <option key={section.id} value={section.id}>{section.title}</option>
+                ))}
+              </select>
+              <Button
+                size="sm"
+                onClick={async () => {
+                  if (!selectedWeek || !populateIngestId) return;
+                  setStatus('Populating menu from ingest...');
+                  try {
+                    const result = await fetchJson('/api/weekly-order/admin/menu-weeks', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json', ...authHeaders },
+                      body: JSON.stringify({
+                        action: 'populate-from-ingest',
+                        id: selectedWeek,
+                        ingestId: populateIngestId,
+                        sectionId: populateSectionId || null,
+                      }),
+                    });
+                    await loadMenuWeeks();
+                    await loadPricing(selectedWeek);
+                    setStatus(`Added ${result.added} dish${result.added === 1 ? '' : 'es'} from ingest`);
+                  } catch (err) {
+                    setStatus(`Populate failed: ${err.message}`);
+                  }
+                }}
+              >
+                Populate from ingest
               </Button>
             </div>
             {selectedWeekRecord?.sections?.length ? (
