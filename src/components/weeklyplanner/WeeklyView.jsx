@@ -151,7 +151,7 @@ export function WeeklyView({ planner, weekDates, weekStart, onDayClick, onNextWe
       {/* Weekly COGS section */}
       <div className="mt-6 max-w-md">
         <COGSSection
-          items={planner.cogs}
+          items={planner.weekCogs}
           weekStart={weekStart}
           onAdd={handlers.handleAddCOGS}
           onDelete={handlers.handleDeleteCOGS}
