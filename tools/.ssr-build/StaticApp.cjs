@@ -2468,7 +2468,7 @@ function __classPrivateFieldIn(state, receiver) {
   if (receiver === null || typeof receiver !== "object" && typeof receiver !== "function") throw new TypeError("Cannot use 'in' operator on non-object");
   return typeof state === "function" ? receiver === state : state.has(receiver);
 }
-function __addDisposableResource(env, value, async) {
+function __addDisposableResource(env2, value, async) {
   if (value !== null && value !== void 0) {
     if (typeof value !== "object" && typeof value !== "function") throw new TypeError("Object expected.");
     var dispose, inner;
@@ -2489,22 +2489,22 @@ function __addDisposableResource(env, value, async) {
         return Promise.reject(e);
       }
     };
-    env.stack.push({ value, dispose, async });
+    env2.stack.push({ value, dispose, async });
   } else if (async) {
-    env.stack.push({ async: true });
+    env2.stack.push({ async: true });
   }
   return value;
 }
-function __disposeResources(env) {
+function __disposeResources(env2) {
   function fail(e) {
-    env.error = env.hasError ? new _SuppressedError(e, env.error, "An error was suppressed during disposal.") : e;
-    env.hasError = true;
+    env2.error = env2.hasError ? new _SuppressedError(e, env2.error, "An error was suppressed during disposal.") : e;
+    env2.hasError = true;
   }
   var r, s = 0;
   function next() {
-    while (r = env.stack.pop()) {
+    while (r = env2.stack.pop()) {
       try {
-        if (!r.async && s === 1) return s = 0, env.stack.push(r), Promise.resolve().then(next);
+        if (!r.async && s === 1) return s = 0, env2.stack.push(r), Promise.resolve().then(next);
         if (r.dispose) {
           var result = r.dispose.call(r.value);
           if (r.async) return s |= 2, Promise.resolve(result).then(next, function(e) {
@@ -2516,8 +2516,8 @@ function __disposeResources(env) {
         fail(e);
       }
     }
-    if (s === 1) return env.hasError ? Promise.reject(env.error) : Promise.resolve();
-    if (env.hasError) throw env.error;
+    if (s === 1) return env2.hasError ? Promise.reject(env2.error) : Promise.resolve();
+    if (env2.hasError) throw env2.error;
   }
   return next();
 }
@@ -2735,10 +2735,10 @@ var require_useMergeRef = __commonJS({
     Object.defineProperty(exports2, "__esModule", { value: true });
     exports2.useMergeRefs = void 0;
     var tslib_1 = (init_tslib_es6(), __toCommonJS(tslib_es6_exports));
-    var React32 = tslib_1.__importStar(require("react"));
+    var React50 = tslib_1.__importStar(require("react"));
     var assignRef_1 = require_assignRef();
     var useRef_1 = require_useRef();
-    var useIsomorphicLayoutEffect = typeof window !== "undefined" ? React32.useLayoutEffect : React32.useEffect;
+    var useIsomorphicLayoutEffect = typeof window !== "undefined" ? React50.useLayoutEffect : React50.useEffect;
     var currentValues = /* @__PURE__ */ new WeakMap();
     function useMergeRefs(refs, defaultValue) {
       var callbackRef = (0, useRef_1.useCallbackRef)(defaultValue || null, function(newValue) {
@@ -2973,7 +2973,7 @@ var require_hoc = __commonJS({
     Object.defineProperty(exports2, "__esModule", { value: true });
     exports2.sidecar = void 0;
     var tslib_1 = (init_tslib_es6(), __toCommonJS(tslib_es6_exports));
-    var React32 = tslib_1.__importStar(require("react"));
+    var React50 = tslib_1.__importStar(require("react"));
     var hook_1 = require_hook();
     function sidecar(importer, errorComponent) {
       var ErrorCase = function() {
@@ -2984,7 +2984,7 @@ var require_hoc = __commonJS({
         if (error && errorComponent) {
           return ErrorCase;
         }
-        return Car ? React32.createElement(Car, tslib_1.__assign({}, props)) : null;
+        return Car ? React50.createElement(Car, tslib_1.__assign({}, props)) : null;
       };
     }
     exports2.sidecar = sidecar;
@@ -3118,7 +3118,7 @@ var require_renderProp = __commonJS({
     Object.defineProperty(exports2, "__esModule", { value: true });
     exports2.renderCar = void 0;
     var tslib_1 = (init_tslib_es6(), __toCommonJS(tslib_es6_exports));
-    var React32 = tslib_1.__importStar(require("react"));
+    var React50 = tslib_1.__importStar(require("react"));
     var react_1 = require("react");
     function renderCar(WrappedComponent, defaults) {
       function State(_a) {
@@ -3133,9 +3133,9 @@ var require_renderProp = __commonJS({
           });
           return null;
         }, []);
-        return React32.createElement(WrappedComponent, tslib_1.__assign({}, props, { children: renderTarget }));
+        return React50.createElement(WrappedComponent, tslib_1.__assign({}, props, { children: renderTarget }));
       }
-      var Children5 = React32.memo(function(_a) {
+      var Children5 = React50.memo(function(_a) {
         var stateRef = _a.stateRef, defaultState = _a.defaultState, children = _a.children;
         var _b = (0, react_1.useState)(defaultState.current), state = _b[0], setState = _b[1];
         (0, react_1.useEffect)(function() {
@@ -3146,15 +3146,15 @@ var require_renderProp = __commonJS({
         return true;
       });
       return function Combiner(props) {
-        var defaultState = React32.useRef(defaults(props));
-        var ref = React32.useRef(function(state) {
+        var defaultState = React50.useRef(defaults(props));
+        var ref = React50.useRef(function(state) {
           return defaultState.current = state;
         });
-        return React32.createElement(
-          React32.Fragment,
+        return React50.createElement(
+          React50.Fragment,
           null,
-          React32.createElement(State, { stateRef: ref, props }),
-          React32.createElement(Children5, { stateRef: ref, defaultState, children: props.children })
+          React50.createElement(State, { stateRef: ref, props }),
+          React50.createElement(Children5, { stateRef: ref, defaultState, children: props.children })
         );
       };
     }
@@ -3169,7 +3169,7 @@ var require_exports = __commonJS({
     Object.defineProperty(exports2, "__esModule", { value: true });
     exports2.exportSidecar = void 0;
     var tslib_1 = (init_tslib_es6(), __toCommonJS(tslib_es6_exports));
-    var React32 = tslib_1.__importStar(require("react"));
+    var React50 = tslib_1.__importStar(require("react"));
     var SideCar = function(_a) {
       var sideCar = _a.sideCar, rest = tslib_1.__rest(_a, ["sideCar"]);
       if (!sideCar) {
@@ -3179,7 +3179,7 @@ var require_exports = __commonJS({
       if (!Target) {
         throw new Error("Sidecar medium not found");
       }
-      return React32.createElement(Target, tslib_1.__assign({}, rest));
+      return React50.createElement(Target, tslib_1.__assign({}, rest));
     };
     SideCar.isSideCarExport = true;
     function exportSidecar(medium, exported) {
@@ -3244,16 +3244,16 @@ var require_UI = __commonJS({
     Object.defineProperty(exports2, "__esModule", { value: true });
     exports2.RemoveScroll = void 0;
     var tslib_1 = (init_tslib_es6(), __toCommonJS(tslib_es6_exports));
-    var React32 = tslib_1.__importStar(require("react"));
+    var React50 = tslib_1.__importStar(require("react"));
     var constants_1 = require_constants();
     var use_callback_ref_1 = require_es5();
     var medium_1 = require_medium2();
     var nothing = function() {
       return;
     };
-    var RemoveScroll2 = React32.forwardRef(function(props, parentRef) {
-      var ref = React32.useRef(null);
-      var _a = React32.useState({
+    var RemoveScroll2 = React50.forwardRef(function(props, parentRef) {
+      var ref = React50.useRef(null);
+      var _a = React50.useState({
         onScrollCapture: nothing,
         onWheelCapture: nothing,
         onTouchMoveCapture: nothing
@@ -3262,11 +3262,11 @@ var require_UI = __commonJS({
       var SideCar = sideCar;
       var containerRef = (0, use_callback_ref_1.useMergeRefs)([ref, parentRef]);
       var containerProps = tslib_1.__assign(tslib_1.__assign({}, rest), callbacks);
-      return React32.createElement(
-        React32.Fragment,
+      return React50.createElement(
+        React50.Fragment,
         null,
-        enabled && React32.createElement(SideCar, { sideCar: medium_1.effectCar, removeScrollBar, shards, noRelative, noIsolation, inert, setCallbacks, allowPinchZoom: !!allowPinchZoom, lockRef: ref, gapMode }),
-        forwardProps ? React32.cloneElement(React32.Children.only(children), tslib_1.__assign(tslib_1.__assign({}, containerProps), { ref: containerRef })) : React32.createElement(Container, tslib_1.__assign({}, containerProps, { className, ref: containerRef }), children)
+        enabled && React50.createElement(SideCar, { sideCar: medium_1.effectCar, removeScrollBar, shards, noRelative, noIsolation, inert, setCallbacks, allowPinchZoom: !!allowPinchZoom, lockRef: ref, gapMode }),
+        forwardProps ? React50.cloneElement(React50.Children.only(children), tslib_1.__assign(tslib_1.__assign({}, containerProps), { ref: containerRef })) : React50.createElement(Container, tslib_1.__assign({}, containerProps, { className, ref: containerRef }), children)
       );
     });
     exports2.RemoveScroll = RemoveScroll2;
@@ -3365,12 +3365,12 @@ var require_hook2 = __commonJS({
     Object.defineProperty(exports2, "__esModule", { value: true });
     exports2.styleHookSingleton = void 0;
     var tslib_1 = (init_tslib_es6(), __toCommonJS(tslib_es6_exports));
-    var React32 = tslib_1.__importStar(require("react"));
+    var React50 = tslib_1.__importStar(require("react"));
     var singleton_1 = require_singleton();
     var styleHookSingleton = function() {
       var sheet = (0, singleton_1.stylesheetSingleton)();
       return function(styles, isDynamic) {
-        React32.useEffect(function() {
+        React50.useEffect(function() {
           sheet.add(styles);
           return function() {
             sheet.remove();
@@ -3473,7 +3473,7 @@ var require_component2 = __commonJS({
     Object.defineProperty(exports2, "__esModule", { value: true });
     exports2.RemoveScrollBar = exports2.useLockAttribute = exports2.lockAttribute = void 0;
     var tslib_1 = (init_tslib_es6(), __toCommonJS(tslib_es6_exports));
-    var React32 = tslib_1.__importStar(require("react"));
+    var React50 = tslib_1.__importStar(require("react"));
     var react_style_singleton_1 = require_es54();
     var constants_1 = require_constants();
     var utils_1 = require_utils();
@@ -3495,7 +3495,7 @@ var require_component2 = __commonJS({
       return isFinite(counter) ? counter : 0;
     };
     var useLockAttribute = function() {
-      React32.useEffect(function() {
+      React50.useEffect(function() {
         document.body.setAttribute(exports2.lockAttribute, (getCurrentUseCounter() + 1).toString());
         return function() {
           var newCounter = getCurrentUseCounter() - 1;
@@ -3511,10 +3511,10 @@ var require_component2 = __commonJS({
     var RemoveScrollBar = function(_a) {
       var noRelative = _a.noRelative, noImportant = _a.noImportant, _b = _a.gapMode, gapMode = _b === void 0 ? "margin" : _b;
       (0, exports2.useLockAttribute)();
-      var gap = React32.useMemo(function() {
+      var gap = React50.useMemo(function() {
         return (0, utils_1.getGapWidth)(gapMode);
       }, [gapMode]);
-      return React32.createElement(Style, { styles: getStyles(gap, !noRelative, gapMode, !noImportant ? "!important" : "") });
+      return React50.createElement(Style, { styles: getStyles(gap, !noRelative, gapMode, !noImportant ? "!important" : "") });
     };
     exports2.RemoveScrollBar = RemoveScrollBar;
   }
@@ -3692,7 +3692,7 @@ var require_SideEffect = __commonJS({
     Object.defineProperty(exports2, "__esModule", { value: true });
     exports2.RemoveScrollSideCar = exports2.getDeltaXY = exports2.getTouchXY = void 0;
     var tslib_1 = (init_tslib_es6(), __toCommonJS(tslib_es6_exports));
-    var React32 = tslib_1.__importStar(require("react"));
+    var React50 = tslib_1.__importStar(require("react"));
     var react_remove_scroll_bar_1 = require_es55();
     var react_style_singleton_1 = require_es54();
     var aggresiveCapture_1 = require_aggresiveCapture();
@@ -3717,16 +3717,16 @@ var require_SideEffect = __commonJS({
     var idCounter = 0;
     var lockStack = [];
     function RemoveScrollSideCar(props) {
-      var shouldPreventQueue = React32.useRef([]);
-      var touchStartRef = React32.useRef([0, 0]);
-      var activeAxis = React32.useRef();
-      var id = React32.useState(idCounter++)[0];
-      var Style = React32.useState(react_style_singleton_1.styleSingleton)[0];
-      var lastProps = React32.useRef(props);
-      React32.useEffect(function() {
+      var shouldPreventQueue = React50.useRef([]);
+      var touchStartRef = React50.useRef([0, 0]);
+      var activeAxis = React50.useRef();
+      var id = React50.useState(idCounter++)[0];
+      var Style = React50.useState(react_style_singleton_1.styleSingleton)[0];
+      var lastProps = React50.useRef(props);
+      React50.useEffect(function() {
         lastProps.current = props;
       }, [props]);
-      React32.useEffect(function() {
+      React50.useEffect(function() {
         if (props.inert) {
           document.body.classList.add("block-interactivity-".concat(id));
           var allow_1 = tslib_1.__spreadArray([props.lockRef.current], (props.shards || []).map(extractRef), true).filter(Boolean);
@@ -3742,7 +3742,7 @@ var require_SideEffect = __commonJS({
         }
         return;
       }, [props.inert, props.lockRef.current, props.shards]);
-      var shouldCancelEvent = React32.useCallback(function(event, parent) {
+      var shouldCancelEvent = React50.useCallback(function(event, parent) {
         if ("touches" in event && event.touches.length === 2 || event.type === "wheel" && event.ctrlKey) {
           return !lastProps.current.allowPinchZoom;
         }
@@ -3778,7 +3778,7 @@ var require_SideEffect = __commonJS({
         var cancelingAxis = activeAxis.current || currentAxis;
         return (0, handleScroll_1.handleScroll)(cancelingAxis, parent, event, cancelingAxis === "h" ? deltaX : deltaY, true);
       }, []);
-      var shouldPrevent = React32.useCallback(function(_event) {
+      var shouldPrevent = React50.useCallback(function(_event) {
         var event = _event;
         if (!lockStack.length || lockStack[lockStack.length - 1] !== Style) {
           return;
@@ -3805,7 +3805,7 @@ var require_SideEffect = __commonJS({
           }
         }
       }, []);
-      var shouldCancel = React32.useCallback(function(name, delta, target, should) {
+      var shouldCancel = React50.useCallback(function(name, delta, target, should) {
         var event = { name, delta, target, should, shadowParent: getOutermostShadowParent(target) };
         shouldPreventQueue.current.push(event);
         setTimeout(function() {
@@ -3814,17 +3814,17 @@ var require_SideEffect = __commonJS({
           });
         }, 1);
       }, []);
-      var scrollTouchStart = React32.useCallback(function(event) {
+      var scrollTouchStart = React50.useCallback(function(event) {
         touchStartRef.current = (0, exports2.getTouchXY)(event);
         activeAxis.current = void 0;
       }, []);
-      var scrollWheel = React32.useCallback(function(event) {
+      var scrollWheel = React50.useCallback(function(event) {
         shouldCancel(event.type, (0, exports2.getDeltaXY)(event), event.target, shouldCancelEvent(event, props.lockRef.current));
       }, []);
-      var scrollTouchMove = React32.useCallback(function(event) {
+      var scrollTouchMove = React50.useCallback(function(event) {
         shouldCancel(event.type, (0, exports2.getTouchXY)(event), event.target, shouldCancelEvent(event, props.lockRef.current));
       }, []);
-      React32.useEffect(function() {
+      React50.useEffect(function() {
         lockStack.push(Style);
         props.setCallbacks({
           onScrollCapture: scrollWheel,
@@ -3844,11 +3844,11 @@ var require_SideEffect = __commonJS({
         };
       }, []);
       var removeScrollBar = props.removeScrollBar, inert = props.inert;
-      return React32.createElement(
-        React32.Fragment,
+      return React50.createElement(
+        React50.Fragment,
         null,
-        inert ? React32.createElement(Style, { styles: generateStyle(id) }) : null,
-        removeScrollBar ? React32.createElement(react_remove_scroll_bar_1.RemoveScrollBar, { noRelative: props.noRelative, gapMode: props.gapMode }) : null
+        inert ? React50.createElement(Style, { styles: generateStyle(id) }) : null,
+        removeScrollBar ? React50.createElement(react_remove_scroll_bar_1.RemoveScrollBar, { noRelative: props.noRelative, gapMode: props.gapMode }) : null
       );
     }
     exports2.RemoveScrollSideCar = RemoveScrollSideCar;
@@ -3884,11 +3884,11 @@ var require_Combination = __commonJS({
     "use strict";
     Object.defineProperty(exports2, "__esModule", { value: true });
     var tslib_1 = (init_tslib_es6(), __toCommonJS(tslib_es6_exports));
-    var React32 = tslib_1.__importStar(require("react"));
+    var React50 = tslib_1.__importStar(require("react"));
     var UI_1 = require_UI();
     var sidecar_1 = tslib_1.__importDefault(require_sidecar());
-    var ReactRemoveScroll = React32.forwardRef(function(props, ref) {
-      return React32.createElement(UI_1.RemoveScroll, tslib_1.__assign({}, props, { ref, sideCar: sidecar_1.default }));
+    var ReactRemoveScroll = React50.forwardRef(function(props, ref) {
+      return React50.createElement(UI_1.RemoveScroll, tslib_1.__assign({}, props, { ref, sideCar: sidecar_1.default }));
     });
     ReactRemoveScroll.classNames = UI_1.RemoveScroll.classNames;
     exports2.default = ReactRemoveScroll;
@@ -4060,15 +4060,270 @@ var require_es57 = __commonJS({
   }
 });
 
+// src/components/menu/FoodItemModal.jsx
+var FoodItemModal_exports = {};
+__export(FoodItemModal_exports, {
+  default: () => FoodItemModal_default
+});
+var import_react27, import_framer_motion7, import_jsx_runtime34, backdrop, modal, FoodItemModal, FoodItemModal_default;
+var init_FoodItemModal = __esm({
+  "src/components/menu/FoodItemModal.jsx"() {
+    import_react27 = __toESM(require("react"));
+    import_framer_motion7 = require("framer-motion");
+    import_jsx_runtime34 = require("react/jsx-runtime");
+    backdrop = {
+      visible: { opacity: 1 },
+      hidden: { opacity: 0 }
+    };
+    modal = {
+      hidden: { y: "-50px", opacity: 0 },
+      visible: { y: "0", opacity: 1, transition: { delay: 0.1 } }
+    };
+    FoodItemModal = ({ item, onClose }) => {
+      return /* @__PURE__ */ (0, import_jsx_runtime34.jsx)(
+        import_framer_motion7.motion.div,
+        {
+          className: "fixed inset-0 bg-black bg-opacity-60 z-50 flex justify-center items-center p-4",
+          variants: backdrop,
+          initial: "hidden",
+          animate: "visible",
+          exit: "hidden",
+          onClick: onClose,
+          children: /* @__PURE__ */ (0, import_jsx_runtime34.jsxs)(
+            import_framer_motion7.motion.div,
+            {
+              variants: modal,
+              className: "bg-white rounded-lg shadow-xl max-w-lg w-full p-8 relative",
+              onClick: (e) => e.stopPropagation(),
+              children: [
+                /* @__PURE__ */ (0, import_jsx_runtime34.jsx)(
+                  "button",
+                  {
+                    onClick: onClose,
+                    className: "absolute top-4 right-4 text-neutral-500 hover:text-neutral-800 text-2xl",
+                    children: "\xD7"
+                  }
+                ),
+                /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("h3", { className: "text-3xl font-bold mb-4", children: item.name }),
+                /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("p", { className: "text-body mb-6", children: item.description }),
+                /* @__PURE__ */ (0, import_jsx_runtime34.jsxs)("div", { children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("h4", { className: "font-bold text-lg mb-2", children: "Ingredients:" }),
+                  /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("ul", { className: "list-disc list-inside text-neutral-600 space-y-1", children: item.ingredients.map((ingredient, index) => /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("li", { children: ingredient }, index)) })
+                ] })
+              ]
+            }
+          )
+        }
+      );
+    };
+    FoodItemModal_default = FoodItemModal;
+  }
+});
+
+// src/components/menu/FeedbackForm.jsx
+var FeedbackForm_exports = {};
+__export(FeedbackForm_exports, {
+  default: () => FeedbackForm_default
+});
+var import_react28, import_framer_motion8, import_jsx_runtime35, FeedbackForm, FeedbackForm_default;
+var init_FeedbackForm = __esm({
+  "src/components/menu/FeedbackForm.jsx"() {
+    import_react28 = __toESM(require("react"));
+    import_framer_motion8 = require("framer-motion");
+    import_jsx_runtime35 = require("react/jsx-runtime");
+    FeedbackForm = () => {
+      const [formData, setFormData] = (0, import_react28.useState)({
+        name: "",
+        email: "",
+        phone: "",
+        category: "requests",
+        message: ""
+      });
+      const [status, setStatus] = (0, import_react28.useState)({ type: "", message: "" });
+      const handleChange = (e) => {
+        const { name, value } = e.target;
+        setFormData((prev) => ({ ...prev, [name]: value }));
+      };
+      const handleSubmit = async (e) => {
+        e.preventDefault();
+        if (!formData.message) {
+          setStatus({ type: "error", message: "Please enter a message before submitting." });
+          return;
+        }
+        setStatus({ type: "loading", message: "" });
+        try {
+          const payload = {
+            name: formData.name,
+            email: formData.email,
+            subject: `Happy Monday Feedback (${formData.category})`,
+            message: formData.message,
+            type: "feedback",
+            category: formData.category
+          };
+          const res = await fetch("/api/messages/submit", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+          });
+          if (!res.ok) {
+            const errorText = await res.text();
+            console.error("API Error Response:", errorText);
+            throw new Error(errorText);
+          }
+          setStatus({ type: "success", message: "Thank you! Your feedback has been submitted." });
+          setFormData({ name: "", email: "", phone: "", category: "requests", message: "" });
+          setTimeout(() => {
+            setStatus({ type: "", message: "" });
+          }, 5e3);
+        } catch (err) {
+          setStatus({
+            type: "error",
+            message: "Could not submit feedback. Please try again or contact us at yum@localeffortfood.com"
+          });
+        }
+      };
+      return /* @__PURE__ */ (0, import_jsx_runtime35.jsx)("div", { className: "max-w-2xl bg-neutral-50 border border-neutral-200 p-8 rounded-lg", children: /* @__PURE__ */ (0, import_jsx_runtime35.jsxs)("form", { onSubmit: handleSubmit, className: "space-y-6", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime35.jsx)("div", { className: "grid sm:grid-cols-2 gap-6", children: /* @__PURE__ */ (0, import_jsx_runtime35.jsxs)("div", { children: [
+          /* @__PURE__ */ (0, import_jsx_runtime35.jsx)("label", { htmlFor: "category", className: "block text-sm font-medium text-neutral-700", children: "Category" }),
+          /* @__PURE__ */ (0, import_jsx_runtime35.jsxs)(
+            "select",
+            {
+              id: "category",
+              name: "category",
+              value: formData.category,
+              onChange: handleChange,
+              className: "mt-1 block w-full rounded-md border-neutral-300 shadow-sm focus:border-primary focus:ring-primary",
+              children: [
+                /* @__PURE__ */ (0, import_jsx_runtime35.jsx)("option", { value: "requests", children: "Requests" }),
+                /* @__PURE__ */ (0, import_jsx_runtime35.jsx)("option", { value: "quality", children: "Quality Feedback" }),
+                /* @__PURE__ */ (0, import_jsx_runtime35.jsx)("option", { value: "other", children: "Other" })
+              ]
+            }
+          )
+        ] }) }),
+        /* @__PURE__ */ (0, import_jsx_runtime35.jsxs)("div", { children: [
+          /* @__PURE__ */ (0, import_jsx_runtime35.jsx)("label", { htmlFor: "message", className: "block text-sm font-medium text-neutral-700", children: "Message" }),
+          /* @__PURE__ */ (0, import_jsx_runtime35.jsx)(
+            "textarea",
+            {
+              id: "message",
+              name: "message",
+              rows: "4",
+              value: formData.message,
+              onChange: handleChange,
+              required: true,
+              className: "mt-1 block w-full rounded-md border-neutral-300 shadow-sm focus:border-primary focus:ring-primary"
+            }
+          )
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime35.jsxs)("div", { className: "grid sm:grid-cols-2 gap-6", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime35.jsxs)("div", { children: [
+            /* @__PURE__ */ (0, import_jsx_runtime35.jsx)("label", { htmlFor: "name", className: "block text-sm font-medium text-neutral-700", children: "Name (Optional)" }),
+            /* @__PURE__ */ (0, import_jsx_runtime35.jsx)(
+              "input",
+              {
+                type: "text",
+                name: "name",
+                id: "name",
+                value: formData.name,
+                onChange: handleChange,
+                className: "mt-1 block w-full rounded-md border-neutral-300 shadow-sm focus:border-primary focus:ring-primary"
+              }
+            )
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime35.jsxs)("div", { children: [
+            /* @__PURE__ */ (0, import_jsx_runtime35.jsx)("label", { htmlFor: "email", className: "block text-sm font-medium text-neutral-700", children: "Email (Optional)" }),
+            /* @__PURE__ */ (0, import_jsx_runtime35.jsx)(
+              "input",
+              {
+                type: "email",
+                name: "email",
+                id: "email",
+                value: formData.email,
+                onChange: handleChange,
+                className: "mt-1 block w-full rounded-md border-neutral-300 shadow-sm focus:border-primary focus:ring-primary"
+              }
+            )
+          ] })
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime35.jsxs)("div", { className: "flex items-center justify-between", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime35.jsx)(
+            import_framer_motion8.motion.button,
+            {
+              type: "submit",
+              className: "btn btn-primary",
+              whileHover: { scale: 1.03 },
+              whileTap: { scale: 0.98 },
+              disabled: status.type === "loading",
+              children: status.type === "loading" ? "Sending..." : "Submit Feedback"
+            }
+          ),
+          status.message && /* @__PURE__ */ (0, import_jsx_runtime35.jsx)(
+            "p",
+            {
+              className: `text-sm ${status.type === "success" ? "text-green-600" : "text-red-600"}`,
+              children: status.message
+            }
+          )
+        ] })
+      ] }) });
+    };
+    FeedbackForm_default = FeedbackForm;
+  }
+});
+
+// src/components/layout/LoadingSpinner.jsx
+var LoadingSpinner_exports = {};
+__export(LoadingSpinner_exports, {
+  LoadingSpinner: () => LoadingSpinner
+});
+var import_react29, import_framer_motion9, import_jsx_runtime36, LoadingSpinner;
+var init_LoadingSpinner = __esm({
+  "src/components/layout/LoadingSpinner.jsx"() {
+    import_react29 = __toESM(require("react"));
+    import_framer_motion9 = require("framer-motion");
+    import_jsx_runtime36 = require("react/jsx-runtime");
+    LoadingSpinner = () => /* @__PURE__ */ (0, import_jsx_runtime36.jsx)(
+      import_framer_motion9.motion.div,
+      {
+        className: "min-h-screen flex items-center justify-center bg-gradient-to-br from-orange-50 to-red-50",
+        initial: { opacity: 0 },
+        animate: { opacity: 1 },
+        exit: { opacity: 0 },
+        children: /* @__PURE__ */ (0, import_jsx_runtime36.jsxs)("div", { className: "text-center", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime36.jsx)(
+            import_framer_motion9.motion.div,
+            {
+              className: "w-16 h-16 mx-auto mb-4 border-4 border-orange-200 border-t-orange-500 rounded-full",
+              animate: { rotate: 360 },
+              transition: { duration: 1, repeat: Infinity, ease: "linear" }
+            }
+          ),
+          /* @__PURE__ */ (0, import_jsx_runtime36.jsx)(
+            import_framer_motion9.motion.p,
+            {
+              className: "text-gray-600 font-medium",
+              initial: { opacity: 0, y: 10 },
+              animate: { opacity: 1, y: 0 },
+              transition: { delay: 0.2 },
+              children: "Just a moment"
+            }
+          )
+        ] })
+      }
+    );
+  }
+});
+
 // src/ssr/StaticApp.jsx
 var StaticApp_exports = {};
 __export(StaticApp_exports, {
   default: () => StaticApp
 });
 module.exports = __toCommonJS(StaticApp_exports);
-var import_react12 = __toESM(require("react"));
-var import_react_router_dom3 = require("react-router-dom");
-var import_react_helmet_async = __toESM(require_lib());
+var import_react33 = __toESM(require("react"));
+var import_react_router_dom6 = require("react-router-dom");
+var import_react_helmet_async7 = __toESM(require_lib());
 
 // src/components/layout/Header.jsx
 var import_react = __toESM(require("react"));
@@ -4271,24 +4526,360 @@ var Header = () => {
   );
 };
 
+// src/store/cart/CartContext.jsx
+var import_react2 = __toESM(require("react"));
+var import_jsx_runtime2 = require("react/jsx-runtime");
+var CartContext = (0, import_react2.createContext)(null);
+function reducer(state, action) {
+  switch (action.type) {
+    case "init":
+      return action.payload || state;
+    case "add": {
+      const { productId, variationId, unitPrice, title, image } = action.payload;
+      const key = `${productId}:${variationId || ""}`;
+      const qty = Math.max(1, action.payload.qty || 1);
+      const next = { ...state, items: { ...state.items || {} } };
+      const existing = next.items[key];
+      next.items[key] = existing ? { ...existing, qty: existing.qty + qty } : { key, productId, variationId, unitPrice, qty, title, image };
+      next.updatedAt = Date.now();
+      return next;
+    }
+    case "remove": {
+      const next = { ...state, items: { ...state.items || {} } };
+      delete next.items[action.key];
+      next.updatedAt = Date.now();
+      return next;
+    }
+    case "updateQty": {
+      const next = { ...state, items: { ...state.items || {} } };
+      const li = next.items[action.key];
+      if (!li) return state;
+      li.qty = Math.max(0, action.qty);
+      if (li.qty === 0) delete next.items[action.key];
+      next.updatedAt = Date.now();
+      return next;
+    }
+    case "clear":
+      return { items: {}, updatedAt: Date.now() };
+    default:
+      return state;
+  }
+}
+var initial = { items: {}, updatedAt: 0 };
+function CartProvider({ children }) {
+  const [state, dispatch] = (0, import_react2.useReducer)(reducer, initial);
+  const [open, setOpen] = (0, import_react2.useState)(false);
+  (0, import_react2.useEffect)(() => {
+    try {
+      const raw = localStorage.getItem("le_cart");
+      if (raw) dispatch({ type: "init", payload: JSON.parse(raw) });
+    } catch (e) {
+    }
+  }, []);
+  (0, import_react2.useEffect)(() => {
+    try {
+      localStorage.setItem("le_cart", JSON.stringify(state));
+    } catch (e) {
+    }
+  }, [state]);
+  const add = (0, import_react2.useCallback)((payload) => dispatch({ type: "add", payload }), []);
+  const remove = (0, import_react2.useCallback)((key) => dispatch({ type: "remove", key }), []);
+  const updateQty = (0, import_react2.useCallback)((key, qty) => dispatch({ type: "updateQty", key, qty }), []);
+  const clear = (0, import_react2.useCallback)(() => dispatch({ type: "clear" }), []);
+  const openCart = (0, import_react2.useCallback)(() => setOpen(true), []);
+  const closeCart = (0, import_react2.useCallback)(() => setOpen(false), []);
+  const itemsArr = (0, import_react2.useMemo)(() => Object.values(state.items || {}), [state.items]);
+  const totalQty = (0, import_react2.useMemo)(() => itemsArr.reduce((s, i) => s + (i.qty || 0), 0), [itemsArr]);
+  const subtotal = (0, import_react2.useMemo)(() => itemsArr.reduce((s, i) => s + i.unitPrice * i.qty, 0), [itemsArr]);
+  const value = (0, import_react2.useMemo)(() => ({
+    items: itemsArr,
+    map: state.items,
+    totalQty,
+    add,
+    remove,
+    updateQty,
+    clear,
+    subtotal,
+    open,
+    openCart,
+    closeCart
+  }), [itemsArr, state.items, totalQty, add, remove, updateQty, clear, subtotal, open, openCart, closeCart]);
+  return /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(CartContext.Provider, { value, children });
+}
+function useCart() {
+  const ctx = (0, import_react2.useContext)(CartContext);
+  if (!ctx) throw new Error("useCart must be used within CartProvider");
+  return ctx;
+}
+
+// src/components/seo/DefaultSeo.jsx
+var import_react3 = __toESM(require("react"));
+var import_react_helmet_async = __toESM(require_lib());
+var import_react_router_dom2 = require("react-router-dom");
+
+// src/config/siteMetadata.js
+var SITE_NAME = "Local Effort Food Co.";
+var SITE_URL = "https://localeffortfood.com";
+var DEFAULT_DESCRIPTION = "Local Effort Food Co. is a Minneapolis personal chef team offering in-home dinners, meal prep Minneapolis plans, and small-event catering built around Minnesota-grown ingredients.";
+var DEFAULT_KEYWORDS = [
+  "personal chef",
+  "Twin Cities catering",
+  "personal chef Minneapolis",
+  "meal prep Minneapolis",
+  "meal plan Minneapolis",
+  "how much does a personal chef cost",
+  "private dining",
+  "farm to table",
+  "Local Effort Food Co."
+];
+var CONTACT_EMAIL = "yum@localeffortfood.com";
+var SOCIAL_LINKS = [
+  "https://www.instagram.com/localeffortfood",
+  "https://www.facebook.com/localeffortfood",
+  "https://www.tiktok.com/@localeffort",
+  "https://www.thumbtack.com/mn/saint-paul/personal-chefs/weston-smith/service/429294230165643268"
+];
+
+// src/config/routes.js
+var PUBLIC_ROUTES = [
+  {
+    path: "/",
+    title: "Local Effort Food Co. \u2014 Minneapolis Personal Chef",
+    description: "Local Effort Food Co. is a Minneapolis personal chef team offering in-home dinners, meal prep plans, and small-event catering built around Minnesota-grown ingredients.",
+    prerender: true
+  },
+  {
+    path: "/releases",
+    title: "Press & Releases \u2014 Local Effort Food Co.",
+    description: "News, press coverage, and updates from Local Effort Food Co.",
+    prerender: true
+  },
+  {
+    path: "/sale",
+    title: "Shop \u2014 Local Effort Food Co.",
+    description: "Order from Local Effort Food Co. Fresh, local, Minneapolis-made.",
+    prerender: true
+  },
+  {
+    path: "/weekly",
+    title: "Weekly Updates \u2014 Local Effort Food Co.",
+    description: "Weekly menus, stories, and updates from the Local Effort kitchen.",
+    prerender: true
+  },
+  {
+    path: "/happymonday",
+    title: "For Happy Monday \u2014 Local Effort Food Co.",
+    description: "Local Effort menu and ordering for Happy Monday.",
+    prerender: true
+  },
+  {
+    path: "/pizza-party",
+    title: "Pizza Party \u2014 Local Effort Food Co.",
+    description: "Book a wood-fired pizza party with Local Effort in Minneapolis-St. Paul.",
+    prerender: true
+  },
+  {
+    path: "/winterdinner",
+    title: "Winter Dinner \u2014 Local Effort Food Co.",
+    description: "Seasonal winter dinner experience from Local Effort.",
+    prerender: false
+  },
+  {
+    path: "/winterpizza",
+    title: "Winter Pizza \u2014 Local Effort Food Co.",
+    description: "Winter pizza pop-up from Local Effort.",
+    prerender: false
+  },
+  {
+    path: "/february",
+    title: "February Menu \u2014 Local Effort Food Co.",
+    description: "February seasonal menu from Local Effort Food Co.",
+    prerender: false
+  },
+  {
+    path: "/psyche",
+    title: "Psyche \u2014 Local Effort Food Co.",
+    description: "Psyche experience by Local Effort Food Co.",
+    prerender: false
+  },
+  {
+    path: "/januarymeals",
+    title: "January Meals \u2014 Local Effort Food Co.",
+    description: "January meal prep offerings from Local Effort.",
+    prerender: false
+  },
+  {
+    path: "/calendar",
+    title: "Calendar \u2014 Local Effort Food Co.",
+    description: "Event and booking calendar for Local Effort Food Co.",
+    prerender: false
+  }
+];
+var INTERNAL_ROUTES = [
+  "/auth",
+  "/inbox",
+  "/campaigns",
+  "/admin/",
+  "/weeklydemo",
+  "/weekly-order",
+  "/catherine-schedule",
+  "/partners/",
+  "/schedule/"
+];
+
+// src/data/cloudinaryContent.js
+var import_meta = {};
+var cloudinaryConfig = {
+  cloudName: typeof import_meta !== "undefined" && import_meta.env?.VITE_CLOUDINARY_CLOUD_NAME || "dokyhfvyd"
+};
+var heroPublicId = "vjuesai2mxfavpq9d2df";
+var heroVersion = "1759456148";
+var heroFallbackSrc = "/gallery/IMG_3145.jpg";
+
+// src/components/seo/DefaultSeo.jsx
+var import_jsx_runtime3 = require("react/jsx-runtime");
+var buildOgImageUrl = () => {
+  const cloudName = cloudinaryConfig?.cloudName;
+  if (cloudName && heroPublicId) {
+    const versionSegment = heroVersion ? `/v${heroVersion}` : "";
+    return `https://res.cloudinary.com/${cloudName}/image/upload/f_auto,q_auto,w_1200${versionSegment}/${heroPublicId}.jpg`;
+  }
+  if (heroFallbackSrc) {
+    return `${SITE_URL}${heroFallbackSrc}`;
+  }
+  return `${SITE_URL}/gallery/logo.png`;
+};
+var DefaultSeo = () => {
+  const location = (0, import_react_router_dom2.useLocation)();
+  const routeMeta = PUBLIC_ROUTES.find((r) => r.path === location.pathname);
+  const pageTitle = routeMeta?.title || SITE_NAME;
+  const pageDescription = routeMeta?.description || DEFAULT_DESCRIPTION;
+  const shouldNoindex = INTERNAL_ROUTES.some((p) => location.pathname === p || location.pathname.startsWith(p));
+  const canonicalUrl = (0, import_react3.useMemo)(() => {
+    const path = location.pathname || "/";
+    const search = location.search || "";
+    const normalized = path === "/" ? "/" : path;
+    try {
+      const url = new URL(SITE_URL);
+      url.pathname = normalized;
+      url.search = search;
+      if (normalized !== "/" && url.pathname.endsWith("/")) {
+        url.pathname = url.pathname.replace(/\/+$/, "");
+      }
+      return url.toString();
+    } catch (err) {
+      return `${SITE_URL}${normalized}${search}`;
+    }
+  }, [location.pathname, location.search]);
+  const ogImageUrl = (0, import_react3.useMemo)(() => buildOgImageUrl(), []);
+  const structuredData = (0, import_react3.useMemo)(() => {
+    const organizationId = `${SITE_URL}#organization`;
+    const websiteId = `${SITE_URL}#website`;
+    return [
+      {
+        "@context": "https://schema.org",
+        "@type": "Organization",
+        "@id": organizationId,
+        name: SITE_NAME,
+        url: SITE_URL,
+        description: DEFAULT_DESCRIPTION,
+        email: CONTACT_EMAIL,
+        sameAs: SOCIAL_LINKS,
+        contactPoint: [
+          {
+            "@type": "ContactPoint",
+            contactType: "customer service",
+            email: CONTACT_EMAIL,
+            areaServed: ["US"],
+            availableLanguage: ["English"]
+          }
+        ],
+        logo: `${SITE_URL}/gallery/logo.png`
+      },
+      {
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        "@id": websiteId,
+        name: SITE_NAME,
+        url: SITE_URL,
+        description: DEFAULT_DESCRIPTION,
+        inLanguage: "en-US",
+        publisher: { "@id": organizationId },
+        potentialAction: [
+          {
+            "@type": "SearchAction",
+            target: `${SITE_URL}/api/support/search?q={query}`,
+            "query-input": "required name=query"
+          },
+          {
+            "@type": "SearchAction",
+            target: `${SITE_URL}/api/public/site?q={query}`,
+            "query-input": "optional name=query"
+          }
+        ]
+      },
+      {
+        "@context": "https://schema.org",
+        "@type": "WebPage",
+        "@id": `${canonicalUrl}#webpage`,
+        url: canonicalUrl,
+        name: pageTitle,
+        isPartOf: { "@id": websiteId },
+        inLanguage: "en-US",
+        description: pageDescription
+      }
+    ];
+  }, [canonicalUrl, pageTitle, pageDescription]);
+  return /* @__PURE__ */ (0, import_jsx_runtime3.jsxs)(import_react_helmet_async.Helmet, { children: [
+    /* @__PURE__ */ (0, import_jsx_runtime3.jsx)("title", { children: pageTitle }),
+    /* @__PURE__ */ (0, import_jsx_runtime3.jsx)("meta", { name: "description", content: pageDescription }),
+    /* @__PURE__ */ (0, import_jsx_runtime3.jsx)("meta", { name: "keywords", content: DEFAULT_KEYWORDS.join(", ") }),
+    /* @__PURE__ */ (0, import_jsx_runtime3.jsx)("meta", { property: "og:site_name", content: SITE_NAME }),
+    /* @__PURE__ */ (0, import_jsx_runtime3.jsx)("meta", { property: "og:type", content: "website" }),
+    /* @__PURE__ */ (0, import_jsx_runtime3.jsx)("meta", { property: "og:title", content: pageTitle }),
+    /* @__PURE__ */ (0, import_jsx_runtime3.jsx)("meta", { property: "og:description", content: pageDescription }),
+    /* @__PURE__ */ (0, import_jsx_runtime3.jsx)("meta", { property: "og:url", content: canonicalUrl }),
+    /* @__PURE__ */ (0, import_jsx_runtime3.jsx)("meta", { property: "og:image", content: ogImageUrl }),
+    /* @__PURE__ */ (0, import_jsx_runtime3.jsx)("meta", { property: "og:locale", content: "en_US" }),
+    /* @__PURE__ */ (0, import_jsx_runtime3.jsx)("meta", { property: "og:see_also", content: `${SITE_URL}/ai/manifest.json` }),
+    /* @__PURE__ */ (0, import_jsx_runtime3.jsx)("meta", { name: "twitter:card", content: "summary_large_image" }),
+    /* @__PURE__ */ (0, import_jsx_runtime3.jsx)("meta", { name: "twitter:title", content: pageTitle }),
+    /* @__PURE__ */ (0, import_jsx_runtime3.jsx)("meta", { name: "twitter:description", content: pageDescription }),
+    /* @__PURE__ */ (0, import_jsx_runtime3.jsx)("meta", { name: "twitter:image", content: ogImageUrl }),
+    /* @__PURE__ */ (0, import_jsx_runtime3.jsx)("meta", { name: "twitter:site", content: "@localeffortfood" }),
+    /* @__PURE__ */ (0, import_jsx_runtime3.jsx)(
+      "meta",
+      {
+        name: "robots",
+        content: shouldNoindex ? "noindex, nofollow" : "index,follow,max-snippet:-1,max-image-preview:large,max-video-preview:-1"
+      }
+    ),
+    /* @__PURE__ */ (0, import_jsx_runtime3.jsx)("link", { rel: "canonical", href: canonicalUrl }),
+    /* @__PURE__ */ (0, import_jsx_runtime3.jsx)("link", { rel: "alternate", type: "text/plain", href: `${SITE_URL}/ai.txt` }),
+    /* @__PURE__ */ (0, import_jsx_runtime3.jsx)("link", { rel: "alternate", type: "application/json", href: `${SITE_URL}/ai/manifest.json` }),
+    /* @__PURE__ */ (0, import_jsx_runtime3.jsx)("script", { type: "application/ld+json", children: JSON.stringify(structuredData) })
+  ] });
+};
+var DefaultSeo_default = DefaultSeo;
+
 // src/pages/FullPageDemoPage.jsx
-var import_react11 = __toESM(require("react"));
+var import_react13 = __toESM(require("react"));
 var import_framer_motion3 = require("framer-motion");
 var import_core = __toESM(require_dist3());
 var import_sortable = __toESM(require_dist4());
 var import_utilities = __toESM(require_dist());
 
 // src/components/fullpage/FullPageContainer.jsx
-var import_react3 = __toESM(require("react"));
-var import_react_router_dom2 = require("react-router-dom");
+var import_react5 = __toESM(require("react"));
+var import_react_router_dom3 = require("react-router-dom");
 
 // src/hooks/useFullPageScroll.js
-var import_react2 = require("react");
+var import_react4 = require("react");
 var useFullPageScroll = (sectionRefs, enableKeyboard = true, scrollDirection = "vertical") => {
-  const [activeSection, setActiveSection] = (0, import_react2.useState)(0);
-  const [moveDirection, setMoveDirection] = (0, import_react2.useState)(0);
-  const lastScrollPos = (0, import_react2.useRef)(0);
-  const scrollToSection = (0, import_react2.useCallback)((index) => {
+  const [activeSection, setActiveSection] = (0, import_react4.useState)(0);
+  const [moveDirection, setMoveDirection] = (0, import_react4.useState)(0);
+  const lastScrollPos = (0, import_react4.useRef)(0);
+  const scrollToSection = (0, import_react4.useCallback)((index) => {
     if (index < 0 || index >= sectionRefs.length) return;
     const section = sectionRefs[index]?.current;
     if (section) {
@@ -4300,7 +4891,7 @@ var useFullPageScroll = (sectionRefs, enableKeyboard = true, scrollDirection = "
       setMoveDirection(index > activeSection ? 1 : -1);
     }
   }, [sectionRefs, activeSection, scrollDirection]);
-  (0, import_react2.useEffect)(() => {
+  (0, import_react4.useEffect)(() => {
     const options = {
       root: null,
       rootMargin: "0px",
@@ -4335,7 +4926,7 @@ var useFullPageScroll = (sectionRefs, enableKeyboard = true, scrollDirection = "
       });
     };
   }, [sectionRefs, activeSection, scrollDirection]);
-  (0, import_react2.useEffect)(() => {
+  (0, import_react4.useEffect)(() => {
     if (!enableKeyboard) return;
     const handleKeyDown = (e) => {
       if (scrollDirection === "horizontal") {
@@ -4397,7 +4988,7 @@ var useFullPageScroll = (sectionRefs, enableKeyboard = true, scrollDirection = "
 };
 
 // src/components/fullpage/FullPageContainer.jsx
-var import_jsx_runtime2 = require("react/jsx-runtime");
+var import_jsx_runtime4 = require("react/jsx-runtime");
 var FullPageContainer = ({
   pages,
   enableKeyboard = true,
@@ -4405,27 +4996,27 @@ var FullPageContainer = ({
   onPageChange,
   children
 }) => {
-  const location = (0, import_react_router_dom2.useLocation)();
-  const containerRef = (0, import_react3.useRef)(null);
-  const pageRefs = (0, import_react3.useRef)(
-    pages.map(() => import_react3.default.createRef())
+  const location = (0, import_react_router_dom3.useLocation)();
+  const containerRef = (0, import_react5.useRef)(null);
+  const pageRefs = (0, import_react5.useRef)(
+    pages.map(() => import_react5.default.createRef())
   );
   const { activeSection: activePage, scrollToSection: scrollToPage } = useFullPageScroll(
     pageRefs.current,
     enableKeyboard,
     "horizontal"
   );
-  (0, import_react3.useEffect)(() => {
+  (0, import_react5.useEffect)(() => {
     if (window) {
       window.scrollToPage = scrollToPage;
     }
   }, [scrollToPage]);
-  (0, import_react3.useEffect)(() => {
+  (0, import_react5.useEffect)(() => {
     if (onPageChange) {
       onPageChange(activePage);
     }
   }, [activePage, onPageChange]);
-  (0, import_react3.useEffect)(() => {
+  (0, import_react5.useEffect)(() => {
     if (location.hash) {
       const id = location.hash.replace("#", "");
       const pageIndex = pages.findIndex((page) => page.id === id);
@@ -4436,14 +5027,14 @@ var FullPageContainer = ({
       }
     }
   }, [location.hash, pages, scrollToPage]);
-  const childrenWithRefs = import_react3.Children.map(children, (child, index) => {
+  const childrenWithRefs = import_react5.Children.map(children, (child, index) => {
     if (!child) return null;
-    return (0, import_react3.cloneElement)(child, {
+    return (0, import_react5.cloneElement)(child, {
       ref: pageRefs.current[index],
       id: pages[index]?.id || child.props.id
     });
   });
-  return /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(
+  return /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(
     "div",
     {
       ref: containerRef,
@@ -4458,10 +5049,15 @@ var FullPageContainer = ({
 var FullPageContainer_default = FullPageContainer;
 
 // src/components/fullpage/FullPageSection.jsx
-var import_react4 = __toESM(require("react"));
+var import_react6 = __toESM(require("react"));
 var import_framer_motion2 = require("framer-motion");
 
 // src/utils/animations.js
+var fadeInUp = {
+  initial: { opacity: 0, y: 30 },
+  animate: { opacity: 1, y: 0 },
+  transition: { duration: 0.6, ease: [0.4, 0, 0.2, 1] }
+};
 var fullPageSectionReveal = {
   hidden: { opacity: 0, y: 60 },
   visible: {
@@ -4498,8 +5094,8 @@ var fullPageStagger = {
 };
 
 // src/components/fullpage/FullPageSection.jsx
-var import_jsx_runtime3 = require("react/jsx-runtime");
-var FullPageSection = (0, import_react4.forwardRef)(
+var import_jsx_runtime5 = require("react/jsx-runtime");
+var FullPageSection = (0, import_react6.forwardRef)(
   ({
     id,
     className = "",
@@ -4515,7 +5111,7 @@ var FullPageSection = (0, import_react4.forwardRef)(
       stagger: fullPageStagger
     };
     const selectedVariant = animationVariants[animation] || fullPageSectionReveal;
-    return /* @__PURE__ */ (0, import_jsx_runtime3.jsx)(
+    return /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(
       import_framer_motion2.motion.div,
       {
         ref,
@@ -4539,27 +5135,27 @@ FullPageSection.displayName = "FullPageSection";
 var FullPageSection_default = FullPageSection;
 
 // src/components/common/cloudinaryImage.jsx
-var import_react5 = __toESM(require("react"));
-var import_react6 = require("@cloudinary/react");
+var import_react7 = __toESM(require("react"));
+var import_react8 = require("@cloudinary/react");
 var import_url_gen = require("@cloudinary/url-gen");
 var import_resize = require("@cloudinary/url-gen/actions/resize");
 var import_gravity = require("@cloudinary/url-gen/qualifiers/gravity");
 var import_quality = require("@cloudinary/url-gen/qualifiers/quality");
 var import_format = require("@cloudinary/url-gen/qualifiers/format");
 var import_delivery = require("@cloudinary/url-gen/actions/delivery");
-var import_react7 = require("react");
-var import_jsx_runtime4 = require("react/jsx-runtime");
-var import_meta = {};
-var CLOUD_NAME = import_meta.env?.VITE_CLOUDINARY_CLOUD_NAME || typeof process !== "undefined" && process?.env?.CLOUDINARY_CLOUD_NAME || "dokyhfvyd";
+var import_react9 = require("react");
+var import_jsx_runtime6 = require("react/jsx-runtime");
+var import_meta2 = {};
+var CLOUD_NAME = import_meta2.env?.VITE_CLOUDINARY_CLOUD_NAME || typeof process !== "undefined" && process?.env?.CLOUDINARY_CLOUD_NAME || "dokyhfvyd";
 var cld = new import_url_gen.Cloudinary({
   cloud: {
     cloudName: CLOUD_NAME
   }
 });
 var CloudinaryImage = ({ publicId, alt, width, height, className, containerClassName, imgClassName, containerStyle, disableLazy = false, fallbackSrc, resizeMode = "fill", placeholderMode = "blur", sizes, responsiveSteps = [480, 768, 1024, 1366, 1600, 1920], eager = false, version }) => {
-  const [loaded, setLoaded] = (0, import_react7.useState)(false);
-  const [error, setError] = (0, import_react7.useState)(false);
-  const imgRef = (0, import_react7.useRef)(null);
+  const [loaded, setLoaded] = (0, import_react9.useState)(false);
+  const [error, setError] = (0, import_react9.useState)(false);
+  const imgRef = (0, import_react9.useRef)(null);
   if (!publicId) {
     const placeholderStyle = {
       width: width ? `${width}px` : "100%",
@@ -4568,7 +5164,7 @@ var CloudinaryImage = ({ publicId, alt, width, height, className, containerClass
       // A light gray placeholder
       display: "inline-block"
     };
-    return /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("span", { style: placeholderStyle, className });
+    return /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("span", { style: placeholderStyle, className });
   }
   const myImage = cld.image(publicId);
   if (version) {
@@ -4592,7 +5188,7 @@ var CloudinaryImage = ({ publicId, alt, width, height, className, containerClass
       myImage.resize((0, import_resize.fill)(width, height).gravity((0, import_gravity.autoGravity)()));
     }
   }
-  (0, import_react7.useEffect)(() => {
+  (0, import_react9.useEffect)(() => {
     let mounted = true;
     let el = null;
     let pollTimer = null;
@@ -4633,7 +5229,7 @@ var CloudinaryImage = ({ publicId, alt, width, height, className, containerClass
     };
   }, [publicId, version]);
   if (error && fallbackSrc) {
-    return /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(
+    return /* @__PURE__ */ (0, import_jsx_runtime6.jsx)(
       "img",
       {
         src: fallbackSrc,
@@ -4659,14 +5255,14 @@ var CloudinaryImage = ({ publicId, alt, width, height, className, containerClass
     }
     return s;
   })();
-  return /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(
+  return /* @__PURE__ */ (0, import_jsx_runtime6.jsx)(
     "div",
     {
       ref: imgRef,
       className: `${containerClassName || className || ""} relative overflow-hidden w-full`,
       style: { ...baseStyle, ...containerStyle || {} },
-      children: /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(
-        import_react6.AdvancedImage,
+      children: /* @__PURE__ */ (0, import_jsx_runtime6.jsx)(
+        import_react8.AdvancedImage,
         {
           cldImg: myImage,
           alt,
@@ -4675,9 +5271,9 @@ var CloudinaryImage = ({ publicId, alt, width, height, className, containerClass
           loading: eager ? "eager" : "lazy",
           style: imgStyle,
           plugins: (() => {
-            const base = [(0, import_react6.responsive)({ steps: responsiveSteps })];
+            const base = [(0, import_react8.responsive)({ steps: responsiveSteps })];
             const isLazy = !eager && !disableLazy;
-            return isLazy ? [...base, (0, import_react6.lazyload)()] : base;
+            return isLazy ? [...base, (0, import_react8.lazyload)()] : base;
           })()
         }
       )
@@ -4687,14 +5283,14 @@ var CloudinaryImage = ({ publicId, alt, width, height, className, containerClass
 var cloudinaryImage_default = CloudinaryImage;
 
 // src/components/common/PhotoGrid.jsx
-var import_react8 = __toESM(require("react"));
-var import_jsx_runtime5 = require("react/jsx-runtime");
+var import_react10 = __toESM(require("react"));
+var import_jsx_runtime7 = require("react/jsx-runtime");
 function PhotoGrid({ tags, title, perPage = 24, layout, masonry = false, className = "", ...rest }) {
-  const tagList = (0, import_react8.useMemo)(() => Array.isArray(tags) ? tags.filter(Boolean) : [tags].filter(Boolean), [tags]);
-  const [images, setImages] = (0, import_react8.useState)([]);
-  const [loading, setLoading] = (0, import_react8.useState)(false);
-  const [error, setError] = (0, import_react8.useState)(null);
-  (0, import_react8.useEffect)(() => {
+  const tagList = (0, import_react10.useMemo)(() => Array.isArray(tags) ? tags.filter(Boolean) : [tags].filter(Boolean), [tags]);
+  const [images, setImages] = (0, import_react10.useState)([]);
+  const [loading, setLoading] = (0, import_react10.useState)(false);
+  const [error, setError] = (0, import_react10.useState)(null);
+  (0, import_react10.useEffect)(() => {
     let abort = false;
     const controller = new AbortController();
     (async () => {
@@ -4736,16 +5332,16 @@ function PhotoGrid({ tags, title, perPage = 24, layout, masonry = false, classNa
   }, [tagList.join(","), perPage]);
   if (!tagList.length) return null;
   const useMasonry = masonry || String(layout || "").toLowerCase() === "masonry";
-  return /* @__PURE__ */ (0, import_jsx_runtime5.jsxs)("section", { className: ["space-y-4", className].filter(Boolean).join(" "), ...rest, children: [
-    title ? /* @__PURE__ */ (0, import_jsx_runtime5.jsx)("h3", { className: "text-2xl font-bold", children: title }) : null,
-    loading ? /* @__PURE__ */ (0, import_jsx_runtime5.jsx)("p", { children: "Loading photos\u2026" }) : error ? /* @__PURE__ */ (0, import_jsx_runtime5.jsxs)("div", { className: "text-red-700 bg-red-50 border border-red-200 p-3 rounded", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime5.jsx)("p", { className: "font-semibold", children: error }),
-      /* @__PURE__ */ (0, import_jsx_runtime5.jsx)("p", { className: "text-sm mt-1", children: "If this persists, check Cloudinary env vars and the serverless function logs." })
-    ] }) : images.length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime5.jsx)("p", { className: "text-sm text-gray-600", children: "No photos found." }) : useMasonry ? /* @__PURE__ */ (0, import_jsx_runtime5.jsx)("div", { className: "columns-2 md:columns-3 lg:columns-4 gap-4 [column-fill:_balance]", children: images.map((img, idx) => /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(
+  return /* @__PURE__ */ (0, import_jsx_runtime7.jsxs)("section", { className: ["space-y-4", className].filter(Boolean).join(" "), ...rest, children: [
+    title ? /* @__PURE__ */ (0, import_jsx_runtime7.jsx)("h3", { className: "text-2xl font-bold", children: title }) : null,
+    loading ? /* @__PURE__ */ (0, import_jsx_runtime7.jsx)("p", { children: "Loading photos\u2026" }) : error ? /* @__PURE__ */ (0, import_jsx_runtime7.jsxs)("div", { className: "text-red-700 bg-red-50 border border-red-200 p-3 rounded", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime7.jsx)("p", { className: "font-semibold", children: error }),
+      /* @__PURE__ */ (0, import_jsx_runtime7.jsx)("p", { className: "text-sm mt-1", children: "If this persists, check Cloudinary env vars and the serverless function logs." })
+    ] }) : images.length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime7.jsx)("p", { className: "text-sm text-gray-600", children: "No photos found." }) : useMasonry ? /* @__PURE__ */ (0, import_jsx_runtime7.jsx)("div", { className: "columns-2 md:columns-3 lg:columns-4 gap-4 [column-fill:_balance]", children: images.map((img, idx) => /* @__PURE__ */ (0, import_jsx_runtime7.jsx)(
       "div",
       {
         className: "mb-4 break-inside-avoid border p-2 bg-white rounded-lg overflow-hidden",
-        children: img.thumbnail_url ? /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(
+        children: img.thumbnail_url ? /* @__PURE__ */ (0, import_jsx_runtime7.jsx)(
           "img",
           {
             src: img.thumbnail_url,
@@ -4753,7 +5349,7 @@ function PhotoGrid({ tags, title, perPage = 24, layout, masonry = false, classNa
             className: "rounded-lg w-full h-auto",
             loading: "lazy"
           }
-        ) : /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(
+        ) : /* @__PURE__ */ (0, import_jsx_runtime7.jsx)(
           cloudinaryImage_default,
           {
             publicId: img.public_id || img.publicId,
@@ -4764,7 +5360,7 @@ function PhotoGrid({ tags, title, perPage = 24, layout, masonry = false, classNa
         )
       },
       (img.asset_id || img.public_id || idx) + ":" + idx
-    )) }) : /* @__PURE__ */ (0, import_jsx_runtime5.jsx)("div", { className: "grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4", children: images.map((img, idx) => /* @__PURE__ */ (0, import_jsx_runtime5.jsx)("div", { className: "border p-2 bg-white rounded-lg overflow-hidden", children: img.thumbnail_url ? /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(
+    )) }) : /* @__PURE__ */ (0, import_jsx_runtime7.jsx)("div", { className: "grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4", children: images.map((img, idx) => /* @__PURE__ */ (0, import_jsx_runtime7.jsx)("div", { className: "border p-2 bg-white rounded-lg overflow-hidden", children: img.thumbnail_url ? /* @__PURE__ */ (0, import_jsx_runtime7.jsx)(
       "img",
       {
         src: img.thumbnail_url,
@@ -4772,7 +5368,7 @@ function PhotoGrid({ tags, title, perPage = 24, layout, masonry = false, classNa
         className: "rounded-lg object-cover w-full h-full aspect-square",
         loading: "lazy"
       }
-    ) : /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(
+    ) : /* @__PURE__ */ (0, import_jsx_runtime7.jsx)(
       cloudinaryImage_default,
       {
         publicId: img.public_id || img.publicId,
@@ -4786,23 +5382,23 @@ function PhotoGrid({ tags, title, perPage = 24, layout, masonry = false, classNa
 }
 
 // src/components/ui/SectionHeader.jsx
-var import_react9 = __toESM(require("react"));
-var import_jsx_runtime6 = require("react/jsx-runtime");
+var import_react11 = __toESM(require("react"));
+var import_jsx_runtime8 = require("react/jsx-runtime");
 function SectionHeader({ overline, title, className = "" }) {
-  return /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("div", { className: ["space-y-2", className].filter(Boolean).join(" "), children: [
-    overline ? /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("span", { className: "heading-overline", children: overline }) : null,
-    title ? /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("h2", { className: "heading-xl heading-balance", children: title }) : null
+  return /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("div", { className: ["space-y-2", className].filter(Boolean).join(" "), children: [
+    overline ? /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("span", { className: "heading-overline", children: overline }) : null,
+    title ? /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("h2", { className: "heading-xl heading-balance", children: title }) : null
   ] });
 }
 
 // src/components/forms/AskChefForm.jsx
-var import_react10 = __toESM(require("react"));
+var import_react12 = __toESM(require("react"));
 
 // src/components/ui/dialog.jsx
-var React24 = __toESM(require("react"));
+var React26 = __toESM(require("react"));
 
 // node_modules/.pnpm/@radix-ui+react-dialog@1.1.15_@types+react-dom@18.3.1_@types+react@19.2.0_react-dom@18.2.0_react@18.2.0__react@18.2.0/node_modules/@radix-ui/react-dialog/dist/index.mjs
-var React21 = __toESM(require("react"), 1);
+var React25 = __toESM(require("react"), 1);
 
 // node_modules/.pnpm/@radix-ui+primitive@1.1.3/node_modules/@radix-ui/primitive/dist/index.mjs
 var canUseDOM = !!(typeof window !== "undefined" && window.document && window.document.createElement);
@@ -4816,7 +5412,7 @@ function composeEventHandlers(originalEventHandler, ourEventHandler, { checkForD
 }
 
 // node_modules/.pnpm/@radix-ui+react-compose-refs@1.1.2_@types+react@19.2.0_react@18.2.0/node_modules/@radix-ui/react-compose-refs/dist/index.mjs
-var React7 = __toESM(require("react"), 1);
+var React9 = __toESM(require("react"), 1);
 function setRef(ref, value) {
   if (typeof ref === "function") {
     return ref(value);
@@ -4849,22 +5445,22 @@ function composeRefs(...refs) {
   };
 }
 function useComposedRefs(...refs) {
-  return React7.useCallback(composeRefs(...refs), refs);
+  return React9.useCallback(composeRefs(...refs), refs);
 }
 
 // node_modules/.pnpm/@radix-ui+react-context@1.1.2_@types+react@19.2.0_react@18.2.0/node_modules/@radix-ui/react-context/dist/index.mjs
-var React8 = __toESM(require("react"), 1);
-var import_jsx_runtime7 = require("react/jsx-runtime");
-function createContext2(rootComponentName, defaultContext) {
-  const Context = React8.createContext(defaultContext);
+var React10 = __toESM(require("react"), 1);
+var import_jsx_runtime9 = require("react/jsx-runtime");
+function createContext22(rootComponentName, defaultContext) {
+  const Context = React10.createContext(defaultContext);
   const Provider = (props) => {
     const { children, ...context } = props;
-    const value = React8.useMemo(() => context, Object.values(context));
-    return /* @__PURE__ */ (0, import_jsx_runtime7.jsx)(Context.Provider, { value, children });
+    const value = React10.useMemo(() => context, Object.values(context));
+    return /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(Context.Provider, { value, children });
   };
   Provider.displayName = rootComponentName + "Provider";
   function useContext22(consumerName) {
-    const context = React8.useContext(Context);
+    const context = React10.useContext(Context);
     if (context) return context;
     if (defaultContext !== void 0) return defaultContext;
     throw new Error(`\`${consumerName}\` must be used within \`${rootComponentName}\``);
@@ -4874,19 +5470,19 @@ function createContext2(rootComponentName, defaultContext) {
 function createContextScope(scopeName, createContextScopeDeps = []) {
   let defaultContexts = [];
   function createContext32(rootComponentName, defaultContext) {
-    const BaseContext = React8.createContext(defaultContext);
+    const BaseContext = React10.createContext(defaultContext);
     const index = defaultContexts.length;
     defaultContexts = [...defaultContexts, defaultContext];
     const Provider = (props) => {
       const { scope, children, ...context } = props;
       const Context = scope?.[scopeName]?.[index] || BaseContext;
-      const value = React8.useMemo(() => context, Object.values(context));
-      return /* @__PURE__ */ (0, import_jsx_runtime7.jsx)(Context.Provider, { value, children });
+      const value = React10.useMemo(() => context, Object.values(context));
+      return /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(Context.Provider, { value, children });
     };
     Provider.displayName = rootComponentName + "Provider";
     function useContext22(consumerName, scope) {
       const Context = scope?.[scopeName]?.[index] || BaseContext;
-      const context = React8.useContext(Context);
+      const context = React10.useContext(Context);
       if (context) return context;
       if (defaultContext !== void 0) return defaultContext;
       throw new Error(`\`${consumerName}\` must be used within \`${rootComponentName}\``);
@@ -4895,11 +5491,11 @@ function createContextScope(scopeName, createContextScopeDeps = []) {
   }
   const createScope = () => {
     const scopeContexts = defaultContexts.map((defaultContext) => {
-      return React8.createContext(defaultContext);
+      return React10.createContext(defaultContext);
     });
     return function useScope(scope) {
       const contexts = scope?.[scopeName] || scopeContexts;
-      return React8.useMemo(
+      return React10.useMemo(
         () => ({ [`__scope${scopeName}`]: { ...scope, [scopeName]: contexts } }),
         [scope, contexts]
       );
@@ -4922,7 +5518,7 @@ function composeContextScopes(...scopes) {
         const currentScope = scopeProps[`__scope${scopeName}`];
         return { ...nextScopes2, ...currentScope };
       }, {});
-      return React8.useMemo(() => ({ [`__scope${baseScope.scopeName}`]: nextScopes }), [nextScopes]);
+      return React10.useMemo(() => ({ [`__scope${baseScope.scopeName}`]: nextScopes }), [nextScopes]);
     };
   };
   createScope.scopeName = baseScope.scopeName;
@@ -4930,18 +5526,18 @@ function composeContextScopes(...scopes) {
 }
 
 // node_modules/.pnpm/@radix-ui+react-id@1.1.1_@types+react@19.2.0_react@18.2.0/node_modules/@radix-ui/react-id/dist/index.mjs
-var React10 = __toESM(require("react"), 1);
+var React12 = __toESM(require("react"), 1);
 
 // node_modules/.pnpm/@radix-ui+react-use-layout-effect@1.1.1_@types+react@19.2.0_react@18.2.0/node_modules/@radix-ui/react-use-layout-effect/dist/index.mjs
-var React9 = __toESM(require("react"), 1);
-var useLayoutEffect2 = globalThis?.document ? React9.useLayoutEffect : () => {
+var React11 = __toESM(require("react"), 1);
+var useLayoutEffect2 = globalThis?.document ? React11.useLayoutEffect : () => {
 };
 
 // node_modules/.pnpm/@radix-ui+react-id@1.1.1_@types+react@19.2.0_react@18.2.0/node_modules/@radix-ui/react-id/dist/index.mjs
-var useReactId = React10[" useId ".trim().toString()] || (() => void 0);
+var useReactId = React12[" useId ".trim().toString()] || (() => void 0);
 var count = 0;
 function useId(deterministicId) {
-  const [id, setId] = React10.useState(useReactId());
+  const [id, setId] = React12.useState(useReactId());
   useLayoutEffect2(() => {
     if (!deterministicId) setId((reactId) => reactId ?? String(count++));
   }, [deterministicId]);
@@ -4949,9 +5545,9 @@ function useId(deterministicId) {
 }
 
 // node_modules/.pnpm/@radix-ui+react-use-controllable-state@1.2.2_@types+react@19.2.0_react@18.2.0/node_modules/@radix-ui/react-use-controllable-state/dist/index.mjs
-var React11 = __toESM(require("react"), 1);
+var React13 = __toESM(require("react"), 1);
 var React22 = __toESM(require("react"), 1);
-var useInsertionEffect = React11[" useInsertionEffect ".trim().toString()] || useLayoutEffect2;
+var useInsertionEffect = React13[" useInsertionEffect ".trim().toString()] || useLayoutEffect2;
 function useControllableState({
   prop,
   defaultProp,
@@ -4966,8 +5562,8 @@ function useControllableState({
   const isControlled = prop !== void 0;
   const value = isControlled ? prop : uncontrolledProp;
   if (true) {
-    const isControlledRef = React11.useRef(prop !== void 0);
-    React11.useEffect(() => {
+    const isControlledRef = React13.useRef(prop !== void 0);
+    React13.useEffect(() => {
       const wasControlled = isControlledRef.current;
       if (wasControlled !== isControlled) {
         const from = wasControlled ? "controlled" : "uncontrolled";
@@ -4979,7 +5575,7 @@ function useControllableState({
       isControlledRef.current = isControlled;
     }, [isControlled, caller]);
   }
-  const setValue = React11.useCallback(
+  const setValue = React13.useCallback(
     (nextValue) => {
       if (isControlled) {
         const value2 = isFunction(nextValue) ? nextValue(prop) : nextValue;
@@ -4998,13 +5594,13 @@ function useUncontrolledState({
   defaultProp,
   onChange
 }) {
-  const [value, setValue] = React11.useState(defaultProp);
-  const prevValueRef = React11.useRef(value);
-  const onChangeRef = React11.useRef(onChange);
+  const [value, setValue] = React13.useState(defaultProp);
+  const prevValueRef = React13.useRef(value);
+  const onChangeRef = React13.useRef(onChange);
   useInsertionEffect(() => {
     onChangeRef.current = onChange;
   }, [onChange]);
-  React11.useEffect(() => {
+  React13.useEffect(() => {
     if (prevValueRef.current !== value) {
       onChangeRef.current?.(value);
       prevValueRef.current = value;
@@ -5018,59 +5614,59 @@ function isFunction(value) {
 var SYNC_STATE = Symbol("RADIX:SYNC_STATE");
 
 // node_modules/.pnpm/@radix-ui+react-dismissable-layer@1.1.11_@types+react-dom@18.3.1_@types+react@19.2.0_react-do_6egxp5znpyk3c7yb7fm5vbccse/node_modules/@radix-ui/react-dismissable-layer/dist/index.mjs
-var React16 = __toESM(require("react"), 1);
+var React18 = __toESM(require("react"), 1);
 
 // node_modules/.pnpm/@radix-ui+react-primitive@2.1.3_@types+react-dom@18.3.1_@types+react@19.2.0_react-dom@18.2.0_react@18.2.0__react@18.2.0/node_modules/@radix-ui/react-primitive/dist/index.mjs
-var React13 = __toESM(require("react"), 1);
+var React15 = __toESM(require("react"), 1);
 var ReactDOM = __toESM(require("react-dom"), 1);
 
 // node_modules/.pnpm/@radix-ui+react-slot@1.2.3_@types+react@19.2.0_react@18.2.0/node_modules/@radix-ui/react-slot/dist/index.mjs
-var React12 = __toESM(require("react"), 1);
-var import_jsx_runtime8 = require("react/jsx-runtime");
+var React14 = __toESM(require("react"), 1);
+var import_jsx_runtime10 = require("react/jsx-runtime");
 // @__NO_SIDE_EFFECTS__
 function createSlot(ownerName) {
   const SlotClone = /* @__PURE__ */ createSlotClone(ownerName);
-  const Slot2 = React12.forwardRef((props, forwardedRef) => {
+  const Slot2 = React14.forwardRef((props, forwardedRef) => {
     const { children, ...slotProps } = props;
-    const childrenArray = React12.Children.toArray(children);
+    const childrenArray = React14.Children.toArray(children);
     const slottable = childrenArray.find(isSlottable);
     if (slottable) {
       const newElement = slottable.props.children;
       const newChildren = childrenArray.map((child) => {
         if (child === slottable) {
-          if (React12.Children.count(newElement) > 1) return React12.Children.only(null);
-          return React12.isValidElement(newElement) ? newElement.props.children : null;
+          if (React14.Children.count(newElement) > 1) return React14.Children.only(null);
+          return React14.isValidElement(newElement) ? newElement.props.children : null;
         } else {
           return child;
         }
       });
-      return /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(SlotClone, { ...slotProps, ref: forwardedRef, children: React12.isValidElement(newElement) ? React12.cloneElement(newElement, void 0, newChildren) : null });
+      return /* @__PURE__ */ (0, import_jsx_runtime10.jsx)(SlotClone, { ...slotProps, ref: forwardedRef, children: React14.isValidElement(newElement) ? React14.cloneElement(newElement, void 0, newChildren) : null });
     }
-    return /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(SlotClone, { ...slotProps, ref: forwardedRef, children });
+    return /* @__PURE__ */ (0, import_jsx_runtime10.jsx)(SlotClone, { ...slotProps, ref: forwardedRef, children });
   });
   Slot2.displayName = `${ownerName}.Slot`;
   return Slot2;
 }
 // @__NO_SIDE_EFFECTS__
 function createSlotClone(ownerName) {
-  const SlotClone = React12.forwardRef((props, forwardedRef) => {
+  const SlotClone = React14.forwardRef((props, forwardedRef) => {
     const { children, ...slotProps } = props;
-    if (React12.isValidElement(children)) {
+    if (React14.isValidElement(children)) {
       const childrenRef = getElementRef(children);
       const props2 = mergeProps(slotProps, children.props);
-      if (children.type !== React12.Fragment) {
+      if (children.type !== React14.Fragment) {
         props2.ref = forwardedRef ? composeRefs(forwardedRef, childrenRef) : childrenRef;
       }
-      return React12.cloneElement(children, props2);
+      return React14.cloneElement(children, props2);
     }
-    return React12.Children.count(children) > 1 ? React12.Children.only(null) : null;
+    return React14.Children.count(children) > 1 ? React14.Children.only(null) : null;
   });
   SlotClone.displayName = `${ownerName}.SlotClone`;
   return SlotClone;
 }
 var SLOTTABLE_IDENTIFIER = Symbol("radix.slottable");
 function isSlottable(child) {
-  return React12.isValidElement(child) && typeof child.type === "function" && "__radixId" in child.type && child.type.__radixId === SLOTTABLE_IDENTIFIER;
+  return React14.isValidElement(child) && typeof child.type === "function" && "__radixId" in child.type && child.type.__radixId === SLOTTABLE_IDENTIFIER;
 }
 function mergeProps(slotProps, childProps) {
   const overrideProps = { ...childProps };
@@ -5111,7 +5707,7 @@ function getElementRef(element) {
 }
 
 // node_modules/.pnpm/@radix-ui+react-primitive@2.1.3_@types+react-dom@18.3.1_@types+react@19.2.0_react-dom@18.2.0_react@18.2.0__react@18.2.0/node_modules/@radix-ui/react-primitive/dist/index.mjs
-var import_jsx_runtime9 = require("react/jsx-runtime");
+var import_jsx_runtime11 = require("react/jsx-runtime");
 var NODES = [
   "a",
   "button",
@@ -5133,13 +5729,13 @@ var NODES = [
 ];
 var Primitive = NODES.reduce((primitive, node) => {
   const Slot2 = createSlot(`Primitive.${node}`);
-  const Node2 = React13.forwardRef((props, forwardedRef) => {
+  const Node2 = React15.forwardRef((props, forwardedRef) => {
     const { asChild, ...primitiveProps } = props;
     const Comp = asChild ? Slot2 : node;
     if (typeof window !== "undefined") {
       window[Symbol.for("radix-ui")] = true;
     }
-    return /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(Comp, { ...primitiveProps, ref: forwardedRef });
+    return /* @__PURE__ */ (0, import_jsx_runtime11.jsx)(Comp, { ...primitiveProps, ref: forwardedRef });
   });
   Node2.displayName = `Primitive.${node}`;
   return { ...primitive, [node]: Node2 };
@@ -5149,20 +5745,20 @@ function dispatchDiscreteCustomEvent(target, event) {
 }
 
 // node_modules/.pnpm/@radix-ui+react-use-callback-ref@1.1.1_@types+react@19.2.0_react@18.2.0/node_modules/@radix-ui/react-use-callback-ref/dist/index.mjs
-var React14 = __toESM(require("react"), 1);
+var React16 = __toESM(require("react"), 1);
 function useCallbackRef(callback) {
-  const callbackRef = React14.useRef(callback);
-  React14.useEffect(() => {
+  const callbackRef = React16.useRef(callback);
+  React16.useEffect(() => {
     callbackRef.current = callback;
   });
-  return React14.useMemo(() => (...args) => callbackRef.current?.(...args), []);
+  return React16.useMemo(() => (...args) => callbackRef.current?.(...args), []);
 }
 
 // node_modules/.pnpm/@radix-ui+react-use-escape-keydown@1.1.1_@types+react@19.2.0_react@18.2.0/node_modules/@radix-ui/react-use-escape-keydown/dist/index.mjs
-var React15 = __toESM(require("react"), 1);
+var React17 = __toESM(require("react"), 1);
 function useEscapeKeydown(onEscapeKeyDownProp, ownerDocument = globalThis?.document) {
   const onEscapeKeyDown = useCallbackRef(onEscapeKeyDownProp);
-  React15.useEffect(() => {
+  React17.useEffect(() => {
     const handleKeyDown = (event) => {
       if (event.key === "Escape") {
         onEscapeKeyDown(event);
@@ -5174,18 +5770,18 @@ function useEscapeKeydown(onEscapeKeyDownProp, ownerDocument = globalThis?.docum
 }
 
 // node_modules/.pnpm/@radix-ui+react-dismissable-layer@1.1.11_@types+react-dom@18.3.1_@types+react@19.2.0_react-do_6egxp5znpyk3c7yb7fm5vbccse/node_modules/@radix-ui/react-dismissable-layer/dist/index.mjs
-var import_jsx_runtime10 = require("react/jsx-runtime");
+var import_jsx_runtime12 = require("react/jsx-runtime");
 var DISMISSABLE_LAYER_NAME = "DismissableLayer";
 var CONTEXT_UPDATE = "dismissableLayer.update";
 var POINTER_DOWN_OUTSIDE = "dismissableLayer.pointerDownOutside";
 var FOCUS_OUTSIDE = "dismissableLayer.focusOutside";
 var originalBodyPointerEvents;
-var DismissableLayerContext = React16.createContext({
+var DismissableLayerContext = React18.createContext({
   layers: /* @__PURE__ */ new Set(),
   layersWithOutsidePointerEventsDisabled: /* @__PURE__ */ new Set(),
   branches: /* @__PURE__ */ new Set()
 });
-var DismissableLayer = React16.forwardRef(
+var DismissableLayer = React18.forwardRef(
   (props, forwardedRef) => {
     const {
       disableOutsidePointerEvents = false,
@@ -5196,10 +5792,10 @@ var DismissableLayer = React16.forwardRef(
       onDismiss,
       ...layerProps
     } = props;
-    const context = React16.useContext(DismissableLayerContext);
-    const [node, setNode] = React16.useState(null);
+    const context = React18.useContext(DismissableLayerContext);
+    const [node, setNode] = React18.useState(null);
     const ownerDocument = node?.ownerDocument ?? globalThis?.document;
-    const [, force] = React16.useState({});
+    const [, force] = React18.useState({});
     const composedRefs = useComposedRefs(forwardedRef, (node2) => setNode(node2));
     const layers = Array.from(context.layers);
     const [highestLayerWithOutsidePointerEventsDisabled] = [...context.layersWithOutsidePointerEventsDisabled].slice(-1);
@@ -5232,7 +5828,7 @@ var DismissableLayer = React16.forwardRef(
         onDismiss();
       }
     }, ownerDocument);
-    React16.useEffect(() => {
+    React18.useEffect(() => {
       if (!node) return;
       if (disableOutsidePointerEvents) {
         if (context.layersWithOutsidePointerEventsDisabled.size === 0) {
@@ -5249,7 +5845,7 @@ var DismissableLayer = React16.forwardRef(
         }
       };
     }, [node, ownerDocument, disableOutsidePointerEvents, context]);
-    React16.useEffect(() => {
+    React18.useEffect(() => {
       return () => {
         if (!node) return;
         context.layers.delete(node);
@@ -5257,12 +5853,12 @@ var DismissableLayer = React16.forwardRef(
         dispatchUpdate();
       };
     }, [node, context]);
-    React16.useEffect(() => {
+    React18.useEffect(() => {
       const handleUpdate = () => force({});
       document.addEventListener(CONTEXT_UPDATE, handleUpdate);
       return () => document.removeEventListener(CONTEXT_UPDATE, handleUpdate);
     }, []);
-    return /* @__PURE__ */ (0, import_jsx_runtime10.jsx)(
+    return /* @__PURE__ */ (0, import_jsx_runtime12.jsx)(
       Primitive.div,
       {
         ...layerProps,
@@ -5283,11 +5879,11 @@ var DismissableLayer = React16.forwardRef(
 );
 DismissableLayer.displayName = DISMISSABLE_LAYER_NAME;
 var BRANCH_NAME = "DismissableLayerBranch";
-var DismissableLayerBranch = React16.forwardRef((props, forwardedRef) => {
-  const context = React16.useContext(DismissableLayerContext);
-  const ref = React16.useRef(null);
+var DismissableLayerBranch = React18.forwardRef((props, forwardedRef) => {
+  const context = React18.useContext(DismissableLayerContext);
+  const ref = React18.useRef(null);
   const composedRefs = useComposedRefs(forwardedRef, ref);
-  React16.useEffect(() => {
+  React18.useEffect(() => {
     const node = ref.current;
     if (node) {
       context.branches.add(node);
@@ -5296,15 +5892,15 @@ var DismissableLayerBranch = React16.forwardRef((props, forwardedRef) => {
       };
     }
   }, [context.branches]);
-  return /* @__PURE__ */ (0, import_jsx_runtime10.jsx)(Primitive.div, { ...props, ref: composedRefs });
+  return /* @__PURE__ */ (0, import_jsx_runtime12.jsx)(Primitive.div, { ...props, ref: composedRefs });
 });
 DismissableLayerBranch.displayName = BRANCH_NAME;
 function usePointerDownOutside(onPointerDownOutside, ownerDocument = globalThis?.document) {
   const handlePointerDownOutside = useCallbackRef(onPointerDownOutside);
-  const isPointerInsideReactTreeRef = React16.useRef(false);
-  const handleClickRef = React16.useRef(() => {
+  const isPointerInsideReactTreeRef = React18.useRef(false);
+  const handleClickRef = React18.useRef(() => {
   });
-  React16.useEffect(() => {
+  React18.useEffect(() => {
     const handlePointerDown = (event) => {
       if (event.target && !isPointerInsideReactTreeRef.current) {
         let handleAndDispatchPointerDownOutsideEvent2 = function() {
@@ -5345,8 +5941,8 @@ function usePointerDownOutside(onPointerDownOutside, ownerDocument = globalThis?
 }
 function useFocusOutside(onFocusOutside, ownerDocument = globalThis?.document) {
   const handleFocusOutside = useCallbackRef(onFocusOutside);
-  const isFocusInsideReactTreeRef = React16.useRef(false);
-  React16.useEffect(() => {
+  const isFocusInsideReactTreeRef = React18.useRef(false);
+  React18.useEffect(() => {
     const handleFocus = (event) => {
       if (event.target && !isFocusInsideReactTreeRef.current) {
         const eventDetail = { originalEvent: event };
@@ -5379,13 +5975,13 @@ function handleAndDispatchCustomEvent(name, handler, detail, { discrete }) {
 }
 
 // node_modules/.pnpm/@radix-ui+react-focus-scope@1.1.7_@types+react-dom@18.3.1_@types+react@19.2.0_react-dom@18.2._dhkdyyxeakawqe2hoiycn4cg2m/node_modules/@radix-ui/react-focus-scope/dist/index.mjs
-var React17 = __toESM(require("react"), 1);
-var import_jsx_runtime11 = require("react/jsx-runtime");
+var React19 = __toESM(require("react"), 1);
+var import_jsx_runtime13 = require("react/jsx-runtime");
 var AUTOFOCUS_ON_MOUNT = "focusScope.autoFocusOnMount";
 var AUTOFOCUS_ON_UNMOUNT = "focusScope.autoFocusOnUnmount";
 var EVENT_OPTIONS = { bubbles: false, cancelable: true };
 var FOCUS_SCOPE_NAME = "FocusScope";
-var FocusScope = React17.forwardRef((props, forwardedRef) => {
+var FocusScope = React19.forwardRef((props, forwardedRef) => {
   const {
     loop = false,
     trapped = false,
@@ -5393,12 +5989,12 @@ var FocusScope = React17.forwardRef((props, forwardedRef) => {
     onUnmountAutoFocus: onUnmountAutoFocusProp,
     ...scopeProps
   } = props;
-  const [container, setContainer] = React17.useState(null);
+  const [container, setContainer] = React19.useState(null);
   const onMountAutoFocus = useCallbackRef(onMountAutoFocusProp);
   const onUnmountAutoFocus = useCallbackRef(onUnmountAutoFocusProp);
-  const lastFocusedElementRef = React17.useRef(null);
+  const lastFocusedElementRef = React19.useRef(null);
   const composedRefs = useComposedRefs(forwardedRef, (node) => setContainer(node));
-  const focusScope = React17.useRef({
+  const focusScope = React19.useRef({
     paused: false,
     pause() {
       this.paused = true;
@@ -5407,7 +6003,7 @@ var FocusScope = React17.forwardRef((props, forwardedRef) => {
       this.paused = false;
     }
   }).current;
-  React17.useEffect(() => {
+  React19.useEffect(() => {
     if (trapped) {
       let handleFocusIn2 = function(event) {
         if (focusScope.paused || !container) return;
@@ -5443,7 +6039,7 @@ var FocusScope = React17.forwardRef((props, forwardedRef) => {
       };
     }
   }, [trapped, container, focusScope.paused]);
-  React17.useEffect(() => {
+  React19.useEffect(() => {
     if (container) {
       focusScopesStack.add(focusScope);
       const previouslyFocusedElement = document.activeElement;
@@ -5474,7 +6070,7 @@ var FocusScope = React17.forwardRef((props, forwardedRef) => {
       };
     }
   }, [container, onMountAutoFocus, onUnmountAutoFocus, focusScope]);
-  const handleKeyDown = React17.useCallback(
+  const handleKeyDown = React19.useCallback(
     (event) => {
       if (!loop && !trapped) return;
       if (focusScope.paused) return;
@@ -5499,7 +6095,7 @@ var FocusScope = React17.forwardRef((props, forwardedRef) => {
     },
     [loop, trapped, focusScope.paused]
   );
-  return /* @__PURE__ */ (0, import_jsx_runtime11.jsx)(Primitive.div, { tabIndex: -1, ...scopeProps, ref: composedRefs, onKeyDown: handleKeyDown });
+  return /* @__PURE__ */ (0, import_jsx_runtime13.jsx)(Primitive.div, { tabIndex: -1, ...scopeProps, ref: composedRefs, onKeyDown: handleKeyDown });
 });
 FocusScope.displayName = FOCUS_SCOPE_NAME;
 function focusFirst(candidates, { select = false } = {}) {
@@ -5583,24 +6179,24 @@ function removeLinks(items) {
 }
 
 // node_modules/.pnpm/@radix-ui+react-portal@1.1.9_@types+react-dom@18.3.1_@types+react@19.2.0_react-dom@18.2.0_react@18.2.0__react@18.2.0/node_modules/@radix-ui/react-portal/dist/index.mjs
-var React18 = __toESM(require("react"), 1);
+var React20 = __toESM(require("react"), 1);
 var import_react_dom = __toESM(require("react-dom"), 1);
-var import_jsx_runtime12 = require("react/jsx-runtime");
+var import_jsx_runtime14 = require("react/jsx-runtime");
 var PORTAL_NAME = "Portal";
-var Portal = React18.forwardRef((props, forwardedRef) => {
+var Portal = React20.forwardRef((props, forwardedRef) => {
   const { container: containerProp, ...portalProps } = props;
-  const [mounted, setMounted] = React18.useState(false);
+  const [mounted, setMounted] = React20.useState(false);
   useLayoutEffect2(() => setMounted(true), []);
   const container = containerProp || mounted && globalThis?.document?.body;
-  return container ? import_react_dom.default.createPortal(/* @__PURE__ */ (0, import_jsx_runtime12.jsx)(Primitive.div, { ...portalProps, ref: forwardedRef }), container) : null;
+  return container ? import_react_dom.default.createPortal(/* @__PURE__ */ (0, import_jsx_runtime14.jsx)(Primitive.div, { ...portalProps, ref: forwardedRef }), container) : null;
 });
 Portal.displayName = PORTAL_NAME;
 
 // node_modules/.pnpm/@radix-ui+react-presence@1.1.5_@types+react-dom@18.3.1_@types+react@19.2.0_react-dom@18.2.0_react@18.2.0__react@18.2.0/node_modules/@radix-ui/react-presence/dist/index.mjs
 var React23 = __toESM(require("react"), 1);
-var React19 = __toESM(require("react"), 1);
+var React21 = __toESM(require("react"), 1);
 function useStateMachine(initialState, machine) {
-  return React19.useReducer((state, event) => {
+  return React21.useReducer((state, event) => {
     const nextState = machine[state][event];
     return nextState ?? state;
   }, initialState);
@@ -5723,10 +6319,10 @@ function getElementRef2(element) {
 }
 
 // node_modules/.pnpm/@radix-ui+react-focus-guards@1.1.3_@types+react@19.2.0_react@18.2.0/node_modules/@radix-ui/react-focus-guards/dist/index.mjs
-var React20 = __toESM(require("react"), 1);
+var React24 = __toESM(require("react"), 1);
 var count2 = 0;
 function useFocusGuards() {
-  React20.useEffect(() => {
+  React24.useEffect(() => {
     const edgeGuards = document.querySelectorAll("[data-radix-focus-guard]");
     document.body.insertAdjacentElement("afterbegin", edgeGuards[0] ?? createFocusGuard());
     document.body.insertAdjacentElement("beforeend", edgeGuards[1] ?? createFocusGuard());
@@ -5753,7 +6349,7 @@ function createFocusGuard() {
 // node_modules/.pnpm/@radix-ui+react-dialog@1.1.15_@types+react-dom@18.3.1_@types+react@19.2.0_react-dom@18.2.0_react@18.2.0__react@18.2.0/node_modules/@radix-ui/react-dialog/dist/index.mjs
 var import_react_remove_scroll = __toESM(require_es56(), 1);
 var import_aria_hidden = __toESM(require_es57(), 1);
-var import_jsx_runtime13 = require("react/jsx-runtime");
+var import_jsx_runtime15 = require("react/jsx-runtime");
 var DIALOG_NAME = "Dialog";
 var [createDialogContext, createDialogScope] = createContextScope(DIALOG_NAME);
 var [DialogProvider, useDialogContext] = createDialogContext(DIALOG_NAME);
@@ -5764,17 +6360,17 @@ var Dialog = (props) => {
     open: openProp,
     defaultOpen,
     onOpenChange,
-    modal = true
+    modal: modal2 = true
   } = props;
-  const triggerRef = React21.useRef(null);
-  const contentRef = React21.useRef(null);
+  const triggerRef = React25.useRef(null);
+  const contentRef = React25.useRef(null);
   const [open, setOpen] = useControllableState({
     prop: openProp,
     defaultProp: defaultOpen ?? false,
     onChange: onOpenChange,
     caller: DIALOG_NAME
   });
-  return /* @__PURE__ */ (0, import_jsx_runtime13.jsx)(
+  return /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(
     DialogProvider,
     {
       scope: __scopeDialog,
@@ -5785,20 +6381,20 @@ var Dialog = (props) => {
       descriptionId: useId(),
       open,
       onOpenChange: setOpen,
-      onOpenToggle: React21.useCallback(() => setOpen((prevOpen) => !prevOpen), [setOpen]),
-      modal,
+      onOpenToggle: React25.useCallback(() => setOpen((prevOpen) => !prevOpen), [setOpen]),
+      modal: modal2,
       children
     }
   );
 };
 Dialog.displayName = DIALOG_NAME;
 var TRIGGER_NAME = "DialogTrigger";
-var DialogTrigger = React21.forwardRef(
+var DialogTrigger = React25.forwardRef(
   (props, forwardedRef) => {
     const { __scopeDialog, ...triggerProps } = props;
     const context = useDialogContext(TRIGGER_NAME, __scopeDialog);
     const composedTriggerRef = useComposedRefs(forwardedRef, context.triggerRef);
-    return /* @__PURE__ */ (0, import_jsx_runtime13.jsx)(
+    return /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(
       Primitive.button,
       {
         type: "button",
@@ -5821,28 +6417,28 @@ var [PortalProvider, usePortalContext] = createDialogContext(PORTAL_NAME2, {
 var DialogPortal = (props) => {
   const { __scopeDialog, forceMount, children, container } = props;
   const context = useDialogContext(PORTAL_NAME2, __scopeDialog);
-  return /* @__PURE__ */ (0, import_jsx_runtime13.jsx)(PortalProvider, { scope: __scopeDialog, forceMount, children: React21.Children.map(children, (child) => /* @__PURE__ */ (0, import_jsx_runtime13.jsx)(Presence, { present: forceMount || context.open, children: /* @__PURE__ */ (0, import_jsx_runtime13.jsx)(Portal, { asChild: true, container, children: child }) })) });
+  return /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(PortalProvider, { scope: __scopeDialog, forceMount, children: React25.Children.map(children, (child) => /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(Presence, { present: forceMount || context.open, children: /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(Portal, { asChild: true, container, children: child }) })) });
 };
 DialogPortal.displayName = PORTAL_NAME2;
 var OVERLAY_NAME = "DialogOverlay";
-var DialogOverlay = React21.forwardRef(
+var DialogOverlay = React25.forwardRef(
   (props, forwardedRef) => {
     const portalContext = usePortalContext(OVERLAY_NAME, props.__scopeDialog);
     const { forceMount = portalContext.forceMount, ...overlayProps } = props;
     const context = useDialogContext(OVERLAY_NAME, props.__scopeDialog);
-    return context.modal ? /* @__PURE__ */ (0, import_jsx_runtime13.jsx)(Presence, { present: forceMount || context.open, children: /* @__PURE__ */ (0, import_jsx_runtime13.jsx)(DialogOverlayImpl, { ...overlayProps, ref: forwardedRef }) }) : null;
+    return context.modal ? /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(Presence, { present: forceMount || context.open, children: /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(DialogOverlayImpl, { ...overlayProps, ref: forwardedRef }) }) : null;
   }
 );
 DialogOverlay.displayName = OVERLAY_NAME;
 var Slot = createSlot("DialogOverlay.RemoveScroll");
-var DialogOverlayImpl = React21.forwardRef(
+var DialogOverlayImpl = React25.forwardRef(
   (props, forwardedRef) => {
     const { __scopeDialog, ...overlayProps } = props;
     const context = useDialogContext(OVERLAY_NAME, __scopeDialog);
     return (
       // Make sure `Content` is scrollable even when it doesn't live inside `RemoveScroll`
       // ie. when `Overlay` and `Content` are siblings
-      /* @__PURE__ */ (0, import_jsx_runtime13.jsx)(import_react_remove_scroll.RemoveScroll, { as: Slot, allowPinchZoom: true, shards: [context.contentRef], children: /* @__PURE__ */ (0, import_jsx_runtime13.jsx)(
+      /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(import_react_remove_scroll.RemoveScroll, { as: Slot, allowPinchZoom: true, shards: [context.contentRef], children: /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(
         Primitive.div,
         {
           "data-state": getState(context.open),
@@ -5855,25 +6451,25 @@ var DialogOverlayImpl = React21.forwardRef(
   }
 );
 var CONTENT_NAME = "DialogContent";
-var DialogContent = React21.forwardRef(
+var DialogContent = React25.forwardRef(
   (props, forwardedRef) => {
     const portalContext = usePortalContext(CONTENT_NAME, props.__scopeDialog);
     const { forceMount = portalContext.forceMount, ...contentProps } = props;
     const context = useDialogContext(CONTENT_NAME, props.__scopeDialog);
-    return /* @__PURE__ */ (0, import_jsx_runtime13.jsx)(Presence, { present: forceMount || context.open, children: context.modal ? /* @__PURE__ */ (0, import_jsx_runtime13.jsx)(DialogContentModal, { ...contentProps, ref: forwardedRef }) : /* @__PURE__ */ (0, import_jsx_runtime13.jsx)(DialogContentNonModal, { ...contentProps, ref: forwardedRef }) });
+    return /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(Presence, { present: forceMount || context.open, children: context.modal ? /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(DialogContentModal, { ...contentProps, ref: forwardedRef }) : /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(DialogContentNonModal, { ...contentProps, ref: forwardedRef }) });
   }
 );
 DialogContent.displayName = CONTENT_NAME;
-var DialogContentModal = React21.forwardRef(
+var DialogContentModal = React25.forwardRef(
   (props, forwardedRef) => {
     const context = useDialogContext(CONTENT_NAME, props.__scopeDialog);
-    const contentRef = React21.useRef(null);
+    const contentRef = React25.useRef(null);
     const composedRefs = useComposedRefs(forwardedRef, context.contentRef, contentRef);
-    React21.useEffect(() => {
+    React25.useEffect(() => {
       const content = contentRef.current;
       if (content) return (0, import_aria_hidden.hideOthers)(content);
     }, []);
-    return /* @__PURE__ */ (0, import_jsx_runtime13.jsx)(
+    return /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(
       DialogContentImpl,
       {
         ...props,
@@ -5898,12 +6494,12 @@ var DialogContentModal = React21.forwardRef(
     );
   }
 );
-var DialogContentNonModal = React21.forwardRef(
+var DialogContentNonModal = React25.forwardRef(
   (props, forwardedRef) => {
     const context = useDialogContext(CONTENT_NAME, props.__scopeDialog);
-    const hasInteractedOutsideRef = React21.useRef(false);
-    const hasPointerDownOutsideRef = React21.useRef(false);
-    return /* @__PURE__ */ (0, import_jsx_runtime13.jsx)(
+    const hasInteractedOutsideRef = React25.useRef(false);
+    const hasPointerDownOutsideRef = React25.useRef(false);
+    return /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(
       DialogContentImpl,
       {
         ...props,
@@ -5938,15 +6534,15 @@ var DialogContentNonModal = React21.forwardRef(
     );
   }
 );
-var DialogContentImpl = React21.forwardRef(
+var DialogContentImpl = React25.forwardRef(
   (props, forwardedRef) => {
     const { __scopeDialog, trapFocus, onOpenAutoFocus, onCloseAutoFocus, ...contentProps } = props;
     const context = useDialogContext(CONTENT_NAME, __scopeDialog);
-    const contentRef = React21.useRef(null);
+    const contentRef = React25.useRef(null);
     const composedRefs = useComposedRefs(forwardedRef, contentRef);
     useFocusGuards();
-    return /* @__PURE__ */ (0, import_jsx_runtime13.jsxs)(import_jsx_runtime13.Fragment, { children: [
-      /* @__PURE__ */ (0, import_jsx_runtime13.jsx)(
+    return /* @__PURE__ */ (0, import_jsx_runtime15.jsxs)(import_jsx_runtime15.Fragment, { children: [
+      /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(
         FocusScope,
         {
           asChild: true,
@@ -5954,7 +6550,7 @@ var DialogContentImpl = React21.forwardRef(
           trapped: trapFocus,
           onMountAutoFocus: onOpenAutoFocus,
           onUnmountAutoFocus: onCloseAutoFocus,
-          children: /* @__PURE__ */ (0, import_jsx_runtime13.jsx)(
+          children: /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(
             DismissableLayer,
             {
               role: "dialog",
@@ -5969,37 +6565,37 @@ var DialogContentImpl = React21.forwardRef(
           )
         }
       ),
-      /* @__PURE__ */ (0, import_jsx_runtime13.jsxs)(import_jsx_runtime13.Fragment, { children: [
-        /* @__PURE__ */ (0, import_jsx_runtime13.jsx)(TitleWarning, { titleId: context.titleId }),
-        /* @__PURE__ */ (0, import_jsx_runtime13.jsx)(DescriptionWarning, { contentRef, descriptionId: context.descriptionId })
+      /* @__PURE__ */ (0, import_jsx_runtime15.jsxs)(import_jsx_runtime15.Fragment, { children: [
+        /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(TitleWarning, { titleId: context.titleId }),
+        /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(DescriptionWarning, { contentRef, descriptionId: context.descriptionId })
       ] })
     ] });
   }
 );
 var TITLE_NAME = "DialogTitle";
-var DialogTitle = React21.forwardRef(
+var DialogTitle = React25.forwardRef(
   (props, forwardedRef) => {
     const { __scopeDialog, ...titleProps } = props;
     const context = useDialogContext(TITLE_NAME, __scopeDialog);
-    return /* @__PURE__ */ (0, import_jsx_runtime13.jsx)(Primitive.h2, { id: context.titleId, ...titleProps, ref: forwardedRef });
+    return /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(Primitive.h2, { id: context.titleId, ...titleProps, ref: forwardedRef });
   }
 );
 DialogTitle.displayName = TITLE_NAME;
 var DESCRIPTION_NAME = "DialogDescription";
-var DialogDescription = React21.forwardRef(
+var DialogDescription = React25.forwardRef(
   (props, forwardedRef) => {
     const { __scopeDialog, ...descriptionProps } = props;
     const context = useDialogContext(DESCRIPTION_NAME, __scopeDialog);
-    return /* @__PURE__ */ (0, import_jsx_runtime13.jsx)(Primitive.p, { id: context.descriptionId, ...descriptionProps, ref: forwardedRef });
+    return /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(Primitive.p, { id: context.descriptionId, ...descriptionProps, ref: forwardedRef });
   }
 );
 DialogDescription.displayName = DESCRIPTION_NAME;
 var CLOSE_NAME = "DialogClose";
-var DialogClose = React21.forwardRef(
+var DialogClose = React25.forwardRef(
   (props, forwardedRef) => {
     const { __scopeDialog, ...closeProps } = props;
     const context = useDialogContext(CLOSE_NAME, __scopeDialog);
-    return /* @__PURE__ */ (0, import_jsx_runtime13.jsx)(
+    return /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(
       Primitive.button,
       {
         type: "button",
@@ -6015,7 +6611,7 @@ function getState(open) {
   return open ? "open" : "closed";
 }
 var TITLE_WARNING_NAME = "DialogTitleWarning";
-var [WarningProvider, useWarningContext] = createContext2(TITLE_WARNING_NAME, {
+var [WarningProvider, useWarningContext] = createContext22(TITLE_WARNING_NAME, {
   contentName: CONTENT_NAME,
   titleName: TITLE_NAME,
   docsSlug: "dialog"
@@ -6027,7 +6623,7 @@ var TitleWarning = ({ titleId }) => {
 If you want to hide the \`${titleWarningContext.titleName}\`, you can wrap it with our VisuallyHidden component.
 
 For more information, see https://radix-ui.com/primitives/docs/components/${titleWarningContext.docsSlug}`;
-  React21.useEffect(() => {
+  React25.useEffect(() => {
     if (titleId) {
       const hasTitle = document.getElementById(titleId);
       if (!hasTitle) console.error(MESSAGE);
@@ -6039,7 +6635,7 @@ var DESCRIPTION_WARNING_NAME = "DialogDescriptionWarning";
 var DescriptionWarning = ({ contentRef, descriptionId }) => {
   const descriptionWarningContext = useWarningContext(DESCRIPTION_WARNING_NAME);
   const MESSAGE = `Warning: Missing \`Description\` or \`aria-describedby={undefined}\` for {${descriptionWarningContext.contentName}}.`;
-  React21.useEffect(() => {
+  React25.useEffect(() => {
     const describedById = contentRef.current?.getAttribute("aria-describedby");
     if (descriptionId && describedById) {
       const hasDescription = document.getElementById(descriptionId);
@@ -6090,11 +6686,11 @@ function cn(...inputs) {
 }
 
 // src/components/ui/dialog.jsx
-var import_jsx_runtime14 = require("react/jsx-runtime");
+var import_jsx_runtime16 = require("react/jsx-runtime");
 var Dialog2 = Root;
-var DialogPortal2 = ({ className, children, ...props }) => /* @__PURE__ */ (0, import_jsx_runtime14.jsx)(Portal2, { ...props, children: /* @__PURE__ */ (0, import_jsx_runtime14.jsx)("div", { className: cn("fixed inset-0 z-[999] flex items-start justify-center overflow-y-auto sm:items-center", className), children }) });
+var DialogPortal2 = ({ className, children, ...props }) => /* @__PURE__ */ (0, import_jsx_runtime16.jsx)(Portal2, { ...props, children: /* @__PURE__ */ (0, import_jsx_runtime16.jsx)("div", { className: cn("fixed inset-0 z-[999] flex items-start justify-center overflow-y-auto sm:items-center", className), children }) });
 DialogPortal2.displayName = Portal2.displayName;
-var DialogOverlay2 = React24.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ (0, import_jsx_runtime14.jsx)(
+var DialogOverlay2 = React26.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ (0, import_jsx_runtime16.jsx)(
   Overlay,
   {
     ref,
@@ -6103,9 +6699,9 @@ var DialogOverlay2 = React24.forwardRef(({ className, ...props }, ref) => /* @__
   }
 ));
 DialogOverlay2.displayName = Overlay.displayName;
-var DialogContent2 = React24.forwardRef(({ className, children, ...props }, ref) => /* @__PURE__ */ (0, import_jsx_runtime14.jsxs)(DialogPortal2, { children: [
-  /* @__PURE__ */ (0, import_jsx_runtime14.jsx)(DialogOverlay2, {}),
-  /* @__PURE__ */ (0, import_jsx_runtime14.jsxs)(
+var DialogContent2 = React26.forwardRef(({ className, children, ...props }, ref) => /* @__PURE__ */ (0, import_jsx_runtime16.jsxs)(DialogPortal2, { children: [
+  /* @__PURE__ */ (0, import_jsx_runtime16.jsx)(DialogOverlay2, {}),
+  /* @__PURE__ */ (0, import_jsx_runtime16.jsxs)(
     Content,
     {
       ref,
@@ -6116,27 +6712,27 @@ var DialogContent2 = React24.forwardRef(({ className, children, ...props }, ref)
       ...props,
       children: [
         children,
-        /* @__PURE__ */ (0, import_jsx_runtime14.jsxs)(Close, { className: "absolute right-5 top-5 rounded-full p-1 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:ring-offset-2", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime14.jsx)("span", { className: "sr-only", children: "Close" }),
-          /* @__PURE__ */ (0, import_jsx_runtime14.jsx)(import_lucide_react.X, { className: "h-4 w-4" })
+        /* @__PURE__ */ (0, import_jsx_runtime16.jsxs)(Close, { className: "absolute right-5 top-5 rounded-full p-1 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:ring-offset-2", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime16.jsx)("span", { className: "sr-only", children: "Close" }),
+          /* @__PURE__ */ (0, import_jsx_runtime16.jsx)(import_lucide_react.X, { className: "h-4 w-4" })
         ] })
       ]
     }
   )
 ] }));
 DialogContent2.displayName = Content.displayName;
-var DialogHeader = ({ className, ...props }) => /* @__PURE__ */ (0, import_jsx_runtime14.jsx)("div", { className: cn("flex flex-col space-y-2 text-center sm:text-left", className), ...props });
+var DialogHeader = ({ className, ...props }) => /* @__PURE__ */ (0, import_jsx_runtime16.jsx)("div", { className: cn("flex flex-col space-y-2 text-center sm:text-left", className), ...props });
 DialogHeader.displayName = "DialogHeader";
-var DialogFooter = ({ className, ...props }) => /* @__PURE__ */ (0, import_jsx_runtime14.jsx)("div", { className: cn("flex flex-col-reverse gap-2 sm:flex-row sm:justify-end", className), ...props });
+var DialogFooter = ({ className, ...props }) => /* @__PURE__ */ (0, import_jsx_runtime16.jsx)("div", { className: cn("flex flex-col-reverse gap-2 sm:flex-row sm:justify-end", className), ...props });
 DialogFooter.displayName = "DialogFooter";
-var DialogTitle2 = React24.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ (0, import_jsx_runtime14.jsx)(Title, { ref, className: cn("text-left text-2xl font-semibold text-slate-900", className), ...props }));
+var DialogTitle2 = React26.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ (0, import_jsx_runtime16.jsx)(Title, { ref, className: cn("text-left text-2xl font-semibold text-slate-900", className), ...props }));
 DialogTitle2.displayName = Title.displayName;
-var DialogDescription2 = React24.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ (0, import_jsx_runtime14.jsx)(Description, { ref, className: cn("text-left text-sm text-slate-600", className), ...props }));
+var DialogDescription2 = React26.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ (0, import_jsx_runtime16.jsx)(Description, { ref, className: cn("text-left text-sm text-slate-600", className), ...props }));
 DialogDescription2.displayName = Description.displayName;
 
 // src/components/ui/button.jsx
-var React25 = __toESM(require("react"));
-var import_jsx_runtime15 = require("react/jsx-runtime");
+var React27 = __toESM(require("react"));
+var import_jsx_runtime17 = require("react/jsx-runtime");
 var baseClasses = "inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-60";
 var variantClasses = {
   default: "bg-[var(--color-accent)] text-white hover:bg-orange-600 focus-visible:ring-[var(--color-accent)]",
@@ -6150,10 +6746,10 @@ var sizeClasses = {
   sm: "h-9 px-3 text-sm",
   icon: "h-10 w-10"
 };
-var Button = React25.forwardRef(({ className = "", variant = "default", size = "default", ...props }, ref) => {
+var Button = React27.forwardRef(({ className = "", variant = "default", size = "default", ...props }, ref) => {
   const variantClass = variantClasses[variant] || variantClasses.default;
   const sizeClass = sizeClasses[size] || sizeClasses.default;
-  return /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(
+  return /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(
     "button",
     {
       ref,
@@ -6165,9 +6761,9 @@ var Button = React25.forwardRef(({ className = "", variant = "default", size = "
 Button.displayName = "Button";
 
 // src/components/ui/input.jsx
-var React26 = __toESM(require("react"));
-var import_jsx_runtime16 = require("react/jsx-runtime");
-var Input = React26.forwardRef(({ className = "", type = "text", ...props }, ref) => /* @__PURE__ */ (0, import_jsx_runtime16.jsx)(
+var React28 = __toESM(require("react"));
+var import_jsx_runtime18 = require("react/jsx-runtime");
+var Input = React28.forwardRef(({ className = "", type = "text", ...props }, ref) => /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(
   "input",
   {
     ref,
@@ -6182,9 +6778,9 @@ var Input = React26.forwardRef(({ className = "", type = "text", ...props }, ref
 Input.displayName = "Input";
 
 // src/components/ui/textarea.jsx
-var React27 = __toESM(require("react"));
-var import_jsx_runtime17 = require("react/jsx-runtime");
-var Textarea = React27.forwardRef(({ className = "", rows = 3, ...props }, ref) => /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(
+var React29 = __toESM(require("react"));
+var import_jsx_runtime19 = require("react/jsx-runtime");
+var Textarea = React29.forwardRef(({ className = "", rows = 3, ...props }, ref) => /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(
   "textarea",
   {
     ref,
@@ -6199,22 +6795,22 @@ var Textarea = React27.forwardRef(({ className = "", rows = 3, ...props }, ref) 
 Textarea.displayName = "Textarea";
 
 // src/components/ui/label.jsx
-var React28 = __toESM(require("react"));
-var import_jsx_runtime18 = require("react/jsx-runtime");
-var Label = React28.forwardRef(({ className = "", children, ...props }, ref) => /* @__PURE__ */ (0, import_jsx_runtime18.jsx)("label", { ref, className: cn("text-sm font-semibold text-slate-700", className), ...props, children }));
+var React30 = __toESM(require("react"));
+var import_jsx_runtime20 = require("react/jsx-runtime");
+var Label = React30.forwardRef(({ className = "", children, ...props }, ref) => /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("label", { ref, className: cn("text-sm font-semibold text-slate-700", className), ...props, children }));
 Label.displayName = "Label";
 
 // src/components/forms/AskChefForm.jsx
-var import_jsx_runtime19 = require("react/jsx-runtime");
+var import_jsx_runtime21 = require("react/jsx-runtime");
 var AskChefForm = ({ open, onOpenChange, dialogClassName = "" }) => {
-  const [formData, setFormData] = (0, import_react10.useState)({
+  const [formData, setFormData] = (0, import_react12.useState)({
     name: "",
     email: "",
     phone: "",
     subject: "",
     message: ""
   });
-  const [status, setStatus] = (0, import_react10.useState)("idle");
+  const [status, setStatus] = (0, import_react12.useState)("idle");
   const dialogClasses = ["sm:max-w-[500px]", dialogClassName].filter(Boolean).join(" ");
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -6257,19 +6853,19 @@ var AskChefForm = ({ open, onOpenChange, dialogClassName = "" }) => {
       setStatus("error");
     }
   };
-  return /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(Dialog2, { open, onOpenChange, children: /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)(DialogContent2, { className: dialogClasses, children: [
-    /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)(DialogHeader, { children: [
-      /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(DialogTitle2, { children: "Ask a Chef" }),
-      /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(DialogDescription2, { children: "Have a question? Send us a message and we'll get back to you soon." })
+  return /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(Dialog2, { open, onOpenChange, children: /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)(DialogContent2, { className: dialogClasses, children: [
+    /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)(DialogHeader, { children: [
+      /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(DialogTitle2, { children: "Ask a Chef" }),
+      /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(DialogDescription2, { children: "Have a question? Send us a message and we'll get back to you soon." })
     ] }),
-    status === "success" ? /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("div", { className: "py-8 text-center", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("div", { className: "mb-4 text-5xl", children: "\u2713" }),
-      /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("h3", { className: "mb-2 text-lg font-semibold text-green-700", children: "Thank you!" }),
-      /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("p", { className: "text-sm text-slate-600", children: "We've received your message and will get back to you shortly." })
-    ] }) : /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("form", { onSubmit: handleSubmit, className: "space-y-4", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("div", { className: "space-y-2", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(Label, { htmlFor: "name", children: "Name *" }),
-        /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(
+    status === "success" ? /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)("div", { className: "py-8 text-center", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("div", { className: "mb-4 text-5xl", children: "\u2713" }),
+      /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("h3", { className: "mb-2 text-lg font-semibold text-green-700", children: "Thank you!" }),
+      /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("p", { className: "text-sm text-slate-600", children: "We've received your message and will get back to you shortly." })
+    ] }) : /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)("form", { onSubmit: handleSubmit, className: "space-y-4", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)("div", { className: "space-y-2", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(Label, { htmlFor: "name", children: "Name *" }),
+        /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(
           Input,
           {
             id: "name",
@@ -6281,9 +6877,9 @@ var AskChefForm = ({ open, onOpenChange, dialogClassName = "" }) => {
           }
         )
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("div", { className: "space-y-2", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(Label, { htmlFor: "email", children: "Email *" }),
-        /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(
+      /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)("div", { className: "space-y-2", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(Label, { htmlFor: "email", children: "Email *" }),
+        /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(
           Input,
           {
             id: "email",
@@ -6296,9 +6892,9 @@ var AskChefForm = ({ open, onOpenChange, dialogClassName = "" }) => {
           }
         )
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("div", { className: "space-y-2", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(Label, { htmlFor: "phone", children: "Phone Number *" }),
-        /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(
+      /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)("div", { className: "space-y-2", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(Label, { htmlFor: "phone", children: "Phone Number *" }),
+        /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(
           Input,
           {
             id: "phone",
@@ -6311,9 +6907,9 @@ var AskChefForm = ({ open, onOpenChange, dialogClassName = "" }) => {
           }
         )
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("div", { className: "space-y-2", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(Label, { htmlFor: "subject", children: "Subject" }),
-        /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(
+      /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)("div", { className: "space-y-2", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(Label, { htmlFor: "subject", children: "Subject" }),
+        /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(
           Input,
           {
             id: "subject",
@@ -6324,9 +6920,9 @@ var AskChefForm = ({ open, onOpenChange, dialogClassName = "" }) => {
           }
         )
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("div", { className: "space-y-2", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(Label, { htmlFor: "message", children: "Message *" }),
-        /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(
+      /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)("div", { className: "space-y-2", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(Label, { htmlFor: "message", children: "Message *" }),
+        /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(
           Textarea,
           {
             id: "message",
@@ -6339,13 +6935,13 @@ var AskChefForm = ({ open, onOpenChange, dialogClassName = "" }) => {
           }
         )
       ] }),
-      status === "error" && /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("div", { className: "rounded-md bg-red-50 p-3 text-sm text-red-700", children: [
+      status === "error" && /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)("div", { className: "rounded-md bg-red-50 p-3 text-sm text-red-700", children: [
         "We couldn't submit your message. Please try again or email us directly at",
         " ",
-        /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("a", { href: "mailto:yum@localeffortfood.com", className: "underline", children: "yum@localeffortfood.com" })
+        /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("a", { href: "mailto:yum@localeffortfood.com", className: "underline", children: "yum@localeffortfood.com" })
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("div", { className: "flex justify-end gap-3 pt-2", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(
+      /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)("div", { className: "flex justify-end gap-3 pt-2", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(
           Button,
           {
             type: "button",
@@ -6355,7 +6951,7 @@ var AskChefForm = ({ open, onOpenChange, dialogClassName = "" }) => {
             children: "Cancel"
           }
         ),
-        /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(Button, { type: "submit", disabled: status === "submitting", children: status === "submitting" ? "Sending..." : "Submit" })
+        /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(Button, { type: "submit", disabled: status === "submitting", children: status === "submitting" ? "Sending..." : "Submit" })
       ] })
     ] })
   ] }) });
@@ -6478,7 +7074,7 @@ var HAPPY_MONDAY_MENU_ITEMS = [
 ];
 
 // src/pages/FullPageDemoPage.jsx
-var import_jsx_runtime20 = require("react/jsx-runtime");
+var import_jsx_runtime22 = require("react/jsx-runtime");
 var SMALL_EVENT_CONFIG = {
   dinner: {
     label: "Dinner party",
@@ -6734,7 +7330,7 @@ var GalleryItem = ({
     pointerEvents: layoutReady ? "auto" : "none",
     touchAction: "none"
   };
-  return /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+  return /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
     "div",
     {
       ref: setNodeRef,
@@ -6744,7 +7340,7 @@ var GalleryItem = ({
       onClick: () => onSelect(id),
       ...attributes,
       ...listeners,
-      children: img.thumbnail_url ? /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+      children: img.thumbnail_url ? /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
         "img",
         {
           src: img.thumbnail_url,
@@ -6759,7 +7355,7 @@ var GalleryItem = ({
             display: "block"
           }
         }
-      ) : /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+      ) : /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
         cloudinaryImage_default,
         {
           publicId: img.public_id,
@@ -6773,45 +7369,45 @@ var GalleryItem = ({
   );
 };
 var FullPageDemoPage = () => {
-  const [activePage, setActivePage] = (0, import_react11.useState)(0);
-  const [images, setImages] = (0, import_react11.useState)([]);
-  const [loading, setLoading] = (0, import_react11.useState)(true);
-  const [selected, setSelected] = (0, import_react11.useState)(null);
-  const [activeDragId, setActiveDragId] = (0, import_react11.useState)(null);
-  const prefetched = (0, import_react11.useRef)(/* @__PURE__ */ new Set());
-  const closeBtnRef = (0, import_react11.useRef)(null);
-  const lastDragEndRef = (0, import_react11.useRef)(0);
-  const [columnOrder, setColumnOrder] = (0, import_react11.useState)([]);
-  const [positions, setPositions] = (0, import_react11.useState)({});
-  const [galleryHeight, setGalleryHeight] = (0, import_react11.useState)(2e3);
-  const [layoutConfig, setLayoutConfig] = (0, import_react11.useState)({ columns: 0, columnWidth: 0, gap: 10 });
-  const containerRef = (0, import_react11.useRef)(null);
-  const [layoutReady, setLayoutReady] = (0, import_react11.useState)(false);
-  const [orderOpen, setOrderOpen] = (0, import_react11.useState)(false);
-  const [smallEventsDialog, setSmallEventsDialog] = (0, import_react11.useState)(null);
-  const [smallEventForms, setSmallEventForms] = (0, import_react11.useState)(() => ({
+  const [activePage, setActivePage] = (0, import_react13.useState)(0);
+  const [images, setImages] = (0, import_react13.useState)([]);
+  const [loading, setLoading] = (0, import_react13.useState)(true);
+  const [selected, setSelected] = (0, import_react13.useState)(null);
+  const [activeDragId, setActiveDragId] = (0, import_react13.useState)(null);
+  const prefetched = (0, import_react13.useRef)(/* @__PURE__ */ new Set());
+  const closeBtnRef = (0, import_react13.useRef)(null);
+  const lastDragEndRef = (0, import_react13.useRef)(0);
+  const [columnOrder, setColumnOrder] = (0, import_react13.useState)([]);
+  const [positions, setPositions] = (0, import_react13.useState)({});
+  const [galleryHeight, setGalleryHeight] = (0, import_react13.useState)(2e3);
+  const [layoutConfig, setLayoutConfig] = (0, import_react13.useState)({ columns: 0, columnWidth: 0, gap: 10 });
+  const containerRef = (0, import_react13.useRef)(null);
+  const [layoutReady, setLayoutReady] = (0, import_react13.useState)(false);
+  const [orderOpen, setOrderOpen] = (0, import_react13.useState)(false);
+  const [smallEventsDialog, setSmallEventsDialog] = (0, import_react13.useState)(null);
+  const [smallEventForms, setSmallEventForms] = (0, import_react13.useState)(() => ({
     dinner: createSmallEventDefaults("dinner"),
     pizza: createSmallEventDefaults("pizza"),
     weddings: createSmallEventDefaults("weddings"),
     holiday: createSmallEventDefaults("holiday")
   }));
-  const [availabilitySlots, setAvailabilitySlots] = (0, import_react11.useState)(() => buildInitialAvailability());
-  const [calendarHolds, setCalendarHolds] = (0, import_react11.useState)([]);
-  const [isCalendarAdmin, setIsCalendarAdmin] = (0, import_react11.useState)(false);
-  const [adminSlotDraft, setAdminSlotDraft] = (0, import_react11.useState)({
+  const [availabilitySlots, setAvailabilitySlots] = (0, import_react13.useState)(() => buildInitialAvailability());
+  const [calendarHolds, setCalendarHolds] = (0, import_react13.useState)([]);
+  const [isCalendarAdmin, setIsCalendarAdmin] = (0, import_react13.useState)(false);
+  const [adminSlotDraft, setAdminSlotDraft] = (0, import_react13.useState)({
     date: "",
     type: "dinner",
     status: "open",
     notes: "",
     applyToAllTypes: false
   });
-  const [smallEventsSessionToken, setSmallEventsSessionToken] = (0, import_react11.useState)("");
-  const [smallEventsSaving, setSmallEventsSaving] = (0, import_react11.useState)(false);
-  const [smallEventsNotice, setSmallEventsNotice] = (0, import_react11.useState)("");
-  const [availabilityLoading, setAvailabilityLoading] = (0, import_react11.useState)(false);
-  const [showWaitlistForm, setShowWaitlistForm] = (0, import_react11.useState)(false);
-  const [waitlistStatus, setWaitlistStatus] = (0, import_react11.useState)("idle");
-  const [waitlist, setWaitlist] = (0, import_react11.useState)({
+  const [smallEventsSessionToken, setSmallEventsSessionToken] = (0, import_react13.useState)("");
+  const [smallEventsSaving, setSmallEventsSaving] = (0, import_react13.useState)(false);
+  const [smallEventsNotice, setSmallEventsNotice] = (0, import_react13.useState)("");
+  const [availabilityLoading, setAvailabilityLoading] = (0, import_react13.useState)(false);
+  const [showWaitlistForm, setShowWaitlistForm] = (0, import_react13.useState)(false);
+  const [waitlistStatus, setWaitlistStatus] = (0, import_react13.useState)("idle");
+  const [waitlist, setWaitlist] = (0, import_react13.useState)({
     name: "",
     email: "",
     phone: "",
@@ -6822,61 +7418,61 @@ var FullPageDemoPage = () => {
     allergies: "",
     questions: ""
   });
-  const [mealPlanImages, setMealPlanImages] = (0, import_react11.useState)([]);
-  const [mealPlanLoading, setMealPlanLoading] = (0, import_react11.useState)(false);
-  const [mealPlanError, setMealPlanError] = (0, import_react11.useState)(null);
-  const [aboutGalleryImages, setAboutGalleryImages] = (0, import_react11.useState)([]);
-  const [aboutGalleryLoading, setAboutGalleryLoading] = (0, import_react11.useState)(false);
-  const [aboutGalleryError, setAboutGalleryError] = (0, import_react11.useState)(null);
-  const [pizzaImages, setPizzaImages] = (0, import_react11.useState)([]);
-  const [pizzaLoading, setPizzaLoading] = (0, import_react11.useState)(false);
-  const [pizzaError, setPizzaError] = (0, import_react11.useState)(null);
-  const [partners, setPartners] = (0, import_react11.useState)([]);
-  const [businessPanel, setBusinessPanel] = (0, import_react11.useState)(null);
-  const [wholesaleEmail, setWholesaleEmail] = (0, import_react11.useState)("");
-  const [wholesaleSubmitted, setWholesaleSubmitted] = (0, import_react11.useState)(false);
-  const [wholesaleMenuItems, setWholesaleMenuItems] = (0, import_react11.useState)([]);
-  const [wholesaleMenuLoading, setWholesaleMenuLoading] = (0, import_react11.useState)(false);
-  const [wholesaleMenuError, setWholesaleMenuError] = (0, import_react11.useState)("");
-  const [officeLunchesOpen, setOfficeLunchesOpen] = (0, import_react11.useState)(false);
-  const [quoteDialogOpen, setQuoteDialogOpen] = (0, import_react11.useState)(false);
-  const [quoteDialogType, setQuoteDialogType] = (0, import_react11.useState)("");
-  const [quoteName, setQuoteName] = (0, import_react11.useState)("");
-  const [quoteEmail, setQuoteEmail] = (0, import_react11.useState)("");
-  const [quoteMessage, setQuoteMessage] = (0, import_react11.useState)("");
-  const [quoteStatus, setQuoteStatus] = (0, import_react11.useState)("idle");
-  const [quoteError, setQuoteError] = (0, import_react11.useState)("");
-  const [announcementVisible, setAnnouncementVisible] = (0, import_react11.useState)(false);
-  const [announcementOpen, setAnnouncementOpen] = (0, import_react11.useState)(false);
-  const [caseStudyImage, setCaseStudyImage] = (0, import_react11.useState)(null);
-  const [aboutFaqOpen, setAboutFaqOpen] = (0, import_react11.useState)(0);
-  const [showFeedback, setShowFeedback] = (0, import_react11.useState)(false);
-  const [fb, setFb] = (0, import_react11.useState)({ name: "", email: "", sentiment: "positive", message: "" });
-  const [fbStatus, setFbStatus] = (0, import_react11.useState)("idle");
-  const [liveFeedback, setLiveFeedback] = (0, import_react11.useState)([]);
-  const [businessContactOpen, setBusinessContactOpen] = (0, import_react11.useState)(false);
-  const [businessContactType, setBusinessContactType] = (0, import_react11.useState)("wholesale");
-  const [businessContactName, setBusinessContactName] = (0, import_react11.useState)("");
-  const [businessContactEmail, setBusinessContactEmail] = (0, import_react11.useState)("");
-  const [businessContactPhone, setBusinessContactPhone] = (0, import_react11.useState)("");
-  const [businessContactOrg, setBusinessContactOrg] = (0, import_react11.useState)("");
-  const [businessContactMessage, setBusinessContactMessage] = (0, import_react11.useState)("");
-  const [businessContactStatus, setBusinessContactStatus] = (0, import_react11.useState)("idle");
-  const [businessContactError, setBusinessContactError] = (0, import_react11.useState)("");
-  const [smallEventsContactOpen, setSmallEventsContactOpen] = (0, import_react11.useState)(false);
-  const [smallEventsContactType, setSmallEventsContactType] = (0, import_react11.useState)("dinner");
-  const [smallEventsContactName, setSmallEventsContactName] = (0, import_react11.useState)("");
-  const [smallEventsContactEmail, setSmallEventsContactEmail] = (0, import_react11.useState)("");
-  const [smallEventsContactPhone, setSmallEventsContactPhone] = (0, import_react11.useState)("");
-  const [smallEventsContactMessage, setSmallEventsContactMessage] = (0, import_react11.useState)("");
-  const [smallEventsContactStatus, setSmallEventsContactStatus] = (0, import_react11.useState)("idle");
-  const [smallEventsContactError, setSmallEventsContactError] = (0, import_react11.useState)("");
-  const [askChefOpen, setAskChefOpen] = (0, import_react11.useState)(false);
+  const [mealPlanImages, setMealPlanImages] = (0, import_react13.useState)([]);
+  const [mealPlanLoading, setMealPlanLoading] = (0, import_react13.useState)(false);
+  const [mealPlanError, setMealPlanError] = (0, import_react13.useState)(null);
+  const [aboutGalleryImages, setAboutGalleryImages] = (0, import_react13.useState)([]);
+  const [aboutGalleryLoading, setAboutGalleryLoading] = (0, import_react13.useState)(false);
+  const [aboutGalleryError, setAboutGalleryError] = (0, import_react13.useState)(null);
+  const [pizzaImages, setPizzaImages] = (0, import_react13.useState)([]);
+  const [pizzaLoading, setPizzaLoading] = (0, import_react13.useState)(false);
+  const [pizzaError, setPizzaError] = (0, import_react13.useState)(null);
+  const [partners, setPartners] = (0, import_react13.useState)([]);
+  const [businessPanel, setBusinessPanel] = (0, import_react13.useState)(null);
+  const [wholesaleEmail, setWholesaleEmail] = (0, import_react13.useState)("");
+  const [wholesaleSubmitted, setWholesaleSubmitted] = (0, import_react13.useState)(false);
+  const [wholesaleMenuItems, setWholesaleMenuItems] = (0, import_react13.useState)([]);
+  const [wholesaleMenuLoading, setWholesaleMenuLoading] = (0, import_react13.useState)(false);
+  const [wholesaleMenuError, setWholesaleMenuError] = (0, import_react13.useState)("");
+  const [officeLunchesOpen, setOfficeLunchesOpen] = (0, import_react13.useState)(false);
+  const [quoteDialogOpen, setQuoteDialogOpen] = (0, import_react13.useState)(false);
+  const [quoteDialogType, setQuoteDialogType] = (0, import_react13.useState)("");
+  const [quoteName, setQuoteName] = (0, import_react13.useState)("");
+  const [quoteEmail, setQuoteEmail] = (0, import_react13.useState)("");
+  const [quoteMessage, setQuoteMessage] = (0, import_react13.useState)("");
+  const [quoteStatus, setQuoteStatus] = (0, import_react13.useState)("idle");
+  const [quoteError, setQuoteError] = (0, import_react13.useState)("");
+  const [announcementVisible, setAnnouncementVisible] = (0, import_react13.useState)(false);
+  const [announcementOpen, setAnnouncementOpen] = (0, import_react13.useState)(false);
+  const [caseStudyImage, setCaseStudyImage] = (0, import_react13.useState)(null);
+  const [aboutFaqOpen, setAboutFaqOpen] = (0, import_react13.useState)(0);
+  const [showFeedback, setShowFeedback] = (0, import_react13.useState)(false);
+  const [fb, setFb] = (0, import_react13.useState)({ name: "", email: "", sentiment: "positive", message: "" });
+  const [fbStatus, setFbStatus] = (0, import_react13.useState)("idle");
+  const [liveFeedback, setLiveFeedback] = (0, import_react13.useState)([]);
+  const [businessContactOpen, setBusinessContactOpen] = (0, import_react13.useState)(false);
+  const [businessContactType, setBusinessContactType] = (0, import_react13.useState)("wholesale");
+  const [businessContactName, setBusinessContactName] = (0, import_react13.useState)("");
+  const [businessContactEmail, setBusinessContactEmail] = (0, import_react13.useState)("");
+  const [businessContactPhone, setBusinessContactPhone] = (0, import_react13.useState)("");
+  const [businessContactOrg, setBusinessContactOrg] = (0, import_react13.useState)("");
+  const [businessContactMessage, setBusinessContactMessage] = (0, import_react13.useState)("");
+  const [businessContactStatus, setBusinessContactStatus] = (0, import_react13.useState)("idle");
+  const [businessContactError, setBusinessContactError] = (0, import_react13.useState)("");
+  const [smallEventsContactOpen, setSmallEventsContactOpen] = (0, import_react13.useState)(false);
+  const [smallEventsContactType, setSmallEventsContactType] = (0, import_react13.useState)("dinner");
+  const [smallEventsContactName, setSmallEventsContactName] = (0, import_react13.useState)("");
+  const [smallEventsContactEmail, setSmallEventsContactEmail] = (0, import_react13.useState)("");
+  const [smallEventsContactPhone, setSmallEventsContactPhone] = (0, import_react13.useState)("");
+  const [smallEventsContactMessage, setSmallEventsContactMessage] = (0, import_react13.useState)("");
+  const [smallEventsContactStatus, setSmallEventsContactStatus] = (0, import_react13.useState)("idle");
+  const [smallEventsContactError, setSmallEventsContactError] = (0, import_react13.useState)("");
+  const [askChefOpen, setAskChefOpen] = (0, import_react13.useState)(false);
   const pages = FULLPAGE_PAGES;
   const sensors = (0, import_core.useSensors)(
     (0, import_core.useSensor)(import_core.PointerSensor, { activationConstraint: { distance: 8 } })
   );
-  (0, import_react11.useEffect)(() => {
+  (0, import_react13.useEffect)(() => {
     if (typeof window === "undefined") return;
     const stored = window.localStorage.getItem("smallEventsSessionToken") || "";
     if (stored) setSmallEventsSessionToken(stored);
@@ -7464,22 +8060,22 @@ var FullPageDemoPage = () => {
     })();
     const calendarMonths = buildCalendarMonths(calendarSpan);
     if (!config) return null;
-    return /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "grid gap-6 md:grid-cols-[minmax(0,1fr)_260px]", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "space-y-6", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "form-fun-banner", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "form-fun-title", children: intro.title }),
-          /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("p", { className: "form-fun-help", children: intro.subtitle })
+    return /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "grid gap-6 md:grid-cols-[minmax(0,1fr)_260px]", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "space-y-6", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "form-fun-banner", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { className: "form-fun-title", children: intro.title }),
+          /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("p", { className: "form-fun-help", children: intro.subtitle })
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "form-fun-card", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "form-fun-header", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "form-fun-title", children: "Say hello" }),
-            /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("span", { className: "form-fun-tag", children: "2 min" })
+        /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "form-fun-card", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "form-fun-header", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { className: "form-fun-title", children: "Say hello" }),
+            /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("span", { className: "form-fun-tag", children: "2 min" })
           ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("p", { className: "form-fun-help", children: "Tell us who to follow up with." }),
-          /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "mt-3 grid gap-3 md:grid-cols-2", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { children: [
-              /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("label", { className: "form-fun-label", children: "Your name" }),
-              /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+          /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("p", { className: "form-fun-help", children: "Tell us who to follow up with." }),
+          /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "mt-3 grid gap-3 md:grid-cols-2", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { children: [
+              /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("label", { className: "form-fun-label", children: "Your name" }),
+              /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
                 "input",
                 {
                   type: "text",
@@ -7490,9 +8086,9 @@ var FullPageDemoPage = () => {
                 }
               )
             ] }),
-            /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { children: [
-              /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("label", { className: "form-fun-label", children: "Best email" }),
-              /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+            /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { children: [
+              /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("label", { className: "form-fun-label", children: "Best email" }),
+              /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
                 "input",
                 {
                   type: "email",
@@ -7503,9 +8099,9 @@ var FullPageDemoPage = () => {
                 }
               )
             ] }),
-            /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { children: [
-              /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("label", { className: "form-fun-label", children: "Phone (optional)" }),
-              /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+            /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { children: [
+              /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("label", { className: "form-fun-label", children: "Phone (optional)" }),
+              /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
                 "input",
                 {
                   type: "tel",
@@ -7516,12 +8112,12 @@ var FullPageDemoPage = () => {
                 }
               )
             ] }),
-            /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { children: [
-              /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("label", { className: "form-fun-label", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { children: [
+              /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("label", { className: "form-fun-label", children: [
                 "Guest count",
                 guestLimitLabel ? ` (${guestLimitLabel})` : ""
               ] }),
-              /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+              /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
                 "input",
                 {
                   type: "number",
@@ -7536,33 +8132,33 @@ var FullPageDemoPage = () => {
             ] })
           ] })
         ] }),
-        (type === "dinner" || type === "pizza") && /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "form-fun-card", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "form-fun-header", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "form-fun-title", children: type === "pizza" ? "Pizza party details" : "Dinner details" }),
-            /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("span", { className: "form-fun-tag", children: type === "pizza" ? "Pizza" : "In-home" })
+        (type === "dinner" || type === "pizza") && /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "form-fun-card", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "form-fun-header", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { className: "form-fun-title", children: type === "pizza" ? "Pizza party details" : "Dinner details" }),
+            /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("span", { className: "form-fun-tag", children: type === "pizza" ? "Pizza" : "In-home" })
           ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("p", { className: "form-fun-help", children: "Share your kitchen setup and service flow." }),
-          /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "mt-3 grid gap-3 md:grid-cols-2", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { children: [
-              /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("label", { className: "form-fun-label", children: type === "pizza" ? "Rounds or courses" : "Course count" }),
-              /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)(
+          /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("p", { className: "form-fun-help", children: "Share your kitchen setup and service flow." }),
+          /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "mt-3 grid gap-3 md:grid-cols-2", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { children: [
+              /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("label", { className: "form-fun-label", children: type === "pizza" ? "Rounds or courses" : "Course count" }),
+              /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)(
                 "select",
                 {
                   className: "mt-1",
                   value: form.courses,
                   onChange: (e) => updateSmallEventForm(type, "courses", e.target.value),
                   children: [
-                    /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("option", { value: "", children: "Select" }),
-                    /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("option", { value: "3", children: "3 courses" }),
-                    /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("option", { value: "4", children: "4 courses" }),
-                    /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("option", { value: "5", children: "5+ courses" })
+                    /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("option", { value: "", children: "Select" }),
+                    /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("option", { value: "3", children: "3 courses" }),
+                    /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("option", { value: "4", children: "4 courses" }),
+                    /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("option", { value: "5", children: "5+ courses" })
                   ]
                 }
               )
             ] }),
-            /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { children: [
-              /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("label", { className: "form-fun-label", children: "Kitchen setup" }),
-              /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+            /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { children: [
+              /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("label", { className: "form-fun-label", children: "Kitchen setup" }),
+              /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
                 "input",
                 {
                   type: "text",
@@ -7575,16 +8171,16 @@ var FullPageDemoPage = () => {
             ] })
           ] })
         ] }),
-        type === "weddings" && /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "form-fun-card", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "form-fun-header", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "form-fun-title", children: "Wedding details" }),
-            /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("span", { className: "form-fun-tag", children: "Celebrate" })
+        type === "weddings" && /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "form-fun-card", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "form-fun-header", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { className: "form-fun-title", children: "Wedding details" }),
+            /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("span", { className: "form-fun-tag", children: "Celebrate" })
           ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("p", { className: "form-fun-help", children: "Let us know who is coordinating and the flow." }),
-          /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "mt-3 grid gap-3 md:grid-cols-2", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { children: [
-              /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("label", { className: "form-fun-label", children: "Planner or point of contact" }),
-              /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+          /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("p", { className: "form-fun-help", children: "Let us know who is coordinating and the flow." }),
+          /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "mt-3 grid gap-3 md:grid-cols-2", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { children: [
+              /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("label", { className: "form-fun-label", children: "Planner or point of contact" }),
+              /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
                 "input",
                 {
                   type: "text",
@@ -7595,9 +8191,9 @@ var FullPageDemoPage = () => {
                 }
               )
             ] }),
-            /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { children: [
-              /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("label", { className: "form-fun-label", children: "Meal moments" }),
-              /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+            /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { children: [
+              /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("label", { className: "form-fun-label", children: "Meal moments" }),
+              /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
                 "input",
                 {
                   type: "text",
@@ -7610,16 +8206,16 @@ var FullPageDemoPage = () => {
             ] })
           ] })
         ] }),
-        type === "holiday" && /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "form-fun-card", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "form-fun-header", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "form-fun-title", children: "Event details" }),
-            /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("span", { className: "form-fun-tag", children: "Vibe" })
+        type === "holiday" && /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "form-fun-card", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "form-fun-header", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { className: "form-fun-title", children: "Event details" }),
+            /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("span", { className: "form-fun-tag", children: "Vibe" })
           ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("p", { className: "form-fun-help", children: "Tell us the occasion and setup." }),
-          /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "mt-3 grid gap-3 md:grid-cols-2", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { children: [
-              /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("label", { className: "form-fun-label", children: "Occasion" }),
-              /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+          /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("p", { className: "form-fun-help", children: "Tell us the occasion and setup." }),
+          /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "mt-3 grid gap-3 md:grid-cols-2", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { children: [
+              /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("label", { className: "form-fun-label", children: "Occasion" }),
+              /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
                 "input",
                 {
                   type: "text",
@@ -7630,9 +8226,9 @@ var FullPageDemoPage = () => {
                 }
               )
             ] }),
-            /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { children: [
-              /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("label", { className: "form-fun-label", children: "Setup needs" }),
-              /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+            /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { children: [
+              /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("label", { className: "form-fun-label", children: "Setup needs" }),
+              /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
                 "input",
                 {
                   type: "text",
@@ -7645,34 +8241,34 @@ var FullPageDemoPage = () => {
             ] })
           ] })
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "form-fun-card", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "form-fun-header", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "form-fun-title", children: "Menu vibes" }),
-            /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("span", { className: "form-fun-tag", children: "Food" })
+        /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "form-fun-card", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "form-fun-header", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { className: "form-fun-title", children: "Menu vibes" }),
+            /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("span", { className: "form-fun-tag", children: "Food" })
           ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("p", { className: "form-fun-help", children: "Pick a style and any must-haves." }),
-          /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "mt-3 grid gap-3 md:grid-cols-2", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { children: [
-              /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("label", { className: "form-fun-label", children: "Serving style" }),
-              /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)(
+          /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("p", { className: "form-fun-help", children: "Pick a style and any must-haves." }),
+          /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "mt-3 grid gap-3 md:grid-cols-2", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { children: [
+              /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("label", { className: "form-fun-label", children: "Serving style" }),
+              /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)(
                 "select",
                 {
                   className: "mt-1",
                   value: form.serviceStyle,
                   onChange: (e) => updateSmallEventForm(type, "serviceStyle", e.target.value),
                   children: [
-                    /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("option", { value: "", children: "Select style" }),
-                    /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("option", { value: "plated", children: "Plated" }),
-                    /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("option", { value: "family", children: "Family-style" }),
-                    /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("option", { value: "buffet", children: "Buffet" }),
-                    /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("option", { value: "dropoff", children: "Drop-off" })
+                    /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("option", { value: "", children: "Select style" }),
+                    /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("option", { value: "plated", children: "Plated" }),
+                    /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("option", { value: "family", children: "Family-style" }),
+                    /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("option", { value: "buffet", children: "Buffet" }),
+                    /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("option", { value: "dropoff", children: "Drop-off" })
                   ]
                 }
               )
             ] }),
-            /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { children: [
-              /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("label", { className: "form-fun-label", children: "Menu wishes" }),
-              /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+            /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { children: [
+              /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("label", { className: "form-fun-label", children: "Menu wishes" }),
+              /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
                 "textarea",
                 {
                   className: "mt-1",
@@ -7683,9 +8279,9 @@ var FullPageDemoPage = () => {
                 }
               )
             ] }),
-            /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "md:col-span-2", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("label", { className: "form-fun-label", children: "Allergies or needs" }),
-              /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+            /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "md:col-span-2", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("label", { className: "form-fun-label", children: "Allergies or needs" }),
+              /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
                 "textarea",
                 {
                   className: "mt-1",
@@ -7696,9 +8292,9 @@ var FullPageDemoPage = () => {
                 }
               )
             ] }),
-            /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "md:col-span-2", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("label", { className: "form-fun-label", children: "Extras to plan for" }),
-              /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+            /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "md:col-span-2", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("label", { className: "form-fun-label", children: "Extras to plan for" }),
+              /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
                 "textarea",
                 {
                   className: "mt-1",
@@ -7711,16 +8307,16 @@ var FullPageDemoPage = () => {
             ] })
           ] })
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "form-fun-card", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "form-fun-header", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "form-fun-title", children: "Save your progress" }),
-            /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("span", { className: "form-fun-tag", children: "Optional" })
+        /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "form-fun-card", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "form-fun-header", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { className: "form-fun-title", children: "Save your progress" }),
+            /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("span", { className: "form-fun-tag", children: "Optional" })
           ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("p", { className: "form-fun-help", children: "We can email a save link so you can return later." }),
-          /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "mt-3 grid gap-3 md:grid-cols-2", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "md:col-span-2", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("label", { className: "form-fun-label", children: "Where should we send the link?" }),
-              /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+          /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("p", { className: "form-fun-help", children: "We can email a save link so you can return later." }),
+          /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "mt-3 grid gap-3 md:grid-cols-2", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "md:col-span-2", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("label", { className: "form-fun-label", children: "Where should we send the link?" }),
+              /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
                 "input",
                 {
                   type: "email",
@@ -7731,8 +8327,8 @@ var FullPageDemoPage = () => {
                 }
               )
             ] }),
-            /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("label", { className: "form-fun-label md:col-span-2 flex items-center gap-2", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+            /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("label", { className: "form-fun-label md:col-span-2 flex items-center gap-2", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
                 "input",
                 {
                   type: "checkbox",
@@ -7742,10 +8338,10 @@ var FullPageDemoPage = () => {
               ),
               "Create an account so you can edit anytime (we'll save your date for 24 hours)"
             ] }),
-            form.wantsAccount && /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)(import_jsx_runtime20.Fragment, { children: [
-              /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { children: [
-                /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("label", { className: "form-fun-label", children: "Account email" }),
-                /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+            form.wantsAccount && /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)(import_jsx_runtime22.Fragment, { children: [
+              /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { children: [
+                /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("label", { className: "form-fun-label", children: "Account email" }),
+                /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
                   "input",
                   {
                     type: "email",
@@ -7756,9 +8352,9 @@ var FullPageDemoPage = () => {
                   }
                 )
               ] }),
-              /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { children: [
-                /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("label", { className: "form-fun-label", children: "Password" }),
-                /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+              /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { children: [
+                /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("label", { className: "form-fun-label", children: "Password" }),
+                /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
                   "input",
                   {
                     type: "password",
@@ -7771,8 +8367,8 @@ var FullPageDemoPage = () => {
               ] })
             ] })
           ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "mt-4 form-fun-actions", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+          /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "mt-4 form-fun-actions", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
               "button",
               {
                 type: "button",
@@ -7782,7 +8378,7 @@ var FullPageDemoPage = () => {
                 children: smallEventsSaving ? "Saving..." : "Save estimate"
               }
             ),
-            /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+            /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
               "button",
               {
                 type: "button",
@@ -7791,7 +8387,7 @@ var FullPageDemoPage = () => {
                 children: "Extend 5 days"
               }
             ),
-            /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+            /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
               "button",
               {
                 type: "button",
@@ -7801,13 +8397,13 @@ var FullPageDemoPage = () => {
               }
             )
           ] }),
-          smallEventsNotice && /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "mt-2 text-xs text-slate-600", children: smallEventsNotice }),
-          /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "mt-2 text-xs text-slate-500", children: [
+          smallEventsNotice && /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { className: "mt-2 text-xs text-slate-600", children: smallEventsNotice }),
+          /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "mt-2 text-xs text-slate-500", children: [
             "Estimate expires on ",
             expiresAt.toLocaleDateString(),
             " (5 days from last update)."
           ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+          /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
             "button",
             {
               type: "button",
@@ -7818,42 +8414,42 @@ var FullPageDemoPage = () => {
           )
         ] })
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "space-y-4", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "form-fun-card", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "form-fun-header", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "form-fun-title", children: "Estimate range" }),
-            /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("span", { className: "form-fun-tag", children: "Live" })
+      /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "space-y-4", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "form-fun-card", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "form-fun-header", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { className: "form-fun-title", children: "Estimate range" }),
+            /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("span", { className: "form-fun-tag", children: "Live" })
           ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "mt-2 text-2xl font-bold text-slate-900", children: estimate ? `${formatCurrency(estimate.estimateMin)} - ${formatCurrency(estimate.estimateMax)}` : formatCurrency(0) }),
-          /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "mt-2 text-xs text-slate-600", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { className: "mt-2 text-2xl font-bold text-slate-900", children: estimate ? `${formatCurrency(estimate.estimateMin)} - ${formatCurrency(estimate.estimateMax)}` : formatCurrency(0) }),
+          /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "mt-2 text-xs text-slate-600", children: [
             "Based on ",
             estimate?.guestCount || 0,
             " guests, ",
             estimate?.staffingCount || 0,
             " staff."
           ] }),
-          type === "weddings" && estimate?.coordinationFee > 0 && /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "text-xs text-slate-600", children: [
+          type === "weddings" && estimate?.coordinationFee > 0 && /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "text-xs text-slate-600", children: [
             "Includes a 5% event coordination line item (",
             formatCurrency(estimate.coordinationFee),
             ")."
           ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "text-xs text-slate-500", children: "Rentals, tax, and bar packages are estimated separately." })
+          /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { className: "text-xs text-slate-500", children: "Rentals, tax, and bar packages are estimated separately." })
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "form-fun-card", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "form-fun-header", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "form-fun-title", children: "Hold your date" }),
-            /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("span", { className: "form-fun-tag", children: "24h" })
+        /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "form-fun-card", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "form-fun-header", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { className: "form-fun-title", children: "Hold your date" }),
+            /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("span", { className: "form-fun-tag", children: "24h" })
           ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "mt-2 text-xs text-slate-600", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "mt-2 text-xs text-slate-600", children: [
             depositLabel,
             " deposit holds your date."
           ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "mt-2 text-lg font-semibold text-slate-900", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "mt-2 text-lg font-semibold text-slate-900", children: [
             "Deposit due:",
             " ",
             estimate ? formatCurrency(estimate.depositAmount, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : formatCurrency(0, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
           ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+          /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
             "button",
             {
               type: "button",
@@ -7863,18 +8459,18 @@ var FullPageDemoPage = () => {
               children: form.depositStatus === "paid" ? "Deposit received" : form.depositStatus === "pending" ? "Deposit started" : "Pay deposit via Square"
             }
           ),
-          /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "mt-2 text-xs text-slate-500", children: holdsOnSlot ? holdsOnSlot.status === "confirmed" ? "Date confirmed. Final balance due before service." : `Hold active until ${new Date(holdsOnSlot.holdUntil).toLocaleString()}.` : "No date hold yet. We will confirm availability after we connect." })
+          /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { className: "mt-2 text-xs text-slate-500", children: holdsOnSlot ? holdsOnSlot.status === "confirmed" ? "Date confirmed. Final balance due before service." : `Hold active until ${new Date(holdsOnSlot.holdUntil).toLocaleString()}.` : "No date hold yet. We will confirm availability after we connect." })
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "form-fun-card", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "form-fun-header", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "form-fun-title", children: "When and where" }),
-            /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("span", { className: "form-fun-tag", children: "Dates" })
+        /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "form-fun-card", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "form-fun-header", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { className: "form-fun-title", children: "When and where" }),
+            /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("span", { className: "form-fun-tag", children: "Dates" })
           ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("p", { className: "form-fun-help", children: "Select an open date on the calendar. Admins set open and blocked dates by event type." }),
-          /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "availability-calendar", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "availability-header", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "availability-title", children: "Available dates" }),
-              /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+          /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("p", { className: "form-fun-help", children: "Select an open date on the calendar. Admins set open and blocked dates by event type." }),
+          /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "availability-calendar", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "availability-header", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { className: "availability-title", children: "Available dates" }),
+              /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
                 "button",
                 {
                   type: "button",
@@ -7884,28 +8480,28 @@ var FullPageDemoPage = () => {
                 }
               )
             ] }),
-            availabilityLoading ? /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "availability-empty", children: "Loading available dates..." }) : slots.length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "availability-empty", children: "No open dates yet. Add your ideal date below." }) : /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "availability-calendar-grid", children: calendarMonths.map((month) => /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "availability-month", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "availability-month-title", children: month.label }),
-              /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "availability-weekdays", children: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((label) => /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("span", { children: label }, label)) }),
-              /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "availability-days", children: month.cells.map((cell) => {
+            availabilityLoading ? /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { className: "availability-empty", children: "Loading available dates..." }) : slots.length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { className: "availability-empty", children: "No open dates yet. Add your ideal date below." }) : /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { className: "availability-calendar-grid", children: calendarMonths.map((month) => /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "availability-month", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { className: "availability-month-title", children: month.label }),
+              /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { className: "availability-weekdays", children: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((label) => /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("span", { children: label }, label)) }),
+              /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { className: "availability-days", children: month.cells.map((cell) => {
                 if (cell.isOutside) {
-                  return /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "availability-day is-outside" }, cell.key);
+                  return /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { className: "availability-day is-outside" }, cell.key);
                 }
                 const slot = cell.slot;
                 if (!slot) {
-                  return /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+                  return /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
                     "div",
                     {
                       className: "availability-day is-unlisted",
                       title: "No availability set",
-                      children: /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("span", { children: cell.day })
+                      children: /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("span", { children: cell.day })
                     },
                     cell.key
                   );
                 }
                 const meta = getSlotStatusMeta(slot);
                 const isSelected = selectedSlot?.id === slot.id;
-                return /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+                return /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
                   "button",
                   {
                     type: "button",
@@ -7914,21 +8510,21 @@ var FullPageDemoPage = () => {
                     disabled: meta.isUnavailable,
                     onClick: () => selectAvailabilitySlot(slot),
                     title: slot.notes || meta.statusLabel,
-                    children: /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("span", { children: cell.day })
+                    children: /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("span", { children: cell.day })
                   },
                   cell.key
                 );
               }) })
             ] }, month.key)) }),
-            /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "availability-legend", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("span", { "data-status": "open", children: "Open" }),
-              /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("span", { "data-status": "held", children: "Held" }),
-              /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("span", { "data-status": "blocked", children: "Blocked" })
+            /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "availability-legend", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("span", { "data-status": "open", children: "Open" }),
+              /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("span", { "data-status": "held", children: "Held" }),
+              /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("span", { "data-status": "blocked", children: "Blocked" })
             ] }),
-            /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "availability-footer", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "availability-selected", children: selectedSlotLabel ? `Selected: ${selectedSlotLabel}` : "Select an open date above." }),
-              selectedSlot?.notes && /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "availability-notes", children: selectedSlot.notes }),
-              /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "availability-actions", children: holdsOnSlot && selectedSlot?.id === holdsOnSlot.slotId ? /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+            /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "availability-footer", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { className: "availability-selected", children: selectedSlotLabel ? `Selected: ${selectedSlotLabel}` : "Select an open date above." }),
+              selectedSlot?.notes && /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { className: "availability-notes", children: selectedSlot.notes }),
+              /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { className: "availability-actions", children: holdsOnSlot && selectedSlot?.id === holdsOnSlot.slotId ? /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
                 "button",
                 {
                   type: "button",
@@ -7936,7 +8532,7 @@ var FullPageDemoPage = () => {
                   onClick: () => releaseHold(holdsOnSlot.slotId, type),
                   children: "Release hold"
                 }
-              ) : /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+              ) : /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
                 "button",
                 {
                   type: "button",
@@ -7946,13 +8542,13 @@ var FullPageDemoPage = () => {
                   children: holdsOnSlot ? "Move hold here" : "Hold this date"
                 }
               ) }),
-              !form.estimateId && selectedSlot && /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "availability-note", children: "Save your estimate before placing a 24-hour hold." })
+              !form.estimateId && selectedSlot && /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { className: "availability-note", children: "Save your estimate before placing a 24-hour hold." })
             ] })
           ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "mt-3 grid gap-3 md:grid-cols-2", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { children: [
-              /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("label", { className: "form-fun-label", children: "Ideal date" }),
-              /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+          /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "mt-3 grid gap-3 md:grid-cols-2", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { children: [
+              /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("label", { className: "form-fun-label", children: "Ideal date" }),
+              /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
                 "input",
                 {
                   type: "date",
@@ -7962,9 +8558,9 @@ var FullPageDemoPage = () => {
                 }
               )
             ] }),
-            /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { children: [
-              /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("label", { className: "form-fun-label", children: "Ideal time" }),
-              /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+            /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { children: [
+              /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("label", { className: "form-fun-label", children: "Ideal time" }),
+              /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
                 "input",
                 {
                   type: "text",
@@ -7975,9 +8571,9 @@ var FullPageDemoPage = () => {
                 }
               )
             ] }),
-            /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "md:col-span-2", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("label", { className: "form-fun-label", children: "Location or venue" }),
-              /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+            /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "md:col-span-2", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("label", { className: "form-fun-label", children: "Location or venue" }),
+              /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
                 "input",
                 {
                   type: "text",
@@ -7990,11 +8586,11 @@ var FullPageDemoPage = () => {
             ] })
           ] })
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "rounded-lg border border-slate-200 bg-slate-50 p-4", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "flex items-center justify-between", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "text-sm font-semibold text-slate-900", children: "Admin controls" }),
-            /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("label", { className: "flex items-center gap-2 text-xs text-slate-600", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+        /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "rounded-lg border border-slate-200 bg-slate-50 p-4", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "flex items-center justify-between", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { className: "text-sm font-semibold text-slate-900", children: "Admin controls" }),
+            /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("label", { className: "flex items-center gap-2 text-xs text-slate-600", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
                 "input",
                 {
                   type: "checkbox",
@@ -8005,11 +8601,11 @@ var FullPageDemoPage = () => {
               "Admin mode"
             ] })
           ] }),
-          isCalendarAdmin && /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "mt-3 space-y-3 text-xs text-slate-700", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "grid grid-cols-2 gap-2", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { children: [
-                /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("label", { className: "font-semibold text-slate-600", children: "Date" }),
-                /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+          isCalendarAdmin && /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "mt-3 space-y-3 text-xs text-slate-700", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "grid grid-cols-2 gap-2", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { children: [
+                /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("label", { className: "font-semibold text-slate-600", children: "Date" }),
+                /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
                   "input",
                   {
                     type: "date",
@@ -8019,38 +8615,38 @@ var FullPageDemoPage = () => {
                   }
                 )
               ] }),
-              /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { children: [
-                /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("label", { className: "font-semibold text-slate-600", children: "Event type" }),
-                /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+              /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { children: [
+                /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("label", { className: "font-semibold text-slate-600", children: "Event type" }),
+                /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
                   "select",
                   {
                     className: "mt-1 w-full rounded-md border border-slate-300 bg-white px-2 py-1 text-xs",
                     value: adminSlotDraft.type,
                     onChange: (e) => updateAdminDraft("type", e.target.value),
-                    children: EVENT_TYPES.map((eventType) => /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("option", { value: eventType, children: SMALL_EVENT_CONFIG[eventType].label }, eventType))
+                    children: EVENT_TYPES.map((eventType) => /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("option", { value: eventType, children: SMALL_EVENT_CONFIG[eventType].label }, eventType))
                   }
                 )
               ] })
             ] }),
-            /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "grid grid-cols-2 gap-2", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { children: [
-                /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("label", { className: "font-semibold text-slate-600", children: "Status" }),
-                /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)(
+            /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "grid grid-cols-2 gap-2", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { children: [
+                /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("label", { className: "font-semibold text-slate-600", children: "Status" }),
+                /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)(
                   "select",
                   {
                     className: "mt-1 w-full rounded-md border border-slate-300 bg-white px-2 py-1 text-xs",
                     value: adminSlotDraft.status,
                     onChange: (e) => updateAdminDraft("status", e.target.value),
                     children: [
-                      /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("option", { value: "open", children: "Open" }),
-                      /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("option", { value: "blocked", children: "Blocked" })
+                      /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("option", { value: "open", children: "Open" }),
+                      /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("option", { value: "blocked", children: "Blocked" })
                     ]
                   }
                 )
               ] }),
-              /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { children: [
-                /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("label", { className: "font-semibold text-slate-600", children: "Notes" }),
-                /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+              /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { children: [
+                /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("label", { className: "font-semibold text-slate-600", children: "Notes" }),
+                /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
                   "input",
                   {
                     type: "text",
@@ -8062,8 +8658,8 @@ var FullPageDemoPage = () => {
                 )
               ] })
             ] }),
-            /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("label", { className: "flex items-center gap-2 text-xs text-slate-600", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+            /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("label", { className: "flex items-center gap-2 text-xs text-slate-600", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
                 "input",
                 {
                   type: "checkbox",
@@ -8073,7 +8669,7 @@ var FullPageDemoPage = () => {
               ),
               "Apply to all event types"
             ] }),
-            /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+            /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
               "button",
               {
                 type: "button",
@@ -8082,7 +8678,7 @@ var FullPageDemoPage = () => {
                 children: "Save availability update"
               }
             ),
-            /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+            /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
               "button",
               {
                 type: "button",
@@ -8091,12 +8687,12 @@ var FullPageDemoPage = () => {
                 children: "Clear expired holds"
               }
             ),
-            /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "rounded-md border border-slate-200 bg-white px-3 py-2", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "text-xs font-semibold text-slate-600", children: "Deposit override" }),
-              /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "mt-2 grid grid-cols-2 gap-2", children: [
-                /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { children: [
-                  /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("label", { className: "text-[11px] text-slate-500", children: "Percent" }),
-                  /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+            /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "rounded-md border border-slate-200 bg-white px-3 py-2", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { className: "text-xs font-semibold text-slate-600", children: "Deposit override" }),
+              /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "mt-2 grid grid-cols-2 gap-2", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("label", { className: "text-[11px] text-slate-500", children: "Percent" }),
+                  /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
                     "input",
                     {
                       type: "number",
@@ -8109,9 +8705,9 @@ var FullPageDemoPage = () => {
                     }
                   )
                 ] }),
-                /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { children: [
-                  /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("label", { className: "text-[11px] text-slate-500", children: "Flat amount" }),
-                  /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+                /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("label", { className: "text-[11px] text-slate-500", children: "Flat amount" }),
+                  /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
                     "input",
                     {
                       type: "number",
@@ -8125,7 +8721,7 @@ var FullPageDemoPage = () => {
                 ] })
               ] })
             ] }),
-            /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "text-[11px] text-slate-500", children: "Manual slots now. Ready for Google calendar sync later." })
+            /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { className: "text-[11px] text-slate-500", children: "Manual slots now. Ready for Google calendar sync later." })
           ] })
         ] })
       ] })
@@ -8141,7 +8737,7 @@ var FullPageDemoPage = () => {
       btn.style.color = isActive ? BRAND_TOKENS.textInverse : BRAND_TOKENS.textPrimary;
     });
   };
-  const shuffle = (0, import_react11.useCallback)((arr) => {
+  const shuffle = (0, import_react13.useCallback)((arr) => {
     const a = arr.slice();
     for (let i = a.length - 1; i > 0; i -= 1) {
       const j = Math.floor(Math.random() * (i + 1));
@@ -8149,7 +8745,7 @@ var FullPageDemoPage = () => {
     }
     return a;
   }, []);
-  const fetchImages = (0, import_react11.useCallback)(async () => {
+  const fetchImages = (0, import_react13.useCallback)(async () => {
     setLoading(true);
     const apiUrl = "/api/search-images?per_page=100";
     try {
@@ -8171,14 +8767,14 @@ var FullPageDemoPage = () => {
       setLoading(false);
     }
   }, [shuffle]);
-  (0, import_react11.useEffect)(() => {
+  (0, import_react13.useEffect)(() => {
     fetchImages();
   }, [fetchImages]);
-  (0, import_react11.useEffect)(() => {
+  (0, import_react13.useEffect)(() => {
     const timer = setTimeout(() => setAnnouncementVisible(true), 1200);
     return () => clearTimeout(timer);
   }, []);
-  (0, import_react11.useEffect)(() => {
+  (0, import_react13.useEffect)(() => {
     if (typeof document === "undefined") return;
     const offset = announcementVisible && activePage === 0 ? `${ANNOUNCEMENT_HEIGHT}px` : "0px";
     document.documentElement.style.setProperty("--announcement-offset", offset);
@@ -8186,13 +8782,13 @@ var FullPageDemoPage = () => {
       document.documentElement.style.removeProperty("--announcement-offset");
     };
   }, [announcementVisible, activePage]);
-  (0, import_react11.useEffect)(() => {
+  (0, import_react13.useEffect)(() => {
     if (smallEventsDialog) {
       loadSmallEventsAvailability();
       setSmallEventsNotice("");
     }
   }, [smallEventsDialog]);
-  (0, import_react11.useEffect)(() => {
+  (0, import_react13.useEffect)(() => {
     let abort = false;
     const controller = new AbortController();
     (async () => {
@@ -8215,7 +8811,7 @@ var FullPageDemoPage = () => {
       controller.abort();
     };
   }, []);
-  (0, import_react11.useEffect)(() => {
+  (0, import_react13.useEffect)(() => {
     let abort = false;
     const controller = new AbortController();
     (async () => {
@@ -8238,7 +8834,7 @@ var FullPageDemoPage = () => {
       controller.abort();
     };
   }, []);
-  (0, import_react11.useEffect)(() => {
+  (0, import_react13.useEffect)(() => {
     let abort = false;
     const controller = new AbortController();
     (async () => {
@@ -8261,7 +8857,7 @@ var FullPageDemoPage = () => {
       controller.abort();
     };
   }, []);
-  (0, import_react11.useEffect)(() => {
+  (0, import_react13.useEffect)(() => {
     let mounted = true;
     fetch("/api/search-images?query=partner&per_page=48").then((r) => r.ok ? r.json() : null).then((data) => {
       if (!mounted || !data || !Array.isArray(data.images)) return;
@@ -8280,7 +8876,7 @@ var FullPageDemoPage = () => {
       mounted = false;
     };
   }, []);
-  (0, import_react11.useEffect)(() => {
+  (0, import_react13.useEffect)(() => {
     setWholesaleMenuLoading(true);
     setWholesaleMenuError("");
     try {
@@ -8304,7 +8900,7 @@ var FullPageDemoPage = () => {
       setWholesaleMenuLoading(false);
     }
   }, []);
-  const wholesaleMenuSections = (0, import_react11.useMemo)(() => {
+  const wholesaleMenuSections = (0, import_react13.useMemo)(() => {
     const sections = [];
     const categoryMap = /* @__PURE__ */ new Map();
     wholesaleMenuItems.forEach((item) => {
@@ -8318,21 +8914,21 @@ var FullPageDemoPage = () => {
     });
     return sections;
   }, [wholesaleMenuItems]);
-  const imageById = (0, import_react11.useMemo)(() => {
+  const imageById = (0, import_react13.useMemo)(() => {
     const map = /* @__PURE__ */ new Map();
     images.forEach((img) => {
       map.set(getImageId(img), img);
     });
     return map;
   }, [images]);
-  const imageIndexById = (0, import_react11.useMemo)(() => {
+  const imageIndexById = (0, import_react13.useMemo)(() => {
     const map = /* @__PURE__ */ new Map();
     images.forEach((img, idx) => {
       map.set(getImageId(img), idx);
     });
     return map;
   }, [images]);
-  const aboutMasonryItems = (0, import_react11.useMemo)(() => {
+  const aboutMasonryItems = (0, import_react13.useMemo)(() => {
     const mixed = [];
     const blocks = ABOUT_INFO_BLOCKS;
     const gallery = aboutGalleryImages;
@@ -8343,14 +8939,14 @@ var FullPageDemoPage = () => {
     }
     return mixed;
   }, [aboutGalleryImages]);
-  const flatOrder = (0, import_react11.useMemo)(() => columnOrder.flat(), [columnOrder]);
-  const orderedImages = (0, import_react11.useMemo)(() => flatOrder.map((id) => imageById.get(id)).filter(Boolean), [flatOrder, imageById]);
-  const getColumnCount = (0, import_react11.useCallback)((width) => {
+  const flatOrder = (0, import_react13.useMemo)(() => columnOrder.flat(), [columnOrder]);
+  const orderedImages = (0, import_react13.useMemo)(() => flatOrder.map((id) => imageById.get(id)).filter(Boolean), [flatOrder, imageById]);
+  const getColumnCount = (0, import_react13.useCallback)((width) => {
     if (width < 768) return 3;
     if (width >= 1024) return 6;
     return 5;
   }, []);
-  const buildColumnOrder = (0, import_react11.useCallback)((ids, config) => {
+  const buildColumnOrder = (0, import_react13.useCallback)((ids, config) => {
     const { columns, columnWidth, gap } = config;
     const nextColumns = Array.from({ length: columns }, () => []);
     const columnHeights = new Array(columns).fill(0);
@@ -8367,7 +8963,7 @@ var FullPageDemoPage = () => {
     });
     return nextColumns;
   }, [imageById]);
-  (0, import_react11.useEffect)(() => {
+  (0, import_react13.useEffect)(() => {
     const updateLayoutConfig = () => {
       const containerWidth = containerRef.current?.clientWidth || window.innerWidth;
       const columns = getColumnCount(containerWidth);
@@ -8384,7 +8980,7 @@ var FullPageDemoPage = () => {
     window.addEventListener("resize", updateLayoutConfig);
     return () => window.removeEventListener("resize", updateLayoutConfig);
   }, [getColumnCount]);
-  (0, import_react11.useEffect)(() => {
+  (0, import_react13.useEffect)(() => {
     if (images.length === 0) {
       setColumnOrder([]);
       setLayoutReady(false);
@@ -8405,7 +9001,7 @@ var FullPageDemoPage = () => {
       return buildColumnOrder(merged, layoutConfig);
     });
   }, [images, layoutConfig, buildColumnOrder]);
-  (0, import_react11.useEffect)(() => {
+  (0, import_react13.useEffect)(() => {
     if (columnOrder.length === 0 || !layoutConfig.columns) return;
     const { columns, columnWidth, gap } = layoutConfig;
     const newPositions = {};
@@ -8436,13 +9032,13 @@ var FullPageDemoPage = () => {
     setGalleryHeight(Math.max(nextHeight, 400));
     setLayoutReady(Object.keys(newPositions).length > 0);
   }, [columnOrder, layoutConfig, imageById]);
-  const handleDragStart = (0, import_react11.useCallback)((event) => {
+  const handleDragStart = (0, import_react13.useCallback)((event) => {
     setActiveDragId(event.active.id);
   }, []);
-  const handleDragCancel = (0, import_react11.useCallback)(() => {
+  const handleDragCancel = (0, import_react13.useCallback)(() => {
     setActiveDragId(null);
   }, []);
-  const handleDragEnd = (0, import_react11.useCallback)((event) => {
+  const handleDragEnd = (0, import_react13.useCallback)((event) => {
     const { active, delta } = event;
     setActiveDragId(null);
     lastDragEndRef.current = Date.now();
@@ -8488,7 +9084,7 @@ var FullPageDemoPage = () => {
       return nextColumns;
     });
   }, [layoutConfig, positions]);
-  const handleSelectImage = (0, import_react11.useCallback)((id) => {
+  const handleSelectImage = (0, import_react13.useCallback)((id) => {
     if (activeDragId) return;
     if (Date.now() - lastDragEndRef.current < 200) return;
     const img = imageById.get(id);
@@ -8496,8 +9092,8 @@ var FullPageDemoPage = () => {
     if (!img || idx === void 0) return;
     setSelected({ img, idx });
   }, [activeDragId, imageById, imageIndexById]);
-  const closeLightbox = (0, import_react11.useCallback)(() => setSelected(null), []);
-  const prefetchImage = (0, import_react11.useCallback)((url) => {
+  const closeLightbox = (0, import_react13.useCallback)(() => setSelected(null), []);
+  const prefetchImage = (0, import_react13.useCallback)((url) => {
     if (!url || typeof document === "undefined") return;
     if (prefetched.current.has(url)) return;
     const img = new Image();
@@ -8558,7 +9154,7 @@ var FullPageDemoPage = () => {
       setWaitlistStatus("error");
     }
   };
-  (0, import_react11.useEffect)(() => {
+  (0, import_react13.useEffect)(() => {
     const onKey = (e) => {
       if (!selected) return;
       if (e.key === "Escape") closeLightbox();
@@ -8574,7 +9170,7 @@ var FullPageDemoPage = () => {
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [selected, images, closeLightbox]);
-  (0, import_react11.useEffect)(() => {
+  (0, import_react13.useEffect)(() => {
     if (selected && closeBtnRef.current) closeBtnRef.current.focus();
   }, [selected]);
   const aboutFaqItems = [
@@ -8654,11 +9250,11 @@ var FullPageDemoPage = () => {
     const renderNodes = (node) => node.children.map((child) => {
       if (typeof child === "string") return child;
       const Tag = child.type === "b" ? "strong" : "em";
-      return /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(Tag, { children: renderNodes(child) }, `inline-${key++}`);
+      return /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(Tag, { children: renderNodes(child) }, `inline-${key++}`);
     });
     return renderNodes(root);
   };
-  const formatFeedbackDate = (0, import_react11.useCallback)((value) => {
+  const formatFeedbackDate = (0, import_react13.useCallback)((value) => {
     if (!value) return null;
     if (value instanceof Date && !Number.isNaN(value.getTime())) return value;
     if (typeof value === "string" || typeof value === "number") {
@@ -8678,7 +9274,7 @@ var FullPageDemoPage = () => {
     }
     return null;
   }, []);
-  const formatFeedbackContext = (0, import_react11.useCallback)((entry) => {
+  const formatFeedbackContext = (0, import_react13.useCallback)((entry) => {
     const date = formatFeedbackDate(entry?.createdAt);
     if (!date) return "Feedback";
     const label = date.toLocaleDateString("en-US", {
@@ -8688,7 +9284,7 @@ var FullPageDemoPage = () => {
     });
     return `Feedback \xB7 ${label}`;
   }, [formatFeedbackDate]);
-  const normalizeFeedbackEntry = (0, import_react11.useCallback)((entry) => {
+  const normalizeFeedbackEntry = (0, import_react13.useCallback)((entry) => {
     if (!entry) return null;
     const quote = entry.comment || entry.quote || "";
     if (!quote) return null;
@@ -8699,7 +9295,7 @@ var FullPageDemoPage = () => {
       context: entry.context || formatFeedbackContext(entry)
     };
   }, [formatFeedbackContext]);
-  const resetBusinessContact = (0, import_react11.useCallback)(() => {
+  const resetBusinessContact = (0, import_react13.useCallback)(() => {
     setBusinessContactName("");
     setBusinessContactEmail("");
     setBusinessContactPhone("");
@@ -8708,13 +9304,13 @@ var FullPageDemoPage = () => {
     setBusinessContactStatus("idle");
     setBusinessContactError("");
   }, []);
-  const openBusinessContact = (0, import_react11.useCallback)((type) => {
+  const openBusinessContact = (0, import_react13.useCallback)((type) => {
     setBusinessContactType(type);
     setBusinessContactOpen(true);
     setBusinessContactStatus("idle");
     setBusinessContactError("");
   }, []);
-  const resetSmallEventsContact = (0, import_react11.useCallback)(() => {
+  const resetSmallEventsContact = (0, import_react13.useCallback)(() => {
     setSmallEventsContactName("");
     setSmallEventsContactEmail("");
     setSmallEventsContactPhone("");
@@ -8722,19 +9318,19 @@ var FullPageDemoPage = () => {
     setSmallEventsContactStatus("idle");
     setSmallEventsContactError("");
   }, []);
-  const openSmallEventsContact = (0, import_react11.useCallback)((type) => {
+  const openSmallEventsContact = (0, import_react13.useCallback)((type) => {
     setSmallEventsContactType(type);
     setSmallEventsContactOpen(true);
     setSmallEventsContactStatus("idle");
     setSmallEventsContactError("");
   }, []);
   const reviews = thumbtackReviews;
-  const feedbackItems = (0, import_react11.useMemo)(() => {
+  const feedbackItems = (0, import_react13.useMemo)(() => {
     const dynamic = Array.isArray(liveFeedback) ? liveFeedback : [];
     const staticReviews = Array.isArray(reviews) ? reviews : [];
     return [...dynamic, ...staticReviews];
   }, [liveFeedback, reviews]);
-  (0, import_react11.useEffect)(() => {
+  (0, import_react13.useEffect)(() => {
     let mounted = true;
     const controller = new AbortController();
     (async () => {
@@ -8753,7 +9349,7 @@ var FullPageDemoPage = () => {
       controller.abort();
     };
   }, [normalizeFeedbackEntry]);
-  const faqStructuredData = (0, import_react11.useMemo)(
+  const faqStructuredData = (0, import_react13.useMemo)(
     () => JSON.stringify({
       "@context": "https://schema.org",
       "@type": "FAQPage",
@@ -8768,10 +9364,10 @@ var FullPageDemoPage = () => {
     }),
     [aboutFaqItems]
   );
-  const FeedbackModal = (0, import_react11.useMemo)(() => {
+  const FeedbackModal = (0, import_react13.useMemo)(() => {
     if (!showFeedback) return null;
-    return /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4", role: "dialog", "aria-modal": "true", children: /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "form-card w-full max-w-lg relative", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+    return /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { className: "fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4", role: "dialog", "aria-modal": "true", children: /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "form-card w-full max-w-lg relative", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
         "button",
         {
           className: "absolute right-4 top-4 text-sm underline",
@@ -8780,9 +9376,9 @@ var FullPageDemoPage = () => {
           children: "Close"
         }
       ),
-      /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("h4", { className: "text-xl font-bold mb-2", children: "Send Feedback" }),
-      /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("p", { className: "text-sm text-gray-600 mb-4", children: "We read every note. Thanks for helping us improve." }),
-      /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)(
+      /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("h4", { className: "text-xl font-bold mb-2", children: "Send Feedback" }),
+      /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("p", { className: "text-sm text-gray-600 mb-4", children: "We read every note. Thanks for helping us improve." }),
+      /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)(
         "form",
         {
           onSubmit: async (e) => {
@@ -8843,29 +9439,29 @@ var FullPageDemoPage = () => {
           },
           className: "space-y-3",
           children: [
-            /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { children: [
-              /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("label", { className: "label", htmlFor: "fb-name", children: "Name" }),
-              /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("input", { id: "fb-name", className: "input", value: fb.name, onChange: (e) => setFb({ ...fb, name: e.target.value }), required: true })
+            /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { children: [
+              /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("label", { className: "label", htmlFor: "fb-name", children: "Name" }),
+              /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("input", { id: "fb-name", className: "input", value: fb.name, onChange: (e) => setFb({ ...fb, name: e.target.value }), required: true })
             ] }),
-            /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { children: [
-              /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("label", { className: "label", htmlFor: "fb-email", children: "Email" }),
-              /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("input", { id: "fb-email", type: "email", className: "input", value: fb.email, onChange: (e) => setFb({ ...fb, email: e.target.value }), required: true })
+            /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { children: [
+              /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("label", { className: "label", htmlFor: "fb-email", children: "Email" }),
+              /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("input", { id: "fb-email", type: "email", className: "input", value: fb.email, onChange: (e) => setFb({ ...fb, email: e.target.value }), required: true })
             ] }),
-            /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { children: [
-              /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("label", { className: "label", htmlFor: "fb-sentiment", children: "Type" }),
-              /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "flex gap-4", id: "fb-sentiment", children: ["positive", "neutral", "negative"].map((s) => /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("label", { className: "inline-flex items-center gap-2", children: [
-                /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("input", { type: "radio", name: "sentiment", value: s, checked: fb.sentiment === s, onChange: () => setFb({ ...fb, sentiment: s }) }),
-                /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("span", { className: "capitalize", children: s })
+            /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { children: [
+              /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("label", { className: "label", htmlFor: "fb-sentiment", children: "Type" }),
+              /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { className: "flex gap-4", id: "fb-sentiment", children: ["positive", "neutral", "negative"].map((s) => /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("label", { className: "inline-flex items-center gap-2", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("input", { type: "radio", name: "sentiment", value: s, checked: fb.sentiment === s, onChange: () => setFb({ ...fb, sentiment: s }) }),
+                /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("span", { className: "capitalize", children: s })
               ] }, s)) })
             ] }),
-            /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { children: [
-              /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("label", { className: "label", htmlFor: "fb-message", children: "Message" }),
-              /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("textarea", { id: "fb-message", className: "textarea", value: fb.message, onChange: (e) => setFb({ ...fb, message: e.target.value }), rows: 5, required: true })
+            /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { children: [
+              /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("label", { className: "label", htmlFor: "fb-message", children: "Message" }),
+              /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("textarea", { id: "fb-message", className: "textarea", value: fb.message, onChange: (e) => setFb({ ...fb, message: e.target.value }), rows: 5, required: true })
             ] }),
-            /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "flex items-center gap-3", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("button", { type: "submit", className: "btn btn-primary", disabled: fbStatus === "sending", children: fbStatus === "sending" ? "Sending..." : "Send feedback" }),
-              fbStatus === "sent" && /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("span", { className: "text-green-700 text-sm", children: "Thanks! Sent." }),
-              fbStatus === "error" && /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("span", { className: "text-red-700 text-sm", children: "Could not send. Try again." })
+            /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "flex items-center gap-3", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("button", { type: "submit", className: "btn btn-primary", disabled: fbStatus === "sending", children: fbStatus === "sending" ? "Sending..." : "Send feedback" }),
+              fbStatus === "sent" && /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("span", { className: "text-green-700 text-sm", children: "Thanks! Sent." }),
+              fbStatus === "error" && /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("span", { className: "text-red-700 text-sm", children: "Could not send. Try again." })
             ] })
           ]
         }
@@ -8875,7 +9471,7 @@ var FullPageDemoPage = () => {
   const PartnerGrid = () => {
     const items = (partners || []).filter((p) => p && p.publicId);
     if (!items.length) return null;
-    return /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "max-w-6xl mx-auto grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-5 items-center px-4", children: items.map((p, i) => /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+    return /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { className: "max-w-6xl mx-auto grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-5 items-center px-4", children: items.map((p, i) => /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
       import_framer_motion3.motion.a,
       {
         href: p.url || "#",
@@ -8893,7 +9489,7 @@ var FullPageDemoPage = () => {
         whileInView: { opacity: 1, scale: 1 },
         viewport: { once: true },
         transition: { duration: 0.25, ease: "easeOut", delay: i * 0.03 },
-        children: /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "w-full", children: /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "relative w-full", style: { paddingTop: "18.2%" }, children: /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+        children: /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { className: "w-full", children: /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { className: "relative w-full", style: { paddingTop: "18.2%" }, children: /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
           cloudinaryImage_default,
           {
             publicId: p.publicId,
@@ -8913,8 +9509,8 @@ var FullPageDemoPage = () => {
       (p.publicId || i) + i
     )) });
   };
-  return /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "fullpage-demo", children: [
-    /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(import_framer_motion3.AnimatePresence, { children: announcementVisible && activePage === 0 && /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)(
+  return /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "fullpage-demo", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(import_framer_motion3.AnimatePresence, { children: announcementVisible && activePage === 0 && /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)(
       import_framer_motion3.motion.button,
       {
         type: "button",
@@ -8926,32 +9522,32 @@ var FullPageDemoPage = () => {
         onClick: () => setAnnouncementOpen(true),
         children: [
           "try ",
-          /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("span", { className: "announcement-highlight", children: "local pizza" }),
+          /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("span", { className: "announcement-highlight", children: "local pizza" }),
           " and more at Happy Monday Coffee in Roseville"
         ]
       }
     ) }),
-    /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)(
+    /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)(
       FullPageContainer_default,
       {
         pages,
         enableKeyboard: true,
         onPageChange: handlePageChange,
         children: [
-          /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+          /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
             FullPageSection_default,
             {
               id: "home",
               style: { backgroundColor: BRAND_TOKENS.bgPage },
               animation: "fadeScale",
-              children: /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+              children: /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
                 "div",
                 {
                   className: "w-full h-full overflow-y-auto",
                   style: {
                     paddingTop: announcementVisible && activePage === 0 ? `calc(5rem + ${ANNOUNCEMENT_HEIGHT}px)` : "5rem"
                   },
-                  children: loading ? /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "text-center py-20", style: { color: BRAND_TOKENS.textPrimary }, children: "Loading images..." }) : images.length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "text-center py-20", style: { color: BRAND_TOKENS.textPrimary }, children: "No images found." }) : !layoutReady ? /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "text-center py-20", style: { color: BRAND_TOKENS.textPrimary }, children: "Loading images..." }) : /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+                  children: loading ? /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { className: "text-center py-20", style: { color: BRAND_TOKENS.textPrimary }, children: "Loading images..." }) : images.length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { className: "text-center py-20", style: { color: BRAND_TOKENS.textPrimary }, children: "No images found." }) : !layoutReady ? /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { className: "text-center py-20", style: { color: BRAND_TOKENS.textPrimary }, children: "Loading images..." }) : /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
                     import_core.DndContext,
                     {
                       sensors,
@@ -8959,7 +9555,7 @@ var FullPageDemoPage = () => {
                       onDragStart: handleDragStart,
                       onDragEnd: handleDragEnd,
                       onDragCancel: handleDragCancel,
-                      children: /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(import_sortable.SortableContext, { items: flatOrder, children: /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+                      children: /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(import_sortable.SortableContext, { items: flatOrder, children: /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
                         "div",
                         {
                           ref: containerRef,
@@ -8968,7 +9564,7 @@ var FullPageDemoPage = () => {
                           children: orderedImages.map((img, idx) => {
                             const imgId = getImageId(img);
                             const pos = positions[imgId] || { x: 0, y: 0, width: 300, height: 400 };
-                            return /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+                            return /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
                               GalleryItem,
                               {
                                 id: imgId,
@@ -8991,14 +9587,14 @@ var FullPageDemoPage = () => {
               )
             }
           ),
-          /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+          /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
             FullPageSection_default,
             {
               id: "weekly-meals",
               style: { backgroundColor: BRAND_TOKENS.bgSection },
-              children: /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "relative h-full pt-20", children: [
-                /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "flex items-start", children: [
-                  /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)(
+              children: /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "relative h-full pt-20", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "flex items-start", children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)(
                     "div",
                     {
                       className: "group mt-6 ml-4 md:mt-8 md:ml-8 lg:mt-[50px] lg:ml-[50px]",
@@ -9008,7 +9604,7 @@ var FullPageDemoPage = () => {
                         borderRadius: "6px"
                       },
                       children: [
-                        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+                        /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
                           "div",
                           {
                             className: "line-through group-hover:italic",
@@ -9021,7 +9617,7 @@ var FullPageDemoPage = () => {
                             children: "Pickup on Sundays"
                           }
                         ),
-                        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+                        /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
                           "button",
                           {
                             type: "button",
@@ -9044,7 +9640,7 @@ var FullPageDemoPage = () => {
                       ]
                     }
                   ),
-                  /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+                  /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
                     import_framer_motion3.motion.span,
                     {
                       "aria-hidden": "true",
@@ -9060,15 +9656,15 @@ var FullPageDemoPage = () => {
                       children: "\u2192"
                     }
                   ),
-                  /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "mt-6 ml-4 md:mt-8 md:ml-8 lg:mt-[50px] lg:ml-[50px]", children: /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)(
+                  /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { className: "mt-6 ml-4 md:mt-8 md:ml-8 lg:mt-[50px] lg:ml-[50px]", children: /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)(
                     "div",
                     {
                       className: "rounded-md border border-slate-300 bg-white/80 px-4 py-3",
                       style: { fontFamily: "'Office Code Pro', monospace" },
                       children: [
-                        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "text-sm font-semibold text-slate-900", children: "Waiting list" }),
-                        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "mt-1 text-xs text-slate-600", children: "We'll let you know when space opens up." }),
-                        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+                        /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { className: "text-sm font-semibold text-slate-900", children: "Waiting list" }),
+                        /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { className: "mt-1 text-xs text-slate-600", children: "We'll let you know when space opens up." }),
+                        /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
                           "button",
                           {
                             type: "button",
@@ -9085,8 +9681,8 @@ var FullPageDemoPage = () => {
                     }
                   ) })
                 ] }),
-                /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "mt-12 px-4 md:px-8 lg:px-[50px]", children: mealPlanLoading ? /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "text-sm text-gray-600", children: "Loading photos..." }) : mealPlanError ? /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "text-sm text-red-700", children: mealPlanError }) : /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "columns-2 md:columns-3 lg:columns-4 gap-4 [column-fill:_balance]", children: [
-                  /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "mb-4 break-inside-avoid border p-4 bg-white/70 rounded-lg", children: /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+                /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { className: "mt-12 px-4 md:px-8 lg:px-[50px]", children: mealPlanLoading ? /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { className: "text-sm text-gray-600", children: "Loading photos..." }) : mealPlanError ? /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { className: "text-sm text-red-700", children: mealPlanError }) : /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "columns-2 md:columns-3 lg:columns-4 gap-4 [column-fill:_balance]", children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { className: "mb-4 break-inside-avoid border p-4 bg-white/70 rounded-lg", children: /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
                     "div",
                     {
                       style: {
@@ -9098,11 +9694,11 @@ var FullPageDemoPage = () => {
                       children: "From a few meals a week to complete meal replacement. We make wholesome home cooked meals from high integrity local ingredients. We ensure that you eat real food all week."
                     }
                   ) }),
-                  mealPlanImages.map((img, idx) => /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+                  mealPlanImages.map((img, idx) => /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
                     "div",
                     {
                       className: "mb-4 break-inside-avoid border p-2 bg-white rounded-lg overflow-hidden",
-                      children: img.thumbnail_url ? /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+                      children: img.thumbnail_url ? /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
                         "img",
                         {
                           src: img.thumbnail_url,
@@ -9110,7 +9706,7 @@ var FullPageDemoPage = () => {
                           className: "rounded-lg w-full h-auto",
                           loading: "lazy"
                         }
-                      ) : /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+                      ) : /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
                         cloudinaryImage_default,
                         {
                           publicId: img.public_id || img.publicId,
@@ -9126,14 +9722,14 @@ var FullPageDemoPage = () => {
               ] })
             }
           ),
-          /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+          /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
             FullPageSection_default,
             {
               id: "small-events",
               style: { backgroundColor: BRAND_TOKENS.bgSection },
-              children: /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "relative w-full h-full pt-20 overflow-y-auto", children: [
-                /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "relative min-h-[520px] h-[70vh]", children: [
-                  /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+              children: /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "relative w-full h-full pt-20 overflow-y-auto", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "relative min-h-[520px] h-[70vh]", children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
                     "img",
                     {
                       src: "https://res.cloudinary.com/dokyhfvyd/image/upload/c_limit,f_auto,q_auto,w_1600/vjuesai2mxfavpq9d2df",
@@ -9142,12 +9738,12 @@ var FullPageDemoPage = () => {
                       style: { objectPosition: "center" }
                     }
                   ),
-                  /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "relative z-10 flex items-start justify-center h-full pt-24", children: /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "small-events-cta", children: [
-                    /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "small-events-guide", "aria-hidden": "true", children: [
-                      /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "small-events-guide-text", children: "BOOK TODAY" }),
-                      /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("span", { className: "small-events-guide-arrow" })
+                  /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { className: "relative z-10 flex items-start justify-center h-full pt-24", children: /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "small-events-cta", children: [
+                    /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "small-events-guide", "aria-hidden": "true", children: [
+                      /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { className: "small-events-guide-text", children: "BOOK TODAY" }),
+                      /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("span", { className: "small-events-guide-arrow" })
                     ] }),
-                    /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+                    /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
                       "div",
                       {
                         style: {
@@ -9155,8 +9751,8 @@ var FullPageDemoPage = () => {
                           borderCollapse: "separate",
                           borderSpacing: "16px"
                         },
-                        children: /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { style: { display: "table-row" }, children: [
-                          /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { style: { display: "table-cell" }, children: /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+                        children: /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { style: { display: "table-row" }, children: [
+                          /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { style: { display: "table-cell" }, children: /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
                             "button",
                             {
                               type: "button",
@@ -9166,7 +9762,7 @@ var FullPageDemoPage = () => {
                               children: "dinner party in my home"
                             }
                           ) }),
-                          /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { style: { display: "table-cell" }, children: /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+                          /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { style: { display: "table-cell" }, children: /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
                             "button",
                             {
                               type: "button",
@@ -9176,7 +9772,7 @@ var FullPageDemoPage = () => {
                               children: "weddings"
                             }
                           ) }),
-                          /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { style: { display: "table-cell" }, children: /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+                          /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { style: { display: "table-cell" }, children: /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
                             "button",
                             {
                               type: "button",
@@ -9190,7 +9786,7 @@ var FullPageDemoPage = () => {
                       }
                     )
                   ] }) }),
-                  /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "absolute bottom-8 left-0 right-0 z-10 flex justify-center", children: /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+                  /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { className: "absolute bottom-8 left-0 right-0 z-10 flex justify-center", children: /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
                     "a",
                     {
                       href: "/february",
@@ -9200,10 +9796,10 @@ var FullPageDemoPage = () => {
                     }
                   ) })
                 ] }),
-                /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "px-8 pb-16 pt-10", children: [
-                  /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "small-events-testimonial", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "px-8 pb-16 pt-10", children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "small-events-testimonial", children: [
                     '"Local Effort is truly top tier."',
-                    /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "small-events-testimonial-author", children: /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+                    /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { className: "small-events-testimonial-author", children: /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
                       "a",
                       {
                         href: "https://soupsistersmn.com",
@@ -9213,9 +9809,9 @@ var FullPageDemoPage = () => {
                       }
                     ) })
                   ] }),
-                  /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "mt-10", children: /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "partnerships-grid columns-2 md:columns-3 lg:columns-4 [column-fill:_balance]", children: [
-                    /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "partnerships-card break-inside-avoid", children: [
-                      /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+                  /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { className: "mt-10", children: /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "partnerships-grid columns-2 md:columns-3 lg:columns-4 [column-fill:_balance]", children: [
+                    /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "partnerships-card break-inside-avoid", children: [
+                      /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
                         "button",
                         {
                           type: "button",
@@ -9224,10 +9820,10 @@ var FullPageDemoPage = () => {
                           children: "dinner at your home"
                         }
                       ),
-                      /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "partnerships-copy" })
+                      /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { className: "partnerships-copy" })
                     ] }),
-                    /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "partnerships-card break-inside-avoid", children: [
-                      /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+                    /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "partnerships-card break-inside-avoid", children: [
+                      /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
                         "button",
                         {
                           type: "button",
@@ -9236,10 +9832,10 @@ var FullPageDemoPage = () => {
                           children: "weddings and showers"
                         }
                       ),
-                      /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "partnerships-copy" })
+                      /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { className: "partnerships-copy" })
                     ] }),
-                    /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "partnerships-card break-inside-avoid", children: [
-                      /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+                    /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "partnerships-card break-inside-avoid", children: [
+                      /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
                         "button",
                         {
                           type: "button",
@@ -9248,10 +9844,10 @@ var FullPageDemoPage = () => {
                           children: "small events and holiday parties"
                         }
                       ),
-                      /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "partnerships-copy" })
+                      /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { className: "partnerships-copy" })
                     ] })
                   ] }) }),
-                  /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "mt-12", children: /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+                  /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { className: "mt-12", children: /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
                     PhotoGrid,
                     {
                       tags: ["event", "dinner"],
@@ -9264,13 +9860,13 @@ var FullPageDemoPage = () => {
               ] })
             }
           ),
-          /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+          /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
             FullPageSection_default,
             {
               id: "for-businesses",
               style: { backgroundColor: BRAND_TOKENS.bgSection },
-              children: /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "business-tab", children: [
-                /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)(
+              children: /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "business-tab", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)(
                   "div",
                   {
                     className: "business-hero",
@@ -9280,14 +9876,14 @@ var FullPageDemoPage = () => {
                     role: "img",
                     "aria-label": "Local Effort for businesses",
                     children: [
-                      /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "business-hero-scrim", "aria-hidden": "true" }),
-                      /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "business-hero-content", children: [
-                        /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "business-panel", children: [
-                          /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "business-eyebrow", children: "For businesses" }),
-                          /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "business-heading", children: "Partner with Local Effort" }),
-                          /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "business-subtitle", children: "You're working directly with the chefs. We're here to support your local food needs." }),
-                          /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "business-actions", children: [
-                            /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+                      /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { className: "business-hero-scrim", "aria-hidden": "true" }),
+                      /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "business-hero-content", children: [
+                        /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "business-panel", children: [
+                          /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { className: "business-eyebrow", children: "For businesses" }),
+                          /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { className: "business-heading", children: "Partner with Local Effort" }),
+                          /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { className: "business-subtitle", children: "You're working directly with the chefs. We're here to support your local food needs." }),
+                          /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "business-actions", children: [
+                            /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
                               "button",
                               {
                                 type: "button",
@@ -9296,7 +9892,7 @@ var FullPageDemoPage = () => {
                                 children: "cafes, bars, grocery stores and other retail settings interested in wholesale"
                               }
                             ),
-                            /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+                            /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
                               "button",
                               {
                                 type: "button",
@@ -9305,7 +9901,7 @@ var FullPageDemoPage = () => {
                                 children: "office lunches (coming soon)"
                               }
                             ),
-                            /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+                            /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
                               "button",
                               {
                                 type: "button",
@@ -9316,10 +9912,10 @@ var FullPageDemoPage = () => {
                             )
                           ] })
                         ] }),
-                        businessPanel && businessPanel !== "office" && /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "business-reveal", children: [
-                          businessPanel === "wholesale" && /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "business-stack", children: !wholesaleSubmitted ? /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("form", { className: "business-form", onSubmit: handleWholesaleSubmit, children: [
-                            /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("label", { className: "business-label", htmlFor: "wholesale-email", children: "Email for menu access" }),
-                            /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+                        businessPanel && businessPanel !== "office" && /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "business-reveal", children: [
+                          businessPanel === "wholesale" && /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { className: "business-stack", children: !wholesaleSubmitted ? /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("form", { className: "business-form", onSubmit: handleWholesaleSubmit, children: [
+                            /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("label", { className: "business-label", htmlFor: "wholesale-email", children: "Email for menu access" }),
+                            /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
                               "input",
                               {
                                 id: "wholesale-email",
@@ -9331,25 +9927,25 @@ var FullPageDemoPage = () => {
                                 required: true
                               }
                             ),
-                            /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("button", { type: "submit", className: "business-btn", children: "Get menu + pricing" }),
-                            /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "business-note", children: "We'll send a copy of the pricing sheet too." }),
-                            /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "business-note", children: "fridge and freezer-friendly foods for display cases, grab and go fridges, and menus, delivered fresh. available within approx. 15 miles of 55449, or anywhere in metro along Highway 35w." })
-                          ] }) : /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "business-menu", children: [
-                            /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "business-menu-title", children: "Wholesale menu unlocked" }),
-                            /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "business-note", children: "Here is a starter list with partner pricing." }),
-                            /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "business-menu-list", children: [
-                              wholesaleMenuLoading && /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "business-note", children: "Loading menu..." }),
-                              !wholesaleMenuLoading && wholesaleMenuError && /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "business-note", children: wholesaleMenuError }),
-                              !wholesaleMenuLoading && !wholesaleMenuError && wholesaleMenuItems.length === 0 && /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "business-note", children: "Menu updates are in progress. Email us for current pricing." }),
-                              !wholesaleMenuLoading && !wholesaleMenuError && wholesaleMenuSections.map((section) => /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "business-menu-section", children: [
-                                /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "business-menu-category", children: section.category }),
-                                section.items.map((item) => /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "business-menu-row", children: [
-                                  /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("span", { children: item.name }),
-                                  /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("span", { className: "business-price", children: item.price })
+                            /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("button", { type: "submit", className: "business-btn", children: "Get menu + pricing" }),
+                            /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { className: "business-note", children: "We'll send a copy of the pricing sheet too." }),
+                            /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { className: "business-note", children: "fridge and freezer-friendly foods for display cases, grab and go fridges, and menus, delivered fresh. available within approx. 15 miles of 55449, or anywhere in metro along Highway 35w." })
+                          ] }) : /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "business-menu", children: [
+                            /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { className: "business-menu-title", children: "Wholesale menu unlocked" }),
+                            /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { className: "business-note", children: "Here is a starter list with partner pricing." }),
+                            /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "business-menu-list", children: [
+                              wholesaleMenuLoading && /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { className: "business-note", children: "Loading menu..." }),
+                              !wholesaleMenuLoading && wholesaleMenuError && /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { className: "business-note", children: wholesaleMenuError }),
+                              !wholesaleMenuLoading && !wholesaleMenuError && wholesaleMenuItems.length === 0 && /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { className: "business-note", children: "Menu updates are in progress. Email us for current pricing." }),
+                              !wholesaleMenuLoading && !wholesaleMenuError && wholesaleMenuSections.map((section) => /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "business-menu-section", children: [
+                                /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { className: "business-menu-category", children: section.category }),
+                                section.items.map((item) => /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "business-menu-row", children: [
+                                  /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("span", { children: item.name }),
+                                  /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("span", { className: "business-price", children: item.price })
                                 ] }, item.id || item.name))
                               ] }, section.category))
                             ] }),
-                            /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+                            /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
                               "button",
                               {
                                 type: "button",
@@ -9359,28 +9955,28 @@ var FullPageDemoPage = () => {
                               }
                             )
                           ] }) }),
-                          businessPanel === "pizza" && /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "business-stack", children: [
-                            /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "business-menu-title", children: "Open a pizza shop" }),
-                            /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "business-note", children: "Reach Weston directly to start the conversation." }),
-                            /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("a", { className: "business-email", href: "mailto:weston@localeffortfood.com", children: "weston@localeffortfood.com" })
+                          businessPanel === "pizza" && /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "business-stack", children: [
+                            /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { className: "business-menu-title", children: "Open a pizza shop" }),
+                            /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { className: "business-note", children: "Reach Weston directly to start the conversation." }),
+                            /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("a", { className: "business-email", href: "mailto:weston@localeffortfood.com", children: "weston@localeffortfood.com" })
                           ] })
                         ] })
                       ] })
                     ]
                   }
                 ),
-                /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("section", { className: "case-study-section", children: [
-                  /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "case-study-header", children: [
-                    /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "case-study-title", children: "case study: customer portal for happy monday" }),
-                    /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "case-study-subtitle", children: "a lightweight portal where customers can get more information, like ingredients and nutrition, as well as provide feedback and make custom requests." })
+                /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("section", { className: "case-study-section", children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "case-study-header", children: [
+                    /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { className: "case-study-title", children: "case study: customer portal for happy monday" }),
+                    /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { className: "case-study-subtitle", children: "a lightweight portal where customers can get more information, like ingredients and nutrition, as well as provide feedback and make custom requests." })
                   ] }),
-                  /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "case-study-scroll", role: "region", "aria-label": "Happy Monday case study", children: /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "case-study-grid", children: [
-                    /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "case-study-card case-study-text", children: [
-                      /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "case-study-tag", children: "Goal" }),
-                      /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "case-study-copy", children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { className: "case-study-scroll", role: "region", "aria-label": "Happy Monday case study", children: /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "case-study-grid", children: [
+                    /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "case-study-card case-study-text", children: [
+                      /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { className: "case-study-tag", children: "Goal" }),
+                      /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "case-study-copy", children: [
                         "create a way for a cafe food vendor to have a direct relationship with end customers.",
                         " ",
-                        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+                        /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
                           "a",
                           {
                             href: "https://www.localeffortfood.com/happymonday",
@@ -9393,7 +9989,7 @@ var FullPageDemoPage = () => {
                         "."
                       ] })
                     ] }),
-                    /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+                    /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
                       "button",
                       {
                         type: "button",
@@ -9402,7 +9998,7 @@ var FullPageDemoPage = () => {
                           src: "/gallery/hmw%20(1).png",
                           alt: "Happy Monday portal preview"
                         }),
-                        children: /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+                        children: /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
                           "img",
                           {
                             src: "/gallery/hmw%20(1).png",
@@ -9412,11 +10008,11 @@ var FullPageDemoPage = () => {
                         )
                       }
                     ),
-                    /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "case-study-card case-study-text", children: [
-                      /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "case-study-tag", children: "Experience" }),
-                      /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "case-study-copy", children: "customers are empowered to chat directly with the chef about their dietary needs and preferences, and have the opportunity to customize their experience at their favorite place." })
+                    /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "case-study-card case-study-text", children: [
+                      /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { className: "case-study-tag", children: "Experience" }),
+                      /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { className: "case-study-copy", children: "customers are empowered to chat directly with the chef about their dietary needs and preferences, and have the opportunity to customize their experience at their favorite place." })
                     ] }),
-                    /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+                    /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
                       "button",
                       {
                         type: "button",
@@ -9425,7 +10021,7 @@ var FullPageDemoPage = () => {
                           src: "/gallery/hmw%20(2).png",
                           alt: "Happy Monday meals grid"
                         }),
-                        children: /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+                        children: /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
                           "img",
                           {
                             src: "/gallery/hmw%20(2).png",
@@ -9435,11 +10031,11 @@ var FullPageDemoPage = () => {
                         )
                       }
                     ),
-                    /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "case-study-card case-study-text", children: [
-                      /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "case-study-tag", children: "What's next" }),
-                      /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "case-study-copy", children: "b2c pre-ordering, subscriptions and notifications for 'DROPS' or new products, discounts and loyalty features, and more ideas about improving vendor-customer relationships in cafe settings." })
+                    /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "case-study-card case-study-text", children: [
+                      /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { className: "case-study-tag", children: "What's next" }),
+                      /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { className: "case-study-copy", children: "b2c pre-ordering, subscriptions and notifications for 'DROPS' or new products, discounts and loyalty features, and more ideas about improving vendor-customer relationships in cafe settings." })
                     ] }),
-                    /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+                    /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
                       "button",
                       {
                         type: "button",
@@ -9448,7 +10044,7 @@ var FullPageDemoPage = () => {
                           src: "/gallery/hmw%20(3).png",
                           alt: "Happy Monday meal prep detail"
                         }),
-                        children: /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+                        children: /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
                           "img",
                           {
                             src: "/gallery/hmw%20(3).png",
@@ -9460,9 +10056,9 @@ var FullPageDemoPage = () => {
                     )
                   ] }) })
                 ] }),
-                /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("section", { className: "partnerships-section", children: /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "partnerships-grid", children: [
-                  /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "partnerships-card", children: [
-                    /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+                /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("section", { className: "partnerships-section", children: /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "partnerships-grid", children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "partnerships-card", children: [
+                    /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
                       "button",
                       {
                         type: "button",
@@ -9471,10 +10067,10 @@ var FullPageDemoPage = () => {
                         children: "wholesale"
                       }
                     ),
-                    /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "partnerships-copy", children: "pizza, sandwiches, salads, and other standbys, with the same commitments to local and high-integrity ingredients. always minnesotan made, always midwest ingredients, always delicious and nutritionally sound." })
+                    /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { className: "partnerships-copy", children: "pizza, sandwiches, salads, and other standbys, with the same commitments to local and high-integrity ingredients. always minnesotan made, always midwest ingredients, always delicious and nutritionally sound." })
                   ] }),
-                  /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "partnerships-card", children: [
-                    /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+                  /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "partnerships-card", children: [
+                    /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
                       "button",
                       {
                         type: "button",
@@ -9483,10 +10079,10 @@ var FullPageDemoPage = () => {
                         children: "restaurant consulting"
                       }
                     ),
-                    /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "partnerships-copy", children: "front-of-house and back-of-house solutions. improve your restaurant group's tech stack, ingredient sourcing, menu design, service feel, and more. we are restaurant veterans with substantial experience in every dimension of this weird business. we're here to help you make your vision sharper, crisper, cooler, higher impact." })
+                    /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { className: "partnerships-copy", children: "front-of-house and back-of-house solutions. improve your restaurant group's tech stack, ingredient sourcing, menu design, service feel, and more. we are restaurant veterans with substantial experience in every dimension of this weird business. we're here to help you make your vision sharper, crisper, cooler, higher impact." })
                   ] }),
-                  /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "partnerships-card", children: [
-                    /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+                  /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "partnerships-card", children: [
+                    /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
                       "button",
                       {
                         type: "button",
@@ -9495,9 +10091,9 @@ var FullPageDemoPage = () => {
                         children: "collaborations"
                       }
                     ),
-                    /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "partnerships-copy", children: [
+                    /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "partnerships-copy", children: [
                       "always very open and interested in working with other creatives and businesses from all domains: political organizers, artists, bakers, farmers and ag workers, event coordinators, small and large businesses - we want to bring ",
-                      /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("span", { className: "partnerships-highlight", children: "local food" }),
+                      /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("span", { className: "partnerships-highlight", children: "local food" }),
                       " to your audience."
                     ] })
                   ] })
@@ -9505,13 +10101,13 @@ var FullPageDemoPage = () => {
               ] })
             }
           ),
-          /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+          /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
             FullPageSection_default,
             {
               id: "about",
               style: { backgroundColor: BRAND_TOKENS.bgSection },
-              children: /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "about-tab relative w-full h-full pt-20 overflow-y-auto", children: [
-                /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "relative w-full h-[70vh] min-h-[420px]", children: /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+              children: /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "about-tab relative w-full h-full pt-20 overflow-y-auto", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { className: "relative w-full h-[70vh] min-h-[420px]", children: /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
                   "img",
                   {
                     src: "https://res.cloudinary.com/dokyhfvyd/image/upload/c_limit,f_auto,q_auto,w_1600/jo9pxtjng8zpt4yo4rcz?_a=BAMAK+eA0",
@@ -9520,29 +10116,29 @@ var FullPageDemoPage = () => {
                     style: { objectPosition: "center", backgroundColor: BRAND_TOKENS.bgSection }
                   }
                 ) }),
-                /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "px-8 py-12", children: [
-                  /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "about-bio", children: [
-                    /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "about-bio-eyebrow", children: "Who we are" }),
-                    /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "about-bio-copy", children: [
-                      /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("p", { children: [
-                        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("strong", { children: "We're a knockout team of experienced kitchen professionals" }),
+                /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "px-8 py-12", children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "about-bio", children: [
+                    /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { className: "about-bio-eyebrow", children: "Who we are" }),
+                    /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "about-bio-copy", children: [
+                      /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("p", { children: [
+                        /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("strong", { children: "We're a knockout team of experienced kitchen professionals" }),
                         " offering our services as personal chefs and value-added producers. We bring Minnesotan and Midwest ingredients to everyday meals and special events with a farm-to-table ethic."
                       ] }),
-                      /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("p", { children: "We love platters and cassoulets and juleps and celery and croque monsieur and white rice, we love vegetables and meats and grain and nuts and grapes and HAZELNUTS and ducks and lamb and the weird great awesome people who make them and keep making them. We love meeting our growers. We love living in an city where shopping locally is valued and not hard to do." }),
-                      /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("p", { children: "We feel strongly about choosing food grown and produced closer to home. It's a duty, and a gift, and it's at the center of our practice and culture. We care about flavor and nutrition in equal measure. We're the realest people make the localest food." })
+                      /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("p", { children: "We love platters and cassoulets and juleps and celery and croque monsieur and white rice, we love vegetables and meats and grain and nuts and grapes and HAZELNUTS and ducks and lamb and the weird great awesome people who make them and keep making them. We love meeting our growers. We love living in an city where shopping locally is valued and not hard to do." }),
+                      /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("p", { children: "We feel strongly about choosing food grown and produced closer to home. It's a duty, and a gift, and it's at the center of our practice and culture. We care about flavor and nutrition in equal measure. We're the realest people make the localest food." })
                     ] })
                   ] }),
-                  /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "about-info-masonry", children: [
-                    aboutGalleryLoading && /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "about-info-status", children: "Loading photos..." }),
-                    aboutGalleryError && /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "about-info-status about-info-status-error", children: aboutGalleryError }),
-                    /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "columns-2 md:columns-3 lg:columns-4 gap-4 [column-fill:_balance]", children: aboutMasonryItems.map((item, idx) => {
+                  /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "about-info-masonry", children: [
+                    aboutGalleryLoading && /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { className: "about-info-status", children: "Loading photos..." }),
+                    aboutGalleryError && /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { className: "about-info-status about-info-status-error", children: aboutGalleryError }),
+                    /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { className: "columns-2 md:columns-3 lg:columns-4 gap-4 [column-fill:_balance]", children: aboutMasonryItems.map((item, idx) => {
                       if (item.type === "image") {
                         const img = item.img;
-                        return /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+                        return /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
                           "div",
                           {
                             className: "mb-4 break-inside-avoid border p-2 bg-white rounded-lg overflow-hidden",
-                            children: img.thumbnail_url ? /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+                            children: img.thumbnail_url ? /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
                               "img",
                               {
                                 src: img.thumbnail_url,
@@ -9550,7 +10146,7 @@ var FullPageDemoPage = () => {
                                 className: "rounded-lg w-full h-auto",
                                 loading: "lazy"
                               }
-                            ) : /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+                            ) : /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
                               cloudinaryImage_default,
                               {
                                 publicId: img.public_id || img.publicId,
@@ -9565,59 +10161,59 @@ var FullPageDemoPage = () => {
                       }
                       const block = item.block;
                       const isHtml = block.type === "html" && block.content;
-                      return /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "about-info-card mb-4 break-inside-avoid", children: [
-                        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "about-info-title", children: block.title }),
-                        isHtml ? /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+                      return /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "about-info-card mb-4 break-inside-avoid", children: [
+                        /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { className: "about-info-title", children: block.title }),
+                        isHtml ? /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
                           "div",
                           {
                             className: "about-info-lines",
                             dangerouslySetInnerHTML: { __html: block.content }
                           }
-                        ) : /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("ul", { className: "about-info-list", children: (block.items || []).map((text) => /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("li", { children: text }, text)) })
+                        ) : /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("ul", { className: "about-info-list", children: (block.items || []).map((text) => /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("li", { children: text }, text)) })
                       ] }, item.key || `about-info-${idx}`);
                     }) })
                   ] }),
-                  /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("section", { className: "py-12", children: [
-                    /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "max-w-6xl mx-auto px-4 md:px-6 lg:px-8", children: /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(SectionHeader, { overline: "Community", title: "Our Partners" }) }),
-                    /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(PartnerGrid, {})
+                  /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("section", { className: "py-12", children: [
+                    /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { className: "max-w-6xl mx-auto px-4 md:px-6 lg:px-8", children: /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(SectionHeader, { overline: "Community", title: "Our Partners" }) }),
+                    /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(PartnerGrid, {})
                   ] }),
-                  /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("section", { className: "about-feedback", children: /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "max-w-6xl mx-auto px-4 md:px-6 lg:px-8", children: [
-                    /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "about-feedback-header", children: [
-                      /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "about-feedback-title", children: "Feedback" }),
-                      /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "about-feedback-extra", children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("section", { className: "about-feedback", children: /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "max-w-6xl mx-auto px-4 md:px-6 lg:px-8", children: [
+                    /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "about-feedback-header", children: [
+                      /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { className: "about-feedback-title", children: "Feedback" }),
+                      /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "about-feedback-extra", children: [
                         "Want to",
                         " ",
-                        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("button", { type: "button", className: "about-feedback-link", onClick: () => setShowFeedback(true), children: "provide feedback" }),
+                        /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("button", { type: "button", className: "about-feedback-link", onClick: () => setShowFeedback(true), children: "provide feedback" }),
                         "?"
                       ] })
                     ] }),
-                    /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "feedback-grid columns-2 md:columns-3 lg:columns-4 [column-fill:_balance]", children: feedbackItems.map((review, idx) => /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("figure", { className: "feedback-quote break-inside-avoid", children: [
-                      /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("blockquote", { className: "feedback-quote-text", children: [
+                    /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { className: "feedback-grid columns-2 md:columns-3 lg:columns-4 [column-fill:_balance]", children: feedbackItems.map((review, idx) => /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("figure", { className: "feedback-quote break-inside-avoid", children: [
+                      /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("blockquote", { className: "feedback-quote-text", children: [
                         '"',
                         renderInlineMarkup(String(review.quote || "").trim()),
                         '"'
                       ] }),
-                      /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("figcaption", { className: "feedback-quote-footer", children: [
-                        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "feedback-quote-author", children: review.author || "Customer" }),
-                        review.context && /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "feedback-quote-context", children: review.context })
+                      /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("figcaption", { className: "feedback-quote-footer", children: [
+                        /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { className: "feedback-quote-author", children: review.author || "Customer" }),
+                        review.context && /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { className: "feedback-quote-context", children: review.context })
                       ] })
                     ] }, review.id || `${review.author || "review"}-${idx}`)) })
                   ] }) }),
-                  /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+                  /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
                     "script",
                     {
                       type: "application/ld+json",
                       dangerouslySetInnerHTML: { __html: faqStructuredData }
                     }
                   ),
-                  /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "about-faq", children: [
-                    /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "about-faq-title", children: "FAQ" }),
-                    /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "about-faq-list", children: aboutFaqItems.map((item, idx) => {
+                  /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "about-faq", children: [
+                    /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { className: "about-faq-title", children: "FAQ" }),
+                    /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { className: "about-faq-list", children: aboutFaqItems.map((item, idx) => {
                       const isOpen = aboutFaqOpen === idx;
                       const questionId = `about-faq-question-${idx}`;
                       const answerId = `about-faq-answer-${idx}`;
-                      return /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: `about-faq-item ${isOpen ? "is-open" : ""}`, children: [
-                        /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)(
+                      return /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: `about-faq-item ${isOpen ? "is-open" : ""}`, children: [
+                        /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)(
                           "button",
                           {
                             type: "button",
@@ -9627,12 +10223,12 @@ var FullPageDemoPage = () => {
                             "aria-expanded": isOpen,
                             "aria-controls": answerId,
                             children: [
-                              /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("span", { children: item.question }),
-                              /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("span", { className: "about-faq-icon", children: isOpen ? "-" : "+" })
+                              /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("span", { children: item.question }),
+                              /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("span", { className: "about-faq-icon", children: isOpen ? "-" : "+" })
                             ]
                           }
                         ),
-                        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+                        /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
                           "div",
                           {
                             id: answerId,
@@ -9650,14 +10246,14 @@ var FullPageDemoPage = () => {
               ] })
             }
           ),
-          /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+          /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
             FullPageSection_default,
             {
               id: "local-pizza",
               style: { backgroundColor: BRAND_TOKENS.bgSection },
-              children: /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "relative w-full h-full pt-20 overflow-y-auto", children: [
-                /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "relative min-h-[520px] h-[70vh]", children: [
-                  /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+              children: /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "relative w-full h-full pt-20 overflow-y-auto", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "relative min-h-[520px] h-[70vh]", children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
                     "img",
                     {
                       src: "/gallery/5Z0A5737-Edit.jpg",
@@ -9666,19 +10262,19 @@ var FullPageDemoPage = () => {
                       style: { objectPosition: "center" }
                     }
                   ),
-                  /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "relative z-10 flex h-full flex-col items-start justify-end gap-6 px-8 pb-16 md:flex-row md:items-end md:justify-between", children: [
-                    /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)(
+                  /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "relative z-10 flex h-full flex-col items-start justify-end gap-6 px-8 pb-16 md:flex-row md:items-end md:justify-between", children: [
+                    /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)(
                       "div",
                       {
                         className: "max-w-lg rounded-lg border border-white/60 bg-white/85 p-5 text-slate-900 shadow-lg",
                         style: { fontFamily: "'Office Code Pro', monospace" },
                         children: [
-                          /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "text-xs font-semibold uppercase tracking-wide text-slate-600", children: "Local pizza" }),
-                          /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "mt-2 text-lg font-semibold", children: "Local Pizza in your freezer" }),
-                          /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "mt-2 text-sm text-slate-700", children: [
+                          /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { className: "text-xs font-semibold uppercase tracking-wide text-slate-600", children: "Local pizza" }),
+                          /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { className: "mt-2 text-lg font-semibold", children: "Local Pizza in your freezer" }),
+                          /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "mt-2 text-sm text-slate-700", children: [
                             "Local Pizza is 100% midwest ingredients. Find us at Happy Monday in Roseville, and soon on",
                             " ",
-                            /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+                            /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
                               "a",
                               {
                                 href: "https://mnfood.club/?afmc=1y",
@@ -9693,7 +10289,7 @@ var FullPageDemoPage = () => {
                         ]
                       }
                     ),
-                    /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+                    /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
                       "button",
                       {
                         type: "button",
@@ -9704,8 +10300,8 @@ var FullPageDemoPage = () => {
                     )
                   ] })
                 ] }),
-                /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "relative z-10 px-8 pb-16 pt-10", children: pizzaLoading ? /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "text-sm text-gray-600", children: "Loading photos..." }) : pizzaError ? /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "text-sm text-red-700", children: pizzaError }) : /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "columns-2 md:columns-3 lg:columns-4 gap-4 [column-fill:_balance]", children: [
-                  /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "mb-4 break-inside-avoid border p-4 bg-white/70 rounded-lg", children: /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)(
+                /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { className: "relative z-10 px-8 pb-16 pt-10", children: pizzaLoading ? /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { className: "text-sm text-gray-600", children: "Loading photos..." }) : pizzaError ? /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { className: "text-sm text-red-700", children: pizzaError }) : /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "columns-2 md:columns-3 lg:columns-4 gap-4 [column-fill:_balance]", children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { className: "mb-4 break-inside-avoid border p-4 bg-white/70 rounded-lg", children: /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)(
                     "div",
                     {
                       style: {
@@ -9717,7 +10313,7 @@ var FullPageDemoPage = () => {
                       children: [
                         "cheese:",
                         " ",
-                        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+                        /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
                           "a",
                           {
                             href: "https://grandecheese.com/cheeses/mozzarella/",
@@ -9729,7 +10325,7 @@ var FullPageDemoPage = () => {
                         ),
                         ". grain:",
                         " ",
-                        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+                        /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
                           "a",
                           {
                             href: "https://www.bakersfieldflourandbread.com/",
@@ -9741,7 +10337,7 @@ var FullPageDemoPage = () => {
                         ),
                         ". tomato:",
                         " ",
-                        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+                        /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
                           "a",
                           {
                             href: "https://deifratelli.com/",
@@ -9755,11 +10351,11 @@ var FullPageDemoPage = () => {
                       ]
                     }
                   ) }),
-                  pizzaImages.map((img, idx) => /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+                  pizzaImages.map((img, idx) => /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
                     "div",
                     {
                       className: "mb-4 break-inside-avoid border p-2 bg-white rounded-lg overflow-hidden",
-                      children: img.thumbnail_url ? /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+                      children: img.thumbnail_url ? /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
                         "img",
                         {
                           src: img.thumbnail_url,
@@ -9767,7 +10363,7 @@ var FullPageDemoPage = () => {
                           className: "rounded-lg w-full h-auto",
                           loading: "lazy"
                         }
-                      ) : /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+                      ) : /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
                         cloudinaryImage_default,
                         {
                           publicId: img.public_id || img.publicId,
@@ -9786,17 +10382,17 @@ var FullPageDemoPage = () => {
         ]
       }
     ),
-    /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("footer", { className: "fullpage-demo-footer", children: /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "fullpage-demo-footer-inner", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "fullpage-demo-footer-brand", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "fullpage-demo-footer-name", children: "Local Effort Inc." }),
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "fullpage-demo-footer-location", children: "Roseville, MN" })
+    /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("footer", { className: "fullpage-demo-footer", children: /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "fullpage-demo-footer-inner", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "fullpage-demo-footer-brand", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { className: "fullpage-demo-footer-name", children: "Local Effort Inc." }),
+        /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { className: "fullpage-demo-footer-location", children: "Roseville, MN" })
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("nav", { className: "fullpage-demo-footer-links", "aria-label": "Footer", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("a", { href: "#about", className: "fullpage-demo-footer-link", children: "About" }),
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("a", { href: "/releases", className: "fullpage-demo-footer-link", children: "Press" }),
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("a", { href: "/happymonday", className: "fullpage-demo-footer-link", children: "For Happy Monday" })
+      /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("nav", { className: "fullpage-demo-footer-links", "aria-label": "Footer", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("a", { href: "#about", className: "fullpage-demo-footer-link", children: "About" }),
+        /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("a", { href: "/releases", className: "fullpage-demo-footer-link", children: "Press" }),
+        /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("a", { href: "/happymonday", className: "fullpage-demo-footer-link", children: "For Happy Monday" })
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "fullpage-demo-footer-actions", children: /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+      /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { className: "fullpage-demo-footer-actions", children: /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
         "button",
         {
           type: "button",
@@ -9806,7 +10402,7 @@ var FullPageDemoPage = () => {
         }
       ) })
     ] }) }),
-    /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+    /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
       AskChefForm,
       {
         open: askChefOpen,
@@ -9815,7 +10411,7 @@ var FullPageDemoPage = () => {
       }
     ),
     FeedbackModal,
-    /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(import_framer_motion3.AnimatePresence, { children: selected && /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+    /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(import_framer_motion3.AnimatePresence, { children: selected && /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
       import_framer_motion3.motion.div,
       {
         className: "fixed inset-0 z-[60] flex items-center justify-center p-4 cursor-pointer",
@@ -9824,7 +10420,7 @@ var FullPageDemoPage = () => {
         animate: { opacity: 1 },
         exit: { opacity: 0 },
         onClick: closeLightbox,
-        children: /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)(
+        children: /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)(
           import_framer_motion3.motion.div,
           {
             initial: { scale: 0.9, opacity: 0 },
@@ -9833,7 +10429,7 @@ var FullPageDemoPage = () => {
             className: "relative w-full max-w-[92vw] max-h-[85vh]",
             onClick: (e) => e.stopPropagation(),
             children: [
-              /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "lightbox-scroll", children: selected.img.large_url ? /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+              /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { className: "lightbox-scroll", children: selected.img.large_url ? /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
                 "img",
                 {
                   src: selected.img.large_url,
@@ -9842,7 +10438,7 @@ var FullPageDemoPage = () => {
                   fetchPriority: "high",
                   className: "lightbox-image object-contain rounded-lg shadow-2xl"
                 }
-              ) : /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+              ) : /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
                 cloudinaryImage_default,
                 {
                   publicId: selected.img.public_id,
@@ -9854,7 +10450,7 @@ var FullPageDemoPage = () => {
                   className: "lightbox-image object-contain rounded-lg shadow-2xl"
                 }
               ) }),
-              /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+              /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
                 "button",
                 {
                   ref: closeBtnRef,
@@ -9869,34 +10465,34 @@ var FullPageDemoPage = () => {
         )
       }
     ) }),
-    /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(Dialog2, { open: orderOpen, onOpenChange: setOrderOpen, children: /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)(DialogContent2, { className: "fullpage-demo-scope sm:max-w-[520px]", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)(DialogHeader, { children: [
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(DialogTitle2, { children: "Weekly Meals Ordering" }),
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(DialogDescription2, { children: "Demo menu and ordering flow. We will replace this with the real system." })
+    /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(Dialog2, { open: orderOpen, onOpenChange: setOrderOpen, children: /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)(DialogContent2, { className: "fullpage-demo-scope sm:max-w-[520px]", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)(DialogHeader, { children: [
+        /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(DialogTitle2, { children: "Weekly Meals Ordering" }),
+        /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(DialogDescription2, { children: "Demo menu and ordering flow. We will replace this with the real system." })
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "space-y-4 text-slate-900", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "rounded-lg border border-slate-200 bg-white p-4", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "text-sm font-semibold", children: "Small Menu" }),
-          /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "mt-3 space-y-2 text-sm", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "flex items-center justify-between", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("span", { children: "Roasted lemon chicken" }),
-              /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("span", { children: "$14" })
+      /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "space-y-4 text-slate-900", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "rounded-lg border border-slate-200 bg-white p-4", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { className: "text-sm font-semibold", children: "Small Menu" }),
+          /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "mt-3 space-y-2 text-sm", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "flex items-center justify-between", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("span", { children: "Roasted lemon chicken" }),
+              /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("span", { children: "$14" })
             ] }),
-            /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "flex items-center justify-between", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("span", { children: "Herb tofu bowl" }),
-              /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("span", { children: "$12" })
+            /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "flex items-center justify-between", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("span", { children: "Herb tofu bowl" }),
+              /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("span", { children: "$12" })
             ] }),
-            /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "flex items-center justify-between", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("span", { children: "Seasonal veggie lasagna" }),
-              /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("span", { children: "$13" })
+            /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "flex items-center justify-between", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("span", { children: "Seasonal veggie lasagna" }),
+              /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("span", { children: "$13" })
             ] })
           ] })
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "rounded-lg border border-slate-200 bg-slate-50 p-4 text-sm", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "font-semibold", children: "Pickup window" }),
-          /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "mt-1 text-slate-700", children: "Sundays, 4:00-6:00 PM" })
+        /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "rounded-lg border border-slate-200 bg-slate-50 p-4 text-sm", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { className: "font-semibold", children: "Pickup window" }),
+          /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { className: "mt-1 text-slate-700", children: "Sundays, 4:00-6:00 PM" })
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+        /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
           "button",
           {
             type: "button",
@@ -9907,10 +10503,10 @@ var FullPageDemoPage = () => {
         )
       ] })
     ] }) }),
-    /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(Dialog2, { open: announcementOpen, onOpenChange: setAnnouncementOpen, children: /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)(DialogContent2, { className: "fullpage-demo-scope sm:max-w-[520px]", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)(DialogHeader, { children: [
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(DialogTitle2, { children: "Happy Monday Coffee" }),
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+    /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(Dialog2, { open: announcementOpen, onOpenChange: setAnnouncementOpen, children: /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)(DialogContent2, { className: "fullpage-demo-scope sm:max-w-[520px]", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)(DialogHeader, { children: [
+        /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(DialogTitle2, { children: "Happy Monday Coffee" }),
+        /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
           "img",
           {
             src: "/gallery/hmw%20(1).png",
@@ -9919,10 +10515,10 @@ var FullPageDemoPage = () => {
             loading: "lazy"
           }
         ),
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)(DialogDescription2, { children: [
+        /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)(DialogDescription2, { children: [
           "Our favorite coffee shop,",
           " ",
-          /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+          /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
             "a",
             {
               href: "https://www.happymonday.company",
@@ -9935,9 +10531,9 @@ var FullPageDemoPage = () => {
           ", has our sandwiches and salads in their grab-and-go fridge, and our frozen pizzas in their freezer. Drop in and try one out."
         ] })
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "announcement-map", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "announcement-map-title", children: "Google Maps" }),
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "announcement-map-media", children: /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "announcement-map-embed", children: /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+      /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "announcement-map", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { className: "announcement-map-title", children: "Google Maps" }),
+        /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { className: "announcement-map-media", children: /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { className: "announcement-map-embed", children: /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
           "iframe",
           {
             title: "Happy Monday Coffee on Google Maps",
@@ -9948,7 +10544,7 @@ var FullPageDemoPage = () => {
             className: "announcement-map-iframe"
           }
         ) }) }),
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+        /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
           "a",
           {
             href: "https://www.google.com/maps/search/?api=1&query=Happy%20Monday%20Coffee%2C%202420%20Cleveland%20Ave%20N%2C%20Roseville%2C%20MN%2055113",
@@ -9960,35 +10556,35 @@ var FullPageDemoPage = () => {
         )
       ] })
     ] }) }),
-    /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(Dialog2, { open: smallEventsDialog === "dinner", onOpenChange: (open) => setSmallEventsDialog(open ? "dinner" : null), children: /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)(DialogContent2, { className: "fullpage-demo-scope small-events-dialog max-h-[85vh] overflow-y-auto sm:max-w-[980px]", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)(DialogHeader, { children: [
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(DialogTitle2, { className: "small-events-title", children: "Dinner party in my home" }),
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(DialogDescription2, { className: "small-events-description", children: "Chef-led, multi-course dinners with seasonal menus, staffing, and a 15% deposit to hold the date." })
+    /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(Dialog2, { open: smallEventsDialog === "dinner", onOpenChange: (open) => setSmallEventsDialog(open ? "dinner" : null), children: /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)(DialogContent2, { className: "fullpage-demo-scope small-events-dialog max-h-[85vh] overflow-y-auto sm:max-w-[980px]", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)(DialogHeader, { children: [
+        /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(DialogTitle2, { className: "small-events-title", children: "Dinner party in my home" }),
+        /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(DialogDescription2, { className: "small-events-description", children: "Chef-led, multi-course dinners with seasonal menus, staffing, and a 15% deposit to hold the date." })
       ] }),
       renderSmallEventDialogContent("dinner")
     ] }) }),
-    /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(Dialog2, { open: smallEventsDialog === "pizza", onOpenChange: (open) => setSmallEventsDialog(open ? "pizza" : null), children: /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)(DialogContent2, { className: "fullpage-demo-scope small-events-dialog max-h-[85vh] overflow-y-auto sm:max-w-[980px]", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)(DialogHeader, { children: [
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(DialogTitle2, { className: "small-events-title", children: "Pizza Party" }),
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(DialogDescription2, { className: "small-events-description", children: "Wood-fired pizza parties with full service, staffing, and a 15% deposit to hold the date." })
+    /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(Dialog2, { open: smallEventsDialog === "pizza", onOpenChange: (open) => setSmallEventsDialog(open ? "pizza" : null), children: /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)(DialogContent2, { className: "fullpage-demo-scope small-events-dialog max-h-[85vh] overflow-y-auto sm:max-w-[980px]", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)(DialogHeader, { children: [
+        /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(DialogTitle2, { className: "small-events-title", children: "Pizza Party" }),
+        /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(DialogDescription2, { className: "small-events-description", children: "Wood-fired pizza parties with full service, staffing, and a 15% deposit to hold the date." })
       ] }),
       renderSmallEventDialogContent("pizza")
     ] }) }),
-    /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(Dialog2, { open: smallEventsDialog === "weddings", onOpenChange: (open) => setSmallEventsDialog(open ? "weddings" : null), children: /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)(DialogContent2, { className: "fullpage-demo-scope small-events-dialog max-h-[85vh] overflow-y-auto sm:max-w-[980px]", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)(DialogHeader, { children: [
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(DialogTitle2, { className: "small-events-title", children: "Weddings" }),
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(DialogDescription2, { className: "small-events-description", children: "Flexible packages for rehearsal dinners, receptions, and late-night bites with deposit holds." })
+    /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(Dialog2, { open: smallEventsDialog === "weddings", onOpenChange: (open) => setSmallEventsDialog(open ? "weddings" : null), children: /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)(DialogContent2, { className: "fullpage-demo-scope small-events-dialog max-h-[85vh] overflow-y-auto sm:max-w-[980px]", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)(DialogHeader, { children: [
+        /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(DialogTitle2, { className: "small-events-title", children: "Weddings" }),
+        /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(DialogDescription2, { className: "small-events-description", children: "Flexible packages for rehearsal dinners, receptions, and late-night bites with deposit holds." })
       ] }),
       renderSmallEventDialogContent("weddings")
     ] }) }),
-    /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(Dialog2, { open: smallEventsDialog === "holiday", onOpenChange: (open) => setSmallEventsDialog(open ? "holiday" : null), children: /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)(DialogContent2, { className: "fullpage-demo-scope small-events-dialog max-h-[85vh] overflow-y-auto sm:max-w-[980px]", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)(DialogHeader, { children: [
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(DialogTitle2, { className: "small-events-title", children: "Small events and holiday parties" }),
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(DialogDescription2, { className: "small-events-description", children: "Drop-off or staffed menus for work parties, milestones, and holiday hosting." })
+    /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(Dialog2, { open: smallEventsDialog === "holiday", onOpenChange: (open) => setSmallEventsDialog(open ? "holiday" : null), children: /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)(DialogContent2, { className: "fullpage-demo-scope small-events-dialog max-h-[85vh] overflow-y-auto sm:max-w-[980px]", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)(DialogHeader, { children: [
+        /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(DialogTitle2, { className: "small-events-title", children: "Small events and holiday parties" }),
+        /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(DialogDescription2, { className: "small-events-description", children: "Drop-off or staffed menus for work parties, milestones, and holiday hosting." })
       ] }),
       renderSmallEventDialogContent("holiday")
     ] }) }),
-    /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+    /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
       Dialog2,
       {
         open: quoteDialogOpen,
@@ -9999,14 +10595,14 @@ var FullPageDemoPage = () => {
             setQuoteError("");
           }
         },
-        children: /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)(DialogContent2, { className: "fullpage-demo-scope sm:max-w-[600px]", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)(DialogHeader, { children: [
-            /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(DialogTitle2, { children: "Contact us about your quote" }),
-            /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(DialogDescription2, { children: "We'll send your note plus the current quote details to our team." })
+        children: /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)(DialogContent2, { className: "fullpage-demo-scope sm:max-w-[600px]", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)(DialogHeader, { children: [
+            /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(DialogTitle2, { children: "Contact us about your quote" }),
+            /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(DialogDescription2, { children: "We'll send your note plus the current quote details to our team." })
           ] }),
-          quoteStatus === "success" ? /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "space-y-4", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "text-sm text-slate-700", children: "Message sent. We'll reply soon." }),
-            /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+          quoteStatus === "success" ? /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "space-y-4", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { className: "text-sm text-slate-700", children: "Message sent. We'll reply soon." }),
+            /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
               "button",
               {
                 type: "button",
@@ -10015,15 +10611,15 @@ var FullPageDemoPage = () => {
                 children: "Close"
               }
             )
-          ] }) : /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("form", { className: "form-fun-card space-y-4", onSubmit: submitQuoteMessage, children: [
-            /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "text-xs text-slate-600", children: [
+          ] }) : /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("form", { className: "form-fun-card space-y-4", onSubmit: submitQuoteMessage, children: [
+            /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "text-xs text-slate-600", children: [
               "Quote type: ",
               SMALL_EVENT_CONFIG[quoteDialogType]?.label || "Small events"
             ] }),
-            /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "grid gap-4 md:grid-cols-2", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { children: [
-                /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("label", { className: "form-fun-label", htmlFor: "quote-name", children: "Name" }),
-                /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+            /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "grid gap-4 md:grid-cols-2", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { children: [
+                /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("label", { className: "form-fun-label", htmlFor: "quote-name", children: "Name" }),
+                /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
                   "input",
                   {
                     id: "quote-name",
@@ -10035,9 +10631,9 @@ var FullPageDemoPage = () => {
                   }
                 )
               ] }),
-              /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { children: [
-                /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("label", { className: "form-fun-label", htmlFor: "quote-email", children: "Email" }),
-                /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+              /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { children: [
+                /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("label", { className: "form-fun-label", htmlFor: "quote-email", children: "Email" }),
+                /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
                   "input",
                   {
                     id: "quote-email",
@@ -10050,9 +10646,9 @@ var FullPageDemoPage = () => {
                 )
               ] })
             ] }),
-            /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { children: [
-              /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("label", { className: "form-fun-label", htmlFor: "quote-message", children: "Message" }),
-              /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+            /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { children: [
+              /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("label", { className: "form-fun-label", htmlFor: "quote-message", children: "Message" }),
+              /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
                 "textarea",
                 {
                   id: "quote-message",
@@ -10064,8 +10660,8 @@ var FullPageDemoPage = () => {
                 }
               )
             ] }),
-            quoteStatus === "error" && /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "text-sm text-red-700", children: quoteError }),
-            /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+            quoteStatus === "error" && /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { className: "text-sm text-red-700", children: quoteError }),
+            /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
               "button",
               {
                 type: "submit",
@@ -10078,7 +10674,7 @@ var FullPageDemoPage = () => {
         ] })
       }
     ),
-    /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+    /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
       Dialog2,
       {
         open: businessContactOpen,
@@ -10086,15 +10682,15 @@ var FullPageDemoPage = () => {
           setBusinessContactOpen(open);
           if (!open) resetBusinessContact();
         },
-        children: /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)(DialogContent2, { className: "fullpage-demo-scope sm:max-w-[560px]", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)(DialogHeader, { children: [
-            /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)(DialogTitle2, { children: [
+        children: /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)(DialogContent2, { className: "fullpage-demo-scope sm:max-w-[560px]", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)(DialogHeader, { children: [
+            /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)(DialogTitle2, { children: [
               "Contact us about ",
               BUSINESS_CONTACT_OPTIONS[businessContactType] || "partnerships"
             ] }),
-            /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(DialogDescription2, { children: "Share a few details and we'll follow up with next steps." })
+            /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(DialogDescription2, { children: "Share a few details and we'll follow up with next steps." })
           ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)(
+          /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)(
             "form",
             {
               className: "space-y-4",
@@ -10133,22 +10729,22 @@ var FullPageDemoPage = () => {
                 }
               },
               children: [
-                /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { children: [
-                  /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("label", { className: "label", htmlFor: "business-contact-type", children: "Partnership type" }),
-                  /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+                /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("label", { className: "label", htmlFor: "business-contact-type", children: "Partnership type" }),
+                  /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
                     "select",
                     {
                       id: "business-contact-type",
                       className: "input",
                       value: businessContactType,
                       onChange: (e) => setBusinessContactType(e.target.value),
-                      children: Object.entries(BUSINESS_CONTACT_OPTIONS).map(([value, label]) => /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("option", { value, children: label }, value))
+                      children: Object.entries(BUSINESS_CONTACT_OPTIONS).map(([value, label]) => /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("option", { value, children: label }, value))
                     }
                   )
                 ] }),
-                /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { children: [
-                  /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("label", { className: "label", htmlFor: "business-contact-name", children: "Name" }),
-                  /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+                /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("label", { className: "label", htmlFor: "business-contact-name", children: "Name" }),
+                  /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
                     "input",
                     {
                       id: "business-contact-name",
@@ -10159,9 +10755,9 @@ var FullPageDemoPage = () => {
                     }
                   )
                 ] }),
-                /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { children: [
-                  /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("label", { className: "label", htmlFor: "business-contact-email", children: "Email" }),
-                  /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+                /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("label", { className: "label", htmlFor: "business-contact-email", children: "Email" }),
+                  /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
                     "input",
                     {
                       id: "business-contact-email",
@@ -10173,9 +10769,9 @@ var FullPageDemoPage = () => {
                     }
                   )
                 ] }),
-                /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { children: [
-                  /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("label", { className: "label", htmlFor: "business-contact-org", children: "Organization" }),
-                  /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+                /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("label", { className: "label", htmlFor: "business-contact-org", children: "Organization" }),
+                  /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
                     "input",
                     {
                       id: "business-contact-org",
@@ -10186,9 +10782,9 @@ var FullPageDemoPage = () => {
                     }
                   )
                 ] }),
-                /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { children: [
-                  /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("label", { className: "label", htmlFor: "business-contact-phone", children: "Phone (optional)" }),
-                  /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+                /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("label", { className: "label", htmlFor: "business-contact-phone", children: "Phone (optional)" }),
+                  /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
                     "input",
                     {
                       id: "business-contact-phone",
@@ -10200,9 +10796,9 @@ var FullPageDemoPage = () => {
                     }
                   )
                 ] }),
-                /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { children: [
-                  /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("label", { className: "label", htmlFor: "business-contact-message", children: "Message" }),
-                  /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+                /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("label", { className: "label", htmlFor: "business-contact-message", children: "Message" }),
+                  /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
                     "textarea",
                     {
                       id: "business-contact-message",
@@ -10214,8 +10810,8 @@ var FullPageDemoPage = () => {
                     }
                   )
                 ] }),
-                businessContactError && /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "text-sm text-red-700", children: businessContactError }),
-                /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+                businessContactError && /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { className: "text-sm text-red-700", children: businessContactError }),
+                /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
                   "button",
                   {
                     type: "submit",
@@ -10230,7 +10826,7 @@ var FullPageDemoPage = () => {
         ] })
       }
     ),
-    /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+    /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
       Dialog2,
       {
         open: smallEventsContactOpen,
@@ -10238,15 +10834,15 @@ var FullPageDemoPage = () => {
           setSmallEventsContactOpen(open);
           if (!open) resetSmallEventsContact();
         },
-        children: /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)(DialogContent2, { className: "fullpage-demo-scope sm:max-w-[560px]", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)(DialogHeader, { children: [
-            /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)(DialogTitle2, { children: [
+        children: /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)(DialogContent2, { className: "fullpage-demo-scope sm:max-w-[560px]", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)(DialogHeader, { children: [
+            /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)(DialogTitle2, { children: [
               "Contact us about ",
               SMALL_EVENTS_CONTACT_OPTIONS[smallEventsContactType] || "small events"
             ] }),
-            /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(DialogDescription2, { children: "Share a few details and we'll follow up with next steps." })
+            /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(DialogDescription2, { children: "Share a few details and we'll follow up with next steps." })
           ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)(
+          /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)(
             "form",
             {
               className: "space-y-4",
@@ -10284,22 +10880,22 @@ var FullPageDemoPage = () => {
                 }
               },
               children: [
-                /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { children: [
-                  /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("label", { className: "label", htmlFor: "small-events-contact-type", children: "Event type" }),
-                  /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+                /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("label", { className: "label", htmlFor: "small-events-contact-type", children: "Event type" }),
+                  /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
                     "select",
                     {
                       id: "small-events-contact-type",
                       className: "input",
                       value: smallEventsContactType,
                       onChange: (e) => setSmallEventsContactType(e.target.value),
-                      children: Object.entries(SMALL_EVENTS_CONTACT_OPTIONS).map(([value, label]) => /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("option", { value, children: label }, value))
+                      children: Object.entries(SMALL_EVENTS_CONTACT_OPTIONS).map(([value, label]) => /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("option", { value, children: label }, value))
                     }
                   )
                 ] }),
-                /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { children: [
-                  /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("label", { className: "label", htmlFor: "small-events-contact-name", children: "Name" }),
-                  /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+                /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("label", { className: "label", htmlFor: "small-events-contact-name", children: "Name" }),
+                  /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
                     "input",
                     {
                       id: "small-events-contact-name",
@@ -10310,9 +10906,9 @@ var FullPageDemoPage = () => {
                     }
                   )
                 ] }),
-                /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { children: [
-                  /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("label", { className: "label", htmlFor: "small-events-contact-email", children: "Email" }),
-                  /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+                /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("label", { className: "label", htmlFor: "small-events-contact-email", children: "Email" }),
+                  /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
                     "input",
                     {
                       id: "small-events-contact-email",
@@ -10324,9 +10920,9 @@ var FullPageDemoPage = () => {
                     }
                   )
                 ] }),
-                /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { children: [
-                  /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("label", { className: "label", htmlFor: "small-events-contact-phone", children: "Phone (optional)" }),
-                  /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+                /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("label", { className: "label", htmlFor: "small-events-contact-phone", children: "Phone (optional)" }),
+                  /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
                     "input",
                     {
                       id: "small-events-contact-phone",
@@ -10338,9 +10934,9 @@ var FullPageDemoPage = () => {
                     }
                   )
                 ] }),
-                /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { children: [
-                  /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("label", { className: "label", htmlFor: "small-events-contact-message", children: "Message" }),
-                  /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+                /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("label", { className: "label", htmlFor: "small-events-contact-message", children: "Message" }),
+                  /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
                     "textarea",
                     {
                       id: "small-events-contact-message",
@@ -10352,8 +10948,8 @@ var FullPageDemoPage = () => {
                     }
                   )
                 ] }),
-                smallEventsContactError && /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "text-sm text-red-700", children: smallEventsContactError }),
-                /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+                smallEventsContactError && /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { className: "text-sm text-red-700", children: smallEventsContactError }),
+                /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
                   "button",
                   {
                     type: "submit",
@@ -10368,9 +10964,9 @@ var FullPageDemoPage = () => {
         ] })
       }
     ),
-    /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(Dialog2, { open: officeLunchesOpen, onOpenChange: setOfficeLunchesOpen, children: /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)(DialogContent2, { className: "fullpage-demo-scope sm:max-w-[900px]", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(DialogHeader, { children: /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(DialogTitle2, { children: "Office lunches (coming soon)" }) }),
-      /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "overflow-hidden rounded-xl border border-slate-200 bg-white", children: /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+    /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(Dialog2, { open: officeLunchesOpen, onOpenChange: setOfficeLunchesOpen, children: /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)(DialogContent2, { className: "fullpage-demo-scope sm:max-w-[900px]", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(DialogHeader, { children: /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(DialogTitle2, { children: "Office lunches (coming soon)" }) }),
+      /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { className: "overflow-hidden rounded-xl border border-slate-200 bg-white", children: /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
         "img",
         {
           src: "/gallery/Screenshot%20(168).png",
@@ -10380,14 +10976,14 @@ var FullPageDemoPage = () => {
         }
       ) })
     ] }) }),
-    /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+    /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
       Dialog2,
       {
         open: Boolean(caseStudyImage),
         onOpenChange: (open) => {
           if (!open) setCaseStudyImage(null);
         },
-        children: /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(DialogContent2, { className: "fullpage-demo-scope case-study-lightbox sm:max-w-[900px]", children: caseStudyImage && /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+        children: /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(DialogContent2, { className: "fullpage-demo-scope case-study-lightbox sm:max-w-[900px]", children: caseStudyImage && /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
           "img",
           {
             src: caseStudyImage.src,
@@ -10398,14 +10994,14 @@ var FullPageDemoPage = () => {
         ) })
       }
     ),
-    showWaitlistForm && /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+    showWaitlistForm && /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
       "div",
       {
         className: "fixed inset-0 z-[70] flex items-start justify-center bg-black/60 px-4 py-8 overflow-y-auto",
         role: "dialog",
         "aria-modal": "true",
-        children: /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "form-card w-full max-w-xl max-h-[90vh] overflow-y-auto relative", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+        children: /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "form-card w-full max-w-xl max-h-[90vh] overflow-y-auto relative", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
             "button",
             {
               type: "button",
@@ -10418,12 +11014,12 @@ var FullPageDemoPage = () => {
               children: "Close"
             }
           ),
-          /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("h2", { className: "text-2xl font-bold mb-2", children: "Join the waiting list" }),
-          /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("p", { className: "text-sm text-gray-600 mb-4", children: "We'll reach out when weekly meal pickup slots reopen." }),
-          /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("form", { onSubmit: handleWaitlistSubmit, className: "space-y-4", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { children: [
-              /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("label", { className: "label", htmlFor: "weekly-waitlist-name", children: "Name" }),
-              /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+          /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("h2", { className: "text-2xl font-bold mb-2", children: "Join the waiting list" }),
+          /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("p", { className: "text-sm text-gray-600 mb-4", children: "We'll reach out when weekly meal pickup slots reopen." }),
+          /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("form", { onSubmit: handleWaitlistSubmit, className: "space-y-4", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { children: [
+              /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("label", { className: "label", htmlFor: "weekly-waitlist-name", children: "Name" }),
+              /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
                 "input",
                 {
                   id: "weekly-waitlist-name",
@@ -10434,10 +11030,10 @@ var FullPageDemoPage = () => {
                 }
               )
             ] }),
-            /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "grid md:grid-cols-2 gap-4", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { children: [
-                /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("label", { className: "label", htmlFor: "weekly-waitlist-email", children: "Email" }),
-                /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+            /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "grid md:grid-cols-2 gap-4", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { children: [
+                /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("label", { className: "label", htmlFor: "weekly-waitlist-email", children: "Email" }),
+                /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
                   "input",
                   {
                     id: "weekly-waitlist-email",
@@ -10449,9 +11045,9 @@ var FullPageDemoPage = () => {
                   }
                 )
               ] }),
-              /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { children: [
-                /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("label", { className: "label", htmlFor: "weekly-waitlist-phone", children: "Phone number" }),
-                /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+              /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { children: [
+                /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("label", { className: "label", htmlFor: "weekly-waitlist-phone", children: "Phone number" }),
+                /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
                   "input",
                   {
                     id: "weekly-waitlist-phone",
@@ -10463,9 +11059,9 @@ var FullPageDemoPage = () => {
                 )
               ] })
             ] }),
-            /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { children: [
-              /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("label", { className: "label", htmlFor: "weekly-waitlist-family", children: "Family size" }),
-              /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+            /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { children: [
+              /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("label", { className: "label", htmlFor: "weekly-waitlist-family", children: "Family size" }),
+              /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
                 "input",
                 {
                   id: "weekly-waitlist-family",
@@ -10477,9 +11073,9 @@ var FullPageDemoPage = () => {
                 }
               )
             ] }),
-            /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { children: [
-              /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("label", { className: "label", htmlFor: "weekly-waitlist-children", children: "Children & ages" }),
-              /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+            /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { children: [
+              /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("label", { className: "label", htmlFor: "weekly-waitlist-children", children: "Children & ages" }),
+              /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
                 "textarea",
                 {
                   id: "weekly-waitlist-children",
@@ -10491,10 +11087,10 @@ var FullPageDemoPage = () => {
                 }
               )
             ] }),
-            /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "grid md:grid-cols-2 gap-4", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { children: [
-                /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("label", { className: "label", htmlFor: "weekly-waitlist-days", children: "Days per week" }),
-                /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+            /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "grid md:grid-cols-2 gap-4", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { children: [
+                /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("label", { className: "label", htmlFor: "weekly-waitlist-days", children: "Days per week" }),
+                /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
                   "input",
                   {
                     id: "weekly-waitlist-days",
@@ -10506,9 +11102,9 @@ var FullPageDemoPage = () => {
                   }
                 )
               ] }),
-              /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { children: [
-                /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("label", { className: "label", htmlFor: "weekly-waitlist-meals", children: "Meals per day" }),
-                /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+              /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { children: [
+                /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("label", { className: "label", htmlFor: "weekly-waitlist-meals", children: "Meals per day" }),
+                /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
                   "input",
                   {
                     id: "weekly-waitlist-meals",
@@ -10521,9 +11117,9 @@ var FullPageDemoPage = () => {
                 )
               ] })
             ] }),
-            /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { children: [
-              /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("label", { className: "label", htmlFor: "weekly-waitlist-allergies", children: "Allergies or medical comments" }),
-              /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+            /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { children: [
+              /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("label", { className: "label", htmlFor: "weekly-waitlist-allergies", children: "Allergies or medical comments" }),
+              /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
                 "textarea",
                 {
                   id: "weekly-waitlist-allergies",
@@ -10535,9 +11131,9 @@ var FullPageDemoPage = () => {
                 }
               )
             ] }),
-            /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { children: [
-              /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("label", { className: "label", htmlFor: "weekly-waitlist-questions", children: "Questions for the team" }),
-              /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+            /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { children: [
+              /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("label", { className: "label", htmlFor: "weekly-waitlist-questions", children: "Questions for the team" }),
+              /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
                 "textarea",
                 {
                   id: "weekly-waitlist-questions",
@@ -10549,10 +11145,10 @@ var FullPageDemoPage = () => {
                 }
               )
             ] }),
-            /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "flex flex-wrap items-center gap-3", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("button", { type: "submit", className: "btn btn-primary", disabled: waitlistStatus === "sending", children: waitlistStatus === "sending" ? "Submitting..." : "Join waitlist" }),
-              waitlistStatus === "success" && /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("span", { className: "text-green-700 text-sm", children: "Thanks! We'll be in touch." }),
-              waitlistStatus === "error" && /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("span", { className: "text-red-700 text-sm", children: "We couldn't submit your request. Please try again." })
+            /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "flex flex-wrap items-center gap-3", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("button", { type: "submit", className: "btn btn-primary", disabled: waitlistStatus === "sending", children: waitlistStatus === "sending" ? "Submitting..." : "Join waitlist" }),
+              waitlistStatus === "success" && /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("span", { className: "text-green-700 text-sm", children: "Thanks! We'll be in touch." }),
+              waitlistStatus === "error" && /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("span", { className: "text-red-700 text-sm", children: "We couldn't submit your request. Please try again." })
             ] })
           ] })
         ] })
@@ -10562,13 +11158,2918 @@ var FullPageDemoPage = () => {
 };
 var FullPageDemoPage_default = FullPageDemoPage;
 
+// src/pages/ReleasesPage.jsx
+var import_react14 = __toESM(require("react"));
+var import_react_helmet_async2 = __toESM(require_lib());
+var import_react_router_dom4 = require("react-router-dom");
+var import_jsx_runtime23 = require("react/jsx-runtime");
+var typewriterFonts = "'IBM Plex Mono', 'Courier Prime', 'Courier New', 'ui-monospace', 'SFMono-Regular', 'Menlo', 'monospace'";
+var releaseDate = "Sep 30, 2025";
+var pressFacts = [
+  { label: "Founded", value: "2022" },
+  { label: "Headquarters", value: "Minneapolis, Minnesota" },
+  {
+    label: "Service Areas",
+    value: "Minneapolis, St. Paul, Roseville, the Twin Cities, and Western Wisconsin"
+  },
+  {
+    label: "Core Services",
+    value: "Personal chef experiences, weekly meal prep, intimate event catering, and 100% local pizzas"
+  }
+];
+var leadership = [
+  {
+    name: "Weston Smith",
+    title: "Chef & Co-Founder",
+    bio: "Trained in fine dining in New York after beginnings in Portland coffee. Leads culinary direction with a focus on Minnesota-grown ingredients."
+  },
+  {
+    name: "Catherine Olsen",
+    title: "Chef & Co-Founder",
+    bio: "Minneapolis native and veteran baker who brings warmth, hospitality, and deep local sourcing relationships to the kitchen."
+  }
+];
+var campaignHighlights = [
+  "Goal: Handcraft and deliver 1,000 wood-fired pizzas made with 100% local Midwest ingredients.",
+  "Purpose: Fund expanded capacity and improve quality control, in the service of opening a pizza shop next year.",
+  "Backer Rewards: Pizzas, pies, events, and premium special offers like sockeye bottarga.",
+  "Timeline: 30-day crowdfunding campaign with weekly progress updates and community tastings."
+];
+var pressAssets = [
+  {
+    label: "Website",
+    value: "https://localeffortfood.com",
+    href: "https://localeffortfood.com"
+  },
+  {
+    label: "Crowdfunding Hub",
+    value: "Join the pizza campaign",
+    href: "/crowdfunding"
+  },
+  {
+    label: "Media Gallery",
+    value: "High-resolution kitchen & event photography",
+    href: "/gallery"
+  },
+  {
+    label: "Service Overview",
+    value: "Menus, pricing, and service areas",
+    href: "/services"
+  }
+];
+var ReleasesPage = () => {
+  return /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)(import_jsx_runtime23.Fragment, { children: [
+    /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)(import_react_helmet_async2.Helmet, { children: [
+      /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("title", { children: "Releases | Local Effort" }),
+      /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(
+        "meta",
+        {
+          name: "description",
+          content: "Press releases and media resources from Local Effort Food Co., the Minneapolis-based personal chef and catering team."
+        }
+      ),
+      /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("link", { rel: "canonical", href: "https://localeffortfood.com/releases" }),
+      /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("link", { rel: "alternate", type: "application/rss+xml", title: "Local Effort Releases RSS", href: "/api/feeds/releases.rss" }),
+      /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("link", { rel: "alternate", type: "application/atom+xml", title: "Local Effort Releases Atom", href: "/api/feeds/releases.atom" }),
+      /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("script", { type: "application/ld+json", children: JSON.stringify({
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "Organization",
+            name: "Local Effort Food Co.",
+            url: "https://localeffortfood.com",
+            foundingDate: "2022",
+            address: { "@type": "PostalAddress", addressLocality: "Roseville", addressRegion: "MN", addressCountry: "US" },
+            areaServed: ["Minneapolis", "St. Paul", "Twin Cities", "Western Wisconsin"],
+            sameAs: [
+              "https://www.instagram.com/localeffort",
+              "https://www.tiktok.com/@localeffort"
+            ]
+          },
+          {
+            "@type": "NewsArticle",
+            headline: "Roseville-Based Local Effort Seeks Support to Craft 1,000 Fully Local Pizzas",
+            datePublished: "2025-09-30",
+            dateModified: "2025-09-30",
+            description: "Local Effort Food Co. launches a community-backed effort to craft 1,000 pizzas using 100% Midwestern ingredients.",
+            author: { "@type": "Organization", name: "Local Effort Food Co." },
+            publisher: { "@type": "Organization", name: "Local Effort Food Co." },
+            mainEntityOfPage: { "@type": "WebPage", "@id": "https://localeffortfood.com/releases" }
+          }
+        ]
+      }) })
+    ] }),
+    /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("div", { className: "bg-neutral-50 py-16", children: /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { className: "max-w-5xl mx-auto px-4 md:px-6 lg:px-8", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)(
+        "section",
+        {
+          className: "bg-white border border-neutral-200 shadow-xl shadow-neutral-900/5 rounded-2xl overflow-hidden",
+          style: { fontFamily: typewriterFonts },
+          children: [
+            /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("div", { className: "bg-neutral-900 text-neutral-100 px-6 py-3 text-xs tracking-[0.4em] uppercase", children: "Press Release" }),
+            /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { className: "px-6 py-8 md:px-10 md:py-12 space-y-8", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("header", { className: "space-y-4", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { className: "flex flex-col gap-1 text-neutral-600 text-sm uppercase tracking-[0.3em]", children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("span", { children: "For Immediate Release" }),
+                  /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("span", { children: releaseDate })
+                ] }),
+                /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { className: "grid gap-3 md:grid-cols-[2fr,1fr] md:items-start", children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { className: "space-y-3", children: [
+                    /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("h1", { className: "heading-xl heading-balance", children: "Roseville-Based Local Effort Seeks Support to Craft 1,000 Fully Local Pizzas" }),
+                    /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("p", { className: "text-base text-neutral-700 leading-relaxed", children: "Roseville-based Local Effort Food Co. invites the community to back its most ambitious pizza initiative yet\u2014building a thousand pies sourced entirely from Midwestern growers, millers, and producers." })
+                  ] }),
+                  /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("aside", { className: "md:justify-self-end md:text-right text-sm text-neutral-700", children: [
+                    /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("p", { className: "font-semibold text-neutral-900", children: "Media Contact" }),
+                    /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("p", { children: "Weston Smith" }),
+                    /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("p", { children: "Local Effort Food Co." }),
+                    /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("p", { children: /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("a", { href: "mailto:yum@localeffortfood.com", className: "underline underline-offset-4 hover:opacity-80", children: "yum@localeffortfood.com" }) }),
+                    /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("p", { children: /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("a", { href: "https://localeffortfood.com", className: "underline underline-offset-4 hover:opacity-80", children: "localeffortfood.com" }) })
+                  ] })
+                ] })
+              ] }),
+              /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { className: "space-y-5 text-[1.02rem] leading-relaxed text-neutral-800", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("p", { children: "The crowdfunding campaign energizes Local Effort's obsession with 100% regional sourcing. Every crust, sauce, and topping will trace back to Minnesota and Midwest farms, mills, creameries, and co-ops that the chef team has partnered with since 2022." }),
+                /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("p", { children: "Backers will help finance upgraded capacity and purchasing power, unlocking more neighborhood pop-ups, farmers market collaborations, and last-mile delivery runs throughout Minneapolis, St. Paul, and Western Wisconsin." }),
+                /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("p", { children: "\u201CThis is truly Local Pizza,\u201D said Weston Smith, chef and co-founder of Local Effort. \u201CThe grain, the cheese, the tomatoes all tell a story about producing food in the Midwest. If we sell a thousand pies, we'll focus on opening a shop.\u201D" }),
+                /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("p", { children: "Supporters can choose from tiered rewards including apple pies, special invite-only parties and events, premium home events, and exclusive seasonal toppings co-developed with local growers. Weekly progress bulletins and tasting events will keep the community connected as milestones are reached on the path to 1,000 pizzas." })
+              ] }),
+              /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("section", { "aria-labelledby": "campaign-highlights", className: "space-y-3", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("h2", { id: "campaign-highlights", className: "heading-overline text-neutral-600", children: "Campaign Snapshot" }),
+                /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("ul", { className: "space-y-3 text-neutral-800", children: campaignHighlights.map((item) => /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("li", { className: "pl-5 relative", children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("span", { className: "absolute left-0 top-2 h-2 w-2 rounded-full bg-neutral-900", "aria-hidden": "true" }),
+                  item
+                ] }, item)) })
+              ] }),
+              /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { className: "space-y-5 text-[1.02rem] leading-relaxed text-neutral-800", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("p", { children: "Local Effort has grown from intimate in-home dinners to weekly meal prep and private events by doubling down on local-first commitments. The pizza program translates that ethos into a universally beloved format." }),
+                /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("p", { children: [
+                  "The crowdfunding page is live now at",
+                  " ",
+                  /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(import_react_router_dom4.Link, { to: "/crowdfunding", className: "underline underline-offset-4 font-semibold", children: "localeffortfood.com/crowdfunding" }),
+                  ". Early backers will unlock surprise collaborations with partner farms and organizations across the Twin Cities."
+                ] })
+              ] }),
+              /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("footer", { className: "pt-6 border-t border-dashed border-neutral-300", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("p", { className: "uppercase tracking-[0.3em] text-xs text-neutral-600", children: "About Local Effort" }),
+                /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("p", { className: "mt-3 text-[1.02rem] leading-relaxed text-neutral-800", children: "Local Effort Food Co. is a Roseville-based personal chef and catering team specializing in locally sourced cuisine. Since 2022, the team has designed in-home dinners, weekly meal prep, and small events that keep Midwestern ingredients at the center of every menu." })
+              ] })
+            ] })
+          ]
+        }
+      ),
+      /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("section", { className: "mt-16 space-y-8", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { className: "space-y-3", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("h2", { className: "heading-xl heading-balance", children: "Press kit" }),
+          /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("p", { className: "text-neutral-600 max-w-3xl", children: "Download-ready facts, leadership bios, and campaign details to support coverage of Local Effort's 1,000 pizza crowdfunding initiative." })
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { className: "grid gap-6 lg:grid-cols-2", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { className: "bg-white border border-neutral-200 rounded-2xl p-6 shadow-sm", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("h3", { className: "text-lg font-semibold text-neutral-900", children: "Fast Facts" }),
+            /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("dl", { className: "mt-4 space-y-3 text-neutral-700", children: pressFacts.map(({ label, value }) => /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { className: "flex flex-col", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("dt", { className: "text-xs uppercase tracking-[0.25em] text-neutral-500", children: label }),
+              /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("dd", { className: "text-base", children: value })
+            ] }, label)) })
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { className: "bg-white border border-neutral-200 rounded-2xl p-6 shadow-sm", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("h3", { className: "text-lg font-semibold text-neutral-900", children: "Leadership" }),
+            /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("ul", { className: "mt-4 space-y-4 text-neutral-700", children: leadership.map(({ name, title, bio }) => /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("li", { children: [
+              /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("p", { className: "text-base font-semibold text-neutral-900", children: name }),
+              /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("p", { className: "text-sm uppercase tracking-[0.2em] text-neutral-500", children: title }),
+              /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("p", { className: "mt-2 text-sm leading-relaxed", children: bio })
+            ] }, name)) })
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { className: "bg-white border border-neutral-200 rounded-2xl p-6 shadow-sm lg:col-span-2", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("h3", { className: "text-lg font-semibold text-neutral-900", children: "Campaign Assets" }),
+            /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { className: "mt-4 grid gap-4 sm:grid-cols-2", children: [
+              pressAssets.map(({ label, value, href }) => /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)(
+                "a",
+                {
+                  href,
+                  className: "group flex flex-col justify-between rounded-xl border border-neutral-200 p-4 transition hover:border-neutral-400 hover:shadow",
+                  children: [
+                    /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("span", { className: "text-xs uppercase tracking-[0.25em] text-neutral-500", children: label }),
+                    /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("span", { className: "mt-2 text-base text-neutral-900 group-hover:underline group-hover:underline-offset-4", children: value })
+                  ]
+                },
+                label
+              )),
+              /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)(
+                "a",
+                {
+                  href: "/press/local-effort-press-kit.pdf",
+                  className: "group flex flex-col justify-between rounded-xl border border-neutral-200 p-4 transition hover:border-neutral-400 hover:shadow",
+                  children: [
+                    /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("span", { className: "text-xs uppercase tracking-[0.25em] text-neutral-500", children: "Press Kit PDF" }),
+                    /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("span", { className: "mt-2 text-base text-neutral-900 group-hover:underline group-hover:underline-offset-4", children: "Download press kit (PDF)" })
+                  ]
+                }
+              )
+            ] })
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { className: "bg-white border border-neutral-200 rounded-2xl p-6 shadow-sm", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("h3", { className: "text-lg font-semibold text-neutral-900", children: "Media Contact" }),
+            /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("p", { className: "mt-3 text-sm text-neutral-600", children: [
+              "Local Effort Food Co.",
+              /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("br", {}),
+              "Minneapolis, MN"
+            ] }),
+            /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("p", { className: "mt-4 text-sm text-neutral-700", children: [
+              "Email:",
+              " ",
+              /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("a", { href: "mailto:yum@localeffortfood.com", className: "underline underline-offset-4 hover:opacity-80", children: "yum@localeffortfood.com" })
+            ] }),
+            /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("p", { className: "mt-1 text-sm text-neutral-700", children: [
+              "Instagram:",
+              " ",
+              /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("a", { href: "https://www.instagram.com/localeffort", className: "underline underline-offset-4 hover:opacity-80", children: "@localeffort" })
+            ] }),
+            /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("p", { className: "mt-1 text-sm text-neutral-700", children: [
+              "TikTok:",
+              " ",
+              /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("a", { href: "https://www.tiktok.com/@localeffort", className: "underline underline-offset-4 hover:opacity-80", children: "@localeffort" })
+            ] }),
+            /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("p", { className: "mt-6", children: /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(
+              import_react_router_dom4.Link,
+              {
+                to: "/crowdfunding",
+                className: "inline-flex items-center justify-center rounded-full bg-neutral-900 px-5 py-2 text-sm font-semibold tracking-wide text-white transition hover:bg-neutral-800",
+                children: "View crowdfunding campaign"
+              }
+            ) })
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { className: "bg-white border border-neutral-200 rounded-2xl p-6 shadow-sm", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("h3", { className: "text-lg font-semibold text-neutral-900", children: "Story Angles" }),
+            /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("ul", { className: "mt-4 space-y-3 text-neutral-700", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("li", { className: "pl-4 relative", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("span", { className: "absolute left-0 top-2 h-2 w-2 rounded-full bg-neutral-900", "aria-hidden": "true" }),
+                "Farm-to-pizza supply chains featuring grain cooperatives, creameries, and seasonal produce."
+              ] }),
+              /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("li", { className: "pl-4 relative", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("span", { className: "absolute left-0 top-2 h-2 w-2 rounded-full bg-neutral-900", "aria-hidden": "true" }),
+                "Growing a chef-led small business through community-backed crowdfunding."
+              ] }),
+              /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("li", { className: "pl-4 relative", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("span", { className: "absolute left-0 top-2 h-2 w-2 rounded-full bg-neutral-900", "aria-hidden": "true" }),
+                "How Local Effort's weekly meal prep program informs fast-casual pizza innovation."
+              ] })
+            ] })
+          ] })
+        ] })
+      ] }),
+      /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("section", { className: "mt-24", "aria-labelledby": "archive-heading", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("h2", { id: "archive-heading", className: "heading-lg heading-balance mb-6", children: "Previous release (archived)" }),
+        /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("details", { className: "group bg-white rounded-2xl border border-neutral-200 shadow-sm", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("summary", { className: "cursor-pointer list-none px-6 py-4 flex items-center justify-between", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("span", { className: "font-medium text-neutral-800", children: "Local Effort Launches Crowdfunding Campaign to Craft 1,000 Local Pizzas" }),
+            /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("span", { className: "text-xs text-neutral-500 group-open:hidden", children: "Expand" }),
+            /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("span", { className: "text-xs text-neutral-500 hidden group-open:inline", children: "Collapse" })
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { className: "px-6 pb-8 space-y-5 text-neutral-800 text-[0.97rem] leading-relaxed", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("p", { children: "Minneapolis-based Local Effort Food Co. invites the community to back its most ambitious pizza initiative yet\u2014building a thousand pies sourced entirely from Midwestern growers, millers, and makers." }),
+            /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("p", { children: "The crowdfunding campaign energizes Local Effort's obsession with 100% regional sourcing. Every crust, sauce, and topping will trace back to Minnesota and Midwest farms, mills, creameries, and co-ops that the chef team has partnered with since 2022." }),
+            /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("p", { children: "Backers will help finance upgraded cold storage and a mobile pizza rig, unlocking more neighborhood pop-ups, farmers market collaborations, and last-mile delivery runs throughout Minneapolis, St. Paul, and Western Wisconsin." }),
+            /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("p", { children: "\u201CPizzas can tell the whole story of a foodshed,\u201D said Weston Smith, chef and co-founder of Local Effort. \u201CWhen we layer house-fermented dough with seasonal produce, heritage grains, and regional cheeses, we showcase the farms that feed us. This campaign invites people to invest in that community table.\u201D" }),
+            /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("p", { children: "Supporters can choose from tiered rewards including limited pizza drops, family meal prep bundles, and exclusive seasonal toppings co-developed with local growers. Weekly progress bulletins and tasting events will keep the community connected as milestones are reached on the path to 1,000 pizzas." }),
+            /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("p", { children: "Local Effort has grown from intimate in-home dinners to weekly meal prep and community events by doubling down on relationships with Minnesota farmers, grain cooperatives, and dairy makers. The pizza program translates that ethos into a handheld, shareable format that can reach more tables without compromising sourcing." })
+          ] })
+        ] })
+      ] })
+    ] }) })
+  ] });
+};
+var ReleasesPage_default = ReleasesPage;
+
+// src/pages/SalePage.jsx
+var import_react21 = __toESM(require("react"));
+var import_react_helmet_async3 = __toESM(require_lib());
+var import_framer_motion5 = require("framer-motion");
+
+// src/store/components/ProductCard.jsx
+var import_react17 = __toESM(require("react"));
+var import_react18 = require("@portabletext/react");
+
+// src/utils/portableTextComponents.jsx
+var import_react15 = __toESM(require("react"));
+var import_image_url = __toESM(require("@sanity/image-url"));
+
+// src/sanityClient.js
+var import_client = require("@sanity/client");
+var import_meta3 = {};
+var rawBuildEnv = typeof import_meta3 !== "undefined" && import_meta3.env ? import_meta3.env : {};
+var runtimeWindowEnv = typeof window !== "undefined" && window.__SANITY_CONFIG__ ? window.__SANITY_CONFIG__ : {};
+var env = { ...rawBuildEnv, ...runtimeWindowEnv };
+var projectId = env.VITE_APP_SANITY_PROJECT_ID || env.VITE_SANITY_PROJECT_ID || env.SANITY_PROJECT_ID || env.PROJECT_ID;
+var dataset = env.VITE_APP_SANITY_DATASET || env.VITE_SANITY_DATASET || env.SANITY_DATASET || env.DATASET;
+var createProxyClient = () => {
+  return {
+    fetch: async (query, params = {}) => {
+      try {
+        const response = await fetch("/api/sanity-query", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ query, params })
+        });
+        if (!response.ok) {
+          const error = await response.json().catch(() => ({ error: "fetch-failed" }));
+          throw new Error(error.message || error.error || "Sanity query failed");
+        }
+        const data = await response.json();
+        return data.result;
+      } catch (err) {
+        console.error("Sanity proxy fetch error:", err);
+        throw err;
+      }
+    }
+  };
+};
+var client = null;
+try {
+  if (projectId && dataset) {
+    if (typeof window !== "undefined") {
+      client = createProxyClient();
+    } else {
+      client = (0, import_client.createClient)({ projectId, dataset, useCdn: true, apiVersion: "2023-05-03" });
+    }
+  } else {
+    client = {
+      fetch: async () => {
+        throw new Error("Sanity client unavailable");
+      }
+    };
+  }
+} catch (e) {
+  console.warn("Failed to initialize Sanity client:", e && (e.message || e));
+  client = {
+    fetch: async () => {
+      throw new Error("Sanity client unavailable");
+    }
+  };
+}
+var sanityClient_default = client;
+
+// src/utils/portableTextComponents.jsx
+var import_jsx_runtime24 = require("react/jsx-runtime");
+var accentLinkClass = "text-[var(--color-accent)] underline underline-offset-4 decoration-[var(--color-accent)] hover:opacity-80 transition-colors";
+function DefaultLink({ children, value }) {
+  const href = typeof value?.href === "string" && value.href.trim() ? value.href : "#";
+  const explicitTarget = value?.target || value?.blank;
+  const isExternal = /^https?:/i.test(href);
+  const shouldOpenNewTab = explicitTarget === "_blank" || explicitTarget === true || explicitTarget === void 0 && isExternal;
+  const target = shouldOpenNewTab ? "_blank" : void 0;
+  const rel = shouldOpenNewTab ? "noopener noreferrer" : void 0;
+  return /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("a", { href, target, rel, className: accentLinkClass, children });
+}
+var imageBuilder = null;
+try {
+  imageBuilder = (0, import_image_url.default)(sanityClient_default);
+} catch (error) {
+  imageBuilder = null;
+}
+function resolveImageUrl(value) {
+  if (value?.asset?.url) {
+    return value.asset.url;
+  }
+  if (!value?.asset?._ref || !imageBuilder) {
+    return "";
+  }
+  try {
+    return imageBuilder.image(value).width(1600).quality(80).fit("max").url();
+  } catch (error) {
+    return "";
+  }
+}
+function DefaultPortableTextImage({ value }) {
+  const src = resolveImageUrl(value);
+  if (!src) {
+    return null;
+  }
+  const alt = typeof value?.alt === "string" ? value.alt : "";
+  return /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
+    "img",
+    {
+      src,
+      alt,
+      loading: "lazy",
+      className: "my-4 w-full rounded-md object-contain"
+    }
+  );
+}
+function createPortableTextComponents(overrides = {}) {
+  const { marks: providedMarks = {}, types: providedTypes = {}, ...rest } = overrides;
+  return {
+    ...rest,
+    marks: {
+      link: DefaultLink,
+      ...providedMarks
+    },
+    types: {
+      image: DefaultPortableTextImage,
+      ...providedTypes
+    }
+  };
+}
+var portableTextComponents = createPortableTextComponents();
+
+// src/components/common/ToastProvider.jsx
+var import_react16 = __toESM(require("react"));
+var import_jsx_runtime25 = require("react/jsx-runtime");
+var ToastContext = (0, import_react16.createContext)({ notify: () => {
+} });
+function useToast() {
+  return (0, import_react16.useContext)(ToastContext);
+}
+
+// src/store/components/ProductCard.jsx
+var import_jsx_runtime26 = require("react/jsx-runtime");
+function ProductCard({ product }) {
+  const { add, map, updateQty, open, openCart } = useCart();
+  const { notify } = useToast();
+  const [variantIdx, setVariantIdx] = (0, import_react17.useState)(0);
+  const [showDetails, setShowDetails] = (0, import_react17.useState)(false);
+  const [selectedAddOns, setSelectedAddOns] = (0, import_react17.useState)({});
+  const [isDairyFree, setIsDairyFree] = (0, import_react17.useState)(false);
+  const dialogRef = (0, import_react17.useRef)(null);
+  const closeBtnRef = (0, import_react17.useRef)(null);
+  const prevFocusRef = (0, import_react17.useRef)(null);
+  const hasVariants = Array.isArray(product.variants) && product.variants.length > 0;
+  const hasAddOns = Array.isArray(product.addOns) && product.addOns.length > 0;
+  const chosen = hasVariants ? product.variants[Math.max(0, Math.min(variantIdx, product.variants.length - 1))] : null;
+  const basePrice = chosen?.price ?? (product.salePrice ?? product.price);
+  const addOnsTotal = hasAddOns ? Object.keys(selectedAddOns).reduce((sum, idx) => {
+    if (selectedAddOns[idx]) {
+      return sum + (product.addOns[idx]?.additionalCost || 0);
+    }
+    return sum;
+  }, 0) : 0;
+  const dairyFreePrice = isDairyFree && product.offerDairyFree ? product.dairyFreeCost || 0 : 0;
+  const price = basePrice + addOnsTotal + dairyFreePrice;
+  (0, import_react17.useEffect)(() => {
+    if (showDetails && hasAddOns) {
+      const defaults = {};
+      product.addOns.forEach((addon, idx) => {
+        if (addon.defaultSelected) {
+          defaults[idx] = true;
+        }
+      });
+      setSelectedAddOns(defaults);
+    }
+  }, [showDetails, hasAddOns, product.addOns]);
+  const images = (0, import_react17.useMemo)(() => {
+    const arr = Array.isArray(product?.images) ? product.images : [];
+    return arr.map((i) => typeof i === "string" ? i : i?.url || i?.asset?.url || null).filter(Boolean);
+  }, [product]);
+  const primary = images[0];
+  const rest = images.slice(1);
+  const variantSelectId = (0, import_react17.useMemo)(() => `variant-select-${product.id || "p"}`, [product.id]);
+  const handleAdd = () => {
+    const variationId = chosen?.squareVariationId || product.squareVariationId || null;
+    const key2 = `${product.id}:${variationId || ""}`;
+    const inCart = map?.[key2]?.qty || 0;
+    if (product.inventoryManaged) {
+      const left = (typeof product.inventory === "number" ? product.inventory : Infinity) - inCart;
+      if (left <= 0) return;
+    }
+    add({ productId: product.id, variationId, unitPrice: price, qty: 1, title: product.title, image: primary });
+    notify("Added to cart", { actionLabel: open ? void 0 : "View cart", onAction: open ? void 0 : openCart });
+  };
+  const key = `${product.id}:${chosen?.squareVariationId || product.squareVariationId || ""}`;
+  const inCartQty = map?.[key]?.qty || 0;
+  const formatted = (0, import_react17.useMemo)(() => `$${(price / 100).toFixed(2)}`, [price]);
+  (0, import_react17.useEffect)(() => {
+    if (!showDetails) return;
+    prevFocusRef.current = document.activeElement;
+    const dlg = dialogRef.current;
+    if (closeBtnRef.current) {
+      try {
+        closeBtnRef.current.focus();
+      } catch (e) {
+      }
+    }
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") {
+        e.stopPropagation();
+        setShowDetails(false);
+        return;
+      }
+      if (e.key === "Tab" && dlg) {
+        const focusable = dlg.querySelectorAll(
+          'a[href], button:not([disabled]), textarea, input, select, [tabindex]:not([tabindex="-1"])'
+        );
+        const list = Array.from(focusable).filter((el) => el.offsetParent !== null);
+        if (list.length === 0) return;
+        const first = list[0];
+        const last = list[list.length - 1];
+        if (!e.shiftKey && document.activeElement === last) {
+          e.preventDefault();
+          first.focus();
+        } else if (e.shiftKey && document.activeElement === first) {
+          e.preventDefault();
+          last.focus();
+        }
+      }
+    };
+    document.addEventListener("keydown", handleKeyDown, true);
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown, true);
+      const prev = prevFocusRef.current;
+      if (prev && prev.focus) {
+        try {
+          prev.focus();
+        } catch (e) {
+        }
+      }
+    };
+  }, [showDetails]);
+  return /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)(
+    "div",
+    {
+      className: cn(
+        "group relative rounded-xl border border-neutral-200 bg-white shadow-sm overflow-hidden",
+        "transition hover:shadow-md"
+      ),
+      children: [
+        /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(
+          "div",
+          {
+            className: "relative aspect-[4/3] w-full bg-neutral-100 overflow-hidden cursor-pointer",
+            role: "button",
+            tabIndex: 0,
+            onClick: () => setShowDetails(true),
+            onKeyDown: (e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                setShowDetails(true);
+              }
+            },
+            children: primary ? /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)(import_jsx_runtime26.Fragment, { children: [
+              /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(
+                "img",
+                {
+                  src: primary,
+                  alt: product.title,
+                  loading: "lazy",
+                  className: cn(
+                    "absolute inset-0 h-full w-full object-cover",
+                    rest[0] ? "transition-opacity duration-300 opacity-100 group-hover:opacity-0" : ""
+                  )
+                }
+              ),
+              rest[0] ? /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(
+                "img",
+                {
+                  src: rest[0],
+                  alt: "",
+                  "aria-hidden": "true",
+                  loading: "lazy",
+                  className: "absolute inset-0 h-full w-full object-cover transition-opacity duration-300 opacity-0 group-hover:opacity-100"
+                }
+              ) : null,
+              /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(
+                "div",
+                {
+                  className: cn(
+                    "pointer-events-none absolute inset-x-0 bottom-0 transition-opacity duration-200",
+                    "opacity-0 group-hover:opacity-100 group-focus-within:opacity-100"
+                  ),
+                  children: /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "pointer-events-none bg-gradient-to-t from-black/70 to-transparent text-white p-3", children: product.shortDescription ? /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("p", { className: "text-xs leading-snug line-clamp-2", children: product.shortDescription }) : null })
+                }
+              )
+            ] }) : /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "w-full h-full grid place-items-center text-neutral-400", children: "No image" })
+          }
+        ),
+        /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "p-3", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "flex items-baseline justify-between gap-3", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("h3", { className: "text-base font-semibold leading-tight line-clamp-2", children: /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(
+              "button",
+              {
+                type: "button",
+                className: "text-left w-full cursor-pointer hover:underline focus:outline-none",
+                onClick: () => setShowDetails(true),
+                children: product.title
+              }
+            ) }),
+            /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "text-sm font-mono", children: [
+              product.salePrice && /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("span", { className: "text-neutral-400 line-through mr-1", children: [
+                "$",
+                (product.price / 100).toFixed(2)
+              ] }),
+              /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("span", { className: "text-rose-600 font-bold", children: formatted })
+            ] })
+          ] }),
+          product.shortDescription && /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("p", { className: "text-sm text-neutral-600 mt-1 line-clamp-2", children: product.shortDescription }),
+          /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "mt-3 flex gap-2 items-center", children: [
+            hasVariants && /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(
+              "select",
+              {
+                className: "input",
+                value: variantIdx,
+                onChange: (e) => setVariantIdx(Number(e.target.value) || 0),
+                "aria-label": "Choose a variant",
+                children: product.variants.map((v, i) => /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("option", { value: i, children: v.name || `Option ${i + 1}` }, v.squareVariationId || v.name || i))
+              }
+            ),
+            inCartQty > 0 && /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "inline-flex items-center gap-2", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("button", { className: "btn", onClick: () => updateQty(key, Math.max(0, inCartQty - 1)), "aria-label": "Decrease quantity", children: "-" }),
+              /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("span", { className: "min-w-[2ch] text-center text-sm", children: inCartQty }),
+              /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("button", { className: "btn", onClick: () => updateQty(key, inCartQty + 1), "aria-label": "Increase quantity", children: "+" })
+            ] }),
+            /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(
+              "button",
+              {
+                className: "btn btn-primary",
+                onClick: handleAdd,
+                disabled: product.inventoryManaged && (product.inventory ?? 0) <= inCartQty,
+                "aria-disabled": product.inventoryManaged && (product.inventory ?? 0) <= inCartQty,
+                title: product.inventoryManaged && (product.inventory ?? 0) <= inCartQty ? "Out of stock" : "Add to cart",
+                children: product.inventoryManaged && (product.inventory ?? 0) <= inCartQty ? "Out of stock" : inCartQty > 0 ? "Add one more" : "Add to cart"
+              }
+            )
+          ] })
+        ] }),
+        showDetails && /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "fixed inset-0 z-[60]", "aria-hidden": !showDetails, children: [
+          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "absolute inset-0 bg-black/50", onClick: () => setShowDetails(false) }),
+          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(
+            "div",
+            {
+              className: "absolute inset-x-3 md:inset-x-auto md:left-1/2 md:-translate-x-1/2 top-10 bottom-10 md:top-1/2 md:-translate-y-1/2 md:bottom-auto w-auto md:w-[720px] max-w-[95vw]",
+              role: "dialog",
+              "aria-modal": "true",
+              "aria-labelledby": `product-dialog-title-${product.id}`,
+              ref: dialogRef,
+              children: /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "bg-white rounded-xl shadow-2xl border overflow-hidden flex flex-col h-full md:h-auto", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "flex items-start justify-between p-4 border-b", children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("h3", { id: `product-dialog-title-${product.id}`, className: "text-lg font-semibold", children: product.title }),
+                  /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("button", { ref: closeBtnRef, className: "btn", onClick: () => setShowDetails(false), "aria-label": "Close", children: "\u2715" })
+                ] }),
+                /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "grid grid-cols-1 md:grid-cols-2 gap-0 md:gap-4 p-4 overflow-auto", children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { children: [
+                    primary ? /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("img", { src: primary, alt: product.title, className: "w-full h-56 md:h-72 object-cover rounded" }) : /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "w-full h-56 md:h-72 grid place-items-center text-neutral-400 bg-neutral-100 rounded", children: "No image" }),
+                    rest.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "mt-2 grid grid-cols-4 gap-2", children: [primary, ...rest].slice(0, 8).map((u, i) => /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "block", children: /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("img", { src: u, alt: "", className: "w-full h-16 object-cover rounded" }) }, i)) })
+                  ] }),
+                  /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { children: [
+                    /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "text-xl font-semibold", children: formatted }),
+                    hasVariants && /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "mt-3", children: [
+                      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("label", { className: "block text-sm font-medium mb-1", htmlFor: variantSelectId, children: "Choose an option" }),
+                      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(
+                        "select",
+                        {
+                          className: "input w-full",
+                          id: variantSelectId,
+                          value: variantIdx,
+                          onChange: (e) => setVariantIdx(Number(e.target.value) || 0),
+                          children: product.variants.map((v, i) => /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("option", { value: i, children: v.name || `Option ${i + 1}` }, v.squareVariationId || v.name || i))
+                        }
+                      )
+                    ] }),
+                    hasAddOns && /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "mt-4 p-3 bg-neutral-50 rounded-lg border border-neutral-200", children: [
+                      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("h4", { className: "text-sm font-semibold mb-2", children: "Customize Your Order" }),
+                      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "space-y-2", children: product.addOns.map((addon, idx) => /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("label", { className: "flex items-center justify-between gap-2 text-sm cursor-pointer hover:bg-white p-2 rounded transition", children: [
+                        /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "flex items-center gap-2", children: [
+                          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(
+                            "input",
+                            {
+                              type: "checkbox",
+                              checked: selectedAddOns[idx] || false,
+                              onChange: (e) => setSelectedAddOns((prev) => ({ ...prev, [idx]: e.target.checked })),
+                              className: "rounded border-neutral-300"
+                            }
+                          ),
+                          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("span", { children: addon.name })
+                        ] }),
+                        /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("span", { className: "text-neutral-600 font-mono text-xs", children: addon.additionalCost > 0 ? `+$${(addon.additionalCost / 100).toFixed(2)}` : "Free" })
+                      ] }, idx)) })
+                    ] }),
+                    product.offerDairyFree && /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "mt-3 p-3 bg-blue-50 rounded-lg border border-blue-200", children: /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("label", { className: "flex items-center justify-between gap-2 text-sm cursor-pointer", children: [
+                      /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "flex items-center gap-2", children: [
+                        /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(
+                          "input",
+                          {
+                            type: "checkbox",
+                            checked: isDairyFree,
+                            onChange: (e) => setIsDairyFree(e.target.checked),
+                            className: "rounded border-blue-300"
+                          }
+                        ),
+                        /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("span", { className: "font-medium", children: "Dairy-Free Option" })
+                      ] }),
+                      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("span", { className: "text-neutral-600 font-mono text-xs", children: product.dairyFreeCost > 0 ? `+$${(product.dairyFreeCost / 100).toFixed(2)}` : "Same price" })
+                    ] }) }),
+                    Array.isArray(product.longDescriptionBlocks) && product.longDescriptionBlocks.length > 0 ? /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "prose prose-sm mt-4 max-w-none", children: /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(import_react18.PortableText, { value: product.longDescriptionBlocks, components: portableTextComponents }) }) : product.longDescription ? /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("p", { className: "text-sm text-neutral-700 mt-4 whitespace-pre-wrap", children: product.longDescription }) : null,
+                    /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "mt-6 flex gap-2 items-center", children: [
+                      inCartQty > 0 && /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "inline-flex items-center gap-2", children: [
+                        /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("button", { className: "btn", onClick: () => updateQty(key, Math.max(0, inCartQty - 1)), "aria-label": "Decrease quantity", children: "-" }),
+                        /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("span", { className: "min-w-[2ch] text-center text-sm", children: inCartQty }),
+                        /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("button", { className: "btn", onClick: () => updateQty(key, inCartQty + 1), "aria-label": "Increase quantity", children: "+" })
+                      ] }),
+                      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(
+                        "button",
+                        {
+                          className: "btn btn-primary",
+                          onClick: handleAdd,
+                          disabled: product.inventoryManaged && (product.inventory ?? 0) <= inCartQty,
+                          "aria-disabled": product.inventoryManaged && (product.inventory ?? 0) <= inCartQty,
+                          children: product.inventoryManaged && (product.inventory ?? 0) <= inCartQty ? "Out of stock" : inCartQty > 0 ? "Add one more" : "Add to cart"
+                        }
+                      )
+                    ] })
+                  ] })
+                ] })
+              ] })
+            }
+          )
+        ] })
+      ]
+    }
+  );
+}
+
+// src/store/components/CheckoutPanel.jsx
+var import_react19 = __toESM(require("react"));
+var import_jsx_runtime27 = require("react/jsx-runtime");
+var import_meta4 = {};
+function CheckoutPanel({ store = "sale" }) {
+  const { items, subtotal, open, closeCart, clear, remove, updateQty } = useCart();
+  const [processing, setProcessing] = (0, import_react19.useState)(false);
+  const [error, setError] = (0, import_react19.useState)("");
+  const [name, setName] = (0, import_react19.useState)("");
+  const [email, setEmail] = (0, import_react19.useState)("");
+  const [pickup, setPickup] = (0, import_react19.useState)(true);
+  const [phone, setPhone] = (0, import_react19.useState)("");
+  const [address, setAddress] = (0, import_react19.useState)({ line1: "", line2: "", city: "", state: "", postal: "" });
+  const cardRef = import_react19.default.useRef(null);
+  const cardElRef = import_react19.default.useRef(null);
+  import_react19.default.useEffect(() => {
+    const appId = import_meta4?.env?.VITE_SQUARE_APP_ID || window?.__SQUARE_APP_ID__;
+    const locationId = import_meta4?.env?.VITE_SQUARE_LOCATION_ID || window?.__SQUARE_LOCATION_ID__;
+    if (!open) return;
+    if (!items || items.length === 0) return;
+    setError("");
+    if (!appId || !locationId) {
+      setError("Square not configured");
+      return;
+    }
+    let canceled = false;
+    (async () => {
+      try {
+        if (!document.getElementById("sq-wpsdk")) {
+          await new Promise((resolve, reject) => {
+            const s = document.createElement("script");
+            s.id = "sq-wpsdk";
+            s.src = "https://web.squarecdn.com/v1/square.js";
+            s.onload = resolve;
+            s.onerror = () => reject(new Error("Square SDK failed"));
+            document.head.appendChild(s);
+          });
+        }
+        if (canceled) return;
+        const ensureSquare = () => new Promise((resolve, reject) => {
+          let tries = 0;
+          const t = setInterval(() => {
+            tries++;
+            if (window.Square && typeof window.Square.payments === "function") {
+              clearInterval(t);
+              resolve();
+            } else if (tries > 50) {
+              clearInterval(t);
+              reject(new Error("Square SDK not ready"));
+            }
+          }, 100);
+        });
+        await ensureSquare();
+        const p = window.Square ? window.Square.payments(appId, locationId) : null;
+        if (!p) throw new Error("Square payments unavailable");
+        if (cardRef.current && typeof cardRef.current.destroy === "function") {
+          try {
+            cardRef.current.destroy();
+          } catch (e) {
+          }
+          cardRef.current = null;
+        }
+        const card = await p.card();
+        cardRef.current = card;
+        if (cardElRef.current) {
+          await card.attach("#sq-card");
+        }
+      } catch (e) {
+        setError(e?.message ? `Payment form failed: ${e.message}` : "Payment form failed to load");
+      }
+    })();
+    return () => {
+      canceled = true;
+    };
+  }, [open, items]);
+  import_react19.default.useEffect(() => {
+    if (!open && cardRef.current && typeof cardRef.current.destroy === "function") {
+      try {
+        cardRef.current.destroy();
+      } catch (e) {
+      }
+      cardRef.current = null;
+    }
+  }, [open]);
+  const onSubmit = async (e) => {
+    e.preventDefault();
+    setProcessing(true);
+    setError("");
+    try {
+      let token = null;
+      if (cardRef.current) {
+        const result = await cardRef.current.tokenize();
+        if (result.status !== "OK") {
+          const msg = result?.errors && result.errors[0]?.message || result?.status || "Card details invalid";
+          throw new Error(msg);
+        }
+        token = result.token;
+      }
+      const res = await fetch("/api/store/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          customer: { name, email, phone },
+          pickup,
+          address: pickup ? null : address,
+          items: items.map((i) => ({ productId: i.productId, variationId: i.variationId, qty: i.qty, unitPrice: i.unitPrice, title: i.title })),
+          token,
+          store
+        })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Checkout failed");
+      clear();
+      closeCart();
+      alert("Order placed!");
+    } catch (e2) {
+      setError(e2.message || "Checkout failed");
+    } finally {
+      setProcessing(false);
+    }
+  };
+  if (!open) return null;
+  return /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("div", { className: "fixed inset-0 bg-black/40 z-50", children: /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)("div", { className: "absolute right-0 top-0 bottom-0 w-full max-w-md bg-white shadow-xl p-4 overflow-auto", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)("div", { className: "flex items-center justify-between mb-3", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("h3", { className: "text-xl font-semibold", children: "Your Cart" }),
+      /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("button", { className: "btn", onClick: closeCart, children: "Close" })
+    ] }),
+    items.length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("p", { className: "text-sm text-neutral-600", children: "Your cart is empty." }) : /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)(import_jsx_runtime27.Fragment, { children: [
+      /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("ul", { className: "divide-y", children: items.map((i) => /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)("li", { className: "py-2 flex items-center gap-3", children: [
+        i.image && /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("img", { src: i.image, alt: "", className: "w-12 h-12 object-cover rounded" }),
+        /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)("div", { className: "flex-1", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("div", { className: "font-medium text-sm", children: i.title }),
+          /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)("div", { className: "text-xs text-neutral-600", children: [
+            "$",
+            (i.unitPrice / 100).toFixed(2),
+            " each"
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)("div", { className: "flex items-center gap-2 mt-2", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(
+              "button",
+              {
+                type: "button",
+                onClick: () => updateQty(i.key, Math.max(0, i.qty - 1)),
+                className: "h-7 w-7 rounded-full border border-neutral-300 text-sm font-semibold text-neutral-600 hover:border-neutral-400 hover:text-neutral-900",
+                "aria-label": "Decrease quantity",
+                children: "\u2212"
+              }
+            ),
+            /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("span", { className: "min-w-[2rem] text-center text-sm font-semibold", children: i.qty }),
+            /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(
+              "button",
+              {
+                type: "button",
+                onClick: () => updateQty(i.key, i.qty + 1),
+                className: "h-7 w-7 rounded-full border border-neutral-300 text-sm font-semibold text-neutral-600 hover:border-neutral-400 hover:text-neutral-900",
+                "aria-label": "Increase quantity",
+                children: "+"
+              }
+            ),
+            /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(
+              "button",
+              {
+                type: "button",
+                onClick: () => remove(i.key),
+                className: "ml-auto text-xs text-red-600 hover:text-red-800 underline",
+                "aria-label": "Remove item",
+                children: "Remove"
+              }
+            )
+          ] })
+        ] })
+      ] }, i.key)) }),
+      /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)("div", { className: "mt-4 border-t pt-3", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)("div", { className: "flex justify-between items-center text-sm mb-2", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("span", { children: "Subtotal" }),
+          /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)("span", { children: [
+            "$",
+            (subtotal / 100).toFixed(2)
+          ] })
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(
+          "button",
+          {
+            type: "button",
+            onClick: () => {
+              if (window.confirm("Are you sure you want to clear your cart?")) {
+                clear();
+              }
+            },
+            className: "text-xs text-red-600 hover:text-red-800 underline",
+            children: "Clear cart"
+          }
+        ),
+        /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("p", { className: "text-xs text-neutral-500 mt-1", children: "Tax calculated by Square." })
+      ] }),
+      /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)("form", { onSubmit, className: "mt-4 space-y-3", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)("div", { children: [
+          /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("label", { className: "label", htmlFor: "co-name", children: "Name" }),
+          /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("input", { id: "co-name", className: "input w-full", value: name, onChange: (e) => setName(e.target.value), required: true })
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)("div", { children: [
+          /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("label", { className: "label", htmlFor: "co-email", children: "Email" }),
+          /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("input", { id: "co-email", type: "email", className: "input w-full", value: email, onChange: (e) => setEmail(e.target.value), required: true })
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)("div", { children: [
+          /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("label", { className: "label", htmlFor: "co-phone", children: "Phone" }),
+          /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("input", { id: "co-phone", type: "tel", className: "input w-full", value: phone, onChange: (e) => setPhone(e.target.value) })
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)("div", { className: "flex items-center gap-2 text-sm", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("input", { id: "pickup", type: "checkbox", checked: pickup, onChange: (e) => setPickup(e.target.checked) }),
+          /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("label", { htmlFor: "pickup", children: "Pickup / local service" })
+        ] }),
+        !pickup && /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)("div", { className: "grid grid-cols-1 gap-2", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)("div", { children: [
+            /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("label", { className: "label", htmlFor: "addr1", children: "Address line 1" }),
+            /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("input", { id: "addr1", className: "input w-full", value: address.line1, onChange: (e) => setAddress({ ...address, line1: e.target.value }), required: true })
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)("div", { children: [
+            /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("label", { className: "label", htmlFor: "addr2", children: "Address line 2 (optional)" }),
+            /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("input", { id: "addr2", className: "input w-full", value: address.line2, onChange: (e) => setAddress({ ...address, line2: e.target.value }) })
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)("div", { className: "grid grid-cols-2 gap-2", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)("div", { children: [
+              /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("label", { className: "label", htmlFor: "city", children: "City" }),
+              /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("input", { id: "city", className: "input w-full", value: address.city, onChange: (e) => setAddress({ ...address, city: e.target.value }), required: true })
+            ] }),
+            /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)("div", { children: [
+              /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("label", { className: "label", htmlFor: "state", children: "State" }),
+              /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("input", { id: "state", className: "input w-full", value: address.state, onChange: (e) => setAddress({ ...address, state: e.target.value }), required: true })
+            ] })
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)("div", { children: [
+            /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("label", { className: "label", htmlFor: "zip", children: "Postal code" }),
+            /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("input", { id: "zip", className: "input w-full", value: address.postal, onChange: (e) => setAddress({ ...address, postal: e.target.value }), required: true })
+          ] })
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("div", { className: "rounded-md border p-3 text-sm text-neutral-600", children: /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("div", { id: "sq-card", ref: cardElRef, className: "min-h-[52px]" }) }),
+        error && /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("div", { className: "text-sm text-red-600", children: error }),
+        /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("button", { type: "submit", className: "btn btn-primary w-full", disabled: processing, children: processing ? "Processing\u2026" : "Checkout" })
+      ] })
+    ] })
+  ] }) });
+}
+
+// src/pages/SalePage.jsx
+var import_react22 = require("@portabletext/react");
+
+// src/components/sale/DraggableMasonry.jsx
+var import_react20 = __toESM(require("react"));
+var import_framer_motion4 = require("framer-motion");
+var import_jsx_runtime28 = require("react/jsx-runtime");
+var DraggableMasonry = ({ images = [] }) => {
+  const [imageOrder, setImageOrder] = (0, import_react20.useState)([]);
+  const [positions, setPositions] = (0, import_react20.useState)({});
+  const [rotations, setRotations] = (0, import_react20.useState)({});
+  const containerRef = (0, import_react20.useRef)(null);
+  const [isDragging, setIsDragging] = (0, import_react20.useState)(null);
+  const [lightboxImage, setLightboxImage] = (0, import_react20.useState)(null);
+  const dragStartTime = (0, import_react20.useRef)(0);
+  const dragStartPos = (0, import_react20.useRef)({ x: 0, y: 0 });
+  (0, import_react20.useEffect)(() => {
+    if (images.length > 0 && imageOrder.length === 0) {
+      setImageOrder(images.map((img) => img.id));
+      const rots = {};
+      images.forEach((img) => {
+        rots[img.id] = (Math.random() - 0.5) * 3;
+      });
+      setRotations(rots);
+    }
+  }, [images, imageOrder.length]);
+  (0, import_react20.useEffect)(() => {
+    if (imageOrder.length === 0) return;
+    const calculatePositions = () => {
+      const newPositions = {};
+      const columns = 3;
+      const columnHeights = new Array(columns).fill(0);
+      const baseGap = 16;
+      const columnWidth = 310;
+      imageOrder.forEach((imgId) => {
+        const img = images.find((i) => i.id === imgId);
+        if (!img) return;
+        const shortestCol = columnHeights.indexOf(Math.min(...columnHeights));
+        const randomOffset = {
+          x: (Math.random() - 0.5) * 20,
+          y: (Math.random() - 0.5) * 10
+        };
+        const x = shortestCol * columnWidth + randomOffset.x;
+        const y = columnHeights[shortestCol] + baseGap + randomOffset.y;
+        newPositions[imgId] = { x, y, column: shortestCol };
+        columnHeights[shortestCol] += (img.height || 380) + baseGap;
+      });
+      setPositions(newPositions);
+    };
+    calculatePositions();
+  }, [imageOrder, images]);
+  const handleDragStart = (id) => {
+    setIsDragging(id);
+    dragStartTime.current = Date.now();
+    dragStartPos.current = positions[id] || { x: 0, y: 0 };
+  };
+  const handleDragEnd = (id, event, info) => {
+    const dragDuration = Date.now() - dragStartTime.current;
+    const dragDistance = Math.sqrt(info.offset.x ** 2 + info.offset.y ** 2);
+    if (dragDuration < 300 && dragDistance < 10) {
+      const img = images.find((i) => i.id === id);
+      if (img) {
+        setLightboxImage(img);
+        setIsDragging(null);
+        return;
+      }
+    }
+    setIsDragging(null);
+    const currentPos = positions[id];
+    if (!currentPos) return;
+    const newX = currentPos.x + info.offset.x;
+    const newY = currentPos.y + info.offset.y;
+    const columnWidth = 310;
+    const targetColumn = Math.max(0, Math.min(2, Math.round(newX / columnWidth)));
+    const columnImages = [[], [], []];
+    imageOrder.forEach((imgId) => {
+      if (imgId === id) return;
+      const pos = positions[imgId];
+      if (pos) {
+        columnImages[pos.column].push({
+          id: imgId,
+          y: pos.y,
+          height: images.find((i) => i.id === imgId)?.height || 380
+        });
+      }
+    });
+    columnImages.forEach((col) => col.sort((a, b) => a.y - b.y));
+    const targetColumnImages = columnImages[targetColumn];
+    let insertIndex = targetColumnImages.length;
+    for (let i = 0; i < targetColumnImages.length; i++) {
+      if (newY < targetColumnImages[i].y) {
+        insertIndex = i;
+        break;
+      }
+    }
+    const newOrder = [];
+    const columnsToProcess = [[], [], []];
+    imageOrder.forEach((imgId) => {
+      if (imgId === id) return;
+      const pos = positions[imgId];
+      if (pos) {
+        columnsToProcess[pos.column].push(imgId);
+      }
+    });
+    columnsToProcess[targetColumn].splice(insertIndex, 0, id);
+    const maxLength = Math.max(...columnsToProcess.map((col) => col.length));
+    for (let i = 0; i < maxLength; i++) {
+      columnsToProcess.forEach((col) => {
+        if (col[i]) newOrder.push(col[i]);
+      });
+    }
+    setImageOrder(newOrder);
+  };
+  return /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)(import_jsx_runtime28.Fragment, { children: [
+    /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(
+      "div",
+      {
+        ref: containerRef,
+        className: "relative w-full",
+        style: { minHeight: "1000px" },
+        children: images.map((img, idx) => {
+          const pos = positions[img.id] || { x: 0, y: 0, column: 0 };
+          const rotation = rotations[img.id] || 0;
+          const isBeingDragged = isDragging === img.id;
+          return /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(
+            import_framer_motion4.motion.div,
+            {
+              drag: true,
+              dragMomentum: false,
+              dragElastic: 0.05,
+              onDragStart: () => handleDragStart(img.id),
+              onDragEnd: (e, info) => handleDragEnd(img.id, e, info),
+              style: {
+                position: "absolute",
+                width: img.width || 300,
+                cursor: isBeingDragged ? "grabbing" : "grab",
+                zIndex: isBeingDragged ? 5 : 1
+              },
+              animate: {
+                x: pos.x,
+                y: pos.y,
+                rotate: rotation,
+                opacity: 1,
+                scale: 1
+              },
+              whileHover: {
+                scale: 1.08,
+                rotate: rotation + (Math.random() - 0.5) * 2,
+                zIndex: 3,
+                transition: { type: "spring", stiffness: 400, damping: 25 }
+              },
+              whileDrag: {
+                scale: 1.12,
+                rotate: rotation + (Math.random() - 0.5) * 3,
+                zIndex: 5,
+                transition: { type: "spring", stiffness: 400, damping: 25 }
+              },
+              initial: {
+                opacity: 0,
+                scale: 0.7,
+                x: pos.x,
+                y: pos.y,
+                rotate: rotation - 10
+              },
+              transition: {
+                type: "spring",
+                stiffness: 260,
+                damping: 26,
+                delay: idx * 0.04
+              },
+              className: "shadow-xl hover:shadow-2xl transition-shadow duration-300",
+              children: /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("div", { className: "relative bg-white p-3 pb-8 rounded-sm", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(
+                  "img",
+                  {
+                    src: img.url,
+                    alt: `Pie gallery ${idx + 1}`,
+                    className: "w-full h-auto select-none pointer-events-none",
+                    draggable: false,
+                    loading: "lazy"
+                  }
+                ),
+                idx % 2 === 0 ? /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(
+                  "div",
+                  {
+                    className: "absolute -top-2 left-1/2 -translate-x-1/2 w-16 h-6 bg-amber-200/80 shadow-md",
+                    style: {
+                      transform: `translateX(-50%) rotate(${(Math.random() - 0.5) * 6}deg)`,
+                      backgroundImage: "repeating-linear-gradient(45deg, transparent, transparent 2px, rgba(255,255,255,.1) 2px, rgba(255,255,255,.1) 4px)"
+                    }
+                  }
+                ) : idx % 3 === 0 ? /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)(import_jsx_runtime28.Fragment, { children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("div", { className: "absolute -top-1.5 -left-1.5 w-10 h-7 bg-orange-200/70 rotate-[-20deg] shadow-sm" }),
+                  /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("div", { className: "absolute -top-1.5 -right-1.5 w-10 h-7 bg-amber-200/70 rotate-[20deg] shadow-sm" })
+                ] }) : /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(
+                  "div",
+                  {
+                    className: "absolute -top-2 right-4 w-14 h-6 bg-yellow-200/80 shadow-md",
+                    style: {
+                      transform: `rotate(${(Math.random() - 0.5) * 8}deg)`
+                    }
+                  }
+                ),
+                /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(
+                  "div",
+                  {
+                    className: "absolute inset-0 pointer-events-none rounded-sm",
+                    style: { boxShadow: "inset 0 1px 3px rgba(0,0,0,0.05)" }
+                  }
+                )
+              ] })
+            },
+            img.id
+          );
+        })
+      }
+    ),
+    /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(import_framer_motion4.AnimatePresence, { children: lightboxImage && /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(
+      import_framer_motion4.motion.div,
+      {
+        initial: { opacity: 0 },
+        animate: { opacity: 1 },
+        exit: { opacity: 0 },
+        onClick: () => setLightboxImage(null),
+        className: "fixed inset-0 z-50 bg-black/90 backdrop-blur-sm flex items-center justify-center p-4 cursor-zoom-out",
+        children: /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)(
+          import_framer_motion4.motion.div,
+          {
+            initial: { scale: 0.8, opacity: 0 },
+            animate: { scale: 1, opacity: 1 },
+            exit: { scale: 0.8, opacity: 0 },
+            className: "relative max-w-6xl max-h-[90vh]",
+            onClick: (e) => e.stopPropagation(),
+            children: [
+              /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(
+                "img",
+                {
+                  src: lightboxImage.url,
+                  alt: "Enlarged view",
+                  className: "w-full h-full object-contain rounded-lg shadow-2xl"
+                }
+              ),
+              /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(
+                "button",
+                {
+                  onClick: () => setLightboxImage(null),
+                  className: "absolute -top-4 -right-4 w-12 h-12 bg-white hover:bg-gray-100 rounded-full flex items-center justify-center text-gray-800 text-3xl font-light transition-colors shadow-lg",
+                  "aria-label": "Close",
+                  children: "\xD7"
+                }
+              )
+            ]
+          }
+        )
+      }
+    ) })
+  ] });
+};
+var DraggableMasonry_default = DraggableMasonry;
+
+// src/pages/SalePage.jsx
+var import_jsx_runtime29 = require("react/jsx-runtime");
+var SalePage = () => {
+  const { totalQty, openCart } = useCart();
+  const [products, setProducts] = (0, import_react21.useState)([]);
+  const [loading, setLoading] = (0, import_react21.useState)(true);
+  const [saleIntro, setSaleIntro] = (0, import_react21.useState)({ title: "", titleIcon: null, subheading: "", intro: [] });
+  const [galleryImages, setGalleryImages] = (0, import_react21.useState)([]);
+  const [lightboxImage, setLightboxImage] = (0, import_react21.useState)(null);
+  (0, import_react21.useEffect)(() => {
+    let alive = true;
+    (async () => {
+      try {
+        const res = await fetch("/api/store/products?store=sale");
+        const data = res.ok ? await res.json() : { products: [] };
+        if (!alive) return;
+        setProducts(Array.isArray(data.products) ? data.products : []);
+      } catch (e) {
+        if (!alive) return;
+        setProducts([]);
+      } finally {
+        if (alive) setLoading(false);
+      }
+    })();
+    (async () => {
+      try {
+        const doc = await sanityClient_default.fetch('*[_type == "salePage"][0]{ title, titleIcon, subheading, intro }').catch(() => null);
+        if (!alive) return;
+        if (doc) setSaleIntro({
+          title: doc.title || "",
+          titleIcon: doc.titleIcon || null,
+          subheading: doc.subheading || "",
+          intro: Array.isArray(doc.intro) ? doc.intro : []
+        });
+      } catch (_) {
+      }
+    })();
+    (async () => {
+      try {
+        const images = [];
+        try {
+          const cloudinaryRes = await fetch("/api/search-images?query=pie&per_page=50", {
+            headers: { Accept: "application/json" }
+          });
+          if (cloudinaryRes.ok) {
+            const cloudinaryData = await cloudinaryRes.json();
+            if (Array.isArray(cloudinaryData.images)) {
+              images.push(...cloudinaryData.images.map((img) => ({
+                id: img.asset_id || img.public_id,
+                url: img.thumbnail_url || img.large_url,
+                width: img.width ? Math.min(img.width, 320) : 300,
+                height: img.height ? Math.round(Math.min(img.width, 320) / img.width * img.height) : 380
+              })));
+            }
+          }
+        } catch (e) {
+          console.error("Cloudinary fetch failed:", e);
+        }
+        const localImages = [
+          "2f4a4f32-21ae-47fc-bcf1-f4e2439294bc_3000.jpg",
+          "819af5c9-a882-4a4d-a1f1-357762a78ebd_3000.jpg",
+          "927eec02-f5a6-4501-8a83-edd2af06f973_3000.jpg",
+          "a847c096-4191-454a-82a2-35e6fd246b2a_2645.jpg",
+          "DP-14936-049.jpg",
+          "DP-15526-010.jpg",
+          "DP-30169-001.jpg",
+          "DP800004.jpg",
+          "DP823463.jpg",
+          "DP885938.jpg",
+          "DPB874625.jpg",
+          "DT1939.jpg",
+          "DT4854.jpg"
+        ];
+        localImages.forEach((filename, idx) => {
+          images.push({
+            id: `local-${idx}`,
+            url: `/images/${filename}`,
+            width: 300,
+            height: 380
+          });
+        });
+        for (let i = images.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [images[i], images[j]] = [images[j], images[i]];
+        }
+        if (!alive) return;
+        setGalleryImages(images);
+      } catch (e) {
+        console.error("Error fetching gallery images:", e);
+      }
+    })();
+    return () => {
+      alive = false;
+    };
+  }, []);
+  const schema = (0, import_react21.useMemo)(() => {
+    const items = (products || []).map((p, idx) => ({
+      "@type": "ListItem",
+      position: idx + 1,
+      item: {
+        "@type": "Product",
+        name: p.title,
+        image: Array.isArray(p.images) ? p.images.filter(Boolean) : p.images ? [p.images] : [],
+        description: p.shortDescription,
+        sku: p.squareVariationId || p.squareItemId || p.id,
+        offers: {
+          "@type": "Offer",
+          priceCurrency: "USD",
+          price: (p.salePrice ?? p.price) / 100,
+          availability: "https://schema.org/InStock"
+        }
+      }
+    }));
+    return {
+      "@context": "https://schema.org",
+      "@type": "ItemList",
+      name: "Sale",
+      itemListElement: items
+    };
+  }, [products]);
+  return /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("div", { className: "relative min-h-screen bg-gradient-to-br from-orange-50 via-amber-50 to-yellow-50", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)(import_react_helmet_async3.Helmet, { children: [
+      /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("title", { children: "SALE | Local Effort" }),
+      /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("meta", { name: "description", content: "Shop Local Effort sale items. Pickup/local service with on-site checkout." }),
+      /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("link", { rel: "canonical", href: "https://localeffortfood.com/sale" }),
+      /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("script", { type: "application/ld+json", children: JSON.stringify(schema) })
+    ] }),
+    /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(
+      "div",
+      {
+        className: "absolute inset-0 opacity-30",
+        style: {
+          backgroundImage: "radial-gradient(circle, rgba(251, 146, 60, 0.15) 1px, transparent 1px)",
+          backgroundSize: "24px 24px"
+        }
+      }
+    ),
+    /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("div", { className: "relative mx-auto max-w-7xl px-4 md:px-6 lg:px-8 py-8", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("div", { className: "mb-8", children: /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)(
+        import_framer_motion5.motion.div,
+        {
+          initial: { opacity: 0, y: -20 },
+          animate: { opacity: 1, y: 0 },
+          className: "relative inline-block",
+          children: [
+            /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("div", { className: "bg-white/90 backdrop-blur-md px-8 py-6 rounded-2xl shadow-xl border-2 border-orange-200/50", children: /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("div", { className: "flex flex-col md:flex-row md:items-center md:justify-between gap-6", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("div", { className: "flex-1", children: [
+                saleIntro.title && /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("h1", { className: "text-4xl md:text-5xl font-bold text-neutral-900 mb-2 tracking-tight flex items-center gap-3", children: [
+                  saleIntro.titleIcon && /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("span", { className: "text-5xl md:text-6xl", role: "img", "aria-label": "icon", children: saleIntro.titleIcon.provider === "emoji" ? saleIntro.titleIcon.name : saleIntro.titleIcon.name || "\u2728" }),
+                  /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("span", { children: saleIntro.title })
+                ] }),
+                saleIntro.subheading && /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("h2", { className: "text-xl md:text-2xl font-semibold text-neutral-700 mb-2", children: saleIntro.subheading }),
+                Array.isArray(saleIntro.intro) && saleIntro.intro.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("div", { className: "prose prose-neutral max-w-none mt-3", children: /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(import_react22.PortableText, { value: saleIntro.intro, components: portableTextComponents }) })
+              ] }),
+              /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("div", { className: "flex-shrink-0", children: /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)(
+                "button",
+                {
+                  onClick: openCart,
+                  className: "bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-semibold px-8 py-4 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 whitespace-nowrap text-lg",
+                  children: [
+                    "Cart (",
+                    totalQty,
+                    ")"
+                  ]
+                }
+              ) })
+            ] }) }),
+            /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("div", { className: "absolute -top-2 -right-2 w-16 h-10 bg-amber-100/80 rotate-12 shadow-md rounded-sm" }),
+            /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("div", { className: "absolute -bottom-2 -left-2 w-16 h-10 bg-orange-100/80 -rotate-12 shadow-md rounded-sm" })
+          ]
+        }
+      ) }),
+      /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)(
+        import_framer_motion5.motion.div,
+        {
+          initial: { opacity: 0 },
+          animate: { opacity: 1 },
+          transition: { delay: 0.5 },
+          className: "hidden lg:flex items-center gap-2 mb-4 text-sm text-neutral-600",
+          children: [
+            /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("span", { className: "text-2xl", children: "\u{1F446}" }),
+            /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("span", { className: "font-medium", children: "drag the photos around to create your own layout" })
+          ]
+        }
+      ),
+      /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("div", { className: "grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("div", { className: "hidden lg:block lg:col-span-7 relative z-0", children: /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("div", { className: "relative", children: /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(DraggableMasonry_default, { images: galleryImages }) }) }),
+        /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("div", { className: "lg:col-span-5 relative z-10", children: loading ? /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("div", { className: "bg-white/90 backdrop-blur-md p-8 rounded-2xl shadow-xl border-2 border-orange-200/50", children: /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("div", { className: "flex items-center justify-center", children: /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("div", { className: "animate-pulse text-neutral-600", children: "Loading delicious pies..." }) }) }) : /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("div", { className: "space-y-6", children: (products || []).map((p, idx) => /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)(
+          import_framer_motion5.motion.div,
+          {
+            initial: { opacity: 0, y: 20 },
+            animate: { opacity: 1, y: 0 },
+            transition: { delay: idx * 0.1 },
+            whileHover: { scale: 1.02 },
+            className: "group relative",
+            children: [
+              /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("div", { className: "absolute -inset-0.5 bg-gradient-to-r from-orange-400 to-amber-400 rounded-2xl opacity-0 group-hover:opacity-100 blur transition duration-300" }),
+              /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("div", { className: "relative bg-white/95 backdrop-blur-md rounded-2xl shadow-lg border-2 border-orange-200/50 overflow-hidden transition-all duration-300 group-hover:shadow-2xl", children: /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(ProductCard, { product: p }) }),
+              idx % 3 === 0 && /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("div", { className: "absolute -top-1 -right-1 w-12 h-8 bg-amber-100/70 rotate-12 shadow-sm pointer-events-none" })
+            ]
+          },
+          p.id
+        )) }) }),
+        /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("div", { className: "lg:hidden", children: /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)(
+          import_framer_motion5.motion.div,
+          {
+            initial: { opacity: 0 },
+            animate: { opacity: 1 },
+            transition: { delay: 0.3 },
+            className: "mt-8",
+            children: [
+              /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("h2", { className: "text-2xl font-bold text-neutral-900 mb-4 text-center", children: "gallery \u{1F4F8}" }),
+              /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("p", { className: "text-xs text-neutral-500 text-center mb-4", children: "for best experience, view on a monitor" }),
+              /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("div", { className: "columns-2 gap-4 space-y-4", children: galleryImages.map((img, i) => /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(
+                import_framer_motion5.motion.div,
+                {
+                  initial: { opacity: 0, y: 20 },
+                  animate: { opacity: 1, y: 0 },
+                  transition: { delay: 0.3 + i * 0.05 },
+                  className: "break-inside-avoid mb-4 rounded-lg overflow-hidden shadow-md bg-white p-2 cursor-pointer active:scale-95 transition-transform",
+                  onClick: () => setLightboxImage(img),
+                  children: /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(
+                    "img",
+                    {
+                      src: img.url,
+                      alt: `Pie ${i + 1}`,
+                      className: "w-full h-auto object-cover rounded",
+                      loading: "lazy"
+                    }
+                  )
+                },
+                img.id
+              )) })
+            ]
+          }
+        ) })
+      ] })
+    ] }),
+    /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(import_framer_motion5.AnimatePresence, { children: lightboxImage && /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(
+      import_framer_motion5.motion.div,
+      {
+        initial: { opacity: 0 },
+        animate: { opacity: 1 },
+        exit: { opacity: 0 },
+        onClick: () => setLightboxImage(null),
+        className: "fixed inset-0 z-50 bg-black/90 backdrop-blur-sm flex items-center justify-center p-4 cursor-zoom-out",
+        children: /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)(
+          import_framer_motion5.motion.div,
+          {
+            initial: { scale: 0.8, opacity: 0 },
+            animate: { scale: 1, opacity: 1 },
+            exit: { scale: 0.8, opacity: 0 },
+            className: "relative max-w-6xl max-h-[90vh]",
+            onClick: (e) => e.stopPropagation(),
+            children: [
+              /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(
+                "img",
+                {
+                  src: lightboxImage.url,
+                  alt: "Enlarged view",
+                  className: "w-full h-full object-contain rounded-lg shadow-2xl"
+                }
+              ),
+              /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(
+                "button",
+                {
+                  onClick: () => setLightboxImage(null),
+                  className: "absolute -top-4 -right-4 w-12 h-12 bg-white hover:bg-gray-100 rounded-full flex items-center justify-center text-gray-800 text-3xl font-light transition-colors shadow-lg",
+                  "aria-label": "Close",
+                  children: "\xD7"
+                }
+              )
+            ]
+          }
+        )
+      }
+    ) }),
+    /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(CheckoutPanel, {})
+  ] });
+};
+var SalePage_default = SalePage;
+
+// src/pages/WeeklyList.jsx
+var import_react23 = __toESM(require("react"));
+var import_react_helmet_async4 = __toESM(require_lib());
+var import_react_router_dom5 = require("react-router-dom");
+var import_jsx_runtime30 = require("react/jsx-runtime");
+var WeeklyList = () => {
+  const [posts, setPosts] = (0, import_react23.useState)([]);
+  const [error, setError] = (0, import_react23.useState)("");
+  (0, import_react23.useEffect)(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        const q = `*[_type == "blogPost"] | order(publishedAt desc)[0...50]{ title, "slug": slug.current, excerpt, publishedAt, mainImage }`;
+        const items = await sanityClient_default.fetch(q);
+        if (mounted) setPosts(items || []);
+      } catch (e) {
+        if (mounted) setError(e?.message || "Failed to load posts");
+      }
+    })();
+    return () => {
+      mounted = false;
+    };
+  }, []);
+  return /* @__PURE__ */ (0, import_jsx_runtime30.jsxs)("div", { className: "mx-auto max-w-3xl px-4 md:px-6 lg:px-8 py-10", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime30.jsx)(import_react_helmet_async4.Helmet, { children: /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("title", { children: "Weekly Meal Prep Journal | Local Effort" }) }),
+    /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("h1", { className: "heading-xl heading-balance mb-6", children: "Weekly meal prep journal" }),
+    error && /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("div", { className: "text-red-700 bg-red-50 border border-red-200 p-3 rounded mb-4", children: error }),
+    /* @__PURE__ */ (0, import_jsx_runtime30.jsxs)("ul", { className: "space-y-4", children: [
+      posts.map((p) => /* @__PURE__ */ (0, import_jsx_runtime30.jsxs)("li", { className: "border rounded-lg p-4 hover:bg-gray-50 shadow-sm", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime30.jsx)(import_react_router_dom5.Link, { to: `/weekly/${p.slug}`, className: "text-xl font-semibold hover:underline", children: p.title }),
+        /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("div", { className: "text-sm text-gray-500 mt-1", children: p.publishedAt ? new Date(p.publishedAt).toLocaleDateString() : "" }),
+        p.excerpt && /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("p", { className: "text-gray-700 mt-2", children: p.excerpt })
+      ] }, p.slug)),
+      !posts.length && !error && /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("li", { children: "No posts yet." })
+    ] })
+  ] });
+};
+var WeeklyList_default = WeeklyList;
+
+// src/pages/happymondaypage.jsx
+var import_react30 = __toESM(require("react"));
+var import_react_helmet_async5 = __toESM(require_lib());
+var import_framer_motion10 = require("framer-motion");
+
+// src/components/menu/FoodItemCard.jsx
+var import_react24 = __toESM(require("react"));
+var import_framer_motion6 = require("framer-motion");
+var import_jsx_runtime31 = require("react/jsx-runtime");
+var FoodItemCard = ({ item, onClick }) => {
+  return /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)(
+    import_framer_motion6.motion.div,
+    {
+      variants: fadeInUp,
+      onClick,
+      className: "border border-neutral-200 rounded-lg p-6 cursor-pointer hover:shadow-lg hover:border-neutral-400 transition-all duration-300 bg-white",
+      whileHover: { scale: 1.03 },
+      whileTap: { scale: 0.98 },
+      children: [
+        /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("h4", { className: "text-xl font-bold text-neutral-800", children: item.name }),
+        /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("p", { className: "text-neutral-600 mt-2 line-clamp-2", children: item.description })
+      ]
+    }
+  );
+};
+var FoodItemCard_default = FoodItemCard;
+
+// src/components/ErrorBoundary.jsx
+var import_react25 = __toESM(require("react"));
+var import_jsx_runtime32 = require("react/jsx-runtime");
+var ErrorBoundary = class extends import_react25.default.Component {
+  constructor(props) {
+    super(props);
+    this.state = { error: null, info: null };
+  }
+  static getDerivedStateFromError(error) {
+    return { error };
+  }
+  componentDidCatch(error, info) {
+    console.error("ErrorBoundary caught", error, info);
+    this.setState({ info });
+  }
+  render() {
+    const { error, info } = this.state;
+    if (error) {
+      return /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("div", { style: { padding: 24, fontFamily: "system-ui, Arial", color: "#111" }, children: [
+        /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("h1", { children: "Application error" }),
+        /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("p", { style: { whiteSpace: "pre-wrap" }, children: String(error && (error.message || error)) }),
+        info && info.componentStack && /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("details", { style: { marginTop: 12, whiteSpace: "pre-wrap" }, children: [
+          /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("summary", { children: "Component stack" }),
+          /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("div", { children: info.componentStack })
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("div", { style: { marginTop: 12 }, children: /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("button", { onClick: () => window.location.reload(), children: "Reload" }) })
+      ] });
+    }
+    return this.props.children;
+  }
+};
+var ErrorBoundary_default = ErrorBoundary;
+
+// src/components/ui/Separator.jsx
+var import_react26 = __toESM(require("react"));
+var import_jsx_runtime33 = require("react/jsx-runtime");
+function Separator({ className = "", orientation = "horizontal", decorative = true, ...props }) {
+  const isHorizontal = orientation !== "vertical";
+  const base = isHorizontal ? "h-px w-full my-12" : "w-px h-full mx-4";
+  const classes = [base, "bg-neutral-200", className].filter(Boolean).join(" ");
+  return /* @__PURE__ */ (0, import_jsx_runtime33.jsx)("div", { role: decorative ? "none" : "separator", "aria-orientation": orientation, className: classes, ...props });
+}
+
+// src/pages/happymondaypage.jsx
+var import_jsx_runtime37 = require("react/jsx-runtime");
+var BlockContent = (0, import_react30.lazy)(() => import("@sanity/block-content-to-react"));
+var FoodItemModal2 = (0, import_react30.lazy)(() => Promise.resolve().then(() => (init_FoodItemModal(), FoodItemModal_exports)));
+var FeedbackForm2 = (0, import_react30.lazy)(() => Promise.resolve().then(() => (init_FeedbackForm(), FeedbackForm_exports)));
+var LoadingSpinner2 = (0, import_react30.lazy)(() => Promise.resolve().then(() => (init_LoadingSpinner(), LoadingSpinner_exports)).then((mod) => ({ default: mod.LoadingSpinner })));
+var HappyMondayPage = () => {
+  const [menuItems, setMenuItems] = (0, import_react30.useState)([]);
+  const [pageContent, setPageContent] = (0, import_react30.useState)(null);
+  const [selectedItem, setSelectedItem] = (0, import_react30.useState)(null);
+  const [isLoading, setIsLoading] = (0, import_react30.useState)(true);
+  (0, import_react30.useEffect)(() => {
+    const query = `{
+      "menuItems": *[_type == "menuItems"],
+      "pageContent": *[_type == "happyMondayPage"][0]
+    }`;
+    sanityClient_default.fetch(query).then((data) => {
+      setMenuItems(data.menuItems || []);
+      setPageContent(data.pageContent);
+      setIsLoading(false);
+    }).catch(console.error);
+  }, []);
+  const handleCardClick = (item) => {
+    setSelectedItem(item);
+  };
+  const handleCloseModal = () => {
+    setSelectedItem(null);
+  };
+  return /* @__PURE__ */ (0, import_jsx_runtime37.jsxs)(import_jsx_runtime37.Fragment, { children: [
+    /* @__PURE__ */ (0, import_jsx_runtime37.jsxs)(import_react_helmet_async5.Helmet, { children: [
+      /* @__PURE__ */ (0, import_jsx_runtime37.jsx)("title", { children: "Happy Monday | Local Effort" }),
+      /* @__PURE__ */ (0, import_jsx_runtime37.jsx)(
+        "meta",
+        {
+          name: "description",
+          content: "Explore our special Happy Monday menu, made with the finest local ingredients."
+        }
+      )
+    ] }),
+    /* @__PURE__ */ (0, import_jsx_runtime37.jsxs)("div", { className: "space-y-24 mb-24", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime37.jsxs)("section", { className: "mx-auto max-w-6xl px-4 md:px-6 lg:px-8", children: [
+        pageContent && /* @__PURE__ */ (0, import_jsx_runtime37.jsxs)("div", { className: "text-center mb-12", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime37.jsx)(SectionHeader, { overline: "Weekly Special", title: pageContent.title }),
+          /* @__PURE__ */ (0, import_jsx_runtime37.jsx)("div", { className: "flex justify-center mt-8 mb-8", children: /* @__PURE__ */ (0, import_jsx_runtime37.jsx)(
+            "img",
+            {
+              src: "https://www.localeffortfood.com/gallery/IMG_3145.jpg",
+              alt: "Happy Monday",
+              className: "max-w-full h-auto rounded-lg shadow-lg",
+              style: { width: "50%" }
+            }
+          ) }),
+          /* @__PURE__ */ (0, import_jsx_runtime37.jsx)("div", { className: "prose lg:prose-lg mx-auto max-w-3xl", children: /* @__PURE__ */ (0, import_jsx_runtime37.jsx)(ErrorBoundary_default, { children: /* @__PURE__ */ (0, import_jsx_runtime37.jsx)(import_react30.Suspense, { fallback: /* @__PURE__ */ (0, import_jsx_runtime37.jsx)("div", { className: "text-center", children: "Loading content\u2026" }), children: /* @__PURE__ */ (0, import_jsx_runtime37.jsx)(BlockContent, { blocks: pageContent.body, client: sanityClient_default }) }) }) })
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime37.jsx)("div", { className: "text-center mb-8", children: /* @__PURE__ */ (0, import_jsx_runtime37.jsx)("h2", { className: "text-2xl font-semibold", children: "Ingredient Lists" }) }),
+        /* @__PURE__ */ (0, import_jsx_runtime37.jsx)(import_react30.Suspense, { fallback: /* @__PURE__ */ (0, import_jsx_runtime37.jsx)("div", { className: "flex justify-center items-center h-64", children: "Loading\u2026" }), children: isLoading ? /* @__PURE__ */ (0, import_jsx_runtime37.jsx)("div", { className: "flex justify-center items-center h-64", children: /* @__PURE__ */ (0, import_jsx_runtime37.jsx)(LoadingSpinner2, {}) }) : /* @__PURE__ */ (0, import_jsx_runtime37.jsx)(
+          import_framer_motion10.motion.div,
+          {
+            className: "grid md:grid-cols-2 lg:grid-cols-3 gap-6",
+            initial: "initial",
+            animate: "animate",
+            variants: { animate: { transition: { staggerChildren: 0.1 } } },
+            children: menuItems.map((item) => /* @__PURE__ */ (0, import_jsx_runtime37.jsx)(FoodItemCard_default, { item, onClick: () => handleCardClick(item) }, item._id))
+          }
+        ) })
+      ] }),
+      /* @__PURE__ */ (0, import_jsx_runtime37.jsxs)("section", { className: "mx-auto max-w-6xl px-4 md:px-6 lg:px-8", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime37.jsx)(SectionHeader, { overline: "Help Us Improve", title: "Feedback" }),
+        /* @__PURE__ */ (0, import_jsx_runtime37.jsx)("p", { className: "text-body mb-8 max-w-2xl", children: "Have a suggestion, a request, or feedback on our quality? We'd love to hear it. Your input helps us grow and improve." }),
+        /* @__PURE__ */ (0, import_jsx_runtime37.jsx)(ErrorBoundary_default, { children: /* @__PURE__ */ (0, import_jsx_runtime37.jsx)(import_react30.Suspense, { fallback: /* @__PURE__ */ (0, import_jsx_runtime37.jsx)("div", { className: "text-center p-8", children: "Loading form\u2026" }), children: /* @__PURE__ */ (0, import_jsx_runtime37.jsx)(FeedbackForm2, {}) }) })
+      ] }),
+      /* @__PURE__ */ (0, import_jsx_runtime37.jsx)(Separator, {})
+    ] }),
+    /* @__PURE__ */ (0, import_jsx_runtime37.jsx)(import_framer_motion10.AnimatePresence, { children: selectedItem && /* @__PURE__ */ (0, import_jsx_runtime37.jsx)(ErrorBoundary_default, { children: /* @__PURE__ */ (0, import_jsx_runtime37.jsx)(import_react30.Suspense, { fallback: /* @__PURE__ */ (0, import_jsx_runtime37.jsx)("div", { className: "fixed inset-0 flex items-center justify-center", children: "Loading\u2026" }), children: /* @__PURE__ */ (0, import_jsx_runtime37.jsx)(FoodItemModal2, { item: selectedItem, onClose: handleCloseModal }) }) }) })
+  ] });
+};
+var happymondaypage_default = HappyMondayPage;
+
+// src/pages/PizzaPartyPage.jsx
+var import_react32 = __toESM(require("react"));
+var import_react_helmet_async6 = __toESM(require_lib());
+var import_framer_motion11 = require("framer-motion");
+
+// src/hooks/useSquareCard.js
+var import_react31 = require("react");
+var import_meta5 = {};
+var SQUARE_SCRIPT_ATTR = "data-square-sdk";
+var squareScriptState = { url: null, promise: null };
+var readSquareRuntimeConfig = () => {
+  if (typeof window === "undefined") {
+    return {
+      appId: null,
+      locationId: null,
+      sdkUrl: "",
+      isSandbox: false,
+      environment: "production"
+    };
+  }
+  const runtimeAppId = window.__SQUARE_APP_ID__ || import_meta5?.env?.VITE_SQUARE_APP_ID || window.SQUARE_APPLICATION_ID || "";
+  const envHintRaw = (window.__SQUARE_ENV__ ?? import_meta5?.env?.VITE_SQUARE_ENV ?? "").toString().trim().toLowerCase();
+  const hostname = window.location?.hostname || "";
+  let isSandbox = false;
+  if (["sandbox", "dev", "development", "test"].includes(envHintRaw)) {
+    isSandbox = true;
+  } else if (["production", "prod", "live"].includes(envHintRaw)) {
+    isSandbox = false;
+  } else if (runtimeAppId.startsWith("sandbox-")) {
+    isSandbox = true;
+  } else if (/localhost$/i.test(hostname) || hostname === "127.0.0.1") {
+    isSandbox = true;
+  }
+  const sdkUrl = isSandbox ? "https://sandbox.web.squarecdn.com/v1/square.js" : "https://web.squarecdn.com/v1/square.js";
+  return {
+    appId: runtimeAppId || null,
+    locationId: window.__SQUARE_LOCATION_ID__ || import_meta5?.env?.VITE_SQUARE_LOCATION_ID || window.SQUARE_LOCATION_ID || null,
+    sdkUrl,
+    isSandbox,
+    environment: isSandbox ? "sandbox" : "production"
+  };
+};
+var getSquareSecurityState = () => {
+  if (typeof window === "undefined") {
+    return {
+      secureContext: false,
+      secureForSquare: false,
+      hostname: "",
+      protocol: ""
+    };
+  }
+  const { protocol = "", hostname = "" } = window.location || {};
+  const normalizedProtocol = protocol.toLowerCase();
+  const secureContext = typeof window.isSecureContext === "boolean" ? window.isSecureContext : normalizedProtocol === "https:";
+  const secureForSquare = normalizedProtocol === "https:" || hostname === "localhost";
+  return {
+    secureContext,
+    secureForSquare,
+    hostname,
+    protocol: normalizedProtocol
+  };
+};
+var ensureSquareSdkScript = (sdkUrl, isSandbox) => {
+  if (typeof window === "undefined" || typeof document === "undefined") {
+    return Promise.reject(new Error("Square SDK requires a browser environment."));
+  }
+  if (squareScriptState.promise && squareScriptState.url === sdkUrl) {
+    return squareScriptState.promise;
+  }
+  let script = document.querySelector(`script[${SQUARE_SCRIPT_ATTR}]`);
+  if (script && (script.getAttribute("src") || "") !== sdkUrl) {
+    script.parentElement?.removeChild(script);
+    script = null;
+  }
+  const promise = new Promise((resolve, reject) => {
+    let scriptEl = script;
+    const cleanup = () => {
+      if (!scriptEl) return;
+      scriptEl.removeEventListener("load", handleLoad);
+      scriptEl.removeEventListener("error", handleError);
+    };
+    const handleLoad = () => {
+      if (scriptEl) {
+        scriptEl.setAttribute("data-square-loaded", "true");
+      }
+      cleanup();
+      resolve();
+    };
+    const handleError = (event) => {
+      cleanup();
+      const err = event instanceof Error ? event : new Error("Failed to load Square SDK");
+      reject(err);
+    };
+    if (scriptEl) {
+      scriptEl.dataset.squareSdkEnv = isSandbox ? "sandbox" : "production";
+      const alreadyLoaded = scriptEl.getAttribute("data-square-loaded") === "true";
+      if (alreadyLoaded || window.Square) {
+        resolve();
+        return;
+      }
+      scriptEl.addEventListener("load", handleLoad, { once: true });
+      scriptEl.addEventListener("error", handleError, { once: true });
+    } else {
+      scriptEl = document.createElement("script");
+      scriptEl.src = sdkUrl;
+      scriptEl.async = true;
+      scriptEl.dataset.squareSdk = "true";
+      scriptEl.dataset.squareSdkEnv = isSandbox ? "sandbox" : "production";
+      scriptEl.addEventListener("load", handleLoad, { once: true });
+      scriptEl.addEventListener("error", handleError, { once: true });
+      document.head.appendChild(scriptEl);
+    }
+  }).catch((err) => {
+    if (squareScriptState.url === sdkUrl) {
+      squareScriptState = { url: null, promise: null };
+    }
+    throw err;
+  });
+  squareScriptState = { url: sdkUrl, promise };
+  return promise;
+};
+function useSquareCard(containerId, enabled, deps = []) {
+  const paymentsRef = (0, import_react31.useRef)(null);
+  const cardRef = (0, import_react31.useRef)(null);
+  const cardInstanceIdRef = (0, import_react31.useRef)(0);
+  const activeCardInstanceIdRef = (0, import_react31.useRef)(0);
+  const lastTokenRef = (0, import_react31.useRef)({ token: null, cardInstanceId: 0, at: 0 });
+  const [cardLoaded, setCardLoaded] = (0, import_react31.useState)(false);
+  const [attempts, setAttempts] = (0, import_react31.useState)(0);
+  const attemptsRef = (0, import_react31.useRef)(0);
+  const [error, setError] = (0, import_react31.useState)("");
+  const [loadingScript, setLoadingScript] = (0, import_react31.useState)(false);
+  const attachStartedRef = (0, import_react31.useRef)(false);
+  const securityState = getSquareSecurityState();
+  const [envInfo, setEnvInfo] = (0, import_react31.useState)({
+    appId: null,
+    locationId: null,
+    sdkUrl: null,
+    sandbox: false,
+    mismatch: false,
+    environment: null,
+    attempts: 0,
+    secureContext: securityState.secureContext,
+    secureForSquare: securityState.secureForSquare,
+    hostname: securityState.hostname,
+    protocol: securityState.protocol
+  });
+  const cleanupContainer = (0, import_react31.useCallback)(() => {
+    if (typeof document === "undefined") return;
+    try {
+      const node = typeof containerId === "string" ? document.querySelector(containerId) : containerId;
+      if (node && node.childNodes && node.childNodes.length > 0) {
+        node.innerHTML = "";
+      }
+    } catch (_) {
+    }
+  }, [containerId]);
+  const destroyCardInstance = (0, import_react31.useCallback)(() => {
+    const card = cardRef.current;
+    cardRef.current = null;
+    attachStartedRef.current = false;
+    activeCardInstanceIdRef.current = 0;
+    lastTokenRef.current = { token: null, cardInstanceId: 0, at: 0 };
+    const finalize = () => {
+      cleanupContainer();
+      setCardLoaded(false);
+    };
+    if (!card) {
+      finalize();
+      return;
+    }
+    try {
+      const maybePromise = typeof card.destroy === "function" ? card.destroy() : void 0;
+      if (maybePromise && typeof maybePromise.then === "function") {
+        maybePromise.catch(() => {
+        }).finally(finalize);
+        return;
+      }
+    } catch (_) {
+    }
+    finalize();
+  }, [cleanupContainer]);
+  const reset = (0, import_react31.useCallback)(() => {
+    try {
+      destroyCardInstance();
+      paymentsRef.current = null;
+      setError("");
+      setAttempts(0);
+      attemptsRef.current = 0;
+    } catch (_) {
+    }
+  }, [destroyCardInstance]);
+  (0, import_react31.useEffect)(() => {
+    if (!enabled) return;
+    let cancelled = false;
+    const config = readSquareRuntimeConfig();
+    const security = getSquareSecurityState();
+    setEnvInfo((info) => ({
+      ...info,
+      appId: config.appId,
+      locationId: config.locationId,
+      sdkUrl: config.sdkUrl,
+      sandbox: config.isSandbox,
+      environment: config.environment,
+      mismatch: false,
+      secureContext: security.secureContext,
+      secureForSquare: security.secureForSquare,
+      hostname: security.hostname,
+      protocol: security.protocol
+    }));
+    if (!security.secureForSquare) {
+      setLoadingScript(false);
+      setError("Payments require HTTPS or running on http://localhost.");
+      return;
+    }
+    setLoadingScript(true);
+    ensureSquareSdkScript(config.sdkUrl, config.isSandbox).then(() => {
+      if (cancelled) return;
+      setLoadingScript(false);
+      setError((prev) => prev && prev.toLowerCase().includes("payment script") ? "" : prev);
+    }).catch((err) => {
+      if (cancelled) return;
+      setLoadingScript(false);
+      setError((prev) => prev || err?.message || "Failed to load payment script.");
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [enabled]);
+  (0, import_react31.useEffect)(() => {
+    if (!enabled) return;
+    const abortController = new AbortController();
+    const { signal } = abortController;
+    const config = readSquareRuntimeConfig();
+    const security = getSquareSecurityState();
+    setEnvInfo((info) => ({
+      ...info,
+      secureContext: security.secureContext,
+      secureForSquare: security.secureForSquare,
+      hostname: security.hostname,
+      protocol: security.protocol
+    }));
+    if (!security.secureForSquare) {
+      setError("Payments require HTTPS or running on http://localhost.");
+      return () => abortController.abort();
+    }
+    if (!config.appId || !config.locationId) {
+      setError("Payment not available: missing Square configuration.");
+      return () => abortController.abort();
+    }
+    const waitForSquare = async () => {
+      if (window.Square) return;
+      const start = Date.now();
+      while (!signal.aborted) {
+        if (window.Square) return;
+        if (Date.now() - start > 2e4) {
+          throw new Error("Payment form failed to load (script not ready).");
+        }
+        await new Promise((resolve) => setTimeout(resolve, 200));
+      }
+      throw new DOMException("Aborted", "AbortError");
+    };
+    const waitForContainer = () => new Promise((resolve, reject) => {
+      let observer;
+      let interval;
+      let timeout;
+      const resolveWith = (node) => {
+        if (signal.aborted) {
+          reject(new DOMException("Aborted", "AbortError"));
+          return;
+        }
+        resolve(node);
+      };
+      const rejectWith = (err) => {
+        if (signal.aborted) {
+          reject(new DOMException("Aborted", "AbortError"));
+        } else {
+          reject(err);
+        }
+      };
+      const cleanup = () => {
+        if (observer) observer.disconnect();
+        if (interval) clearInterval(interval);
+        if (timeout) clearTimeout(timeout);
+        if (signal) signal.removeEventListener("abort", onAbort);
+      };
+      const lookup = () => {
+        if (signal.aborted) {
+          cleanup();
+          reject(new DOMException("Aborted", "AbortError"));
+          return true;
+        }
+        const node = typeof containerId === "string" ? document.querySelector(containerId) : containerId;
+        if (node) {
+          cleanup();
+          resolveWith(node);
+          return true;
+        }
+        return false;
+      };
+      const onAbort = () => {
+        cleanup();
+        reject(new DOMException("Aborted", "AbortError"));
+      };
+      if (lookup()) return;
+      const observerRoot = document.body || document.documentElement;
+      try {
+        observer = new MutationObserver(() => {
+          lookup();
+        });
+        observer.observe(observerRoot, { childList: true, subtree: true });
+      } catch (_) {
+        observer = void 0;
+      }
+      interval = setInterval(() => {
+        lookup();
+      }, 150);
+      signal.addEventListener("abort", onAbort, { once: true });
+      timeout = setTimeout(() => {
+        cleanup();
+        rejectWith(new Error("Payment container not found (timed out)."));
+      }, 12e4);
+    });
+    const scheduleRetry = (delay = 800) => {
+      if (signal.aborted) return;
+      if (attemptsRef.current >= 5) return;
+      setTimeout(() => {
+        if (!signal.aborted) {
+          init();
+        }
+      }, delay);
+    };
+    const init = async () => {
+      try {
+        if (cardRef.current || attachStartedRef.current) return;
+        setAttempts((a) => {
+          const next = a + 1;
+          attemptsRef.current = next;
+          return next;
+        });
+        await ensureSquareSdkScript(config.sdkUrl, config.isSandbox);
+        await waitForSquare();
+        if (signal.aborted) return;
+        if (!window.Square || typeof window.Square.payments !== "function") {
+          throw new Error("Square payments API unavailable.");
+        }
+        const envUpper = typeof config.environment === "string" ? config.environment.toUpperCase() : "";
+        const isValidEnv = envUpper === "SANDBOX" || envUpper === "PRODUCTION";
+        const payments = isValidEnv ? window.Square.payments(config.appId, config.locationId, { environment: envUpper }) : window.Square.payments(config.appId, config.locationId);
+        paymentsRef.current = payments;
+        const card = await payments.card();
+        const container = await waitForContainer();
+        if (signal.aborted) return;
+        attachStartedRef.current = true;
+        cleanupContainer();
+        await card.attach(container);
+        if (!signal.aborted) {
+          cardRef.current = card;
+          cardInstanceIdRef.current += 1;
+          activeCardInstanceIdRef.current = cardInstanceIdRef.current;
+          setCardLoaded(true);
+          setError("");
+        }
+      } catch (e) {
+        if (signal.aborted) return;
+        if (false) {
+          console.debug("[Square:init:error]", e);
+        }
+        const msg = e?.message || "Payment initialization failed";
+        attachStartedRef.current = false;
+        if (msg.includes("secure context")) {
+          setError("Payments require HTTPS or running on http://localhost.");
+        } else if (msg.includes("Invalid App ID")) {
+          setError("Invalid Square App ID.");
+        } else if (msg.includes("Unexpected token")) {
+          setError("Payment script parse error.");
+          scheduleRetry(1500);
+        } else if (msg.includes("network")) {
+          setError("Network error initializing payment form.");
+          scheduleRetry(1200);
+        } else if (msg === "Payment container not found (timed out).") {
+          scheduleRetry(300);
+        } else if (msg === "Payment form failed to load (script not ready).") {
+          setError(msg);
+          scheduleRetry(500);
+        } else if (msg === "Square payments API unavailable.") {
+          setError("Square payments API unavailable.");
+          scheduleRetry(800);
+        } else {
+          setError(msg);
+          scheduleRetry(1500);
+        }
+      }
+    };
+    init();
+    return () => {
+      abortController.abort();
+      destroyCardInstance();
+      paymentsRef.current = null;
+    };
+  }, [enabled, containerId, destroyCardInstance, cleanupContainer, ...deps]);
+  (0, import_react31.useEffect)(() => {
+    setEnvInfo((info) => ({ ...info, attempts }));
+  }, [attempts]);
+  const withTimeout = async (promise, ms, message) => {
+    let timer;
+    try {
+      const timeout = new Promise((_, reject) => {
+        timer = setTimeout(() => reject(new Error(message)), ms);
+      });
+      return await Promise.race([promise, timeout]);
+    } finally {
+      if (timer) clearTimeout(timer);
+    }
+  };
+  const tokenize = async () => {
+    if (!cardRef.current) throw new Error(error || "Card form not ready");
+    const result = await withTimeout(
+      cardRef.current.tokenize(),
+      2e4,
+      "Card verification timed out. Please try again."
+    );
+    if (result.status !== "OK") {
+      const first = result?.errors?.[0];
+      const msg = first?.message || first?.code || result.status || "Card details invalid";
+      lastTokenRef.current = { token: null, cardInstanceId: 0, at: 0 };
+      throw new Error(msg);
+    }
+    const activeId = activeCardInstanceIdRef.current;
+    lastTokenRef.current = { token: result.token, cardInstanceId: activeId, at: Date.now() };
+    return result.token;
+  };
+  const verifyBuyer = async (token, details) => {
+    const payments = paymentsRef.current;
+    if (!payments || typeof payments.verifyBuyer !== "function") {
+      throw new Error("Buyer verification is unavailable. Please try hosted checkout.");
+    }
+    const activeId = activeCardInstanceIdRef.current;
+    const last = lastTokenRef.current;
+    if (!token || !last.token || last.token !== token || last.cardInstanceId !== activeId) {
+      throw new Error("Card details expired. Please re-enter your card information.");
+    }
+    try {
+      const result = await withTimeout(
+        payments.verifyBuyer(token, details),
+        2e4,
+        "Buyer verification timed out. Please try again."
+      );
+      const verificationToken = result?.token || result?.verificationToken;
+      if (!verificationToken) {
+        const first = result?.errors?.[0];
+        const msg = first?.message || first?.code || "Buyer verification failed.";
+        throw new Error(msg);
+      }
+      return verificationToken;
+    } catch (err) {
+      lastTokenRef.current = { token: null, cardInstanceId: 0, at: 0 };
+      throw err;
+    }
+  };
+  return { cardLoaded, error, loadingScript, tokenize, verifyBuyer, reset, envInfo };
+}
+
+// src/lib/checkoutAttemptId.js
+var resolveStorage = () => {
+  if (typeof window === "undefined") return null;
+  try {
+    return window.sessionStorage || null;
+  } catch (_) {
+    return null;
+  }
+};
+var generateId = () => {
+  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+    return crypto.randomUUID();
+  }
+  const rand = Math.random().toString(36).slice(2, 10);
+  return `${Date.now()}-${rand}`;
+};
+var getOrCreateCheckoutAttemptId = (storageKey) => {
+  if (!storageKey) {
+    return generateId();
+  }
+  const storage = resolveStorage();
+  if (!storage) {
+    return generateId();
+  }
+  const existing = storage.getItem(storageKey);
+  if (existing && existing.trim()) {
+    return existing;
+  }
+  const next = generateId();
+  storage.setItem(storageKey, next);
+  return next;
+};
+var clearCheckoutAttemptId = (storageKey) => {
+  const storage = resolveStorage();
+  if (!storage || !storageKey) return;
+  storage.removeItem(storageKey);
+};
+
+// src/pages/PizzaPartyPage.jsx
+var import_jsx_runtime38 = require("react/jsx-runtime");
+var import_meta6 = {};
+async function fetchPizzaImages(setter, setError, setLoading) {
+  try {
+    const res = await fetch("/api/search-images?query=pizza&per_page=8");
+    if (!res.ok) throw new Error(`Request failed: ${res.status}`);
+    const data = await res.json();
+    setter(Array.isArray(data.images) ? data.images : []);
+  } catch (e) {
+    console.error("Failed to load pizza images", e);
+    setError(e.message || "Error loading images");
+  } finally {
+    setLoading(false);
+  }
+}
+var PIZZA_PARTY_DATES = [
+  { label: "Oct 2", isoDate: "2024-10-02" },
+  { label: "Oct 3", isoDate: "2024-10-03" },
+  { label: "Oct 4", isoDate: "2024-10-04" },
+  { label: "Oct 9", isoDate: "2024-10-09" },
+  { label: "Oct 10", isoDate: "2024-10-10" },
+  { label: "Oct 11", isoDate: "2024-10-11" },
+  { label: "Oct 16", isoDate: "2024-10-16" },
+  { label: "Oct 17", isoDate: "2024-10-17" }
+];
+var SOLD_OUT_OVERRIDES = ["Oct 2", "Oct 3", "Oct 4"];
+var MONTH_NAMES = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+var toLocalDate = (isoDate) => {
+  if (!isoDate) return null;
+  const parts = isoDate.split("-").map((part) => parseInt(part, 10));
+  if (parts.length !== 3 || parts.some((val) => Number.isNaN(val))) return null;
+  const [year, month, day] = parts;
+  return new Date(year, month - 1, day, 0, 0, 0, 0);
+};
+var formatDateLabel = (isoDate, fallbackLabel) => {
+  const dateObj = toLocalDate(isoDate);
+  if (!dateObj) return fallbackLabel || isoDate;
+  return `${MONTH_NAMES[dateObj.getMonth()]} ${dateObj.getDate()}`;
+};
+var DISPLAY_YEAR = 2025;
+var projectDateToYear = (isoDate, targetYear) => {
+  const baseDate = toLocalDate(isoDate);
+  if (!baseDate) return null;
+  const projected = new Date(baseDate);
+  projected.setHours(0, 0, 0, 0);
+  projected.setFullYear(targetYear);
+  return projected;
+};
+var PizzaPartyPage = () => {
+  const canonical = "https://localeffort.app/pizza-party";
+  const siteName = "Local Effort";
+  const pageTitle = "Book Your Pizza Party - Pay a Deposit | Local Effort";
+  const pageDescription = "Pay a deposit to book your pizza party. $75 deposit reserves your date. Estimated $450 for parties of 15 guests with premium wood-fired pizza and local ingredients.";
+  const startOfToday = (() => {
+    const d = /* @__PURE__ */ new Date();
+    d.setHours(0, 0, 0, 0);
+    return d;
+  })();
+  const upcomingDates = PIZZA_PARTY_DATES.map((entry) => {
+    const projectedDate = projectDateToYear(entry.isoDate, DISPLAY_YEAR);
+    if (!projectedDate || projectedDate < startOfToday) return null;
+    const isoDate = projectedDate.toISOString().slice(0, 10);
+    const label = entry.label || formatDateLabel(isoDate, entry.label);
+    return {
+      ...entry,
+      label,
+      isoDate,
+      dateObj: projectedDate,
+      weekday: projectedDate.toLocaleDateString("en-US", { weekday: "short" })
+    };
+  }).filter(Boolean).sort((a, b) => a.dateObj && b.dateObj ? a.dateObj - b.dateObj : 0);
+  const availabilityYears = Array.from(new Set(upcomingDates.map((entry) => entry.dateObj?.getFullYear()).filter(Boolean)));
+  const availabilityMonthLabel = upcomingDates.length ? upcomingDates[0].dateObj.toLocaleString("en-US", { month: "long" }) : "Upcoming";
+  const availabilityYearLabel = availabilityYears.length === 0 ? String((/* @__PURE__ */ new Date()).getFullYear()) : availabilityYears.join(" / ");
+  const eventStartHour = "17:00:00";
+  const timezoneOffset = "-05:00";
+  const eventsSchema = upcomingDates.map(({ isoDate }) => ({
+    "@type": "Event",
+    name: "Private Mobile Pizza Party",
+    description: "On-site artisanal wood-fired pizza experience (up to 15 guests). $75 deposit to book.",
+    startDate: `${isoDate}T${eventStartHour}${timezoneOffset}`,
+    eventAttendanceMode: "https://schema.org/OfflineEventAttendanceMode",
+    eventStatus: "https://schema.org/EventScheduled",
+    location: {
+      "@type": "Place",
+      name: "Client Provided Location",
+      address: { "@type": "PostalAddress", addressRegion: "MN", addressCountry: "US" }
+    },
+    organizer: { "@type": "Organization", name: siteName, url: canonical.replace("/pizza-party", "/") },
+    offers: {
+      "@type": "Offer",
+      price: "75",
+      priceCurrency: "USD",
+      availability: "https://schema.org/LimitedAvailability",
+      url: canonical,
+      validFrom: (/* @__PURE__ */ new Date()).toISOString()
+    }
+  }));
+  const serviceSchema = {
+    "@type": "Service",
+    name: "Pizza Party Booking - Deposit Required",
+    description: pageDescription,
+    provider: {
+      "@type": "LocalBusiness",
+      name: siteName,
+      areaServed: { "@type": "Place", name: "Minnesota" }
+    },
+    offers: {
+      "@type": "Offer",
+      price: "75",
+      priceCurrency: "USD",
+      description: "$75 deposit to reserve your date. Estimated $450 for parties of 15 guests."
+    },
+    category: "Catering",
+    additionalType: "https://schema.org/FoodEstablishment"
+  };
+  const breadcrumbSchema = {
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Home", item: canonical.replace("/pizza-party", "/") },
+      { "@type": "ListItem", position: 2, name: "Pizza Party", item: canonical }
+    ]
+  };
+  const jsonLd = [serviceSchema, ...eventsSchema, breadcrumbSchema];
+  const [images, setImages] = (0, import_react32.useState)([]);
+  const [error, setError] = (0, import_react32.useState)(null);
+  const [loading, setLoading] = (0, import_react32.useState)(true);
+  const [bookingState, setBookingState] = (0, import_react32.useState)({});
+  const [soldOutDates, setSoldOutDates] = (0, import_react32.useState)(() => new Set(SOLD_OUT_OVERRIDES));
+  const [showModal, setShowModal] = (0, import_react32.useState)(false);
+  const [selectedDate, setSelectedDate] = (0, import_react32.useState)(null);
+  const squareEnabled = showModal;
+  const { cardLoaded, error: cardError, loadingScript, tokenize, verifyBuyer, reset, envInfo } = useSquareCard("#pp-card-container", squareEnabled, [squareEnabled]);
+  const checkoutAttemptRef = (0, import_react32.useRef)("");
+  const attemptStorageKey = "le:checkoutAttempt:pizza-party";
+  const resolveCheckoutAttemptId = (0, import_react32.useCallback)(() => {
+    if (checkoutAttemptRef.current) return checkoutAttemptRef.current;
+    const next = getOrCreateCheckoutAttemptId(attemptStorageKey);
+    checkoutAttemptRef.current = next;
+    return next;
+  }, []);
+  const clearCheckoutAttempt = (0, import_react32.useCallback)(() => {
+    checkoutAttemptRef.current = "";
+    clearCheckoutAttemptId(attemptStorageKey);
+  }, []);
+  const [bookedDate, setBookedDate] = (0, import_react32.useState)(null);
+  const [justBooked, setJustBooked] = (0, import_react32.useState)(false);
+  const [email, setEmail] = (0, import_react32.useState)("");
+  const [fullName, setFullName] = (0, import_react32.useState)("");
+  const [phone, setPhone] = (0, import_react32.useState)("");
+  const [address, setAddress] = (0, import_react32.useState)({ line1: "", line2: "", city: "", state: "MN", postal: "" });
+  const [mealTime, setMealTime] = (0, import_react32.useState)("5:00 PM");
+  const [pizzaRequests, setPizzaRequests] = (0, import_react32.useState)("");
+  const [addOnEnabled, setAddOnEnabled] = (0, import_react32.useState)(false);
+  const [guestCount, setGuestCount] = (0, import_react32.useState)(10);
+  const [submitting, setSubmitting] = (0, import_react32.useState)(false);
+  const isValidEmail = (val) => /.+@.+\..+/.test(val.trim());
+  const formatPhone = (val) => {
+    const digits = val.replace(/\D/g, "").slice(0, 10);
+    if (digits.length < 4) return digits;
+    if (digits.length < 7) return `(${digits.slice(0, 3)}) ${digits.slice(3)}`;
+    return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
+  };
+  const isValidPhone = (val) => val.replace(/\D/g, "").length === 10;
+  const formatPostal = (val) => val.replace(/[^0-9]/g, "").slice(0, 5);
+  const isValidAddress = (a) => a.line1.trim().length > 3 && a.city.trim().length > 1 && a.postal.trim().length >= 5;
+  const basePrice = 75;
+  const estimatedTotal = 450;
+  const addOnTotal = addOnEnabled ? guestCount * 9 : 0;
+  const grandTotal = basePrice + addOnTotal;
+  (0, import_react32.useEffect)(() => {
+    let active = true;
+    fetchPizzaImages((imgs) => {
+      if (active) setImages(imgs);
+    }, (err) => active && setError(err), (val) => active && setLoading(val));
+    const fetchCalendarDates = async () => {
+      try {
+        const res = await fetch("/api/calendar/events?event_type=pizza_party&visibility=public&status=scheduled");
+        if (res.ok) {
+          const events = await res.json();
+          const calendarDates = events.filter((e) => e.is_bookable && e.start_date).map((e) => ({
+            label: new Date(e.start_date).toLocaleDateString("en-US", { month: "short", day: "numeric" }),
+            isoDate: e.start_date
+          }));
+          if (calendarDates.length > 0) {
+          }
+        }
+      } catch (err) {
+        console.warn("Failed to load calendar dates, using fallback:", err);
+      }
+    };
+    fetchCalendarDates();
+    return () => {
+      active = false;
+    };
+  }, []);
+  (0, import_react32.useEffect)(() => {
+    let mounted = true;
+    const loadAvailability = async () => {
+      try {
+        const res = await fetch("/api/store/pizza-party-status");
+        if (!res.ok) return;
+        const data = await res.json().catch(() => ({}));
+        if (!mounted || !data?.soldOutDates) return;
+        setSoldOutDates((prev) => {
+          const next = new Set(prev);
+          data.soldOutDates.filter(Boolean).forEach((label) => next.add(label));
+          return next;
+        });
+      } catch (err) {
+        if (false) {
+          console.warn("[pizza-party] availability load failed", err);
+        }
+      }
+    };
+    loadAvailability();
+    const timer = setInterval(loadAvailability, 5 * 60 * 1e3);
+    return () => {
+      mounted = false;
+      clearInterval(timer);
+    };
+  }, []);
+  (0, import_react32.useEffect)(() => {
+    if (selectedDate && soldOutDates.has(selectedDate)) {
+      setSelectedDate(null);
+    }
+  }, [selectedDate, soldOutDates]);
+  (0, import_react32.useEffect)(() => {
+    if (!showModal) return;
+    const apiKey = window.GOOGLE_PLACES_KEY || import_meta6?.env?.VITE_GOOGLE_PLACES_KEY;
+    if (!apiKey) return;
+    const existing = document.querySelector("script[data-gplaces]");
+    if (existing) return;
+    const s = document.createElement("script");
+    s.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places&callback=__lpPlacesInit`;
+    s.async = true;
+    s.dataset.gplaces = "true";
+    window.__lpPlacesInit = () => {
+      try {
+        const input = document.querySelector("#pp-address-line1");
+        if (!input || !window.google || !window.google.maps) return;
+        const ac = new window.google.maps.places.Autocomplete(input, { types: ["address"], componentRestrictions: { country: "us" } });
+        ac.addListener("place_changed", () => {
+          const place = ac.getPlace();
+          if (!place || !Array.isArray(place.address_components)) return;
+          const comp = (type) => place.address_components.find((c) => c.types.includes(type))?.long_name || "";
+          const streetNumber = comp("street_number");
+          const route = comp("route");
+          const locality = comp("locality") || comp("sublocality") || "";
+          const admin = comp("administrative_area_level_1") || "";
+          const postal = comp("postal_code") || "";
+          setAddress((a) => ({
+            ...a,
+            line1: [streetNumber, route].filter(Boolean).join(" ") || a.line1,
+            city: locality || a.city,
+            state: admin || a.state,
+            postal: postal || a.postal
+          }));
+        });
+      } catch (_) {
+      }
+    };
+    document.head.appendChild(s);
+    return () => {
+      try {
+        delete window.__lpPlacesInit;
+      } catch (_) {
+      }
+    };
+  }, [showModal]);
+  (0, import_react32.useEffect)(() => {
+    const params = new URLSearchParams(window.location.search);
+    const b = params.get("booked");
+    if (b) {
+      setBookedDate(b);
+      params.delete("booked");
+      const newUrl = `${window.location.pathname}${params.toString() ? "?" + params.toString() : ""}`;
+      window.history.replaceState({}, "", newUrl);
+    }
+  }, []);
+  const openModal = (date) => {
+    try {
+      if (typeof reset === "function") {
+        reset();
+      }
+    } catch (err) {
+      if (false) {
+        console.error("[pizza-party] failed to reset payment form", err);
+      }
+    }
+    setShowModal(true);
+    setSelectedDate(date);
+  };
+  const closeModal = () => {
+    setShowModal(false);
+    setSelectedDate(null);
+    setEmail("");
+    setAddOnEnabled(false);
+    setGuestCount(10);
+    clearCheckoutAttempt();
+  };
+  const submitBooking = async () => {
+    if (!selectedDate) return;
+    if (submitting) return;
+    if (!fullName.trim() || !isValidEmail(email) || !isValidPhone(phone) || !isValidAddress(address)) {
+      setBookingState((s) => ({ ...s, [selectedDate]: { ...s[selectedDate] || {}, error: "Please complete required contact & address fields." } }));
+      return;
+    }
+    setSubmitting(true);
+    const date = selectedDate;
+    setBookingState((s) => ({ ...s, [date]: { loading: true } }));
+    try {
+      let token;
+      try {
+        token = await tokenize();
+      } catch (e) {
+        throw new Error(e?.message || "Card not ready");
+      }
+      const basePriceCents = 3e4;
+      const addOnPricePerGuestCents = 900;
+      const guestsInt = addOnEnabled ? guestCount : 0;
+      const amountCents = basePriceCents + (guestsInt > 0 ? guestsInt * addOnPricePerGuestCents : 0);
+      const nameParts = fullName.trim().split(" ");
+      const verificationDetails = {
+        amount: (amountCents / 100).toFixed(2),
+        currencyCode: "USD",
+        intent: "CHARGE",
+        billingContact: {
+          givenName: nameParts[0] || void 0,
+          familyName: nameParts.slice(1).join(" ") || void 0,
+          email: email.trim() || void 0,
+          phone: phone.trim() || void 0,
+          addressLines: [address?.line1, address?.line2].filter(Boolean),
+          city: address?.city || void 0,
+          state: address?.state || void 0,
+          postalCode: address?.postal || void 0,
+          countryCode: "US"
+        }
+      };
+      const verificationToken = await verifyBuyer(token, verificationDetails);
+      const checkoutAttemptId = resolveCheckoutAttemptId();
+      const res = await fetch("/api/store/pizza-party-checkout", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          date,
+          email: email.trim(),
+          name: fullName.trim(),
+          phone: phone.trim(),
+          address,
+          mealTime,
+          pizzaRequests,
+          addOnGuests: addOnEnabled ? guestCount : 0,
+          token,
+          verificationToken,
+          checkoutAttemptId,
+          basePriceCents,
+          addOnPricePerGuestCents
+        })
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || "Payment failed");
+      setBookingState((s) => ({ ...s, [date]: { loading: false, success: true, paymentId: data.paymentId } }));
+      setBookedDate(date);
+      setJustBooked(true);
+      closeModal();
+      clearCheckoutAttempt();
+      try {
+        fetch("/api/store/pizza-party-receipt", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ paymentId: data.paymentId, date, email: email.trim(), addOnGuests: addOnEnabled ? guestCount : 0 })
+        }).catch(() => {
+        });
+      } catch (_) {
+      }
+      setTimeout(() => setJustBooked(false), 6e3);
+    } catch (e) {
+      setBookingState((s) => ({ ...s, [date]: { loading: false, error: e.message || "Error" } }));
+    } finally {
+      setSubmitting(false);
+    }
+  };
+  return /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)(import_jsx_runtime38.Fragment, { children: [
+    /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)(import_react_helmet_async6.Helmet, { children: [
+      /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("title", { children: pageTitle }),
+      /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("meta", { name: "description", content: pageDescription }),
+      /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("link", { rel: "canonical", href: canonical }),
+      /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("meta", { property: "og:title", content: pageTitle }),
+      /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("meta", { property: "og:description", content: pageDescription }),
+      /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("meta", { property: "og:type", content: "website" }),
+      /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("meta", { property: "og:url", content: canonical }),
+      /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("meta", { property: "og:site_name", content: siteName }),
+      /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("meta", { property: "og:locale", content: "en_US" }),
+      /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("meta", { name: "twitter:card", content: "summary_large_image" }),
+      /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("meta", { name: "twitter:title", content: pageTitle }),
+      /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("meta", { name: "twitter:description", content: pageDescription }),
+      /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("script", { type: "application/ld+json", children: JSON.stringify(jsonLd) })
+    ] }),
+    /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("div", { className: "space-y-16", children: bookedDate && /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)("div", { className: `p-4 rounded-lg border bg-green-50 text-green-800 text-sm shadow-sm flex items-start gap-3 transition-all ${justBooked ? "border-green-400 ring-2 ring-green-300" : "border-green-300"}`, children: [
+      /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("span", { className: "font-semibold", children: "Booked!" }),
+      /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)("span", { children: [
+        "Your reservation for ",
+        /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("strong", { children: bookedDate }),
+        " was received. We\\'ll follow up to confirm details."
+      ] })
+    ] }) }),
+    /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)("div", { className: "mx-auto max-w-6xl px-4 py-10 space-y-14", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)("div", { className: "text-center space-y-4", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("h1", { className: "heading-display heading-balance", children: "Pizza party special" }),
+        /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)("p", { className: "mt-2 text-xl md:text-2xl text-neutral-800 max-w-3xl mx-auto leading-relaxed", children: [
+          "Host an unforgettable pizza experience right in your home. We bring the oven, the dough, and the vibes. We call it ",
+          /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("strong", { children: "Local Pizza" }),
+          "."
+        ] })
+      ] }),
+      /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("section", { children: /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)("div", { className: "relative rounded-2xl border bg-gradient-to-br from-amber-50 via-orange-50 to-rose-50 p-6 md:p-10 overflow-hidden", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("div", { className: "absolute inset-0 pointer-events-none opacity-[0.15]", style: { backgroundImage: "radial-gradient(circle at 30% 30%, #fb923c, transparent 60%)" } }),
+        /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)("div", { className: "relative grid md:grid-cols-3 gap-8 items-center", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)("div", { className: "md:col-span-2 space-y-4", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("h2", { className: "heading-lg heading-balance", children: "Pizza party in your home" }),
+            /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)("ul", { className: "list-disc list-inside text-neutral-700 text-sm md:text-base space-y-1", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("li", { children: "Up to 15 guests" }),
+              /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("li", { children: "100% local midwest ingredients, slow-fermented sourdough crust" }),
+              /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("li", { children: "We handle setup, firing & service" }),
+              /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("li", { children: "Includes 2 hours of active pizza making/eating time" })
+            ] })
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)("div", { className: "flex flex-col items-center justify-center gap-4", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)("div", { className: "text-center space-y-2", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)("div", { className: "text-5xl font-extrabold tracking-tight bg-gradient-to-r from-orange-500 to-rose-500 bg-clip-text text-transparent", children: [
+                "$",
+                basePrice
+              ] }),
+              /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("div", { className: "mt-1 text-xs uppercase tracking-wider text-neutral-500", children: "Deposit to Reserve" }),
+              /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)("div", { className: "text-sm text-neutral-600", children: [
+                "Est. $",
+                estimatedTotal,
+                " for 15 guests"
+              ] })
+            ] }),
+            /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("button", { type: "button", onClick: () => openModal(null), className: "inline-flex items-center rounded-md bg-orange-600 hover:bg-orange-700 text-white font-semibold px-6 py-3 shadow-sm transition-colors", children: "Book / Pay Deposit" })
+          ] })
+        ] })
+      ] }) }),
+      /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)("section", { id: "dates", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)("h3", { className: "text-lg font-semibold mb-3 flex items-center gap-2", children: [
+          "Available ",
+          availabilityMonthLabel,
+          " Dates",
+          /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("span", { className: "text-[10px] font-mono bg-neutral-200 rounded px-1.5 py-0.5", children: availabilityYearLabel })
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("div", { className: "mx-auto max-w-4xl", children: upcomingDates.length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("div", { className: "rounded-xl border border-dashed border-neutral-300 bg-neutral-50 px-4 py-6 text-center text-sm text-neutral-600", children: "More pizza party dates are coming soon. Reach out if you need a custom date." }) : /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("ul", { className: "grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4", children: upcomingDates.map(({ label, weekday }) => {
+          const st = bookingState[label] || {};
+          const isSoldOut = soldOutDates.has(label);
+          return /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)("li", { className: `relative group rounded-xl border bg-white/80 backdrop-blur-sm shadow-sm px-3 py-3 flex flex-col items-start justify-between h-28 overflow-hidden ${isSoldOut ? "opacity-80" : ""}`, children: [
+            /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)("div", { className: "w-full flex items-start justify-between gap-2", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)("div", { children: [
+                weekday && /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("span", { className: "block text-[10px] uppercase tracking-wide text-neutral-500", children: weekday }),
+                /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("span", { className: "font-semibold text-neutral-800 text-sm tracking-tight", children: label })
+              ] }),
+              st.loading && /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("span", { className: "text-[10px] text-orange-600 animate-pulse", children: "..." })
+            ] }),
+            /* @__PURE__ */ (0, import_jsx_runtime38.jsx)(
+              "button",
+              {
+                type: "button",
+                disabled: st.loading || isSoldOut,
+                onClick: () => openModal(label),
+                className: `mt-auto inline-flex justify-center items-center rounded-md px-2.5 py-1.5 text-xs font-semibold shadow-sm transition-colors border ${st.loading || isSoldOut ? "bg-neutral-200 text-neutral-500 border-neutral-200 cursor-not-allowed" : "bg-orange-600 hover:bg-orange-700 text-white border-orange-600"}`,
+                "aria-label": `Book pizza party on ${label}`,
+                children: isSoldOut ? "Sold out" : st.loading ? "Processing" : "Book"
+              }
+            ),
+            isSoldOut && /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("span", { className: "absolute top-2 right-2 text-[10px] font-semibold uppercase tracking-wide bg-rose-100 text-rose-700 rounded px-2 py-0.5", children: "Sold Out" }),
+            /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("div", { className: "pointer-events-none absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity bg-gradient-to-br from-orange-50/40 to-rose-50/40" })
+          ] }, label);
+        }) }) })
+      ] }),
+      /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)("section", { children: [
+        /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)("div", { className: "flex items-center justify-between mb-5", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("h3", { className: "text-xl font-semibold", children: "Pizza Inspiration" }),
+          loading && /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("span", { className: "text-sm text-neutral-500 animate-pulse", children: "Loading..." })
+        ] }),
+        error && /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)("div", { className: "p-4 mb-6 rounded-md bg-rose-50 border border-rose-200 text-rose-700 text-sm", children: [
+          "Could not load images: ",
+          error
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)("div", { className: "columns-2 md:columns-3 lg:columns-4 gap-3 [column-fill:_balance]", children: [
+          images.map((img, idx) => /* @__PURE__ */ (0, import_jsx_runtime38.jsx)(import_framer_motion11.motion.figure, { className: "mb-3 break-inside-avoid rounded-lg overflow-hidden shadow-sm bg-neutral-100", whileHover: { scale: 1.02 }, children: /* @__PURE__ */ (0, import_jsx_runtime38.jsx)(
+            "img",
+            {
+              src: img.thumbnail_url,
+              alt: `Wood-fired pizza ${idx + 1}`,
+              loading: "lazy",
+              className: "w-full h-auto block",
+              decoding: "async",
+              fetchPriority: idx < 2 ? "high" : "auto"
+            }
+          ) }, img.asset_id || img.public_id)),
+          !loading && images.length === 0 && !error && /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("p", { className: "text-sm text-neutral-500", children: "No images found yet. Tag some photos in Cloudinary with 'pizza'." })
+        ] })
+      ] }),
+      /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)("section", { children: [
+        /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("h3", { className: "text-xl font-semibold mt-24 mb-6", children: "FAQ" }),
+        /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)("div", { className: "space-y-6", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)("div", { children: [
+            /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("h4", { className: "font-medium text-neutral-900", children: "What pizzas does this include?" }),
+            /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("p", { className: "text-sm text-neutral-700 mt-1", children: "We have some signature favorites, or we're happy to take requests." })
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)("div", { children: [
+            /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("h4", { className: "font-medium text-neutral-900", children: "Does it include anything besides pizza?" }),
+            /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("p", { className: "text-sm text-neutral-700 mt-1", children: "This offer is just for pizza, but we can build a bigger package if you like. It's easy to add additional sides like salads and dessert." })
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)("div", { children: [
+            /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("h4", { className: "font-medium text-neutral-900", children: "What kind of pizza do you make?" }),
+            /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("p", { className: "text-sm text-neutral-700 mt-1", children: "Minnesotan-style. It's sort of neapolitan, sort of New York. Puffy, crispy, chewy crusts. It's our own thing." })
+          ] })
+        ] })
+      ] })
+    ] }),
+    /* @__PURE__ */ (0, import_jsx_runtime38.jsx)(import_framer_motion11.AnimatePresence, { children: showModal && /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)(import_framer_motion11.motion.div, { className: "fixed inset-0 z-50 flex items-start justify-center p-4 overflow-y-auto", initial: { opacity: 0 }, animate: { opacity: 1 }, exit: { opacity: 0 }, children: [
+      /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("div", { className: "absolute inset-0 bg-black/40 backdrop-blur-sm", onClick: closeModal }),
+      /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)(
+        import_framer_motion11.motion.div,
+        {
+          initial: { scale: 0.9, opacity: 0 },
+          animate: { scale: 1, opacity: 1 },
+          exit: { scale: 0.9, opacity: 0 },
+          transition: { type: "spring", stiffness: 220, damping: 20 },
+          className: "relative w-full max-w-md rounded-xl bg-white shadow-lg border p-6 space-y-5 mt-10 mb-10 max-h-[90vh] overflow-y-auto",
+          children: [
+            /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)("div", { className: "flex items-start justify-between gap-4", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)("div", { children: [
+                /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("h3", { className: "text-lg font-semibold", children: selectedDate ? `Book ${selectedDate}` : "Select a Date" }),
+                /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("p", { className: "text-xs text-neutral-500 mt-0.5", children: selectedDate ? "Confirm your details below." : "Choose a date to continue." })
+              ] }),
+              /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("button", { onClick: closeModal, className: "text-neutral-400 hover:text-neutral-600", "aria-label": "Close", children: "\u2715" })
+            ] }),
+            !selectedDate && /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("div", { className: "space-y-2", children: /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("ul", { className: "max-h-48 overflow-auto border rounded-md divide-y", children: upcomingDates.map(({ label }) => {
+              const isSoldOut = soldOutDates.has(label);
+              return /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)("li", { className: "flex items-center justify-between px-3 py-2 text-sm", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("span", { children: label }),
+                /* @__PURE__ */ (0, import_jsx_runtime38.jsx)(
+                  "button",
+                  {
+                    type: "button",
+                    onClick: () => !isSoldOut ? setSelectedDate(label) : null,
+                    disabled: isSoldOut,
+                    className: `text-xs font-semibold px-2 py-1 rounded-md ${isSoldOut ? "bg-neutral-200 text-neutral-500 cursor-not-allowed" : "bg-orange-600 hover:bg-orange-700 text-white"}`,
+                    children: isSoldOut ? "Sold out" : "Select"
+                  }
+                )
+              ] }, label);
+            }) }) }),
+            selectedDate && /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)("div", { className: "space-y-4", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)("label", { className: "block text-sm font-medium", children: [
+                "Name",
+                /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("input", { type: "text", value: fullName, onChange: (e) => setFullName(e.target.value), placeholder: "Your full name", className: "mt-1 w-full rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500" })
+              ] }),
+              /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)("label", { className: "block text-sm font-medium", children: [
+                "Email",
+                /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("input", { type: "email", value: email, onChange: (e) => setEmail(e.target.value), placeholder: "you@example.com", className: "mt-1 w-full rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500" })
+              ] }),
+              /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)("label", { className: "block text-sm font-medium", children: [
+                "Phone",
+                /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("input", { type: "tel", value: phone, onChange: (e) => setPhone(formatPhone(e.target.value)), placeholder: "(555) 123-4567", className: "mt-1 w-full rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500" })
+              ] }),
+              /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)("fieldset", { className: "border rounded-md p-3 space-y-2", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("legend", { className: "text-xs font-semibold uppercase tracking-wide text-neutral-600", children: "Address" }),
+                /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)("div", { className: "grid grid-cols-1 gap-2", children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("input", { id: "pp-address-line1", value: address.line1, onChange: (e) => setAddress((a) => ({ ...a, line1: e.target.value })), placeholder: "Street address", className: "rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500" }),
+                  /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("input", { value: address.line2, onChange: (e) => setAddress((a) => ({ ...a, line2: e.target.value })), placeholder: "Apt / Suite (optional)", className: "rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500" }),
+                  /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)("div", { className: "grid grid-cols-6 gap-2", children: [
+                    /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("input", { value: address.city, onChange: (e) => setAddress((a) => ({ ...a, city: e.target.value })), placeholder: "City", className: "col-span-3 rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500" }),
+                    /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("input", { value: address.state, onChange: (e) => setAddress((a) => ({ ...a, state: e.target.value })), placeholder: "State", className: "col-span-1 rounded-md border px-2 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500" }),
+                    /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("input", { value: address.postal, onChange: (e) => setAddress((a) => ({ ...a, postal: formatPostal(e.target.value) })), placeholder: "ZIP", className: "col-span-2 rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500" })
+                  ] })
+                ] })
+              ] }),
+              /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)("div", { className: "grid grid-cols-2 gap-4", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)("label", { className: "block text-sm font-medium", children: [
+                  "Mealtime",
+                  /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("select", { value: mealTime, onChange: (e) => setMealTime(e.target.value), className: "mt-1 w-full rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500", children: ["4:00 PM", "4:30 PM", "5:00 PM", "5:30 PM", "6:00 PM", "6:30 PM", "7:00 PM"].map((t) => /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("option", { value: t, children: t }, t)) })
+                ] }),
+                /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)("label", { className: "block text-sm font-medium", children: [
+                  "Guests",
+                  /* @__PURE__ */ (0, import_jsx_runtime38.jsx)(
+                    "input",
+                    {
+                      type: "number",
+                      min: 1,
+                      max: 50,
+                      value: guestCount,
+                      onChange: (e) => setGuestCount(Math.max(1, Math.min(50, Number(e.target.value)))),
+                      className: "mt-1 w-full rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
+                    }
+                  )
+                ] })
+              ] }),
+              /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)("div", { className: "space-y-2 border rounded-md p-3", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)("label", { className: "flex items-center gap-2 text-sm font-medium", children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("input", { type: "checkbox", checked: addOnEnabled, onChange: (e) => setAddOnEnabled(e.target.checked) }),
+                  /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("span", { children: "Add salads & dessert ($9 / guest)" })
+                ] }),
+                addOnEnabled && /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("div", { className: "flex items-center gap-3 pl-6", children: /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)("span", { className: "text-xs text-neutral-500", children: [
+                  "Add-on total: $",
+                  addOnTotal
+                ] }) })
+              ] }),
+              /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)("label", { className: "block text-sm font-medium", children: [
+                "Pizza Requests (optional)",
+                /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("textarea", { value: pizzaRequests, onChange: (e) => setPizzaRequests(e.target.value), placeholder: "Favorite styles, dietary notes, special requests...", rows: 3, className: "mt-1 w-full rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500" })
+              ] }),
+              /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)("div", { className: "space-y-1 pt-2 border-t text-sm", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)("div", { className: "flex items-center justify-between font-medium", children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("span", { children: "Deposit (due now)" }),
+                  /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)("span", { children: [
+                    "$",
+                    grandTotal
+                  ] })
+                ] }),
+                /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)("div", { className: "flex items-center justify-between text-neutral-600 text-xs", children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("span", { children: "Estimated total (15 guests)" }),
+                  /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)("span", { children: [
+                    "$",
+                    estimatedTotal
+                  ] })
+                ] })
+              ] })
+            ] }),
+            /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)("div", { className: "flex gap-3 pt-2", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("button", { onClick: closeModal, type: "button", className: "flex-1 rounded-md border px-4 py-2 text-sm font-medium hover:bg-neutral-50", children: "Cancel" }),
+              /* @__PURE__ */ (0, import_jsx_runtime38.jsx)(
+                "button",
+                {
+                  onClick: selectedDate ? submitBooking : void 0,
+                  type: "button",
+                  disabled: selectedDate ? bookingState[selectedDate]?.loading || submitting || !cardLoaded || !!cardError || loadingScript || !isValidEmail(email) || !fullName.trim() || !isValidPhone(phone) || !isValidAddress(address) : false,
+                  className: `flex-1 rounded-md text-sm font-semibold px-4 py-2 shadow disabled:opacity-60 disabled:cursor-not-allowed ${selectedDate ? "bg-orange-600 hover:bg-orange-700 text-white" : "bg-neutral-200 text-neutral-500 cursor-not-allowed"}`,
+                  children: selectedDate ? bookingState[selectedDate]?.loading || submitting ? "Processing\u2026" : !fullName.trim() ? "Enter Name" : !isValidEmail(email) ? "Enter Email" : !isValidPhone(phone) ? "Phone Needed" : !isValidAddress(address) ? "Address Needed" : "Pay Deposit" : "Select a Date"
+                }
+              )
+            ] }),
+            selectedDate && bookingState[selectedDate]?.error && /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("p", { className: "text-xs text-rose-600 pt-2", children: bookingState[selectedDate].error }),
+            selectedDate && bookingState[selectedDate]?.success && /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("p", { className: "text-xs text-emerald-600 pt-2", children: "Payment successful! We will confirm shortly." }),
+            cardError && /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("p", { className: "text-xs text-rose-600 pt-2", children: cardError }),
+            /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)("div", { className: "mt-4 border rounded-md p-4 bg-white", "aria-label": "Pizza party card form", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("div", { id: "pp-card-container", className: "min-h-[88px]" }),
+              !cardLoaded && !cardError && /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("p", { className: "mt-2 text-xs text-neutral-500", children: loadingScript ? "Loading payment library\u2026" : "Initializing secure payment form\u2026" }),
+              (cardError || selectedDate && bookingState[selectedDate]?.error) && /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)("div", { className: "mt-2 text-[10px] text-rose-600 space-y-1", children: [
+                cardError && /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("p", { children: cardError }),
+                /* @__PURE__ */ (0, import_jsx_runtime38.jsx)(FallbackLink, { date: selectedDate, email, addOnGuests: addOnEnabled ? guestCount : 0 })
+              ] })
+            ] })
+          ]
+        }
+      )
+    ] }) }),
+    false
+  ] });
+};
+var FallbackLink = ({ date, email, addOnGuests }) => {
+  const [url, setUrl] = import_react32.default.useState(null);
+  const [loading, setLoading] = import_react32.default.useState(false);
+  const [err, setErr] = import_react32.default.useState("");
+  const build = async () => {
+    if (loading) return;
+    setLoading(true);
+    setErr("");
+    try {
+      const qs = new URLSearchParams();
+      if (date) qs.set("date", date);
+      if (email) qs.set("email", email);
+      if (addOnGuests) qs.set("addOnGuests", String(addOnGuests));
+      const res = await fetch(`/api/store/pizza-party-link?${qs.toString()}`);
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || "Link creation failed");
+      setUrl(data.url);
+    } catch (e) {
+      setErr(e?.message || "Failed to create link");
+    } finally {
+      setLoading(false);
+    }
+  };
+  return /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)("div", { className: "space-y-1", children: [
+    !url && /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("button", { type: "button", onClick: build, className: "underline text-[10px]", children: "Get fallback hosted checkout" }),
+    loading && /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("p", { children: "Building link\u2026" }),
+    err && /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("p", { className: "text-rose-600", children: err }),
+    url && /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("p", { children: /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("a", { href: url, className: "text-orange-600 underline", target: "_blank", rel: "noopener noreferrer", children: "Open hosted Square checkout" }) })
+  ] });
+};
+FallbackLink.propTypes = {};
+var PizzaPartyPage_default = PizzaPartyPage;
+
 // src/ssr/StaticApp.jsx
-var import_jsx_runtime21 = require("react/jsx-runtime");
+var import_jsx_runtime39 = require("react/jsx-runtime");
 function StaticApp({ helmetContext }) {
-  const location = (0, import_react_router_dom3.useLocation)();
+  const location = (0, import_react_router_dom6.useLocation)();
   const isFullPageHome = location.pathname === "/";
-  return /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(import_react_helmet_async.HelmetProvider, { context: helmetContext, children: /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)("div", { className: "app-root min-h-screen flex flex-col", children: [
-    /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(Header, {}),
-    /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("main", { className: "flex-1", style: { paddingTop: isFullPageHome ? 0 : "5rem" }, children: /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(import_react_router_dom3.Routes, { children: /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(import_react_router_dom3.Route, { path: "/", element: /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(FullPageDemoPage_default, {}) }) }) })
+  return /* @__PURE__ */ (0, import_jsx_runtime39.jsx)(import_react_helmet_async7.HelmetProvider, { context: helmetContext, children: /* @__PURE__ */ (0, import_jsx_runtime39.jsxs)(CartProvider, { children: [
+    /* @__PURE__ */ (0, import_jsx_runtime39.jsx)(DefaultSeo_default, {}),
+    /* @__PURE__ */ (0, import_jsx_runtime39.jsxs)("div", { className: "app-root min-h-screen flex flex-col", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime39.jsx)(Header, {}),
+      /* @__PURE__ */ (0, import_jsx_runtime39.jsx)("main", { className: "flex-1", style: { paddingTop: isFullPageHome ? 0 : "5rem" }, children: /* @__PURE__ */ (0, import_jsx_runtime39.jsxs)(import_react_router_dom6.Routes, { children: [
+        /* @__PURE__ */ (0, import_jsx_runtime39.jsx)(import_react_router_dom6.Route, { path: "/", element: /* @__PURE__ */ (0, import_jsx_runtime39.jsx)(FullPageDemoPage_default, {}) }),
+        /* @__PURE__ */ (0, import_jsx_runtime39.jsx)(import_react_router_dom6.Route, { path: "/releases", element: /* @__PURE__ */ (0, import_jsx_runtime39.jsx)(ReleasesPage_default, {}) }),
+        /* @__PURE__ */ (0, import_jsx_runtime39.jsx)(import_react_router_dom6.Route, { path: "/sale", element: /* @__PURE__ */ (0, import_jsx_runtime39.jsx)(SalePage_default, {}) }),
+        /* @__PURE__ */ (0, import_jsx_runtime39.jsx)(import_react_router_dom6.Route, { path: "/weekly", element: /* @__PURE__ */ (0, import_jsx_runtime39.jsx)(WeeklyList_default, {}) }),
+        /* @__PURE__ */ (0, import_jsx_runtime39.jsx)(import_react_router_dom6.Route, { path: "/happymonday", element: /* @__PURE__ */ (0, import_jsx_runtime39.jsx)(happymondaypage_default, {}) }),
+        /* @__PURE__ */ (0, import_jsx_runtime39.jsx)(import_react_router_dom6.Route, { path: "/pizza-party", element: /* @__PURE__ */ (0, import_jsx_runtime39.jsx)(PizzaPartyPage_default, {}) })
+      ] }) })
+    ] })
   ] }) });
 }

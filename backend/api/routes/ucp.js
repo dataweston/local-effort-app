@@ -3,7 +3,7 @@ const express = require('express');
 
 const februaryCheckoutHandler = require('../../../api-handlers/february/checkout');
 const weeklyOrderCheckoutHandler = require('../../../api-handlers/weekly-order/checkout');
-const psycheCheckoutHandler = require('../../../api/psyche/checkout');
+const psycheCheckoutHandler = require('../../../api-handlers/psyche/checkout');
 const { prisma } = require('../utils/prisma');
 
 const UCP_VERSION = '2026-01-11';

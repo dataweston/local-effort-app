@@ -80,9 +80,9 @@ const srcTemplatePath = path.join(process.cwd(), 'index.html');
 const templatePath = fs.existsSync(distTemplatePath) ? distTemplatePath : srcTemplatePath;
 const template = fs.readFileSync(templatePath, 'utf8');
 
-const routes = [
-  '/',
-];
+const { loadRoutes } = require('./load-routes');
+const { PUBLIC_ROUTES } = loadRoutes();
+const routes = PUBLIC_ROUTES.filter(r => r.prerender).map(r => r.path);
 
 function inject(html, body, head) {
   let out = html.replace('<div id="root"></div>', `<div id="root">${body}</div>`);
@@ -121,14 +121,15 @@ function ensureDir(p) { fs.mkdirSync(p, { recursive: true }); }
     process.stdout.write(`Wrote ${outPath}\n`);
   }
 
-  // Generate a basic sitemap from prerendered routes
-      const sitemap = [
-        '<?xml version="1.0" encoding="UTF-8"?>',
-        '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
-        ...seenUrls.map((loc) => `  <url><loc>${loc}</loc></url>`),
-        '</urlset>',
-        ''
-      ].join('\n');
+  // Generate sitemap from all public routes (not just prerendered)
+  const allPublicUrls = PUBLIC_ROUTES.map(r => abs(r.path));
+  const sitemap = [
+    '<?xml version="1.0" encoding="UTF-8"?>',
+    '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
+    ...allPublicUrls.map((loc) => `  <url><loc>${loc}</loc></url>`),
+    '</urlset>',
+    '',
+  ].join('\n');
   // Write to dist and public to keep hosting consistent
   const distPath = path.join(process.cwd(), 'dist', 'sitemap.xml');
   const pubPath = path.join(process.cwd(), 'public', 'sitemap.xml');
@@ -136,6 +137,12 @@ function ensureDir(p) { fs.mkdirSync(p, { recursive: true }); }
   fs.writeFileSync(distPath, sitemap, 'utf8');
   fs.writeFileSync(pubPath, sitemap, 'utf8');
   process.stdout.write('Updated sitemap.xml\n');
+
+  // Write routes manifest for the API sitemap endpoint
+  const manifest = { publicPaths: PUBLIC_ROUTES.map(r => r.path) };
+  const manifestPath = path.join(process.cwd(), '.routes-manifest.json');
+  fs.writeFileSync(manifestPath, JSON.stringify(manifest, null, 2), 'utf8');
+  process.stdout.write('Wrote .routes-manifest.json\n');
 })();
 
 

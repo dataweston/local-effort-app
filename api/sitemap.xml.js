@@ -1,15 +1,18 @@
 const sanity = require('@sanity/client');
+const path = require('path');
+const fs = require('fs');
 
 const projectId = process.env.VITE_APP_SANITY_PROJECT_ID || process.env.VITE_SANITY_PROJECT_ID || process.env.SANITY_PROJECT_ID;
 const dataset = process.env.VITE_APP_SANITY_DATASET || process.env.VITE_SANITY_DATASET || process.env.SANITY_DATASET;
 const site = process.env.SITE_ORIGIN || 'https://localeffortfood.com';
 const client = projectId && dataset ? sanity.createClient({ projectId, dataset, useCdn: true, apiVersion: '2023-05-03' }) : null;
 
-const staticPaths = [
-  '/',
-  '/sale',
-  '/weekly',
-];
+// Read static paths from generated routes manifest (built during deploy)
+let staticPaths = ['/'];
+try {
+  const manifest = JSON.parse(fs.readFileSync(path.join(__dirname, '..', '.routes-manifest.json'), 'utf8'));
+  staticPaths = manifest.publicPaths || staticPaths;
+} catch { /* fallback to default */ }
 
 module.exports = async (req, res) => {
   try {

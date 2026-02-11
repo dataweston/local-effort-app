@@ -18,7 +18,12 @@
   "routes": [
     {
       "src": "/(.*)",
-      "has": [{ "type": "host", "value": "tiny-weddings.localeffortfood.com" }],
+      "has": [
+        {
+          "type": "host",
+          "value": "tiny-weddings.localeffortfood.com"
+        }
+      ],
       "dest": "https://weddings.localeffortfood.com/$1",
       "status": 308
     },
@@ -37,6 +42,26 @@
     {
       "src": "^/$",
       "dest": "/prerender/index.html"
+    },
+    {
+      "src": "^/releases$",
+      "dest": "/prerender/releases/index.html"
+    },
+    {
+      "src": "^/sale$",
+      "dest": "/prerender/sale/index.html"
+    },
+    {
+      "src": "^/weekly$",
+      "dest": "/prerender/weekly/index.html"
+    },
+    {
+      "src": "^/happymonday$",
+      "dest": "/prerender/happymonday/index.html"
+    },
+    {
+      "src": "^/pizza-party$",
+      "dest": "/prerender/pizza-party/index.html"
     },
     {
       "src": "^/weddings$",

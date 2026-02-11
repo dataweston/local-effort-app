@@ -10,6 +10,7 @@ import {
   SITE_URL,
   SOCIAL_LINKS,
 } from '../../config/siteMetadata';
+import { PUBLIC_ROUTES, INTERNAL_ROUTES } from '../../config/routes';
 import { cloudinaryConfig, heroPublicId, heroFallbackSrc, heroVersion } from '../../data/cloudinaryContent';
 
 const buildOgImageUrl = () => {
@@ -24,11 +25,12 @@ const buildOgImageUrl = () => {
   return `${SITE_URL}/gallery/logo.png`;
 };
 
-const NOINDEX_PATHS = ['/auth', '/inbox', '/campaigns', '/admin/', '/weeklydemo', '/weekly-order', '/catherine-schedule', '/partners/'];
-
 export const DefaultSeo = () => {
   const location = useLocation();
-  const shouldNoindex = NOINDEX_PATHS.some(p => location.pathname === p || location.pathname.startsWith(p));
+  const routeMeta = PUBLIC_ROUTES.find(r => r.path === location.pathname);
+  const pageTitle = routeMeta?.title || SITE_NAME;
+  const pageDescription = routeMeta?.description || DEFAULT_DESCRIPTION;
+  const shouldNoindex = INTERNAL_ROUTES.some(p => location.pathname === p || location.pathname.startsWith(p));
 
   const canonicalUrl = useMemo(() => {
     const path = location.pathname || '/';
@@ -100,29 +102,30 @@ export const DefaultSeo = () => {
         '@type': 'WebPage',
         '@id': `${canonicalUrl}#webpage`,
         url: canonicalUrl,
-        name: SITE_NAME,
+        name: pageTitle,
         isPartOf: { '@id': websiteId },
         inLanguage: 'en-US',
-        description: DEFAULT_DESCRIPTION,
+        description: pageDescription,
       },
     ];
-  }, [canonicalUrl]);
+  }, [canonicalUrl, pageTitle, pageDescription]);
 
   return (
     <Helmet>
-      <meta name="description" content={DEFAULT_DESCRIPTION} />
+      <title>{pageTitle}</title>
+      <meta name="description" content={pageDescription} />
       <meta name="keywords" content={DEFAULT_KEYWORDS.join(', ')} />
       <meta property="og:site_name" content={SITE_NAME} />
       <meta property="og:type" content="website" />
-      <meta property="og:title" content={SITE_NAME} />
-      <meta property="og:description" content={DEFAULT_DESCRIPTION} />
+      <meta property="og:title" content={pageTitle} />
+      <meta property="og:description" content={pageDescription} />
       <meta property="og:url" content={canonicalUrl} />
       <meta property="og:image" content={ogImageUrl} />
       <meta property="og:locale" content="en_US" />
       <meta property="og:see_also" content={`${SITE_URL}/ai/manifest.json`} />
       <meta name="twitter:card" content="summary_large_image" />
-      <meta name="twitter:title" content={SITE_NAME} />
-      <meta name="twitter:description" content={DEFAULT_DESCRIPTION} />
+      <meta name="twitter:title" content={pageTitle} />
+      <meta name="twitter:description" content={pageDescription} />
       <meta name="twitter:image" content={ogImageUrl} />
       <meta name="twitter:site" content="@localeffortfood" />
       <meta

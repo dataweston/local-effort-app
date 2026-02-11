@@ -8,3 +8,9 @@ node_modules
 .env.vercel.production
 nul
 .env.vercel
+
+# Build artifacts
+public/sitemap.xml
+.routes-manifest.json
+tools/.routes-build/
+tools/.ssr-build/
