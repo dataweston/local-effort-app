@@ -37,7 +37,8 @@
       "Bash(do rm -rf \"prerender/$d\")",
       "Bash(done)",
       "Bash(xargs:*)",
-      "Bash(pnpm audit:*)"
+      "Bash(pnpm audit:*)",
+      "Bash(git filter-repo:*)"
     ],
     "deny": [],
     "ask": []
