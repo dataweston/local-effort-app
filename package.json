@@ -33,6 +33,7 @@
     "cors": "^2.8.5",
     "csv-parse": "^5.5.6",
     "date-fns": "^4.1.0",
+    "dompurify": "^3.3.1",
     "dotenv": "^16.4.5",
     "emailjs-com": "^3.2.0",
     "embla-carousel": "^8.1.6",

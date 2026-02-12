@@ -72,19 +72,17 @@ module.exports = async (req, res) => {
   
   if (error) {
     if (error.message.includes('at capacity')) {
-      return res.status(409).json({ 
-        error: 'At capacity', 
-        details: error.message 
+      return res.status(409).json({
+        error: 'At capacity'
       });
     }
     if (error.message.includes('Scheduling conflict')) {
-      return res.status(409).json({ 
-        error: 'Scheduling conflict', 
-        details: error.message 
+      return res.status(409).json({
+        error: 'Scheduling conflict'
       });
     }
     console.error('Booking error:', error);
-    return res.status(500).json({ error: error.message });
+    return res.status(500).json({ error: 'Booking failed' });
   }
   
   return res.status(201).json({ 

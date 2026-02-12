@@ -121,17 +121,16 @@ module.exports = async (req, res) => {
       if (error) {
         // Conflict caught by trigger
         if (error.message?.includes('Scheduling conflict')) {
-          return res.status(409).json({ 
-            error: 'Scheduling conflict',
-            message: error.message 
+          return res.status(409).json({
+            error: 'Scheduling conflict'
           });
         }
         throw error;
       }
-      
+
       return res.status(201).json(data);
     }
-    
+
     // PATCH - Update time slot (admin only)
     if (method === 'PATCH') {
       if (!isAdmin) {
@@ -188,14 +187,13 @@ module.exports = async (req, res) => {
       
       if (error) {
         if (error.message?.includes('Scheduling conflict')) {
-          return res.status(409).json({ 
-            error: 'Scheduling conflict',
-            message: error.message 
+          return res.status(409).json({
+            error: 'Scheduling conflict'
           });
         }
         throw error;
       }
-      
+
       if (!data) {
         return res.status(404).json({ error: 'Time slot not found' });
       }
@@ -243,9 +241,8 @@ module.exports = async (req, res) => {
     
   } catch (error) {
     console.error('Time slots API error:', error);
-    return res.status(500).json({ 
-      error: 'Internal server error',
-      message: error.message 
+    return res.status(500).json({
+      error: 'Internal server error'
     });
   }
 };

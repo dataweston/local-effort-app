@@ -24,7 +24,7 @@ module.exports = async (req, res) => {
     
     const { data, error } = await query;
     
-    if (error) return res.status(500).json({ error: error.message });
+    if (error) return res.status(500).json({ error: 'Internal server error' });
     
     const availability = data.map(event => ({
       event_id: event.id,

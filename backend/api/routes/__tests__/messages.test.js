@@ -29,6 +29,7 @@ describe('messages router', () => {
 
   beforeEach(() => {
     process.env.SENDER_EMAIL = 'noreply@example.com';
+    process.env.TEAM_INBOX_EMAIL = 'team@example.com';
     sendEmail = vi.fn().mockResolvedValue({});
     upsertContact = vi.fn().mockResolvedValue();
     getSanityClient = vi.fn(() => ({
@@ -62,5 +63,31 @@ describe('messages router', () => {
 
     expect(res.status).toBe(500);
     expect(res.body.error).toBe('Email service not configured');
+  });
+
+  it('subscribes email to Brevo list and notifies admin inbox', async () => {
+    process.env.BREVO_LIST_IDS = '13, bad,42';
+    const app = buildApp();
+    const res = await request(app)
+      .post('/api/subscribe')
+      .send({ email: 'newsubscriber@example.com', name: 'Jane Doe', source: 'home-about' });
+
+    expect(res.status).toBe(200);
+    expect(res.body.ok).toBe(true);
+    expect(upsertContact).toHaveBeenCalledWith(
+      expect.objectContaining({
+        email: 'newsubscriber@example.com',
+        firstName: 'Jane',
+        lastName: 'Doe',
+        listIds: [13, 42],
+      })
+    );
+    expect(sendEmail).toHaveBeenCalledWith(
+      expect.objectContaining({
+        to: [{ email: 'team@example.com' }],
+        subject: 'New newsletter subscription',
+        tags: ['newsletter', 'subscribe'],
+      })
+    );
   });
 });

@@ -18,8 +18,14 @@ try {
   // ignore; will be handled at runtime
 }
 
+const ALLOWED_ORIGINS = ['https://localeffortfood.com', 'https://www.localeffortfood.com'];
+
 module.exports = async (req, res) => {
-  res.setHeader('Access-Control-Allow-Origin', '*');
+  const origin = req.headers.origin;
+  if (ALLOWED_ORIGINS.includes(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+    res.setHeader('Vary', 'Origin');
+  }
   if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' });
   if (!sq) return res.status(500).json({ error: 'Square not configured' });
 

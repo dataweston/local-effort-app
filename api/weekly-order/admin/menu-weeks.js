@@ -1,3 +1,4 @@
+const crypto = require('crypto');
 const { PrismaClient } = require('@prisma/client');
 
 const ADMIN_TOKEN = process.env.WEEKLY_ORDER_ADMIN_TOKEN || '';
@@ -9,12 +10,17 @@ try {
   prisma = null;
 }
 
+const safeEqual = (a, b) => {
+  if (a.length !== b.length) return false;
+  return crypto.timingSafeEqual(Buffer.from(a), Buffer.from(b));
+};
+
 const checkAdmin = (req) => {
-  if (!ADMIN_TOKEN) return true;
+  if (!ADMIN_TOKEN) return false;
   const header = req.headers['x-admin-token'] || '';
   const auth = req.headers.authorization || '';
   const bearer = auth.startsWith('Bearer ') ? auth.slice(7) : '';
-  return header === ADMIN_TOKEN || bearer === ADMIN_TOKEN;
+  return safeEqual(header, ADMIN_TOKEN) || safeEqual(bearer, ADMIN_TOKEN);
 };
 
 const slugify = (value) => (value || '')

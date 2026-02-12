@@ -19,9 +19,15 @@ if (CLOUD_NAME && CLOUD_KEY && CLOUD_SECRET) {
   console.warn('Cloudinary environment variables are not fully configured. Please set CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET.');
 }
 
+const ALLOWED_ORIGINS = ['https://localeffortfood.com', 'https://www.localeffortfood.com'];
+
 async function handler(req, res) {
   // Add CORS headers for local dev / preview
-  res.setHeader('Access-Control-Allow-Origin', '*');
+  const origin = req.headers.origin;
+  if (ALLOWED_ORIGINS.includes(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+    res.setHeader('Vary', 'Origin');
+  }
   res.setHeader('Access-Control-Allow-Methods', 'GET');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
@@ -166,7 +172,7 @@ async function handler(req, res) {
     });
   } catch (error) {
     console.error('Cloudinary error:', error);
-    res.status(500).json({ error: 'Failed to fetch images', details: error.message });
+    res.status(500).json({ error: 'Failed to fetch images' });
   }
 }
 

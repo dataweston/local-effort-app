@@ -16,8 +16,14 @@ try {
   console.warn('[HappyMonday] Supabase not available:', err.message);
 }
 
+const ALLOWED_ORIGINS = ['https://localeffortfood.com', 'https://www.localeffortfood.com'];
+
 module.exports = async function handler(req, res) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
+  const origin = req.headers.origin;
+  if (ALLOWED_ORIGINS.includes(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+    res.setHeader('Vary', 'Origin');
+  }
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
   res.setHeader('Access-Control-Allow-Methods', 'POST, GET, OPTIONS');
 
@@ -38,7 +44,7 @@ module.exports = async function handler(req, res) {
         .order('local_item_id', { ascending: true });
 
       if (error) {
-        return res.status(500).json({ error: error.message });
+        return res.status(500).json({ error: 'Internal server error' });
       }
 
       return res.status(200).json({
@@ -48,7 +54,7 @@ module.exports = async function handler(req, res) {
 
     } catch (error) {
       console.error('[HappyMonday] Error fetching mappings:', error);
-      return res.status(500).json({ error: error.message });
+      return res.status(500).json({ error: 'Internal server error' });
     }
   }
 
@@ -89,7 +95,7 @@ module.exports = async function handler(req, res) {
 
       if (error) {
         console.error('[HappyMonday] Error saving mappings:', error);
-        return res.status(500).json({ error: error.message });
+        return res.status(500).json({ error: 'Internal server error' });
       }
 
       console.log(`[HappyMonday] ✅ Saved ${data.length} catalog mappings`);
@@ -102,7 +108,7 @@ module.exports = async function handler(req, res) {
 
     } catch (error) {
       console.error('[HappyMonday] Error saving mappings:', error);
-      return res.status(500).json({ error: error.message });
+      return res.status(500).json({ error: 'Internal server error' });
     }
   }
 

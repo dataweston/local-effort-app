@@ -9,8 +9,14 @@ const BREVO_API_KEY = process.env.BREVO_API_KEY || process.env.SENDINBLUE_API_KE
 const FROM_EMAIL = process.env.RECEIPTS_FROM_EMAIL || process.env.SUPPORT_INBOX_EMAIL || 'no-reply@localeffort.app';
 const FROM_NAME = process.env.RECEIPTS_FROM_NAME || 'Local Effort';
 
+const ALLOWED_ORIGINS = ['https://localeffortfood.com', 'https://www.localeffortfood.com'];
+
 module.exports = async (req, res) => {
-  res.setHeader('Access-Control-Allow-Origin', '*');
+  const origin = req.headers.origin;
+  if (ALLOWED_ORIGINS.includes(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+    res.setHeader('Vary', 'Origin');
+  }
   if (req.method === 'OPTIONS') {
     res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type');

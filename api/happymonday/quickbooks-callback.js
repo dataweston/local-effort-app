@@ -23,8 +23,14 @@ try {
   console.warn('[HappyMonday] Supabase not available:', err.message);
 }
 
+const ALLOWED_ORIGINS = ['https://localeffortfood.com', 'https://www.localeffortfood.com'];
+
 module.exports = async function handler(req, res) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
+  const origin = req.headers.origin;
+  if (ALLOWED_ORIGINS.includes(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+    res.setHeader('Vary', 'Origin');
+  }
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
   res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
 
@@ -37,6 +43,20 @@ module.exports = async function handler(req, res) {
   }
 
   const { code, state, realmId, error: oauthError } = req.query;
+
+  // Validate OAuth state against cookie to prevent CSRF
+  const cookies = (req.headers.cookie || '').split(';').reduce((acc, c) => {
+    const [k, ...v] = c.trim().split('=');
+    if (k) acc[k] = v.join('=');
+    return acc;
+  }, {});
+  const expectedState = cookies.qb_oauth_state;
+  if (!state || !expectedState || state !== expectedState) {
+    console.error('[HappyMonday] QuickBooks OAuth state mismatch');
+    return res.redirect('/partners/happy-monday?qb_error=invalid_state');
+  }
+  // Clear the state cookie
+  res.setHeader('Set-Cookie', 'qb_oauth_state=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0');
 
   // Handle OAuth errors
   if (oauthError) {

@@ -24,7 +24,7 @@ module.exports = async (req, res) => {
 
     const { data, error } = await query;
 
-    if (error) return res.status(500).json({ error: error.message });
+    if (error) return res.status(500).json({ error: 'Internal server error' });
 
     // Return array directly (not wrapped in object)
     return res.json(data || []);

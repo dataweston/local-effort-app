@@ -9,6 +9,10 @@ node_modules
 nul
 .env.vercel
 
+# Logs
+*.log
+backend-log.txt
+
 # Build artifacts
 public/sitemap.xml
 .routes-manifest.json

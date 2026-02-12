@@ -2,12 +2,18 @@ const BREVO_API_KEY = process.env.BREVO_API_KEY;
 const TEAM_EMAIL = process.env.TEAM_INBOX_EMAIL || 'dataweston@gmail.com';
 const SENDER_EMAIL = process.env.SENDER_EMAIL || 'hello@localeffortfood.com';
 
+const ALLOWED_ORIGINS = ['https://localeffortfood.com', 'https://www.localeffortfood.com'];
+
 /**
  * Handle customer feedback submissions from Happy Monday page
  * Sends email notification to team
  */
 module.exports = async function handler(req, res) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
+  const origin = req.headers.origin;
+  if (ALLOWED_ORIGINS.includes(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+    res.setHeader('Vary', 'Origin');
+  }
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
 
@@ -25,7 +31,6 @@ module.exports = async function handler(req, res) {
   }
 
   try {
-    console.log('[Messages] Received request body:', req.body);
     const { name, email, subject, message, type, category } = req.body;
 
     if (!message) {
@@ -125,7 +130,6 @@ This is an automated notification from the Local Effort Happy Monday feedback fo
     console.error('[Messages] Error sending feedback:', error);
     return res.status(500).json({
       error: 'Failed to send feedback',
-      message: error.message,
     });
   }
 };

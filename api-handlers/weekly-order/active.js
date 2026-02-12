@@ -135,7 +135,8 @@ module.exports = async (req, res) => {
 
   const slug = (req.query?.customerSlug || 'weekly-order').toString();
   const tier = (req.query?.tier || 'member').toString().toLowerCase();
-  const userEmail = req.query?.userEmail ? req.query.userEmail.toString().toLowerCase() : null;
+  // User-specific overrides require authentication — never trust query params for identity
+  const userEmail = null;
 
   if (!prisma) {
     return res.status(200).json(buildSampleWeeklyOrder(slug));

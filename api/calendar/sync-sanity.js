@@ -141,8 +141,7 @@ module.exports = async function handler(req, res) {
     });
   } catch (error) {
     return res.status(500).json({
-      error: 'Sync failed',
-      message: error.message
+      error: 'Sync failed'
     });
   }
 }

@@ -6,8 +6,14 @@ const SENDER_EMAIL = process.env.SENDER_EMAIL || 'hello@localeffortfood.com';
  * Handle refund/credit requests from clients
  * Sends email notification to admin
  */
+const ALLOWED_ORIGINS = ['https://localeffortfood.com', 'https://www.localeffortfood.com'];
+
 module.exports = async function handler(req, res) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
+  const origin = req.headers.origin;
+  if (ALLOWED_ORIGINS.includes(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+    res.setHeader('Vary', 'Origin');
+  }
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
 
@@ -112,7 +118,6 @@ Please review this request and take appropriate action in the Happy Monday porta
     console.error('[HappyMonday] Error sending refund request:', error);
     return res.status(500).json({
       error: 'Failed to send refund request',
-      message: error.message,
     });
   }
 };

@@ -322,8 +322,7 @@ module.exports = async (req, res) => {
       dbRecorded,
     });
   } catch (err) {
-    const msg = err?.errors ? JSON.stringify(err.errors) : err?.message || 'Checkout failed';
-    console.error('[weekly-order] checkout error', msg);
-    return res.status(500).json({ error: msg });
+    console.error('[weekly-order] checkout error', err?.errors || err?.message || err);
+    return res.status(500).json({ error: 'Checkout failed' });
   }
 };

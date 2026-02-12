@@ -17,9 +17,15 @@ try {
 /**
  * Send invoice notification email when client creates an order
  */
+const ALLOWED_ORIGINS = ['https://localeffortfood.com', 'https://www.localeffortfood.com'];
+
 module.exports = async function handler(req, res) {
   // CORS headers
-  res.setHeader('Access-Control-Allow-Origin', '*');
+  const origin = req.headers.origin;
+  if (ALLOWED_ORIGINS.includes(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+    res.setHeader('Vary', 'Origin');
+  }
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
 
@@ -133,7 +139,6 @@ module.exports = async function handler(req, res) {
     console.error('[HappyMonday] Error sending invoice email:', error);
     return res.status(500).json({
       error: 'Failed to send email',
-      message: error.message,
     });
   }
 };

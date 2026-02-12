@@ -257,7 +257,7 @@ module.exports = async (req, res) => {
     if (!url) return res.status(500).json({ error: 'Failed to create payment link' });
     return res.status(200).json({ url });
   } catch (err) {
-    const msg = err?.errors ? JSON.stringify(err.errors) : err?.message || 'Checkout link failed';
-    return res.status(500).json({ error: msg });
+    console.error('[weekly-order] checkout-link error', err?.errors || err?.message || err);
+    return res.status(500).json({ error: 'Checkout link failed' });
   }
 };

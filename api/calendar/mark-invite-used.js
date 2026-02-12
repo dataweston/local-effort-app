@@ -26,7 +26,7 @@ module.exports = async (req, res) => {
   
   if (error) {
     console.error('Failed to mark invitation as used:', error);
-    return res.status(500).json({ error: error.message });
+    return res.status(500).json({ error: 'Failed to mark invitation' });
   }
   
   return res.json({ 

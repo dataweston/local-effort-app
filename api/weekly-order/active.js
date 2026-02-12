@@ -137,10 +137,9 @@ module.exports = async (req, res) => {
   const slug = (req.query?.customerSlug || 'weekly-order').toString();
   const tier = (req.query?.tier || 'member').toString().toLowerCase();
 
-  // Prefer authenticated user; fall back to query param for backward compat
+  // Only use authenticated user email — never trust query params for identity
   const supabaseUser = await verifySupabaseToken(req);
-  const userEmail = supabaseUser?.email
-    || (req.query?.userEmail ? req.query.userEmail.toString().toLowerCase() : null);
+  const userEmail = supabaseUser?.email || null;
 
   if (!prisma) {
     return res.status(200).json(buildSampleWeeklyOrder(slug));

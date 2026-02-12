@@ -40,10 +40,10 @@ module.exports = async (req, res) => {
     
     const { data, error } = await query.order('date', { ascending: false });
     
-    if (error) return res.status(500).json({ error: error.message });
+    if (error) return res.status(500).json({ error: 'Internal server error' });
     return res.json(data);
   }
-  
+
   if (req.method === 'POST') {
     const { store, total, date, notes } = req.body;
     
@@ -57,7 +57,7 @@ module.exports = async (req, res) => {
       .select()
       .single();
     
-    if (error) return res.status(500).json({ error: error.message });
+    if (error) return res.status(500).json({ error: 'Internal server error' });
     return res.status(201).json(data);
   }
   
@@ -70,7 +70,7 @@ module.exports = async (req, res) => {
       .delete()
       .eq('id', id);
     
-    if (error) return res.status(500).json({ error: error.message });
+    if (error) return res.status(500).json({ error: 'Internal server error' });
     return res.json({ deleted: id });
   }
   

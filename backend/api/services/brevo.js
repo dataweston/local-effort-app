@@ -35,9 +35,14 @@ function createBrevoService({ getSanityClient, logger, fetch = fetchImpl } = {})
     return response;
   };
 
-  const upsertContact = async ({ email, firstName, lastName, phone }) => {
+  const upsertContact = async ({ email, firstName, lastName, phone, listIds = [] }) => {
     const headers = resolveHeaders();
     if (!headers) throw new Error('BREVO_API_KEY is not configured on the server');
+    const normalizedListIds = Array.isArray(listIds)
+      ? listIds
+          .map((id) => parseInt(id, 10))
+          .filter((id) => Number.isInteger(id) && id > 0)
+      : [];
     const body = {
       email,
       attributes: {
@@ -45,6 +50,7 @@ function createBrevoService({ getSanityClient, logger, fetch = fetchImpl } = {})
         LASTNAME: lastName || undefined,
         SMS: phone || undefined,
       },
+      listIds: normalizedListIds.length > 0 ? normalizedListIds : undefined,
       updateEnabled: true,
     };
     const response = await fetch('https://api.brevo.com/v3/contacts', {

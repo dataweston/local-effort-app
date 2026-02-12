@@ -64,7 +64,7 @@ module.exports = async (req, res) => {
   
   if (error) {
     console.error('Failed to create invitation:', error);
-    return res.status(500).json({ error: error.message });
+    return res.status(500).json({ error: 'Failed to create invitation' });
   }
   
   const scheduleUrl = `${req.headers.origin || 'https://localeffortfood.com'}/schedule/${token}`;

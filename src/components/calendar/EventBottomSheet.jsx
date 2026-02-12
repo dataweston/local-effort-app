@@ -1,4 +1,5 @@
 import React from 'react';
+import DOMPurify from 'dompurify';
 import { X, MapPin, Users, Calendar, Clock, DollarSign } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 import * as Dialog from '@radix-ui/react-dialog';
@@ -142,11 +143,19 @@ export default function EventBottomSheet({ event, open, onClose, onEdit }) {
                 <div
                   className="text-sm text-gray-600 prose prose-sm max-w-none"
                   dangerouslySetInnerHTML={{
-                    __html: event.description
-                      .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-                      .replace(/\*(.+?)\*/g, '<em>$1</em>')
-                      .replace(/\[(.+?)\]\((.+?)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:underline">$1</a>')
-                      .replace(/\n/g, '<br />')
+                    __html: DOMPurify.sanitize(
+                      event.description
+                        .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+                        .replace(/\*(.+?)\*/g, '<em>$1</em>')
+                        .replace(/\[(.+?)\]\((.+?)\)/g, (_, text, url) => {
+                          if (/^https?:\/\//i.test(url)) {
+                            return `<a href="${url}" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:underline">${text}</a>`;
+                          }
+                          return text;
+                        })
+                        .replace(/\n/g, '<br />'),
+                      { ADD_ATTR: ['target'] }
+                    )
                   }}
                 />
               </div>

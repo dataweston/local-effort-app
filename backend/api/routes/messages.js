@@ -60,6 +60,22 @@ function hashKey(str) {
 function createMessagesRouter({ logger, brevoService, getSanityClient, db, getSupabase }) {
   const router = express.Router();
   const { upsertContact, sendEmail, getHeaders } = brevoService;
+  const parseListIds = (value) => {
+    if (Array.isArray(value)) {
+      return value
+        .map((entry) => parseInt(String(entry).trim(), 10))
+        .filter((entry) => Number.isInteger(entry) && entry > 0);
+    }
+    if (typeof value !== 'string') return [];
+    return value
+      .split(',')
+      .map((entry) => parseInt(entry.trim(), 10))
+      .filter((entry) => Number.isInteger(entry) && entry > 0);
+  };
+  const escapeHtml = (value) => String(value || '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
 
   const handleEmailError = (res, err, fallback) => {
     if (err && err.code === 'EMAIL_NOT_CONFIGURED') {
@@ -264,9 +280,60 @@ function createMessagesRouter({ logger, brevoService, getSanityClient, db, getSu
 
   router.post('/subscribe', async (req, res) => {
     try {
-      const { email, firstName, lastName, phone } = req.body || {};
-      if (!email) return res.status(400).json({ error: 'Missing email' });
-      await upsertContact({ email, firstName, lastName, phone });
+      const { email, firstName, lastName, name, phone, listIds, source = 'home-about' } = req.body || {};
+      const trimmedEmail = String(email || '').trim().toLowerCase();
+      if (!trimmedEmail || !trimmedEmail.includes('@')) {
+        return res.status(400).json({ error: 'Missing email' });
+      }
+
+      const adminEmail = process.env.NEWSLETTER_ADMIN_EMAIL
+        || process.env.SUPPORT_INBOX_EMAIL
+        || process.env.TEAM_INBOX_EMAIL
+        || process.env.SENDER_EMAIL;
+      const senderEmail = process.env.SENDER_EMAIL || adminEmail;
+      if (!adminEmail || !senderEmail) {
+        return res.status(500).json({ error: 'No admin inbox configured on server' });
+      }
+
+      const normalizedName = String(name || '').trim();
+      const parsedFromName = normalizedName ? normalizedName.split(/\s+/) : [];
+      const resolvedFirstName = firstName || parsedFromName[0] || '';
+      const resolvedLastName = lastName || parsedFromName.slice(1).join(' ') || '';
+      const resolvedListIds = (() => {
+        const explicit = parseListIds(listIds);
+        if (explicit.length > 0) return explicit;
+        const fromEnv = process.env.BREVO_NEWSLETTER_LIST_IDS || process.env.BREVO_LIST_IDS || '';
+        return parseListIds(fromEnv);
+      })();
+
+      await upsertContact({
+        email: trimmedEmail,
+        firstName: resolvedFirstName,
+        lastName: resolvedLastName,
+        phone,
+        listIds: resolvedListIds,
+      });
+
+      const subscriberName = [resolvedFirstName, resolvedLastName].filter(Boolean).join(' ').trim() || 'Subscriber';
+      const subject = 'New newsletter subscription';
+      const htmlContent = `
+        <p><strong>New newsletter subscriber</strong></p>
+        <p><strong>Email:</strong> ${escapeHtml(trimmedEmail)}</p>
+        <p><strong>Name:</strong> ${escapeHtml(subscriberName)}</p>
+        ${phone ? `<p><strong>Phone:</strong> ${escapeHtml(phone)}</p>` : ''}
+        <p><strong>Source:</strong> ${escapeHtml(source)}</p>
+        <p><strong>Brevo list IDs:</strong> ${resolvedListIds.length ? escapeHtml(resolvedListIds.join(', ')) : 'None configured'}</p>
+      `;
+
+      await sendEmail({
+        to: [{ email: adminEmail }],
+        sender: { email: senderEmail, name: 'Local Effort' },
+        replyTo: { email: trimmedEmail, name: subscriberName },
+        subject,
+        htmlContent,
+        tags: ['newsletter', 'subscribe'],
+      });
+
       return res.json({ ok: true });
     } catch (err) {
       if (logger) logger.error({ err }, 'subscribe error');

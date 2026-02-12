@@ -1047,7 +1047,7 @@ app.all('/api/calendar/sync-sanity', async (req, res) => {
   } catch (err) {
     logger.error({ err: err.message, stack: err.stack, method: req.method }, 'calendar sync-sanity handler failed');
     if (!res.headersSent) {
-      res.status(500).json({ error: 'sync failed', message: err.message });
+      res.status(500).json({ error: 'sync failed' });
     }
   }
 });
@@ -1391,7 +1391,7 @@ app.post('/api/sanity/query', async (req, res) => {
     return res.json({ result: data });
   } catch (err) {
     logger.error({ err: err.message, stack: err.stack }, 'sanity query proxy error');
-    return res.status(500).json({ error: 'sanity-fetch-failed', message: err.message });
+    return res.status(500).json({ error: 'sanity-fetch-failed' });
   }
 });
 
@@ -2098,7 +2098,6 @@ app.post('/api/events/request', async (req, res) => {
     logger.error({ err }, 'Event request error');
     return res.status(500).json({
       error: 'Failed to process event request',
-      details: err.message,
     });
   }
 });
@@ -2518,7 +2517,7 @@ app.post('/api/intake/submit', async (req, res) => {
     return res.json({ success: true, message: 'Form submitted successfully' });
   } catch (err) {
     logger.error({ err }, 'intake form submission error');
-    return res.status(500).json({ error: 'Failed to submit form', details: err.message });
+    return res.status(500).json({ error: 'Failed to submit form' });
   }
 });
 
@@ -2530,8 +2529,7 @@ if (sentryEnabled) {
 // Ensure JSON error responses for unhandled errors.
 app.use((err, req, res, next) => {
   if (res.headersSent) return next(err);
-  const message = err && err.message ? String(err.message).slice(0, 200) : 'internal-error';
-  res.status(500).json({ error: 'internal-error', message });
+  res.status(500).json({ error: 'internal-error' });
 });
 
 const createApiApp = () => app;

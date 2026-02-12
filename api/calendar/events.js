@@ -107,10 +107,10 @@ module.exports = async (req, res) => {
     
     const { data, error } = await query.order('start_date', { ascending: true });
     
-    if (error) return res.status(500).json({ error: error.message });
+    if (error) return res.status(500).json({ error: 'Internal server error' });
     return res.json(data);
   }
-  
+
   if (req.method === 'POST') {
     // Only admins can create events
     if (!isAdmin) {
@@ -130,8 +130,8 @@ module.exports = async (req, res) => {
       .select()
       .single();
     
-    if (error) return res.status(500).json({ error: error.message });
-    
+    if (error) return res.status(500).json({ error: 'Internal server error' });
+
     if (repeat && repeat !== 'none' && repeatUntil) {
       const seriesId = data.id;
       const instances = generateRecurringInstances(sanitizedEventData, repeat, repeatUntil, seriesId);
@@ -165,10 +165,10 @@ module.exports = async (req, res) => {
       .select()
       .single();
     
-    if (error) return res.status(500).json({ error: error.message });
+    if (error) return res.status(500).json({ error: 'Internal server error' });
     return res.json(data);
   }
-  
+
   if (req.method === 'DELETE') {
     // Only admins can delete events
     if (!isAdmin) {
@@ -192,7 +192,7 @@ module.exports = async (req, res) => {
           .delete()
           .eq('series_id', event.series_id);
         
-        if (error) return res.status(500).json({ error: error.message });
+        if (error) return res.status(500).json({ error: 'Internal server error' });
         return res.json({ deleted: 'series', series_id: event.series_id });
       }
     }
@@ -202,7 +202,7 @@ module.exports = async (req, res) => {
       .delete()
       .eq('id', id);
     
-    if (error) return res.status(500).json({ error: error.message });
+    if (error) return res.status(500).json({ error: 'Internal server error' });
     return res.json({ deleted: 'single', id });
   }
   

@@ -149,7 +149,8 @@ const extractBearerToken = (req) => {
 
 const hasAdminToken = (req) => {
   const token = req.headers['x-admin-token'] || '';
-  return Boolean(ADMIN_TOKEN && token && token === ADMIN_TOKEN);
+  if (!ADMIN_TOKEN || !token || token.length !== ADMIN_TOKEN.length) return false;
+  return crypto.timingSafeEqual(Buffer.from(token), Buffer.from(ADMIN_TOKEN));
 };
 
 const getSession = async (req) => {

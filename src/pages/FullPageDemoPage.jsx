@@ -1,5 +1,6 @@
 // src/pages/FullPageDemoPage.jsx
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
+import DOMPurify from 'dompurify';
 import { motion, AnimatePresence } from 'framer-motion';
 import { DndContext, PointerSensor, closestCenter, useSensor, useSensors } from '@dnd-kit/core';
 import { SortableContext, useSortable } from '@dnd-kit/sortable';
@@ -385,6 +386,9 @@ const FullPageDemoPage = () => {
   const [aboutGalleryImages, setAboutGalleryImages] = useState([]);
   const [aboutGalleryLoading, setAboutGalleryLoading] = useState(false);
   const [aboutGalleryError, setAboutGalleryError] = useState(null);
+  const [aboutSubscribeEmail, setAboutSubscribeEmail] = useState('');
+  const [aboutSubscribeStatus, setAboutSubscribeStatus] = useState('idle');
+  const [aboutSubscribeMessage, setAboutSubscribeMessage] = useState('');
   const [pizzaImages, setPizzaImages] = useState([]);
   const [pizzaLoading, setPizzaLoading] = useState(false);
   const [pizzaError, setPizzaError] = useState(null);
@@ -2235,6 +2239,43 @@ const clampGuestCount = (value, config) => {
     }
   };
 
+  const handleAboutSubscribeChange = (value) => {
+    setAboutSubscribeEmail(value);
+    if (aboutSubscribeStatus !== 'idle') {
+      setAboutSubscribeStatus('idle');
+      setAboutSubscribeMessage('');
+    }
+  };
+
+  const handleAboutSubscribeSubmit = async (event) => {
+    event.preventDefault();
+    const email = aboutSubscribeEmail.trim();
+    if (!email || aboutSubscribeStatus === 'sending') return;
+
+    setAboutSubscribeStatus('sending');
+    setAboutSubscribeMessage('');
+    try {
+      const response = await fetch('/api/subscribe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email,
+          source: 'home-about',
+        }),
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(data?.error || 'subscribe-failed');
+      }
+      setAboutSubscribeStatus('success');
+      setAboutSubscribeMessage("Thanks! You're on the list.");
+      setAboutSubscribeEmail('');
+    } catch (_error) {
+      setAboutSubscribeStatus('error');
+      setAboutSubscribeMessage('Could not subscribe right now. Please try again.');
+    }
+  };
+
   // Keyboard navigation for lightbox
   useEffect(() => {
     const onKey = (e) => {
@@ -3287,6 +3328,39 @@ const clampGuestCount = (value, config) => {
                   </p>
                 </div>
               </div>
+              <section className="mt-10 rounded-xl border border-slate-200 bg-white px-5 py-6 shadow-sm">
+                <div className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Newsletter</div>
+                <h3 className="mt-2 text-xl font-semibold text-slate-900">Get updates from Local Effort</h3>
+                <p className="mt-2 max-w-2xl text-sm text-slate-700">
+                  Seasonal menus, events, and new offerings. We&apos;ll add you to our Brevo list and notify our team
+                  right away.
+                </p>
+                <form onSubmit={handleAboutSubscribeSubmit} className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-end">
+                  <div className="w-full sm:flex-1">
+                    <label className="label" htmlFor="about-subscribe-email">Email</label>
+                    <input
+                      id="about-subscribe-email"
+                      type="email"
+                      className="input"
+                      value={aboutSubscribeEmail}
+                      onChange={(event) => handleAboutSubscribeChange(event.target.value)}
+                      placeholder="you@example.com"
+                      required
+                    />
+                  </div>
+                  <button type="submit" className="btn btn-primary sm:mb-[1px]" disabled={aboutSubscribeStatus === 'sending'}>
+                    {aboutSubscribeStatus === 'sending' ? 'Subscribing...' : 'Subscribe'}
+                  </button>
+                </form>
+                <div className="mt-3 min-h-5 text-sm" aria-live="polite">
+                  {aboutSubscribeStatus === 'success' && (
+                    <span className="text-green-700">{aboutSubscribeMessage}</span>
+                  )}
+                  {aboutSubscribeStatus === 'error' && (
+                    <span className="text-red-700">{aboutSubscribeMessage}</span>
+                  )}
+                </div>
+              </section>
               <div className="about-info-masonry">
                 {aboutGalleryLoading && (
                   <div className="about-info-status">Loading photos...</div>
@@ -3330,7 +3404,7 @@ const clampGuestCount = (value, config) => {
                         {isHtml ? (
                           <div
                             className="about-info-lines"
-                            dangerouslySetInnerHTML={{ __html: block.content }}
+                            dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(block.content) }}
                           />
                         ) : (
                           <ul className="about-info-list">
