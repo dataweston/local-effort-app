@@ -84,6 +84,7 @@ export const DYNAMIC_ROUTES = [
 
 // Internal routes — noindex, never prerendered
 export const INTERNAL_ROUTES = [
+  '/finefoods',
   '/auth',
   '/inbox',
   '/campaigns',

@@ -71,6 +71,7 @@ module.exports = async function handler(req, res) {
       { id: 3, name: "Roast Beef", price: 7.1, category: "Sandwiches" },
       { id: 4, name: "Pastrami", price: 7.1, category: "Sandwiches" },
       { id: 5, name: "Mortadella", price: 7.1, category: "Sandwiches" },
+      { id: 20, name: "salame cotto", price: 7.1, category: "Sandwiches" },
       { id: 6, name: "Vegetable", price: 6.1, category: "Sandwiches" },
       { id: 7, name: '12" Cheese', price: 7.1, category: "Pizza" },
       { id: 8, name: '4" Cheese', price: 3.6, category: "Pizza" },
