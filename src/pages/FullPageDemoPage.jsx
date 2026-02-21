@@ -3105,8 +3105,8 @@ const clampGuestCount = (value, config) => {
           id="small-events"
           style={{ backgroundColor: BRAND_TOKENS.bgSection }}
         >
-          <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: smallEventsStructuredData }} />
           <div className="relative w-full h-full pt-20 overflow-y-auto">
+            <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: smallEventsStructuredData }} />
             {/* Crawl-friendly summary — visible to search engines, visually hidden */}
             <div className="sr-only">
               <h2>Private Event Catering in Minneapolis–St. Paul</h2>
@@ -3264,8 +3264,8 @@ const clampGuestCount = (value, config) => {
           id="for-businesses"
           style={{ backgroundColor: BRAND_TOKENS.bgSection }}
         >
-          <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: b2bStructuredData }} />
           <div className="business-tab">
+            <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: b2bStructuredData }} />
             {/* Crawl-friendly summary — visible to search engines, visually hidden */}
             <div className="sr-only">
               <h2>Commercial Food Services for Minneapolis Businesses</h2>
