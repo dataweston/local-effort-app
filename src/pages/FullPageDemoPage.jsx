@@ -2504,6 +2504,91 @@ const clampGuestCount = (value, config) => {
     };
   }, [normalizeFeedbackEntry]);
 
+  /* ── Small Events / Catering structured data ── */
+  const smallEventsStructuredData = useMemo(
+    () => JSON.stringify({
+      '@context': 'https://schema.org',
+      '@graph': [
+        {
+          '@type': 'FoodService',
+          '@id': 'https://localeffortfood.com#catering',
+          name: 'Local Effort Food Co. — Private Event Catering',
+          url: 'https://localeffortfood.com/#small-events',
+          description: 'Private chef catering for intimate dinners, weddings, showers, corporate events, and holiday parties in Minneapolis–St. Paul. Farm-to-table menus with 100% Minnesota-sourced ingredients. 2–75 guests.',
+          provider: { '@id': 'https://localeffortfood.com#business' },
+          areaServed: [
+            { '@type': 'City', name: 'Minneapolis' },
+            { '@type': 'City', name: 'Saint Paul' },
+            { '@type': 'Place', name: 'Twin Cities Metro, Minnesota' },
+          ],
+          hasOfferCatalog: {
+            '@type': 'OfferCatalog',
+            name: 'Private Catering Services',
+            itemListElement: [
+              {
+                '@type': 'Offer',
+                itemOffered: {
+                  '@type': 'Service',
+                  name: 'Private Dinner Party at Your Home',
+                  description: 'In-home private chef dinner party for 4–16 guests. Seasonal, locally sourced multi-course menus tailored to your preferences, dietary needs, and occasion. Includes chef, ingredients, cooking, and service.',
+                  serviceType: 'Private chef dinner',
+                  category: 'Event Catering',
+                },
+                priceSpecification: {
+                  '@type': 'PriceSpecification',
+                  priceCurrency: 'USD',
+                  price: '85',
+                  unitText: 'per guest (estimated starting rate)',
+                },
+              },
+              {
+                '@type': 'Offer',
+                itemOffered: {
+                  '@type': 'Service',
+                  name: 'Wedding & Shower Catering',
+                  description: 'Farm-to-table wedding and shower catering for up to 50 guests. Custom menus, professional staffing, and full service built around Minnesota-grown ingredients. Deposit holds your date.',
+                  serviceType: 'Wedding catering',
+                  category: 'Event Catering',
+                },
+                priceSpecification: {
+                  '@type': 'PriceSpecification',
+                  priceCurrency: 'USD',
+                  price: '45',
+                  unitText: 'per guest (estimated starting rate)',
+                },
+              },
+              {
+                '@type': 'Offer',
+                itemOffered: {
+                  '@type': 'Service',
+                  name: 'Small Events & Holiday Parties',
+                  description: 'Catering for holiday parties, corporate events, birthdays, and gatherings up to 75 guests. Seasonal menus, professional service, and locally sourced ingredients throughout.',
+                  serviceType: 'Event catering',
+                  category: 'Event Catering',
+                },
+                priceSpecification: {
+                  '@type': 'PriceSpecification',
+                  priceCurrency: 'USD',
+                  price: '45',
+                  unitText: 'per guest (estimated starting rate)',
+                },
+              },
+            ],
+          },
+        },
+        {
+          '@type': 'WebPage',
+          '@id': 'https://localeffortfood.com/#small-events',
+          name: 'Private Event Catering — Dinners, Weddings & Parties | Local Effort Food Co.',
+          description: 'Book private chef catering for intimate dinners, weddings, showers, and holiday parties in Minneapolis–St. Paul. Locally sourced, seasonal menus for 2–75 guests.',
+          isPartOf: { '@id': 'https://localeffortfood.com#website' },
+          about: { '@id': 'https://localeffortfood.com#catering' },
+        },
+      ],
+    }),
+    [],
+  );
+
   const faqStructuredData = useMemo(
     () => JSON.stringify({
       '@context': 'https://schema.org',
@@ -2518,6 +2603,123 @@ const clampGuestCount = (value, config) => {
       })),
     }),
     [aboutFaqItems],
+  );
+
+  /* ── B2B / For-Business structured data (Service + OfferCatalog) ── */
+  const b2bStructuredData = useMemo(
+    () => JSON.stringify({
+      '@context': 'https://schema.org',
+      '@graph': [
+        {
+          '@type': 'LocalBusiness',
+          '@id': 'https://localeffortfood.com#business',
+          name: 'Local Effort Food Co.',
+          url: 'https://localeffortfood.com',
+          description: 'Minneapolis-based chef team offering wholesale food supply, restaurant consulting, pizza shop development, and creative collaborations for cafes, bars, offices, and retail businesses across the Twin Cities.',
+          email: 'weston@localeffortfood.com',
+          areaServed: [
+            { '@type': 'City', name: 'Minneapolis' },
+            { '@type': 'City', name: 'Saint Paul' },
+            { '@type': 'City', name: 'Roseville' },
+            { '@type': 'Place', name: 'Twin Cities Metro, Minnesota' },
+          ],
+          address: {
+            '@type': 'PostalAddress',
+            addressLocality: 'Minneapolis',
+            addressRegion: 'MN',
+            postalCode: '55449',
+            addressCountry: 'US',
+          },
+          hasOfferCatalog: {
+            '@type': 'OfferCatalog',
+            name: 'B2B & Commercial Food Services',
+            itemListElement: [
+              {
+                '@type': 'OfferCatalog',
+                name: 'Wholesale Food Supply',
+                itemListElement: [
+                  {
+                    '@type': 'Offer',
+                    itemOffered: {
+                      '@type': 'Service',
+                      name: 'Wholesale Food for Cafes, Bars & Retail',
+                      description: 'Fridge and freezer-ready foods for display cases, grab-and-go fridges, and menus. Pizza, sandwiches, salads, and seasonal items — always Minnesota-made with Midwest ingredients. Delivered fresh within 15 miles of 55449 or along Highway 35W in the metro.',
+                      provider: { '@id': 'https://localeffortfood.com#business' },
+                      areaServed: { '@type': 'Place', name: 'Minneapolis-St. Paul Metro' },
+                      serviceType: 'Wholesale food supply',
+                      category: 'Food & Beverage Wholesale',
+                    },
+                  },
+                ],
+              },
+              {
+                '@type': 'OfferCatalog',
+                name: 'Restaurant Consulting',
+                itemListElement: [
+                  {
+                    '@type': 'Offer',
+                    itemOffered: {
+                      '@type': 'Service',
+                      name: 'Restaurant Consulting — FOH & BOH Solutions',
+                      description: 'Front-of-house and back-of-house consulting for restaurant groups: tech stack optimization, ingredient sourcing, menu design, and service experience. Veteran operators with deep experience across every dimension of food-service.',
+                      provider: { '@id': 'https://localeffortfood.com#business' },
+                      areaServed: { '@type': 'Place', name: 'Minnesota' },
+                      serviceType: 'Restaurant consulting',
+                      category: 'Business Consulting',
+                    },
+                  },
+                ],
+              },
+              {
+                '@type': 'OfferCatalog',
+                name: 'Pizza Shop Development',
+                itemListElement: [
+                  {
+                    '@type': 'Offer',
+                    itemOffered: {
+                      '@type': 'Service',
+                      name: 'Open a Pizza Shop — Concept & Launch',
+                      description: 'End-to-end guidance on opening a pizza shop: concept development, sourcing local ingredients, menu engineering, kitchen build-out consulting, and operational playbook. Built on Local Effort\'s 100%-local pizza program.',
+                      provider: { '@id': 'https://localeffortfood.com#business' },
+                      areaServed: { '@type': 'Place', name: 'United States' },
+                      serviceType: 'Food business consulting',
+                      category: 'Restaurant Development',
+                    },
+                  },
+                ],
+              },
+              {
+                '@type': 'OfferCatalog',
+                name: 'Creative Collaborations',
+                itemListElement: [
+                  {
+                    '@type': 'Offer',
+                    itemOffered: {
+                      '@type': 'Service',
+                      name: 'Local Food Collaborations for Businesses & Events',
+                      description: 'Food partnerships for organizations, artists, farmers, event coordinators, and businesses of all sizes. Bring local, high-integrity food to your audience — pop-ups, co-branded products, campaigns, and custom food experiences.',
+                      provider: { '@id': 'https://localeffortfood.com#business' },
+                      areaServed: { '@type': 'Place', name: 'Minnesota' },
+                      serviceType: 'Food collaboration & partnership',
+                      category: 'Creative Services',
+                    },
+                  },
+                ],
+              },
+            ],
+          },
+        },
+        {
+          '@type': 'WebPage',
+          '@id': 'https://localeffortfood.com/#for-businesses',
+          name: 'For Businesses — Wholesale, Consulting & Collaborations | Local Effort Food Co.',
+          description: 'Commercial food services for Minneapolis businesses: wholesale supply for cafes and retail, restaurant consulting, pizza shop development, and creative food collaborations.',
+          isPartOf: { '@id': 'https://localeffortfood.com#website' },
+          about: { '@id': 'https://localeffortfood.com#business' },
+        },
+      ],
+    }),
+    [],
   );
 
   const FeedbackModal = useMemo(() => {
@@ -2903,11 +3105,27 @@ const clampGuestCount = (value, config) => {
           id="small-events"
           style={{ backgroundColor: BRAND_TOKENS.bgSection }}
         >
+          <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: smallEventsStructuredData }} />
           <div className="relative w-full h-full pt-20 overflow-y-auto">
+            {/* Crawl-friendly summary — visible to search engines, visually hidden */}
+            <div className="sr-only">
+              <h2>Private Event Catering in Minneapolis–St. Paul</h2>
+              <p>
+                Local Effort Food Co. offers private chef catering for intimate dinners, weddings, showers,
+                corporate events, and holiday parties across the Twin Cities. Farm-to-table seasonal menus
+                with 100% Minnesota-sourced ingredients. Book today — deposit holds your date.
+              </p>
+              <ul>
+                <li>Private dinner parties at your home — 4 to 16 guests, multi-course seasonal menus from $85/guest</li>
+                <li>Wedding and shower catering — up to 50 guests, custom menus and full service from $45/guest</li>
+                <li>Small events and holiday parties — up to 75 guests, corporate-friendly, from $45/guest</li>
+              </ul>
+              <p>Contact: yum@localeffortfood.com | Minneapolis, MN</p>
+            </div>
             <div className="relative min-h-[520px] h-[70vh]">
               <img
                 src="https://res.cloudinary.com/dokyhfvyd/image/upload/c_limit,f_auto,q_auto,w_1600/vjuesai2mxfavpq9d2df"
-                alt="Small Events"
+                alt="Private event catering by Local Effort Food Co. in Minneapolis"
                 className="absolute inset-0 w-full h-full object-cover"
                 style={{ objectPosition: 'center' }}
               />
@@ -2983,37 +3201,50 @@ const clampGuestCount = (value, config) => {
                 </div>
               </div>
               <div className="mt-10">
+                <h3 className="sr-only">Our catering services: dinners, weddings, and events</h3>
                 <div className="partnerships-grid columns-2 md:columns-3 lg:columns-4 [column-fill:_balance]">
-                  <div className="partnerships-card break-inside-avoid">
+                  <article className="partnerships-card break-inside-avoid" itemScope itemType="https://schema.org/Service">
+                    <meta itemProp="serviceType" content="Private chef dinner" />
+                    <meta itemProp="areaServed" content="Minneapolis-St. Paul, Minnesota" />
                     <button
                       type="button"
                       className="partnerships-title partnerships-title-link"
                       onClick={() => openSmallEventsContact('dinner')}
                     >
-                      dinner at your home
+                      <span itemProp="name">dinner at your home</span>
                     </button>
-                    <div className="partnerships-copy" />
-                  </div>
-                  <div className="partnerships-card break-inside-avoid">
+                    <div className="partnerships-copy" itemProp="description">
+                      In-home private chef dinner for 4–16 guests. Multi-course seasonal menus tailored to your occasion and dietary needs.
+                    </div>
+                  </article>
+                  <article className="partnerships-card break-inside-avoid" itemScope itemType="https://schema.org/Service">
+                    <meta itemProp="serviceType" content="Wedding catering" />
+                    <meta itemProp="areaServed" content="Twin Cities Metro, Minnesota" />
                     <button
                       type="button"
                       className="partnerships-title partnerships-title-link"
                       onClick={() => openSmallEventsContact('weddings')}
                     >
-                      weddings and showers
+                      <span itemProp="name">weddings and showers</span>
                     </button>
-                    <div className="partnerships-copy" />
-                  </div>
-                  <div className="partnerships-card break-inside-avoid">
+                    <div className="partnerships-copy" itemProp="description">
+                      Farm-to-table wedding and shower catering for up to 50 guests. Custom menus and full professional service.
+                    </div>
+                  </article>
+                  <article className="partnerships-card break-inside-avoid" itemScope itemType="https://schema.org/Service">
+                    <meta itemProp="serviceType" content="Event catering" />
+                    <meta itemProp="areaServed" content="Minneapolis-St. Paul, Minnesota" />
                     <button
                       type="button"
                       className="partnerships-title partnerships-title-link"
                       onClick={() => openSmallEventsContact('holiday')}
                     >
-                      small events and holiday parties
+                      <span itemProp="name">small events and holiday parties</span>
                     </button>
-                    <div className="partnerships-copy" />
-                  </div>
+                    <div className="partnerships-copy" itemProp="description">
+                      Catering for holiday parties, corporate events, birthdays, and gatherings up to 75 guests. Seasonal, locally sourced menus.
+                    </div>
+                  </article>
                 </div>
               </div>
               <div className="mt-12">
@@ -3033,20 +3264,36 @@ const clampGuestCount = (value, config) => {
           id="for-businesses"
           style={{ backgroundColor: BRAND_TOKENS.bgSection }}
         >
+          <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: b2bStructuredData }} />
           <div className="business-tab">
+            {/* Crawl-friendly summary — visible to search engines, visually hidden */}
+            <div className="sr-only">
+              <h2>Commercial Food Services for Minneapolis Businesses</h2>
+              <p>
+                Local Effort Food Co. provides wholesale food supply, restaurant consulting, pizza shop
+                development, and creative collaborations for cafes, bars, grocery stores, offices, and
+                organizations across the Twin Cities metro. Contact weston@localeffortfood.com.
+              </p>
+              <ul>
+                <li>Wholesale: pizza, sandwiches, salads for display cases and grab-and-go — delivered fresh within 15 miles of 55449</li>
+                <li>Restaurant consulting: FOH/BOH, tech stack, sourcing, menu design, service experience</li>
+                <li>Open a pizza shop: concept, sourcing, menu engineering, kitchen build-out, operations</li>
+                <li>Collaborations: pop-ups, co-branded products, food partnerships for events and organizations</li>
+              </ul>
+            </div>
             <div
               className="business-hero"
               style={{
                 backgroundImage: "url('https://res.cloudinary.com/dokyhfvyd/image/upload/c_limit,f_auto,q_auto,w_1600/n4xtzathcmkkqdzq5im4?_a=BAMAK+eA0')",
               }}
               role="img"
-              aria-label="Local Effort for businesses"
+              aria-label="Local Effort commercial food services for Minneapolis businesses"
             >
               <div className="business-hero-scrim" aria-hidden="true" />
               <div className="business-hero-content">
                 <div className="business-panel">
                   <div className="business-eyebrow">For businesses</div>
-                  <div className="business-heading">Partner with Local Effort</div>
+                  <h2 className="business-heading">Partner with Local Effort</h2>
                   <div className="business-subtitle">
                     You&apos;re working directly with the chefs. We&apos;re here to support your local food needs.
                   </div>
@@ -3241,52 +3488,59 @@ const clampGuestCount = (value, config) => {
               </div>
             </section>
 
-            <section className="partnerships-section">
+            <section className="partnerships-section" aria-label="Commercial food services">
+              <h3 className="sr-only">Our B2B services: wholesale, consulting, and collaborations</h3>
               <div className="partnerships-grid">
-                <div className="partnerships-card">
+                <article className="partnerships-card" itemScope itemType="https://schema.org/Service">
+                  <meta itemProp="serviceType" content="Wholesale food supply" />
+                  <meta itemProp="areaServed" content="Minneapolis-St. Paul Metro, Minnesota" />
                   <button
                     type="button"
                     className="partnerships-title partnerships-title-link"
                     onClick={() => openBusinessContact('wholesale')}
                   >
-                    wholesale
+                    <span itemProp="name">wholesale</span>
                   </button>
-                  <div className="partnerships-copy">
+                  <div className="partnerships-copy" itemProp="description">
                     pizza, sandwiches, salads, and other standbys, with the same commitments to local and high-integrity
                     ingredients. always minnesotan made, always midwest ingredients, always delicious and nutritionally
                     sound.
                   </div>
-                </div>
-                <div className="partnerships-card">
+                </article>
+                <article className="partnerships-card" itemScope itemType="https://schema.org/Service">
+                  <meta itemProp="serviceType" content="Restaurant consulting" />
+                  <meta itemProp="areaServed" content="Minnesota" />
                   <button
                     type="button"
                     className="partnerships-title partnerships-title-link"
                     onClick={() => openBusinessContact('consulting')}
                   >
-                    restaurant consulting
+                    <span itemProp="name">restaurant consulting</span>
                   </button>
-                  <div className="partnerships-copy">
+                  <div className="partnerships-copy" itemProp="description">
                     front-of-house and back-of-house solutions. improve your restaurant group&apos;s tech stack,
                     ingredient sourcing, menu design, service feel, and more. we are restaurant veterans with
                     substantial experience in every dimension of this weird business. we&apos;re here to help you make
                     your vision sharper, crisper, cooler, higher impact.
                   </div>
-                </div>
-                <div className="partnerships-card">
+                </article>
+                <article className="partnerships-card" itemScope itemType="https://schema.org/Service">
+                  <meta itemProp="serviceType" content="Food collaboration & partnership" />
+                  <meta itemProp="areaServed" content="Minnesota" />
                   <button
                     type="button"
                     className="partnerships-title partnerships-title-link"
                     onClick={() => openBusinessContact('collaborations')}
                   >
-                    collaborations
+                    <span itemProp="name">collaborations</span>
                   </button>
-                  <div className="partnerships-copy">
+                  <div className="partnerships-copy" itemProp="description">
                     always very open and interested in working with other creatives and businesses from all domains:
                     political organizers, artists, bakers, farmers and ag workers, event coordinators, small and large
                     businesses - we want to bring <span className="partnerships-highlight">local food</span> to your
                     audience.
                   </div>
-                </div>
+                </article>
               </div>
             </section>
           </div>

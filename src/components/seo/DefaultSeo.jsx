@@ -13,6 +13,24 @@ import {
 import { PUBLIC_ROUTES, INTERNAL_ROUTES } from '../../config/routes';
 import { cloudinaryConfig, heroPublicId, heroFallbackSrc, heroVersion } from '../../data/cloudinaryContent';
 
+/**
+ * Deep-linkable section metadata — these hash fragments are treated as
+ * distinct "pages" for canonical URLs, OG tags, and structured data so that
+ * Google can surface them independently in search results.
+ */
+const SECTION_META = {
+  '#small-events': {
+    title: 'Private Event Catering — Dinners, Weddings & Parties | Local Effort Food Co.',
+    description:
+      'Book private chef catering for intimate dinners, weddings, showers, and holiday parties in Minneapolis–St. Paul. Locally sourced, seasonal menus for 2–75 guests.',
+  },
+  '#for-businesses': {
+    title: 'For Businesses — Wholesale, Consulting & Collaborations | Local Effort Food Co.',
+    description:
+      'Commercial food services for Minneapolis businesses: wholesale supply for cafes and retail, restaurant consulting, pizza shop development, and creative food collaborations.',
+  },
+};
+
 const buildOgImageUrl = () => {
   const cloudName = cloudinaryConfig?.cloudName;
   if (cloudName && heroPublicId) {
@@ -28,13 +46,15 @@ const buildOgImageUrl = () => {
 export const DefaultSeo = () => {
   const location = useLocation();
   const routeMeta = PUBLIC_ROUTES.find(r => r.path === location.pathname);
-  const pageTitle = routeMeta?.title || SITE_NAME;
-  const pageDescription = routeMeta?.description || DEFAULT_DESCRIPTION;
+  const sectionMeta = SECTION_META[location.hash] || null;
+  const pageTitle = sectionMeta?.title || routeMeta?.title || SITE_NAME;
+  const pageDescription = sectionMeta?.description || routeMeta?.description || DEFAULT_DESCRIPTION;
   const shouldNoindex = INTERNAL_ROUTES.some(p => location.pathname === p || location.pathname.startsWith(p));
 
   const canonicalUrl = useMemo(() => {
     const path = location.pathname || '/';
     const search = location.search || '';
+    const hash = (sectionMeta && location.hash) || '';
     const normalized = path === '/' ? '/' : path;
     try {
       const url = new URL(SITE_URL);
@@ -43,11 +63,11 @@ export const DefaultSeo = () => {
       if (normalized !== '/' && url.pathname.endsWith('/')) {
         url.pathname = url.pathname.replace(/\/+$/, '');
       }
-      return url.toString();
+      return url.toString() + hash;
     } catch (err) {
-      return `${SITE_URL}${normalized}${search}`;
+      return `${SITE_URL}${normalized}${search}${hash}`;
     }
-  }, [location.pathname, location.search]);
+  }, [location.pathname, location.search, location.hash, sectionMeta]);
 
   const ogImageUrl = useMemo(() => buildOgImageUrl(), []);
 
