@@ -58,9 +58,9 @@ export const PUBLIC_ROUTES = [
   },
   {
     path: '/psyche',
-    title: 'Psyche — Local Effort Food Co.',
-    description: 'Psyche experience by Local Effort Food Co.',
-    prerender: false,
+    title: 'Buy Psyche Olive Oil — 3L Extra-Virgin | Local Effort Food Co.',
+    description: 'Buy Psyche extra-virgin olive oil (3 L bag-in-box) from Local Effort Food Co. in Minneapolis. Single-estate koroneiki from Greece — bright, peppery, EVA-certified. $90 with free local delivery.',
+    prerender: true,
   },
   {
     path: '/januarymeals',

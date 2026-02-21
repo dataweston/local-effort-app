@@ -12,6 +12,89 @@ const MAX_QUANTITY = 4;
 const DELIVERY_FEE_CENTS = 1000;
 const SHIPPING_FEE_CENTS = 1000;
 
+/* ── JSON-LD structured data for Google rich results ── */
+const buildProductJsonLd = () => ({
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'Product',
+      name: 'Psyche Olive Oil — 3 Liter Bag-in-Box',
+      description:
+        'Single-estate, late-season koroneiki extra-virgin olive oil from Ampelofito, Greece. Bright, peppery finish — ideal for finishing, dipping, and drizzling. Produced by artist Theophilos Constantinou. EVA certified.',
+      image: `${SITE_URL}${HERO_IMAGE}`,
+      url: `${SITE_URL}/psyche`,
+      brand: {
+        '@type': 'Brand',
+        name: 'Psyche Olive Oil',
+        url: 'https://psycheoliveoil.com/',
+      },
+      sku: 'PSYCHE-3L',
+      category: 'Grocery > Cooking Oils > Olive Oil',
+      material: 'Extra-virgin olive oil — Koroneiki varietal',
+      countryOfOrigin: {
+        '@type': 'Country',
+        name: 'Greece',
+      },
+      weight: {
+        '@type': 'QuantitativeValue',
+        value: 3,
+        unitCode: 'LTR',
+      },
+      offers: {
+        '@type': 'Offer',
+        price: '90.00',
+        priceCurrency: 'USD',
+        availability: 'https://schema.org/InStock',
+        url: `${SITE_URL}/psyche`,
+        priceValidUntil: '2026-12-31',
+        itemCondition: 'https://schema.org/NewCondition',
+        seller: {
+          '@type': 'LocalBusiness',
+          name: 'Local Effort Food Co.',
+          url: SITE_URL,
+          address: {
+            '@type': 'PostalAddress',
+            addressLocality: 'Roseville',
+            addressRegion: 'MN',
+            postalCode: '55113',
+            addressCountry: 'US',
+          },
+          areaServed: {
+            '@type': 'GeoCircle',
+            geoMidpoint: { '@type': 'GeoCoordinates', latitude: 44.9778, longitude: -93.2650 },
+            geoRadius: '50000',
+          },
+        },
+        shippingDetails: {
+          '@type': 'OfferShippingDetails',
+          shippingRate: {
+            '@type': 'MonetaryAmount',
+            value: '10.00',
+            currency: 'USD',
+          },
+          shippingDestination: {
+            '@type': 'DefinedRegion',
+            addressCountry: 'US',
+            addressRegion: ['MN', 'WI', 'IA', 'ND', 'SD'],
+          },
+          deliveryTime: {
+            '@type': 'ShippingDeliveryTime',
+            handlingTime: { '@type': 'QuantitativeValue', minValue: 1, maxValue: 3, unitCode: 'DAY' },
+            transitTime: { '@type': 'QuantitativeValue', minValue: 2, maxValue: 5, unitCode: 'DAY' },
+          },
+        },
+      },
+    },
+    {
+      '@type': 'BreadcrumbList',
+      itemListElement: [
+        { '@type': 'ListItem', position: 1, name: 'Home', item: SITE_URL },
+        { '@type': 'ListItem', position: 2, name: 'Psyche Olive Oil', item: `${SITE_URL}/psyche` },
+      ],
+    },
+  ],
+});
+
 const formatMoney = (cents) => (cents / 100).toFixed(2);
 const isValidEmail = (value) => /.+@.+\..+/.test(value.trim());
 const normalizePhone = (value) => value.replace(/\D/g, '').slice(0, 10);
@@ -151,30 +234,40 @@ const PsychePage = () => {
   return (
     <div className="fullpage-demo february-page psyche-page">
       <Helmet>
-        <title>Psyche Olive Oil | {SITE_NAME}</title>
+        <title>Buy Psyche Olive Oil — 3L Extra-Virgin | {SITE_NAME}</title>
         <meta
           name="description"
-          content="Psyche olive oil is a bright, peppery extra-virgin olive oil designed for finishing, dipping, and drizzling."
+          content="Buy Psyche extra-virgin olive oil (3 L bag-in-box) from Local Effort Food Co. in Minneapolis. Single-estate koroneiki from Greece — bright, peppery, EVA-certified. $90 with free local delivery."
+        />
+        <meta
+          name="keywords"
+          content="Psyche olive oil, buy olive oil Minneapolis, extra virgin olive oil, koroneiki, Greek olive oil, Local Effort Food Co., bag in box olive oil, finishing oil"
         />
         <link rel="canonical" href={`${SITE_URL}/psyche`} />
-        <meta property="og:type" content="website" />
+        <meta property="og:type" content="product" />
         <meta property="og:url" content={`${SITE_URL}/psyche`} />
-        <meta property="og:title" content={`Psyche Olive Oil | ${SITE_NAME}`} />
+        <meta property="og:title" content="Buy Psyche Olive Oil — 3L Extra-Virgin | Local Effort Food Co." />
         <meta
           property="og:description"
-          content="Psyche olive oil is a bright, peppery extra-virgin olive oil designed for finishing, dipping, and drizzling."
+          content="Single-estate koroneiki extra-virgin olive oil from Greece. Bright, peppery, EVA-certified. $90 for a 3-liter bag-in-box with free local delivery in Minneapolis–St. Paul."
         />
         <meta property="og:image" content={`${SITE_URL}${HERO_IMAGE}`} />
         <meta property="og:image:width" content="1200" />
         <meta property="og:image:height" content="630" />
+        <meta property="og:image:alt" content="Psyche olive oil 3-liter bag-in-box" />
+        <meta property="product:price:amount" content="90.00" />
+        <meta property="product:price:currency" content="USD" />
+        <meta property="product:availability" content="in stock" />
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:url" content={`${SITE_URL}/psyche`} />
-        <meta name="twitter:title" content={`Psyche Olive Oil | ${SITE_NAME}`} />
+        <meta name="twitter:title" content="Buy Psyche Olive Oil — 3L Extra-Virgin | Local Effort Food Co." />
         <meta
           name="twitter:description"
-          content="Psyche olive oil is a bright, peppery extra-virgin olive oil designed for finishing, dipping, and drizzling."
+          content="Single-estate koroneiki extra-virgin olive oil from Greece. $90 for a 3-liter bag-in-box. Free local delivery in Minneapolis–St. Paul."
         />
         <meta name="twitter:image" content={`${SITE_URL}${HERO_IMAGE}`} />
+        <meta name="twitter:image:alt" content="Psyche olive oil 3-liter bag-in-box" />
+        <script type="application/ld+json">{JSON.stringify(buildProductJsonLd())}</script>
       </Helmet>
 
       <nav className="february-breadcrumb">
