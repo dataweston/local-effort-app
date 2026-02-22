@@ -1,4 +1,5 @@
 const express = require('express');
+const crypto = require('crypto');
 
 function icsEscape(text) {
   return String(text || '')
@@ -57,9 +58,10 @@ function hashKey(str) {
   return String(h >>> 0);
 }
 
-function createMessagesRouter({ logger, brevoService, getSanityClient, db, getSupabase }) {
+function createMessagesRouter({ logger, brevoService, getSanityClient, db, getSupabase, emailOutboxService, auditLogger }) {
   const router = express.Router();
-  const { upsertContact, sendEmail, getHeaders } = brevoService;
+  const { upsertContact, sendEmail, getHeaders, blacklistContact } = brevoService;
+  const hasOutbox = !!(emailOutboxService && typeof emailOutboxService.enqueue === 'function');
   const parseListIds = (value) => {
     if (Array.isArray(value)) {
       return value
@@ -76,6 +78,83 @@ function createMessagesRouter({ logger, brevoService, getSanityClient, db, getSu
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;');
+  const defaultListIds = parseListIds(process.env.BREVO_NEWSLETTER_LIST_IDS || process.env.BREVO_LIST_IDS || '');
+  const tokenTtlHours = Number.parseInt(process.env.NEWSLETTER_CONFIRM_TTL_HOURS || '72', 10) || 72;
+  const unsubscribeSecret = process.env.EMAIL_UNSUBSCRIBE_SECRET || process.env.SANITY_WEBHOOK_SECRET || process.env.BLOG_WEBHOOK_SECRET || 'dev-unsubscribe-secret';
+
+  const logAudit = (event, details = {}) => {
+    if (typeof auditLogger === 'function') {
+      try {
+        auditLogger(event, details);
+        return;
+      } catch (err) {
+        if (logger?.warn) logger.warn({ err }, 'audit logger failed');
+      }
+    }
+    if (logger?.info) logger.info({ event, ...details }, 'messages audit');
+  };
+
+  const subscriberDocId = (email) => {
+    const safe = String(email || '').toLowerCase().replace(/@/g, '-at-').replace(/\./g, '-').replace(/[^a-z0-9-]/g, '-');
+    return `email-subscriber-${safe}`;
+  };
+
+  const createToken = () => crypto.randomBytes(24).toString('hex');
+  const hashToken = (token) => crypto.createHash('sha256').update(String(token || '')).digest('hex');
+  const signUnsubscribeToken = (email) => crypto.createHmac('sha256', unsubscribeSecret).update(String(email || '').toLowerCase()).digest('hex');
+  const timingSafeEq = (left, right) => {
+    if (typeof left !== 'string' || typeof right !== 'string') return false;
+    const a = Buffer.from(left);
+    const b = Buffer.from(right);
+    if (a.length !== b.length) return false;
+    return crypto.timingSafeEqual(a, b);
+  };
+
+  const basePublicUrl = () => (process.env.PUBLIC_URL || 'https://localeffortfood.com').replace(/\/$/, '');
+
+  const renderConfirmHtml = ({ title, body }) => `<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8" /><meta name="viewport" content="width=device-width,initial-scale=1" /><title>${escapeHtml(title)}</title></head>
+<body style="font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:#f8fafc;color:#0f172a;padding:24px;">
+  <main style="max-width:640px;margin:0 auto;background:white;border:1px solid #e2e8f0;border-radius:12px;padding:24px;">
+    <h1 style="margin:0 0 12px 0;font-size:1.5rem;">${escapeHtml(title)}</h1>
+    <p style="margin:0;line-height:1.5;">${escapeHtml(body)}</p>
+    <p style="margin-top:16px;"><a href="${basePublicUrl()}" style="color:#0f172a;">Return to Local Effort</a></p>
+  </main>
+</body>
+</html>`;
+
+  async function saveSubscriberState({ email, firstName, lastName, phone, source, listIds, status, tokenHash, tokenExpiresAt, confirmedAt, unsubscribedAt, suppressedAt, suppressionReason }) {
+    const sc = getSanityClient ? getSanityClient() : null;
+    if (!sc) return null;
+    const id = subscriberDocId(email);
+    const now = new Date().toISOString();
+    await sc.createIfNotExists({
+      _id: id,
+      _type: 'emailSubscriber',
+      email,
+      createdAt: now,
+    });
+    const patch = {
+      email,
+      firstName: firstName || null,
+      lastName: lastName || null,
+      phone: phone || null,
+      source: source || null,
+      listIds: Array.isArray(listIds) ? listIds : defaultListIds,
+      status: status || 'pending_double_opt_in',
+      updatedAt: now,
+      pendingTokenHash: tokenHash || null,
+      tokenExpiresAt: tokenExpiresAt || null,
+      confirmedAt: confirmedAt || null,
+      unsubscribedAt: unsubscribedAt || null,
+      suppressedAt: suppressedAt || null,
+      suppressionReason: suppressionReason || null,
+      unsubscribeToken: signUnsubscribeToken(email),
+    };
+    await sc.patch(id).set(patch).commit();
+    return id;
+  }
 
   const handleEmailError = (res, err, fallback) => {
     if (err && err.code === 'EMAIL_NOT_CONFIGURED') {
@@ -302,42 +381,226 @@ function createMessagesRouter({ logger, brevoService, getSanityClient, db, getSu
       const resolvedListIds = (() => {
         const explicit = parseListIds(listIds);
         if (explicit.length > 0) return explicit;
-        const fromEnv = process.env.BREVO_NEWSLETTER_LIST_IDS || process.env.BREVO_LIST_IDS || '';
-        return parseListIds(fromEnv);
+        return defaultListIds;
       })();
+      const sc = getSanityClient ? getSanityClient() : null;
+      const existing = sc
+        ? await sc.fetch('*[_type == "emailSubscriber" && email == $email][0]{ _id, status }', { email: trimmedEmail })
+        : null;
 
-      await upsertContact({
+      if (String(existing?.status || '').toLowerCase() === 'subscribed') {
+        logAudit('newsletter.subscribe.already-subscribed', { email: trimmedEmail, source });
+        return res.json({ ok: true, status: 'already-subscribed' });
+      }
+
+      const confirmToken = createToken();
+      const confirmTokenHash = hashToken(confirmToken);
+      const tokenExpiresAt = new Date(Date.now() + tokenTtlHours * 60 * 60 * 1000).toISOString();
+      await saveSubscriberState({
         email: trimmedEmail,
         firstName: resolvedFirstName,
         lastName: resolvedLastName,
         phone,
+        source,
         listIds: resolvedListIds,
+        status: 'pending_double_opt_in',
+        tokenHash: confirmTokenHash,
+        tokenExpiresAt,
       });
 
-      const subscriberName = [resolvedFirstName, resolvedLastName].filter(Boolean).join(' ').trim() || 'Subscriber';
-      const subject = 'New newsletter subscription';
+      const confirmLink = `${basePublicUrl()}/api/messages/subscribe/confirm?email=${encodeURIComponent(trimmedEmail)}&token=${encodeURIComponent(confirmToken)}`;
+      const subscriberName = [resolvedFirstName, resolvedLastName].filter(Boolean).join(' ').trim() || 'there';
+      const subject = 'Confirm your Local Effort newsletter subscription';
       const htmlContent = `
-        <p><strong>New newsletter subscriber</strong></p>
+        <p>Hi ${escapeHtml(subscriberName)},</p>
+        <p>Please confirm your subscription by clicking this secure link:</p>
+        <p><a href="${confirmLink}">Confirm my subscription</a></p>
+        <p>This link expires in ${tokenTtlHours} hours.</p>
+        <p>If you did not request this, you can ignore this email.</p>
+      `;
+      const idempotencyKey = `subscribe-confirm-${trimmedEmail}-${confirmTokenHash.slice(0, 20)}`;
+      const confirmPayload = {
+        to: [{ email: trimmedEmail, name: subscriberName }],
+        sender: { email: senderEmail, name: 'Local Effort' },
+        subject,
+        htmlContent,
+        tags: ['newsletter', 'double-opt-in'],
+      };
+      if (hasOutbox) {
+        await emailOutboxService.enqueue({
+          payload: confirmPayload,
+          idempotencyKey,
+          category: 'subscription',
+          source: 'messages.subscribe',
+          context: { email: trimmedEmail, source },
+        });
+        Promise.resolve()
+          .then(() => emailOutboxService.processBatch({ limit: 5, maxAttempts: 5 }))
+          .catch((queueErr) => {
+            if (logger) logger.warn({ err: queueErr }, 'outbox opportunistic process failed after subscribe enqueue');
+          });
+      } else {
+        await sendEmail(confirmPayload);
+      }
+
+      const adminHtmlContent = `
+        <p><strong>Newsletter confirmation requested</strong></p>
         <p><strong>Email:</strong> ${escapeHtml(trimmedEmail)}</p>
         <p><strong>Name:</strong> ${escapeHtml(subscriberName)}</p>
         ${phone ? `<p><strong>Phone:</strong> ${escapeHtml(phone)}</p>` : ''}
         <p><strong>Source:</strong> ${escapeHtml(source)}</p>
-        <p><strong>Brevo list IDs:</strong> ${resolvedListIds.length ? escapeHtml(resolvedListIds.join(', ')) : 'None configured'}</p>
+        <p><strong>Target list IDs:</strong> ${resolvedListIds.length ? escapeHtml(resolvedListIds.join(', ')) : 'None configured'}</p>
       `;
-
-      await sendEmail({
+      const adminPayload = {
         to: [{ email: adminEmail }],
         sender: { email: senderEmail, name: 'Local Effort' },
         replyTo: { email: trimmedEmail, name: subscriberName },
-        subject,
-        htmlContent,
-        tags: ['newsletter', 'subscribe'],
-      });
+        subject: 'Newsletter subscription pending confirmation',
+        htmlContent: adminHtmlContent,
+        tags: ['newsletter', 'subscribe-pending'],
+      };
+      if (hasOutbox) {
+        await emailOutboxService.enqueue({
+          payload: adminPayload,
+          idempotencyKey: `subscribe-admin-${trimmedEmail}-${Date.now().toString(36)}`,
+          category: 'subscription',
+          source: 'messages.subscribe',
+          context: { email: trimmedEmail, source },
+        });
+      } else {
+        await sendEmail(adminPayload);
+      }
 
-      return res.json({ ok: true });
+      logAudit('newsletter.subscribe.pending', { email: trimmedEmail, source, listCount: resolvedListIds.length });
+      return res.json({ ok: true, status: 'pending_confirmation' });
     } catch (err) {
       if (logger) logger.error({ err }, 'subscribe error');
       return res.status(500).json({ error: 'subscribe-failed' });
+    }
+  });
+
+  router.get('/messages/subscribe/confirm', async (req, res) => {
+    try {
+      const email = String(req.query?.email || '').trim().toLowerCase();
+      const token = String(req.query?.token || '').trim();
+      if (!email || !token) {
+        const html = renderConfirmHtml({
+          ok: false,
+          title: 'Invalid confirmation link',
+          body: 'This confirmation link is incomplete. Please request a new subscription email.',
+        });
+        return res.status(400).type('html').send(html);
+      }
+
+      const sc = getSanityClient ? getSanityClient() : null;
+      if (!sc) return res.status(500).json({ error: 'sanity-not-configured' });
+      const subscriber = await sc.fetch(
+        '*[_type == "emailSubscriber" && email == $email][0]{ _id, email, firstName, lastName, phone, status, listIds, pendingTokenHash, tokenExpiresAt }',
+        { email }
+      );
+      if (!subscriber?._id) {
+        const html = renderConfirmHtml({
+          ok: false,
+          title: 'Subscription not found',
+          body: 'We could not find your subscription request. Please subscribe again.',
+        });
+        return res.status(404).type('html').send(html);
+      }
+
+      const hashed = hashToken(token);
+      const expiresAt = subscriber?.tokenExpiresAt ? new Date(subscriber.tokenExpiresAt).getTime() : 0;
+      if (!timingSafeEq(hashed, String(subscriber?.pendingTokenHash || '')) || !expiresAt || expiresAt < Date.now()) {
+        const html = renderConfirmHtml({
+          ok: false,
+          title: 'Confirmation link expired',
+          body: 'This confirmation link is invalid or expired. Please submit your email again to receive a new link.',
+        });
+        return res.status(410).type('html').send(html);
+      }
+
+      const now = new Date().toISOString();
+      await sc.patch(subscriber._id).set({
+        status: 'subscribed',
+        confirmedAt: now,
+        updatedAt: now,
+        pendingTokenHash: null,
+        tokenExpiresAt: null,
+      }).commit();
+
+      try {
+        await upsertContact({
+          email,
+          firstName: subscriber.firstName || undefined,
+          lastName: subscriber.lastName || undefined,
+          phone: subscriber.phone || undefined,
+          listIds: Array.isArray(subscriber.listIds) && subscriber.listIds.length ? subscriber.listIds : defaultListIds,
+        });
+      } catch (brevoErr) {
+        if (logger) logger.warn({ err: brevoErr, email }, 'failed to upsert contact after subscription confirmation');
+      }
+
+      logAudit('newsletter.subscribe.confirmed', { email });
+      const html = renderConfirmHtml({
+        ok: true,
+        title: 'Subscription confirmed',
+        body: 'Thanks for confirming. You are now subscribed to Local Effort updates.',
+      });
+      return res.status(200).type('html').send(html);
+    } catch (err) {
+      if (logger) logger.error({ err }, 'subscribe confirm error');
+      const html = renderConfirmHtml({
+        ok: false,
+        title: 'Confirmation error',
+        body: 'We were unable to confirm your subscription right now. Please try again shortly.',
+      });
+      return res.status(500).type('html').send(html);
+    }
+  });
+
+  router.get('/messages/unsubscribe', async (req, res) => {
+    try {
+      const email = String(req.query?.email || '').trim().toLowerCase();
+      const token = String(req.query?.token || '').trim();
+      if (!email || !token || !timingSafeEq(token, signUnsubscribeToken(email))) {
+        const html = renderConfirmHtml({
+          ok: false,
+          title: 'Invalid unsubscribe link',
+          body: 'This unsubscribe link is invalid.',
+        });
+        return res.status(400).type('html').send(html);
+      }
+
+      const sc = getSanityClient ? getSanityClient() : null;
+      if (!sc) return res.status(500).json({ error: 'sanity-not-configured' });
+      const id = subscriberDocId(email);
+      const now = new Date().toISOString();
+      await sc.createIfNotExists({ _id: id, _type: 'emailSubscriber', email, createdAt: now });
+      await sc.patch(id).set({
+        email,
+        status: 'unsubscribed',
+        unsubscribedAt: now,
+        updatedAt: now,
+      }).commit();
+      try {
+        await blacklistContact({ email, emailBlacklisted: true });
+      } catch (brevoErr) {
+        if (logger) logger.warn({ err: brevoErr, email }, 'failed to blacklist contact on unsubscribe');
+      }
+      logAudit('newsletter.unsubscribe', { email });
+      const html = renderConfirmHtml({
+        ok: true,
+        title: 'You are unsubscribed',
+        body: 'Your email preferences have been updated. You will no longer receive these emails.',
+      });
+      return res.status(200).type('html').send(html);
+    } catch (err) {
+      if (logger) logger.error({ err }, 'unsubscribe error');
+      const html = renderConfirmHtml({
+        ok: false,
+        title: 'Unsubscribe error',
+        body: 'Unable to update your preference right now. Please try again later.',
+      });
+      return res.status(500).type('html').send(html);
     }
   });
 

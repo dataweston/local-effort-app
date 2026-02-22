@@ -29,6 +29,10 @@ import cloudinaryImage from './objects/cloudinaryImage'
 import sale from './sale'
 import saleProduct from './objects/saleProduct'
 import saleFaq from './objects/saleFaq'
+import release from './release'
+import emailSubscriber from './emailSubscriber'
+import emailOutbox from './emailOutbox'
+import emailEvent from './emailEvent'
 
 export const schemaTypes = [
 	page,
@@ -60,6 +64,10 @@ export const schemaTypes = [
 	publicEvent,
 	referralParticipant,
 	blogPost,
+	release,
+	emailSubscriber,
+	emailOutbox,
+	emailEvent,
 	cloudinaryImage,
 ]
 

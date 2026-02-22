@@ -21,13 +21,15 @@ try {
 }
 const express = require('express');
 const cors = require('cors');
-const { getSanityClient } = require('./sanityClient');
+const crypto = require('crypto');
+const { getSanityClient, getSanityReadClient } = require('./sanityClient');
 const { getSupabase } = require('./supabaseClient');
 const fs = require('fs');
 const path = require('path');
 // Structured logger (pino wrapper)
 const { logger } = require('./logger');
 const { createBrevoService } = require('./services/brevo');
+const { createEmailOutboxService } = require('./services/emailOutbox');
 const { createCrowdfundingRouter } = require('./routes/crowdfunding');
 const crowdfundCheckoutHandler = require('../../api-handlers/crowdfund/checkout');
 const crowdfundFeedbackHandler = require('../../api-handlers/crowdfund/feedback');
@@ -125,20 +127,166 @@ const GALLANT_ALLOWED = new Set([
 // AI manifest path (machine-readable site schema) used by /api/public/site
 const AI_MANIFEST_PATH = path.resolve(__dirname, '../../public/ai/manifest.json');
 
-async function requireAllowedUser(req, res, next) {
+async function authenticateAllowedUser(req) {
+  const authHeader = req.headers.authorization || '';
+  const m = authHeader.match(/^Bearer\s+(.+)$/i);
+  if (!m) return { ok: false, status: 401, error: 'missing-auth' };
+  if (!admin?.auth) return { ok: false, status: 500, error: 'auth-unavailable' };
   try {
-    const authHeader = req.headers.authorization || '';
-    const m = authHeader.match(/^Bearer\s+(.+)$/i);
-    if (!m) return res.status(401).json({ error: 'missing-auth' });
-    if (!admin?.auth) return res.status(500).json({ error: 'auth-unavailable' });
     const decoded = await admin.auth().verifyIdToken(m[1]);
     const email = decoded?.email;
-    if (!email || !GALLANT_ALLOWED.has(email)) return res.status(403).json({ error: 'forbidden' });
-    req.user = { uid: decoded.uid, email };
-    return next();
+    if (!email || !GALLANT_ALLOWED.has(email)) return { ok: false, status: 403, error: 'forbidden' };
+    return { ok: true, user: { uid: decoded.uid, email } };
   } catch (err) {
-    return res.status(401).json({ error: 'invalid-auth' });
+    return { ok: false, status: 401, error: 'invalid-auth' };
   }
+}
+
+async function requireAllowedUser(req, res, next) {
+  const auth = await authenticateAllowedUser(req);
+  if (!auth.ok) return res.status(auth.status).json({ error: auth.error });
+  req.user = auth.user;
+  return next();
+}
+
+function createRateLimiter({ name, windowMs, max }) {
+  const cache = new Map();
+  const windowDuration = Math.max(1000, Number(windowMs) || 60000);
+  const maxRequests = Math.max(1, Number(max) || 60);
+
+  return (req, res, next) => {
+    const ip = req.ip || req.headers['x-forwarded-for'] || req.connection?.remoteAddress || 'unknown';
+    const key = `${name}:${String(ip).split(',')[0].trim()}`;
+    const now = Date.now();
+    const current = cache.get(key);
+    if (!current || current.expiresAt <= now) {
+      cache.set(key, { count: 1, expiresAt: now + windowDuration });
+      return next();
+    }
+    if (current.count >= maxRequests) {
+      const retryAfter = Math.max(1, Math.ceil((current.expiresAt - now) / 1000));
+      res.setHeader('Retry-After', String(retryAfter));
+      return res.status(429).json({ error: 'rate-limit-exceeded', scope: name, retryAfter });
+    }
+    current.count += 1;
+    if (cache.size > 5000) {
+      for (const [cacheKey, value] of cache.entries()) {
+        if (value.expiresAt <= now) cache.delete(cacheKey);
+      }
+    }
+    return next();
+  };
+}
+
+function auditLog(req, action, details = {}) {
+  logger.info(
+    {
+      audit: true,
+      action,
+      actor: req.user?.email || null,
+      path: req.path,
+      method: req.method,
+      ip: req.ip || null,
+      userAgent: req.get('user-agent') || null,
+      ...details,
+    },
+    'audit event'
+  );
+}
+
+function normalizeGroq(query) {
+  return String(query || '').replace(/\s+/g, ' ').trim();
+}
+
+const PUBLIC_SANITY_QUERY_ALLOWLIST = new Set([
+  normalizeGroq('*[_type == "blogPost"] | order(publishedAt desc)[0...50]{ title, "slug": slug.current, excerpt, publishedAt }'),
+  normalizeGroq('*[_type == "blogPost"] | order(publishedAt desc)[0...50]{ title, "slug": slug.current, excerpt, publishedAt, mainImage }'),
+  normalizeGroq('*[_type == "blogPost" && slug.current == $slug][0]{ title, publishedAt, body }'),
+  normalizeGroq('*[_type == "blogPost" && slug.current == $slug][0]{ title, publishedAt, body, mainImage }'),
+  normalizeGroq('*[_type == "salePage"][0]{ title, titleIcon, subheading, intro }'),
+  normalizeGroq('*[_type == "release"] | order(coalesce(publishedAt, _createdAt) desc)[0...50]{ _id, title, "slug": slug.current, summary, publishedAt, body, canonicalUrl, metaDescription, heroImage{ alt, "url": asset->url } }'),
+  normalizeGroq('*[_type in ["pricingFaq","page","post"] && (defined(question) && question match $q || defined(answer) && answer match $q || defined(title) && title match $q || defined(body) && body match $q)] | order(_updatedAt desc)[0...10]{ _id, question, answer, title }'),
+]);
+
+function isPlainObject(value) {
+  return !!value && typeof value === 'object' && !Array.isArray(value);
+}
+
+function hasValidSanityParams(params) {
+  if (!isPlainObject(params)) return false;
+  const entries = Object.entries(params);
+  if (entries.length > 10) return false;
+  return entries.every(([key, value]) => {
+    if (!/^[a-zA-Z0-9_]{1,64}$/.test(key)) return false;
+    if (value === null) return true;
+    if (typeof value === 'string') return value.length <= 200;
+    if (typeof value === 'number') return Number.isFinite(value);
+    if (typeof value === 'boolean') return true;
+    return false;
+  });
+}
+
+function isSanityAuthError(err) {
+  const statusCode = err?.statusCode || err?.status || err?.response?.statusCode || err?.response?.status;
+  return statusCode === 401 || statusCode === 403;
+}
+
+function timingSafeEqualString(a, b) {
+  if (typeof a !== 'string' || typeof b !== 'string') return false;
+  const bufA = Buffer.from(a);
+  const bufB = Buffer.from(b);
+  if (bufA.length !== bufB.length) return false;
+  return crypto.timingSafeEqual(bufA, bufB);
+}
+
+function validateSanityWebhookSecret(req) {
+  const expected = process.env.SANITY_WEBHOOK_SECRET || process.env.BLOG_WEBHOOK_SECRET;
+  if (!expected) {
+    return { ok: false, status: 503, error: 'webhook-secret-not-configured' };
+  }
+
+  const body = isPlainObject(req.body) ? req.body : {};
+  const query = isPlainObject(req.query) ? req.query : {};
+  const candidates = [
+    req.get('X-Sanity-Webhook-Secret'),
+    req.get('X-Webhook-Secret'),
+    req.get('X-Admin-Token'),
+    typeof query.secret === 'string' ? query.secret : null,
+    typeof body.secret === 'string' ? body.secret : null,
+  ].filter((value) => typeof value === 'string' && value.length > 0);
+
+  if (!candidates.some((value) => timingSafeEqualString(value, expected))) {
+    return { ok: false, status: 401, error: 'unauthorized' };
+  }
+
+  return { ok: true };
+}
+
+function validateBrevoWebhookSecret(req) {
+  const expected = process.env.BREVO_WEBHOOK_SECRET;
+  if (!expected) {
+    return { ok: false, status: 503, error: 'brevo-webhook-secret-not-configured' };
+  }
+  const body = isPlainObject(req.body) ? req.body : {};
+  const query = isPlainObject(req.query) ? req.query : {};
+  const candidates = [
+    req.get('X-Brevo-Webhook-Secret'),
+    req.get('X-Webhook-Secret'),
+    typeof query.secret === 'string' ? query.secret : null,
+    typeof body.secret === 'string' ? body.secret : null,
+  ].filter((value) => typeof value === 'string' && value.length > 0);
+  if (!candidates.some((value) => timingSafeEqualString(value, expected))) {
+    return { ok: false, status: 401, error: 'unauthorized' };
+  }
+  return { ok: true };
+}
+
+function escapeXml(value = '') {
+  return String(value)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
 }
 
 // --- INITIALIZE SQUARE CLIENT (defensive) ---
@@ -167,6 +315,15 @@ if (Client) {
 
 const app = express();
 const brevoService = createBrevoService({ getSanityClient, logger });
+const emailOutboxService = createEmailOutboxService({
+  getSanityClient,
+  getSanityReadClient,
+  brevoService,
+  logger,
+});
+const publishRateLimit = createRateLimiter({ name: 'publish', windowMs: 60 * 1000, max: 30 });
+const webhookRateLimit = createRateLimiter({ name: 'webhook', windowMs: 60 * 1000, max: 120 });
+const sanityQueryRateLimit = createRateLimiter({ name: 'sanity-query', windowMs: 60 * 1000, max: 180 });
 
 // Attach Sentry request + tracing handlers early (before other middleware) if enabled
 if (sentryEnabled) {
@@ -864,7 +1021,7 @@ app.all('/api/psyche/checkout', async (req, res, next) => {
   }
 });
 
-app.all('/api/sanity-query', async (req, res) => {
+app.all('/api/sanity-query', sanityQueryRateLimit, async (req, res) => {
   if (req.method !== 'POST') {
     res.setHeader('Allow', 'POST');
     return res.status(405).json({ ok: false, error: 'method-not-allowed' });
@@ -872,8 +1029,9 @@ app.all('/api/sanity-query', async (req, res) => {
 
   res.setHeader('Cache-Control', 'no-store');
 
-  const client = getSanityClient();
-  if (!client) {
+  const readClient = getSanityReadClient();
+  const writeClient = getSanityClient();
+  if (!readClient && !writeClient) {
     return res.status(500).json({ ok: false, error: 'sanity-not-configured' });
   }
 
@@ -890,10 +1048,28 @@ app.all('/api/sanity-query', async (req, res) => {
     return res.status(400).json({ ok: false, error: 'missing-query' });
   }
 
+  const normalizedQuery = normalizeGroq(body.query);
+  if (!PUBLIC_SANITY_QUERY_ALLOWLIST.has(normalizedQuery)) {
+    return res.status(403).json({ ok: false, error: 'query-not-allowed' });
+  }
+
   const params = body.params && typeof body.params === 'object' ? body.params : {};
+  if (!hasValidSanityParams(params)) {
+    return res.status(400).json({ ok: false, error: 'invalid-params' });
+  }
 
   try {
-    const result = await client.fetch(body.query, params);
+    const primaryClient = readClient || writeClient;
+    let result;
+    try {
+      result = await primaryClient.fetch(body.query, params);
+    } catch (err) {
+      if (!writeClient || writeClient === primaryClient || !isSanityAuthError(err)) {
+        throw err;
+      }
+      // If dataset is private, fall back to token-backed client for allowlisted queries only.
+      result = await writeClient.fetch(body.query, params);
+    }
     return res.status(200).json({ ok: true, result });
   } catch (err) {
     logger.error({ err }, 'sanity query fetch failed');
@@ -1294,7 +1470,15 @@ app.post('/api/feedback', async (req, res) => {
   }
 });
 
-app.use('/api', createMessagesRouter({ logger, brevoService, getSanityClient, db, getSupabase }));
+app.use('/api', createMessagesRouter({
+  logger,
+  brevoService,
+  getSanityClient,
+  db,
+  getSupabase,
+  emailOutboxService,
+  auditLogger: (event, details) => logger.info({ audit: true, event, ...details }, 'messages audit'),
+}));
 
 // Diagnostic endpoint (safe): reports whether required env vars are present
 // and attempts a lightweight Cloudinary ping if configured. Do NOT expose
@@ -1373,8 +1557,97 @@ app.get('/api/about', async (req, res) => {
   }
 });
 
-// --- Generic Sanity query proxy (to avoid client-side CORS) ---
-app.post('/api/sanity/query', async (req, res) => {
+async function fetchPublishedReleases(limit = 20) {
+  const client = getSanityReadClient() || getSanityClient();
+  if (!client) return [];
+  const docs = await client.fetch(
+    '*[_type == "release"] | order(coalesce(publishedAt, _createdAt) desc)[0...$limit]{ _id, title, "slug": slug.current, summary, publishedAt, _updatedAt, canonicalUrl }',
+    { limit: Math.max(1, Math.min(100, Number(limit) || 20)) }
+  );
+  const site = (process.env.PUBLIC_URL || 'https://localeffortfood.com').replace(/\/$/, '');
+  return (Array.isArray(docs) ? docs : []).map((doc) => {
+    const slug = String(doc?.slug || '').trim();
+    const fallbackUrl = slug ? `${site}/releases#${encodeURIComponent(slug)}` : `${site}/releases`;
+    return {
+      id: String(doc?._id || slug || Math.random().toString(36).slice(2)),
+      title: String(doc?.title || 'Release'),
+      summary: String(doc?.summary || ''),
+      url: String(doc?.canonicalUrl || fallbackUrl),
+      publishedAt: doc?.publishedAt || null,
+      updatedAt: doc?._updatedAt || doc?.publishedAt || null,
+    };
+  });
+}
+
+app.get('/api/feeds/releases.rss', async (req, res) => {
+  try {
+    const site = (process.env.PUBLIC_URL || 'https://localeffortfood.com').replace(/\/$/, '');
+    const releases = await fetchPublishedReleases(50);
+    const items = releases.map((release) => `
+    <item>
+      <guid isPermaLink="false">${escapeXml(release.id)}</guid>
+      <title>${escapeXml(release.title)}</title>
+      <link>${escapeXml(release.url)}</link>
+      <pubDate>${new Date(release.publishedAt || release.updatedAt || Date.now()).toUTCString()}</pubDate>
+      <description>${escapeXml(release.summary)}</description>
+    </item>`).join('');
+    const xml = `<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0">
+  <channel>
+    <title>Local Effort Releases</title>
+    <link>${escapeXml(site)}/releases</link>
+    <description>Press releases and media updates from Local Effort Food Co.</description>
+    <language>en-us</language>
+    <lastBuildDate>${new Date().toUTCString()}</lastBuildDate>${items}
+  </channel>
+</rss>`;
+    res.statusCode = 200;
+    res.setHeader('Content-Type', 'application/rss+xml; charset=utf-8');
+    res.setHeader('Cache-Control', 's-maxage=600, stale-while-revalidate');
+    return res.end(xml);
+  } catch (err) {
+    logger.error({ err }, 'releases rss feed failed');
+    res.statusCode = 500;
+    res.setHeader('Content-Type', 'text/plain');
+    return res.end('Failed to generate releases RSS');
+  }
+});
+
+app.get('/api/feeds/releases.atom', async (req, res) => {
+  try {
+    const site = (process.env.PUBLIC_URL || 'https://localeffortfood.com').replace(/\/$/, '');
+    const releases = await fetchPublishedReleases(50);
+    const updated = releases[0]?.updatedAt || new Date().toISOString();
+    const entries = releases.map((release) => `
+  <entry>
+    <id>tag:localeffortfood.com,2026:${escapeXml(release.id)}</id>
+    <title>${escapeXml(release.title)}</title>
+    <link href="${escapeXml(release.url)}" />
+    <updated>${escapeXml(new Date(release.updatedAt || release.publishedAt || Date.now()).toISOString())}</updated>
+    <summary>${escapeXml(release.summary)}</summary>
+  </entry>`).join('');
+    const xml = `<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <id>tag:localeffortfood.com,2026:releases</id>
+  <title>Local Effort Releases</title>
+  <updated>${escapeXml(new Date(updated).toISOString())}</updated>
+  <link rel="self" href="${escapeXml(site)}/api/feeds/releases.atom" />
+  <link rel="alternate" href="${escapeXml(site)}/releases" />${entries}
+</feed>`;
+    res.statusCode = 200;
+    res.setHeader('Content-Type', 'application/atom+xml; charset=utf-8');
+    res.setHeader('Cache-Control', 's-maxage=600, stale-while-revalidate');
+    return res.end(xml);
+  } catch (err) {
+    logger.error({ err }, 'releases atom feed failed');
+    res.statusCode = 500;
+    res.setHeader('Content-Type', 'text/plain');
+    return res.end('Failed to generate releases Atom feed');
+  }
+});
+
+// --- Generic Sanity query proxy (admin-only) ---
+app.post('/api/sanity/query', requireAllowedUser, async (req, res) => {
   try {
     const sanity = getSanityClient();
     if (!sanity) {
@@ -1706,7 +1979,7 @@ app.post('/api/events/confirm', requireAllowedUser, async (req, res) => {
 // Create a blog post in Sanity. Accepts either { title, bodyBlocks?, text? }.
 // If `text` is provided, convert to a simple Portable Text block array.
 // Optional: { publishedAt, emailOnPublish, emailTo[] }
-app.post('/api/blog/publish', async (req, res) => {
+app.post('/api/blog/publish', publishRateLimit, requireAllowedUser, async (req, res) => {
   try {
     const { title, bodyBlocks, text, publishedAt, emailOnPublish = false, emailTo } = req.body || {};
     if (!title) return res.status(400).json({ error: 'missing-title' });
@@ -1734,78 +2007,184 @@ app.post('/api/blog/publish', async (req, res) => {
 
     let emailed = null;
     if (emailOnPublish) {
-      const headers = brevoService.getHeaders();
-      if (headers) {
-        const recipients = Array.isArray(emailTo) && emailTo.length
-          ? emailTo
-          : (process.env.BLOG_ANNOUNCE_TO || '').split(',').map(s => s.trim()).filter(Boolean);
-        if (recipients.length) {
-          const base = (process.env.PUBLIC_URL || 'https://localeffortfood.com');
-          const url = base.replace(/\/$/, '') + '/weekly/' + doc.slug.current;
-          const snippet = (text || JSON.stringify(blocks)).slice(0, 400);
-          const payload = {
-            to: recipients.map((e) => ({ email: e })),
-            sender: { email: process.env.SENDER_EMAIL || recipients[0], name: 'Local Effort' },
-            subject: `New post: ${title}`,
-            htmlContent: `<h2>${title}</h2><p>${snippet}…</p><p><a href="${url}">Read on the site</a></p>`,
-            tags: ['blog','auto'],
-          };
-          const resp = await fetch('https://api.brevo.com/v3/smtp/email', { method: 'POST', headers, body: JSON.stringify(payload) });
-          emailed = resp.ok ? recipients.length : 0;
-        }
+      const recipients = Array.isArray(emailTo) && emailTo.length
+        ? emailTo
+        : (process.env.BLOG_ANNOUNCE_TO || '').split(',').map((s) => s.trim()).filter(Boolean);
+      if (recipients.length) {
+        const base = (process.env.PUBLIC_URL || 'https://localeffortfood.com').replace(/\/$/, '');
+        const url = `${base}/weekly/${doc.slug.current}`;
+        const snippet = (text || JSON.stringify(blocks)).slice(0, 400);
+        const payload = {
+          to: recipients.map((e) => ({ email: e })),
+          sender: { email: process.env.SENDER_EMAIL || recipients[0], name: 'Local Effort' },
+          subject: `New post: ${title}`,
+          htmlContent: `<h2>${escapeXml(title)}</h2><p>${escapeXml(snippet)}...</p><p><a href="${url}">Read on the site</a></p>`,
+          tags: ['blog', 'auto'],
+        };
+        const queued = await emailOutboxService.enqueue({
+          payload,
+          idempotencyKey: `blog-publish-${doc._id}`,
+          category: 'publishing',
+          source: '/api/blog/publish',
+          context: { docId: doc._id, slug: doc.slug?.current, actor: req.user?.email || null },
+        });
+        Promise.resolve()
+          .then(() => emailOutboxService.processBatch({ limit: 5, maxAttempts: 5 }))
+          .catch((queueErr) => logger.warn({ err: queueErr }, 'outbox opportunistic process failed after blog publish'));
+        emailed = { queued: recipients.length, queueId: queued.id };
       }
     }
 
+    auditLog(req, 'blog.publish', { docId: doc._id, slug: doc.slug?.current, emailOnPublish: !!emailOnPublish });
     return res.json({ ok: true, id: doc._id, slug: doc.slug?.current, emailed });
   } catch (err) {
-  logger.error({ err }, 'blog publish error');
+    logger.error({ err }, 'blog publish error');
     return res.status(500).json({ error: 'publish-failed' });
   }
 });
 
-// Sanity webhook: on blogPost publish, send Brevo email to a small list
-app.post('/api/webhooks/sanity/blog', async (req, res) => {
+// Sanity webhook: on blogPost publish, enqueue email in outbox
+app.post('/api/webhooks/sanity/blog', webhookRateLimit, async (req, res) => {
   try {
+    const auth = validateSanityWebhookSecret(req);
+    if (!auth.ok) return res.status(auth.status).json({ ok: false, error: auth.error });
+
     const { _type, slug, title } = req.body || {};
     if (_type !== 'blogPost') return res.status(400).json({ ok: false });
-    // Fetch the full post content
-    const sc = getSanityClient();
+
+    const sc = getSanityReadClient() || getSanityClient();
     if (!sc) return res.status(500).json({ error: 'sanity-not-configured' });
-    const doc = await sc.fetch('*[_type == "blogPost" && slug.current == $slug][0]{ title, publishedAt, body }', { slug: slug?.current || slug });
+    const doc = await sc.fetch('*[_type == "blogPost" && slug.current == $slug][0]{ _id, title, publishedAt, body, slug }', { slug: slug?.current || slug });
 
-    // Render a simple HTML from blocks (very basic)
-    const text = JSON.stringify(doc?.body || []);
-    const snippet = (text || '').slice(0, 400);
-
-    const headers = brevoService.getHeaders();
-    if (!headers) return res.status(500).json({ error: 'email-not-configured' });
-
+    const bodyText = JSON.stringify(doc?.body || []);
+    const snippet = (bodyText || '').slice(0, 400);
     const recipientsRaw = process.env.BLOG_ANNOUNCE_TO || '';
-    const recipients = recipientsRaw.split(',').map(s => s.trim()).filter(Boolean);
+    const recipients = recipientsRaw.split(',').map((s) => s.trim()).filter(Boolean);
     if (!recipients.length) return res.json({ ok: true, skipped: 'no-recipients' });
 
+    const base = (process.env.PUBLIC_URL || 'https://localeffortfood.com').replace(/\/$/, '');
+    const slugValue = doc?.slug?.current || slug?.current || slug;
     const payload = {
       to: recipients.map((e) => ({ email: e })),
       sender: { email: process.env.SENDER_EMAIL || recipients[0], name: 'Local Effort' },
       subject: `New post: ${doc?.title || title || 'Local Effort Blog'}`,
-      htmlContent: `
-        <h2>${doc?.title || title || 'Local Effort Blog'}</h2>
-        <p>${snippet}…</p>
-        <p><a href="${(process.env.PUBLIC_URL || 'https://localeffortfood.com').replace(/\/$/, '')}/weekly/${slug?.current || slug}">Read on the site</a></p>
-      `,
+      htmlContent: `<h2>${escapeXml(doc?.title || title || 'Local Effort Blog')}</h2><p>${escapeXml(snippet)}...</p><p><a href="${base}/weekly/${slugValue}">Read on the site</a></p>`,
       tags: ['blog', 'auto'],
     };
-    const resp = await fetch('https://api.brevo.com/v3/smtp/email', {
-      method: 'POST', headers, body: JSON.stringify(payload)
+    const queued = await emailOutboxService.enqueue({
+      payload,
+      idempotencyKey: `sanity-blog-webhook-${doc?._id || slugValue}-${doc?.publishedAt || ''}`,
+      category: 'publishing',
+      source: '/api/webhooks/sanity/blog',
+      context: { docId: doc?._id || null, slug: slugValue || null },
     });
-    if (!resp.ok) {
-      const t = await resp.text().catch(() => '');
-      return res.status(502).json({ ok: false, error: 'email-failed', details: t });
-    }
-    return res.json({ ok: true, recipients: recipients.length });
+    Promise.resolve()
+      .then(() => emailOutboxService.processBatch({ limit: 5, maxAttempts: 5 }))
+      .catch((queueErr) => logger.warn({ err: queueErr }, 'outbox opportunistic process failed after sanity webhook'));
+
+    auditLog(req, 'webhook.sanity.blog', { queueId: queued.id, recipients: recipients.length, slug: slugValue || null });
+    logger.info({ queueId: queued.id, recipients: recipients.length, slug: slugValue }, 'sanity blog webhook queued email');
+    return res.json({ ok: true, queueId: queued.id, recipients: recipients.length });
   } catch (err) {
-  logger.error({ err }, 'sanity blog webhook error');
+    logger.error({ err }, 'sanity blog webhook error');
     return res.status(500).json({ error: 'webhook-failed' });
+  }
+});
+
+// Brevo events webhook: updates subscriber suppression / subscription state
+app.post('/api/webhooks/brevo/events', webhookRateLimit, async (req, res) => {
+  try {
+    const auth = validateBrevoWebhookSecret(req);
+    if (!auth.ok) return res.status(auth.status).json({ ok: false, error: auth.error });
+
+    const events = Array.isArray(req.body) ? req.body : [req.body];
+    const sc = getSanityClient();
+    if (!sc) return res.status(500).json({ error: 'sanity-not-configured' });
+
+    const now = new Date().toISOString();
+    let processed = 0;
+    let suppressed = 0;
+    let delivered = 0;
+
+    for (const event of events) {
+      const email = String(event?.email || '').trim().toLowerCase();
+      const eventType = String(event?.event || event?.type || '').toLowerCase();
+      if (!email || !eventType) continue;
+      const subscriberId = `email-subscriber-${email.replace(/@/g, '-at-').replace(/\./g, '-').replace(/[^a-z0-9-]/g, '-')}`;
+      await sc.createIfNotExists({ _id: subscriberId, _type: 'emailSubscriber', email, createdAt: now });
+      const patch = { email, updatedAt: now, lastBrevoEvent: eventType, lastBrevoEventAt: now };
+
+      if (['hard_bounce', 'spam', 'unsubscribed', 'blocked', 'invalid_email', 'complaint'].includes(eventType)) {
+        patch.status = eventType === 'unsubscribed' ? 'unsubscribed' : (eventType === 'hard_bounce' ? 'bounced' : 'suppressed');
+        patch.suppressedAt = now;
+        patch.suppressionReason = eventType;
+        suppressed += 1;
+      } else if (eventType === 'delivered') {
+        patch.lastDeliveredAt = now;
+        if (!['unsubscribed', 'bounced', 'suppressed', 'complained'].includes(String(event?.status || '').toLowerCase())) {
+          patch.status = 'subscribed';
+        }
+        delivered += 1;
+      }
+
+      await sc.patch(subscriberId).set(patch).commit();
+      const eventId = `email-event-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 9)}`;
+      const parsedOccurredAt = new Date(event?.date || now);
+      await sc.create({
+        _id: eventId,
+        _type: 'emailEvent',
+        email,
+        eventType,
+        provider: 'brevo',
+        occurredAt: Number.isNaN(parsedOccurredAt.getTime()) ? now : parsedOccurredAt.toISOString(),
+        payload: JSON.stringify(event).slice(0, 20000),
+        createdAt: now,
+      });
+      processed += 1;
+    }
+
+    logger.info({ processed, suppressed, delivered }, 'processed brevo webhook events');
+    auditLog(req, 'webhook.brevo.events', { processed, suppressed, delivered });
+    return res.json({ ok: true, processed, suppressed, delivered });
+  } catch (err) {
+    logger.error({ err }, 'brevo webhook processing failed');
+    return res.status(500).json({ error: 'brevo-webhook-failed' });
+  }
+});
+
+app.post('/api/email/outbox/process', webhookRateLimit, async (req, res) => {
+  try {
+    const token = req.get('X-Job-Token') || req.query?.token || req.body?.token;
+    const expected = process.env.EMAIL_OUTBOX_JOB_TOKEN || '';
+    let authorized = false;
+    if (expected && token && timingSafeEqualString(String(token), String(expected))) {
+      authorized = true;
+    } else {
+      const auth = await authenticateAllowedUser(req);
+      authorized = !!auth.ok;
+      if (authorized) req.user = auth.user;
+    }
+    if (!authorized) return res.status(401).json({ error: 'unauthorized' });
+
+    const limit = Math.max(1, Math.min(100, Number(req.body?.limit || req.query?.limit || 20)));
+    const maxAttempts = Math.max(1, Math.min(10, Number(req.body?.maxAttempts || req.query?.maxAttempts || 5)));
+    const result = await emailOutboxService.processBatch({ limit, maxAttempts });
+    auditLog(req, 'email.outbox.process', result);
+    return res.json({ ok: true, ...result });
+  } catch (err) {
+    logger.error({ err }, 'email outbox process failed');
+    return res.status(500).json({ error: 'outbox-process-failed' });
+  }
+});
+
+app.get('/api/email/outbox/stats', requireAllowedUser, async (req, res) => {
+  try {
+    const stats = await emailOutboxService.getStats();
+    auditLog(req, 'email.outbox.stats');
+    return res.json({ ok: true, stats });
+  } catch (err) {
+    logger.error({ err }, 'email outbox stats failed');
+    return res.status(500).json({ error: 'outbox-stats-failed' });
   }
 });
 
@@ -2194,6 +2573,8 @@ app.get('/api/public/site', (req, res) => {
       : [
           { type: 'sitemap', url: `${trimmedSite}/sitemap.xml` },
           { type: 'sitemap', url: `${trimmedSite}/api/sitemap.xml` },
+          { type: 'rss', url: `${trimmedSite}/api/feeds/releases.rss` },
+          { type: 'atom', url: `${trimmedSite}/api/feeds/releases.atom` },
         ];
 
     return res.json({
@@ -2535,4 +2916,5 @@ app.use((err, req, res, next) => {
 const createApiApp = () => app;
 
 module.exports = { createApiApp };
+
 
