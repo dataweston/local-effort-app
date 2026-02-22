@@ -44,6 +44,10 @@
       "dest": "/prerender/index.html"
     },
     {
+      "src": "^/blog$",
+      "dest": "/prerender/blog/index.html"
+    },
+    {
       "src": "^/releases$",
       "dest": "/prerender/releases/index.html"
     },

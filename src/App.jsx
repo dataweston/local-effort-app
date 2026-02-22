@@ -15,6 +15,8 @@ import { SupabaseAuthProvider } from './contexts/SupabaseAuthContext';
 
 // Lazily import page components
 const ReleasesPage = lazy(() => import('./pages/ReleasesPage'));
+const BlogList = lazy(() => import('./pages/BlogList'));
+const BlogPost = lazy(() => import('./pages/BlogPost'));
 const WeeklyList = lazy(() => import('./pages/WeeklyList'));
 const WeeklyPost = lazy(() => import('./pages/WeeklyPost'));
 const SalePage = lazy(() => import('./pages/SalePage'));
@@ -117,6 +119,22 @@ const AppContent = () => {
                 <Route path="/bridalexpo" element={<Navigate to="/" replace />} />
                 <Route path="/fullpage-demo" element={<Navigate to="/" replace />} />
                 {/* Active pages */}
+                <Route
+                  path="/blog"
+                  element={
+                    <AnimatedPage>
+                      <BlogList />
+                    </AnimatedPage>
+                  }
+                />
+                <Route
+                  path="/blog/:slug"
+                  element={
+                    <AnimatedPage>
+                      <BlogPost />
+                    </AnimatedPage>
+                  }
+                />
                 <Route
                   path="/releases"
                   element={

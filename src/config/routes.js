@@ -4,85 +4,92 @@
 export const PUBLIC_ROUTES = [
   {
     path: '/',
-    title: 'Local Effort Food Co. — Minneapolis Personal Chef',
+    title: 'Local Effort Food Co. - Minneapolis Personal Chef',
     description: 'Local Effort Food Co. is a Minneapolis personal chef team offering in-home dinners, meal prep plans, and small-event catering built around Minnesota-grown ingredients.',
     prerender: true,
   },
   {
+    path: '/blog',
+    title: 'Blog - Local Effort Food Co.',
+    description: 'Stories, updates, and kitchen notes from Local Effort Food Co.',
+    prerender: true,
+  },
+  {
     path: '/releases',
-    title: 'Press & Releases — Local Effort Food Co.',
+    title: 'Press & Releases - Local Effort Food Co.',
     description: 'News, press coverage, and updates from Local Effort Food Co.',
     prerender: true,
   },
   {
     path: '/sale',
-    title: 'Shop — Local Effort Food Co.',
+    title: 'Shop - Local Effort Food Co.',
     description: 'Order from Local Effort Food Co. Fresh, local, Minneapolis-made.',
     prerender: true,
   },
   {
     path: '/weekly',
-    title: 'Weekly Updates — Local Effort Food Co.',
+    title: 'Weekly Updates - Local Effort Food Co.',
     description: 'Weekly menus, stories, and updates from the Local Effort kitchen.',
     prerender: true,
   },
   {
     path: '/happymonday',
-    title: 'For Happy Monday — Local Effort Food Co.',
+    title: 'For Happy Monday - Local Effort Food Co.',
     description: 'Local Effort menu and ordering for Happy Monday.',
     prerender: true,
   },
   {
     path: '/pizza-party',
-    title: 'Pizza Party — Local Effort Food Co.',
+    title: 'Pizza Party - Local Effort Food Co.',
     description: 'Book a wood-fired pizza party with Local Effort in Minneapolis-St. Paul.',
     prerender: true,
   },
   {
     path: '/winterdinner',
-    title: 'Winter Dinner — Local Effort Food Co.',
+    title: 'Winter Dinner - Local Effort Food Co.',
     description: 'Seasonal winter dinner experience from Local Effort.',
     prerender: false,
   },
   {
     path: '/winterpizza',
-    title: 'Winter Pizza — Local Effort Food Co.',
+    title: 'Winter Pizza - Local Effort Food Co.',
     description: 'Winter pizza pop-up from Local Effort.',
     prerender: false,
   },
   {
     path: '/february',
-    title: 'February Menu — Local Effort Food Co.',
+    title: 'February Menu - Local Effort Food Co.',
     description: 'February seasonal menu from Local Effort Food Co.',
     prerender: false,
   },
   {
     path: '/psyche',
-    title: 'Buy Psyche Olive Oil — 3L Extra-Virgin | Local Effort Food Co.',
-    description: 'Buy Psyche extra-virgin olive oil (3 L bag-in-box) from Local Effort Food Co. in Minneapolis. Single-estate koroneiki from Greece — bright, peppery, EVA-certified. $90 with free local delivery.',
+    title: 'Buy Psyche Olive Oil - 3L Extra-Virgin | Local Effort Food Co.',
+    description: 'Buy Psyche extra-virgin olive oil (3 L bag-in-box) from Local Effort Food Co. in Minneapolis. Single-estate koroneiki from Greece - bright, peppery, EVA-certified. $90 with free local delivery.',
     prerender: true,
   },
   {
     path: '/januarymeals',
-    title: 'January Meals — Local Effort Food Co.',
+    title: 'January Meals - Local Effort Food Co.',
     description: 'January meal prep offerings from Local Effort.',
     prerender: false,
   },
   {
     path: '/calendar',
-    title: 'Calendar — Local Effort Food Co.',
+    title: 'Calendar - Local Effort Food Co.',
     description: 'Event and booking calendar for Local Effort Food Co.',
     prerender: false,
   },
 ];
 
-// Dynamic routes — slugs resolved from Sanity at build time
+// Dynamic routes - slugs resolved from Sanity at build time
 export const DYNAMIC_ROUTES = [
   { pattern: '/product/:slug', sanityQuery: '*[_type == "product" && defined(slug.current) && active == true][].slug.current' },
+  { pattern: '/blog/:slug', sanityQuery: '*[_type == "blogPost" && defined(slug.current)][].slug.current' },
   { pattern: '/weekly/:slug', sanityQuery: '*[_type == "weeklyPost" && defined(slug.current)][].slug.current' },
 ];
 
-// Internal routes — noindex, never prerendered
+// Internal routes - noindex, never prerendered
 export const INTERNAL_ROUTES = [
   '/finefoods',
   '/auth',

@@ -5,6 +5,8 @@ import { Header } from '../components/layout/Header';
 import { CartProvider } from '../store/cart/CartContext';
 import DefaultSeo from '../components/seo/DefaultSeo';
 import FullPageDemoPage from '../pages/FullPageDemoPage';
+import BlogList from '../pages/BlogList';
+import BlogPost from '../pages/BlogPost';
 import ReleasesPage from '../pages/ReleasesPage';
 import SalePage from '../pages/SalePage';
 import WeeklyList from '../pages/WeeklyList';
@@ -23,6 +25,8 @@ export default function StaticApp({ helmetContext }) {
           <main className="flex-1" style={{ paddingTop: isFullPageHome ? 0 : '5rem' }}>
             <Routes>
               <Route path="/" element={<FullPageDemoPage />} />
+              <Route path="/blog" element={<BlogList />} />
+              <Route path="/blog/:slug" element={<BlogPost />} />
               <Route path="/releases" element={<ReleasesPage />} />
               <Route path="/sale" element={<SalePage />} />
               <Route path="/weekly" element={<WeeklyList />} />
