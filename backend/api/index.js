@@ -271,9 +271,14 @@ function validateBrevoWebhookSecret(req) {
   const query = isPlainObject(req.query) ? req.query : {};
   const candidates = [
     req.get('X-Brevo-Webhook-Secret'),
+    req.get('X-Brevo-Webhook-Token'),
+    req.get('X-Webhook-Token'),
     req.get('X-Webhook-Secret'),
+    req.get('X-Mailin-Token'),
     typeof query.secret === 'string' ? query.secret : null,
+    typeof query.token === 'string' ? query.token : null,
     typeof body.secret === 'string' ? body.secret : null,
+    typeof body.token === 'string' ? body.token : null,
   ].filter((value) => typeof value === 'string' && value.length > 0);
   if (!candidates.some((value) => timingSafeEqualString(value, expected))) {
     return { ok: false, status: 401, error: 'unauthorized' };
@@ -287,6 +292,44 @@ function escapeXml(value = '') {
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;');
+}
+
+function normalizeBrevoEventType(raw) {
+  const normalized = String(raw || '')
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '_')
+    .replace(/_+/g, '_')
+    .replace(/^_|_$/g, '');
+  const aliasMap = {
+    hardbounce: 'hard_bounce',
+    hard_bounce: 'hard_bounce',
+    softbounce: 'soft_bounce',
+    soft_bounce: 'soft_bounce',
+    spamcomplaint: 'complaint',
+    spam_complaint: 'complaint',
+    complaint: 'complaint',
+    spam: 'spam',
+    unsubscribe: 'unsubscribed',
+    unsubscribed: 'unsubscribed',
+    invalid: 'invalid_email',
+    invalid_email: 'invalid_email',
+    blocked: 'blocked',
+    delivered: 'delivered',
+    deferred: 'deferred',
+    error: 'error',
+    opened: 'opened',
+    click: 'click',
+    clicked: 'click',
+  };
+  return aliasMap[normalized] || normalized;
+}
+
+function extractBrevoEvents(body) {
+  if (Array.isArray(body)) return body;
+  if (Array.isArray(body?.events)) return body.events;
+  if (body && typeof body === 'object') return [body];
+  return [];
 }
 
 // --- INITIALIZE SQUARE CLIENT (defensive) ---
@@ -2097,7 +2140,7 @@ app.post('/api/webhooks/brevo/events', webhookRateLimit, async (req, res) => {
     const auth = validateBrevoWebhookSecret(req);
     if (!auth.ok) return res.status(auth.status).json({ ok: false, error: auth.error });
 
-    const events = Array.isArray(req.body) ? req.body : [req.body];
+    const events = extractBrevoEvents(req.body);
     const sc = getSanityClient();
     if (!sc) return res.status(500).json({ error: 'sanity-not-configured' });
 
@@ -2105,11 +2148,15 @@ app.post('/api/webhooks/brevo/events', webhookRateLimit, async (req, res) => {
     let processed = 0;
     let suppressed = 0;
     let delivered = 0;
+    let ignored = 0;
 
     for (const event of events) {
       const email = String(event?.email || '').trim().toLowerCase();
-      const eventType = String(event?.event || event?.type || '').toLowerCase();
-      if (!email || !eventType) continue;
+      const eventType = normalizeBrevoEventType(event?.event || event?.type || event?.eventType || '');
+      if (!email || !eventType) {
+        ignored += 1;
+        continue;
+      }
       const subscriberId = `email-subscriber-${email.replace(/@/g, '-at-').replace(/\./g, '-').replace(/[^a-z0-9-]/g, '-')}`;
       await sc.createIfNotExists({ _id: subscriberId, _type: 'emailSubscriber', email, createdAt: now });
       const patch = { email, updatedAt: now, lastBrevoEvent: eventType, lastBrevoEventAt: now };
@@ -2143,9 +2190,9 @@ app.post('/api/webhooks/brevo/events', webhookRateLimit, async (req, res) => {
       processed += 1;
     }
 
-    logger.info({ processed, suppressed, delivered }, 'processed brevo webhook events');
-    auditLog(req, 'webhook.brevo.events', { processed, suppressed, delivered });
-    return res.json({ ok: true, processed, suppressed, delivered });
+    logger.info({ processed, suppressed, delivered, ignored }, 'processed brevo webhook events');
+    auditLog(req, 'webhook.brevo.events', { processed, suppressed, delivered, ignored });
+    return res.json({ ok: true, processed, suppressed, delivered, ignored });
   } catch (err) {
     logger.error({ err }, 'brevo webhook processing failed');
     return res.status(500).json({ error: 'brevo-webhook-failed' });
@@ -2185,6 +2232,33 @@ app.get('/api/email/outbox/stats', requireAllowedUser, async (req, res) => {
   } catch (err) {
     logger.error({ err }, 'email outbox stats failed');
     return res.status(500).json({ error: 'outbox-stats-failed' });
+  }
+});
+
+app.get('/api/email/events/summary', requireAllowedUser, async (req, res) => {
+  try {
+    const sc = getSanityReadClient() || getSanityClient();
+    if (!sc) return res.status(500).json({ error: 'sanity-not-configured' });
+
+    const summary = await sc.fetch(`{
+      "totalEvents": count(*[_type == "emailEvent"]),
+      "eventsLast24h": count(*[_type == "emailEvent" && dateTime(_createdAt) > dateTime(now()) - 60*60*24]),
+      "subscribers": count(*[_type == "emailSubscriber"]),
+      "subscriberStatusCounts": {
+        "pending_double_opt_in": count(*[_type == "emailSubscriber" && status == "pending_double_opt_in"]),
+        "subscribed": count(*[_type == "emailSubscriber" && status == "subscribed"]),
+        "unsubscribed": count(*[_type == "emailSubscriber" && status == "unsubscribed"]),
+        "suppressed": count(*[_type == "emailSubscriber" && status == "suppressed"]),
+        "bounced": count(*[_type == "emailSubscriber" && status == "bounced"])
+      },
+      "recentEvents": *[_type == "emailEvent"] | order(_createdAt desc)[0...20]{ email, eventType, occurredAt, _createdAt }
+    }`);
+
+    auditLog(req, 'email.events.summary');
+    return res.json({ ok: true, summary: summary || {} });
+  } catch (err) {
+    logger.error({ err }, 'email events summary failed');
+    return res.status(500).json({ error: 'email-events-summary-failed' });
   }
 });
 
