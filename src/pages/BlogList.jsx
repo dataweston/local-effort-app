@@ -42,6 +42,14 @@ const BlogList = () => {
       <ul className="space-y-4">
         {posts.map((p) => (
           <li key={p.slug} className="border rounded-lg p-4 hover:bg-gray-50">
+            {(p.mainImageUrl || p.ogImageUrl) && (
+              <img
+                src={p.mainImageUrl || p.ogImageUrl}
+                alt={p.mainImageAlt || p.ogImageAlt || p.title || 'Blog post image'}
+                loading="lazy"
+                className="mb-3 h-52 w-full rounded-md object-cover"
+              />
+            )}
             <Link to={`/blog/${p.slug}`} className="text-xl font-semibold hover:underline">{p.title}</Link>
             <div className="text-sm text-gray-500 mt-1">{p.publishedAt ? new Date(p.publishedAt).toLocaleDateString() : ''}</div>
             {p.excerpt && <p className="text-gray-700 mt-2">{p.excerpt}</p>}

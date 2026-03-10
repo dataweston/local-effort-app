@@ -209,7 +209,10 @@ function createPublishingService({ getSanityClient, getSanityReadClient, memberT
       canonicalUrl: canonicalForPost(post),
       metaTitle: post?.metaTitle || post?.title || '',
       metaDescription: post?.metaDescription || buildExcerpt(post),
+      mainImageUrl: post?.mainImage?.asset?.url || null,
+      mainImageAlt: post?.mainImage?.alt || null,
       ogImageUrl: post?.ogImage?.asset?.url || post?.mainImage?.asset?.url || null,
+      ogImageAlt: post?.ogImage?.alt || post?.mainImage?.alt || null,
       emailSegment: post?.emailSegment || 'all_subscribers',
       newsletter: post?.newsletter
         ? {

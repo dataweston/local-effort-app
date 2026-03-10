@@ -69,6 +69,14 @@ const BlogPost = () => {
       <Link to="/blog" className="text-sm underline">Back to blog</Link>
       <h1 className="heading-xl heading-balance mt-4">{post.title}</h1>
       <div className="text-sm text-gray-500 mt-1">{post.publishedAt ? new Date(post.publishedAt).toLocaleDateString() : ''}</div>
+      {(post?.mainImageUrl || post?.ogImageUrl) && (
+        <img
+          src={post.mainImageUrl || post.ogImageUrl}
+          alt={post.mainImageAlt || post.ogImageAlt || post.title || 'Blog post image'}
+          loading="lazy"
+          className="mt-6 w-full rounded-lg object-cover"
+        />
+      )}
       <article className="prose max-w-none mt-6">
         {Array.isArray(post.body) && post.body.length > 0
           ? <PortableText value={post.body} components={portableTextComponents} />
