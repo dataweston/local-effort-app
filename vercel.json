@@ -40,6 +40,10 @@
       "dest": "/backend/api/server.js"
     },
     {
+      "src": "^/\\.well-known/(.*)$",
+      "dest": "/backend/api/server.js"
+    },
+    {
       "src": "^/$",
       "dest": "/prerender/index.html"
     },

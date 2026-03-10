@@ -8,6 +8,7 @@ const FeedbackForm = () => {
     phone: '',
     category: 'requests',
     message: '',
+    website: '',
   });
   const [status, setStatus] = useState({ type: '', message: '' });
 
@@ -33,6 +34,7 @@ const FeedbackForm = () => {
         message: formData.message,
         type: 'feedback',
         category: formData.category,
+        website: formData.website,
       };
 
       const res = await fetch('/api/messages/submit', {
@@ -48,7 +50,7 @@ const FeedbackForm = () => {
       }
 
       setStatus({ type: 'success', message: 'Thank you! Your feedback has been submitted.' });
-      setFormData({ name: '', email: '', phone: '', category: 'requests', message: '' });
+      setFormData({ name: '', email: '', phone: '', category: 'requests', message: '', website: '' });
 
       setTimeout(() => {
         setStatus({ type: '', message: '' });
@@ -112,7 +114,7 @@ const FeedbackForm = () => {
           </div>
           <div>
             <label htmlFor="email" className="block text-sm font-medium text-neutral-700">
-              Email (Optional)
+              Email
             </label>
             <input
               type="email"
@@ -120,10 +122,21 @@ const FeedbackForm = () => {
               id="email"
               value={formData.email}
               onChange={handleChange}
+              required
               className="mt-1 block w-full rounded-md border-neutral-300 shadow-sm focus:border-primary focus:ring-primary"
             />
           </div>
         </div>
+        <input
+          type="text"
+          name="website"
+          value={formData.website}
+          onChange={handleChange}
+          autoComplete="off"
+          tabIndex={-1}
+          aria-hidden="true"
+          className="hidden"
+        />
         <div className="flex items-center justify-between">
           <motion.button
             type="submit"

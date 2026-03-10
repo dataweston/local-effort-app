@@ -58,10 +58,14 @@ function hashKey(str) {
   return String(h >>> 0);
 }
 
+const BASIC_EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 function createMessagesRouter({ logger, brevoService, getSanityClient, db, getSupabase, emailOutboxService, auditLogger }) {
   const router = express.Router();
   const { upsertContact, sendEmail, getHeaders, blacklistContact } = brevoService;
   const hasOutbox = !!(emailOutboxService && typeof emailOutboxService.enqueue === 'function');
+  const submitRateBuckets = new Map();
+  const sensitiveSubmitTypes = new Set(['feedback', 'meal-prep-waitlist']);
   const parseListIds = (value) => {
     if (Array.isArray(value)) {
       return value
@@ -111,6 +115,69 @@ function createMessagesRouter({ logger, brevoService, getSanityClient, db, getSu
   };
 
   const basePublicUrl = () => (process.env.PUBLIC_URL || 'https://localeffortfood.com').replace(/\/$/, '');
+
+  const normalizeType = (value) => String(value || 'general').trim().toLowerCase().slice(0, 80) || 'general';
+  const normalizeEmail = (value) => String(value || '').trim().toLowerCase();
+  const readTrimmed = (value, max = 1000) => {
+    if (typeof value !== 'string') return '';
+    return value.trim().slice(0, max);
+  };
+  const getClientIp = (req) => {
+    const forwarded = req.headers['x-forwarded-for'];
+    if (typeof forwarded === 'string' && forwarded.trim()) {
+      return forwarded.split(',')[0].trim();
+    }
+    return req.ip || req.connection?.remoteAddress || 'unknown';
+  };
+  const bumpRateLimit = ({ key, windowMs, max }) => {
+    const now = Date.now();
+    const current = submitRateBuckets.get(key);
+    if (!current || current.expiresAt <= now) {
+      submitRateBuckets.set(key, { count: 1, expiresAt: now + windowMs });
+      return { limited: false, retryAfter: 0 };
+    }
+    if (current.count >= max) {
+      const retryAfter = Math.max(1, Math.ceil((current.expiresAt - now) / 1000));
+      return { limited: true, retryAfter };
+    }
+    current.count += 1;
+    if (submitRateBuckets.size > 12000) {
+      for (const [bucketKey, bucket] of submitRateBuckets.entries()) {
+        if (!bucket || bucket.expiresAt <= now) submitRateBuckets.delete(bucketKey);
+      }
+    }
+    return { limited: false, retryAfter: 0 };
+  };
+  const checkSubmitRateLimit = ({ req, type, email }) => {
+    const ip = getClientIp(req);
+    const isSensitive = sensitiveSubmitTypes.has(type);
+    const checks = [
+      { key: `messages-submit:ip:${ip}`, windowMs: 10 * 60 * 1000, max: 40 },
+      {
+        key: `messages-submit:ip-type:${ip}:${type}`,
+        windowMs: isSensitive ? 10 * 60 * 1000 : 5 * 60 * 1000,
+        max: isSensitive ? 6 : 20,
+      },
+    ];
+    const emailValue = normalizeEmail(email);
+    if (emailValue) {
+      checks.push({
+        key: `messages-submit:email-type:${emailValue}:${type}`,
+        windowMs: 10 * 60 * 1000,
+        max: isSensitive ? 4 : 12,
+      });
+    }
+    let retryAfter = 0;
+    for (const check of checks) {
+      const result = bumpRateLimit(check);
+      if (result.limited) {
+        retryAfter = Math.max(retryAfter, result.retryAfter);
+      }
+    }
+    return retryAfter > 0
+      ? { limited: true, retryAfter, ip }
+      : { limited: false, retryAfter: 0, ip };
+  };
 
   const renderConfirmHtml = ({ title, body }) => `<!doctype html>
 <html lang="en">
@@ -168,12 +235,56 @@ function createMessagesRouter({ logger, brevoService, getSanityClient, db, getSu
 
   router.post('/messages/submit', async (req, res) => {
     try {
-      const { name, email, phone, subject, message, type = 'general', sendCopy = false } = req.body || {};
+      const body = req.body || {};
+      const type = normalizeType(body.type);
+      const name = readTrimmed(body.name, 200);
+      const email = normalizeEmail(body.email);
+      const phone = readTrimmed(body.phone, 80);
+      const subject = readTrimmed(body.subject, 240);
+      const message = readTrimmed(body.message, 12000);
+      const sendCopy = !!body.sendCopy;
+      const honeypot = readTrimmed(body.website, 255);
+      const familySize = readTrimmed(body.familySize, 120);
+      const children = readTrimmed(body.children, 400);
+      const daysPerWeek = readTrimmed(body.daysPerWeek, 120);
+      const mealsPerDay = readTrimmed(body.mealsPerDay, 120);
+      const allergies = readTrimmed(body.allergies, 400);
+      const questions = readTrimmed(body.questions, 1200);
       if (!message) return res.status(400).json({ error: 'Message is required' });
+
+      // Silent success on honeypot hits to reduce bot retries.
+      if (honeypot) {
+        if (logger?.info) logger.info({ type, email, hasHoneypot: true }, 'messages submit suppressed by honeypot');
+        return res.json({ ok: true, suppressed: true });
+      }
+
+      const rateLimit = checkSubmitRateLimit({ req, type, email });
+      if (rateLimit.limited) {
+        res.setHeader('Retry-After', String(rateLimit.retryAfter));
+        return res.status(429).json({ error: 'rate-limit-exceeded', retryAfter: rateLimit.retryAfter });
+      }
+
+      if (type === 'feedback') {
+        if (!email || !BASIC_EMAIL_REGEX.test(email)) {
+          return res.status(400).json({ error: 'Feedback requires a valid email' });
+        }
+        if (message.length < 8) {
+          return res.status(400).json({ error: 'Feedback message is too short' });
+        }
+      }
+
+      if (type === 'meal-prep-waitlist') {
+        if (!name || !email || !phone || !BASIC_EMAIL_REGEX.test(email)) {
+          return res.status(400).json({ error: 'Waitlist requires name, email, and phone' });
+        }
+        if (!familySize || !daysPerWeek || !mealsPerDay) {
+          return res.status(400).json({ error: 'Waitlist requires family size, days per week, and meals per day' });
+        }
+      }
 
       // Only upsert contact if email is provided
       if (email) {
-        const [firstName, ...rest] = (name || '').split(' ');
+        const [firstName, ...rest] = name.split(' ');
         await upsertContact({ email, firstName, lastName: rest.join(' '), phone });
       }
 
@@ -187,7 +298,7 @@ function createMessagesRouter({ logger, brevoService, getSanityClient, db, getSu
             status: 'open',
             subject: subject || '(no subject)',
             bodyText: message,
-            fromEmail: email,
+            fromEmail: email || null,
             fromName: name || null,
             phone: phone || null,
             channel: 'email',
@@ -209,12 +320,12 @@ function createMessagesRouter({ logger, brevoService, getSanityClient, db, getSu
               name,
               email,
               phone: phone || null,
-              family_size: req.body.familySize || null,
-              children: req.body.children || null,
-              days_per_week: req.body.daysPerWeek || null,
-              meals_per_day: req.body.mealsPerDay || null,
-              allergies: req.body.allergies || null,
-              questions: req.body.questions || null,
+              family_size: familySize || null,
+              children: children || null,
+              days_per_week: daysPerWeek || null,
+              meals_per_day: mealsPerDay || null,
+              allergies: allergies || null,
+              questions: questions || null,
               sanity_message_id: msgDoc?._id || null,
               status: 'pending',
             };
@@ -233,13 +344,14 @@ function createMessagesRouter({ logger, brevoService, getSanityClient, db, getSu
       if (!teamEmail) return res.status(500).json({ error: 'No TEAM/SUPPORT inbox configured on server' });
 
       const fromDisplay = name || email || 'Anonymous';
+      const safeMessage = escapeHtml(message);
       const htmlContent = `
-        <p>New inquiry from <strong>${fromDisplay}</strong></p>
-        ${email ? `<p><strong>Email:</strong> ${email}</p>` : '<p><strong>Email:</strong> Not provided (anonymous)</p>'}
-        ${phone ? `<p><strong>Phone:</strong> ${phone}</p>` : ''}
-        <p><strong>Type:</strong> ${type}</p>
+        <p>New inquiry from <strong>${escapeHtml(fromDisplay)}</strong></p>
+        ${email ? `<p><strong>Email:</strong> ${escapeHtml(email)}</p>` : '<p><strong>Email:</strong> Not provided (anonymous)</p>'}
+        ${phone ? `<p><strong>Phone:</strong> ${escapeHtml(phone)}</p>` : ''}
+        <p><strong>Type:</strong> ${escapeHtml(type)}</p>
         <hr />
-        <pre style="white-space:pre-wrap;font-family:inherit">${(message || '').replace(/</g, '&lt;')}</pre>
+        <pre style="white-space:pre-wrap;font-family:inherit">${safeMessage}</pre>
       `;
       const payload = {
         to: [{ email: teamEmail }],

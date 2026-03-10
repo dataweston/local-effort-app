@@ -33,6 +33,10 @@ import release from './release'
 import emailSubscriber from './emailSubscriber'
 import emailOutbox from './emailOutbox'
 import emailEvent from './emailEvent'
+import newsletter from './newsletter'
+import membershipTier from './membershipTier'
+import activityPubFollower from './activityPubFollower'
+import activityPubDelivery from './activityPubDelivery'
 
 export const schemaTypes = [
 	page,
@@ -65,6 +69,10 @@ export const schemaTypes = [
 	referralParticipant,
 	blogPost,
 	release,
+	newsletter,
+	membershipTier,
+	activityPubFollower,
+	activityPubDelivery,
 	emailSubscriber,
 	emailOutbox,
 	emailEvent,

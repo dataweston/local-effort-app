@@ -30,6 +30,8 @@ const path = require('path');
 const { logger } = require('./logger');
 const { createBrevoService } = require('./services/brevo');
 const { createEmailOutboxService } = require('./services/emailOutbox');
+const { createPublishingService } = require('./services/publishing');
+const { createActivityPubService } = require('./services/activityPub');
 const { createCrowdfundingRouter } = require('./routes/crowdfunding');
 const crowdfundCheckoutHandler = require('../../api-handlers/crowdfund/checkout');
 const crowdfundFeedbackHandler = require('../../api-handlers/crowdfund/feedback');
@@ -363,6 +365,39 @@ const emailOutboxService = createEmailOutboxService({
   getSanityReadClient,
   brevoService,
   logger,
+});
+const publicSiteUrl = (process.env.PUBLIC_SITE_URL || process.env.PUBLIC_URL || 'https://localeffortfood.com').replace(/\/$/, '');
+const publishingService = createPublishingService({
+  getSanityClient,
+  getSanityReadClient,
+  memberTokenSecret: process.env.MEMBER_TOKEN_SECRET || process.env.EMAIL_UNSUBSCRIBE_SECRET || '',
+  siteUrl: publicSiteUrl,
+});
+const activityPubUsername = String(process.env.ACTIVITYPUB_USERNAME || 'localeffort').trim() || 'localeffort';
+const activityPubActorName = String(process.env.ACTIVITYPUB_ACTOR_NAME || 'Local Effort Blog').trim() || 'Local Effort Blog';
+const activityPubPublicKeyPem = String(process.env.ACTIVITYPUB_PUBLIC_KEY_PEM || '').trim();
+const activityPubPrivateKeyPem = String(process.env.ACTIVITYPUB_PRIVATE_KEY_PEM || '').trim();
+const activityPubInboxEnabled = /^(1|true|yes)$/i.test(String(process.env.ACTIVITYPUB_INBOX_ENABLED || ''));
+const activityPubSiteHost = (() => {
+  try {
+    return new URL(publicSiteUrl).host.toLowerCase();
+  } catch (err) {
+    return 'localeffortfood.com';
+  }
+})();
+const activityPubActorUrl = `${publicSiteUrl}/api/activitypub/actor`;
+const activityPubInboxUrl = `${publicSiteUrl}/api/activitypub/inbox`;
+const activityPubOutboxUrl = `${publicSiteUrl}/api/activitypub/outbox`;
+const activityPubFollowersUrl = `${publicSiteUrl}/api/activitypub/followers`;
+const activityPubFollowingUrl = `${publicSiteUrl}/api/activitypub/following`;
+const activityPubPublicKeyId = `${activityPubActorUrl}#main-key`;
+const activityPubService = createActivityPubService({
+  getSanityClient,
+  getSanityReadClient,
+  logger,
+  privateKeyPem: activityPubPrivateKeyPem,
+  keyId: activityPubPublicKeyId,
+  outboundAuthToken: process.env.ACTIVITYPUB_OUTBOUND_TOKEN || '',
 });
 const publishRateLimit = createRateLimiter({ name: 'publish', windowMs: 60 * 1000, max: 30 });
 const webhookRateLimit = createRateLimiter({ name: 'webhook', windowMs: 60 * 1000, max: 120 });
@@ -1622,6 +1657,558 @@ async function fetchPublishedReleases(limit = 20) {
   });
 }
 
+function parseBoundedInteger(value, { fallback = 20, min = 1, max = 100 } = {}) {
+  const num = Number(value);
+  if (!Number.isFinite(num)) return fallback;
+  return Math.max(min, Math.min(max, Math.floor(num)));
+}
+
+function includeSetFromQuery(raw) {
+  if (!raw) return new Set();
+  const value = Array.isArray(raw) ? raw.join(',') : String(raw);
+  return new Set(
+    value
+      .split(',')
+      .map((entry) => entry.trim().toLowerCase())
+      .filter(Boolean)
+  );
+}
+
+function toSafeCdata(value) {
+  return String(value || '').replace(/]]>/g, ']]]]><![CDATA[>');
+}
+
+function baseAnonymousMemberContext() {
+  return {
+    isMemberAuthenticated: false,
+    isSubscribed: false,
+    activeTierSlugs: [],
+    email: null,
+  };
+}
+
+function sanitizeMemberContext(memberContext) {
+  return {
+    isMemberAuthenticated: !!memberContext?.isMemberAuthenticated,
+    isSubscribed: !!memberContext?.isSubscribed,
+    activeTierSlugs: Array.isArray(memberContext?.activeTierSlugs) ? memberContext.activeTierSlugs : [],
+  };
+}
+
+async function fetchPublicBlogPosts({ limit = 50, authorSlug = '', tag = '' } = {}) {
+  const posts = await publishingService.fetchRawPosts({ limit: Math.max(limit * 3, limit) });
+  const publicPosts = publishingService.filterByAccess(posts, baseAnonymousMemberContext());
+  const byAuthor = publishingService.filterByAuthor(publicPosts, authorSlug);
+  const byTag = publishingService.filterByTag(byAuthor, tag);
+  return byTag.slice(0, limit);
+}
+
+function sendActivityJson(res, payload, { status = 200, cacheControl = 'public, max-age=300' } = {}) {
+  res.statusCode = status;
+  if (cacheControl) res.setHeader('Cache-Control', cacheControl);
+  res.setHeader('Content-Type', 'application/activity+json; charset=utf-8');
+  return res.end(JSON.stringify(payload));
+}
+
+function activityStreamsContext() {
+  return ['https://www.w3.org/ns/activitystreams'];
+}
+
+function activityObjectUrlFromSlug(slug) {
+  return `${publicSiteUrl}/api/activitypub/objects/${encodeURIComponent(String(slug || '').trim())}`;
+}
+
+function buildActivityObject(post) {
+  const serialized = publishingService.serializePost(post, { includeHtml: true });
+  const slug = String(serialized.slug || '').trim();
+  const objectId = activityObjectUrlFromSlug(slug || serialized.id || '');
+  const tags = (serialized.tags || [])
+    .map((value) => String(value || '').trim())
+    .filter(Boolean)
+    .map((value) => {
+      const clean = value.replace(/^#/, '').trim();
+      return {
+        type: 'Hashtag',
+        name: `#${clean}`,
+        href: `${publicSiteUrl}/blog?tag=${encodeURIComponent(clean)}`,
+      };
+    });
+  return {
+    id: objectId,
+    type: 'Article',
+    attributedTo: activityPubActorUrl,
+    url: serialized.canonicalUrl || `${publicSiteUrl}/blog/${slug}`,
+    name: serialized.title || '',
+    summary: serialized.excerpt || '',
+    content: serialized.html || '',
+    published: serialized.publishedAt || serialized.updatedAt || new Date().toISOString(),
+    updated: serialized.updatedAt || serialized.publishedAt || new Date().toISOString(),
+    to: ['https://www.w3.org/ns/activitystreams#Public'],
+    cc: [activityPubFollowersUrl],
+    tag: tags,
+    sensitive: false,
+  };
+}
+
+function buildCreateActivity(post) {
+  const object = buildActivityObject(post);
+  return {
+    id: `${object.id}#create`,
+    type: 'Create',
+    actor: activityPubActorUrl,
+    published: object.published,
+    to: object.to,
+    cc: object.cc,
+    object,
+  };
+}
+
+function buildEmptyOrderedCollection(id) {
+  return {
+    '@context': activityStreamsContext(),
+    id,
+    type: 'OrderedCollection',
+    totalItems: 0,
+    first: `${id}?page=true&offset=0&limit=20`,
+  };
+}
+
+function sha1Hex(value) {
+  return crypto.createHash('sha1').update(String(value || '')).digest('hex');
+}
+
+function normalizeActivityUrl(value) {
+  const raw = String(value || '').trim();
+  if (!raw) return '';
+  try {
+    return new URL(raw).toString();
+  } catch (err) {
+    return '';
+  }
+}
+
+function parseActorObject(actorValue) {
+  if (!actorValue) return null;
+  if (typeof actorValue === 'string') {
+    return { actorId: normalizeActivityUrl(actorValue) };
+  }
+  if (typeof actorValue !== 'object') return null;
+  const actorId = normalizeActivityUrl(actorValue.id || actorValue.url || '');
+  return {
+    actorId,
+    actorType: String(actorValue.type || '').trim() || 'Person',
+    inboxUrl: normalizeActivityUrl(actorValue.inbox || ''),
+    sharedInboxUrl: normalizeActivityUrl(actorValue?.endpoints?.sharedInbox || ''),
+    profileUrl: normalizeActivityUrl(actorValue.url || actorValue.id || ''),
+    publicKeyPem: String(actorValue?.publicKey?.publicKeyPem || '').trim(),
+  };
+}
+
+async function fetchRemoteActor(actorId) {
+  const normalizedActorId = normalizeActivityUrl(actorId);
+  if (!normalizedActorId) return null;
+  try {
+    const response = await fetch(normalizedActorId, {
+      method: 'GET',
+      headers: {
+        accept: 'application/activity+json, application/ld+json; profile="https://www.w3.org/ns/activitystreams", application/json',
+      },
+    });
+    if (!response.ok) return null;
+    const payload = await response.json().catch(() => null);
+    if (!payload || typeof payload !== 'object') return null;
+    const actor = parseActorObject(payload);
+    if (!actor || !actor.actorId) return null;
+    return actor;
+  } catch (err) {
+    return null;
+  }
+}
+
+async function resolveFollowerActor(actorValue) {
+  const parsed = parseActorObject(actorValue);
+  if (!parsed || !parsed.actorId) return null;
+  if (parsed.inboxUrl) return parsed;
+  const remote = await fetchRemoteActor(parsed.actorId);
+  if (!remote) return parsed;
+  return {
+    ...parsed,
+    actorType: remote.actorType || parsed.actorType,
+    inboxUrl: remote.inboxUrl || parsed.inboxUrl || '',
+    sharedInboxUrl: remote.sharedInboxUrl || parsed.sharedInboxUrl || '',
+    profileUrl: remote.profileUrl || parsed.profileUrl || '',
+    publicKeyPem: remote.publicKeyPem || parsed.publicKeyPem || '',
+  };
+}
+
+function buildAcceptActivity({ followActivity, actorId }) {
+  const followId = String(followActivity?.id || `${actorId}#follow`).trim();
+  const published = new Date().toISOString();
+  return {
+    '@context': activityStreamsContext(),
+    id: `${activityPubActorUrl}/accept/${sha1Hex(`${followId}|${actorId}`)}`,
+    type: 'Accept',
+    actor: activityPubActorUrl,
+    object: followActivity?.id
+      ? {
+          id: followId,
+          type: 'Follow',
+          actor: actorId,
+          object: activityPubActorUrl,
+        }
+      : {
+          type: 'Follow',
+          actor: actorId,
+          object: activityPubActorUrl,
+        },
+    to: [actorId],
+    published,
+  };
+}
+
+app.get('/.well-known/webfinger', (req, res) => {
+  const resource = String(req.query?.resource || '').trim().toLowerCase();
+  if (!resource) {
+    return res.status(400).json({ error: 'missing-resource' });
+  }
+  const supported = new Set([
+    `acct:${activityPubUsername.toLowerCase()}@${activityPubSiteHost}`,
+    `acct:blog@${activityPubSiteHost}`,
+    activityPubActorUrl.toLowerCase(),
+  ]);
+  if (!supported.has(resource)) {
+    return res.status(404).json({ error: 'not-found' });
+  }
+  const subject = `acct:${activityPubUsername.toLowerCase()}@${activityPubSiteHost}`;
+  res.statusCode = 200;
+  res.setHeader('Cache-Control', 'public, max-age=600');
+  res.setHeader('Content-Type', 'application/jrd+json; charset=utf-8');
+  return res.end(JSON.stringify({
+    subject,
+    aliases: [activityPubActorUrl, `${publicSiteUrl}/blog`],
+    links: [
+      {
+        rel: 'self',
+        type: 'application/activity+json',
+        href: activityPubActorUrl,
+      },
+      {
+        rel: 'http://webfinger.net/rel/profile-page',
+        type: 'text/html',
+        href: `${publicSiteUrl}/blog`,
+      },
+    ],
+  }));
+});
+
+app.get('/.well-known/nodeinfo', (req, res) => {
+  res.statusCode = 200;
+  res.setHeader('Cache-Control', 'public, max-age=600');
+  res.setHeader('Content-Type', 'application/json; charset=utf-8');
+  return res.end(JSON.stringify({
+    links: [
+      {
+        rel: 'http://nodeinfo.diaspora.software/ns/schema/2.1',
+        href: `${publicSiteUrl}/api/activitypub/nodeinfo/2.1`,
+      },
+    ],
+  }));
+});
+
+app.get('/api/activitypub/nodeinfo/2.1', async (req, res) => {
+  try {
+    const posts = await fetchPublicBlogPosts({ limit: 200 });
+    const followers = await activityPubService.listFollowers({ status: 'active', limit: 1, offset: 0 });
+    const userCount = 1 + Number(followers?.total || 0);
+    return res.json({
+      version: '2.1',
+      software: {
+        name: 'local-effort-publisher',
+        version: '1.0.0',
+      },
+      protocols: ['activitypub'],
+      services: { inbound: activityPubInboxEnabled ? ['activitypub'] : [], outbound: ['activitypub'] },
+      usage: {
+        users: { total: userCount, activeHalfyear: userCount, activeMonth: userCount },
+        localPosts: posts.length,
+      },
+      openRegistrations: false,
+      metadata: {
+        actor: activityPubActorUrl,
+        site: publicSiteUrl,
+      },
+    });
+  } catch (err) {
+    logger.error({ err }, 'activitypub nodeinfo failed');
+    return res.status(500).json({ error: 'activitypub-nodeinfo-failed' });
+  }
+});
+
+app.get('/api/activitypub/actor', (req, res) => {
+  const actor = {
+    '@context': [
+      'https://www.w3.org/ns/activitystreams',
+      'https://w3id.org/security/v1',
+    ],
+    id: activityPubActorUrl,
+    type: 'Person',
+    preferredUsername: activityPubUsername,
+    name: activityPubActorName,
+    summary: 'Publishing feed for Local Effort Food Co. blog posts.',
+    discoverable: true,
+    inbox: activityPubInboxUrl,
+    outbox: activityPubOutboxUrl,
+    followers: activityPubFollowersUrl,
+    following: activityPubFollowingUrl,
+    manuallyApprovesFollowers: true,
+    url: `${publicSiteUrl}/blog`,
+    icon: {
+      type: 'Image',
+      mediaType: 'image/png',
+      url: `${publicSiteUrl}/gallery/logo.png`,
+    },
+  };
+  if (activityPubPublicKeyPem) {
+    actor.publicKey = {
+      id: activityPubPublicKeyId,
+      owner: activityPubActorUrl,
+      publicKeyPem: activityPubPublicKeyPem,
+    };
+  }
+  return sendActivityJson(res, actor, { cacheControl: 'public, max-age=600' });
+});
+
+app.get('/api/activitypub/followers', async (req, res) => {
+  try {
+    const isPage = String(req.query?.page || '').toLowerCase() === 'true';
+    const limit = parseBoundedInteger(req.query?.limit, { fallback: 20, min: 1, max: 100 });
+    const offset = parseBoundedInteger(req.query?.offset, { fallback: 0, min: 0, max: 5000 });
+    const followerResult = await activityPubService.listFollowers({
+      status: 'active',
+      limit,
+      offset,
+    });
+
+    if (!isPage) {
+      return sendActivityJson(
+        res,
+        {
+          '@context': activityStreamsContext(),
+          id: activityPubFollowersUrl,
+          type: 'OrderedCollection',
+          totalItems: followerResult.total,
+          first: `${activityPubFollowersUrl}?page=true&offset=0&limit=${limit}`,
+        },
+        { cacheControl: 'public, max-age=120' }
+      );
+    }
+
+    const orderedItems = followerResult.items
+      .map((follower) => normalizeActivityUrl(follower?.actorId))
+      .filter(Boolean);
+    const nextOffset = offset + limit;
+    const prevOffset = Math.max(0, offset - limit);
+    const pagePayload = {
+      '@context': activityStreamsContext(),
+      id: `${activityPubFollowersUrl}?page=true&offset=${offset}&limit=${limit}`,
+      type: 'OrderedCollectionPage',
+      partOf: activityPubFollowersUrl,
+      orderedItems,
+    };
+    if (nextOffset < followerResult.total) {
+      pagePayload.next = `${activityPubFollowersUrl}?page=true&offset=${nextOffset}&limit=${limit}`;
+    }
+    if (offset > 0) {
+      pagePayload.prev = `${activityPubFollowersUrl}?page=true&offset=${prevOffset}&limit=${limit}`;
+    }
+    return sendActivityJson(res, pagePayload, { cacheControl: 'public, max-age=120' });
+  } catch (err) {
+    logger.error({ err }, 'activitypub followers failed');
+    return res.status(500).json({ error: 'activitypub-followers-failed' });
+  }
+});
+
+app.get('/api/activitypub/following', (req, res) => sendActivityJson(
+  res,
+  buildEmptyOrderedCollection(activityPubFollowingUrl),
+  { cacheControl: 'public, max-age=120' }
+));
+
+app.get('/api/activitypub/outbox', async (req, res) => {
+  try {
+    const isPage = String(req.query?.page || '').toLowerCase() === 'true';
+    const limit = parseBoundedInteger(req.query?.limit, { fallback: 20, min: 1, max: 50 });
+    const offset = parseBoundedInteger(req.query?.offset, { fallback: 0, min: 0, max: 5000 });
+    const posts = await fetchPublicBlogPosts({ limit: 200 });
+    const orderedItems = posts.map((post) => buildCreateActivity(post));
+
+    if (!isPage) {
+      return sendActivityJson(res, {
+        '@context': activityStreamsContext(),
+        id: activityPubOutboxUrl,
+        type: 'OrderedCollection',
+        totalItems: orderedItems.length,
+        first: `${activityPubOutboxUrl}?page=true&offset=0&limit=${limit}`,
+      }, { cacheControl: 'public, max-age=120' });
+    }
+
+    const items = orderedItems.slice(offset, offset + limit);
+    const nextOffset = offset + limit;
+    const prevOffset = Math.max(0, offset - limit);
+    const pageId = `${activityPubOutboxUrl}?page=true&offset=${offset}&limit=${limit}`;
+    const pagePayload = {
+      '@context': activityStreamsContext(),
+      id: pageId,
+      type: 'OrderedCollectionPage',
+      partOf: activityPubOutboxUrl,
+      orderedItems: items,
+    };
+    if (nextOffset < orderedItems.length) {
+      pagePayload.next = `${activityPubOutboxUrl}?page=true&offset=${nextOffset}&limit=${limit}`;
+    }
+    if (offset > 0) {
+      pagePayload.prev = `${activityPubOutboxUrl}?page=true&offset=${prevOffset}&limit=${limit}`;
+    }
+    return sendActivityJson(res, pagePayload, { cacheControl: 'public, max-age=120' });
+  } catch (err) {
+    logger.error({ err }, 'activitypub outbox failed');
+    return res.status(500).json({ error: 'activitypub-outbox-failed' });
+  }
+});
+
+app.get('/api/activitypub/objects/:slug', async (req, res) => {
+  try {
+    const slug = String(req.params?.slug || '').trim();
+    if (!slug) return res.status(400).json({ error: 'missing-slug' });
+    const raw = await publishingService.fetchRawPostBySlug(slug);
+    if (!raw) return res.status(404).json({ error: 'not-found' });
+    const access = publishingService.computeAccess(raw, baseAnonymousMemberContext());
+    if (!access.allowed) return res.status(404).json({ error: 'not-found' });
+    const payload = {
+      '@context': activityStreamsContext(),
+      ...buildActivityObject(raw),
+    };
+    return sendActivityJson(res, payload, { cacheControl: 'public, max-age=300' });
+  } catch (err) {
+    logger.error({ err }, 'activitypub object lookup failed');
+    return res.status(500).json({ error: 'activitypub-object-failed' });
+  }
+});
+
+app.post('/api/activitypub/inbox', webhookRateLimit, async (req, res) => {
+  try {
+    if (!activityPubInboxEnabled) {
+      return res.status(501).json({ ok: false, error: 'activitypub-inbox-disabled' });
+    }
+    const configuredToken = String(process.env.ACTIVITYPUB_INBOX_TOKEN || '');
+    if (configuredToken) {
+      const providedToken = String(
+        req.get('X-ActivityPub-Token')
+        || req.query?.token
+        || req.body?.token
+        || ''
+      );
+      if (!providedToken || !timingSafeEqualString(configuredToken, providedToken)) {
+        return res.status(401).json({ ok: false, error: 'unauthorized' });
+      }
+    }
+
+    const activity = req.body && typeof req.body === 'object' ? req.body : {};
+    const eventType = String(activity?.type || 'unknown').trim();
+    const normalizedEventType = eventType.toLowerCase();
+    const actor = await resolveFollowerActor(activity?.actor);
+    const actorId = normalizeActivityUrl(actor?.actorId || '');
+    const targetObject = normalizeActivityUrl(activity?.object?.id || activity?.object || '');
+    const isTargetingActor = !targetObject || targetObject === activityPubActorUrl;
+
+    if (normalizedEventType === 'follow' && isTargetingActor) {
+      if (!actorId) return res.status(400).json({ ok: false, error: 'missing-actor-id' });
+      if (!actor?.inboxUrl && !actor?.sharedInboxUrl) {
+        return res.status(400).json({ ok: false, error: 'missing-actor-inbox' });
+      }
+      const follower = await activityPubService.upsertFollower({
+        actorId,
+        actorType: actor?.actorType || 'Person',
+        inboxUrl: actor?.inboxUrl || actor?.sharedInboxUrl || '',
+        sharedInboxUrl: actor?.sharedInboxUrl || '',
+        profileUrl: actor?.profileUrl || actorId,
+        publicKeyPem: actor?.publicKeyPem || '',
+        status: 'active',
+      });
+      const acceptActivity = buildAcceptActivity({ followActivity: activity, actorId });
+      await activityPubService.enqueueDelivery({
+        activity: acceptActivity,
+        actorId,
+        inboxUrl: actor?.sharedInboxUrl || actor?.inboxUrl,
+        idempotencyKey: `accept-follow-${activity?.id || actorId}`,
+      });
+      Promise.resolve()
+        .then(() => activityPubService.processBatch({ limit: 10, maxAttempts: 5 }))
+        .catch((deliveryErr) => logger.warn({ err: deliveryErr }, 'activitypub accept delivery process failed'));
+
+      logger.info({ actorId, followerId: follower.id }, 'activitypub follow accepted');
+      return res.status(202).json({ ok: true, accepted: true, followerId: follower.id, handled: 'follow' });
+    }
+
+    if (normalizedEventType === 'undo') {
+      const undoObject = activity?.object && typeof activity.object === 'object' ? activity.object : {};
+      const undoType = String(undoObject?.type || '').toLowerCase();
+      const undoObjectTarget = normalizeActivityUrl(undoObject?.object || undoObject?.object?.id || '');
+      if (undoType === 'follow' && (!undoObjectTarget || undoObjectTarget === activityPubActorUrl) && actorId) {
+        await activityPubService.markFollowerInactive(actorId, 'undo-follow');
+        logger.info({ actorId }, 'activitypub follow undone');
+        return res.status(202).json({ ok: true, accepted: true, handled: 'undo-follow' });
+      }
+    }
+
+    logger.info({
+      eventType,
+      actor: actorId || activity?.actor || null,
+      object: activity?.object?.id || activity?.object || null,
+    }, 'activitypub inbox event received');
+    return res.status(202).json({ ok: true, accepted: true, handled: 'noop' });
+  } catch (err) {
+    logger.error({ err }, 'activitypub inbox failed');
+    return res.status(500).json({ ok: false, error: 'activitypub-inbox-failed' });
+  }
+});
+
+app.post('/api/activitypub/deliveries/process', webhookRateLimit, async (req, res) => {
+  try {
+    const jobToken = req.get('X-Job-Token') || req.query?.token || req.body?.token;
+    const expectedToken = process.env.ACTIVITYPUB_DELIVERY_JOB_TOKEN || process.env.EMAIL_OUTBOX_JOB_TOKEN || '';
+    let authorized = false;
+    if (expectedToken && jobToken && timingSafeEqualString(String(jobToken), String(expectedToken))) {
+      authorized = true;
+    } else {
+      const auth = await authenticateAllowedUser(req);
+      authorized = !!auth.ok;
+      if (authorized) req.user = auth.user;
+    }
+    if (!authorized) return res.status(401).json({ error: 'unauthorized' });
+
+    const limit = parseBoundedInteger(req.body?.limit || req.query?.limit, { fallback: 20, min: 1, max: 100 });
+    const maxAttempts = parseBoundedInteger(req.body?.maxAttempts || req.query?.maxAttempts, { fallback: 5, min: 1, max: 10 });
+    const result = await activityPubService.processBatch({ limit, maxAttempts });
+    auditLog(req, 'activitypub.deliveries.process', result);
+    return res.json({ ok: true, ...result });
+  } catch (err) {
+    logger.error({ err }, 'activitypub deliveries process failed');
+    return res.status(500).json({ error: 'activitypub-deliveries-process-failed' });
+  }
+});
+
+app.get('/api/activitypub/deliveries/stats', requireAllowedUser, async (req, res) => {
+  try {
+    const stats = await activityPubService.getDeliveryStats();
+    auditLog(req, 'activitypub.deliveries.stats');
+    return res.json({ ok: true, stats });
+  } catch (err) {
+    logger.error({ err }, 'activitypub deliveries stats failed');
+    return res.status(500).json({ error: 'activitypub-deliveries-stats-failed' });
+  }
+});
+
 app.get('/api/feeds/releases.rss', async (req, res) => {
   try {
     const site = (process.env.PUBLIC_URL || 'https://localeffortfood.com').replace(/\/$/, '');
@@ -1686,6 +2273,300 @@ app.get('/api/feeds/releases.atom', async (req, res) => {
     res.statusCode = 500;
     res.setHeader('Content-Type', 'text/plain');
     return res.end('Failed to generate releases Atom feed');
+  }
+});
+
+app.get('/api/v1/posts', sanityQueryRateLimit, async (req, res) => {
+  try {
+    const limit = parseBoundedInteger(req.query?.limit, { fallback: 20, min: 1, max: 100 });
+    const include = includeSetFromQuery(req.query?.include);
+    const includeBody = include.has('body') || include.has('full');
+    const includeHtml = include.has('html') || include.has('full');
+    const author = String(req.query?.author || '').trim();
+    const tag = String(req.query?.tag || '').trim();
+    const memberContext = await publishingService.loadMemberContext(req);
+    const posts = await publishingService.fetchRawPosts({ limit: Math.max(limit * 3, limit) });
+    const allowedPosts = publishingService.filterByAccess(posts, memberContext);
+    const byAuthor = publishingService.filterByAuthor(allowedPosts, author);
+    const byTag = publishingService.filterByTag(byAuthor, tag);
+    const serialized = byTag
+      .slice(0, limit)
+      .map((post) => publishingService.serializePost(post, { includeBody, includeHtml }));
+
+    return res.json({
+      ok: true,
+      count: serialized.length,
+      posts: serialized,
+      member: sanitizeMemberContext(memberContext),
+    });
+  } catch (err) {
+    logger.error({ err }, 'v1 posts list failed');
+    return res.status(500).json({ ok: false, error: 'posts-list-failed' });
+  }
+});
+
+app.get('/api/v1/posts/:slug', sanityQueryRateLimit, async (req, res) => {
+  try {
+    const slug = String(req.params?.slug || '').trim();
+    if (!slug) return res.status(400).json({ ok: false, error: 'missing-slug' });
+
+    const include = includeSetFromQuery(req.query?.include);
+    const includeBody = !include.size || include.has('body') || include.has('full');
+    const includeHtml = !include.size || include.has('html') || include.has('full');
+    const memberContext = await publishingService.loadMemberContext(req);
+    const rawPost = await publishingService.fetchRawPostBySlug(slug);
+    if (!rawPost) return res.status(404).json({ ok: false, error: 'not-found' });
+
+    const access = publishingService.computeAccess(rawPost, memberContext);
+    if (!access.allowed) {
+      return res.status(403).json({
+        ok: false,
+        error: 'membership-required',
+        visibility: access.visibility,
+        requiredTierSlugs: rawPost?.requiredTierSlugs || [],
+        member: sanitizeMemberContext(memberContext),
+      });
+    }
+
+    return res.json({
+      ok: true,
+      post: publishingService.serializePost(rawPost, { includeBody, includeHtml }),
+      member: sanitizeMemberContext(memberContext),
+    });
+  } catch (err) {
+    logger.error({ err }, 'v1 post detail failed');
+    return res.status(500).json({ ok: false, error: 'post-detail-failed' });
+  }
+});
+
+app.get('/api/v1/authors', sanityQueryRateLimit, async (req, res) => {
+  try {
+    const memberContext = await publishingService.loadMemberContext(req);
+    const posts = await publishingService.fetchRawPosts({ limit: 200 });
+    const allowedPosts = publishingService.filterByAccess(posts, memberContext);
+    const map = new Map();
+
+    for (const post of allowedPosts) {
+      const serialized = publishingService.serializePost(post, { includeBody: false, includeHtml: false });
+      for (const author of serialized.authors || []) {
+        const key = String(author.slug || '').trim() || String(author.id || '').trim() || String(author.name || '').trim();
+        if (!key) continue;
+        const existing = map.get(key) || { ...author, postCount: 0 };
+        existing.postCount += 1;
+        map.set(key, existing);
+      }
+    }
+
+    const authors = Array.from(map.values())
+      .sort((a, b) => b.postCount - a.postCount || String(a.name || '').localeCompare(String(b.name || '')));
+    return res.json({ ok: true, count: authors.length, authors, member: sanitizeMemberContext(memberContext) });
+  } catch (err) {
+    logger.error({ err }, 'v1 authors list failed');
+    return res.status(500).json({ ok: false, error: 'authors-list-failed' });
+  }
+});
+
+app.get('/api/v1/tags', sanityQueryRateLimit, async (req, res) => {
+  try {
+    const memberContext = await publishingService.loadMemberContext(req);
+    const posts = await publishingService.fetchRawPosts({ limit: 200 });
+    const allowedPosts = publishingService.filterByAccess(posts, memberContext);
+    const map = new Map();
+
+    for (const post of allowedPosts) {
+      const serialized = publishingService.serializePost(post, { includeBody: false, includeHtml: false });
+      for (const tag of serialized.tags || []) {
+        const normalized = String(tag || '').trim();
+        if (!normalized) continue;
+        map.set(normalized, (map.get(normalized) || 0) + 1);
+      }
+    }
+
+    const tags = Array.from(map.entries())
+      .map(([tag, postCount]) => ({ tag, slug: publishingService.toSlug(tag), postCount }))
+      .sort((a, b) => b.postCount - a.postCount || a.tag.localeCompare(b.tag));
+    return res.json({ ok: true, count: tags.length, tags, member: sanitizeMemberContext(memberContext) });
+  } catch (err) {
+    logger.error({ err }, 'v1 tags list failed');
+    return res.status(500).json({ ok: false, error: 'tags-list-failed' });
+  }
+});
+
+app.get('/api/feeds/blog.rss', async (req, res) => {
+  try {
+    const posts = await fetchPublicBlogPosts({ limit: 50, tag: req.query?.tag || '' });
+    const items = posts.map((post) => {
+      const item = publishingService.serializeFeedItem(post);
+      const pubDate = new Date(item.publishedAt || item.updatedAt || Date.now()).toUTCString();
+      return `
+    <item>
+      <guid isPermaLink="true">${escapeXml(item.canonicalUrl)}</guid>
+      <title>${escapeXml(item.title)}</title>
+      <link>${escapeXml(item.canonicalUrl)}</link>
+      <pubDate>${pubDate}</pubDate>
+      <description>${escapeXml(item.excerpt || '')}</description>
+      <content:encoded><![CDATA[${toSafeCdata(item.html || '')}]]></content:encoded>
+    </item>`;
+    }).join('');
+
+    const xml = `<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Local Effort Blog</title>
+    <link>${escapeXml(publicSiteUrl)}/blog</link>
+    <description>News, stories, and updates from Local Effort Food Co.</description>
+    <language>en-us</language>
+    <atom:link href="${escapeXml(publicSiteUrl)}/api/feeds/blog.rss" rel="self" type="application/rss+xml" />
+    <lastBuildDate>${new Date().toUTCString()}</lastBuildDate>${items}
+  </channel>
+</rss>`;
+    res.statusCode = 200;
+    res.setHeader('Content-Type', 'application/rss+xml; charset=utf-8');
+    res.setHeader('Cache-Control', 's-maxage=600, stale-while-revalidate');
+    return res.end(xml);
+  } catch (err) {
+    logger.error({ err }, 'blog rss feed failed');
+    res.statusCode = 500;
+    res.setHeader('Content-Type', 'text/plain');
+    return res.end('Failed to generate blog RSS');
+  }
+});
+
+app.get('/api/feeds/blog.atom', async (req, res) => {
+  try {
+    const posts = await fetchPublicBlogPosts({ limit: 50, tag: req.query?.tag || '' });
+    const updated = posts[0]?.publishedAt || new Date().toISOString();
+    const entries = posts.map((post) => {
+      const item = publishingService.serializeFeedItem(post);
+      const published = new Date(item.publishedAt || item.updatedAt || Date.now()).toISOString();
+      return `
+  <entry>
+    <id>${escapeXml(item.canonicalUrl)}</id>
+    <title>${escapeXml(item.title)}</title>
+    <link href="${escapeXml(item.canonicalUrl)}" />
+    <updated>${escapeXml(new Date(item.updatedAt || item.publishedAt || Date.now()).toISOString())}</updated>
+    <published>${escapeXml(published)}</published>
+    <summary>${escapeXml(item.excerpt || '')}</summary>
+    <content type="html"><![CDATA[${toSafeCdata(item.html || '')}]]></content>
+  </entry>`;
+    }).join('');
+
+    const xml = `<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <id>${escapeXml(publicSiteUrl)}/api/feeds/blog.atom</id>
+  <title>Local Effort Blog</title>
+  <updated>${escapeXml(new Date(updated).toISOString())}</updated>
+  <link rel="self" href="${escapeXml(publicSiteUrl)}/api/feeds/blog.atom" />
+  <link rel="alternate" href="${escapeXml(publicSiteUrl)}/blog" />${entries}
+</feed>`;
+    res.statusCode = 200;
+    res.setHeader('Content-Type', 'application/atom+xml; charset=utf-8');
+    res.setHeader('Cache-Control', 's-maxage=600, stale-while-revalidate');
+    return res.end(xml);
+  } catch (err) {
+    logger.error({ err }, 'blog atom feed failed');
+    res.statusCode = 500;
+    res.setHeader('Content-Type', 'text/plain');
+    return res.end('Failed to generate blog Atom feed');
+  }
+});
+
+app.get('/api/feeds/blog.json', async (req, res) => {
+  try {
+    const posts = await fetchPublicBlogPosts({ limit: 50, tag: req.query?.tag || '' });
+    const items = posts.map((post) => {
+      const item = publishingService.serializeFeedItem(post);
+      return {
+        id: item.canonicalUrl,
+        url: item.canonicalUrl,
+        title: item.title,
+        content_html: item.html,
+        summary: item.excerpt,
+        date_published: item.publishedAt,
+        date_modified: item.updatedAt,
+        tags: item.tags || [],
+        authors: (item.authors || []).map((author) => ({ name: author.name, url: `${publicSiteUrl}/blog?author=${encodeURIComponent(author.slug || author.name)}` })),
+      };
+    });
+    return res.json({
+      version: 'https://jsonfeed.org/version/1.1',
+      title: 'Local Effort Blog',
+      home_page_url: `${publicSiteUrl}/blog`,
+      feed_url: `${publicSiteUrl}/api/feeds/blog.json`,
+      description: 'News, stories, and updates from Local Effort Food Co.',
+      items,
+    });
+  } catch (err) {
+    logger.error({ err }, 'blog json feed failed');
+    return res.status(500).json({ error: 'blog-feed-json-failed' });
+  }
+});
+
+app.get('/api/feeds/blog/author/:slug.rss', async (req, res) => {
+  try {
+    const authorSlug = String(req.params?.slug || '').trim();
+    if (!authorSlug) return res.status(400).json({ error: 'missing-author' });
+    const posts = await fetchPublicBlogPosts({ limit: 50, authorSlug });
+    const authorName = posts
+      .map((post) => publishingService.serializePost(post))
+      .flatMap((post) => post.authors || [])
+      .find((author) => publishingService.toSlug(author.slug || author.name) === publishingService.toSlug(authorSlug))
+      ?.name || authorSlug;
+    const items = posts.map((post) => {
+      const item = publishingService.serializeFeedItem(post);
+      return `
+    <item>
+      <guid isPermaLink="true">${escapeXml(item.canonicalUrl)}</guid>
+      <title>${escapeXml(item.title)}</title>
+      <link>${escapeXml(item.canonicalUrl)}</link>
+      <pubDate>${new Date(item.publishedAt || item.updatedAt || Date.now()).toUTCString()}</pubDate>
+      <description>${escapeXml(item.excerpt || '')}</description>
+      <content:encoded><![CDATA[${toSafeCdata(item.html || '')}]]></content:encoded>
+    </item>`;
+    }).join('');
+
+    const authorQueryValue = encodeURIComponent(authorSlug);
+    const xml = `<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:content="http://purl.org/rss/1.0/modules/content/">
+  <channel>
+    <title>Local Effort Blog - ${escapeXml(authorName)}</title>
+    <link>${escapeXml(publicSiteUrl)}/blog?author=${escapeXml(authorQueryValue)}</link>
+    <description>Posts by ${escapeXml(authorName)} on Local Effort Blog.</description>
+    <language>en-us</language>
+    <lastBuildDate>${new Date().toUTCString()}</lastBuildDate>${items}
+  </channel>
+</rss>`;
+    res.statusCode = 200;
+    res.setHeader('Content-Type', 'application/rss+xml; charset=utf-8');
+    res.setHeader('Cache-Control', 's-maxage=600, stale-while-revalidate');
+    return res.end(xml);
+  } catch (err) {
+    logger.error({ err }, 'blog author rss feed failed');
+    res.statusCode = 500;
+    res.setHeader('Content-Type', 'text/plain');
+    return res.end('Failed to generate author RSS');
+  }
+});
+
+app.get('/api/feeds/blog.email.json', webhookRateLimit, async (req, res) => {
+  try {
+    const expectedToken = String(process.env.EMAIL_OUTBOX_JOB_TOKEN || '');
+    const providedToken = String(req.get('X-Job-Token') || req.query?.token || '');
+    if (!expectedToken || !providedToken || !timingSafeEqualString(expectedToken, providedToken)) {
+      return res.status(401).json({ ok: false, error: 'unauthorized' });
+    }
+    const limit = parseBoundedInteger(req.query?.limit, { fallback: 20, min: 1, max: 100 });
+    const posts = await publishingService.fetchRawPosts({ limit });
+    const items = posts.map((post) => publishingService.serializePost(post, { includeBody: true, includeHtml: true }));
+    return res.json({
+      ok: true,
+      generatedAt: new Date().toISOString(),
+      count: items.length,
+      items,
+    });
+  } catch (err) {
+    logger.error({ err }, 'blog email feed failed');
+    return res.status(500).json({ ok: false, error: 'blog-email-feed-failed' });
   }
 });
 
@@ -2055,7 +2936,7 @@ app.post('/api/blog/publish', publishRateLimit, requireAllowedUser, async (req, 
         : (process.env.BLOG_ANNOUNCE_TO || '').split(',').map((s) => s.trim()).filter(Boolean);
       if (recipients.length) {
         const base = (process.env.PUBLIC_URL || 'https://localeffortfood.com').replace(/\/$/, '');
-        const url = `${base}/weekly/${doc.slug.current}`;
+        const url = `${base}/blog/${doc.slug.current}`;
         const snippet = (text || JSON.stringify(blocks)).slice(0, 400);
         const payload = {
           to: recipients.map((e) => ({ email: e })),
@@ -2078,8 +2959,44 @@ app.post('/api/blog/publish', publishRateLimit, requireAllowedUser, async (req, 
       }
     }
 
-    auditLog(req, 'blog.publish', { docId: doc._id, slug: doc.slug?.current, emailOnPublish: !!emailOnPublish });
-    return res.json({ ok: true, id: doc._id, slug: doc.slug?.current, emailed });
+    let activityPubQueued = 0;
+    try {
+      const rawPost = await publishingService.fetchRawPostBySlug(doc.slug?.current);
+      if (rawPost && publishingService.computeAccess(rawPost, baseAnonymousMemberContext()).allowed) {
+        const createActivity = {
+          '@context': activityStreamsContext(),
+          ...buildCreateActivity(rawPost),
+        };
+        const followers = await activityPubService.listFollowers({ status: 'active', limit: 500, offset: 0 });
+        for (const follower of followers.items || []) {
+          const inboxUrl = normalizeActivityUrl(follower?.sharedInboxUrl || follower?.inboxUrl || '');
+          const actorId = normalizeActivityUrl(follower?.actorId || '');
+          if (!inboxUrl || !actorId) continue;
+          const queuedDelivery = await activityPubService.enqueueDelivery({
+            activity: createActivity,
+            actorId,
+            inboxUrl,
+            idempotencyKey: `create-${createActivity.id}-${actorId}`,
+          });
+          if (!queuedDelivery?.deduped) activityPubQueued += 1;
+        }
+        if (activityPubQueued > 0) {
+          Promise.resolve()
+            .then(() => activityPubService.processBatch({ limit: 10, maxAttempts: 5 }))
+            .catch((deliveryErr) => logger.warn({ err: deliveryErr }, 'activitypub opportunistic process failed after blog publish'));
+        }
+      }
+    } catch (activityErr) {
+      logger.warn({ err: activityErr, slug: doc.slug?.current }, 'activitypub fanout skipped after blog publish');
+    }
+
+    auditLog(req, 'blog.publish', {
+      docId: doc._id,
+      slug: doc.slug?.current,
+      emailOnPublish: !!emailOnPublish,
+      activityPubQueued,
+    });
+    return res.json({ ok: true, id: doc._id, slug: doc.slug?.current, emailed, activityPubQueued });
   } catch (err) {
     logger.error({ err }, 'blog publish error');
     return res.status(500).json({ error: 'publish-failed' });
@@ -2103,31 +3020,82 @@ app.post('/api/webhooks/sanity/blog', webhookRateLimit, async (req, res) => {
     const snippet = (bodyText || '').slice(0, 400);
     const recipientsRaw = process.env.BLOG_ANNOUNCE_TO || '';
     const recipients = recipientsRaw.split(',').map((s) => s.trim()).filter(Boolean);
-    if (!recipients.length) return res.json({ ok: true, skipped: 'no-recipients' });
-
     const base = (process.env.PUBLIC_URL || 'https://localeffortfood.com').replace(/\/$/, '');
     const slugValue = doc?.slug?.current || slug?.current || slug;
-    const payload = {
-      to: recipients.map((e) => ({ email: e })),
-      sender: { email: process.env.SENDER_EMAIL || recipients[0], name: 'Local Effort' },
-      subject: `New post: ${doc?.title || title || 'Local Effort Blog'}`,
-      htmlContent: `<h2>${escapeXml(doc?.title || title || 'Local Effort Blog')}</h2><p>${escapeXml(snippet)}...</p><p><a href="${base}/weekly/${slugValue}">Read on the site</a></p>`,
-      tags: ['blog', 'auto'],
-    };
-    const queued = await emailOutboxService.enqueue({
-      payload,
-      idempotencyKey: `sanity-blog-webhook-${doc?._id || slugValue}-${doc?.publishedAt || ''}`,
-      category: 'publishing',
-      source: '/api/webhooks/sanity/blog',
-      context: { docId: doc?._id || null, slug: slugValue || null },
-    });
-    Promise.resolve()
-      .then(() => emailOutboxService.processBatch({ limit: 5, maxAttempts: 5 }))
-      .catch((queueErr) => logger.warn({ err: queueErr }, 'outbox opportunistic process failed after sanity webhook'));
+    let emailQueueId = null;
+    if (recipients.length) {
+      const payload = {
+        to: recipients.map((e) => ({ email: e })),
+        sender: { email: process.env.SENDER_EMAIL || recipients[0], name: 'Local Effort' },
+        subject: `New post: ${doc?.title || title || 'Local Effort Blog'}`,
+        htmlContent: `<h2>${escapeXml(doc?.title || title || 'Local Effort Blog')}</h2><p>${escapeXml(snippet)}...</p><p><a href="${base}/blog/${slugValue}">Read on the site</a></p>`,
+        tags: ['blog', 'auto'],
+      };
+      const queued = await emailOutboxService.enqueue({
+        payload,
+        idempotencyKey: `sanity-blog-webhook-${doc?._id || slugValue}-${doc?.publishedAt || ''}`,
+        category: 'publishing',
+        source: '/api/webhooks/sanity/blog',
+        context: { docId: doc?._id || null, slug: slugValue || null },
+      });
+      emailQueueId = queued.id;
+      Promise.resolve()
+        .then(() => emailOutboxService.processBatch({ limit: 5, maxAttempts: 5 }))
+        .catch((queueErr) => logger.warn({ err: queueErr }, 'outbox opportunistic process failed after sanity webhook'));
+    }
 
-    auditLog(req, 'webhook.sanity.blog', { queueId: queued.id, recipients: recipients.length, slug: slugValue || null });
-    logger.info({ queueId: queued.id, recipients: recipients.length, slug: slugValue }, 'sanity blog webhook queued email');
-    return res.json({ ok: true, queueId: queued.id, recipients: recipients.length });
+    let activityPubQueued = 0;
+    try {
+      if (slugValue) {
+        const rawPost = await publishingService.fetchRawPostBySlug(slugValue);
+        if (rawPost && publishingService.computeAccess(rawPost, baseAnonymousMemberContext()).allowed) {
+          const createActivity = {
+            '@context': activityStreamsContext(),
+            ...buildCreateActivity(rawPost),
+          };
+          const followers = await activityPubService.listFollowers({ status: 'active', limit: 500, offset: 0 });
+          for (const follower of followers.items || []) {
+            const inboxUrl = normalizeActivityUrl(follower?.sharedInboxUrl || follower?.inboxUrl || '');
+            const actorId = normalizeActivityUrl(follower?.actorId || '');
+            if (!inboxUrl || !actorId) continue;
+            const queuedDelivery = await activityPubService.enqueueDelivery({
+              activity: createActivity,
+              actorId,
+              inboxUrl,
+              idempotencyKey: `create-${createActivity.id}-${actorId}`,
+            });
+            if (!queuedDelivery?.deduped) activityPubQueued += 1;
+          }
+          if (activityPubQueued > 0) {
+            Promise.resolve()
+              .then(() => activityPubService.processBatch({ limit: 10, maxAttempts: 5 }))
+              .catch((deliveryErr) => logger.warn({ err: deliveryErr }, 'activitypub opportunistic process failed after sanity webhook'));
+          }
+        }
+      }
+    } catch (activityErr) {
+      logger.warn({ err: activityErr, slug: slugValue }, 'activitypub fanout skipped after sanity webhook');
+    }
+
+    auditLog(req, 'webhook.sanity.blog', {
+      queueId: emailQueueId,
+      recipients: recipients.length,
+      slug: slugValue || null,
+      activityPubQueued,
+    });
+    logger.info({
+      queueId: emailQueueId,
+      recipients: recipients.length,
+      slug: slugValue,
+      activityPubQueued,
+    }, 'sanity blog webhook processed publish fanout');
+    return res.json({
+      ok: true,
+      queueId: emailQueueId,
+      recipients: recipients.length,
+      activityPubQueued,
+      skippedEmail: recipients.length === 0 ? 'no-recipients' : null,
+    });
   } catch (err) {
     logger.error({ err }, 'sanity blog webhook error');
     return res.status(500).json({ error: 'webhook-failed' });
@@ -2639,6 +3607,14 @@ app.get('/api/public/site', (req, res) => {
           { path: '/api/support/search', method: 'GET', query: { q: 'query string' } },
           { path: '/api/messages/submit', method: 'POST' },
           { path: '/api/events/request', method: 'POST' },
+          { path: '/api/v1/posts', method: 'GET' },
+          { path: '/api/v1/posts/:slug', method: 'GET' },
+          { path: '/api/v1/authors', method: 'GET' },
+          { path: '/api/v1/tags', method: 'GET' },
+          { path: '/api/activitypub/actor', method: 'GET' },
+          { path: '/api/activitypub/outbox', method: 'GET' },
+          { path: '/.well-known/webfinger', method: 'GET' },
+          { path: '/.well-known/nodeinfo', method: 'GET' },
           { path: '/api/public/pricing-faq', method: 'GET' },
           { path: '/api/public/estimator-help', method: 'GET' },
         ];
@@ -2647,6 +3623,10 @@ app.get('/api/public/site', (req, res) => {
       : [
           { type: 'sitemap', url: `${trimmedSite}/sitemap.xml` },
           { type: 'sitemap', url: `${trimmedSite}/api/sitemap.xml` },
+          { type: 'rss', url: `${trimmedSite}/api/feeds/blog.rss` },
+          { type: 'atom', url: `${trimmedSite}/api/feeds/blog.atom` },
+          { type: 'json', url: `${trimmedSite}/api/feeds/blog.json` },
+          { type: 'activitypub', url: `${trimmedSite}/api/activitypub/actor` },
           { type: 'rss', url: `${trimmedSite}/api/feeds/releases.rss` },
           { type: 'atom', url: `${trimmedSite}/api/feeds/releases.atom` },
         ];

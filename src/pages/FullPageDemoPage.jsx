@@ -379,6 +379,7 @@ const FullPageDemoPage = () => {
     mealsPerDay: '',
     allergies: '',
     questions: '',
+    website: '',
   });
   const [mealPlanImages, setMealPlanImages] = useState([]);
   const [mealPlanLoading, setMealPlanLoading] = useState(false);
@@ -412,7 +413,7 @@ const FullPageDemoPage = () => {
   const [caseStudyImage, setCaseStudyImage] = useState(null);
   const [aboutFaqOpen, setAboutFaqOpen] = useState(0);
   const [showFeedback, setShowFeedback] = useState(false);
-  const [fb, setFb] = useState({ name: '', email: '', sentiment: 'positive', message: '' });
+  const [fb, setFb] = useState({ name: '', email: '', sentiment: 'positive', message: '', website: '' });
   const [fbStatus, setFbStatus] = useState('idle');
   const [liveFeedback, setLiveFeedback] = useState([]);
   const [businessContactOpen, setBusinessContactOpen] = useState(false);
@@ -2193,6 +2194,7 @@ const clampGuestCount = (value, config) => {
       mealsPerDay: '',
       allergies: '',
       questions: '',
+      website: '',
     });
 
   const handleWaitlistChange = (field, value) => {
@@ -2224,6 +2226,13 @@ const clampGuestCount = (value, config) => {
         phone: waitlist.phone,
         subject: 'Meal Prep Waitlist signup',
         type: 'meal-prep-waitlist',
+        familySize: waitlist.familySize,
+        children: waitlist.children,
+        daysPerWeek: waitlist.daysPerWeek,
+        mealsPerDay: waitlist.mealsPerDay,
+        allergies: waitlist.allergies,
+        questions: waitlist.questions,
+        website: waitlist.website,
         message: lines.join('\n'),
       };
       const res = await fetch('/api/messages/submit', {
@@ -2754,6 +2763,7 @@ const clampGuestCount = (value, config) => {
                   subject: `Website feedback (${fb.sentiment})`,
                   message: fb.message,
                   type: 'feedback',
+                  website: fb.website,
                 };
 
                 const [feedbackResult, messageResult] = await Promise.allSettled([
@@ -2792,7 +2802,7 @@ const clampGuestCount = (value, config) => {
                   setLiveFeedback((prev) => [newEntry, ...prev.filter((item) => item?.id !== newEntry.id)]);
                 }
                 setFbStatus('sent');
-                setFb({ name: '', email: '', sentiment: 'positive', message: '' });
+                setFb({ name: '', email: '', sentiment: 'positive', message: '', website: '' });
                 setTimeout(() => setShowFeedback(false), 900);
               } catch (_e) {
                 setFbStatus('error');
@@ -2823,6 +2833,16 @@ const clampGuestCount = (value, config) => {
               <label className="label" htmlFor="fb-message">Message</label>
               <textarea id="fb-message" className="textarea" value={fb.message} onChange={(e) => setFb({ ...fb, message: e.target.value })} rows={5} required />
             </div>
+            <input
+              type="text"
+              name="website"
+              value={fb.website}
+              onChange={(e) => setFb({ ...fb, website: e.target.value })}
+              autoComplete="off"
+              tabIndex={-1}
+              aria-hidden="true"
+              className="hidden"
+            />
             <div className="flex items-center gap-3">
               <button type="submit" className="btn btn-primary" disabled={fbStatus === 'sending'}>
                 {fbStatus === 'sending' ? 'Sending...' : 'Send feedback'}
@@ -4587,6 +4607,16 @@ const clampGuestCount = (value, config) => {
                   placeholder="Anything else we should know?"
                 />
               </div>
+              <input
+                type="text"
+                name="website"
+                value={waitlist.website}
+                onChange={(e) => handleWaitlistChange('website', e.target.value)}
+                autoComplete="off"
+                tabIndex={-1}
+                aria-hidden="true"
+                className="hidden"
+              />
               <div className="flex flex-wrap items-center gap-3">
                 <button type="submit" className="btn btn-primary" disabled={waitlistStatus === 'sending'}>
                   {waitlistStatus === 'sending' ? 'Submitting...' : 'Join waitlist'}
