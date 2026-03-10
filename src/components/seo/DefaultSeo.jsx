@@ -54,7 +54,6 @@ export const DefaultSeo = () => {
   const canonicalUrl = useMemo(() => {
     const path = location.pathname || '/';
     const search = location.search || '';
-    const hash = (sectionMeta && location.hash) || '';
     const normalized = path === '/' ? '/' : path;
     try {
       const url = new URL(SITE_URL);
@@ -63,11 +62,11 @@ export const DefaultSeo = () => {
       if (normalized !== '/' && url.pathname.endsWith('/')) {
         url.pathname = url.pathname.replace(/\/+$/, '');
       }
-      return url.toString() + hash;
+      return url.toString();
     } catch (err) {
-      return `${SITE_URL}${normalized}${search}${hash}`;
+      return `${SITE_URL}${normalized}${search}`;
     }
-  }, [location.pathname, location.search, location.hash, sectionMeta]);
+  }, [location.pathname, location.search]);
 
   const ogImageUrl = useMemo(() => buildOgImageUrl(), []);
 

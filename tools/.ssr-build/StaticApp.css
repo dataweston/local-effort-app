@@ -643,6 +643,7 @@ div:has(> .fullpage-demo-scope) > .bg-black\/60 {
 }
 :where(.fullpage-demo, .fullpage-demo-scope) .business-heading {
   margin-top: 0.5rem;
+  margin-bottom: 0;
   font-size: clamp(1.65rem, 3vw, 2.35rem);
   font-weight: 700;
   letter-spacing: -0.02em;

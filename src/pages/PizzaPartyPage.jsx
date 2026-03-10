@@ -3,6 +3,7 @@ import { Helmet } from 'react-helmet-async';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSquareCard } from '../hooks/useSquareCard';
 import { getOrCreateCheckoutAttemptId, clearCheckoutAttemptId } from '../lib/checkoutAttemptId';
+import { SITE_NAME, SITE_URL } from '../config/siteMetadata';
 
 // Fetch up to 8 images tagged 'pizza' using existing API (uses tag expansion logic)
 async function fetchPizzaImages(setter, setError, setLoading) {
@@ -64,8 +65,8 @@ const projectDateToYear = (isoDate, targetYear) => {
 
 const PizzaPartyPage = () => {
   // SEO canonical (update if production domain differs)
-  const canonical = 'https://localeffort.app/pizza-party';
-  const siteName = 'Local Effort';
+  const canonical = `${SITE_URL}/pizza-party`;
+  const siteName = SITE_NAME;
   const pageTitle = 'Book Your Pizza Party - Pay a Deposit | Local Effort';
   const pageDescription = 'Pay a deposit to book your pizza party. $75 deposit reserves your date. Estimated $450 for parties of 15 guests with premium wood-fired pizza and local ingredients.';
 

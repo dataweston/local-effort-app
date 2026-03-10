@@ -194,7 +194,7 @@ var require_invariant = __commonJS({
   "node_modules/.pnpm/invariant@2.2.4/node_modules/invariant/invariant.js"(exports2, module2) {
     "use strict";
     var NODE_ENV = "production";
-    var invariant = function(condition, format, a, b, c, d, e, f) {
+    var invariant = function(condition, format, a, b, c, d2, e, f) {
       if (NODE_ENV !== "production") {
         if (format === void 0) {
           throw new Error("invariant requires an error message argument");
@@ -207,7 +207,7 @@ var require_invariant = __commonJS({
             "Minified exception occurred; use the non-minified dev environment for the full error message and additional helpful warnings."
           );
         } else {
-          var args = [a, b, c, d, e, f];
+          var args = [a, b, c, d2, e, f];
           var argIndex = 0;
           error = new Error(
             format.replace(/%s/g, function() {
@@ -286,7 +286,7 @@ var require_lib = __commonJS({
         return t2;
       }, f.apply(this, arguments);
     }
-    function d(t2, e2) {
+    function d2(t2, e2) {
       t2.prototype = Object.create(e2.prototype), t2.prototype.constructor = t2, p(t2, e2);
     }
     function p(t2, e2) {
@@ -302,13 +302,13 @@ var require_lib = __commonJS({
     }
     var m = { BASE: "base", BODY: "body", HEAD: "head", HTML: "html", LINK: "link", META: "meta", NOSCRIPT: "noscript", SCRIPT: "script", STYLE: "style", TITLE: "title", FRAGMENT: "Symbol(react.fragment)" };
     var y = { rel: ["amphtml", "canonical", "alternate"] };
-    var T = { type: ["application/ld+json"] };
+    var T2 = { type: ["application/ld+json"] };
     var g = { charset: "", name: ["robots", "description"], property: ["og:type", "og:title", "og:url", "og:image", "og:image:alt", "og:description", "twitter:url", "twitter:title", "twitter:description", "twitter:image", "twitter:image:alt", "twitter:card", "twitter:site"] };
     var b = Object.keys(m).map(function(t2) {
       return m[t2];
     });
     var v = { accesskey: "accessKey", charset: "charSet", class: "className", contenteditable: "contentEditable", contextmenu: "contextMenu", "http-equiv": "httpEquiv", itemprop: "itemProp", tabindex: "tabIndex" };
-    var A = Object.keys(v).reduce(function(t2, e2) {
+    var A2 = Object.keys(v).reduce(function(t2, e2) {
       return t2[v[e2]] = e2, t2;
     }, {});
     var C = function(t2, e2) {
@@ -326,7 +326,7 @@ var require_lib = __commonJS({
       var n2 = C(t2, "defaultTitle");
       return e2 || n2 || void 0;
     };
-    var S = function(t2) {
+    var S2 = function(t2) {
       return C(t2, "onChangeClientState") || function() {
       };
     };
@@ -378,7 +378,7 @@ var require_lib = __commonJS({
         return t3;
       }, []).reverse();
     };
-    var P = function(t2, e2) {
+    var P2 = function(t2, e2) {
       if (Array.isArray(t2) && t2.length) {
         for (var r2 = 0; r2 < t2.length; r2 += 1) if (t2[r2][e2]) return true;
       }
@@ -403,7 +403,7 @@ var require_lib = __commonJS({
     var k = function(t2, e2) {
       return void 0 === e2 && (e2 = true), false === e2 ? String(t2) : String(t2).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#x27;");
     };
-    var H = function(t2) {
+    var H2 = function(t2) {
       return Object.keys(t2).reduce(function(e2, r2) {
         var n2 = void 0 !== t2[r2] ? r2 + '="' + t2[r2] + '"' : "" + r2;
         return e2 ? e2 + " " + n2 : n2;
@@ -431,7 +431,7 @@ var require_lib = __commonJS({
             var t3, r3, n2, i2;
           }, toString: function() {
             return function(t3, e3, r3, n2) {
-              var i2 = H(r3), a2 = w(e3);
+              var i2 = H2(r3), a2 = w(e3);
               return i2 ? "<" + t3 + ' data-rh="true" ' + i2 + ">" + k(a2, n2) + "</" + t3 + ">" : "<" + t3 + ' data-rh="true">' + k(a2, n2) + "</" + t3 + ">";
             }(t2, e2.title, e2.titleAttributes, r2);
           } };
@@ -440,7 +440,7 @@ var require_lib = __commonJS({
           return { toComponent: function() {
             return N(e2);
           }, toString: function() {
-            return H(e2);
+            return H2(e2);
           } };
         default:
           return { toComponent: function() {
@@ -460,52 +460,52 @@ var require_lib = __commonJS({
           } };
       }
     };
-    var q = function(t2) {
-      var e2 = t2.baseTag, r2 = t2.bodyAttributes, n2 = t2.encode, i2 = t2.htmlAttributes, a2 = t2.noscriptTags, o2 = t2.styleTags, u2 = t2.title, s2 = void 0 === u2 ? "" : u2, c2 = t2.titleAttributes, l2 = t2.linkTags, f2 = t2.metaTags, d2 = t2.scriptTags, p2 = { toComponent: function() {
+    var q2 = function(t2) {
+      var e2 = t2.baseTag, r2 = t2.bodyAttributes, n2 = t2.encode, i2 = t2.htmlAttributes, a2 = t2.noscriptTags, o2 = t2.styleTags, u2 = t2.title, s2 = void 0 === u2 ? "" : u2, c2 = t2.titleAttributes, l2 = t2.linkTags, f2 = t2.metaTags, d3 = t2.scriptTags, p2 = { toComponent: function() {
       }, toString: function() {
         return "";
       } };
       if (t2.prioritizeSeoTags) {
         var h2 = function(t3) {
-          var e3 = t3.linkTags, r3 = t3.scriptTags, n3 = t3.encode, i3 = L(t3.metaTags, g), a3 = L(e3, y), o3 = L(r3, T);
+          var e3 = t3.linkTags, r3 = t3.scriptTags, n3 = t3.encode, i3 = L(t3.metaTags, g), a3 = L(e3, y), o3 = L(r3, T2);
           return { priorityMethods: { toComponent: function() {
             return [].concat(D(m.META, i3.priority), D(m.LINK, a3.priority), D(m.SCRIPT, o3.priority));
           }, toString: function() {
             return R(m.META, i3.priority, n3) + " " + R(m.LINK, a3.priority, n3) + " " + R(m.SCRIPT, o3.priority, n3);
           } }, metaTags: i3.default, linkTags: a3.default, scriptTags: o3.default };
         }(t2);
-        p2 = h2.priorityMethods, l2 = h2.linkTags, f2 = h2.metaTags, d2 = h2.scriptTags;
+        p2 = h2.priorityMethods, l2 = h2.linkTags, f2 = h2.metaTags, d3 = h2.scriptTags;
       }
-      return { priority: p2, base: R(m.BASE, e2, n2), bodyAttributes: R("bodyAttributes", r2, n2), htmlAttributes: R("htmlAttributes", i2, n2), link: R(m.LINK, l2, n2), meta: R(m.META, f2, n2), noscript: R(m.NOSCRIPT, a2, n2), script: R(m.SCRIPT, d2, n2), style: R(m.STYLE, o2, n2), title: R(m.TITLE, { title: s2, titleAttributes: c2 }, n2) };
+      return { priority: p2, base: R(m.BASE, e2, n2), bodyAttributes: R("bodyAttributes", r2, n2), htmlAttributes: R("htmlAttributes", i2, n2), link: R(m.LINK, l2, n2), meta: R(m.META, f2, n2), noscript: R(m.NOSCRIPT, a2, n2), script: R(m.SCRIPT, d3, n2), style: R(m.STYLE, o2, n2), title: R(m.TITLE, { title: s2, titleAttributes: c2 }, n2) };
     };
-    var U = [];
+    var U2 = [];
     var Y = function(t2, e2) {
       var r2 = this;
       void 0 === e2 && (e2 = "undefined" != typeof document), this.instances = [], this.value = { setHelmet: function(t3) {
         r2.context.helmet = t3;
       }, helmetInstances: { get: function() {
-        return r2.canUseDOM ? U : r2.instances;
+        return r2.canUseDOM ? U2 : r2.instances;
       }, add: function(t3) {
-        (r2.canUseDOM ? U : r2.instances).push(t3);
+        (r2.canUseDOM ? U2 : r2.instances).push(t3);
       }, remove: function(t3) {
-        var e3 = (r2.canUseDOM ? U : r2.instances).indexOf(t3);
-        (r2.canUseDOM ? U : r2.instances).splice(e3, 1);
-      } } }, this.context = t2, this.canUseDOM = e2, e2 || (t2.helmet = q({ baseTag: [], bodyAttributes: {}, encodeSpecialCharacters: true, htmlAttributes: {}, linkTags: [], metaTags: [], noscriptTags: [], scriptTags: [], styleTags: [], title: "", titleAttributes: {} }));
+        var e3 = (r2.canUseDOM ? U2 : r2.instances).indexOf(t3);
+        (r2.canUseDOM ? U2 : r2.instances).splice(e3, 1);
+      } } }, this.context = t2, this.canUseDOM = e2, e2 || (t2.helmet = q2({ baseTag: [], bodyAttributes: {}, encodeSpecialCharacters: true, htmlAttributes: {}, linkTags: [], metaTags: [], noscriptTags: [], scriptTags: [], styleTags: [], title: "", titleAttributes: {} }));
     };
     var B = o.default.createContext({});
     var K = u.default.shape({ setHelmet: u.default.func, helmetInstances: u.default.shape({ get: u.default.func, add: u.default.func, remove: u.default.func }) });
     var _ = "undefined" != typeof document;
-    var z = /* @__PURE__ */ function(t2) {
+    var z2 = /* @__PURE__ */ function(t2) {
       function e2(r2) {
         var n2;
         return (n2 = t2.call(this, r2) || this).helmetData = new Y(n2.props.context, e2.canUseDOM), n2;
       }
-      return d(e2, t2), e2.prototype.render = function() {
+      return d2(e2, t2), e2.prototype.render = function() {
         return o.default.createElement(B.Provider, { value: this.helmetData.value }, this.props.children);
       }, e2;
     }(t.Component);
-    z.canUseDOM = _, z.propTypes = { context: u.default.shape({ helmet: u.default.shape() }), children: u.default.node.isRequired }, z.defaultProps = { context: {} }, z.displayName = "HelmetProvider";
-    var F = function(t2, e2) {
+    z2.canUseDOM = _, z2.propTypes = { context: u.default.shape({ helmet: u.default.shape() }), children: u.default.node.isRequired }, z2.defaultProps = { context: {} }, z2.displayName = "HelmetProvider";
+    var F2 = function(t2, e2) {
       var r2, n2 = document.head || document.querySelector(m.HEAD), i2 = n2.querySelectorAll(t2 + "[data-rh]"), a2 = [].slice.call(i2), o2 = [];
       return e2 && e2.length && e2.forEach(function(e3) {
         var n3 = document.createElement(t2);
@@ -519,7 +519,7 @@ var require_lib = __commonJS({
         return n2.appendChild(t3);
       }), { oldTags: a2, newTags: o2 };
     };
-    var G = function(t2, e2) {
+    var G2 = function(t2, e2) {
       var r2 = document.getElementsByTagName(t2)[0];
       if (r2) {
         for (var n2 = r2.getAttribute("data-rh"), i2 = n2 ? n2.split(",") : [], a2 = [].concat(i2), o2 = Object.keys(e2), u2 = 0; u2 < o2.length; u2 += 1) {
@@ -534,22 +534,22 @@ var require_lib = __commonJS({
     };
     var W = function(t2, e2) {
       var r2 = t2.baseTag, n2 = t2.htmlAttributes, i2 = t2.linkTags, a2 = t2.metaTags, o2 = t2.noscriptTags, u2 = t2.onChangeClientState, s2 = t2.scriptTags, c2 = t2.styleTags, l2 = t2.title, f2 = t2.titleAttributes;
-      G(m.BODY, t2.bodyAttributes), G(m.HTML, n2), function(t3, e3) {
-        void 0 !== t3 && document.title !== t3 && (document.title = w(t3)), G(m.TITLE, e3);
+      G2(m.BODY, t2.bodyAttributes), G2(m.HTML, n2), function(t3, e3) {
+        void 0 !== t3 && document.title !== t3 && (document.title = w(t3)), G2(m.TITLE, e3);
       }(l2, f2);
-      var d2 = { baseTag: F(m.BASE, r2), linkTags: F(m.LINK, i2), metaTags: F(m.META, a2), noscriptTags: F(m.NOSCRIPT, o2), scriptTags: F(m.SCRIPT, s2), styleTags: F(m.STYLE, c2) }, p2 = {}, h2 = {};
-      Object.keys(d2).forEach(function(t3) {
-        var e3 = d2[t3], r3 = e3.newTags, n3 = e3.oldTags;
-        r3.length && (p2[t3] = r3), n3.length && (h2[t3] = d2[t3].oldTags);
+      var d3 = { baseTag: F2(m.BASE, r2), linkTags: F2(m.LINK, i2), metaTags: F2(m.META, a2), noscriptTags: F2(m.NOSCRIPT, o2), scriptTags: F2(m.SCRIPT, s2), styleTags: F2(m.STYLE, c2) }, p2 = {}, h2 = {};
+      Object.keys(d3).forEach(function(t3) {
+        var e3 = d3[t3], r3 = e3.newTags, n3 = e3.oldTags;
+        r3.length && (p2[t3] = r3), n3.length && (h2[t3] = d3[t3].oldTags);
       }), e2 && e2(), u2(t2, p2, h2);
     };
-    var J = null;
+    var J2 = null;
     var Q = /* @__PURE__ */ function(t2) {
       function e2() {
         for (var e3, r3 = arguments.length, n2 = new Array(r3), i2 = 0; i2 < r3; i2++) n2[i2] = arguments[i2];
         return (e3 = t2.call.apply(t2, [this].concat(n2)) || this).rendered = false, e3;
       }
-      d(e2, t2);
+      d2(e2, t2);
       var r2 = e2.prototype;
       return r2.shouldComponentUpdate = function(t3) {
         return !l.default(t3, this.props);
@@ -561,12 +561,12 @@ var require_lib = __commonJS({
         var t3, e3, r3 = this.props.context, n2 = r3.setHelmet, i2 = null, a2 = (t3 = r3.helmetInstances.get().map(function(t4) {
           var e4 = f({}, t4.props);
           return delete e4.context, e4;
-        }), { baseTag: I(["href"], t3), bodyAttributes: E("bodyAttributes", t3), defer: C(t3, "defer"), encode: C(t3, "encodeSpecialCharacters"), htmlAttributes: E("htmlAttributes", t3), linkTags: x(m.LINK, ["rel", "href"], t3), metaTags: x(m.META, ["name", "charset", "http-equiv", "property", "itemprop"], t3), noscriptTags: x(m.NOSCRIPT, ["innerHTML"], t3), onChangeClientState: S(t3), scriptTags: x(m.SCRIPT, ["src", "innerHTML"], t3), styleTags: x(m.STYLE, ["cssText"], t3), title: O(t3), titleAttributes: E("titleAttributes", t3), prioritizeSeoTags: P(t3, "prioritizeSeoTags") });
-        z.canUseDOM ? (e3 = a2, J && cancelAnimationFrame(J), e3.defer ? J = requestAnimationFrame(function() {
+        }), { baseTag: I(["href"], t3), bodyAttributes: E("bodyAttributes", t3), defer: C(t3, "defer"), encode: C(t3, "encodeSpecialCharacters"), htmlAttributes: E("htmlAttributes", t3), linkTags: x(m.LINK, ["rel", "href"], t3), metaTags: x(m.META, ["name", "charset", "http-equiv", "property", "itemprop"], t3), noscriptTags: x(m.NOSCRIPT, ["innerHTML"], t3), onChangeClientState: S2(t3), scriptTags: x(m.SCRIPT, ["src", "innerHTML"], t3), styleTags: x(m.STYLE, ["cssText"], t3), title: O(t3), titleAttributes: E("titleAttributes", t3), prioritizeSeoTags: P2(t3, "prioritizeSeoTags") });
+        z2.canUseDOM ? (e3 = a2, J2 && cancelAnimationFrame(J2), e3.defer ? J2 = requestAnimationFrame(function() {
           W(e3, function() {
-            J = null;
+            J2 = null;
           });
-        }) : (W(e3), J = null)) : q && (i2 = q(a2)), n2(i2);
+        }) : (W(e3), J2 = null)) : q2 && (i2 = q2(a2)), n2(i2);
       }, r2.init = function() {
         this.rendered || (this.rendered = true, this.props.context.helmetInstances.add(this), this.emitChange());
       }, r2.render = function() {
@@ -580,7 +580,7 @@ var require_lib = __commonJS({
       function e2() {
         return t2.apply(this, arguments) || this;
       }
-      d(e2, t2);
+      d2(e2, t2);
       var r2 = e2.prototype;
       return r2.shouldComponentUpdate = function(t3) {
         return !s.default(j(this.props, "helmetData"), j(t3, "helmetData"));
@@ -627,7 +627,7 @@ var require_lib = __commonJS({
         return o.default.Children.forEach(t3, function(t4) {
           if (t4 && t4.props) {
             var i2 = t4.props, a2 = i2.children, o2 = h(i2, V), u2 = Object.keys(o2).reduce(function(t5, e4) {
-              return t5[A[e4] || e4] = o2[e4], t5;
+              return t5[A2[e4] || e4] = o2[e4], t5;
             }, {}), s2 = t4.type;
             switch ("symbol" == typeof s2 ? s2 = s2.toString() : r3.warnOnInvalidChildren(t4, a2), s2) {
               case m.FRAGMENT:
@@ -652,7 +652,7 @@ var require_lib = __commonJS({
         });
       }, e2;
     }(t.Component);
-    Z.propTypes = { base: u.default.object, bodyAttributes: u.default.object, children: u.default.oneOfType([u.default.arrayOf(u.default.node), u.default.node]), defaultTitle: u.default.string, defer: u.default.bool, encodeSpecialCharacters: u.default.bool, htmlAttributes: u.default.object, link: u.default.arrayOf(u.default.object), meta: u.default.arrayOf(u.default.object), noscript: u.default.arrayOf(u.default.object), onChangeClientState: u.default.func, script: u.default.arrayOf(u.default.object), style: u.default.arrayOf(u.default.object), title: u.default.string, titleAttributes: u.default.object, titleTemplate: u.default.string, prioritizeSeoTags: u.default.bool, helmetData: u.default.object }, Z.defaultProps = { defer: true, encodeSpecialCharacters: true, prioritizeSeoTags: false }, Z.displayName = "Helmet", exports2.Helmet = Z, exports2.HelmetData = Y, exports2.HelmetProvider = z;
+    Z.propTypes = { base: u.default.object, bodyAttributes: u.default.object, children: u.default.oneOfType([u.default.arrayOf(u.default.node), u.default.node]), defaultTitle: u.default.string, defer: u.default.bool, encodeSpecialCharacters: u.default.bool, htmlAttributes: u.default.object, link: u.default.arrayOf(u.default.object), meta: u.default.arrayOf(u.default.object), noscript: u.default.arrayOf(u.default.object), onChangeClientState: u.default.func, script: u.default.arrayOf(u.default.object), style: u.default.arrayOf(u.default.object), title: u.default.string, titleAttributes: u.default.object, titleTemplate: u.default.string, prioritizeSeoTags: u.default.bool, helmetData: u.default.object }, Z.defaultProps = { defer: true, encodeSpecialCharacters: true, prioritizeSeoTags: false }, Z.displayName = "Helmet", exports2.Helmet = Z, exports2.HelmetData = Y, exports2.HelmetProvider = z2;
   }
 });
 
@@ -708,7 +708,7 @@ var require_utilities_cjs_production_min = __commonJS({
         }, { ...t2 });
       };
     }
-    var d = f(1);
+    var d2 = f(1);
     var p = f(-1);
     function x(e2) {
       return "clientX" in e2 && "clientY" in e2;
@@ -733,7 +733,7 @@ var require_utilities_cjs_production_min = __commonJS({
       return t2 + " " + n2 + "ms " + r2;
     } } });
     var b = "a,frame,iframe,input:not([type=hidden]):not(:disabled),select:not(:disabled),textarea:not(:disabled),button:not(:disabled),*[tabindex]";
-    exports2.CSS = h, exports2.add = d, exports2.canUseDOM = t, exports2.findFirstFocusableNode = function(e2) {
+    exports2.CSS = h, exports2.add = d2, exports2.canUseDOM = t, exports2.findFirstFocusableNode = function(e2) {
       return e2.matches(b) ? e2 : e2.querySelector(b);
     }, exports2.getEventCoordinates = function(e2) {
       if (m(e2)) {
@@ -878,8 +878,8 @@ var require_core_cjs_production_min = __commonJS({
       let { active: t2 } = e2;
       return "Dragging was cancelled. Draggable item " + t2.id + " was dropped.";
     } };
-    function d(e2) {
-      let { announcements: a2 = c, container: d2, hiddenTextDescribedById: u2, screenReaderInstructions: f2 = l } = e2;
+    function d2(e2) {
+      let { announcements: a2 = c, container: d3, hiddenTextDescribedById: u2, screenReaderInstructions: f2 = l } = e2;
       const { announce: v2, announcement: g2 } = i.useAnnouncement(), p2 = o.useUniqueId("DndLiveRegion"), [h2, b2] = t.useState(false);
       if (t.useEffect(() => {
         b2(true);
@@ -900,7 +900,7 @@ var require_core_cjs_production_min = __commonJS({
         v2(a2.onDragCancel({ active: t2, over: n2 }));
       } }), [v2, a2])), !h2) return null;
       const m2 = n.createElement(n.Fragment, null, n.createElement(i.HiddenText, { id: u2, value: f2.draggable }), n.createElement(i.LiveRegion, { id: p2, announcement: g2 }));
-      return d2 ? r.createPortal(m2, d2) : m2;
+      return d3 ? r.createPortal(m2, d3) : m2;
     }
     var u;
     function f() {
@@ -969,7 +969,7 @@ var require_core_cjs_production_min = __commonJS({
         return r2.reduce((t3, n3) => ({ ...t3, top: t3.top + e2 * n3.y, bottom: t3.bottom + e2 * n3.y, left: t3.left + e2 * n3.x, right: t3.right + e2 * n3.x }), { ...t2 });
       };
     }
-    var S = R(1);
+    var S2 = R(1);
     function M(e2) {
       if (e2.startsWith("matrix3d(")) {
         const t2 = e2.slice(9, -1).split(/, /);
@@ -990,14 +990,14 @@ var require_core_cjs_production_min = __commonJS({
         t3 && (n2 = function(e3, t4, n3) {
           const r4 = M(t4);
           if (!r4) return e3;
-          const { scaleX: o2, scaleY: i3, x: a3, y: s3 } = r4, l3 = e3.left - a3 - (1 - o2) * parseFloat(n3), c3 = e3.top - s3 - (1 - i3) * parseFloat(n3.slice(n3.indexOf(" ") + 1)), d2 = o2 ? e3.width / o2 : e3.width, u2 = i3 ? e3.height / i3 : e3.height;
-          return { width: d2, height: u2, top: c3, right: l3 + d2, bottom: c3 + u2, left: l3 };
+          const { scaleX: o2, scaleY: i3, x: a3, y: s3 } = r4, l3 = e3.left - a3 - (1 - o2) * parseFloat(n3), c3 = e3.top - s3 - (1 - i3) * parseFloat(n3.slice(n3.indexOf(" ") + 1)), d3 = o2 ? e3.width / o2 : e3.width, u2 = i3 ? e3.height / i3 : e3.height;
+          return { width: d3, height: u2, top: c3, right: l3 + d3, bottom: c3 + u2, left: l3 };
         }(n2, t3, r3));
       }
       const { top: r2, left: i2, width: a2, height: s2, bottom: l2, right: c2 } = n2;
       return { top: r2, left: i2, width: a2, height: s2, bottom: l2, right: c2 };
     }
-    function A(e2) {
+    function A2(e2) {
       return O(e2, { ignoreTransform: true });
     }
     function L(e2, t2) {
@@ -1025,35 +1025,35 @@ var require_core_cjs_production_min = __commonJS({
       const [t2] = L(e2, 1);
       return null != t2 ? t2 : null;
     }
-    function T(e2) {
+    function T2(e2) {
       return o.canUseDOM && e2 ? o.isWindow(e2) ? e2 : o.isNode(e2) ? o.isDocument(e2) || e2 === o.getOwnerDocument(e2).scrollingElement ? window : o.isHTMLElement(e2) ? e2 : null : null : null;
     }
     function K(e2) {
       return o.isWindow(e2) ? e2.scrollX : e2.scrollLeft;
     }
-    function P(e2) {
+    function P2(e2) {
       return o.isWindow(e2) ? e2.scrollY : e2.scrollTop;
     }
     function I(e2) {
-      return { x: K(e2), y: P(e2) };
+      return { x: K(e2), y: P2(e2) };
     }
     var B;
-    function z(e2) {
+    function z2(e2) {
       return !(!o.canUseDOM || !e2) && e2 === document.scrollingElement;
     }
-    function F(e2) {
-      const t2 = { x: 0, y: 0 }, n2 = z(e2) ? { height: window.innerHeight, width: window.innerWidth } : { height: e2.clientHeight, width: e2.clientWidth }, r2 = { x: e2.scrollWidth - n2.width, y: e2.scrollHeight - n2.height };
+    function F2(e2) {
+      const t2 = { x: 0, y: 0 }, n2 = z2(e2) ? { height: window.innerHeight, width: window.innerWidth } : { height: e2.clientHeight, width: e2.clientWidth }, r2 = { x: e2.scrollWidth - n2.width, y: e2.scrollHeight - n2.height };
       return { isTop: e2.scrollTop <= t2.y, isLeft: e2.scrollLeft <= t2.x, isBottom: e2.scrollTop >= r2.y, isRight: e2.scrollLeft >= r2.x, maxScroll: r2, minScroll: t2 };
     }
     !function(e2) {
       e2[e2.Forward = 1] = "Forward", e2[e2.Backward = -1] = "Backward";
     }(B || (B = {}));
     var W = { x: 0.2, y: 0.2 };
-    function U(e2, t2, n2, r2, o2) {
+    function U2(e2, t2, n2, r2, o2) {
       let { top: i2, left: a2, right: s2, bottom: l2 } = n2;
       void 0 === r2 && (r2 = 10), void 0 === o2 && (o2 = W);
-      const { isTop: c2, isBottom: d2, isLeft: u2, isRight: f2 } = F(e2), v2 = { x: 0, y: 0 }, g2 = { x: 0, y: 0 }, p2 = t2.height * o2.y, h2 = t2.width * o2.x;
-      return !c2 && i2 <= t2.top + p2 ? (v2.y = B.Backward, g2.y = r2 * Math.abs((t2.top + p2 - i2) / p2)) : !d2 && l2 >= t2.bottom - p2 && (v2.y = B.Forward, g2.y = r2 * Math.abs((t2.bottom - p2 - l2) / p2)), !f2 && s2 >= t2.right - h2 ? (v2.x = B.Forward, g2.x = r2 * Math.abs((t2.right - h2 - s2) / h2)) : !u2 && a2 <= t2.left + h2 && (v2.x = B.Backward, g2.x = r2 * Math.abs((t2.left + h2 - a2) / h2)), { direction: v2, speed: g2 };
+      const { isTop: c2, isBottom: d3, isLeft: u2, isRight: f2 } = F2(e2), v2 = { x: 0, y: 0 }, g2 = { x: 0, y: 0 }, p2 = t2.height * o2.y, h2 = t2.width * o2.x;
+      return !c2 && i2 <= t2.top + p2 ? (v2.y = B.Backward, g2.y = r2 * Math.abs((t2.top + p2 - i2) / p2)) : !d3 && l2 >= t2.bottom - p2 && (v2.y = B.Forward, g2.y = r2 * Math.abs((t2.bottom - p2 - l2) / p2)), !f2 && s2 >= t2.right - h2 ? (v2.x = B.Forward, g2.x = r2 * Math.abs((t2.right - h2 - s2) / h2)) : !u2 && a2 <= t2.left + h2 && (v2.x = B.Backward, g2.x = r2 * Math.abs((t2.left + h2 - a2) / h2)), { direction: v2, speed: g2 };
     }
     function j(e2) {
       if (e2 === document.scrollingElement) {
@@ -1063,10 +1063,10 @@ var require_core_cjs_production_min = __commonJS({
       const { top: t2, left: n2, right: r2, bottom: o2 } = e2.getBoundingClientRect();
       return { top: t2, left: n2, right: r2, bottom: o2, width: e2.clientWidth, height: e2.clientHeight };
     }
-    function q(e2) {
+    function q2(e2) {
       return e2.reduce((e3, t2) => o.add(e3, I(t2)), v);
     }
-    function H(e2, t2) {
+    function H2(e2, t2) {
       if (void 0 === t2 && (t2 = O), !e2) return;
       const { top: n2, left: r2, bottom: o2, right: i2 } = t2(e2);
       k(e2) && (o2 <= 0 || i2 <= 0 || n2 >= window.innerHeight || r2 >= window.innerWidth) && e2.scrollIntoView({ block: "center", inline: "center" });
@@ -1074,12 +1074,12 @@ var require_core_cjs_production_min = __commonJS({
     var X2 = [["x", ["left", "right"], function(e2) {
       return e2.reduce((e3, t2) => e3 + K(t2), 0);
     }], ["y", ["top", "bottom"], function(e2) {
-      return e2.reduce((e3, t2) => e3 + P(t2), 0);
+      return e2.reduce((e3, t2) => e3 + P2(t2), 0);
     }]];
     var Y = class {
       constructor(e2, t2) {
         this.rect = void 0, this.width = void 0, this.height = void 0, this.top = void 0, this.bottom = void 0, this.right = void 0, this.left = void 0;
-        const n2 = L(t2), r2 = q(n2);
+        const n2 = L(t2), r2 = q2(n2);
         this.rect = { ...e2 }, this.width = e2.width, this.height = e2.height;
         for (const [e3, t3, o2] of X2) for (const i2 of t3) Object.defineProperty(this, i2, { get: () => {
           const t4 = o2(n2);
@@ -1102,12 +1102,12 @@ var require_core_cjs_production_min = __commonJS({
         null == (r2 = this.target) || r2.addEventListener(e2, t2, n2), this.listeners.push([e2, t2, n2]);
       }
     };
-    function J(e2, t2) {
+    function J2(e2, t2) {
       const n2 = Math.abs(e2.x), r2 = Math.abs(e2.y);
       return "number" == typeof t2 ? Math.sqrt(n2 ** 2 + r2 ** 2) > t2 : "x" in t2 && "y" in t2 ? n2 > t2.x && r2 > t2.y : "x" in t2 ? n2 > t2.x : "y" in t2 && r2 > t2.y;
     }
     var _;
-    var G;
+    var G2;
     function Q(e2) {
       e2.preventDefault();
     }
@@ -1116,7 +1116,7 @@ var require_core_cjs_production_min = __commonJS({
     }
     !function(e2) {
       e2.Click = "click", e2.DragStart = "dragstart", e2.Keydown = "keydown", e2.ContextMenu = "contextmenu", e2.Resize = "resize", e2.SelectionChange = "selectionchange", e2.VisibilityChange = "visibilitychange";
-    }(_ || (_ = {})), (G = exports2.KeyboardCode || (exports2.KeyboardCode = {})).Space = "Space", G.Down = "ArrowDown", G.Right = "ArrowRight", G.Left = "ArrowLeft", G.Up = "ArrowUp", G.Esc = "Escape", G.Enter = "Enter", G.Tab = "Tab";
+    }(_ || (_ = {})), (G2 = exports2.KeyboardCode || (exports2.KeyboardCode = {})).Space = "Space", G2.Down = "ArrowDown", G2.Right = "ArrowRight", G2.Left = "ArrowLeft", G2.Up = "ArrowUp", G2.Esc = "Escape", G2.Enter = "Enter", G2.Tab = "Tab";
     var $ = { start: [exports2.KeyboardCode.Space, exports2.KeyboardCode.Enter], cancel: [exports2.KeyboardCode.Esc], end: [exports2.KeyboardCode.Space, exports2.KeyboardCode.Enter, exports2.KeyboardCode.Tab] };
     var ee = (e2, t2) => {
       let { currentCoordinates: n2 } = t2;
@@ -1142,30 +1142,30 @@ var require_core_cjs_production_min = __commonJS({
       }
       handleStart() {
         const { activeNode: e2, onStart: t2 } = this.props, n2 = e2.node.current;
-        n2 && H(n2), t2(v);
+        n2 && H2(n2), t2(v);
       }
       handleKeyDown(e2) {
         if (o.isKeyboardEvent(e2)) {
           const { active: t2, context: n2, options: r2 } = this.props, { keyboardCodes: i2 = $, coordinateGetter: a2 = ee, scrollBehavior: s2 = "smooth" } = r2, { code: l2 } = e2;
           if (i2.end.includes(l2)) return void this.handleEnd(e2);
           if (i2.cancel.includes(l2)) return void this.handleCancel(e2);
-          const { collisionRect: c2 } = n2.current, d2 = c2 ? { x: c2.left, y: c2.top } : v;
-          this.referenceCoordinates || (this.referenceCoordinates = d2);
-          const u2 = a2(e2, { active: t2, context: n2.current, currentCoordinates: d2 });
+          const { collisionRect: c2 } = n2.current, d3 = c2 ? { x: c2.left, y: c2.top } : v;
+          this.referenceCoordinates || (this.referenceCoordinates = d3);
+          const u2 = a2(e2, { active: t2, context: n2.current, currentCoordinates: d3 });
           if (u2) {
-            const t3 = o.subtract(u2, d2), r3 = { x: 0, y: 0 }, { scrollableAncestors: i3 } = n2.current;
+            const t3 = o.subtract(u2, d3), r3 = { x: 0, y: 0 }, { scrollableAncestors: i3 } = n2.current;
             for (const n3 of i3) {
-              const o2 = e2.code, { isTop: i4, isRight: a3, isLeft: l3, isBottom: c3, maxScroll: d3, minScroll: f2 } = F(n3), v2 = j(n3), g2 = { x: Math.min(o2 === exports2.KeyboardCode.Right ? v2.right - v2.width / 2 : v2.right, Math.max(o2 === exports2.KeyboardCode.Right ? v2.left : v2.left + v2.width / 2, u2.x)), y: Math.min(o2 === exports2.KeyboardCode.Down ? v2.bottom - v2.height / 2 : v2.bottom, Math.max(o2 === exports2.KeyboardCode.Down ? v2.top : v2.top + v2.height / 2, u2.y)) }, p2 = o2 === exports2.KeyboardCode.Right && !a3 || o2 === exports2.KeyboardCode.Left && !l3, h2 = o2 === exports2.KeyboardCode.Down && !c3 || o2 === exports2.KeyboardCode.Up && !i4;
+              const o2 = e2.code, { isTop: i4, isRight: a3, isLeft: l3, isBottom: c3, maxScroll: d4, minScroll: f2 } = F2(n3), v2 = j(n3), g2 = { x: Math.min(o2 === exports2.KeyboardCode.Right ? v2.right - v2.width / 2 : v2.right, Math.max(o2 === exports2.KeyboardCode.Right ? v2.left : v2.left + v2.width / 2, u2.x)), y: Math.min(o2 === exports2.KeyboardCode.Down ? v2.bottom - v2.height / 2 : v2.bottom, Math.max(o2 === exports2.KeyboardCode.Down ? v2.top : v2.top + v2.height / 2, u2.y)) }, p2 = o2 === exports2.KeyboardCode.Right && !a3 || o2 === exports2.KeyboardCode.Left && !l3, h2 = o2 === exports2.KeyboardCode.Down && !c3 || o2 === exports2.KeyboardCode.Up && !i4;
               if (p2 && g2.x !== u2.x) {
-                const e3 = n3.scrollLeft + t3.x, i5 = o2 === exports2.KeyboardCode.Right && e3 <= d3.x || o2 === exports2.KeyboardCode.Left && e3 >= f2.x;
+                const e3 = n3.scrollLeft + t3.x, i5 = o2 === exports2.KeyboardCode.Right && e3 <= d4.x || o2 === exports2.KeyboardCode.Left && e3 >= f2.x;
                 if (i5 && !t3.y) return void n3.scrollTo({ left: e3, behavior: s2 });
-                r3.x = i5 ? n3.scrollLeft - e3 : o2 === exports2.KeyboardCode.Right ? n3.scrollLeft - d3.x : n3.scrollLeft - f2.x, r3.x && n3.scrollBy({ left: -r3.x, behavior: s2 });
+                r3.x = i5 ? n3.scrollLeft - e3 : o2 === exports2.KeyboardCode.Right ? n3.scrollLeft - d4.x : n3.scrollLeft - f2.x, r3.x && n3.scrollBy({ left: -r3.x, behavior: s2 });
                 break;
               }
               if (h2 && g2.y !== u2.y) {
-                const e3 = n3.scrollTop + t3.y, i5 = o2 === exports2.KeyboardCode.Down && e3 <= d3.y || o2 === exports2.KeyboardCode.Up && e3 >= f2.y;
+                const e3 = n3.scrollTop + t3.y, i5 = o2 === exports2.KeyboardCode.Down && e3 <= d4.y || o2 === exports2.KeyboardCode.Up && e3 >= f2.y;
                 if (i5 && !t3.x) return void n3.scrollTo({ top: e3, behavior: s2 });
-                r3.y = i5 ? n3.scrollTop - e3 : o2 === exports2.KeyboardCode.Down ? n3.scrollTop - d3.y : n3.scrollTop - f2.y, r3.y && n3.scrollBy({ top: -r3.y, behavior: s2 });
+                r3.y = i5 ? n3.scrollTop - e3 : o2 === exports2.KeyboardCode.Down ? n3.scrollTop - d4.y : n3.scrollTop - f2.y, r3.y && n3.scrollBy({ top: -r3.y, behavior: s2 });
                 break;
               }
             }
@@ -1241,10 +1241,10 @@ var require_core_cjs_production_min = __commonJS({
         const l2 = null != (t2 = o.getEventCoordinates(e2)) ? t2 : v, c2 = o.subtract(r2, l2);
         if (!n2 && s2) {
           if (ne(s2)) {
-            if (null != s2.tolerance && J(c2, s2.tolerance)) return this.handleCancel();
-            if (J(c2, s2.distance)) return this.handleStart();
+            if (null != s2.tolerance && J2(c2, s2.tolerance)) return this.handleCancel();
+            if (J2(c2, s2.distance)) return this.handleStart();
           }
-          return re(s2) && J(c2, s2.tolerance) ? this.handleCancel() : void this.handlePending(s2, c2);
+          return re(s2) && J2(c2, s2.tolerance) ? this.handleCancel() : void this.handlePending(s2, c2);
         }
         e2.cancelable && e2.preventDefault(), a2(l2);
       }
@@ -1387,7 +1387,7 @@ var require_core_cjs_production_min = __commonJS({
     }
     var Se = [{ sensor: ae, options: {} }, { sensor: te, options: {} }];
     var Me = { current: {} };
-    var Ne = { draggable: { measure: A }, droppable: { measure: A, strategy: exports2.MeasuringStrategy.WhileDragging, frequency: exports2.MeasuringFrequency.Optimized }, dragOverlay: { measure: O } };
+    var Ne = { draggable: { measure: A2 }, droppable: { measure: A2, strategy: exports2.MeasuringStrategy.WhileDragging, frequency: exports2.MeasuringFrequency.Optimized }, dragOverlay: { measure: O } };
     var Oe = class extends Map {
       get(e2) {
         var t2;
@@ -1479,7 +1479,7 @@ var require_core_cjs_production_min = __commonJS({
     var We = t.memo(function(e2) {
       var i2, s2, l2, c2;
       let { id: f2, accessibility: g2, autoScroll: p2 = true, children: h2, sensors: b2 = Se, collisionDetection: m2 = C, measuring: x2, modifiers: w2, ...E2 } = e2;
-      const R2 = t.useReducer(Pe, void 0, Ke), [M2, N2] = R2, [A2, K2] = function() {
+      const R2 = t.useReducer(Pe, void 0, Ke), [M2, N2] = R2, [A3, K2] = function() {
         const [e3] = t.useState(() => /* @__PURE__ */ new Set()), n2 = t.useCallback((t2) => (e3.add(t2), () => e3.delete(t2)), [e3]);
         return [t.useCallback((t2) => {
           let { type: n3, event: r2 } = t2;
@@ -1488,14 +1488,14 @@ var require_core_cjs_production_min = __commonJS({
             return null == (t3 = e4[n3]) ? void 0 : t3.call(e4, r2);
           });
         }, [e3]), n2];
-      }(), [P2, F2] = t.useState(Fe.Uninitialized), W2 = P2 === Fe.Initialized, { draggable: { active: j2, nodes: H2, translate: X3 }, droppable: { containers: V2 } } = M2, J2 = null != j2 ? H2.get(j2) : null, _2 = t.useRef({ initial: null, translated: null }), G2 = t.useMemo(() => {
+      }(), [P3, F3] = t.useState(Fe.Uninitialized), W2 = P3 === Fe.Initialized, { draggable: { active: j2, nodes: H3, translate: X3 }, droppable: { containers: V2 } } = M2, J3 = null != j2 ? H3.get(j2) : null, _2 = t.useRef({ initial: null, translated: null }), G3 = t.useMemo(() => {
         var e3;
-        return null != j2 ? { id: j2, data: null != (e3 = null == J2 ? void 0 : J2.data) ? e3 : Me, rect: _2 } : null;
-      }, [j2, J2]), Q2 = t.useRef(null), [Z2, $2] = t.useState(null), [ee2, te2] = t.useState(null), ne2 = o.useLatestValue(E2, Object.values(E2)), re2 = o.useUniqueId("DndDescribedBy", f2), oe2 = t.useMemo(() => V2.getEnabled(), [V2]), ie2 = t.useMemo(() => ({ draggable: { ...Ne.draggable, ...null == ae2 ? void 0 : ae2.draggable }, droppable: { ...Ne.droppable, ...null == ae2 ? void 0 : ae2.droppable }, dragOverlay: { ...Ne.dragOverlay, ...null == ae2 ? void 0 : ae2.dragOverlay } }), [null == (ae2 = x2) ? void 0 : ae2.draggable, null == ae2 ? void 0 : ae2.droppable, null == ae2 ? void 0 : ae2.dragOverlay]);
+        return null != j2 ? { id: j2, data: null != (e3 = null == J3 ? void 0 : J3.data) ? e3 : Me, rect: _2 } : null;
+      }, [j2, J3]), Q2 = t.useRef(null), [Z2, $2] = t.useState(null), [ee2, te2] = t.useState(null), ne2 = o.useLatestValue(E2, Object.values(E2)), re2 = o.useUniqueId("DndDescribedBy", f2), oe2 = t.useMemo(() => V2.getEnabled(), [V2]), ie2 = t.useMemo(() => ({ draggable: { ...Ne.draggable, ...null == ae2 ? void 0 : ae2.draggable }, droppable: { ...Ne.droppable, ...null == ae2 ? void 0 : ae2.droppable }, dragOverlay: { ...Ne.dragOverlay, ...null == ae2 ? void 0 : ae2.dragOverlay } }), [null == (ae2 = x2) ? void 0 : ae2.draggable, null == ae2 ? void 0 : ae2.droppable, null == ae2 ? void 0 : ae2.dragOverlay]);
       var ae2;
       const { droppableRects: se2, measureDroppableContainers: le2, measuringScheduled: ce2 } = function(e3, n2) {
         let { dragging: r2, dependencies: i3, config: a2 } = n2;
-        const [s3, l3] = t.useState(null), { frequency: c3, measure: d2, strategy: u2 } = a2, f3 = t.useRef(e3), v2 = function() {
+        const [s3, l3] = t.useState(null), { frequency: c3, measure: d3, strategy: u2 } = a2, f3 = t.useRef(e3), v2 = function() {
           switch (u2) {
             case exports2.MeasuringStrategy.Always:
               return false;
@@ -1516,13 +1516,13 @@ var require_core_cjs_production_min = __commonJS({
                 t3.set(n3.id, n3.rect.current);
                 continue;
               }
-              const e4 = n3.node.current, r3 = e4 ? new Y(d2(e4), e4) : null;
+              const e4 = n3.node.current, r3 = e4 ? new Y(d3(e4), e4) : null;
               n3.rect.current = r3, r3 && t3.set(n3.id, r3);
             }
             return t3;
           }
           return t2;
-        }, [e3, s3, r2, v2, d2]);
+        }, [e3, s3, r2, v2, d3]);
         return t.useEffect(() => {
           f3.current = e3;
         }, [e3]), t.useEffect(() => {
@@ -1540,7 +1540,7 @@ var require_core_cjs_production_min = __commonJS({
           var n3;
           return null == t2 ? null : null != (n3 = null != r2 ? r2 : e4) ? n3 : null;
         }, [r2, t2]);
-      }(H2, j2), ue2 = t.useMemo(() => ee2 ? o.getEventCoordinates(ee2) : null, [ee2]), fe2 = function() {
+      }(H3, j2), ue2 = t.useMemo(() => ee2 ? o.getEventCoordinates(ee2) : null, [ee2]), fe2 = function() {
         const e3 = W2 && !(false === (null == Z2 ? void 0 : Z2.autoScrollEnabled)) && !("object" == typeof p2 ? false === p2.enabled : false === p2);
         return "object" == typeof p2 ? { ...p2, enabled: e3 } : { enabled: e3 };
       }(), ve2 = function(e3, t2) {
@@ -1560,8 +1560,8 @@ var require_core_cjs_production_min = __commonJS({
             n3 && n3.scrollBy({ top: t2.y, left: t2.x });
           }
         }, [n2, l3, c3, i3, r2]);
-      }({ activeNode: null != j2 ? H2.get(j2) : null, config: fe2.layoutShiftCompensation, initialRect: ve2, measure: ie2.draggable.measure });
-      const pe2 = xe(de2, ie2.draggable.measure, ve2), ye2 = xe(de2 ? de2.parentElement : null), Oe2 = t.useRef({ activatorEvent: null, active: null, activeNode: de2, collisionRect: null, collisions: null, droppableRects: se2, draggableNodes: H2, draggingNode: null, draggingNodeRect: null, droppableContainers: V2, over: null, scrollableAncestors: [], scrollAdjustedTranslate: null }), Ae2 = V2.getNodeFor(null == (i2 = Oe2.current.over) ? void 0 : i2.id), Le2 = function(e3) {
+      }({ activeNode: null != j2 ? H3.get(j2) : null, config: fe2.layoutShiftCompensation, initialRect: ve2, measure: ie2.draggable.measure });
+      const pe2 = xe(de2, ie2.draggable.measure, ve2), ye2 = xe(de2 ? de2.parentElement : null), Oe2 = t.useRef({ activatorEvent: null, active: null, activeNode: de2, collisionRect: null, collisions: null, droppableRects: se2, draggableNodes: H3, draggingNode: null, draggingNodeRect: null, droppableContainers: V2, over: null, scrollableAncestors: [], scrollAdjustedTranslate: null }), Ae2 = V2.getNodeFor(null == (i2 = Oe2.current.over) ? void 0 : i2.id), Le2 = function(e3) {
         let { measure: n2 } = e3;
         const [r2, i3] = t.useState(null), a2 = me({ callback: t.useCallback((e4) => {
           for (const { target: t2 } of e4) if (o.isHTMLElement(t2)) {
@@ -1587,15 +1587,15 @@ var require_core_cjs_production_min = __commonJS({
         void 0 === n2 && (n2 = O);
         const [r2] = e3, i3 = Ee(r2 ? o.getWindow(r2) : null), [a2, s3] = t.useState(De);
         function l3() {
-          s3(() => e3.length ? e3.map((e4) => z(e4) ? i3 : new Y(n2(e4), e4)) : De);
+          s3(() => e3.length ? e3.map((e4) => z2(e4) ? i3 : new Y(n2(e4), e4)) : De);
         }
         const c3 = me({ callback: l3 });
         return o.useIsomorphicLayoutEffect(() => {
           null == c3 || c3.disconnect(), l3(), e3.forEach((e4) => null == c3 ? void 0 : c3.observe(e4));
         }, [e3]), a2;
-      }(Ye2), Je2 = Be(w2, { transform: { x: X3.x - qe2.x, y: X3.y - qe2.y, scaleX: 1, scaleY: 1 }, activatorEvent: ee2, active: G2, activeNodeRect: pe2, containerNodeRect: ye2, draggingNodeRect: Ue2, over: Oe2.current.over, overlayNodeRect: Le2.rect, scrollableAncestors: Ye2, scrollableAncestorRects: Ve2, windowRect: Xe2 }), _e2 = ue2 ? o.add(ue2, X3) : null, Ge2 = function(e3) {
+      }(Ye2), Je2 = Be(w2, { transform: { x: X3.x - qe2.x, y: X3.y - qe2.y, scaleX: 1, scaleY: 1 }, activatorEvent: ee2, active: G3, activeNodeRect: pe2, containerNodeRect: ye2, draggingNodeRect: Ue2, over: Oe2.current.over, overlayNodeRect: Le2.rect, scrollableAncestors: Ye2, scrollableAncestorRects: Ve2, windowRect: Xe2 }), _e2 = ue2 ? o.add(ue2, X3) : null, Ge2 = function(e3) {
         const [n2, r2] = t.useState(null), i3 = t.useRef(e3), a2 = t.useCallback((e4) => {
-          const t2 = T(e4.target);
+          const t2 = T2(e4.target);
           t2 && r2((e5) => e5 ? (e5.set(t2, I(t2)), new Map(e5)) : null);
         }, []);
         return t.useEffect(() => {
@@ -1603,7 +1603,7 @@ var require_core_cjs_production_min = __commonJS({
           if (e3 !== t2) {
             n3(t2);
             const o2 = e3.map((e4) => {
-              const t3 = T(e4);
+              const t3 = T2(e4);
               return t3 ? (t3.addEventListener("scroll", a2, { passive: true }), [t3, I(t3)]) : null;
             }).filter((e4) => null != e4);
             r2(o2.length ? new Map(o2) : null), i3.current = e3;
@@ -1613,34 +1613,34 @@ var require_core_cjs_production_min = __commonJS({
           };
           function n3(e4) {
             e4.forEach((e5) => {
-              const t3 = T(e5);
+              const t3 = T2(e5);
               null == t3 || t3.removeEventListener("scroll", a2);
             });
           }
-        }, [a2, e3]), t.useMemo(() => e3.length ? n2 ? Array.from(n2.values()).reduce((e4, t2) => o.add(e4, t2), v) : q(e3) : v, [e3, n2]);
-      }(Ye2), Qe2 = Ce(Ge2), Ze2 = Ce(Ge2, [pe2]), $e2 = o.add(Je2, Qe2), et2 = Ue2 ? S(Ue2, Je2) : null, tt2 = G2 && et2 ? m2({ active: G2, collisionRect: et2, droppableRects: se2, droppableContainers: oe2, pointerCoordinates: _e2 }) : null, nt = y(tt2, "id"), [rt, ot] = t.useState(null), it = function(e3, t2, n2) {
+        }, [a2, e3]), t.useMemo(() => e3.length ? n2 ? Array.from(n2.values()).reduce((e4, t2) => o.add(e4, t2), v) : q2(e3) : v, [e3, n2]);
+      }(Ye2), Qe2 = Ce(Ge2), Ze2 = Ce(Ge2, [pe2]), $e2 = o.add(Je2, Qe2), et2 = Ue2 ? S2(Ue2, Je2) : null, tt2 = G3 && et2 ? m2({ active: G3, collisionRect: et2, droppableRects: se2, droppableContainers: oe2, pointerCoordinates: _e2 }) : null, nt = y(tt2, "id"), [rt, ot] = t.useState(null), it = function(e3, t2, n2) {
         return { ...e3, scaleX: t2 && n2 ? t2.width / n2.width : 1, scaleY: t2 && n2 ? t2.height / n2.height : 1 };
       }(je2 ? Je2 : o.add(Je2, Ze2), null != (c2 = null == rt ? void 0 : rt.rect) ? c2 : null, pe2), at = t.useRef(null), st = t.useCallback((e3, t2) => {
         let { sensor: n2, options: o2 } = t2;
         if (null == Q2.current) return;
-        const i3 = H2.get(Q2.current);
+        const i3 = H3.get(Q2.current);
         if (!i3) return;
         const a2 = e3.nativeEvent, s3 = new n2({ active: Q2.current, activeNode: i3, event: a2, options: o2, context: Oe2, onAbort(e4) {
-          if (!H2.get(e4)) return;
+          if (!H3.get(e4)) return;
           const { onDragAbort: t3 } = ne2.current, n3 = { id: e4 };
-          null == t3 || t3(n3), A2({ type: "onDragAbort", event: n3 });
+          null == t3 || t3(n3), A3({ type: "onDragAbort", event: n3 });
         }, onPending(e4, t3, n3, r2) {
-          if (!H2.get(e4)) return;
+          if (!H3.get(e4)) return;
           const { onDragPending: o3 } = ne2.current, i4 = { id: e4, constraint: t3, initialCoordinates: n3, offset: r2 };
-          null == o3 || o3(i4), A2({ type: "onDragPending", event: i4 });
+          null == o3 || o3(i4), A3({ type: "onDragPending", event: i4 });
         }, onStart(e4) {
           const t3 = Q2.current;
           if (null == t3) return;
-          const n3 = H2.get(t3);
+          const n3 = H3.get(t3);
           if (!n3) return;
           const { onDragStart: o3 } = ne2.current, i4 = { activatorEvent: a2, active: { id: t3, data: n3.data, rect: _2 } };
           r.unstable_batchedUpdates(() => {
-            null == o3 || o3(i4), F2(Fe.Initializing), N2({ type: u.DragStart, initialCoordinates: e4, active: t3 }), A2({ type: "onDragStart", event: i4 }), $2(at.current), te2(a2);
+            null == o3 || o3(i4), F3(Fe.Initializing), N2({ type: u.DragStart, initialCoordinates: e4, active: t3 }), A3({ type: "onDragStart", event: i4 }), $2(at.current), te2(a2);
           });
         }, onMove(e4) {
           N2({ type: u.DragMove, coordinates: e4 });
@@ -1654,25 +1654,25 @@ var require_core_cjs_production_min = __commonJS({
               s4 = { activatorEvent: a2, active: t3, collisions: n3, delta: i4, over: o3 }, e4 === u.DragEnd && "function" == typeof r2 && await Promise.resolve(r2(s4)) && (e4 = u.DragCancel);
             }
             Q2.current = null, r.unstable_batchedUpdates(() => {
-              N2({ type: e4 }), F2(Fe.Uninitialized), ot(null), $2(null), te2(null), at.current = null;
+              N2({ type: e4 }), F3(Fe.Uninitialized), ot(null), $2(null), te2(null), at.current = null;
               const t4 = e4 === u.DragEnd ? "onDragEnd" : "onDragCancel";
               if (s4) {
                 const e5 = ne2.current[t4];
-                null == e5 || e5(s4), A2({ type: t4, event: s4 });
+                null == e5 || e5(s4), A3({ type: t4, event: s4 });
               }
             });
           };
         }
         at.current = s3;
-      }, [H2]), lt = function(e3, n2) {
+      }, [H3]), lt = function(e3, n2) {
         return t.useMemo(() => e3.reduce((e4, t2) => {
           const { sensor: r2 } = t2;
           return [...e4, ...r2.activators.map((e5) => ({ eventName: e5.eventName, handler: n2(e5.handler, t2) }))];
         }, []), [e3, n2]);
       }(b2, t.useCallback((e3, t2) => (n2, r2) => {
-        const o2 = n2.nativeEvent, i3 = H2.get(r2);
+        const o2 = n2.nativeEvent, i3 = H3.get(r2);
         null !== Q2.current || !i3 || o2.dndKit || o2.defaultPrevented || true === e3(n2, t2.options, { active: i3 }) && (o2.dndKit = { capturedBy: t2.sensor }, Q2.current = r2, st(n2, t2));
-      }, [H2, st]));
+      }, [H3, st]));
       !function(e3) {
         t.useEffect(() => {
           if (!o.canUseDOM) return;
@@ -1688,25 +1688,25 @@ var require_core_cjs_production_min = __commonJS({
           return t2;
         }));
       }(b2), o.useIsomorphicLayoutEffect(() => {
-        pe2 && P2 === Fe.Initializing && F2(Fe.Initialized);
-      }, [pe2, P2]), t.useEffect(() => {
+        pe2 && P3 === Fe.Initializing && F3(Fe.Initialized);
+      }, [pe2, P3]), t.useEffect(() => {
         const { onDragMove: e3 } = ne2.current, { active: t2, activatorEvent: n2, collisions: o2, over: i3 } = Oe2.current;
         if (!t2 || !n2) return;
         const a2 = { active: t2, activatorEvent: n2, collisions: o2, delta: { x: $e2.x, y: $e2.y }, over: i3 };
         r.unstable_batchedUpdates(() => {
-          null == e3 || e3(a2), A2({ type: "onDragMove", event: a2 });
+          null == e3 || e3(a2), A3({ type: "onDragMove", event: a2 });
         });
       }, [$e2.x, $e2.y]), t.useEffect(() => {
         const { active: e3, activatorEvent: t2, collisions: n2, droppableContainers: o2, scrollAdjustedTranslate: i3 } = Oe2.current;
         if (!e3 || null == Q2.current || !t2 || !i3) return;
         const { onDragOver: a2 } = ne2.current, s3 = o2.get(nt), l3 = s3 && s3.rect.current ? { id: s3.id, rect: s3.rect.current, data: s3.data, disabled: s3.disabled } : null, c3 = { active: e3, activatorEvent: t2, collisions: n2, delta: { x: i3.x, y: i3.y }, over: l3 };
         r.unstable_batchedUpdates(() => {
-          ot(l3), null == a2 || a2(c3), A2({ type: "onDragOver", event: c3 });
+          ot(l3), null == a2 || a2(c3), A3({ type: "onDragOver", event: c3 });
         });
       }, [nt]), o.useIsomorphicLayoutEffect(() => {
-        Oe2.current = { activatorEvent: ee2, active: G2, activeNode: de2, collisionRect: et2, collisions: tt2, droppableRects: se2, draggableNodes: H2, draggingNode: We2, draggingNodeRect: Ue2, droppableContainers: V2, over: rt, scrollableAncestors: Ye2, scrollAdjustedTranslate: $e2 }, _2.current = { initial: Ue2, translated: et2 };
-      }, [G2, de2, tt2, et2, H2, We2, Ue2, se2, V2, rt, Ye2, $e2]), function(e3) {
-        let { acceleration: n2, activator: r2 = exports2.AutoScrollActivator.Pointer, canScroll: i3, draggingRect: a2, enabled: s3, interval: l3 = 5, order: c3 = exports2.TraversalOrder.TreeOrder, pointerCoordinates: d2, scrollableAncestors: u2, scrollableAncestorRects: f3, delta: v2, threshold: g3 } = e3;
+        Oe2.current = { activatorEvent: ee2, active: G3, activeNode: de2, collisionRect: et2, collisions: tt2, droppableRects: se2, draggableNodes: H3, draggingNode: We2, draggingNodeRect: Ue2, droppableContainers: V2, over: rt, scrollableAncestors: Ye2, scrollAdjustedTranslate: $e2 }, _2.current = { initial: Ue2, translated: et2 };
+      }, [G3, de2, tt2, et2, H3, We2, Ue2, se2, V2, rt, Ye2, $e2]), function(e3) {
+        let { acceleration: n2, activator: r2 = exports2.AutoScrollActivator.Pointer, canScroll: i3, draggingRect: a2, enabled: s3, interval: l3 = 5, order: c3 = exports2.TraversalOrder.TreeOrder, pointerCoordinates: d3, scrollableAncestors: u2, scrollableAncestorRects: f3, delta: v2, threshold: g3 } = e3;
         const p3 = function(e4) {
           let { delta: t2, disabled: n3 } = e4;
           const r3 = o.usePrevious(t2);
@@ -1718,11 +1718,11 @@ var require_core_cjs_production_min = __commonJS({
         }({ delta: v2, disabled: !s3 }), [h3, b3] = o.useInterval(), m3 = t.useRef({ x: 0, y: 0 }), y2 = t.useRef({ x: 0, y: 0 }), x3 = t.useMemo(() => {
           switch (r2) {
             case exports2.AutoScrollActivator.Pointer:
-              return d2 ? { top: d2.y, bottom: d2.y, left: d2.x, right: d2.x } : null;
+              return d3 ? { top: d3.y, bottom: d3.y, left: d3.x, right: d3.x } : null;
             case exports2.AutoScrollActivator.DraggableRect:
               return a2;
           }
-        }, [r2, a2, d2]), w3 = t.useRef(null), C2 = t.useCallback(() => {
+        }, [r2, a2, d3]), w3 = t.useRef(null), C2 = t.useCallback(() => {
           const e4 = w3.current;
           e4 && e4.scrollBy(m3.current.x * y2.current.x, m3.current.y * y2.current.y);
         }, []), E3 = t.useMemo(() => c3 === exports2.TraversalOrder.TreeOrder ? [...u2].reverse() : u2, [c3, u2]);
@@ -1732,7 +1732,7 @@ var require_core_cjs_production_min = __commonJS({
               if (false === (null == i3 ? void 0 : i3(e4))) continue;
               const t2 = u2.indexOf(e4), r3 = f3[t2];
               if (!r3) continue;
-              const { direction: o2, speed: a3 } = U(e4, r3, x3, n2, g3);
+              const { direction: o2, speed: a3 } = U2(e4, r3, x3, n2, g3);
               for (const e5 of ["x", "y"]) p3[e5][o2[e5]] || (a3[e5] = 0, o2[e5] = 0);
               if (a3.x > 0 || a3.y > 0) return b3(), w3.current = e4, h3(C2, l3), m3.current = a3, void (y2.current = o2);
             }
@@ -1740,8 +1740,8 @@ var require_core_cjs_production_min = __commonJS({
           } else b3();
         }, [n2, C2, i3, b3, s3, l3, JSON.stringify(x3), JSON.stringify(p3), h3, u2, E3, f3, JSON.stringify(g3)]);
       }({ ...fe2, delta: X3, draggingRect: et2, pointerCoordinates: _e2, scrollableAncestors: Ye2, scrollableAncestorRects: Ve2 });
-      const ct = t.useMemo(() => ({ active: G2, activeNode: de2, activeNodeRect: pe2, activatorEvent: ee2, collisions: tt2, containerNodeRect: ye2, dragOverlay: Le2, draggableNodes: H2, droppableContainers: V2, droppableRects: se2, over: rt, measureDroppableContainers: le2, scrollableAncestors: Ye2, scrollableAncestorRects: Ve2, measuringConfiguration: ie2, measuringScheduled: ce2, windowRect: Xe2 }), [G2, de2, pe2, ee2, tt2, ye2, Le2, H2, V2, se2, rt, le2, Ye2, Ve2, ie2, ce2, Xe2]), dt = t.useMemo(() => ({ activatorEvent: ee2, activators: lt, active: G2, activeNodeRect: pe2, ariaDescribedById: { draggable: re2 }, dispatch: N2, draggableNodes: H2, over: rt, measureDroppableContainers: le2 }), [ee2, lt, G2, pe2, N2, re2, H2, rt, le2]);
-      return n.createElement(a.Provider, { value: K2 }, n.createElement(ke.Provider, { value: dt }, n.createElement(Te.Provider, { value: ct }, n.createElement(ze.Provider, { value: it }, h2)), n.createElement(Ie, { disabled: false === (null == g2 ? void 0 : g2.restoreFocus) })), n.createElement(d, { ...g2, hiddenTextDescribedById: re2 }));
+      const ct = t.useMemo(() => ({ active: G3, activeNode: de2, activeNodeRect: pe2, activatorEvent: ee2, collisions: tt2, containerNodeRect: ye2, dragOverlay: Le2, draggableNodes: H3, droppableContainers: V2, droppableRects: se2, over: rt, measureDroppableContainers: le2, scrollableAncestors: Ye2, scrollableAncestorRects: Ve2, measuringConfiguration: ie2, measuringScheduled: ce2, windowRect: Xe2 }), [G3, de2, pe2, ee2, tt2, ye2, Le2, H3, V2, se2, rt, le2, Ye2, Ve2, ie2, ce2, Xe2]), dt = t.useMemo(() => ({ activatorEvent: ee2, activators: lt, active: G3, activeNodeRect: pe2, ariaDescribedById: { draggable: re2 }, dispatch: N2, draggableNodes: H3, over: rt, measureDroppableContainers: le2 }), [ee2, lt, G3, pe2, N2, re2, H3, rt, le2]);
+      return n.createElement(a.Provider, { value: K2 }, n.createElement(ke.Provider, { value: dt }, n.createElement(Te.Provider, { value: ct }, n.createElement(ze.Provider, { value: it }, h2)), n.createElement(Ie, { disabled: false === (null == g2 ? void 0 : g2.restoreFocus) })), n.createElement(d2, { ...g2, hiddenTextDescribedById: re2 }));
     });
     var Ue = t.createContext(null);
     var je = "button";
@@ -1751,8 +1751,8 @@ var require_core_cjs_production_min = __commonJS({
     var He = { timeout: 25 };
     function Xe(e2) {
       let { animation: r2, children: i2 } = e2;
-      const [a2, s2] = t.useState(null), [l2, c2] = t.useState(null), d2 = o.usePrevious(i2);
-      return i2 || a2 || !d2 || s2(d2), o.useIsomorphicLayoutEffect(() => {
+      const [a2, s2] = t.useState(null), [l2, c2] = t.useState(null), d3 = o.usePrevious(i2);
+      return i2 || a2 || !d3 || s2(d3), o.useIsomorphicLayoutEffect(() => {
         if (!l2) return;
         const e3 = null == a2 ? void 0 : a2.props.id;
         null != (null == a2 ? void 0 : a2.key) && null != e3 ? Promise.resolve(r2(e3, l2)).then(() => {
@@ -1768,9 +1768,9 @@ var require_core_cjs_production_min = __commonJS({
     var Je = { position: "fixed", touchAction: "none" };
     var _e = (e2) => o.isKeyboardEvent(e2) ? "transform 250ms ease" : void 0;
     var Ge = t.forwardRef((e2, t2) => {
-      let { as: r2, activatorEvent: i2, adjustScale: a2, children: s2, className: l2, rect: c2, style: d2, transform: u2, transition: f2 = _e } = e2;
+      let { as: r2, activatorEvent: i2, adjustScale: a2, children: s2, className: l2, rect: c2, style: d3, transform: u2, transition: f2 = _e } = e2;
       if (!c2) return null;
-      const v2 = a2 ? u2 : { ...u2, scaleX: 1, scaleY: 1 }, g2 = { ...Je, width: c2.width, height: c2.height, top: c2.top, left: c2.left, transform: o.CSS.Transform.toString(v2), transformOrigin: a2 && i2 ? p(i2, c2) : void 0, transition: "function" == typeof f2 ? f2(i2) : f2, ...d2 };
+      const v2 = a2 ? u2 : { ...u2, scaleX: 1, scaleY: 1 }, g2 = { ...Je, width: c2.width, height: c2.height, top: c2.top, left: c2.left, transform: o.CSS.Transform.toString(v2), transformOrigin: a2 && i2 ? p(i2, c2) : void 0, transition: "function" == typeof f2 ? f2(i2) : f2, ...d3 };
       return n.createElement(r2, { className: l2, style: g2, ref: t2 }, s2);
     });
     var Qe = (e2) => (t2) => {
@@ -1794,8 +1794,8 @@ var require_core_cjs_production_min = __commonJS({
       }, [e2]);
     }
     var tt = n.memo((e2) => {
-      let { adjustScale: r2 = false, children: i2, dropAnimation: a2, style: s2, transition: l2, modifiers: c2, wrapperElement: d2 = "div", className: u2, zIndex: f2 = 999 } = e2;
-      const { activatorEvent: v2, active: g2, activeNodeRect: p2, containerNodeRect: h2, draggableNodes: b2, droppableContainers: m2, dragOverlay: y2, over: x2, measuringConfiguration: w2, scrollableAncestors: C2, scrollableAncestorRects: E2, windowRect: D2 } = qe(), R2 = t.useContext(ze), S2 = et(null == g2 ? void 0 : g2.id), N2 = Be(c2, { activatorEvent: v2, active: g2, activeNodeRect: p2, containerNodeRect: h2, draggingNodeRect: y2.rect, over: x2, overlayNodeRect: y2.rect, scrollableAncestors: C2, scrollableAncestorRects: E2, transform: R2, windowRect: D2 }), O2 = be(p2), A2 = function(e3) {
+      let { adjustScale: r2 = false, children: i2, dropAnimation: a2, style: s2, transition: l2, modifiers: c2, wrapperElement: d3 = "div", className: u2, zIndex: f2 = 999 } = e2;
+      const { activatorEvent: v2, active: g2, activeNodeRect: p2, containerNodeRect: h2, draggableNodes: b2, droppableContainers: m2, dragOverlay: y2, over: x2, measuringConfiguration: w2, scrollableAncestors: C2, scrollableAncestorRects: E2, windowRect: D2 } = qe(), R2 = t.useContext(ze), S3 = et(null == g2 ? void 0 : g2.id), N2 = Be(c2, { activatorEvent: v2, active: g2, activeNodeRect: p2, containerNodeRect: h2, draggingNodeRect: y2.rect, over: x2, overlayNodeRect: y2.rect, scrollableAncestors: C2, scrollableAncestorRects: E2, transform: R2, windowRect: D2 }), O2 = be(p2), A3 = function(e3) {
         let { config: t2, draggableNodes: n2, droppableContainers: r3, measuringConfiguration: i3 } = e3;
         return o.useEvent((e4, a3) => {
           if (null === t2) return;
@@ -1805,16 +1805,16 @@ var require_core_cjs_production_min = __commonJS({
           if (!l3) return;
           const c3 = Re(a3);
           if (!c3) return;
-          const { transform: d3 } = o.getWindow(a3).getComputedStyle(a3), u3 = M(d3);
+          const { transform: d4 } = o.getWindow(a3).getComputedStyle(a3), u3 = M(d4);
           if (!u3) return;
           const f3 = "function" == typeof t2 ? t2 : function(e5) {
             const { duration: t3, easing: n3, sideEffects: r4, keyframes: o2 } = { ...Ze, ...e5 };
             return (e6) => {
               let { active: i4, dragOverlay: a4, transform: s4, ...l4 } = e6;
               if (!t3) return;
-              const c4 = { x: s4.x - (a4.rect.left - i4.rect.left), y: s4.y - (a4.rect.top - i4.rect.top), scaleX: 1 !== s4.scaleX ? i4.rect.width * s4.scaleX / a4.rect.width : 1, scaleY: 1 !== s4.scaleY ? i4.rect.height * s4.scaleY / a4.rect.height : 1 }, d4 = o2({ ...l4, active: i4, dragOverlay: a4, transform: { initial: s4, final: c4 } }), [u4] = d4, f4 = d4[d4.length - 1];
+              const c4 = { x: s4.x - (a4.rect.left - i4.rect.left), y: s4.y - (a4.rect.top - i4.rect.top), scaleX: 1 !== s4.scaleX ? i4.rect.width * s4.scaleX / a4.rect.width : 1, scaleY: 1 !== s4.scaleY ? i4.rect.height * s4.scaleY / a4.rect.height : 1 }, d5 = o2({ ...l4, active: i4, dragOverlay: a4, transform: { initial: s4, final: c4 } }), [u4] = d5, f4 = d5[d5.length - 1];
               if (JSON.stringify(u4) === JSON.stringify(f4)) return;
-              const v3 = null == r4 ? void 0 : r4({ active: i4, dragOverlay: a4, ...l4 }), g3 = a4.node.animate(d4, { duration: t3, easing: n3, fill: "forwards" });
+              const v3 = null == r4 ? void 0 : r4({ active: i4, dragOverlay: a4, ...l4 }), g3 = a4.node.animate(d5, { duration: t3, easing: n3, fill: "forwards" });
               return new Promise((e7) => {
                 g3.onfinish = () => {
                   null == v3 || v3(), e7();
@@ -1822,10 +1822,10 @@ var require_core_cjs_production_min = __commonJS({
               });
             };
           }(t2);
-          return H(l3, i3.draggable.measure), f3({ active: { id: e4, data: s3.data, node: l3, rect: i3.draggable.measure(l3) }, draggableNodes: n2, dragOverlay: { node: a3, rect: i3.dragOverlay.measure(c3) }, droppableContainers: r3, measuringConfiguration: i3, transform: u3 });
+          return H2(l3, i3.draggable.measure), f3({ active: { id: e4, data: s3.data, node: l3, rect: i3.draggable.measure(l3) }, draggableNodes: n2, dragOverlay: { node: a3, rect: i3.dragOverlay.measure(c3) }, droppableContainers: r3, measuringConfiguration: i3, transform: u3 });
         });
       }({ config: a2, draggableNodes: b2, droppableContainers: m2, measuringConfiguration: w2 });
-      return n.createElement(Ve, null, n.createElement(Xe, { animation: A2 }, g2 && S2 ? n.createElement(Ge, { key: S2, id: g2.id, ref: O2 ? y2.setRef : void 0, as: d2, activatorEvent: v2, adjustScale: r2, className: u2, transition: l2, rect: O2, style: { zIndex: f2, ...s2 }, transform: N2 }, i2) : null));
+      return n.createElement(Ve, null, n.createElement(Xe, { animation: A3 }, g2 && S3 ? n.createElement(Ge, { key: S3, id: g2.id, ref: O2 ? y2.setRef : void 0, as: d3, activatorEvent: v2, adjustScale: r2, className: u2, transition: l2, rect: O2, style: { zIndex: f2, ...s2 }, transform: N2 }, i2) : null));
     });
     exports2.DndContext = We, exports2.DragOverlay = tt, exports2.KeyboardSensor = te, exports2.MouseSensor = ce, exports2.PointerSensor = ae, exports2.TouchSensor = ue, exports2.applyModifiers = Be, exports2.closestCenter = (e2) => {
       let { collisionRect: t2, droppableRects: n2, droppableContainers: r2 } = e2;
@@ -1863,7 +1863,7 @@ var require_core_cjs_production_min = __commonJS({
       return o2.sort(h);
     }, exports2.rectIntersection = C, exports2.useDndContext = qe, exports2.useDndMonitor = s, exports2.useDraggable = function(e2) {
       let { id: n2, data: r2, disabled: i2 = false, attributes: a2 } = e2;
-      const s2 = o.useUniqueId("Draggable"), { activators: l2, activatorEvent: c2, active: d2, activeNodeRect: u2, ariaDescribedById: f2, draggableNodes: v2, over: g2 } = t.useContext(ke), { role: p2 = je, roleDescription: h2 = "draggable", tabIndex: b2 = 0 } = null != a2 ? a2 : {}, m2 = (null == d2 ? void 0 : d2.id) === n2, y2 = t.useContext(m2 ? ze : Ue), [x2, w2] = o.useNodeRef(), [C2, E2] = o.useNodeRef(), D2 = function(e3, n3) {
+      const s2 = o.useUniqueId("Draggable"), { activators: l2, activatorEvent: c2, active: d3, activeNodeRect: u2, ariaDescribedById: f2, draggableNodes: v2, over: g2 } = t.useContext(ke), { role: p2 = je, roleDescription: h2 = "draggable", tabIndex: b2 = 0 } = null != a2 ? a2 : {}, m2 = (null == d3 ? void 0 : d3.id) === n2, y2 = t.useContext(m2 ? ze : Ue), [x2, w2] = o.useNodeRef(), [C2, E2] = o.useNodeRef(), D2 = function(e3, n3) {
         return t.useMemo(() => e3.reduce((e4, t2) => {
           let { eventName: r3, handler: o2 } = t2;
           return e4[r3] = (e5) => {
@@ -1874,10 +1874,10 @@ var require_core_cjs_production_min = __commonJS({
       return o.useIsomorphicLayoutEffect(() => (v2.set(n2, { id: n2, key: s2, node: x2, activatorNode: C2, data: R2 }), () => {
         const e3 = v2.get(n2);
         e3 && e3.key === s2 && v2.delete(n2);
-      }), [v2, n2]), { active: d2, activatorEvent: c2, activeNodeRect: u2, attributes: t.useMemo(() => ({ role: p2, tabIndex: b2, "aria-disabled": i2, "aria-pressed": !(!m2 || p2 !== je) || void 0, "aria-roledescription": h2, "aria-describedby": f2.draggable }), [i2, p2, b2, m2, h2, f2.draggable]), isDragging: m2, listeners: i2 ? void 0 : D2, node: x2, over: g2, setNodeRef: w2, setActivatorNodeRef: E2, transform: y2 };
+      }), [v2, n2]), { active: d3, activatorEvent: c2, activeNodeRect: u2, attributes: t.useMemo(() => ({ role: p2, tabIndex: b2, "aria-disabled": i2, "aria-pressed": !(!m2 || p2 !== je) || void 0, "aria-roledescription": h2, "aria-describedby": f2.draggable }), [i2, p2, b2, m2, h2, f2.draggable]), isDragging: m2, listeners: i2 ? void 0 : D2, node: x2, over: g2, setNodeRef: w2, setActivatorNodeRef: E2, transform: y2 };
     }, exports2.useDroppable = function(e2) {
       let { data: n2, disabled: r2 = false, id: i2, resizeObserverConfig: a2 } = e2;
-      const s2 = o.useUniqueId("Droppable"), { active: l2, dispatch: c2, over: d2, measureDroppableContainers: f2 } = t.useContext(ke), v2 = t.useRef({ disabled: r2 }), g2 = t.useRef(false), p2 = t.useRef(null), h2 = t.useRef(null), { disabled: b2, updateMeasurementsFor: m2, timeout: y2 } = { ...He, ...a2 }, x2 = o.useLatestValue(null != m2 ? m2 : i2), w2 = me({ callback: t.useCallback(() => {
+      const s2 = o.useUniqueId("Droppable"), { active: l2, dispatch: c2, over: d3, measureDroppableContainers: f2 } = t.useContext(ke), v2 = t.useRef({ disabled: r2 }), g2 = t.useRef(false), p2 = t.useRef(null), h2 = t.useRef(null), { disabled: b2, updateMeasurementsFor: m2, timeout: y2 } = { ...He, ...a2 }, x2 = o.useLatestValue(null != m2 ? m2 : i2), w2 = me({ callback: t.useCallback(() => {
         g2.current ? (null != h2.current && clearTimeout(h2.current), h2.current = setTimeout(() => {
           f2(Array.isArray(x2.current) ? x2.current : [x2.current]), h2.current = null;
         }, y2)) : g2.current = true;
@@ -1888,7 +1888,7 @@ var require_core_cjs_production_min = __commonJS({
         w2 && E2.current && (w2.disconnect(), g2.current = false, w2.observe(E2.current));
       }, [E2, w2]), t.useEffect(() => (c2({ type: u.RegisterDroppable, element: { id: i2, key: s2, disabled: r2, node: E2, rect: p2, data: R2 } }), () => c2({ type: u.UnregisterDroppable, key: s2, id: i2 })), [i2]), t.useEffect(() => {
         r2 !== v2.current.disabled && (c2({ type: u.SetDroppableDisabled, id: i2, key: s2, disabled: r2 }), v2.current.disabled = r2);
-      }, [i2, s2, r2, c2]), { active: l2, rect: p2, isOver: (null == d2 ? void 0 : d2.id) === i2, node: E2, over: d2, setNodeRef: D2 };
+      }, [i2, s2, r2, c2]), { active: l2, rect: p2, isOver: (null == d3 ? void 0 : d3.id) === i2, node: E2, over: d3, setNodeRef: D2 };
     }, exports2.useSensor = function(e2, n2) {
       return t.useMemo(() => ({ sensor: e2, options: null != n2 ? n2 : {} }), [e2, n2]);
     }, exports2.useSensors = function() {
@@ -1933,11 +1933,11 @@ var require_sortable_cjs_production_min = __commonJS({
     function s(e2) {
       return null !== e2 && e2 >= 0;
     }
-    var d = { scaleX: 1, scaleY: 1 };
+    var d2 = { scaleX: 1, scaleY: 1 };
     var l = (e2) => {
       let { rects: t2, activeIndex: r2, overIndex: n2, index: o2 } = e2;
-      const a2 = i(t2, n2, r2), s2 = t2[o2], d2 = a2[o2];
-      return d2 && s2 ? { x: d2.left - s2.left, y: d2.top - s2.top, scaleX: d2.width / s2.width, scaleY: d2.height / s2.height } : null;
+      const a2 = i(t2, n2, r2), s2 = t2[o2], d3 = a2[o2];
+      return d3 && s2 ? { x: d3.left - s2.left, y: d3.top - s2.top, scaleX: d3.width / s2.width, scaleY: d3.height / s2.height } : null;
     };
     var c = { scaleX: 1, scaleY: 1 };
     var u = r.createContext({ activeIndex: -1, containerId: "Sortable", disableTransforms: false, items: [], overIndex: -1, useDragOverlay: false, sortedRects: [], strategy: l, disabled: { draggable: false, droppable: false } });
@@ -1946,8 +1946,8 @@ var require_sortable_cjs_production_min = __commonJS({
       return i(r2, n2, o2).indexOf(t2);
     };
     var p = (e2) => {
-      let { containerId: t2, isSorting: r2, wasDragging: n2, index: o2, items: i2, newIndex: a2, previousItems: s2, previousContainerId: d2, transition: l2 } = e2;
-      return !(!l2 || !n2 || s2 !== i2 && o2 === a2 || !r2 && (a2 === o2 || t2 !== d2));
+      let { containerId: t2, isSorting: r2, wasDragging: n2, index: o2, items: i2, newIndex: a2, previousItems: s2, previousContainerId: d3, transition: l2 } = e2;
+      return !(!l2 || !n2 || s2 !== i2 && o2 === a2 || !r2 && (a2 === o2 || t2 !== d3));
     };
     var g = { duration: 200, easing: "ease" };
     var b = o.CSS.Transition.toString({ property: "transform", duration: 0, easing: "linear" });
@@ -1962,18 +1962,18 @@ var require_sortable_cjs_production_min = __commonJS({
       return !(!v(e2) || !v(t2)) && e2.data.current.sortable.containerId === t2.data.current.sortable.containerId;
     }
     exports2.SortableContext = function(e2) {
-      let { children: i2, id: s2, items: d2, strategy: c2 = l, disabled: f2 = false } = e2;
-      const { active: p2, dragOverlay: g2, droppableRects: b2, over: x2, measureDroppableContainers: v2 } = n.useDndContext(), h2 = o.useUniqueId("Sortable", s2), I2 = Boolean(null !== g2.rect), y = t.useMemo(() => d2.map((e3) => "object" == typeof e3 && "id" in e3 ? e3.id : e3), [d2]), m = null != p2, w = p2 ? y.indexOf(p2.id) : -1, C = x2 ? y.indexOf(x2.id) : -1, R = t.useRef(y), S = !function(e3, t2) {
+      let { children: i2, id: s2, items: d3, strategy: c2 = l, disabled: f2 = false } = e2;
+      const { active: p2, dragOverlay: g2, droppableRects: b2, over: x2, measureDroppableContainers: v2 } = n.useDndContext(), h2 = o.useUniqueId("Sortable", s2), I2 = Boolean(null !== g2.rect), y = t.useMemo(() => d3.map((e3) => "object" == typeof e3 && "id" in e3 ? e3.id : e3), [d3]), m = null != p2, w = p2 ? y.indexOf(p2.id) : -1, C = x2 ? y.indexOf(x2.id) : -1, R = t.useRef(y), S2 = !function(e3, t2) {
         if (e3 === t2) return true;
         if (e3.length !== t2.length) return false;
         for (let r2 = 0; r2 < e3.length; r2++) if (e3[r2] !== t2[r2]) return false;
         return true;
-      }(y, R.current), D = -1 !== C && -1 === w || S, O = /* @__PURE__ */ function(e3) {
+      }(y, R.current), D = -1 !== C && -1 === w || S2, O = /* @__PURE__ */ function(e3) {
         return "boolean" == typeof e3 ? { draggable: e3, droppable: e3 } : e3;
       }(f2);
       o.useIsomorphicLayoutEffect(() => {
-        S && m && v2(y);
-      }, [S, y, m, v2]), t.useEffect(() => {
+        S2 && m && v2(y);
+      }, [S2, y, m, v2]), t.useEffect(() => {
         R.current = y;
       }, [y]);
       const N = t.useMemo(() => ({ activeIndex: w, containerId: h2, disabled: O, disableTransforms: D, items: y, overIndex: C, useDragOverlay: I2, sortedRects: a(y, b2), strategy: c2 }), [w, h2, O.draggable, O.droppable, D, y, C, b2, I2, c2]);
@@ -1992,14 +1992,14 @@ var require_sortable_cjs_production_min = __commonJS({
       }(r2, a2, o2);
       if (a2 === o2) {
         const e3 = r2[i2];
-        return e3 ? { x: o2 < i2 ? e3.left + e3.width - (s2.left + s2.width) : e3.left - s2.left, y: 0, ...d } : null;
+        return e3 ? { x: o2 < i2 ? e3.left + e3.width - (s2.left + s2.width) : e3.left - s2.left, y: 0, ...d2 } : null;
       }
-      return a2 > o2 && a2 <= i2 ? { x: -s2.width - l2, y: 0, ...d } : a2 < o2 && a2 >= i2 ? { x: s2.width + l2, y: 0, ...d } : { x: 0, y: 0, ...d };
+      return a2 > o2 && a2 <= i2 ? { x: -s2.width - l2, y: 0, ...d2 } : a2 < o2 && a2 >= i2 ? { x: s2.width + l2, y: 0, ...d2 } : { x: 0, y: 0, ...d2 };
     }, exports2.rectSortingStrategy = l, exports2.rectSwappingStrategy = (e2) => {
       let t2, r2, { activeIndex: n2, index: o2, rects: i2, overIndex: a2 } = e2;
       return o2 === n2 && (t2 = i2[o2], r2 = i2[a2]), o2 === a2 && (t2 = i2[o2], r2 = i2[n2]), r2 && t2 ? { x: r2.left - t2.left, y: r2.top - t2.top, scaleX: r2.width / t2.width, scaleY: r2.height / t2.height } : null;
     }, exports2.sortableKeyboardCoordinates = (e2, t2) => {
-      let { context: { active: r2, collisionRect: i2, droppableRects: a2, droppableContainers: s2, over: d2, scrollableAncestors: l2 } } = t2;
+      let { context: { active: r2, collisionRect: i2, droppableRects: a2, droppableContainers: s2, over: d3, scrollableAncestors: l2 } } = t2;
       if (h.includes(e2.code)) {
         if (e2.preventDefault(), !r2 || !i2) return;
         const t3 = [];
@@ -2022,23 +2022,23 @@ var require_sortable_cjs_production_min = __commonJS({
         });
         const f2 = n.closestCorners({ active: r2, collisionRect: i2, droppableRects: a2, droppableContainers: t3, pointerCoordinates: null });
         let p2 = n.getFirstCollision(f2, "id");
-        if (p2 === (null == d2 ? void 0 : d2.id) && f2.length > 1 && (p2 = f2[1].id), null != p2) {
-          const e3 = s2.get(r2.id), t4 = s2.get(p2), d3 = t4 ? a2.get(t4.id) : null, f3 = null == t4 ? void 0 : t4.node.current;
-          if (f3 && d3 && e3 && t4) {
-            const r3 = n.getScrollableAncestors(f3).some((e4, t5) => l2[t5] !== e4), a3 = I(e3, t4), s3 = (u2 = t4, !(!v(c2 = e3) || !v(u2)) && !!I(c2, u2) && c2.data.current.sortable.index < u2.data.current.sortable.index), p3 = r3 || !a3 ? { x: 0, y: 0 } : { x: s3 ? i2.width - d3.width : 0, y: s3 ? i2.height - d3.height : 0 }, g2 = { x: d3.left, y: d3.top };
+        if (p2 === (null == d3 ? void 0 : d3.id) && f2.length > 1 && (p2 = f2[1].id), null != p2) {
+          const e3 = s2.get(r2.id), t4 = s2.get(p2), d4 = t4 ? a2.get(t4.id) : null, f3 = null == t4 ? void 0 : t4.node.current;
+          if (f3 && d4 && e3 && t4) {
+            const r3 = n.getScrollableAncestors(f3).some((e4, t5) => l2[t5] !== e4), a3 = I(e3, t4), s3 = (u2 = t4, !(!v(c2 = e3) || !v(u2)) && !!I(c2, u2) && c2.data.current.sortable.index < u2.data.current.sortable.index), p3 = r3 || !a3 ? { x: 0, y: 0 } : { x: s3 ? i2.width - d4.width : 0, y: s3 ? i2.height - d4.height : 0 }, g2 = { x: d4.left, y: d4.top };
             return p3.x && p3.y ? g2 : o.subtract(g2, p3);
           }
         }
       }
       var c2, u2;
     }, exports2.useSortable = function(e2) {
-      let { animateLayoutChanges: r2 = p, attributes: i2, disabled: a2, data: d2, getNewIndex: l2 = f, id: c2, strategy: v2, resizeObserverConfig: h2, transition: I2 = g } = e2;
-      const { items: y, containerId: m, activeIndex: w, disabled: C, disableTransforms: R, sortedRects: S, overIndex: D, useDragOverlay: O, strategy: N } = t.useContext(u), E = function(e3, t2) {
+      let { animateLayoutChanges: r2 = p, attributes: i2, disabled: a2, data: d3, getNewIndex: l2 = f, id: c2, strategy: v2, resizeObserverConfig: h2, transition: I2 = g } = e2;
+      const { items: y, containerId: m, activeIndex: w, disabled: C, disableTransforms: R, sortedRects: S2, overIndex: D, useDragOverlay: O, strategy: N } = t.useContext(u), E = function(e3, t2) {
         var r3, n2;
         return "boolean" == typeof e3 ? { draggable: e3, droppable: false } : { draggable: null != (r3 = null == e3 ? void 0 : e3.draggable) ? r3 : t2.draggable, droppable: null != (n2 = null == e3 ? void 0 : e3.droppable) ? n2 : t2.droppable };
-      }(a2, C), K = y.indexOf(c2), L = t.useMemo(() => ({ sortable: { containerId: m, index: K, items: y }, ...d2 }), [m, d2, K, y]), T = t.useMemo(() => y.slice(y.indexOf(c2)), [y, c2]), { rect: M, node: A, isOver: k, setNodeRef: X2 } = n.useDroppable({ id: c2, data: L, disabled: E.droppable, resizeObserverConfig: { updateMeasurementsFor: T, ...h2 } }), { active: Y, activatorEvent: j, activeNodeRect: q, attributes: z, setNodeRef: U, listeners: B, isDragging: F, over: P, setActivatorNodeRef: _, transform: G } = n.useDraggable({ id: c2, data: L, attributes: { ...x, ...i2 }, disabled: E.draggable }), H = o.useCombinedRefs(X2, U), J = Boolean(Y), Q = J && !R && s(w) && s(D), V = !O && F, W = V && Q ? G : null, Z = Q ? null != W ? W : (null != v2 ? v2 : N)({ rects: S, activeNodeRect: q, activeIndex: w, overIndex: D, index: K }) : null, $ = s(w) && s(D) ? l2({ id: c2, items: y, activeIndex: w, overIndex: D }) : K, ee = null == Y ? void 0 : Y.id, te = t.useRef({ activeId: ee, items: y, newIndex: $, containerId: m }), re = y !== te.current.items, ne = r2({ active: Y, containerId: m, isDragging: F, isSorting: J, id: c2, index: K, items: y, newIndex: te.current.newIndex, previousItems: te.current.items, previousContainerId: te.current.containerId, transition: I2, wasDragging: null != te.current.activeId }), oe = function(e3) {
+      }(a2, C), K = y.indexOf(c2), L = t.useMemo(() => ({ sortable: { containerId: m, index: K, items: y }, ...d3 }), [m, d3, K, y]), T2 = t.useMemo(() => y.slice(y.indexOf(c2)), [y, c2]), { rect: M, node: A2, isOver: k, setNodeRef: X2 } = n.useDroppable({ id: c2, data: L, disabled: E.droppable, resizeObserverConfig: { updateMeasurementsFor: T2, ...h2 } }), { active: Y, activatorEvent: j, activeNodeRect: q2, attributes: z2, setNodeRef: U2, listeners: B, isDragging: F2, over: P2, setActivatorNodeRef: _, transform: G2 } = n.useDraggable({ id: c2, data: L, attributes: { ...x, ...i2 }, disabled: E.draggable }), H2 = o.useCombinedRefs(X2, U2), J2 = Boolean(Y), Q = J2 && !R && s(w) && s(D), V = !O && F2, W = V && Q ? G2 : null, Z = Q ? null != W ? W : (null != v2 ? v2 : N)({ rects: S2, activeNodeRect: q2, activeIndex: w, overIndex: D, index: K }) : null, $ = s(w) && s(D) ? l2({ id: c2, items: y, activeIndex: w, overIndex: D }) : K, ee = null == Y ? void 0 : Y.id, te = t.useRef({ activeId: ee, items: y, newIndex: $, containerId: m }), re = y !== te.current.items, ne = r2({ active: Y, containerId: m, isDragging: F2, isSorting: J2, id: c2, index: K, items: y, newIndex: te.current.newIndex, previousItems: te.current.items, previousContainerId: te.current.containerId, transition: I2, wasDragging: null != te.current.activeId }), oe = function(e3) {
         let { disabled: r3, index: i3, node: a3, rect: s2 } = e3;
-        const [d3, l3] = t.useState(null), c3 = t.useRef(i3);
+        const [d4, l3] = t.useState(null), c3 = t.useRef(i3);
         return o.useIsomorphicLayoutEffect(() => {
           if (!r3 && i3 !== c3.current && a3.current) {
             const e4 = s2.current;
@@ -2049,19 +2049,19 @@ var require_sortable_cjs_production_min = __commonJS({
           }
           i3 !== c3.current && (c3.current = i3);
         }, [r3, i3, a3, s2]), t.useEffect(() => {
-          d3 && l3(null);
-        }, [d3]), d3;
-      }({ disabled: !ne, index: K, node: A, rect: M });
+          d4 && l3(null);
+        }, [d4]), d4;
+      }({ disabled: !ne, index: K, node: A2, rect: M });
       return t.useEffect(() => {
-        J && te.current.newIndex !== $ && (te.current.newIndex = $), m !== te.current.containerId && (te.current.containerId = m), y !== te.current.items && (te.current.items = y);
-      }, [J, $, m, y]), t.useEffect(() => {
+        J2 && te.current.newIndex !== $ && (te.current.newIndex = $), m !== te.current.containerId && (te.current.containerId = m), y !== te.current.items && (te.current.items = y);
+      }, [J2, $, m, y]), t.useEffect(() => {
         if (ee === te.current.activeId) return;
         if (ee && !te.current.activeId) return void (te.current.activeId = ee);
         const e3 = setTimeout(() => {
           te.current.activeId = ee;
         }, 50);
         return () => clearTimeout(e3);
-      }, [ee]), { active: Y, activeIndex: w, attributes: z, data: L, rect: M, index: K, newIndex: $, items: y, isOver: k, isSorting: J, isDragging: F, listeners: B, node: A, overIndex: D, over: P, setNodeRef: H, setActivatorNodeRef: _, setDroppableNodeRef: X2, setDraggableNodeRef: U, transform: null != oe ? oe : Z, transition: oe || re && te.current.newIndex === K ? b : V && !o.isKeyboardEvent(j) || !I2 ? void 0 : J || ne ? o.CSS.Transition.toString({ ...I2, property: "transform" }) : void 0 };
+      }, [ee]), { active: Y, activeIndex: w, attributes: z2, data: L, rect: M, index: K, newIndex: $, items: y, isOver: k, isSorting: J2, isDragging: F2, listeners: B, node: A2, overIndex: D, over: P2, setNodeRef: H2, setActivatorNodeRef: _, setDroppableNodeRef: X2, setDraggableNodeRef: U2, transform: null != oe ? oe : Z, transition: oe || re && te.current.newIndex === K ? b : V && !o.isKeyboardEvent(j) || !I2 ? void 0 : J2 || ne ? o.CSS.Transition.toString({ ...I2, property: "transform" }) : void 0 };
     }, exports2.verticalListSortingStrategy = (e2) => {
       var t2;
       let { activeIndex: r2, activeNodeRect: n2, index: o2, rects: i2, overIndex: a2 } = e2;
@@ -2071,11 +2071,11 @@ var require_sortable_cjs_production_min = __commonJS({
         const e3 = i2[a2];
         return e3 ? { x: 0, y: r2 < a2 ? e3.top + e3.height - (s2.top + s2.height) : e3.top - s2.top, ...c } : null;
       }
-      const d2 = function(e3, t3, r3) {
+      const d3 = function(e3, t3, r3) {
         const n3 = e3[t3], o3 = e3[t3 - 1], i3 = e3[t3 + 1];
         return n3 ? r3 < t3 ? o3 ? n3.top - (o3.top + o3.height) : i3 ? i3.top - (n3.top + n3.height) : 0 : i3 ? i3.top - (n3.top + n3.height) : o3 ? n3.top - (o3.top + o3.height) : 0 : 0;
       }(i2, o2, r2);
-      return o2 > r2 && o2 <= a2 ? { x: 0, y: -s2.height - d2, ...c } : o2 < r2 && o2 >= a2 ? { x: 0, y: s2.height + d2, ...c } : { x: 0, y: 0, ...c };
+      return o2 > r2 && o2 <= a2 ? { x: 0, y: -s2.height - d3, ...c } : o2 < r2 && o2 >= a2 ? { x: 0, y: s2.height + d3, ...c } : { x: 0, y: 0, ...c };
     };
   }
 });
@@ -2129,14 +2129,14 @@ __export(tslib_es6_exports, {
   __values: () => __values,
   default: () => tslib_es6_default
 });
-function __extends(d, b) {
+function __extends(d2, b) {
   if (typeof b !== "function" && b !== null)
     throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
-  extendStatics(d, b);
+  extendStatics(d2, b);
   function __() {
-    this.constructor = d;
+    this.constructor = d2;
   }
-  d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+  d2.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 }
 function __rest(s, e) {
   var t = {};
@@ -2150,9 +2150,9 @@ function __rest(s, e) {
   return t;
 }
 function __decorate(decorators, target, key, desc) {
-  var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+  var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d2;
   if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-  else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+  else for (var i = decorators.length - 1; i >= 0; i--) if (d2 = decorators[i]) r = (c < 3 ? d2(r) : c > 3 ? d2(target, key, r) : d2(target, key)) || r;
   return c > 3 && r && Object.defineProperty(target, key, r), r;
 }
 function __param(paramIndex, decorator) {
@@ -2209,13 +2209,13 @@ function __setFunctionName(f, name, prefix) {
 function __metadata(metadataKey, metadataValue) {
   if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(metadataKey, metadataValue);
 }
-function __awaiter(thisArg, _arguments, P, generator) {
+function __awaiter(thisArg, _arguments, P2, generator) {
   function adopt(value) {
-    return value instanceof P ? value : new P(function(resolve) {
+    return value instanceof P2 ? value : new P2(function(resolve) {
       resolve(value);
     });
   }
-  return new (P || (P = Promise))(function(resolve, reject) {
+  return new (P2 || (P2 = Promise))(function(resolve, reject) {
     function fulfilled(value) {
       try {
         step(generator.next(value));
@@ -2362,7 +2362,7 @@ function __await(v) {
 }
 function __asyncGenerator(thisArg, _arguments, generator) {
   if (!Symbol.asyncIterator) throw new TypeError("Symbol.asyncIterator is not defined.");
-  var g = generator.apply(thisArg, _arguments || []), i, q = [];
+  var g = generator.apply(thisArg, _arguments || []), i, q2 = [];
   return i = Object.create((typeof AsyncIterator === "function" ? AsyncIterator : Object).prototype), verb("next"), verb("throw"), verb("return", awaitReturn), i[Symbol.asyncIterator] = function() {
     return this;
   }, i;
@@ -2375,7 +2375,7 @@ function __asyncGenerator(thisArg, _arguments, generator) {
     if (g[n]) {
       i[n] = function(v) {
         return new Promise(function(a, b) {
-          q.push([n, v, a, b]) > 1 || resume(n, v);
+          q2.push([n, v, a, b]) > 1 || resume(n, v);
         });
       };
       if (f) i[n] = f(i[n]);
@@ -2385,11 +2385,11 @@ function __asyncGenerator(thisArg, _arguments, generator) {
     try {
       step(g[n](v));
     } catch (e) {
-      settle(q[0][3], e);
+      settle(q2[0][3], e);
     }
   }
   function step(r) {
-    r.value instanceof __await ? Promise.resolve(r.value.v).then(fulfill, reject) : settle(q[0][2], r);
+    r.value instanceof __await ? Promise.resolve(r.value.v).then(fulfill, reject) : settle(q2[0][2], r);
   }
   function fulfill(value) {
     resume("next", value);
@@ -2398,7 +2398,7 @@ function __asyncGenerator(thisArg, _arguments, generator) {
     resume("throw", value);
   }
   function settle(f, v) {
-    if (f(v), q.shift(), q.length) resume(q[0][0], q[0][1]);
+    if (f(v), q2.shift(), q2.length) resume(q2[0][0], q2[0][1]);
   }
 }
 function __asyncDelegator(o) {
@@ -2427,9 +2427,9 @@ function __asyncValues(o) {
       });
     };
   }
-  function settle(resolve, reject, d, v) {
+  function settle(resolve, reject, d2, v) {
     Promise.resolve(v).then(function(v2) {
-      resolve({ value: v2, done: d });
+      resolve({ value: v2, done: d2 });
     }, reject);
   }
 }
@@ -2523,8 +2523,8 @@ function __disposeResources(env2) {
 }
 function __rewriteRelativeImportExtension(path, preserveJsx) {
   if (typeof path === "string" && /^\.\.?\//.test(path)) {
-    return path.replace(/\.(tsx)$|((?:\.d)?)((?:\.[^./]+?)?)\.([cm]?)ts$/i, function(m, tsx, d, ext, cm) {
-      return tsx ? preserveJsx ? ".jsx" : ".js" : d && (!ext || !cm) ? m : d + ext + "." + cm.toLowerCase() + "js";
+    return path.replace(/\.(tsx)$|((?:\.d)?)((?:\.[^./]+?)?)\.([cm]?)ts$/i, function(m, tsx, d2, ext, cm) {
+      return tsx ? preserveJsx ? ".jsx" : ".js" : d2 && (!ext || !cm) ? m : d2 + ext + "." + cm.toLowerCase() + "js";
     });
   }
   return path;
@@ -2532,13 +2532,13 @@ function __rewriteRelativeImportExtension(path, preserveJsx) {
 var extendStatics, __assign, __createBinding, __setModuleDefault, ownKeys, _SuppressedError, tslib_es6_default;
 var init_tslib_es6 = __esm({
   "node_modules/.pnpm/tslib@2.8.1/node_modules/tslib/tslib.es6.mjs"() {
-    extendStatics = function(d, b) {
-      extendStatics = Object.setPrototypeOf || { __proto__: [] } instanceof Array && function(d2, b2) {
-        d2.__proto__ = b2;
-      } || function(d2, b2) {
-        for (var p in b2) if (Object.prototype.hasOwnProperty.call(b2, p)) d2[p] = b2[p];
+    extendStatics = function(d2, b) {
+      extendStatics = Object.setPrototypeOf || { __proto__: [] } instanceof Array && function(d3, b2) {
+        d3.__proto__ = b2;
+      } || function(d3, b2) {
+        for (var p in b2) if (Object.prototype.hasOwnProperty.call(b2, p)) d3[p] = b2[p];
       };
-      return extendStatics(d, b);
+      return extendStatics(d2, b);
     };
     __assign = function() {
       __assign = Object.assign || function __assign2(t) {
@@ -2735,10 +2735,10 @@ var require_useMergeRef = __commonJS({
     Object.defineProperty(exports2, "__esModule", { value: true });
     exports2.useMergeRefs = void 0;
     var tslib_1 = (init_tslib_es6(), __toCommonJS(tslib_es6_exports));
-    var React50 = tslib_1.__importStar(require("react"));
+    var React53 = tslib_1.__importStar(require("react"));
     var assignRef_1 = require_assignRef();
     var useRef_1 = require_useRef();
-    var useIsomorphicLayoutEffect = typeof window !== "undefined" ? React50.useLayoutEffect : React50.useEffect;
+    var useIsomorphicLayoutEffect = typeof window !== "undefined" ? React53.useLayoutEffect : React53.useEffect;
     var currentValues = /* @__PURE__ */ new WeakMap();
     function useMergeRefs(refs, defaultValue) {
       var callbackRef = (0, useRef_1.useCallbackRef)(defaultValue || null, function(newValue) {
@@ -2973,7 +2973,7 @@ var require_hoc = __commonJS({
     Object.defineProperty(exports2, "__esModule", { value: true });
     exports2.sidecar = void 0;
     var tslib_1 = (init_tslib_es6(), __toCommonJS(tslib_es6_exports));
-    var React50 = tslib_1.__importStar(require("react"));
+    var React53 = tslib_1.__importStar(require("react"));
     var hook_1 = require_hook();
     function sidecar(importer, errorComponent) {
       var ErrorCase = function() {
@@ -2984,7 +2984,7 @@ var require_hoc = __commonJS({
         if (error && errorComponent) {
           return ErrorCase;
         }
-        return Car ? React50.createElement(Car, tslib_1.__assign({}, props)) : null;
+        return Car ? React53.createElement(Car, tslib_1.__assign({}, props)) : null;
       };
     }
     exports2.sidecar = sidecar;
@@ -3118,7 +3118,7 @@ var require_renderProp = __commonJS({
     Object.defineProperty(exports2, "__esModule", { value: true });
     exports2.renderCar = void 0;
     var tslib_1 = (init_tslib_es6(), __toCommonJS(tslib_es6_exports));
-    var React50 = tslib_1.__importStar(require("react"));
+    var React53 = tslib_1.__importStar(require("react"));
     var react_1 = require("react");
     function renderCar(WrappedComponent, defaults) {
       function State(_a) {
@@ -3133,9 +3133,9 @@ var require_renderProp = __commonJS({
           });
           return null;
         }, []);
-        return React50.createElement(WrappedComponent, tslib_1.__assign({}, props, { children: renderTarget }));
+        return React53.createElement(WrappedComponent, tslib_1.__assign({}, props, { children: renderTarget }));
       }
-      var Children5 = React50.memo(function(_a) {
+      var Children5 = React53.memo(function(_a) {
         var stateRef = _a.stateRef, defaultState = _a.defaultState, children = _a.children;
         var _b = (0, react_1.useState)(defaultState.current), state = _b[0], setState = _b[1];
         (0, react_1.useEffect)(function() {
@@ -3146,15 +3146,15 @@ var require_renderProp = __commonJS({
         return true;
       });
       return function Combiner(props) {
-        var defaultState = React50.useRef(defaults(props));
-        var ref = React50.useRef(function(state) {
+        var defaultState = React53.useRef(defaults(props));
+        var ref = React53.useRef(function(state) {
           return defaultState.current = state;
         });
-        return React50.createElement(
-          React50.Fragment,
+        return React53.createElement(
+          React53.Fragment,
           null,
-          React50.createElement(State, { stateRef: ref, props }),
-          React50.createElement(Children5, { stateRef: ref, defaultState, children: props.children })
+          React53.createElement(State, { stateRef: ref, props }),
+          React53.createElement(Children5, { stateRef: ref, defaultState, children: props.children })
         );
       };
     }
@@ -3169,7 +3169,7 @@ var require_exports = __commonJS({
     Object.defineProperty(exports2, "__esModule", { value: true });
     exports2.exportSidecar = void 0;
     var tslib_1 = (init_tslib_es6(), __toCommonJS(tslib_es6_exports));
-    var React50 = tslib_1.__importStar(require("react"));
+    var React53 = tslib_1.__importStar(require("react"));
     var SideCar = function(_a) {
       var sideCar = _a.sideCar, rest = tslib_1.__rest(_a, ["sideCar"]);
       if (!sideCar) {
@@ -3179,7 +3179,7 @@ var require_exports = __commonJS({
       if (!Target) {
         throw new Error("Sidecar medium not found");
       }
-      return React50.createElement(Target, tslib_1.__assign({}, rest));
+      return React53.createElement(Target, tslib_1.__assign({}, rest));
     };
     SideCar.isSideCarExport = true;
     function exportSidecar(medium, exported) {
@@ -3244,16 +3244,16 @@ var require_UI = __commonJS({
     Object.defineProperty(exports2, "__esModule", { value: true });
     exports2.RemoveScroll = void 0;
     var tslib_1 = (init_tslib_es6(), __toCommonJS(tslib_es6_exports));
-    var React50 = tslib_1.__importStar(require("react"));
+    var React53 = tslib_1.__importStar(require("react"));
     var constants_1 = require_constants();
     var use_callback_ref_1 = require_es5();
     var medium_1 = require_medium2();
     var nothing = function() {
       return;
     };
-    var RemoveScroll2 = React50.forwardRef(function(props, parentRef) {
-      var ref = React50.useRef(null);
-      var _a = React50.useState({
+    var RemoveScroll2 = React53.forwardRef(function(props, parentRef) {
+      var ref = React53.useRef(null);
+      var _a = React53.useState({
         onScrollCapture: nothing,
         onWheelCapture: nothing,
         onTouchMoveCapture: nothing
@@ -3262,11 +3262,11 @@ var require_UI = __commonJS({
       var SideCar = sideCar;
       var containerRef = (0, use_callback_ref_1.useMergeRefs)([ref, parentRef]);
       var containerProps = tslib_1.__assign(tslib_1.__assign({}, rest), callbacks);
-      return React50.createElement(
-        React50.Fragment,
+      return React53.createElement(
+        React53.Fragment,
         null,
-        enabled && React50.createElement(SideCar, { sideCar: medium_1.effectCar, removeScrollBar, shards, noRelative, noIsolation, inert, setCallbacks, allowPinchZoom: !!allowPinchZoom, lockRef: ref, gapMode }),
-        forwardProps ? React50.cloneElement(React50.Children.only(children), tslib_1.__assign(tslib_1.__assign({}, containerProps), { ref: containerRef })) : React50.createElement(Container, tslib_1.__assign({}, containerProps, { className, ref: containerRef }), children)
+        enabled && React53.createElement(SideCar, { sideCar: medium_1.effectCar, removeScrollBar, shards, noRelative, noIsolation, inert, setCallbacks, allowPinchZoom: !!allowPinchZoom, lockRef: ref, gapMode }),
+        forwardProps ? React53.cloneElement(React53.Children.only(children), tslib_1.__assign(tslib_1.__assign({}, containerProps), { ref: containerRef })) : React53.createElement(Container, tslib_1.__assign({}, containerProps, { className, ref: containerRef }), children)
       );
     });
     exports2.RemoveScroll = RemoveScroll2;
@@ -3365,12 +3365,12 @@ var require_hook2 = __commonJS({
     Object.defineProperty(exports2, "__esModule", { value: true });
     exports2.styleHookSingleton = void 0;
     var tslib_1 = (init_tslib_es6(), __toCommonJS(tslib_es6_exports));
-    var React50 = tslib_1.__importStar(require("react"));
+    var React53 = tslib_1.__importStar(require("react"));
     var singleton_1 = require_singleton();
     var styleHookSingleton = function() {
       var sheet = (0, singleton_1.stylesheetSingleton)();
       return function(styles, isDynamic) {
-        React50.useEffect(function() {
+        React53.useEffect(function() {
           sheet.add(styles);
           return function() {
             sheet.remove();
@@ -3473,7 +3473,7 @@ var require_component2 = __commonJS({
     Object.defineProperty(exports2, "__esModule", { value: true });
     exports2.RemoveScrollBar = exports2.useLockAttribute = exports2.lockAttribute = void 0;
     var tslib_1 = (init_tslib_es6(), __toCommonJS(tslib_es6_exports));
-    var React50 = tslib_1.__importStar(require("react"));
+    var React53 = tslib_1.__importStar(require("react"));
     var react_style_singleton_1 = require_es54();
     var constants_1 = require_constants();
     var utils_1 = require_utils();
@@ -3495,7 +3495,7 @@ var require_component2 = __commonJS({
       return isFinite(counter) ? counter : 0;
     };
     var useLockAttribute = function() {
-      React50.useEffect(function() {
+      React53.useEffect(function() {
         document.body.setAttribute(exports2.lockAttribute, (getCurrentUseCounter() + 1).toString());
         return function() {
           var newCounter = getCurrentUseCounter() - 1;
@@ -3511,10 +3511,10 @@ var require_component2 = __commonJS({
     var RemoveScrollBar = function(_a) {
       var noRelative = _a.noRelative, noImportant = _a.noImportant, _b = _a.gapMode, gapMode = _b === void 0 ? "margin" : _b;
       (0, exports2.useLockAttribute)();
-      var gap = React50.useMemo(function() {
+      var gap = React53.useMemo(function() {
         return (0, utils_1.getGapWidth)(gapMode);
       }, [gapMode]);
-      return React50.createElement(Style, { styles: getStyles(gap, !noRelative, gapMode, !noImportant ? "!important" : "") });
+      return React53.createElement(Style, { styles: getStyles(gap, !noRelative, gapMode, !noImportant ? "!important" : "") });
     };
     exports2.RemoveScrollBar = RemoveScrollBar;
   }
@@ -3692,7 +3692,7 @@ var require_SideEffect = __commonJS({
     Object.defineProperty(exports2, "__esModule", { value: true });
     exports2.RemoveScrollSideCar = exports2.getDeltaXY = exports2.getTouchXY = void 0;
     var tslib_1 = (init_tslib_es6(), __toCommonJS(tslib_es6_exports));
-    var React50 = tslib_1.__importStar(require("react"));
+    var React53 = tslib_1.__importStar(require("react"));
     var react_remove_scroll_bar_1 = require_es55();
     var react_style_singleton_1 = require_es54();
     var aggresiveCapture_1 = require_aggresiveCapture();
@@ -3717,16 +3717,16 @@ var require_SideEffect = __commonJS({
     var idCounter = 0;
     var lockStack = [];
     function RemoveScrollSideCar(props) {
-      var shouldPreventQueue = React50.useRef([]);
-      var touchStartRef = React50.useRef([0, 0]);
-      var activeAxis = React50.useRef();
-      var id = React50.useState(idCounter++)[0];
-      var Style = React50.useState(react_style_singleton_1.styleSingleton)[0];
-      var lastProps = React50.useRef(props);
-      React50.useEffect(function() {
+      var shouldPreventQueue = React53.useRef([]);
+      var touchStartRef = React53.useRef([0, 0]);
+      var activeAxis = React53.useRef();
+      var id = React53.useState(idCounter++)[0];
+      var Style = React53.useState(react_style_singleton_1.styleSingleton)[0];
+      var lastProps = React53.useRef(props);
+      React53.useEffect(function() {
         lastProps.current = props;
       }, [props]);
-      React50.useEffect(function() {
+      React53.useEffect(function() {
         if (props.inert) {
           document.body.classList.add("block-interactivity-".concat(id));
           var allow_1 = tslib_1.__spreadArray([props.lockRef.current], (props.shards || []).map(extractRef), true).filter(Boolean);
@@ -3742,7 +3742,7 @@ var require_SideEffect = __commonJS({
         }
         return;
       }, [props.inert, props.lockRef.current, props.shards]);
-      var shouldCancelEvent = React50.useCallback(function(event, parent) {
+      var shouldCancelEvent = React53.useCallback(function(event, parent) {
         if ("touches" in event && event.touches.length === 2 || event.type === "wheel" && event.ctrlKey) {
           return !lastProps.current.allowPinchZoom;
         }
@@ -3778,7 +3778,7 @@ var require_SideEffect = __commonJS({
         var cancelingAxis = activeAxis.current || currentAxis;
         return (0, handleScroll_1.handleScroll)(cancelingAxis, parent, event, cancelingAxis === "h" ? deltaX : deltaY, true);
       }, []);
-      var shouldPrevent = React50.useCallback(function(_event) {
+      var shouldPrevent = React53.useCallback(function(_event) {
         var event = _event;
         if (!lockStack.length || lockStack[lockStack.length - 1] !== Style) {
           return;
@@ -3805,7 +3805,7 @@ var require_SideEffect = __commonJS({
           }
         }
       }, []);
-      var shouldCancel = React50.useCallback(function(name, delta, target, should) {
+      var shouldCancel = React53.useCallback(function(name, delta, target, should) {
         var event = { name, delta, target, should, shadowParent: getOutermostShadowParent(target) };
         shouldPreventQueue.current.push(event);
         setTimeout(function() {
@@ -3814,17 +3814,17 @@ var require_SideEffect = __commonJS({
           });
         }, 1);
       }, []);
-      var scrollTouchStart = React50.useCallback(function(event) {
+      var scrollTouchStart = React53.useCallback(function(event) {
         touchStartRef.current = (0, exports2.getTouchXY)(event);
         activeAxis.current = void 0;
       }, []);
-      var scrollWheel = React50.useCallback(function(event) {
+      var scrollWheel = React53.useCallback(function(event) {
         shouldCancel(event.type, (0, exports2.getDeltaXY)(event), event.target, shouldCancelEvent(event, props.lockRef.current));
       }, []);
-      var scrollTouchMove = React50.useCallback(function(event) {
+      var scrollTouchMove = React53.useCallback(function(event) {
         shouldCancel(event.type, (0, exports2.getTouchXY)(event), event.target, shouldCancelEvent(event, props.lockRef.current));
       }, []);
-      React50.useEffect(function() {
+      React53.useEffect(function() {
         lockStack.push(Style);
         props.setCallbacks({
           onScrollCapture: scrollWheel,
@@ -3844,11 +3844,11 @@ var require_SideEffect = __commonJS({
         };
       }, []);
       var removeScrollBar = props.removeScrollBar, inert = props.inert;
-      return React50.createElement(
-        React50.Fragment,
+      return React53.createElement(
+        React53.Fragment,
         null,
-        inert ? React50.createElement(Style, { styles: generateStyle(id) }) : null,
-        removeScrollBar ? React50.createElement(react_remove_scroll_bar_1.RemoveScrollBar, { noRelative: props.noRelative, gapMode: props.gapMode }) : null
+        inert ? React53.createElement(Style, { styles: generateStyle(id) }) : null,
+        removeScrollBar ? React53.createElement(react_remove_scroll_bar_1.RemoveScrollBar, { noRelative: props.noRelative, gapMode: props.gapMode }) : null
       );
     }
     exports2.RemoveScrollSideCar = RemoveScrollSideCar;
@@ -3884,11 +3884,11 @@ var require_Combination = __commonJS({
     "use strict";
     Object.defineProperty(exports2, "__esModule", { value: true });
     var tslib_1 = (init_tslib_es6(), __toCommonJS(tslib_es6_exports));
-    var React50 = tslib_1.__importStar(require("react"));
+    var React53 = tslib_1.__importStar(require("react"));
     var UI_1 = require_UI();
     var sidecar_1 = tslib_1.__importDefault(require_sidecar());
-    var ReactRemoveScroll = React50.forwardRef(function(props, ref) {
-      return React50.createElement(UI_1.RemoveScroll, tslib_1.__assign({}, props, { ref, sideCar: sidecar_1.default }));
+    var ReactRemoveScroll = React53.forwardRef(function(props, ref) {
+      return React53.createElement(UI_1.RemoveScroll, tslib_1.__assign({}, props, { ref, sideCar: sidecar_1.default }));
     });
     ReactRemoveScroll.classNames = UI_1.RemoveScroll.classNames;
     exports2.default = ReactRemoveScroll;
@@ -4065,12 +4065,12 @@ var FoodItemModal_exports = {};
 __export(FoodItemModal_exports, {
   default: () => FoodItemModal_default
 });
-var import_react27, import_framer_motion7, import_jsx_runtime34, backdrop, modal, FoodItemModal, FoodItemModal_default;
+var import_react31, import_framer_motion7, import_jsx_runtime36, backdrop, modal, FoodItemModal, FoodItemModal_default;
 var init_FoodItemModal = __esm({
   "src/components/menu/FoodItemModal.jsx"() {
-    import_react27 = __toESM(require("react"));
+    import_react31 = __toESM(require("react"));
     import_framer_motion7 = require("framer-motion");
-    import_jsx_runtime34 = require("react/jsx-runtime");
+    import_jsx_runtime36 = require("react/jsx-runtime");
     backdrop = {
       visible: { opacity: 1 },
       hidden: { opacity: 0 }
@@ -4080,7 +4080,7 @@ var init_FoodItemModal = __esm({
       visible: { y: "0", opacity: 1, transition: { delay: 0.1 } }
     };
     FoodItemModal = ({ item, onClose }) => {
-      return /* @__PURE__ */ (0, import_jsx_runtime34.jsx)(
+      return /* @__PURE__ */ (0, import_jsx_runtime36.jsx)(
         import_framer_motion7.motion.div,
         {
           className: "fixed inset-0 bg-black bg-opacity-60 z-50 flex justify-center items-center p-4",
@@ -4089,14 +4089,14 @@ var init_FoodItemModal = __esm({
           animate: "visible",
           exit: "hidden",
           onClick: onClose,
-          children: /* @__PURE__ */ (0, import_jsx_runtime34.jsxs)(
+          children: /* @__PURE__ */ (0, import_jsx_runtime36.jsxs)(
             import_framer_motion7.motion.div,
             {
               variants: modal,
               className: "bg-white rounded-lg shadow-xl max-w-lg w-full p-8 relative",
               onClick: (e) => e.stopPropagation(),
               children: [
-                /* @__PURE__ */ (0, import_jsx_runtime34.jsx)(
+                /* @__PURE__ */ (0, import_jsx_runtime36.jsx)(
                   "button",
                   {
                     onClick: onClose,
@@ -4104,11 +4104,11 @@ var init_FoodItemModal = __esm({
                     children: "\xD7"
                   }
                 ),
-                /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("h3", { className: "text-3xl font-bold mb-4", children: item.name }),
-                /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("p", { className: "text-body mb-6", children: item.description }),
-                /* @__PURE__ */ (0, import_jsx_runtime34.jsxs)("div", { children: [
-                  /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("h4", { className: "font-bold text-lg mb-2", children: "Ingredients:" }),
-                  /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("ul", { className: "list-disc list-inside text-neutral-600 space-y-1", children: item.ingredients.map((ingredient, index) => /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("li", { children: ingredient }, index)) })
+                /* @__PURE__ */ (0, import_jsx_runtime36.jsx)("h3", { className: "text-3xl font-bold mb-4", children: item.name }),
+                /* @__PURE__ */ (0, import_jsx_runtime36.jsx)("p", { className: "text-body mb-6", children: item.description }),
+                /* @__PURE__ */ (0, import_jsx_runtime36.jsxs)("div", { children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime36.jsx)("h4", { className: "font-bold text-lg mb-2", children: "Ingredients:" }),
+                  /* @__PURE__ */ (0, import_jsx_runtime36.jsx)("ul", { className: "list-disc list-inside text-neutral-600 space-y-1", children: item.ingredients.map((ingredient, index) => /* @__PURE__ */ (0, import_jsx_runtime36.jsx)("li", { children: ingredient }, index)) })
                 ] })
               ]
             }
@@ -4125,21 +4125,22 @@ var FeedbackForm_exports = {};
 __export(FeedbackForm_exports, {
   default: () => FeedbackForm_default
 });
-var import_react28, import_framer_motion8, import_jsx_runtime35, FeedbackForm, FeedbackForm_default;
+var import_react32, import_framer_motion8, import_jsx_runtime37, FeedbackForm, FeedbackForm_default;
 var init_FeedbackForm = __esm({
   "src/components/menu/FeedbackForm.jsx"() {
-    import_react28 = __toESM(require("react"));
+    import_react32 = __toESM(require("react"));
     import_framer_motion8 = require("framer-motion");
-    import_jsx_runtime35 = require("react/jsx-runtime");
+    import_jsx_runtime37 = require("react/jsx-runtime");
     FeedbackForm = () => {
-      const [formData, setFormData] = (0, import_react28.useState)({
+      const [formData, setFormData] = (0, import_react32.useState)({
         name: "",
         email: "",
         phone: "",
         category: "requests",
-        message: ""
+        message: "",
+        website: ""
       });
-      const [status, setStatus] = (0, import_react28.useState)({ type: "", message: "" });
+      const [status, setStatus] = (0, import_react32.useState)({ type: "", message: "" });
       const handleChange = (e) => {
         const { name, value } = e.target;
         setFormData((prev) => ({ ...prev, [name]: value }));
@@ -4158,7 +4159,8 @@ var init_FeedbackForm = __esm({
             subject: `Happy Monday Feedback (${formData.category})`,
             message: formData.message,
             type: "feedback",
-            category: formData.category
+            category: formData.category,
+            website: formData.website
           };
           const res = await fetch("/api/messages/submit", {
             method: "POST",
@@ -4171,7 +4173,7 @@ var init_FeedbackForm = __esm({
             throw new Error(errorText);
           }
           setStatus({ type: "success", message: "Thank you! Your feedback has been submitted." });
-          setFormData({ name: "", email: "", phone: "", category: "requests", message: "" });
+          setFormData({ name: "", email: "", phone: "", category: "requests", message: "", website: "" });
           setTimeout(() => {
             setStatus({ type: "", message: "" });
           }, 5e3);
@@ -4182,10 +4184,10 @@ var init_FeedbackForm = __esm({
           });
         }
       };
-      return /* @__PURE__ */ (0, import_jsx_runtime35.jsx)("div", { className: "max-w-2xl bg-neutral-50 border border-neutral-200 p-8 rounded-lg", children: /* @__PURE__ */ (0, import_jsx_runtime35.jsxs)("form", { onSubmit: handleSubmit, className: "space-y-6", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime35.jsx)("div", { className: "grid sm:grid-cols-2 gap-6", children: /* @__PURE__ */ (0, import_jsx_runtime35.jsxs)("div", { children: [
-          /* @__PURE__ */ (0, import_jsx_runtime35.jsx)("label", { htmlFor: "category", className: "block text-sm font-medium text-neutral-700", children: "Category" }),
-          /* @__PURE__ */ (0, import_jsx_runtime35.jsxs)(
+      return /* @__PURE__ */ (0, import_jsx_runtime37.jsx)("div", { className: "max-w-2xl bg-neutral-50 border border-neutral-200 p-8 rounded-lg", children: /* @__PURE__ */ (0, import_jsx_runtime37.jsxs)("form", { onSubmit: handleSubmit, className: "space-y-6", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime37.jsx)("div", { className: "grid sm:grid-cols-2 gap-6", children: /* @__PURE__ */ (0, import_jsx_runtime37.jsxs)("div", { children: [
+          /* @__PURE__ */ (0, import_jsx_runtime37.jsx)("label", { htmlFor: "category", className: "block text-sm font-medium text-neutral-700", children: "Category" }),
+          /* @__PURE__ */ (0, import_jsx_runtime37.jsxs)(
             "select",
             {
               id: "category",
@@ -4194,16 +4196,16 @@ var init_FeedbackForm = __esm({
               onChange: handleChange,
               className: "mt-1 block w-full rounded-md border-neutral-300 shadow-sm focus:border-primary focus:ring-primary",
               children: [
-                /* @__PURE__ */ (0, import_jsx_runtime35.jsx)("option", { value: "requests", children: "Requests" }),
-                /* @__PURE__ */ (0, import_jsx_runtime35.jsx)("option", { value: "quality", children: "Quality Feedback" }),
-                /* @__PURE__ */ (0, import_jsx_runtime35.jsx)("option", { value: "other", children: "Other" })
+                /* @__PURE__ */ (0, import_jsx_runtime37.jsx)("option", { value: "requests", children: "Requests" }),
+                /* @__PURE__ */ (0, import_jsx_runtime37.jsx)("option", { value: "quality", children: "Quality Feedback" }),
+                /* @__PURE__ */ (0, import_jsx_runtime37.jsx)("option", { value: "other", children: "Other" })
               ]
             }
           )
         ] }) }),
-        /* @__PURE__ */ (0, import_jsx_runtime35.jsxs)("div", { children: [
-          /* @__PURE__ */ (0, import_jsx_runtime35.jsx)("label", { htmlFor: "message", className: "block text-sm font-medium text-neutral-700", children: "Message" }),
-          /* @__PURE__ */ (0, import_jsx_runtime35.jsx)(
+        /* @__PURE__ */ (0, import_jsx_runtime37.jsxs)("div", { children: [
+          /* @__PURE__ */ (0, import_jsx_runtime37.jsx)("label", { htmlFor: "message", className: "block text-sm font-medium text-neutral-700", children: "Message" }),
+          /* @__PURE__ */ (0, import_jsx_runtime37.jsx)(
             "textarea",
             {
               id: "message",
@@ -4216,10 +4218,10 @@ var init_FeedbackForm = __esm({
             }
           )
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime35.jsxs)("div", { className: "grid sm:grid-cols-2 gap-6", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime35.jsxs)("div", { children: [
-            /* @__PURE__ */ (0, import_jsx_runtime35.jsx)("label", { htmlFor: "name", className: "block text-sm font-medium text-neutral-700", children: "Name (Optional)" }),
-            /* @__PURE__ */ (0, import_jsx_runtime35.jsx)(
+        /* @__PURE__ */ (0, import_jsx_runtime37.jsxs)("div", { className: "grid sm:grid-cols-2 gap-6", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime37.jsxs)("div", { children: [
+            /* @__PURE__ */ (0, import_jsx_runtime37.jsx)("label", { htmlFor: "name", className: "block text-sm font-medium text-neutral-700", children: "Name (Optional)" }),
+            /* @__PURE__ */ (0, import_jsx_runtime37.jsx)(
               "input",
               {
                 type: "text",
@@ -4231,9 +4233,9 @@ var init_FeedbackForm = __esm({
               }
             )
           ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime35.jsxs)("div", { children: [
-            /* @__PURE__ */ (0, import_jsx_runtime35.jsx)("label", { htmlFor: "email", className: "block text-sm font-medium text-neutral-700", children: "Email (Optional)" }),
-            /* @__PURE__ */ (0, import_jsx_runtime35.jsx)(
+          /* @__PURE__ */ (0, import_jsx_runtime37.jsxs)("div", { children: [
+            /* @__PURE__ */ (0, import_jsx_runtime37.jsx)("label", { htmlFor: "email", className: "block text-sm font-medium text-neutral-700", children: "Email" }),
+            /* @__PURE__ */ (0, import_jsx_runtime37.jsx)(
               "input",
               {
                 type: "email",
@@ -4241,13 +4243,27 @@ var init_FeedbackForm = __esm({
                 id: "email",
                 value: formData.email,
                 onChange: handleChange,
+                required: true,
                 className: "mt-1 block w-full rounded-md border-neutral-300 shadow-sm focus:border-primary focus:ring-primary"
               }
             )
           ] })
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime35.jsxs)("div", { className: "flex items-center justify-between", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime35.jsx)(
+        /* @__PURE__ */ (0, import_jsx_runtime37.jsx)(
+          "input",
+          {
+            type: "text",
+            name: "website",
+            value: formData.website,
+            onChange: handleChange,
+            autoComplete: "off",
+            tabIndex: -1,
+            "aria-hidden": "true",
+            className: "hidden"
+          }
+        ),
+        /* @__PURE__ */ (0, import_jsx_runtime37.jsxs)("div", { className: "flex items-center justify-between", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime37.jsx)(
             import_framer_motion8.motion.button,
             {
               type: "submit",
@@ -4258,7 +4274,7 @@ var init_FeedbackForm = __esm({
               children: status.type === "loading" ? "Sending..." : "Submit Feedback"
             }
           ),
-          status.message && /* @__PURE__ */ (0, import_jsx_runtime35.jsx)(
+          status.message && /* @__PURE__ */ (0, import_jsx_runtime37.jsx)(
             "p",
             {
               className: `text-sm ${status.type === "success" ? "text-green-600" : "text-red-600"}`,
@@ -4277,21 +4293,21 @@ var LoadingSpinner_exports = {};
 __export(LoadingSpinner_exports, {
   LoadingSpinner: () => LoadingSpinner
 });
-var import_react29, import_framer_motion9, import_jsx_runtime36, LoadingSpinner;
+var import_react33, import_framer_motion9, import_jsx_runtime38, LoadingSpinner;
 var init_LoadingSpinner = __esm({
   "src/components/layout/LoadingSpinner.jsx"() {
-    import_react29 = __toESM(require("react"));
+    import_react33 = __toESM(require("react"));
     import_framer_motion9 = require("framer-motion");
-    import_jsx_runtime36 = require("react/jsx-runtime");
-    LoadingSpinner = () => /* @__PURE__ */ (0, import_jsx_runtime36.jsx)(
+    import_jsx_runtime38 = require("react/jsx-runtime");
+    LoadingSpinner = () => /* @__PURE__ */ (0, import_jsx_runtime38.jsx)(
       import_framer_motion9.motion.div,
       {
         className: "min-h-screen flex items-center justify-center bg-gradient-to-br from-orange-50 to-red-50",
         initial: { opacity: 0 },
         animate: { opacity: 1 },
         exit: { opacity: 0 },
-        children: /* @__PURE__ */ (0, import_jsx_runtime36.jsxs)("div", { className: "text-center", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime36.jsx)(
+        children: /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)("div", { className: "text-center", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime38.jsx)(
             import_framer_motion9.motion.div,
             {
               className: "w-16 h-16 mx-auto mb-4 border-4 border-orange-200 border-t-orange-500 rounded-full",
@@ -4299,7 +4315,7 @@ var init_LoadingSpinner = __esm({
               transition: { duration: 1, repeat: Infinity, ease: "linear" }
             }
           ),
-          /* @__PURE__ */ (0, import_jsx_runtime36.jsx)(
+          /* @__PURE__ */ (0, import_jsx_runtime38.jsx)(
             import_framer_motion9.motion.p,
             {
               className: "text-gray-600 font-medium",
@@ -4321,9 +4337,9 @@ __export(StaticApp_exports, {
   default: () => StaticApp
 });
 module.exports = __toCommonJS(StaticApp_exports);
-var import_react33 = __toESM(require("react"));
-var import_react_router_dom6 = require("react-router-dom");
-var import_react_helmet_async7 = __toESM(require_lib());
+var import_react40 = __toESM(require("react"));
+var import_react_router_dom7 = require("react-router-dom");
+var import_react_helmet_async10 = __toESM(require_lib());
 
 // src/components/layout/Header.jsx
 var import_react = __toESM(require("react"));
@@ -4619,7 +4635,7 @@ var import_react_router_dom2 = require("react-router-dom");
 
 // src/config/siteMetadata.js
 var SITE_NAME = "Local Effort Food Co.";
-var SITE_URL = "https://localeffortfood.com";
+var SITE_URL = "https://www.localeffortfood.com";
 var DEFAULT_DESCRIPTION = "Local Effort Food Co. is a Minneapolis personal chef team offering in-home dinners, meal prep Minneapolis plans, and small-event catering built around Minnesota-grown ingredients.";
 var DEFAULT_KEYWORDS = [
   "personal chef",
@@ -4644,78 +4660,85 @@ var SOCIAL_LINKS = [
 var PUBLIC_ROUTES = [
   {
     path: "/",
-    title: "Local Effort Food Co. \u2014 Minneapolis Personal Chef",
+    title: "Local Effort Food Co. - Minneapolis Personal Chef",
     description: "Local Effort Food Co. is a Minneapolis personal chef team offering in-home dinners, meal prep plans, and small-event catering built around Minnesota-grown ingredients.",
     prerender: true
   },
   {
+    path: "/blog",
+    title: "Blog - Local Effort Food Co.",
+    description: "Stories, updates, and kitchen notes from Local Effort Food Co.",
+    prerender: true
+  },
+  {
     path: "/releases",
-    title: "Press & Releases \u2014 Local Effort Food Co.",
+    title: "Press & Releases - Local Effort Food Co.",
     description: "News, press coverage, and updates from Local Effort Food Co.",
     prerender: true
   },
   {
     path: "/sale",
-    title: "Shop \u2014 Local Effort Food Co.",
+    title: "Shop - Local Effort Food Co.",
     description: "Order from Local Effort Food Co. Fresh, local, Minneapolis-made.",
     prerender: true
   },
   {
     path: "/weekly",
-    title: "Weekly Updates \u2014 Local Effort Food Co.",
+    title: "Weekly Updates - Local Effort Food Co.",
     description: "Weekly menus, stories, and updates from the Local Effort kitchen.",
     prerender: true
   },
   {
     path: "/happymonday",
-    title: "For Happy Monday \u2014 Local Effort Food Co.",
+    title: "For Happy Monday - Local Effort Food Co.",
     description: "Local Effort menu and ordering for Happy Monday.",
     prerender: true
   },
   {
     path: "/pizza-party",
-    title: "Pizza Party \u2014 Local Effort Food Co.",
+    title: "Pizza Party - Local Effort Food Co.",
     description: "Book a wood-fired pizza party with Local Effort in Minneapolis-St. Paul.",
     prerender: true
   },
   {
     path: "/winterdinner",
-    title: "Winter Dinner \u2014 Local Effort Food Co.",
+    title: "Winter Dinner - Local Effort Food Co.",
     description: "Seasonal winter dinner experience from Local Effort.",
     prerender: false
   },
   {
     path: "/winterpizza",
-    title: "Winter Pizza \u2014 Local Effort Food Co.",
+    title: "Winter Pizza - Local Effort Food Co.",
     description: "Winter pizza pop-up from Local Effort.",
     prerender: false
   },
   {
     path: "/february",
-    title: "February Menu \u2014 Local Effort Food Co.",
+    title: "February Menu - Local Effort Food Co.",
     description: "February seasonal menu from Local Effort Food Co.",
     prerender: false
   },
   {
     path: "/psyche",
-    title: "Psyche \u2014 Local Effort Food Co.",
-    description: "Psyche experience by Local Effort Food Co.",
-    prerender: false
+    title: "Buy Psyche Olive Oil - 3L Extra-Virgin | Local Effort Food Co.",
+    description: "Buy Psyche extra-virgin olive oil (3 L bag-in-box) from Local Effort Food Co. in Minneapolis. Single-estate koroneiki from Greece - bright, peppery, EVA-certified. $90 with free local delivery.",
+    prerender: true
   },
   {
     path: "/januarymeals",
-    title: "January Meals \u2014 Local Effort Food Co.",
+    title: "January Meals - Local Effort Food Co.",
     description: "January meal prep offerings from Local Effort.",
     prerender: false
   },
   {
     path: "/calendar",
-    title: "Calendar \u2014 Local Effort Food Co.",
+    title: "Calendar - Local Effort Food Co.",
     description: "Event and booking calendar for Local Effort Food Co.",
     prerender: false
   }
 ];
 var INTERNAL_ROUTES = [
+  "/finefoods",
   "/auth",
   "/inbox",
   "/campaigns",
@@ -4738,6 +4761,16 @@ var heroFallbackSrc = "/gallery/IMG_3145.jpg";
 
 // src/components/seo/DefaultSeo.jsx
 var import_jsx_runtime3 = require("react/jsx-runtime");
+var SECTION_META = {
+  "#small-events": {
+    title: "Private Event Catering \u2014 Dinners, Weddings & Parties | Local Effort Food Co.",
+    description: "Book private chef catering for intimate dinners, weddings, showers, and holiday parties in Minneapolis\u2013St. Paul. Locally sourced, seasonal menus for 2\u201375 guests."
+  },
+  "#for-businesses": {
+    title: "For Businesses \u2014 Wholesale, Consulting & Collaborations | Local Effort Food Co.",
+    description: "Commercial food services for Minneapolis businesses: wholesale supply for cafes and retail, restaurant consulting, pizza shop development, and creative food collaborations."
+  }
+};
 var buildOgImageUrl = () => {
   const cloudName = cloudinaryConfig?.cloudName;
   if (cloudName && heroPublicId) {
@@ -4752,8 +4785,9 @@ var buildOgImageUrl = () => {
 var DefaultSeo = () => {
   const location = (0, import_react_router_dom2.useLocation)();
   const routeMeta = PUBLIC_ROUTES.find((r) => r.path === location.pathname);
-  const pageTitle = routeMeta?.title || SITE_NAME;
-  const pageDescription = routeMeta?.description || DEFAULT_DESCRIPTION;
+  const sectionMeta = SECTION_META[location.hash] || null;
+  const pageTitle = sectionMeta?.title || routeMeta?.title || SITE_NAME;
+  const pageDescription = sectionMeta?.description || routeMeta?.description || DEFAULT_DESCRIPTION;
   const shouldNoindex = INTERNAL_ROUTES.some((p) => location.pathname === p || location.pathname.startsWith(p));
   const canonicalUrl = (0, import_react3.useMemo)(() => {
     const path = location.pathname || "/";
@@ -4864,6 +4898,1027 @@ var DefaultSeo_default = DefaultSeo;
 
 // src/pages/FullPageDemoPage.jsx
 var import_react13 = __toESM(require("react"));
+
+// node_modules/.pnpm/dompurify@3.3.1/node_modules/dompurify/dist/purify.es.mjs
+var {
+  entries,
+  setPrototypeOf,
+  isFrozen,
+  getPrototypeOf,
+  getOwnPropertyDescriptor
+} = Object;
+var {
+  freeze,
+  seal,
+  create
+} = Object;
+var {
+  apply,
+  construct
+} = typeof Reflect !== "undefined" && Reflect;
+if (!freeze) {
+  freeze = function freeze2(x) {
+    return x;
+  };
+}
+if (!seal) {
+  seal = function seal2(x) {
+    return x;
+  };
+}
+if (!apply) {
+  apply = function apply2(func, thisArg) {
+    for (var _len = arguments.length, args = new Array(_len > 2 ? _len - 2 : 0), _key = 2; _key < _len; _key++) {
+      args[_key - 2] = arguments[_key];
+    }
+    return func.apply(thisArg, args);
+  };
+}
+if (!construct) {
+  construct = function construct2(Func) {
+    for (var _len2 = arguments.length, args = new Array(_len2 > 1 ? _len2 - 1 : 0), _key2 = 1; _key2 < _len2; _key2++) {
+      args[_key2 - 1] = arguments[_key2];
+    }
+    return new Func(...args);
+  };
+}
+var arrayForEach = unapply(Array.prototype.forEach);
+var arrayLastIndexOf = unapply(Array.prototype.lastIndexOf);
+var arrayPop = unapply(Array.prototype.pop);
+var arrayPush = unapply(Array.prototype.push);
+var arraySplice = unapply(Array.prototype.splice);
+var stringToLowerCase = unapply(String.prototype.toLowerCase);
+var stringToString = unapply(String.prototype.toString);
+var stringMatch = unapply(String.prototype.match);
+var stringReplace = unapply(String.prototype.replace);
+var stringIndexOf = unapply(String.prototype.indexOf);
+var stringTrim = unapply(String.prototype.trim);
+var objectHasOwnProperty = unapply(Object.prototype.hasOwnProperty);
+var regExpTest = unapply(RegExp.prototype.test);
+var typeErrorCreate = unconstruct(TypeError);
+function unapply(func) {
+  return function(thisArg) {
+    if (thisArg instanceof RegExp) {
+      thisArg.lastIndex = 0;
+    }
+    for (var _len3 = arguments.length, args = new Array(_len3 > 1 ? _len3 - 1 : 0), _key3 = 1; _key3 < _len3; _key3++) {
+      args[_key3 - 1] = arguments[_key3];
+    }
+    return apply(func, thisArg, args);
+  };
+}
+function unconstruct(Func) {
+  return function() {
+    for (var _len4 = arguments.length, args = new Array(_len4), _key4 = 0; _key4 < _len4; _key4++) {
+      args[_key4] = arguments[_key4];
+    }
+    return construct(Func, args);
+  };
+}
+function addToSet(set, array) {
+  let transformCaseFunc = arguments.length > 2 && arguments[2] !== void 0 ? arguments[2] : stringToLowerCase;
+  if (setPrototypeOf) {
+    setPrototypeOf(set, null);
+  }
+  let l = array.length;
+  while (l--) {
+    let element = array[l];
+    if (typeof element === "string") {
+      const lcElement = transformCaseFunc(element);
+      if (lcElement !== element) {
+        if (!isFrozen(array)) {
+          array[l] = lcElement;
+        }
+        element = lcElement;
+      }
+    }
+    set[element] = true;
+  }
+  return set;
+}
+function cleanArray(array) {
+  for (let index = 0; index < array.length; index++) {
+    const isPropertyExist = objectHasOwnProperty(array, index);
+    if (!isPropertyExist) {
+      array[index] = null;
+    }
+  }
+  return array;
+}
+function clone(object) {
+  const newObject = create(null);
+  for (const [property, value] of entries(object)) {
+    const isPropertyExist = objectHasOwnProperty(object, property);
+    if (isPropertyExist) {
+      if (Array.isArray(value)) {
+        newObject[property] = cleanArray(value);
+      } else if (value && typeof value === "object" && value.constructor === Object) {
+        newObject[property] = clone(value);
+      } else {
+        newObject[property] = value;
+      }
+    }
+  }
+  return newObject;
+}
+function lookupGetter(object, prop) {
+  while (object !== null) {
+    const desc = getOwnPropertyDescriptor(object, prop);
+    if (desc) {
+      if (desc.get) {
+        return unapply(desc.get);
+      }
+      if (typeof desc.value === "function") {
+        return unapply(desc.value);
+      }
+    }
+    object = getPrototypeOf(object);
+  }
+  function fallbackValue() {
+    return null;
+  }
+  return fallbackValue;
+}
+var html$1 = freeze(["a", "abbr", "acronym", "address", "area", "article", "aside", "audio", "b", "bdi", "bdo", "big", "blink", "blockquote", "body", "br", "button", "canvas", "caption", "center", "cite", "code", "col", "colgroup", "content", "data", "datalist", "dd", "decorator", "del", "details", "dfn", "dialog", "dir", "div", "dl", "dt", "element", "em", "fieldset", "figcaption", "figure", "font", "footer", "form", "h1", "h2", "h3", "h4", "h5", "h6", "head", "header", "hgroup", "hr", "html", "i", "img", "input", "ins", "kbd", "label", "legend", "li", "main", "map", "mark", "marquee", "menu", "menuitem", "meter", "nav", "nobr", "ol", "optgroup", "option", "output", "p", "picture", "pre", "progress", "q", "rp", "rt", "ruby", "s", "samp", "search", "section", "select", "shadow", "slot", "small", "source", "spacer", "span", "strike", "strong", "style", "sub", "summary", "sup", "table", "tbody", "td", "template", "textarea", "tfoot", "th", "thead", "time", "tr", "track", "tt", "u", "ul", "var", "video", "wbr"]);
+var svg$1 = freeze(["svg", "a", "altglyph", "altglyphdef", "altglyphitem", "animatecolor", "animatemotion", "animatetransform", "circle", "clippath", "defs", "desc", "ellipse", "enterkeyhint", "exportparts", "filter", "font", "g", "glyph", "glyphref", "hkern", "image", "inputmode", "line", "lineargradient", "marker", "mask", "metadata", "mpath", "part", "path", "pattern", "polygon", "polyline", "radialgradient", "rect", "stop", "style", "switch", "symbol", "text", "textpath", "title", "tref", "tspan", "view", "vkern"]);
+var svgFilters = freeze(["feBlend", "feColorMatrix", "feComponentTransfer", "feComposite", "feConvolveMatrix", "feDiffuseLighting", "feDisplacementMap", "feDistantLight", "feDropShadow", "feFlood", "feFuncA", "feFuncB", "feFuncG", "feFuncR", "feGaussianBlur", "feImage", "feMerge", "feMergeNode", "feMorphology", "feOffset", "fePointLight", "feSpecularLighting", "feSpotLight", "feTile", "feTurbulence"]);
+var svgDisallowed = freeze(["animate", "color-profile", "cursor", "discard", "font-face", "font-face-format", "font-face-name", "font-face-src", "font-face-uri", "foreignobject", "hatch", "hatchpath", "mesh", "meshgradient", "meshpatch", "meshrow", "missing-glyph", "script", "set", "solidcolor", "unknown", "use"]);
+var mathMl$1 = freeze(["math", "menclose", "merror", "mfenced", "mfrac", "mglyph", "mi", "mlabeledtr", "mmultiscripts", "mn", "mo", "mover", "mpadded", "mphantom", "mroot", "mrow", "ms", "mspace", "msqrt", "mstyle", "msub", "msup", "msubsup", "mtable", "mtd", "mtext", "mtr", "munder", "munderover", "mprescripts"]);
+var mathMlDisallowed = freeze(["maction", "maligngroup", "malignmark", "mlongdiv", "mscarries", "mscarry", "msgroup", "mstack", "msline", "msrow", "semantics", "annotation", "annotation-xml", "mprescripts", "none"]);
+var text = freeze(["#text"]);
+var html = freeze(["accept", "action", "align", "alt", "autocapitalize", "autocomplete", "autopictureinpicture", "autoplay", "background", "bgcolor", "border", "capture", "cellpadding", "cellspacing", "checked", "cite", "class", "clear", "color", "cols", "colspan", "controls", "controlslist", "coords", "crossorigin", "datetime", "decoding", "default", "dir", "disabled", "disablepictureinpicture", "disableremoteplayback", "download", "draggable", "enctype", "enterkeyhint", "exportparts", "face", "for", "headers", "height", "hidden", "high", "href", "hreflang", "id", "inert", "inputmode", "integrity", "ismap", "kind", "label", "lang", "list", "loading", "loop", "low", "max", "maxlength", "media", "method", "min", "minlength", "multiple", "muted", "name", "nonce", "noshade", "novalidate", "nowrap", "open", "optimum", "part", "pattern", "placeholder", "playsinline", "popover", "popovertarget", "popovertargetaction", "poster", "preload", "pubdate", "radiogroup", "readonly", "rel", "required", "rev", "reversed", "role", "rows", "rowspan", "spellcheck", "scope", "selected", "shape", "size", "sizes", "slot", "span", "srclang", "start", "src", "srcset", "step", "style", "summary", "tabindex", "title", "translate", "type", "usemap", "valign", "value", "width", "wrap", "xmlns", "slot"]);
+var svg = freeze(["accent-height", "accumulate", "additive", "alignment-baseline", "amplitude", "ascent", "attributename", "attributetype", "azimuth", "basefrequency", "baseline-shift", "begin", "bias", "by", "class", "clip", "clippathunits", "clip-path", "clip-rule", "color", "color-interpolation", "color-interpolation-filters", "color-profile", "color-rendering", "cx", "cy", "d", "dx", "dy", "diffuseconstant", "direction", "display", "divisor", "dur", "edgemode", "elevation", "end", "exponent", "fill", "fill-opacity", "fill-rule", "filter", "filterunits", "flood-color", "flood-opacity", "font-family", "font-size", "font-size-adjust", "font-stretch", "font-style", "font-variant", "font-weight", "fx", "fy", "g1", "g2", "glyph-name", "glyphref", "gradientunits", "gradienttransform", "height", "href", "id", "image-rendering", "in", "in2", "intercept", "k", "k1", "k2", "k3", "k4", "kerning", "keypoints", "keysplines", "keytimes", "lang", "lengthadjust", "letter-spacing", "kernelmatrix", "kernelunitlength", "lighting-color", "local", "marker-end", "marker-mid", "marker-start", "markerheight", "markerunits", "markerwidth", "maskcontentunits", "maskunits", "max", "mask", "mask-type", "media", "method", "mode", "min", "name", "numoctaves", "offset", "operator", "opacity", "order", "orient", "orientation", "origin", "overflow", "paint-order", "path", "pathlength", "patterncontentunits", "patterntransform", "patternunits", "points", "preservealpha", "preserveaspectratio", "primitiveunits", "r", "rx", "ry", "radius", "refx", "refy", "repeatcount", "repeatdur", "restart", "result", "rotate", "scale", "seed", "shape-rendering", "slope", "specularconstant", "specularexponent", "spreadmethod", "startoffset", "stddeviation", "stitchtiles", "stop-color", "stop-opacity", "stroke-dasharray", "stroke-dashoffset", "stroke-linecap", "stroke-linejoin", "stroke-miterlimit", "stroke-opacity", "stroke", "stroke-width", "style", "surfacescale", "systemlanguage", "tabindex", "tablevalues", "targetx", "targety", "transform", "transform-origin", "text-anchor", "text-decoration", "text-rendering", "textlength", "type", "u1", "u2", "unicode", "values", "viewbox", "visibility", "version", "vert-adv-y", "vert-origin-x", "vert-origin-y", "width", "word-spacing", "wrap", "writing-mode", "xchannelselector", "ychannelselector", "x", "x1", "x2", "xmlns", "y", "y1", "y2", "z", "zoomandpan"]);
+var mathMl = freeze(["accent", "accentunder", "align", "bevelled", "close", "columnsalign", "columnlines", "columnspan", "denomalign", "depth", "dir", "display", "displaystyle", "encoding", "fence", "frame", "height", "href", "id", "largeop", "length", "linethickness", "lspace", "lquote", "mathbackground", "mathcolor", "mathsize", "mathvariant", "maxsize", "minsize", "movablelimits", "notation", "numalign", "open", "rowalign", "rowlines", "rowspacing", "rowspan", "rspace", "rquote", "scriptlevel", "scriptminsize", "scriptsizemultiplier", "selection", "separator", "separators", "stretchy", "subscriptshift", "supscriptshift", "symmetric", "voffset", "width", "xmlns"]);
+var xml = freeze(["xlink:href", "xml:id", "xlink:title", "xml:space", "xmlns:xlink"]);
+var MUSTACHE_EXPR = seal(/\{\{[\w\W]*|[\w\W]*\}\}/gm);
+var ERB_EXPR = seal(/<%[\w\W]*|[\w\W]*%>/gm);
+var TMPLIT_EXPR = seal(/\$\{[\w\W]*/gm);
+var DATA_ATTR = seal(/^data-[\-\w.\u00B7-\uFFFF]+$/);
+var ARIA_ATTR = seal(/^aria-[\-\w]+$/);
+var IS_ALLOWED_URI = seal(
+  /^(?:(?:(?:f|ht)tps?|mailto|tel|callto|sms|cid|xmpp|matrix):|[^a-z]|[a-z+.\-]+(?:[^a-z+.\-:]|$))/i
+  // eslint-disable-line no-useless-escape
+);
+var IS_SCRIPT_OR_DATA = seal(/^(?:\w+script|data):/i);
+var ATTR_WHITESPACE = seal(
+  /[\u0000-\u0020\u00A0\u1680\u180E\u2000-\u2029\u205F\u3000]/g
+  // eslint-disable-line no-control-regex
+);
+var DOCTYPE_NAME = seal(/^html$/i);
+var CUSTOM_ELEMENT = seal(/^[a-z][.\w]*(-[.\w]+)+$/i);
+var EXPRESSIONS = /* @__PURE__ */ Object.freeze({
+  __proto__: null,
+  ARIA_ATTR,
+  ATTR_WHITESPACE,
+  CUSTOM_ELEMENT,
+  DATA_ATTR,
+  DOCTYPE_NAME,
+  ERB_EXPR,
+  IS_ALLOWED_URI,
+  IS_SCRIPT_OR_DATA,
+  MUSTACHE_EXPR,
+  TMPLIT_EXPR
+});
+var NODE_TYPE = {
+  element: 1,
+  attribute: 2,
+  text: 3,
+  cdataSection: 4,
+  entityReference: 5,
+  // Deprecated
+  entityNode: 6,
+  // Deprecated
+  progressingInstruction: 7,
+  comment: 8,
+  document: 9,
+  documentType: 10,
+  documentFragment: 11,
+  notation: 12
+  // Deprecated
+};
+var getGlobal = function getGlobal2() {
+  return typeof window === "undefined" ? null : window;
+};
+var _createTrustedTypesPolicy = function _createTrustedTypesPolicy2(trustedTypes, purifyHostElement) {
+  if (typeof trustedTypes !== "object" || typeof trustedTypes.createPolicy !== "function") {
+    return null;
+  }
+  let suffix = null;
+  const ATTR_NAME = "data-tt-policy-suffix";
+  if (purifyHostElement && purifyHostElement.hasAttribute(ATTR_NAME)) {
+    suffix = purifyHostElement.getAttribute(ATTR_NAME);
+  }
+  const policyName = "dompurify" + (suffix ? "#" + suffix : "");
+  try {
+    return trustedTypes.createPolicy(policyName, {
+      createHTML(html2) {
+        return html2;
+      },
+      createScriptURL(scriptUrl) {
+        return scriptUrl;
+      }
+    });
+  } catch (_) {
+    console.warn("TrustedTypes policy " + policyName + " could not be created.");
+    return null;
+  }
+};
+var _createHooksMap = function _createHooksMap2() {
+  return {
+    afterSanitizeAttributes: [],
+    afterSanitizeElements: [],
+    afterSanitizeShadowDOM: [],
+    beforeSanitizeAttributes: [],
+    beforeSanitizeElements: [],
+    beforeSanitizeShadowDOM: [],
+    uponSanitizeAttribute: [],
+    uponSanitizeElement: [],
+    uponSanitizeShadowNode: []
+  };
+};
+function createDOMPurify() {
+  let window2 = arguments.length > 0 && arguments[0] !== void 0 ? arguments[0] : getGlobal();
+  const DOMPurify = (root) => createDOMPurify(root);
+  DOMPurify.version = "3.3.1";
+  DOMPurify.removed = [];
+  if (!window2 || !window2.document || window2.document.nodeType !== NODE_TYPE.document || !window2.Element) {
+    DOMPurify.isSupported = false;
+    return DOMPurify;
+  }
+  let {
+    document: document2
+  } = window2;
+  const originalDocument = document2;
+  const currentScript = originalDocument.currentScript;
+  const {
+    DocumentFragment,
+    HTMLTemplateElement,
+    Node: Node2,
+    Element: Element2,
+    NodeFilter: NodeFilter2,
+    NamedNodeMap = window2.NamedNodeMap || window2.MozNamedAttrMap,
+    HTMLFormElement,
+    DOMParser,
+    trustedTypes
+  } = window2;
+  const ElementPrototype = Element2.prototype;
+  const cloneNode = lookupGetter(ElementPrototype, "cloneNode");
+  const remove = lookupGetter(ElementPrototype, "remove");
+  const getNextSibling = lookupGetter(ElementPrototype, "nextSibling");
+  const getChildNodes = lookupGetter(ElementPrototype, "childNodes");
+  const getParentNode = lookupGetter(ElementPrototype, "parentNode");
+  if (typeof HTMLTemplateElement === "function") {
+    const template = document2.createElement("template");
+    if (template.content && template.content.ownerDocument) {
+      document2 = template.content.ownerDocument;
+    }
+  }
+  let trustedTypesPolicy;
+  let emptyHTML = "";
+  const {
+    implementation,
+    createNodeIterator,
+    createDocumentFragment,
+    getElementsByTagName
+  } = document2;
+  const {
+    importNode
+  } = originalDocument;
+  let hooks = _createHooksMap();
+  DOMPurify.isSupported = typeof entries === "function" && typeof getParentNode === "function" && implementation && implementation.createHTMLDocument !== void 0;
+  const {
+    MUSTACHE_EXPR: MUSTACHE_EXPR2,
+    ERB_EXPR: ERB_EXPR2,
+    TMPLIT_EXPR: TMPLIT_EXPR2,
+    DATA_ATTR: DATA_ATTR2,
+    ARIA_ATTR: ARIA_ATTR2,
+    IS_SCRIPT_OR_DATA: IS_SCRIPT_OR_DATA2,
+    ATTR_WHITESPACE: ATTR_WHITESPACE2,
+    CUSTOM_ELEMENT: CUSTOM_ELEMENT2
+  } = EXPRESSIONS;
+  let {
+    IS_ALLOWED_URI: IS_ALLOWED_URI$1
+  } = EXPRESSIONS;
+  let ALLOWED_TAGS = null;
+  const DEFAULT_ALLOWED_TAGS = addToSet({}, [...html$1, ...svg$1, ...svgFilters, ...mathMl$1, ...text]);
+  let ALLOWED_ATTR = null;
+  const DEFAULT_ALLOWED_ATTR = addToSet({}, [...html, ...svg, ...mathMl, ...xml]);
+  let CUSTOM_ELEMENT_HANDLING = Object.seal(create(null, {
+    tagNameCheck: {
+      writable: true,
+      configurable: false,
+      enumerable: true,
+      value: null
+    },
+    attributeNameCheck: {
+      writable: true,
+      configurable: false,
+      enumerable: true,
+      value: null
+    },
+    allowCustomizedBuiltInElements: {
+      writable: true,
+      configurable: false,
+      enumerable: true,
+      value: false
+    }
+  }));
+  let FORBID_TAGS = null;
+  let FORBID_ATTR = null;
+  const EXTRA_ELEMENT_HANDLING = Object.seal(create(null, {
+    tagCheck: {
+      writable: true,
+      configurable: false,
+      enumerable: true,
+      value: null
+    },
+    attributeCheck: {
+      writable: true,
+      configurable: false,
+      enumerable: true,
+      value: null
+    }
+  }));
+  let ALLOW_ARIA_ATTR = true;
+  let ALLOW_DATA_ATTR = true;
+  let ALLOW_UNKNOWN_PROTOCOLS = false;
+  let ALLOW_SELF_CLOSE_IN_ATTR = true;
+  let SAFE_FOR_TEMPLATES = false;
+  let SAFE_FOR_XML = true;
+  let WHOLE_DOCUMENT = false;
+  let SET_CONFIG = false;
+  let FORCE_BODY = false;
+  let RETURN_DOM = false;
+  let RETURN_DOM_FRAGMENT = false;
+  let RETURN_TRUSTED_TYPE = false;
+  let SANITIZE_DOM = true;
+  let SANITIZE_NAMED_PROPS = false;
+  const SANITIZE_NAMED_PROPS_PREFIX = "user-content-";
+  let KEEP_CONTENT = true;
+  let IN_PLACE = false;
+  let USE_PROFILES = {};
+  let FORBID_CONTENTS = null;
+  const DEFAULT_FORBID_CONTENTS = addToSet({}, ["annotation-xml", "audio", "colgroup", "desc", "foreignobject", "head", "iframe", "math", "mi", "mn", "mo", "ms", "mtext", "noembed", "noframes", "noscript", "plaintext", "script", "style", "svg", "template", "thead", "title", "video", "xmp"]);
+  let DATA_URI_TAGS = null;
+  const DEFAULT_DATA_URI_TAGS = addToSet({}, ["audio", "video", "img", "source", "image", "track"]);
+  let URI_SAFE_ATTRIBUTES = null;
+  const DEFAULT_URI_SAFE_ATTRIBUTES = addToSet({}, ["alt", "class", "for", "id", "label", "name", "pattern", "placeholder", "role", "summary", "title", "value", "style", "xmlns"]);
+  const MATHML_NAMESPACE = "http://www.w3.org/1998/Math/MathML";
+  const SVG_NAMESPACE = "http://www.w3.org/2000/svg";
+  const HTML_NAMESPACE = "http://www.w3.org/1999/xhtml";
+  let NAMESPACE = HTML_NAMESPACE;
+  let IS_EMPTY_INPUT = false;
+  let ALLOWED_NAMESPACES = null;
+  const DEFAULT_ALLOWED_NAMESPACES = addToSet({}, [MATHML_NAMESPACE, SVG_NAMESPACE, HTML_NAMESPACE], stringToString);
+  let MATHML_TEXT_INTEGRATION_POINTS = addToSet({}, ["mi", "mo", "mn", "ms", "mtext"]);
+  let HTML_INTEGRATION_POINTS = addToSet({}, ["annotation-xml"]);
+  const COMMON_SVG_AND_HTML_ELEMENTS = addToSet({}, ["title", "style", "font", "a", "script"]);
+  let PARSER_MEDIA_TYPE = null;
+  const SUPPORTED_PARSER_MEDIA_TYPES = ["application/xhtml+xml", "text/html"];
+  const DEFAULT_PARSER_MEDIA_TYPE = "text/html";
+  let transformCaseFunc = null;
+  let CONFIG = null;
+  const formElement = document2.createElement("form");
+  const isRegexOrFunction = function isRegexOrFunction2(testValue) {
+    return testValue instanceof RegExp || testValue instanceof Function;
+  };
+  const _parseConfig = function _parseConfig2() {
+    let cfg = arguments.length > 0 && arguments[0] !== void 0 ? arguments[0] : {};
+    if (CONFIG && CONFIG === cfg) {
+      return;
+    }
+    if (!cfg || typeof cfg !== "object") {
+      cfg = {};
+    }
+    cfg = clone(cfg);
+    PARSER_MEDIA_TYPE = // eslint-disable-next-line unicorn/prefer-includes
+    SUPPORTED_PARSER_MEDIA_TYPES.indexOf(cfg.PARSER_MEDIA_TYPE) === -1 ? DEFAULT_PARSER_MEDIA_TYPE : cfg.PARSER_MEDIA_TYPE;
+    transformCaseFunc = PARSER_MEDIA_TYPE === "application/xhtml+xml" ? stringToString : stringToLowerCase;
+    ALLOWED_TAGS = objectHasOwnProperty(cfg, "ALLOWED_TAGS") ? addToSet({}, cfg.ALLOWED_TAGS, transformCaseFunc) : DEFAULT_ALLOWED_TAGS;
+    ALLOWED_ATTR = objectHasOwnProperty(cfg, "ALLOWED_ATTR") ? addToSet({}, cfg.ALLOWED_ATTR, transformCaseFunc) : DEFAULT_ALLOWED_ATTR;
+    ALLOWED_NAMESPACES = objectHasOwnProperty(cfg, "ALLOWED_NAMESPACES") ? addToSet({}, cfg.ALLOWED_NAMESPACES, stringToString) : DEFAULT_ALLOWED_NAMESPACES;
+    URI_SAFE_ATTRIBUTES = objectHasOwnProperty(cfg, "ADD_URI_SAFE_ATTR") ? addToSet(clone(DEFAULT_URI_SAFE_ATTRIBUTES), cfg.ADD_URI_SAFE_ATTR, transformCaseFunc) : DEFAULT_URI_SAFE_ATTRIBUTES;
+    DATA_URI_TAGS = objectHasOwnProperty(cfg, "ADD_DATA_URI_TAGS") ? addToSet(clone(DEFAULT_DATA_URI_TAGS), cfg.ADD_DATA_URI_TAGS, transformCaseFunc) : DEFAULT_DATA_URI_TAGS;
+    FORBID_CONTENTS = objectHasOwnProperty(cfg, "FORBID_CONTENTS") ? addToSet({}, cfg.FORBID_CONTENTS, transformCaseFunc) : DEFAULT_FORBID_CONTENTS;
+    FORBID_TAGS = objectHasOwnProperty(cfg, "FORBID_TAGS") ? addToSet({}, cfg.FORBID_TAGS, transformCaseFunc) : clone({});
+    FORBID_ATTR = objectHasOwnProperty(cfg, "FORBID_ATTR") ? addToSet({}, cfg.FORBID_ATTR, transformCaseFunc) : clone({});
+    USE_PROFILES = objectHasOwnProperty(cfg, "USE_PROFILES") ? cfg.USE_PROFILES : false;
+    ALLOW_ARIA_ATTR = cfg.ALLOW_ARIA_ATTR !== false;
+    ALLOW_DATA_ATTR = cfg.ALLOW_DATA_ATTR !== false;
+    ALLOW_UNKNOWN_PROTOCOLS = cfg.ALLOW_UNKNOWN_PROTOCOLS || false;
+    ALLOW_SELF_CLOSE_IN_ATTR = cfg.ALLOW_SELF_CLOSE_IN_ATTR !== false;
+    SAFE_FOR_TEMPLATES = cfg.SAFE_FOR_TEMPLATES || false;
+    SAFE_FOR_XML = cfg.SAFE_FOR_XML !== false;
+    WHOLE_DOCUMENT = cfg.WHOLE_DOCUMENT || false;
+    RETURN_DOM = cfg.RETURN_DOM || false;
+    RETURN_DOM_FRAGMENT = cfg.RETURN_DOM_FRAGMENT || false;
+    RETURN_TRUSTED_TYPE = cfg.RETURN_TRUSTED_TYPE || false;
+    FORCE_BODY = cfg.FORCE_BODY || false;
+    SANITIZE_DOM = cfg.SANITIZE_DOM !== false;
+    SANITIZE_NAMED_PROPS = cfg.SANITIZE_NAMED_PROPS || false;
+    KEEP_CONTENT = cfg.KEEP_CONTENT !== false;
+    IN_PLACE = cfg.IN_PLACE || false;
+    IS_ALLOWED_URI$1 = cfg.ALLOWED_URI_REGEXP || IS_ALLOWED_URI;
+    NAMESPACE = cfg.NAMESPACE || HTML_NAMESPACE;
+    MATHML_TEXT_INTEGRATION_POINTS = cfg.MATHML_TEXT_INTEGRATION_POINTS || MATHML_TEXT_INTEGRATION_POINTS;
+    HTML_INTEGRATION_POINTS = cfg.HTML_INTEGRATION_POINTS || HTML_INTEGRATION_POINTS;
+    CUSTOM_ELEMENT_HANDLING = cfg.CUSTOM_ELEMENT_HANDLING || {};
+    if (cfg.CUSTOM_ELEMENT_HANDLING && isRegexOrFunction(cfg.CUSTOM_ELEMENT_HANDLING.tagNameCheck)) {
+      CUSTOM_ELEMENT_HANDLING.tagNameCheck = cfg.CUSTOM_ELEMENT_HANDLING.tagNameCheck;
+    }
+    if (cfg.CUSTOM_ELEMENT_HANDLING && isRegexOrFunction(cfg.CUSTOM_ELEMENT_HANDLING.attributeNameCheck)) {
+      CUSTOM_ELEMENT_HANDLING.attributeNameCheck = cfg.CUSTOM_ELEMENT_HANDLING.attributeNameCheck;
+    }
+    if (cfg.CUSTOM_ELEMENT_HANDLING && typeof cfg.CUSTOM_ELEMENT_HANDLING.allowCustomizedBuiltInElements === "boolean") {
+      CUSTOM_ELEMENT_HANDLING.allowCustomizedBuiltInElements = cfg.CUSTOM_ELEMENT_HANDLING.allowCustomizedBuiltInElements;
+    }
+    if (SAFE_FOR_TEMPLATES) {
+      ALLOW_DATA_ATTR = false;
+    }
+    if (RETURN_DOM_FRAGMENT) {
+      RETURN_DOM = true;
+    }
+    if (USE_PROFILES) {
+      ALLOWED_TAGS = addToSet({}, text);
+      ALLOWED_ATTR = [];
+      if (USE_PROFILES.html === true) {
+        addToSet(ALLOWED_TAGS, html$1);
+        addToSet(ALLOWED_ATTR, html);
+      }
+      if (USE_PROFILES.svg === true) {
+        addToSet(ALLOWED_TAGS, svg$1);
+        addToSet(ALLOWED_ATTR, svg);
+        addToSet(ALLOWED_ATTR, xml);
+      }
+      if (USE_PROFILES.svgFilters === true) {
+        addToSet(ALLOWED_TAGS, svgFilters);
+        addToSet(ALLOWED_ATTR, svg);
+        addToSet(ALLOWED_ATTR, xml);
+      }
+      if (USE_PROFILES.mathMl === true) {
+        addToSet(ALLOWED_TAGS, mathMl$1);
+        addToSet(ALLOWED_ATTR, mathMl);
+        addToSet(ALLOWED_ATTR, xml);
+      }
+    }
+    if (cfg.ADD_TAGS) {
+      if (typeof cfg.ADD_TAGS === "function") {
+        EXTRA_ELEMENT_HANDLING.tagCheck = cfg.ADD_TAGS;
+      } else {
+        if (ALLOWED_TAGS === DEFAULT_ALLOWED_TAGS) {
+          ALLOWED_TAGS = clone(ALLOWED_TAGS);
+        }
+        addToSet(ALLOWED_TAGS, cfg.ADD_TAGS, transformCaseFunc);
+      }
+    }
+    if (cfg.ADD_ATTR) {
+      if (typeof cfg.ADD_ATTR === "function") {
+        EXTRA_ELEMENT_HANDLING.attributeCheck = cfg.ADD_ATTR;
+      } else {
+        if (ALLOWED_ATTR === DEFAULT_ALLOWED_ATTR) {
+          ALLOWED_ATTR = clone(ALLOWED_ATTR);
+        }
+        addToSet(ALLOWED_ATTR, cfg.ADD_ATTR, transformCaseFunc);
+      }
+    }
+    if (cfg.ADD_URI_SAFE_ATTR) {
+      addToSet(URI_SAFE_ATTRIBUTES, cfg.ADD_URI_SAFE_ATTR, transformCaseFunc);
+    }
+    if (cfg.FORBID_CONTENTS) {
+      if (FORBID_CONTENTS === DEFAULT_FORBID_CONTENTS) {
+        FORBID_CONTENTS = clone(FORBID_CONTENTS);
+      }
+      addToSet(FORBID_CONTENTS, cfg.FORBID_CONTENTS, transformCaseFunc);
+    }
+    if (cfg.ADD_FORBID_CONTENTS) {
+      if (FORBID_CONTENTS === DEFAULT_FORBID_CONTENTS) {
+        FORBID_CONTENTS = clone(FORBID_CONTENTS);
+      }
+      addToSet(FORBID_CONTENTS, cfg.ADD_FORBID_CONTENTS, transformCaseFunc);
+    }
+    if (KEEP_CONTENT) {
+      ALLOWED_TAGS["#text"] = true;
+    }
+    if (WHOLE_DOCUMENT) {
+      addToSet(ALLOWED_TAGS, ["html", "head", "body"]);
+    }
+    if (ALLOWED_TAGS.table) {
+      addToSet(ALLOWED_TAGS, ["tbody"]);
+      delete FORBID_TAGS.tbody;
+    }
+    if (cfg.TRUSTED_TYPES_POLICY) {
+      if (typeof cfg.TRUSTED_TYPES_POLICY.createHTML !== "function") {
+        throw typeErrorCreate('TRUSTED_TYPES_POLICY configuration option must provide a "createHTML" hook.');
+      }
+      if (typeof cfg.TRUSTED_TYPES_POLICY.createScriptURL !== "function") {
+        throw typeErrorCreate('TRUSTED_TYPES_POLICY configuration option must provide a "createScriptURL" hook.');
+      }
+      trustedTypesPolicy = cfg.TRUSTED_TYPES_POLICY;
+      emptyHTML = trustedTypesPolicy.createHTML("");
+    } else {
+      if (trustedTypesPolicy === void 0) {
+        trustedTypesPolicy = _createTrustedTypesPolicy(trustedTypes, currentScript);
+      }
+      if (trustedTypesPolicy !== null && typeof emptyHTML === "string") {
+        emptyHTML = trustedTypesPolicy.createHTML("");
+      }
+    }
+    if (freeze) {
+      freeze(cfg);
+    }
+    CONFIG = cfg;
+  };
+  const ALL_SVG_TAGS = addToSet({}, [...svg$1, ...svgFilters, ...svgDisallowed]);
+  const ALL_MATHML_TAGS = addToSet({}, [...mathMl$1, ...mathMlDisallowed]);
+  const _checkValidNamespace = function _checkValidNamespace2(element) {
+    let parent = getParentNode(element);
+    if (!parent || !parent.tagName) {
+      parent = {
+        namespaceURI: NAMESPACE,
+        tagName: "template"
+      };
+    }
+    const tagName = stringToLowerCase(element.tagName);
+    const parentTagName = stringToLowerCase(parent.tagName);
+    if (!ALLOWED_NAMESPACES[element.namespaceURI]) {
+      return false;
+    }
+    if (element.namespaceURI === SVG_NAMESPACE) {
+      if (parent.namespaceURI === HTML_NAMESPACE) {
+        return tagName === "svg";
+      }
+      if (parent.namespaceURI === MATHML_NAMESPACE) {
+        return tagName === "svg" && (parentTagName === "annotation-xml" || MATHML_TEXT_INTEGRATION_POINTS[parentTagName]);
+      }
+      return Boolean(ALL_SVG_TAGS[tagName]);
+    }
+    if (element.namespaceURI === MATHML_NAMESPACE) {
+      if (parent.namespaceURI === HTML_NAMESPACE) {
+        return tagName === "math";
+      }
+      if (parent.namespaceURI === SVG_NAMESPACE) {
+        return tagName === "math" && HTML_INTEGRATION_POINTS[parentTagName];
+      }
+      return Boolean(ALL_MATHML_TAGS[tagName]);
+    }
+    if (element.namespaceURI === HTML_NAMESPACE) {
+      if (parent.namespaceURI === SVG_NAMESPACE && !HTML_INTEGRATION_POINTS[parentTagName]) {
+        return false;
+      }
+      if (parent.namespaceURI === MATHML_NAMESPACE && !MATHML_TEXT_INTEGRATION_POINTS[parentTagName]) {
+        return false;
+      }
+      return !ALL_MATHML_TAGS[tagName] && (COMMON_SVG_AND_HTML_ELEMENTS[tagName] || !ALL_SVG_TAGS[tagName]);
+    }
+    if (PARSER_MEDIA_TYPE === "application/xhtml+xml" && ALLOWED_NAMESPACES[element.namespaceURI]) {
+      return true;
+    }
+    return false;
+  };
+  const _forceRemove = function _forceRemove2(node) {
+    arrayPush(DOMPurify.removed, {
+      element: node
+    });
+    try {
+      getParentNode(node).removeChild(node);
+    } catch (_) {
+      remove(node);
+    }
+  };
+  const _removeAttribute = function _removeAttribute2(name, element) {
+    try {
+      arrayPush(DOMPurify.removed, {
+        attribute: element.getAttributeNode(name),
+        from: element
+      });
+    } catch (_) {
+      arrayPush(DOMPurify.removed, {
+        attribute: null,
+        from: element
+      });
+    }
+    element.removeAttribute(name);
+    if (name === "is") {
+      if (RETURN_DOM || RETURN_DOM_FRAGMENT) {
+        try {
+          _forceRemove(element);
+        } catch (_) {
+        }
+      } else {
+        try {
+          element.setAttribute(name, "");
+        } catch (_) {
+        }
+      }
+    }
+  };
+  const _initDocument = function _initDocument2(dirty) {
+    let doc = null;
+    let leadingWhitespace = null;
+    if (FORCE_BODY) {
+      dirty = "<remove></remove>" + dirty;
+    } else {
+      const matches = stringMatch(dirty, /^[\r\n\t ]+/);
+      leadingWhitespace = matches && matches[0];
+    }
+    if (PARSER_MEDIA_TYPE === "application/xhtml+xml" && NAMESPACE === HTML_NAMESPACE) {
+      dirty = '<html xmlns="http://www.w3.org/1999/xhtml"><head></head><body>' + dirty + "</body></html>";
+    }
+    const dirtyPayload = trustedTypesPolicy ? trustedTypesPolicy.createHTML(dirty) : dirty;
+    if (NAMESPACE === HTML_NAMESPACE) {
+      try {
+        doc = new DOMParser().parseFromString(dirtyPayload, PARSER_MEDIA_TYPE);
+      } catch (_) {
+      }
+    }
+    if (!doc || !doc.documentElement) {
+      doc = implementation.createDocument(NAMESPACE, "template", null);
+      try {
+        doc.documentElement.innerHTML = IS_EMPTY_INPUT ? emptyHTML : dirtyPayload;
+      } catch (_) {
+      }
+    }
+    const body = doc.body || doc.documentElement;
+    if (dirty && leadingWhitespace) {
+      body.insertBefore(document2.createTextNode(leadingWhitespace), body.childNodes[0] || null);
+    }
+    if (NAMESPACE === HTML_NAMESPACE) {
+      return getElementsByTagName.call(doc, WHOLE_DOCUMENT ? "html" : "body")[0];
+    }
+    return WHOLE_DOCUMENT ? doc.documentElement : body;
+  };
+  const _createNodeIterator = function _createNodeIterator2(root) {
+    return createNodeIterator.call(
+      root.ownerDocument || root,
+      root,
+      // eslint-disable-next-line no-bitwise
+      NodeFilter2.SHOW_ELEMENT | NodeFilter2.SHOW_COMMENT | NodeFilter2.SHOW_TEXT | NodeFilter2.SHOW_PROCESSING_INSTRUCTION | NodeFilter2.SHOW_CDATA_SECTION,
+      null
+    );
+  };
+  const _isClobbered = function _isClobbered2(element) {
+    return element instanceof HTMLFormElement && (typeof element.nodeName !== "string" || typeof element.textContent !== "string" || typeof element.removeChild !== "function" || !(element.attributes instanceof NamedNodeMap) || typeof element.removeAttribute !== "function" || typeof element.setAttribute !== "function" || typeof element.namespaceURI !== "string" || typeof element.insertBefore !== "function" || typeof element.hasChildNodes !== "function");
+  };
+  const _isNode = function _isNode2(value) {
+    return typeof Node2 === "function" && value instanceof Node2;
+  };
+  function _executeHooks(hooks2, currentNode, data) {
+    arrayForEach(hooks2, (hook) => {
+      hook.call(DOMPurify, currentNode, data, CONFIG);
+    });
+  }
+  const _sanitizeElements = function _sanitizeElements2(currentNode) {
+    let content = null;
+    _executeHooks(hooks.beforeSanitizeElements, currentNode, null);
+    if (_isClobbered(currentNode)) {
+      _forceRemove(currentNode);
+      return true;
+    }
+    const tagName = transformCaseFunc(currentNode.nodeName);
+    _executeHooks(hooks.uponSanitizeElement, currentNode, {
+      tagName,
+      allowedTags: ALLOWED_TAGS
+    });
+    if (SAFE_FOR_XML && currentNode.hasChildNodes() && !_isNode(currentNode.firstElementChild) && regExpTest(/<[/\w!]/g, currentNode.innerHTML) && regExpTest(/<[/\w!]/g, currentNode.textContent)) {
+      _forceRemove(currentNode);
+      return true;
+    }
+    if (currentNode.nodeType === NODE_TYPE.progressingInstruction) {
+      _forceRemove(currentNode);
+      return true;
+    }
+    if (SAFE_FOR_XML && currentNode.nodeType === NODE_TYPE.comment && regExpTest(/<[/\w]/g, currentNode.data)) {
+      _forceRemove(currentNode);
+      return true;
+    }
+    if (!(EXTRA_ELEMENT_HANDLING.tagCheck instanceof Function && EXTRA_ELEMENT_HANDLING.tagCheck(tagName)) && (!ALLOWED_TAGS[tagName] || FORBID_TAGS[tagName])) {
+      if (!FORBID_TAGS[tagName] && _isBasicCustomElement(tagName)) {
+        if (CUSTOM_ELEMENT_HANDLING.tagNameCheck instanceof RegExp && regExpTest(CUSTOM_ELEMENT_HANDLING.tagNameCheck, tagName)) {
+          return false;
+        }
+        if (CUSTOM_ELEMENT_HANDLING.tagNameCheck instanceof Function && CUSTOM_ELEMENT_HANDLING.tagNameCheck(tagName)) {
+          return false;
+        }
+      }
+      if (KEEP_CONTENT && !FORBID_CONTENTS[tagName]) {
+        const parentNode = getParentNode(currentNode) || currentNode.parentNode;
+        const childNodes = getChildNodes(currentNode) || currentNode.childNodes;
+        if (childNodes && parentNode) {
+          const childCount = childNodes.length;
+          for (let i = childCount - 1; i >= 0; --i) {
+            const childClone = cloneNode(childNodes[i], true);
+            childClone.__removalCount = (currentNode.__removalCount || 0) + 1;
+            parentNode.insertBefore(childClone, getNextSibling(currentNode));
+          }
+        }
+      }
+      _forceRemove(currentNode);
+      return true;
+    }
+    if (currentNode instanceof Element2 && !_checkValidNamespace(currentNode)) {
+      _forceRemove(currentNode);
+      return true;
+    }
+    if ((tagName === "noscript" || tagName === "noembed" || tagName === "noframes") && regExpTest(/<\/no(script|embed|frames)/i, currentNode.innerHTML)) {
+      _forceRemove(currentNode);
+      return true;
+    }
+    if (SAFE_FOR_TEMPLATES && currentNode.nodeType === NODE_TYPE.text) {
+      content = currentNode.textContent;
+      arrayForEach([MUSTACHE_EXPR2, ERB_EXPR2, TMPLIT_EXPR2], (expr) => {
+        content = stringReplace(content, expr, " ");
+      });
+      if (currentNode.textContent !== content) {
+        arrayPush(DOMPurify.removed, {
+          element: currentNode.cloneNode()
+        });
+        currentNode.textContent = content;
+      }
+    }
+    _executeHooks(hooks.afterSanitizeElements, currentNode, null);
+    return false;
+  };
+  const _isValidAttribute = function _isValidAttribute2(lcTag, lcName, value) {
+    if (SANITIZE_DOM && (lcName === "id" || lcName === "name") && (value in document2 || value in formElement)) {
+      return false;
+    }
+    if (ALLOW_DATA_ATTR && !FORBID_ATTR[lcName] && regExpTest(DATA_ATTR2, lcName)) ;
+    else if (ALLOW_ARIA_ATTR && regExpTest(ARIA_ATTR2, lcName)) ;
+    else if (EXTRA_ELEMENT_HANDLING.attributeCheck instanceof Function && EXTRA_ELEMENT_HANDLING.attributeCheck(lcName, lcTag)) ;
+    else if (!ALLOWED_ATTR[lcName] || FORBID_ATTR[lcName]) {
+      if (
+        // First condition does a very basic check if a) it's basically a valid custom element tagname AND
+        // b) if the tagName passes whatever the user has configured for CUSTOM_ELEMENT_HANDLING.tagNameCheck
+        // and c) if the attribute name passes whatever the user has configured for CUSTOM_ELEMENT_HANDLING.attributeNameCheck
+        _isBasicCustomElement(lcTag) && (CUSTOM_ELEMENT_HANDLING.tagNameCheck instanceof RegExp && regExpTest(CUSTOM_ELEMENT_HANDLING.tagNameCheck, lcTag) || CUSTOM_ELEMENT_HANDLING.tagNameCheck instanceof Function && CUSTOM_ELEMENT_HANDLING.tagNameCheck(lcTag)) && (CUSTOM_ELEMENT_HANDLING.attributeNameCheck instanceof RegExp && regExpTest(CUSTOM_ELEMENT_HANDLING.attributeNameCheck, lcName) || CUSTOM_ELEMENT_HANDLING.attributeNameCheck instanceof Function && CUSTOM_ELEMENT_HANDLING.attributeNameCheck(lcName, lcTag)) || // Alternative, second condition checks if it's an `is`-attribute, AND
+        // the value passes whatever the user has configured for CUSTOM_ELEMENT_HANDLING.tagNameCheck
+        lcName === "is" && CUSTOM_ELEMENT_HANDLING.allowCustomizedBuiltInElements && (CUSTOM_ELEMENT_HANDLING.tagNameCheck instanceof RegExp && regExpTest(CUSTOM_ELEMENT_HANDLING.tagNameCheck, value) || CUSTOM_ELEMENT_HANDLING.tagNameCheck instanceof Function && CUSTOM_ELEMENT_HANDLING.tagNameCheck(value))
+      ) ;
+      else {
+        return false;
+      }
+    } else if (URI_SAFE_ATTRIBUTES[lcName]) ;
+    else if (regExpTest(IS_ALLOWED_URI$1, stringReplace(value, ATTR_WHITESPACE2, ""))) ;
+    else if ((lcName === "src" || lcName === "xlink:href" || lcName === "href") && lcTag !== "script" && stringIndexOf(value, "data:") === 0 && DATA_URI_TAGS[lcTag]) ;
+    else if (ALLOW_UNKNOWN_PROTOCOLS && !regExpTest(IS_SCRIPT_OR_DATA2, stringReplace(value, ATTR_WHITESPACE2, ""))) ;
+    else if (value) {
+      return false;
+    } else ;
+    return true;
+  };
+  const _isBasicCustomElement = function _isBasicCustomElement2(tagName) {
+    return tagName !== "annotation-xml" && stringMatch(tagName, CUSTOM_ELEMENT2);
+  };
+  const _sanitizeAttributes = function _sanitizeAttributes2(currentNode) {
+    _executeHooks(hooks.beforeSanitizeAttributes, currentNode, null);
+    const {
+      attributes
+    } = currentNode;
+    if (!attributes || _isClobbered(currentNode)) {
+      return;
+    }
+    const hookEvent = {
+      attrName: "",
+      attrValue: "",
+      keepAttr: true,
+      allowedAttributes: ALLOWED_ATTR,
+      forceKeepAttr: void 0
+    };
+    let l = attributes.length;
+    while (l--) {
+      const attr = attributes[l];
+      const {
+        name,
+        namespaceURI,
+        value: attrValue
+      } = attr;
+      const lcName = transformCaseFunc(name);
+      const initValue = attrValue;
+      let value = name === "value" ? initValue : stringTrim(initValue);
+      hookEvent.attrName = lcName;
+      hookEvent.attrValue = value;
+      hookEvent.keepAttr = true;
+      hookEvent.forceKeepAttr = void 0;
+      _executeHooks(hooks.uponSanitizeAttribute, currentNode, hookEvent);
+      value = hookEvent.attrValue;
+      if (SANITIZE_NAMED_PROPS && (lcName === "id" || lcName === "name")) {
+        _removeAttribute(name, currentNode);
+        value = SANITIZE_NAMED_PROPS_PREFIX + value;
+      }
+      if (SAFE_FOR_XML && regExpTest(/((--!?|])>)|<\/(style|title|textarea)/i, value)) {
+        _removeAttribute(name, currentNode);
+        continue;
+      }
+      if (lcName === "attributename" && stringMatch(value, "href")) {
+        _removeAttribute(name, currentNode);
+        continue;
+      }
+      if (hookEvent.forceKeepAttr) {
+        continue;
+      }
+      if (!hookEvent.keepAttr) {
+        _removeAttribute(name, currentNode);
+        continue;
+      }
+      if (!ALLOW_SELF_CLOSE_IN_ATTR && regExpTest(/\/>/i, value)) {
+        _removeAttribute(name, currentNode);
+        continue;
+      }
+      if (SAFE_FOR_TEMPLATES) {
+        arrayForEach([MUSTACHE_EXPR2, ERB_EXPR2, TMPLIT_EXPR2], (expr) => {
+          value = stringReplace(value, expr, " ");
+        });
+      }
+      const lcTag = transformCaseFunc(currentNode.nodeName);
+      if (!_isValidAttribute(lcTag, lcName, value)) {
+        _removeAttribute(name, currentNode);
+        continue;
+      }
+      if (trustedTypesPolicy && typeof trustedTypes === "object" && typeof trustedTypes.getAttributeType === "function") {
+        if (namespaceURI) ;
+        else {
+          switch (trustedTypes.getAttributeType(lcTag, lcName)) {
+            case "TrustedHTML": {
+              value = trustedTypesPolicy.createHTML(value);
+              break;
+            }
+            case "TrustedScriptURL": {
+              value = trustedTypesPolicy.createScriptURL(value);
+              break;
+            }
+          }
+        }
+      }
+      if (value !== initValue) {
+        try {
+          if (namespaceURI) {
+            currentNode.setAttributeNS(namespaceURI, name, value);
+          } else {
+            currentNode.setAttribute(name, value);
+          }
+          if (_isClobbered(currentNode)) {
+            _forceRemove(currentNode);
+          } else {
+            arrayPop(DOMPurify.removed);
+          }
+        } catch (_) {
+          _removeAttribute(name, currentNode);
+        }
+      }
+    }
+    _executeHooks(hooks.afterSanitizeAttributes, currentNode, null);
+  };
+  const _sanitizeShadowDOM = function _sanitizeShadowDOM2(fragment) {
+    let shadowNode = null;
+    const shadowIterator = _createNodeIterator(fragment);
+    _executeHooks(hooks.beforeSanitizeShadowDOM, fragment, null);
+    while (shadowNode = shadowIterator.nextNode()) {
+      _executeHooks(hooks.uponSanitizeShadowNode, shadowNode, null);
+      _sanitizeElements(shadowNode);
+      _sanitizeAttributes(shadowNode);
+      if (shadowNode.content instanceof DocumentFragment) {
+        _sanitizeShadowDOM2(shadowNode.content);
+      }
+    }
+    _executeHooks(hooks.afterSanitizeShadowDOM, fragment, null);
+  };
+  DOMPurify.sanitize = function(dirty) {
+    let cfg = arguments.length > 1 && arguments[1] !== void 0 ? arguments[1] : {};
+    let body = null;
+    let importedNode = null;
+    let currentNode = null;
+    let returnNode = null;
+    IS_EMPTY_INPUT = !dirty;
+    if (IS_EMPTY_INPUT) {
+      dirty = "<!-->";
+    }
+    if (typeof dirty !== "string" && !_isNode(dirty)) {
+      if (typeof dirty.toString === "function") {
+        dirty = dirty.toString();
+        if (typeof dirty !== "string") {
+          throw typeErrorCreate("dirty is not a string, aborting");
+        }
+      } else {
+        throw typeErrorCreate("toString is not a function");
+      }
+    }
+    if (!DOMPurify.isSupported) {
+      return dirty;
+    }
+    if (!SET_CONFIG) {
+      _parseConfig(cfg);
+    }
+    DOMPurify.removed = [];
+    if (typeof dirty === "string") {
+      IN_PLACE = false;
+    }
+    if (IN_PLACE) {
+      if (dirty.nodeName) {
+        const tagName = transformCaseFunc(dirty.nodeName);
+        if (!ALLOWED_TAGS[tagName] || FORBID_TAGS[tagName]) {
+          throw typeErrorCreate("root node is forbidden and cannot be sanitized in-place");
+        }
+      }
+    } else if (dirty instanceof Node2) {
+      body = _initDocument("<!---->");
+      importedNode = body.ownerDocument.importNode(dirty, true);
+      if (importedNode.nodeType === NODE_TYPE.element && importedNode.nodeName === "BODY") {
+        body = importedNode;
+      } else if (importedNode.nodeName === "HTML") {
+        body = importedNode;
+      } else {
+        body.appendChild(importedNode);
+      }
+    } else {
+      if (!RETURN_DOM && !SAFE_FOR_TEMPLATES && !WHOLE_DOCUMENT && // eslint-disable-next-line unicorn/prefer-includes
+      dirty.indexOf("<") === -1) {
+        return trustedTypesPolicy && RETURN_TRUSTED_TYPE ? trustedTypesPolicy.createHTML(dirty) : dirty;
+      }
+      body = _initDocument(dirty);
+      if (!body) {
+        return RETURN_DOM ? null : RETURN_TRUSTED_TYPE ? emptyHTML : "";
+      }
+    }
+    if (body && FORCE_BODY) {
+      _forceRemove(body.firstChild);
+    }
+    const nodeIterator = _createNodeIterator(IN_PLACE ? dirty : body);
+    while (currentNode = nodeIterator.nextNode()) {
+      _sanitizeElements(currentNode);
+      _sanitizeAttributes(currentNode);
+      if (currentNode.content instanceof DocumentFragment) {
+        _sanitizeShadowDOM(currentNode.content);
+      }
+    }
+    if (IN_PLACE) {
+      return dirty;
+    }
+    if (RETURN_DOM) {
+      if (RETURN_DOM_FRAGMENT) {
+        returnNode = createDocumentFragment.call(body.ownerDocument);
+        while (body.firstChild) {
+          returnNode.appendChild(body.firstChild);
+        }
+      } else {
+        returnNode = body;
+      }
+      if (ALLOWED_ATTR.shadowroot || ALLOWED_ATTR.shadowrootmode) {
+        returnNode = importNode.call(originalDocument, returnNode, true);
+      }
+      return returnNode;
+    }
+    let serializedHTML = WHOLE_DOCUMENT ? body.outerHTML : body.innerHTML;
+    if (WHOLE_DOCUMENT && ALLOWED_TAGS["!doctype"] && body.ownerDocument && body.ownerDocument.doctype && body.ownerDocument.doctype.name && regExpTest(DOCTYPE_NAME, body.ownerDocument.doctype.name)) {
+      serializedHTML = "<!DOCTYPE " + body.ownerDocument.doctype.name + ">\n" + serializedHTML;
+    }
+    if (SAFE_FOR_TEMPLATES) {
+      arrayForEach([MUSTACHE_EXPR2, ERB_EXPR2, TMPLIT_EXPR2], (expr) => {
+        serializedHTML = stringReplace(serializedHTML, expr, " ");
+      });
+    }
+    return trustedTypesPolicy && RETURN_TRUSTED_TYPE ? trustedTypesPolicy.createHTML(serializedHTML) : serializedHTML;
+  };
+  DOMPurify.setConfig = function() {
+    let cfg = arguments.length > 0 && arguments[0] !== void 0 ? arguments[0] : {};
+    _parseConfig(cfg);
+    SET_CONFIG = true;
+  };
+  DOMPurify.clearConfig = function() {
+    CONFIG = null;
+    SET_CONFIG = false;
+  };
+  DOMPurify.isValidAttribute = function(tag, attr, value) {
+    if (!CONFIG) {
+      _parseConfig({});
+    }
+    const lcTag = transformCaseFunc(tag);
+    const lcName = transformCaseFunc(attr);
+    return _isValidAttribute(lcTag, lcName, value);
+  };
+  DOMPurify.addHook = function(entryPoint, hookFunction) {
+    if (typeof hookFunction !== "function") {
+      return;
+    }
+    arrayPush(hooks[entryPoint], hookFunction);
+  };
+  DOMPurify.removeHook = function(entryPoint, hookFunction) {
+    if (hookFunction !== void 0) {
+      const index = arrayLastIndexOf(hooks[entryPoint], hookFunction);
+      return index === -1 ? void 0 : arraySplice(hooks[entryPoint], index, 1)[0];
+    }
+    return arrayPop(hooks[entryPoint]);
+  };
+  DOMPurify.removeHooks = function(entryPoint) {
+    hooks[entryPoint] = [];
+  };
+  DOMPurify.removeAllHooks = function() {
+    hooks = _createHooksMap();
+  };
+  return DOMPurify;
+}
+var purify = createDOMPurify();
+
+// src/pages/FullPageDemoPage.jsx
 var import_framer_motion3 = require("framer-motion");
 var import_core = __toESM(require_dist3());
 var import_sortable = __toESM(require_dist4());
@@ -4898,8 +5953,8 @@ var useFullPageScroll = (sectionRefs, enableKeyboard = true, scrollDirection = "
       threshold: 0.5
       // Section is "active" when 50% visible
     };
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach((entry) => {
+    const observer = new IntersectionObserver((entries2) => {
+      entries2.forEach((entry) => {
         if (entry.isIntersecting) {
           const index = sectionRefs.findIndex(
             (ref) => ref.current === entry.target
@@ -6963,20 +8018,17 @@ var business_default = {
   description: "Personal chef and event catering serving Minneapolis, St. Paul, Roseville, and the Twin Cities. In-home private dinners, weekly meal prep, and small event catering.",
   services: ["personal chef", "meal prep", "event catering"],
   serviceArea: ["Minneapolis", "St. Paul", "Roseville", "Twin Cities", "Minnesota", "Western Wisconsin"],
-  telephone: "+1-612-555-XXXX",
-  url: "https://localeffortfood.com",
+  url: "https://www.localeffortfood.com",
   address: {
     "@type": "PostalAddress",
-    streetAddress: "ENTER ACTUAL BUSINESS ADDRESS",
-    addressLocality: "Minneapolis",
+    addressLocality: "Roseville",
     addressRegion: "MN",
-    postalCode: "554xx",
     addressCountry: "US"
   },
   geo: {
     "@type": "GeoCoordinates",
-    latitude: 44.9778,
-    longitude: -93.265
+    latitude: 45.0061,
+    longitude: -93.1566
   },
   sameAs: [
     "https://www.instagram.com/localeffortfood",
@@ -7057,6 +8109,7 @@ var HAPPY_MONDAY_MENU_ITEMS = [
   { id: 3, name: "Roast Beef", price: 7.1, category: "Sandwiches" },
   { id: 4, name: "Pastrami", price: 7.1, category: "Sandwiches" },
   { id: 5, name: "Mortadella", price: 7.1, category: "Sandwiches" },
+  { id: 20, name: "salame cotto", price: 7.1, category: "Sandwiches" },
   { id: 6, name: "Vegetable", price: 6.1, category: "Sandwiches" },
   { id: 7, name: '12" Cheese', price: 7.1, category: "Pizza" },
   { id: 8, name: '4" Cheese', price: 3.6, category: "Pizza" },
@@ -7068,7 +8121,7 @@ var HAPPY_MONDAY_MENU_ITEMS = [
   { id: 14, name: "Beet Salad", price: 5.1, category: "Salads" },
   { id: 15, name: "Pasta Salad (gluten free)", price: 3.1, category: "Salads" },
   { id: 16, name: "Yogurt & Granola (gluten free)", price: 3.1, category: "Breakfast" },
-  { id: 17, name: "Yogurt & Granola with chocolate (gluten free)", price: 4.1, category: "Breakfast" },
+  { id: 17, name: "Yogurt & Granola with chocolate (gluten free)", price: 3.85, category: "Breakfast" },
   { id: 18, name: "Chia Pudding", price: 3.1, category: "Breakfast" },
   { id: 19, name: "Chia Pudding (dairy free)", price: 4.1, category: "Breakfast" }
 ];
@@ -7416,7 +8469,8 @@ var FullPageDemoPage = () => {
     daysPerWeek: "",
     mealsPerDay: "",
     allergies: "",
-    questions: ""
+    questions: "",
+    website: ""
   });
   const [mealPlanImages, setMealPlanImages] = (0, import_react13.useState)([]);
   const [mealPlanLoading, setMealPlanLoading] = (0, import_react13.useState)(false);
@@ -7424,6 +8478,9 @@ var FullPageDemoPage = () => {
   const [aboutGalleryImages, setAboutGalleryImages] = (0, import_react13.useState)([]);
   const [aboutGalleryLoading, setAboutGalleryLoading] = (0, import_react13.useState)(false);
   const [aboutGalleryError, setAboutGalleryError] = (0, import_react13.useState)(null);
+  const [aboutSubscribeEmail, setAboutSubscribeEmail] = (0, import_react13.useState)("");
+  const [aboutSubscribeStatus, setAboutSubscribeStatus] = (0, import_react13.useState)("idle");
+  const [aboutSubscribeMessage, setAboutSubscribeMessage] = (0, import_react13.useState)("");
   const [pizzaImages, setPizzaImages] = (0, import_react13.useState)([]);
   const [pizzaLoading, setPizzaLoading] = (0, import_react13.useState)(false);
   const [pizzaError, setPizzaError] = (0, import_react13.useState)(null);
@@ -7447,7 +8504,7 @@ var FullPageDemoPage = () => {
   const [caseStudyImage, setCaseStudyImage] = (0, import_react13.useState)(null);
   const [aboutFaqOpen, setAboutFaqOpen] = (0, import_react13.useState)(0);
   const [showFeedback, setShowFeedback] = (0, import_react13.useState)(false);
-  const [fb, setFb] = (0, import_react13.useState)({ name: "", email: "", sentiment: "positive", message: "" });
+  const [fb, setFb] = (0, import_react13.useState)({ name: "", email: "", sentiment: "positive", message: "", website: "" });
   const [fbStatus, setFbStatus] = (0, import_react13.useState)("idle");
   const [liveFeedback, setLiveFeedback] = (0, import_react13.useState)([]);
   const [businessContactOpen, setBusinessContactOpen] = (0, import_react13.useState)(false);
@@ -9110,7 +10167,8 @@ var FullPageDemoPage = () => {
     daysPerWeek: "",
     mealsPerDay: "",
     allergies: "",
-    questions: ""
+    questions: "",
+    website: ""
   });
   const handleWaitlistChange = (field, value) => {
     setWaitlist((prev) => ({ ...prev, [field]: value }));
@@ -9140,6 +10198,13 @@ var FullPageDemoPage = () => {
         phone: waitlist.phone,
         subject: "Meal Prep Waitlist signup",
         type: "meal-prep-waitlist",
+        familySize: waitlist.familySize,
+        children: waitlist.children,
+        daysPerWeek: waitlist.daysPerWeek,
+        mealsPerDay: waitlist.mealsPerDay,
+        allergies: waitlist.allergies,
+        questions: waitlist.questions,
+        website: waitlist.website,
         message: lines.join("\n")
       };
       const res = await fetch("/api/messages/submit", {
@@ -9152,6 +10217,40 @@ var FullPageDemoPage = () => {
       resetWaitlist();
     } catch (_error) {
       setWaitlistStatus("error");
+    }
+  };
+  const handleAboutSubscribeChange = (value) => {
+    setAboutSubscribeEmail(value);
+    if (aboutSubscribeStatus !== "idle") {
+      setAboutSubscribeStatus("idle");
+      setAboutSubscribeMessage("");
+    }
+  };
+  const handleAboutSubscribeSubmit = async (event) => {
+    event.preventDefault();
+    const email = aboutSubscribeEmail.trim();
+    if (!email || aboutSubscribeStatus === "sending") return;
+    setAboutSubscribeStatus("sending");
+    setAboutSubscribeMessage("");
+    try {
+      const response = await fetch("/api/subscribe", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email,
+          source: "home-about"
+        })
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(data?.error || "subscribe-failed");
+      }
+      setAboutSubscribeStatus("success");
+      setAboutSubscribeMessage("Thanks! You're on the list.");
+      setAboutSubscribeEmail("");
+    } catch (_error) {
+      setAboutSubscribeStatus("error");
+      setAboutSubscribeMessage("Could not subscribe right now. Please try again.");
     }
   };
   (0, import_react13.useEffect)(() => {
@@ -9215,9 +10314,9 @@ var FullPageDemoPage = () => {
       answer: "Yes, usually. We will utilize a coordinator if your event needs rentals (tables/chairs/linens/kitchen equipment) or additional service staff."
     }
   ];
-  const renderInlineMarkup = (text) => {
-    if (!text) return null;
-    const raw = String(text);
+  const renderInlineMarkup = (text2) => {
+    if (!text2) return null;
+    const raw = String(text2);
     if (!/\[(?:\/)?[bi]\]/.test(raw)) return raw;
     const tokens = raw.split(/(\[\/?b\]|\[\/?i\])/);
     const root = { type: null, children: [] };
@@ -9349,6 +10448,89 @@ var FullPageDemoPage = () => {
       controller.abort();
     };
   }, [normalizeFeedbackEntry]);
+  const smallEventsStructuredData = (0, import_react13.useMemo)(
+    () => JSON.stringify({
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "FoodService",
+          "@id": "https://www.localeffortfood.com#catering",
+          name: "Local Effort Food Co. \u2014 Private Event Catering",
+          url: "https://www.localeffortfood.com/#small-events",
+          description: "Private chef catering for intimate dinners, weddings, showers, corporate events, and holiday parties in Minneapolis\u2013St. Paul. Farm-to-table menus with 100% Minnesota-sourced ingredients. 2\u201375 guests.",
+          provider: { "@id": "https://www.localeffortfood.com#business" },
+          areaServed: [
+            { "@type": "City", name: "Minneapolis" },
+            { "@type": "City", name: "Saint Paul" },
+            { "@type": "Place", name: "Twin Cities Metro, Minnesota" }
+          ],
+          hasOfferCatalog: {
+            "@type": "OfferCatalog",
+            name: "Private Catering Services",
+            itemListElement: [
+              {
+                "@type": "Offer",
+                itemOffered: {
+                  "@type": "Service",
+                  name: "Private Dinner Party at Your Home",
+                  description: "In-home private chef dinner party for 4\u201316 guests. Seasonal, locally sourced multi-course menus tailored to your preferences, dietary needs, and occasion. Includes chef, ingredients, cooking, and service.",
+                  serviceType: "Private chef dinner",
+                  category: "Event Catering"
+                },
+                priceSpecification: {
+                  "@type": "PriceSpecification",
+                  priceCurrency: "USD",
+                  price: "85",
+                  unitText: "per guest (estimated starting rate)"
+                }
+              },
+              {
+                "@type": "Offer",
+                itemOffered: {
+                  "@type": "Service",
+                  name: "Wedding & Shower Catering",
+                  description: "Farm-to-table wedding and shower catering for up to 50 guests. Custom menus, professional staffing, and full service built around Minnesota-grown ingredients. Deposit holds your date.",
+                  serviceType: "Wedding catering",
+                  category: "Event Catering"
+                },
+                priceSpecification: {
+                  "@type": "PriceSpecification",
+                  priceCurrency: "USD",
+                  price: "45",
+                  unitText: "per guest (estimated starting rate)"
+                }
+              },
+              {
+                "@type": "Offer",
+                itemOffered: {
+                  "@type": "Service",
+                  name: "Small Events & Holiday Parties",
+                  description: "Catering for holiday parties, corporate events, birthdays, and gatherings up to 75 guests. Seasonal menus, professional service, and locally sourced ingredients throughout.",
+                  serviceType: "Event catering",
+                  category: "Event Catering"
+                },
+                priceSpecification: {
+                  "@type": "PriceSpecification",
+                  priceCurrency: "USD",
+                  price: "45",
+                  unitText: "per guest (estimated starting rate)"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "@type": "WebPage",
+          "@id": "https://www.localeffortfood.com/#small-events",
+          name: "Private Event Catering \u2014 Dinners, Weddings & Parties | Local Effort Food Co.",
+          description: "Book private chef catering for intimate dinners, weddings, showers, and holiday parties in Minneapolis\u2013St. Paul. Locally sourced, seasonal menus for 2\u201375 guests.",
+          isPartOf: { "@id": "https://www.localeffortfood.com#website" },
+          about: { "@id": "https://www.localeffortfood.com#catering" }
+        }
+      ]
+    }),
+    []
+  );
   const faqStructuredData = (0, import_react13.useMemo)(
     () => JSON.stringify({
       "@context": "https://schema.org",
@@ -9363,6 +10545,121 @@ var FullPageDemoPage = () => {
       }))
     }),
     [aboutFaqItems]
+  );
+  const b2bStructuredData = (0, import_react13.useMemo)(
+    () => JSON.stringify({
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "LocalBusiness",
+          "@id": "https://www.localeffortfood.com#business",
+          name: "Local Effort Food Co.",
+          url: "https://www.localeffortfood.com",
+          description: "Minneapolis-based chef team offering wholesale food supply, restaurant consulting, pizza shop development, and creative collaborations for cafes, bars, offices, and retail businesses across the Twin Cities.",
+          email: "weston@localeffortfood.com",
+          areaServed: [
+            { "@type": "City", name: "Minneapolis" },
+            { "@type": "City", name: "Saint Paul" },
+            { "@type": "City", name: "Roseville" },
+            { "@type": "Place", name: "Twin Cities Metro, Minnesota" }
+          ],
+          address: {
+            "@type": "PostalAddress",
+            addressLocality: "Minneapolis",
+            addressRegion: "MN",
+            postalCode: "55449",
+            addressCountry: "US"
+          },
+          hasOfferCatalog: {
+            "@type": "OfferCatalog",
+            name: "B2B & Commercial Food Services",
+            itemListElement: [
+              {
+                "@type": "OfferCatalog",
+                name: "Wholesale Food Supply",
+                itemListElement: [
+                  {
+                    "@type": "Offer",
+                    itemOffered: {
+                      "@type": "Service",
+                      name: "Wholesale Food for Cafes, Bars & Retail",
+                      description: "Fridge and freezer-ready foods for display cases, grab-and-go fridges, and menus. Pizza, sandwiches, salads, and seasonal items \u2014 always Minnesota-made with Midwest ingredients. Delivered fresh within 15 miles of 55449 or along Highway 35W in the metro.",
+                      provider: { "@id": "https://www.localeffortfood.com#business" },
+                      areaServed: { "@type": "Place", name: "Minneapolis-St. Paul Metro" },
+                      serviceType: "Wholesale food supply",
+                      category: "Food & Beverage Wholesale"
+                    }
+                  }
+                ]
+              },
+              {
+                "@type": "OfferCatalog",
+                name: "Restaurant Consulting",
+                itemListElement: [
+                  {
+                    "@type": "Offer",
+                    itemOffered: {
+                      "@type": "Service",
+                      name: "Restaurant Consulting \u2014 FOH & BOH Solutions",
+                      description: "Front-of-house and back-of-house consulting for restaurant groups: tech stack optimization, ingredient sourcing, menu design, and service experience. Veteran operators with deep experience across every dimension of food-service.",
+                      provider: { "@id": "https://www.localeffortfood.com#business" },
+                      areaServed: { "@type": "Place", name: "Minnesota" },
+                      serviceType: "Restaurant consulting",
+                      category: "Business Consulting"
+                    }
+                  }
+                ]
+              },
+              {
+                "@type": "OfferCatalog",
+                name: "Pizza Shop Development",
+                itemListElement: [
+                  {
+                    "@type": "Offer",
+                    itemOffered: {
+                      "@type": "Service",
+                      name: "Open a Pizza Shop \u2014 Concept & Launch",
+                      description: "End-to-end guidance on opening a pizza shop: concept development, sourcing local ingredients, menu engineering, kitchen build-out consulting, and operational playbook. Built on Local Effort's 100%-local pizza program.",
+                      provider: { "@id": "https://www.localeffortfood.com#business" },
+                      areaServed: { "@type": "Place", name: "United States" },
+                      serviceType: "Food business consulting",
+                      category: "Restaurant Development"
+                    }
+                  }
+                ]
+              },
+              {
+                "@type": "OfferCatalog",
+                name: "Creative Collaborations",
+                itemListElement: [
+                  {
+                    "@type": "Offer",
+                    itemOffered: {
+                      "@type": "Service",
+                      name: "Local Food Collaborations for Businesses & Events",
+                      description: "Food partnerships for organizations, artists, farmers, event coordinators, and businesses of all sizes. Bring local, high-integrity food to your audience \u2014 pop-ups, co-branded products, campaigns, and custom food experiences.",
+                      provider: { "@id": "https://www.localeffortfood.com#business" },
+                      areaServed: { "@type": "Place", name: "Minnesota" },
+                      serviceType: "Food collaboration & partnership",
+                      category: "Creative Services"
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "@type": "WebPage",
+          "@id": "https://www.localeffortfood.com/#for-businesses",
+          name: "For Businesses \u2014 Wholesale, Consulting & Collaborations | Local Effort Food Co.",
+          description: "Commercial food services for Minneapolis businesses: wholesale supply for cafes and retail, restaurant consulting, pizza shop development, and creative food collaborations.",
+          isPartOf: { "@id": "https://www.localeffortfood.com#website" },
+          about: { "@id": "https://www.localeffortfood.com#business" }
+        }
+      ]
+    }),
+    []
   );
   const FeedbackModal = (0, import_react13.useMemo)(() => {
     if (!showFeedback) return null;
@@ -9397,7 +10694,8 @@ var FullPageDemoPage = () => {
                 email: fb.email,
                 subject: `Website feedback (${fb.sentiment})`,
                 message: fb.message,
-                type: "feedback"
+                type: "feedback",
+                website: fb.website
               };
               const [feedbackResult, messageResult] = await Promise.allSettled([
                 fetch("/api/feedback", {
@@ -9431,7 +10729,7 @@ var FullPageDemoPage = () => {
                 setLiveFeedback((prev) => [newEntry, ...prev.filter((item) => item?.id !== newEntry.id)]);
               }
               setFbStatus("sent");
-              setFb({ name: "", email: "", sentiment: "positive", message: "" });
+              setFb({ name: "", email: "", sentiment: "positive", message: "", website: "" });
               setTimeout(() => setShowFeedback(false), 900);
             } catch (_e) {
               setFbStatus("error");
@@ -9458,6 +10756,19 @@ var FullPageDemoPage = () => {
               /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("label", { className: "label", htmlFor: "fb-message", children: "Message" }),
               /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("textarea", { id: "fb-message", className: "textarea", value: fb.message, onChange: (e) => setFb({ ...fb, message: e.target.value }), rows: 5, required: true })
             ] }),
+            /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
+              "input",
+              {
+                type: "text",
+                name: "website",
+                value: fb.website,
+                onChange: (e) => setFb({ ...fb, website: e.target.value }),
+                autoComplete: "off",
+                tabIndex: -1,
+                "aria-hidden": "true",
+                className: "hidden"
+              }
+            ),
             /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "flex items-center gap-3", children: [
               /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("button", { type: "submit", className: "btn btn-primary", disabled: fbStatus === "sending", children: fbStatus === "sending" ? "Sending..." : "Send feedback" }),
               fbStatus === "sent" && /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("span", { className: "text-green-700 text-sm", children: "Thanks! Sent." }),
@@ -9728,12 +11039,23 @@ var FullPageDemoPage = () => {
               id: "small-events",
               style: { backgroundColor: BRAND_TOKENS.bgSection },
               children: /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "relative w-full h-full pt-20 overflow-y-auto", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("script", { type: "application/ld+json", dangerouslySetInnerHTML: { __html: smallEventsStructuredData } }),
+                /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "sr-only", children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("h2", { children: "Private Event Catering in Minneapolis\u2013St. Paul" }),
+                  /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("p", { children: "Local Effort Food Co. offers private chef catering for intimate dinners, weddings, showers, corporate events, and holiday parties across the Twin Cities. Farm-to-table seasonal menus with 100% Minnesota-sourced ingredients. Book today \u2014 deposit holds your date." }),
+                  /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("ul", { children: [
+                    /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("li", { children: "Private dinner parties at your home \u2014 4 to 16 guests, multi-course seasonal menus from $85/guest" }),
+                    /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("li", { children: "Wedding and shower catering \u2014 up to 50 guests, custom menus and full service from $45/guest" }),
+                    /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("li", { children: "Small events and holiday parties \u2014 up to 75 guests, corporate-friendly, from $45/guest" })
+                  ] }),
+                  /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("p", { children: "Contact: yum@localeffortfood.com | Minneapolis, MN" })
+                ] }),
                 /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "relative min-h-[520px] h-[70vh]", children: [
                   /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
                     "img",
                     {
                       src: "https://res.cloudinary.com/dokyhfvyd/image/upload/c_limit,f_auto,q_auto,w_1600/vjuesai2mxfavpq9d2df",
-                      alt: "Small Events",
+                      alt: "Private event catering by Local Effort Food Co. in Minneapolis",
                       className: "absolute inset-0 w-full h-full object-cover",
                       style: { objectPosition: "center" }
                     }
@@ -9809,44 +11131,53 @@ var FullPageDemoPage = () => {
                       }
                     ) })
                   ] }),
-                  /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { className: "mt-10", children: /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "partnerships-grid columns-2 md:columns-3 lg:columns-4 [column-fill:_balance]", children: [
-                    /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "partnerships-card break-inside-avoid", children: [
-                      /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
-                        "button",
-                        {
-                          type: "button",
-                          className: "partnerships-title partnerships-title-link",
-                          onClick: () => openSmallEventsContact("dinner"),
-                          children: "dinner at your home"
-                        }
-                      ),
-                      /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { className: "partnerships-copy" })
-                    ] }),
-                    /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "partnerships-card break-inside-avoid", children: [
-                      /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
-                        "button",
-                        {
-                          type: "button",
-                          className: "partnerships-title partnerships-title-link",
-                          onClick: () => openSmallEventsContact("weddings"),
-                          children: "weddings and showers"
-                        }
-                      ),
-                      /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { className: "partnerships-copy" })
-                    ] }),
-                    /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "partnerships-card break-inside-avoid", children: [
-                      /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
-                        "button",
-                        {
-                          type: "button",
-                          className: "partnerships-title partnerships-title-link",
-                          onClick: () => openSmallEventsContact("holiday"),
-                          children: "small events and holiday parties"
-                        }
-                      ),
-                      /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { className: "partnerships-copy" })
+                  /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "mt-10", children: [
+                    /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("h3", { className: "sr-only", children: "Our catering services: dinners, weddings, and events" }),
+                    /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "partnerships-grid columns-2 md:columns-3 lg:columns-4 [column-fill:_balance]", children: [
+                      /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("article", { className: "partnerships-card break-inside-avoid", itemScope: true, itemType: "https://schema.org/Service", children: [
+                        /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("meta", { itemProp: "serviceType", content: "Private chef dinner" }),
+                        /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("meta", { itemProp: "areaServed", content: "Minneapolis-St. Paul, Minnesota" }),
+                        /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
+                          "button",
+                          {
+                            type: "button",
+                            className: "partnerships-title partnerships-title-link",
+                            onClick: () => openSmallEventsContact("dinner"),
+                            children: /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("span", { itemProp: "name", children: "dinner at your home" })
+                          }
+                        ),
+                        /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { className: "partnerships-copy", itemProp: "description", children: "In-home private chef dinner for 4\u201316 guests. Multi-course seasonal menus tailored to your occasion and dietary needs." })
+                      ] }),
+                      /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("article", { className: "partnerships-card break-inside-avoid", itemScope: true, itemType: "https://schema.org/Service", children: [
+                        /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("meta", { itemProp: "serviceType", content: "Wedding catering" }),
+                        /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("meta", { itemProp: "areaServed", content: "Twin Cities Metro, Minnesota" }),
+                        /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
+                          "button",
+                          {
+                            type: "button",
+                            className: "partnerships-title partnerships-title-link",
+                            onClick: () => openSmallEventsContact("weddings"),
+                            children: /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("span", { itemProp: "name", children: "weddings and showers" })
+                          }
+                        ),
+                        /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { className: "partnerships-copy", itemProp: "description", children: "Farm-to-table wedding and shower catering for up to 50 guests. Custom menus and full professional service." })
+                      ] }),
+                      /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("article", { className: "partnerships-card break-inside-avoid", itemScope: true, itemType: "https://schema.org/Service", children: [
+                        /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("meta", { itemProp: "serviceType", content: "Event catering" }),
+                        /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("meta", { itemProp: "areaServed", content: "Minneapolis-St. Paul, Minnesota" }),
+                        /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
+                          "button",
+                          {
+                            type: "button",
+                            className: "partnerships-title partnerships-title-link",
+                            onClick: () => openSmallEventsContact("holiday"),
+                            children: /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("span", { itemProp: "name", children: "small events and holiday parties" })
+                          }
+                        ),
+                        /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { className: "partnerships-copy", itemProp: "description", children: "Catering for holiday parties, corporate events, birthdays, and gatherings up to 75 guests. Seasonal, locally sourced menus." })
+                      ] })
                     ] })
-                  ] }) }),
+                  ] }),
                   /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { className: "mt-12", children: /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
                     PhotoGrid,
                     {
@@ -9866,6 +11197,17 @@ var FullPageDemoPage = () => {
               id: "for-businesses",
               style: { backgroundColor: BRAND_TOKENS.bgSection },
               children: /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "business-tab", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("script", { type: "application/ld+json", dangerouslySetInnerHTML: { __html: b2bStructuredData } }),
+                /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "sr-only", children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("h2", { children: "Commercial Food Services for Minneapolis Businesses" }),
+                  /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("p", { children: "Local Effort Food Co. provides wholesale food supply, restaurant consulting, pizza shop development, and creative collaborations for cafes, bars, grocery stores, offices, and organizations across the Twin Cities metro. Contact weston@localeffortfood.com." }),
+                  /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("ul", { children: [
+                    /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("li", { children: "Wholesale: pizza, sandwiches, salads for display cases and grab-and-go \u2014 delivered fresh within 15 miles of 55449" }),
+                    /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("li", { children: "Restaurant consulting: FOH/BOH, tech stack, sourcing, menu design, service experience" }),
+                    /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("li", { children: "Open a pizza shop: concept, sourcing, menu engineering, kitchen build-out, operations" }),
+                    /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("li", { children: "Collaborations: pop-ups, co-branded products, food partnerships for events and organizations" })
+                  ] })
+                ] }),
                 /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)(
                   "div",
                   {
@@ -9874,13 +11216,13 @@ var FullPageDemoPage = () => {
                       backgroundImage: "url('https://res.cloudinary.com/dokyhfvyd/image/upload/c_limit,f_auto,q_auto,w_1600/n4xtzathcmkkqdzq5im4?_a=BAMAK+eA0')"
                     },
                     role: "img",
-                    "aria-label": "Local Effort for businesses",
+                    "aria-label": "Local Effort commercial food services for Minneapolis businesses",
                     children: [
                       /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { className: "business-hero-scrim", "aria-hidden": "true" }),
                       /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "business-hero-content", children: [
                         /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "business-panel", children: [
                           /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { className: "business-eyebrow", children: "For businesses" }),
-                          /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { className: "business-heading", children: "Partner with Local Effort" }),
+                          /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("h2", { className: "business-heading", children: "Partner with Local Effort" }),
                           /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { className: "business-subtitle", children: "You're working directly with the chefs. We're here to support your local food needs." }),
                           /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "business-actions", children: [
                             /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
@@ -10056,48 +11398,57 @@ var FullPageDemoPage = () => {
                     )
                   ] }) })
                 ] }),
-                /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("section", { className: "partnerships-section", children: /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "partnerships-grid", children: [
-                  /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "partnerships-card", children: [
-                    /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
-                      "button",
-                      {
-                        type: "button",
-                        className: "partnerships-title partnerships-title-link",
-                        onClick: () => openBusinessContact("wholesale"),
-                        children: "wholesale"
-                      }
-                    ),
-                    /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { className: "partnerships-copy", children: "pizza, sandwiches, salads, and other standbys, with the same commitments to local and high-integrity ingredients. always minnesotan made, always midwest ingredients, always delicious and nutritionally sound." })
-                  ] }),
-                  /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "partnerships-card", children: [
-                    /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
-                      "button",
-                      {
-                        type: "button",
-                        className: "partnerships-title partnerships-title-link",
-                        onClick: () => openBusinessContact("consulting"),
-                        children: "restaurant consulting"
-                      }
-                    ),
-                    /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { className: "partnerships-copy", children: "front-of-house and back-of-house solutions. improve your restaurant group's tech stack, ingredient sourcing, menu design, service feel, and more. we are restaurant veterans with substantial experience in every dimension of this weird business. we're here to help you make your vision sharper, crisper, cooler, higher impact." })
-                  ] }),
-                  /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "partnerships-card", children: [
-                    /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
-                      "button",
-                      {
-                        type: "button",
-                        className: "partnerships-title partnerships-title-link",
-                        onClick: () => openBusinessContact("collaborations"),
-                        children: "collaborations"
-                      }
-                    ),
-                    /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "partnerships-copy", children: [
-                      "always very open and interested in working with other creatives and businesses from all domains: political organizers, artists, bakers, farmers and ag workers, event coordinators, small and large businesses - we want to bring ",
-                      /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("span", { className: "partnerships-highlight", children: "local food" }),
-                      " to your audience."
+                /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("section", { className: "partnerships-section", "aria-label": "Commercial food services", children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("h3", { className: "sr-only", children: "Our B2B services: wholesale, consulting, and collaborations" }),
+                  /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "partnerships-grid", children: [
+                    /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("article", { className: "partnerships-card", itemScope: true, itemType: "https://schema.org/Service", children: [
+                      /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("meta", { itemProp: "serviceType", content: "Wholesale food supply" }),
+                      /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("meta", { itemProp: "areaServed", content: "Minneapolis-St. Paul Metro, Minnesota" }),
+                      /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
+                        "button",
+                        {
+                          type: "button",
+                          className: "partnerships-title partnerships-title-link",
+                          onClick: () => openBusinessContact("wholesale"),
+                          children: /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("span", { itemProp: "name", children: "wholesale" })
+                        }
+                      ),
+                      /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { className: "partnerships-copy", itemProp: "description", children: "pizza, sandwiches, salads, and other standbys, with the same commitments to local and high-integrity ingredients. always minnesotan made, always midwest ingredients, always delicious and nutritionally sound." })
+                    ] }),
+                    /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("article", { className: "partnerships-card", itemScope: true, itemType: "https://schema.org/Service", children: [
+                      /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("meta", { itemProp: "serviceType", content: "Restaurant consulting" }),
+                      /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("meta", { itemProp: "areaServed", content: "Minnesota" }),
+                      /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
+                        "button",
+                        {
+                          type: "button",
+                          className: "partnerships-title partnerships-title-link",
+                          onClick: () => openBusinessContact("consulting"),
+                          children: /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("span", { itemProp: "name", children: "restaurant consulting" })
+                        }
+                      ),
+                      /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { className: "partnerships-copy", itemProp: "description", children: "front-of-house and back-of-house solutions. improve your restaurant group's tech stack, ingredient sourcing, menu design, service feel, and more. we are restaurant veterans with substantial experience in every dimension of this weird business. we're here to help you make your vision sharper, crisper, cooler, higher impact." })
+                    ] }),
+                    /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("article", { className: "partnerships-card", itemScope: true, itemType: "https://schema.org/Service", children: [
+                      /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("meta", { itemProp: "serviceType", content: "Food collaboration & partnership" }),
+                      /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("meta", { itemProp: "areaServed", content: "Minnesota" }),
+                      /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
+                        "button",
+                        {
+                          type: "button",
+                          className: "partnerships-title partnerships-title-link",
+                          onClick: () => openBusinessContact("collaborations"),
+                          children: /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("span", { itemProp: "name", children: "collaborations" })
+                        }
+                      ),
+                      /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "partnerships-copy", itemProp: "description", children: [
+                        "always very open and interested in working with other creatives and businesses from all domains: political organizers, artists, bakers, farmers and ag workers, event coordinators, small and large businesses - we want to bring ",
+                        /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("span", { className: "partnerships-highlight", children: "local food" }),
+                        " to your audience."
+                      ] })
                     ] })
                   ] })
-                ] }) })
+                ] })
               ] })
             }
           ),
@@ -10126,6 +11477,33 @@ var FullPageDemoPage = () => {
                       ] }),
                       /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("p", { children: "We love platters and cassoulets and juleps and celery and croque monsieur and white rice, we love vegetables and meats and grain and nuts and grapes and HAZELNUTS and ducks and lamb and the weird great awesome people who make them and keep making them. We love meeting our growers. We love living in an city where shopping locally is valued and not hard to do." }),
                       /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("p", { children: "We feel strongly about choosing food grown and produced closer to home. It's a duty, and a gift, and it's at the center of our practice and culture. We care about flavor and nutrition in equal measure. We're the realest people make the localest food." })
+                    ] })
+                  ] }),
+                  /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("section", { className: "mt-10 rounded-xl border border-slate-200 bg-white px-5 py-6 shadow-sm", children: [
+                    /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { className: "text-xs font-semibold uppercase tracking-[0.2em] text-slate-500", children: "Newsletter" }),
+                    /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("h3", { className: "mt-2 text-xl font-semibold text-slate-900", children: "Get updates from Local Effort" }),
+                    /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("p", { className: "mt-2 max-w-2xl text-sm text-slate-700", children: "Seasonal menus, events, and new offerings. We'll add you to our Brevo list and notify our team right away." }),
+                    /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("form", { onSubmit: handleAboutSubscribeSubmit, className: "mt-4 flex flex-col gap-3 sm:flex-row sm:items-end", children: [
+                      /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "w-full sm:flex-1", children: [
+                        /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("label", { className: "label", htmlFor: "about-subscribe-email", children: "Email" }),
+                        /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
+                          "input",
+                          {
+                            id: "about-subscribe-email",
+                            type: "email",
+                            className: "input",
+                            value: aboutSubscribeEmail,
+                            onChange: (event) => handleAboutSubscribeChange(event.target.value),
+                            placeholder: "you@example.com",
+                            required: true
+                          }
+                        )
+                      ] }),
+                      /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("button", { type: "submit", className: "btn btn-primary sm:mb-[1px]", disabled: aboutSubscribeStatus === "sending", children: aboutSubscribeStatus === "sending" ? "Subscribing..." : "Subscribe" })
+                    ] }),
+                    /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "mt-3 min-h-5 text-sm", "aria-live": "polite", children: [
+                      aboutSubscribeStatus === "success" && /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("span", { className: "text-green-700", children: aboutSubscribeMessage }),
+                      aboutSubscribeStatus === "error" && /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("span", { className: "text-red-700", children: aboutSubscribeMessage })
                     ] })
                   ] }),
                   /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "about-info-masonry", children: [
@@ -10167,9 +11545,9 @@ var FullPageDemoPage = () => {
                           "div",
                           {
                             className: "about-info-lines",
-                            dangerouslySetInnerHTML: { __html: block.content }
+                            dangerouslySetInnerHTML: { __html: purify.sanitize(block.content) }
                           }
-                        ) : /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("ul", { className: "about-info-list", children: (block.items || []).map((text) => /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("li", { children: text }, text)) })
+                        ) : /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("ul", { className: "about-info-list", children: (block.items || []).map((text2) => /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("li", { children: text2 }, text2)) })
                       ] }, item.key || `about-info-${idx}`);
                     }) })
                   ] }),
@@ -11145,6 +12523,19 @@ var FullPageDemoPage = () => {
                 }
               )
             ] }),
+            /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
+              "input",
+              {
+                type: "text",
+                name: "website",
+                value: waitlist.website,
+                onChange: (e) => handleWaitlistChange("website", e.target.value),
+                autoComplete: "off",
+                tabIndex: -1,
+                "aria-hidden": "true",
+                className: "hidden"
+              }
+            ),
             /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "flex flex-wrap items-center gap-3", children: [
               /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("button", { type: "submit", className: "btn btn-primary", disabled: waitlistStatus === "sending", children: waitlistStatus === "sending" ? "Submitting..." : "Join waitlist" }),
               waitlistStatus === "success" && /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("span", { className: "text-green-700 text-sm", children: "Thanks! We'll be in touch." }),
@@ -11158,295 +12549,74 @@ var FullPageDemoPage = () => {
 };
 var FullPageDemoPage_default = FullPageDemoPage;
 
-// src/pages/ReleasesPage.jsx
+// src/pages/BlogList.jsx
 var import_react14 = __toESM(require("react"));
 var import_react_helmet_async2 = __toESM(require_lib());
 var import_react_router_dom4 = require("react-router-dom");
 var import_jsx_runtime23 = require("react/jsx-runtime");
-var typewriterFonts = "'IBM Plex Mono', 'Courier Prime', 'Courier New', 'ui-monospace', 'SFMono-Regular', 'Menlo', 'monospace'";
-var releaseDate = "Sep 30, 2025";
-var pressFacts = [
-  { label: "Founded", value: "2022" },
-  { label: "Headquarters", value: "Minneapolis, Minnesota" },
-  {
-    label: "Service Areas",
-    value: "Minneapolis, St. Paul, Roseville, the Twin Cities, and Western Wisconsin"
-  },
-  {
-    label: "Core Services",
-    value: "Personal chef experiences, weekly meal prep, intimate event catering, and 100% local pizzas"
-  }
-];
-var leadership = [
-  {
-    name: "Weston Smith",
-    title: "Chef & Co-Founder",
-    bio: "Trained in fine dining in New York after beginnings in Portland coffee. Leads culinary direction with a focus on Minnesota-grown ingredients."
-  },
-  {
-    name: "Catherine Olsen",
-    title: "Chef & Co-Founder",
-    bio: "Minneapolis native and veteran baker who brings warmth, hospitality, and deep local sourcing relationships to the kitchen."
-  }
-];
-var campaignHighlights = [
-  "Goal: Handcraft and deliver 1,000 wood-fired pizzas made with 100% local Midwest ingredients.",
-  "Purpose: Fund expanded capacity and improve quality control, in the service of opening a pizza shop next year.",
-  "Backer Rewards: Pizzas, pies, events, and premium special offers like sockeye bottarga.",
-  "Timeline: 30-day crowdfunding campaign with weekly progress updates and community tastings."
-];
-var pressAssets = [
-  {
-    label: "Website",
-    value: "https://localeffortfood.com",
-    href: "https://localeffortfood.com"
-  },
-  {
-    label: "Crowdfunding Hub",
-    value: "Join the pizza campaign",
-    href: "/crowdfunding"
-  },
-  {
-    label: "Media Gallery",
-    value: "High-resolution kitchen & event photography",
-    href: "/gallery"
-  },
-  {
-    label: "Service Overview",
-    value: "Menus, pricing, and service areas",
-    href: "/services"
-  }
-];
-var ReleasesPage = () => {
-  return /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)(import_jsx_runtime23.Fragment, { children: [
+var BlogList = () => {
+  const [posts, setPosts] = (0, import_react14.useState)([]);
+  const [error, setError] = (0, import_react14.useState)("");
+  const [loading, setLoading] = (0, import_react14.useState)(true);
+  (0, import_react14.useEffect)(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        const response = await fetch("/api/v1/posts?limit=50");
+        const payload = await response.json().catch(() => ({}));
+        if (!response.ok || payload?.ok === false) {
+          throw new Error(payload?.error || "Failed to load blog posts");
+        }
+        if (mounted) setPosts(Array.isArray(payload?.posts) ? payload.posts : []);
+      } catch (e) {
+        if (mounted) setError(e?.message || "Failed to load blog posts");
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    })();
+    return () => {
+      mounted = false;
+    };
+  }, []);
+  return /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { className: "mx-auto max-w-3xl px-4 md:px-6 lg:px-8 py-10", children: [
     /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)(import_react_helmet_async2.Helmet, { children: [
-      /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("title", { children: "Releases | Local Effort" }),
-      /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(
-        "meta",
-        {
-          name: "description",
-          content: "Press releases and media resources from Local Effort Food Co., the Minneapolis-based personal chef and catering team."
-        }
-      ),
-      /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("link", { rel: "canonical", href: "https://localeffortfood.com/releases" }),
-      /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("link", { rel: "alternate", type: "application/rss+xml", title: "Local Effort Releases RSS", href: "/api/feeds/releases.rss" }),
-      /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("link", { rel: "alternate", type: "application/atom+xml", title: "Local Effort Releases Atom", href: "/api/feeds/releases.atom" }),
-      /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("script", { type: "application/ld+json", children: JSON.stringify({
-        "@context": "https://schema.org",
-        "@graph": [
-          {
-            "@type": "Organization",
-            name: "Local Effort Food Co.",
-            url: "https://localeffortfood.com",
-            foundingDate: "2022",
-            address: { "@type": "PostalAddress", addressLocality: "Roseville", addressRegion: "MN", addressCountry: "US" },
-            areaServed: ["Minneapolis", "St. Paul", "Twin Cities", "Western Wisconsin"],
-            sameAs: [
-              "https://www.instagram.com/localeffort",
-              "https://www.tiktok.com/@localeffort"
-            ]
-          },
-          {
-            "@type": "NewsArticle",
-            headline: "Roseville-Based Local Effort Seeks Support to Craft 1,000 Fully Local Pizzas",
-            datePublished: "2025-09-30",
-            dateModified: "2025-09-30",
-            description: "Local Effort Food Co. launches a community-backed effort to craft 1,000 pizzas using 100% Midwestern ingredients.",
-            author: { "@type": "Organization", name: "Local Effort Food Co." },
-            publisher: { "@type": "Organization", name: "Local Effort Food Co." },
-            mainEntityOfPage: { "@type": "WebPage", "@id": "https://localeffortfood.com/releases" }
-          }
-        ]
-      }) })
+      /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("title", { children: "Blog | Local Effort" }),
+      /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("meta", { name: "description", content: "News, stories, and updates from Local Effort Food Co." }),
+      /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("link", { rel: "canonical", href: `${SITE_URL}/blog` }),
+      /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("link", { rel: "alternate", type: "application/rss+xml", title: "Local Effort Blog RSS", href: "/api/feeds/blog.rss" }),
+      /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("link", { rel: "alternate", type: "application/atom+xml", title: "Local Effort Blog Atom", href: "/api/feeds/blog.atom" }),
+      /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("link", { rel: "alternate", type: "application/feed+json", title: "Local Effort Blog JSON Feed", href: "/api/feeds/blog.json" }),
+      /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("link", { rel: "alternate", type: "application/activity+json", title: "Local Effort ActivityPub Actor", href: "/api/activitypub/actor" })
     ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("div", { className: "bg-neutral-50 py-16", children: /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { className: "max-w-5xl mx-auto px-4 md:px-6 lg:px-8", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)(
-        "section",
-        {
-          className: "bg-white border border-neutral-200 shadow-xl shadow-neutral-900/5 rounded-2xl overflow-hidden",
-          style: { fontFamily: typewriterFonts },
-          children: [
-            /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("div", { className: "bg-neutral-900 text-neutral-100 px-6 py-3 text-xs tracking-[0.4em] uppercase", children: "Press Release" }),
-            /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { className: "px-6 py-8 md:px-10 md:py-12 space-y-8", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("header", { className: "space-y-4", children: [
-                /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { className: "flex flex-col gap-1 text-neutral-600 text-sm uppercase tracking-[0.3em]", children: [
-                  /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("span", { children: "For Immediate Release" }),
-                  /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("span", { children: releaseDate })
-                ] }),
-                /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { className: "grid gap-3 md:grid-cols-[2fr,1fr] md:items-start", children: [
-                  /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { className: "space-y-3", children: [
-                    /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("h1", { className: "heading-xl heading-balance", children: "Roseville-Based Local Effort Seeks Support to Craft 1,000 Fully Local Pizzas" }),
-                    /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("p", { className: "text-base text-neutral-700 leading-relaxed", children: "Roseville-based Local Effort Food Co. invites the community to back its most ambitious pizza initiative yet\u2014building a thousand pies sourced entirely from Midwestern growers, millers, and producers." })
-                  ] }),
-                  /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("aside", { className: "md:justify-self-end md:text-right text-sm text-neutral-700", children: [
-                    /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("p", { className: "font-semibold text-neutral-900", children: "Media Contact" }),
-                    /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("p", { children: "Weston Smith" }),
-                    /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("p", { children: "Local Effort Food Co." }),
-                    /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("p", { children: /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("a", { href: "mailto:yum@localeffortfood.com", className: "underline underline-offset-4 hover:opacity-80", children: "yum@localeffortfood.com" }) }),
-                    /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("p", { children: /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("a", { href: "https://localeffortfood.com", className: "underline underline-offset-4 hover:opacity-80", children: "localeffortfood.com" }) })
-                  ] })
-                ] })
-              ] }),
-              /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { className: "space-y-5 text-[1.02rem] leading-relaxed text-neutral-800", children: [
-                /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("p", { children: "The crowdfunding campaign energizes Local Effort's obsession with 100% regional sourcing. Every crust, sauce, and topping will trace back to Minnesota and Midwest farms, mills, creameries, and co-ops that the chef team has partnered with since 2022." }),
-                /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("p", { children: "Backers will help finance upgraded capacity and purchasing power, unlocking more neighborhood pop-ups, farmers market collaborations, and last-mile delivery runs throughout Minneapolis, St. Paul, and Western Wisconsin." }),
-                /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("p", { children: "\u201CThis is truly Local Pizza,\u201D said Weston Smith, chef and co-founder of Local Effort. \u201CThe grain, the cheese, the tomatoes all tell a story about producing food in the Midwest. If we sell a thousand pies, we'll focus on opening a shop.\u201D" }),
-                /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("p", { children: "Supporters can choose from tiered rewards including apple pies, special invite-only parties and events, premium home events, and exclusive seasonal toppings co-developed with local growers. Weekly progress bulletins and tasting events will keep the community connected as milestones are reached on the path to 1,000 pizzas." })
-              ] }),
-              /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("section", { "aria-labelledby": "campaign-highlights", className: "space-y-3", children: [
-                /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("h2", { id: "campaign-highlights", className: "heading-overline text-neutral-600", children: "Campaign Snapshot" }),
-                /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("ul", { className: "space-y-3 text-neutral-800", children: campaignHighlights.map((item) => /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("li", { className: "pl-5 relative", children: [
-                  /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("span", { className: "absolute left-0 top-2 h-2 w-2 rounded-full bg-neutral-900", "aria-hidden": "true" }),
-                  item
-                ] }, item)) })
-              ] }),
-              /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { className: "space-y-5 text-[1.02rem] leading-relaxed text-neutral-800", children: [
-                /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("p", { children: "Local Effort has grown from intimate in-home dinners to weekly meal prep and private events by doubling down on local-first commitments. The pizza program translates that ethos into a universally beloved format." }),
-                /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("p", { children: [
-                  "The crowdfunding page is live now at",
-                  " ",
-                  /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(import_react_router_dom4.Link, { to: "/crowdfunding", className: "underline underline-offset-4 font-semibold", children: "localeffortfood.com/crowdfunding" }),
-                  ". Early backers will unlock surprise collaborations with partner farms and organizations across the Twin Cities."
-                ] })
-              ] }),
-              /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("footer", { className: "pt-6 border-t border-dashed border-neutral-300", children: [
-                /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("p", { className: "uppercase tracking-[0.3em] text-xs text-neutral-600", children: "About Local Effort" }),
-                /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("p", { className: "mt-3 text-[1.02rem] leading-relaxed text-neutral-800", children: "Local Effort Food Co. is a Roseville-based personal chef and catering team specializing in locally sourced cuisine. Since 2022, the team has designed in-home dinners, weekly meal prep, and small events that keep Midwestern ingredients at the center of every menu." })
-              ] })
-            ] })
-          ]
-        }
-      ),
-      /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("section", { className: "mt-16 space-y-8", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { className: "space-y-3", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("h2", { className: "heading-xl heading-balance", children: "Press kit" }),
-          /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("p", { className: "text-neutral-600 max-w-3xl", children: "Download-ready facts, leadership bios, and campaign details to support coverage of Local Effort's 1,000 pizza crowdfunding initiative." })
-        ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { className: "grid gap-6 lg:grid-cols-2", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { className: "bg-white border border-neutral-200 rounded-2xl p-6 shadow-sm", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("h3", { className: "text-lg font-semibold text-neutral-900", children: "Fast Facts" }),
-            /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("dl", { className: "mt-4 space-y-3 text-neutral-700", children: pressFacts.map(({ label, value }) => /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { className: "flex flex-col", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("dt", { className: "text-xs uppercase tracking-[0.25em] text-neutral-500", children: label }),
-              /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("dd", { className: "text-base", children: value })
-            ] }, label)) })
-          ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { className: "bg-white border border-neutral-200 rounded-2xl p-6 shadow-sm", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("h3", { className: "text-lg font-semibold text-neutral-900", children: "Leadership" }),
-            /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("ul", { className: "mt-4 space-y-4 text-neutral-700", children: leadership.map(({ name, title, bio }) => /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("li", { children: [
-              /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("p", { className: "text-base font-semibold text-neutral-900", children: name }),
-              /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("p", { className: "text-sm uppercase tracking-[0.2em] text-neutral-500", children: title }),
-              /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("p", { className: "mt-2 text-sm leading-relaxed", children: bio })
-            ] }, name)) })
-          ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { className: "bg-white border border-neutral-200 rounded-2xl p-6 shadow-sm lg:col-span-2", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("h3", { className: "text-lg font-semibold text-neutral-900", children: "Campaign Assets" }),
-            /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { className: "mt-4 grid gap-4 sm:grid-cols-2", children: [
-              pressAssets.map(({ label, value, href }) => /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)(
-                "a",
-                {
-                  href,
-                  className: "group flex flex-col justify-between rounded-xl border border-neutral-200 p-4 transition hover:border-neutral-400 hover:shadow",
-                  children: [
-                    /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("span", { className: "text-xs uppercase tracking-[0.25em] text-neutral-500", children: label }),
-                    /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("span", { className: "mt-2 text-base text-neutral-900 group-hover:underline group-hover:underline-offset-4", children: value })
-                  ]
-                },
-                label
-              )),
-              /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)(
-                "a",
-                {
-                  href: "/press/local-effort-press-kit.pdf",
-                  className: "group flex flex-col justify-between rounded-xl border border-neutral-200 p-4 transition hover:border-neutral-400 hover:shadow",
-                  children: [
-                    /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("span", { className: "text-xs uppercase tracking-[0.25em] text-neutral-500", children: "Press Kit PDF" }),
-                    /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("span", { className: "mt-2 text-base text-neutral-900 group-hover:underline group-hover:underline-offset-4", children: "Download press kit (PDF)" })
-                  ]
-                }
-              )
-            ] })
-          ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { className: "bg-white border border-neutral-200 rounded-2xl p-6 shadow-sm", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("h3", { className: "text-lg font-semibold text-neutral-900", children: "Media Contact" }),
-            /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("p", { className: "mt-3 text-sm text-neutral-600", children: [
-              "Local Effort Food Co.",
-              /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("br", {}),
-              "Minneapolis, MN"
-            ] }),
-            /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("p", { className: "mt-4 text-sm text-neutral-700", children: [
-              "Email:",
-              " ",
-              /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("a", { href: "mailto:yum@localeffortfood.com", className: "underline underline-offset-4 hover:opacity-80", children: "yum@localeffortfood.com" })
-            ] }),
-            /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("p", { className: "mt-1 text-sm text-neutral-700", children: [
-              "Instagram:",
-              " ",
-              /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("a", { href: "https://www.instagram.com/localeffort", className: "underline underline-offset-4 hover:opacity-80", children: "@localeffort" })
-            ] }),
-            /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("p", { className: "mt-1 text-sm text-neutral-700", children: [
-              "TikTok:",
-              " ",
-              /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("a", { href: "https://www.tiktok.com/@localeffort", className: "underline underline-offset-4 hover:opacity-80", children: "@localeffort" })
-            ] }),
-            /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("p", { className: "mt-6", children: /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(
-              import_react_router_dom4.Link,
-              {
-                to: "/crowdfunding",
-                className: "inline-flex items-center justify-center rounded-full bg-neutral-900 px-5 py-2 text-sm font-semibold tracking-wide text-white transition hover:bg-neutral-800",
-                children: "View crowdfunding campaign"
-              }
-            ) })
-          ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { className: "bg-white border border-neutral-200 rounded-2xl p-6 shadow-sm", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("h3", { className: "text-lg font-semibold text-neutral-900", children: "Story Angles" }),
-            /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("ul", { className: "mt-4 space-y-3 text-neutral-700", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("li", { className: "pl-4 relative", children: [
-                /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("span", { className: "absolute left-0 top-2 h-2 w-2 rounded-full bg-neutral-900", "aria-hidden": "true" }),
-                "Farm-to-pizza supply chains featuring grain cooperatives, creameries, and seasonal produce."
-              ] }),
-              /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("li", { className: "pl-4 relative", children: [
-                /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("span", { className: "absolute left-0 top-2 h-2 w-2 rounded-full bg-neutral-900", "aria-hidden": "true" }),
-                "Growing a chef-led small business through community-backed crowdfunding."
-              ] }),
-              /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("li", { className: "pl-4 relative", children: [
-                /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("span", { className: "absolute left-0 top-2 h-2 w-2 rounded-full bg-neutral-900", "aria-hidden": "true" }),
-                "How Local Effort's weekly meal prep program informs fast-casual pizza innovation."
-              ] })
-            ] })
-          ] })
-        ] })
-      ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("section", { className: "mt-24", "aria-labelledby": "archive-heading", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("h2", { id: "archive-heading", className: "heading-lg heading-balance mb-6", children: "Previous release (archived)" }),
-        /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("details", { className: "group bg-white rounded-2xl border border-neutral-200 shadow-sm", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("summary", { className: "cursor-pointer list-none px-6 py-4 flex items-center justify-between", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("span", { className: "font-medium text-neutral-800", children: "Local Effort Launches Crowdfunding Campaign to Craft 1,000 Local Pizzas" }),
-            /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("span", { className: "text-xs text-neutral-500 group-open:hidden", children: "Expand" }),
-            /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("span", { className: "text-xs text-neutral-500 hidden group-open:inline", children: "Collapse" })
-          ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { className: "px-6 pb-8 space-y-5 text-neutral-800 text-[0.97rem] leading-relaxed", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("p", { children: "Minneapolis-based Local Effort Food Co. invites the community to back its most ambitious pizza initiative yet\u2014building a thousand pies sourced entirely from Midwestern growers, millers, and makers." }),
-            /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("p", { children: "The crowdfunding campaign energizes Local Effort's obsession with 100% regional sourcing. Every crust, sauce, and topping will trace back to Minnesota and Midwest farms, mills, creameries, and co-ops that the chef team has partnered with since 2022." }),
-            /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("p", { children: "Backers will help finance upgraded cold storage and a mobile pizza rig, unlocking more neighborhood pop-ups, farmers market collaborations, and last-mile delivery runs throughout Minneapolis, St. Paul, and Western Wisconsin." }),
-            /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("p", { children: "\u201CPizzas can tell the whole story of a foodshed,\u201D said Weston Smith, chef and co-founder of Local Effort. \u201CWhen we layer house-fermented dough with seasonal produce, heritage grains, and regional cheeses, we showcase the farms that feed us. This campaign invites people to invest in that community table.\u201D" }),
-            /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("p", { children: "Supporters can choose from tiered rewards including limited pizza drops, family meal prep bundles, and exclusive seasonal toppings co-developed with local growers. Weekly progress bulletins and tasting events will keep the community connected as milestones are reached on the path to 1,000 pizzas." }),
-            /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("p", { children: "Local Effort has grown from intimate in-home dinners to weekly meal prep and community events by doubling down on relationships with Minnesota farmers, grain cooperatives, and dairy makers. The pizza program translates that ethos into a handheld, shareable format that can reach more tables without compromising sourcing." })
-          ] })
-        ] })
-      ] })
-    ] }) })
+    /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("h1", { className: "heading-xl heading-balance mb-6", children: "Blog" }),
+    error && /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("div", { className: "text-red-700 bg-red-50 border border-red-200 p-3 rounded mb-4", children: error }),
+    /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("ul", { className: "space-y-4", children: [
+      posts.map((p) => /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("li", { className: "border rounded-lg p-4 hover:bg-gray-50", children: [
+        (p.mainImageUrl || p.ogImageUrl) && /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(
+          "img",
+          {
+            src: p.mainImageUrl || p.ogImageUrl,
+            alt: p.mainImageAlt || p.ogImageAlt || p.title || "Blog post image",
+            loading: "lazy",
+            className: "mb-3 h-52 w-full rounded-md object-cover"
+          }
+        ),
+        /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(import_react_router_dom4.Link, { to: `/blog/${p.slug}`, className: "text-xl font-semibold hover:underline", children: p.title }),
+        /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("div", { className: "text-sm text-gray-500 mt-1", children: p.publishedAt ? new Date(p.publishedAt).toLocaleDateString() : "" }),
+        p.excerpt && /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("p", { className: "text-gray-700 mt-2", children: p.excerpt })
+      ] }, p.slug)),
+      !posts.length && !error && !loading && /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("li", { children: "No posts yet." }),
+      loading && !error && /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("li", { children: "Loading..." })
+    ] })
   ] });
 };
-var ReleasesPage_default = ReleasesPage;
+var BlogList_default = BlogList;
 
-// src/pages/SalePage.jsx
-var import_react21 = __toESM(require("react"));
+// src/pages/BlogPost.jsx
+var import_react16 = __toESM(require("react"));
 var import_react_helmet_async3 = __toESM(require_lib());
-var import_framer_motion5 = require("framer-motion");
-
-// src/store/components/ProductCard.jsx
-var import_react17 = __toESM(require("react"));
-var import_react18 = require("@portabletext/react");
+var import_react_router_dom5 = require("react-router-dom");
+var import_react17 = require("@portabletext/react");
 
 // src/utils/portableTextComponents.jsx
 var import_react15 = __toESM(require("react"));
@@ -11570,27 +12740,211 @@ function createPortableTextComponents(overrides = {}) {
 }
 var portableTextComponents = createPortableTextComponents();
 
-// src/components/common/ToastProvider.jsx
-var import_react16 = __toESM(require("react"));
+// src/pages/BlogPost.jsx
 var import_jsx_runtime25 = require("react/jsx-runtime");
-var ToastContext = (0, import_react16.createContext)({ notify: () => {
+var BlogPost = () => {
+  const { slug } = (0, import_react_router_dom5.useParams)();
+  const [post, setPost] = (0, import_react16.useState)(null);
+  const [error, setError] = (0, import_react16.useState)("");
+  const [statusCode, setStatusCode] = (0, import_react16.useState)(0);
+  (0, import_react16.useEffect)(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        const response = await fetch(`/api/v1/posts/${encodeURIComponent(slug || "")}?include=full`);
+        const payload = await response.json().catch(() => ({}));
+        if (!response.ok || payload?.ok === false) {
+          if (mounted) {
+            setStatusCode(response.status || 500);
+            setError(payload?.error || "Failed to load post");
+          }
+          return;
+        }
+        if (mounted) {
+          setPost(payload?.post || null);
+          setStatusCode(200);
+        }
+      } catch (err) {
+        if (mounted) {
+          setStatusCode(500);
+          setError(err?.message || "Failed to load post");
+        }
+      }
+    })();
+    return () => {
+      mounted = false;
+    };
+  }, [slug]);
+  if (error && statusCode === 404) return /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("div", { className: "mx-auto max-w-3xl px-4 py-10 text-red-700", children: "Post not found." });
+  if (error && statusCode === 403) return /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("div", { className: "mx-auto max-w-3xl px-4 py-10 text-red-700", children: "This post is for members only." });
+  if (error) return /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("div", { className: "mx-auto max-w-3xl px-4 py-10 text-red-700", children: error });
+  if (!post) return /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("div", { className: "mx-auto max-w-3xl px-4 py-10", children: "Loading..." });
+  const canonicalUrl = post?.canonicalUrl || `${SITE_URL}/blog/${slug}`;
+  const pageTitle = post?.metaTitle || (post?.title ? `${post.title} | Blog | Local Effort` : "Blog | Local Effort");
+  const description = post?.metaDescription || post?.excerpt || "";
+  const ogImage = post?.ogImageUrl || "";
+  return /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { className: "mx-auto max-w-3xl px-4 md:px-6 lg:px-8 py-10", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)(import_react_helmet_async3.Helmet, { children: [
+      /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("title", { children: pageTitle }),
+      description && /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("meta", { name: "description", content: description }),
+      /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("meta", { property: "og:type", content: "article" }),
+      /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("meta", { property: "og:title", content: post?.metaTitle || post?.title || "Blog" }),
+      description && /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("meta", { property: "og:description", content: description }),
+      /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("meta", { property: "og:url", content: canonicalUrl }),
+      ogImage && /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("meta", { property: "og:image", content: ogImage }),
+      /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("link", { rel: "canonical", href: canonicalUrl }),
+      post?.slug && /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(
+        "link",
+        {
+          rel: "alternate",
+          type: "application/activity+json",
+          href: `/api/activitypub/objects/${encodeURIComponent(post.slug)}`
+        }
+      )
+    ] }),
+    /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(import_react_router_dom5.Link, { to: "/blog", className: "text-sm underline", children: "Back to blog" }),
+    /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("h1", { className: "heading-xl heading-balance mt-4", children: post.title }),
+    /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("div", { className: "text-sm text-gray-500 mt-1", children: post.publishedAt ? new Date(post.publishedAt).toLocaleDateString() : "" }),
+    (post?.mainImageUrl || post?.ogImageUrl) && /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(
+      "img",
+      {
+        src: post.mainImageUrl || post.ogImageUrl,
+        alt: post.mainImageAlt || post.ogImageAlt || post.title || "Blog post image",
+        loading: "lazy",
+        className: "mt-6 w-full rounded-lg object-cover"
+      }
+    ),
+    /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("article", { className: "prose max-w-none mt-6", children: Array.isArray(post.body) && post.body.length > 0 ? /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(import_react17.PortableText, { value: post.body, components: portableTextComponents }) : /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("div", { dangerouslySetInnerHTML: { __html: post?.html || "" } }) })
+  ] });
+};
+var BlogPost_default = BlogPost;
+
+// src/pages/ReleasesPage.jsx
+var import_react18 = __toESM(require("react"));
+var import_react_helmet_async4 = __toESM(require_lib());
+var import_react19 = require("@portabletext/react");
+var import_jsx_runtime26 = require("react/jsx-runtime");
+var RELEASES_QUERY = '*[_type == "release"] | order(coalesce(publishedAt, _createdAt) desc)[0...50]{ _id, title, "slug": slug.current, summary, publishedAt, body, canonicalUrl, metaDescription, heroImage{ alt, "url": asset->url } }';
+var portableComponents = createPortableTextComponents({
+  types: {
+    image: ({ value }) => {
+      const src = value?.asset?.url || "";
+      if (!src) return null;
+      return /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("img", { src, alt: value?.alt || "", className: "my-4 rounded-lg", loading: "lazy" });
+    }
+  }
+});
+function formatDate(value) {
+  if (!value) return "";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "";
+  return date.toLocaleDateString(void 0, { year: "numeric", month: "long", day: "numeric" });
+}
+var ReleasesPage = () => {
+  const [releases, setReleases] = (0, import_react18.useState)([]);
+  const [error, setError] = (0, import_react18.useState)("");
+  (0, import_react18.useEffect)(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        const items = await sanityClient_default.fetch(RELEASES_QUERY);
+        if (mounted) setReleases(Array.isArray(items) ? items : []);
+      } catch (err) {
+        if (mounted) setError(err?.message || "Failed to load releases");
+      }
+    })();
+    return () => {
+      mounted = false;
+    };
+  }, []);
+  const pageDescription = (0, import_react18.useMemo)(() => {
+    if (releases[0]?.metaDescription) return releases[0].metaDescription;
+    return "Press releases and media resources from Local Effort Food Co.";
+  }, [releases]);
+  const schema = (0, import_react18.useMemo)(() => {
+    const list = releases.map((release, idx) => ({
+      "@type": "ListItem",
+      position: idx + 1,
+      item: {
+        "@type": "NewsArticle",
+        headline: release.title,
+        datePublished: release.publishedAt,
+        description: release.summary,
+        url: release.canonicalUrl || `${SITE_URL}/releases#${release.slug || release._id}`
+      }
+    }));
+    if (!list.length) return null;
+    return {
+      "@context": "https://schema.org",
+      "@type": "ItemList",
+      name: "Local Effort Releases",
+      itemListElement: list
+    };
+  }, [releases]);
+  return /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "mx-auto max-w-4xl px-4 md:px-6 lg:px-8 py-10", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)(import_react_helmet_async4.Helmet, { children: [
+      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("title", { children: "Releases | Local Effort" }),
+      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("meta", { name: "description", content: pageDescription }),
+      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("link", { rel: "canonical", href: `${SITE_URL}/releases` }),
+      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("link", { rel: "alternate", type: "application/rss+xml", title: "Local Effort Releases RSS", href: "/api/feeds/releases.rss" }),
+      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("link", { rel: "alternate", type: "application/atom+xml", title: "Local Effort Releases Atom", href: "/api/feeds/releases.atom" }),
+      schema && /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("script", { type: "application/ld+json", children: JSON.stringify(schema) })
+    ] }),
+    /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("header", { className: "mb-8", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("h1", { className: "heading-xl heading-balance", children: "Press Releases" }),
+      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("p", { className: "text-neutral-600 mt-2", children: "Company announcements and media updates from Local Effort Food Co." })
+    ] }),
+    error && /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "rounded-md border border-red-200 bg-red-50 p-3 text-red-700 mb-6", children: error }),
+    !error && releases.length === 0 && /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "rounded-md border border-neutral-200 bg-neutral-50 p-4 text-neutral-700", children: "No releases have been published yet." }),
+    /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "space-y-10", children: releases.map((release) => /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("article", { id: release.slug || release._id, className: "rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("p", { className: "text-sm text-neutral-500", children: formatDate(release.publishedAt) }),
+      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("h2", { className: "mt-1 text-2xl font-semibold text-neutral-900", children: release.title }),
+      release.summary && /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("p", { className: "mt-3 text-neutral-700", children: release.summary }),
+      release.heroImage?.url && /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(
+        "img",
+        {
+          src: release.heroImage.url,
+          alt: release.heroImage?.alt || "",
+          className: "mt-5 rounded-lg",
+          loading: "lazy"
+        }
+      ),
+      Array.isArray(release.body) && release.body.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "prose max-w-none mt-6", children: /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(import_react19.PortableText, { value: release.body, components: portableComponents }) })
+    ] }, release._id)) })
+  ] });
+};
+var ReleasesPage_default = ReleasesPage;
+
+// src/pages/SalePage.jsx
+var import_react25 = __toESM(require("react"));
+var import_react_helmet_async5 = __toESM(require_lib());
+var import_framer_motion5 = require("framer-motion");
+
+// src/store/components/ProductCard.jsx
+var import_react21 = __toESM(require("react"));
+var import_react22 = require("@portabletext/react");
+
+// src/components/common/ToastProvider.jsx
+var import_react20 = __toESM(require("react"));
+var import_jsx_runtime27 = require("react/jsx-runtime");
+var ToastContext = (0, import_react20.createContext)({ notify: () => {
 } });
 function useToast() {
-  return (0, import_react16.useContext)(ToastContext);
+  return (0, import_react20.useContext)(ToastContext);
 }
 
 // src/store/components/ProductCard.jsx
-var import_jsx_runtime26 = require("react/jsx-runtime");
+var import_jsx_runtime28 = require("react/jsx-runtime");
 function ProductCard({ product }) {
   const { add, map, updateQty, open, openCart } = useCart();
   const { notify } = useToast();
-  const [variantIdx, setVariantIdx] = (0, import_react17.useState)(0);
-  const [showDetails, setShowDetails] = (0, import_react17.useState)(false);
-  const [selectedAddOns, setSelectedAddOns] = (0, import_react17.useState)({});
-  const [isDairyFree, setIsDairyFree] = (0, import_react17.useState)(false);
-  const dialogRef = (0, import_react17.useRef)(null);
-  const closeBtnRef = (0, import_react17.useRef)(null);
-  const prevFocusRef = (0, import_react17.useRef)(null);
+  const [variantIdx, setVariantIdx] = (0, import_react21.useState)(0);
+  const [showDetails, setShowDetails] = (0, import_react21.useState)(false);
+  const [selectedAddOns, setSelectedAddOns] = (0, import_react21.useState)({});
+  const [isDairyFree, setIsDairyFree] = (0, import_react21.useState)(false);
+  const dialogRef = (0, import_react21.useRef)(null);
+  const closeBtnRef = (0, import_react21.useRef)(null);
+  const prevFocusRef = (0, import_react21.useRef)(null);
   const hasVariants = Array.isArray(product.variants) && product.variants.length > 0;
   const hasAddOns = Array.isArray(product.addOns) && product.addOns.length > 0;
   const chosen = hasVariants ? product.variants[Math.max(0, Math.min(variantIdx, product.variants.length - 1))] : null;
@@ -11603,7 +12957,7 @@ function ProductCard({ product }) {
   }, 0) : 0;
   const dairyFreePrice = isDairyFree && product.offerDairyFree ? product.dairyFreeCost || 0 : 0;
   const price = basePrice + addOnsTotal + dairyFreePrice;
-  (0, import_react17.useEffect)(() => {
+  (0, import_react21.useEffect)(() => {
     if (showDetails && hasAddOns) {
       const defaults = {};
       product.addOns.forEach((addon, idx) => {
@@ -11614,13 +12968,13 @@ function ProductCard({ product }) {
       setSelectedAddOns(defaults);
     }
   }, [showDetails, hasAddOns, product.addOns]);
-  const images = (0, import_react17.useMemo)(() => {
+  const images = (0, import_react21.useMemo)(() => {
     const arr = Array.isArray(product?.images) ? product.images : [];
     return arr.map((i) => typeof i === "string" ? i : i?.url || i?.asset?.url || null).filter(Boolean);
   }, [product]);
   const primary = images[0];
   const rest = images.slice(1);
-  const variantSelectId = (0, import_react17.useMemo)(() => `variant-select-${product.id || "p"}`, [product.id]);
+  const variantSelectId = (0, import_react21.useMemo)(() => `variant-select-${product.id || "p"}`, [product.id]);
   const handleAdd = () => {
     const variationId = chosen?.squareVariationId || product.squareVariationId || null;
     const key2 = `${product.id}:${variationId || ""}`;
@@ -11634,8 +12988,8 @@ function ProductCard({ product }) {
   };
   const key = `${product.id}:${chosen?.squareVariationId || product.squareVariationId || ""}`;
   const inCartQty = map?.[key]?.qty || 0;
-  const formatted = (0, import_react17.useMemo)(() => `$${(price / 100).toFixed(2)}`, [price]);
-  (0, import_react17.useEffect)(() => {
+  const formatted = (0, import_react21.useMemo)(() => `$${(price / 100).toFixed(2)}`, [price]);
+  (0, import_react21.useEffect)(() => {
     if (!showDetails) return;
     prevFocusRef.current = document.activeElement;
     const dlg = dialogRef.current;
@@ -11680,7 +13034,7 @@ function ProductCard({ product }) {
       }
     };
   }, [showDetails]);
-  return /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)(
+  return /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)(
     "div",
     {
       className: cn(
@@ -11688,7 +13042,7 @@ function ProductCard({ product }) {
         "transition hover:shadow-md"
       ),
       children: [
-        /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(
+        /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(
           "div",
           {
             className: "relative aspect-[4/3] w-full bg-neutral-100 overflow-hidden cursor-pointer",
@@ -11701,8 +13055,8 @@ function ProductCard({ product }) {
                 setShowDetails(true);
               }
             },
-            children: primary ? /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)(import_jsx_runtime26.Fragment, { children: [
-              /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(
+            children: primary ? /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)(import_jsx_runtime28.Fragment, { children: [
+              /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(
                 "img",
                 {
                   src: primary,
@@ -11714,7 +13068,7 @@ function ProductCard({ product }) {
                   )
                 }
               ),
-              rest[0] ? /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(
+              rest[0] ? /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(
                 "img",
                 {
                   src: rest[0],
@@ -11724,22 +13078,22 @@ function ProductCard({ product }) {
                   className: "absolute inset-0 h-full w-full object-cover transition-opacity duration-300 opacity-0 group-hover:opacity-100"
                 }
               ) : null,
-              /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(
+              /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(
                 "div",
                 {
                   className: cn(
                     "pointer-events-none absolute inset-x-0 bottom-0 transition-opacity duration-200",
                     "opacity-0 group-hover:opacity-100 group-focus-within:opacity-100"
                   ),
-                  children: /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "pointer-events-none bg-gradient-to-t from-black/70 to-transparent text-white p-3", children: product.shortDescription ? /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("p", { className: "text-xs leading-snug line-clamp-2", children: product.shortDescription }) : null })
+                  children: /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("div", { className: "pointer-events-none bg-gradient-to-t from-black/70 to-transparent text-white p-3", children: product.shortDescription ? /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("p", { className: "text-xs leading-snug line-clamp-2", children: product.shortDescription }) : null })
                 }
               )
-            ] }) : /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "w-full h-full grid place-items-center text-neutral-400", children: "No image" })
+            ] }) : /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("div", { className: "w-full h-full grid place-items-center text-neutral-400", children: "No image" })
           }
         ),
-        /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "p-3", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "flex items-baseline justify-between gap-3", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("h3", { className: "text-base font-semibold leading-tight line-clamp-2", children: /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(
+        /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("div", { className: "p-3", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("div", { className: "flex items-baseline justify-between gap-3", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("h3", { className: "text-base font-semibold leading-tight line-clamp-2", children: /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(
               "button",
               {
                 type: "button",
@@ -11748,32 +13102,32 @@ function ProductCard({ product }) {
                 children: product.title
               }
             ) }),
-            /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "text-sm font-mono", children: [
-              product.salePrice && /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("span", { className: "text-neutral-400 line-through mr-1", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("div", { className: "text-sm font-mono", children: [
+              product.salePrice && /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("span", { className: "text-neutral-400 line-through mr-1", children: [
                 "$",
                 (product.price / 100).toFixed(2)
               ] }),
-              /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("span", { className: "text-rose-600 font-bold", children: formatted })
+              /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("span", { className: "text-rose-600 font-bold", children: formatted })
             ] })
           ] }),
-          product.shortDescription && /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("p", { className: "text-sm text-neutral-600 mt-1 line-clamp-2", children: product.shortDescription }),
-          /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "mt-3 flex gap-2 items-center", children: [
-            hasVariants && /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(
+          product.shortDescription && /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("p", { className: "text-sm text-neutral-600 mt-1 line-clamp-2", children: product.shortDescription }),
+          /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("div", { className: "mt-3 flex gap-2 items-center", children: [
+            hasVariants && /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(
               "select",
               {
                 className: "input",
                 value: variantIdx,
                 onChange: (e) => setVariantIdx(Number(e.target.value) || 0),
                 "aria-label": "Choose a variant",
-                children: product.variants.map((v, i) => /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("option", { value: i, children: v.name || `Option ${i + 1}` }, v.squareVariationId || v.name || i))
+                children: product.variants.map((v, i) => /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("option", { value: i, children: v.name || `Option ${i + 1}` }, v.squareVariationId || v.name || i))
               }
             ),
-            inCartQty > 0 && /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "inline-flex items-center gap-2", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("button", { className: "btn", onClick: () => updateQty(key, Math.max(0, inCartQty - 1)), "aria-label": "Decrease quantity", children: "-" }),
-              /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("span", { className: "min-w-[2ch] text-center text-sm", children: inCartQty }),
-              /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("button", { className: "btn", onClick: () => updateQty(key, inCartQty + 1), "aria-label": "Increase quantity", children: "+" })
+            inCartQty > 0 && /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("div", { className: "inline-flex items-center gap-2", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("button", { className: "btn", onClick: () => updateQty(key, Math.max(0, inCartQty - 1)), "aria-label": "Decrease quantity", children: "-" }),
+              /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("span", { className: "min-w-[2ch] text-center text-sm", children: inCartQty }),
+              /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("button", { className: "btn", onClick: () => updateQty(key, inCartQty + 1), "aria-label": "Increase quantity", children: "+" })
             ] }),
-            /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(
+            /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(
               "button",
               {
                 className: "btn btn-primary",
@@ -11786,9 +13140,9 @@ function ProductCard({ product }) {
             )
           ] })
         ] }),
-        showDetails && /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "fixed inset-0 z-[60]", "aria-hidden": !showDetails, children: [
-          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "absolute inset-0 bg-black/50", onClick: () => setShowDetails(false) }),
-          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(
+        showDetails && /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("div", { className: "fixed inset-0 z-[60]", "aria-hidden": !showDetails, children: [
+          /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("div", { className: "absolute inset-0 bg-black/50", onClick: () => setShowDetails(false) }),
+          /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(
             "div",
             {
               className: "absolute inset-x-3 md:inset-x-auto md:left-1/2 md:-translate-x-1/2 top-10 bottom-10 md:top-1/2 md:-translate-y-1/2 md:bottom-auto w-auto md:w-[720px] max-w-[95vw]",
@@ -11796,36 +13150,36 @@ function ProductCard({ product }) {
               "aria-modal": "true",
               "aria-labelledby": `product-dialog-title-${product.id}`,
               ref: dialogRef,
-              children: /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "bg-white rounded-xl shadow-2xl border overflow-hidden flex flex-col h-full md:h-auto", children: [
-                /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "flex items-start justify-between p-4 border-b", children: [
-                  /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("h3", { id: `product-dialog-title-${product.id}`, className: "text-lg font-semibold", children: product.title }),
-                  /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("button", { ref: closeBtnRef, className: "btn", onClick: () => setShowDetails(false), "aria-label": "Close", children: "\u2715" })
+              children: /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("div", { className: "bg-white rounded-xl shadow-2xl border overflow-hidden flex flex-col h-full md:h-auto", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("div", { className: "flex items-start justify-between p-4 border-b", children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("h3", { id: `product-dialog-title-${product.id}`, className: "text-lg font-semibold", children: product.title }),
+                  /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("button", { ref: closeBtnRef, className: "btn", onClick: () => setShowDetails(false), "aria-label": "Close", children: "\u2715" })
                 ] }),
-                /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "grid grid-cols-1 md:grid-cols-2 gap-0 md:gap-4 p-4 overflow-auto", children: [
-                  /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { children: [
-                    primary ? /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("img", { src: primary, alt: product.title, className: "w-full h-56 md:h-72 object-cover rounded" }) : /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "w-full h-56 md:h-72 grid place-items-center text-neutral-400 bg-neutral-100 rounded", children: "No image" }),
-                    rest.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "mt-2 grid grid-cols-4 gap-2", children: [primary, ...rest].slice(0, 8).map((u, i) => /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "block", children: /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("img", { src: u, alt: "", className: "w-full h-16 object-cover rounded" }) }, i)) })
+                /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("div", { className: "grid grid-cols-1 md:grid-cols-2 gap-0 md:gap-4 p-4 overflow-auto", children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("div", { children: [
+                    primary ? /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("img", { src: primary, alt: product.title, className: "w-full h-56 md:h-72 object-cover rounded" }) : /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("div", { className: "w-full h-56 md:h-72 grid place-items-center text-neutral-400 bg-neutral-100 rounded", children: "No image" }),
+                    rest.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("div", { className: "mt-2 grid grid-cols-4 gap-2", children: [primary, ...rest].slice(0, 8).map((u, i) => /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("div", { className: "block", children: /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("img", { src: u, alt: "", className: "w-full h-16 object-cover rounded" }) }, i)) })
                   ] }),
-                  /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { children: [
-                    /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "text-xl font-semibold", children: formatted }),
-                    hasVariants && /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "mt-3", children: [
-                      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("label", { className: "block text-sm font-medium mb-1", htmlFor: variantSelectId, children: "Choose an option" }),
-                      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(
+                  /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("div", { children: [
+                    /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("div", { className: "text-xl font-semibold", children: formatted }),
+                    hasVariants && /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("div", { className: "mt-3", children: [
+                      /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("label", { className: "block text-sm font-medium mb-1", htmlFor: variantSelectId, children: "Choose an option" }),
+                      /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(
                         "select",
                         {
                           className: "input w-full",
                           id: variantSelectId,
                           value: variantIdx,
                           onChange: (e) => setVariantIdx(Number(e.target.value) || 0),
-                          children: product.variants.map((v, i) => /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("option", { value: i, children: v.name || `Option ${i + 1}` }, v.squareVariationId || v.name || i))
+                          children: product.variants.map((v, i) => /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("option", { value: i, children: v.name || `Option ${i + 1}` }, v.squareVariationId || v.name || i))
                         }
                       )
                     ] }),
-                    hasAddOns && /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "mt-4 p-3 bg-neutral-50 rounded-lg border border-neutral-200", children: [
-                      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("h4", { className: "text-sm font-semibold mb-2", children: "Customize Your Order" }),
-                      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "space-y-2", children: product.addOns.map((addon, idx) => /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("label", { className: "flex items-center justify-between gap-2 text-sm cursor-pointer hover:bg-white p-2 rounded transition", children: [
-                        /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "flex items-center gap-2", children: [
-                          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(
+                    hasAddOns && /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("div", { className: "mt-4 p-3 bg-neutral-50 rounded-lg border border-neutral-200", children: [
+                      /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("h4", { className: "text-sm font-semibold mb-2", children: "Customize Your Order" }),
+                      /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("div", { className: "space-y-2", children: product.addOns.map((addon, idx) => /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("label", { className: "flex items-center justify-between gap-2 text-sm cursor-pointer hover:bg-white p-2 rounded transition", children: [
+                        /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("div", { className: "flex items-center gap-2", children: [
+                          /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(
                             "input",
                             {
                               type: "checkbox",
@@ -11834,14 +13188,14 @@ function ProductCard({ product }) {
                               className: "rounded border-neutral-300"
                             }
                           ),
-                          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("span", { children: addon.name })
+                          /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("span", { children: addon.name })
                         ] }),
-                        /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("span", { className: "text-neutral-600 font-mono text-xs", children: addon.additionalCost > 0 ? `+$${(addon.additionalCost / 100).toFixed(2)}` : "Free" })
+                        /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("span", { className: "text-neutral-600 font-mono text-xs", children: addon.additionalCost > 0 ? `+$${(addon.additionalCost / 100).toFixed(2)}` : "Free" })
                       ] }, idx)) })
                     ] }),
-                    product.offerDairyFree && /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "mt-3 p-3 bg-blue-50 rounded-lg border border-blue-200", children: /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("label", { className: "flex items-center justify-between gap-2 text-sm cursor-pointer", children: [
-                      /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "flex items-center gap-2", children: [
-                        /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(
+                    product.offerDairyFree && /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("div", { className: "mt-3 p-3 bg-blue-50 rounded-lg border border-blue-200", children: /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("label", { className: "flex items-center justify-between gap-2 text-sm cursor-pointer", children: [
+                      /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("div", { className: "flex items-center gap-2", children: [
+                        /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(
                           "input",
                           {
                             type: "checkbox",
@@ -11850,18 +13204,18 @@ function ProductCard({ product }) {
                             className: "rounded border-blue-300"
                           }
                         ),
-                        /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("span", { className: "font-medium", children: "Dairy-Free Option" })
+                        /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("span", { className: "font-medium", children: "Dairy-Free Option" })
                       ] }),
-                      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("span", { className: "text-neutral-600 font-mono text-xs", children: product.dairyFreeCost > 0 ? `+$${(product.dairyFreeCost / 100).toFixed(2)}` : "Same price" })
+                      /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("span", { className: "text-neutral-600 font-mono text-xs", children: product.dairyFreeCost > 0 ? `+$${(product.dairyFreeCost / 100).toFixed(2)}` : "Same price" })
                     ] }) }),
-                    Array.isArray(product.longDescriptionBlocks) && product.longDescriptionBlocks.length > 0 ? /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "prose prose-sm mt-4 max-w-none", children: /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(import_react18.PortableText, { value: product.longDescriptionBlocks, components: portableTextComponents }) }) : product.longDescription ? /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("p", { className: "text-sm text-neutral-700 mt-4 whitespace-pre-wrap", children: product.longDescription }) : null,
-                    /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "mt-6 flex gap-2 items-center", children: [
-                      inCartQty > 0 && /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "inline-flex items-center gap-2", children: [
-                        /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("button", { className: "btn", onClick: () => updateQty(key, Math.max(0, inCartQty - 1)), "aria-label": "Decrease quantity", children: "-" }),
-                        /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("span", { className: "min-w-[2ch] text-center text-sm", children: inCartQty }),
-                        /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("button", { className: "btn", onClick: () => updateQty(key, inCartQty + 1), "aria-label": "Increase quantity", children: "+" })
+                    Array.isArray(product.longDescriptionBlocks) && product.longDescriptionBlocks.length > 0 ? /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("div", { className: "prose prose-sm mt-4 max-w-none", children: /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(import_react22.PortableText, { value: product.longDescriptionBlocks, components: portableTextComponents }) }) : product.longDescription ? /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("p", { className: "text-sm text-neutral-700 mt-4 whitespace-pre-wrap", children: product.longDescription }) : null,
+                    /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("div", { className: "mt-6 flex gap-2 items-center", children: [
+                      inCartQty > 0 && /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("div", { className: "inline-flex items-center gap-2", children: [
+                        /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("button", { className: "btn", onClick: () => updateQty(key, Math.max(0, inCartQty - 1)), "aria-label": "Decrease quantity", children: "-" }),
+                        /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("span", { className: "min-w-[2ch] text-center text-sm", children: inCartQty }),
+                        /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("button", { className: "btn", onClick: () => updateQty(key, inCartQty + 1), "aria-label": "Increase quantity", children: "+" })
                       ] }),
-                      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(
+                      /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(
                         "button",
                         {
                           className: "btn btn-primary",
@@ -11884,21 +13238,21 @@ function ProductCard({ product }) {
 }
 
 // src/store/components/CheckoutPanel.jsx
-var import_react19 = __toESM(require("react"));
-var import_jsx_runtime27 = require("react/jsx-runtime");
+var import_react23 = __toESM(require("react"));
+var import_jsx_runtime29 = require("react/jsx-runtime");
 var import_meta4 = {};
 function CheckoutPanel({ store = "sale" }) {
   const { items, subtotal, open, closeCart, clear, remove, updateQty } = useCart();
-  const [processing, setProcessing] = (0, import_react19.useState)(false);
-  const [error, setError] = (0, import_react19.useState)("");
-  const [name, setName] = (0, import_react19.useState)("");
-  const [email, setEmail] = (0, import_react19.useState)("");
-  const [pickup, setPickup] = (0, import_react19.useState)(true);
-  const [phone, setPhone] = (0, import_react19.useState)("");
-  const [address, setAddress] = (0, import_react19.useState)({ line1: "", line2: "", city: "", state: "", postal: "" });
-  const cardRef = import_react19.default.useRef(null);
-  const cardElRef = import_react19.default.useRef(null);
-  import_react19.default.useEffect(() => {
+  const [processing, setProcessing] = (0, import_react23.useState)(false);
+  const [error, setError] = (0, import_react23.useState)("");
+  const [name, setName] = (0, import_react23.useState)("");
+  const [email, setEmail] = (0, import_react23.useState)("");
+  const [pickup, setPickup] = (0, import_react23.useState)(true);
+  const [phone, setPhone] = (0, import_react23.useState)("");
+  const [address, setAddress] = (0, import_react23.useState)({ line1: "", line2: "", city: "", state: "", postal: "" });
+  const cardRef = import_react23.default.useRef(null);
+  const cardElRef = import_react23.default.useRef(null);
+  import_react23.default.useEffect(() => {
     const appId = import_meta4?.env?.VITE_SQUARE_APP_ID || window?.__SQUARE_APP_ID__;
     const locationId = import_meta4?.env?.VITE_SQUARE_LOCATION_ID || window?.__SQUARE_LOCATION_ID__;
     if (!open) return;
@@ -11958,7 +13312,7 @@ function CheckoutPanel({ store = "sale" }) {
       canceled = true;
     };
   }, [open, items]);
-  import_react19.default.useEffect(() => {
+  import_react23.default.useEffect(() => {
     if (!open && cardRef.current && typeof cardRef.current.destroy === "function") {
       try {
         cardRef.current.destroy();
@@ -12005,23 +13359,23 @@ function CheckoutPanel({ store = "sale" }) {
     }
   };
   if (!open) return null;
-  return /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("div", { className: "fixed inset-0 bg-black/40 z-50", children: /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)("div", { className: "absolute right-0 top-0 bottom-0 w-full max-w-md bg-white shadow-xl p-4 overflow-auto", children: [
-    /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)("div", { className: "flex items-center justify-between mb-3", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("h3", { className: "text-xl font-semibold", children: "Your Cart" }),
-      /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("button", { className: "btn", onClick: closeCart, children: "Close" })
+  return /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("div", { className: "fixed inset-0 bg-black/40 z-50", children: /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("div", { className: "absolute right-0 top-0 bottom-0 w-full max-w-md bg-white shadow-xl p-4 overflow-auto", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("div", { className: "flex items-center justify-between mb-3", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("h3", { className: "text-xl font-semibold", children: "Your Cart" }),
+      /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("button", { className: "btn", onClick: closeCart, children: "Close" })
     ] }),
-    items.length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("p", { className: "text-sm text-neutral-600", children: "Your cart is empty." }) : /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)(import_jsx_runtime27.Fragment, { children: [
-      /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("ul", { className: "divide-y", children: items.map((i) => /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)("li", { className: "py-2 flex items-center gap-3", children: [
-        i.image && /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("img", { src: i.image, alt: "", className: "w-12 h-12 object-cover rounded" }),
-        /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)("div", { className: "flex-1", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("div", { className: "font-medium text-sm", children: i.title }),
-          /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)("div", { className: "text-xs text-neutral-600", children: [
+    items.length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("p", { className: "text-sm text-neutral-600", children: "Your cart is empty." }) : /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)(import_jsx_runtime29.Fragment, { children: [
+      /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("ul", { className: "divide-y", children: items.map((i) => /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("li", { className: "py-2 flex items-center gap-3", children: [
+        i.image && /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("img", { src: i.image, alt: "", className: "w-12 h-12 object-cover rounded" }),
+        /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("div", { className: "flex-1", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("div", { className: "font-medium text-sm", children: i.title }),
+          /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("div", { className: "text-xs text-neutral-600", children: [
             "$",
             (i.unitPrice / 100).toFixed(2),
             " each"
           ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)("div", { className: "flex items-center gap-2 mt-2", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(
+          /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("div", { className: "flex items-center gap-2 mt-2", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(
               "button",
               {
                 type: "button",
@@ -12031,8 +13385,8 @@ function CheckoutPanel({ store = "sale" }) {
                 children: "\u2212"
               }
             ),
-            /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("span", { className: "min-w-[2rem] text-center text-sm font-semibold", children: i.qty }),
-            /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(
+            /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("span", { className: "min-w-[2rem] text-center text-sm font-semibold", children: i.qty }),
+            /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(
               "button",
               {
                 type: "button",
@@ -12042,7 +13396,7 @@ function CheckoutPanel({ store = "sale" }) {
                 children: "+"
               }
             ),
-            /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(
+            /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(
               "button",
               {
                 type: "button",
@@ -12055,15 +13409,15 @@ function CheckoutPanel({ store = "sale" }) {
           ] })
         ] })
       ] }, i.key)) }),
-      /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)("div", { className: "mt-4 border-t pt-3", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)("div", { className: "flex justify-between items-center text-sm mb-2", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("span", { children: "Subtotal" }),
-          /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)("span", { children: [
+      /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("div", { className: "mt-4 border-t pt-3", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("div", { className: "flex justify-between items-center text-sm mb-2", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("span", { children: "Subtotal" }),
+          /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("span", { children: [
             "$",
             (subtotal / 100).toFixed(2)
           ] })
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(
+        /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(
           "button",
           {
             type: "button",
@@ -12076,74 +13430,74 @@ function CheckoutPanel({ store = "sale" }) {
             children: "Clear cart"
           }
         ),
-        /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("p", { className: "text-xs text-neutral-500 mt-1", children: "Tax calculated by Square." })
+        /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("p", { className: "text-xs text-neutral-500 mt-1", children: "Tax calculated by Square." })
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)("form", { onSubmit, className: "mt-4 space-y-3", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)("div", { children: [
-          /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("label", { className: "label", htmlFor: "co-name", children: "Name" }),
-          /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("input", { id: "co-name", className: "input w-full", value: name, onChange: (e) => setName(e.target.value), required: true })
+      /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("form", { onSubmit, className: "mt-4 space-y-3", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("div", { children: [
+          /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("label", { className: "label", htmlFor: "co-name", children: "Name" }),
+          /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("input", { id: "co-name", className: "input w-full", value: name, onChange: (e) => setName(e.target.value), required: true })
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)("div", { children: [
-          /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("label", { className: "label", htmlFor: "co-email", children: "Email" }),
-          /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("input", { id: "co-email", type: "email", className: "input w-full", value: email, onChange: (e) => setEmail(e.target.value), required: true })
+        /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("div", { children: [
+          /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("label", { className: "label", htmlFor: "co-email", children: "Email" }),
+          /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("input", { id: "co-email", type: "email", className: "input w-full", value: email, onChange: (e) => setEmail(e.target.value), required: true })
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)("div", { children: [
-          /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("label", { className: "label", htmlFor: "co-phone", children: "Phone" }),
-          /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("input", { id: "co-phone", type: "tel", className: "input w-full", value: phone, onChange: (e) => setPhone(e.target.value) })
+        /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("div", { children: [
+          /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("label", { className: "label", htmlFor: "co-phone", children: "Phone" }),
+          /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("input", { id: "co-phone", type: "tel", className: "input w-full", value: phone, onChange: (e) => setPhone(e.target.value) })
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)("div", { className: "flex items-center gap-2 text-sm", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("input", { id: "pickup", type: "checkbox", checked: pickup, onChange: (e) => setPickup(e.target.checked) }),
-          /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("label", { htmlFor: "pickup", children: "Pickup / local service" })
+        /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("div", { className: "flex items-center gap-2 text-sm", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("input", { id: "pickup", type: "checkbox", checked: pickup, onChange: (e) => setPickup(e.target.checked) }),
+          /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("label", { htmlFor: "pickup", children: "Pickup / local service" })
         ] }),
-        !pickup && /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)("div", { className: "grid grid-cols-1 gap-2", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)("div", { children: [
-            /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("label", { className: "label", htmlFor: "addr1", children: "Address line 1" }),
-            /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("input", { id: "addr1", className: "input w-full", value: address.line1, onChange: (e) => setAddress({ ...address, line1: e.target.value }), required: true })
+        !pickup && /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("div", { className: "grid grid-cols-1 gap-2", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("div", { children: [
+            /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("label", { className: "label", htmlFor: "addr1", children: "Address line 1" }),
+            /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("input", { id: "addr1", className: "input w-full", value: address.line1, onChange: (e) => setAddress({ ...address, line1: e.target.value }), required: true })
           ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)("div", { children: [
-            /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("label", { className: "label", htmlFor: "addr2", children: "Address line 2 (optional)" }),
-            /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("input", { id: "addr2", className: "input w-full", value: address.line2, onChange: (e) => setAddress({ ...address, line2: e.target.value }) })
+          /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("div", { children: [
+            /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("label", { className: "label", htmlFor: "addr2", children: "Address line 2 (optional)" }),
+            /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("input", { id: "addr2", className: "input w-full", value: address.line2, onChange: (e) => setAddress({ ...address, line2: e.target.value }) })
           ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)("div", { className: "grid grid-cols-2 gap-2", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)("div", { children: [
-              /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("label", { className: "label", htmlFor: "city", children: "City" }),
-              /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("input", { id: "city", className: "input w-full", value: address.city, onChange: (e) => setAddress({ ...address, city: e.target.value }), required: true })
+          /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("div", { className: "grid grid-cols-2 gap-2", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("div", { children: [
+              /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("label", { className: "label", htmlFor: "city", children: "City" }),
+              /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("input", { id: "city", className: "input w-full", value: address.city, onChange: (e) => setAddress({ ...address, city: e.target.value }), required: true })
             ] }),
-            /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)("div", { children: [
-              /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("label", { className: "label", htmlFor: "state", children: "State" }),
-              /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("input", { id: "state", className: "input w-full", value: address.state, onChange: (e) => setAddress({ ...address, state: e.target.value }), required: true })
+            /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("div", { children: [
+              /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("label", { className: "label", htmlFor: "state", children: "State" }),
+              /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("input", { id: "state", className: "input w-full", value: address.state, onChange: (e) => setAddress({ ...address, state: e.target.value }), required: true })
             ] })
           ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)("div", { children: [
-            /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("label", { className: "label", htmlFor: "zip", children: "Postal code" }),
-            /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("input", { id: "zip", className: "input w-full", value: address.postal, onChange: (e) => setAddress({ ...address, postal: e.target.value }), required: true })
+          /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("div", { children: [
+            /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("label", { className: "label", htmlFor: "zip", children: "Postal code" }),
+            /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("input", { id: "zip", className: "input w-full", value: address.postal, onChange: (e) => setAddress({ ...address, postal: e.target.value }), required: true })
           ] })
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("div", { className: "rounded-md border p-3 text-sm text-neutral-600", children: /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("div", { id: "sq-card", ref: cardElRef, className: "min-h-[52px]" }) }),
-        error && /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("div", { className: "text-sm text-red-600", children: error }),
-        /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("button", { type: "submit", className: "btn btn-primary w-full", disabled: processing, children: processing ? "Processing\u2026" : "Checkout" })
+        /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("div", { className: "rounded-md border p-3 text-sm text-neutral-600", children: /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("div", { id: "sq-card", ref: cardElRef, className: "min-h-[52px]" }) }),
+        error && /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("div", { className: "text-sm text-red-600", children: error }),
+        /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("button", { type: "submit", className: "btn btn-primary w-full", disabled: processing, children: processing ? "Processing\u2026" : "Checkout" })
       ] })
     ] })
   ] }) });
 }
 
 // src/pages/SalePage.jsx
-var import_react22 = require("@portabletext/react");
+var import_react26 = require("@portabletext/react");
 
 // src/components/sale/DraggableMasonry.jsx
-var import_react20 = __toESM(require("react"));
+var import_react24 = __toESM(require("react"));
 var import_framer_motion4 = require("framer-motion");
-var import_jsx_runtime28 = require("react/jsx-runtime");
+var import_jsx_runtime30 = require("react/jsx-runtime");
 var DraggableMasonry = ({ images = [] }) => {
-  const [imageOrder, setImageOrder] = (0, import_react20.useState)([]);
-  const [positions, setPositions] = (0, import_react20.useState)({});
-  const [rotations, setRotations] = (0, import_react20.useState)({});
-  const containerRef = (0, import_react20.useRef)(null);
-  const [isDragging, setIsDragging] = (0, import_react20.useState)(null);
-  const [lightboxImage, setLightboxImage] = (0, import_react20.useState)(null);
-  const dragStartTime = (0, import_react20.useRef)(0);
-  const dragStartPos = (0, import_react20.useRef)({ x: 0, y: 0 });
-  (0, import_react20.useEffect)(() => {
+  const [imageOrder, setImageOrder] = (0, import_react24.useState)([]);
+  const [positions, setPositions] = (0, import_react24.useState)({});
+  const [rotations, setRotations] = (0, import_react24.useState)({});
+  const containerRef = (0, import_react24.useRef)(null);
+  const [isDragging, setIsDragging] = (0, import_react24.useState)(null);
+  const [lightboxImage, setLightboxImage] = (0, import_react24.useState)(null);
+  const dragStartTime = (0, import_react24.useRef)(0);
+  const dragStartPos = (0, import_react24.useRef)({ x: 0, y: 0 });
+  (0, import_react24.useEffect)(() => {
     if (images.length > 0 && imageOrder.length === 0) {
       setImageOrder(images.map((img) => img.id));
       const rots = {};
@@ -12153,7 +13507,7 @@ var DraggableMasonry = ({ images = [] }) => {
       setRotations(rots);
     }
   }, [images, imageOrder.length]);
-  (0, import_react20.useEffect)(() => {
+  (0, import_react24.useEffect)(() => {
     if (imageOrder.length === 0) return;
     const calculatePositions = () => {
       const newPositions = {};
@@ -12240,8 +13594,8 @@ var DraggableMasonry = ({ images = [] }) => {
     }
     setImageOrder(newOrder);
   };
-  return /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)(import_jsx_runtime28.Fragment, { children: [
-    /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(
+  return /* @__PURE__ */ (0, import_jsx_runtime30.jsxs)(import_jsx_runtime30.Fragment, { children: [
+    /* @__PURE__ */ (0, import_jsx_runtime30.jsx)(
       "div",
       {
         ref: containerRef,
@@ -12251,7 +13605,7 @@ var DraggableMasonry = ({ images = [] }) => {
           const pos = positions[img.id] || { x: 0, y: 0, column: 0 };
           const rotation = rotations[img.id] || 0;
           const isBeingDragged = isDragging === img.id;
-          return /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(
+          return /* @__PURE__ */ (0, import_jsx_runtime30.jsx)(
             import_framer_motion4.motion.div,
             {
               drag: true,
@@ -12298,8 +13652,8 @@ var DraggableMasonry = ({ images = [] }) => {
                 delay: idx * 0.04
               },
               className: "shadow-xl hover:shadow-2xl transition-shadow duration-300",
-              children: /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("div", { className: "relative bg-white p-3 pb-8 rounded-sm", children: [
-                /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(
+              children: /* @__PURE__ */ (0, import_jsx_runtime30.jsxs)("div", { className: "relative bg-white p-3 pb-8 rounded-sm", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime30.jsx)(
                   "img",
                   {
                     src: img.url,
@@ -12309,7 +13663,7 @@ var DraggableMasonry = ({ images = [] }) => {
                     loading: "lazy"
                   }
                 ),
-                idx % 2 === 0 ? /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(
+                idx % 2 === 0 ? /* @__PURE__ */ (0, import_jsx_runtime30.jsx)(
                   "div",
                   {
                     className: "absolute -top-2 left-1/2 -translate-x-1/2 w-16 h-6 bg-amber-200/80 shadow-md",
@@ -12318,10 +13672,10 @@ var DraggableMasonry = ({ images = [] }) => {
                       backgroundImage: "repeating-linear-gradient(45deg, transparent, transparent 2px, rgba(255,255,255,.1) 2px, rgba(255,255,255,.1) 4px)"
                     }
                   }
-                ) : idx % 3 === 0 ? /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)(import_jsx_runtime28.Fragment, { children: [
-                  /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("div", { className: "absolute -top-1.5 -left-1.5 w-10 h-7 bg-orange-200/70 rotate-[-20deg] shadow-sm" }),
-                  /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("div", { className: "absolute -top-1.5 -right-1.5 w-10 h-7 bg-amber-200/70 rotate-[20deg] shadow-sm" })
-                ] }) : /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(
+                ) : idx % 3 === 0 ? /* @__PURE__ */ (0, import_jsx_runtime30.jsxs)(import_jsx_runtime30.Fragment, { children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("div", { className: "absolute -top-1.5 -left-1.5 w-10 h-7 bg-orange-200/70 rotate-[-20deg] shadow-sm" }),
+                  /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("div", { className: "absolute -top-1.5 -right-1.5 w-10 h-7 bg-amber-200/70 rotate-[20deg] shadow-sm" })
+                ] }) : /* @__PURE__ */ (0, import_jsx_runtime30.jsx)(
                   "div",
                   {
                     className: "absolute -top-2 right-4 w-14 h-6 bg-yellow-200/80 shadow-md",
@@ -12330,7 +13684,7 @@ var DraggableMasonry = ({ images = [] }) => {
                     }
                   }
                 ),
-                /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(
+                /* @__PURE__ */ (0, import_jsx_runtime30.jsx)(
                   "div",
                   {
                     className: "absolute inset-0 pointer-events-none rounded-sm",
@@ -12344,7 +13698,7 @@ var DraggableMasonry = ({ images = [] }) => {
         })
       }
     ),
-    /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(import_framer_motion4.AnimatePresence, { children: lightboxImage && /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(
+    /* @__PURE__ */ (0, import_jsx_runtime30.jsx)(import_framer_motion4.AnimatePresence, { children: lightboxImage && /* @__PURE__ */ (0, import_jsx_runtime30.jsx)(
       import_framer_motion4.motion.div,
       {
         initial: { opacity: 0 },
@@ -12352,7 +13706,7 @@ var DraggableMasonry = ({ images = [] }) => {
         exit: { opacity: 0 },
         onClick: () => setLightboxImage(null),
         className: "fixed inset-0 z-50 bg-black/90 backdrop-blur-sm flex items-center justify-center p-4 cursor-zoom-out",
-        children: /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)(
+        children: /* @__PURE__ */ (0, import_jsx_runtime30.jsxs)(
           import_framer_motion4.motion.div,
           {
             initial: { scale: 0.8, opacity: 0 },
@@ -12361,7 +13715,7 @@ var DraggableMasonry = ({ images = [] }) => {
             className: "relative max-w-6xl max-h-[90vh]",
             onClick: (e) => e.stopPropagation(),
             children: [
-              /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(
+              /* @__PURE__ */ (0, import_jsx_runtime30.jsx)(
                 "img",
                 {
                   src: lightboxImage.url,
@@ -12369,7 +13723,7 @@ var DraggableMasonry = ({ images = [] }) => {
                   className: "w-full h-full object-contain rounded-lg shadow-2xl"
                 }
               ),
-              /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(
+              /* @__PURE__ */ (0, import_jsx_runtime30.jsx)(
                 "button",
                 {
                   onClick: () => setLightboxImage(null),
@@ -12388,15 +13742,15 @@ var DraggableMasonry = ({ images = [] }) => {
 var DraggableMasonry_default = DraggableMasonry;
 
 // src/pages/SalePage.jsx
-var import_jsx_runtime29 = require("react/jsx-runtime");
+var import_jsx_runtime31 = require("react/jsx-runtime");
 var SalePage = () => {
   const { totalQty, openCart } = useCart();
-  const [products, setProducts] = (0, import_react21.useState)([]);
-  const [loading, setLoading] = (0, import_react21.useState)(true);
-  const [saleIntro, setSaleIntro] = (0, import_react21.useState)({ title: "", titleIcon: null, subheading: "", intro: [] });
-  const [galleryImages, setGalleryImages] = (0, import_react21.useState)([]);
-  const [lightboxImage, setLightboxImage] = (0, import_react21.useState)(null);
-  (0, import_react21.useEffect)(() => {
+  const [products, setProducts] = (0, import_react25.useState)([]);
+  const [loading, setLoading] = (0, import_react25.useState)(true);
+  const [saleIntro, setSaleIntro] = (0, import_react25.useState)({ title: "", titleIcon: null, subheading: "", intro: [] });
+  const [galleryImages, setGalleryImages] = (0, import_react25.useState)([]);
+  const [lightboxImage, setLightboxImage] = (0, import_react25.useState)(null);
+  (0, import_react25.useEffect)(() => {
     let alive = true;
     (async () => {
       try {
@@ -12482,7 +13836,7 @@ var SalePage = () => {
       alive = false;
     };
   }, []);
-  const schema = (0, import_react21.useMemo)(() => {
+  const schema = (0, import_react25.useMemo)(() => {
     const items = (products || []).map((p, idx) => ({
       "@type": "ListItem",
       position: idx + 1,
@@ -12500,6 +13854,7 @@ var SalePage = () => {
         }
       }
     }));
+    if (!items.length) return null;
     return {
       "@context": "https://schema.org",
       "@type": "ItemList",
@@ -12507,14 +13862,14 @@ var SalePage = () => {
       itemListElement: items
     };
   }, [products]);
-  return /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("div", { className: "relative min-h-screen bg-gradient-to-br from-orange-50 via-amber-50 to-yellow-50", children: [
-    /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)(import_react_helmet_async3.Helmet, { children: [
-      /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("title", { children: "SALE | Local Effort" }),
-      /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("meta", { name: "description", content: "Shop Local Effort sale items. Pickup/local service with on-site checkout." }),
-      /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("link", { rel: "canonical", href: "https://localeffortfood.com/sale" }),
-      /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("script", { type: "application/ld+json", children: JSON.stringify(schema) })
+  return /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)("div", { className: "relative min-h-screen bg-gradient-to-br from-orange-50 via-amber-50 to-yellow-50", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)(import_react_helmet_async5.Helmet, { children: [
+      /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("title", { children: "SALE | Local Effort" }),
+      /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("meta", { name: "description", content: "Shop Local Effort sale items. Pickup/local service with on-site checkout." }),
+      /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("link", { rel: "canonical", href: `${SITE_URL}/sale` }),
+      schema && /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("script", { type: "application/ld+json", children: JSON.stringify(schema) })
     ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(
+    /* @__PURE__ */ (0, import_jsx_runtime31.jsx)(
       "div",
       {
         className: "absolute inset-0 opacity-30",
@@ -12524,24 +13879,24 @@ var SalePage = () => {
         }
       }
     ),
-    /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("div", { className: "relative mx-auto max-w-7xl px-4 md:px-6 lg:px-8 py-8", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("div", { className: "mb-8", children: /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)(
+    /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)("div", { className: "relative mx-auto max-w-7xl px-4 md:px-6 lg:px-8 py-8", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("div", { className: "mb-8", children: /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)(
         import_framer_motion5.motion.div,
         {
           initial: { opacity: 0, y: -20 },
           animate: { opacity: 1, y: 0 },
           className: "relative inline-block",
           children: [
-            /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("div", { className: "bg-white/90 backdrop-blur-md px-8 py-6 rounded-2xl shadow-xl border-2 border-orange-200/50", children: /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("div", { className: "flex flex-col md:flex-row md:items-center md:justify-between gap-6", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("div", { className: "flex-1", children: [
-                saleIntro.title && /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("h1", { className: "text-4xl md:text-5xl font-bold text-neutral-900 mb-2 tracking-tight flex items-center gap-3", children: [
-                  saleIntro.titleIcon && /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("span", { className: "text-5xl md:text-6xl", role: "img", "aria-label": "icon", children: saleIntro.titleIcon.provider === "emoji" ? saleIntro.titleIcon.name : saleIntro.titleIcon.name || "\u2728" }),
-                  /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("span", { children: saleIntro.title })
+            /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("div", { className: "bg-white/90 backdrop-blur-md px-8 py-6 rounded-2xl shadow-xl border-2 border-orange-200/50", children: /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)("div", { className: "flex flex-col md:flex-row md:items-center md:justify-between gap-6", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)("div", { className: "flex-1", children: [
+                saleIntro.title && /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)("h1", { className: "text-4xl md:text-5xl font-bold text-neutral-900 mb-2 tracking-tight flex items-center gap-3", children: [
+                  saleIntro.titleIcon && /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("span", { className: "text-5xl md:text-6xl", role: "img", "aria-label": "icon", children: saleIntro.titleIcon.provider === "emoji" ? saleIntro.titleIcon.name : saleIntro.titleIcon.name || "\u2728" }),
+                  /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("span", { children: saleIntro.title })
                 ] }),
-                saleIntro.subheading && /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("h2", { className: "text-xl md:text-2xl font-semibold text-neutral-700 mb-2", children: saleIntro.subheading }),
-                Array.isArray(saleIntro.intro) && saleIntro.intro.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("div", { className: "prose prose-neutral max-w-none mt-3", children: /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(import_react22.PortableText, { value: saleIntro.intro, components: portableTextComponents }) })
+                saleIntro.subheading && /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("h2", { className: "text-xl md:text-2xl font-semibold text-neutral-700 mb-2", children: saleIntro.subheading }),
+                Array.isArray(saleIntro.intro) && saleIntro.intro.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("div", { className: "prose prose-neutral max-w-none mt-3", children: /* @__PURE__ */ (0, import_jsx_runtime31.jsx)(import_react26.PortableText, { value: saleIntro.intro, components: portableTextComponents }) })
               ] }),
-              /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("div", { className: "flex-shrink-0", children: /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)(
+              /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("div", { className: "flex-shrink-0", children: /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)(
                 "button",
                 {
                   onClick: openCart,
@@ -12554,12 +13909,12 @@ var SalePage = () => {
                 }
               ) })
             ] }) }),
-            /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("div", { className: "absolute -top-2 -right-2 w-16 h-10 bg-amber-100/80 rotate-12 shadow-md rounded-sm" }),
-            /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("div", { className: "absolute -bottom-2 -left-2 w-16 h-10 bg-orange-100/80 -rotate-12 shadow-md rounded-sm" })
+            /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("div", { className: "absolute -top-2 -right-2 w-16 h-10 bg-amber-100/80 rotate-12 shadow-md rounded-sm" }),
+            /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("div", { className: "absolute -bottom-2 -left-2 w-16 h-10 bg-orange-100/80 -rotate-12 shadow-md rounded-sm" })
           ]
         }
       ) }),
-      /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)(
+      /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)(
         import_framer_motion5.motion.div,
         {
           initial: { opacity: 0 },
@@ -12567,14 +13922,14 @@ var SalePage = () => {
           transition: { delay: 0.5 },
           className: "hidden lg:flex items-center gap-2 mb-4 text-sm text-neutral-600",
           children: [
-            /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("span", { className: "text-2xl", children: "\u{1F446}" }),
-            /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("span", { className: "font-medium", children: "drag the photos around to create your own layout" })
+            /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("span", { className: "text-2xl", children: "\u{1F446}" }),
+            /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("span", { className: "font-medium", children: "drag the photos around to create your own layout" })
           ]
         }
       ),
-      /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("div", { className: "grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("div", { className: "hidden lg:block lg:col-span-7 relative z-0", children: /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("div", { className: "relative", children: /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(DraggableMasonry_default, { images: galleryImages }) }) }),
-        /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("div", { className: "lg:col-span-5 relative z-10", children: loading ? /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("div", { className: "bg-white/90 backdrop-blur-md p-8 rounded-2xl shadow-xl border-2 border-orange-200/50", children: /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("div", { className: "flex items-center justify-center", children: /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("div", { className: "animate-pulse text-neutral-600", children: "Loading delicious pies..." }) }) }) : /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("div", { className: "space-y-6", children: (products || []).map((p, idx) => /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)(
+      /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)("div", { className: "grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("div", { className: "hidden lg:block lg:col-span-7 relative z-0", children: /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("div", { className: "relative", children: /* @__PURE__ */ (0, import_jsx_runtime31.jsx)(DraggableMasonry_default, { images: galleryImages }) }) }),
+        /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("div", { className: "lg:col-span-5 relative z-10", children: loading ? /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("div", { className: "bg-white/90 backdrop-blur-md p-8 rounded-2xl shadow-xl border-2 border-orange-200/50", children: /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("div", { className: "flex items-center justify-center", children: /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("div", { className: "animate-pulse text-neutral-600", children: "Loading delicious pies..." }) }) }) : /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("div", { className: "space-y-6", children: (products || []).map((p, idx) => /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)(
           import_framer_motion5.motion.div,
           {
             initial: { opacity: 0, y: 20 },
@@ -12583,14 +13938,14 @@ var SalePage = () => {
             whileHover: { scale: 1.02 },
             className: "group relative",
             children: [
-              /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("div", { className: "absolute -inset-0.5 bg-gradient-to-r from-orange-400 to-amber-400 rounded-2xl opacity-0 group-hover:opacity-100 blur transition duration-300" }),
-              /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("div", { className: "relative bg-white/95 backdrop-blur-md rounded-2xl shadow-lg border-2 border-orange-200/50 overflow-hidden transition-all duration-300 group-hover:shadow-2xl", children: /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(ProductCard, { product: p }) }),
-              idx % 3 === 0 && /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("div", { className: "absolute -top-1 -right-1 w-12 h-8 bg-amber-100/70 rotate-12 shadow-sm pointer-events-none" })
+              /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("div", { className: "absolute -inset-0.5 bg-gradient-to-r from-orange-400 to-amber-400 rounded-2xl opacity-0 group-hover:opacity-100 blur transition duration-300" }),
+              /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("div", { className: "relative bg-white/95 backdrop-blur-md rounded-2xl shadow-lg border-2 border-orange-200/50 overflow-hidden transition-all duration-300 group-hover:shadow-2xl", children: /* @__PURE__ */ (0, import_jsx_runtime31.jsx)(ProductCard, { product: p }) }),
+              idx % 3 === 0 && /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("div", { className: "absolute -top-1 -right-1 w-12 h-8 bg-amber-100/70 rotate-12 shadow-sm pointer-events-none" })
             ]
           },
           p.id
         )) }) }),
-        /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("div", { className: "lg:hidden", children: /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)(
+        /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("div", { className: "lg:hidden", children: /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)(
           import_framer_motion5.motion.div,
           {
             initial: { opacity: 0 },
@@ -12598,9 +13953,9 @@ var SalePage = () => {
             transition: { delay: 0.3 },
             className: "mt-8",
             children: [
-              /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("h2", { className: "text-2xl font-bold text-neutral-900 mb-4 text-center", children: "gallery \u{1F4F8}" }),
-              /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("p", { className: "text-xs text-neutral-500 text-center mb-4", children: "for best experience, view on a monitor" }),
-              /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("div", { className: "columns-2 gap-4 space-y-4", children: galleryImages.map((img, i) => /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(
+              /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("h2", { className: "text-2xl font-bold text-neutral-900 mb-4 text-center", children: "gallery \u{1F4F8}" }),
+              /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("p", { className: "text-xs text-neutral-500 text-center mb-4", children: "for best experience, view on a monitor" }),
+              /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("div", { className: "columns-2 gap-4 space-y-4", children: galleryImages.map((img, i) => /* @__PURE__ */ (0, import_jsx_runtime31.jsx)(
                 import_framer_motion5.motion.div,
                 {
                   initial: { opacity: 0, y: 20 },
@@ -12608,7 +13963,7 @@ var SalePage = () => {
                   transition: { delay: 0.3 + i * 0.05 },
                   className: "break-inside-avoid mb-4 rounded-lg overflow-hidden shadow-md bg-white p-2 cursor-pointer active:scale-95 transition-transform",
                   onClick: () => setLightboxImage(img),
-                  children: /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(
+                  children: /* @__PURE__ */ (0, import_jsx_runtime31.jsx)(
                     "img",
                     {
                       src: img.url,
@@ -12625,7 +13980,7 @@ var SalePage = () => {
         ) })
       ] })
     ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(import_framer_motion5.AnimatePresence, { children: lightboxImage && /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(
+    /* @__PURE__ */ (0, import_jsx_runtime31.jsx)(import_framer_motion5.AnimatePresence, { children: lightboxImage && /* @__PURE__ */ (0, import_jsx_runtime31.jsx)(
       import_framer_motion5.motion.div,
       {
         initial: { opacity: 0 },
@@ -12633,7 +13988,7 @@ var SalePage = () => {
         exit: { opacity: 0 },
         onClick: () => setLightboxImage(null),
         className: "fixed inset-0 z-50 bg-black/90 backdrop-blur-sm flex items-center justify-center p-4 cursor-zoom-out",
-        children: /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)(
+        children: /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)(
           import_framer_motion5.motion.div,
           {
             initial: { scale: 0.8, opacity: 0 },
@@ -12642,7 +13997,7 @@ var SalePage = () => {
             className: "relative max-w-6xl max-h-[90vh]",
             onClick: (e) => e.stopPropagation(),
             children: [
-              /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(
+              /* @__PURE__ */ (0, import_jsx_runtime31.jsx)(
                 "img",
                 {
                   src: lightboxImage.url,
@@ -12650,7 +14005,7 @@ var SalePage = () => {
                   className: "w-full h-full object-contain rounded-lg shadow-2xl"
                 }
               ),
-              /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(
+              /* @__PURE__ */ (0, import_jsx_runtime31.jsx)(
                 "button",
                 {
                   onClick: () => setLightboxImage(null),
@@ -12664,25 +14019,25 @@ var SalePage = () => {
         )
       }
     ) }),
-    /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(CheckoutPanel, {})
+    /* @__PURE__ */ (0, import_jsx_runtime31.jsx)(CheckoutPanel, {})
   ] });
 };
 var SalePage_default = SalePage;
 
 // src/pages/WeeklyList.jsx
-var import_react23 = __toESM(require("react"));
-var import_react_helmet_async4 = __toESM(require_lib());
-var import_react_router_dom5 = require("react-router-dom");
-var import_jsx_runtime30 = require("react/jsx-runtime");
+var import_react27 = __toESM(require("react"));
+var import_react_helmet_async6 = __toESM(require_lib());
+var import_react_router_dom6 = require("react-router-dom");
+var import_jsx_runtime32 = require("react/jsx-runtime");
 var WeeklyList = () => {
-  const [posts, setPosts] = (0, import_react23.useState)([]);
-  const [error, setError] = (0, import_react23.useState)("");
-  (0, import_react23.useEffect)(() => {
+  const [posts, setPosts] = (0, import_react27.useState)([]);
+  const [error, setError] = (0, import_react27.useState)("");
+  (0, import_react27.useEffect)(() => {
     let mounted = true;
     (async () => {
       try {
-        const q = `*[_type == "blogPost"] | order(publishedAt desc)[0...50]{ title, "slug": slug.current, excerpt, publishedAt, mainImage }`;
-        const items = await sanityClient_default.fetch(q);
+        const q2 = `*[_type == "blogPost"] | order(publishedAt desc)[0...50]{ title, "slug": slug.current, excerpt, publishedAt, mainImage }`;
+        const items = await sanityClient_default.fetch(q2);
         if (mounted) setPosts(items || []);
       } catch (e) {
         if (mounted) setError(e?.message || "Failed to load posts");
@@ -12692,33 +14047,33 @@ var WeeklyList = () => {
       mounted = false;
     };
   }, []);
-  return /* @__PURE__ */ (0, import_jsx_runtime30.jsxs)("div", { className: "mx-auto max-w-3xl px-4 md:px-6 lg:px-8 py-10", children: [
-    /* @__PURE__ */ (0, import_jsx_runtime30.jsx)(import_react_helmet_async4.Helmet, { children: /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("title", { children: "Weekly Meal Prep Journal | Local Effort" }) }),
-    /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("h1", { className: "heading-xl heading-balance mb-6", children: "Weekly meal prep journal" }),
-    error && /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("div", { className: "text-red-700 bg-red-50 border border-red-200 p-3 rounded mb-4", children: error }),
-    /* @__PURE__ */ (0, import_jsx_runtime30.jsxs)("ul", { className: "space-y-4", children: [
-      posts.map((p) => /* @__PURE__ */ (0, import_jsx_runtime30.jsxs)("li", { className: "border rounded-lg p-4 hover:bg-gray-50 shadow-sm", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime30.jsx)(import_react_router_dom5.Link, { to: `/weekly/${p.slug}`, className: "text-xl font-semibold hover:underline", children: p.title }),
-        /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("div", { className: "text-sm text-gray-500 mt-1", children: p.publishedAt ? new Date(p.publishedAt).toLocaleDateString() : "" }),
-        p.excerpt && /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("p", { className: "text-gray-700 mt-2", children: p.excerpt })
+  return /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("div", { className: "mx-auto max-w-3xl px-4 md:px-6 lg:px-8 py-10", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime32.jsx)(import_react_helmet_async6.Helmet, { children: /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("title", { children: "Weekly Meal Prep Journal | Local Effort" }) }),
+    /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("h1", { className: "heading-xl heading-balance mb-6", children: "Weekly meal prep journal" }),
+    error && /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("div", { className: "text-red-700 bg-red-50 border border-red-200 p-3 rounded mb-4", children: error }),
+    /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("ul", { className: "space-y-4", children: [
+      posts.map((p) => /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("li", { className: "border rounded-lg p-4 hover:bg-gray-50 shadow-sm", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime32.jsx)(import_react_router_dom6.Link, { to: `/weekly/${p.slug}`, className: "text-xl font-semibold hover:underline", children: p.title }),
+        /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("div", { className: "text-sm text-gray-500 mt-1", children: p.publishedAt ? new Date(p.publishedAt).toLocaleDateString() : "" }),
+        p.excerpt && /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("p", { className: "text-gray-700 mt-2", children: p.excerpt })
       ] }, p.slug)),
-      !posts.length && !error && /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("li", { children: "No posts yet." })
+      !posts.length && !error && /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("li", { children: "No posts yet." })
     ] })
   ] });
 };
 var WeeklyList_default = WeeklyList;
 
 // src/pages/happymondaypage.jsx
-var import_react30 = __toESM(require("react"));
-var import_react_helmet_async5 = __toESM(require_lib());
+var import_react34 = __toESM(require("react"));
+var import_react_helmet_async7 = __toESM(require_lib());
 var import_framer_motion10 = require("framer-motion");
 
 // src/components/menu/FoodItemCard.jsx
-var import_react24 = __toESM(require("react"));
+var import_react28 = __toESM(require("react"));
 var import_framer_motion6 = require("framer-motion");
-var import_jsx_runtime31 = require("react/jsx-runtime");
+var import_jsx_runtime33 = require("react/jsx-runtime");
 var FoodItemCard = ({ item, onClick }) => {
-  return /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)(
+  return /* @__PURE__ */ (0, import_jsx_runtime33.jsxs)(
     import_framer_motion6.motion.div,
     {
       variants: fadeInUp,
@@ -12727,8 +14082,8 @@ var FoodItemCard = ({ item, onClick }) => {
       whileHover: { scale: 1.03 },
       whileTap: { scale: 0.98 },
       children: [
-        /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("h4", { className: "text-xl font-bold text-neutral-800", children: item.name }),
-        /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("p", { className: "text-neutral-600 mt-2 line-clamp-2", children: item.description })
+        /* @__PURE__ */ (0, import_jsx_runtime33.jsx)("h4", { className: "text-xl font-bold text-neutral-800", children: item.name }),
+        /* @__PURE__ */ (0, import_jsx_runtime33.jsx)("p", { className: "text-neutral-600 mt-2 line-clamp-2", children: item.description })
       ]
     }
   );
@@ -12736,9 +14091,9 @@ var FoodItemCard = ({ item, onClick }) => {
 var FoodItemCard_default = FoodItemCard;
 
 // src/components/ErrorBoundary.jsx
-var import_react25 = __toESM(require("react"));
-var import_jsx_runtime32 = require("react/jsx-runtime");
-var ErrorBoundary = class extends import_react25.default.Component {
+var import_react29 = __toESM(require("react"));
+var import_jsx_runtime34 = require("react/jsx-runtime");
+var ErrorBoundary = class extends import_react29.default.Component {
   constructor(props) {
     super(props);
     this.state = { error: null, info: null };
@@ -12753,14 +14108,14 @@ var ErrorBoundary = class extends import_react25.default.Component {
   render() {
     const { error, info } = this.state;
     if (error) {
-      return /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("div", { style: { padding: 24, fontFamily: "system-ui, Arial", color: "#111" }, children: [
-        /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("h1", { children: "Application error" }),
-        /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("p", { style: { whiteSpace: "pre-wrap" }, children: String(error && (error.message || error)) }),
-        info && info.componentStack && /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("details", { style: { marginTop: 12, whiteSpace: "pre-wrap" }, children: [
-          /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("summary", { children: "Component stack" }),
-          /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("div", { children: info.componentStack })
+      return /* @__PURE__ */ (0, import_jsx_runtime34.jsxs)("div", { style: { padding: 24, fontFamily: "system-ui, Arial", color: "#111" }, children: [
+        /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("h1", { children: "Application error" }),
+        /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("p", { style: { whiteSpace: "pre-wrap" }, children: String(error && (error.message || error)) }),
+        info && info.componentStack && /* @__PURE__ */ (0, import_jsx_runtime34.jsxs)("details", { style: { marginTop: 12, whiteSpace: "pre-wrap" }, children: [
+          /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("summary", { children: "Component stack" }),
+          /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("div", { children: info.componentStack })
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("div", { style: { marginTop: 12 }, children: /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("button", { onClick: () => window.location.reload(), children: "Reload" }) })
+        /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("div", { style: { marginTop: 12 }, children: /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("button", { onClick: () => window.location.reload(), children: "Reload" }) })
       ] });
     }
     return this.props.children;
@@ -12769,27 +14124,27 @@ var ErrorBoundary = class extends import_react25.default.Component {
 var ErrorBoundary_default = ErrorBoundary;
 
 // src/components/ui/Separator.jsx
-var import_react26 = __toESM(require("react"));
-var import_jsx_runtime33 = require("react/jsx-runtime");
+var import_react30 = __toESM(require("react"));
+var import_jsx_runtime35 = require("react/jsx-runtime");
 function Separator({ className = "", orientation = "horizontal", decorative = true, ...props }) {
   const isHorizontal = orientation !== "vertical";
   const base = isHorizontal ? "h-px w-full my-12" : "w-px h-full mx-4";
   const classes = [base, "bg-neutral-200", className].filter(Boolean).join(" ");
-  return /* @__PURE__ */ (0, import_jsx_runtime33.jsx)("div", { role: decorative ? "none" : "separator", "aria-orientation": orientation, className: classes, ...props });
+  return /* @__PURE__ */ (0, import_jsx_runtime35.jsx)("div", { role: decorative ? "none" : "separator", "aria-orientation": orientation, className: classes, ...props });
 }
 
 // src/pages/happymondaypage.jsx
-var import_jsx_runtime37 = require("react/jsx-runtime");
-var BlockContent = (0, import_react30.lazy)(() => import("@sanity/block-content-to-react"));
-var FoodItemModal2 = (0, import_react30.lazy)(() => Promise.resolve().then(() => (init_FoodItemModal(), FoodItemModal_exports)));
-var FeedbackForm2 = (0, import_react30.lazy)(() => Promise.resolve().then(() => (init_FeedbackForm(), FeedbackForm_exports)));
-var LoadingSpinner2 = (0, import_react30.lazy)(() => Promise.resolve().then(() => (init_LoadingSpinner(), LoadingSpinner_exports)).then((mod) => ({ default: mod.LoadingSpinner })));
+var import_jsx_runtime39 = require("react/jsx-runtime");
+var BlockContent = (0, import_react34.lazy)(() => import("@sanity/block-content-to-react"));
+var FoodItemModal2 = (0, import_react34.lazy)(() => Promise.resolve().then(() => (init_FoodItemModal(), FoodItemModal_exports)));
+var FeedbackForm2 = (0, import_react34.lazy)(() => Promise.resolve().then(() => (init_FeedbackForm(), FeedbackForm_exports)));
+var LoadingSpinner2 = (0, import_react34.lazy)(() => Promise.resolve().then(() => (init_LoadingSpinner(), LoadingSpinner_exports)).then((mod) => ({ default: mod.LoadingSpinner })));
 var HappyMondayPage = () => {
-  const [menuItems, setMenuItems] = (0, import_react30.useState)([]);
-  const [pageContent, setPageContent] = (0, import_react30.useState)(null);
-  const [selectedItem, setSelectedItem] = (0, import_react30.useState)(null);
-  const [isLoading, setIsLoading] = (0, import_react30.useState)(true);
-  (0, import_react30.useEffect)(() => {
+  const [menuItems, setMenuItems] = (0, import_react34.useState)([]);
+  const [pageContent, setPageContent] = (0, import_react34.useState)(null);
+  const [selectedItem, setSelectedItem] = (0, import_react34.useState)(null);
+  const [isLoading, setIsLoading] = (0, import_react34.useState)(true);
+  (0, import_react34.useEffect)(() => {
     const query = `{
       "menuItems": *[_type == "menuItems"],
       "pageContent": *[_type == "happyMondayPage"][0]
@@ -12806,10 +14161,10 @@ var HappyMondayPage = () => {
   const handleCloseModal = () => {
     setSelectedItem(null);
   };
-  return /* @__PURE__ */ (0, import_jsx_runtime37.jsxs)(import_jsx_runtime37.Fragment, { children: [
-    /* @__PURE__ */ (0, import_jsx_runtime37.jsxs)(import_react_helmet_async5.Helmet, { children: [
-      /* @__PURE__ */ (0, import_jsx_runtime37.jsx)("title", { children: "Happy Monday | Local Effort" }),
-      /* @__PURE__ */ (0, import_jsx_runtime37.jsx)(
+  return /* @__PURE__ */ (0, import_jsx_runtime39.jsxs)(import_jsx_runtime39.Fragment, { children: [
+    /* @__PURE__ */ (0, import_jsx_runtime39.jsxs)(import_react_helmet_async7.Helmet, { children: [
+      /* @__PURE__ */ (0, import_jsx_runtime39.jsx)("title", { children: "Happy Monday | Local Effort" }),
+      /* @__PURE__ */ (0, import_jsx_runtime39.jsx)(
         "meta",
         {
           name: "description",
@@ -12817,11 +14172,11 @@ var HappyMondayPage = () => {
         }
       )
     ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime37.jsxs)("div", { className: "space-y-24 mb-24", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime37.jsxs)("section", { className: "mx-auto max-w-6xl px-4 md:px-6 lg:px-8", children: [
-        pageContent && /* @__PURE__ */ (0, import_jsx_runtime37.jsxs)("div", { className: "text-center mb-12", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime37.jsx)(SectionHeader, { overline: "Weekly Special", title: pageContent.title }),
-          /* @__PURE__ */ (0, import_jsx_runtime37.jsx)("div", { className: "flex justify-center mt-8 mb-8", children: /* @__PURE__ */ (0, import_jsx_runtime37.jsx)(
+    /* @__PURE__ */ (0, import_jsx_runtime39.jsxs)("div", { className: "space-y-24 mb-24", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime39.jsxs)("section", { className: "mx-auto max-w-6xl px-4 md:px-6 lg:px-8", children: [
+        pageContent && /* @__PURE__ */ (0, import_jsx_runtime39.jsxs)("div", { className: "text-center mb-12", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime39.jsx)(SectionHeader, { overline: "Weekly Special", title: pageContent.title }),
+          /* @__PURE__ */ (0, import_jsx_runtime39.jsx)("div", { className: "flex justify-center mt-8 mb-8", children: /* @__PURE__ */ (0, import_jsx_runtime39.jsx)(
             "img",
             {
               src: "https://www.localeffortfood.com/gallery/IMG_3145.jpg",
@@ -12830,39 +14185,39 @@ var HappyMondayPage = () => {
               style: { width: "50%" }
             }
           ) }),
-          /* @__PURE__ */ (0, import_jsx_runtime37.jsx)("div", { className: "prose lg:prose-lg mx-auto max-w-3xl", children: /* @__PURE__ */ (0, import_jsx_runtime37.jsx)(ErrorBoundary_default, { children: /* @__PURE__ */ (0, import_jsx_runtime37.jsx)(import_react30.Suspense, { fallback: /* @__PURE__ */ (0, import_jsx_runtime37.jsx)("div", { className: "text-center", children: "Loading content\u2026" }), children: /* @__PURE__ */ (0, import_jsx_runtime37.jsx)(BlockContent, { blocks: pageContent.body, client: sanityClient_default }) }) }) })
+          /* @__PURE__ */ (0, import_jsx_runtime39.jsx)("div", { className: "prose lg:prose-lg mx-auto max-w-3xl", children: /* @__PURE__ */ (0, import_jsx_runtime39.jsx)(ErrorBoundary_default, { children: /* @__PURE__ */ (0, import_jsx_runtime39.jsx)(import_react34.Suspense, { fallback: /* @__PURE__ */ (0, import_jsx_runtime39.jsx)("div", { className: "text-center", children: "Loading content\u2026" }), children: /* @__PURE__ */ (0, import_jsx_runtime39.jsx)(BlockContent, { blocks: pageContent.body, client: sanityClient_default }) }) }) })
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime37.jsx)("div", { className: "text-center mb-8", children: /* @__PURE__ */ (0, import_jsx_runtime37.jsx)("h2", { className: "text-2xl font-semibold", children: "Ingredient Lists" }) }),
-        /* @__PURE__ */ (0, import_jsx_runtime37.jsx)(import_react30.Suspense, { fallback: /* @__PURE__ */ (0, import_jsx_runtime37.jsx)("div", { className: "flex justify-center items-center h-64", children: "Loading\u2026" }), children: isLoading ? /* @__PURE__ */ (0, import_jsx_runtime37.jsx)("div", { className: "flex justify-center items-center h-64", children: /* @__PURE__ */ (0, import_jsx_runtime37.jsx)(LoadingSpinner2, {}) }) : /* @__PURE__ */ (0, import_jsx_runtime37.jsx)(
+        /* @__PURE__ */ (0, import_jsx_runtime39.jsx)("div", { className: "text-center mb-8", children: /* @__PURE__ */ (0, import_jsx_runtime39.jsx)("h2", { className: "text-2xl font-semibold", children: "Ingredient Lists" }) }),
+        /* @__PURE__ */ (0, import_jsx_runtime39.jsx)(import_react34.Suspense, { fallback: /* @__PURE__ */ (0, import_jsx_runtime39.jsx)("div", { className: "flex justify-center items-center h-64", children: "Loading\u2026" }), children: isLoading ? /* @__PURE__ */ (0, import_jsx_runtime39.jsx)("div", { className: "flex justify-center items-center h-64", children: /* @__PURE__ */ (0, import_jsx_runtime39.jsx)(LoadingSpinner2, {}) }) : /* @__PURE__ */ (0, import_jsx_runtime39.jsx)(
           import_framer_motion10.motion.div,
           {
             className: "grid md:grid-cols-2 lg:grid-cols-3 gap-6",
             initial: "initial",
             animate: "animate",
             variants: { animate: { transition: { staggerChildren: 0.1 } } },
-            children: menuItems.map((item) => /* @__PURE__ */ (0, import_jsx_runtime37.jsx)(FoodItemCard_default, { item, onClick: () => handleCardClick(item) }, item._id))
+            children: menuItems.map((item) => /* @__PURE__ */ (0, import_jsx_runtime39.jsx)(FoodItemCard_default, { item, onClick: () => handleCardClick(item) }, item._id))
           }
         ) })
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime37.jsxs)("section", { className: "mx-auto max-w-6xl px-4 md:px-6 lg:px-8", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime37.jsx)(SectionHeader, { overline: "Help Us Improve", title: "Feedback" }),
-        /* @__PURE__ */ (0, import_jsx_runtime37.jsx)("p", { className: "text-body mb-8 max-w-2xl", children: "Have a suggestion, a request, or feedback on our quality? We'd love to hear it. Your input helps us grow and improve." }),
-        /* @__PURE__ */ (0, import_jsx_runtime37.jsx)(ErrorBoundary_default, { children: /* @__PURE__ */ (0, import_jsx_runtime37.jsx)(import_react30.Suspense, { fallback: /* @__PURE__ */ (0, import_jsx_runtime37.jsx)("div", { className: "text-center p-8", children: "Loading form\u2026" }), children: /* @__PURE__ */ (0, import_jsx_runtime37.jsx)(FeedbackForm2, {}) }) })
+      /* @__PURE__ */ (0, import_jsx_runtime39.jsxs)("section", { className: "mx-auto max-w-6xl px-4 md:px-6 lg:px-8", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime39.jsx)(SectionHeader, { overline: "Help Us Improve", title: "Feedback" }),
+        /* @__PURE__ */ (0, import_jsx_runtime39.jsx)("p", { className: "text-body mb-8 max-w-2xl", children: "Have a suggestion, a request, or feedback on our quality? We'd love to hear it. Your input helps us grow and improve." }),
+        /* @__PURE__ */ (0, import_jsx_runtime39.jsx)(ErrorBoundary_default, { children: /* @__PURE__ */ (0, import_jsx_runtime39.jsx)(import_react34.Suspense, { fallback: /* @__PURE__ */ (0, import_jsx_runtime39.jsx)("div", { className: "text-center p-8", children: "Loading form\u2026" }), children: /* @__PURE__ */ (0, import_jsx_runtime39.jsx)(FeedbackForm2, {}) }) })
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime37.jsx)(Separator, {})
+      /* @__PURE__ */ (0, import_jsx_runtime39.jsx)(Separator, {})
     ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime37.jsx)(import_framer_motion10.AnimatePresence, { children: selectedItem && /* @__PURE__ */ (0, import_jsx_runtime37.jsx)(ErrorBoundary_default, { children: /* @__PURE__ */ (0, import_jsx_runtime37.jsx)(import_react30.Suspense, { fallback: /* @__PURE__ */ (0, import_jsx_runtime37.jsx)("div", { className: "fixed inset-0 flex items-center justify-center", children: "Loading\u2026" }), children: /* @__PURE__ */ (0, import_jsx_runtime37.jsx)(FoodItemModal2, { item: selectedItem, onClose: handleCloseModal }) }) }) })
+    /* @__PURE__ */ (0, import_jsx_runtime39.jsx)(import_framer_motion10.AnimatePresence, { children: selectedItem && /* @__PURE__ */ (0, import_jsx_runtime39.jsx)(ErrorBoundary_default, { children: /* @__PURE__ */ (0, import_jsx_runtime39.jsx)(import_react34.Suspense, { fallback: /* @__PURE__ */ (0, import_jsx_runtime39.jsx)("div", { className: "fixed inset-0 flex items-center justify-center", children: "Loading\u2026" }), children: /* @__PURE__ */ (0, import_jsx_runtime39.jsx)(FoodItemModal2, { item: selectedItem, onClose: handleCloseModal }) }) }) })
   ] });
 };
 var happymondaypage_default = HappyMondayPage;
 
 // src/pages/PizzaPartyPage.jsx
-var import_react32 = __toESM(require("react"));
-var import_react_helmet_async6 = __toESM(require_lib());
+var import_react36 = __toESM(require("react"));
+var import_react_helmet_async8 = __toESM(require_lib());
 var import_framer_motion11 = require("framer-motion");
 
 // src/hooks/useSquareCard.js
-var import_react31 = require("react");
+var import_react35 = require("react");
 var import_meta5 = {};
 var SQUARE_SCRIPT_ATTR = "data-square-sdk";
 var squareScriptState = { url: null, promise: null };
@@ -12978,19 +14333,19 @@ var ensureSquareSdkScript = (sdkUrl, isSandbox) => {
   return promise;
 };
 function useSquareCard(containerId, enabled, deps = []) {
-  const paymentsRef = (0, import_react31.useRef)(null);
-  const cardRef = (0, import_react31.useRef)(null);
-  const cardInstanceIdRef = (0, import_react31.useRef)(0);
-  const activeCardInstanceIdRef = (0, import_react31.useRef)(0);
-  const lastTokenRef = (0, import_react31.useRef)({ token: null, cardInstanceId: 0, at: 0 });
-  const [cardLoaded, setCardLoaded] = (0, import_react31.useState)(false);
-  const [attempts, setAttempts] = (0, import_react31.useState)(0);
-  const attemptsRef = (0, import_react31.useRef)(0);
-  const [error, setError] = (0, import_react31.useState)("");
-  const [loadingScript, setLoadingScript] = (0, import_react31.useState)(false);
-  const attachStartedRef = (0, import_react31.useRef)(false);
+  const paymentsRef = (0, import_react35.useRef)(null);
+  const cardRef = (0, import_react35.useRef)(null);
+  const cardInstanceIdRef = (0, import_react35.useRef)(0);
+  const activeCardInstanceIdRef = (0, import_react35.useRef)(0);
+  const lastTokenRef = (0, import_react35.useRef)({ token: null, cardInstanceId: 0, at: 0 });
+  const [cardLoaded, setCardLoaded] = (0, import_react35.useState)(false);
+  const [attempts, setAttempts] = (0, import_react35.useState)(0);
+  const attemptsRef = (0, import_react35.useRef)(0);
+  const [error, setError] = (0, import_react35.useState)("");
+  const [loadingScript, setLoadingScript] = (0, import_react35.useState)(false);
+  const attachStartedRef = (0, import_react35.useRef)(false);
   const securityState = getSquareSecurityState();
-  const [envInfo, setEnvInfo] = (0, import_react31.useState)({
+  const [envInfo, setEnvInfo] = (0, import_react35.useState)({
     appId: null,
     locationId: null,
     sdkUrl: null,
@@ -13003,7 +14358,7 @@ function useSquareCard(containerId, enabled, deps = []) {
     hostname: securityState.hostname,
     protocol: securityState.protocol
   });
-  const cleanupContainer = (0, import_react31.useCallback)(() => {
+  const cleanupContainer = (0, import_react35.useCallback)(() => {
     if (typeof document === "undefined") return;
     try {
       const node = typeof containerId === "string" ? document.querySelector(containerId) : containerId;
@@ -13013,7 +14368,7 @@ function useSquareCard(containerId, enabled, deps = []) {
     } catch (_) {
     }
   }, [containerId]);
-  const destroyCardInstance = (0, import_react31.useCallback)(() => {
+  const destroyCardInstance = (0, import_react35.useCallback)(() => {
     const card = cardRef.current;
     cardRef.current = null;
     attachStartedRef.current = false;
@@ -13038,7 +14393,7 @@ function useSquareCard(containerId, enabled, deps = []) {
     }
     finalize();
   }, [cleanupContainer]);
-  const reset = (0, import_react31.useCallback)(() => {
+  const reset = (0, import_react35.useCallback)(() => {
     try {
       destroyCardInstance();
       paymentsRef.current = null;
@@ -13048,7 +14403,7 @@ function useSquareCard(containerId, enabled, deps = []) {
     } catch (_) {
     }
   }, [destroyCardInstance]);
-  (0, import_react31.useEffect)(() => {
+  (0, import_react35.useEffect)(() => {
     if (!enabled) return;
     let cancelled = false;
     const config = readSquareRuntimeConfig();
@@ -13085,7 +14440,7 @@ function useSquareCard(containerId, enabled, deps = []) {
       cancelled = true;
     };
   }, [enabled]);
-  (0, import_react31.useEffect)(() => {
+  (0, import_react35.useEffect)(() => {
     if (!enabled) return;
     const abortController = new AbortController();
     const { signal } = abortController;
@@ -13106,7 +14461,7 @@ function useSquareCard(containerId, enabled, deps = []) {
       setError("Payment not available: missing Square configuration.");
       return () => abortController.abort();
     }
-    const waitForSquare = async () => {
+    const waitForSquare2 = async () => {
       if (window.Square) return;
       const start = Date.now();
       while (!signal.aborted) {
@@ -13197,7 +14552,7 @@ function useSquareCard(containerId, enabled, deps = []) {
           return next;
         });
         await ensureSquareSdkScript(config.sdkUrl, config.isSandbox);
-        await waitForSquare();
+        await waitForSquare2();
         if (signal.aborted) return;
         if (!window.Square || typeof window.Square.payments !== "function") {
           throw new Error("Square payments API unavailable.");
@@ -13257,7 +14612,7 @@ function useSquareCard(containerId, enabled, deps = []) {
       paymentsRef.current = null;
     };
   }, [enabled, containerId, destroyCardInstance, cleanupContainer, ...deps]);
-  (0, import_react31.useEffect)(() => {
+  (0, import_react35.useEffect)(() => {
     setEnvInfo((info) => ({ ...info, attempts }));
   }, [attempts]);
   const withTimeout = async (promise, ms, message) => {
@@ -13358,7 +14713,7 @@ var clearCheckoutAttemptId = (storageKey) => {
 };
 
 // src/pages/PizzaPartyPage.jsx
-var import_jsx_runtime38 = require("react/jsx-runtime");
+var import_jsx_runtime40 = require("react/jsx-runtime");
 var import_meta6 = {};
 async function fetchPizzaImages(setter, setError, setLoading) {
   try {
@@ -13407,14 +14762,14 @@ var projectDateToYear = (isoDate, targetYear) => {
   return projected;
 };
 var PizzaPartyPage = () => {
-  const canonical = "https://localeffort.app/pizza-party";
-  const siteName = "Local Effort";
+  const canonical = `${SITE_URL}/pizza-party`;
+  const siteName = SITE_NAME;
   const pageTitle = "Book Your Pizza Party - Pay a Deposit | Local Effort";
   const pageDescription = "Pay a deposit to book your pizza party. $75 deposit reserves your date. Estimated $450 for parties of 15 guests with premium wood-fired pizza and local ingredients.";
   const startOfToday = (() => {
-    const d = /* @__PURE__ */ new Date();
-    d.setHours(0, 0, 0, 0);
-    return d;
+    const d2 = /* @__PURE__ */ new Date();
+    d2.setHours(0, 0, 0, 0);
+    return d2;
   })();
   const upcomingDates = PIZZA_PARTY_DATES.map((entry) => {
     const projectedDate = projectDateToYear(entry.isoDate, DISPLAY_YEAR);
@@ -13482,53 +14837,53 @@ var PizzaPartyPage = () => {
     ]
   };
   const jsonLd = [serviceSchema, ...eventsSchema, breadcrumbSchema];
-  const [images, setImages] = (0, import_react32.useState)([]);
-  const [error, setError] = (0, import_react32.useState)(null);
-  const [loading, setLoading] = (0, import_react32.useState)(true);
-  const [bookingState, setBookingState] = (0, import_react32.useState)({});
-  const [soldOutDates, setSoldOutDates] = (0, import_react32.useState)(() => new Set(SOLD_OUT_OVERRIDES));
-  const [showModal, setShowModal] = (0, import_react32.useState)(false);
-  const [selectedDate, setSelectedDate] = (0, import_react32.useState)(null);
+  const [images, setImages] = (0, import_react36.useState)([]);
+  const [error, setError] = (0, import_react36.useState)(null);
+  const [loading, setLoading] = (0, import_react36.useState)(true);
+  const [bookingState, setBookingState] = (0, import_react36.useState)({});
+  const [soldOutDates, setSoldOutDates] = (0, import_react36.useState)(() => new Set(SOLD_OUT_OVERRIDES));
+  const [showModal, setShowModal] = (0, import_react36.useState)(false);
+  const [selectedDate, setSelectedDate] = (0, import_react36.useState)(null);
   const squareEnabled = showModal;
   const { cardLoaded, error: cardError, loadingScript, tokenize, verifyBuyer, reset, envInfo } = useSquareCard("#pp-card-container", squareEnabled, [squareEnabled]);
-  const checkoutAttemptRef = (0, import_react32.useRef)("");
+  const checkoutAttemptRef = (0, import_react36.useRef)("");
   const attemptStorageKey = "le:checkoutAttempt:pizza-party";
-  const resolveCheckoutAttemptId = (0, import_react32.useCallback)(() => {
+  const resolveCheckoutAttemptId = (0, import_react36.useCallback)(() => {
     if (checkoutAttemptRef.current) return checkoutAttemptRef.current;
     const next = getOrCreateCheckoutAttemptId(attemptStorageKey);
     checkoutAttemptRef.current = next;
     return next;
   }, []);
-  const clearCheckoutAttempt = (0, import_react32.useCallback)(() => {
+  const clearCheckoutAttempt = (0, import_react36.useCallback)(() => {
     checkoutAttemptRef.current = "";
     clearCheckoutAttemptId(attemptStorageKey);
   }, []);
-  const [bookedDate, setBookedDate] = (0, import_react32.useState)(null);
-  const [justBooked, setJustBooked] = (0, import_react32.useState)(false);
-  const [email, setEmail] = (0, import_react32.useState)("");
-  const [fullName, setFullName] = (0, import_react32.useState)("");
-  const [phone, setPhone] = (0, import_react32.useState)("");
-  const [address, setAddress] = (0, import_react32.useState)({ line1: "", line2: "", city: "", state: "MN", postal: "" });
-  const [mealTime, setMealTime] = (0, import_react32.useState)("5:00 PM");
-  const [pizzaRequests, setPizzaRequests] = (0, import_react32.useState)("");
-  const [addOnEnabled, setAddOnEnabled] = (0, import_react32.useState)(false);
-  const [guestCount, setGuestCount] = (0, import_react32.useState)(10);
-  const [submitting, setSubmitting] = (0, import_react32.useState)(false);
-  const isValidEmail = (val) => /.+@.+\..+/.test(val.trim());
-  const formatPhone = (val) => {
+  const [bookedDate, setBookedDate] = (0, import_react36.useState)(null);
+  const [justBooked, setJustBooked] = (0, import_react36.useState)(false);
+  const [email, setEmail] = (0, import_react36.useState)("");
+  const [fullName, setFullName] = (0, import_react36.useState)("");
+  const [phone, setPhone] = (0, import_react36.useState)("");
+  const [address, setAddress] = (0, import_react36.useState)({ line1: "", line2: "", city: "", state: "MN", postal: "" });
+  const [mealTime, setMealTime] = (0, import_react36.useState)("5:00 PM");
+  const [pizzaRequests, setPizzaRequests] = (0, import_react36.useState)("");
+  const [addOnEnabled, setAddOnEnabled] = (0, import_react36.useState)(false);
+  const [guestCount, setGuestCount] = (0, import_react36.useState)(10);
+  const [submitting, setSubmitting] = (0, import_react36.useState)(false);
+  const isValidEmail2 = (val) => /.+@.+\..+/.test(val.trim());
+  const formatPhone2 = (val) => {
     const digits = val.replace(/\D/g, "").slice(0, 10);
     if (digits.length < 4) return digits;
     if (digits.length < 7) return `(${digits.slice(0, 3)}) ${digits.slice(3)}`;
     return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
   };
   const isValidPhone = (val) => val.replace(/\D/g, "").length === 10;
-  const formatPostal = (val) => val.replace(/[^0-9]/g, "").slice(0, 5);
+  const formatPostal2 = (val) => val.replace(/[^0-9]/g, "").slice(0, 5);
   const isValidAddress = (a) => a.line1.trim().length > 3 && a.city.trim().length > 1 && a.postal.trim().length >= 5;
   const basePrice = 75;
   const estimatedTotal = 450;
   const addOnTotal = addOnEnabled ? guestCount * 9 : 0;
   const grandTotal = basePrice + addOnTotal;
-  (0, import_react32.useEffect)(() => {
+  (0, import_react36.useEffect)(() => {
     let active = true;
     fetchPizzaImages((imgs) => {
       if (active) setImages(imgs);
@@ -13554,7 +14909,7 @@ var PizzaPartyPage = () => {
       active = false;
     };
   }, []);
-  (0, import_react32.useEffect)(() => {
+  (0, import_react36.useEffect)(() => {
     let mounted = true;
     const loadAvailability = async () => {
       try {
@@ -13580,12 +14935,12 @@ var PizzaPartyPage = () => {
       clearInterval(timer);
     };
   }, []);
-  (0, import_react32.useEffect)(() => {
+  (0, import_react36.useEffect)(() => {
     if (selectedDate && soldOutDates.has(selectedDate)) {
       setSelectedDate(null);
     }
   }, [selectedDate, soldOutDates]);
-  (0, import_react32.useEffect)(() => {
+  (0, import_react36.useEffect)(() => {
     if (!showModal) return;
     const apiKey = window.GOOGLE_PLACES_KEY || import_meta6?.env?.VITE_GOOGLE_PLACES_KEY;
     if (!apiKey) return;
@@ -13628,7 +14983,7 @@ var PizzaPartyPage = () => {
       }
     };
   }, [showModal]);
-  (0, import_react32.useEffect)(() => {
+  (0, import_react36.useEffect)(() => {
     const params = new URLSearchParams(window.location.search);
     const b = params.get("booked");
     if (b) {
@@ -13662,7 +15017,7 @@ var PizzaPartyPage = () => {
   const submitBooking = async () => {
     if (!selectedDate) return;
     if (submitting) return;
-    if (!fullName.trim() || !isValidEmail(email) || !isValidPhone(phone) || !isValidAddress(address)) {
+    if (!fullName.trim() || !isValidEmail2(email) || !isValidPhone(phone) || !isValidAddress(address)) {
       setBookingState((s) => ({ ...s, [selectedDate]: { ...s[selectedDate] || {}, error: "Please complete required contact & address fields." } }));
       return;
     }
@@ -13741,87 +15096,87 @@ var PizzaPartyPage = () => {
       setSubmitting(false);
     }
   };
-  return /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)(import_jsx_runtime38.Fragment, { children: [
-    /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)(import_react_helmet_async6.Helmet, { children: [
-      /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("title", { children: pageTitle }),
-      /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("meta", { name: "description", content: pageDescription }),
-      /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("link", { rel: "canonical", href: canonical }),
-      /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("meta", { property: "og:title", content: pageTitle }),
-      /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("meta", { property: "og:description", content: pageDescription }),
-      /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("meta", { property: "og:type", content: "website" }),
-      /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("meta", { property: "og:url", content: canonical }),
-      /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("meta", { property: "og:site_name", content: siteName }),
-      /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("meta", { property: "og:locale", content: "en_US" }),
-      /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("meta", { name: "twitter:card", content: "summary_large_image" }),
-      /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("meta", { name: "twitter:title", content: pageTitle }),
-      /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("meta", { name: "twitter:description", content: pageDescription }),
-      /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("script", { type: "application/ld+json", children: JSON.stringify(jsonLd) })
+  return /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)(import_jsx_runtime40.Fragment, { children: [
+    /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)(import_react_helmet_async8.Helmet, { children: [
+      /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("title", { children: pageTitle }),
+      /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("meta", { name: "description", content: pageDescription }),
+      /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("link", { rel: "canonical", href: canonical }),
+      /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("meta", { property: "og:title", content: pageTitle }),
+      /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("meta", { property: "og:description", content: pageDescription }),
+      /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("meta", { property: "og:type", content: "website" }),
+      /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("meta", { property: "og:url", content: canonical }),
+      /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("meta", { property: "og:site_name", content: siteName }),
+      /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("meta", { property: "og:locale", content: "en_US" }),
+      /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("meta", { name: "twitter:card", content: "summary_large_image" }),
+      /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("meta", { name: "twitter:title", content: pageTitle }),
+      /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("meta", { name: "twitter:description", content: pageDescription }),
+      /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("script", { type: "application/ld+json", children: JSON.stringify(jsonLd) })
     ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("div", { className: "space-y-16", children: bookedDate && /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)("div", { className: `p-4 rounded-lg border bg-green-50 text-green-800 text-sm shadow-sm flex items-start gap-3 transition-all ${justBooked ? "border-green-400 ring-2 ring-green-300" : "border-green-300"}`, children: [
-      /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("span", { className: "font-semibold", children: "Booked!" }),
-      /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)("span", { children: [
+    /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("div", { className: "space-y-16", children: bookedDate && /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)("div", { className: `p-4 rounded-lg border bg-green-50 text-green-800 text-sm shadow-sm flex items-start gap-3 transition-all ${justBooked ? "border-green-400 ring-2 ring-green-300" : "border-green-300"}`, children: [
+      /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("span", { className: "font-semibold", children: "Booked!" }),
+      /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)("span", { children: [
         "Your reservation for ",
-        /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("strong", { children: bookedDate }),
+        /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("strong", { children: bookedDate }),
         " was received. We\\'ll follow up to confirm details."
       ] })
     ] }) }),
-    /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)("div", { className: "mx-auto max-w-6xl px-4 py-10 space-y-14", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)("div", { className: "text-center space-y-4", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("h1", { className: "heading-display heading-balance", children: "Pizza party special" }),
-        /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)("p", { className: "mt-2 text-xl md:text-2xl text-neutral-800 max-w-3xl mx-auto leading-relaxed", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)("div", { className: "mx-auto max-w-6xl px-4 py-10 space-y-14", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)("div", { className: "text-center space-y-4", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("h1", { className: "heading-display heading-balance", children: "Pizza party special" }),
+        /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)("p", { className: "mt-2 text-xl md:text-2xl text-neutral-800 max-w-3xl mx-auto leading-relaxed", children: [
           "Host an unforgettable pizza experience right in your home. We bring the oven, the dough, and the vibes. We call it ",
-          /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("strong", { children: "Local Pizza" }),
+          /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("strong", { children: "Local Pizza" }),
           "."
         ] })
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("section", { children: /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)("div", { className: "relative rounded-2xl border bg-gradient-to-br from-amber-50 via-orange-50 to-rose-50 p-6 md:p-10 overflow-hidden", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("div", { className: "absolute inset-0 pointer-events-none opacity-[0.15]", style: { backgroundImage: "radial-gradient(circle at 30% 30%, #fb923c, transparent 60%)" } }),
-        /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)("div", { className: "relative grid md:grid-cols-3 gap-8 items-center", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)("div", { className: "md:col-span-2 space-y-4", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("h2", { className: "heading-lg heading-balance", children: "Pizza party in your home" }),
-            /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)("ul", { className: "list-disc list-inside text-neutral-700 text-sm md:text-base space-y-1", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("li", { children: "Up to 15 guests" }),
-              /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("li", { children: "100% local midwest ingredients, slow-fermented sourdough crust" }),
-              /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("li", { children: "We handle setup, firing & service" }),
-              /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("li", { children: "Includes 2 hours of active pizza making/eating time" })
+      /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("section", { children: /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)("div", { className: "relative rounded-2xl border bg-gradient-to-br from-amber-50 via-orange-50 to-rose-50 p-6 md:p-10 overflow-hidden", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("div", { className: "absolute inset-0 pointer-events-none opacity-[0.15]", style: { backgroundImage: "radial-gradient(circle at 30% 30%, #fb923c, transparent 60%)" } }),
+        /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)("div", { className: "relative grid md:grid-cols-3 gap-8 items-center", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)("div", { className: "md:col-span-2 space-y-4", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("h2", { className: "heading-lg heading-balance", children: "Pizza party in your home" }),
+            /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)("ul", { className: "list-disc list-inside text-neutral-700 text-sm md:text-base space-y-1", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("li", { children: "Up to 15 guests" }),
+              /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("li", { children: "100% local midwest ingredients, slow-fermented sourdough crust" }),
+              /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("li", { children: "We handle setup, firing & service" }),
+              /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("li", { children: "Includes 2 hours of active pizza making/eating time" })
             ] })
           ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)("div", { className: "flex flex-col items-center justify-center gap-4", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)("div", { className: "text-center space-y-2", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)("div", { className: "text-5xl font-extrabold tracking-tight bg-gradient-to-r from-orange-500 to-rose-500 bg-clip-text text-transparent", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)("div", { className: "flex flex-col items-center justify-center gap-4", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)("div", { className: "text-center space-y-2", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)("div", { className: "text-5xl font-extrabold tracking-tight bg-gradient-to-r from-orange-500 to-rose-500 bg-clip-text text-transparent", children: [
                 "$",
                 basePrice
               ] }),
-              /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("div", { className: "mt-1 text-xs uppercase tracking-wider text-neutral-500", children: "Deposit to Reserve" }),
-              /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)("div", { className: "text-sm text-neutral-600", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("div", { className: "mt-1 text-xs uppercase tracking-wider text-neutral-500", children: "Deposit to Reserve" }),
+              /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)("div", { className: "text-sm text-neutral-600", children: [
                 "Est. $",
                 estimatedTotal,
                 " for 15 guests"
               ] })
             ] }),
-            /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("button", { type: "button", onClick: () => openModal(null), className: "inline-flex items-center rounded-md bg-orange-600 hover:bg-orange-700 text-white font-semibold px-6 py-3 shadow-sm transition-colors", children: "Book / Pay Deposit" })
+            /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("button", { type: "button", onClick: () => openModal(null), className: "inline-flex items-center rounded-md bg-orange-600 hover:bg-orange-700 text-white font-semibold px-6 py-3 shadow-sm transition-colors", children: "Book / Pay Deposit" })
           ] })
         ] })
       ] }) }),
-      /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)("section", { id: "dates", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)("h3", { className: "text-lg font-semibold mb-3 flex items-center gap-2", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)("section", { id: "dates", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)("h3", { className: "text-lg font-semibold mb-3 flex items-center gap-2", children: [
           "Available ",
           availabilityMonthLabel,
           " Dates",
-          /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("span", { className: "text-[10px] font-mono bg-neutral-200 rounded px-1.5 py-0.5", children: availabilityYearLabel })
+          /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("span", { className: "text-[10px] font-mono bg-neutral-200 rounded px-1.5 py-0.5", children: availabilityYearLabel })
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("div", { className: "mx-auto max-w-4xl", children: upcomingDates.length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("div", { className: "rounded-xl border border-dashed border-neutral-300 bg-neutral-50 px-4 py-6 text-center text-sm text-neutral-600", children: "More pizza party dates are coming soon. Reach out if you need a custom date." }) : /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("ul", { className: "grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4", children: upcomingDates.map(({ label, weekday }) => {
+        /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("div", { className: "mx-auto max-w-4xl", children: upcomingDates.length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("div", { className: "rounded-xl border border-dashed border-neutral-300 bg-neutral-50 px-4 py-6 text-center text-sm text-neutral-600", children: "More pizza party dates are coming soon. Reach out if you need a custom date." }) : /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("ul", { className: "grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4", children: upcomingDates.map(({ label, weekday }) => {
           const st = bookingState[label] || {};
           const isSoldOut = soldOutDates.has(label);
-          return /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)("li", { className: `relative group rounded-xl border bg-white/80 backdrop-blur-sm shadow-sm px-3 py-3 flex flex-col items-start justify-between h-28 overflow-hidden ${isSoldOut ? "opacity-80" : ""}`, children: [
-            /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)("div", { className: "w-full flex items-start justify-between gap-2", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)("div", { children: [
-                weekday && /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("span", { className: "block text-[10px] uppercase tracking-wide text-neutral-500", children: weekday }),
-                /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("span", { className: "font-semibold text-neutral-800 text-sm tracking-tight", children: label })
+          return /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)("li", { className: `relative group rounded-xl border bg-white/80 backdrop-blur-sm shadow-sm px-3 py-3 flex flex-col items-start justify-between h-28 overflow-hidden ${isSoldOut ? "opacity-80" : ""}`, children: [
+            /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)("div", { className: "w-full flex items-start justify-between gap-2", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)("div", { children: [
+                weekday && /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("span", { className: "block text-[10px] uppercase tracking-wide text-neutral-500", children: weekday }),
+                /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("span", { className: "font-semibold text-neutral-800 text-sm tracking-tight", children: label })
               ] }),
-              st.loading && /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("span", { className: "text-[10px] text-orange-600 animate-pulse", children: "..." })
+              st.loading && /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("span", { className: "text-[10px] text-orange-600 animate-pulse", children: "..." })
             ] }),
-            /* @__PURE__ */ (0, import_jsx_runtime38.jsx)(
+            /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(
               "button",
               {
                 type: "button",
@@ -13832,22 +15187,22 @@ var PizzaPartyPage = () => {
                 children: isSoldOut ? "Sold out" : st.loading ? "Processing" : "Book"
               }
             ),
-            isSoldOut && /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("span", { className: "absolute top-2 right-2 text-[10px] font-semibold uppercase tracking-wide bg-rose-100 text-rose-700 rounded px-2 py-0.5", children: "Sold Out" }),
-            /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("div", { className: "pointer-events-none absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity bg-gradient-to-br from-orange-50/40 to-rose-50/40" })
+            isSoldOut && /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("span", { className: "absolute top-2 right-2 text-[10px] font-semibold uppercase tracking-wide bg-rose-100 text-rose-700 rounded px-2 py-0.5", children: "Sold Out" }),
+            /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("div", { className: "pointer-events-none absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity bg-gradient-to-br from-orange-50/40 to-rose-50/40" })
           ] }, label);
         }) }) })
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)("section", { children: [
-        /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)("div", { className: "flex items-center justify-between mb-5", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("h3", { className: "text-xl font-semibold", children: "Pizza Inspiration" }),
-          loading && /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("span", { className: "text-sm text-neutral-500 animate-pulse", children: "Loading..." })
+      /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)("section", { children: [
+        /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)("div", { className: "flex items-center justify-between mb-5", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("h3", { className: "text-xl font-semibold", children: "Pizza Inspiration" }),
+          loading && /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("span", { className: "text-sm text-neutral-500 animate-pulse", children: "Loading..." })
         ] }),
-        error && /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)("div", { className: "p-4 mb-6 rounded-md bg-rose-50 border border-rose-200 text-rose-700 text-sm", children: [
+        error && /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)("div", { className: "p-4 mb-6 rounded-md bg-rose-50 border border-rose-200 text-rose-700 text-sm", children: [
           "Could not load images: ",
           error
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)("div", { className: "columns-2 md:columns-3 lg:columns-4 gap-3 [column-fill:_balance]", children: [
-          images.map((img, idx) => /* @__PURE__ */ (0, import_jsx_runtime38.jsx)(import_framer_motion11.motion.figure, { className: "mb-3 break-inside-avoid rounded-lg overflow-hidden shadow-sm bg-neutral-100", whileHover: { scale: 1.02 }, children: /* @__PURE__ */ (0, import_jsx_runtime38.jsx)(
+        /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)("div", { className: "columns-2 md:columns-3 lg:columns-4 gap-3 [column-fill:_balance]", children: [
+          images.map((img, idx) => /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(import_framer_motion11.motion.figure, { className: "mb-3 break-inside-avoid rounded-lg overflow-hidden shadow-sm bg-neutral-100", whileHover: { scale: 1.02 }, children: /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(
             "img",
             {
               src: img.thumbnail_url,
@@ -13858,30 +15213,30 @@ var PizzaPartyPage = () => {
               fetchPriority: idx < 2 ? "high" : "auto"
             }
           ) }, img.asset_id || img.public_id)),
-          !loading && images.length === 0 && !error && /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("p", { className: "text-sm text-neutral-500", children: "No images found yet. Tag some photos in Cloudinary with 'pizza'." })
+          !loading && images.length === 0 && !error && /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("p", { className: "text-sm text-neutral-500", children: "No images found yet. Tag some photos in Cloudinary with 'pizza'." })
         ] })
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)("section", { children: [
-        /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("h3", { className: "text-xl font-semibold mt-24 mb-6", children: "FAQ" }),
-        /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)("div", { className: "space-y-6", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)("div", { children: [
-            /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("h4", { className: "font-medium text-neutral-900", children: "What pizzas does this include?" }),
-            /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("p", { className: "text-sm text-neutral-700 mt-1", children: "We have some signature favorites, or we're happy to take requests." })
+      /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)("section", { children: [
+        /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("h3", { className: "text-xl font-semibold mt-24 mb-6", children: "FAQ" }),
+        /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)("div", { className: "space-y-6", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)("div", { children: [
+            /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("h4", { className: "font-medium text-neutral-900", children: "What pizzas does this include?" }),
+            /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("p", { className: "text-sm text-neutral-700 mt-1", children: "We have some signature favorites, or we're happy to take requests." })
           ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)("div", { children: [
-            /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("h4", { className: "font-medium text-neutral-900", children: "Does it include anything besides pizza?" }),
-            /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("p", { className: "text-sm text-neutral-700 mt-1", children: "This offer is just for pizza, but we can build a bigger package if you like. It's easy to add additional sides like salads and dessert." })
+          /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)("div", { children: [
+            /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("h4", { className: "font-medium text-neutral-900", children: "Does it include anything besides pizza?" }),
+            /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("p", { className: "text-sm text-neutral-700 mt-1", children: "This offer is just for pizza, but we can build a bigger package if you like. It's easy to add additional sides like salads and dessert." })
           ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)("div", { children: [
-            /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("h4", { className: "font-medium text-neutral-900", children: "What kind of pizza do you make?" }),
-            /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("p", { className: "text-sm text-neutral-700 mt-1", children: "Minnesotan-style. It's sort of neapolitan, sort of New York. Puffy, crispy, chewy crusts. It's our own thing." })
+          /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)("div", { children: [
+            /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("h4", { className: "font-medium text-neutral-900", children: "What kind of pizza do you make?" }),
+            /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("p", { className: "text-sm text-neutral-700 mt-1", children: "Minnesotan-style. It's sort of neapolitan, sort of New York. Puffy, crispy, chewy crusts. It's our own thing." })
           ] })
         ] })
       ] })
     ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime38.jsx)(import_framer_motion11.AnimatePresence, { children: showModal && /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)(import_framer_motion11.motion.div, { className: "fixed inset-0 z-50 flex items-start justify-center p-4 overflow-y-auto", initial: { opacity: 0 }, animate: { opacity: 1 }, exit: { opacity: 0 }, children: [
-      /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("div", { className: "absolute inset-0 bg-black/40 backdrop-blur-sm", onClick: closeModal }),
-      /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)(
+    /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(import_framer_motion11.AnimatePresence, { children: showModal && /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)(import_framer_motion11.motion.div, { className: "fixed inset-0 z-50 flex items-start justify-center p-4 overflow-y-auto", initial: { opacity: 0 }, animate: { opacity: 1 }, exit: { opacity: 0 }, children: [
+      /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("div", { className: "absolute inset-0 bg-black/40 backdrop-blur-sm", onClick: closeModal }),
+      /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)(
         import_framer_motion11.motion.div,
         {
           initial: { scale: 0.9, opacity: 0 },
@@ -13890,18 +15245,18 @@ var PizzaPartyPage = () => {
           transition: { type: "spring", stiffness: 220, damping: 20 },
           className: "relative w-full max-w-md rounded-xl bg-white shadow-lg border p-6 space-y-5 mt-10 mb-10 max-h-[90vh] overflow-y-auto",
           children: [
-            /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)("div", { className: "flex items-start justify-between gap-4", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)("div", { children: [
-                /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("h3", { className: "text-lg font-semibold", children: selectedDate ? `Book ${selectedDate}` : "Select a Date" }),
-                /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("p", { className: "text-xs text-neutral-500 mt-0.5", children: selectedDate ? "Confirm your details below." : "Choose a date to continue." })
+            /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)("div", { className: "flex items-start justify-between gap-4", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)("div", { children: [
+                /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("h3", { className: "text-lg font-semibold", children: selectedDate ? `Book ${selectedDate}` : "Select a Date" }),
+                /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("p", { className: "text-xs text-neutral-500 mt-0.5", children: selectedDate ? "Confirm your details below." : "Choose a date to continue." })
               ] }),
-              /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("button", { onClick: closeModal, className: "text-neutral-400 hover:text-neutral-600", "aria-label": "Close", children: "\u2715" })
+              /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("button", { onClick: closeModal, className: "text-neutral-400 hover:text-neutral-600", "aria-label": "Close", children: "\u2715" })
             ] }),
-            !selectedDate && /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("div", { className: "space-y-2", children: /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("ul", { className: "max-h-48 overflow-auto border rounded-md divide-y", children: upcomingDates.map(({ label }) => {
+            !selectedDate && /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("div", { className: "space-y-2", children: /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("ul", { className: "max-h-48 overflow-auto border rounded-md divide-y", children: upcomingDates.map(({ label }) => {
               const isSoldOut = soldOutDates.has(label);
-              return /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)("li", { className: "flex items-center justify-between px-3 py-2 text-sm", children: [
-                /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("span", { children: label }),
-                /* @__PURE__ */ (0, import_jsx_runtime38.jsx)(
+              return /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)("li", { className: "flex items-center justify-between px-3 py-2 text-sm", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("span", { children: label }),
+                /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(
                   "button",
                   {
                     type: "button",
@@ -13913,39 +15268,39 @@ var PizzaPartyPage = () => {
                 )
               ] }, label);
             }) }) }),
-            selectedDate && /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)("div", { className: "space-y-4", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)("label", { className: "block text-sm font-medium", children: [
+            selectedDate && /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)("div", { className: "space-y-4", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)("label", { className: "block text-sm font-medium", children: [
                 "Name",
-                /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("input", { type: "text", value: fullName, onChange: (e) => setFullName(e.target.value), placeholder: "Your full name", className: "mt-1 w-full rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500" })
+                /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("input", { type: "text", value: fullName, onChange: (e) => setFullName(e.target.value), placeholder: "Your full name", className: "mt-1 w-full rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500" })
               ] }),
-              /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)("label", { className: "block text-sm font-medium", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)("label", { className: "block text-sm font-medium", children: [
                 "Email",
-                /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("input", { type: "email", value: email, onChange: (e) => setEmail(e.target.value), placeholder: "you@example.com", className: "mt-1 w-full rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500" })
+                /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("input", { type: "email", value: email, onChange: (e) => setEmail(e.target.value), placeholder: "you@example.com", className: "mt-1 w-full rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500" })
               ] }),
-              /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)("label", { className: "block text-sm font-medium", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)("label", { className: "block text-sm font-medium", children: [
                 "Phone",
-                /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("input", { type: "tel", value: phone, onChange: (e) => setPhone(formatPhone(e.target.value)), placeholder: "(555) 123-4567", className: "mt-1 w-full rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500" })
+                /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("input", { type: "tel", value: phone, onChange: (e) => setPhone(formatPhone2(e.target.value)), placeholder: "(555) 123-4567", className: "mt-1 w-full rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500" })
               ] }),
-              /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)("fieldset", { className: "border rounded-md p-3 space-y-2", children: [
-                /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("legend", { className: "text-xs font-semibold uppercase tracking-wide text-neutral-600", children: "Address" }),
-                /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)("div", { className: "grid grid-cols-1 gap-2", children: [
-                  /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("input", { id: "pp-address-line1", value: address.line1, onChange: (e) => setAddress((a) => ({ ...a, line1: e.target.value })), placeholder: "Street address", className: "rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500" }),
-                  /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("input", { value: address.line2, onChange: (e) => setAddress((a) => ({ ...a, line2: e.target.value })), placeholder: "Apt / Suite (optional)", className: "rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500" }),
-                  /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)("div", { className: "grid grid-cols-6 gap-2", children: [
-                    /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("input", { value: address.city, onChange: (e) => setAddress((a) => ({ ...a, city: e.target.value })), placeholder: "City", className: "col-span-3 rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500" }),
-                    /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("input", { value: address.state, onChange: (e) => setAddress((a) => ({ ...a, state: e.target.value })), placeholder: "State", className: "col-span-1 rounded-md border px-2 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500" }),
-                    /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("input", { value: address.postal, onChange: (e) => setAddress((a) => ({ ...a, postal: formatPostal(e.target.value) })), placeholder: "ZIP", className: "col-span-2 rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500" })
+              /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)("fieldset", { className: "border rounded-md p-3 space-y-2", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("legend", { className: "text-xs font-semibold uppercase tracking-wide text-neutral-600", children: "Address" }),
+                /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)("div", { className: "grid grid-cols-1 gap-2", children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("input", { id: "pp-address-line1", value: address.line1, onChange: (e) => setAddress((a) => ({ ...a, line1: e.target.value })), placeholder: "Street address", className: "rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500" }),
+                  /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("input", { value: address.line2, onChange: (e) => setAddress((a) => ({ ...a, line2: e.target.value })), placeholder: "Apt / Suite (optional)", className: "rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500" }),
+                  /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)("div", { className: "grid grid-cols-6 gap-2", children: [
+                    /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("input", { value: address.city, onChange: (e) => setAddress((a) => ({ ...a, city: e.target.value })), placeholder: "City", className: "col-span-3 rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500" }),
+                    /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("input", { value: address.state, onChange: (e) => setAddress((a) => ({ ...a, state: e.target.value })), placeholder: "State", className: "col-span-1 rounded-md border px-2 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500" }),
+                    /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("input", { value: address.postal, onChange: (e) => setAddress((a) => ({ ...a, postal: formatPostal2(e.target.value) })), placeholder: "ZIP", className: "col-span-2 rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500" })
                   ] })
                 ] })
               ] }),
-              /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)("div", { className: "grid grid-cols-2 gap-4", children: [
-                /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)("label", { className: "block text-sm font-medium", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)("div", { className: "grid grid-cols-2 gap-4", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)("label", { className: "block text-sm font-medium", children: [
                   "Mealtime",
-                  /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("select", { value: mealTime, onChange: (e) => setMealTime(e.target.value), className: "mt-1 w-full rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500", children: ["4:00 PM", "4:30 PM", "5:00 PM", "5:30 PM", "6:00 PM", "6:30 PM", "7:00 PM"].map((t) => /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("option", { value: t, children: t }, t)) })
+                  /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("select", { value: mealTime, onChange: (e) => setMealTime(e.target.value), className: "mt-1 w-full rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500", children: ["4:00 PM", "4:30 PM", "5:00 PM", "5:30 PM", "6:00 PM", "6:30 PM", "7:00 PM"].map((t) => /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("option", { value: t, children: t }, t)) })
                 ] }),
-                /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)("label", { className: "block text-sm font-medium", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)("label", { className: "block text-sm font-medium", children: [
                   "Guests",
-                  /* @__PURE__ */ (0, import_jsx_runtime38.jsx)(
+                  /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(
                     "input",
                     {
                       type: "number",
@@ -13958,59 +15313,59 @@ var PizzaPartyPage = () => {
                   )
                 ] })
               ] }),
-              /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)("div", { className: "space-y-2 border rounded-md p-3", children: [
-                /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)("label", { className: "flex items-center gap-2 text-sm font-medium", children: [
-                  /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("input", { type: "checkbox", checked: addOnEnabled, onChange: (e) => setAddOnEnabled(e.target.checked) }),
-                  /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("span", { children: "Add salads & dessert ($9 / guest)" })
+              /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)("div", { className: "space-y-2 border rounded-md p-3", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)("label", { className: "flex items-center gap-2 text-sm font-medium", children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("input", { type: "checkbox", checked: addOnEnabled, onChange: (e) => setAddOnEnabled(e.target.checked) }),
+                  /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("span", { children: "Add salads & dessert ($9 / guest)" })
                 ] }),
-                addOnEnabled && /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("div", { className: "flex items-center gap-3 pl-6", children: /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)("span", { className: "text-xs text-neutral-500", children: [
+                addOnEnabled && /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("div", { className: "flex items-center gap-3 pl-6", children: /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)("span", { className: "text-xs text-neutral-500", children: [
                   "Add-on total: $",
                   addOnTotal
                 ] }) })
               ] }),
-              /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)("label", { className: "block text-sm font-medium", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)("label", { className: "block text-sm font-medium", children: [
                 "Pizza Requests (optional)",
-                /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("textarea", { value: pizzaRequests, onChange: (e) => setPizzaRequests(e.target.value), placeholder: "Favorite styles, dietary notes, special requests...", rows: 3, className: "mt-1 w-full rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500" })
+                /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("textarea", { value: pizzaRequests, onChange: (e) => setPizzaRequests(e.target.value), placeholder: "Favorite styles, dietary notes, special requests...", rows: 3, className: "mt-1 w-full rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500" })
               ] }),
-              /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)("div", { className: "space-y-1 pt-2 border-t text-sm", children: [
-                /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)("div", { className: "flex items-center justify-between font-medium", children: [
-                  /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("span", { children: "Deposit (due now)" }),
-                  /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)("span", { children: [
+              /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)("div", { className: "space-y-1 pt-2 border-t text-sm", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)("div", { className: "flex items-center justify-between font-medium", children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("span", { children: "Deposit (due now)" }),
+                  /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)("span", { children: [
                     "$",
                     grandTotal
                   ] })
                 ] }),
-                /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)("div", { className: "flex items-center justify-between text-neutral-600 text-xs", children: [
-                  /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("span", { children: "Estimated total (15 guests)" }),
-                  /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)("span", { children: [
+                /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)("div", { className: "flex items-center justify-between text-neutral-600 text-xs", children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("span", { children: "Estimated total (15 guests)" }),
+                  /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)("span", { children: [
                     "$",
                     estimatedTotal
                   ] })
                 ] })
               ] })
             ] }),
-            /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)("div", { className: "flex gap-3 pt-2", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("button", { onClick: closeModal, type: "button", className: "flex-1 rounded-md border px-4 py-2 text-sm font-medium hover:bg-neutral-50", children: "Cancel" }),
-              /* @__PURE__ */ (0, import_jsx_runtime38.jsx)(
+            /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)("div", { className: "flex gap-3 pt-2", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("button", { onClick: closeModal, type: "button", className: "flex-1 rounded-md border px-4 py-2 text-sm font-medium hover:bg-neutral-50", children: "Cancel" }),
+              /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(
                 "button",
                 {
                   onClick: selectedDate ? submitBooking : void 0,
                   type: "button",
-                  disabled: selectedDate ? bookingState[selectedDate]?.loading || submitting || !cardLoaded || !!cardError || loadingScript || !isValidEmail(email) || !fullName.trim() || !isValidPhone(phone) || !isValidAddress(address) : false,
+                  disabled: selectedDate ? bookingState[selectedDate]?.loading || submitting || !cardLoaded || !!cardError || loadingScript || !isValidEmail2(email) || !fullName.trim() || !isValidPhone(phone) || !isValidAddress(address) : false,
                   className: `flex-1 rounded-md text-sm font-semibold px-4 py-2 shadow disabled:opacity-60 disabled:cursor-not-allowed ${selectedDate ? "bg-orange-600 hover:bg-orange-700 text-white" : "bg-neutral-200 text-neutral-500 cursor-not-allowed"}`,
-                  children: selectedDate ? bookingState[selectedDate]?.loading || submitting ? "Processing\u2026" : !fullName.trim() ? "Enter Name" : !isValidEmail(email) ? "Enter Email" : !isValidPhone(phone) ? "Phone Needed" : !isValidAddress(address) ? "Address Needed" : "Pay Deposit" : "Select a Date"
+                  children: selectedDate ? bookingState[selectedDate]?.loading || submitting ? "Processing\u2026" : !fullName.trim() ? "Enter Name" : !isValidEmail2(email) ? "Enter Email" : !isValidPhone(phone) ? "Phone Needed" : !isValidAddress(address) ? "Address Needed" : "Pay Deposit" : "Select a Date"
                 }
               )
             ] }),
-            selectedDate && bookingState[selectedDate]?.error && /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("p", { className: "text-xs text-rose-600 pt-2", children: bookingState[selectedDate].error }),
-            selectedDate && bookingState[selectedDate]?.success && /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("p", { className: "text-xs text-emerald-600 pt-2", children: "Payment successful! We will confirm shortly." }),
-            cardError && /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("p", { className: "text-xs text-rose-600 pt-2", children: cardError }),
-            /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)("div", { className: "mt-4 border rounded-md p-4 bg-white", "aria-label": "Pizza party card form", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("div", { id: "pp-card-container", className: "min-h-[88px]" }),
-              !cardLoaded && !cardError && /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("p", { className: "mt-2 text-xs text-neutral-500", children: loadingScript ? "Loading payment library\u2026" : "Initializing secure payment form\u2026" }),
-              (cardError || selectedDate && bookingState[selectedDate]?.error) && /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)("div", { className: "mt-2 text-[10px] text-rose-600 space-y-1", children: [
-                cardError && /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("p", { children: cardError }),
-                /* @__PURE__ */ (0, import_jsx_runtime38.jsx)(FallbackLink, { date: selectedDate, email, addOnGuests: addOnEnabled ? guestCount : 0 })
+            selectedDate && bookingState[selectedDate]?.error && /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("p", { className: "text-xs text-rose-600 pt-2", children: bookingState[selectedDate].error }),
+            selectedDate && bookingState[selectedDate]?.success && /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("p", { className: "text-xs text-emerald-600 pt-2", children: "Payment successful! We will confirm shortly." }),
+            cardError && /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("p", { className: "text-xs text-rose-600 pt-2", children: cardError }),
+            /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)("div", { className: "mt-4 border rounded-md p-4 bg-white", "aria-label": "Pizza party card form", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("div", { id: "pp-card-container", className: "min-h-[88px]" }),
+              !cardLoaded && !cardError && /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("p", { className: "mt-2 text-xs text-neutral-500", children: loadingScript ? "Loading payment library\u2026" : "Initializing secure payment form\u2026" }),
+              (cardError || selectedDate && bookingState[selectedDate]?.error) && /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)("div", { className: "mt-2 text-[10px] text-rose-600 space-y-1", children: [
+                cardError && /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("p", { children: cardError }),
+                /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(FallbackLink, { date: selectedDate, email, addOnGuests: addOnEnabled ? guestCount : 0 })
               ] })
             ] })
           ]
@@ -14021,9 +15376,9 @@ var PizzaPartyPage = () => {
   ] });
 };
 var FallbackLink = ({ date, email, addOnGuests }) => {
-  const [url, setUrl] = import_react32.default.useState(null);
-  const [loading, setLoading] = import_react32.default.useState(false);
-  const [err, setErr] = import_react32.default.useState("");
+  const [url, setUrl] = import_react36.default.useState(null);
+  const [loading, setLoading] = import_react36.default.useState(false);
+  const [err, setErr] = import_react36.default.useState("");
   const build = async () => {
     if (loading) return;
     setLoading(true);
@@ -14043,33 +15398,993 @@ var FallbackLink = ({ date, email, addOnGuests }) => {
       setLoading(false);
     }
   };
-  return /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)("div", { className: "space-y-1", children: [
-    !url && /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("button", { type: "button", onClick: build, className: "underline text-[10px]", children: "Get fallback hosted checkout" }),
-    loading && /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("p", { children: "Building link\u2026" }),
-    err && /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("p", { className: "text-rose-600", children: err }),
-    url && /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("p", { children: /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("a", { href: url, className: "text-orange-600 underline", target: "_blank", rel: "noopener noreferrer", children: "Open hosted Square checkout" }) })
+  return /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)("div", { className: "space-y-1", children: [
+    !url && /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("button", { type: "button", onClick: build, className: "underline text-[10px]", children: "Get fallback hosted checkout" }),
+    loading && /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("p", { children: "Building link\u2026" }),
+    err && /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("p", { className: "text-rose-600", children: err }),
+    url && /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("p", { children: /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("a", { href: url, className: "text-orange-600 underline", target: "_blank", rel: "noopener noreferrer", children: "Open hosted Square checkout" }) })
   ] });
 };
 FallbackLink.propTypes = {};
 var PizzaPartyPage_default = PizzaPartyPage;
 
+// src/pages/PsychePage.jsx
+var import_react39 = __toESM(require("react"));
+var import_react_helmet_async9 = __toESM(require_lib());
+
+// node_modules/.pnpm/react-image-zooom@1.6.0_react-dom@18.2.0_react@18.2.0__react@18.2.0/node_modules/react-image-zooom/dist/react-image-zooom.mjs
+var import_jsx_runtime41 = require("react/jsx-runtime");
+var import_react37 = require("react");
+(function() {
+  "use strict";
+  try {
+    if (typeof document < "u") {
+      var o = document.createElement("style");
+      o.appendChild(document.createTextNode('@keyframes rotate{0%{transform:rotate(0)}to{transform:rotate(360deg)}}figure.image-zooom{position:relative;display:inline-block;width:auto;min-height:25vh;background-position:50% 50%;background-color:#eee;margin:0;overflow:hidden;cursor:zoom-in;-webkit-user-select:none;user-select:none}figure.image-zooom.loaded{min-height:auto}figure.image-zooom.zoomed{cursor:zoom-out}figure.image-zooom:before{content:"";background-color:transparent;position:absolute;top:0;left:0;right:0;width:100%;height:100%;opacity:1;transition:opacity .2s ease-in-out;z-index:1}figure.image-zooom.loaded:before{opacity:0}figure.image-zooom:after{content:"";position:absolute;top:calc(50% - 25px);left:calc(50% - 25px);width:50px;height:50px;border-radius:50%;border:5px solid transparent;border-top-color:#333;border-right-color:#333;border-bottom-color:#333;animation:rotate 2s linear infinite;opacity:1;transition:opacity .2s ease-in-out;z-index:2}figure.image-zooom.loaded:after{opacity:0}img#imageZoom{opacity:1;display:block}figure.image-zooom.zoomed img#imageZoom{opacity:0}p.image-zooom-error{width:100%;text-align:center;border:1px solid #f8f8f8;padding:8px 16px;border-radius:8px;color:#555}')), document.head.appendChild(o);
+    }
+  } catch (e) {
+    console.error("vite-plugin-css-injected-by-js", e);
+  }
+})();
+function A(t, o) {
+  (0, import_react37.useEffect)(() => {
+    const e = getComputedStyle(document.body).overflow || "auto";
+    return t ? document.body.style.overflow = "hidden" : document.body.style.overflow = e, () => {
+      document.body.style.overflow = e;
+    };
+  }, [t]), (0, import_react37.useEffect)(() => {
+    if (!o) return;
+    const e = (n) => {
+      t && n.touches.length === 1 && n.preventDefault();
+    };
+    return t && o.addEventListener("touchmove", e, { passive: false }), () => {
+      o.removeEventListener("touchmove", e);
+    };
+  }, [t, o]);
+}
+function F(t, o, e, n) {
+  return (0, import_react37.useMemo)(() => {
+    if (!o || !e) return `${t}%`;
+    const r = (n == null ? void 0 : n.clientWidth) || 0;
+    if (!r) return `${t}%`;
+    const u = e / r * 100;
+    return `${u < 100 ? t : u}%`;
+  }, [t, o, e, n]);
+}
+function G(t) {
+  return (0, import_react37.useCallback)((o) => {
+    if (!t) return;
+    const e = t.getBoundingClientRect();
+    let n, r;
+    if (((s) => "touches" in s)(o)) {
+      const s = o.touches[0];
+      n = (s.clientX - e.x) / e.width * 100, r = (s.clientY - e.y) / e.height * 100;
+    } else
+      n = (o.clientX - e.x) / e.width * 100, r = (o.clientY - e.y) / e.height * 100;
+    return `${Math.max(0, Math.min(n, 100))}% ${Math.max(
+      0,
+      Math.min(r, 100)
+    )}%`;
+  }, [t]);
+}
+function J(t, o) {
+  const [e, n] = (0, import_react37.useState)({
+    imgData: null,
+    error: false,
+    naturalWidth: 0,
+    naturalHeight: 0
+  });
+  return (0, import_react37.useEffect)(() => {
+    if (n({ imgData: null, error: false, naturalWidth: 0, naturalHeight: 0 }), !t) {
+      n((h) => ({ ...h, error: true }));
+      return;
+    }
+    const r = new Image(), u = () => {
+      n({
+        imgData: r.src,
+        error: false,
+        naturalWidth: r.naturalWidth,
+        naturalHeight: r.naturalHeight
+      });
+    }, s = (h) => {
+      n((y) => ({ ...y, error: true })), o == null || o(h);
+    };
+    return r.addEventListener("load", u), r.addEventListener("error", s), r.src = t, () => {
+      r.removeEventListener("load", u), r.removeEventListener("error", s);
+    };
+  }, [t, o]), e;
+}
+function U({
+  zoom: t = "200",
+  fullWidth: o = false,
+  alt: e = "This is an imageZoom image",
+  width: n = "100%",
+  height: r = "auto",
+  src: u,
+  id: s,
+  className: h,
+  onError: y,
+  errorContent: x
+}) {
+  const [i, b] = (0, import_react37.useState)(false), [E, f] = (0, import_react37.useState)("50% 50%"), g = (0, import_react37.useRef)(null), l = G(g.current), m = (0, import_react37.useRef)(false);
+  A(i, g.current);
+  const { imgData: c, error: W, naturalWidth: B } = J(u, y), I = F(
+    t,
+    o,
+    B,
+    g.current
+  ), Z = (a, p, M, L, v, O) => {
+    p && (m.current = true);
+    const C = !M;
+    L(C);
+    const D = C ? O(a) : "50% 50%";
+    D && v(D);
+  }, $ = (a, p, M, L) => {
+    if (p) {
+      const v = L(a);
+      v && M(v);
+    }
+  }, j = (0, import_react37.useCallback)(
+    (a) => {
+      if (m.current) {
+        m.current = false;
+        return;
+      }
+      Z(a, false, i, b, f, l);
+    },
+    [i, l]
+  ), w = (0, import_react37.useCallback)(
+    (a) => {
+      a.touches.length === 1 && Z(a, true, i, b, f, l);
+    },
+    [i, l]
+  ), N = (0, import_react37.useCallback)(
+    (a) => {
+      $(a, i, f, l);
+    },
+    [i, l]
+  ), V = (0, import_react37.useCallback)(
+    (a) => {
+      a.touches.length === 1 && (a.preventDefault(), m.current = true, i ? $(a, i, f, l) : w(a));
+    },
+    [w, i, l]
+  ), k = (0, import_react37.useCallback)(() => {
+    m.current = false, b(false), f("50% 50%");
+  }, []), X2 = (0, import_react37.useMemo)(
+    () => ({
+      backgroundImage: `url(${i && c ? c : ""})`,
+      backgroundSize: I,
+      backgroundPosition: E
+    }),
+    [i, c, I, E]
+  );
+  if (W)
+    return (0, import_react37.isValidElement)(x) ? x : /* @__PURE__ */ (0, import_jsx_runtime41.jsx)("p", { className: "image-zooom-error", children: "There was a problem loading your image" });
+  const Y = [
+    c ? "loaded" : "loading",
+    i ? "zoomed" : "fullView",
+    "image-zooom",
+    h
+  ].filter(Boolean).join(" ");
+  return /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(
+    "figure",
+    {
+      ref: g,
+      id: s,
+      className: Y,
+      style: X2,
+      onClick: j,
+      onMouseMove: N,
+      onMouseLeave: k,
+      onTouchStart: w,
+      onTouchMove: V,
+      onTouchEnd: k,
+      role: "button",
+      "aria-label": `Zoomable image: ${e}`,
+      tabIndex: 0,
+      children: c && /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(
+        "img",
+        {
+          loading: "lazy",
+          id: "imageZoom",
+          src: c,
+          alt: e,
+          width: n,
+          height: r
+        }
+      )
+    }
+  );
+}
+
+// src/hooks/useSquareExpressPay.js
+var import_react38 = require("react");
+var import_meta7 = {};
+var readConfig = () => {
+  if (typeof window === "undefined") return { appId: null, locationId: null };
+  return {
+    appId: window.__SQUARE_APP_ID__ || import_meta7?.env?.VITE_SQUARE_APP_ID || null,
+    locationId: window.__SQUARE_LOCATION_ID__ || import_meta7?.env?.VITE_SQUARE_LOCATION_ID || null
+  };
+};
+var waitForSquare = (signal) => new Promise((resolve, reject) => {
+  if (window.Square) return resolve();
+  const start = Date.now();
+  const iv = setInterval(() => {
+    if (signal?.aborted) {
+      clearInterval(iv);
+      reject(new DOMException("Aborted", "AbortError"));
+      return;
+    }
+    if (window.Square) {
+      clearInterval(iv);
+      resolve();
+      return;
+    }
+    if (Date.now() - start > 15e3) {
+      clearInterval(iv);
+      reject(new Error("Square SDK not ready"));
+    }
+  }, 150);
+});
+function useSquareExpressPay({ amountCents, containerId, enabled, onToken }) {
+  const [googlePayAvailable, setGooglePayAvailable] = (0, import_react38.useState)(false);
+  const [applePayAvailable, setApplePayAvailable] = (0, import_react38.useState)(false);
+  const [loading, setLoading] = (0, import_react38.useState)(false);
+  const [error, setError] = (0, import_react38.useState)("");
+  const paymentsRef = (0, import_react38.useRef)(null);
+  const googlePayRef = (0, import_react38.useRef)(null);
+  const applePayRef = (0, import_react38.useRef)(null);
+  const destroy = (0, import_react38.useCallback)(() => {
+    [googlePayRef, applePayRef].forEach((ref) => {
+      if (ref.current) {
+        try {
+          ref.current.destroy?.();
+        } catch (_) {
+        }
+        ref.current = null;
+      }
+    });
+    setGooglePayAvailable(false);
+    setApplePayAvailable(false);
+  }, []);
+  (0, import_react38.useEffect)(() => {
+    if (!enabled || !amountCents || amountCents <= 0) return;
+    const controller = new AbortController();
+    const { signal } = controller;
+    const init = async () => {
+      setLoading(true);
+      setError("");
+      try {
+        const { appId, locationId } = readConfig();
+        if (!appId || !locationId) throw new Error("Square not configured");
+        await waitForSquare(signal);
+        if (signal.aborted) return;
+        const payments = window.Square.payments(appId, locationId);
+        paymentsRef.current = payments;
+        const paymentRequest = payments.paymentRequest({
+          countryCode: "US",
+          currencyCode: "USD",
+          total: {
+            amount: (amountCents / 100).toFixed(2),
+            label: "Local Effort"
+          }
+        });
+        const container2 = typeof containerId === "string" ? document.querySelector(containerId) : containerId;
+        if (!container2) throw new Error("Express pay container not found");
+        container2.innerHTML = "";
+        try {
+          const gPay = await payments.googlePay(paymentRequest);
+          await gPay.attach(container2);
+          googlePayRef.current = gPay;
+          if (!signal.aborted) setGooglePayAvailable(true);
+        } catch (_) {
+        }
+        try {
+          const aPay = await payments.applePay(paymentRequest);
+          await aPay.attach(container2);
+          applePayRef.current = aPay;
+          if (!signal.aborted) setApplePayAvailable(true);
+        } catch (_) {
+        }
+      } catch (err) {
+        if (!signal.aborted) setError(err?.message || "Express pay unavailable");
+      } finally {
+        if (!signal.aborted) setLoading(false);
+      }
+    };
+    const handleToken = async (event) => {
+      const token = event?.detail?.token || event?.token;
+      if (token && onToken) {
+        try {
+          await onToken(token);
+        } catch (_) {
+        }
+      }
+    };
+    const container = typeof containerId === "string" ? document.querySelector(containerId) : containerId;
+    container?.addEventListener("paymentMethodRequestUpdate", handleToken);
+    init();
+    return () => {
+      controller.abort();
+      destroy();
+      container?.removeEventListener("paymentMethodRequestUpdate", handleToken);
+    };
+  }, [enabled, amountCents, containerId]);
+  return { googlePayAvailable, applePayAvailable, loading, error };
+}
+
+// src/pages/PsychePage.jsx
+var import_jsx_runtime42 = require("react/jsx-runtime");
+var HERO_IMAGE = "/gallery/Screenshot%20%28172%29.png";
+var PRODUCT_PRICE_CENTS = 9e3;
+var MAX_QUANTITY = 4;
+var DELIVERY_FEE_CENTS = 1e3;
+var SHIPPING_FEE_CENTS = 1e3;
+var buildProductJsonLd = () => ({
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Product",
+      name: "Psyche Olive Oil \u2014 3 Liter Bag-in-Box",
+      description: "Single-estate, late-season koroneiki extra-virgin olive oil from Ampelofito, Greece. Bright, peppery finish \u2014 ideal for finishing, dipping, and drizzling. Produced by artist Theophilos Constantinou. EVA certified.",
+      image: `${SITE_URL}${HERO_IMAGE}`,
+      url: `${SITE_URL}/psyche`,
+      brand: {
+        "@type": "Brand",
+        name: "Psyche Olive Oil",
+        url: "https://psycheoliveoil.com/"
+      },
+      sku: "PSYCHE-3L",
+      category: "Grocery > Cooking Oils > Olive Oil",
+      material: "Extra-virgin olive oil \u2014 Koroneiki varietal",
+      countryOfOrigin: {
+        "@type": "Country",
+        name: "Greece"
+      },
+      weight: {
+        "@type": "QuantitativeValue",
+        value: 3,
+        unitCode: "LTR"
+      },
+      offers: {
+        "@type": "Offer",
+        price: "90.00",
+        priceCurrency: "USD",
+        availability: "https://schema.org/InStock",
+        url: `${SITE_URL}/psyche`,
+        priceValidUntil: "2026-12-31",
+        itemCondition: "https://schema.org/NewCondition",
+        seller: {
+          "@type": "LocalBusiness",
+          name: "Local Effort Food Co.",
+          url: SITE_URL,
+          address: {
+            "@type": "PostalAddress",
+            addressLocality: "Roseville",
+            addressRegion: "MN",
+            postalCode: "55113",
+            addressCountry: "US"
+          },
+          areaServed: {
+            "@type": "GeoCircle",
+            geoMidpoint: { "@type": "GeoCoordinates", latitude: 44.9778, longitude: -93.265 },
+            geoRadius: "50000"
+          }
+        },
+        shippingDetails: {
+          "@type": "OfferShippingDetails",
+          shippingRate: {
+            "@type": "MonetaryAmount",
+            value: "10.00",
+            currency: "USD"
+          },
+          shippingDestination: {
+            "@type": "DefinedRegion",
+            addressCountry: "US",
+            addressRegion: ["MN", "WI", "IA", "ND", "SD"]
+          },
+          deliveryTime: {
+            "@type": "ShippingDeliveryTime",
+            handlingTime: { "@type": "QuantitativeValue", minValue: 1, maxValue: 3, unitCode: "DAY" },
+            transitTime: { "@type": "QuantitativeValue", minValue: 2, maxValue: 5, unitCode: "DAY" }
+          }
+        }
+      }
+    },
+    {
+      "@type": "BreadcrumbList",
+      itemListElement: [
+        { "@type": "ListItem", position: 1, name: "Home", item: SITE_URL },
+        { "@type": "ListItem", position: 2, name: "Psyche Olive Oil", item: `${SITE_URL}/psyche` }
+      ]
+    }
+  ]
+});
+var formatMoney = (cents) => (cents / 100).toFixed(2);
+var isValidEmail = (value) => /.+@.+\..+/.test(value.trim());
+var normalizePhone = (value) => value.replace(/\D/g, "").slice(0, 10);
+var formatPhone = (value) => {
+  const digits = normalizePhone(value);
+  if (digits.length <= 3) return digits;
+  if (digits.length <= 6) return `(${digits.slice(0, 3)}) ${digits.slice(3)}`;
+  return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
+};
+var formatPostal = (value) => value.replace(/\D/g, "").slice(0, 5);
+var PsychePage = () => {
+  const [fulfillment, setFulfillment] = (0, import_react39.useState)("delivery");
+  const [deliveryZone, setDeliveryZone] = (0, import_react39.useState)("local");
+  const [quantity, setQuantity] = (0, import_react39.useState)(1);
+  const [customer, setCustomer] = (0, import_react39.useState)({ name: "", email: "", phone: "" });
+  const [address, setAddress] = (0, import_react39.useState)({ line1: "", line2: "", city: "", state: "MN", postal: "" });
+  const [deliveryNotes, setDeliveryNotes] = (0, import_react39.useState)("");
+  const [status, setStatus] = (0, import_react39.useState)("idle");
+  const [error, setError] = (0, import_react39.useState)("");
+  const [paymentId, setPaymentId] = (0, import_react39.useState)("");
+  const [emailStatus, setEmailStatus] = (0, import_react39.useState)(null);
+  const fulfillmentFeeCents = (0, import_react39.useMemo)(() => {
+    if (fulfillment === "shipping") return SHIPPING_FEE_CENTS;
+    return deliveryZone === "extended" ? DELIVERY_FEE_CENTS : 0;
+  }, [fulfillment, deliveryZone]);
+  const subtotalCents = (0, import_react39.useMemo)(
+    () => PRODUCT_PRICE_CENTS * quantity,
+    [quantity]
+  );
+  const totalCents = (0, import_react39.useMemo)(
+    () => subtotalCents + fulfillmentFeeCents,
+    [subtotalCents, fulfillmentFeeCents]
+  );
+  const { cardLoaded, error: cardError, loadingScript, tokenize, verifyBuyer } = useSquareCard(
+    "#psyche-card-container",
+    true,
+    []
+  );
+  const checkoutAttemptRef = (0, import_react39.useRef)("");
+  const attemptStorageKey = "le:checkoutAttempt:psyche";
+  const resolveCheckoutAttemptId = (0, import_react39.useCallback)(() => {
+    if (checkoutAttemptRef.current) return checkoutAttemptRef.current;
+    const next = getOrCreateCheckoutAttemptId(attemptStorageKey);
+    checkoutAttemptRef.current = next;
+    return next;
+  }, []);
+  const clearCheckoutAttempt = (0, import_react39.useCallback)(() => {
+    checkoutAttemptRef.current = "";
+    clearCheckoutAttemptId(attemptStorageKey);
+  }, []);
+  const handleExpressToken = (0, import_react39.useCallback)(async (token) => {
+    if (status === "submitting") return;
+    if (!customer.name.trim() || !customer.email.trim()) return;
+    setError("");
+    setStatus("submitting");
+    try {
+      const checkoutAttemptId = resolveCheckoutAttemptId();
+      const response = await fetch("/api/psyche/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          token,
+          fulfillment,
+          deliveryZone,
+          deliveryNotes,
+          quantity,
+          customer,
+          address,
+          checkoutAttemptId
+        })
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(data?.error || "Payment failed.");
+      setPaymentId(data?.paymentId || "");
+      setEmailStatus(data?.emailStatus || null);
+      setStatus("success");
+      clearCheckoutAttempt();
+    } catch (err) {
+      setStatus("error");
+      setError(err?.message || "Unable to complete purchase.");
+    }
+  }, [status, customer, address, fulfillment, deliveryZone, deliveryNotes, quantity]);
+  const { googlePayAvailable, applePayAvailable } = useSquareExpressPay({
+    amountCents: totalCents,
+    containerId: "#psyche-express-pay",
+    enabled: status !== "success",
+    onToken: handleExpressToken
+  });
+  const expressPayAvailable = googlePayAvailable || applePayAvailable;
+  const resetStatus = () => {
+    if (status !== "idle") {
+      setStatus("idle");
+      setError("");
+    }
+  };
+  const canSubmit = () => {
+    if (!customer.name.trim()) return false;
+    if (!isValidEmail(customer.email)) return false;
+    if (normalizePhone(customer.phone).length !== 10) return false;
+    if (!address.line1.trim() || !address.city.trim() || address.postal.trim().length < 5) return false;
+    if (!cardLoaded) return false;
+    return true;
+  };
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    if (status === "submitting") return;
+    setError("");
+    if (!canSubmit()) {
+      setError("Please complete all required fields before purchasing.");
+      return;
+    }
+    setStatus("submitting");
+    try {
+      const token = await tokenize();
+      const verificationDetails = {
+        amount: (totalCents / 100).toFixed(2),
+        currencyCode: "USD",
+        intent: "CHARGE",
+        billingContact: {
+          givenName: customer?.name?.split(" ")?.[0] || void 0,
+          familyName: customer?.name?.split(" ")?.slice(1).join(" ") || void 0,
+          email: customer?.email || void 0,
+          phone: customer?.phone || void 0,
+          addressLines: [address?.line1, address?.line2].filter(Boolean),
+          city: address?.city || void 0,
+          state: address?.state || void 0,
+          postalCode: address?.postal || void 0,
+          countryCode: "US"
+        }
+      };
+      const verificationToken = await verifyBuyer(token, verificationDetails);
+      const checkoutAttemptId = resolveCheckoutAttemptId();
+      const response = await fetch("/api/psyche/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          token,
+          verificationToken,
+          checkoutAttemptId,
+          fulfillment,
+          deliveryZone,
+          deliveryNotes,
+          quantity,
+          customer,
+          address
+        })
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(data?.error || "Payment failed.");
+      }
+      setPaymentId(data?.paymentId || "");
+      setEmailStatus(data?.emailStatus || null);
+      setStatus("success");
+      clearCheckoutAttempt();
+    } catch (err) {
+      setStatus("error");
+      setError(err?.message || "Unable to complete purchase.");
+    }
+  };
+  return /* @__PURE__ */ (0, import_jsx_runtime42.jsxs)("div", { className: "fullpage-demo february-page psyche-page", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime42.jsxs)(import_react_helmet_async9.Helmet, { children: [
+      /* @__PURE__ */ (0, import_jsx_runtime42.jsxs)("title", { children: [
+        "Buy Psyche Olive Oil \u2014 3L Extra-Virgin | ",
+        SITE_NAME
+      ] }),
+      /* @__PURE__ */ (0, import_jsx_runtime42.jsx)(
+        "meta",
+        {
+          name: "description",
+          content: "Buy Psyche extra-virgin olive oil (3 L bag-in-box) from Local Effort Food Co. in Minneapolis. Single-estate koroneiki from Greece \u2014 bright, peppery, EVA-certified. $90 with free local delivery."
+        }
+      ),
+      /* @__PURE__ */ (0, import_jsx_runtime42.jsx)(
+        "meta",
+        {
+          name: "keywords",
+          content: "Psyche olive oil, buy olive oil Minneapolis, extra virgin olive oil, koroneiki, Greek olive oil, Local Effort Food Co., bag in box olive oil, finishing oil"
+        }
+      ),
+      /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("link", { rel: "canonical", href: `${SITE_URL}/psyche` }),
+      /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("meta", { property: "og:type", content: "product" }),
+      /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("meta", { property: "og:url", content: `${SITE_URL}/psyche` }),
+      /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("meta", { property: "og:title", content: "Buy Psyche Olive Oil \u2014 3L Extra-Virgin | Local Effort Food Co." }),
+      /* @__PURE__ */ (0, import_jsx_runtime42.jsx)(
+        "meta",
+        {
+          property: "og:description",
+          content: "Single-estate koroneiki extra-virgin olive oil from Greece. Bright, peppery, EVA-certified. $90 for a 3-liter bag-in-box with free local delivery in Minneapolis\u2013St. Paul."
+        }
+      ),
+      /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("meta", { property: "og:image", content: `${SITE_URL}${HERO_IMAGE}` }),
+      /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("meta", { property: "og:image:width", content: "1200" }),
+      /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("meta", { property: "og:image:height", content: "630" }),
+      /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("meta", { property: "og:image:alt", content: "Psyche olive oil 3-liter bag-in-box" }),
+      /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("meta", { property: "product:price:amount", content: "90.00" }),
+      /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("meta", { property: "product:price:currency", content: "USD" }),
+      /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("meta", { property: "product:availability", content: "in stock" }),
+      /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("meta", { name: "twitter:card", content: "summary_large_image" }),
+      /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("meta", { name: "twitter:url", content: `${SITE_URL}/psyche` }),
+      /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("meta", { name: "twitter:title", content: "Buy Psyche Olive Oil \u2014 3L Extra-Virgin | Local Effort Food Co." }),
+      /* @__PURE__ */ (0, import_jsx_runtime42.jsx)(
+        "meta",
+        {
+          name: "twitter:description",
+          content: "Single-estate koroneiki extra-virgin olive oil from Greece. $90 for a 3-liter bag-in-box. Free local delivery in Minneapolis\u2013St. Paul."
+        }
+      ),
+      /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("meta", { name: "twitter:image", content: `${SITE_URL}${HERO_IMAGE}` }),
+      /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("meta", { name: "twitter:image:alt", content: "Psyche olive oil 3-liter bag-in-box" }),
+      /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("script", { type: "application/ld+json", children: JSON.stringify(buildProductJsonLd()) })
+    ] }),
+    /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("nav", { className: "february-breadcrumb", children: /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("a", { href: "/", children: "<- Home" }) }),
+    /* @__PURE__ */ (0, import_jsx_runtime42.jsxs)("div", { className: "february-grid", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime42.jsxs)("div", { className: "february-col february-col-left", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("div", { className: "february-hero-media psyche-hero-media", children: /* @__PURE__ */ (0, import_jsx_runtime42.jsx)(
+          U,
+          {
+            src: HERO_IMAGE,
+            alt: "Psyche olive oil bottle",
+            zoom: "200"
+          }
+        ) }),
+        /* @__PURE__ */ (0, import_jsx_runtime42.jsxs)("div", { className: "february-hero-text", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime42.jsxs)("p", { children: [
+            /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("strong", { children: "Psyche Olive Oil" }),
+            /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("br", {}),
+            "3 Liters - plastic bag with aluminum lining",
+            /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("br", {}),
+            /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("a", { href: "https://psycheoliveoil.com/", target: "_blank", rel: "noreferrer", children: "psycheoliveoil.com" })
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("p", { children: "Psyche is the highly regarded olive oil project by Ohio-born artist Theophilos Constantinou. Single-estate, late-season koroneiki olives from the Karambotsos family in Ampelofito, Greece. Very fresh, medium strength. We don't have polyphenol labs on this yet, but, from Constantinou:" }),
+          /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("blockquote", { className: "psyche-quote", children: "PSYCHE is different because they are not competing with or comparing it to other olive oil brands. It is built on the principle of quality and transparency in the supply chain. It is a philosophy towards life. You are buying into a lifestyle, an ideology rooted in food as medicine." }),
+          /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("p", { children: "We're offering this olive oil 20% cheaper than his website because... we can." }),
+          /* @__PURE__ */ (0, import_jsx_runtime42.jsxs)("p", { children: [
+            /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("a", { href: "https://www.aboutoliveoil.org/extra-virgin-alliance/eva-psyche", target: "_blank", rel: "noreferrer", children: "https://www.aboutoliveoil.org/extra-virgin-alliance/eva-psyche" }),
+            /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("br", {}),
+            /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("a", { href: "https://www.instagram.com/psycheoliveoil", target: "_blank", rel: "noreferrer", children: "https://www.instagram.com/psycheoliveoil" })
+          ] })
+        ] })
+      ] }),
+      /* @__PURE__ */ (0, import_jsx_runtime42.jsxs)("div", { className: "february-col february-col-right", children: [
+        status === "success" && /* @__PURE__ */ (0, import_jsx_runtime42.jsxs)("div", { className: "february-success", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("div", { className: "february-success-title", children: "Order confirmed" }),
+          /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("div", { className: "february-success-copy", children: "Payment received. A confirmation email is on the way with your details." }),
+          paymentId && /* @__PURE__ */ (0, import_jsx_runtime42.jsxs)("div", { className: "february-success-meta", children: [
+            "Payment ID: ",
+            paymentId
+          ] }),
+          emailStatus?.customer === false && /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("div", { className: "february-warning", children: "We could not send the customer email. Please contact us." }),
+          emailStatus?.admin === false && /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("div", { className: "february-warning", children: "We could not send the admin email. Please contact us." })
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime42.jsxs)("section", { className: "february-card", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime42.jsxs)("div", { className: "february-card-header", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime42.jsxs)("div", { children: [
+              /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("div", { className: "february-card-title", children: "Buy Psyche olive oil" }),
+              /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("div", { className: "february-card-subtitle", children: "Price per bottle: $90.00" }),
+              /* @__PURE__ */ (0, import_jsx_runtime42.jsxs)("div", { className: "february-card-subtitle", children: [
+                "Quantity: ",
+                quantity,
+                " (max ",
+                MAX_QUANTITY,
+                ")"
+              ] }),
+              /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("div", { className: "february-card-subtitle", children: fulfillment === "shipping" ? "Midwest shipping $10 flat." : deliveryZone === "extended" ? "Delivery over 10 miles from 55113 is $10." : "Delivery within 10 miles of 55113 is free." })
+            ] }),
+            /* @__PURE__ */ (0, import_jsx_runtime42.jsxs)("div", { className: "february-card-total", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("div", { className: "february-card-total-label", children: "Total" }),
+              /* @__PURE__ */ (0, import_jsx_runtime42.jsxs)("div", { className: "february-card-total-value", children: [
+                "$",
+                formatMoney(totalCents)
+              ] }),
+              /* @__PURE__ */ (0, import_jsx_runtime42.jsxs)("div", { className: "february-card-subtitle", children: [
+                "$",
+                formatMoney(subtotalCents),
+                " + $",
+                formatMoney(fulfillmentFeeCents)
+              ] })
+            ] })
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime42.jsxs)("form", { className: "february-form", onSubmit: handleSubmit, children: [
+            /* @__PURE__ */ (0, import_jsx_runtime42.jsxs)("div", { className: "february-form-grid", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime42.jsxs)("div", { children: [
+                /* @__PURE__ */ (0, import_jsx_runtime42.jsxs)("label", { className: "form-fun-label", htmlFor: "psyche-quantity", children: [
+                  "Quantity ",
+                  /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("span", { className: "required-indicator", children: "*" })
+                ] }),
+                /* @__PURE__ */ (0, import_jsx_runtime42.jsx)(
+                  "select",
+                  {
+                    id: "psyche-quantity",
+                    className: "input",
+                    value: quantity,
+                    onChange: (e) => {
+                      const next = Math.min(MAX_QUANTITY, Math.max(1, Number(e.target.value) || 1));
+                      setQuantity(next);
+                      resetStatus();
+                    },
+                    children: Array.from({ length: MAX_QUANTITY }, (_, idx) => {
+                      const value = idx + 1;
+                      return /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("option", { value, children: value }, value);
+                    })
+                  }
+                )
+              ] }),
+              /* @__PURE__ */ (0, import_jsx_runtime42.jsxs)("div", { children: [
+                /* @__PURE__ */ (0, import_jsx_runtime42.jsxs)("label", { className: "form-fun-label", htmlFor: "psyche-name", children: [
+                  "Name ",
+                  /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("span", { className: "required-indicator", children: "*" })
+                ] }),
+                /* @__PURE__ */ (0, import_jsx_runtime42.jsx)(
+                  "input",
+                  {
+                    id: "psyche-name",
+                    className: "input",
+                    value: customer.name,
+                    onChange: (e) => {
+                      setCustomer((prev) => ({ ...prev, name: e.target.value }));
+                      resetStatus();
+                    },
+                    placeholder: "Your full name",
+                    required: true
+                  }
+                )
+              ] }),
+              /* @__PURE__ */ (0, import_jsx_runtime42.jsxs)("div", { children: [
+                /* @__PURE__ */ (0, import_jsx_runtime42.jsxs)("label", { className: "form-fun-label", htmlFor: "psyche-email", children: [
+                  "Email ",
+                  /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("span", { className: "required-indicator", children: "*" })
+                ] }),
+                /* @__PURE__ */ (0, import_jsx_runtime42.jsx)(
+                  "input",
+                  {
+                    id: "psyche-email",
+                    type: "email",
+                    className: "input",
+                    value: customer.email,
+                    onChange: (e) => {
+                      setCustomer((prev) => ({ ...prev, email: e.target.value }));
+                      resetStatus();
+                    },
+                    placeholder: "you@example.com",
+                    required: true
+                  }
+                )
+              ] }),
+              /* @__PURE__ */ (0, import_jsx_runtime42.jsxs)("div", { children: [
+                /* @__PURE__ */ (0, import_jsx_runtime42.jsxs)("label", { className: "form-fun-label", htmlFor: "psyche-phone", children: [
+                  "Phone ",
+                  /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("span", { className: "required-indicator", children: "*" })
+                ] }),
+                /* @__PURE__ */ (0, import_jsx_runtime42.jsx)(
+                  "input",
+                  {
+                    id: "psyche-phone",
+                    type: "tel",
+                    className: "input",
+                    value: customer.phone,
+                    onChange: (e) => {
+                      setCustomer((prev) => ({ ...prev, phone: formatPhone(e.target.value) }));
+                      resetStatus();
+                    },
+                    required: true
+                  }
+                )
+              ] }),
+              /* @__PURE__ */ (0, import_jsx_runtime42.jsxs)("div", { children: [
+                /* @__PURE__ */ (0, import_jsx_runtime42.jsxs)("label", { className: "form-fun-label", htmlFor: "psyche-fulfillment", children: [
+                  "Fulfillment ",
+                  /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("span", { className: "required-indicator", children: "*" })
+                ] }),
+                /* @__PURE__ */ (0, import_jsx_runtime42.jsxs)(
+                  "select",
+                  {
+                    id: "psyche-fulfillment",
+                    className: "input",
+                    value: fulfillment,
+                    onChange: (e) => {
+                      setFulfillment(e.target.value);
+                      resetStatus();
+                    },
+                    children: [
+                      /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("option", { value: "delivery", children: "Delivery (from 55113)" }),
+                      /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("option", { value: "shipping", children: "Midwest shipping ($10 flat)" })
+                    ]
+                  }
+                )
+              ] }),
+              fulfillment === "delivery" && /* @__PURE__ */ (0, import_jsx_runtime42.jsxs)("div", { children: [
+                /* @__PURE__ */ (0, import_jsx_runtime42.jsxs)("label", { className: "form-fun-label", htmlFor: "psyche-delivery-zone", children: [
+                  "Delivery distance ",
+                  /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("span", { className: "required-indicator", children: "*" })
+                ] }),
+                /* @__PURE__ */ (0, import_jsx_runtime42.jsxs)(
+                  "select",
+                  {
+                    id: "psyche-delivery-zone",
+                    className: "input",
+                    value: deliveryZone,
+                    onChange: (e) => {
+                      setDeliveryZone(e.target.value);
+                      resetStatus();
+                    },
+                    children: [
+                      /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("option", { value: "local", children: "Within 10 miles of 55113 (free)" }),
+                      /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("option", { value: "extended", children: "Over 10 miles (+$10)" })
+                    ]
+                  }
+                )
+              ] }),
+              /* @__PURE__ */ (0, import_jsx_runtime42.jsxs)("div", { className: "february-form-span", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime42.jsxs)("label", { className: "form-fun-label", htmlFor: "psyche-address1", children: [
+                  "Address ",
+                  /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("span", { className: "required-indicator", children: "*" })
+                ] }),
+                /* @__PURE__ */ (0, import_jsx_runtime42.jsx)(
+                  "input",
+                  {
+                    id: "psyche-address1",
+                    className: "input",
+                    value: address.line1,
+                    onChange: (e) => {
+                      setAddress((prev) => ({ ...prev, line1: e.target.value }));
+                      resetStatus();
+                    },
+                    placeholder: "Street address",
+                    required: true
+                  }
+                )
+              ] }),
+              /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("div", { className: "february-form-span", children: /* @__PURE__ */ (0, import_jsx_runtime42.jsx)(
+                "input",
+                {
+                  id: "psyche-address2",
+                  className: "input",
+                  value: address.line2,
+                  onChange: (e) => {
+                    setAddress((prev) => ({ ...prev, line2: e.target.value }));
+                    resetStatus();
+                  },
+                  placeholder: "Unit, suite, etc. (optional)"
+                }
+              ) }),
+              /* @__PURE__ */ (0, import_jsx_runtime42.jsxs)("div", { children: [
+                /* @__PURE__ */ (0, import_jsx_runtime42.jsxs)("label", { className: "form-fun-label", htmlFor: "psyche-city", children: [
+                  "City ",
+                  /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("span", { className: "required-indicator", children: "*" })
+                ] }),
+                /* @__PURE__ */ (0, import_jsx_runtime42.jsx)(
+                  "input",
+                  {
+                    id: "psyche-city",
+                    className: "input",
+                    value: address.city,
+                    onChange: (e) => {
+                      setAddress((prev) => ({ ...prev, city: e.target.value }));
+                      resetStatus();
+                    },
+                    placeholder: "Saint Paul",
+                    required: true
+                  }
+                )
+              ] }),
+              /* @__PURE__ */ (0, import_jsx_runtime42.jsxs)("div", { children: [
+                /* @__PURE__ */ (0, import_jsx_runtime42.jsxs)("label", { className: "form-fun-label", htmlFor: "psyche-state", children: [
+                  "State ",
+                  /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("span", { className: "required-indicator", children: "*" })
+                ] }),
+                /* @__PURE__ */ (0, import_jsx_runtime42.jsx)(
+                  "input",
+                  {
+                    id: "psyche-state",
+                    className: "input",
+                    value: address.state,
+                    onChange: (e) => {
+                      setAddress((prev) => ({ ...prev, state: e.target.value }));
+                      resetStatus();
+                    },
+                    required: true
+                  }
+                )
+              ] }),
+              /* @__PURE__ */ (0, import_jsx_runtime42.jsxs)("div", { children: [
+                /* @__PURE__ */ (0, import_jsx_runtime42.jsxs)("label", { className: "form-fun-label", htmlFor: "psyche-postal", children: [
+                  "ZIP ",
+                  /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("span", { className: "required-indicator", children: "*" })
+                ] }),
+                /* @__PURE__ */ (0, import_jsx_runtime42.jsx)(
+                  "input",
+                  {
+                    id: "psyche-postal",
+                    className: "input",
+                    value: address.postal,
+                    onChange: (e) => {
+                      setAddress((prev) => ({ ...prev, postal: formatPostal(e.target.value) }));
+                      resetStatus();
+                    },
+                    placeholder: "55113",
+                    required: true
+                  }
+                )
+              ] }),
+              /* @__PURE__ */ (0, import_jsx_runtime42.jsxs)("div", { className: "february-form-span", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("label", { className: "form-fun-label", htmlFor: "psyche-notes", children: "Delivery or shipping notes" }),
+                /* @__PURE__ */ (0, import_jsx_runtime42.jsx)(
+                  "textarea",
+                  {
+                    id: "psyche-notes",
+                    className: "textarea february-textarea-lg",
+                    rows: 4,
+                    value: deliveryNotes,
+                    onChange: (e) => {
+                      setDeliveryNotes(e.target.value);
+                      resetStatus();
+                    },
+                    placeholder: "Gate codes, preferred drop-off, etc."
+                  }
+                )
+              ] }),
+              /* @__PURE__ */ (0, import_jsx_runtime42.jsxs)("div", { className: "february-form-span", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("label", { className: "form-fun-label", children: "Payment" }),
+                /* @__PURE__ */ (0, import_jsx_runtime42.jsxs)("div", { className: "february-payment", children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime42.jsx)(
+                    "div",
+                    {
+                      id: "psyche-express-pay",
+                      style: { display: expressPayAvailable ? "block" : "none", marginBottom: "0.75rem" }
+                    }
+                  ),
+                  expressPayAvailable && /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("div", { className: "february-payment-status", style: { textAlign: "center", margin: "0.5rem 0", fontSize: "0.75rem", color: "var(--color-text-muted, #888)" }, children: "\u2014 or pay with card \u2014" }),
+                  /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("div", { id: "psyche-card-container", className: "february-card-container" }),
+                  loadingScript && /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("div", { className: "february-payment-status", children: "Loading secure payment form..." }),
+                  cardError && /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("div", { className: "february-payment-error", children: cardError })
+                ] })
+              ] })
+            ] }),
+            error && /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("div", { className: "february-error", children: error }),
+            /* @__PURE__ */ (0, import_jsx_runtime42.jsx)(
+              "button",
+              {
+                type: "submit",
+                className: "february-submit",
+                disabled: !canSubmit() || status === "submitting" || status === "success",
+                children: status === "submitting" ? "Processing..." : `Pay $${formatMoney(totalCents)}`
+              }
+            ),
+            /* @__PURE__ */ (0, import_jsx_runtime42.jsxs)("div", { className: "required-note", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("span", { className: "required-indicator", children: "*" }),
+              "Required fields"
+            ] }),
+            /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("div", { className: "february-form-footnote", children: "Payments are processed securely by Square. A confirmation email will be sent after purchase." })
+          ] })
+        ] })
+      ] })
+    ] })
+  ] });
+};
+var PsychePage_default = PsychePage;
+
 // src/ssr/StaticApp.jsx
-var import_jsx_runtime39 = require("react/jsx-runtime");
+var import_jsx_runtime43 = require("react/jsx-runtime");
 function StaticApp({ helmetContext }) {
-  const location = (0, import_react_router_dom6.useLocation)();
+  const location = (0, import_react_router_dom7.useLocation)();
   const isFullPageHome = location.pathname === "/";
-  return /* @__PURE__ */ (0, import_jsx_runtime39.jsx)(import_react_helmet_async7.HelmetProvider, { context: helmetContext, children: /* @__PURE__ */ (0, import_jsx_runtime39.jsxs)(CartProvider, { children: [
-    /* @__PURE__ */ (0, import_jsx_runtime39.jsx)(DefaultSeo_default, {}),
-    /* @__PURE__ */ (0, import_jsx_runtime39.jsxs)("div", { className: "app-root min-h-screen flex flex-col", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime39.jsx)(Header, {}),
-      /* @__PURE__ */ (0, import_jsx_runtime39.jsx)("main", { className: "flex-1", style: { paddingTop: isFullPageHome ? 0 : "5rem" }, children: /* @__PURE__ */ (0, import_jsx_runtime39.jsxs)(import_react_router_dom6.Routes, { children: [
-        /* @__PURE__ */ (0, import_jsx_runtime39.jsx)(import_react_router_dom6.Route, { path: "/", element: /* @__PURE__ */ (0, import_jsx_runtime39.jsx)(FullPageDemoPage_default, {}) }),
-        /* @__PURE__ */ (0, import_jsx_runtime39.jsx)(import_react_router_dom6.Route, { path: "/releases", element: /* @__PURE__ */ (0, import_jsx_runtime39.jsx)(ReleasesPage_default, {}) }),
-        /* @__PURE__ */ (0, import_jsx_runtime39.jsx)(import_react_router_dom6.Route, { path: "/sale", element: /* @__PURE__ */ (0, import_jsx_runtime39.jsx)(SalePage_default, {}) }),
-        /* @__PURE__ */ (0, import_jsx_runtime39.jsx)(import_react_router_dom6.Route, { path: "/weekly", element: /* @__PURE__ */ (0, import_jsx_runtime39.jsx)(WeeklyList_default, {}) }),
-        /* @__PURE__ */ (0, import_jsx_runtime39.jsx)(import_react_router_dom6.Route, { path: "/happymonday", element: /* @__PURE__ */ (0, import_jsx_runtime39.jsx)(happymondaypage_default, {}) }),
-        /* @__PURE__ */ (0, import_jsx_runtime39.jsx)(import_react_router_dom6.Route, { path: "/pizza-party", element: /* @__PURE__ */ (0, import_jsx_runtime39.jsx)(PizzaPartyPage_default, {}) })
+  return /* @__PURE__ */ (0, import_jsx_runtime43.jsx)(import_react_helmet_async10.HelmetProvider, { context: helmetContext, children: /* @__PURE__ */ (0, import_jsx_runtime43.jsxs)(CartProvider, { children: [
+    /* @__PURE__ */ (0, import_jsx_runtime43.jsx)(DefaultSeo_default, {}),
+    /* @__PURE__ */ (0, import_jsx_runtime43.jsxs)("div", { className: "app-root min-h-screen flex flex-col", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime43.jsx)(Header, {}),
+      /* @__PURE__ */ (0, import_jsx_runtime43.jsx)("main", { className: "flex-1", style: { paddingTop: isFullPageHome ? 0 : "5rem" }, children: /* @__PURE__ */ (0, import_jsx_runtime43.jsxs)(import_react_router_dom7.Routes, { children: [
+        /* @__PURE__ */ (0, import_jsx_runtime43.jsx)(import_react_router_dom7.Route, { path: "/", element: /* @__PURE__ */ (0, import_jsx_runtime43.jsx)(FullPageDemoPage_default, {}) }),
+        /* @__PURE__ */ (0, import_jsx_runtime43.jsx)(import_react_router_dom7.Route, { path: "/blog", element: /* @__PURE__ */ (0, import_jsx_runtime43.jsx)(BlogList_default, {}) }),
+        /* @__PURE__ */ (0, import_jsx_runtime43.jsx)(import_react_router_dom7.Route, { path: "/blog/:slug", element: /* @__PURE__ */ (0, import_jsx_runtime43.jsx)(BlogPost_default, {}) }),
+        /* @__PURE__ */ (0, import_jsx_runtime43.jsx)(import_react_router_dom7.Route, { path: "/releases", element: /* @__PURE__ */ (0, import_jsx_runtime43.jsx)(ReleasesPage_default, {}) }),
+        /* @__PURE__ */ (0, import_jsx_runtime43.jsx)(import_react_router_dom7.Route, { path: "/sale", element: /* @__PURE__ */ (0, import_jsx_runtime43.jsx)(SalePage_default, {}) }),
+        /* @__PURE__ */ (0, import_jsx_runtime43.jsx)(import_react_router_dom7.Route, { path: "/weekly", element: /* @__PURE__ */ (0, import_jsx_runtime43.jsx)(WeeklyList_default, {}) }),
+        /* @__PURE__ */ (0, import_jsx_runtime43.jsx)(import_react_router_dom7.Route, { path: "/happymonday", element: /* @__PURE__ */ (0, import_jsx_runtime43.jsx)(happymondaypage_default, {}) }),
+        /* @__PURE__ */ (0, import_jsx_runtime43.jsx)(import_react_router_dom7.Route, { path: "/pizza-party", element: /* @__PURE__ */ (0, import_jsx_runtime43.jsx)(PizzaPartyPage_default, {}) }),
+        /* @__PURE__ */ (0, import_jsx_runtime43.jsx)(import_react_router_dom7.Route, { path: "/psyche", element: /* @__PURE__ */ (0, import_jsx_runtime43.jsx)(PsychePage_default, {}) })
       ] }) })
     ] })
   ] }) });
 }
+/*! Bundled license information:
+
+dompurify/dist/purify.es.mjs:
+  (*! @license DOMPurify 3.3.1 | (c) Cure53 and other contributors | Released under the Apache license 2.0 and Mozilla Public License 2.0 | github.com/cure53/DOMPurify/blob/3.3.1/LICENSE *)
+*/

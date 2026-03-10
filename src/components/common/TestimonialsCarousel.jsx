@@ -86,7 +86,7 @@ export default function TestimonialsCarousel({ items = [], title = 'Testimonials
     const subj = {
       '@type': 'ProfessionalService',
       name: businessInfo.name || 'Local Effort',
-      url: businessInfo.url || 'https://localeffortfood.com/'
+      url: businessInfo.url || 'https://www.localeffortfood.com/'
     };
   const graph = items.slice(0, 20).map((t) => ({
       '@type': 'Review',

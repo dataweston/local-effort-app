@@ -2,7 +2,9 @@ import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import ImageZoom from 'react-image-zooom';
 import { useSquareCard } from '../hooks/useSquareCard';
+import { useSquareExpressPay } from '../hooks/useSquareExpressPay';
 import { getOrCreateCheckoutAttemptId, clearCheckoutAttemptId } from '../lib/checkoutAttemptId';
+import { trackEvent } from '../lib/trackEvent';
 import { SITE_NAME, SITE_URL } from '../config/siteMetadata';
 import '../styles/fullpage-demo-theme.css';
 
@@ -153,6 +155,58 @@ const PsychePage = () => {
     clearCheckoutAttemptId(attemptStorageKey);
   }, []);
 
+  // Express pay (Apple Pay / Google Pay) — mounted above the manual card form.
+  // When the wallet returns a token we reuse the same checkout submit path.
+  const handleExpressToken = useCallback(async (token) => {
+    if (status === 'submitting') return;
+    if (!customer.name.trim() || !customer.email.trim()) return; // still need contact info
+    trackEvent('express_pay.used', { store: 'psyche' });
+    setError('');
+    setStatus('submitting');
+    try {
+      const checkoutAttemptId = resolveCheckoutAttemptId();
+      const response = await fetch('/api/psyche/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          token,
+          fulfillment,
+          deliveryZone,
+          deliveryNotes,
+          quantity,
+          customer,
+          address,
+          checkoutAttemptId,
+        }),
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(data?.error || 'Payment failed.');
+      setPaymentId(data?.paymentId || '');
+      setEmailStatus(data?.emailStatus || null);
+      setStatus('success');
+      clearCheckoutAttempt();
+    } catch (err) {
+      setStatus('error');
+      setError(err?.message || 'Unable to complete purchase.');
+    }
+  // deps intentionally omitted — this is a stable callback; resolveCheckoutAttemptId is stable
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [status, customer, address, fulfillment, deliveryZone, deliveryNotes, quantity]);
+
+  const { googlePayAvailable, applePayAvailable } = useSquareExpressPay({
+    amountCents: totalCents,
+    containerId: '#psyche-express-pay',
+    enabled: status !== 'success',
+    onToken: handleExpressToken,
+  });
+
+  const expressPayAvailable = googlePayAvailable || applePayAvailable;
+
+  // Track when express pay becomes available in this browser
+  React.useEffect(() => {
+    if (expressPayAvailable) trackEvent('express_pay.shown', { store: 'psyche' });
+  }, [expressPayAvailable]);
+
   const resetStatus = () => {
     if (status !== 'idle') {
       setStatus('idle');
@@ -180,6 +234,8 @@ const PsychePage = () => {
     }
 
     setStatus('submitting');
+    const checkoutAttemptId = resolveCheckoutAttemptId();
+    trackEvent('payment.attempted', { store: 'psyche', sessionId: checkoutAttemptId, amountCents: totalCents });
     try {
       const token = await tokenize();
       const verificationDetails = {
@@ -199,7 +255,6 @@ const PsychePage = () => {
         },
       };
       const verificationToken = await verifyBuyer(token, verificationDetails);
-      const checkoutAttemptId = resolveCheckoutAttemptId();
 
       const response = await fetch('/api/psyche/checkout', {
         method: 'POST',
@@ -221,11 +276,13 @@ const PsychePage = () => {
         throw new Error(data?.error || 'Payment failed.');
       }
 
+      trackEvent('order.placed', { store: 'psyche', sessionId: checkoutAttemptId, paymentId: data?.paymentId });
       setPaymentId(data?.paymentId || '');
       setEmailStatus(data?.emailStatus || null);
       setStatus('success');
       clearCheckoutAttempt();
     } catch (err) {
+      trackEvent('payment.failed', { store: 'psyche', reason: err?.message });
       setStatus('error');
       setError(err?.message || 'Unable to complete purchase.');
     }
@@ -548,6 +605,17 @@ const PsychePage = () => {
                 <div className="february-form-span">
                   <label className="form-fun-label">Payment</label>
                   <div className="february-payment">
+                    {/* Express pay (Apple Pay / Google Pay) — shown when available */}
+                    <div
+                      id="psyche-express-pay"
+                      style={{ display: expressPayAvailable ? 'block' : 'none', marginBottom: '0.75rem' }}
+                    />
+                    {expressPayAvailable && (
+                      <div className="february-payment-status" style={{ textAlign: 'center', margin: '0.5rem 0', fontSize: '0.75rem', color: 'var(--color-text-muted, #888)' }}>
+                        — or pay with card —
+                      </div>
+                    )}
+                    {/* Manual card form — always rendered so Square can attach */}
                     <div id="psyche-card-container" className="february-card-container" />
                     {loadingScript && <div className="february-payment-status">Loading secure payment form...</div>}
                     {cardError && <div className="february-payment-error">{cardError}</div>}

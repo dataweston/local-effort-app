@@ -12,7 +12,7 @@ const DEFAULT_SESSION_TTL_MS = 1000 * 60 * 60 * 6; // 6 hours
 const MAX_SESSION_TTL_MS = 1000 * 60 * 60 * 24 * 7; // 7 days
 const STORE_RETENTION_TTL_MS = 1000 * 60 * 60 * 24 * 30; // 30 days
 
-const SITE_FALLBACK = 'https://localeffortfood.com';
+const SITE_FALLBACK = 'https://www.localeffortfood.com';
 
 const CHECKOUT_SCOPES = {
   create: 'commerce:checkout:create',
@@ -44,13 +44,13 @@ const FLOW_DEFS = {
   'small-events': {
     aliases: ['small-events', 'small-events-catering', 'small events'],
     title: 'Small Events',
-    path: '/fullpage-demo#small-events',
+    path: '/#small-events',
     kind: 'event_booking',
   },
   'local-pizza': {
     aliases: ['local-pizza', 'local-pizza-party', 'pizza-party', 'pizza'],
     title: 'Local Pizza Party',
-    path: '/fullpage-demo#local-pizza',
+    path: '/#local-pizza',
     kind: 'event_booking',
   },
 };

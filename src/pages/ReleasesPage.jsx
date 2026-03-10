@@ -3,6 +3,7 @@ import { Helmet } from 'react-helmet-async';
 import { PortableText } from '@portabletext/react';
 import sanityClient from '../sanityClient';
 import { createPortableTextComponents } from '../utils/portableTextComponents';
+import { SITE_URL } from '../config/siteMetadata';
 
 const RELEASES_QUERY = '*[_type == "release"] | order(coalesce(publishedAt, _createdAt) desc)[0...50]{ _id, title, "slug": slug.current, summary, publishedAt, body, canonicalUrl, metaDescription, heroImage{ alt, "url": asset->url } }';
 
@@ -54,9 +55,10 @@ const ReleasesPage = () => {
         headline: release.title,
         datePublished: release.publishedAt,
         description: release.summary,
-        url: release.canonicalUrl || `https://localeffortfood.com/releases#${release.slug || release._id}`,
+        url: release.canonicalUrl || `${SITE_URL}/releases#${release.slug || release._id}`,
       },
     }));
+    if (!list.length) return null;
     return {
       '@context': 'https://schema.org',
       '@type': 'ItemList',
@@ -70,10 +72,10 @@ const ReleasesPage = () => {
       <Helmet>
         <title>Releases | Local Effort</title>
         <meta name="description" content={pageDescription} />
-        <link rel="canonical" href="https://localeffortfood.com/releases" />
+        <link rel="canonical" href={`${SITE_URL}/releases`} />
         <link rel="alternate" type="application/rss+xml" title="Local Effort Releases RSS" href="/api/feeds/releases.rss" />
         <link rel="alternate" type="application/atom+xml" title="Local Effort Releases Atom" href="/api/feeds/releases.atom" />
-        <script type="application/ld+json">{JSON.stringify(schema)}</script>
+        {schema && <script type="application/ld+json">{JSON.stringify(schema)}</script>}
       </Helmet>
 
       <header className="mb-8">

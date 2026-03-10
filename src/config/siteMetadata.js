@@ -1,5 +1,5 @@
 export const SITE_NAME = 'Local Effort Food Co.';
-export const SITE_URL = 'https://localeffortfood.com';
+export const SITE_URL = 'https://www.localeffortfood.com';
 export const DEFAULT_DESCRIPTION =
   'Local Effort Food Co. is a Minneapolis personal chef team offering in-home dinners, meal prep Minneapolis plans, and small-event catering built around Minnesota-grown ingredients.';
 export const DEFAULT_KEYWORDS = [

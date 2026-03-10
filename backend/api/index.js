@@ -43,6 +43,8 @@ const pizzaPartyReceiptHandler = require('../../api-handlers/store/pizza-party-r
 const pizzaPartyLinkHandler = require('../../api-handlers/store/pizza-party-link');
 const pizzaPartyBookingsHandler = require('../../api-handlers/store/pizza-party-bookings');
 const storeProductsHandler = require('../../api-handlers/store/products');
+const storePriceHandler = require('../../api-handlers/store/price');
+const storeEventsHandler = require('../../api-handlers/store/events');
 const storeSyncSquareHandler = require('../../api-handlers/store/sync-square');
 const giftCardLinkHandler = require('../../api-handlers/store/gift-card-link');
 const salesProxyHandler = require('../../api-handlers/sales-proxy');
@@ -57,6 +59,7 @@ const pizzafunderPaymentLinkHandler = require('../../api-handlers/pizzafunder/pa
 const foodTruckDepositLinkHandler = require('../../api-handlers/food-truck/deposit-link');
 const happymondayProcessPaymentHandler = require('../../api-handlers/happymonday/process-payment');
 const happymondayPaymentLinkHandler = require('../../api-handlers/happymonday/payment-link');
+const dynamicSitemapHandler = require('../../api/sitemap.xml.js');
 const { createMessagesRouter } = require('./routes/messages');
 const { createSmallEventsRouter } = require('./routes/smallEvents');
 const { createPlannerRouter } = require('./routes/planner');
@@ -369,7 +372,12 @@ const emailOutboxService = createEmailOutboxService({
   brevoService,
   logger,
 });
-const publicSiteUrl = (process.env.PUBLIC_SITE_URL || process.env.PUBLIC_URL || 'https://localeffortfood.com').replace(/\/$/, '');
+const publicSiteUrl = (
+  process.env.PUBLIC_SITE_URL ||
+  process.env.NEXT_PUBLIC_SITE_URL ||
+  process.env.PUBLIC_URL ||
+  'https://www.localeffortfood.com'
+).replace(/\/$/, '');
 const publishingService = createPublishingService({
   getSanityClient,
   getSanityReadClient,
@@ -472,7 +480,11 @@ app.use(express.json({ limit: '2mb' }));
 
 const sendUcpProfile = (res) => {
   try {
-    const siteUrl = process.env.PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_SITE_URL || process.env.PUBLIC_URL || 'https://localeffortfood.com';
+    const siteUrl =
+      process.env.PUBLIC_SITE_URL ||
+      process.env.NEXT_PUBLIC_SITE_URL ||
+      process.env.PUBLIC_URL ||
+      'https://www.localeffortfood.com';
     return res.status(200).json(buildUcpBusinessProfile(siteUrl));
   } catch (err) {
     logger.error({ err }, 'ucp profile route failed');
@@ -482,6 +494,16 @@ const sendUcpProfile = (res) => {
 
 app.get('/.well-known/ucp', (req, res) => sendUcpProfile(res));
 app.get('/.well-known/ucp.json', (req, res) => sendUcpProfile(res));
+app.get('/api/sitemap.xml', async (req, res) => {
+  try {
+    await dynamicSitemapHandler(req, res);
+  } catch (err) {
+    logger.error({ err }, 'dynamic sitemap route failed');
+    if (!res.headersSent) {
+      res.status(500).type('text/plain').send('Failed to generate sitemap');
+    }
+  }
+});
 
 // MCP HTTP bridge removed (mcpTransport not initialized in this process). If needed, reintroduce with proper import.
 // --- MCP STREAMABLE HTTP BRIDGE ---
@@ -1013,6 +1035,24 @@ app.all('/api/store/products', async (req, res, next) => {
   } catch (err) {
     logger.error({ err, method: req.method }, 'store products handler failed');
     next(err);
+  }
+});
+
+app.all('/api/store/price', async (req, res, next) => {
+  try {
+    await storePriceHandler(req, res);
+  } catch (err) {
+    logger.error({ err, method: req.method }, 'store price handler failed');
+    next(err);
+  }
+});
+
+app.all('/api/store/events', async (req, res, next) => {
+  try {
+    await storeEventsHandler(req, res);
+  } catch (err) {
+    // Events are fire-and-forget; swallow errors silently
+    if (!res.headersSent) res.status(204).end();
   }
 });
 
@@ -1645,7 +1685,7 @@ async function fetchPublishedReleases(limit = 20) {
     '*[_type == "release"] | order(coalesce(publishedAt, _createdAt) desc)[0...$limit]{ _id, title, "slug": slug.current, summary, publishedAt, _updatedAt, canonicalUrl }',
     { limit: Math.max(1, Math.min(100, Number(limit) || 20)) }
   );
-  const site = (process.env.PUBLIC_URL || 'https://localeffortfood.com').replace(/\/$/, '');
+  const site = publicSiteUrl;
   return (Array.isArray(docs) ? docs : []).map((doc) => {
     const slug = String(doc?.slug || '').trim();
     const fallbackUrl = slug ? `${site}/releases#${encodeURIComponent(slug)}` : `${site}/releases`;
@@ -2214,7 +2254,7 @@ app.get('/api/activitypub/deliveries/stats', requireAllowedUser, async (req, res
 
 app.get('/api/feeds/releases.rss', async (req, res) => {
   try {
-    const site = (process.env.PUBLIC_URL || 'https://localeffortfood.com').replace(/\/$/, '');
+    const site = publicSiteUrl;
     const releases = await fetchPublishedReleases(50);
     const items = releases.map((release) => `
     <item>
@@ -2248,7 +2288,7 @@ app.get('/api/feeds/releases.rss', async (req, res) => {
 
 app.get('/api/feeds/releases.atom', async (req, res) => {
   try {
-    const site = (process.env.PUBLIC_URL || 'https://localeffortfood.com').replace(/\/$/, '');
+    const site = publicSiteUrl;
     const releases = await fetchPublishedReleases(50);
     const updated = releases[0]?.updatedAt || new Date().toISOString();
     const entries = releases.map((release) => `
@@ -2938,7 +2978,7 @@ app.post('/api/blog/publish', publishRateLimit, requireAllowedUser, async (req, 
         ? emailTo
         : (process.env.BLOG_ANNOUNCE_TO || '').split(',').map((s) => s.trim()).filter(Boolean);
       if (recipients.length) {
-        const base = (process.env.PUBLIC_URL || 'https://localeffortfood.com').replace(/\/$/, '');
+        const base = publicSiteUrl;
         const url = `${base}/blog/${doc.slug.current}`;
         const snippet = (text || JSON.stringify(blocks)).slice(0, 400);
         const payload = {
@@ -3023,7 +3063,7 @@ app.post('/api/webhooks/sanity/blog', webhookRateLimit, async (req, res) => {
     const snippet = (bodyText || '').slice(0, 400);
     const recipientsRaw = process.env.BLOG_ANNOUNCE_TO || '';
     const recipients = recipientsRaw.split(',').map((s) => s.trim()).filter(Boolean);
-    const base = (process.env.PUBLIC_URL || 'https://localeffortfood.com').replace(/\/$/, '');
+    const base = publicSiteUrl;
     const slugValue = doc?.slug?.current || slug?.current || slug;
     let emailQueueId = null;
     if (recipients.length) {
@@ -3599,7 +3639,12 @@ app.get('/api/public/site', (req, res) => {
       }
     }
 
-    const siteUrl = (manifest && manifest.site) || process.env.PUBLIC_URL || 'https://localeffortfood.com';
+    const siteUrl =
+      (manifest && manifest.site) ||
+      process.env.PUBLIC_SITE_URL ||
+      process.env.NEXT_PUBLIC_SITE_URL ||
+      process.env.PUBLIC_URL ||
+      'https://www.localeffortfood.com';
     const trimmedSite = siteUrl.replace(/\/$/, '');
     const navigation = Array.isArray(manifest?.navigation) ? manifest.navigation : [];
     const mcp = Array.isArray(manifest?.mcpServers) ? manifest.mcpServers : [];

@@ -3,6 +3,7 @@ import { Helmet } from 'react-helmet-async';
 import { useParams, Link } from 'react-router-dom';
 import { PortableText } from '@portabletext/react';
 import { portableTextComponents } from '../utils/portableTextComponents';
+import { SITE_URL } from '../config/siteMetadata';
 
 const BlogPost = () => {
   const { slug } = useParams();
@@ -42,7 +43,7 @@ const BlogPost = () => {
   if (error) return <div className="mx-auto max-w-3xl px-4 py-10 text-red-700">{error}</div>;
   if (!post) return <div className="mx-auto max-w-3xl px-4 py-10">Loading...</div>;
 
-  const canonicalUrl = post?.canonicalUrl || `https://localeffortfood.com/blog/${slug}`;
+  const canonicalUrl = post?.canonicalUrl || `${SITE_URL}/blog/${slug}`;
   const pageTitle = post?.metaTitle || (post?.title ? `${post.title} | Blog | Local Effort` : 'Blog | Local Effort');
   const description = post?.metaDescription || post?.excerpt || '';
   const ogImage = post?.ogImageUrl || '';

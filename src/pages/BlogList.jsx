@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Link } from 'react-router-dom';
+import { SITE_URL } from '../config/siteMetadata';
 
 const BlogList = () => {
   const [posts, setPosts] = useState([]);
@@ -31,7 +32,7 @@ const BlogList = () => {
       <Helmet>
         <title>Blog | Local Effort</title>
         <meta name="description" content="News, stories, and updates from Local Effort Food Co." />
-        <link rel="canonical" href="https://localeffortfood.com/blog" />
+        <link rel="canonical" href={`${SITE_URL}/blog`} />
         <link rel="alternate" type="application/rss+xml" title="Local Effort Blog RSS" href="/api/feeds/blog.rss" />
         <link rel="alternate" type="application/atom+xml" title="Local Effort Blog Atom" href="/api/feeds/blog.atom" />
         <link rel="alternate" type="application/feed+json" title="Local Effort Blog JSON Feed" href="/api/feeds/blog.json" />

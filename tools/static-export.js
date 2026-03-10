@@ -95,7 +95,13 @@ function inject(html, body, head) {
 function ensureDir(p) { fs.mkdirSync(p, { recursive: true }); }
 
 (async () => {
-  const abs = (u) => `https://localeffortfood.com${u}`;
+  const siteOrigin = (
+    process.env.SITE_ORIGIN ||
+    process.env.PUBLIC_SITE_URL ||
+    process.env.PUBLIC_URL ||
+    'https://www.localeffortfood.com'
+  ).replace(/\/$/, '');
+  const abs = (u) => `${siteOrigin}${u}`;
   const seenUrls = [];
   for (const url of routes) {
     const helmetContext = {};

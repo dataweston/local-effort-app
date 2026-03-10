@@ -4,7 +4,7 @@ const fs = require('fs');
 
 const projectId = process.env.VITE_APP_SANITY_PROJECT_ID || process.env.VITE_SANITY_PROJECT_ID || process.env.SANITY_PROJECT_ID;
 const dataset = process.env.VITE_APP_SANITY_DATASET || process.env.VITE_SANITY_DATASET || process.env.SANITY_DATASET;
-const site = process.env.SITE_ORIGIN || 'https://localeffortfood.com';
+const site = process.env.SITE_ORIGIN || process.env.PUBLIC_SITE_URL || process.env.PUBLIC_URL || 'https://www.localeffortfood.com';
 const client = projectId && dataset ? sanity.createClient({ projectId, dataset, useCdn: true, apiVersion: '2023-05-03' }) : null;
 
 // Read static paths from generated routes manifest (built during deploy)

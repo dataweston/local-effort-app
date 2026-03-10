@@ -1,0 +1,13 @@
+@font-face {
+    font-family: 'office_code_proregular';
+    src: url('officecodepro-regular-webfont.eot');
+    src: url('officecodepro-regular-webfont.eot?#iefix') format('embedded-opentype'),
+         url('officecodepro-regular-webfont.woff2') format('woff2'),
+         url('officecodepro-regular-webfont.woff') format('woff'),
+         url('officecodepro-regular-webfont.ttf') format('truetype'),
+         url('officecodepro-regular-webfont.svg#office_code_proregular') format('svg');
+    font-weight: normal;
+    font-style: normal;
+
+}
+

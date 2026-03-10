@@ -1,4 +1,4 @@
-const site = process.env.SITE_ORIGIN || 'https://localeffortfood.com';
+const site = process.env.SITE_ORIGIN || process.env.PUBLIC_SITE_URL || process.env.PUBLIC_URL || 'https://www.localeffortfood.com';
 
 // For now, releases are static; could be migrated to CMS later.
 function getReleases() {

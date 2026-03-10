@@ -63,7 +63,7 @@ export const generateEventSchema = (event, campaignData = null) => {
   
   // Get fallback image
   const fallbackImage = campaignData?.heroImage?.asset?.url || 
-                       'https://localeffortfood.com/images/default-event.jpg';
+                       'https://www.localeffortfood.com/images/default-event.jpg';
   
   // Base schema
   const schema = {
@@ -92,8 +92,8 @@ export const generateEventSchema = (event, campaignData = null) => {
     "organizer": {
       "@type": "Organization",
       "name": "Local Effort",
-      "url": "https://localeffortfood.com",
-      "logo": "https://localeffortfood.com/images/logo.png"
+      "url": "https://www.localeffortfood.com",
+      "logo": "https://www.localeffortfood.com/images/logo.png"
     }
   };
   
@@ -205,9 +205,9 @@ export const generateOrganizationSchema = (business = null) => {
     "@type": "LocalBusiness",
     "name": business?.name || "Local Effort",
     "description": business?.description || "Personal chef services, meal prep, and catering in Minneapolis",
-    "url": "https://localeffortfood.com",
-    "logo": "https://localeffortfood.com/images/logo.png",
-    "image": "https://localeffortfood.com/images/hero.jpg",
+    "url": "https://www.localeffortfood.com",
+    "logo": "https://www.localeffortfood.com/images/logo.png",
+    "image": "https://www.localeffortfood.com/images/hero.jpg",
     "telephone": business?.phone || "",
     "email": business?.email || "",
     "address": {

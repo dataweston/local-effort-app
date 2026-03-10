@@ -99,7 +99,7 @@ const WinterPizzaPage = () => {
       <Helmet>
         <title>Winter Pizza | Local Effort</title>
         <meta name="description" content="Winter Pizza" />
-        <link rel="canonical" href="https://localeffortfood.com/winterpizza" />
+        <link rel="canonical" href="https://www.localeffortfood.com/winterpizza" />
       </Helmet>
 
       <div className="relative min-h-screen w-full overflow-hidden bg-neutral-950 text-white">

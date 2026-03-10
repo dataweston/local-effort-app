@@ -38,7 +38,8 @@
       "Bash(done)",
       "Bash(xargs:*)",
       "Bash(pnpm audit:*)",
-      "Bash(git filter-repo:*)"
+      "Bash(git filter-repo:*)",
+      "Bash(grep -E \"\\\\.\\(js|jsx\\)$\")"
     ],
     "deny": [],
     "ask": []

@@ -1,0 +1,13 @@
+@font-face {
+    font-family: 'office_code_pro_dbold';
+    src: url('OfficeCodeProD-Bold-webfont.eot');
+    src: url('OfficeCodeProD-Bold-webfont.eot?#iefix') format('embedded-opentype'),
+         url('OfficeCodeProD-Bold-webfont.woff2') format('woff2'),
+         url('OfficeCodeProD-Bold-webfont.woff') format('woff'),
+         url('OfficeCodeProD-Bold-webfont.ttf') format('truetype'),
+         url('OfficeCodeProD-Bold-webfont.svg#office_code_pro_dbold') format('svg');
+    font-weight: normal;
+    font-style: normal;
+
+}
+
