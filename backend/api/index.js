@@ -205,6 +205,7 @@ const PUBLIC_SANITY_QUERY_ALLOWLIST = new Set([
   normalizeGroq('*[_type == "blogPost"] | order(publishedAt desc)[0...50]{ title, "slug": slug.current, excerpt, publishedAt, mainImage }'),
   normalizeGroq('*[_type == "blogPost" && slug.current == $slug][0]{ title, publishedAt, body }'),
   normalizeGroq('*[_type == "blogPost" && slug.current == $slug][0]{ title, publishedAt, body, mainImage }'),
+  normalizeGroq('{ "menuItems": *[_type == "menuItems"], "pageContent": *[_type == "happyMondayPage"][0] }'),
   normalizeGroq('*[_type == "product" && active == true]{ _id, title, slug, shortDescription, longDescription, images[]{asset->{url}}, price, salePrice, squareItemId, squareVariationId, variants[]{name, squareVariationId, price}, } | order(title asc)'),
   normalizeGroq('*[_type == "product" && slug.current == $slug][0]{ _id, title, shortDescription, longDescription, images[]{asset->{url}}, price, salePrice }'),
   normalizeGroq('*[_type == "salePage"][0]{ title, titleIcon, subheading, intro }'),
