@@ -68,8 +68,17 @@
       "dest": "/prerender/pizza-party/index.html"
     },
     {
+      "src": "^/february$",
+      "dest": "/prerender/february/index.html"
+    },
+    {
       "src": "^/psyche$",
       "dest": "/prerender/psyche/index.html"
+    },
+    {
+      "src": "^/salepage$",
+      "dest": "/sale",
+      "status": 308
     },
     {
       "src": "^/\\.well-known/(.*)$",

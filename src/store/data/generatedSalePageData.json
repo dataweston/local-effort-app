@@ -1,0 +1,130 @@
+{
+  "generatedAt": "2026-03-11T02:29:21.668Z",
+  "page": {
+    "title": "Local Effort Sale",
+    "subheading": "holiday pie sale",
+    "introText": "pickup at Henry & Son 11/26 (day before thanksgiving).\nwe'll get some christmas dates up soon too."
+  },
+  "products": [
+    {
+      "id": "178a4ea0-417b-460a-b699-0c11b8811ef0",
+      "title": "Apple Pie",
+      "slug": "apple-pie",
+      "shortDescription": "zestar apples and a double crust",
+      "longDescription": null,
+      "longDescriptionBlocks": [
+        {
+          "_key": "0a7292eba3ce",
+          "_type": "block",
+          "children": [
+            {
+              "_key": "5c38fc7ca4dc",
+              "_type": "span",
+              "marks": [],
+              "text": "we use butter for the crust but let us know if you like lard, could be good. local zestar apples for now and we're picking up haralson next - if you have a firm preference, let us know. "
+            }
+          ],
+          "markDefs": [],
+          "style": "normal"
+        }
+      ],
+      "images": [
+        "https://cdn.sanity.io/images/d6l9d0ea/localeffort/53ff9d67f5da93947c1af57eb31029867b0be07b-3024x4032.jpg"
+      ],
+      "price": 4200,
+      "salePrice": null,
+      "priceDisplay": null,
+      "inventoryManaged": false,
+      "inventory": null,
+      "squareItemId": null,
+      "squareVariationId": null,
+      "variants": [],
+      "addOns": [],
+      "offerDairyFree": false,
+      "dairyFreeCost": 0,
+      "stores": [
+        "sale"
+      ]
+    },
+    {
+      "id": "c530941a-d2b0-4aa4-a60f-ce0b47088699",
+      "title": "Peach Pie",
+      "slug": "peach-pie",
+      "shortDescription": "tree-ripe peaches from Shafer, Minnesota",
+      "longDescription": null,
+      "longDescriptionBlocks": [
+        {
+          "_key": "dc471b98ce84",
+          "_type": "block",
+          "children": [
+            {
+              "_key": "be3b6a7f0b92",
+              "_type": "span",
+              "marks": [],
+              "text": "grown in high tunnels, and picked around 9/14. big big pieces of peach. crust from local flour and Hope butter. 9\" double crust."
+            }
+          ],
+          "markDefs": [],
+          "style": "normal"
+        }
+      ],
+      "images": [
+        "https://cdn.sanity.io/images/d6l9d0ea/localeffort/6ce1acb345a667305c399dd71cefb369dc17eb6f-3024x4032.jpg"
+      ],
+      "price": 4200,
+      "salePrice": null,
+      "priceDisplay": null,
+      "inventoryManaged": false,
+      "inventory": null,
+      "squareItemId": null,
+      "squareVariationId": null,
+      "variants": [],
+      "addOns": [],
+      "offerDairyFree": false,
+      "dairyFreeCost": 0,
+      "stores": [
+        "sale"
+      ]
+    },
+    {
+      "id": "38cd2d7d-2461-420f-8259-8fbdc4369ff0",
+      "title": "Pumpkin Pie",
+      "slug": "pumpkin-pie",
+      "shortDescription": "early season pumpkin custard, classic.",
+      "longDescription": null,
+      "longDescriptionBlocks": [
+        {
+          "_key": "b379841a834b",
+          "_type": "block",
+          "children": [
+            {
+              "_key": "45becbcadd4b",
+              "_type": "span",
+              "marks": [],
+              "text": "roasted pumpkin puree with warming spices like cardamom and clove, on a classic crust. "
+            }
+          ],
+          "markDefs": [],
+          "style": "normal"
+        }
+      ],
+      "images": [
+        "https://cdn.sanity.io/images/d6l9d0ea/localeffort/9cc8dfda88f44126651f7f2d5f133b866235f54f-1536x2048.jpg"
+      ],
+      "price": 3500,
+      "salePrice": null,
+      "priceDisplay": null,
+      "inventoryManaged": false,
+      "inventory": null,
+      "squareItemId": null,
+      "squareVariationId": null,
+      "variants": [],
+      "addOns": [],
+      "offerDairyFree": false,
+      "dairyFreeCost": 0,
+      "stores": [
+        "sale"
+      ]
+    }
+  ]
+}

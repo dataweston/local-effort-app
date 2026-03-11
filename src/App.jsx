@@ -151,6 +151,7 @@ const AppContent = () => {
                     </AnimatedPage>
                   }
                 />
+                <Route path="/salepage" element={<Navigate to="/sale" replace />} />
                 <Route
                   path="/product/:slug"
                   element={

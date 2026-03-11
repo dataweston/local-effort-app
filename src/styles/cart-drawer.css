@@ -84,7 +84,7 @@
 
 .le-cart-empty {
   font-size: 0.875rem;
-  color: #888;
+  color: #767676;
   padding: 2rem 0;
   text-align: center;
 }
@@ -178,7 +178,7 @@
   font-size: 0.7rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: #999;
+  color: #767676;
   padding: 0;
   text-decoration: underline;
   text-underline-offset: 2px;
@@ -218,7 +218,7 @@
   font-size: 0.7rem;
   letter-spacing: 0.15em;
   text-transform: uppercase;
-  color: #888;
+  color: #767676;
 }
 
 .le-cart-subtotal-value {
@@ -231,7 +231,7 @@
 .le-cart-tax-note,
 .le-cart-pricing-note {
   font-size: 0.7rem;
-  color: #aaa;
+  color: #767676;
   margin: 0;
   line-height: 1.4;
 }
@@ -262,7 +262,7 @@
   border: none;
   cursor: pointer;
   font-size: 0.7rem;
-  color: #bbb;
+  color: #767676;
   text-decoration: underline;
   text-underline-offset: 2px;
   text-transform: uppercase;
@@ -274,7 +274,21 @@
 }
 
 .le-cart-clear:hover {
-  color: #666;
+  color: #333;
+}
+
+.le-cart-confirm-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+}
+
+.le-cart-confirm-label {
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #767676;
 }
 
 /* iOS safe area support */
@@ -282,4 +296,9 @@
   .le-cart-footer {
     padding-bottom: calc(1.5rem + env(safe-area-inset-bottom));
   }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .le-cart-drawer { animation-duration: 0.01ms !important; }
 }

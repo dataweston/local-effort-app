@@ -39,7 +39,10 @@
       "Bash(xargs:*)",
       "Bash(pnpm audit:*)",
       "Bash(git filter-repo:*)",
-      "Bash(grep -E \"\\\\.\\(js|jsx\\)$\")"
+      "Bash(grep -E \"\\\\.\\(js|jsx\\)$\")",
+      "Bash(ls -la /c/Users/user/local-effort-app/checkout*)",
+      "Bash(ls -la /c/Users/user/local-effort-app/public/checkout*)",
+      "Bash(ls -la /c/Users/user/local-effort-app/*.html)"
     ],
     "deny": [],
     "ask": []

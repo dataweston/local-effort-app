@@ -67,6 +67,10 @@ const usePricedSubtotal = (items) => {
 export default function CartDrawer({ store = 'sale' }) {
   const { items, subtotal, open, closeCart, clear, remove, updateQty } = useCart();
   const { serverSubtotal, pricingError } = usePricedSubtotal(items);
+  const drawerRef = useRef(null);
+  const closeBtnRef = useRef(null);
+  const prevFocusRef = useRef(null);
+  const [confirmClear, setConfirmClear] = useState(false);
 
   // Displayed subtotal: server value if available, else local estimate
   const displaySubtotal = serverSubtotal ?? subtotal;
@@ -77,18 +81,42 @@ export default function CartDrawer({ store = 'sale' }) {
     if (open) trackEvent('cart.opened', { store });
   }, [open, store]);
 
-  // Close on Escape
+  // Focus trap + Escape
   useEffect(() => {
     if (!open) return;
-    const handle = (e) => { if (e.key === 'Escape') closeCart(); };
-    document.addEventListener('keydown', handle);
-    return () => document.removeEventListener('keydown', handle);
+    prevFocusRef.current = document.activeElement;
+    if (closeBtnRef.current) closeBtnRef.current.focus();
+
+    const handleKey = (e) => {
+      if (e.key === 'Escape') { closeCart(); return; }
+      if (e.key === 'Tab' && drawerRef.current) {
+        const focusable = Array.from(
+          drawerRef.current.querySelectorAll(
+            'a[href], button:not([disabled]), input, select, textarea, [tabindex]:not([tabindex="-1"])',
+          ),
+        ).filter((el) => el.offsetParent !== null);
+        if (!focusable.length) return;
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+        if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+        else if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+      }
+    };
+    document.addEventListener('keydown', handleKey, true);
+    return () => {
+      document.removeEventListener('keydown', handleKey, true);
+      prevFocusRef.current?.focus?.();
+    };
   }, [open, closeCart]);
 
-  // Trap scroll when open
+  // Trap scroll when open; reset confirm state on close
   useEffect(() => {
-    if (open) document.body.style.overflow = 'hidden';
-    else document.body.style.overflow = '';
+    if (open) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+      setConfirmClear(false);
+    }
     return () => { document.body.style.overflow = ''; };
   }, [open]);
 
@@ -115,11 +143,13 @@ export default function CartDrawer({ store = 'sale' }) {
         role="dialog"
         aria-modal="true"
         aria-label="Your cart"
+        ref={drawerRef}
       >
         {/* Header */}
         <div className="le-cart-header">
           <span className="le-cart-heading">Bag</span>
           <button
+            ref={closeBtnRef}
             type="button"
             className="le-cart-close"
             onClick={closeCart}
@@ -207,15 +237,33 @@ export default function CartDrawer({ store = 'sale' }) {
             >
               Checkout
             </button>
-            <button
-              type="button"
-              className="le-cart-clear"
-              onClick={() => {
-                if (window.confirm('Clear your bag?')) clear();
-              }}
-            >
-              Clear bag
-            </button>
+            {confirmClear ? (
+              <div className="le-cart-confirm-row">
+                <span className="le-cart-confirm-label">Clear bag?</span>
+                <button
+                  type="button"
+                  className="le-cart-clear"
+                  onClick={() => { clear(); setConfirmClear(false); }}
+                >
+                  Yes
+                </button>
+                <button
+                  type="button"
+                  className="le-cart-clear"
+                  onClick={() => setConfirmClear(false)}
+                >
+                  No
+                </button>
+              </div>
+            ) : (
+              <button
+                type="button"
+                className="le-cart-clear"
+                onClick={() => setConfirmClear(true)}
+              >
+                Clear bag
+              </button>
+            )}
           </div>
         )}
       </div>

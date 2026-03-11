@@ -22,8 +22,8 @@ export const PUBLIC_ROUTES = [
   },
   {
     path: '/sale',
-    title: 'Shop - Local Effort Food Co.',
-    description: 'Order from Local Effort Food Co. Fresh, local, Minneapolis-made.',
+    title: 'Shop Seasonal Food Drops & Preorders - Local Effort Food Co.',
+    description: 'Shop the Local Effort sale for seasonal food drops, pantry goods, and limited preorders with Minneapolis pickup and local delivery.',
     prerender: true,
   },
   {
@@ -60,7 +60,7 @@ export const PUBLIC_ROUTES = [
     path: '/february',
     title: 'February Menu - Local Effort Food Co.',
     description: 'February seasonal menu from Local Effort Food Co.',
-    prerender: false,
+    prerender: true,
   },
   {
     path: '/psyche',

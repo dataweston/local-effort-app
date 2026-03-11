@@ -13,6 +13,7 @@ import { PortableText } from '@portabletext/react';
 import { portableTextComponents } from '../../utils/portableTextComponents';
 import { useCart } from '../cart/CartContext';
 import { useToast } from '../../components/common/ToastProvider';
+import { ptToHtml } from '../data/ptToHtml';
 
 const fmt = (cents) => `$${(cents / 100).toFixed(2)}`;
 
@@ -60,6 +61,18 @@ export default function ProductDetail({ product, sku, onClose }) {
   const cartKey = `${product.id}:${variationId || ''}`;
   const inCartQty = map?.[cartKey]?.qty || 0;
   const isOutOfStock = product.inventoryManaged && (product.inventory ?? 0) <= inCartQty;
+  const leadText = useMemo(() => {
+    const text = (ptToHtml(product?.longDescriptionBlocks) || product?.longDescription || product?.shortDescription || '')
+      .replace(/\s+/g, ' ')
+      .trim();
+    if (!text) return '';
+    return text.length > 220 ? `${text.slice(0, 217).trim()}...` : text;
+  }, [product]);
+  const availabilityLabel = isOutOfStock
+    ? 'Out of stock'
+    : product.inventoryManaged && typeof product.inventory === 'number'
+      ? `${Math.max(0, product.inventory - inCartQty)} available`
+      : 'Available now';
 
   const handleAdd = useCallback(() => {
     if (isOutOfStock) return;
@@ -150,11 +163,10 @@ export default function ProductDetail({ product, sku, onClose }) {
                   <button
                     key={i}
                     type="button"
-                    role="listitem"
                     className={`le-detail-thumb${i === imgIdx ? ' is-active' : ''}`}
                     onClick={() => setImgIdx(i)}
                     aria-label={`Image ${i + 1}`}
-                    aria-pressed={i === imgIdx}
+                    aria-current={i === imgIdx ? 'true' : undefined}
                   >
                     <img src={src} alt="" />
                   </button>
@@ -170,9 +182,38 @@ export default function ProductDetail({ product, sku, onClose }) {
 
             <div className="le-detail-price">
               {product.salePrice && (
-                <span className="le-detail-price-original">{fmt(product.price)}</span>
+                <>
+                  <span className="sr-only">Original price: </span>
+                  <span className="le-detail-price-original">{fmt(product.price)}</span>
+                </>
               )}
+              <span className="sr-only">{product.salePrice ? 'Sale price: ' : 'Price: '}</span>
               <span className="le-detail-price-current">{fmt(unitPrice)}</span>
+            </div>
+
+            {leadText && <p className="le-detail-lead">{leadText}</p>}
+
+            <div className="le-detail-facts" aria-label="Product details">
+              <div className="le-detail-fact">
+                <span className="le-detail-fact-label">Availability</span>
+                <strong className="le-detail-fact-value">{availabilityLabel}</strong>
+              </div>
+              <div className="le-detail-fact">
+                <span className="le-detail-fact-label">Fulfillment</span>
+                <strong className="le-detail-fact-value">Pickup or local delivery</strong>
+              </div>
+              {(hasVariants || hasAddOns) && (
+                <div className="le-detail-fact">
+                  <span className="le-detail-fact-label">Options</span>
+                  <strong className="le-detail-fact-value">{hasAddOns ? product.addOns.length : product.variants.length}</strong>
+                </div>
+              )}
+              {product.offerDairyFree && (
+                <div className="le-detail-fact">
+                  <span className="le-detail-fact-label">Dairy-free</span>
+                  <strong className="le-detail-fact-value">Available</strong>
+                </div>
+              )}
             </div>
 
             {/* Variant selector */}
@@ -277,12 +318,19 @@ export default function ProductDetail({ product, sku, onClose }) {
             {/* Description — below the fold intentionally */}
             {(Array.isArray(product.longDescriptionBlocks) && product.longDescriptionBlocks.length > 0) ? (
               <div className="le-detail-description">
+                <div className="le-detail-section-label">More details</div>
                 <PortableText value={product.longDescriptionBlocks} components={portableTextComponents} />
               </div>
             ) : product.longDescription ? (
-              <p className="le-detail-description">{product.longDescription}</p>
+              <div className="le-detail-description">
+                <div className="le-detail-section-label">More details</div>
+                <p>{product.longDescription}</p>
+              </div>
             ) : product.shortDescription ? (
-              <p className="le-detail-description">{product.shortDescription}</p>
+              <div className="le-detail-description">
+                <div className="le-detail-section-label">More details</div>
+                <p>{product.shortDescription}</p>
+              </div>
             ) : null}
           </div>
         </div>

@@ -175,7 +175,7 @@ var require_react_fast_compare = __commonJS({
       }
       return a !== a && b !== b;
     }
-    module2.exports = function isEqual(a, b) {
+    module2.exports = function isEqual3(a, b) {
       try {
         return equal(a, b);
       } catch (error) {
@@ -194,15 +194,15 @@ var require_invariant = __commonJS({
   "node_modules/.pnpm/invariant@2.2.4/node_modules/invariant/invariant.js"(exports2, module2) {
     "use strict";
     var NODE_ENV = "production";
-    var invariant = function(condition, format, a, b, c, d2, e, f) {
+    var invariant = function(condition, format2, a, b, c, d2, e, f) {
       if (NODE_ENV !== "production") {
-        if (format === void 0) {
+        if (format2 === void 0) {
           throw new Error("invariant requires an error message argument");
         }
       }
       if (!condition) {
         var error;
-        if (format === void 0) {
+        if (format2 === void 0) {
           error = new Error(
             "Minified exception occurred; use the non-minified dev environment for the full error message and additional helpful warnings."
           );
@@ -210,7 +210,7 @@ var require_invariant = __commonJS({
           var args = [a, b, c, d2, e, f];
           var argIndex = 0;
           error = new Error(
-            format.replace(/%s/g, function() {
+            format2.replace(/%s/g, function() {
               return args[argIndex++];
             })
           );
@@ -266,7 +266,7 @@ var require_lib = __commonJS({
   "node_modules/.pnpm/react-helmet-async@1.3.0_react-dom@18.2.0_react@18.2.0__react@18.2.0/node_modules/react-helmet-async/lib/index.js"(exports2) {
     var t = require("react");
     var e = require_prop_types();
-    var r = require_react_fast_compare();
+    var r2 = require_react_fast_compare();
     var n = require_invariant();
     var i = require_shallowequal();
     function a(t2) {
@@ -274,14 +274,14 @@ var require_lib = __commonJS({
     }
     var o = /* @__PURE__ */ a(t);
     var u = /* @__PURE__ */ a(e);
-    var s = /* @__PURE__ */ a(r);
+    var s = /* @__PURE__ */ a(r2);
     var c = /* @__PURE__ */ a(n);
     var l = /* @__PURE__ */ a(i);
     function f() {
       return f = Object.assign || function(t2) {
         for (var e2 = 1; e2 < arguments.length; e2++) {
-          var r2 = arguments[e2];
-          for (var n2 in r2) Object.prototype.hasOwnProperty.call(r2, n2) && (t2[n2] = r2[n2]);
+          var r3 = arguments[e2];
+          for (var n2 in r3) Object.prototype.hasOwnProperty.call(r3, n2) && (t2[n2] = r3[n2]);
         }
         return t2;
       }, f.apply(this, arguments);
@@ -296,8 +296,8 @@ var require_lib = __commonJS({
     }
     function h(t2, e2) {
       if (null == t2) return {};
-      var r2, n2, i2 = {}, a2 = Object.keys(t2);
-      for (n2 = 0; n2 < a2.length; n2++) e2.indexOf(r2 = a2[n2]) >= 0 || (i2[r2] = t2[r2]);
+      var r3, n2, i2 = {}, a2 = Object.keys(t2);
+      for (n2 = 0; n2 < a2.length; n2++) e2.indexOf(r3 = a2[n2]) >= 0 || (i2[r3] = t2[r3]);
       return i2;
     }
     var m = { BASE: "base", BODY: "body", HEAD: "head", HTML: "html", LINK: "link", META: "meta", NOSCRIPT: "noscript", SCRIPT: "script", STYLE: "style", TITLE: "title", FRAGMENT: "Symbol(react.fragment)" };
@@ -312,15 +312,15 @@ var require_lib = __commonJS({
       return t2[v[e2]] = e2, t2;
     }, {});
     var C = function(t2, e2) {
-      for (var r2 = t2.length - 1; r2 >= 0; r2 -= 1) {
-        var n2 = t2[r2];
+      for (var r3 = t2.length - 1; r3 >= 0; r3 -= 1) {
+        var n2 = t2[r3];
         if (Object.prototype.hasOwnProperty.call(n2, e2)) return n2[e2];
       }
       return null;
     };
     var O = function(t2) {
-      var e2 = C(t2, m.TITLE), r2 = C(t2, "titleTemplate");
-      if (Array.isArray(e2) && (e2 = e2.join("")), r2 && e2) return r2.replace(/%s/g, function() {
+      var e2 = C(t2, m.TITLE), r3 = C(t2, "titleTemplate");
+      if (Array.isArray(e2) && (e2 = e2.join("")), r3 && e2) return r3.replace(/%s/g, function() {
         return e2;
       });
       var n2 = C(t2, "defaultTitle");
@@ -344,30 +344,30 @@ var require_lib = __commonJS({
         return void 0 !== t3[m.BASE];
       }).map(function(t3) {
         return t3[m.BASE];
-      }).reverse().reduce(function(e3, r2) {
-        if (!e3.length) for (var n2 = Object.keys(r2), i2 = 0; i2 < n2.length; i2 += 1) {
+      }).reverse().reduce(function(e3, r3) {
+        if (!e3.length) for (var n2 = Object.keys(r3), i2 = 0; i2 < n2.length; i2 += 1) {
           var a2 = n2[i2].toLowerCase();
-          if (-1 !== t2.indexOf(a2) && r2[a2]) return e3.concat(r2);
+          if (-1 !== t2.indexOf(a2) && r3[a2]) return e3.concat(r3);
         }
         return e3;
       }, []);
     };
-    var x = function(t2, e2, r2) {
+    var x = function(t2, e2, r3) {
       var n2 = {};
-      return r2.filter(function(e3) {
+      return r3.filter(function(e3) {
         return !!Array.isArray(e3[t2]) || (void 0 !== e3[t2] && console && "function" == typeof console.warn && console.warn("Helmet: " + t2 + ' should be of type "Array". Instead found type "' + typeof e3[t2] + '"'), false);
       }).map(function(e3) {
         return e3[t2];
-      }).reverse().reduce(function(t3, r3) {
+      }).reverse().reduce(function(t3, r4) {
         var i2 = {};
-        r3.filter(function(t4) {
-          for (var r4, a3 = Object.keys(t4), o3 = 0; o3 < a3.length; o3 += 1) {
+        r4.filter(function(t4) {
+          for (var r5, a3 = Object.keys(t4), o3 = 0; o3 < a3.length; o3 += 1) {
             var u3 = a3[o3], s3 = u3.toLowerCase();
-            -1 === e2.indexOf(s3) || "rel" === r4 && "canonical" === t4[r4].toLowerCase() || "rel" === s3 && "stylesheet" === t4[s3].toLowerCase() || (r4 = s3), -1 === e2.indexOf(u3) || "innerHTML" !== u3 && "cssText" !== u3 && "itemprop" !== u3 || (r4 = u3);
+            -1 === e2.indexOf(s3) || "rel" === r5 && "canonical" === t4[r5].toLowerCase() || "rel" === s3 && "stylesheet" === t4[s3].toLowerCase() || (r5 = s3), -1 === e2.indexOf(u3) || "innerHTML" !== u3 && "cssText" !== u3 && "itemprop" !== u3 || (r5 = u3);
           }
-          if (!r4 || !t4[r4]) return false;
-          var c2 = t4[r4].toLowerCase();
-          return n2[r4] || (n2[r4] = {}), i2[r4] || (i2[r4] = {}), !n2[r4][c2] && (i2[r4][c2] = true, true);
+          if (!r5 || !t4[r5]) return false;
+          var c2 = t4[r5].toLowerCase();
+          return n2[r5] || (n2[r5] = {}), i2[r5] || (i2[r5] = {}), !n2[r5][c2] && (i2[r5][c2] = true, true);
         }).reverse().forEach(function(e3) {
           return t3.push(e3);
         });
@@ -380,7 +380,7 @@ var require_lib = __commonJS({
     };
     var P2 = function(t2, e2) {
       if (Array.isArray(t2) && t2.length) {
-        for (var r2 = 0; r2 < t2.length; r2 += 1) if (t2[r2][e2]) return true;
+        for (var r3 = 0; r3 < t2.length; r3 += 1) if (t2[r3][e2]) return true;
       }
       return false;
     };
@@ -388,52 +388,52 @@ var require_lib = __commonJS({
       return Array.isArray(t2) ? t2.join("") : t2;
     };
     var L = function(t2, e2) {
-      return Array.isArray(t2) ? t2.reduce(function(t3, r2) {
+      return Array.isArray(t2) ? t2.reduce(function(t3, r3) {
         return function(t4, e3) {
-          for (var r3 = Object.keys(t4), n2 = 0; n2 < r3.length; n2 += 1) if (e3[r3[n2]] && e3[r3[n2]].includes(t4[r3[n2]])) return true;
+          for (var r4 = Object.keys(t4), n2 = 0; n2 < r4.length; n2 += 1) if (e3[r4[n2]] && e3[r4[n2]].includes(t4[r4[n2]])) return true;
           return false;
-        }(r2, e2) ? t3.priority.push(r2) : t3.default.push(r2), t3;
+        }(r3, e2) ? t3.priority.push(r3) : t3.default.push(r3), t3;
       }, { priority: [], default: [] }) : { default: t2 };
     };
     var j = function(t2, e2) {
-      var r2;
-      return f({}, t2, ((r2 = {})[e2] = void 0, r2));
+      var r3;
+      return f({}, t2, ((r3 = {})[e2] = void 0, r3));
     };
     var M = [m.NOSCRIPT, m.SCRIPT, m.STYLE];
     var k = function(t2, e2) {
       return void 0 === e2 && (e2 = true), false === e2 ? String(t2) : String(t2).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#x27;");
     };
     var H2 = function(t2) {
-      return Object.keys(t2).reduce(function(e2, r2) {
-        var n2 = void 0 !== t2[r2] ? r2 + '="' + t2[r2] + '"' : "" + r2;
+      return Object.keys(t2).reduce(function(e2, r3) {
+        var n2 = void 0 !== t2[r3] ? r3 + '="' + t2[r3] + '"' : "" + r3;
         return e2 ? e2 + " " + n2 : n2;
       }, "");
     };
     var N = function(t2, e2) {
-      return void 0 === e2 && (e2 = {}), Object.keys(t2).reduce(function(e3, r2) {
-        return e3[v[r2] || r2] = t2[r2], e3;
+      return void 0 === e2 && (e2 = {}), Object.keys(t2).reduce(function(e3, r3) {
+        return e3[v[r3] || r3] = t2[r3], e3;
       }, e2);
     };
     var D = function(t2, e2) {
-      return e2.map(function(e3, r2) {
-        var n2, i2 = ((n2 = { key: r2 })["data-rh"] = true, n2);
+      return e2.map(function(e3, r3) {
+        var n2, i2 = ((n2 = { key: r3 })["data-rh"] = true, n2);
         return Object.keys(e3).forEach(function(t3) {
-          var r3 = v[t3] || t3;
-          "innerHTML" === r3 || "cssText" === r3 ? i2.dangerouslySetInnerHTML = { __html: e3.innerHTML || e3.cssText } : i2[r3] = e3[t3];
+          var r4 = v[t3] || t3;
+          "innerHTML" === r4 || "cssText" === r4 ? i2.dangerouslySetInnerHTML = { __html: e3.innerHTML || e3.cssText } : i2[r4] = e3[t3];
         }), o.default.createElement(t2, i2);
       });
     };
-    var R = function(t2, e2, r2) {
+    var R = function(t2, e2, r3) {
       switch (t2) {
         case m.TITLE:
           return { toComponent: function() {
-            return r3 = e2.titleAttributes, (n2 = { key: t3 = e2.title })["data-rh"] = true, i2 = N(r3, n2), [o.default.createElement(m.TITLE, i2, t3)];
-            var t3, r3, n2, i2;
+            return r4 = e2.titleAttributes, (n2 = { key: t3 = e2.title })["data-rh"] = true, i2 = N(r4, n2), [o.default.createElement(m.TITLE, i2, t3)];
+            var t3, r4, n2, i2;
           }, toString: function() {
-            return function(t3, e3, r3, n2) {
-              var i2 = H2(r3), a2 = w(e3);
+            return function(t3, e3, r4, n2) {
+              var i2 = H2(r4), a2 = w(e3);
               return i2 ? "<" + t3 + ' data-rh="true" ' + i2 + ">" + k(a2, n2) + "</" + t3 + ">" : "<" + t3 + ' data-rh="true">' + k(a2, n2) + "</" + t3 + ">";
-            }(t2, e2.title, e2.titleAttributes, r2);
+            }(t2, e2.title, e2.titleAttributes, r3);
           } };
         case "bodyAttributes":
         case "htmlAttributes":
@@ -446,28 +446,28 @@ var require_lib = __commonJS({
           return { toComponent: function() {
             return D(t2, e2);
           }, toString: function() {
-            return function(t3, e3, r3) {
+            return function(t3, e3, r4) {
               return e3.reduce(function(e4, n2) {
                 var i2 = Object.keys(n2).filter(function(t4) {
                   return !("innerHTML" === t4 || "cssText" === t4);
                 }).reduce(function(t4, e5) {
-                  var i3 = void 0 === n2[e5] ? e5 : e5 + '="' + k(n2[e5], r3) + '"';
+                  var i3 = void 0 === n2[e5] ? e5 : e5 + '="' + k(n2[e5], r4) + '"';
                   return t4 ? t4 + " " + i3 : i3;
                 }, ""), a2 = n2.innerHTML || n2.cssText || "", o2 = -1 === M.indexOf(t3);
                 return e4 + "<" + t3 + ' data-rh="true" ' + i2 + (o2 ? "/>" : ">" + a2 + "</" + t3 + ">");
               }, "");
-            }(t2, e2, r2);
+            }(t2, e2, r3);
           } };
       }
     };
     var q2 = function(t2) {
-      var e2 = t2.baseTag, r2 = t2.bodyAttributes, n2 = t2.encode, i2 = t2.htmlAttributes, a2 = t2.noscriptTags, o2 = t2.styleTags, u2 = t2.title, s2 = void 0 === u2 ? "" : u2, c2 = t2.titleAttributes, l2 = t2.linkTags, f2 = t2.metaTags, d3 = t2.scriptTags, p2 = { toComponent: function() {
+      var e2 = t2.baseTag, r3 = t2.bodyAttributes, n2 = t2.encode, i2 = t2.htmlAttributes, a2 = t2.noscriptTags, o2 = t2.styleTags, u2 = t2.title, s2 = void 0 === u2 ? "" : u2, c2 = t2.titleAttributes, l2 = t2.linkTags, f2 = t2.metaTags, d3 = t2.scriptTags, p2 = { toComponent: function() {
       }, toString: function() {
         return "";
       } };
       if (t2.prioritizeSeoTags) {
         var h2 = function(t3) {
-          var e3 = t3.linkTags, r3 = t3.scriptTags, n3 = t3.encode, i3 = L(t3.metaTags, g), a3 = L(e3, y), o3 = L(r3, T2);
+          var e3 = t3.linkTags, r4 = t3.scriptTags, n3 = t3.encode, i3 = L(t3.metaTags, g), a3 = L(e3, y), o3 = L(r4, T2);
           return { priorityMethods: { toComponent: function() {
             return [].concat(D(m.META, i3.priority), D(m.LINK, a3.priority), D(m.SCRIPT, o3.priority));
           }, toString: function() {
@@ -476,29 +476,29 @@ var require_lib = __commonJS({
         }(t2);
         p2 = h2.priorityMethods, l2 = h2.linkTags, f2 = h2.metaTags, d3 = h2.scriptTags;
       }
-      return { priority: p2, base: R(m.BASE, e2, n2), bodyAttributes: R("bodyAttributes", r2, n2), htmlAttributes: R("htmlAttributes", i2, n2), link: R(m.LINK, l2, n2), meta: R(m.META, f2, n2), noscript: R(m.NOSCRIPT, a2, n2), script: R(m.SCRIPT, d3, n2), style: R(m.STYLE, o2, n2), title: R(m.TITLE, { title: s2, titleAttributes: c2 }, n2) };
+      return { priority: p2, base: R(m.BASE, e2, n2), bodyAttributes: R("bodyAttributes", r3, n2), htmlAttributes: R("htmlAttributes", i2, n2), link: R(m.LINK, l2, n2), meta: R(m.META, f2, n2), noscript: R(m.NOSCRIPT, a2, n2), script: R(m.SCRIPT, d3, n2), style: R(m.STYLE, o2, n2), title: R(m.TITLE, { title: s2, titleAttributes: c2 }, n2) };
     };
     var U2 = [];
     var Y = function(t2, e2) {
-      var r2 = this;
+      var r3 = this;
       void 0 === e2 && (e2 = "undefined" != typeof document), this.instances = [], this.value = { setHelmet: function(t3) {
-        r2.context.helmet = t3;
+        r3.context.helmet = t3;
       }, helmetInstances: { get: function() {
-        return r2.canUseDOM ? U2 : r2.instances;
+        return r3.canUseDOM ? U2 : r3.instances;
       }, add: function(t3) {
-        (r2.canUseDOM ? U2 : r2.instances).push(t3);
+        (r3.canUseDOM ? U2 : r3.instances).push(t3);
       }, remove: function(t3) {
-        var e3 = (r2.canUseDOM ? U2 : r2.instances).indexOf(t3);
-        (r2.canUseDOM ? U2 : r2.instances).splice(e3, 1);
+        var e3 = (r3.canUseDOM ? U2 : r3.instances).indexOf(t3);
+        (r3.canUseDOM ? U2 : r3.instances).splice(e3, 1);
       } } }, this.context = t2, this.canUseDOM = e2, e2 || (t2.helmet = q2({ baseTag: [], bodyAttributes: {}, encodeSpecialCharacters: true, htmlAttributes: {}, linkTags: [], metaTags: [], noscriptTags: [], scriptTags: [], styleTags: [], title: "", titleAttributes: {} }));
     };
     var B = o.default.createContext({});
     var K = u.default.shape({ setHelmet: u.default.func, helmetInstances: u.default.shape({ get: u.default.func, add: u.default.func, remove: u.default.func }) });
     var _ = "undefined" != typeof document;
     var z2 = /* @__PURE__ */ function(t2) {
-      function e2(r2) {
+      function e2(r3) {
         var n2;
-        return (n2 = t2.call(this, r2) || this).helmetData = new Y(n2.props.context, e2.canUseDOM), n2;
+        return (n2 = t2.call(this, r3) || this).helmetData = new Y(n2.props.context, e2.canUseDOM), n2;
       }
       return d2(e2, t2), e2.prototype.render = function() {
         return o.default.createElement(B.Provider, { value: this.helmetData.value }, this.props.children);
@@ -506,13 +506,13 @@ var require_lib = __commonJS({
     }(t.Component);
     z2.canUseDOM = _, z2.propTypes = { context: u.default.shape({ helmet: u.default.shape() }), children: u.default.node.isRequired }, z2.defaultProps = { context: {} }, z2.displayName = "HelmetProvider";
     var F2 = function(t2, e2) {
-      var r2, n2 = document.head || document.querySelector(m.HEAD), i2 = n2.querySelectorAll(t2 + "[data-rh]"), a2 = [].slice.call(i2), o2 = [];
+      var r3, n2 = document.head || document.querySelector(m.HEAD), i2 = n2.querySelectorAll(t2 + "[data-rh]"), a2 = [].slice.call(i2), o2 = [];
       return e2 && e2.length && e2.forEach(function(e3) {
         var n3 = document.createElement(t2);
         for (var i3 in e3) Object.prototype.hasOwnProperty.call(e3, i3) && ("innerHTML" === i3 ? n3.innerHTML = e3.innerHTML : "cssText" === i3 ? n3.styleSheet ? n3.styleSheet.cssText = e3.cssText : n3.appendChild(document.createTextNode(e3.cssText)) : n3.setAttribute(i3, void 0 === e3[i3] ? "" : e3[i3]));
         n3.setAttribute("data-rh", "true"), a2.some(function(t3, e4) {
-          return r2 = e4, n3.isEqualNode(t3);
-        }) ? a2.splice(r2, 1) : o2.push(n3);
+          return r3 = e4, n3.isEqualNode(t3);
+        }) ? a2.splice(r3, 1) : o2.push(n3);
       }), a2.forEach(function(t3) {
         return t3.parentNode.removeChild(t3);
       }), o2.forEach(function(t3) {
@@ -520,45 +520,45 @@ var require_lib = __commonJS({
       }), { oldTags: a2, newTags: o2 };
     };
     var G2 = function(t2, e2) {
-      var r2 = document.getElementsByTagName(t2)[0];
-      if (r2) {
-        for (var n2 = r2.getAttribute("data-rh"), i2 = n2 ? n2.split(",") : [], a2 = [].concat(i2), o2 = Object.keys(e2), u2 = 0; u2 < o2.length; u2 += 1) {
+      var r3 = document.getElementsByTagName(t2)[0];
+      if (r3) {
+        for (var n2 = r3.getAttribute("data-rh"), i2 = n2 ? n2.split(",") : [], a2 = [].concat(i2), o2 = Object.keys(e2), u2 = 0; u2 < o2.length; u2 += 1) {
           var s2 = o2[u2], c2 = e2[s2] || "";
-          r2.getAttribute(s2) !== c2 && r2.setAttribute(s2, c2), -1 === i2.indexOf(s2) && i2.push(s2);
+          r3.getAttribute(s2) !== c2 && r3.setAttribute(s2, c2), -1 === i2.indexOf(s2) && i2.push(s2);
           var l2 = a2.indexOf(s2);
           -1 !== l2 && a2.splice(l2, 1);
         }
-        for (var f2 = a2.length - 1; f2 >= 0; f2 -= 1) r2.removeAttribute(a2[f2]);
-        i2.length === a2.length ? r2.removeAttribute("data-rh") : r2.getAttribute("data-rh") !== o2.join(",") && r2.setAttribute("data-rh", o2.join(","));
+        for (var f2 = a2.length - 1; f2 >= 0; f2 -= 1) r3.removeAttribute(a2[f2]);
+        i2.length === a2.length ? r3.removeAttribute("data-rh") : r3.getAttribute("data-rh") !== o2.join(",") && r3.setAttribute("data-rh", o2.join(","));
       }
     };
     var W = function(t2, e2) {
-      var r2 = t2.baseTag, n2 = t2.htmlAttributes, i2 = t2.linkTags, a2 = t2.metaTags, o2 = t2.noscriptTags, u2 = t2.onChangeClientState, s2 = t2.scriptTags, c2 = t2.styleTags, l2 = t2.title, f2 = t2.titleAttributes;
+      var r3 = t2.baseTag, n2 = t2.htmlAttributes, i2 = t2.linkTags, a2 = t2.metaTags, o2 = t2.noscriptTags, u2 = t2.onChangeClientState, s2 = t2.scriptTags, c2 = t2.styleTags, l2 = t2.title, f2 = t2.titleAttributes;
       G2(m.BODY, t2.bodyAttributes), G2(m.HTML, n2), function(t3, e3) {
         void 0 !== t3 && document.title !== t3 && (document.title = w(t3)), G2(m.TITLE, e3);
       }(l2, f2);
-      var d3 = { baseTag: F2(m.BASE, r2), linkTags: F2(m.LINK, i2), metaTags: F2(m.META, a2), noscriptTags: F2(m.NOSCRIPT, o2), scriptTags: F2(m.SCRIPT, s2), styleTags: F2(m.STYLE, c2) }, p2 = {}, h2 = {};
+      var d3 = { baseTag: F2(m.BASE, r3), linkTags: F2(m.LINK, i2), metaTags: F2(m.META, a2), noscriptTags: F2(m.NOSCRIPT, o2), scriptTags: F2(m.SCRIPT, s2), styleTags: F2(m.STYLE, c2) }, p2 = {}, h2 = {};
       Object.keys(d3).forEach(function(t3) {
-        var e3 = d3[t3], r3 = e3.newTags, n3 = e3.oldTags;
-        r3.length && (p2[t3] = r3), n3.length && (h2[t3] = d3[t3].oldTags);
+        var e3 = d3[t3], r4 = e3.newTags, n3 = e3.oldTags;
+        r4.length && (p2[t3] = r4), n3.length && (h2[t3] = d3[t3].oldTags);
       }), e2 && e2(), u2(t2, p2, h2);
     };
     var J2 = null;
     var Q = /* @__PURE__ */ function(t2) {
       function e2() {
-        for (var e3, r3 = arguments.length, n2 = new Array(r3), i2 = 0; i2 < r3; i2++) n2[i2] = arguments[i2];
+        for (var e3, r4 = arguments.length, n2 = new Array(r4), i2 = 0; i2 < r4; i2++) n2[i2] = arguments[i2];
         return (e3 = t2.call.apply(t2, [this].concat(n2)) || this).rendered = false, e3;
       }
       d2(e2, t2);
-      var r2 = e2.prototype;
-      return r2.shouldComponentUpdate = function(t3) {
+      var r3 = e2.prototype;
+      return r3.shouldComponentUpdate = function(t3) {
         return !l.default(t3, this.props);
-      }, r2.componentDidUpdate = function() {
+      }, r3.componentDidUpdate = function() {
         this.emitChange();
-      }, r2.componentWillUnmount = function() {
+      }, r3.componentWillUnmount = function() {
         this.props.context.helmetInstances.remove(this), this.emitChange();
-      }, r2.emitChange = function() {
-        var t3, e3, r3 = this.props.context, n2 = r3.setHelmet, i2 = null, a2 = (t3 = r3.helmetInstances.get().map(function(t4) {
+      }, r3.emitChange = function() {
+        var t3, e3, r4 = this.props.context, n2 = r4.setHelmet, i2 = null, a2 = (t3 = r4.helmetInstances.get().map(function(t4) {
           var e4 = f({}, t4.props);
           return delete e4.context, e4;
         }), { baseTag: I(["href"], t3), bodyAttributes: E("bodyAttributes", t3), defer: C(t3, "defer"), encode: C(t3, "encodeSpecialCharacters"), htmlAttributes: E("htmlAttributes", t3), linkTags: x(m.LINK, ["rel", "href"], t3), metaTags: x(m.META, ["name", "charset", "http-equiv", "property", "itemprop"], t3), noscriptTags: x(m.NOSCRIPT, ["innerHTML"], t3), onChangeClientState: S2(t3), scriptTags: x(m.SCRIPT, ["src", "innerHTML"], t3), styleTags: x(m.STYLE, ["cssText"], t3), title: O(t3), titleAttributes: E("titleAttributes", t3), prioritizeSeoTags: P2(t3, "prioritizeSeoTags") });
@@ -567,9 +567,9 @@ var require_lib = __commonJS({
             J2 = null;
           });
         }) : (W(e3), J2 = null)) : q2 && (i2 = q2(a2)), n2(i2);
-      }, r2.init = function() {
+      }, r3.init = function() {
         this.rendered || (this.rendered = true, this.props.context.helmetInstances.add(this), this.emitChange());
-      }, r2.render = function() {
+      }, r3.render = function() {
         return this.init(), null;
       }, e2;
     }(t.Component);
@@ -581,10 +581,10 @@ var require_lib = __commonJS({
         return t2.apply(this, arguments) || this;
       }
       d2(e2, t2);
-      var r2 = e2.prototype;
-      return r2.shouldComponentUpdate = function(t3) {
+      var r3 = e2.prototype;
+      return r3.shouldComponentUpdate = function(t3) {
         return !s.default(j(this.props, "helmetData"), j(t3, "helmetData"));
-      }, r2.mapNestedChildrenToProps = function(t3, e3) {
+      }, r3.mapNestedChildrenToProps = function(t3, e3) {
         if (!e3) return null;
         switch (t3.type) {
           case m.SCRIPT:
@@ -595,11 +595,11 @@ var require_lib = __commonJS({
           default:
             throw new Error("<" + t3.type + " /> elements are self-closing and can not contain children. Refer to our API for more information.");
         }
-      }, r2.flattenArrayTypeChildren = function(t3) {
-        var e3, r3 = t3.child, n2 = t3.arrayTypeChildren;
-        return f({}, n2, ((e3 = {})[r3.type] = [].concat(n2[r3.type] || [], [f({}, t3.newChildProps, this.mapNestedChildrenToProps(r3, t3.nestedChildren))]), e3));
-      }, r2.mapObjectTypeChildren = function(t3) {
-        var e3, r3, n2 = t3.child, i2 = t3.newProps, a2 = t3.newChildProps, o2 = t3.nestedChildren;
+      }, r3.flattenArrayTypeChildren = function(t3) {
+        var e3, r4 = t3.child, n2 = t3.arrayTypeChildren;
+        return f({}, n2, ((e3 = {})[r4.type] = [].concat(n2[r4.type] || [], [f({}, t3.newChildProps, this.mapNestedChildrenToProps(r4, t3.nestedChildren))]), e3));
+      }, r3.mapObjectTypeChildren = function(t3) {
+        var e3, r4, n2 = t3.child, i2 = t3.newProps, a2 = t3.newChildProps, o2 = t3.nestedChildren;
         switch (n2.type) {
           case m.TITLE:
             return f({}, i2, ((e3 = {})[n2.type] = o2, e3.titleAttributes = f({}, a2), e3));
@@ -608,45 +608,45 @@ var require_lib = __commonJS({
           case m.HTML:
             return f({}, i2, { htmlAttributes: f({}, a2) });
           default:
-            return f({}, i2, ((r3 = {})[n2.type] = f({}, a2), r3));
+            return f({}, i2, ((r4 = {})[n2.type] = f({}, a2), r4));
         }
-      }, r2.mapArrayTypeChildrenToProps = function(t3, e3) {
-        var r3 = f({}, e3);
+      }, r3.mapArrayTypeChildrenToProps = function(t3, e3) {
+        var r4 = f({}, e3);
         return Object.keys(t3).forEach(function(e4) {
           var n2;
-          r3 = f({}, r3, ((n2 = {})[e4] = t3[e4], n2));
-        }), r3;
-      }, r2.warnOnInvalidChildren = function(t3, e3) {
+          r4 = f({}, r4, ((n2 = {})[e4] = t3[e4], n2));
+        }), r4;
+      }, r3.warnOnInvalidChildren = function(t3, e3) {
         return c.default(b.some(function(e4) {
           return t3.type === e4;
         }), "function" == typeof t3.type ? "You may be attempting to nest <Helmet> components within each other, which is not allowed. Refer to our API for more information." : "Only elements types " + b.join(", ") + " are allowed. Helmet does not support rendering <" + t3.type + "> elements. Refer to our API for more information."), c.default(!e3 || "string" == typeof e3 || Array.isArray(e3) && !e3.some(function(t4) {
           return "string" != typeof t4;
         }), "Helmet expects a string as a child of <" + t3.type + ">. Did you forget to wrap your children in braces? ( <" + t3.type + ">{``}</" + t3.type + "> ) Refer to our API for more information."), true;
-      }, r2.mapChildrenToProps = function(t3, e3) {
-        var r3 = this, n2 = {};
+      }, r3.mapChildrenToProps = function(t3, e3) {
+        var r4 = this, n2 = {};
         return o.default.Children.forEach(t3, function(t4) {
           if (t4 && t4.props) {
             var i2 = t4.props, a2 = i2.children, o2 = h(i2, V), u2 = Object.keys(o2).reduce(function(t5, e4) {
               return t5[A2[e4] || e4] = o2[e4], t5;
             }, {}), s2 = t4.type;
-            switch ("symbol" == typeof s2 ? s2 = s2.toString() : r3.warnOnInvalidChildren(t4, a2), s2) {
+            switch ("symbol" == typeof s2 ? s2 = s2.toString() : r4.warnOnInvalidChildren(t4, a2), s2) {
               case m.FRAGMENT:
-                e3 = r3.mapChildrenToProps(a2, e3);
+                e3 = r4.mapChildrenToProps(a2, e3);
                 break;
               case m.LINK:
               case m.META:
               case m.NOSCRIPT:
               case m.SCRIPT:
               case m.STYLE:
-                n2 = r3.flattenArrayTypeChildren({ child: t4, arrayTypeChildren: n2, newChildProps: u2, nestedChildren: a2 });
+                n2 = r4.flattenArrayTypeChildren({ child: t4, arrayTypeChildren: n2, newChildProps: u2, nestedChildren: a2 });
                 break;
               default:
-                e3 = r3.mapObjectTypeChildren({ child: t4, newProps: e3, newChildProps: u2, nestedChildren: a2 });
+                e3 = r4.mapObjectTypeChildren({ child: t4, newProps: e3, newChildProps: u2, nestedChildren: a2 });
             }
           }
         }), this.mapArrayTypeChildrenToProps(n2, e3);
-      }, r2.render = function() {
-        var t3 = this.props, e3 = t3.children, r3 = h(t3, X2), n2 = f({}, r3), i2 = r3.helmetData;
+      }, r3.render = function() {
+        var t3 = this.props, e3 = t3.children, r4 = h(t3, X2), n2 = f({}, r4), i2 = r4.helmetData;
         return e3 && (n2 = this.mapChildrenToProps(e3, n2)), !i2 || i2 instanceof Y || (i2 = new Y(i2.context, i2.instances)), i2 ? /* @__PURE__ */ o.default.createElement(Q, f({}, n2, { context: i2.value, helmetData: void 0 })) : /* @__PURE__ */ o.default.createElement(B.Consumer, null, function(t4) {
           return o.default.createElement(Q, f({}, n2, { context: t4 }));
         });
@@ -667,12 +667,12 @@ var require_utilities_cjs_production_min = __commonJS({
       const t2 = Object.prototype.toString.call(e2);
       return "[object Window]" === t2 || "[object global]" === t2;
     }
-    function r(e2) {
+    function r2(e2) {
       return "nodeType" in e2;
     }
     function o(e2) {
       var t2, o2;
-      return e2 ? n(e2) ? e2 : r(e2) && null != (t2 = null == (o2 = e2.ownerDocument) ? void 0 : o2.defaultView) ? t2 : window : window;
+      return e2 ? n(e2) ? e2 : r2(e2) && null != (t2 = null == (o2 = e2.ownerDocument) ? void 0 : o2.defaultView) ? t2 : window : window;
     }
     function u(e2) {
       const { Document: t2 } = o(e2);
@@ -690,19 +690,19 @@ var require_utilities_cjs_production_min = __commonJS({
       return i(() => {
         n2.current = t2;
       }), e.useCallback(function() {
-        for (var e2 = arguments.length, t3 = new Array(e2), r2 = 0; r2 < e2; r2++) t3[r2] = arguments[r2];
+        for (var e2 = arguments.length, t3 = new Array(e2), r3 = 0; r3 < e2; r3++) t3[r3] = arguments[r3];
         return null == n2.current ? void 0 : n2.current(...t3);
       }, []);
     }
     var l = {};
     function f(e2) {
       return function(t2) {
-        for (var n2 = arguments.length, r2 = new Array(n2 > 1 ? n2 - 1 : 0), o2 = 1; o2 < n2; o2++) r2[o2 - 1] = arguments[o2];
-        return r2.reduce((t3, n3) => {
-          const r3 = Object.entries(n3);
-          for (const [n4, o3] of r3) {
-            const r4 = t3[n4];
-            null != r4 && (t3[n4] = r4 + e2 * o3);
+        for (var n2 = arguments.length, r3 = new Array(n2 > 1 ? n2 - 1 : 0), o2 = 1; o2 < n2; o2++) r3[o2 - 1] = arguments[o2];
+        return r3.reduce((t3, n3) => {
+          const r4 = Object.entries(n3);
+          for (const [n4, o3] of r4) {
+            const r5 = t3[n4];
+            null != r5 && (t3[n4] = r5 + e2 * o3);
           }
           return t3;
         }, { ...t2 });
@@ -729,8 +729,8 @@ var require_utilities_cjs_production_min = __commonJS({
     } }, Transform: { toString(e2) {
       if (e2) return [h.Translate.toString(e2), h.Scale.toString(e2)].join(" ");
     } }, Transition: { toString(e2) {
-      let { property: t2, duration: n2, easing: r2 } = e2;
-      return t2 + " " + n2 + "ms " + r2;
+      let { property: t2, duration: n2, easing: r3 } = e2;
+      return t2 + " " + n2 + "ms " + r3;
     } } });
     var b = "a,frame,iframe,input:not([type=hidden]):not(:disabled),select:not(:disabled),textarea:not(:disabled),button:not(:disabled),*[tabindex]";
     exports2.CSS = h, exports2.add = d2, exports2.canUseDOM = t, exports2.findFirstFocusableNode = function(e2) {
@@ -748,13 +748,13 @@ var require_utilities_cjs_production_min = __commonJS({
       }
       return x(e2) ? { x: e2.clientX, y: e2.clientY } : null;
     }, exports2.getOwnerDocument = function(e2) {
-      return e2 ? n(e2) ? e2.document : r(e2) ? u(e2) ? e2 : c(e2) || s(e2) ? e2.ownerDocument : document : document : document;
+      return e2 ? n(e2) ? e2.document : r2(e2) ? u(e2) ? e2 : c(e2) || s(e2) ? e2.ownerDocument : document : document : document;
     }, exports2.getWindow = o, exports2.hasViewportRelativeCoordinates = x, exports2.isDocument = u, exports2.isHTMLElement = c, exports2.isKeyboardEvent = function(e2) {
       if (!e2) return false;
       const { KeyboardEvent: t2 } = o(e2.target);
       return t2 && e2 instanceof t2;
-    }, exports2.isNode = r, exports2.isSVGElement = s, exports2.isTouchEvent = m, exports2.isWindow = n, exports2.subtract = p, exports2.useCombinedRefs = function() {
-      for (var t2 = arguments.length, n2 = new Array(t2), r2 = 0; r2 < t2; r2++) n2[r2] = arguments[r2];
+    }, exports2.isNode = r2, exports2.isSVGElement = s, exports2.isTouchEvent = m, exports2.isWindow = n, exports2.subtract = p, exports2.useCombinedRefs = function() {
+      for (var t2 = arguments.length, n2 = new Array(t2), r3 = 0; r3 < t2; r3++) n2[r3] = arguments[r3];
       return e.useMemo(() => (e2) => {
         n2.forEach((t3) => t3(e2));
       }, n2);
@@ -767,21 +767,21 @@ var require_utilities_cjs_production_min = __commonJS({
       }, [])];
     }, exports2.useIsomorphicLayoutEffect = i, exports2.useLatestValue = function(t2, n2) {
       void 0 === n2 && (n2 = [t2]);
-      const r2 = e.useRef(t2);
+      const r3 = e.useRef(t2);
       return i(() => {
-        r2.current !== t2 && (r2.current = t2);
-      }, n2), r2;
+        r3.current !== t2 && (r3.current = t2);
+      }, n2), r3;
     }, exports2.useLazyMemo = function(t2, n2) {
-      const r2 = e.useRef();
+      const r3 = e.useRef();
       return e.useMemo(() => {
-        const e2 = t2(r2.current);
-        return r2.current = e2, e2;
+        const e2 = t2(r3.current);
+        return r3.current = e2, e2;
       }, [...n2]);
     }, exports2.useNodeRef = function(t2) {
-      const n2 = a(t2), r2 = e.useRef(null), o2 = e.useCallback((e2) => {
-        e2 !== r2.current && (null == n2 || n2(e2, r2.current)), r2.current = e2;
+      const n2 = a(t2), r3 = e.useRef(null), o2 = e.useCallback((e2) => {
+        e2 !== r3.current && (null == n2 || n2(e2, r3.current)), r3.current = e2;
       }, []);
-      return [r2, o2];
+      return [r3, o2];
     }, exports2.usePrevious = function(t2) {
       const n2 = e.useRef();
       return e.useEffect(() => {
@@ -819,11 +819,11 @@ var require_accessibility_cjs_production_min = __commonJS({
     var n = (e = t) && "object" == typeof e && "default" in e ? e.default : e;
     var i = { display: "none" };
     exports2.HiddenText = function(e2) {
-      let { id: t2, value: r } = e2;
-      return n.createElement("div", { id: t2, style: i }, r);
+      let { id: t2, value: r2 } = e2;
+      return n.createElement("div", { id: t2, style: i }, r2);
     }, exports2.LiveRegion = function(e2) {
-      let { id: t2, announcement: i2, ariaLiveType: r = "assertive" } = e2;
-      return n.createElement("div", { id: t2, style: { position: "fixed", top: 0, left: 0, width: 1, height: 1, margin: -1, border: 0, padding: 0, overflow: "hidden", clip: "rect(0 0 0 0)", clipPath: "inset(100%)", whiteSpace: "nowrap" }, role: "status", "aria-live": r, "aria-atomic": true }, i2);
+      let { id: t2, announcement: i2, ariaLiveType: r2 = "assertive" } = e2;
+      return n.createElement("div", { id: t2, style: { position: "fixed", top: 0, left: 0, width: 1, height: 1, margin: -1, border: 0, padding: 0, overflow: "hidden", clip: "rect(0 0 0 0)", clipPath: "inset(100%)", whiteSpace: "nowrap" }, role: "status", "aria-live": r2, "aria-atomic": true }, i2);
     }, exports2.useAnnouncement = function() {
       const [e2, n2] = t.useState("");
       return { announce: t.useCallback((e3) => {
@@ -853,7 +853,7 @@ var require_core_cjs_production_min = __commonJS({
     var e;
     var t = require("react");
     var n = (e = t) && "object" == typeof e && "default" in e ? e.default : e;
-    var r = require("react-dom");
+    var r2 = require("react-dom");
     var o = require_dist();
     var i = require_dist2();
     var a = t.createContext(null);
@@ -900,7 +900,7 @@ var require_core_cjs_production_min = __commonJS({
         v2(a2.onDragCancel({ active: t2, over: n2 }));
       } }), [v2, a2])), !h2) return null;
       const m2 = n.createElement(n.Fragment, null, n.createElement(i.HiddenText, { id: u2, value: f2.draggable }), n.createElement(i.LiveRegion, { id: p2, announcement: g2 }));
-      return d3 ? r.createPortal(m2, d3) : m2;
+      return d3 ? r2.createPortal(m2, d3) : m2;
     }
     var u;
     function f() {
@@ -917,16 +917,16 @@ var require_core_cjs_production_min = __commonJS({
       return n2 ? (n2.x - t2.left) / t2.width * 100 + "% " + (n2.y - t2.top) / t2.height * 100 + "%" : "0 0";
     }
     function h(e2, t2) {
-      let { data: { value: n2 } } = e2, { data: { value: r2 } } = t2;
-      return n2 - r2;
+      let { data: { value: n2 } } = e2, { data: { value: r3 } } = t2;
+      return n2 - r3;
     }
     function b(e2, t2) {
-      let { data: { value: n2 } } = e2, { data: { value: r2 } } = t2;
-      return r2 - n2;
+      let { data: { value: n2 } } = e2, { data: { value: r3 } } = t2;
+      return r3 - n2;
     }
     function m(e2) {
-      let { left: t2, top: n2, height: r2, width: o2 } = e2;
-      return [{ x: t2, y: n2 }, { x: t2 + o2, y: n2 }, { x: t2, y: n2 + r2 }, { x: t2 + o2, y: n2 + r2 }];
+      let { left: t2, top: n2, height: r3, width: o2 } = e2;
+      return [{ x: t2, y: n2 }, { x: t2 + o2, y: n2 }, { x: t2, y: n2 + r3 }, { x: t2 + o2, y: n2 + r3 }];
     }
     function y(e2, t2) {
       if (!e2 || 0 === e2.length) return null;
@@ -937,36 +937,36 @@ var require_core_cjs_production_min = __commonJS({
       return void 0 === t2 && (t2 = e2.left), void 0 === n2 && (n2 = e2.top), { x: t2 + 0.5 * e2.width, y: n2 + 0.5 * e2.height };
     }
     function w(e2, t2) {
-      const n2 = Math.max(t2.top, e2.top), r2 = Math.max(t2.left, e2.left), o2 = Math.min(t2.left + t2.width, e2.left + e2.width), i2 = Math.min(t2.top + t2.height, e2.top + e2.height);
-      if (r2 < o2 && n2 < i2) {
-        const a2 = (o2 - r2) * (i2 - n2);
+      const n2 = Math.max(t2.top, e2.top), r3 = Math.max(t2.left, e2.left), o2 = Math.min(t2.left + t2.width, e2.left + e2.width), i2 = Math.min(t2.top + t2.height, e2.top + e2.height);
+      if (r3 < o2 && n2 < i2) {
+        const a2 = (o2 - r3) * (i2 - n2);
         return Number((a2 / (t2.width * t2.height + e2.width * e2.height - a2)).toFixed(4));
       }
       return 0;
     }
     var C = (e2) => {
-      let { collisionRect: t2, droppableRects: n2, droppableContainers: r2 } = e2;
+      let { collisionRect: t2, droppableRects: n2, droppableContainers: r3 } = e2;
       const o2 = [];
-      for (const e3 of r2) {
-        const { id: r3 } = e3, i2 = n2.get(r3);
+      for (const e3 of r3) {
+        const { id: r4 } = e3, i2 = n2.get(r4);
         if (i2) {
           const n3 = w(i2, t2);
-          n3 > 0 && o2.push({ id: r3, data: { droppableContainer: e3, value: n3 } });
+          n3 > 0 && o2.push({ id: r4, data: { droppableContainer: e3, value: n3 } });
         }
       }
       return o2.sort(b);
     };
     function E(e2, t2) {
-      const { top: n2, left: r2, bottom: o2, right: i2 } = t2;
-      return n2 <= e2.y && e2.y <= o2 && r2 <= e2.x && e2.x <= i2;
+      const { top: n2, left: r3, bottom: o2, right: i2 } = t2;
+      return n2 <= e2.y && e2.y <= o2 && r3 <= e2.x && e2.x <= i2;
     }
     function D(e2, t2) {
       return e2 && t2 ? { x: e2.left - t2.left, y: e2.top - t2.top } : v;
     }
     function R(e2) {
       return function(t2) {
-        for (var n2 = arguments.length, r2 = new Array(n2 > 1 ? n2 - 1 : 0), o2 = 1; o2 < n2; o2++) r2[o2 - 1] = arguments[o2];
-        return r2.reduce((t3, n3) => ({ ...t3, top: t3.top + e2 * n3.y, bottom: t3.bottom + e2 * n3.y, left: t3.left + e2 * n3.x, right: t3.right + e2 * n3.x }), { ...t2 });
+        for (var n2 = arguments.length, r3 = new Array(n2 > 1 ? n2 - 1 : 0), o2 = 1; o2 < n2; o2++) r3[o2 - 1] = arguments[o2];
+        return r3.reduce((t3, n3) => ({ ...t3, top: t3.top + e2 * n3.y, bottom: t3.bottom + e2 * n3.y, left: t3.left + e2 * n3.x, right: t3.right + e2 * n3.x }), { ...t2 });
       };
     }
     var S2 = R(1);
@@ -986,23 +986,23 @@ var require_core_cjs_production_min = __commonJS({
       void 0 === t2 && (t2 = N);
       let n2 = e2.getBoundingClientRect();
       if (t2.ignoreTransform) {
-        const { transform: t3, transformOrigin: r3 } = o.getWindow(e2).getComputedStyle(e2);
+        const { transform: t3, transformOrigin: r4 } = o.getWindow(e2).getComputedStyle(e2);
         t3 && (n2 = function(e3, t4, n3) {
-          const r4 = M(t4);
-          if (!r4) return e3;
-          const { scaleX: o2, scaleY: i3, x: a3, y: s3 } = r4, l3 = e3.left - a3 - (1 - o2) * parseFloat(n3), c3 = e3.top - s3 - (1 - i3) * parseFloat(n3.slice(n3.indexOf(" ") + 1)), d3 = o2 ? e3.width / o2 : e3.width, u2 = i3 ? e3.height / i3 : e3.height;
+          const r5 = M(t4);
+          if (!r5) return e3;
+          const { scaleX: o2, scaleY: i3, x: a3, y: s3 } = r5, l3 = e3.left - a3 - (1 - o2) * parseFloat(n3), c3 = e3.top - s3 - (1 - i3) * parseFloat(n3.slice(n3.indexOf(" ") + 1)), d3 = o2 ? e3.width / o2 : e3.width, u2 = i3 ? e3.height / i3 : e3.height;
           return { width: d3, height: u2, top: c3, right: l3 + d3, bottom: c3 + u2, left: l3 };
-        }(n2, t3, r3));
+        }(n2, t3, r4));
       }
-      const { top: r2, left: i2, width: a2, height: s2, bottom: l2, right: c2 } = n2;
-      return { top: r2, left: i2, width: a2, height: s2, bottom: l2, right: c2 };
+      const { top: r3, left: i2, width: a2, height: s2, bottom: l2, right: c2 } = n2;
+      return { top: r3, left: i2, width: a2, height: s2, bottom: l2, right: c2 };
     }
     function A2(e2) {
       return O(e2, { ignoreTransform: true });
     }
     function L(e2, t2) {
       const n2 = [];
-      return e2 ? function r2(i2) {
+      return e2 ? function r3(i2) {
         if (null != t2 && n2.length >= t2) return n2;
         if (!i2) return n2;
         if (o.isDocument(i2) && null != i2.scrollingElement && !n2.includes(i2.scrollingElement)) return n2.push(i2.scrollingElement), n2;
@@ -1013,12 +1013,12 @@ var require_core_cjs_production_min = __commonJS({
           void 0 === t3 && (t3 = o.getWindow(e3).getComputedStyle(e3));
           const n3 = /(auto|scroll|overlay)/;
           return ["overflow", "overflowX", "overflowY"].some((e4) => {
-            const r3 = t3[e4];
-            return "string" == typeof r3 && n3.test(r3);
+            const r4 = t3[e4];
+            return "string" == typeof r4 && n3.test(r4);
           });
         }(i2, a2) && n2.push(i2), function(e3, t3) {
           return void 0 === t3 && (t3 = o.getWindow(e3).getComputedStyle(e3)), "fixed" === t3.position;
-        }(i2, a2) ? n2 : r2(i2.parentNode);
+        }(i2, a2) ? n2 : r3(i2.parentNode);
       }(e2) : n2;
     }
     function k(e2) {
@@ -1042,34 +1042,34 @@ var require_core_cjs_production_min = __commonJS({
       return !(!o.canUseDOM || !e2) && e2 === document.scrollingElement;
     }
     function F2(e2) {
-      const t2 = { x: 0, y: 0 }, n2 = z2(e2) ? { height: window.innerHeight, width: window.innerWidth } : { height: e2.clientHeight, width: e2.clientWidth }, r2 = { x: e2.scrollWidth - n2.width, y: e2.scrollHeight - n2.height };
-      return { isTop: e2.scrollTop <= t2.y, isLeft: e2.scrollLeft <= t2.x, isBottom: e2.scrollTop >= r2.y, isRight: e2.scrollLeft >= r2.x, maxScroll: r2, minScroll: t2 };
+      const t2 = { x: 0, y: 0 }, n2 = z2(e2) ? { height: window.innerHeight, width: window.innerWidth } : { height: e2.clientHeight, width: e2.clientWidth }, r3 = { x: e2.scrollWidth - n2.width, y: e2.scrollHeight - n2.height };
+      return { isTop: e2.scrollTop <= t2.y, isLeft: e2.scrollLeft <= t2.x, isBottom: e2.scrollTop >= r3.y, isRight: e2.scrollLeft >= r3.x, maxScroll: r3, minScroll: t2 };
     }
     !function(e2) {
       e2[e2.Forward = 1] = "Forward", e2[e2.Backward = -1] = "Backward";
     }(B || (B = {}));
     var W = { x: 0.2, y: 0.2 };
-    function U2(e2, t2, n2, r2, o2) {
+    function U2(e2, t2, n2, r3, o2) {
       let { top: i2, left: a2, right: s2, bottom: l2 } = n2;
-      void 0 === r2 && (r2 = 10), void 0 === o2 && (o2 = W);
+      void 0 === r3 && (r3 = 10), void 0 === o2 && (o2 = W);
       const { isTop: c2, isBottom: d3, isLeft: u2, isRight: f2 } = F2(e2), v2 = { x: 0, y: 0 }, g2 = { x: 0, y: 0 }, p2 = t2.height * o2.y, h2 = t2.width * o2.x;
-      return !c2 && i2 <= t2.top + p2 ? (v2.y = B.Backward, g2.y = r2 * Math.abs((t2.top + p2 - i2) / p2)) : !d3 && l2 >= t2.bottom - p2 && (v2.y = B.Forward, g2.y = r2 * Math.abs((t2.bottom - p2 - l2) / p2)), !f2 && s2 >= t2.right - h2 ? (v2.x = B.Forward, g2.x = r2 * Math.abs((t2.right - h2 - s2) / h2)) : !u2 && a2 <= t2.left + h2 && (v2.x = B.Backward, g2.x = r2 * Math.abs((t2.left + h2 - a2) / h2)), { direction: v2, speed: g2 };
+      return !c2 && i2 <= t2.top + p2 ? (v2.y = B.Backward, g2.y = r3 * Math.abs((t2.top + p2 - i2) / p2)) : !d3 && l2 >= t2.bottom - p2 && (v2.y = B.Forward, g2.y = r3 * Math.abs((t2.bottom - p2 - l2) / p2)), !f2 && s2 >= t2.right - h2 ? (v2.x = B.Forward, g2.x = r3 * Math.abs((t2.right - h2 - s2) / h2)) : !u2 && a2 <= t2.left + h2 && (v2.x = B.Backward, g2.x = r3 * Math.abs((t2.left + h2 - a2) / h2)), { direction: v2, speed: g2 };
     }
     function j(e2) {
       if (e2 === document.scrollingElement) {
         const { innerWidth: e3, innerHeight: t3 } = window;
         return { top: 0, left: 0, right: e3, bottom: t3, width: e3, height: t3 };
       }
-      const { top: t2, left: n2, right: r2, bottom: o2 } = e2.getBoundingClientRect();
-      return { top: t2, left: n2, right: r2, bottom: o2, width: e2.clientWidth, height: e2.clientHeight };
+      const { top: t2, left: n2, right: r3, bottom: o2 } = e2.getBoundingClientRect();
+      return { top: t2, left: n2, right: r3, bottom: o2, width: e2.clientWidth, height: e2.clientHeight };
     }
     function q2(e2) {
       return e2.reduce((e3, t2) => o.add(e3, I(t2)), v);
     }
     function H2(e2, t2) {
       if (void 0 === t2 && (t2 = O), !e2) return;
-      const { top: n2, left: r2, bottom: o2, right: i2 } = t2(e2);
-      k(e2) && (o2 <= 0 || i2 <= 0 || n2 >= window.innerHeight || r2 >= window.innerWidth) && e2.scrollIntoView({ block: "center", inline: "center" });
+      const { top: n2, left: r3, bottom: o2, right: i2 } = t2(e2);
+      k(e2) && (o2 <= 0 || i2 <= 0 || n2 >= window.innerHeight || r3 >= window.innerWidth) && e2.scrollIntoView({ block: "center", inline: "center" });
     }
     var X2 = [["x", ["left", "right"], function(e2) {
       return e2.reduce((e3, t2) => e3 + K(t2), 0);
@@ -1079,11 +1079,11 @@ var require_core_cjs_production_min = __commonJS({
     var Y = class {
       constructor(e2, t2) {
         this.rect = void 0, this.width = void 0, this.height = void 0, this.top = void 0, this.bottom = void 0, this.right = void 0, this.left = void 0;
-        const n2 = L(t2), r2 = q2(n2);
+        const n2 = L(t2), r3 = q2(n2);
         this.rect = { ...e2 }, this.width = e2.width, this.height = e2.height;
         for (const [e3, t3, o2] of X2) for (const i2 of t3) Object.defineProperty(this, i2, { get: () => {
           const t4 = o2(n2);
-          return this.rect[i2] + (r2[e3] - t4);
+          return this.rect[i2] + (r3[e3] - t4);
         }, enumerable: true });
         Object.defineProperty(this, "rect", { enumerable: false });
       }
@@ -1098,13 +1098,13 @@ var require_core_cjs_production_min = __commonJS({
         }, this.target = e2;
       }
       add(e2, t2, n2) {
-        var r2;
-        null == (r2 = this.target) || r2.addEventListener(e2, t2, n2), this.listeners.push([e2, t2, n2]);
+        var r3;
+        null == (r3 = this.target) || r3.addEventListener(e2, t2, n2), this.listeners.push([e2, t2, n2]);
       }
     };
     function J2(e2, t2) {
-      const n2 = Math.abs(e2.x), r2 = Math.abs(e2.y);
-      return "number" == typeof t2 ? Math.sqrt(n2 ** 2 + r2 ** 2) > t2 : "x" in t2 && "y" in t2 ? n2 > t2.x && r2 > t2.y : "x" in t2 ? n2 > t2.x : "y" in t2 && r2 > t2.y;
+      const n2 = Math.abs(e2.x), r3 = Math.abs(e2.y);
+      return "number" == typeof t2 ? Math.sqrt(n2 ** 2 + r3 ** 2) > t2 : "x" in t2 && "y" in t2 ? n2 > t2.x && r3 > t2.y : "x" in t2 ? n2 > t2.x : "y" in t2 && r3 > t2.y;
     }
     var _;
     var G2;
@@ -1146,30 +1146,30 @@ var require_core_cjs_production_min = __commonJS({
       }
       handleKeyDown(e2) {
         if (o.isKeyboardEvent(e2)) {
-          const { active: t2, context: n2, options: r2 } = this.props, { keyboardCodes: i2 = $, coordinateGetter: a2 = ee, scrollBehavior: s2 = "smooth" } = r2, { code: l2 } = e2;
+          const { active: t2, context: n2, options: r3 } = this.props, { keyboardCodes: i2 = $, coordinateGetter: a2 = ee, scrollBehavior: s2 = "smooth" } = r3, { code: l2 } = e2;
           if (i2.end.includes(l2)) return void this.handleEnd(e2);
           if (i2.cancel.includes(l2)) return void this.handleCancel(e2);
           const { collisionRect: c2 } = n2.current, d3 = c2 ? { x: c2.left, y: c2.top } : v;
           this.referenceCoordinates || (this.referenceCoordinates = d3);
           const u2 = a2(e2, { active: t2, context: n2.current, currentCoordinates: d3 });
           if (u2) {
-            const t3 = o.subtract(u2, d3), r3 = { x: 0, y: 0 }, { scrollableAncestors: i3 } = n2.current;
+            const t3 = o.subtract(u2, d3), r4 = { x: 0, y: 0 }, { scrollableAncestors: i3 } = n2.current;
             for (const n3 of i3) {
               const o2 = e2.code, { isTop: i4, isRight: a3, isLeft: l3, isBottom: c3, maxScroll: d4, minScroll: f2 } = F2(n3), v2 = j(n3), g2 = { x: Math.min(o2 === exports2.KeyboardCode.Right ? v2.right - v2.width / 2 : v2.right, Math.max(o2 === exports2.KeyboardCode.Right ? v2.left : v2.left + v2.width / 2, u2.x)), y: Math.min(o2 === exports2.KeyboardCode.Down ? v2.bottom - v2.height / 2 : v2.bottom, Math.max(o2 === exports2.KeyboardCode.Down ? v2.top : v2.top + v2.height / 2, u2.y)) }, p2 = o2 === exports2.KeyboardCode.Right && !a3 || o2 === exports2.KeyboardCode.Left && !l3, h2 = o2 === exports2.KeyboardCode.Down && !c3 || o2 === exports2.KeyboardCode.Up && !i4;
               if (p2 && g2.x !== u2.x) {
                 const e3 = n3.scrollLeft + t3.x, i5 = o2 === exports2.KeyboardCode.Right && e3 <= d4.x || o2 === exports2.KeyboardCode.Left && e3 >= f2.x;
                 if (i5 && !t3.y) return void n3.scrollTo({ left: e3, behavior: s2 });
-                r3.x = i5 ? n3.scrollLeft - e3 : o2 === exports2.KeyboardCode.Right ? n3.scrollLeft - d4.x : n3.scrollLeft - f2.x, r3.x && n3.scrollBy({ left: -r3.x, behavior: s2 });
+                r4.x = i5 ? n3.scrollLeft - e3 : o2 === exports2.KeyboardCode.Right ? n3.scrollLeft - d4.x : n3.scrollLeft - f2.x, r4.x && n3.scrollBy({ left: -r4.x, behavior: s2 });
                 break;
               }
               if (h2 && g2.y !== u2.y) {
                 const e3 = n3.scrollTop + t3.y, i5 = o2 === exports2.KeyboardCode.Down && e3 <= d4.y || o2 === exports2.KeyboardCode.Up && e3 >= f2.y;
                 if (i5 && !t3.x) return void n3.scrollTo({ top: e3, behavior: s2 });
-                r3.y = i5 ? n3.scrollTop - e3 : o2 === exports2.KeyboardCode.Down ? n3.scrollTop - d4.y : n3.scrollTop - f2.y, r3.y && n3.scrollBy({ top: -r3.y, behavior: s2 });
+                r4.y = i5 ? n3.scrollTop - e3 : o2 === exports2.KeyboardCode.Down ? n3.scrollTop - d4.y : n3.scrollTop - f2.y, r4.y && n3.scrollBy({ top: -r4.y, behavior: s2 });
                 break;
               }
             }
-            this.handleMove(e2, o.add(o.subtract(u2, this.referenceCoordinates), r3));
+            this.handleMove(e2, o.add(o.subtract(u2, this.referenceCoordinates), r4));
           }
         }
       }
@@ -1196,9 +1196,9 @@ var require_core_cjs_production_min = __commonJS({
       return Boolean(e2 && "delay" in e2);
     }
     te.activators = [{ eventName: "onKeyDown", handler: (e2, t2, n2) => {
-      let { keyboardCodes: r2 = $, onActivation: o2 } = t2, { active: i2 } = n2;
+      let { keyboardCodes: r3 = $, onActivation: o2 } = t2, { active: i2 } = n2;
       const { code: a2 } = e2.nativeEvent;
-      if (r2.start.includes(a2)) {
+      if (r3.start.includes(a2)) {
         const t3 = i2.activatorNode.current;
         return !(t3 && e2.target !== t3 || (e2.preventDefault(), null == o2 || o2({ event: e2.nativeEvent }), 0));
       }
@@ -1206,13 +1206,13 @@ var require_core_cjs_production_min = __commonJS({
     } }];
     var oe = class {
       constructor(e2, t2, n2) {
-        var r2;
+        var r3;
         void 0 === n2 && (n2 = function(e3) {
           const { EventTarget: t3 } = o.getWindow(e3);
           return e3 instanceof t3 ? e3 : o.getOwnerDocument(e3);
         }(e2.event.target)), this.props = void 0, this.events = void 0, this.autoScrollEnabled = true, this.document = void 0, this.activated = false, this.initialCoordinates = void 0, this.timeoutId = null, this.listeners = void 0, this.documentListeners = void 0, this.windowListeners = void 0, this.props = e2, this.events = t2;
         const { event: i2 } = e2, { target: a2 } = i2;
-        this.props = e2, this.events = t2, this.document = o.getOwnerDocument(a2), this.documentListeners = new V(this.document), this.listeners = new V(n2), this.windowListeners = new V(o.getWindow(a2)), this.initialCoordinates = null != (r2 = o.getEventCoordinates(i2)) ? r2 : v, this.handleStart = this.handleStart.bind(this), this.handleMove = this.handleMove.bind(this), this.handleEnd = this.handleEnd.bind(this), this.handleCancel = this.handleCancel.bind(this), this.handleKeydown = this.handleKeydown.bind(this), this.removeTextSelection = this.removeTextSelection.bind(this), this.attach();
+        this.props = e2, this.events = t2, this.document = o.getOwnerDocument(a2), this.documentListeners = new V(this.document), this.listeners = new V(n2), this.windowListeners = new V(o.getWindow(a2)), this.initialCoordinates = null != (r3 = o.getEventCoordinates(i2)) ? r3 : v, this.handleStart = this.handleStart.bind(this), this.handleMove = this.handleMove.bind(this), this.handleEnd = this.handleEnd.bind(this), this.handleCancel = this.handleCancel.bind(this), this.handleKeydown = this.handleKeydown.bind(this), this.removeTextSelection = this.removeTextSelection.bind(this), this.attach();
       }
       attach() {
         const { events: e2, props: { options: { activationConstraint: t2, bypassActivationConstraint: n2 } } } = this;
@@ -1227,8 +1227,8 @@ var require_core_cjs_production_min = __commonJS({
         this.listeners.removeAll(), this.windowListeners.removeAll(), setTimeout(this.documentListeners.removeAll, 50), null !== this.timeoutId && (clearTimeout(this.timeoutId), this.timeoutId = null);
       }
       handlePending(e2, t2) {
-        const { active: n2, onPending: r2 } = this.props;
-        r2(n2, e2, this.initialCoordinates, t2);
+        const { active: n2, onPending: r3 } = this.props;
+        r3(n2, e2, this.initialCoordinates, t2);
       }
       handleStart() {
         const { initialCoordinates: e2 } = this, { onStart: t2 } = this.props;
@@ -1236,9 +1236,9 @@ var require_core_cjs_production_min = __commonJS({
       }
       handleMove(e2) {
         var t2;
-        const { activated: n2, initialCoordinates: r2, props: i2 } = this, { onMove: a2, options: { activationConstraint: s2 } } = i2;
-        if (!r2) return;
-        const l2 = null != (t2 = o.getEventCoordinates(e2)) ? t2 : v, c2 = o.subtract(r2, l2);
+        const { activated: n2, initialCoordinates: r3, props: i2 } = this, { onMove: a2, options: { activationConstraint: s2 } } = i2;
+        if (!r3) return;
+        const l2 = null != (t2 = o.getEventCoordinates(e2)) ? t2 : v, c2 = o.subtract(r3, l2);
         if (!n2 && s2) {
           if (ne(s2)) {
             if (null != s2.tolerance && J2(c2, s2.tolerance)) return this.handleCancel();
@@ -1272,8 +1272,8 @@ var require_core_cjs_production_min = __commonJS({
       }
     };
     ae.activators = [{ eventName: "onPointerDown", handler: (e2, t2) => {
-      let { nativeEvent: n2 } = e2, { onActivation: r2 } = t2;
-      return !(!n2.isPrimary || 0 !== n2.button || (null == r2 || r2({ event: n2 }), 0));
+      let { nativeEvent: n2 } = e2, { onActivation: r3 } = t2;
+      return !(!n2.isPrimary || 0 !== n2.button || (null == r3 || r3({ event: n2 }), 0));
     } }];
     var se = { move: { name: "mousemove" }, end: { name: "mouseup" } };
     var le;
@@ -1286,8 +1286,8 @@ var require_core_cjs_production_min = __commonJS({
       }
     };
     ce.activators = [{ eventName: "onMouseDown", handler: (e2, t2) => {
-      let { nativeEvent: n2 } = e2, { onActivation: r2 } = t2;
-      return n2.button !== le.RightClick && (null == r2 || r2({ event: n2 }), true);
+      let { nativeEvent: n2 } = e2, { onActivation: r3 } = t2;
+      return n2.button !== le.RightClick && (null == r3 || r3({ event: n2 }), true);
     } }];
     var de = { cancel: { name: "touchcancel" }, move: { name: "touchmove" }, end: { name: "touchend" } };
     var ue = class extends oe {
@@ -1305,9 +1305,9 @@ var require_core_cjs_production_min = __commonJS({
     var fe;
     var ve;
     ue.activators = [{ eventName: "onTouchStart", handler: (e2, t2) => {
-      let { nativeEvent: n2 } = e2, { onActivation: r2 } = t2;
+      let { nativeEvent: n2 } = e2, { onActivation: r3 } = t2;
       const { touches: o2 } = n2;
-      return !(o2.length > 1 || (null == r2 || r2({ event: n2 }), 0));
+      return !(o2.length > 1 || (null == r3 || r3({ event: n2 }), 0));
     } }], (fe = exports2.AutoScrollActivator || (exports2.AutoScrollActivator = {}))[fe.Pointer = 0] = "Pointer", fe[fe.DraggableRect = 1] = "DraggableRect", (ve = exports2.TraversalOrder || (exports2.TraversalOrder = {}))[ve.TreeOrder = 0] = "TreeOrder", ve[ve.ReversedTreeOrder = 1] = "ReversedTreeOrder";
     var ge = { x: { [B.Backward]: false, [B.Forward]: false }, y: { [B.Backward]: false, [B.Forward]: false } };
     var pe;
@@ -1317,41 +1317,41 @@ var require_core_cjs_production_min = __commonJS({
       return o.useLazyMemo((n2) => e2 ? n2 || ("function" == typeof t2 ? t2(e2) : e2) : null, [t2, e2]);
     }
     function me(e2) {
-      let { callback: n2, disabled: r2 } = e2;
+      let { callback: n2, disabled: r3 } = e2;
       const i2 = o.useEvent(n2), a2 = t.useMemo(() => {
-        if (r2 || "undefined" == typeof window || void 0 === window.ResizeObserver) return;
+        if (r3 || "undefined" == typeof window || void 0 === window.ResizeObserver) return;
         const { ResizeObserver: e3 } = window;
         return new e3(i2);
-      }, [r2]);
+      }, [r3]);
       return t.useEffect(() => () => null == a2 ? void 0 : a2.disconnect(), [a2]), a2;
     }
     function ye(e2) {
       return new Y(O(e2), e2);
     }
-    function xe(e2, n2, r2) {
+    function xe(e2, n2, r3) {
       void 0 === n2 && (n2 = ye);
       const [i2, a2] = t.useState(null);
       function s2() {
         a2((t2) => {
           if (!e2) return null;
           var o2;
-          if (false === e2.isConnected) return null != (o2 = null != t2 ? t2 : r2) ? o2 : null;
+          if (false === e2.isConnected) return null != (o2 = null != t2 ? t2 : r3) ? o2 : null;
           const i3 = n2(e2);
           return JSON.stringify(t2) === JSON.stringify(i3) ? t2 : i3;
         });
       }
       const l2 = function(e3) {
-        let { callback: n3, disabled: r3 } = e3;
+        let { callback: n3, disabled: r4 } = e3;
         const i3 = o.useEvent(n3), a3 = t.useMemo(() => {
-          if (r3 || "undefined" == typeof window || void 0 === window.MutationObserver) return;
+          if (r4 || "undefined" == typeof window || void 0 === window.MutationObserver) return;
           const { MutationObserver: e4 } = window;
           return new e4(i3);
-        }, [i3, r3]);
+        }, [i3, r4]);
         return t.useEffect(() => () => null == a3 ? void 0 : a3.disconnect(), [a3]), a3;
       }({ callback(t2) {
         if (e2) for (const n3 of t2) {
-          const { type: t3, target: r3 } = n3;
-          if ("childList" === t3 && r3 instanceof HTMLElement && r3.contains(e2)) {
+          const { type: t3, target: r4 } = n3;
+          if ("childList" === t3 && r4 instanceof HTMLElement && r4.contains(e2)) {
             s2();
             break;
           }
@@ -1364,13 +1364,13 @@ var require_core_cjs_production_min = __commonJS({
     var we = [];
     function Ce(e2, n2) {
       void 0 === n2 && (n2 = []);
-      const r2 = t.useRef(null);
+      const r3 = t.useRef(null);
       return t.useEffect(() => {
-        r2.current = null;
+        r3.current = null;
       }, n2), t.useEffect(() => {
         const t2 = e2 !== v;
-        t2 && !r2.current && (r2.current = e2), !t2 && r2.current && (r2.current = null);
-      }, [e2]), r2.current ? o.subtract(e2, r2.current) : v;
+        t2 && !r3.current && (r3.current = e2), !t2 && r3.current && (r3.current = null);
+      }, [e2]), r3.current ? o.subtract(e2, r3.current) : v;
     }
     function Ee(e2) {
       return t.useMemo(() => e2 ? function(e3) {
@@ -1424,18 +1424,18 @@ var require_core_cjs_production_min = __commonJS({
         case u.DragCancel:
           return { ...e2, draggable: { ...e2.draggable, active: null, initialCoordinates: { x: 0, y: 0 }, translate: { x: 0, y: 0 } } };
         case u.RegisterDroppable: {
-          const { element: n2 } = t2, { id: r2 } = n2, o2 = new Oe(e2.droppable.containers);
-          return o2.set(r2, n2), { ...e2, droppable: { ...e2.droppable, containers: o2 } };
+          const { element: n2 } = t2, { id: r3 } = n2, o2 = new Oe(e2.droppable.containers);
+          return o2.set(r3, n2), { ...e2, droppable: { ...e2.droppable, containers: o2 } };
         }
         case u.SetDroppableDisabled: {
-          const { id: n2, key: r2, disabled: o2 } = t2, i2 = e2.droppable.containers.get(n2);
-          if (!i2 || r2 !== i2.key) return e2;
+          const { id: n2, key: r3, disabled: o2 } = t2, i2 = e2.droppable.containers.get(n2);
+          if (!i2 || r3 !== i2.key) return e2;
           const a2 = new Oe(e2.droppable.containers);
           return a2.set(n2, { ...i2, disabled: o2 }), { ...e2, droppable: { ...e2.droppable, containers: a2 } };
         }
         case u.UnregisterDroppable: {
-          const { id: n2, key: r2 } = t2, o2 = e2.droppable.containers.get(n2);
-          if (!o2 || r2 !== o2.key) return e2;
+          const { id: n2, key: r3 } = t2, o2 = e2.droppable.containers.get(n2);
+          if (!o2 || r3 !== o2.key) return e2;
           const i2 = new Oe(e2.droppable.containers);
           return i2.delete(n2), { ...e2, droppable: { ...e2.droppable, containers: i2 } };
         }
@@ -1445,7 +1445,7 @@ var require_core_cjs_production_min = __commonJS({
     }
     function Ie(e2) {
       let { disabled: n2 } = e2;
-      const { active: r2, activatorEvent: i2, draggableNodes: a2 } = t.useContext(ke), s2 = o.usePrevious(i2), l2 = o.usePrevious(null == r2 ? void 0 : r2.id);
+      const { active: r3, activatorEvent: i2, draggableNodes: a2 } = t.useContext(ke), s2 = o.usePrevious(i2), l2 = o.usePrevious(null == r3 ? void 0 : r3.id);
       return t.useEffect(() => {
         if (!n2 && !i2 && s2 && null != l2) {
           if (!o.isKeyboardEvent(s2)) return;
@@ -1468,8 +1468,8 @@ var require_core_cjs_production_min = __commonJS({
       }, [i2, n2, a2, l2, s2]), null;
     }
     function Be(e2, t2) {
-      let { transform: n2, ...r2 } = t2;
-      return null != e2 && e2.length ? e2.reduce((e3, t3) => t3({ transform: e3, ...r2 }), n2) : n2;
+      let { transform: n2, ...r3 } = t2;
+      return null != e2 && e2.length ? e2.reduce((e3, t3) => t3({ transform: e3, ...r3 }), n2) : n2;
     }
     var ze = t.createContext({ ...v, scaleX: 1, scaleY: 1 });
     var Fe;
@@ -1482,10 +1482,10 @@ var require_core_cjs_production_min = __commonJS({
       const R2 = t.useReducer(Pe, void 0, Ke), [M2, N2] = R2, [A3, K2] = function() {
         const [e3] = t.useState(() => /* @__PURE__ */ new Set()), n2 = t.useCallback((t2) => (e3.add(t2), () => e3.delete(t2)), [e3]);
         return [t.useCallback((t2) => {
-          let { type: n3, event: r2 } = t2;
+          let { type: n3, event: r3 } = t2;
           e3.forEach((e4) => {
             var t3;
-            return null == (t3 = e4[n3]) ? void 0 : t3.call(e4, r2);
+            return null == (t3 = e4[n3]) ? void 0 : t3.call(e4, r3);
           });
         }, [e3]), n2];
       }(), [P3, F3] = t.useState(Fe.Uninitialized), W2 = P3 === Fe.Initialized, { draggable: { active: j2, nodes: H3, translate: X3 }, droppable: { containers: V2 } } = M2, J3 = null != j2 ? H3.get(j2) : null, _2 = t.useRef({ initial: null, translated: null }), G3 = t.useMemo(() => {
@@ -1494,20 +1494,20 @@ var require_core_cjs_production_min = __commonJS({
       }, [j2, J3]), Q2 = t.useRef(null), [Z2, $2] = t.useState(null), [ee2, te2] = t.useState(null), ne2 = o.useLatestValue(E2, Object.values(E2)), re2 = o.useUniqueId("DndDescribedBy", f2), oe2 = t.useMemo(() => V2.getEnabled(), [V2]), ie2 = t.useMemo(() => ({ draggable: { ...Ne.draggable, ...null == ae2 ? void 0 : ae2.draggable }, droppable: { ...Ne.droppable, ...null == ae2 ? void 0 : ae2.droppable }, dragOverlay: { ...Ne.dragOverlay, ...null == ae2 ? void 0 : ae2.dragOverlay } }), [null == (ae2 = x2) ? void 0 : ae2.draggable, null == ae2 ? void 0 : ae2.droppable, null == ae2 ? void 0 : ae2.dragOverlay]);
       var ae2;
       const { droppableRects: se2, measureDroppableContainers: le2, measuringScheduled: ce2 } = function(e3, n2) {
-        let { dragging: r2, dependencies: i3, config: a2 } = n2;
+        let { dragging: r3, dependencies: i3, config: a2 } = n2;
         const [s3, l3] = t.useState(null), { frequency: c3, measure: d3, strategy: u2 } = a2, f3 = t.useRef(e3), v2 = function() {
           switch (u2) {
             case exports2.MeasuringStrategy.Always:
               return false;
             case exports2.MeasuringStrategy.BeforeDragging:
-              return r2;
+              return r3;
             default:
-              return !r2;
+              return !r3;
           }
         }(), g3 = o.useLatestValue(v2), p3 = t.useCallback(function(e4) {
           void 0 === e4 && (e4 = []), g3.current || l3((t2) => null === t2 ? e4 : t2.concat(e4.filter((e5) => !t2.includes(e5))));
         }, [g3]), h3 = t.useRef(null), b3 = o.useLazyMemo((t2) => {
-          if (v2 && !r2) return he;
+          if (v2 && !r3) return he;
           if (!t2 || t2 === he || f3.current !== e3 || null != s3) {
             const t3 = /* @__PURE__ */ new Map();
             for (let n3 of e3) {
@@ -1516,18 +1516,18 @@ var require_core_cjs_production_min = __commonJS({
                 t3.set(n3.id, n3.rect.current);
                 continue;
               }
-              const e4 = n3.node.current, r3 = e4 ? new Y(d3(e4), e4) : null;
-              n3.rect.current = r3, r3 && t3.set(n3.id, r3);
+              const e4 = n3.node.current, r4 = e4 ? new Y(d3(e4), e4) : null;
+              n3.rect.current = r4, r4 && t3.set(n3.id, r4);
             }
             return t3;
           }
           return t2;
-        }, [e3, s3, r2, v2, d3]);
+        }, [e3, s3, r3, v2, d3]);
         return t.useEffect(() => {
           f3.current = e3;
         }, [e3]), t.useEffect(() => {
           v2 || p3();
-        }, [r2, v2]), t.useEffect(() => {
+        }, [r3, v2]), t.useEffect(() => {
           s3 && s3.length > 0 && l3(null);
         }, [JSON.stringify(s3)]), t.useEffect(() => {
           v2 || "number" != typeof c3 || null !== h3.current || (h3.current = setTimeout(() => {
@@ -1535,11 +1535,11 @@ var require_core_cjs_production_min = __commonJS({
           }, c3));
         }, [c3, v2, p3, ...i3]), { droppableRects: b3, measureDroppableContainers: p3, measuringScheduled: null != s3 };
       }(oe2, { dragging: W2, dependencies: [X3.x, X3.y], config: ie2.droppable }), de2 = function(e3, t2) {
-        const n2 = null != t2 ? e3.get(t2) : void 0, r2 = n2 ? n2.node.current : null;
+        const n2 = null != t2 ? e3.get(t2) : void 0, r3 = n2 ? n2.node.current : null;
         return o.useLazyMemo((e4) => {
           var n3;
-          return null == t2 ? null : null != (n3 = null != r2 ? r2 : e4) ? n3 : null;
-        }, [r2, t2]);
+          return null == t2 ? null : null != (n3 = null != r3 ? r3 : e4) ? n3 : null;
+        }, [r3, t2]);
       }(H3, j2), ue2 = t.useMemo(() => ee2 ? o.getEventCoordinates(ee2) : null, [ee2]), fe2 = function() {
         const e3 = W2 && !(false === (null == Z2 ? void 0 : Z2.autoScrollEnabled)) && !("object" == typeof p2 ? false === p2.enabled : false === p2);
         return "object" == typeof p2 ? { ...p2, enabled: e3 } : { enabled: e3 };
@@ -1547,27 +1547,27 @@ var require_core_cjs_production_min = __commonJS({
         return be(e3, t2);
       }(de2, ie2.draggable.measure);
       !function(e3) {
-        let { activeNode: n2, measure: r2, initialRect: i3, config: a2 = true } = e3;
+        let { activeNode: n2, measure: r3, initialRect: i3, config: a2 = true } = e3;
         const s3 = t.useRef(false), { x: l3, y: c3 } = "boolean" == typeof a2 ? { x: a2, y: a2 } : a2;
         o.useIsomorphicLayoutEffect(() => {
           if (!l3 && !c3 || !n2) return void (s3.current = false);
           if (s3.current || !i3) return;
           const e4 = null == n2 ? void 0 : n2.node.current;
           if (!e4 || false === e4.isConnected) return;
-          const t2 = D(r2(e4), i3);
+          const t2 = D(r3(e4), i3);
           if (l3 || (t2.x = 0), c3 || (t2.y = 0), s3.current = true, Math.abs(t2.x) > 0 || Math.abs(t2.y) > 0) {
             const n3 = k(e4);
             n3 && n3.scrollBy({ top: t2.y, left: t2.x });
           }
-        }, [n2, l3, c3, i3, r2]);
+        }, [n2, l3, c3, i3, r3]);
       }({ activeNode: null != j2 ? H3.get(j2) : null, config: fe2.layoutShiftCompensation, initialRect: ve2, measure: ie2.draggable.measure });
       const pe2 = xe(de2, ie2.draggable.measure, ve2), ye2 = xe(de2 ? de2.parentElement : null), Oe2 = t.useRef({ activatorEvent: null, active: null, activeNode: de2, collisionRect: null, collisions: null, droppableRects: se2, draggableNodes: H3, draggingNode: null, draggingNodeRect: null, droppableContainers: V2, over: null, scrollableAncestors: [], scrollAdjustedTranslate: null }), Ae2 = V2.getNodeFor(null == (i2 = Oe2.current.over) ? void 0 : i2.id), Le2 = function(e3) {
         let { measure: n2 } = e3;
-        const [r2, i3] = t.useState(null), a2 = me({ callback: t.useCallback((e4) => {
+        const [r3, i3] = t.useState(null), a2 = me({ callback: t.useCallback((e4) => {
           for (const { target: t2 } of e4) if (o.isHTMLElement(t2)) {
             i3((e5) => {
-              const r3 = n2(t2);
-              return e5 ? { ...e5, width: r3.width, height: r3.height } : r3;
+              const r4 = n2(t2);
+              return e5 ? { ...e5, width: r4.width, height: r4.height } : r4;
             });
             break;
           }
@@ -1575,17 +1575,17 @@ var require_core_cjs_production_min = __commonJS({
           const t2 = Re(e4);
           null == a2 || a2.disconnect(), t2 && (null == a2 || a2.observe(t2)), i3(t2 ? n2(t2) : null);
         }, [n2, a2]), [l3, c3] = o.useNodeRef(s3);
-        return t.useMemo(() => ({ nodeRef: l3, rect: r2, setRef: c3 }), [r2, l3, c3]);
+        return t.useMemo(() => ({ nodeRef: l3, rect: r3, setRef: c3 }), [r3, l3, c3]);
       }({ measure: ie2.dragOverlay.measure }), We2 = null != (s2 = Le2.nodeRef.current) ? s2 : de2, Ue2 = W2 ? null != (l2 = Le2.rect) ? l2 : pe2 : null, je2 = Boolean(Le2.nodeRef.current && Le2.rect), qe2 = D(He2 = je2 ? null : pe2, be(He2));
       var He2;
       const Xe2 = Ee(We2 ? o.getWindow(We2) : null), Ye2 = function(e3) {
-        const n2 = t.useRef(e3), r2 = o.useLazyMemo((t2) => e3 ? t2 && t2 !== we && e3 && n2.current && e3.parentNode === n2.current.parentNode ? t2 : L(e3) : we, [e3]);
+        const n2 = t.useRef(e3), r3 = o.useLazyMemo((t2) => e3 ? t2 && t2 !== we && e3 && n2.current && e3.parentNode === n2.current.parentNode ? t2 : L(e3) : we, [e3]);
         return t.useEffect(() => {
           n2.current = e3;
-        }, [e3]), r2;
+        }, [e3]), r3;
       }(W2 ? null != Ae2 ? Ae2 : de2 : null), Ve2 = function(e3, n2) {
         void 0 === n2 && (n2 = O);
-        const [r2] = e3, i3 = Ee(r2 ? o.getWindow(r2) : null), [a2, s3] = t.useState(De);
+        const [r3] = e3, i3 = Ee(r3 ? o.getWindow(r3) : null), [a2, s3] = t.useState(De);
         function l3() {
           s3(() => e3.length ? e3.map((e4) => z2(e4) ? i3 : new Y(n2(e4), e4)) : De);
         }
@@ -1594,9 +1594,9 @@ var require_core_cjs_production_min = __commonJS({
           null == c3 || c3.disconnect(), l3(), e3.forEach((e4) => null == c3 ? void 0 : c3.observe(e4));
         }, [e3]), a2;
       }(Ye2), Je2 = Be(w2, { transform: { x: X3.x - qe2.x, y: X3.y - qe2.y, scaleX: 1, scaleY: 1 }, activatorEvent: ee2, active: G3, activeNodeRect: pe2, containerNodeRect: ye2, draggingNodeRect: Ue2, over: Oe2.current.over, overlayNodeRect: Le2.rect, scrollableAncestors: Ye2, scrollableAncestorRects: Ve2, windowRect: Xe2 }), _e2 = ue2 ? o.add(ue2, X3) : null, Ge2 = function(e3) {
-        const [n2, r2] = t.useState(null), i3 = t.useRef(e3), a2 = t.useCallback((e4) => {
+        const [n2, r3] = t.useState(null), i3 = t.useRef(e3), a2 = t.useCallback((e4) => {
           const t2 = T2(e4.target);
-          t2 && r2((e5) => e5 ? (e5.set(t2, I(t2)), new Map(e5)) : null);
+          t2 && r3((e5) => e5 ? (e5.set(t2, I(t2)), new Map(e5)) : null);
         }, []);
         return t.useEffect(() => {
           const t2 = i3.current;
@@ -1606,7 +1606,7 @@ var require_core_cjs_production_min = __commonJS({
               const t3 = T2(e4);
               return t3 ? (t3.addEventListener("scroll", a2, { passive: true }), [t3, I(t3)]) : null;
             }).filter((e4) => null != e4);
-            r2(o2.length ? new Map(o2) : null), i3.current = e3;
+            r3(o2.length ? new Map(o2) : null), i3.current = e3;
           }
           return () => {
             n3(e3), n3(t2);
@@ -1629,9 +1629,9 @@ var require_core_cjs_production_min = __commonJS({
           if (!H3.get(e4)) return;
           const { onDragAbort: t3 } = ne2.current, n3 = { id: e4 };
           null == t3 || t3(n3), A3({ type: "onDragAbort", event: n3 });
-        }, onPending(e4, t3, n3, r2) {
+        }, onPending(e4, t3, n3, r3) {
           if (!H3.get(e4)) return;
-          const { onDragPending: o3 } = ne2.current, i4 = { id: e4, constraint: t3, initialCoordinates: n3, offset: r2 };
+          const { onDragPending: o3 } = ne2.current, i4 = { id: e4, constraint: t3, initialCoordinates: n3, offset: r3 };
           null == o3 || o3(i4), A3({ type: "onDragPending", event: i4 });
         }, onStart(e4) {
           const t3 = Q2.current;
@@ -1639,7 +1639,7 @@ var require_core_cjs_production_min = __commonJS({
           const n3 = H3.get(t3);
           if (!n3) return;
           const { onDragStart: o3 } = ne2.current, i4 = { activatorEvent: a2, active: { id: t3, data: n3.data, rect: _2 } };
-          r.unstable_batchedUpdates(() => {
+          r2.unstable_batchedUpdates(() => {
             null == o3 || o3(i4), F3(Fe.Initializing), N2({ type: u.DragStart, initialCoordinates: e4, active: t3 }), A3({ type: "onDragStart", event: i4 }), $2(at.current), te2(a2);
           });
         }, onMove(e4) {
@@ -1650,10 +1650,10 @@ var require_core_cjs_production_min = __commonJS({
             const { active: t3, collisions: n3, over: o3, scrollAdjustedTranslate: i4 } = Oe2.current;
             let s4 = null;
             if (t3 && i4) {
-              const { cancelDrop: r2 } = ne2.current;
-              s4 = { activatorEvent: a2, active: t3, collisions: n3, delta: i4, over: o3 }, e4 === u.DragEnd && "function" == typeof r2 && await Promise.resolve(r2(s4)) && (e4 = u.DragCancel);
+              const { cancelDrop: r3 } = ne2.current;
+              s4 = { activatorEvent: a2, active: t3, collisions: n3, delta: i4, over: o3 }, e4 === u.DragEnd && "function" == typeof r3 && await Promise.resolve(r3(s4)) && (e4 = u.DragCancel);
             }
-            Q2.current = null, r.unstable_batchedUpdates(() => {
+            Q2.current = null, r2.unstable_batchedUpdates(() => {
               N2({ type: e4 }), F3(Fe.Uninitialized), ot(null), $2(null), te2(null), at.current = null;
               const t4 = e4 === u.DragEnd ? "onDragEnd" : "onDragCancel";
               if (s4) {
@@ -1666,12 +1666,12 @@ var require_core_cjs_production_min = __commonJS({
         at.current = s3;
       }, [H3]), lt = function(e3, n2) {
         return t.useMemo(() => e3.reduce((e4, t2) => {
-          const { sensor: r2 } = t2;
-          return [...e4, ...r2.activators.map((e5) => ({ eventName: e5.eventName, handler: n2(e5.handler, t2) }))];
+          const { sensor: r3 } = t2;
+          return [...e4, ...r3.activators.map((e5) => ({ eventName: e5.eventName, handler: n2(e5.handler, t2) }))];
         }, []), [e3, n2]);
-      }(b2, t.useCallback((e3, t2) => (n2, r2) => {
-        const o2 = n2.nativeEvent, i3 = H3.get(r2);
-        null !== Q2.current || !i3 || o2.dndKit || o2.defaultPrevented || true === e3(n2, t2.options, { active: i3 }) && (o2.dndKit = { capturedBy: t2.sensor }, Q2.current = r2, st(n2, t2));
+      }(b2, t.useCallback((e3, t2) => (n2, r3) => {
+        const o2 = n2.nativeEvent, i3 = H3.get(r3);
+        null !== Q2.current || !i3 || o2.dndKit || o2.defaultPrevented || true === e3(n2, t2.options, { active: i3 }) && (o2.dndKit = { capturedBy: t2.sensor }, Q2.current = r3, st(n2, t2));
       }, [H3, st]));
       !function(e3) {
         t.useEffect(() => {
@@ -1693,36 +1693,36 @@ var require_core_cjs_production_min = __commonJS({
         const { onDragMove: e3 } = ne2.current, { active: t2, activatorEvent: n2, collisions: o2, over: i3 } = Oe2.current;
         if (!t2 || !n2) return;
         const a2 = { active: t2, activatorEvent: n2, collisions: o2, delta: { x: $e2.x, y: $e2.y }, over: i3 };
-        r.unstable_batchedUpdates(() => {
+        r2.unstable_batchedUpdates(() => {
           null == e3 || e3(a2), A3({ type: "onDragMove", event: a2 });
         });
       }, [$e2.x, $e2.y]), t.useEffect(() => {
         const { active: e3, activatorEvent: t2, collisions: n2, droppableContainers: o2, scrollAdjustedTranslate: i3 } = Oe2.current;
         if (!e3 || null == Q2.current || !t2 || !i3) return;
         const { onDragOver: a2 } = ne2.current, s3 = o2.get(nt), l3 = s3 && s3.rect.current ? { id: s3.id, rect: s3.rect.current, data: s3.data, disabled: s3.disabled } : null, c3 = { active: e3, activatorEvent: t2, collisions: n2, delta: { x: i3.x, y: i3.y }, over: l3 };
-        r.unstable_batchedUpdates(() => {
+        r2.unstable_batchedUpdates(() => {
           ot(l3), null == a2 || a2(c3), A3({ type: "onDragOver", event: c3 });
         });
       }, [nt]), o.useIsomorphicLayoutEffect(() => {
         Oe2.current = { activatorEvent: ee2, active: G3, activeNode: de2, collisionRect: et2, collisions: tt2, droppableRects: se2, draggableNodes: H3, draggingNode: We2, draggingNodeRect: Ue2, droppableContainers: V2, over: rt, scrollableAncestors: Ye2, scrollAdjustedTranslate: $e2 }, _2.current = { initial: Ue2, translated: et2 };
       }, [G3, de2, tt2, et2, H3, We2, Ue2, se2, V2, rt, Ye2, $e2]), function(e3) {
-        let { acceleration: n2, activator: r2 = exports2.AutoScrollActivator.Pointer, canScroll: i3, draggingRect: a2, enabled: s3, interval: l3 = 5, order: c3 = exports2.TraversalOrder.TreeOrder, pointerCoordinates: d3, scrollableAncestors: u2, scrollableAncestorRects: f3, delta: v2, threshold: g3 } = e3;
+        let { acceleration: n2, activator: r3 = exports2.AutoScrollActivator.Pointer, canScroll: i3, draggingRect: a2, enabled: s3, interval: l3 = 5, order: c3 = exports2.TraversalOrder.TreeOrder, pointerCoordinates: d3, scrollableAncestors: u2, scrollableAncestorRects: f3, delta: v2, threshold: g3 } = e3;
         const p3 = function(e4) {
           let { delta: t2, disabled: n3 } = e4;
-          const r3 = o.usePrevious(t2);
+          const r4 = o.usePrevious(t2);
           return o.useLazyMemo((e5) => {
-            if (n3 || !r3 || !e5) return ge;
-            const o2 = Math.sign(t2.x - r3.x), i4 = Math.sign(t2.y - r3.y);
+            if (n3 || !r4 || !e5) return ge;
+            const o2 = Math.sign(t2.x - r4.x), i4 = Math.sign(t2.y - r4.y);
             return { x: { [B.Backward]: e5.x[B.Backward] || -1 === o2, [B.Forward]: e5.x[B.Forward] || 1 === o2 }, y: { [B.Backward]: e5.y[B.Backward] || -1 === i4, [B.Forward]: e5.y[B.Forward] || 1 === i4 } };
-          }, [n3, t2, r3]);
+          }, [n3, t2, r4]);
         }({ delta: v2, disabled: !s3 }), [h3, b3] = o.useInterval(), m3 = t.useRef({ x: 0, y: 0 }), y2 = t.useRef({ x: 0, y: 0 }), x3 = t.useMemo(() => {
-          switch (r2) {
+          switch (r3) {
             case exports2.AutoScrollActivator.Pointer:
               return d3 ? { top: d3.y, bottom: d3.y, left: d3.x, right: d3.x } : null;
             case exports2.AutoScrollActivator.DraggableRect:
               return a2;
           }
-        }, [r2, a2, d3]), w3 = t.useRef(null), C2 = t.useCallback(() => {
+        }, [r3, a2, d3]), w3 = t.useRef(null), C2 = t.useCallback(() => {
           const e4 = w3.current;
           e4 && e4.scrollBy(m3.current.x * y2.current.x, m3.current.y * y2.current.y);
         }, []), E3 = t.useMemo(() => c3 === exports2.TraversalOrder.TreeOrder ? [...u2].reverse() : u2, [c3, u2]);
@@ -1730,9 +1730,9 @@ var require_core_cjs_production_min = __commonJS({
           if (s3 && u2.length && x3) {
             for (const e4 of E3) {
               if (false === (null == i3 ? void 0 : i3(e4))) continue;
-              const t2 = u2.indexOf(e4), r3 = f3[t2];
-              if (!r3) continue;
-              const { direction: o2, speed: a3 } = U2(e4, r3, x3, n2, g3);
+              const t2 = u2.indexOf(e4), r4 = f3[t2];
+              if (!r4) continue;
+              const { direction: o2, speed: a3 } = U2(e4, r4, x3, n2, g3);
               for (const e5 of ["x", "y"]) p3[e5][o2[e5]] || (a3[e5] = 0, o2[e5] = 0);
               if (a3.x > 0 || a3.y > 0) return b3(), w3.current = e4, h3(C2, l3), m3.current = a3, void (y2.current = o2);
             }
@@ -1750,15 +1750,15 @@ var require_core_cjs_production_min = __commonJS({
     }
     var He = { timeout: 25 };
     function Xe(e2) {
-      let { animation: r2, children: i2 } = e2;
+      let { animation: r3, children: i2 } = e2;
       const [a2, s2] = t.useState(null), [l2, c2] = t.useState(null), d3 = o.usePrevious(i2);
       return i2 || a2 || !d3 || s2(d3), o.useIsomorphicLayoutEffect(() => {
         if (!l2) return;
         const e3 = null == a2 ? void 0 : a2.props.id;
-        null != (null == a2 ? void 0 : a2.key) && null != e3 ? Promise.resolve(r2(e3, l2)).then(() => {
+        null != (null == a2 ? void 0 : a2.key) && null != e3 ? Promise.resolve(r3(e3, l2)).then(() => {
           s2(null);
         }) : s2(null);
-      }, [r2, a2, l2]), n.createElement(n.Fragment, null, i2, a2 ? t.cloneElement(a2, { ref: c2 }) : null);
+      }, [r3, a2, l2]), n.createElement(n.Fragment, null, i2, a2 ? t.cloneElement(a2, { ref: c2 }) : null);
     }
     var Ye = { x: 0, y: 0, scaleX: 1, scaleY: 1 };
     function Ve(e2) {
@@ -1768,17 +1768,17 @@ var require_core_cjs_production_min = __commonJS({
     var Je = { position: "fixed", touchAction: "none" };
     var _e = (e2) => o.isKeyboardEvent(e2) ? "transform 250ms ease" : void 0;
     var Ge = t.forwardRef((e2, t2) => {
-      let { as: r2, activatorEvent: i2, adjustScale: a2, children: s2, className: l2, rect: c2, style: d3, transform: u2, transition: f2 = _e } = e2;
+      let { as: r3, activatorEvent: i2, adjustScale: a2, children: s2, className: l2, rect: c2, style: d3, transform: u2, transition: f2 = _e } = e2;
       if (!c2) return null;
       const v2 = a2 ? u2 : { ...u2, scaleX: 1, scaleY: 1 }, g2 = { ...Je, width: c2.width, height: c2.height, top: c2.top, left: c2.left, transform: o.CSS.Transform.toString(v2), transformOrigin: a2 && i2 ? p(i2, c2) : void 0, transition: "function" == typeof f2 ? f2(i2) : f2, ...d3 };
-      return n.createElement(r2, { className: l2, style: g2, ref: t2 }, s2);
+      return n.createElement(r3, { className: l2, style: g2, ref: t2 }, s2);
     });
     var Qe = (e2) => (t2) => {
-      let { active: n2, dragOverlay: r2 } = t2;
+      let { active: n2, dragOverlay: r3 } = t2;
       const o2 = {}, { styles: i2, className: a2 } = e2;
       if (null != i2 && i2.active) for (const [e3, t3] of Object.entries(i2.active)) void 0 !== t3 && (o2[e3] = n2.node.style.getPropertyValue(e3), n2.node.style.setProperty(e3, t3));
-      if (null != i2 && i2.dragOverlay) for (const [e3, t3] of Object.entries(i2.dragOverlay)) void 0 !== t3 && r2.node.style.setProperty(e3, t3);
-      return null != a2 && a2.active && n2.node.classList.add(a2.active), null != a2 && a2.dragOverlay && r2.node.classList.add(a2.dragOverlay), function() {
+      if (null != i2 && i2.dragOverlay) for (const [e3, t3] of Object.entries(i2.dragOverlay)) void 0 !== t3 && r3.node.style.setProperty(e3, t3);
+      return null != a2 && a2.active && n2.node.classList.add(a2.active), null != a2 && a2.dragOverlay && r3.node.classList.add(a2.dragOverlay), function() {
         for (const [e3, t3] of Object.entries(o2)) n2.node.style.setProperty(e3, t3);
         null != a2 && a2.active && n2.node.classList.remove(a2.active);
       };
@@ -1794,9 +1794,9 @@ var require_core_cjs_production_min = __commonJS({
       }, [e2]);
     }
     var tt = n.memo((e2) => {
-      let { adjustScale: r2 = false, children: i2, dropAnimation: a2, style: s2, transition: l2, modifiers: c2, wrapperElement: d3 = "div", className: u2, zIndex: f2 = 999 } = e2;
+      let { adjustScale: r3 = false, children: i2, dropAnimation: a2, style: s2, transition: l2, modifiers: c2, wrapperElement: d3 = "div", className: u2, zIndex: f2 = 999 } = e2;
       const { activatorEvent: v2, active: g2, activeNodeRect: p2, containerNodeRect: h2, draggableNodes: b2, droppableContainers: m2, dragOverlay: y2, over: x2, measuringConfiguration: w2, scrollableAncestors: C2, scrollableAncestorRects: E2, windowRect: D2 } = qe(), R2 = t.useContext(ze), S3 = et(null == g2 ? void 0 : g2.id), N2 = Be(c2, { activatorEvent: v2, active: g2, activeNodeRect: p2, containerNodeRect: h2, draggingNodeRect: y2.rect, over: x2, overlayNodeRect: y2.rect, scrollableAncestors: C2, scrollableAncestorRects: E2, transform: R2, windowRect: D2 }), O2 = be(p2), A3 = function(e3) {
-        let { config: t2, draggableNodes: n2, droppableContainers: r3, measuringConfiguration: i3 } = e3;
+        let { config: t2, draggableNodes: n2, droppableContainers: r4, measuringConfiguration: i3 } = e3;
         return o.useEvent((e4, a3) => {
           if (null === t2) return;
           const s3 = n2.get(e4);
@@ -1808,13 +1808,13 @@ var require_core_cjs_production_min = __commonJS({
           const { transform: d4 } = o.getWindow(a3).getComputedStyle(a3), u3 = M(d4);
           if (!u3) return;
           const f3 = "function" == typeof t2 ? t2 : function(e5) {
-            const { duration: t3, easing: n3, sideEffects: r4, keyframes: o2 } = { ...Ze, ...e5 };
+            const { duration: t3, easing: n3, sideEffects: r5, keyframes: o2 } = { ...Ze, ...e5 };
             return (e6) => {
               let { active: i4, dragOverlay: a4, transform: s4, ...l4 } = e6;
               if (!t3) return;
               const c4 = { x: s4.x - (a4.rect.left - i4.rect.left), y: s4.y - (a4.rect.top - i4.rect.top), scaleX: 1 !== s4.scaleX ? i4.rect.width * s4.scaleX / a4.rect.width : 1, scaleY: 1 !== s4.scaleY ? i4.rect.height * s4.scaleY / a4.rect.height : 1 }, d5 = o2({ ...l4, active: i4, dragOverlay: a4, transform: { initial: s4, final: c4 } }), [u4] = d5, f4 = d5[d5.length - 1];
               if (JSON.stringify(u4) === JSON.stringify(f4)) return;
-              const v3 = null == r4 ? void 0 : r4({ active: i4, dragOverlay: a4, ...l4 }), g3 = a4.node.animate(d5, { duration: t3, easing: n3, fill: "forwards" });
+              const v3 = null == r5 ? void 0 : r5({ active: i4, dragOverlay: a4, ...l4 }), g3 = a4.node.animate(d5, { duration: t3, easing: n3, fill: "forwards" });
               return new Promise((e7) => {
                 g3.onfinish = () => {
                   null == v3 || v3(), e7();
@@ -1822,62 +1822,62 @@ var require_core_cjs_production_min = __commonJS({
               });
             };
           }(t2);
-          return H2(l3, i3.draggable.measure), f3({ active: { id: e4, data: s3.data, node: l3, rect: i3.draggable.measure(l3) }, draggableNodes: n2, dragOverlay: { node: a3, rect: i3.dragOverlay.measure(c3) }, droppableContainers: r3, measuringConfiguration: i3, transform: u3 });
+          return H2(l3, i3.draggable.measure), f3({ active: { id: e4, data: s3.data, node: l3, rect: i3.draggable.measure(l3) }, draggableNodes: n2, dragOverlay: { node: a3, rect: i3.dragOverlay.measure(c3) }, droppableContainers: r4, measuringConfiguration: i3, transform: u3 });
         });
       }({ config: a2, draggableNodes: b2, droppableContainers: m2, measuringConfiguration: w2 });
-      return n.createElement(Ve, null, n.createElement(Xe, { animation: A3 }, g2 && S3 ? n.createElement(Ge, { key: S3, id: g2.id, ref: O2 ? y2.setRef : void 0, as: d3, activatorEvent: v2, adjustScale: r2, className: u2, transition: l2, rect: O2, style: { zIndex: f2, ...s2 }, transform: N2 }, i2) : null));
+      return n.createElement(Ve, null, n.createElement(Xe, { animation: A3 }, g2 && S3 ? n.createElement(Ge, { key: S3, id: g2.id, ref: O2 ? y2.setRef : void 0, as: d3, activatorEvent: v2, adjustScale: r3, className: u2, transition: l2, rect: O2, style: { zIndex: f2, ...s2 }, transform: N2 }, i2) : null));
     });
     exports2.DndContext = We, exports2.DragOverlay = tt, exports2.KeyboardSensor = te, exports2.MouseSensor = ce, exports2.PointerSensor = ae, exports2.TouchSensor = ue, exports2.applyModifiers = Be, exports2.closestCenter = (e2) => {
-      let { collisionRect: t2, droppableRects: n2, droppableContainers: r2 } = e2;
+      let { collisionRect: t2, droppableRects: n2, droppableContainers: r3 } = e2;
       const o2 = x(t2, t2.left, t2.top), i2 = [];
-      for (const e3 of r2) {
-        const { id: t3 } = e3, r3 = n2.get(t3);
-        if (r3) {
-          const n3 = g(x(r3), o2);
+      for (const e3 of r3) {
+        const { id: t3 } = e3, r4 = n2.get(t3);
+        if (r4) {
+          const n3 = g(x(r4), o2);
           i2.push({ id: t3, data: { droppableContainer: e3, value: n3 } });
         }
       }
       return i2.sort(h);
     }, exports2.closestCorners = (e2) => {
-      let { collisionRect: t2, droppableRects: n2, droppableContainers: r2 } = e2;
+      let { collisionRect: t2, droppableRects: n2, droppableContainers: r3 } = e2;
       const o2 = m(t2), i2 = [];
-      for (const e3 of r2) {
-        const { id: t3 } = e3, r3 = n2.get(t3);
-        if (r3) {
-          const n3 = m(r3), a2 = o2.reduce((e4, t4, r4) => e4 + g(n3[r4], t4), 0), s2 = Number((a2 / 4).toFixed(4));
+      for (const e3 of r3) {
+        const { id: t3 } = e3, r4 = n2.get(t3);
+        if (r4) {
+          const n3 = m(r4), a2 = o2.reduce((e4, t4, r5) => e4 + g(n3[r5], t4), 0), s2 = Number((a2 / 4).toFixed(4));
           i2.push({ id: t3, data: { droppableContainer: e3, value: s2 } });
         }
       }
       return i2.sort(h);
     }, exports2.defaultAnnouncements = c, exports2.defaultCoordinates = v, exports2.defaultDropAnimation = Ze, exports2.defaultDropAnimationSideEffects = Qe, exports2.defaultKeyboardCoordinateGetter = ee, exports2.defaultScreenReaderInstructions = l, exports2.getClientRect = O, exports2.getFirstCollision = y, exports2.getScrollableAncestors = L, exports2.pointerWithin = (e2) => {
-      let { droppableContainers: t2, droppableRects: n2, pointerCoordinates: r2 } = e2;
-      if (!r2) return [];
+      let { droppableContainers: t2, droppableRects: n2, pointerCoordinates: r3 } = e2;
+      if (!r3) return [];
       const o2 = [];
       for (const e3 of t2) {
         const { id: t3 } = e3, i2 = n2.get(t3);
-        if (i2 && E(r2, i2)) {
-          const n3 = m(i2).reduce((e4, t4) => e4 + g(r2, t4), 0), a2 = Number((n3 / 4).toFixed(4));
+        if (i2 && E(r3, i2)) {
+          const n3 = m(i2).reduce((e4, t4) => e4 + g(r3, t4), 0), a2 = Number((n3 / 4).toFixed(4));
           o2.push({ id: t3, data: { droppableContainer: e3, value: a2 } });
         }
       }
       return o2.sort(h);
     }, exports2.rectIntersection = C, exports2.useDndContext = qe, exports2.useDndMonitor = s, exports2.useDraggable = function(e2) {
-      let { id: n2, data: r2, disabled: i2 = false, attributes: a2 } = e2;
+      let { id: n2, data: r3, disabled: i2 = false, attributes: a2 } = e2;
       const s2 = o.useUniqueId("Draggable"), { activators: l2, activatorEvent: c2, active: d3, activeNodeRect: u2, ariaDescribedById: f2, draggableNodes: v2, over: g2 } = t.useContext(ke), { role: p2 = je, roleDescription: h2 = "draggable", tabIndex: b2 = 0 } = null != a2 ? a2 : {}, m2 = (null == d3 ? void 0 : d3.id) === n2, y2 = t.useContext(m2 ? ze : Ue), [x2, w2] = o.useNodeRef(), [C2, E2] = o.useNodeRef(), D2 = function(e3, n3) {
         return t.useMemo(() => e3.reduce((e4, t2) => {
-          let { eventName: r3, handler: o2 } = t2;
-          return e4[r3] = (e5) => {
+          let { eventName: r4, handler: o2 } = t2;
+          return e4[r4] = (e5) => {
             o2(e5, n3);
           }, e4;
         }, {}), [e3, n3]);
-      }(l2, n2), R2 = o.useLatestValue(r2);
+      }(l2, n2), R2 = o.useLatestValue(r3);
       return o.useIsomorphicLayoutEffect(() => (v2.set(n2, { id: n2, key: s2, node: x2, activatorNode: C2, data: R2 }), () => {
         const e3 = v2.get(n2);
         e3 && e3.key === s2 && v2.delete(n2);
       }), [v2, n2]), { active: d3, activatorEvent: c2, activeNodeRect: u2, attributes: t.useMemo(() => ({ role: p2, tabIndex: b2, "aria-disabled": i2, "aria-pressed": !(!m2 || p2 !== je) || void 0, "aria-roledescription": h2, "aria-describedby": f2.draggable }), [i2, p2, b2, m2, h2, f2.draggable]), isDragging: m2, listeners: i2 ? void 0 : D2, node: x2, over: g2, setNodeRef: w2, setActivatorNodeRef: E2, transform: y2 };
     }, exports2.useDroppable = function(e2) {
-      let { data: n2, disabled: r2 = false, id: i2, resizeObserverConfig: a2 } = e2;
-      const s2 = o.useUniqueId("Droppable"), { active: l2, dispatch: c2, over: d3, measureDroppableContainers: f2 } = t.useContext(ke), v2 = t.useRef({ disabled: r2 }), g2 = t.useRef(false), p2 = t.useRef(null), h2 = t.useRef(null), { disabled: b2, updateMeasurementsFor: m2, timeout: y2 } = { ...He, ...a2 }, x2 = o.useLatestValue(null != m2 ? m2 : i2), w2 = me({ callback: t.useCallback(() => {
+      let { data: n2, disabled: r3 = false, id: i2, resizeObserverConfig: a2 } = e2;
+      const s2 = o.useUniqueId("Droppable"), { active: l2, dispatch: c2, over: d3, measureDroppableContainers: f2 } = t.useContext(ke), v2 = t.useRef({ disabled: r3 }), g2 = t.useRef(false), p2 = t.useRef(null), h2 = t.useRef(null), { disabled: b2, updateMeasurementsFor: m2, timeout: y2 } = { ...He, ...a2 }, x2 = o.useLatestValue(null != m2 ? m2 : i2), w2 = me({ callback: t.useCallback(() => {
         g2.current ? (null != h2.current && clearTimeout(h2.current), h2.current = setTimeout(() => {
           f2(Array.isArray(x2.current) ? x2.current : [x2.current]), h2.current = null;
         }, y2)) : g2.current = true;
@@ -1886,13 +1886,13 @@ var require_core_cjs_production_min = __commonJS({
       }, [w2]), [E2, D2] = o.useNodeRef(C2), R2 = o.useLatestValue(n2);
       return t.useEffect(() => {
         w2 && E2.current && (w2.disconnect(), g2.current = false, w2.observe(E2.current));
-      }, [E2, w2]), t.useEffect(() => (c2({ type: u.RegisterDroppable, element: { id: i2, key: s2, disabled: r2, node: E2, rect: p2, data: R2 } }), () => c2({ type: u.UnregisterDroppable, key: s2, id: i2 })), [i2]), t.useEffect(() => {
-        r2 !== v2.current.disabled && (c2({ type: u.SetDroppableDisabled, id: i2, key: s2, disabled: r2 }), v2.current.disabled = r2);
-      }, [i2, s2, r2, c2]), { active: l2, rect: p2, isOver: (null == d3 ? void 0 : d3.id) === i2, node: E2, over: d3, setNodeRef: D2 };
+      }, [E2, w2]), t.useEffect(() => (c2({ type: u.RegisterDroppable, element: { id: i2, key: s2, disabled: r3, node: E2, rect: p2, data: R2 } }), () => c2({ type: u.UnregisterDroppable, key: s2, id: i2 })), [i2]), t.useEffect(() => {
+        r3 !== v2.current.disabled && (c2({ type: u.SetDroppableDisabled, id: i2, key: s2, disabled: r3 }), v2.current.disabled = r3);
+      }, [i2, s2, r3, c2]), { active: l2, rect: p2, isOver: (null == d3 ? void 0 : d3.id) === i2, node: E2, over: d3, setNodeRef: D2 };
     }, exports2.useSensor = function(e2, n2) {
       return t.useMemo(() => ({ sensor: e2, options: null != n2 ? n2 : {} }), [e2, n2]);
     }, exports2.useSensors = function() {
-      for (var e2 = arguments.length, n2 = new Array(e2), r2 = 0; r2 < e2; r2++) n2[r2] = arguments[r2];
+      for (var e2 = arguments.length, n2 = new Array(e2), r3 = 0; r3 < e2; r3++) n2[r3] = arguments[r3];
       return t.useMemo(() => [...n2].filter((e3) => null != e3), [...n2]);
     };
   }
@@ -1917,16 +1917,16 @@ var require_sortable_cjs_production_min = __commonJS({
     Object.defineProperty(exports2, "__esModule", { value: true });
     var e;
     var t = require("react");
-    var r = (e = t) && "object" == typeof e && "default" in e ? e.default : e;
+    var r2 = (e = t) && "object" == typeof e && "default" in e ? e.default : e;
     var n = require_dist3();
     var o = require_dist();
-    function i(e2, t2, r2) {
+    function i(e2, t2, r3) {
       const n2 = e2.slice();
-      return n2.splice(r2 < 0 ? n2.length + r2 : r2, 0, n2.splice(t2, 1)[0]), n2;
+      return n2.splice(r3 < 0 ? n2.length + r3 : r3, 0, n2.splice(t2, 1)[0]), n2;
     }
     function a(e2, t2) {
-      return e2.reduce((e3, r2, n2) => {
-        const o2 = t2.get(r2);
+      return e2.reduce((e3, r3, n2) => {
+        const o2 = t2.get(r3);
         return o2 && (e3[n2] = o2), e3;
       }, Array(e2.length));
     }
@@ -1935,19 +1935,19 @@ var require_sortable_cjs_production_min = __commonJS({
     }
     var d2 = { scaleX: 1, scaleY: 1 };
     var l = (e2) => {
-      let { rects: t2, activeIndex: r2, overIndex: n2, index: o2 } = e2;
-      const a2 = i(t2, n2, r2), s2 = t2[o2], d3 = a2[o2];
+      let { rects: t2, activeIndex: r3, overIndex: n2, index: o2 } = e2;
+      const a2 = i(t2, n2, r3), s2 = t2[o2], d3 = a2[o2];
       return d3 && s2 ? { x: d3.left - s2.left, y: d3.top - s2.top, scaleX: d3.width / s2.width, scaleY: d3.height / s2.height } : null;
     };
     var c = { scaleX: 1, scaleY: 1 };
-    var u = r.createContext({ activeIndex: -1, containerId: "Sortable", disableTransforms: false, items: [], overIndex: -1, useDragOverlay: false, sortedRects: [], strategy: l, disabled: { draggable: false, droppable: false } });
+    var u = r2.createContext({ activeIndex: -1, containerId: "Sortable", disableTransforms: false, items: [], overIndex: -1, useDragOverlay: false, sortedRects: [], strategy: l, disabled: { draggable: false, droppable: false } });
     var f = (e2) => {
-      let { id: t2, items: r2, activeIndex: n2, overIndex: o2 } = e2;
-      return i(r2, n2, o2).indexOf(t2);
+      let { id: t2, items: r3, activeIndex: n2, overIndex: o2 } = e2;
+      return i(r3, n2, o2).indexOf(t2);
     };
     var p = (e2) => {
-      let { containerId: t2, isSorting: r2, wasDragging: n2, index: o2, items: i2, newIndex: a2, previousItems: s2, previousContainerId: d3, transition: l2 } = e2;
-      return !(!l2 || !n2 || s2 !== i2 && o2 === a2 || !r2 && (a2 === o2 || t2 !== d3));
+      let { containerId: t2, isSorting: r3, wasDragging: n2, index: o2, items: i2, newIndex: a2, previousItems: s2, previousContainerId: d3, transition: l2 } = e2;
+      return !(!l2 || !n2 || s2 !== i2 && o2 === a2 || !r3 && (a2 === o2 || t2 !== d3));
     };
     var g = { duration: 200, easing: "ease" };
     var b = o.CSS.Transition.toString({ property: "transform", duration: 0, easing: "linear" });
@@ -1966,7 +1966,7 @@ var require_sortable_cjs_production_min = __commonJS({
       const { active: p2, dragOverlay: g2, droppableRects: b2, over: x2, measureDroppableContainers: v2 } = n.useDndContext(), h2 = o.useUniqueId("Sortable", s2), I2 = Boolean(null !== g2.rect), y = t.useMemo(() => d3.map((e3) => "object" == typeof e3 && "id" in e3 ? e3.id : e3), [d3]), m = null != p2, w = p2 ? y.indexOf(p2.id) : -1, C = x2 ? y.indexOf(x2.id) : -1, R = t.useRef(y), S2 = !function(e3, t2) {
         if (e3 === t2) return true;
         if (e3.length !== t2.length) return false;
-        for (let r2 = 0; r2 < e3.length; r2++) if (e3[r2] !== t2[r2]) return false;
+        for (let r3 = 0; r3 < e3.length; r3++) if (e3[r3] !== t2[r3]) return false;
         return true;
       }(y, R.current), D = -1 !== C && -1 === w || S2, O = /* @__PURE__ */ function(e3) {
         return "boolean" == typeof e3 ? { draggable: e3, droppable: e3 } : e3;
@@ -1977,78 +1977,78 @@ var require_sortable_cjs_production_min = __commonJS({
         R.current = y;
       }, [y]);
       const N = t.useMemo(() => ({ activeIndex: w, containerId: h2, disabled: O, disableTransforms: D, items: y, overIndex: C, useDragOverlay: I2, sortedRects: a(y, b2), strategy: c2 }), [w, h2, O.draggable, O.droppable, D, y, C, b2, I2, c2]);
-      return r.createElement(u.Provider, { value: N }, i2);
-    }, exports2.arrayMove = i, exports2.arraySwap = function(e2, t2, r2) {
+      return r2.createElement(u.Provider, { value: N }, i2);
+    }, exports2.arrayMove = i, exports2.arraySwap = function(e2, t2, r3) {
       const n2 = e2.slice();
-      return n2[t2] = e2[r2], n2[r2] = e2[t2], n2;
+      return n2[t2] = e2[r3], n2[r3] = e2[t2], n2;
     }, exports2.defaultAnimateLayoutChanges = p, exports2.defaultNewIndexGetter = f, exports2.hasSortableData = v, exports2.horizontalListSortingStrategy = (e2) => {
       var t2;
-      let { rects: r2, activeNodeRect: n2, activeIndex: o2, overIndex: i2, index: a2 } = e2;
-      const s2 = null != (t2 = r2[o2]) ? t2 : n2;
+      let { rects: r3, activeNodeRect: n2, activeIndex: o2, overIndex: i2, index: a2 } = e2;
+      const s2 = null != (t2 = r3[o2]) ? t2 : n2;
       if (!s2) return null;
-      const l2 = function(e3, t3, r3) {
+      const l2 = function(e3, t3, r4) {
         const n3 = e3[t3], o3 = e3[t3 - 1], i3 = e3[t3 + 1];
-        return n3 && (o3 || i3) ? r3 < t3 ? o3 ? n3.left - (o3.left + o3.width) : i3.left - (n3.left + n3.width) : i3 ? i3.left - (n3.left + n3.width) : n3.left - (o3.left + o3.width) : 0;
-      }(r2, a2, o2);
+        return n3 && (o3 || i3) ? r4 < t3 ? o3 ? n3.left - (o3.left + o3.width) : i3.left - (n3.left + n3.width) : i3 ? i3.left - (n3.left + n3.width) : n3.left - (o3.left + o3.width) : 0;
+      }(r3, a2, o2);
       if (a2 === o2) {
-        const e3 = r2[i2];
+        const e3 = r3[i2];
         return e3 ? { x: o2 < i2 ? e3.left + e3.width - (s2.left + s2.width) : e3.left - s2.left, y: 0, ...d2 } : null;
       }
       return a2 > o2 && a2 <= i2 ? { x: -s2.width - l2, y: 0, ...d2 } : a2 < o2 && a2 >= i2 ? { x: s2.width + l2, y: 0, ...d2 } : { x: 0, y: 0, ...d2 };
     }, exports2.rectSortingStrategy = l, exports2.rectSwappingStrategy = (e2) => {
-      let t2, r2, { activeIndex: n2, index: o2, rects: i2, overIndex: a2 } = e2;
-      return o2 === n2 && (t2 = i2[o2], r2 = i2[a2]), o2 === a2 && (t2 = i2[o2], r2 = i2[n2]), r2 && t2 ? { x: r2.left - t2.left, y: r2.top - t2.top, scaleX: r2.width / t2.width, scaleY: r2.height / t2.height } : null;
+      let t2, r3, { activeIndex: n2, index: o2, rects: i2, overIndex: a2 } = e2;
+      return o2 === n2 && (t2 = i2[o2], r3 = i2[a2]), o2 === a2 && (t2 = i2[o2], r3 = i2[n2]), r3 && t2 ? { x: r3.left - t2.left, y: r3.top - t2.top, scaleX: r3.width / t2.width, scaleY: r3.height / t2.height } : null;
     }, exports2.sortableKeyboardCoordinates = (e2, t2) => {
-      let { context: { active: r2, collisionRect: i2, droppableRects: a2, droppableContainers: s2, over: d3, scrollableAncestors: l2 } } = t2;
+      let { context: { active: r3, collisionRect: i2, droppableRects: a2, droppableContainers: s2, over: d3, scrollableAncestors: l2 } } = t2;
       if (h.includes(e2.code)) {
-        if (e2.preventDefault(), !r2 || !i2) return;
+        if (e2.preventDefault(), !r3 || !i2) return;
         const t3 = [];
-        s2.getEnabled().forEach((r3) => {
-          if (!r3 || null != r3 && r3.disabled) return;
-          const o2 = a2.get(r3.id);
+        s2.getEnabled().forEach((r4) => {
+          if (!r4 || null != r4 && r4.disabled) return;
+          const o2 = a2.get(r4.id);
           if (o2) switch (e2.code) {
             case n.KeyboardCode.Down:
-              i2.top < o2.top && t3.push(r3);
+              i2.top < o2.top && t3.push(r4);
               break;
             case n.KeyboardCode.Up:
-              i2.top > o2.top && t3.push(r3);
+              i2.top > o2.top && t3.push(r4);
               break;
             case n.KeyboardCode.Left:
-              i2.left > o2.left && t3.push(r3);
+              i2.left > o2.left && t3.push(r4);
               break;
             case n.KeyboardCode.Right:
-              i2.left < o2.left && t3.push(r3);
+              i2.left < o2.left && t3.push(r4);
           }
         });
-        const f2 = n.closestCorners({ active: r2, collisionRect: i2, droppableRects: a2, droppableContainers: t3, pointerCoordinates: null });
+        const f2 = n.closestCorners({ active: r3, collisionRect: i2, droppableRects: a2, droppableContainers: t3, pointerCoordinates: null });
         let p2 = n.getFirstCollision(f2, "id");
         if (p2 === (null == d3 ? void 0 : d3.id) && f2.length > 1 && (p2 = f2[1].id), null != p2) {
-          const e3 = s2.get(r2.id), t4 = s2.get(p2), d4 = t4 ? a2.get(t4.id) : null, f3 = null == t4 ? void 0 : t4.node.current;
+          const e3 = s2.get(r3.id), t4 = s2.get(p2), d4 = t4 ? a2.get(t4.id) : null, f3 = null == t4 ? void 0 : t4.node.current;
           if (f3 && d4 && e3 && t4) {
-            const r3 = n.getScrollableAncestors(f3).some((e4, t5) => l2[t5] !== e4), a3 = I(e3, t4), s3 = (u2 = t4, !(!v(c2 = e3) || !v(u2)) && !!I(c2, u2) && c2.data.current.sortable.index < u2.data.current.sortable.index), p3 = r3 || !a3 ? { x: 0, y: 0 } : { x: s3 ? i2.width - d4.width : 0, y: s3 ? i2.height - d4.height : 0 }, g2 = { x: d4.left, y: d4.top };
+            const r4 = n.getScrollableAncestors(f3).some((e4, t5) => l2[t5] !== e4), a3 = I(e3, t4), s3 = (u2 = t4, !(!v(c2 = e3) || !v(u2)) && !!I(c2, u2) && c2.data.current.sortable.index < u2.data.current.sortable.index), p3 = r4 || !a3 ? { x: 0, y: 0 } : { x: s3 ? i2.width - d4.width : 0, y: s3 ? i2.height - d4.height : 0 }, g2 = { x: d4.left, y: d4.top };
             return p3.x && p3.y ? g2 : o.subtract(g2, p3);
           }
         }
       }
       var c2, u2;
     }, exports2.useSortable = function(e2) {
-      let { animateLayoutChanges: r2 = p, attributes: i2, disabled: a2, data: d3, getNewIndex: l2 = f, id: c2, strategy: v2, resizeObserverConfig: h2, transition: I2 = g } = e2;
+      let { animateLayoutChanges: r3 = p, attributes: i2, disabled: a2, data: d3, getNewIndex: l2 = f, id: c2, strategy: v2, resizeObserverConfig: h2, transition: I2 = g } = e2;
       const { items: y, containerId: m, activeIndex: w, disabled: C, disableTransforms: R, sortedRects: S2, overIndex: D, useDragOverlay: O, strategy: N } = t.useContext(u), E = function(e3, t2) {
-        var r3, n2;
-        return "boolean" == typeof e3 ? { draggable: e3, droppable: false } : { draggable: null != (r3 = null == e3 ? void 0 : e3.draggable) ? r3 : t2.draggable, droppable: null != (n2 = null == e3 ? void 0 : e3.droppable) ? n2 : t2.droppable };
-      }(a2, C), K = y.indexOf(c2), L = t.useMemo(() => ({ sortable: { containerId: m, index: K, items: y }, ...d3 }), [m, d3, K, y]), T2 = t.useMemo(() => y.slice(y.indexOf(c2)), [y, c2]), { rect: M, node: A2, isOver: k, setNodeRef: X2 } = n.useDroppable({ id: c2, data: L, disabled: E.droppable, resizeObserverConfig: { updateMeasurementsFor: T2, ...h2 } }), { active: Y, activatorEvent: j, activeNodeRect: q2, attributes: z2, setNodeRef: U2, listeners: B, isDragging: F2, over: P2, setActivatorNodeRef: _, transform: G2 } = n.useDraggable({ id: c2, data: L, attributes: { ...x, ...i2 }, disabled: E.draggable }), H2 = o.useCombinedRefs(X2, U2), J2 = Boolean(Y), Q = J2 && !R && s(w) && s(D), V = !O && F2, W = V && Q ? G2 : null, Z = Q ? null != W ? W : (null != v2 ? v2 : N)({ rects: S2, activeNodeRect: q2, activeIndex: w, overIndex: D, index: K }) : null, $ = s(w) && s(D) ? l2({ id: c2, items: y, activeIndex: w, overIndex: D }) : K, ee = null == Y ? void 0 : Y.id, te = t.useRef({ activeId: ee, items: y, newIndex: $, containerId: m }), re = y !== te.current.items, ne = r2({ active: Y, containerId: m, isDragging: F2, isSorting: J2, id: c2, index: K, items: y, newIndex: te.current.newIndex, previousItems: te.current.items, previousContainerId: te.current.containerId, transition: I2, wasDragging: null != te.current.activeId }), oe = function(e3) {
-        let { disabled: r3, index: i3, node: a3, rect: s2 } = e3;
+        var r4, n2;
+        return "boolean" == typeof e3 ? { draggable: e3, droppable: false } : { draggable: null != (r4 = null == e3 ? void 0 : e3.draggable) ? r4 : t2.draggable, droppable: null != (n2 = null == e3 ? void 0 : e3.droppable) ? n2 : t2.droppable };
+      }(a2, C), K = y.indexOf(c2), L = t.useMemo(() => ({ sortable: { containerId: m, index: K, items: y }, ...d3 }), [m, d3, K, y]), T2 = t.useMemo(() => y.slice(y.indexOf(c2)), [y, c2]), { rect: M, node: A2, isOver: k, setNodeRef: X2 } = n.useDroppable({ id: c2, data: L, disabled: E.droppable, resizeObserverConfig: { updateMeasurementsFor: T2, ...h2 } }), { active: Y, activatorEvent: j, activeNodeRect: q2, attributes: z2, setNodeRef: U2, listeners: B, isDragging: F2, over: P2, setActivatorNodeRef: _, transform: G2 } = n.useDraggable({ id: c2, data: L, attributes: { ...x, ...i2 }, disabled: E.draggable }), H2 = o.useCombinedRefs(X2, U2), J2 = Boolean(Y), Q = J2 && !R && s(w) && s(D), V = !O && F2, W = V && Q ? G2 : null, Z = Q ? null != W ? W : (null != v2 ? v2 : N)({ rects: S2, activeNodeRect: q2, activeIndex: w, overIndex: D, index: K }) : null, $ = s(w) && s(D) ? l2({ id: c2, items: y, activeIndex: w, overIndex: D }) : K, ee = null == Y ? void 0 : Y.id, te = t.useRef({ activeId: ee, items: y, newIndex: $, containerId: m }), re = y !== te.current.items, ne = r3({ active: Y, containerId: m, isDragging: F2, isSorting: J2, id: c2, index: K, items: y, newIndex: te.current.newIndex, previousItems: te.current.items, previousContainerId: te.current.containerId, transition: I2, wasDragging: null != te.current.activeId }), oe = function(e3) {
+        let { disabled: r4, index: i3, node: a3, rect: s2 } = e3;
         const [d4, l3] = t.useState(null), c3 = t.useRef(i3);
         return o.useIsomorphicLayoutEffect(() => {
-          if (!r3 && i3 !== c3.current && a3.current) {
+          if (!r4 && i3 !== c3.current && a3.current) {
             const e4 = s2.current;
             if (e4) {
-              const t2 = n.getClientRect(a3.current, { ignoreTransform: true }), r4 = { x: e4.left - t2.left, y: e4.top - t2.top, scaleX: e4.width / t2.width, scaleY: e4.height / t2.height };
-              (r4.x || r4.y) && l3(r4);
+              const t2 = n.getClientRect(a3.current, { ignoreTransform: true }), r5 = { x: e4.left - t2.left, y: e4.top - t2.top, scaleX: e4.width / t2.width, scaleY: e4.height / t2.height };
+              (r5.x || r5.y) && l3(r5);
             }
           }
           i3 !== c3.current && (c3.current = i3);
-        }, [r3, i3, a3, s2]), t.useEffect(() => {
+        }, [r4, i3, a3, s2]), t.useEffect(() => {
           d4 && l3(null);
         }, [d4]), d4;
       }({ disabled: !ne, index: K, node: A2, rect: M });
@@ -2064,18 +2064,18 @@ var require_sortable_cjs_production_min = __commonJS({
       }, [ee]), { active: Y, activeIndex: w, attributes: z2, data: L, rect: M, index: K, newIndex: $, items: y, isOver: k, isSorting: J2, isDragging: F2, listeners: B, node: A2, overIndex: D, over: P2, setNodeRef: H2, setActivatorNodeRef: _, setDroppableNodeRef: X2, setDraggableNodeRef: U2, transform: null != oe ? oe : Z, transition: oe || re && te.current.newIndex === K ? b : V && !o.isKeyboardEvent(j) || !I2 ? void 0 : J2 || ne ? o.CSS.Transition.toString({ ...I2, property: "transform" }) : void 0 };
     }, exports2.verticalListSortingStrategy = (e2) => {
       var t2;
-      let { activeIndex: r2, activeNodeRect: n2, index: o2, rects: i2, overIndex: a2 } = e2;
-      const s2 = null != (t2 = i2[r2]) ? t2 : n2;
+      let { activeIndex: r3, activeNodeRect: n2, index: o2, rects: i2, overIndex: a2 } = e2;
+      const s2 = null != (t2 = i2[r3]) ? t2 : n2;
       if (!s2) return null;
-      if (o2 === r2) {
+      if (o2 === r3) {
         const e3 = i2[a2];
-        return e3 ? { x: 0, y: r2 < a2 ? e3.top + e3.height - (s2.top + s2.height) : e3.top - s2.top, ...c } : null;
+        return e3 ? { x: 0, y: r3 < a2 ? e3.top + e3.height - (s2.top + s2.height) : e3.top - s2.top, ...c } : null;
       }
-      const d3 = function(e3, t3, r3) {
+      const d3 = function(e3, t3, r4) {
         const n3 = e3[t3], o3 = e3[t3 - 1], i3 = e3[t3 + 1];
-        return n3 ? r3 < t3 ? o3 ? n3.top - (o3.top + o3.height) : i3 ? i3.top - (n3.top + n3.height) : 0 : i3 ? i3.top - (n3.top + n3.height) : o3 ? n3.top - (o3.top + o3.height) : 0 : 0;
-      }(i2, o2, r2);
-      return o2 > r2 && o2 <= a2 ? { x: 0, y: -s2.height - d3, ...c } : o2 < r2 && o2 >= a2 ? { x: 0, y: s2.height + d3, ...c } : { x: 0, y: 0, ...c };
+        return n3 ? r4 < t3 ? o3 ? n3.top - (o3.top + o3.height) : i3 ? i3.top - (n3.top + n3.height) : 0 : i3 ? i3.top - (n3.top + n3.height) : o3 ? n3.top - (o3.top + o3.height) : 0 : 0;
+      }(i2, o2, r3);
+      return o2 > r3 && o2 <= a2 ? { x: 0, y: -s2.height - d3, ...c } : o2 < r3 && o2 >= a2 ? { x: 0, y: s2.height + d3, ...c } : { x: 0, y: 0, ...c };
     };
   }
 });
@@ -2150,10 +2150,10 @@ function __rest(s, e) {
   return t;
 }
 function __decorate(decorators, target, key, desc) {
-  var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d2;
-  if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-  else for (var i = decorators.length - 1; i >= 0; i--) if (d2 = decorators[i]) r = (c < 3 ? d2(r) : c > 3 ? d2(target, key, r) : d2(target, key)) || r;
-  return c > 3 && r && Object.defineProperty(target, key, r), r;
+  var c = arguments.length, r2 = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d2;
+  if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r2 = Reflect.decorate(decorators, target, key, desc);
+  else for (var i = decorators.length - 1; i >= 0; i--) if (d2 = decorators[i]) r2 = (c < 3 ? d2(r2) : c > 3 ? d2(target, key, r2) : d2(target, key)) || r2;
+  return c > 3 && r2 && Object.defineProperty(target, key, r2), r2;
 }
 function __param(paramIndex, decorator) {
   return function(target, key) {
@@ -2322,14 +2322,14 @@ function __values(o) {
 function __read(o, n) {
   var m = typeof Symbol === "function" && o[Symbol.iterator];
   if (!m) return o;
-  var i = m.call(o), r, ar = [], e;
+  var i = m.call(o), r2, ar = [], e;
   try {
-    while ((n === void 0 || n-- > 0) && !(r = i.next()).done) ar.push(r.value);
+    while ((n === void 0 || n-- > 0) && !(r2 = i.next()).done) ar.push(r2.value);
   } catch (error) {
     e = { error };
   } finally {
     try {
-      if (r && !r.done && (m = i["return"])) m.call(i);
+      if (r2 && !r2.done && (m = i["return"])) m.call(i);
     } finally {
       if (e) throw e.error;
     }
@@ -2343,10 +2343,10 @@ function __spread() {
 }
 function __spreadArrays() {
   for (var s = 0, i = 0, il = arguments.length; i < il; i++) s += arguments[i].length;
-  for (var r = Array(s), k = 0, i = 0; i < il; i++)
+  for (var r2 = Array(s), k = 0, i = 0; i < il; i++)
     for (var a = arguments[i], j = 0, jl = a.length; j < jl; j++, k++)
-      r[k] = a[j];
-  return r;
+      r2[k] = a[j];
+  return r2;
 }
 function __spreadArray(to, from, pack) {
   if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
@@ -2388,8 +2388,8 @@ function __asyncGenerator(thisArg, _arguments, generator) {
       settle(q2[0][3], e);
     }
   }
-  function step(r) {
-    r.value instanceof __await ? Promise.resolve(r.value.v).then(fulfill, reject) : settle(q2[0][2], r);
+  function step(r2) {
+    r2.value instanceof __await ? Promise.resolve(r2.value.v).then(fulfill, reject) : settle(q2[0][2], r2);
   }
   function fulfill(value) {
     resume("next", value);
@@ -2500,14 +2500,14 @@ function __disposeResources(env2) {
     env2.error = env2.hasError ? new _SuppressedError(e, env2.error, "An error was suppressed during disposal.") : e;
     env2.hasError = true;
   }
-  var r, s = 0;
+  var r2, s = 0;
   function next() {
-    while (r = env2.stack.pop()) {
+    while (r2 = env2.stack.pop()) {
       try {
-        if (!r.async && s === 1) return s = 0, env2.stack.push(r), Promise.resolve().then(next);
-        if (r.dispose) {
-          var result = r.dispose.call(r.value);
-          if (r.async) return s |= 2, Promise.resolve(result).then(next, function(e) {
+        if (!r2.async && s === 1) return s = 0, env2.stack.push(r2), Promise.resolve().then(next);
+        if (r2.dispose) {
+          var result = r2.dispose.call(r2.value);
+          if (r2.async) return s |= 2, Promise.resolve(result).then(next, function(e) {
             fail(e);
             return next();
           });
@@ -2541,7 +2541,7 @@ var init_tslib_es6 = __esm({
       return extendStatics(d2, b);
     };
     __assign = function() {
-      __assign = Object.assign || function __assign2(t) {
+      __assign = Object.assign || function __assign3(t) {
         for (var s, i = 1, n = arguments.length; i < n; i++) {
           s = arguments[i];
           for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p)) t[p] = s[p];
@@ -2576,8 +2576,8 @@ var init_tslib_es6 = __esm({
       };
       return ownKeys(o);
     };
-    _SuppressedError = typeof SuppressedError === "function" ? SuppressedError : function(error, suppressed, message) {
-      var e = new Error(message);
+    _SuppressedError = typeof SuppressedError === "function" ? SuppressedError : function(error, suppressed, message2) {
+      var e = new Error(message2);
       return e.name = "SuppressedError", e.error = error, e.suppressed = suppressed, e;
     };
     tslib_es6_default = {
@@ -2735,10 +2735,10 @@ var require_useMergeRef = __commonJS({
     Object.defineProperty(exports2, "__esModule", { value: true });
     exports2.useMergeRefs = void 0;
     var tslib_1 = (init_tslib_es6(), __toCommonJS(tslib_es6_exports));
-    var React54 = tslib_1.__importStar(require("react"));
+    var React59 = tslib_1.__importStar(require("react"));
     var assignRef_1 = require_assignRef();
     var useRef_1 = require_useRef();
-    var useIsomorphicLayoutEffect = typeof window !== "undefined" ? React54.useLayoutEffect : React54.useEffect;
+    var useIsomorphicLayoutEffect = typeof window !== "undefined" ? React59.useLayoutEffect : React59.useEffect;
     var currentValues = /* @__PURE__ */ new WeakMap();
     function useMergeRefs(refs, defaultValue) {
       var callbackRef = (0, useRef_1.useCallbackRef)(defaultValue || null, function(newValue) {
@@ -2928,9 +2928,9 @@ var require_hook = __commonJS({
     function useRealSidecar(importer, effect) {
       var options = effect && effect.options || NO_OPTIONS;
       var couldUseCache = env_1.env.forceCache || env_1.env.isNode && !!options.ssr || !options.async;
-      var _a = (0, react_1.useState)(couldUseCache ? function() {
+      var _a2 = (0, react_1.useState)(couldUseCache ? function() {
         return cache.get(importer);
-      } : void 0), Car = _a[0], setCar = _a[1];
+      } : void 0), Car = _a2[0], setCar = _a2[1];
       var _b = (0, react_1.useState)(null), error = _b[0], setError = _b[1];
       (0, react_1.useEffect)(function() {
         if (!Car) {
@@ -2973,18 +2973,18 @@ var require_hoc = __commonJS({
     Object.defineProperty(exports2, "__esModule", { value: true });
     exports2.sidecar = void 0;
     var tslib_1 = (init_tslib_es6(), __toCommonJS(tslib_es6_exports));
-    var React54 = tslib_1.__importStar(require("react"));
+    var React59 = tslib_1.__importStar(require("react"));
     var hook_1 = require_hook();
     function sidecar(importer, errorComponent) {
       var ErrorCase = function() {
         return errorComponent;
       };
       return function Sidecar(props) {
-        var _a = (0, hook_1.useSidecar)(importer, props.sideCar), Car = _a[0], error = _a[1];
+        var _a2 = (0, hook_1.useSidecar)(importer, props.sideCar), Car = _a2[0], error = _a2[1];
         if (error && errorComponent) {
           return ErrorCase;
         }
-        return Car ? React54.createElement(Car, tslib_1.__assign({}, props)) : null;
+        return Car ? React59.createElement(Car, tslib_1.__assign({}, props)) : null;
       };
     }
     exports2.sidecar = sidecar;
@@ -3118,11 +3118,11 @@ var require_renderProp = __commonJS({
     Object.defineProperty(exports2, "__esModule", { value: true });
     exports2.renderCar = void 0;
     var tslib_1 = (init_tslib_es6(), __toCommonJS(tslib_es6_exports));
-    var React54 = tslib_1.__importStar(require("react"));
+    var React59 = tslib_1.__importStar(require("react"));
     var react_1 = require("react");
     function renderCar(WrappedComponent, defaults) {
-      function State(_a) {
-        var stateRef = _a.stateRef, props = _a.props;
+      function State(_a2) {
+        var stateRef = _a2.stateRef, props = _a2.props;
         var renderTarget = (0, react_1.useCallback)(function SideTarget() {
           var args = [];
           for (var _i = 0; _i < arguments.length; _i++) {
@@ -3133,10 +3133,10 @@ var require_renderProp = __commonJS({
           });
           return null;
         }, []);
-        return React54.createElement(WrappedComponent, tslib_1.__assign({}, props, { children: renderTarget }));
+        return React59.createElement(WrappedComponent, tslib_1.__assign({}, props, { children: renderTarget }));
       }
-      var Children5 = React54.memo(function(_a) {
-        var stateRef = _a.stateRef, defaultState = _a.defaultState, children = _a.children;
+      var Children5 = React59.memo(function(_a2) {
+        var stateRef = _a2.stateRef, defaultState = _a2.defaultState, children = _a2.children;
         var _b = (0, react_1.useState)(defaultState.current), state = _b[0], setState = _b[1];
         (0, react_1.useEffect)(function() {
           stateRef.current = setState;
@@ -3146,15 +3146,15 @@ var require_renderProp = __commonJS({
         return true;
       });
       return function Combiner(props) {
-        var defaultState = React54.useRef(defaults(props));
-        var ref = React54.useRef(function(state) {
+        var defaultState = React59.useRef(defaults(props));
+        var ref = React59.useRef(function(state) {
           return defaultState.current = state;
         });
-        return React54.createElement(
-          React54.Fragment,
+        return React59.createElement(
+          React59.Fragment,
           null,
-          React54.createElement(State, { stateRef: ref, props }),
-          React54.createElement(Children5, { stateRef: ref, defaultState, children: props.children })
+          React59.createElement(State, { stateRef: ref, props }),
+          React59.createElement(Children5, { stateRef: ref, defaultState, children: props.children })
         );
       };
     }
@@ -3169,9 +3169,9 @@ var require_exports = __commonJS({
     Object.defineProperty(exports2, "__esModule", { value: true });
     exports2.exportSidecar = void 0;
     var tslib_1 = (init_tslib_es6(), __toCommonJS(tslib_es6_exports));
-    var React54 = tslib_1.__importStar(require("react"));
-    var SideCar = function(_a) {
-      var sideCar = _a.sideCar, rest = tslib_1.__rest(_a, ["sideCar"]);
+    var React59 = tslib_1.__importStar(require("react"));
+    var SideCar = function(_a2) {
+      var sideCar = _a2.sideCar, rest = tslib_1.__rest(_a2, ["sideCar"]);
       if (!sideCar) {
         throw new Error("Sidecar: please provide `sideCar` property to import the right car");
       }
@@ -3179,7 +3179,7 @@ var require_exports = __commonJS({
       if (!Target) {
         throw new Error("Sidecar medium not found");
       }
-      return React54.createElement(Target, tslib_1.__assign({}, rest));
+      return React59.createElement(Target, tslib_1.__assign({}, rest));
     };
     SideCar.isSideCarExport = true;
     function exportSidecar(medium, exported) {
@@ -3244,29 +3244,29 @@ var require_UI = __commonJS({
     Object.defineProperty(exports2, "__esModule", { value: true });
     exports2.RemoveScroll = void 0;
     var tslib_1 = (init_tslib_es6(), __toCommonJS(tslib_es6_exports));
-    var React54 = tslib_1.__importStar(require("react"));
+    var React59 = tslib_1.__importStar(require("react"));
     var constants_1 = require_constants();
     var use_callback_ref_1 = require_es5();
     var medium_1 = require_medium2();
     var nothing = function() {
       return;
     };
-    var RemoveScroll2 = React54.forwardRef(function(props, parentRef) {
-      var ref = React54.useRef(null);
-      var _a = React54.useState({
+    var RemoveScroll2 = React59.forwardRef(function(props, parentRef) {
+      var ref = React59.useRef(null);
+      var _a2 = React59.useState({
         onScrollCapture: nothing,
         onWheelCapture: nothing,
         onTouchMoveCapture: nothing
-      }), callbacks = _a[0], setCallbacks = _a[1];
+      }), callbacks = _a2[0], setCallbacks = _a2[1];
       var forwardProps = props.forwardProps, children = props.children, className = props.className, removeScrollBar = props.removeScrollBar, enabled = props.enabled, shards = props.shards, sideCar = props.sideCar, noRelative = props.noRelative, noIsolation = props.noIsolation, inert = props.inert, allowPinchZoom = props.allowPinchZoom, _b = props.as, Container = _b === void 0 ? "div" : _b, gapMode = props.gapMode, rest = tslib_1.__rest(props, ["forwardProps", "children", "className", "removeScrollBar", "enabled", "shards", "sideCar", "noRelative", "noIsolation", "inert", "allowPinchZoom", "as", "gapMode"]);
       var SideCar = sideCar;
       var containerRef = (0, use_callback_ref_1.useMergeRefs)([ref, parentRef]);
       var containerProps = tslib_1.__assign(tslib_1.__assign({}, rest), callbacks);
-      return React54.createElement(
-        React54.Fragment,
+      return React59.createElement(
+        React59.Fragment,
         null,
-        enabled && React54.createElement(SideCar, { sideCar: medium_1.effectCar, removeScrollBar, shards, noRelative, noIsolation, inert, setCallbacks, allowPinchZoom: !!allowPinchZoom, lockRef: ref, gapMode }),
-        forwardProps ? React54.cloneElement(React54.Children.only(children), tslib_1.__assign(tslib_1.__assign({}, containerProps), { ref: containerRef })) : React54.createElement(Container, tslib_1.__assign({}, containerProps, { className, ref: containerRef }), children)
+        enabled && React59.createElement(SideCar, { sideCar: medium_1.effectCar, removeScrollBar, shards, noRelative, noIsolation, inert, setCallbacks, allowPinchZoom: !!allowPinchZoom, lockRef: ref, gapMode }),
+        forwardProps ? React59.cloneElement(React59.Children.only(children), tslib_1.__assign(tslib_1.__assign({}, containerProps), { ref: containerRef })) : React59.createElement(Container, tslib_1.__assign({}, containerProps, { className, ref: containerRef }), children)
       );
     });
     exports2.RemoveScroll = RemoveScroll2;
@@ -3365,12 +3365,12 @@ var require_hook2 = __commonJS({
     Object.defineProperty(exports2, "__esModule", { value: true });
     exports2.styleHookSingleton = void 0;
     var tslib_1 = (init_tslib_es6(), __toCommonJS(tslib_es6_exports));
-    var React54 = tslib_1.__importStar(require("react"));
+    var React59 = tslib_1.__importStar(require("react"));
     var singleton_1 = require_singleton();
     var styleHookSingleton = function() {
       var sheet = (0, singleton_1.stylesheetSingleton)();
       return function(styles, isDynamic) {
-        React54.useEffect(function() {
+        React59.useEffect(function() {
           sheet.add(styles);
           return function() {
             sheet.remove();
@@ -3391,8 +3391,8 @@ var require_component = __commonJS({
     var hook_1 = require_hook2();
     var styleSingleton = function() {
       var useStyle = (0, hook_1.styleHookSingleton)();
-      var Sheet = function(_a) {
-        var styles = _a.styles, dynamic = _a.dynamic;
+      var Sheet = function(_a2) {
+        var styles = _a2.styles, dynamic = _a2.dynamic;
         useStyle(styles, dynamic);
         return null;
       };
@@ -3435,7 +3435,7 @@ var require_utils = __commonJS({
       right: 0,
       gap: 0
     };
-    var parse = function(x) {
+    var parse2 = function(x) {
       return parseInt(x || "", 10) || 0;
     };
     var getOffset = function(gapMode) {
@@ -3443,7 +3443,7 @@ var require_utils = __commonJS({
       var left = cs[gapMode === "padding" ? "paddingLeft" : "marginLeft"];
       var top = cs[gapMode === "padding" ? "paddingTop" : "marginTop"];
       var right = cs[gapMode === "padding" ? "paddingRight" : "marginRight"];
-      return [parse(left), parse(top), parse(right)];
+      return [parse2(left), parse2(top), parse2(right)];
     };
     var getGapWidth = function(gapMode) {
       if (gapMode === void 0) {
@@ -3473,14 +3473,14 @@ var require_component2 = __commonJS({
     Object.defineProperty(exports2, "__esModule", { value: true });
     exports2.RemoveScrollBar = exports2.useLockAttribute = exports2.lockAttribute = void 0;
     var tslib_1 = (init_tslib_es6(), __toCommonJS(tslib_es6_exports));
-    var React54 = tslib_1.__importStar(require("react"));
+    var React59 = tslib_1.__importStar(require("react"));
     var react_style_singleton_1 = require_es54();
     var constants_1 = require_constants();
     var utils_1 = require_utils();
     var Style = (0, react_style_singleton_1.styleSingleton)();
     exports2.lockAttribute = "data-scroll-locked";
-    var getStyles = function(_a, allowRelative, gapMode, important) {
-      var left = _a.left, top = _a.top, right = _a.right, gap = _a.gap;
+    var getStyles = function(_a2, allowRelative, gapMode, important) {
+      var left = _a2.left, top = _a2.top, right = _a2.right, gap = _a2.gap;
       if (gapMode === void 0) {
         gapMode = "margin";
       }
@@ -3495,7 +3495,7 @@ var require_component2 = __commonJS({
       return isFinite(counter) ? counter : 0;
     };
     var useLockAttribute = function() {
-      React54.useEffect(function() {
+      React59.useEffect(function() {
         document.body.setAttribute(exports2.lockAttribute, (getCurrentUseCounter() + 1).toString());
         return function() {
           var newCounter = getCurrentUseCounter() - 1;
@@ -3508,13 +3508,13 @@ var require_component2 = __commonJS({
       }, []);
     };
     exports2.useLockAttribute = useLockAttribute;
-    var RemoveScrollBar = function(_a) {
-      var noRelative = _a.noRelative, noImportant = _a.noImportant, _b = _a.gapMode, gapMode = _b === void 0 ? "margin" : _b;
+    var RemoveScrollBar = function(_a2) {
+      var noRelative = _a2.noRelative, noImportant = _a2.noImportant, _b = _a2.gapMode, gapMode = _b === void 0 ? "margin" : _b;
       (0, exports2.useLockAttribute)();
-      var gap = React54.useMemo(function() {
+      var gap = React59.useMemo(function() {
         return (0, utils_1.getGapWidth)(gapMode);
       }, [gapMode]);
-      return React54.createElement(Style, { styles: getStyles(gap, !noRelative, gapMode, !noImportant ? "!important" : "") });
+      return React59.createElement(Style, { styles: getStyles(gap, !noRelative, gapMode, !noImportant ? "!important" : "") });
     };
     exports2.RemoveScrollBar = RemoveScrollBar;
   }
@@ -3611,7 +3611,7 @@ var require_handleScroll = __commonJS({
         }
         var isScrollable = elementCouldBeScrolled(axis, current);
         if (isScrollable) {
-          var _a = getScrollVariables(axis, current), scrollHeight = _a[1], clientHeight = _a[2];
+          var _a2 = getScrollVariables(axis, current), scrollHeight = _a2[1], clientHeight = _a2[2];
           if (scrollHeight > clientHeight) {
             return true;
           }
@@ -3621,16 +3621,16 @@ var require_handleScroll = __commonJS({
       return false;
     };
     exports2.locationCouldBeScrolled = locationCouldBeScrolled;
-    var getVScrollVariables = function(_a) {
-      var scrollTop = _a.scrollTop, scrollHeight = _a.scrollHeight, clientHeight = _a.clientHeight;
+    var getVScrollVariables = function(_a2) {
+      var scrollTop = _a2.scrollTop, scrollHeight = _a2.scrollHeight, clientHeight = _a2.clientHeight;
       return [
         scrollTop,
         scrollHeight,
         clientHeight
       ];
     };
-    var getHScrollVariables = function(_a) {
-      var scrollLeft = _a.scrollLeft, scrollWidth = _a.scrollWidth, clientWidth = _a.clientWidth;
+    var getHScrollVariables = function(_a2) {
+      var scrollLeft = _a2.scrollLeft, scrollWidth = _a2.scrollWidth, clientWidth = _a2.clientWidth;
       return [
         scrollLeft,
         scrollWidth,
@@ -3659,7 +3659,7 @@ var require_handleScroll = __commonJS({
         if (!target) {
           break;
         }
-        var _a = getScrollVariables(axis, target), position = _a[0], scroll_1 = _a[1], capacity = _a[2];
+        var _a2 = getScrollVariables(axis, target), position = _a2[0], scroll_1 = _a2[1], capacity = _a2[2];
         var elementScroll = scroll_1 - capacity - directionFactor * position;
         if (position || elementScroll) {
           if (elementCouldBeScrolled(axis, target)) {
@@ -3692,7 +3692,7 @@ var require_SideEffect = __commonJS({
     Object.defineProperty(exports2, "__esModule", { value: true });
     exports2.RemoveScrollSideCar = exports2.getDeltaXY = exports2.getTouchXY = void 0;
     var tslib_1 = (init_tslib_es6(), __toCommonJS(tslib_es6_exports));
-    var React54 = tslib_1.__importStar(require("react"));
+    var React59 = tslib_1.__importStar(require("react"));
     var react_remove_scroll_bar_1 = require_es55();
     var react_style_singleton_1 = require_es54();
     var aggresiveCapture_1 = require_aggresiveCapture();
@@ -3717,16 +3717,16 @@ var require_SideEffect = __commonJS({
     var idCounter = 0;
     var lockStack = [];
     function RemoveScrollSideCar(props) {
-      var shouldPreventQueue = React54.useRef([]);
-      var touchStartRef = React54.useRef([0, 0]);
-      var activeAxis = React54.useRef();
-      var id = React54.useState(idCounter++)[0];
-      var Style = React54.useState(react_style_singleton_1.styleSingleton)[0];
-      var lastProps = React54.useRef(props);
-      React54.useEffect(function() {
+      var shouldPreventQueue = React59.useRef([]);
+      var touchStartRef = React59.useRef([0, 0]);
+      var activeAxis = React59.useRef();
+      var id = React59.useState(idCounter++)[0];
+      var Style = React59.useState(react_style_singleton_1.styleSingleton)[0];
+      var lastProps = React59.useRef(props);
+      React59.useEffect(function() {
         lastProps.current = props;
       }, [props]);
-      React54.useEffect(function() {
+      React59.useEffect(function() {
         if (props.inert) {
           document.body.classList.add("block-interactivity-".concat(id));
           var allow_1 = tslib_1.__spreadArray([props.lockRef.current], (props.shards || []).map(extractRef), true).filter(Boolean);
@@ -3742,7 +3742,7 @@ var require_SideEffect = __commonJS({
         }
         return;
       }, [props.inert, props.lockRef.current, props.shards]);
-      var shouldCancelEvent = React54.useCallback(function(event, parent) {
+      var shouldCancelEvent = React59.useCallback(function(event, parent) {
         if ("touches" in event && event.touches.length === 2 || event.type === "wheel" && event.ctrlKey) {
           return !lastProps.current.allowPinchZoom;
         }
@@ -3778,7 +3778,7 @@ var require_SideEffect = __commonJS({
         var cancelingAxis = activeAxis.current || currentAxis;
         return (0, handleScroll_1.handleScroll)(cancelingAxis, parent, event, cancelingAxis === "h" ? deltaX : deltaY, true);
       }, []);
-      var shouldPrevent = React54.useCallback(function(_event) {
+      var shouldPrevent = React59.useCallback(function(_event) {
         var event = _event;
         if (!lockStack.length || lockStack[lockStack.length - 1] !== Style) {
           return;
@@ -3805,7 +3805,7 @@ var require_SideEffect = __commonJS({
           }
         }
       }, []);
-      var shouldCancel = React54.useCallback(function(name, delta, target, should) {
+      var shouldCancel = React59.useCallback(function(name, delta, target, should) {
         var event = { name, delta, target, should, shadowParent: getOutermostShadowParent(target) };
         shouldPreventQueue.current.push(event);
         setTimeout(function() {
@@ -3814,17 +3814,17 @@ var require_SideEffect = __commonJS({
           });
         }, 1);
       }, []);
-      var scrollTouchStart = React54.useCallback(function(event) {
+      var scrollTouchStart = React59.useCallback(function(event) {
         touchStartRef.current = (0, exports2.getTouchXY)(event);
         activeAxis.current = void 0;
       }, []);
-      var scrollWheel = React54.useCallback(function(event) {
+      var scrollWheel = React59.useCallback(function(event) {
         shouldCancel(event.type, (0, exports2.getDeltaXY)(event), event.target, shouldCancelEvent(event, props.lockRef.current));
       }, []);
-      var scrollTouchMove = React54.useCallback(function(event) {
+      var scrollTouchMove = React59.useCallback(function(event) {
         shouldCancel(event.type, (0, exports2.getTouchXY)(event), event.target, shouldCancelEvent(event, props.lockRef.current));
       }, []);
-      React54.useEffect(function() {
+      React59.useEffect(function() {
         lockStack.push(Style);
         props.setCallbacks({
           onScrollCapture: scrollWheel,
@@ -3844,11 +3844,11 @@ var require_SideEffect = __commonJS({
         };
       }, []);
       var removeScrollBar = props.removeScrollBar, inert = props.inert;
-      return React54.createElement(
-        React54.Fragment,
+      return React59.createElement(
+        React59.Fragment,
         null,
-        inert ? React54.createElement(Style, { styles: generateStyle(id) }) : null,
-        removeScrollBar ? React54.createElement(react_remove_scroll_bar_1.RemoveScrollBar, { noRelative: props.noRelative, gapMode: props.gapMode }) : null
+        inert ? React59.createElement(Style, { styles: generateStyle(id) }) : null,
+        removeScrollBar ? React59.createElement(react_remove_scroll_bar_1.RemoveScrollBar, { noRelative: props.noRelative, gapMode: props.gapMode }) : null
       );
     }
     exports2.RemoveScrollSideCar = RemoveScrollSideCar;
@@ -3884,11 +3884,11 @@ var require_Combination = __commonJS({
     "use strict";
     Object.defineProperty(exports2, "__esModule", { value: true });
     var tslib_1 = (init_tslib_es6(), __toCommonJS(tslib_es6_exports));
-    var React54 = tslib_1.__importStar(require("react"));
+    var React59 = tslib_1.__importStar(require("react"));
     var UI_1 = require_UI();
     var sidecar_1 = tslib_1.__importDefault(require_sidecar());
-    var ReactRemoveScroll = React54.forwardRef(function(props, ref) {
-      return React54.createElement(UI_1.RemoveScroll, tslib_1.__assign({}, props, { ref, sideCar: sidecar_1.default }));
+    var ReactRemoveScroll = React59.forwardRef(function(props, ref) {
+      return React59.createElement(UI_1.RemoveScroll, tslib_1.__assign({}, props, { ref, sideCar: sidecar_1.default }));
     });
     ReactRemoveScroll.classNames = UI_1.RemoveScroll.classNames;
     exports2.default = ReactRemoveScroll;
@@ -4108,7 +4108,7 @@ var init_FoodItemModal = __esm({
                 /* @__PURE__ */ (0, import_jsx_runtime37.jsx)("p", { className: "text-body mb-6", children: item.description }),
                 /* @__PURE__ */ (0, import_jsx_runtime37.jsxs)("div", { children: [
                   /* @__PURE__ */ (0, import_jsx_runtime37.jsx)("h4", { className: "font-bold text-lg mb-2", children: "Ingredients:" }),
-                  /* @__PURE__ */ (0, import_jsx_runtime37.jsx)("ul", { className: "list-disc list-inside text-neutral-600 space-y-1", children: item.ingredients.map((ingredient, index) => /* @__PURE__ */ (0, import_jsx_runtime37.jsx)("li", { children: ingredient }, index)) })
+                  /* @__PURE__ */ (0, import_jsx_runtime37.jsx)("ul", { className: "list-disc list-inside text-neutral-600 space-y-1", children: item.ingredients.map((ingredient, index3) => /* @__PURE__ */ (0, import_jsx_runtime37.jsx)("li", { children: ingredient }, index3)) })
                 ] })
               ]
             }
@@ -4337,9 +4337,9 @@ __export(StaticApp_exports, {
   default: () => StaticApp
 });
 module.exports = __toCommonJS(StaticApp_exports);
-var import_react40 = __toESM(require("react"));
-var import_react_router_dom7 = require("react-router-dom");
-var import_react_helmet_async10 = __toESM(require_lib());
+var import_react45 = __toESM(require("react"));
+var import_react_router_dom8 = require("react-router-dom");
+var import_react_helmet_async11 = __toESM(require_lib());
 
 // src/components/layout/Header.jsx
 var import_react = __toESM(require("react"));
@@ -4369,8 +4369,8 @@ var Header = () => {
       document.body.style.overflow = "auto";
     };
   }, [isOpen]);
-  const handleNavigate = (index) => {
-    const page = FULLPAGE_PAGES[index];
+  const handleNavigate = (index3) => {
+    const page = FULLPAGE_PAGES[index3];
     if (!page) return;
     const hash = page.id === "home" ? "" : `#${page.id}`;
     const target = hash ? `/${hash}` : "/";
@@ -4380,7 +4380,7 @@ var Header = () => {
       return;
     }
     if (typeof window !== "undefined" && typeof window.scrollToPage === "function") {
-      window.scrollToPage(index);
+      window.scrollToPage(index3);
     }
     if (hash) {
       if (location.hash !== hash) {
@@ -4448,8 +4448,8 @@ var Header = () => {
               ]
             }
           ),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("nav", { className: "hidden md:flex gap-1", children: navItems.map((page, index) => {
-            const pageIndex = index + 1;
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("nav", { className: "hidden md:flex gap-1", children: navItems.map((page, index3) => {
+            const pageIndex = index3 + 1;
             return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
               "button",
               {
@@ -4521,11 +4521,11 @@ var Header = () => {
                   }
                 },
                 className: "flex flex-col items-center justify-center h-full space-y-6 px-6",
-                children: FULLPAGE_PAGES.map((page, index) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+                children: FULLPAGE_PAGES.map((page, index3) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
                   import_framer_motion.motion.button,
                   {
                     type: "button",
-                    onClick: () => handleNavigate(index),
+                    onClick: () => handleNavigate(index3),
                     className: "text-3xl uppercase text-center text-slate-900",
                     style: { fontFamily: "'Office Code Pro', monospace" },
                     variants: { hidden: { y: 10, opacity: 0 }, show: { y: 0, opacity: 1 } },
@@ -4678,8 +4678,8 @@ var PUBLIC_ROUTES = [
   },
   {
     path: "/sale",
-    title: "Shop - Local Effort Food Co.",
-    description: "Order from Local Effort Food Co. Fresh, local, Minneapolis-made.",
+    title: "Shop Seasonal Food Drops & Preorders - Local Effort Food Co.",
+    description: "Shop the Local Effort sale for seasonal food drops, pantry goods, and limited preorders with Minneapolis pickup and local delivery.",
     prerender: true
   },
   {
@@ -4716,7 +4716,7 @@ var PUBLIC_ROUTES = [
     path: "/february",
     title: "February Menu - Local Effort Food Co.",
     description: "February seasonal menu from Local Effort Food Co.",
-    prerender: false
+    prerender: true
   },
   {
     path: "/psyche",
@@ -4784,7 +4784,7 @@ var buildOgImageUrl = () => {
 };
 var DefaultSeo = () => {
   const location = (0, import_react_router_dom2.useLocation)();
-  const routeMeta = PUBLIC_ROUTES.find((r) => r.path === location.pathname);
+  const routeMeta = PUBLIC_ROUTES.find((r2) => r2.path === location.pathname);
   const sectionMeta = SECTION_META[location.hash] || null;
   const pageTitle = sectionMeta?.title || routeMeta?.title || SITE_NAME;
   const pageDescription = sectionMeta?.description || routeMeta?.description || DEFAULT_DESCRIPTION;
@@ -4997,10 +4997,10 @@ function addToSet(set, array) {
   return set;
 }
 function cleanArray(array) {
-  for (let index = 0; index < array.length; index++) {
-    const isPropertyExist = objectHasOwnProperty(array, index);
+  for (let index3 = 0; index3 < array.length; index3++) {
+    const isPropertyExist = objectHasOwnProperty(array, index3);
     if (!isPropertyExist) {
-      array[index] = null;
+      array[index3] = null;
     }
   }
   return array;
@@ -5166,7 +5166,7 @@ function createDOMPurify() {
   const remove = lookupGetter(ElementPrototype, "remove");
   const getNextSibling = lookupGetter(ElementPrototype, "nextSibling");
   const getChildNodes = lookupGetter(ElementPrototype, "childNodes");
-  const getParentNode = lookupGetter(ElementPrototype, "parentNode");
+  const getParentNode2 = lookupGetter(ElementPrototype, "parentNode");
   if (typeof HTMLTemplateElement === "function") {
     const template = document2.createElement("template");
     if (template.content && template.content.ownerDocument) {
@@ -5185,7 +5185,7 @@ function createDOMPurify() {
     importNode
   } = originalDocument;
   let hooks = _createHooksMap();
-  DOMPurify.isSupported = typeof entries === "function" && typeof getParentNode === "function" && implementation && implementation.createHTMLDocument !== void 0;
+  DOMPurify.isSupported = typeof entries === "function" && typeof getParentNode2 === "function" && implementation && implementation.createHTMLDocument !== void 0;
   const {
     MUSTACHE_EXPR: MUSTACHE_EXPR2,
     ERB_EXPR: ERB_EXPR2,
@@ -5431,7 +5431,7 @@ function createDOMPurify() {
   const ALL_SVG_TAGS = addToSet({}, [...svg$1, ...svgFilters, ...svgDisallowed]);
   const ALL_MATHML_TAGS = addToSet({}, [...mathMl$1, ...mathMlDisallowed]);
   const _checkValidNamespace = function _checkValidNamespace2(element) {
-    let parent = getParentNode(element);
+    let parent = getParentNode2(element);
     if (!parent || !parent.tagName) {
       parent = {
         namespaceURI: NAMESPACE,
@@ -5480,7 +5480,7 @@ function createDOMPurify() {
       element: node
     });
     try {
-      getParentNode(node).removeChild(node);
+      getParentNode2(node).removeChild(node);
     } catch (_) {
       remove(node);
     }
@@ -5601,7 +5601,7 @@ function createDOMPurify() {
         }
       }
       if (KEEP_CONTENT && !FORBID_CONTENTS[tagName]) {
-        const parentNode = getParentNode(currentNode) || currentNode.parentNode;
+        const parentNode = getParentNode2(currentNode) || currentNode.parentNode;
         const childNodes = getChildNodes(currentNode) || currentNode.childNodes;
         if (childNodes && parentNode) {
           const childCount = childNodes.length;
@@ -5903,8 +5903,8 @@ function createDOMPurify() {
   };
   DOMPurify.removeHook = function(entryPoint, hookFunction) {
     if (hookFunction !== void 0) {
-      const index = arrayLastIndexOf(hooks[entryPoint], hookFunction);
-      return index === -1 ? void 0 : arraySplice(hooks[entryPoint], index, 1)[0];
+      const index3 = arrayLastIndexOf(hooks[entryPoint], hookFunction);
+      return index3 === -1 ? void 0 : arraySplice(hooks[entryPoint], index3, 1)[0];
     }
     return arrayPop(hooks[entryPoint]);
   };
@@ -5934,16 +5934,16 @@ var useFullPageScroll = (sectionRefs, enableKeyboard = true, scrollDirection = "
   const [activeSection, setActiveSection] = (0, import_react4.useState)(0);
   const [moveDirection, setMoveDirection] = (0, import_react4.useState)(0);
   const lastScrollPos = (0, import_react4.useRef)(0);
-  const scrollToSection = (0, import_react4.useCallback)((index) => {
-    if (index < 0 || index >= sectionRefs.length) return;
-    const section = sectionRefs[index]?.current;
+  const scrollToSection = (0, import_react4.useCallback)((index3) => {
+    if (index3 < 0 || index3 >= sectionRefs.length) return;
+    const section = sectionRefs[index3]?.current;
     if (section) {
       section.scrollIntoView({
         behavior: "smooth",
         block: scrollDirection === "horizontal" ? "nearest" : "start",
         inline: scrollDirection === "horizontal" ? "start" : "nearest"
       });
-      setMoveDirection(index > activeSection ? 1 : -1);
+      setMoveDirection(index3 > activeSection ? 1 : -1);
     }
   }, [sectionRefs, activeSection, scrollDirection]);
   (0, import_react4.useEffect)(() => {
@@ -5956,11 +5956,11 @@ var useFullPageScroll = (sectionRefs, enableKeyboard = true, scrollDirection = "
     const observer = new IntersectionObserver((entries2) => {
       entries2.forEach((entry) => {
         if (entry.isIntersecting) {
-          const index = sectionRefs.findIndex(
+          const index3 = sectionRefs.findIndex(
             (ref) => ref.current === entry.target
           );
-          if (index !== -1 && index !== activeSection) {
-            setActiveSection(index);
+          if (index3 !== -1 && index3 !== activeSection) {
+            setActiveSection(index3);
             const currentScrollPos = scrollDirection === "horizontal" ? window.scrollX : window.scrollY;
             setMoveDirection(currentScrollPos > lastScrollPos.current ? 1 : -1);
             lastScrollPos.current = currentScrollPos;
@@ -6082,11 +6082,11 @@ var FullPageContainer = ({
       }
     }
   }, [location.hash, pages, scrollToPage]);
-  const childrenWithRefs = import_react5.Children.map(children, (child, index) => {
+  const childrenWithRefs = import_react5.Children.map(children, (child, index3) => {
     if (!child) return null;
     return (0, import_react5.cloneElement)(child, {
-      ref: pageRefs.current[index],
-      id: pages[index]?.id || child.props.id
+      ref: pageRefs.current[index3],
+      id: pages[index3]?.id || child.props.id
     });
   });
   return /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(
@@ -6526,17 +6526,17 @@ function createContextScope(scopeName, createContextScopeDeps = []) {
   let defaultContexts = [];
   function createContext32(rootComponentName, defaultContext) {
     const BaseContext = React10.createContext(defaultContext);
-    const index = defaultContexts.length;
+    const index3 = defaultContexts.length;
     defaultContexts = [...defaultContexts, defaultContext];
     const Provider = (props) => {
       const { scope, children, ...context } = props;
-      const Context = scope?.[scopeName]?.[index] || BaseContext;
+      const Context = scope?.[scopeName]?.[index3] || BaseContext;
       const value = React10.useMemo(() => context, Object.values(context));
       return /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(Context.Provider, { value, children });
     };
     Provider.displayName = rootComponentName + "Provider";
     function useContext22(consumerName, scope) {
-      const Context = scope?.[scopeName]?.[index] || BaseContext;
+      const Context = scope?.[scopeName]?.[index3] || BaseContext;
       const context = React10.useContext(Context);
       if (context) return context;
       if (defaultContext !== void 0) return defaultContext;
@@ -6855,9 +6855,9 @@ var DismissableLayer = React18.forwardRef(
     const layers = Array.from(context.layers);
     const [highestLayerWithOutsidePointerEventsDisabled] = [...context.layersWithOutsidePointerEventsDisabled].slice(-1);
     const highestLayerWithOutsidePointerEventsDisabledIndex = layers.indexOf(highestLayerWithOutsidePointerEventsDisabled);
-    const index = node ? layers.indexOf(node) : -1;
+    const index3 = node ? layers.indexOf(node) : -1;
     const isBodyPointerEventsDisabled = context.layersWithOutsidePointerEventsDisabled.size > 0;
-    const isPointerEventsEnabled = index >= highestLayerWithOutsidePointerEventsDisabledIndex;
+    const isPointerEventsEnabled = index3 >= highestLayerWithOutsidePointerEventsDisabledIndex;
     const pointerDownOutside = usePointerDownOutside((event) => {
       const target = event.target;
       const isPointerDownOnBranch = [...context.branches].some((branch) => branch.contains(target));
@@ -6875,7 +6875,7 @@ var DismissableLayer = React18.forwardRef(
       if (!event.defaultPrevented) onDismiss?.();
     }, ownerDocument);
     useEscapeKeydown((event) => {
-      const isHighestLayer = index === context.layers.size - 1;
+      const isHighestLayer = index3 === context.layers.size - 1;
       if (!isHighestLayer) return;
       onEscapeKeyDown?.(event);
       if (!event.defaultPrevented && onDismiss) {
@@ -7223,9 +7223,9 @@ function createFocusScopesStack() {
 }
 function arrayRemove(array, item) {
   const updatedArray = [...array];
-  const index = updatedArray.indexOf(item);
-  if (index !== -1) {
-    updatedArray.splice(index, 1);
+  const index3 = updatedArray.indexOf(item);
+  if (index3 !== -1) {
+    updatedArray.splice(index3, 1);
   }
   return updatedArray;
 }
@@ -7801,9 +7801,9 @@ var sizeClasses = {
   sm: "h-9 px-3 text-sm",
   icon: "h-10 w-10"
 };
-var Button = React27.forwardRef(({ className = "", variant = "default", size = "default", ...props }, ref) => {
+var Button = React27.forwardRef(({ className = "", variant = "default", size: size4 = "default", ...props }, ref) => {
   const variantClass = variantClasses[variant] || variantClasses.default;
-  const sizeClass = sizeClasses[size] || sizeClasses.default;
+  const sizeClass = sizeClasses[size4] || sizeClasses.default;
   return /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(
     "button",
     {
@@ -8351,7 +8351,7 @@ var getImageScale = (id) => {
 var GalleryItem = ({
   id,
   img,
-  index,
+  index: index3,
   pos,
   layoutReady,
   onSelect,
@@ -8402,7 +8402,7 @@ var GalleryItem = ({
           draggable: false,
           loading: "eager",
           decoding: "async",
-          fetchpriority: index < 20 ? "high" : "auto",
+          fetchpriority: index3 < 20 ? "high" : "auto",
           style: {
             transition: "none",
             display: "block"
@@ -8415,7 +8415,7 @@ var GalleryItem = ({
           alt: img.context?.alt || "Gallery image",
           width: Math.floor(pos.width),
           className: "gallery-image w-full h-full block select-none pointer-events-none object-cover",
-          disableLazy: index < 20
+          disableLazy: index3 < 20
         }
       )
     }
@@ -8581,11 +8581,11 @@ var FullPageDemoPage = () => {
   };
   const clampGuestCount = (value, config) => {
     if (value === "" || value === null || value === void 0) return 0;
-    let count3 = parseGuestCount(value);
-    if (count3 <= 0) return 0;
-    if (config?.minGuests && count3 < config.minGuests) count3 = config.minGuests;
-    if (config?.maxGuests && count3 > config.maxGuests) count3 = config.maxGuests;
-    return count3;
+    let count4 = parseGuestCount(value);
+    if (count4 <= 0) return 0;
+    if (config?.minGuests && count4 < config.minGuests) count4 = config.minGuests;
+    if (config?.maxGuests && count4 > config.maxGuests) count4 = config.maxGuests;
+    return count4;
   };
   const getDepositPercent = (form) => {
     const override = parseFloat(form.depositOverridePercent);
@@ -8881,12 +8881,12 @@ var FullPageDemoPage = () => {
       const data = await res.json();
       if (!res.ok) throw new Error(data?.error || "Failed to load saved estimates");
       const items = Array.isArray(data?.items) ? data.items : [];
-      const match = items.find((item) => item.type === type);
-      if (!match) {
+      const match2 = items.find((item) => item.type === type);
+      if (!match2) {
         setSmallEventsNotice("No saved estimate found for this event type.");
         return;
       }
-      applyEstimateToForm(type, match);
+      applyEstimateToForm(type, match2);
       setSmallEventsNotice("Loaded your saved estimate.");
     } catch (error) {
       console.error("Load estimate error:", error);
@@ -9068,13 +9068,13 @@ var FullPageDemoPage = () => {
       const statusLabel = slot.status === "open" ? "Open" : slot.status === "blocked" ? "Blocked" : isHeldByCurrent ? "Your hold" : slot.status === "confirmed" ? "Confirmed" : "Held";
       return { hold, isHeldByCurrent, isUnavailable, statusKey, statusLabel };
     };
-    const buildCalendarMonths = (count3 = 2) => {
+    const buildCalendarMonths = (count4 = 2) => {
       const today = /* @__PURE__ */ new Date();
       const firstSlotDate = slots.length ? new Date(slots[0].date) : today;
       const base = firstSlotDate > today ? firstSlotDate : today;
       const cursor = new Date(base.getFullYear(), base.getMonth(), 1);
       const months = [];
-      for (let i = 0; i < count3; i += 1) {
+      for (let i = 0; i < count4; i += 1) {
         const year = cursor.getFullYear();
         const month = cursor.getMonth();
         const monthStart = new Date(year, month, 1);
@@ -9784,11 +9784,11 @@ var FullPageDemoPage = () => {
       ] })
     ] });
   };
-  const handlePageChange = (index) => {
-    setActivePage(index);
+  const handlePageChange = (index3) => {
+    setActivePage(index3);
     document.querySelectorAll("nav button[data-menu-btn]").forEach((btn) => {
       const pageIndex = parseInt(btn.getAttribute("data-page-index"), 10);
-      const isActive = Number.isFinite(pageIndex) && pageIndex === index;
+      const isActive = Number.isFinite(pageIndex) && pageIndex === index3;
       btn.dataset.active = isActive ? "true" : "false";
       btn.style.backgroundColor = isActive ? BRAND_TOKENS.bgStrong : "transparent";
       btn.style.color = isActive ? BRAND_TOKENS.textInverse : BRAND_TOKENS.textPrimary;
@@ -9833,8 +9833,8 @@ var FullPageDemoPage = () => {
   }, []);
   (0, import_react13.useEffect)(() => {
     if (typeof document === "undefined") return;
-    const offset = announcementVisible && activePage === 0 ? `${ANNOUNCEMENT_HEIGHT}px` : "0px";
-    document.documentElement.style.setProperty("--announcement-offset", offset);
+    const offset4 = announcementVisible && activePage === 0 ? `${ANNOUNCEMENT_HEIGHT}px` : "0px";
+    document.documentElement.style.setProperty("--announcement-offset", offset4);
     return () => {
       document.documentElement.style.removeProperty("--announcement-offset");
     };
@@ -9916,7 +9916,7 @@ var FullPageDemoPage = () => {
   }, []);
   (0, import_react13.useEffect)(() => {
     let mounted = true;
-    fetch("/api/search-images?query=partner&per_page=48").then((r) => r.ok ? r.json() : null).then((data) => {
+    fetch("/api/search-images?query=partner&per_page=48").then((r2) => r2.ok ? r2.json() : null).then((data) => {
       if (!mounted || !data || !Array.isArray(data.images)) return;
       const items = data.images.map((img) => {
         const ctx = img.context && (img.context.custom || img.context);
@@ -9937,10 +9937,10 @@ var FullPageDemoPage = () => {
     setWholesaleMenuLoading(true);
     setWholesaleMenuError("");
     try {
-      const mapped = HAPPY_MONDAY_MENU_ITEMS.map((item, index) => {
+      const mapped = HAPPY_MONDAY_MENU_ITEMS.map((item, index3) => {
         const priceValue = Number(item.price);
         return {
-          id: item.id || `${item.name || "item"}-${index}`,
+          id: item.id || `${item.name || "item"}-${index3}`,
           name: item.name || "Menu item",
           category: item.category || "Menu",
           price: formatCurrency(Number.isFinite(priceValue) ? priceValue : 0, {
@@ -12918,12 +12918,34 @@ var ReleasesPage_default = ReleasesPage;
 // src/pages/SalePage.jsx
 var import_react26 = __toESM(require("react"));
 var import_react_helmet_async5 = __toESM(require_lib());
+var import_react_router_dom6 = require("react-router-dom");
 
 // src/store/components/ProductGrid.jsx
 var import_react24 = __toESM(require("react"));
 
 // src/store/components/ProductTile.jsx
 var import_react20 = __toESM(require("react"));
+
+// src/store/data/ptToHtml.js
+function ptToHtml(blocks) {
+  if (!Array.isArray(blocks) || blocks.length === 0) {
+    return "";
+  }
+  try {
+    const lines = blocks.map((block) => {
+      if (!block || block._type !== "block" || !Array.isArray(block.children)) {
+        return "";
+      }
+      const text2 = block.children.map((child) => child && typeof child.text === "string" ? child.text : "").join("").trim();
+      return text2;
+    }).filter(Boolean);
+    return lines.join("\n\n");
+  } catch (error) {
+    return "";
+  }
+}
+
+// src/store/components/ProductTile.jsx
 var import_jsx_runtime27 = require("react/jsx-runtime");
 var fmt = (cents) => `$${(cents / 100).toFixed(2)}`;
 function ProductTile({ product, sku, onSelect }) {
@@ -12931,6 +12953,27 @@ function ProductTile({ product, sku, onSelect }) {
   const imgRef = (0, import_react20.useRef)(null);
   const primary = Array.isArray(product.images) ? product.images[0] : null;
   const displayPrice = product.salePrice ?? product.price;
+  const summary = (0, import_react20.useMemo)(() => {
+    const text2 = (ptToHtml(product?.longDescriptionBlocks) || product?.longDescription || product?.shortDescription || "").replace(/\s+/g, " ").trim();
+    if (!text2) return "";
+    return text2.length > 150 ? `${text2.slice(0, 147).trim()}...` : text2;
+  }, [product]);
+  const detailBits = (0, import_react20.useMemo)(() => {
+    const bits = [];
+    if (product.inventoryManaged && typeof product.inventory === "number") {
+      bits.push(product.inventory > 0 ? `${product.inventory} left` : "Sold out");
+    } else {
+      bits.push("Limited drop");
+    }
+    if (Array.isArray(product.addOns) && product.addOns.length > 0) {
+      bits.push(`${product.addOns.length} add-on${product.addOns.length === 1 ? "" : "s"}`);
+    } else if (Array.isArray(product.variants) && product.variants.length > 0) {
+      bits.push(`${product.variants.length} option${product.variants.length === 1 ? "" : "s"}`);
+    } else {
+      bits.push("Open for details");
+    }
+    return bits.join(" | ");
+  }, [product]);
   const inCart = Object.keys(map || {}).some((k) => k.startsWith(product.id));
   return /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)(
     "button",
@@ -12940,7 +12983,7 @@ function ProductTile({ product, sku, onSelect }) {
       onClick: () => onSelect(product),
       "aria-label": `View ${product.title}`,
       children: [
-        /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)("div", { className: "le-tile-image-wrap", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)("span", { className: "le-tile-image-wrap", children: [
           primary ? /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(
             "img",
             {
@@ -12950,14 +12993,27 @@ function ProductTile({ product, sku, onSelect }) {
               loading: "lazy",
               className: "le-tile-image"
             }
-          ) : /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("div", { className: "le-tile-image-placeholder", "aria-hidden": "true" }),
-          inCart && /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("span", { className: "le-tile-in-cart", "aria-label": "In bag" })
+          ) : /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("span", { className: "le-tile-image-placeholder", "aria-hidden": "true" }),
+          inCart && /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("span", { className: "le-tile-in-cart", "aria-label": "In bag" }),
+          product.salePrice && /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("span", { className: "le-tile-badge", children: "Sale" })
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)("div", { className: "le-tile-meta", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)("span", { className: "le-tile-meta", children: [
           /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("span", { className: "le-tile-sku", children: sku }),
           /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)("span", { className: "le-tile-price", children: [
-            product.salePrice && /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("span", { className: "le-tile-price-original", children: fmt(product.price) }),
+            product.salePrice && /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)(import_jsx_runtime27.Fragment, { children: [
+              /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("span", { className: "sr-only", children: "Original price: " }),
+              /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("span", { className: "le-tile-price-original", children: fmt(product.price) }),
+              /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("span", { className: "sr-only", children: "Sale price: " })
+            ] }),
             fmt(displayPrice)
+          ] })
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)("span", { className: "le-tile-copy", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("span", { className: "le-tile-title", children: product.title }),
+          summary && /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("span", { className: "le-tile-description", children: summary }),
+          /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)("span", { className: "le-tile-detail-row", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("span", { className: "le-tile-detail-text", children: detailBits }),
+            /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("span", { className: "le-tile-detail-link", children: "View details" })
           ] })
         ] })
       ]
@@ -13017,6 +13073,12 @@ function ProductDetail({ product, sku, onClose }) {
   const cartKey = `${product.id}:${variationId || ""}`;
   const inCartQty = map?.[cartKey]?.qty || 0;
   const isOutOfStock = product.inventoryManaged && (product.inventory ?? 0) <= inCartQty;
+  const leadText = (0, import_react22.useMemo)(() => {
+    const text2 = (ptToHtml(product?.longDescriptionBlocks) || product?.longDescription || product?.shortDescription || "").replace(/\s+/g, " ").trim();
+    if (!text2) return "";
+    return text2.length > 220 ? `${text2.slice(0, 217).trim()}...` : text2;
+  }, [product]);
+  const availabilityLabel = isOutOfStock ? "Out of stock" : product.inventoryManaged && typeof product.inventory === "number" ? `${Math.max(0, product.inventory - inCartQty)} available` : "Available now";
   const handleAdd = (0, import_react22.useCallback)(() => {
     if (isOutOfStock) return;
     add({
@@ -13106,11 +13168,10 @@ function ProductDetail({ product, sku, onClose }) {
                 "button",
                 {
                   type: "button",
-                  role: "listitem",
                   className: `le-detail-thumb${i === imgIdx ? " is-active" : ""}`,
                   onClick: () => setImgIdx(i),
                   "aria-label": `Image ${i + 1}`,
-                  "aria-pressed": i === imgIdx,
+                  "aria-current": i === imgIdx ? "true" : void 0,
                   children: /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("img", { src, alt: "" })
                 },
                 i
@@ -13120,8 +13181,31 @@ function ProductDetail({ product, sku, onClose }) {
               /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("div", { className: "le-detail-sku", children: sku }),
               /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("h2", { className: "le-detail-title", children: product.title }),
               /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("div", { className: "le-detail-price", children: [
-                product.salePrice && /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("span", { className: "le-detail-price-original", children: fmt2(product.price) }),
+                product.salePrice && /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)(import_jsx_runtime29.Fragment, { children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("span", { className: "sr-only", children: "Original price: " }),
+                  /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("span", { className: "le-detail-price-original", children: fmt2(product.price) })
+                ] }),
+                /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("span", { className: "sr-only", children: product.salePrice ? "Sale price: " : "Price: " }),
                 /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("span", { className: "le-detail-price-current", children: fmt2(unitPrice) })
+              ] }),
+              leadText && /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("p", { className: "le-detail-lead", children: leadText }),
+              /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("div", { className: "le-detail-facts", "aria-label": "Product details", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("div", { className: "le-detail-fact", children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("span", { className: "le-detail-fact-label", children: "Availability" }),
+                  /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("strong", { className: "le-detail-fact-value", children: availabilityLabel })
+                ] }),
+                /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("div", { className: "le-detail-fact", children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("span", { className: "le-detail-fact-label", children: "Fulfillment" }),
+                  /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("strong", { className: "le-detail-fact-value", children: "Pickup or local delivery" })
+                ] }),
+                (hasVariants || hasAddOns) && /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("div", { className: "le-detail-fact", children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("span", { className: "le-detail-fact-label", children: "Options" }),
+                  /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("strong", { className: "le-detail-fact-value", children: hasAddOns ? product.addOns.length : product.variants.length })
+                ] }),
+                product.offerDairyFree && /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("div", { className: "le-detail-fact", children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("span", { className: "le-detail-fact-label", children: "Dairy-free" }),
+                  /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("strong", { className: "le-detail-fact-value", children: "Available" })
+                ] })
               ] }),
               hasVariants && /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("div", { className: "le-detail-section", children: [
                 /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("div", { className: "le-detail-section-label", children: "Option" }),
@@ -13201,7 +13285,16 @@ function ProductDetail({ product, sku, onClose }) {
                   children: isOutOfStock ? "Out of stock" : inCartQty > 0 ? "Add one more" : "Add to bag"
                 }
               ),
-              Array.isArray(product.longDescriptionBlocks) && product.longDescriptionBlocks.length > 0 ? /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("div", { className: "le-detail-description", children: /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(import_react23.PortableText, { value: product.longDescriptionBlocks, components: portableTextComponents }) }) : product.longDescription ? /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("p", { className: "le-detail-description", children: product.longDescription }) : product.shortDescription ? /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("p", { className: "le-detail-description", children: product.shortDescription }) : null
+              Array.isArray(product.longDescriptionBlocks) && product.longDescriptionBlocks.length > 0 ? /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("div", { className: "le-detail-description", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("div", { className: "le-detail-section-label", children: "More details" }),
+                /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(import_react23.PortableText, { value: product.longDescriptionBlocks, components: portableTextComponents })
+              ] }) : product.longDescription ? /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("div", { className: "le-detail-description", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("div", { className: "le-detail-section-label", children: "More details" }),
+                /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("p", { children: product.longDescription })
+              ] }) : product.shortDescription ? /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("div", { className: "le-detail-description", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("div", { className: "le-detail-section-label", children: "More details" }),
+                /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("p", { children: product.shortDescription })
+              ] }) : null
             ] })
           ] })
         ]
@@ -13213,20 +13306,51 @@ function ProductDetail({ product, sku, onClose }) {
 // src/store/components/ProductGrid.jsx
 var import_jsx_runtime30 = require("react/jsx-runtime");
 var padded = (n) => String(n).padStart(2, "0");
+var getProductSummary = (product) => {
+  const summary = (ptToHtml(product?.longDescriptionBlocks) || product?.longDescription || product?.shortDescription || "").replace(/\s+/g, " ").trim();
+  return summary.length > 220 ? `${summary.slice(0, 217).trim()}...` : summary;
+};
 function ProductGrid({ products = [], skuPrefix = "LE", loading = false }) {
   const [selected, setSelected] = (0, import_react24.useState)(null);
   const selectedSku = selected ? `${skuPrefix}-${padded(products.indexOf(selected) + 1)}` : null;
   return /* @__PURE__ */ (0, import_jsx_runtime30.jsxs)(import_jsx_runtime30.Fragment, { children: [
     loading ? /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("div", { className: "le-grid-loading", "aria-live": "polite", children: "Loading..." }) : products.length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("div", { className: "le-grid-empty", children: "No products available." }) : /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("ul", { className: "le-grid", "aria-label": "Products", children: products.map((product, i) => {
       const sku = `${skuPrefix}-${padded(i + 1)}`;
-      return /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("li", { className: "le-grid-item", children: /* @__PURE__ */ (0, import_jsx_runtime30.jsx)(
-        ProductTile,
+      const availability = product.inventoryManaged && (product.inventory ?? 0) <= 0 ? "https://schema.org/OutOfStock" : "https://schema.org/InStock";
+      const summary = getProductSummary(product);
+      const anchorId = product.slug || product.id;
+      return /* @__PURE__ */ (0, import_jsx_runtime30.jsxs)(
+        "li",
         {
-          product,
-          sku,
-          onSelect: setSelected
-        }
-      ) }, product.id);
+          id: anchorId,
+          className: "le-grid-item",
+          itemScope: true,
+          itemType: "https://schema.org/Product",
+          children: [
+            /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("meta", { itemProp: "name", content: product.title }),
+            product.images?.[0] && /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("meta", { itemProp: "image", content: product.images[0] }),
+            summary && /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("meta", { itemProp: "description", content: summary }),
+            /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("meta", { itemProp: "sku", content: sku }),
+            /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("meta", { itemProp: "url", content: `${SITE_URL}/sale#${anchorId}` }),
+            /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("div", { itemProp: "brand", itemScope: true, itemType: "https://schema.org/Brand", children: /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("meta", { itemProp: "name", content: "Local Effort Food Co." }) }),
+            /* @__PURE__ */ (0, import_jsx_runtime30.jsxs)("div", { itemProp: "offers", itemScope: true, itemType: "https://schema.org/Offer", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("meta", { itemProp: "priceCurrency", content: "USD" }),
+              /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("meta", { itemProp: "price", content: ((product.salePrice ?? product.price) / 100).toFixed(2) }),
+              /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("meta", { itemProp: "availability", content: availability }),
+              /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("meta", { itemProp: "url", content: `${SITE_URL}/sale#${anchorId}` })
+            ] }),
+            /* @__PURE__ */ (0, import_jsx_runtime30.jsx)(
+              ProductTile,
+              {
+                product,
+                sku,
+                onSelect: setSelected
+              }
+            )
+          ]
+        },
+        product.id
+      );
     }) }),
     selected && /* @__PURE__ */ (0, import_jsx_runtime30.jsx)(
       ProductDetail,
@@ -13306,6 +13430,10 @@ var usePricedSubtotal = (items) => {
 function CartDrawer({ store = "sale" }) {
   const { items, subtotal, open, closeCart, clear, remove, updateQty } = useCart();
   const { serverSubtotal, pricingError } = usePricedSubtotal(items);
+  const drawerRef = (0, import_react25.useRef)(null);
+  const closeBtnRef = (0, import_react25.useRef)(null);
+  const prevFocusRef = (0, import_react25.useRef)(null);
+  const [confirmClear, setConfirmClear] = (0, import_react25.useState)(false);
   const displaySubtotal = serverSubtotal ?? subtotal;
   const isServerConfirmed = serverSubtotal !== null && !pricingError;
   (0, import_react25.useEffect)(() => {
@@ -13313,15 +13441,44 @@ function CartDrawer({ store = "sale" }) {
   }, [open, store]);
   (0, import_react25.useEffect)(() => {
     if (!open) return;
-    const handle = (e) => {
-      if (e.key === "Escape") closeCart();
+    prevFocusRef.current = document.activeElement;
+    if (closeBtnRef.current) closeBtnRef.current.focus();
+    const handleKey = (e) => {
+      if (e.key === "Escape") {
+        closeCart();
+        return;
+      }
+      if (e.key === "Tab" && drawerRef.current) {
+        const focusable = Array.from(
+          drawerRef.current.querySelectorAll(
+            'a[href], button:not([disabled]), input, select, textarea, [tabindex]:not([tabindex="-1"])'
+          )
+        ).filter((el) => el.offsetParent !== null);
+        if (!focusable.length) return;
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+        if (!e.shiftKey && document.activeElement === last) {
+          e.preventDefault();
+          first.focus();
+        } else if (e.shiftKey && document.activeElement === first) {
+          e.preventDefault();
+          last.focus();
+        }
+      }
     };
-    document.addEventListener("keydown", handle);
-    return () => document.removeEventListener("keydown", handle);
+    document.addEventListener("keydown", handleKey, true);
+    return () => {
+      document.removeEventListener("keydown", handleKey, true);
+      prevFocusRef.current?.focus?.();
+    };
   }, [open, closeCart]);
   (0, import_react25.useEffect)(() => {
-    if (open) document.body.style.overflow = "hidden";
-    else document.body.style.overflow = "";
+    if (open) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+      setConfirmClear(false);
+    }
     return () => {
       document.body.style.overflow = "";
     };
@@ -13348,12 +13505,14 @@ function CartDrawer({ store = "sale" }) {
         role: "dialog",
         "aria-modal": "true",
         "aria-label": "Your cart",
+        ref: drawerRef,
         children: [
           /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)("div", { className: "le-cart-header", children: [
             /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("span", { className: "le-cart-heading", children: "Bag" }),
             /* @__PURE__ */ (0, import_jsx_runtime31.jsx)(
               "button",
               {
+                ref: closeBtnRef,
                 type: "button",
                 className: "le-cart-close",
                 onClick: closeCart,
@@ -13430,14 +13589,35 @@ function CartDrawer({ store = "sale" }) {
                 children: "Checkout"
               }
             ),
-            /* @__PURE__ */ (0, import_jsx_runtime31.jsx)(
+            confirmClear ? /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)("div", { className: "le-cart-confirm-row", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("span", { className: "le-cart-confirm-label", children: "Clear bag?" }),
+              /* @__PURE__ */ (0, import_jsx_runtime31.jsx)(
+                "button",
+                {
+                  type: "button",
+                  className: "le-cart-clear",
+                  onClick: () => {
+                    clear();
+                    setConfirmClear(false);
+                  },
+                  children: "Yes"
+                }
+              ),
+              /* @__PURE__ */ (0, import_jsx_runtime31.jsx)(
+                "button",
+                {
+                  type: "button",
+                  className: "le-cart-clear",
+                  onClick: () => setConfirmClear(false),
+                  children: "No"
+                }
+              )
+            ] }) : /* @__PURE__ */ (0, import_jsx_runtime31.jsx)(
               "button",
               {
                 type: "button",
                 className: "le-cart-clear",
-                onClick: () => {
-                  if (window.confirm("Clear your bag?")) clear();
-                },
+                onClick: () => setConfirmClear(true),
                 children: "Clear bag"
               }
             )
@@ -13448,21 +13628,176 @@ function CartDrawer({ store = "sale" }) {
   ] });
 }
 
+// src/store/data/generatedSalePageData.json
+var generatedSalePageData_default = {
+  generatedAt: "2026-03-11T02:29:21.668Z",
+  page: {
+    title: "Local Effort Sale",
+    subheading: "holiday pie sale",
+    introText: "pickup at Henry & Son 11/26 (day before thanksgiving).\nwe'll get some christmas dates up soon too."
+  },
+  products: [
+    {
+      id: "178a4ea0-417b-460a-b699-0c11b8811ef0",
+      title: "Apple Pie",
+      slug: "apple-pie",
+      shortDescription: "zestar apples and a double crust",
+      longDescription: null,
+      longDescriptionBlocks: [
+        {
+          _key: "0a7292eba3ce",
+          _type: "block",
+          children: [
+            {
+              _key: "5c38fc7ca4dc",
+              _type: "span",
+              marks: [],
+              text: "we use butter for the crust but let us know if you like lard, could be good. local zestar apples for now and we're picking up haralson next - if you have a firm preference, let us know. "
+            }
+          ],
+          markDefs: [],
+          style: "normal"
+        }
+      ],
+      images: [
+        "https://cdn.sanity.io/images/d6l9d0ea/localeffort/53ff9d67f5da93947c1af57eb31029867b0be07b-3024x4032.jpg"
+      ],
+      price: 4200,
+      salePrice: null,
+      priceDisplay: null,
+      inventoryManaged: false,
+      inventory: null,
+      squareItemId: null,
+      squareVariationId: null,
+      variants: [],
+      addOns: [],
+      offerDairyFree: false,
+      dairyFreeCost: 0,
+      stores: [
+        "sale"
+      ]
+    },
+    {
+      id: "c530941a-d2b0-4aa4-a60f-ce0b47088699",
+      title: "Peach Pie",
+      slug: "peach-pie",
+      shortDescription: "tree-ripe peaches from Shafer, Minnesota",
+      longDescription: null,
+      longDescriptionBlocks: [
+        {
+          _key: "dc471b98ce84",
+          _type: "block",
+          children: [
+            {
+              _key: "be3b6a7f0b92",
+              _type: "span",
+              marks: [],
+              text: 'grown in high tunnels, and picked around 9/14. big big pieces of peach. crust from local flour and Hope butter. 9" double crust.'
+            }
+          ],
+          markDefs: [],
+          style: "normal"
+        }
+      ],
+      images: [
+        "https://cdn.sanity.io/images/d6l9d0ea/localeffort/6ce1acb345a667305c399dd71cefb369dc17eb6f-3024x4032.jpg"
+      ],
+      price: 4200,
+      salePrice: null,
+      priceDisplay: null,
+      inventoryManaged: false,
+      inventory: null,
+      squareItemId: null,
+      squareVariationId: null,
+      variants: [],
+      addOns: [],
+      offerDairyFree: false,
+      dairyFreeCost: 0,
+      stores: [
+        "sale"
+      ]
+    },
+    {
+      id: "38cd2d7d-2461-420f-8259-8fbdc4369ff0",
+      title: "Pumpkin Pie",
+      slug: "pumpkin-pie",
+      shortDescription: "early season pumpkin custard, classic.",
+      longDescription: null,
+      longDescriptionBlocks: [
+        {
+          _key: "b379841a834b",
+          _type: "block",
+          children: [
+            {
+              _key: "45becbcadd4b",
+              _type: "span",
+              marks: [],
+              text: "roasted pumpkin puree with warming spices like cardamom and clove, on a classic crust. "
+            }
+          ],
+          markDefs: [],
+          style: "normal"
+        }
+      ],
+      images: [
+        "https://cdn.sanity.io/images/d6l9d0ea/localeffort/9cc8dfda88f44126651f7f2d5f133b866235f54f-1536x2048.jpg"
+      ],
+      price: 3500,
+      salePrice: null,
+      priceDisplay: null,
+      inventoryManaged: false,
+      inventory: null,
+      squareItemId: null,
+      squareVariationId: null,
+      variants: [],
+      addOns: [],
+      offerDairyFree: false,
+      dairyFreeCost: 0,
+      stores: [
+        "sale"
+      ]
+    }
+  ]
+};
+
 // src/pages/SalePage.jsx
 var import_jsx_runtime32 = require("react/jsx-runtime");
+var INITIAL_PRODUCTS = Array.isArray(generatedSalePageData_default?.products) ? generatedSalePageData_default.products : [];
+var INITIAL_PAGE = generatedSalePageData_default?.page || {};
+var INITIAL_GENERATED_AT = generatedSalePageData_default?.generatedAt || "";
+var FALLBACK_TITLE = "Local Effort Sale";
+var FALLBACK_SUBHEADING = "Seasonal prepared foods, pantry goods, and limited preorders.";
+var FALLBACK_INTRO = "Browse the current Local Effort sale for seasonal drops, limited runs, and pantry staples. Open any product for larger photos, full details, and checkout options.";
+var getProductSummary2 = (product) => {
+  const portableText = ptToHtml(product?.longDescriptionBlocks);
+  const summary = (portableText || product?.longDescription || product?.shortDescription || "").replace(/\s+/g, " ").trim();
+  if (!summary) return "";
+  return summary.length > 170 ? `${summary.slice(0, 167).trim()}...` : summary;
+};
+var formatGeneratedDate = (value) => {
+  if (!value) return "";
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) return "";
+  return parsed.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric"
+  });
+};
 var SalePage = () => {
   const { totalQty, openCart } = useCart();
-  const [products, setProducts] = (0, import_react26.useState)([]);
-  const [loading, setLoading] = (0, import_react26.useState)(true);
+  const [products, setProducts] = (0, import_react26.useState)(INITIAL_PRODUCTS);
+  const [loading, setLoading] = (0, import_react26.useState)(INITIAL_PRODUCTS.length === 0);
   (0, import_react26.useEffect)(() => {
     let alive = true;
     (async () => {
       try {
         const res = await fetch("/api/store/products?store=sale");
         const data = res.ok ? await res.json() : { products: [] };
-        if (alive) setProducts(Array.isArray(data.products) ? data.products : []);
+        if (alive && Array.isArray(data.products)) {
+          setProducts(data.products);
+        }
       } catch (_) {
-        if (alive) setProducts([]);
       } finally {
         if (alive) setLoading(false);
       }
@@ -13471,40 +13806,105 @@ var SalePage = () => {
       alive = false;
     };
   }, []);
+  const pageTitle = INITIAL_PAGE.title || FALLBACK_TITLE;
+  const pageSubheading = INITIAL_PAGE.subheading || FALLBACK_SUBHEADING;
+  const introText = INITIAL_PAGE.introText || FALLBACK_INTRO;
+  const generatedLabel = formatGeneratedDate(INITIAL_GENERATED_AT);
+  const metaDescription = (0, import_react26.useMemo)(() => {
+    const names = products.slice(0, 3).map((product) => product.title).filter(Boolean);
+    const namesLabel = names.length ? ` including ${names.join(", ")}` : "";
+    return `Shop the Local Effort sale${namesLabel}. Seasonal food drops, pantry goods, and limited preorders with Minneapolis pickup and local delivery.`;
+  }, [products]);
+  const heroImage = products.find((product) => Array.isArray(product.images) && product.images[0])?.images?.[0] || null;
   const schema = (0, import_react26.useMemo)(() => {
-    if (!products.length) return null;
-    return {
-      "@context": "https://schema.org",
-      "@type": "ItemList",
-      name: "Sale",
-      itemListElement: products.map((p, idx) => ({
-        "@type": "ListItem",
-        position: idx + 1,
-        item: {
-          "@type": "Product",
-          name: p.title,
-          image: Array.isArray(p.images) ? p.images.filter(Boolean) : [],
-          description: p.shortDescription,
-          sku: p.squareVariationId || p.squareItemId || p.id,
-          offers: {
-            "@type": "Offer",
-            priceCurrency: "USD",
-            price: ((p.salePrice ?? p.price) / 100).toFixed(2),
-            availability: "https://schema.org/InStock"
+    const canonical = `${SITE_URL}/sale`;
+    const productList = products.map((product, idx) => ({
+      "@type": "ListItem",
+      position: idx + 1,
+      url: `${canonical}#${product.slug || product.id}`,
+      item: {
+        "@type": "Product",
+        name: product.title,
+        image: Array.isArray(product.images) ? product.images.filter(Boolean) : [],
+        description: getProductSummary2(product),
+        sku: product.squareVariationId || product.squareItemId || product.id,
+        brand: {
+          "@type": "Brand",
+          name: "Local Effort Food Co."
+        },
+        offers: {
+          "@type": "Offer",
+          url: `${canonical}#${product.slug || product.id}`,
+          priceCurrency: "USD",
+          price: ((product.salePrice ?? product.price) / 100).toFixed(2),
+          availability: product.inventoryManaged && (product.inventory ?? 0) <= 0 ? "https://schema.org/OutOfStock" : "https://schema.org/InStock",
+          seller: {
+            "@type": "Organization",
+            name: "Local Effort Food Co.",
+            url: SITE_URL
           }
         }
-      }))
+      }
+    }));
+    return {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "CollectionPage",
+          name: pageTitle,
+          url: canonical,
+          description: metaDescription,
+          mainEntity: {
+            "@id": `${canonical}#sale-items`
+          }
+        },
+        {
+          "@type": "BreadcrumbList",
+          itemListElement: [
+            {
+              "@type": "ListItem",
+              position: 1,
+              name: "Home",
+              item: SITE_URL
+            },
+            {
+              "@type": "ListItem",
+              position: 2,
+              name: "Sale",
+              item: canonical
+            }
+          ]
+        },
+        {
+          "@id": `${canonical}#sale-items`,
+          "@type": "ItemList",
+          name: "Local Effort sale products",
+          numberOfItems: productList.length,
+          itemListElement: productList
+        }
+      ]
     };
-  }, [products]);
+  }, [metaDescription, pageTitle, products]);
   return /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("div", { className: "le-sale-page", children: [
     /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)(import_react_helmet_async5.Helmet, { children: [
-      /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("title", { children: "Sale \u2014 Local Effort" }),
-      /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("meta", { name: "description", content: "Shop Local Effort. Pickup and local delivery available." }),
+      /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("title", { children: `${pageTitle} | Local Effort Food Co.` }),
+      /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("meta", { name: "description", content: metaDescription }),
+      /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("meta", { name: "keywords", content: "Local Effort sale, Minneapolis food preorder, prepared foods Minneapolis, pantry goods Minneapolis, local delivery food, seasonal food drop" }),
+      /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("meta", { property: "og:title", content: `${pageTitle} | Local Effort Food Co.` }),
+      /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("meta", { property: "og:description", content: metaDescription }),
+      /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("meta", { property: "og:type", content: "website" }),
+      /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("meta", { property: "og:url", content: `${SITE_URL}/sale` }),
+      heroImage && /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("meta", { property: "og:image", content: heroImage }),
+      heroImage && /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("meta", { name: "twitter:image", content: heroImage }),
+      /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("meta", { name: "twitter:title", content: `${pageTitle} | Local Effort Food Co.` }),
+      /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("meta", { name: "twitter:description", content: metaDescription }),
+      /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("meta", { name: "robots", content: "index,follow,max-snippet:-1,max-image-preview:large,max-video-preview:-1" }),
       /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("link", { rel: "canonical", href: `${SITE_URL}/sale` }),
-      schema && /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("script", { type: "application/ld+json", children: JSON.stringify(schema) })
+      /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("script", { type: "application/ld+json", children: JSON.stringify(schema) })
     ] }),
+    /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("a", { href: "#products", className: "sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-[200] focus:bg-white focus:px-3 focus:py-2 focus:text-xs focus:uppercase focus:tracking-widest focus:border focus:border-black", children: "Skip to products" }),
     /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("header", { className: "le-sale-header", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("a", { href: "/", className: "le-sale-home-link", children: "Local Effort" }),
+      /* @__PURE__ */ (0, import_jsx_runtime32.jsx)(import_react_router_dom6.Link, { to: "/", className: "le-sale-home-link", children: "Local Effort" }),
       /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)(
         "button",
         {
@@ -13519,7 +13919,61 @@ var SalePage = () => {
         }
       )
     ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("main", { children: /* @__PURE__ */ (0, import_jsx_runtime32.jsx)(ProductGrid, { products, skuPrefix: "LE", loading }) }),
+    /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("main", { id: "products", className: "le-sale-main", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("section", { className: "le-sale-hero", "aria-labelledby": "sale-title", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("div", { className: "le-sale-hero-copy", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("p", { className: "le-sale-eyebrow", children: "Minneapolis sale" }),
+          /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("h1", { id: "sale-title", className: "le-sale-title", children: pageTitle }),
+          /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("p", { className: "le-sale-subheading", children: pageSubheading }),
+          /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("div", { className: "le-sale-intro", children: introText.split(/\n{2,}/).filter(Boolean).map((paragraph) => /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("p", { children: paragraph }, paragraph)) })
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("aside", { className: "le-sale-summary", "aria-label": "Sale details", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("div", { className: "le-sale-summary-card", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("span", { className: "le-sale-summary-label", children: "Products live" }),
+            /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("strong", { className: "le-sale-summary-value", children: products.length || "Updating" })
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("div", { className: "le-sale-summary-card", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("span", { className: "le-sale-summary-label", children: "Fulfillment" }),
+            /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("strong", { className: "le-sale-summary-value", children: "Pickup + local delivery" })
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("div", { className: "le-sale-summary-card", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("span", { className: "le-sale-summary-label", children: "How to shop" }),
+            /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("strong", { className: "le-sale-summary-value", children: "Open any item for full details" })
+          ] }),
+          generatedLabel && /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("div", { className: "le-sale-summary-card", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("span", { className: "le-sale-summary-label", children: "Catalog snapshot" }),
+            /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("strong", { className: "le-sale-summary-value", children: generatedLabel })
+          ] })
+        ] })
+      ] }),
+      /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("section", { className: "le-sale-links", "aria-labelledby": "sale-links-title", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("div", { children: [
+          /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("h2", { id: "sale-links-title", className: "le-sale-section-title", children: "Looking for a specific event or drop?" }),
+          /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("p", { className: "le-sale-section-copy", children: "Some Local Effort offers live on dedicated landing pages with fuller booking and product context. These links help search engines and visitors move between the store, specialty drops, and private-event booking pages." })
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("div", { className: "le-sale-link-grid", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)(import_react_router_dom6.Link, { className: "le-sale-link-card", to: "/psyche", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("span", { className: "le-sale-link-title", children: "Psyche olive oil" }),
+            /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("span", { className: "le-sale-link-copy", children: "Dedicated product page with provenance, pricing, and fulfillment details." })
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)(import_react_router_dom6.Link, { className: "le-sale-link-card", to: "/february", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("span", { className: "le-sale-link-title", children: "February chef dinner" }),
+            /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("span", { className: "le-sale-link-copy", children: "Private in-home dinner booking flow with date, pricing, and guest information." })
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)(import_react_router_dom6.Link, { className: "le-sale-link-card", to: "/#small-events", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("span", { className: "le-sale-link-title", children: "Small events" }),
+            /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("span", { className: "le-sale-link-copy", children: "Private dinners, pizza parties, and other event windows from the main site." })
+          ] })
+        ] })
+      ] }),
+      /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("section", { className: "le-sale-products", "aria-labelledby": "sale-products-title", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("div", { className: "le-sale-products-header", children: /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("div", { children: [
+          /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("h2", { id: "sale-products-title", className: "le-sale-section-title", children: "Current sale catalog" }),
+          /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("p", { className: "le-sale-section-copy", children: "Product cards include visible names and summaries in the HTML so Google and AI crawlers can understand what the sale contains before JavaScript finishes loading." })
+        ] }) }),
+        /* @__PURE__ */ (0, import_jsx_runtime32.jsx)(ProductGrid, { products, skuPrefix: "LE", loading })
+      ] })
+    ] }),
     /* @__PURE__ */ (0, import_jsx_runtime32.jsx)(CartDrawer, { store: "sale" })
   ] });
 };
@@ -13528,7 +13982,7 @@ var SalePage_default = SalePage;
 // src/pages/WeeklyList.jsx
 var import_react27 = __toESM(require("react"));
 var import_react_helmet_async6 = __toESM(require_lib());
-var import_react_router_dom6 = require("react-router-dom");
+var import_react_router_dom7 = require("react-router-dom");
 var import_jsx_runtime33 = require("react/jsx-runtime");
 var WeeklyList = () => {
   const [posts, setPosts] = (0, import_react27.useState)([]);
@@ -13554,7 +14008,7 @@ var WeeklyList = () => {
     error && /* @__PURE__ */ (0, import_jsx_runtime33.jsx)("div", { className: "text-red-700 bg-red-50 border border-red-200 p-3 rounded mb-4", children: error }),
     /* @__PURE__ */ (0, import_jsx_runtime33.jsxs)("ul", { className: "space-y-4", children: [
       posts.map((p) => /* @__PURE__ */ (0, import_jsx_runtime33.jsxs)("li", { className: "border rounded-lg p-4 hover:bg-gray-50 shadow-sm", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime33.jsx)(import_react_router_dom6.Link, { to: `/weekly/${p.slug}`, className: "text-xl font-semibold hover:underline", children: p.title }),
+        /* @__PURE__ */ (0, import_jsx_runtime33.jsx)(import_react_router_dom7.Link, { to: `/weekly/${p.slug}`, className: "text-xl font-semibold hover:underline", children: p.title }),
         /* @__PURE__ */ (0, import_jsx_runtime33.jsx)("div", { className: "text-sm text-gray-500 mt-1", children: p.publishedAt ? new Date(p.publishedAt).toLocaleDateString() : "" }),
         p.excerpt && /* @__PURE__ */ (0, import_jsx_runtime33.jsx)("p", { className: "text-gray-700 mt-2", children: p.excerpt })
       ] }, p.slug)),
@@ -14116,11 +14570,11 @@ function useSquareCard(containerId, enabled, deps = []) {
   (0, import_react35.useEffect)(() => {
     setEnvInfo((info) => ({ ...info, attempts }));
   }, [attempts]);
-  const withTimeout = async (promise, ms, message) => {
+  const withTimeout = async (promise, ms, message2) => {
     let timer;
     try {
       const timeout = new Promise((_, reject) => {
-        timer = setTimeout(() => reject(new Error(message)), ms);
+        timer = setTimeout(() => reject(new Error(message2)), ms);
       });
       return await Promise.race([promise, timeout]);
     } finally {
@@ -14370,15 +14824,15 @@ var PizzaPartyPage = () => {
   const [addOnEnabled, setAddOnEnabled] = (0, import_react36.useState)(false);
   const [guestCount, setGuestCount] = (0, import_react36.useState)(10);
   const [submitting, setSubmitting] = (0, import_react36.useState)(false);
-  const isValidEmail2 = (val) => /.+@.+\..+/.test(val.trim());
-  const formatPhone2 = (val) => {
+  const isValidEmail3 = (val) => /.+@.+\..+/.test(val.trim());
+  const formatPhone3 = (val) => {
     const digits = val.replace(/\D/g, "").slice(0, 10);
     if (digits.length < 4) return digits;
     if (digits.length < 7) return `(${digits.slice(0, 3)}) ${digits.slice(3)}`;
     return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
   };
   const isValidPhone = (val) => val.replace(/\D/g, "").length === 10;
-  const formatPostal2 = (val) => val.replace(/[^0-9]/g, "").slice(0, 5);
+  const formatPostal3 = (val) => val.replace(/[^0-9]/g, "").slice(0, 5);
   const isValidAddress = (a) => a.line1.trim().length > 3 && a.city.trim().length > 1 && a.postal.trim().length >= 5;
   const basePrice = 75;
   const estimatedTotal = 450;
@@ -14518,7 +14972,7 @@ var PizzaPartyPage = () => {
   const submitBooking = async () => {
     if (!selectedDate) return;
     if (submitting) return;
-    if (!fullName.trim() || !isValidEmail2(email) || !isValidPhone(phone) || !isValidAddress(address)) {
+    if (!fullName.trim() || !isValidEmail3(email) || !isValidPhone(phone) || !isValidAddress(address)) {
       setBookingState((s) => ({ ...s, [selectedDate]: { ...s[selectedDate] || {}, error: "Please complete required contact & address fields." } }));
       return;
     }
@@ -14780,7 +15234,7 @@ var PizzaPartyPage = () => {
               ] }),
               /* @__PURE__ */ (0, import_jsx_runtime41.jsxs)("label", { className: "block text-sm font-medium", children: [
                 "Phone",
-                /* @__PURE__ */ (0, import_jsx_runtime41.jsx)("input", { type: "tel", value: phone, onChange: (e) => setPhone(formatPhone2(e.target.value)), placeholder: "(555) 123-4567", className: "mt-1 w-full rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500" })
+                /* @__PURE__ */ (0, import_jsx_runtime41.jsx)("input", { type: "tel", value: phone, onChange: (e) => setPhone(formatPhone3(e.target.value)), placeholder: "(555) 123-4567", className: "mt-1 w-full rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500" })
               ] }),
               /* @__PURE__ */ (0, import_jsx_runtime41.jsxs)("fieldset", { className: "border rounded-md p-3 space-y-2", children: [
                 /* @__PURE__ */ (0, import_jsx_runtime41.jsx)("legend", { className: "text-xs font-semibold uppercase tracking-wide text-neutral-600", children: "Address" }),
@@ -14790,7 +15244,7 @@ var PizzaPartyPage = () => {
                   /* @__PURE__ */ (0, import_jsx_runtime41.jsxs)("div", { className: "grid grid-cols-6 gap-2", children: [
                     /* @__PURE__ */ (0, import_jsx_runtime41.jsx)("input", { value: address.city, onChange: (e) => setAddress((a) => ({ ...a, city: e.target.value })), placeholder: "City", className: "col-span-3 rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500" }),
                     /* @__PURE__ */ (0, import_jsx_runtime41.jsx)("input", { value: address.state, onChange: (e) => setAddress((a) => ({ ...a, state: e.target.value })), placeholder: "State", className: "col-span-1 rounded-md border px-2 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500" }),
-                    /* @__PURE__ */ (0, import_jsx_runtime41.jsx)("input", { value: address.postal, onChange: (e) => setAddress((a) => ({ ...a, postal: formatPostal2(e.target.value) })), placeholder: "ZIP", className: "col-span-2 rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500" })
+                    /* @__PURE__ */ (0, import_jsx_runtime41.jsx)("input", { value: address.postal, onChange: (e) => setAddress((a) => ({ ...a, postal: formatPostal3(e.target.value) })), placeholder: "ZIP", className: "col-span-2 rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500" })
                   ] })
                 ] })
               ] }),
@@ -14852,9 +15306,9 @@ var PizzaPartyPage = () => {
                 {
                   onClick: selectedDate ? submitBooking : void 0,
                   type: "button",
-                  disabled: selectedDate ? bookingState[selectedDate]?.loading || submitting || !cardLoaded || !!cardError || loadingScript || !isValidEmail2(email) || !fullName.trim() || !isValidPhone(phone) || !isValidAddress(address) : false,
+                  disabled: selectedDate ? bookingState[selectedDate]?.loading || submitting || !cardLoaded || !!cardError || loadingScript || !isValidEmail3(email) || !fullName.trim() || !isValidPhone(phone) || !isValidAddress(address) : false,
                   className: `flex-1 rounded-md text-sm font-semibold px-4 py-2 shadow disabled:opacity-60 disabled:cursor-not-allowed ${selectedDate ? "bg-orange-600 hover:bg-orange-700 text-white" : "bg-neutral-200 text-neutral-500 cursor-not-allowed"}`,
-                  children: selectedDate ? bookingState[selectedDate]?.loading || submitting ? "Processing\u2026" : !fullName.trim() ? "Enter Name" : !isValidEmail2(email) ? "Enter Email" : !isValidPhone(phone) ? "Phone Needed" : !isValidAddress(address) ? "Address Needed" : "Pay Deposit" : "Select a Date"
+                  children: selectedDate ? bookingState[selectedDate]?.loading || submitting ? "Processing\u2026" : !fullName.trim() ? "Enter Name" : !isValidEmail3(email) ? "Enter Email" : !isValidPhone(phone) ? "Phone Needed" : !isValidAddress(address) ? "Address Needed" : "Pay Deposit" : "Select a Date"
                 }
               )
             ] }),
@@ -14946,9 +15400,9 @@ function A(t, o) {
 function F(t, o, e, n) {
   return (0, import_react37.useMemo)(() => {
     if (!o || !e) return `${t}%`;
-    const r = (n == null ? void 0 : n.clientWidth) || 0;
-    if (!r) return `${t}%`;
-    const u = e / r * 100;
+    const r2 = (n == null ? void 0 : n.clientWidth) || 0;
+    if (!r2) return `${t}%`;
+    const u = e / r2 * 100;
     return `${u < 100 ? t : u}%`;
   }, [t, o, e, n]);
 }
@@ -14956,15 +15410,15 @@ function G(t) {
   return (0, import_react37.useCallback)((o) => {
     if (!t) return;
     const e = t.getBoundingClientRect();
-    let n, r;
+    let n, r2;
     if (((s) => "touches" in s)(o)) {
       const s = o.touches[0];
-      n = (s.clientX - e.x) / e.width * 100, r = (s.clientY - e.y) / e.height * 100;
+      n = (s.clientX - e.x) / e.width * 100, r2 = (s.clientY - e.y) / e.height * 100;
     } else
-      n = (o.clientX - e.x) / e.width * 100, r = (o.clientY - e.y) / e.height * 100;
+      n = (o.clientX - e.x) / e.width * 100, r2 = (o.clientY - e.y) / e.height * 100;
     return `${Math.max(0, Math.min(n, 100))}% ${Math.max(
       0,
-      Math.min(r, 100)
+      Math.min(r2, 100)
     )}%`;
   }, [t]);
 }
@@ -14980,18 +15434,18 @@ function J(t, o) {
       n((h) => ({ ...h, error: true }));
       return;
     }
-    const r = new Image(), u = () => {
+    const r2 = new Image(), u = () => {
       n({
-        imgData: r.src,
+        imgData: r2.src,
         error: false,
-        naturalWidth: r.naturalWidth,
-        naturalHeight: r.naturalHeight
+        naturalWidth: r2.naturalWidth,
+        naturalHeight: r2.naturalHeight
       });
     }, s = (h) => {
       n((y) => ({ ...y, error: true })), o == null || o(h);
     };
-    return r.addEventListener("load", u), r.addEventListener("error", s), r.src = t, () => {
-      r.removeEventListener("load", u), r.removeEventListener("error", s);
+    return r2.addEventListener("load", u), r2.addEventListener("error", s), r2.src = t, () => {
+      r2.removeEventListener("load", u), r2.removeEventListener("error", s);
     };
   }, [t, o]), e;
 }
@@ -15000,7 +15454,7 @@ function U({
   fullWidth: o = false,
   alt: e = "This is an imageZoom image",
   width: n = "100%",
-  height: r = "auto",
+  height: r2 = "auto",
   src: u,
   id: s,
   className: h,
@@ -15091,7 +15545,7 @@ function U({
           src: c,
           alt: e,
           width: n,
-          height: r
+          height: r2
         }
       )
     }
@@ -15868,25 +16322,11320 @@ var PsychePage = () => {
 };
 var PsychePage_default = PsychePage;
 
-// src/ssr/StaticApp.jsx
+// src/pages/FebruaryPage.jsx
+var import_react44 = __toESM(require("react"));
+var import_react_helmet_async10 = __toESM(require_lib());
+
+// node_modules/.pnpm/clsx@2.1.1/node_modules/clsx/dist/clsx.mjs
+function r(e) {
+  var t, f, n = "";
+  if ("string" == typeof e || "number" == typeof e) n += e;
+  else if ("object" == typeof e) if (Array.isArray(e)) {
+    var o = e.length;
+    for (t = 0; t < o; t++) e[t] && (f = r(e[t])) && (n && (n += " "), n += f);
+  } else for (f in e) e[f] && (n && (n += " "), n += f);
+  return n;
+}
+function clsx() {
+  for (var e, t, f = 0, n = "", o = arguments.length; f < o; f++) (e = arguments[f]) && (t = r(e)) && (n && (n += " "), n += t);
+  return n;
+}
+
+// node_modules/.pnpm/react-datepicker@9.1.0_react-dom@18.2.0_react@18.2.0__react@18.2.0/node_modules/react-datepicker/dist/index.es.js
+var import_react42 = __toESM(require("react"));
+
+// node_modules/.pnpm/date-fns@4.1.0/node_modules/date-fns/constants.js
+var daysInYear = 365.2425;
+var maxTime = Math.pow(10, 8) * 24 * 60 * 60 * 1e3;
+var minTime = -maxTime;
+var millisecondsInWeek = 6048e5;
+var millisecondsInDay = 864e5;
+var millisecondsInMinute = 6e4;
+var millisecondsInHour = 36e5;
+var millisecondsInSecond = 1e3;
+var secondsInHour = 3600;
+var secondsInDay = secondsInHour * 24;
+var secondsInWeek = secondsInDay * 7;
+var secondsInYear = secondsInDay * daysInYear;
+var secondsInMonth = secondsInYear / 12;
+var secondsInQuarter = secondsInMonth * 3;
+var constructFromSymbol = Symbol.for("constructDateFrom");
+
+// node_modules/.pnpm/date-fns@4.1.0/node_modules/date-fns/constructFrom.js
+function constructFrom(date, value) {
+  if (typeof date === "function") return date(value);
+  if (date && typeof date === "object" && constructFromSymbol in date)
+    return date[constructFromSymbol](value);
+  if (date instanceof Date) return new date.constructor(value);
+  return new Date(value);
+}
+
+// node_modules/.pnpm/date-fns@4.1.0/node_modules/date-fns/toDate.js
+function toDate(argument, context) {
+  return constructFrom(context || argument, argument);
+}
+
+// node_modules/.pnpm/date-fns@4.1.0/node_modules/date-fns/addDays.js
+function addDays2(date, amount, options) {
+  const _date = toDate(date, options?.in);
+  if (isNaN(amount)) return constructFrom(options?.in || date, NaN);
+  if (!amount) return _date;
+  _date.setDate(_date.getDate() + amount);
+  return _date;
+}
+
+// node_modules/.pnpm/date-fns@4.1.0/node_modules/date-fns/addMonths.js
+function addMonths(date, amount, options) {
+  const _date = toDate(date, options?.in);
+  if (isNaN(amount)) return constructFrom(options?.in || date, NaN);
+  if (!amount) {
+    return _date;
+  }
+  const dayOfMonth = _date.getDate();
+  const endOfDesiredMonth = constructFrom(options?.in || date, _date.getTime());
+  endOfDesiredMonth.setMonth(_date.getMonth() + amount + 1, 0);
+  const daysInMonth = endOfDesiredMonth.getDate();
+  if (dayOfMonth >= daysInMonth) {
+    return endOfDesiredMonth;
+  } else {
+    _date.setFullYear(
+      endOfDesiredMonth.getFullYear(),
+      endOfDesiredMonth.getMonth(),
+      dayOfMonth
+    );
+    return _date;
+  }
+}
+
+// node_modules/.pnpm/date-fns@4.1.0/node_modules/date-fns/addMilliseconds.js
+function addMilliseconds(date, amount, options) {
+  return constructFrom(options?.in || date, +toDate(date) + amount);
+}
+
+// node_modules/.pnpm/date-fns@4.1.0/node_modules/date-fns/addHours.js
+function addHours(date, amount, options) {
+  return addMilliseconds(date, amount * millisecondsInHour, options);
+}
+
+// node_modules/.pnpm/date-fns@4.1.0/node_modules/date-fns/_lib/defaultOptions.js
+var defaultOptions = {};
+function getDefaultOptions() {
+  return defaultOptions;
+}
+
+// node_modules/.pnpm/date-fns@4.1.0/node_modules/date-fns/startOfWeek.js
+function startOfWeek(date, options) {
+  const defaultOptions2 = getDefaultOptions();
+  const weekStartsOn = options?.weekStartsOn ?? options?.locale?.options?.weekStartsOn ?? defaultOptions2.weekStartsOn ?? defaultOptions2.locale?.options?.weekStartsOn ?? 0;
+  const _date = toDate(date, options?.in);
+  const day = _date.getDay();
+  const diff = (day < weekStartsOn ? 7 : 0) + day - weekStartsOn;
+  _date.setDate(_date.getDate() - diff);
+  _date.setHours(0, 0, 0, 0);
+  return _date;
+}
+
+// node_modules/.pnpm/date-fns@4.1.0/node_modules/date-fns/startOfISOWeek.js
+function startOfISOWeek(date, options) {
+  return startOfWeek(date, { ...options, weekStartsOn: 1 });
+}
+
+// node_modules/.pnpm/date-fns@4.1.0/node_modules/date-fns/getISOWeekYear.js
+function getISOWeekYear(date, options) {
+  const _date = toDate(date, options?.in);
+  const year = _date.getFullYear();
+  const fourthOfJanuaryOfNextYear = constructFrom(_date, 0);
+  fourthOfJanuaryOfNextYear.setFullYear(year + 1, 0, 4);
+  fourthOfJanuaryOfNextYear.setHours(0, 0, 0, 0);
+  const startOfNextYear = startOfISOWeek(fourthOfJanuaryOfNextYear);
+  const fourthOfJanuaryOfThisYear = constructFrom(_date, 0);
+  fourthOfJanuaryOfThisYear.setFullYear(year, 0, 4);
+  fourthOfJanuaryOfThisYear.setHours(0, 0, 0, 0);
+  const startOfThisYear = startOfISOWeek(fourthOfJanuaryOfThisYear);
+  if (_date.getTime() >= startOfNextYear.getTime()) {
+    return year + 1;
+  } else if (_date.getTime() >= startOfThisYear.getTime()) {
+    return year;
+  } else {
+    return year - 1;
+  }
+}
+
+// node_modules/.pnpm/date-fns@4.1.0/node_modules/date-fns/_lib/getTimezoneOffsetInMilliseconds.js
+function getTimezoneOffsetInMilliseconds(date) {
+  const _date = toDate(date);
+  const utcDate = new Date(
+    Date.UTC(
+      _date.getFullYear(),
+      _date.getMonth(),
+      _date.getDate(),
+      _date.getHours(),
+      _date.getMinutes(),
+      _date.getSeconds(),
+      _date.getMilliseconds()
+    )
+  );
+  utcDate.setUTCFullYear(_date.getFullYear());
+  return +date - +utcDate;
+}
+
+// node_modules/.pnpm/date-fns@4.1.0/node_modules/date-fns/_lib/normalizeDates.js
+function normalizeDates(context, ...dates) {
+  const normalize = constructFrom.bind(
+    null,
+    context || dates.find((date) => typeof date === "object")
+  );
+  return dates.map(normalize);
+}
+
+// node_modules/.pnpm/date-fns@4.1.0/node_modules/date-fns/startOfDay.js
+function startOfDay(date, options) {
+  const _date = toDate(date, options?.in);
+  _date.setHours(0, 0, 0, 0);
+  return _date;
+}
+
+// node_modules/.pnpm/date-fns@4.1.0/node_modules/date-fns/differenceInCalendarDays.js
+function differenceInCalendarDays(laterDate, earlierDate, options) {
+  const [laterDate_, earlierDate_] = normalizeDates(
+    options?.in,
+    laterDate,
+    earlierDate
+  );
+  const laterStartOfDay = startOfDay(laterDate_);
+  const earlierStartOfDay = startOfDay(earlierDate_);
+  const laterTimestamp = +laterStartOfDay - getTimezoneOffsetInMilliseconds(laterStartOfDay);
+  const earlierTimestamp = +earlierStartOfDay - getTimezoneOffsetInMilliseconds(earlierStartOfDay);
+  return Math.round((laterTimestamp - earlierTimestamp) / millisecondsInDay);
+}
+
+// node_modules/.pnpm/date-fns@4.1.0/node_modules/date-fns/startOfISOWeekYear.js
+function startOfISOWeekYear(date, options) {
+  const year = getISOWeekYear(date, options);
+  const fourthOfJanuary = constructFrom(options?.in || date, 0);
+  fourthOfJanuary.setFullYear(year, 0, 4);
+  fourthOfJanuary.setHours(0, 0, 0, 0);
+  return startOfISOWeek(fourthOfJanuary);
+}
+
+// node_modules/.pnpm/date-fns@4.1.0/node_modules/date-fns/addMinutes.js
+function addMinutes(date, amount, options) {
+  const _date = toDate(date, options?.in);
+  _date.setTime(_date.getTime() + amount * millisecondsInMinute);
+  return _date;
+}
+
+// node_modules/.pnpm/date-fns@4.1.0/node_modules/date-fns/addQuarters.js
+function addQuarters(date, amount, options) {
+  return addMonths(date, amount * 3, options);
+}
+
+// node_modules/.pnpm/date-fns@4.1.0/node_modules/date-fns/addSeconds.js
+function addSeconds(date, amount, options) {
+  return addMilliseconds(date, amount * 1e3, options);
+}
+
+// node_modules/.pnpm/date-fns@4.1.0/node_modules/date-fns/addWeeks.js
+function addWeeks(date, amount, options) {
+  return addDays2(date, amount * 7, options);
+}
+
+// node_modules/.pnpm/date-fns@4.1.0/node_modules/date-fns/addYears.js
+function addYears(date, amount, options) {
+  return addMonths(date, amount * 12, options);
+}
+
+// node_modules/.pnpm/date-fns@4.1.0/node_modules/date-fns/max.js
+function max(dates, options) {
+  let result;
+  let context = options?.in;
+  dates.forEach((date) => {
+    if (!context && typeof date === "object")
+      context = constructFrom.bind(null, date);
+    const date_ = toDate(date, context);
+    if (!result || result < date_ || isNaN(+date_)) result = date_;
+  });
+  return constructFrom(context, result || NaN);
+}
+
+// node_modules/.pnpm/date-fns@4.1.0/node_modules/date-fns/min.js
+function min(dates, options) {
+  let result;
+  let context = options?.in;
+  dates.forEach((date) => {
+    if (!context && typeof date === "object")
+      context = constructFrom.bind(null, date);
+    const date_ = toDate(date, context);
+    if (!result || result > date_ || isNaN(+date_)) result = date_;
+  });
+  return constructFrom(context, result || NaN);
+}
+
+// node_modules/.pnpm/date-fns@4.1.0/node_modules/date-fns/isSameDay.js
+function isSameDay(laterDate, earlierDate, options) {
+  const [dateLeft_, dateRight_] = normalizeDates(
+    options?.in,
+    laterDate,
+    earlierDate
+  );
+  return +startOfDay(dateLeft_) === +startOfDay(dateRight_);
+}
+
+// node_modules/.pnpm/date-fns@4.1.0/node_modules/date-fns/isDate.js
+function isDate(value) {
+  return value instanceof Date || typeof value === "object" && Object.prototype.toString.call(value) === "[object Date]";
+}
+
+// node_modules/.pnpm/date-fns@4.1.0/node_modules/date-fns/isValid.js
+function isValid(date) {
+  return !(!isDate(date) && typeof date !== "number" || isNaN(+toDate(date)));
+}
+
+// node_modules/.pnpm/date-fns@4.1.0/node_modules/date-fns/differenceInCalendarMonths.js
+function differenceInCalendarMonths(laterDate, earlierDate, options) {
+  const [laterDate_, earlierDate_] = normalizeDates(
+    options?.in,
+    laterDate,
+    earlierDate
+  );
+  const yearsDiff = laterDate_.getFullYear() - earlierDate_.getFullYear();
+  const monthsDiff = laterDate_.getMonth() - earlierDate_.getMonth();
+  return yearsDiff * 12 + monthsDiff;
+}
+
+// node_modules/.pnpm/date-fns@4.1.0/node_modules/date-fns/getQuarter.js
+function getQuarter(date, options) {
+  const _date = toDate(date, options?.in);
+  const quarter = Math.trunc(_date.getMonth() / 3) + 1;
+  return quarter;
+}
+
+// node_modules/.pnpm/date-fns@4.1.0/node_modules/date-fns/differenceInCalendarQuarters.js
+function differenceInCalendarQuarters(laterDate, earlierDate, options) {
+  const [laterDate_, earlierDate_] = normalizeDates(
+    options?.in,
+    laterDate,
+    earlierDate
+  );
+  const yearsDiff = laterDate_.getFullYear() - earlierDate_.getFullYear();
+  const quartersDiff = getQuarter(laterDate_) - getQuarter(earlierDate_);
+  return yearsDiff * 4 + quartersDiff;
+}
+
+// node_modules/.pnpm/date-fns@4.1.0/node_modules/date-fns/differenceInCalendarYears.js
+function differenceInCalendarYears(laterDate, earlierDate, options) {
+  const [laterDate_, earlierDate_] = normalizeDates(
+    options?.in,
+    laterDate,
+    earlierDate
+  );
+  return laterDate_.getFullYear() - earlierDate_.getFullYear();
+}
+
+// node_modules/.pnpm/date-fns@4.1.0/node_modules/date-fns/differenceInDays.js
+function differenceInDays(laterDate, earlierDate, options) {
+  const [laterDate_, earlierDate_] = normalizeDates(
+    options?.in,
+    laterDate,
+    earlierDate
+  );
+  const sign = compareLocalAsc(laterDate_, earlierDate_);
+  const difference = Math.abs(
+    differenceInCalendarDays(laterDate_, earlierDate_)
+  );
+  laterDate_.setDate(laterDate_.getDate() - sign * difference);
+  const isLastDayNotFull = Number(
+    compareLocalAsc(laterDate_, earlierDate_) === -sign
+  );
+  const result = sign * (difference - isLastDayNotFull);
+  return result === 0 ? 0 : result;
+}
+function compareLocalAsc(laterDate, earlierDate) {
+  const diff = laterDate.getFullYear() - earlierDate.getFullYear() || laterDate.getMonth() - earlierDate.getMonth() || laterDate.getDate() - earlierDate.getDate() || laterDate.getHours() - earlierDate.getHours() || laterDate.getMinutes() - earlierDate.getMinutes() || laterDate.getSeconds() - earlierDate.getSeconds() || laterDate.getMilliseconds() - earlierDate.getMilliseconds();
+  if (diff < 0) return -1;
+  if (diff > 0) return 1;
+  return diff;
+}
+
+// node_modules/.pnpm/date-fns@4.1.0/node_modules/date-fns/endOfDay.js
+function endOfDay(date, options) {
+  const _date = toDate(date, options?.in);
+  _date.setHours(23, 59, 59, 999);
+  return _date;
+}
+
+// node_modules/.pnpm/date-fns@4.1.0/node_modules/date-fns/endOfMonth.js
+function endOfMonth(date, options) {
+  const _date = toDate(date, options?.in);
+  const month = _date.getMonth();
+  _date.setFullYear(_date.getFullYear(), month + 1, 0);
+  _date.setHours(23, 59, 59, 999);
+  return _date;
+}
+
+// node_modules/.pnpm/date-fns@4.1.0/node_modules/date-fns/startOfQuarter.js
+function startOfQuarter(date, options) {
+  const _date = toDate(date, options?.in);
+  const currentMonth = _date.getMonth();
+  const month = currentMonth - currentMonth % 3;
+  _date.setMonth(month, 1);
+  _date.setHours(0, 0, 0, 0);
+  return _date;
+}
+
+// node_modules/.pnpm/date-fns@4.1.0/node_modules/date-fns/startOfMonth.js
+function startOfMonth(date, options) {
+  const _date = toDate(date, options?.in);
+  _date.setDate(1);
+  _date.setHours(0, 0, 0, 0);
+  return _date;
+}
+
+// node_modules/.pnpm/date-fns@4.1.0/node_modules/date-fns/endOfYear.js
+function endOfYear(date, options) {
+  const _date = toDate(date, options?.in);
+  const year = _date.getFullYear();
+  _date.setFullYear(year + 1, 0, 0);
+  _date.setHours(23, 59, 59, 999);
+  return _date;
+}
+
+// node_modules/.pnpm/date-fns@4.1.0/node_modules/date-fns/startOfYear.js
+function startOfYear(date, options) {
+  const date_ = toDate(date, options?.in);
+  date_.setFullYear(date_.getFullYear(), 0, 1);
+  date_.setHours(0, 0, 0, 0);
+  return date_;
+}
+
+// node_modules/.pnpm/date-fns@4.1.0/node_modules/date-fns/endOfWeek.js
+function endOfWeek(date, options) {
+  const defaultOptions2 = getDefaultOptions();
+  const weekStartsOn = options?.weekStartsOn ?? options?.locale?.options?.weekStartsOn ?? defaultOptions2.weekStartsOn ?? defaultOptions2.locale?.options?.weekStartsOn ?? 0;
+  const _date = toDate(date, options?.in);
+  const day = _date.getDay();
+  const diff = (day < weekStartsOn ? -7 : 0) + 6 - (day - weekStartsOn);
+  _date.setDate(_date.getDate() + diff);
+  _date.setHours(23, 59, 59, 999);
+  return _date;
+}
+
+// node_modules/.pnpm/date-fns@4.1.0/node_modules/date-fns/locale/en-US/_lib/formatDistance.js
+var formatDistanceLocale = {
+  lessThanXSeconds: {
+    one: "less than a second",
+    other: "less than {{count}} seconds"
+  },
+  xSeconds: {
+    one: "1 second",
+    other: "{{count}} seconds"
+  },
+  halfAMinute: "half a minute",
+  lessThanXMinutes: {
+    one: "less than a minute",
+    other: "less than {{count}} minutes"
+  },
+  xMinutes: {
+    one: "1 minute",
+    other: "{{count}} minutes"
+  },
+  aboutXHours: {
+    one: "about 1 hour",
+    other: "about {{count}} hours"
+  },
+  xHours: {
+    one: "1 hour",
+    other: "{{count}} hours"
+  },
+  xDays: {
+    one: "1 day",
+    other: "{{count}} days"
+  },
+  aboutXWeeks: {
+    one: "about 1 week",
+    other: "about {{count}} weeks"
+  },
+  xWeeks: {
+    one: "1 week",
+    other: "{{count}} weeks"
+  },
+  aboutXMonths: {
+    one: "about 1 month",
+    other: "about {{count}} months"
+  },
+  xMonths: {
+    one: "1 month",
+    other: "{{count}} months"
+  },
+  aboutXYears: {
+    one: "about 1 year",
+    other: "about {{count}} years"
+  },
+  xYears: {
+    one: "1 year",
+    other: "{{count}} years"
+  },
+  overXYears: {
+    one: "over 1 year",
+    other: "over {{count}} years"
+  },
+  almostXYears: {
+    one: "almost 1 year",
+    other: "almost {{count}} years"
+  }
+};
+var formatDistance = (token, count4, options) => {
+  let result;
+  const tokenValue = formatDistanceLocale[token];
+  if (typeof tokenValue === "string") {
+    result = tokenValue;
+  } else if (count4 === 1) {
+    result = tokenValue.one;
+  } else {
+    result = tokenValue.other.replace("{{count}}", count4.toString());
+  }
+  if (options?.addSuffix) {
+    if (options.comparison && options.comparison > 0) {
+      return "in " + result;
+    } else {
+      return result + " ago";
+    }
+  }
+  return result;
+};
+
+// node_modules/.pnpm/date-fns@4.1.0/node_modules/date-fns/locale/_lib/buildFormatLongFn.js
+function buildFormatLongFn(args) {
+  return (options = {}) => {
+    const width = options.width ? String(options.width) : args.defaultWidth;
+    const format2 = args.formats[width] || args.formats[args.defaultWidth];
+    return format2;
+  };
+}
+
+// node_modules/.pnpm/date-fns@4.1.0/node_modules/date-fns/locale/en-US/_lib/formatLong.js
+var dateFormats = {
+  full: "EEEE, MMMM do, y",
+  long: "MMMM do, y",
+  medium: "MMM d, y",
+  short: "MM/dd/yyyy"
+};
+var timeFormats = {
+  full: "h:mm:ss a zzzz",
+  long: "h:mm:ss a z",
+  medium: "h:mm:ss a",
+  short: "h:mm a"
+};
+var dateTimeFormats = {
+  full: "{{date}} 'at' {{time}}",
+  long: "{{date}} 'at' {{time}}",
+  medium: "{{date}}, {{time}}",
+  short: "{{date}}, {{time}}"
+};
+var formatLong = {
+  date: buildFormatLongFn({
+    formats: dateFormats,
+    defaultWidth: "full"
+  }),
+  time: buildFormatLongFn({
+    formats: timeFormats,
+    defaultWidth: "full"
+  }),
+  dateTime: buildFormatLongFn({
+    formats: dateTimeFormats,
+    defaultWidth: "full"
+  })
+};
+
+// node_modules/.pnpm/date-fns@4.1.0/node_modules/date-fns/locale/en-US/_lib/formatRelative.js
+var formatRelativeLocale = {
+  lastWeek: "'last' eeee 'at' p",
+  yesterday: "'yesterday at' p",
+  today: "'today at' p",
+  tomorrow: "'tomorrow at' p",
+  nextWeek: "eeee 'at' p",
+  other: "P"
+};
+var formatRelative = (token, _date, _baseDate, _options) => formatRelativeLocale[token];
+
+// node_modules/.pnpm/date-fns@4.1.0/node_modules/date-fns/locale/_lib/buildLocalizeFn.js
+function buildLocalizeFn(args) {
+  return (value, options) => {
+    const context = options?.context ? String(options.context) : "standalone";
+    let valuesArray;
+    if (context === "formatting" && args.formattingValues) {
+      const defaultWidth = args.defaultFormattingWidth || args.defaultWidth;
+      const width = options?.width ? String(options.width) : defaultWidth;
+      valuesArray = args.formattingValues[width] || args.formattingValues[defaultWidth];
+    } else {
+      const defaultWidth = args.defaultWidth;
+      const width = options?.width ? String(options.width) : args.defaultWidth;
+      valuesArray = args.values[width] || args.values[defaultWidth];
+    }
+    const index3 = args.argumentCallback ? args.argumentCallback(value) : value;
+    return valuesArray[index3];
+  };
+}
+
+// node_modules/.pnpm/date-fns@4.1.0/node_modules/date-fns/locale/en-US/_lib/localize.js
+var eraValues = {
+  narrow: ["B", "A"],
+  abbreviated: ["BC", "AD"],
+  wide: ["Before Christ", "Anno Domini"]
+};
+var quarterValues = {
+  narrow: ["1", "2", "3", "4"],
+  abbreviated: ["Q1", "Q2", "Q3", "Q4"],
+  wide: ["1st quarter", "2nd quarter", "3rd quarter", "4th quarter"]
+};
+var monthValues = {
+  narrow: ["J", "F", "M", "A", "M", "J", "J", "A", "S", "O", "N", "D"],
+  abbreviated: [
+    "Jan",
+    "Feb",
+    "Mar",
+    "Apr",
+    "May",
+    "Jun",
+    "Jul",
+    "Aug",
+    "Sep",
+    "Oct",
+    "Nov",
+    "Dec"
+  ],
+  wide: [
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December"
+  ]
+};
+var dayValues = {
+  narrow: ["S", "M", "T", "W", "T", "F", "S"],
+  short: ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"],
+  abbreviated: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
+  wide: [
+    "Sunday",
+    "Monday",
+    "Tuesday",
+    "Wednesday",
+    "Thursday",
+    "Friday",
+    "Saturday"
+  ]
+};
+var dayPeriodValues = {
+  narrow: {
+    am: "a",
+    pm: "p",
+    midnight: "mi",
+    noon: "n",
+    morning: "morning",
+    afternoon: "afternoon",
+    evening: "evening",
+    night: "night"
+  },
+  abbreviated: {
+    am: "AM",
+    pm: "PM",
+    midnight: "midnight",
+    noon: "noon",
+    morning: "morning",
+    afternoon: "afternoon",
+    evening: "evening",
+    night: "night"
+  },
+  wide: {
+    am: "a.m.",
+    pm: "p.m.",
+    midnight: "midnight",
+    noon: "noon",
+    morning: "morning",
+    afternoon: "afternoon",
+    evening: "evening",
+    night: "night"
+  }
+};
+var formattingDayPeriodValues = {
+  narrow: {
+    am: "a",
+    pm: "p",
+    midnight: "mi",
+    noon: "n",
+    morning: "in the morning",
+    afternoon: "in the afternoon",
+    evening: "in the evening",
+    night: "at night"
+  },
+  abbreviated: {
+    am: "AM",
+    pm: "PM",
+    midnight: "midnight",
+    noon: "noon",
+    morning: "in the morning",
+    afternoon: "in the afternoon",
+    evening: "in the evening",
+    night: "at night"
+  },
+  wide: {
+    am: "a.m.",
+    pm: "p.m.",
+    midnight: "midnight",
+    noon: "noon",
+    morning: "in the morning",
+    afternoon: "in the afternoon",
+    evening: "in the evening",
+    night: "at night"
+  }
+};
+var ordinalNumber = (dirtyNumber, _options) => {
+  const number = Number(dirtyNumber);
+  const rem100 = number % 100;
+  if (rem100 > 20 || rem100 < 10) {
+    switch (rem100 % 10) {
+      case 1:
+        return number + "st";
+      case 2:
+        return number + "nd";
+      case 3:
+        return number + "rd";
+    }
+  }
+  return number + "th";
+};
+var localize = {
+  ordinalNumber,
+  era: buildLocalizeFn({
+    values: eraValues,
+    defaultWidth: "wide"
+  }),
+  quarter: buildLocalizeFn({
+    values: quarterValues,
+    defaultWidth: "wide",
+    argumentCallback: (quarter) => quarter - 1
+  }),
+  month: buildLocalizeFn({
+    values: monthValues,
+    defaultWidth: "wide"
+  }),
+  day: buildLocalizeFn({
+    values: dayValues,
+    defaultWidth: "wide"
+  }),
+  dayPeriod: buildLocalizeFn({
+    values: dayPeriodValues,
+    defaultWidth: "wide",
+    formattingValues: formattingDayPeriodValues,
+    defaultFormattingWidth: "wide"
+  })
+};
+
+// node_modules/.pnpm/date-fns@4.1.0/node_modules/date-fns/locale/_lib/buildMatchFn.js
+function buildMatchFn(args) {
+  return (string, options = {}) => {
+    const width = options.width;
+    const matchPattern = width && args.matchPatterns[width] || args.matchPatterns[args.defaultMatchWidth];
+    const matchResult = string.match(matchPattern);
+    if (!matchResult) {
+      return null;
+    }
+    const matchedString = matchResult[0];
+    const parsePatterns = width && args.parsePatterns[width] || args.parsePatterns[args.defaultParseWidth];
+    const key = Array.isArray(parsePatterns) ? findIndex(parsePatterns, (pattern) => pattern.test(matchedString)) : (
+      // [TODO] -- I challenge you to fix the type
+      findKey(parsePatterns, (pattern) => pattern.test(matchedString))
+    );
+    let value;
+    value = args.valueCallback ? args.valueCallback(key) : key;
+    value = options.valueCallback ? (
+      // [TODO] -- I challenge you to fix the type
+      options.valueCallback(value)
+    ) : value;
+    const rest = string.slice(matchedString.length);
+    return { value, rest };
+  };
+}
+function findKey(object, predicate) {
+  for (const key in object) {
+    if (Object.prototype.hasOwnProperty.call(object, key) && predicate(object[key])) {
+      return key;
+    }
+  }
+  return void 0;
+}
+function findIndex(array, predicate) {
+  for (let key = 0; key < array.length; key++) {
+    if (predicate(array[key])) {
+      return key;
+    }
+  }
+  return void 0;
+}
+
+// node_modules/.pnpm/date-fns@4.1.0/node_modules/date-fns/locale/_lib/buildMatchPatternFn.js
+function buildMatchPatternFn(args) {
+  return (string, options = {}) => {
+    const matchResult = string.match(args.matchPattern);
+    if (!matchResult) return null;
+    const matchedString = matchResult[0];
+    const parseResult = string.match(args.parsePattern);
+    if (!parseResult) return null;
+    let value = args.valueCallback ? args.valueCallback(parseResult[0]) : parseResult[0];
+    value = options.valueCallback ? options.valueCallback(value) : value;
+    const rest = string.slice(matchedString.length);
+    return { value, rest };
+  };
+}
+
+// node_modules/.pnpm/date-fns@4.1.0/node_modules/date-fns/locale/en-US/_lib/match.js
+var matchOrdinalNumberPattern = /^(\d+)(th|st|nd|rd)?/i;
+var parseOrdinalNumberPattern = /\d+/i;
+var matchEraPatterns = {
+  narrow: /^(b|a)/i,
+  abbreviated: /^(b\.?\s?c\.?|b\.?\s?c\.?\s?e\.?|a\.?\s?d\.?|c\.?\s?e\.?)/i,
+  wide: /^(before christ|before common era|anno domini|common era)/i
+};
+var parseEraPatterns = {
+  any: [/^b/i, /^(a|c)/i]
+};
+var matchQuarterPatterns = {
+  narrow: /^[1234]/i,
+  abbreviated: /^q[1234]/i,
+  wide: /^[1234](th|st|nd|rd)? quarter/i
+};
+var parseQuarterPatterns = {
+  any: [/1/i, /2/i, /3/i, /4/i]
+};
+var matchMonthPatterns = {
+  narrow: /^[jfmasond]/i,
+  abbreviated: /^(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)/i,
+  wide: /^(january|february|march|april|may|june|july|august|september|october|november|december)/i
+};
+var parseMonthPatterns = {
+  narrow: [
+    /^j/i,
+    /^f/i,
+    /^m/i,
+    /^a/i,
+    /^m/i,
+    /^j/i,
+    /^j/i,
+    /^a/i,
+    /^s/i,
+    /^o/i,
+    /^n/i,
+    /^d/i
+  ],
+  any: [
+    /^ja/i,
+    /^f/i,
+    /^mar/i,
+    /^ap/i,
+    /^may/i,
+    /^jun/i,
+    /^jul/i,
+    /^au/i,
+    /^s/i,
+    /^o/i,
+    /^n/i,
+    /^d/i
+  ]
+};
+var matchDayPatterns = {
+  narrow: /^[smtwf]/i,
+  short: /^(su|mo|tu|we|th|fr|sa)/i,
+  abbreviated: /^(sun|mon|tue|wed|thu|fri|sat)/i,
+  wide: /^(sunday|monday|tuesday|wednesday|thursday|friday|saturday)/i
+};
+var parseDayPatterns = {
+  narrow: [/^s/i, /^m/i, /^t/i, /^w/i, /^t/i, /^f/i, /^s/i],
+  any: [/^su/i, /^m/i, /^tu/i, /^w/i, /^th/i, /^f/i, /^sa/i]
+};
+var matchDayPeriodPatterns = {
+  narrow: /^(a|p|mi|n|(in the|at) (morning|afternoon|evening|night))/i,
+  any: /^([ap]\.?\s?m\.?|midnight|noon|(in the|at) (morning|afternoon|evening|night))/i
+};
+var parseDayPeriodPatterns = {
+  any: {
+    am: /^a/i,
+    pm: /^p/i,
+    midnight: /^mi/i,
+    noon: /^no/i,
+    morning: /morning/i,
+    afternoon: /afternoon/i,
+    evening: /evening/i,
+    night: /night/i
+  }
+};
+var match = {
+  ordinalNumber: buildMatchPatternFn({
+    matchPattern: matchOrdinalNumberPattern,
+    parsePattern: parseOrdinalNumberPattern,
+    valueCallback: (value) => parseInt(value, 10)
+  }),
+  era: buildMatchFn({
+    matchPatterns: matchEraPatterns,
+    defaultMatchWidth: "wide",
+    parsePatterns: parseEraPatterns,
+    defaultParseWidth: "any"
+  }),
+  quarter: buildMatchFn({
+    matchPatterns: matchQuarterPatterns,
+    defaultMatchWidth: "wide",
+    parsePatterns: parseQuarterPatterns,
+    defaultParseWidth: "any",
+    valueCallback: (index3) => index3 + 1
+  }),
+  month: buildMatchFn({
+    matchPatterns: matchMonthPatterns,
+    defaultMatchWidth: "wide",
+    parsePatterns: parseMonthPatterns,
+    defaultParseWidth: "any"
+  }),
+  day: buildMatchFn({
+    matchPatterns: matchDayPatterns,
+    defaultMatchWidth: "wide",
+    parsePatterns: parseDayPatterns,
+    defaultParseWidth: "any"
+  }),
+  dayPeriod: buildMatchFn({
+    matchPatterns: matchDayPeriodPatterns,
+    defaultMatchWidth: "any",
+    parsePatterns: parseDayPeriodPatterns,
+    defaultParseWidth: "any"
+  })
+};
+
+// node_modules/.pnpm/date-fns@4.1.0/node_modules/date-fns/locale/en-US.js
+var enUS = {
+  code: "en-US",
+  formatDistance,
+  formatLong,
+  formatRelative,
+  localize,
+  match,
+  options: {
+    weekStartsOn: 0,
+    firstWeekContainsDate: 1
+  }
+};
+
+// node_modules/.pnpm/date-fns@4.1.0/node_modules/date-fns/getDayOfYear.js
+function getDayOfYear(date, options) {
+  const _date = toDate(date, options?.in);
+  const diff = differenceInCalendarDays(_date, startOfYear(_date));
+  const dayOfYear = diff + 1;
+  return dayOfYear;
+}
+
+// node_modules/.pnpm/date-fns@4.1.0/node_modules/date-fns/getISOWeek.js
+function getISOWeek(date, options) {
+  const _date = toDate(date, options?.in);
+  const diff = +startOfISOWeek(_date) - +startOfISOWeekYear(_date);
+  return Math.round(diff / millisecondsInWeek) + 1;
+}
+
+// node_modules/.pnpm/date-fns@4.1.0/node_modules/date-fns/getWeekYear.js
+function getWeekYear(date, options) {
+  const _date = toDate(date, options?.in);
+  const year = _date.getFullYear();
+  const defaultOptions2 = getDefaultOptions();
+  const firstWeekContainsDate = options?.firstWeekContainsDate ?? options?.locale?.options?.firstWeekContainsDate ?? defaultOptions2.firstWeekContainsDate ?? defaultOptions2.locale?.options?.firstWeekContainsDate ?? 1;
+  const firstWeekOfNextYear = constructFrom(options?.in || date, 0);
+  firstWeekOfNextYear.setFullYear(year + 1, 0, firstWeekContainsDate);
+  firstWeekOfNextYear.setHours(0, 0, 0, 0);
+  const startOfNextYear = startOfWeek(firstWeekOfNextYear, options);
+  const firstWeekOfThisYear = constructFrom(options?.in || date, 0);
+  firstWeekOfThisYear.setFullYear(year, 0, firstWeekContainsDate);
+  firstWeekOfThisYear.setHours(0, 0, 0, 0);
+  const startOfThisYear = startOfWeek(firstWeekOfThisYear, options);
+  if (+_date >= +startOfNextYear) {
+    return year + 1;
+  } else if (+_date >= +startOfThisYear) {
+    return year;
+  } else {
+    return year - 1;
+  }
+}
+
+// node_modules/.pnpm/date-fns@4.1.0/node_modules/date-fns/startOfWeekYear.js
+function startOfWeekYear(date, options) {
+  const defaultOptions2 = getDefaultOptions();
+  const firstWeekContainsDate = options?.firstWeekContainsDate ?? options?.locale?.options?.firstWeekContainsDate ?? defaultOptions2.firstWeekContainsDate ?? defaultOptions2.locale?.options?.firstWeekContainsDate ?? 1;
+  const year = getWeekYear(date, options);
+  const firstWeek = constructFrom(options?.in || date, 0);
+  firstWeek.setFullYear(year, 0, firstWeekContainsDate);
+  firstWeek.setHours(0, 0, 0, 0);
+  const _date = startOfWeek(firstWeek, options);
+  return _date;
+}
+
+// node_modules/.pnpm/date-fns@4.1.0/node_modules/date-fns/getWeek.js
+function getWeek(date, options) {
+  const _date = toDate(date, options?.in);
+  const diff = +startOfWeek(_date, options) - +startOfWeekYear(_date, options);
+  return Math.round(diff / millisecondsInWeek) + 1;
+}
+
+// node_modules/.pnpm/date-fns@4.1.0/node_modules/date-fns/_lib/addLeadingZeros.js
+function addLeadingZeros(number, targetLength) {
+  const sign = number < 0 ? "-" : "";
+  const output = Math.abs(number).toString().padStart(targetLength, "0");
+  return sign + output;
+}
+
+// node_modules/.pnpm/date-fns@4.1.0/node_modules/date-fns/_lib/format/lightFormatters.js
+var lightFormatters = {
+  // Year
+  y(date, token) {
+    const signedYear = date.getFullYear();
+    const year = signedYear > 0 ? signedYear : 1 - signedYear;
+    return addLeadingZeros(token === "yy" ? year % 100 : year, token.length);
+  },
+  // Month
+  M(date, token) {
+    const month = date.getMonth();
+    return token === "M" ? String(month + 1) : addLeadingZeros(month + 1, 2);
+  },
+  // Day of the month
+  d(date, token) {
+    return addLeadingZeros(date.getDate(), token.length);
+  },
+  // AM or PM
+  a(date, token) {
+    const dayPeriodEnumValue = date.getHours() / 12 >= 1 ? "pm" : "am";
+    switch (token) {
+      case "a":
+      case "aa":
+        return dayPeriodEnumValue.toUpperCase();
+      case "aaa":
+        return dayPeriodEnumValue;
+      case "aaaaa":
+        return dayPeriodEnumValue[0];
+      case "aaaa":
+      default:
+        return dayPeriodEnumValue === "am" ? "a.m." : "p.m.";
+    }
+  },
+  // Hour [1-12]
+  h(date, token) {
+    return addLeadingZeros(date.getHours() % 12 || 12, token.length);
+  },
+  // Hour [0-23]
+  H(date, token) {
+    return addLeadingZeros(date.getHours(), token.length);
+  },
+  // Minute
+  m(date, token) {
+    return addLeadingZeros(date.getMinutes(), token.length);
+  },
+  // Second
+  s(date, token) {
+    return addLeadingZeros(date.getSeconds(), token.length);
+  },
+  // Fraction of second
+  S(date, token) {
+    const numberOfDigits = token.length;
+    const milliseconds = date.getMilliseconds();
+    const fractionalSeconds = Math.trunc(
+      milliseconds * Math.pow(10, numberOfDigits - 3)
+    );
+    return addLeadingZeros(fractionalSeconds, token.length);
+  }
+};
+
+// node_modules/.pnpm/date-fns@4.1.0/node_modules/date-fns/_lib/format/formatters.js
+var dayPeriodEnum = {
+  am: "am",
+  pm: "pm",
+  midnight: "midnight",
+  noon: "noon",
+  morning: "morning",
+  afternoon: "afternoon",
+  evening: "evening",
+  night: "night"
+};
+var formatters = {
+  // Era
+  G: function(date, token, localize2) {
+    const era = date.getFullYear() > 0 ? 1 : 0;
+    switch (token) {
+      // AD, BC
+      case "G":
+      case "GG":
+      case "GGG":
+        return localize2.era(era, { width: "abbreviated" });
+      // A, B
+      case "GGGGG":
+        return localize2.era(era, { width: "narrow" });
+      // Anno Domini, Before Christ
+      case "GGGG":
+      default:
+        return localize2.era(era, { width: "wide" });
+    }
+  },
+  // Year
+  y: function(date, token, localize2) {
+    if (token === "yo") {
+      const signedYear = date.getFullYear();
+      const year = signedYear > 0 ? signedYear : 1 - signedYear;
+      return localize2.ordinalNumber(year, { unit: "year" });
+    }
+    return lightFormatters.y(date, token);
+  },
+  // Local week-numbering year
+  Y: function(date, token, localize2, options) {
+    const signedWeekYear = getWeekYear(date, options);
+    const weekYear = signedWeekYear > 0 ? signedWeekYear : 1 - signedWeekYear;
+    if (token === "YY") {
+      const twoDigitYear = weekYear % 100;
+      return addLeadingZeros(twoDigitYear, 2);
+    }
+    if (token === "Yo") {
+      return localize2.ordinalNumber(weekYear, { unit: "year" });
+    }
+    return addLeadingZeros(weekYear, token.length);
+  },
+  // ISO week-numbering year
+  R: function(date, token) {
+    const isoWeekYear = getISOWeekYear(date);
+    return addLeadingZeros(isoWeekYear, token.length);
+  },
+  // Extended year. This is a single number designating the year of this calendar system.
+  // The main difference between `y` and `u` localizers are B.C. years:
+  // | Year | `y` | `u` |
+  // |------|-----|-----|
+  // | AC 1 |   1 |   1 |
+  // | BC 1 |   1 |   0 |
+  // | BC 2 |   2 |  -1 |
+  // Also `yy` always returns the last two digits of a year,
+  // while `uu` pads single digit years to 2 characters and returns other years unchanged.
+  u: function(date, token) {
+    const year = date.getFullYear();
+    return addLeadingZeros(year, token.length);
+  },
+  // Quarter
+  Q: function(date, token, localize2) {
+    const quarter = Math.ceil((date.getMonth() + 1) / 3);
+    switch (token) {
+      // 1, 2, 3, 4
+      case "Q":
+        return String(quarter);
+      // 01, 02, 03, 04
+      case "QQ":
+        return addLeadingZeros(quarter, 2);
+      // 1st, 2nd, 3rd, 4th
+      case "Qo":
+        return localize2.ordinalNumber(quarter, { unit: "quarter" });
+      // Q1, Q2, Q3, Q4
+      case "QQQ":
+        return localize2.quarter(quarter, {
+          width: "abbreviated",
+          context: "formatting"
+        });
+      // 1, 2, 3, 4 (narrow quarter; could be not numerical)
+      case "QQQQQ":
+        return localize2.quarter(quarter, {
+          width: "narrow",
+          context: "formatting"
+        });
+      // 1st quarter, 2nd quarter, ...
+      case "QQQQ":
+      default:
+        return localize2.quarter(quarter, {
+          width: "wide",
+          context: "formatting"
+        });
+    }
+  },
+  // Stand-alone quarter
+  q: function(date, token, localize2) {
+    const quarter = Math.ceil((date.getMonth() + 1) / 3);
+    switch (token) {
+      // 1, 2, 3, 4
+      case "q":
+        return String(quarter);
+      // 01, 02, 03, 04
+      case "qq":
+        return addLeadingZeros(quarter, 2);
+      // 1st, 2nd, 3rd, 4th
+      case "qo":
+        return localize2.ordinalNumber(quarter, { unit: "quarter" });
+      // Q1, Q2, Q3, Q4
+      case "qqq":
+        return localize2.quarter(quarter, {
+          width: "abbreviated",
+          context: "standalone"
+        });
+      // 1, 2, 3, 4 (narrow quarter; could be not numerical)
+      case "qqqqq":
+        return localize2.quarter(quarter, {
+          width: "narrow",
+          context: "standalone"
+        });
+      // 1st quarter, 2nd quarter, ...
+      case "qqqq":
+      default:
+        return localize2.quarter(quarter, {
+          width: "wide",
+          context: "standalone"
+        });
+    }
+  },
+  // Month
+  M: function(date, token, localize2) {
+    const month = date.getMonth();
+    switch (token) {
+      case "M":
+      case "MM":
+        return lightFormatters.M(date, token);
+      // 1st, 2nd, ..., 12th
+      case "Mo":
+        return localize2.ordinalNumber(month + 1, { unit: "month" });
+      // Jan, Feb, ..., Dec
+      case "MMM":
+        return localize2.month(month, {
+          width: "abbreviated",
+          context: "formatting"
+        });
+      // J, F, ..., D
+      case "MMMMM":
+        return localize2.month(month, {
+          width: "narrow",
+          context: "formatting"
+        });
+      // January, February, ..., December
+      case "MMMM":
+      default:
+        return localize2.month(month, { width: "wide", context: "formatting" });
+    }
+  },
+  // Stand-alone month
+  L: function(date, token, localize2) {
+    const month = date.getMonth();
+    switch (token) {
+      // 1, 2, ..., 12
+      case "L":
+        return String(month + 1);
+      // 01, 02, ..., 12
+      case "LL":
+        return addLeadingZeros(month + 1, 2);
+      // 1st, 2nd, ..., 12th
+      case "Lo":
+        return localize2.ordinalNumber(month + 1, { unit: "month" });
+      // Jan, Feb, ..., Dec
+      case "LLL":
+        return localize2.month(month, {
+          width: "abbreviated",
+          context: "standalone"
+        });
+      // J, F, ..., D
+      case "LLLLL":
+        return localize2.month(month, {
+          width: "narrow",
+          context: "standalone"
+        });
+      // January, February, ..., December
+      case "LLLL":
+      default:
+        return localize2.month(month, { width: "wide", context: "standalone" });
+    }
+  },
+  // Local week of year
+  w: function(date, token, localize2, options) {
+    const week = getWeek(date, options);
+    if (token === "wo") {
+      return localize2.ordinalNumber(week, { unit: "week" });
+    }
+    return addLeadingZeros(week, token.length);
+  },
+  // ISO week of year
+  I: function(date, token, localize2) {
+    const isoWeek = getISOWeek(date);
+    if (token === "Io") {
+      return localize2.ordinalNumber(isoWeek, { unit: "week" });
+    }
+    return addLeadingZeros(isoWeek, token.length);
+  },
+  // Day of the month
+  d: function(date, token, localize2) {
+    if (token === "do") {
+      return localize2.ordinalNumber(date.getDate(), { unit: "date" });
+    }
+    return lightFormatters.d(date, token);
+  },
+  // Day of year
+  D: function(date, token, localize2) {
+    const dayOfYear = getDayOfYear(date);
+    if (token === "Do") {
+      return localize2.ordinalNumber(dayOfYear, { unit: "dayOfYear" });
+    }
+    return addLeadingZeros(dayOfYear, token.length);
+  },
+  // Day of week
+  E: function(date, token, localize2) {
+    const dayOfWeek = date.getDay();
+    switch (token) {
+      // Tue
+      case "E":
+      case "EE":
+      case "EEE":
+        return localize2.day(dayOfWeek, {
+          width: "abbreviated",
+          context: "formatting"
+        });
+      // T
+      case "EEEEE":
+        return localize2.day(dayOfWeek, {
+          width: "narrow",
+          context: "formatting"
+        });
+      // Tu
+      case "EEEEEE":
+        return localize2.day(dayOfWeek, {
+          width: "short",
+          context: "formatting"
+        });
+      // Tuesday
+      case "EEEE":
+      default:
+        return localize2.day(dayOfWeek, {
+          width: "wide",
+          context: "formatting"
+        });
+    }
+  },
+  // Local day of week
+  e: function(date, token, localize2, options) {
+    const dayOfWeek = date.getDay();
+    const localDayOfWeek = (dayOfWeek - options.weekStartsOn + 8) % 7 || 7;
+    switch (token) {
+      // Numerical value (Nth day of week with current locale or weekStartsOn)
+      case "e":
+        return String(localDayOfWeek);
+      // Padded numerical value
+      case "ee":
+        return addLeadingZeros(localDayOfWeek, 2);
+      // 1st, 2nd, ..., 7th
+      case "eo":
+        return localize2.ordinalNumber(localDayOfWeek, { unit: "day" });
+      case "eee":
+        return localize2.day(dayOfWeek, {
+          width: "abbreviated",
+          context: "formatting"
+        });
+      // T
+      case "eeeee":
+        return localize2.day(dayOfWeek, {
+          width: "narrow",
+          context: "formatting"
+        });
+      // Tu
+      case "eeeeee":
+        return localize2.day(dayOfWeek, {
+          width: "short",
+          context: "formatting"
+        });
+      // Tuesday
+      case "eeee":
+      default:
+        return localize2.day(dayOfWeek, {
+          width: "wide",
+          context: "formatting"
+        });
+    }
+  },
+  // Stand-alone local day of week
+  c: function(date, token, localize2, options) {
+    const dayOfWeek = date.getDay();
+    const localDayOfWeek = (dayOfWeek - options.weekStartsOn + 8) % 7 || 7;
+    switch (token) {
+      // Numerical value (same as in `e`)
+      case "c":
+        return String(localDayOfWeek);
+      // Padded numerical value
+      case "cc":
+        return addLeadingZeros(localDayOfWeek, token.length);
+      // 1st, 2nd, ..., 7th
+      case "co":
+        return localize2.ordinalNumber(localDayOfWeek, { unit: "day" });
+      case "ccc":
+        return localize2.day(dayOfWeek, {
+          width: "abbreviated",
+          context: "standalone"
+        });
+      // T
+      case "ccccc":
+        return localize2.day(dayOfWeek, {
+          width: "narrow",
+          context: "standalone"
+        });
+      // Tu
+      case "cccccc":
+        return localize2.day(dayOfWeek, {
+          width: "short",
+          context: "standalone"
+        });
+      // Tuesday
+      case "cccc":
+      default:
+        return localize2.day(dayOfWeek, {
+          width: "wide",
+          context: "standalone"
+        });
+    }
+  },
+  // ISO day of week
+  i: function(date, token, localize2) {
+    const dayOfWeek = date.getDay();
+    const isoDayOfWeek = dayOfWeek === 0 ? 7 : dayOfWeek;
+    switch (token) {
+      // 2
+      case "i":
+        return String(isoDayOfWeek);
+      // 02
+      case "ii":
+        return addLeadingZeros(isoDayOfWeek, token.length);
+      // 2nd
+      case "io":
+        return localize2.ordinalNumber(isoDayOfWeek, { unit: "day" });
+      // Tue
+      case "iii":
+        return localize2.day(dayOfWeek, {
+          width: "abbreviated",
+          context: "formatting"
+        });
+      // T
+      case "iiiii":
+        return localize2.day(dayOfWeek, {
+          width: "narrow",
+          context: "formatting"
+        });
+      // Tu
+      case "iiiiii":
+        return localize2.day(dayOfWeek, {
+          width: "short",
+          context: "formatting"
+        });
+      // Tuesday
+      case "iiii":
+      default:
+        return localize2.day(dayOfWeek, {
+          width: "wide",
+          context: "formatting"
+        });
+    }
+  },
+  // AM or PM
+  a: function(date, token, localize2) {
+    const hours = date.getHours();
+    const dayPeriodEnumValue = hours / 12 >= 1 ? "pm" : "am";
+    switch (token) {
+      case "a":
+      case "aa":
+        return localize2.dayPeriod(dayPeriodEnumValue, {
+          width: "abbreviated",
+          context: "formatting"
+        });
+      case "aaa":
+        return localize2.dayPeriod(dayPeriodEnumValue, {
+          width: "abbreviated",
+          context: "formatting"
+        }).toLowerCase();
+      case "aaaaa":
+        return localize2.dayPeriod(dayPeriodEnumValue, {
+          width: "narrow",
+          context: "formatting"
+        });
+      case "aaaa":
+      default:
+        return localize2.dayPeriod(dayPeriodEnumValue, {
+          width: "wide",
+          context: "formatting"
+        });
+    }
+  },
+  // AM, PM, midnight, noon
+  b: function(date, token, localize2) {
+    const hours = date.getHours();
+    let dayPeriodEnumValue;
+    if (hours === 12) {
+      dayPeriodEnumValue = dayPeriodEnum.noon;
+    } else if (hours === 0) {
+      dayPeriodEnumValue = dayPeriodEnum.midnight;
+    } else {
+      dayPeriodEnumValue = hours / 12 >= 1 ? "pm" : "am";
+    }
+    switch (token) {
+      case "b":
+      case "bb":
+        return localize2.dayPeriod(dayPeriodEnumValue, {
+          width: "abbreviated",
+          context: "formatting"
+        });
+      case "bbb":
+        return localize2.dayPeriod(dayPeriodEnumValue, {
+          width: "abbreviated",
+          context: "formatting"
+        }).toLowerCase();
+      case "bbbbb":
+        return localize2.dayPeriod(dayPeriodEnumValue, {
+          width: "narrow",
+          context: "formatting"
+        });
+      case "bbbb":
+      default:
+        return localize2.dayPeriod(dayPeriodEnumValue, {
+          width: "wide",
+          context: "formatting"
+        });
+    }
+  },
+  // in the morning, in the afternoon, in the evening, at night
+  B: function(date, token, localize2) {
+    const hours = date.getHours();
+    let dayPeriodEnumValue;
+    if (hours >= 17) {
+      dayPeriodEnumValue = dayPeriodEnum.evening;
+    } else if (hours >= 12) {
+      dayPeriodEnumValue = dayPeriodEnum.afternoon;
+    } else if (hours >= 4) {
+      dayPeriodEnumValue = dayPeriodEnum.morning;
+    } else {
+      dayPeriodEnumValue = dayPeriodEnum.night;
+    }
+    switch (token) {
+      case "B":
+      case "BB":
+      case "BBB":
+        return localize2.dayPeriod(dayPeriodEnumValue, {
+          width: "abbreviated",
+          context: "formatting"
+        });
+      case "BBBBB":
+        return localize2.dayPeriod(dayPeriodEnumValue, {
+          width: "narrow",
+          context: "formatting"
+        });
+      case "BBBB":
+      default:
+        return localize2.dayPeriod(dayPeriodEnumValue, {
+          width: "wide",
+          context: "formatting"
+        });
+    }
+  },
+  // Hour [1-12]
+  h: function(date, token, localize2) {
+    if (token === "ho") {
+      let hours = date.getHours() % 12;
+      if (hours === 0) hours = 12;
+      return localize2.ordinalNumber(hours, { unit: "hour" });
+    }
+    return lightFormatters.h(date, token);
+  },
+  // Hour [0-23]
+  H: function(date, token, localize2) {
+    if (token === "Ho") {
+      return localize2.ordinalNumber(date.getHours(), { unit: "hour" });
+    }
+    return lightFormatters.H(date, token);
+  },
+  // Hour [0-11]
+  K: function(date, token, localize2) {
+    const hours = date.getHours() % 12;
+    if (token === "Ko") {
+      return localize2.ordinalNumber(hours, { unit: "hour" });
+    }
+    return addLeadingZeros(hours, token.length);
+  },
+  // Hour [1-24]
+  k: function(date, token, localize2) {
+    let hours = date.getHours();
+    if (hours === 0) hours = 24;
+    if (token === "ko") {
+      return localize2.ordinalNumber(hours, { unit: "hour" });
+    }
+    return addLeadingZeros(hours, token.length);
+  },
+  // Minute
+  m: function(date, token, localize2) {
+    if (token === "mo") {
+      return localize2.ordinalNumber(date.getMinutes(), { unit: "minute" });
+    }
+    return lightFormatters.m(date, token);
+  },
+  // Second
+  s: function(date, token, localize2) {
+    if (token === "so") {
+      return localize2.ordinalNumber(date.getSeconds(), { unit: "second" });
+    }
+    return lightFormatters.s(date, token);
+  },
+  // Fraction of second
+  S: function(date, token) {
+    return lightFormatters.S(date, token);
+  },
+  // Timezone (ISO-8601. If offset is 0, output is always `'Z'`)
+  X: function(date, token, _localize) {
+    const timezoneOffset = date.getTimezoneOffset();
+    if (timezoneOffset === 0) {
+      return "Z";
+    }
+    switch (token) {
+      // Hours and optional minutes
+      case "X":
+        return formatTimezoneWithOptionalMinutes(timezoneOffset);
+      // Hours, minutes and optional seconds without `:` delimiter
+      // Note: neither ISO-8601 nor JavaScript supports seconds in timezone offsets
+      // so this token always has the same output as `XX`
+      case "XXXX":
+      case "XX":
+        return formatTimezone(timezoneOffset);
+      // Hours, minutes and optional seconds with `:` delimiter
+      // Note: neither ISO-8601 nor JavaScript supports seconds in timezone offsets
+      // so this token always has the same output as `XXX`
+      case "XXXXX":
+      case "XXX":
+      // Hours and minutes with `:` delimiter
+      default:
+        return formatTimezone(timezoneOffset, ":");
+    }
+  },
+  // Timezone (ISO-8601. If offset is 0, output is `'+00:00'` or equivalent)
+  x: function(date, token, _localize) {
+    const timezoneOffset = date.getTimezoneOffset();
+    switch (token) {
+      // Hours and optional minutes
+      case "x":
+        return formatTimezoneWithOptionalMinutes(timezoneOffset);
+      // Hours, minutes and optional seconds without `:` delimiter
+      // Note: neither ISO-8601 nor JavaScript supports seconds in timezone offsets
+      // so this token always has the same output as `xx`
+      case "xxxx":
+      case "xx":
+        return formatTimezone(timezoneOffset);
+      // Hours, minutes and optional seconds with `:` delimiter
+      // Note: neither ISO-8601 nor JavaScript supports seconds in timezone offsets
+      // so this token always has the same output as `xxx`
+      case "xxxxx":
+      case "xxx":
+      // Hours and minutes with `:` delimiter
+      default:
+        return formatTimezone(timezoneOffset, ":");
+    }
+  },
+  // Timezone (GMT)
+  O: function(date, token, _localize) {
+    const timezoneOffset = date.getTimezoneOffset();
+    switch (token) {
+      // Short
+      case "O":
+      case "OO":
+      case "OOO":
+        return "GMT" + formatTimezoneShort(timezoneOffset, ":");
+      // Long
+      case "OOOO":
+      default:
+        return "GMT" + formatTimezone(timezoneOffset, ":");
+    }
+  },
+  // Timezone (specific non-location)
+  z: function(date, token, _localize) {
+    const timezoneOffset = date.getTimezoneOffset();
+    switch (token) {
+      // Short
+      case "z":
+      case "zz":
+      case "zzz":
+        return "GMT" + formatTimezoneShort(timezoneOffset, ":");
+      // Long
+      case "zzzz":
+      default:
+        return "GMT" + formatTimezone(timezoneOffset, ":");
+    }
+  },
+  // Seconds timestamp
+  t: function(date, token, _localize) {
+    const timestamp = Math.trunc(+date / 1e3);
+    return addLeadingZeros(timestamp, token.length);
+  },
+  // Milliseconds timestamp
+  T: function(date, token, _localize) {
+    return addLeadingZeros(+date, token.length);
+  }
+};
+function formatTimezoneShort(offset4, delimiter = "") {
+  const sign = offset4 > 0 ? "-" : "+";
+  const absOffset = Math.abs(offset4);
+  const hours = Math.trunc(absOffset / 60);
+  const minutes = absOffset % 60;
+  if (minutes === 0) {
+    return sign + String(hours);
+  }
+  return sign + String(hours) + delimiter + addLeadingZeros(minutes, 2);
+}
+function formatTimezoneWithOptionalMinutes(offset4, delimiter) {
+  if (offset4 % 60 === 0) {
+    const sign = offset4 > 0 ? "-" : "+";
+    return sign + addLeadingZeros(Math.abs(offset4) / 60, 2);
+  }
+  return formatTimezone(offset4, delimiter);
+}
+function formatTimezone(offset4, delimiter = "") {
+  const sign = offset4 > 0 ? "-" : "+";
+  const absOffset = Math.abs(offset4);
+  const hours = addLeadingZeros(Math.trunc(absOffset / 60), 2);
+  const minutes = addLeadingZeros(absOffset % 60, 2);
+  return sign + hours + delimiter + minutes;
+}
+
+// node_modules/.pnpm/date-fns@4.1.0/node_modules/date-fns/_lib/format/longFormatters.js
+var dateLongFormatter = (pattern, formatLong2) => {
+  switch (pattern) {
+    case "P":
+      return formatLong2.date({ width: "short" });
+    case "PP":
+      return formatLong2.date({ width: "medium" });
+    case "PPP":
+      return formatLong2.date({ width: "long" });
+    case "PPPP":
+    default:
+      return formatLong2.date({ width: "full" });
+  }
+};
+var timeLongFormatter = (pattern, formatLong2) => {
+  switch (pattern) {
+    case "p":
+      return formatLong2.time({ width: "short" });
+    case "pp":
+      return formatLong2.time({ width: "medium" });
+    case "ppp":
+      return formatLong2.time({ width: "long" });
+    case "pppp":
+    default:
+      return formatLong2.time({ width: "full" });
+  }
+};
+var dateTimeLongFormatter = (pattern, formatLong2) => {
+  const matchResult = pattern.match(/(P+)(p+)?/) || [];
+  const datePattern = matchResult[1];
+  const timePattern = matchResult[2];
+  if (!timePattern) {
+    return dateLongFormatter(pattern, formatLong2);
+  }
+  let dateTimeFormat;
+  switch (datePattern) {
+    case "P":
+      dateTimeFormat = formatLong2.dateTime({ width: "short" });
+      break;
+    case "PP":
+      dateTimeFormat = formatLong2.dateTime({ width: "medium" });
+      break;
+    case "PPP":
+      dateTimeFormat = formatLong2.dateTime({ width: "long" });
+      break;
+    case "PPPP":
+    default:
+      dateTimeFormat = formatLong2.dateTime({ width: "full" });
+      break;
+  }
+  return dateTimeFormat.replace("{{date}}", dateLongFormatter(datePattern, formatLong2)).replace("{{time}}", timeLongFormatter(timePattern, formatLong2));
+};
+var longFormatters = {
+  p: timeLongFormatter,
+  P: dateTimeLongFormatter
+};
+
+// node_modules/.pnpm/date-fns@4.1.0/node_modules/date-fns/_lib/protectedTokens.js
+var dayOfYearTokenRE = /^D+$/;
+var weekYearTokenRE = /^Y+$/;
+var throwTokens = ["D", "DD", "YY", "YYYY"];
+function isProtectedDayOfYearToken(token) {
+  return dayOfYearTokenRE.test(token);
+}
+function isProtectedWeekYearToken(token) {
+  return weekYearTokenRE.test(token);
+}
+function warnOrThrowProtectedError(token, format2, input) {
+  const _message = message(token, format2, input);
+  console.warn(_message);
+  if (throwTokens.includes(token)) throw new RangeError(_message);
+}
+function message(token, format2, input) {
+  const subject = token[0] === "Y" ? "years" : "days of the month";
+  return `Use \`${token.toLowerCase()}\` instead of \`${token}\` (in \`${format2}\`) for formatting ${subject} to the input \`${input}\`; see: https://github.com/date-fns/date-fns/blob/master/docs/unicodeTokens.md`;
+}
+
+// node_modules/.pnpm/date-fns@4.1.0/node_modules/date-fns/format.js
+var formattingTokensRegExp = /[yYQqMLwIdDecihHKkms]o|(\w)\1*|''|'(''|[^'])+('|$)|./g;
+var longFormattingTokensRegExp = /P+p+|P+|p+|''|'(''|[^'])+('|$)|./g;
+var escapedStringRegExp = /^'([^]*?)'?$/;
+var doubleQuoteRegExp = /''/g;
+var unescapedLatinCharacterRegExp = /[a-zA-Z]/;
+function format(date, formatStr, options) {
+  const defaultOptions2 = getDefaultOptions();
+  const locale = options?.locale ?? defaultOptions2.locale ?? enUS;
+  const firstWeekContainsDate = options?.firstWeekContainsDate ?? options?.locale?.options?.firstWeekContainsDate ?? defaultOptions2.firstWeekContainsDate ?? defaultOptions2.locale?.options?.firstWeekContainsDate ?? 1;
+  const weekStartsOn = options?.weekStartsOn ?? options?.locale?.options?.weekStartsOn ?? defaultOptions2.weekStartsOn ?? defaultOptions2.locale?.options?.weekStartsOn ?? 0;
+  const originalDate = toDate(date, options?.in);
+  if (!isValid(originalDate)) {
+    throw new RangeError("Invalid time value");
+  }
+  let parts = formatStr.match(longFormattingTokensRegExp).map((substring) => {
+    const firstCharacter = substring[0];
+    if (firstCharacter === "p" || firstCharacter === "P") {
+      const longFormatter = longFormatters[firstCharacter];
+      return longFormatter(substring, locale.formatLong);
+    }
+    return substring;
+  }).join("").match(formattingTokensRegExp).map((substring) => {
+    if (substring === "''") {
+      return { isToken: false, value: "'" };
+    }
+    const firstCharacter = substring[0];
+    if (firstCharacter === "'") {
+      return { isToken: false, value: cleanEscapedString(substring) };
+    }
+    if (formatters[firstCharacter]) {
+      return { isToken: true, value: substring };
+    }
+    if (firstCharacter.match(unescapedLatinCharacterRegExp)) {
+      throw new RangeError(
+        "Format string contains an unescaped latin alphabet character `" + firstCharacter + "`"
+      );
+    }
+    return { isToken: false, value: substring };
+  });
+  if (locale.localize.preprocessor) {
+    parts = locale.localize.preprocessor(originalDate, parts);
+  }
+  const formatterOptions = {
+    firstWeekContainsDate,
+    weekStartsOn,
+    locale
+  };
+  return parts.map((part) => {
+    if (!part.isToken) return part.value;
+    const token = part.value;
+    if (!options?.useAdditionalWeekYearTokens && isProtectedWeekYearToken(token) || !options?.useAdditionalDayOfYearTokens && isProtectedDayOfYearToken(token)) {
+      warnOrThrowProtectedError(token, formatStr, String(date));
+    }
+    const formatter = formatters[token[0]];
+    return formatter(originalDate, token, locale.localize, formatterOptions);
+  }).join("");
+}
+function cleanEscapedString(input) {
+  const matched = input.match(escapedStringRegExp);
+  if (!matched) {
+    return input;
+  }
+  return matched[1].replace(doubleQuoteRegExp, "'");
+}
+
+// node_modules/.pnpm/date-fns@4.1.0/node_modules/date-fns/getDate.js
+function getDate(date, options) {
+  return toDate(date, options?.in).getDate();
+}
+
+// node_modules/.pnpm/date-fns@4.1.0/node_modules/date-fns/getDay.js
+function getDay(date, options) {
+  return toDate(date, options?.in).getDay();
+}
+
+// node_modules/.pnpm/date-fns@4.1.0/node_modules/date-fns/getDaysInMonth.js
+function getDaysInMonth(date, options) {
+  const _date = toDate(date, options?.in);
+  const year = _date.getFullYear();
+  const monthIndex = _date.getMonth();
+  const lastDayOfMonth = constructFrom(_date, 0);
+  lastDayOfMonth.setFullYear(year, monthIndex + 1, 0);
+  lastDayOfMonth.setHours(0, 0, 0, 0);
+  return lastDayOfMonth.getDate();
+}
+
+// node_modules/.pnpm/date-fns@4.1.0/node_modules/date-fns/getDefaultOptions.js
+function getDefaultOptions2() {
+  return Object.assign({}, getDefaultOptions());
+}
+
+// node_modules/.pnpm/date-fns@4.1.0/node_modules/date-fns/getHours.js
+function getHours(date, options) {
+  return toDate(date, options?.in).getHours();
+}
+
+// node_modules/.pnpm/date-fns@4.1.0/node_modules/date-fns/getISODay.js
+function getISODay(date, options) {
+  const day = toDate(date, options?.in).getDay();
+  return day === 0 ? 7 : day;
+}
+
+// node_modules/.pnpm/date-fns@4.1.0/node_modules/date-fns/getMinutes.js
+function getMinutes(date, options) {
+  return toDate(date, options?.in).getMinutes();
+}
+
+// node_modules/.pnpm/date-fns@4.1.0/node_modules/date-fns/getMonth.js
+function getMonth(date, options) {
+  return toDate(date, options?.in).getMonth();
+}
+
+// node_modules/.pnpm/date-fns@4.1.0/node_modules/date-fns/getSeconds.js
+function getSeconds(date) {
+  return toDate(date).getSeconds();
+}
+
+// node_modules/.pnpm/date-fns@4.1.0/node_modules/date-fns/getTime.js
+function getTime(date) {
+  return +toDate(date);
+}
+
+// node_modules/.pnpm/date-fns@4.1.0/node_modules/date-fns/getYear.js
+function getYear(date, options) {
+  return toDate(date, options?.in).getFullYear();
+}
+
+// node_modules/.pnpm/date-fns@4.1.0/node_modules/date-fns/isAfter.js
+function isAfter(date, dateToCompare) {
+  return +toDate(date) > +toDate(dateToCompare);
+}
+
+// node_modules/.pnpm/date-fns@4.1.0/node_modules/date-fns/isBefore.js
+function isBefore(date, dateToCompare) {
+  return +toDate(date) < +toDate(dateToCompare);
+}
+
+// node_modules/.pnpm/date-fns@4.1.0/node_modules/date-fns/isEqual.js
+function isEqual(leftDate, rightDate) {
+  return +toDate(leftDate) === +toDate(rightDate);
+}
+
+// node_modules/.pnpm/date-fns@4.1.0/node_modules/date-fns/transpose.js
+function transpose(date, constructor) {
+  const date_ = isConstructor(constructor) ? new constructor(0) : constructFrom(constructor, 0);
+  date_.setFullYear(date.getFullYear(), date.getMonth(), date.getDate());
+  date_.setHours(
+    date.getHours(),
+    date.getMinutes(),
+    date.getSeconds(),
+    date.getMilliseconds()
+  );
+  return date_;
+}
+function isConstructor(constructor) {
+  return typeof constructor === "function" && constructor.prototype?.constructor === constructor;
+}
+
+// node_modules/.pnpm/date-fns@4.1.0/node_modules/date-fns/parse/_lib/Setter.js
+var TIMEZONE_UNIT_PRIORITY = 10;
+var Setter = class {
+  subPriority = 0;
+  validate(_utcDate, _options) {
+    return true;
+  }
+};
+var ValueSetter = class extends Setter {
+  constructor(value, validateValue, setValue, priority, subPriority) {
+    super();
+    this.value = value;
+    this.validateValue = validateValue;
+    this.setValue = setValue;
+    this.priority = priority;
+    if (subPriority) {
+      this.subPriority = subPriority;
+    }
+  }
+  validate(date, options) {
+    return this.validateValue(date, this.value, options);
+  }
+  set(date, flags, options) {
+    return this.setValue(date, flags, this.value, options);
+  }
+};
+var DateTimezoneSetter = class extends Setter {
+  priority = TIMEZONE_UNIT_PRIORITY;
+  subPriority = -1;
+  constructor(context, reference) {
+    super();
+    this.context = context || ((date) => constructFrom(reference, date));
+  }
+  set(date, flags) {
+    if (flags.timestampIsSet) return date;
+    return constructFrom(date, transpose(date, this.context));
+  }
+};
+
+// node_modules/.pnpm/date-fns@4.1.0/node_modules/date-fns/parse/_lib/Parser.js
+var Parser = class {
+  run(dateString, token, match2, options) {
+    const result = this.parse(dateString, token, match2, options);
+    if (!result) {
+      return null;
+    }
+    return {
+      setter: new ValueSetter(
+        result.value,
+        this.validate,
+        this.set,
+        this.priority,
+        this.subPriority
+      ),
+      rest: result.rest
+    };
+  }
+  validate(_utcDate, _value, _options) {
+    return true;
+  }
+};
+
+// node_modules/.pnpm/date-fns@4.1.0/node_modules/date-fns/parse/_lib/parsers/EraParser.js
+var EraParser = class extends Parser {
+  priority = 140;
+  parse(dateString, token, match2) {
+    switch (token) {
+      // AD, BC
+      case "G":
+      case "GG":
+      case "GGG":
+        return match2.era(dateString, { width: "abbreviated" }) || match2.era(dateString, { width: "narrow" });
+      // A, B
+      case "GGGGG":
+        return match2.era(dateString, { width: "narrow" });
+      // Anno Domini, Before Christ
+      case "GGGG":
+      default:
+        return match2.era(dateString, { width: "wide" }) || match2.era(dateString, { width: "abbreviated" }) || match2.era(dateString, { width: "narrow" });
+    }
+  }
+  set(date, flags, value) {
+    flags.era = value;
+    date.setFullYear(value, 0, 1);
+    date.setHours(0, 0, 0, 0);
+    return date;
+  }
+  incompatibleTokens = ["R", "u", "t", "T"];
+};
+
+// node_modules/.pnpm/date-fns@4.1.0/node_modules/date-fns/parse/_lib/constants.js
+var numericPatterns = {
+  month: /^(1[0-2]|0?\d)/,
+  // 0 to 12
+  date: /^(3[0-1]|[0-2]?\d)/,
+  // 0 to 31
+  dayOfYear: /^(36[0-6]|3[0-5]\d|[0-2]?\d?\d)/,
+  // 0 to 366
+  week: /^(5[0-3]|[0-4]?\d)/,
+  // 0 to 53
+  hour23h: /^(2[0-3]|[0-1]?\d)/,
+  // 0 to 23
+  hour24h: /^(2[0-4]|[0-1]?\d)/,
+  // 0 to 24
+  hour11h: /^(1[0-1]|0?\d)/,
+  // 0 to 11
+  hour12h: /^(1[0-2]|0?\d)/,
+  // 0 to 12
+  minute: /^[0-5]?\d/,
+  // 0 to 59
+  second: /^[0-5]?\d/,
+  // 0 to 59
+  singleDigit: /^\d/,
+  // 0 to 9
+  twoDigits: /^\d{1,2}/,
+  // 0 to 99
+  threeDigits: /^\d{1,3}/,
+  // 0 to 999
+  fourDigits: /^\d{1,4}/,
+  // 0 to 9999
+  anyDigitsSigned: /^-?\d+/,
+  singleDigitSigned: /^-?\d/,
+  // 0 to 9, -0 to -9
+  twoDigitsSigned: /^-?\d{1,2}/,
+  // 0 to 99, -0 to -99
+  threeDigitsSigned: /^-?\d{1,3}/,
+  // 0 to 999, -0 to -999
+  fourDigitsSigned: /^-?\d{1,4}/
+  // 0 to 9999, -0 to -9999
+};
+var timezonePatterns = {
+  basicOptionalMinutes: /^([+-])(\d{2})(\d{2})?|Z/,
+  basic: /^([+-])(\d{2})(\d{2})|Z/,
+  basicOptionalSeconds: /^([+-])(\d{2})(\d{2})((\d{2}))?|Z/,
+  extended: /^([+-])(\d{2}):(\d{2})|Z/,
+  extendedOptionalSeconds: /^([+-])(\d{2}):(\d{2})(:(\d{2}))?|Z/
+};
+
+// node_modules/.pnpm/date-fns@4.1.0/node_modules/date-fns/parse/_lib/utils.js
+function mapValue(parseFnResult, mapFn) {
+  if (!parseFnResult) {
+    return parseFnResult;
+  }
+  return {
+    value: mapFn(parseFnResult.value),
+    rest: parseFnResult.rest
+  };
+}
+function parseNumericPattern(pattern, dateString) {
+  const matchResult = dateString.match(pattern);
+  if (!matchResult) {
+    return null;
+  }
+  return {
+    value: parseInt(matchResult[0], 10),
+    rest: dateString.slice(matchResult[0].length)
+  };
+}
+function parseTimezonePattern(pattern, dateString) {
+  const matchResult = dateString.match(pattern);
+  if (!matchResult) {
+    return null;
+  }
+  if (matchResult[0] === "Z") {
+    return {
+      value: 0,
+      rest: dateString.slice(1)
+    };
+  }
+  const sign = matchResult[1] === "+" ? 1 : -1;
+  const hours = matchResult[2] ? parseInt(matchResult[2], 10) : 0;
+  const minutes = matchResult[3] ? parseInt(matchResult[3], 10) : 0;
+  const seconds = matchResult[5] ? parseInt(matchResult[5], 10) : 0;
+  return {
+    value: sign * (hours * millisecondsInHour + minutes * millisecondsInMinute + seconds * millisecondsInSecond),
+    rest: dateString.slice(matchResult[0].length)
+  };
+}
+function parseAnyDigitsSigned(dateString) {
+  return parseNumericPattern(numericPatterns.anyDigitsSigned, dateString);
+}
+function parseNDigits(n, dateString) {
+  switch (n) {
+    case 1:
+      return parseNumericPattern(numericPatterns.singleDigit, dateString);
+    case 2:
+      return parseNumericPattern(numericPatterns.twoDigits, dateString);
+    case 3:
+      return parseNumericPattern(numericPatterns.threeDigits, dateString);
+    case 4:
+      return parseNumericPattern(numericPatterns.fourDigits, dateString);
+    default:
+      return parseNumericPattern(new RegExp("^\\d{1," + n + "}"), dateString);
+  }
+}
+function parseNDigitsSigned(n, dateString) {
+  switch (n) {
+    case 1:
+      return parseNumericPattern(numericPatterns.singleDigitSigned, dateString);
+    case 2:
+      return parseNumericPattern(numericPatterns.twoDigitsSigned, dateString);
+    case 3:
+      return parseNumericPattern(numericPatterns.threeDigitsSigned, dateString);
+    case 4:
+      return parseNumericPattern(numericPatterns.fourDigitsSigned, dateString);
+    default:
+      return parseNumericPattern(new RegExp("^-?\\d{1," + n + "}"), dateString);
+  }
+}
+function dayPeriodEnumToHours(dayPeriod) {
+  switch (dayPeriod) {
+    case "morning":
+      return 4;
+    case "evening":
+      return 17;
+    case "pm":
+    case "noon":
+    case "afternoon":
+      return 12;
+    case "am":
+    case "midnight":
+    case "night":
+    default:
+      return 0;
+  }
+}
+function normalizeTwoDigitYear(twoDigitYear, currentYear) {
+  const isCommonEra = currentYear > 0;
+  const absCurrentYear = isCommonEra ? currentYear : 1 - currentYear;
+  let result;
+  if (absCurrentYear <= 50) {
+    result = twoDigitYear || 100;
+  } else {
+    const rangeEnd = absCurrentYear + 50;
+    const rangeEndCentury = Math.trunc(rangeEnd / 100) * 100;
+    const isPreviousCentury = twoDigitYear >= rangeEnd % 100;
+    result = twoDigitYear + rangeEndCentury - (isPreviousCentury ? 100 : 0);
+  }
+  return isCommonEra ? result : 1 - result;
+}
+function isLeapYearIndex(year) {
+  return year % 400 === 0 || year % 4 === 0 && year % 100 !== 0;
+}
+
+// node_modules/.pnpm/date-fns@4.1.0/node_modules/date-fns/parse/_lib/parsers/YearParser.js
+var YearParser = class extends Parser {
+  priority = 130;
+  incompatibleTokens = ["Y", "R", "u", "w", "I", "i", "e", "c", "t", "T"];
+  parse(dateString, token, match2) {
+    const valueCallback = (year) => ({
+      year,
+      isTwoDigitYear: token === "yy"
+    });
+    switch (token) {
+      case "y":
+        return mapValue(parseNDigits(4, dateString), valueCallback);
+      case "yo":
+        return mapValue(
+          match2.ordinalNumber(dateString, {
+            unit: "year"
+          }),
+          valueCallback
+        );
+      default:
+        return mapValue(parseNDigits(token.length, dateString), valueCallback);
+    }
+  }
+  validate(_date, value) {
+    return value.isTwoDigitYear || value.year > 0;
+  }
+  set(date, flags, value) {
+    const currentYear = date.getFullYear();
+    if (value.isTwoDigitYear) {
+      const normalizedTwoDigitYear = normalizeTwoDigitYear(
+        value.year,
+        currentYear
+      );
+      date.setFullYear(normalizedTwoDigitYear, 0, 1);
+      date.setHours(0, 0, 0, 0);
+      return date;
+    }
+    const year = !("era" in flags) || flags.era === 1 ? value.year : 1 - value.year;
+    date.setFullYear(year, 0, 1);
+    date.setHours(0, 0, 0, 0);
+    return date;
+  }
+};
+
+// node_modules/.pnpm/date-fns@4.1.0/node_modules/date-fns/parse/_lib/parsers/LocalWeekYearParser.js
+var LocalWeekYearParser = class extends Parser {
+  priority = 130;
+  parse(dateString, token, match2) {
+    const valueCallback = (year) => ({
+      year,
+      isTwoDigitYear: token === "YY"
+    });
+    switch (token) {
+      case "Y":
+        return mapValue(parseNDigits(4, dateString), valueCallback);
+      case "Yo":
+        return mapValue(
+          match2.ordinalNumber(dateString, {
+            unit: "year"
+          }),
+          valueCallback
+        );
+      default:
+        return mapValue(parseNDigits(token.length, dateString), valueCallback);
+    }
+  }
+  validate(_date, value) {
+    return value.isTwoDigitYear || value.year > 0;
+  }
+  set(date, flags, value, options) {
+    const currentYear = getWeekYear(date, options);
+    if (value.isTwoDigitYear) {
+      const normalizedTwoDigitYear = normalizeTwoDigitYear(
+        value.year,
+        currentYear
+      );
+      date.setFullYear(
+        normalizedTwoDigitYear,
+        0,
+        options.firstWeekContainsDate
+      );
+      date.setHours(0, 0, 0, 0);
+      return startOfWeek(date, options);
+    }
+    const year = !("era" in flags) || flags.era === 1 ? value.year : 1 - value.year;
+    date.setFullYear(year, 0, options.firstWeekContainsDate);
+    date.setHours(0, 0, 0, 0);
+    return startOfWeek(date, options);
+  }
+  incompatibleTokens = [
+    "y",
+    "R",
+    "u",
+    "Q",
+    "q",
+    "M",
+    "L",
+    "I",
+    "d",
+    "D",
+    "i",
+    "t",
+    "T"
+  ];
+};
+
+// node_modules/.pnpm/date-fns@4.1.0/node_modules/date-fns/parse/_lib/parsers/ISOWeekYearParser.js
+var ISOWeekYearParser = class extends Parser {
+  priority = 130;
+  parse(dateString, token) {
+    if (token === "R") {
+      return parseNDigitsSigned(4, dateString);
+    }
+    return parseNDigitsSigned(token.length, dateString);
+  }
+  set(date, _flags, value) {
+    const firstWeekOfYear = constructFrom(date, 0);
+    firstWeekOfYear.setFullYear(value, 0, 4);
+    firstWeekOfYear.setHours(0, 0, 0, 0);
+    return startOfISOWeek(firstWeekOfYear);
+  }
+  incompatibleTokens = [
+    "G",
+    "y",
+    "Y",
+    "u",
+    "Q",
+    "q",
+    "M",
+    "L",
+    "w",
+    "d",
+    "D",
+    "e",
+    "c",
+    "t",
+    "T"
+  ];
+};
+
+// node_modules/.pnpm/date-fns@4.1.0/node_modules/date-fns/parse/_lib/parsers/ExtendedYearParser.js
+var ExtendedYearParser = class extends Parser {
+  priority = 130;
+  parse(dateString, token) {
+    if (token === "u") {
+      return parseNDigitsSigned(4, dateString);
+    }
+    return parseNDigitsSigned(token.length, dateString);
+  }
+  set(date, _flags, value) {
+    date.setFullYear(value, 0, 1);
+    date.setHours(0, 0, 0, 0);
+    return date;
+  }
+  incompatibleTokens = ["G", "y", "Y", "R", "w", "I", "i", "e", "c", "t", "T"];
+};
+
+// node_modules/.pnpm/date-fns@4.1.0/node_modules/date-fns/parse/_lib/parsers/QuarterParser.js
+var QuarterParser = class extends Parser {
+  priority = 120;
+  parse(dateString, token, match2) {
+    switch (token) {
+      // 1, 2, 3, 4
+      case "Q":
+      case "QQ":
+        return parseNDigits(token.length, dateString);
+      // 1st, 2nd, 3rd, 4th
+      case "Qo":
+        return match2.ordinalNumber(dateString, { unit: "quarter" });
+      // Q1, Q2, Q3, Q4
+      case "QQQ":
+        return match2.quarter(dateString, {
+          width: "abbreviated",
+          context: "formatting"
+        }) || match2.quarter(dateString, {
+          width: "narrow",
+          context: "formatting"
+        });
+      // 1, 2, 3, 4 (narrow quarter; could be not numerical)
+      case "QQQQQ":
+        return match2.quarter(dateString, {
+          width: "narrow",
+          context: "formatting"
+        });
+      // 1st quarter, 2nd quarter, ...
+      case "QQQQ":
+      default:
+        return match2.quarter(dateString, {
+          width: "wide",
+          context: "formatting"
+        }) || match2.quarter(dateString, {
+          width: "abbreviated",
+          context: "formatting"
+        }) || match2.quarter(dateString, {
+          width: "narrow",
+          context: "formatting"
+        });
+    }
+  }
+  validate(_date, value) {
+    return value >= 1 && value <= 4;
+  }
+  set(date, _flags, value) {
+    date.setMonth((value - 1) * 3, 1);
+    date.setHours(0, 0, 0, 0);
+    return date;
+  }
+  incompatibleTokens = [
+    "Y",
+    "R",
+    "q",
+    "M",
+    "L",
+    "w",
+    "I",
+    "d",
+    "D",
+    "i",
+    "e",
+    "c",
+    "t",
+    "T"
+  ];
+};
+
+// node_modules/.pnpm/date-fns@4.1.0/node_modules/date-fns/parse/_lib/parsers/StandAloneQuarterParser.js
+var StandAloneQuarterParser = class extends Parser {
+  priority = 120;
+  parse(dateString, token, match2) {
+    switch (token) {
+      // 1, 2, 3, 4
+      case "q":
+      case "qq":
+        return parseNDigits(token.length, dateString);
+      // 1st, 2nd, 3rd, 4th
+      case "qo":
+        return match2.ordinalNumber(dateString, { unit: "quarter" });
+      // Q1, Q2, Q3, Q4
+      case "qqq":
+        return match2.quarter(dateString, {
+          width: "abbreviated",
+          context: "standalone"
+        }) || match2.quarter(dateString, {
+          width: "narrow",
+          context: "standalone"
+        });
+      // 1, 2, 3, 4 (narrow quarter; could be not numerical)
+      case "qqqqq":
+        return match2.quarter(dateString, {
+          width: "narrow",
+          context: "standalone"
+        });
+      // 1st quarter, 2nd quarter, ...
+      case "qqqq":
+      default:
+        return match2.quarter(dateString, {
+          width: "wide",
+          context: "standalone"
+        }) || match2.quarter(dateString, {
+          width: "abbreviated",
+          context: "standalone"
+        }) || match2.quarter(dateString, {
+          width: "narrow",
+          context: "standalone"
+        });
+    }
+  }
+  validate(_date, value) {
+    return value >= 1 && value <= 4;
+  }
+  set(date, _flags, value) {
+    date.setMonth((value - 1) * 3, 1);
+    date.setHours(0, 0, 0, 0);
+    return date;
+  }
+  incompatibleTokens = [
+    "Y",
+    "R",
+    "Q",
+    "M",
+    "L",
+    "w",
+    "I",
+    "d",
+    "D",
+    "i",
+    "e",
+    "c",
+    "t",
+    "T"
+  ];
+};
+
+// node_modules/.pnpm/date-fns@4.1.0/node_modules/date-fns/parse/_lib/parsers/MonthParser.js
+var MonthParser = class extends Parser {
+  incompatibleTokens = [
+    "Y",
+    "R",
+    "q",
+    "Q",
+    "L",
+    "w",
+    "I",
+    "D",
+    "i",
+    "e",
+    "c",
+    "t",
+    "T"
+  ];
+  priority = 110;
+  parse(dateString, token, match2) {
+    const valueCallback = (value) => value - 1;
+    switch (token) {
+      // 1, 2, ..., 12
+      case "M":
+        return mapValue(
+          parseNumericPattern(numericPatterns.month, dateString),
+          valueCallback
+        );
+      // 01, 02, ..., 12
+      case "MM":
+        return mapValue(parseNDigits(2, dateString), valueCallback);
+      // 1st, 2nd, ..., 12th
+      case "Mo":
+        return mapValue(
+          match2.ordinalNumber(dateString, {
+            unit: "month"
+          }),
+          valueCallback
+        );
+      // Jan, Feb, ..., Dec
+      case "MMM":
+        return match2.month(dateString, {
+          width: "abbreviated",
+          context: "formatting"
+        }) || match2.month(dateString, { width: "narrow", context: "formatting" });
+      // J, F, ..., D
+      case "MMMMM":
+        return match2.month(dateString, {
+          width: "narrow",
+          context: "formatting"
+        });
+      // January, February, ..., December
+      case "MMMM":
+      default:
+        return match2.month(dateString, { width: "wide", context: "formatting" }) || match2.month(dateString, {
+          width: "abbreviated",
+          context: "formatting"
+        }) || match2.month(dateString, { width: "narrow", context: "formatting" });
+    }
+  }
+  validate(_date, value) {
+    return value >= 0 && value <= 11;
+  }
+  set(date, _flags, value) {
+    date.setMonth(value, 1);
+    date.setHours(0, 0, 0, 0);
+    return date;
+  }
+};
+
+// node_modules/.pnpm/date-fns@4.1.0/node_modules/date-fns/parse/_lib/parsers/StandAloneMonthParser.js
+var StandAloneMonthParser = class extends Parser {
+  priority = 110;
+  parse(dateString, token, match2) {
+    const valueCallback = (value) => value - 1;
+    switch (token) {
+      // 1, 2, ..., 12
+      case "L":
+        return mapValue(
+          parseNumericPattern(numericPatterns.month, dateString),
+          valueCallback
+        );
+      // 01, 02, ..., 12
+      case "LL":
+        return mapValue(parseNDigits(2, dateString), valueCallback);
+      // 1st, 2nd, ..., 12th
+      case "Lo":
+        return mapValue(
+          match2.ordinalNumber(dateString, {
+            unit: "month"
+          }),
+          valueCallback
+        );
+      // Jan, Feb, ..., Dec
+      case "LLL":
+        return match2.month(dateString, {
+          width: "abbreviated",
+          context: "standalone"
+        }) || match2.month(dateString, { width: "narrow", context: "standalone" });
+      // J, F, ..., D
+      case "LLLLL":
+        return match2.month(dateString, {
+          width: "narrow",
+          context: "standalone"
+        });
+      // January, February, ..., December
+      case "LLLL":
+      default:
+        return match2.month(dateString, { width: "wide", context: "standalone" }) || match2.month(dateString, {
+          width: "abbreviated",
+          context: "standalone"
+        }) || match2.month(dateString, { width: "narrow", context: "standalone" });
+    }
+  }
+  validate(_date, value) {
+    return value >= 0 && value <= 11;
+  }
+  set(date, _flags, value) {
+    date.setMonth(value, 1);
+    date.setHours(0, 0, 0, 0);
+    return date;
+  }
+  incompatibleTokens = [
+    "Y",
+    "R",
+    "q",
+    "Q",
+    "M",
+    "w",
+    "I",
+    "D",
+    "i",
+    "e",
+    "c",
+    "t",
+    "T"
+  ];
+};
+
+// node_modules/.pnpm/date-fns@4.1.0/node_modules/date-fns/setWeek.js
+function setWeek(date, week, options) {
+  const date_ = toDate(date, options?.in);
+  const diff = getWeek(date_, options) - week;
+  date_.setDate(date_.getDate() - diff * 7);
+  return toDate(date_, options?.in);
+}
+
+// node_modules/.pnpm/date-fns@4.1.0/node_modules/date-fns/parse/_lib/parsers/LocalWeekParser.js
+var LocalWeekParser = class extends Parser {
+  priority = 100;
+  parse(dateString, token, match2) {
+    switch (token) {
+      case "w":
+        return parseNumericPattern(numericPatterns.week, dateString);
+      case "wo":
+        return match2.ordinalNumber(dateString, { unit: "week" });
+      default:
+        return parseNDigits(token.length, dateString);
+    }
+  }
+  validate(_date, value) {
+    return value >= 1 && value <= 53;
+  }
+  set(date, _flags, value, options) {
+    return startOfWeek(setWeek(date, value, options), options);
+  }
+  incompatibleTokens = [
+    "y",
+    "R",
+    "u",
+    "q",
+    "Q",
+    "M",
+    "L",
+    "I",
+    "d",
+    "D",
+    "i",
+    "t",
+    "T"
+  ];
+};
+
+// node_modules/.pnpm/date-fns@4.1.0/node_modules/date-fns/setISOWeek.js
+function setISOWeek(date, week, options) {
+  const _date = toDate(date, options?.in);
+  const diff = getISOWeek(_date, options) - week;
+  _date.setDate(_date.getDate() - diff * 7);
+  return _date;
+}
+
+// node_modules/.pnpm/date-fns@4.1.0/node_modules/date-fns/parse/_lib/parsers/ISOWeekParser.js
+var ISOWeekParser = class extends Parser {
+  priority = 100;
+  parse(dateString, token, match2) {
+    switch (token) {
+      case "I":
+        return parseNumericPattern(numericPatterns.week, dateString);
+      case "Io":
+        return match2.ordinalNumber(dateString, { unit: "week" });
+      default:
+        return parseNDigits(token.length, dateString);
+    }
+  }
+  validate(_date, value) {
+    return value >= 1 && value <= 53;
+  }
+  set(date, _flags, value) {
+    return startOfISOWeek(setISOWeek(date, value));
+  }
+  incompatibleTokens = [
+    "y",
+    "Y",
+    "u",
+    "q",
+    "Q",
+    "M",
+    "L",
+    "w",
+    "d",
+    "D",
+    "e",
+    "c",
+    "t",
+    "T"
+  ];
+};
+
+// node_modules/.pnpm/date-fns@4.1.0/node_modules/date-fns/parse/_lib/parsers/DateParser.js
+var DAYS_IN_MONTH = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+var DAYS_IN_MONTH_LEAP_YEAR = [
+  31,
+  29,
+  31,
+  30,
+  31,
+  30,
+  31,
+  31,
+  30,
+  31,
+  30,
+  31
+];
+var DateParser = class extends Parser {
+  priority = 90;
+  subPriority = 1;
+  parse(dateString, token, match2) {
+    switch (token) {
+      case "d":
+        return parseNumericPattern(numericPatterns.date, dateString);
+      case "do":
+        return match2.ordinalNumber(dateString, { unit: "date" });
+      default:
+        return parseNDigits(token.length, dateString);
+    }
+  }
+  validate(date, value) {
+    const year = date.getFullYear();
+    const isLeapYear = isLeapYearIndex(year);
+    const month = date.getMonth();
+    if (isLeapYear) {
+      return value >= 1 && value <= DAYS_IN_MONTH_LEAP_YEAR[month];
+    } else {
+      return value >= 1 && value <= DAYS_IN_MONTH[month];
+    }
+  }
+  set(date, _flags, value) {
+    date.setDate(value);
+    date.setHours(0, 0, 0, 0);
+    return date;
+  }
+  incompatibleTokens = [
+    "Y",
+    "R",
+    "q",
+    "Q",
+    "w",
+    "I",
+    "D",
+    "i",
+    "e",
+    "c",
+    "t",
+    "T"
+  ];
+};
+
+// node_modules/.pnpm/date-fns@4.1.0/node_modules/date-fns/parse/_lib/parsers/DayOfYearParser.js
+var DayOfYearParser = class extends Parser {
+  priority = 90;
+  subpriority = 1;
+  parse(dateString, token, match2) {
+    switch (token) {
+      case "D":
+      case "DD":
+        return parseNumericPattern(numericPatterns.dayOfYear, dateString);
+      case "Do":
+        return match2.ordinalNumber(dateString, { unit: "date" });
+      default:
+        return parseNDigits(token.length, dateString);
+    }
+  }
+  validate(date, value) {
+    const year = date.getFullYear();
+    const isLeapYear = isLeapYearIndex(year);
+    if (isLeapYear) {
+      return value >= 1 && value <= 366;
+    } else {
+      return value >= 1 && value <= 365;
+    }
+  }
+  set(date, _flags, value) {
+    date.setMonth(0, value);
+    date.setHours(0, 0, 0, 0);
+    return date;
+  }
+  incompatibleTokens = [
+    "Y",
+    "R",
+    "q",
+    "Q",
+    "M",
+    "L",
+    "w",
+    "I",
+    "d",
+    "E",
+    "i",
+    "e",
+    "c",
+    "t",
+    "T"
+  ];
+};
+
+// node_modules/.pnpm/date-fns@4.1.0/node_modules/date-fns/setDay.js
+function setDay(date, day, options) {
+  const defaultOptions2 = getDefaultOptions();
+  const weekStartsOn = options?.weekStartsOn ?? options?.locale?.options?.weekStartsOn ?? defaultOptions2.weekStartsOn ?? defaultOptions2.locale?.options?.weekStartsOn ?? 0;
+  const date_ = toDate(date, options?.in);
+  const currentDay = date_.getDay();
+  const remainder = day % 7;
+  const dayIndex = (remainder + 7) % 7;
+  const delta = 7 - weekStartsOn;
+  const diff = day < 0 || day > 6 ? day - (currentDay + delta) % 7 : (dayIndex + delta) % 7 - (currentDay + delta) % 7;
+  return addDays2(date_, diff, options);
+}
+
+// node_modules/.pnpm/date-fns@4.1.0/node_modules/date-fns/parse/_lib/parsers/DayParser.js
+var DayParser = class extends Parser {
+  priority = 90;
+  parse(dateString, token, match2) {
+    switch (token) {
+      // Tue
+      case "E":
+      case "EE":
+      case "EEE":
+        return match2.day(dateString, {
+          width: "abbreviated",
+          context: "formatting"
+        }) || match2.day(dateString, { width: "short", context: "formatting" }) || match2.day(dateString, { width: "narrow", context: "formatting" });
+      // T
+      case "EEEEE":
+        return match2.day(dateString, {
+          width: "narrow",
+          context: "formatting"
+        });
+      // Tu
+      case "EEEEEE":
+        return match2.day(dateString, { width: "short", context: "formatting" }) || match2.day(dateString, { width: "narrow", context: "formatting" });
+      // Tuesday
+      case "EEEE":
+      default:
+        return match2.day(dateString, { width: "wide", context: "formatting" }) || match2.day(dateString, {
+          width: "abbreviated",
+          context: "formatting"
+        }) || match2.day(dateString, { width: "short", context: "formatting" }) || match2.day(dateString, { width: "narrow", context: "formatting" });
+    }
+  }
+  validate(_date, value) {
+    return value >= 0 && value <= 6;
+  }
+  set(date, _flags, value, options) {
+    date = setDay(date, value, options);
+    date.setHours(0, 0, 0, 0);
+    return date;
+  }
+  incompatibleTokens = ["D", "i", "e", "c", "t", "T"];
+};
+
+// node_modules/.pnpm/date-fns@4.1.0/node_modules/date-fns/parse/_lib/parsers/LocalDayParser.js
+var LocalDayParser = class extends Parser {
+  priority = 90;
+  parse(dateString, token, match2, options) {
+    const valueCallback = (value) => {
+      const wholeWeekDays = Math.floor((value - 1) / 7) * 7;
+      return (value + options.weekStartsOn + 6) % 7 + wholeWeekDays;
+    };
+    switch (token) {
+      // 3
+      case "e":
+      case "ee":
+        return mapValue(parseNDigits(token.length, dateString), valueCallback);
+      // 3rd
+      case "eo":
+        return mapValue(
+          match2.ordinalNumber(dateString, {
+            unit: "day"
+          }),
+          valueCallback
+        );
+      // Tue
+      case "eee":
+        return match2.day(dateString, {
+          width: "abbreviated",
+          context: "formatting"
+        }) || match2.day(dateString, { width: "short", context: "formatting" }) || match2.day(dateString, { width: "narrow", context: "formatting" });
+      // T
+      case "eeeee":
+        return match2.day(dateString, {
+          width: "narrow",
+          context: "formatting"
+        });
+      // Tu
+      case "eeeeee":
+        return match2.day(dateString, { width: "short", context: "formatting" }) || match2.day(dateString, { width: "narrow", context: "formatting" });
+      // Tuesday
+      case "eeee":
+      default:
+        return match2.day(dateString, { width: "wide", context: "formatting" }) || match2.day(dateString, {
+          width: "abbreviated",
+          context: "formatting"
+        }) || match2.day(dateString, { width: "short", context: "formatting" }) || match2.day(dateString, { width: "narrow", context: "formatting" });
+    }
+  }
+  validate(_date, value) {
+    return value >= 0 && value <= 6;
+  }
+  set(date, _flags, value, options) {
+    date = setDay(date, value, options);
+    date.setHours(0, 0, 0, 0);
+    return date;
+  }
+  incompatibleTokens = [
+    "y",
+    "R",
+    "u",
+    "q",
+    "Q",
+    "M",
+    "L",
+    "I",
+    "d",
+    "D",
+    "E",
+    "i",
+    "c",
+    "t",
+    "T"
+  ];
+};
+
+// node_modules/.pnpm/date-fns@4.1.0/node_modules/date-fns/parse/_lib/parsers/StandAloneLocalDayParser.js
+var StandAloneLocalDayParser = class extends Parser {
+  priority = 90;
+  parse(dateString, token, match2, options) {
+    const valueCallback = (value) => {
+      const wholeWeekDays = Math.floor((value - 1) / 7) * 7;
+      return (value + options.weekStartsOn + 6) % 7 + wholeWeekDays;
+    };
+    switch (token) {
+      // 3
+      case "c":
+      case "cc":
+        return mapValue(parseNDigits(token.length, dateString), valueCallback);
+      // 3rd
+      case "co":
+        return mapValue(
+          match2.ordinalNumber(dateString, {
+            unit: "day"
+          }),
+          valueCallback
+        );
+      // Tue
+      case "ccc":
+        return match2.day(dateString, {
+          width: "abbreviated",
+          context: "standalone"
+        }) || match2.day(dateString, { width: "short", context: "standalone" }) || match2.day(dateString, { width: "narrow", context: "standalone" });
+      // T
+      case "ccccc":
+        return match2.day(dateString, {
+          width: "narrow",
+          context: "standalone"
+        });
+      // Tu
+      case "cccccc":
+        return match2.day(dateString, { width: "short", context: "standalone" }) || match2.day(dateString, { width: "narrow", context: "standalone" });
+      // Tuesday
+      case "cccc":
+      default:
+        return match2.day(dateString, { width: "wide", context: "standalone" }) || match2.day(dateString, {
+          width: "abbreviated",
+          context: "standalone"
+        }) || match2.day(dateString, { width: "short", context: "standalone" }) || match2.day(dateString, { width: "narrow", context: "standalone" });
+    }
+  }
+  validate(_date, value) {
+    return value >= 0 && value <= 6;
+  }
+  set(date, _flags, value, options) {
+    date = setDay(date, value, options);
+    date.setHours(0, 0, 0, 0);
+    return date;
+  }
+  incompatibleTokens = [
+    "y",
+    "R",
+    "u",
+    "q",
+    "Q",
+    "M",
+    "L",
+    "I",
+    "d",
+    "D",
+    "E",
+    "i",
+    "e",
+    "t",
+    "T"
+  ];
+};
+
+// node_modules/.pnpm/date-fns@4.1.0/node_modules/date-fns/setISODay.js
+function setISODay(date, day, options) {
+  const date_ = toDate(date, options?.in);
+  const currentDay = getISODay(date_, options);
+  const diff = day - currentDay;
+  return addDays2(date_, diff, options);
+}
+
+// node_modules/.pnpm/date-fns@4.1.0/node_modules/date-fns/parse/_lib/parsers/ISODayParser.js
+var ISODayParser = class extends Parser {
+  priority = 90;
+  parse(dateString, token, match2) {
+    const valueCallback = (value) => {
+      if (value === 0) {
+        return 7;
+      }
+      return value;
+    };
+    switch (token) {
+      // 2
+      case "i":
+      case "ii":
+        return parseNDigits(token.length, dateString);
+      // 2nd
+      case "io":
+        return match2.ordinalNumber(dateString, { unit: "day" });
+      // Tue
+      case "iii":
+        return mapValue(
+          match2.day(dateString, {
+            width: "abbreviated",
+            context: "formatting"
+          }) || match2.day(dateString, {
+            width: "short",
+            context: "formatting"
+          }) || match2.day(dateString, {
+            width: "narrow",
+            context: "formatting"
+          }),
+          valueCallback
+        );
+      // T
+      case "iiiii":
+        return mapValue(
+          match2.day(dateString, {
+            width: "narrow",
+            context: "formatting"
+          }),
+          valueCallback
+        );
+      // Tu
+      case "iiiiii":
+        return mapValue(
+          match2.day(dateString, {
+            width: "short",
+            context: "formatting"
+          }) || match2.day(dateString, {
+            width: "narrow",
+            context: "formatting"
+          }),
+          valueCallback
+        );
+      // Tuesday
+      case "iiii":
+      default:
+        return mapValue(
+          match2.day(dateString, {
+            width: "wide",
+            context: "formatting"
+          }) || match2.day(dateString, {
+            width: "abbreviated",
+            context: "formatting"
+          }) || match2.day(dateString, {
+            width: "short",
+            context: "formatting"
+          }) || match2.day(dateString, {
+            width: "narrow",
+            context: "formatting"
+          }),
+          valueCallback
+        );
+    }
+  }
+  validate(_date, value) {
+    return value >= 1 && value <= 7;
+  }
+  set(date, _flags, value) {
+    date = setISODay(date, value);
+    date.setHours(0, 0, 0, 0);
+    return date;
+  }
+  incompatibleTokens = [
+    "y",
+    "Y",
+    "u",
+    "q",
+    "Q",
+    "M",
+    "L",
+    "w",
+    "d",
+    "D",
+    "E",
+    "e",
+    "c",
+    "t",
+    "T"
+  ];
+};
+
+// node_modules/.pnpm/date-fns@4.1.0/node_modules/date-fns/parse/_lib/parsers/AMPMParser.js
+var AMPMParser = class extends Parser {
+  priority = 80;
+  parse(dateString, token, match2) {
+    switch (token) {
+      case "a":
+      case "aa":
+      case "aaa":
+        return match2.dayPeriod(dateString, {
+          width: "abbreviated",
+          context: "formatting"
+        }) || match2.dayPeriod(dateString, {
+          width: "narrow",
+          context: "formatting"
+        });
+      case "aaaaa":
+        return match2.dayPeriod(dateString, {
+          width: "narrow",
+          context: "formatting"
+        });
+      case "aaaa":
+      default:
+        return match2.dayPeriod(dateString, {
+          width: "wide",
+          context: "formatting"
+        }) || match2.dayPeriod(dateString, {
+          width: "abbreviated",
+          context: "formatting"
+        }) || match2.dayPeriod(dateString, {
+          width: "narrow",
+          context: "formatting"
+        });
+    }
+  }
+  set(date, _flags, value) {
+    date.setHours(dayPeriodEnumToHours(value), 0, 0, 0);
+    return date;
+  }
+  incompatibleTokens = ["b", "B", "H", "k", "t", "T"];
+};
+
+// node_modules/.pnpm/date-fns@4.1.0/node_modules/date-fns/parse/_lib/parsers/AMPMMidnightParser.js
+var AMPMMidnightParser = class extends Parser {
+  priority = 80;
+  parse(dateString, token, match2) {
+    switch (token) {
+      case "b":
+      case "bb":
+      case "bbb":
+        return match2.dayPeriod(dateString, {
+          width: "abbreviated",
+          context: "formatting"
+        }) || match2.dayPeriod(dateString, {
+          width: "narrow",
+          context: "formatting"
+        });
+      case "bbbbb":
+        return match2.dayPeriod(dateString, {
+          width: "narrow",
+          context: "formatting"
+        });
+      case "bbbb":
+      default:
+        return match2.dayPeriod(dateString, {
+          width: "wide",
+          context: "formatting"
+        }) || match2.dayPeriod(dateString, {
+          width: "abbreviated",
+          context: "formatting"
+        }) || match2.dayPeriod(dateString, {
+          width: "narrow",
+          context: "formatting"
+        });
+    }
+  }
+  set(date, _flags, value) {
+    date.setHours(dayPeriodEnumToHours(value), 0, 0, 0);
+    return date;
+  }
+  incompatibleTokens = ["a", "B", "H", "k", "t", "T"];
+};
+
+// node_modules/.pnpm/date-fns@4.1.0/node_modules/date-fns/parse/_lib/parsers/DayPeriodParser.js
+var DayPeriodParser = class extends Parser {
+  priority = 80;
+  parse(dateString, token, match2) {
+    switch (token) {
+      case "B":
+      case "BB":
+      case "BBB":
+        return match2.dayPeriod(dateString, {
+          width: "abbreviated",
+          context: "formatting"
+        }) || match2.dayPeriod(dateString, {
+          width: "narrow",
+          context: "formatting"
+        });
+      case "BBBBB":
+        return match2.dayPeriod(dateString, {
+          width: "narrow",
+          context: "formatting"
+        });
+      case "BBBB":
+      default:
+        return match2.dayPeriod(dateString, {
+          width: "wide",
+          context: "formatting"
+        }) || match2.dayPeriod(dateString, {
+          width: "abbreviated",
+          context: "formatting"
+        }) || match2.dayPeriod(dateString, {
+          width: "narrow",
+          context: "formatting"
+        });
+    }
+  }
+  set(date, _flags, value) {
+    date.setHours(dayPeriodEnumToHours(value), 0, 0, 0);
+    return date;
+  }
+  incompatibleTokens = ["a", "b", "t", "T"];
+};
+
+// node_modules/.pnpm/date-fns@4.1.0/node_modules/date-fns/parse/_lib/parsers/Hour1to12Parser.js
+var Hour1to12Parser = class extends Parser {
+  priority = 70;
+  parse(dateString, token, match2) {
+    switch (token) {
+      case "h":
+        return parseNumericPattern(numericPatterns.hour12h, dateString);
+      case "ho":
+        return match2.ordinalNumber(dateString, { unit: "hour" });
+      default:
+        return parseNDigits(token.length, dateString);
+    }
+  }
+  validate(_date, value) {
+    return value >= 1 && value <= 12;
+  }
+  set(date, _flags, value) {
+    const isPM = date.getHours() >= 12;
+    if (isPM && value < 12) {
+      date.setHours(value + 12, 0, 0, 0);
+    } else if (!isPM && value === 12) {
+      date.setHours(0, 0, 0, 0);
+    } else {
+      date.setHours(value, 0, 0, 0);
+    }
+    return date;
+  }
+  incompatibleTokens = ["H", "K", "k", "t", "T"];
+};
+
+// node_modules/.pnpm/date-fns@4.1.0/node_modules/date-fns/parse/_lib/parsers/Hour0to23Parser.js
+var Hour0to23Parser = class extends Parser {
+  priority = 70;
+  parse(dateString, token, match2) {
+    switch (token) {
+      case "H":
+        return parseNumericPattern(numericPatterns.hour23h, dateString);
+      case "Ho":
+        return match2.ordinalNumber(dateString, { unit: "hour" });
+      default:
+        return parseNDigits(token.length, dateString);
+    }
+  }
+  validate(_date, value) {
+    return value >= 0 && value <= 23;
+  }
+  set(date, _flags, value) {
+    date.setHours(value, 0, 0, 0);
+    return date;
+  }
+  incompatibleTokens = ["a", "b", "h", "K", "k", "t", "T"];
+};
+
+// node_modules/.pnpm/date-fns@4.1.0/node_modules/date-fns/parse/_lib/parsers/Hour0To11Parser.js
+var Hour0To11Parser = class extends Parser {
+  priority = 70;
+  parse(dateString, token, match2) {
+    switch (token) {
+      case "K":
+        return parseNumericPattern(numericPatterns.hour11h, dateString);
+      case "Ko":
+        return match2.ordinalNumber(dateString, { unit: "hour" });
+      default:
+        return parseNDigits(token.length, dateString);
+    }
+  }
+  validate(_date, value) {
+    return value >= 0 && value <= 11;
+  }
+  set(date, _flags, value) {
+    const isPM = date.getHours() >= 12;
+    if (isPM && value < 12) {
+      date.setHours(value + 12, 0, 0, 0);
+    } else {
+      date.setHours(value, 0, 0, 0);
+    }
+    return date;
+  }
+  incompatibleTokens = ["h", "H", "k", "t", "T"];
+};
+
+// node_modules/.pnpm/date-fns@4.1.0/node_modules/date-fns/parse/_lib/parsers/Hour1To24Parser.js
+var Hour1To24Parser = class extends Parser {
+  priority = 70;
+  parse(dateString, token, match2) {
+    switch (token) {
+      case "k":
+        return parseNumericPattern(numericPatterns.hour24h, dateString);
+      case "ko":
+        return match2.ordinalNumber(dateString, { unit: "hour" });
+      default:
+        return parseNDigits(token.length, dateString);
+    }
+  }
+  validate(_date, value) {
+    return value >= 1 && value <= 24;
+  }
+  set(date, _flags, value) {
+    const hours = value <= 24 ? value % 24 : value;
+    date.setHours(hours, 0, 0, 0);
+    return date;
+  }
+  incompatibleTokens = ["a", "b", "h", "H", "K", "t", "T"];
+};
+
+// node_modules/.pnpm/date-fns@4.1.0/node_modules/date-fns/parse/_lib/parsers/MinuteParser.js
+var MinuteParser = class extends Parser {
+  priority = 60;
+  parse(dateString, token, match2) {
+    switch (token) {
+      case "m":
+        return parseNumericPattern(numericPatterns.minute, dateString);
+      case "mo":
+        return match2.ordinalNumber(dateString, { unit: "minute" });
+      default:
+        return parseNDigits(token.length, dateString);
+    }
+  }
+  validate(_date, value) {
+    return value >= 0 && value <= 59;
+  }
+  set(date, _flags, value) {
+    date.setMinutes(value, 0, 0);
+    return date;
+  }
+  incompatibleTokens = ["t", "T"];
+};
+
+// node_modules/.pnpm/date-fns@4.1.0/node_modules/date-fns/parse/_lib/parsers/SecondParser.js
+var SecondParser = class extends Parser {
+  priority = 50;
+  parse(dateString, token, match2) {
+    switch (token) {
+      case "s":
+        return parseNumericPattern(numericPatterns.second, dateString);
+      case "so":
+        return match2.ordinalNumber(dateString, { unit: "second" });
+      default:
+        return parseNDigits(token.length, dateString);
+    }
+  }
+  validate(_date, value) {
+    return value >= 0 && value <= 59;
+  }
+  set(date, _flags, value) {
+    date.setSeconds(value, 0);
+    return date;
+  }
+  incompatibleTokens = ["t", "T"];
+};
+
+// node_modules/.pnpm/date-fns@4.1.0/node_modules/date-fns/parse/_lib/parsers/FractionOfSecondParser.js
+var FractionOfSecondParser = class extends Parser {
+  priority = 30;
+  parse(dateString, token) {
+    const valueCallback = (value) => Math.trunc(value * Math.pow(10, -token.length + 3));
+    return mapValue(parseNDigits(token.length, dateString), valueCallback);
+  }
+  set(date, _flags, value) {
+    date.setMilliseconds(value);
+    return date;
+  }
+  incompatibleTokens = ["t", "T"];
+};
+
+// node_modules/.pnpm/date-fns@4.1.0/node_modules/date-fns/parse/_lib/parsers/ISOTimezoneWithZParser.js
+var ISOTimezoneWithZParser = class extends Parser {
+  priority = 10;
+  parse(dateString, token) {
+    switch (token) {
+      case "X":
+        return parseTimezonePattern(
+          timezonePatterns.basicOptionalMinutes,
+          dateString
+        );
+      case "XX":
+        return parseTimezonePattern(timezonePatterns.basic, dateString);
+      case "XXXX":
+        return parseTimezonePattern(
+          timezonePatterns.basicOptionalSeconds,
+          dateString
+        );
+      case "XXXXX":
+        return parseTimezonePattern(
+          timezonePatterns.extendedOptionalSeconds,
+          dateString
+        );
+      case "XXX":
+      default:
+        return parseTimezonePattern(timezonePatterns.extended, dateString);
+    }
+  }
+  set(date, flags, value) {
+    if (flags.timestampIsSet) return date;
+    return constructFrom(
+      date,
+      date.getTime() - getTimezoneOffsetInMilliseconds(date) - value
+    );
+  }
+  incompatibleTokens = ["t", "T", "x"];
+};
+
+// node_modules/.pnpm/date-fns@4.1.0/node_modules/date-fns/parse/_lib/parsers/ISOTimezoneParser.js
+var ISOTimezoneParser = class extends Parser {
+  priority = 10;
+  parse(dateString, token) {
+    switch (token) {
+      case "x":
+        return parseTimezonePattern(
+          timezonePatterns.basicOptionalMinutes,
+          dateString
+        );
+      case "xx":
+        return parseTimezonePattern(timezonePatterns.basic, dateString);
+      case "xxxx":
+        return parseTimezonePattern(
+          timezonePatterns.basicOptionalSeconds,
+          dateString
+        );
+      case "xxxxx":
+        return parseTimezonePattern(
+          timezonePatterns.extendedOptionalSeconds,
+          dateString
+        );
+      case "xxx":
+      default:
+        return parseTimezonePattern(timezonePatterns.extended, dateString);
+    }
+  }
+  set(date, flags, value) {
+    if (flags.timestampIsSet) return date;
+    return constructFrom(
+      date,
+      date.getTime() - getTimezoneOffsetInMilliseconds(date) - value
+    );
+  }
+  incompatibleTokens = ["t", "T", "X"];
+};
+
+// node_modules/.pnpm/date-fns@4.1.0/node_modules/date-fns/parse/_lib/parsers/TimestampSecondsParser.js
+var TimestampSecondsParser = class extends Parser {
+  priority = 40;
+  parse(dateString) {
+    return parseAnyDigitsSigned(dateString);
+  }
+  set(date, _flags, value) {
+    return [constructFrom(date, value * 1e3), { timestampIsSet: true }];
+  }
+  incompatibleTokens = "*";
+};
+
+// node_modules/.pnpm/date-fns@4.1.0/node_modules/date-fns/parse/_lib/parsers/TimestampMillisecondsParser.js
+var TimestampMillisecondsParser = class extends Parser {
+  priority = 20;
+  parse(dateString) {
+    return parseAnyDigitsSigned(dateString);
+  }
+  set(date, _flags, value) {
+    return [constructFrom(date, value), { timestampIsSet: true }];
+  }
+  incompatibleTokens = "*";
+};
+
+// node_modules/.pnpm/date-fns@4.1.0/node_modules/date-fns/parse/_lib/parsers.js
+var parsers = {
+  G: new EraParser(),
+  y: new YearParser(),
+  Y: new LocalWeekYearParser(),
+  R: new ISOWeekYearParser(),
+  u: new ExtendedYearParser(),
+  Q: new QuarterParser(),
+  q: new StandAloneQuarterParser(),
+  M: new MonthParser(),
+  L: new StandAloneMonthParser(),
+  w: new LocalWeekParser(),
+  I: new ISOWeekParser(),
+  d: new DateParser(),
+  D: new DayOfYearParser(),
+  E: new DayParser(),
+  e: new LocalDayParser(),
+  c: new StandAloneLocalDayParser(),
+  i: new ISODayParser(),
+  a: new AMPMParser(),
+  b: new AMPMMidnightParser(),
+  B: new DayPeriodParser(),
+  h: new Hour1to12Parser(),
+  H: new Hour0to23Parser(),
+  K: new Hour0To11Parser(),
+  k: new Hour1To24Parser(),
+  m: new MinuteParser(),
+  s: new SecondParser(),
+  S: new FractionOfSecondParser(),
+  X: new ISOTimezoneWithZParser(),
+  x: new ISOTimezoneParser(),
+  t: new TimestampSecondsParser(),
+  T: new TimestampMillisecondsParser()
+};
+
+// node_modules/.pnpm/date-fns@4.1.0/node_modules/date-fns/parse.js
+var formattingTokensRegExp2 = /[yYQqMLwIdDecihHKkms]o|(\w)\1*|''|'(''|[^'])+('|$)|./g;
+var longFormattingTokensRegExp2 = /P+p+|P+|p+|''|'(''|[^'])+('|$)|./g;
+var escapedStringRegExp2 = /^'([^]*?)'?$/;
+var doubleQuoteRegExp2 = /''/g;
+var notWhitespaceRegExp = /\S/;
+var unescapedLatinCharacterRegExp2 = /[a-zA-Z]/;
+function parse(dateStr, formatStr, referenceDate, options) {
+  const invalidDate = () => constructFrom(options?.in || referenceDate, NaN);
+  const defaultOptions2 = getDefaultOptions2();
+  const locale = options?.locale ?? defaultOptions2.locale ?? enUS;
+  const firstWeekContainsDate = options?.firstWeekContainsDate ?? options?.locale?.options?.firstWeekContainsDate ?? defaultOptions2.firstWeekContainsDate ?? defaultOptions2.locale?.options?.firstWeekContainsDate ?? 1;
+  const weekStartsOn = options?.weekStartsOn ?? options?.locale?.options?.weekStartsOn ?? defaultOptions2.weekStartsOn ?? defaultOptions2.locale?.options?.weekStartsOn ?? 0;
+  if (!formatStr)
+    return dateStr ? invalidDate() : toDate(referenceDate, options?.in);
+  const subFnOptions = {
+    firstWeekContainsDate,
+    weekStartsOn,
+    locale
+  };
+  const setters = [new DateTimezoneSetter(options?.in, referenceDate)];
+  const tokens = formatStr.match(longFormattingTokensRegExp2).map((substring) => {
+    const firstCharacter = substring[0];
+    if (firstCharacter in longFormatters) {
+      const longFormatter = longFormatters[firstCharacter];
+      return longFormatter(substring, locale.formatLong);
+    }
+    return substring;
+  }).join("").match(formattingTokensRegExp2);
+  const usedTokens = [];
+  for (let token of tokens) {
+    if (!options?.useAdditionalWeekYearTokens && isProtectedWeekYearToken(token)) {
+      warnOrThrowProtectedError(token, formatStr, dateStr);
+    }
+    if (!options?.useAdditionalDayOfYearTokens && isProtectedDayOfYearToken(token)) {
+      warnOrThrowProtectedError(token, formatStr, dateStr);
+    }
+    const firstCharacter = token[0];
+    const parser = parsers[firstCharacter];
+    if (parser) {
+      const { incompatibleTokens } = parser;
+      if (Array.isArray(incompatibleTokens)) {
+        const incompatibleToken = usedTokens.find(
+          (usedToken) => incompatibleTokens.includes(usedToken.token) || usedToken.token === firstCharacter
+        );
+        if (incompatibleToken) {
+          throw new RangeError(
+            `The format string mustn't contain \`${incompatibleToken.fullToken}\` and \`${token}\` at the same time`
+          );
+        }
+      } else if (parser.incompatibleTokens === "*" && usedTokens.length > 0) {
+        throw new RangeError(
+          `The format string mustn't contain \`${token}\` and any other token at the same time`
+        );
+      }
+      usedTokens.push({ token: firstCharacter, fullToken: token });
+      const parseResult = parser.run(
+        dateStr,
+        token,
+        locale.match,
+        subFnOptions
+      );
+      if (!parseResult) {
+        return invalidDate();
+      }
+      setters.push(parseResult.setter);
+      dateStr = parseResult.rest;
+    } else {
+      if (firstCharacter.match(unescapedLatinCharacterRegExp2)) {
+        throw new RangeError(
+          "Format string contains an unescaped latin alphabet character `" + firstCharacter + "`"
+        );
+      }
+      if (token === "''") {
+        token = "'";
+      } else if (firstCharacter === "'") {
+        token = cleanEscapedString2(token);
+      }
+      if (dateStr.indexOf(token) === 0) {
+        dateStr = dateStr.slice(token.length);
+      } else {
+        return invalidDate();
+      }
+    }
+  }
+  if (dateStr.length > 0 && notWhitespaceRegExp.test(dateStr)) {
+    return invalidDate();
+  }
+  const uniquePrioritySetters = setters.map((setter) => setter.priority).sort((a, b) => b - a).filter((priority, index3, array) => array.indexOf(priority) === index3).map(
+    (priority) => setters.filter((setter) => setter.priority === priority).sort((a, b) => b.subPriority - a.subPriority)
+  ).map((setterArray) => setterArray[0]);
+  let date = toDate(referenceDate, options?.in);
+  if (isNaN(+date)) return invalidDate();
+  const flags = {};
+  for (const setter of uniquePrioritySetters) {
+    if (!setter.validate(date, subFnOptions)) {
+      return invalidDate();
+    }
+    const result = setter.set(date, flags, subFnOptions);
+    if (Array.isArray(result)) {
+      date = result[0];
+      Object.assign(flags, result[1]);
+    } else {
+      date = result;
+    }
+  }
+  return date;
+}
+function cleanEscapedString2(input) {
+  return input.match(escapedStringRegExp2)[1].replace(doubleQuoteRegExp2, "'");
+}
+
+// node_modules/.pnpm/date-fns@4.1.0/node_modules/date-fns/isSameMonth.js
+function isSameMonth(laterDate, earlierDate, options) {
+  const [laterDate_, earlierDate_] = normalizeDates(
+    options?.in,
+    laterDate,
+    earlierDate
+  );
+  return laterDate_.getFullYear() === earlierDate_.getFullYear() && laterDate_.getMonth() === earlierDate_.getMonth();
+}
+
+// node_modules/.pnpm/date-fns@4.1.0/node_modules/date-fns/isSameQuarter.js
+function isSameQuarter(laterDate, earlierDate, options) {
+  const [dateLeft_, dateRight_] = normalizeDates(
+    options?.in,
+    laterDate,
+    earlierDate
+  );
+  return +startOfQuarter(dateLeft_) === +startOfQuarter(dateRight_);
+}
+
+// node_modules/.pnpm/date-fns@4.1.0/node_modules/date-fns/isSameYear.js
+function isSameYear(laterDate, earlierDate, options) {
+  const [laterDate_, earlierDate_] = normalizeDates(
+    options?.in,
+    laterDate,
+    earlierDate
+  );
+  return laterDate_.getFullYear() === earlierDate_.getFullYear();
+}
+
+// node_modules/.pnpm/date-fns@4.1.0/node_modules/date-fns/isWithinInterval.js
+function isWithinInterval(date, interval, options) {
+  const time = +toDate(date, options?.in);
+  const [startTime, endTime] = [
+    +toDate(interval.start, options?.in),
+    +toDate(interval.end, options?.in)
+  ].sort((a, b) => a - b);
+  return time >= startTime && time <= endTime;
+}
+
+// node_modules/.pnpm/date-fns@4.1.0/node_modules/date-fns/subDays.js
+function subDays(date, amount, options) {
+  return addDays2(date, -amount, options);
+}
+
+// node_modules/.pnpm/date-fns@4.1.0/node_modules/date-fns/parseISO.js
+function parseISO(argument, options) {
+  const invalidDate = () => constructFrom(options?.in, NaN);
+  const additionalDigits = options?.additionalDigits ?? 2;
+  const dateStrings = splitDateString(argument);
+  let date;
+  if (dateStrings.date) {
+    const parseYearResult = parseYear(dateStrings.date, additionalDigits);
+    date = parseDate(parseYearResult.restDateString, parseYearResult.year);
+  }
+  if (!date || isNaN(+date)) return invalidDate();
+  const timestamp = +date;
+  let time = 0;
+  let offset4;
+  if (dateStrings.time) {
+    time = parseTime(dateStrings.time);
+    if (isNaN(time)) return invalidDate();
+  }
+  if (dateStrings.timezone) {
+    offset4 = parseTimezone(dateStrings.timezone);
+    if (isNaN(offset4)) return invalidDate();
+  } else {
+    const tmpDate = new Date(timestamp + time);
+    const result = toDate(0, options?.in);
+    result.setFullYear(
+      tmpDate.getUTCFullYear(),
+      tmpDate.getUTCMonth(),
+      tmpDate.getUTCDate()
+    );
+    result.setHours(
+      tmpDate.getUTCHours(),
+      tmpDate.getUTCMinutes(),
+      tmpDate.getUTCSeconds(),
+      tmpDate.getUTCMilliseconds()
+    );
+    return result;
+  }
+  return toDate(timestamp + time + offset4, options?.in);
+}
+var patterns = {
+  dateTimeDelimiter: /[T ]/,
+  timeZoneDelimiter: /[Z ]/i,
+  timezone: /([Z+-].*)$/
+};
+var dateRegex = /^-?(?:(\d{3})|(\d{2})(?:-?(\d{2}))?|W(\d{2})(?:-?(\d{1}))?|)$/;
+var timeRegex = /^(\d{2}(?:[.,]\d*)?)(?::?(\d{2}(?:[.,]\d*)?))?(?::?(\d{2}(?:[.,]\d*)?))?$/;
+var timezoneRegex = /^([+-])(\d{2})(?::?(\d{2}))?$/;
+function splitDateString(dateString) {
+  const dateStrings = {};
+  const array = dateString.split(patterns.dateTimeDelimiter);
+  let timeString;
+  if (array.length > 2) {
+    return dateStrings;
+  }
+  if (/:/.test(array[0])) {
+    timeString = array[0];
+  } else {
+    dateStrings.date = array[0];
+    timeString = array[1];
+    if (patterns.timeZoneDelimiter.test(dateStrings.date)) {
+      dateStrings.date = dateString.split(patterns.timeZoneDelimiter)[0];
+      timeString = dateString.substr(
+        dateStrings.date.length,
+        dateString.length
+      );
+    }
+  }
+  if (timeString) {
+    const token = patterns.timezone.exec(timeString);
+    if (token) {
+      dateStrings.time = timeString.replace(token[1], "");
+      dateStrings.timezone = token[1];
+    } else {
+      dateStrings.time = timeString;
+    }
+  }
+  return dateStrings;
+}
+function parseYear(dateString, additionalDigits) {
+  const regex = new RegExp(
+    "^(?:(\\d{4}|[+-]\\d{" + (4 + additionalDigits) + "})|(\\d{2}|[+-]\\d{" + (2 + additionalDigits) + "})$)"
+  );
+  const captures = dateString.match(regex);
+  if (!captures) return { year: NaN, restDateString: "" };
+  const year = captures[1] ? parseInt(captures[1]) : null;
+  const century = captures[2] ? parseInt(captures[2]) : null;
+  return {
+    year: century === null ? year : century * 100,
+    restDateString: dateString.slice((captures[1] || captures[2]).length)
+  };
+}
+function parseDate(dateString, year) {
+  if (year === null) return /* @__PURE__ */ new Date(NaN);
+  const captures = dateString.match(dateRegex);
+  if (!captures) return /* @__PURE__ */ new Date(NaN);
+  const isWeekDate = !!captures[4];
+  const dayOfYear = parseDateUnit(captures[1]);
+  const month = parseDateUnit(captures[2]) - 1;
+  const day = parseDateUnit(captures[3]);
+  const week = parseDateUnit(captures[4]);
+  const dayOfWeek = parseDateUnit(captures[5]) - 1;
+  if (isWeekDate) {
+    if (!validateWeekDate(year, week, dayOfWeek)) {
+      return /* @__PURE__ */ new Date(NaN);
+    }
+    return dayOfISOWeekYear(year, week, dayOfWeek);
+  } else {
+    const date = /* @__PURE__ */ new Date(0);
+    if (!validateDate(year, month, day) || !validateDayOfYearDate(year, dayOfYear)) {
+      return /* @__PURE__ */ new Date(NaN);
+    }
+    date.setUTCFullYear(year, month, Math.max(dayOfYear, day));
+    return date;
+  }
+}
+function parseDateUnit(value) {
+  return value ? parseInt(value) : 1;
+}
+function parseTime(timeString) {
+  const captures = timeString.match(timeRegex);
+  if (!captures) return NaN;
+  const hours = parseTimeUnit(captures[1]);
+  const minutes = parseTimeUnit(captures[2]);
+  const seconds = parseTimeUnit(captures[3]);
+  if (!validateTime(hours, minutes, seconds)) {
+    return NaN;
+  }
+  return hours * millisecondsInHour + minutes * millisecondsInMinute + seconds * 1e3;
+}
+function parseTimeUnit(value) {
+  return value && parseFloat(value.replace(",", ".")) || 0;
+}
+function parseTimezone(timezoneString) {
+  if (timezoneString === "Z") return 0;
+  const captures = timezoneString.match(timezoneRegex);
+  if (!captures) return 0;
+  const sign = captures[1] === "+" ? -1 : 1;
+  const hours = parseInt(captures[2]);
+  const minutes = captures[3] && parseInt(captures[3]) || 0;
+  if (!validateTimezone(hours, minutes)) {
+    return NaN;
+  }
+  return sign * (hours * millisecondsInHour + minutes * millisecondsInMinute);
+}
+function dayOfISOWeekYear(isoWeekYear, week, day) {
+  const date = /* @__PURE__ */ new Date(0);
+  date.setUTCFullYear(isoWeekYear, 0, 4);
+  const fourthOfJanuaryDay = date.getUTCDay() || 7;
+  const diff = (week - 1) * 7 + day + 1 - fourthOfJanuaryDay;
+  date.setUTCDate(date.getUTCDate() + diff);
+  return date;
+}
+var daysInMonths = [31, null, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+function isLeapYearIndex2(year) {
+  return year % 400 === 0 || year % 4 === 0 && year % 100 !== 0;
+}
+function validateDate(year, month, date) {
+  return month >= 0 && month <= 11 && date >= 1 && date <= (daysInMonths[month] || (isLeapYearIndex2(year) ? 29 : 28));
+}
+function validateDayOfYearDate(year, dayOfYear) {
+  return dayOfYear >= 1 && dayOfYear <= (isLeapYearIndex2(year) ? 366 : 365);
+}
+function validateWeekDate(_year, week, day) {
+  return week >= 1 && week <= 53 && day >= 0 && day <= 6;
+}
+function validateTime(hours, minutes, seconds) {
+  if (hours === 24) {
+    return minutes === 0 && seconds === 0;
+  }
+  return seconds >= 0 && seconds < 60 && minutes >= 0 && minutes < 60 && hours >= 0 && hours < 25;
+}
+function validateTimezone(_hours, minutes) {
+  return minutes >= 0 && minutes <= 59;
+}
+
+// node_modules/.pnpm/date-fns@4.1.0/node_modules/date-fns/setMonth.js
+function setMonth(date, month, options) {
+  const _date = toDate(date, options?.in);
+  const year = _date.getFullYear();
+  const day = _date.getDate();
+  const midMonth = constructFrom(options?.in || date, 0);
+  midMonth.setFullYear(year, month, 15);
+  midMonth.setHours(0, 0, 0, 0);
+  const daysInMonth = getDaysInMonth(midMonth);
+  _date.setMonth(month, Math.min(day, daysInMonth));
+  return _date;
+}
+
+// node_modules/.pnpm/date-fns@4.1.0/node_modules/date-fns/setHours.js
+function setHours(date, hours, options) {
+  const _date = toDate(date, options?.in);
+  _date.setHours(hours);
+  return _date;
+}
+
+// node_modules/.pnpm/date-fns@4.1.0/node_modules/date-fns/setMinutes.js
+function setMinutes(date, minutes, options) {
+  const date_ = toDate(date, options?.in);
+  date_.setMinutes(minutes);
+  return date_;
+}
+
+// node_modules/.pnpm/date-fns@4.1.0/node_modules/date-fns/setQuarter.js
+function setQuarter(date, quarter, options) {
+  const date_ = toDate(date, options?.in);
+  const oldQuarter = Math.trunc(date_.getMonth() / 3) + 1;
+  const diff = quarter - oldQuarter;
+  return setMonth(date_, date_.getMonth() + diff * 3);
+}
+
+// node_modules/.pnpm/date-fns@4.1.0/node_modules/date-fns/setSeconds.js
+function setSeconds(date, seconds, options) {
+  const _date = toDate(date, options?.in);
+  _date.setSeconds(seconds);
+  return _date;
+}
+
+// node_modules/.pnpm/date-fns@4.1.0/node_modules/date-fns/setYear.js
+function setYear(date, year, options) {
+  const date_ = toDate(date, options?.in);
+  if (isNaN(+date_)) return constructFrom(options?.in || date, NaN);
+  date_.setFullYear(year);
+  return date_;
+}
+
+// node_modules/.pnpm/date-fns@4.1.0/node_modules/date-fns/subMonths.js
+function subMonths(date, amount, options) {
+  return addMonths(date, -amount, options);
+}
+
+// node_modules/.pnpm/date-fns@4.1.0/node_modules/date-fns/subQuarters.js
+function subQuarters(date, amount, options) {
+  return addQuarters(date, -amount, options);
+}
+
+// node_modules/.pnpm/date-fns@4.1.0/node_modules/date-fns/subWeeks.js
+function subWeeks(date, amount, options) {
+  return addWeeks(date, -amount, options);
+}
+
+// node_modules/.pnpm/date-fns@4.1.0/node_modules/date-fns/subYears.js
+function subYears(date, amount, options) {
+  return addYears(date, -amount, options);
+}
+
+// node_modules/.pnpm/@floating-ui+react@0.27.17_react-dom@18.2.0_react@18.2.0__react@18.2.0/node_modules/@floating-ui/react/dist/floating-ui.react.mjs
+var React55 = __toESM(require("react"), 1);
+
+// node_modules/.pnpm/@floating-ui+utils@0.2.10/node_modules/@floating-ui/utils/dist/floating-ui.utils.dom.mjs
+function hasWindow() {
+  return typeof window !== "undefined";
+}
+function getNodeName(node) {
+  if (isNode(node)) {
+    return (node.nodeName || "").toLowerCase();
+  }
+  return "#document";
+}
+function getWindow(node) {
+  var _node$ownerDocument;
+  return (node == null || (_node$ownerDocument = node.ownerDocument) == null ? void 0 : _node$ownerDocument.defaultView) || window;
+}
+function getDocumentElement(node) {
+  var _ref;
+  return (_ref = (isNode(node) ? node.ownerDocument : node.document) || window.document) == null ? void 0 : _ref.documentElement;
+}
+function isNode(value) {
+  if (!hasWindow()) {
+    return false;
+  }
+  return value instanceof Node || value instanceof getWindow(value).Node;
+}
+function isElement(value) {
+  if (!hasWindow()) {
+    return false;
+  }
+  return value instanceof Element || value instanceof getWindow(value).Element;
+}
+function isHTMLElement(value) {
+  if (!hasWindow()) {
+    return false;
+  }
+  return value instanceof HTMLElement || value instanceof getWindow(value).HTMLElement;
+}
+function isShadowRoot(value) {
+  if (!hasWindow() || typeof ShadowRoot === "undefined") {
+    return false;
+  }
+  return value instanceof ShadowRoot || value instanceof getWindow(value).ShadowRoot;
+}
+var invalidOverflowDisplayValues = /* @__PURE__ */ new Set(["inline", "contents"]);
+function isOverflowElement(element) {
+  const {
+    overflow,
+    overflowX,
+    overflowY,
+    display
+  } = getComputedStyle2(element);
+  return /auto|scroll|overlay|hidden|clip/.test(overflow + overflowY + overflowX) && !invalidOverflowDisplayValues.has(display);
+}
+var tableElements = /* @__PURE__ */ new Set(["table", "td", "th"]);
+function isTableElement(element) {
+  return tableElements.has(getNodeName(element));
+}
+var topLayerSelectors = [":popover-open", ":modal"];
+function isTopLayer(element) {
+  return topLayerSelectors.some((selector) => {
+    try {
+      return element.matches(selector);
+    } catch (_e) {
+      return false;
+    }
+  });
+}
+var transformProperties = ["transform", "translate", "scale", "rotate", "perspective"];
+var willChangeValues = ["transform", "translate", "scale", "rotate", "perspective", "filter"];
+var containValues = ["paint", "layout", "strict", "content"];
+function isContainingBlock(elementOrCss) {
+  const webkit = isWebKit();
+  const css = isElement(elementOrCss) ? getComputedStyle2(elementOrCss) : elementOrCss;
+  return transformProperties.some((value) => css[value] ? css[value] !== "none" : false) || (css.containerType ? css.containerType !== "normal" : false) || !webkit && (css.backdropFilter ? css.backdropFilter !== "none" : false) || !webkit && (css.filter ? css.filter !== "none" : false) || willChangeValues.some((value) => (css.willChange || "").includes(value)) || containValues.some((value) => (css.contain || "").includes(value));
+}
+function getContainingBlock(element) {
+  let currentNode = getParentNode(element);
+  while (isHTMLElement(currentNode) && !isLastTraversableNode(currentNode)) {
+    if (isContainingBlock(currentNode)) {
+      return currentNode;
+    } else if (isTopLayer(currentNode)) {
+      return null;
+    }
+    currentNode = getParentNode(currentNode);
+  }
+  return null;
+}
+function isWebKit() {
+  if (typeof CSS === "undefined" || !CSS.supports) return false;
+  return CSS.supports("-webkit-backdrop-filter", "none");
+}
+var lastTraversableNodeNames = /* @__PURE__ */ new Set(["html", "body", "#document"]);
+function isLastTraversableNode(node) {
+  return lastTraversableNodeNames.has(getNodeName(node));
+}
+function getComputedStyle2(element) {
+  return getWindow(element).getComputedStyle(element);
+}
+function getNodeScroll(element) {
+  if (isElement(element)) {
+    return {
+      scrollLeft: element.scrollLeft,
+      scrollTop: element.scrollTop
+    };
+  }
+  return {
+    scrollLeft: element.scrollX,
+    scrollTop: element.scrollY
+  };
+}
+function getParentNode(node) {
+  if (getNodeName(node) === "html") {
+    return node;
+  }
+  const result = (
+    // Step into the shadow DOM of the parent of a slotted node.
+    node.assignedSlot || // DOM Element detected.
+    node.parentNode || // ShadowRoot detected.
+    isShadowRoot(node) && node.host || // Fallback.
+    getDocumentElement(node)
+  );
+  return isShadowRoot(result) ? result.host : result;
+}
+function getNearestOverflowAncestor(node) {
+  const parentNode = getParentNode(node);
+  if (isLastTraversableNode(parentNode)) {
+    return node.ownerDocument ? node.ownerDocument.body : node.body;
+  }
+  if (isHTMLElement(parentNode) && isOverflowElement(parentNode)) {
+    return parentNode;
+  }
+  return getNearestOverflowAncestor(parentNode);
+}
+function getOverflowAncestors(node, list, traverseIframes) {
+  var _node$ownerDocument2;
+  if (list === void 0) {
+    list = [];
+  }
+  if (traverseIframes === void 0) {
+    traverseIframes = true;
+  }
+  const scrollableAncestor = getNearestOverflowAncestor(node);
+  const isBody = scrollableAncestor === ((_node$ownerDocument2 = node.ownerDocument) == null ? void 0 : _node$ownerDocument2.body);
+  const win = getWindow(scrollableAncestor);
+  if (isBody) {
+    const frameElement = getFrameElement(win);
+    return list.concat(win, win.visualViewport || [], isOverflowElement(scrollableAncestor) ? scrollableAncestor : [], frameElement && traverseIframes ? getOverflowAncestors(frameElement) : []);
+  }
+  return list.concat(scrollableAncestor, getOverflowAncestors(scrollableAncestor, [], traverseIframes));
+}
+function getFrameElement(win) {
+  return win.parent && Object.getPrototypeOf(win.parent) ? win.frameElement : null;
+}
+
+// node_modules/.pnpm/@floating-ui+react@0.27.17_react-dom@18.2.0_react@18.2.0__react@18.2.0/node_modules/@floating-ui/react/dist/floating-ui.react.utils.mjs
+var React53 = __toESM(require("react"), 1);
+var import_react40 = require("react");
+
+// node_modules/.pnpm/@floating-ui+utils@0.2.10/node_modules/@floating-ui/utils/dist/floating-ui.utils.mjs
+var min2 = Math.min;
+var max2 = Math.max;
+var round = Math.round;
+var floor = Math.floor;
+var createCoords = (v) => ({
+  x: v,
+  y: v
+});
+var oppositeSideMap = {
+  left: "right",
+  right: "left",
+  bottom: "top",
+  top: "bottom"
+};
+var oppositeAlignmentMap = {
+  start: "end",
+  end: "start"
+};
+function clamp(start, value, end) {
+  return max2(start, min2(value, end));
+}
+function evaluate(value, param) {
+  return typeof value === "function" ? value(param) : value;
+}
+function getSide(placement) {
+  return placement.split("-")[0];
+}
+function getAlignment(placement) {
+  return placement.split("-")[1];
+}
+function getOppositeAxis(axis) {
+  return axis === "x" ? "y" : "x";
+}
+function getAxisLength(axis) {
+  return axis === "y" ? "height" : "width";
+}
+var yAxisSides = /* @__PURE__ */ new Set(["top", "bottom"]);
+function getSideAxis(placement) {
+  return yAxisSides.has(getSide(placement)) ? "y" : "x";
+}
+function getAlignmentAxis(placement) {
+  return getOppositeAxis(getSideAxis(placement));
+}
+function getAlignmentSides(placement, rects, rtl) {
+  if (rtl === void 0) {
+    rtl = false;
+  }
+  const alignment = getAlignment(placement);
+  const alignmentAxis = getAlignmentAxis(placement);
+  const length = getAxisLength(alignmentAxis);
+  let mainAlignmentSide = alignmentAxis === "x" ? alignment === (rtl ? "end" : "start") ? "right" : "left" : alignment === "start" ? "bottom" : "top";
+  if (rects.reference[length] > rects.floating[length]) {
+    mainAlignmentSide = getOppositePlacement(mainAlignmentSide);
+  }
+  return [mainAlignmentSide, getOppositePlacement(mainAlignmentSide)];
+}
+function getExpandedPlacements(placement) {
+  const oppositePlacement = getOppositePlacement(placement);
+  return [getOppositeAlignmentPlacement(placement), oppositePlacement, getOppositeAlignmentPlacement(oppositePlacement)];
+}
+function getOppositeAlignmentPlacement(placement) {
+  return placement.replace(/start|end/g, (alignment) => oppositeAlignmentMap[alignment]);
+}
+var lrPlacement = ["left", "right"];
+var rlPlacement = ["right", "left"];
+var tbPlacement = ["top", "bottom"];
+var btPlacement = ["bottom", "top"];
+function getSideList(side, isStart, rtl) {
+  switch (side) {
+    case "top":
+    case "bottom":
+      if (rtl) return isStart ? rlPlacement : lrPlacement;
+      return isStart ? lrPlacement : rlPlacement;
+    case "left":
+    case "right":
+      return isStart ? tbPlacement : btPlacement;
+    default:
+      return [];
+  }
+}
+function getOppositeAxisPlacements(placement, flipAlignment, direction, rtl) {
+  const alignment = getAlignment(placement);
+  let list = getSideList(getSide(placement), direction === "start", rtl);
+  if (alignment) {
+    list = list.map((side) => side + "-" + alignment);
+    if (flipAlignment) {
+      list = list.concat(list.map(getOppositeAlignmentPlacement));
+    }
+  }
+  return list;
+}
+function getOppositePlacement(placement) {
+  return placement.replace(/left|right|bottom|top/g, (side) => oppositeSideMap[side]);
+}
+function expandPaddingObject(padding) {
+  return {
+    top: 0,
+    right: 0,
+    bottom: 0,
+    left: 0,
+    ...padding
+  };
+}
+function getPaddingObject(padding) {
+  return typeof padding !== "number" ? expandPaddingObject(padding) : {
+    top: padding,
+    right: padding,
+    bottom: padding,
+    left: padding
+  };
+}
+function rectToClientRect(rect) {
+  const {
+    x,
+    y,
+    width,
+    height
+  } = rect;
+  return {
+    width,
+    height,
+    top: y,
+    left: x,
+    right: x + width,
+    bottom: y + height,
+    x,
+    y
+  };
+}
+
+// node_modules/.pnpm/@floating-ui+react@0.27.17_react-dom@18.2.0_react@18.2.0__react@18.2.0/node_modules/@floating-ui/react/dist/floating-ui.react.utils.mjs
+var isClient = typeof document !== "undefined";
+var noop = function noop2() {
+};
+var index = isClient ? import_react40.useLayoutEffect : noop;
+var SafeReact = {
+  ...React53
+};
+var useInsertionEffect2 = SafeReact.useInsertionEffect;
+var useSafeInsertionEffect = useInsertionEffect2 || ((fn) => fn());
+function useEffectEvent(callback) {
+  const ref = React53.useRef(() => {
+    if (false) {
+      throw new Error("Cannot call an event handler while rendering.");
+    }
+  });
+  useSafeInsertionEffect(() => {
+    ref.current = callback;
+  });
+  return React53.useCallback(function() {
+    for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
+      args[_key] = arguments[_key];
+    }
+    return ref.current == null ? void 0 : ref.current(...args);
+  }, []);
+}
+
+// node_modules/.pnpm/@floating-ui+react@0.27.17_react-dom@18.2.0_react@18.2.0__react@18.2.0/node_modules/@floating-ui/react/dist/floating-ui.react.mjs
 var import_jsx_runtime44 = require("react/jsx-runtime");
+var ReactDOM4 = __toESM(require("react-dom"), 1);
+
+// node_modules/.pnpm/@floating-ui+core@1.7.4/node_modules/@floating-ui/core/dist/floating-ui.core.mjs
+function computeCoordsFromPlacement(_ref, placement, rtl) {
+  let {
+    reference,
+    floating
+  } = _ref;
+  const sideAxis = getSideAxis(placement);
+  const alignmentAxis = getAlignmentAxis(placement);
+  const alignLength = getAxisLength(alignmentAxis);
+  const side = getSide(placement);
+  const isVertical = sideAxis === "y";
+  const commonX = reference.x + reference.width / 2 - floating.width / 2;
+  const commonY = reference.y + reference.height / 2 - floating.height / 2;
+  const commonAlign = reference[alignLength] / 2 - floating[alignLength] / 2;
+  let coords;
+  switch (side) {
+    case "top":
+      coords = {
+        x: commonX,
+        y: reference.y - floating.height
+      };
+      break;
+    case "bottom":
+      coords = {
+        x: commonX,
+        y: reference.y + reference.height
+      };
+      break;
+    case "right":
+      coords = {
+        x: reference.x + reference.width,
+        y: commonY
+      };
+      break;
+    case "left":
+      coords = {
+        x: reference.x - floating.width,
+        y: commonY
+      };
+      break;
+    default:
+      coords = {
+        x: reference.x,
+        y: reference.y
+      };
+  }
+  switch (getAlignment(placement)) {
+    case "start":
+      coords[alignmentAxis] -= commonAlign * (rtl && isVertical ? -1 : 1);
+      break;
+    case "end":
+      coords[alignmentAxis] += commonAlign * (rtl && isVertical ? -1 : 1);
+      break;
+  }
+  return coords;
+}
+async function detectOverflow(state, options) {
+  var _await$platform$isEle;
+  if (options === void 0) {
+    options = {};
+  }
+  const {
+    x,
+    y,
+    platform: platform2,
+    rects,
+    elements,
+    strategy
+  } = state;
+  const {
+    boundary = "clippingAncestors",
+    rootBoundary = "viewport",
+    elementContext = "floating",
+    altBoundary = false,
+    padding = 0
+  } = evaluate(options, state);
+  const paddingObject = getPaddingObject(padding);
+  const altContext = elementContext === "floating" ? "reference" : "floating";
+  const element = elements[altBoundary ? altContext : elementContext];
+  const clippingClientRect = rectToClientRect(await platform2.getClippingRect({
+    element: ((_await$platform$isEle = await (platform2.isElement == null ? void 0 : platform2.isElement(element))) != null ? _await$platform$isEle : true) ? element : element.contextElement || await (platform2.getDocumentElement == null ? void 0 : platform2.getDocumentElement(elements.floating)),
+    boundary,
+    rootBoundary,
+    strategy
+  }));
+  const rect = elementContext === "floating" ? {
+    x,
+    y,
+    width: rects.floating.width,
+    height: rects.floating.height
+  } : rects.reference;
+  const offsetParent = await (platform2.getOffsetParent == null ? void 0 : platform2.getOffsetParent(elements.floating));
+  const offsetScale = await (platform2.isElement == null ? void 0 : platform2.isElement(offsetParent)) ? await (platform2.getScale == null ? void 0 : platform2.getScale(offsetParent)) || {
+    x: 1,
+    y: 1
+  } : {
+    x: 1,
+    y: 1
+  };
+  const elementClientRect = rectToClientRect(platform2.convertOffsetParentRelativeRectToViewportRelativeRect ? await platform2.convertOffsetParentRelativeRectToViewportRelativeRect({
+    elements,
+    rect,
+    offsetParent,
+    strategy
+  }) : rect);
+  return {
+    top: (clippingClientRect.top - elementClientRect.top + paddingObject.top) / offsetScale.y,
+    bottom: (elementClientRect.bottom - clippingClientRect.bottom + paddingObject.bottom) / offsetScale.y,
+    left: (clippingClientRect.left - elementClientRect.left + paddingObject.left) / offsetScale.x,
+    right: (elementClientRect.right - clippingClientRect.right + paddingObject.right) / offsetScale.x
+  };
+}
+var computePosition = async (reference, floating, config) => {
+  const {
+    placement = "bottom",
+    strategy = "absolute",
+    middleware = [],
+    platform: platform2
+  } = config;
+  const validMiddleware = middleware.filter(Boolean);
+  const rtl = await (platform2.isRTL == null ? void 0 : platform2.isRTL(floating));
+  let rects = await platform2.getElementRects({
+    reference,
+    floating,
+    strategy
+  });
+  let {
+    x,
+    y
+  } = computeCoordsFromPlacement(rects, placement, rtl);
+  let statefulPlacement = placement;
+  let middlewareData = {};
+  let resetCount = 0;
+  for (let i = 0; i < validMiddleware.length; i++) {
+    var _platform$detectOverf;
+    const {
+      name,
+      fn
+    } = validMiddleware[i];
+    const {
+      x: nextX,
+      y: nextY,
+      data,
+      reset
+    } = await fn({
+      x,
+      y,
+      initialPlacement: placement,
+      placement: statefulPlacement,
+      strategy,
+      middlewareData,
+      rects,
+      platform: {
+        ...platform2,
+        detectOverflow: (_platform$detectOverf = platform2.detectOverflow) != null ? _platform$detectOverf : detectOverflow
+      },
+      elements: {
+        reference,
+        floating
+      }
+    });
+    x = nextX != null ? nextX : x;
+    y = nextY != null ? nextY : y;
+    middlewareData = {
+      ...middlewareData,
+      [name]: {
+        ...middlewareData[name],
+        ...data
+      }
+    };
+    if (reset && resetCount <= 50) {
+      resetCount++;
+      if (typeof reset === "object") {
+        if (reset.placement) {
+          statefulPlacement = reset.placement;
+        }
+        if (reset.rects) {
+          rects = reset.rects === true ? await platform2.getElementRects({
+            reference,
+            floating,
+            strategy
+          }) : reset.rects;
+        }
+        ({
+          x,
+          y
+        } = computeCoordsFromPlacement(rects, statefulPlacement, rtl));
+      }
+      i = -1;
+    }
+  }
+  return {
+    x,
+    y,
+    placement: statefulPlacement,
+    strategy,
+    middlewareData
+  };
+};
+var arrow = (options) => ({
+  name: "arrow",
+  options,
+  async fn(state) {
+    const {
+      x,
+      y,
+      placement,
+      rects,
+      platform: platform2,
+      elements,
+      middlewareData
+    } = state;
+    const {
+      element,
+      padding = 0
+    } = evaluate(options, state) || {};
+    if (element == null) {
+      return {};
+    }
+    const paddingObject = getPaddingObject(padding);
+    const coords = {
+      x,
+      y
+    };
+    const axis = getAlignmentAxis(placement);
+    const length = getAxisLength(axis);
+    const arrowDimensions = await platform2.getDimensions(element);
+    const isYAxis = axis === "y";
+    const minProp = isYAxis ? "top" : "left";
+    const maxProp = isYAxis ? "bottom" : "right";
+    const clientProp = isYAxis ? "clientHeight" : "clientWidth";
+    const endDiff = rects.reference[length] + rects.reference[axis] - coords[axis] - rects.floating[length];
+    const startDiff = coords[axis] - rects.reference[axis];
+    const arrowOffsetParent = await (platform2.getOffsetParent == null ? void 0 : platform2.getOffsetParent(element));
+    let clientSize = arrowOffsetParent ? arrowOffsetParent[clientProp] : 0;
+    if (!clientSize || !await (platform2.isElement == null ? void 0 : platform2.isElement(arrowOffsetParent))) {
+      clientSize = elements.floating[clientProp] || rects.floating[length];
+    }
+    const centerToReference = endDiff / 2 - startDiff / 2;
+    const largestPossiblePadding = clientSize / 2 - arrowDimensions[length] / 2 - 1;
+    const minPadding = min2(paddingObject[minProp], largestPossiblePadding);
+    const maxPadding = min2(paddingObject[maxProp], largestPossiblePadding);
+    const min$1 = minPadding;
+    const max3 = clientSize - arrowDimensions[length] - maxPadding;
+    const center = clientSize / 2 - arrowDimensions[length] / 2 + centerToReference;
+    const offset4 = clamp(min$1, center, max3);
+    const shouldAddOffset = !middlewareData.arrow && getAlignment(placement) != null && center !== offset4 && rects.reference[length] / 2 - (center < min$1 ? minPadding : maxPadding) - arrowDimensions[length] / 2 < 0;
+    const alignmentOffset = shouldAddOffset ? center < min$1 ? center - min$1 : center - max3 : 0;
+    return {
+      [axis]: coords[axis] + alignmentOffset,
+      data: {
+        [axis]: offset4,
+        centerOffset: center - offset4 - alignmentOffset,
+        ...shouldAddOffset && {
+          alignmentOffset
+        }
+      },
+      reset: shouldAddOffset
+    };
+  }
+});
+var flip = function(options) {
+  if (options === void 0) {
+    options = {};
+  }
+  return {
+    name: "flip",
+    options,
+    async fn(state) {
+      var _middlewareData$arrow, _middlewareData$flip;
+      const {
+        placement,
+        middlewareData,
+        rects,
+        initialPlacement,
+        platform: platform2,
+        elements
+      } = state;
+      const {
+        mainAxis: checkMainAxis = true,
+        crossAxis: checkCrossAxis = true,
+        fallbackPlacements: specifiedFallbackPlacements,
+        fallbackStrategy = "bestFit",
+        fallbackAxisSideDirection = "none",
+        flipAlignment = true,
+        ...detectOverflowOptions
+      } = evaluate(options, state);
+      if ((_middlewareData$arrow = middlewareData.arrow) != null && _middlewareData$arrow.alignmentOffset) {
+        return {};
+      }
+      const side = getSide(placement);
+      const initialSideAxis = getSideAxis(initialPlacement);
+      const isBasePlacement = getSide(initialPlacement) === initialPlacement;
+      const rtl = await (platform2.isRTL == null ? void 0 : platform2.isRTL(elements.floating));
+      const fallbackPlacements = specifiedFallbackPlacements || (isBasePlacement || !flipAlignment ? [getOppositePlacement(initialPlacement)] : getExpandedPlacements(initialPlacement));
+      const hasFallbackAxisSideDirection = fallbackAxisSideDirection !== "none";
+      if (!specifiedFallbackPlacements && hasFallbackAxisSideDirection) {
+        fallbackPlacements.push(...getOppositeAxisPlacements(initialPlacement, flipAlignment, fallbackAxisSideDirection, rtl));
+      }
+      const placements2 = [initialPlacement, ...fallbackPlacements];
+      const overflow = await platform2.detectOverflow(state, detectOverflowOptions);
+      const overflows = [];
+      let overflowsData = ((_middlewareData$flip = middlewareData.flip) == null ? void 0 : _middlewareData$flip.overflows) || [];
+      if (checkMainAxis) {
+        overflows.push(overflow[side]);
+      }
+      if (checkCrossAxis) {
+        const sides2 = getAlignmentSides(placement, rects, rtl);
+        overflows.push(overflow[sides2[0]], overflow[sides2[1]]);
+      }
+      overflowsData = [...overflowsData, {
+        placement,
+        overflows
+      }];
+      if (!overflows.every((side2) => side2 <= 0)) {
+        var _middlewareData$flip2, _overflowsData$filter;
+        const nextIndex = (((_middlewareData$flip2 = middlewareData.flip) == null ? void 0 : _middlewareData$flip2.index) || 0) + 1;
+        const nextPlacement = placements2[nextIndex];
+        if (nextPlacement) {
+          const ignoreCrossAxisOverflow = checkCrossAxis === "alignment" ? initialSideAxis !== getSideAxis(nextPlacement) : false;
+          if (!ignoreCrossAxisOverflow || // We leave the current main axis only if every placement on that axis
+          // overflows the main axis.
+          overflowsData.every((d2) => getSideAxis(d2.placement) === initialSideAxis ? d2.overflows[0] > 0 : true)) {
+            return {
+              data: {
+                index: nextIndex,
+                overflows: overflowsData
+              },
+              reset: {
+                placement: nextPlacement
+              }
+            };
+          }
+        }
+        let resetPlacement = (_overflowsData$filter = overflowsData.filter((d2) => d2.overflows[0] <= 0).sort((a, b) => a.overflows[1] - b.overflows[1])[0]) == null ? void 0 : _overflowsData$filter.placement;
+        if (!resetPlacement) {
+          switch (fallbackStrategy) {
+            case "bestFit": {
+              var _overflowsData$filter2;
+              const placement2 = (_overflowsData$filter2 = overflowsData.filter((d2) => {
+                if (hasFallbackAxisSideDirection) {
+                  const currentSideAxis = getSideAxis(d2.placement);
+                  return currentSideAxis === initialSideAxis || // Create a bias to the `y` side axis due to horizontal
+                  // reading directions favoring greater width.
+                  currentSideAxis === "y";
+                }
+                return true;
+              }).map((d2) => [d2.placement, d2.overflows.filter((overflow2) => overflow2 > 0).reduce((acc, overflow2) => acc + overflow2, 0)]).sort((a, b) => a[1] - b[1])[0]) == null ? void 0 : _overflowsData$filter2[0];
+              if (placement2) {
+                resetPlacement = placement2;
+              }
+              break;
+            }
+            case "initialPlacement":
+              resetPlacement = initialPlacement;
+              break;
+          }
+        }
+        if (placement !== resetPlacement) {
+          return {
+            reset: {
+              placement: resetPlacement
+            }
+          };
+        }
+      }
+      return {};
+    }
+  };
+};
+var originSides = /* @__PURE__ */ new Set(["left", "top"]);
+async function convertValueToCoords(state, options) {
+  const {
+    placement,
+    platform: platform2,
+    elements
+  } = state;
+  const rtl = await (platform2.isRTL == null ? void 0 : platform2.isRTL(elements.floating));
+  const side = getSide(placement);
+  const alignment = getAlignment(placement);
+  const isVertical = getSideAxis(placement) === "y";
+  const mainAxisMulti = originSides.has(side) ? -1 : 1;
+  const crossAxisMulti = rtl && isVertical ? -1 : 1;
+  const rawValue = evaluate(options, state);
+  let {
+    mainAxis,
+    crossAxis,
+    alignmentAxis
+  } = typeof rawValue === "number" ? {
+    mainAxis: rawValue,
+    crossAxis: 0,
+    alignmentAxis: null
+  } : {
+    mainAxis: rawValue.mainAxis || 0,
+    crossAxis: rawValue.crossAxis || 0,
+    alignmentAxis: rawValue.alignmentAxis
+  };
+  if (alignment && typeof alignmentAxis === "number") {
+    crossAxis = alignment === "end" ? alignmentAxis * -1 : alignmentAxis;
+  }
+  return isVertical ? {
+    x: crossAxis * crossAxisMulti,
+    y: mainAxis * mainAxisMulti
+  } : {
+    x: mainAxis * mainAxisMulti,
+    y: crossAxis * crossAxisMulti
+  };
+}
+var offset = function(options) {
+  if (options === void 0) {
+    options = 0;
+  }
+  return {
+    name: "offset",
+    options,
+    async fn(state) {
+      var _middlewareData$offse, _middlewareData$arrow;
+      const {
+        x,
+        y,
+        placement,
+        middlewareData
+      } = state;
+      const diffCoords = await convertValueToCoords(state, options);
+      if (placement === ((_middlewareData$offse = middlewareData.offset) == null ? void 0 : _middlewareData$offse.placement) && (_middlewareData$arrow = middlewareData.arrow) != null && _middlewareData$arrow.alignmentOffset) {
+        return {};
+      }
+      return {
+        x: x + diffCoords.x,
+        y: y + diffCoords.y,
+        data: {
+          ...diffCoords,
+          placement
+        }
+      };
+    }
+  };
+};
+
+// node_modules/.pnpm/@floating-ui+dom@1.7.5/node_modules/@floating-ui/dom/dist/floating-ui.dom.mjs
+function getCssDimensions(element) {
+  const css = getComputedStyle2(element);
+  let width = parseFloat(css.width) || 0;
+  let height = parseFloat(css.height) || 0;
+  const hasOffset = isHTMLElement(element);
+  const offsetWidth = hasOffset ? element.offsetWidth : width;
+  const offsetHeight = hasOffset ? element.offsetHeight : height;
+  const shouldFallback = round(width) !== offsetWidth || round(height) !== offsetHeight;
+  if (shouldFallback) {
+    width = offsetWidth;
+    height = offsetHeight;
+  }
+  return {
+    width,
+    height,
+    $: shouldFallback
+  };
+}
+function unwrapElement(element) {
+  return !isElement(element) ? element.contextElement : element;
+}
+function getScale(element) {
+  const domElement = unwrapElement(element);
+  if (!isHTMLElement(domElement)) {
+    return createCoords(1);
+  }
+  const rect = domElement.getBoundingClientRect();
+  const {
+    width,
+    height,
+    $
+  } = getCssDimensions(domElement);
+  let x = ($ ? round(rect.width) : rect.width) / width;
+  let y = ($ ? round(rect.height) : rect.height) / height;
+  if (!x || !Number.isFinite(x)) {
+    x = 1;
+  }
+  if (!y || !Number.isFinite(y)) {
+    y = 1;
+  }
+  return {
+    x,
+    y
+  };
+}
+var noOffsets = /* @__PURE__ */ createCoords(0);
+function getVisualOffsets(element) {
+  const win = getWindow(element);
+  if (!isWebKit() || !win.visualViewport) {
+    return noOffsets;
+  }
+  return {
+    x: win.visualViewport.offsetLeft,
+    y: win.visualViewport.offsetTop
+  };
+}
+function shouldAddVisualOffsets(element, isFixed, floatingOffsetParent) {
+  if (isFixed === void 0) {
+    isFixed = false;
+  }
+  if (!floatingOffsetParent || isFixed && floatingOffsetParent !== getWindow(element)) {
+    return false;
+  }
+  return isFixed;
+}
+function getBoundingClientRect(element, includeScale, isFixedStrategy, offsetParent) {
+  if (includeScale === void 0) {
+    includeScale = false;
+  }
+  if (isFixedStrategy === void 0) {
+    isFixedStrategy = false;
+  }
+  const clientRect = element.getBoundingClientRect();
+  const domElement = unwrapElement(element);
+  let scale = createCoords(1);
+  if (includeScale) {
+    if (offsetParent) {
+      if (isElement(offsetParent)) {
+        scale = getScale(offsetParent);
+      }
+    } else {
+      scale = getScale(element);
+    }
+  }
+  const visualOffsets = shouldAddVisualOffsets(domElement, isFixedStrategy, offsetParent) ? getVisualOffsets(domElement) : createCoords(0);
+  let x = (clientRect.left + visualOffsets.x) / scale.x;
+  let y = (clientRect.top + visualOffsets.y) / scale.y;
+  let width = clientRect.width / scale.x;
+  let height = clientRect.height / scale.y;
+  if (domElement) {
+    const win = getWindow(domElement);
+    const offsetWin = offsetParent && isElement(offsetParent) ? getWindow(offsetParent) : offsetParent;
+    let currentWin = win;
+    let currentIFrame = getFrameElement(currentWin);
+    while (currentIFrame && offsetParent && offsetWin !== currentWin) {
+      const iframeScale = getScale(currentIFrame);
+      const iframeRect = currentIFrame.getBoundingClientRect();
+      const css = getComputedStyle2(currentIFrame);
+      const left = iframeRect.left + (currentIFrame.clientLeft + parseFloat(css.paddingLeft)) * iframeScale.x;
+      const top = iframeRect.top + (currentIFrame.clientTop + parseFloat(css.paddingTop)) * iframeScale.y;
+      x *= iframeScale.x;
+      y *= iframeScale.y;
+      width *= iframeScale.x;
+      height *= iframeScale.y;
+      x += left;
+      y += top;
+      currentWin = getWindow(currentIFrame);
+      currentIFrame = getFrameElement(currentWin);
+    }
+  }
+  return rectToClientRect({
+    width,
+    height,
+    x,
+    y
+  });
+}
+function getWindowScrollBarX(element, rect) {
+  const leftScroll = getNodeScroll(element).scrollLeft;
+  if (!rect) {
+    return getBoundingClientRect(getDocumentElement(element)).left + leftScroll;
+  }
+  return rect.left + leftScroll;
+}
+function getHTMLOffset(documentElement, scroll) {
+  const htmlRect = documentElement.getBoundingClientRect();
+  const x = htmlRect.left + scroll.scrollLeft - getWindowScrollBarX(documentElement, htmlRect);
+  const y = htmlRect.top + scroll.scrollTop;
+  return {
+    x,
+    y
+  };
+}
+function convertOffsetParentRelativeRectToViewportRelativeRect(_ref) {
+  let {
+    elements,
+    rect,
+    offsetParent,
+    strategy
+  } = _ref;
+  const isFixed = strategy === "fixed";
+  const documentElement = getDocumentElement(offsetParent);
+  const topLayer = elements ? isTopLayer(elements.floating) : false;
+  if (offsetParent === documentElement || topLayer && isFixed) {
+    return rect;
+  }
+  let scroll = {
+    scrollLeft: 0,
+    scrollTop: 0
+  };
+  let scale = createCoords(1);
+  const offsets = createCoords(0);
+  const isOffsetParentAnElement = isHTMLElement(offsetParent);
+  if (isOffsetParentAnElement || !isOffsetParentAnElement && !isFixed) {
+    if (getNodeName(offsetParent) !== "body" || isOverflowElement(documentElement)) {
+      scroll = getNodeScroll(offsetParent);
+    }
+    if (isHTMLElement(offsetParent)) {
+      const offsetRect = getBoundingClientRect(offsetParent);
+      scale = getScale(offsetParent);
+      offsets.x = offsetRect.x + offsetParent.clientLeft;
+      offsets.y = offsetRect.y + offsetParent.clientTop;
+    }
+  }
+  const htmlOffset = documentElement && !isOffsetParentAnElement && !isFixed ? getHTMLOffset(documentElement, scroll) : createCoords(0);
+  return {
+    width: rect.width * scale.x,
+    height: rect.height * scale.y,
+    x: rect.x * scale.x - scroll.scrollLeft * scale.x + offsets.x + htmlOffset.x,
+    y: rect.y * scale.y - scroll.scrollTop * scale.y + offsets.y + htmlOffset.y
+  };
+}
+function getClientRects(element) {
+  return Array.from(element.getClientRects());
+}
+function getDocumentRect(element) {
+  const html2 = getDocumentElement(element);
+  const scroll = getNodeScroll(element);
+  const body = element.ownerDocument.body;
+  const width = max2(html2.scrollWidth, html2.clientWidth, body.scrollWidth, body.clientWidth);
+  const height = max2(html2.scrollHeight, html2.clientHeight, body.scrollHeight, body.clientHeight);
+  let x = -scroll.scrollLeft + getWindowScrollBarX(element);
+  const y = -scroll.scrollTop;
+  if (getComputedStyle2(body).direction === "rtl") {
+    x += max2(html2.clientWidth, body.clientWidth) - width;
+  }
+  return {
+    width,
+    height,
+    x,
+    y
+  };
+}
+var SCROLLBAR_MAX = 25;
+function getViewportRect(element, strategy) {
+  const win = getWindow(element);
+  const html2 = getDocumentElement(element);
+  const visualViewport = win.visualViewport;
+  let width = html2.clientWidth;
+  let height = html2.clientHeight;
+  let x = 0;
+  let y = 0;
+  if (visualViewport) {
+    width = visualViewport.width;
+    height = visualViewport.height;
+    const visualViewportBased = isWebKit();
+    if (!visualViewportBased || visualViewportBased && strategy === "fixed") {
+      x = visualViewport.offsetLeft;
+      y = visualViewport.offsetTop;
+    }
+  }
+  const windowScrollbarX = getWindowScrollBarX(html2);
+  if (windowScrollbarX <= 0) {
+    const doc = html2.ownerDocument;
+    const body = doc.body;
+    const bodyStyles = getComputedStyle(body);
+    const bodyMarginInline = doc.compatMode === "CSS1Compat" ? parseFloat(bodyStyles.marginLeft) + parseFloat(bodyStyles.marginRight) || 0 : 0;
+    const clippingStableScrollbarWidth = Math.abs(html2.clientWidth - body.clientWidth - bodyMarginInline);
+    if (clippingStableScrollbarWidth <= SCROLLBAR_MAX) {
+      width -= clippingStableScrollbarWidth;
+    }
+  } else if (windowScrollbarX <= SCROLLBAR_MAX) {
+    width += windowScrollbarX;
+  }
+  return {
+    width,
+    height,
+    x,
+    y
+  };
+}
+var absoluteOrFixed = /* @__PURE__ */ new Set(["absolute", "fixed"]);
+function getInnerBoundingClientRect(element, strategy) {
+  const clientRect = getBoundingClientRect(element, true, strategy === "fixed");
+  const top = clientRect.top + element.clientTop;
+  const left = clientRect.left + element.clientLeft;
+  const scale = isHTMLElement(element) ? getScale(element) : createCoords(1);
+  const width = element.clientWidth * scale.x;
+  const height = element.clientHeight * scale.y;
+  const x = left * scale.x;
+  const y = top * scale.y;
+  return {
+    width,
+    height,
+    x,
+    y
+  };
+}
+function getClientRectFromClippingAncestor(element, clippingAncestor, strategy) {
+  let rect;
+  if (clippingAncestor === "viewport") {
+    rect = getViewportRect(element, strategy);
+  } else if (clippingAncestor === "document") {
+    rect = getDocumentRect(getDocumentElement(element));
+  } else if (isElement(clippingAncestor)) {
+    rect = getInnerBoundingClientRect(clippingAncestor, strategy);
+  } else {
+    const visualOffsets = getVisualOffsets(element);
+    rect = {
+      x: clippingAncestor.x - visualOffsets.x,
+      y: clippingAncestor.y - visualOffsets.y,
+      width: clippingAncestor.width,
+      height: clippingAncestor.height
+    };
+  }
+  return rectToClientRect(rect);
+}
+function hasFixedPositionAncestor(element, stopNode) {
+  const parentNode = getParentNode(element);
+  if (parentNode === stopNode || !isElement(parentNode) || isLastTraversableNode(parentNode)) {
+    return false;
+  }
+  return getComputedStyle2(parentNode).position === "fixed" || hasFixedPositionAncestor(parentNode, stopNode);
+}
+function getClippingElementAncestors(element, cache) {
+  const cachedResult = cache.get(element);
+  if (cachedResult) {
+    return cachedResult;
+  }
+  let result = getOverflowAncestors(element, [], false).filter((el) => isElement(el) && getNodeName(el) !== "body");
+  let currentContainingBlockComputedStyle = null;
+  const elementIsFixed = getComputedStyle2(element).position === "fixed";
+  let currentNode = elementIsFixed ? getParentNode(element) : element;
+  while (isElement(currentNode) && !isLastTraversableNode(currentNode)) {
+    const computedStyle = getComputedStyle2(currentNode);
+    const currentNodeIsContaining = isContainingBlock(currentNode);
+    if (!currentNodeIsContaining && computedStyle.position === "fixed") {
+      currentContainingBlockComputedStyle = null;
+    }
+    const shouldDropCurrentNode = elementIsFixed ? !currentNodeIsContaining && !currentContainingBlockComputedStyle : !currentNodeIsContaining && computedStyle.position === "static" && !!currentContainingBlockComputedStyle && absoluteOrFixed.has(currentContainingBlockComputedStyle.position) || isOverflowElement(currentNode) && !currentNodeIsContaining && hasFixedPositionAncestor(element, currentNode);
+    if (shouldDropCurrentNode) {
+      result = result.filter((ancestor) => ancestor !== currentNode);
+    } else {
+      currentContainingBlockComputedStyle = computedStyle;
+    }
+    currentNode = getParentNode(currentNode);
+  }
+  cache.set(element, result);
+  return result;
+}
+function getClippingRect(_ref) {
+  let {
+    element,
+    boundary,
+    rootBoundary,
+    strategy
+  } = _ref;
+  const elementClippingAncestors = boundary === "clippingAncestors" ? isTopLayer(element) ? [] : getClippingElementAncestors(element, this._c) : [].concat(boundary);
+  const clippingAncestors = [...elementClippingAncestors, rootBoundary];
+  const firstClippingAncestor = clippingAncestors[0];
+  const clippingRect = clippingAncestors.reduce((accRect, clippingAncestor) => {
+    const rect = getClientRectFromClippingAncestor(element, clippingAncestor, strategy);
+    accRect.top = max2(rect.top, accRect.top);
+    accRect.right = min2(rect.right, accRect.right);
+    accRect.bottom = min2(rect.bottom, accRect.bottom);
+    accRect.left = max2(rect.left, accRect.left);
+    return accRect;
+  }, getClientRectFromClippingAncestor(element, firstClippingAncestor, strategy));
+  return {
+    width: clippingRect.right - clippingRect.left,
+    height: clippingRect.bottom - clippingRect.top,
+    x: clippingRect.left,
+    y: clippingRect.top
+  };
+}
+function getDimensions(element) {
+  const {
+    width,
+    height
+  } = getCssDimensions(element);
+  return {
+    width,
+    height
+  };
+}
+function getRectRelativeToOffsetParent(element, offsetParent, strategy) {
+  const isOffsetParentAnElement = isHTMLElement(offsetParent);
+  const documentElement = getDocumentElement(offsetParent);
+  const isFixed = strategy === "fixed";
+  const rect = getBoundingClientRect(element, true, isFixed, offsetParent);
+  let scroll = {
+    scrollLeft: 0,
+    scrollTop: 0
+  };
+  const offsets = createCoords(0);
+  function setLeftRTLScrollbarOffset() {
+    offsets.x = getWindowScrollBarX(documentElement);
+  }
+  if (isOffsetParentAnElement || !isOffsetParentAnElement && !isFixed) {
+    if (getNodeName(offsetParent) !== "body" || isOverflowElement(documentElement)) {
+      scroll = getNodeScroll(offsetParent);
+    }
+    if (isOffsetParentAnElement) {
+      const offsetRect = getBoundingClientRect(offsetParent, true, isFixed, offsetParent);
+      offsets.x = offsetRect.x + offsetParent.clientLeft;
+      offsets.y = offsetRect.y + offsetParent.clientTop;
+    } else if (documentElement) {
+      setLeftRTLScrollbarOffset();
+    }
+  }
+  if (isFixed && !isOffsetParentAnElement && documentElement) {
+    setLeftRTLScrollbarOffset();
+  }
+  const htmlOffset = documentElement && !isOffsetParentAnElement && !isFixed ? getHTMLOffset(documentElement, scroll) : createCoords(0);
+  const x = rect.left + scroll.scrollLeft - offsets.x - htmlOffset.x;
+  const y = rect.top + scroll.scrollTop - offsets.y - htmlOffset.y;
+  return {
+    x,
+    y,
+    width: rect.width,
+    height: rect.height
+  };
+}
+function isStaticPositioned(element) {
+  return getComputedStyle2(element).position === "static";
+}
+function getTrueOffsetParent(element, polyfill) {
+  if (!isHTMLElement(element) || getComputedStyle2(element).position === "fixed") {
+    return null;
+  }
+  if (polyfill) {
+    return polyfill(element);
+  }
+  let rawOffsetParent = element.offsetParent;
+  if (getDocumentElement(element) === rawOffsetParent) {
+    rawOffsetParent = rawOffsetParent.ownerDocument.body;
+  }
+  return rawOffsetParent;
+}
+function getOffsetParent(element, polyfill) {
+  const win = getWindow(element);
+  if (isTopLayer(element)) {
+    return win;
+  }
+  if (!isHTMLElement(element)) {
+    let svgOffsetParent = getParentNode(element);
+    while (svgOffsetParent && !isLastTraversableNode(svgOffsetParent)) {
+      if (isElement(svgOffsetParent) && !isStaticPositioned(svgOffsetParent)) {
+        return svgOffsetParent;
+      }
+      svgOffsetParent = getParentNode(svgOffsetParent);
+    }
+    return win;
+  }
+  let offsetParent = getTrueOffsetParent(element, polyfill);
+  while (offsetParent && isTableElement(offsetParent) && isStaticPositioned(offsetParent)) {
+    offsetParent = getTrueOffsetParent(offsetParent, polyfill);
+  }
+  if (offsetParent && isLastTraversableNode(offsetParent) && isStaticPositioned(offsetParent) && !isContainingBlock(offsetParent)) {
+    return win;
+  }
+  return offsetParent || getContainingBlock(element) || win;
+}
+var getElementRects = async function(data) {
+  const getOffsetParentFn = this.getOffsetParent || getOffsetParent;
+  const getDimensionsFn = this.getDimensions;
+  const floatingDimensions = await getDimensionsFn(data.floating);
+  return {
+    reference: getRectRelativeToOffsetParent(data.reference, await getOffsetParentFn(data.floating), data.strategy),
+    floating: {
+      x: 0,
+      y: 0,
+      width: floatingDimensions.width,
+      height: floatingDimensions.height
+    }
+  };
+};
+function isRTL(element) {
+  return getComputedStyle2(element).direction === "rtl";
+}
+var platform = {
+  convertOffsetParentRelativeRectToViewportRelativeRect,
+  getDocumentElement,
+  getClippingRect,
+  getOffsetParent,
+  getElementRects,
+  getClientRects,
+  getDimensions,
+  getScale,
+  isElement,
+  isRTL
+};
+function rectsAreEqual(a, b) {
+  return a.x === b.x && a.y === b.y && a.width === b.width && a.height === b.height;
+}
+function observeMove(element, onMove) {
+  let io = null;
+  let timeoutId;
+  const root = getDocumentElement(element);
+  function cleanup() {
+    var _io;
+    clearTimeout(timeoutId);
+    (_io = io) == null || _io.disconnect();
+    io = null;
+  }
+  function refresh(skip, threshold) {
+    if (skip === void 0) {
+      skip = false;
+    }
+    if (threshold === void 0) {
+      threshold = 1;
+    }
+    cleanup();
+    const elementRectForRootMargin = element.getBoundingClientRect();
+    const {
+      left,
+      top,
+      width,
+      height
+    } = elementRectForRootMargin;
+    if (!skip) {
+      onMove();
+    }
+    if (!width || !height) {
+      return;
+    }
+    const insetTop = floor(top);
+    const insetRight = floor(root.clientWidth - (left + width));
+    const insetBottom = floor(root.clientHeight - (top + height));
+    const insetLeft = floor(left);
+    const rootMargin = -insetTop + "px " + -insetRight + "px " + -insetBottom + "px " + -insetLeft + "px";
+    const options = {
+      rootMargin,
+      threshold: max2(0, min2(1, threshold)) || 1
+    };
+    let isFirstUpdate = true;
+    function handleObserve(entries2) {
+      const ratio = entries2[0].intersectionRatio;
+      if (ratio !== threshold) {
+        if (!isFirstUpdate) {
+          return refresh();
+        }
+        if (!ratio) {
+          timeoutId = setTimeout(() => {
+            refresh(false, 1e-7);
+          }, 1e3);
+        } else {
+          refresh(false, ratio);
+        }
+      }
+      if (ratio === 1 && !rectsAreEqual(elementRectForRootMargin, element.getBoundingClientRect())) {
+        refresh();
+      }
+      isFirstUpdate = false;
+    }
+    try {
+      io = new IntersectionObserver(handleObserve, {
+        ...options,
+        // Handle <iframe>s
+        root: root.ownerDocument
+      });
+    } catch (_e) {
+      io = new IntersectionObserver(handleObserve, options);
+    }
+    io.observe(element);
+  }
+  refresh(true);
+  return cleanup;
+}
+function autoUpdate(reference, floating, update, options) {
+  if (options === void 0) {
+    options = {};
+  }
+  const {
+    ancestorScroll = true,
+    ancestorResize = true,
+    elementResize = typeof ResizeObserver === "function",
+    layoutShift = typeof IntersectionObserver === "function",
+    animationFrame = false
+  } = options;
+  const referenceEl = unwrapElement(reference);
+  const ancestors = ancestorScroll || ancestorResize ? [...referenceEl ? getOverflowAncestors(referenceEl) : [], ...getOverflowAncestors(floating)] : [];
+  ancestors.forEach((ancestor) => {
+    ancestorScroll && ancestor.addEventListener("scroll", update, {
+      passive: true
+    });
+    ancestorResize && ancestor.addEventListener("resize", update);
+  });
+  const cleanupIo = referenceEl && layoutShift ? observeMove(referenceEl, update) : null;
+  let reobserveFrame = -1;
+  let resizeObserver = null;
+  if (elementResize) {
+    resizeObserver = new ResizeObserver((_ref) => {
+      let [firstEntry] = _ref;
+      if (firstEntry && firstEntry.target === referenceEl && resizeObserver) {
+        resizeObserver.unobserve(floating);
+        cancelAnimationFrame(reobserveFrame);
+        reobserveFrame = requestAnimationFrame(() => {
+          var _resizeObserver;
+          (_resizeObserver = resizeObserver) == null || _resizeObserver.observe(floating);
+        });
+      }
+      update();
+    });
+    if (referenceEl && !animationFrame) {
+      resizeObserver.observe(referenceEl);
+    }
+    resizeObserver.observe(floating);
+  }
+  let frameId;
+  let prevRefRect = animationFrame ? getBoundingClientRect(reference) : null;
+  if (animationFrame) {
+    frameLoop();
+  }
+  function frameLoop() {
+    const nextRefRect = getBoundingClientRect(reference);
+    if (prevRefRect && !rectsAreEqual(prevRefRect, nextRefRect)) {
+      update();
+    }
+    prevRefRect = nextRefRect;
+    frameId = requestAnimationFrame(frameLoop);
+  }
+  update();
+  return () => {
+    var _resizeObserver2;
+    ancestors.forEach((ancestor) => {
+      ancestorScroll && ancestor.removeEventListener("scroll", update);
+      ancestorResize && ancestor.removeEventListener("resize", update);
+    });
+    cleanupIo == null || cleanupIo();
+    (_resizeObserver2 = resizeObserver) == null || _resizeObserver2.disconnect();
+    resizeObserver = null;
+    if (animationFrame) {
+      cancelAnimationFrame(frameId);
+    }
+  };
+}
+var offset2 = offset;
+var flip2 = flip;
+var arrow2 = arrow;
+var computePosition2 = (reference, floating, options) => {
+  const cache = /* @__PURE__ */ new Map();
+  const mergedOptions = {
+    platform,
+    ...options
+  };
+  const platformWithCache = {
+    ...mergedOptions.platform,
+    _c: cache
+  };
+  return computePosition(reference, floating, {
+    ...mergedOptions,
+    platform: platformWithCache
+  });
+};
+
+// node_modules/.pnpm/@floating-ui+react-dom@2.1.7_react-dom@18.2.0_react@18.2.0__react@18.2.0/node_modules/@floating-ui/react-dom/dist/floating-ui.react-dom.mjs
+var React54 = __toESM(require("react"), 1);
+var import_react41 = require("react");
+var ReactDOM3 = __toESM(require("react-dom"), 1);
+var isClient2 = typeof document !== "undefined";
+var noop3 = function noop4() {
+};
+var index2 = isClient2 ? import_react41.useLayoutEffect : noop3;
+function deepEqual(a, b) {
+  if (a === b) {
+    return true;
+  }
+  if (typeof a !== typeof b) {
+    return false;
+  }
+  if (typeof a === "function" && a.toString() === b.toString()) {
+    return true;
+  }
+  let length;
+  let i;
+  let keys;
+  if (a && b && typeof a === "object") {
+    if (Array.isArray(a)) {
+      length = a.length;
+      if (length !== b.length) return false;
+      for (i = length; i-- !== 0; ) {
+        if (!deepEqual(a[i], b[i])) {
+          return false;
+        }
+      }
+      return true;
+    }
+    keys = Object.keys(a);
+    length = keys.length;
+    if (length !== Object.keys(b).length) {
+      return false;
+    }
+    for (i = length; i-- !== 0; ) {
+      if (!{}.hasOwnProperty.call(b, keys[i])) {
+        return false;
+      }
+    }
+    for (i = length; i-- !== 0; ) {
+      const key = keys[i];
+      if (key === "_owner" && a.$$typeof) {
+        continue;
+      }
+      if (!deepEqual(a[key], b[key])) {
+        return false;
+      }
+    }
+    return true;
+  }
+  return a !== a && b !== b;
+}
+function getDPR(element) {
+  if (typeof window === "undefined") {
+    return 1;
+  }
+  const win = element.ownerDocument.defaultView || window;
+  return win.devicePixelRatio || 1;
+}
+function roundByDPR(element, value) {
+  const dpr2 = getDPR(element);
+  return Math.round(value * dpr2) / dpr2;
+}
+function useLatestRef(value) {
+  const ref = React54.useRef(value);
+  index2(() => {
+    ref.current = value;
+  });
+  return ref;
+}
+function useFloating(options) {
+  if (options === void 0) {
+    options = {};
+  }
+  const {
+    placement = "bottom",
+    strategy = "absolute",
+    middleware = [],
+    platform: platform2,
+    elements: {
+      reference: externalReference,
+      floating: externalFloating
+    } = {},
+    transform = true,
+    whileElementsMounted,
+    open
+  } = options;
+  const [data, setData] = React54.useState({
+    x: 0,
+    y: 0,
+    strategy,
+    placement,
+    middlewareData: {},
+    isPositioned: false
+  });
+  const [latestMiddleware, setLatestMiddleware] = React54.useState(middleware);
+  if (!deepEqual(latestMiddleware, middleware)) {
+    setLatestMiddleware(middleware);
+  }
+  const [_reference, _setReference] = React54.useState(null);
+  const [_floating, _setFloating] = React54.useState(null);
+  const setReference = React54.useCallback((node) => {
+    if (node !== referenceRef.current) {
+      referenceRef.current = node;
+      _setReference(node);
+    }
+  }, []);
+  const setFloating = React54.useCallback((node) => {
+    if (node !== floatingRef.current) {
+      floatingRef.current = node;
+      _setFloating(node);
+    }
+  }, []);
+  const referenceEl = externalReference || _reference;
+  const floatingEl = externalFloating || _floating;
+  const referenceRef = React54.useRef(null);
+  const floatingRef = React54.useRef(null);
+  const dataRef = React54.useRef(data);
+  const hasWhileElementsMounted = whileElementsMounted != null;
+  const whileElementsMountedRef = useLatestRef(whileElementsMounted);
+  const platformRef = useLatestRef(platform2);
+  const openRef = useLatestRef(open);
+  const update = React54.useCallback(() => {
+    if (!referenceRef.current || !floatingRef.current) {
+      return;
+    }
+    const config = {
+      placement,
+      strategy,
+      middleware: latestMiddleware
+    };
+    if (platformRef.current) {
+      config.platform = platformRef.current;
+    }
+    computePosition2(referenceRef.current, floatingRef.current, config).then((data2) => {
+      const fullData = {
+        ...data2,
+        // The floating element's position may be recomputed while it's closed
+        // but still mounted (such as when transitioning out). To ensure
+        // `isPositioned` will be `false` initially on the next open, avoid
+        // setting it to `true` when `open === false` (must be specified).
+        isPositioned: openRef.current !== false
+      };
+      if (isMountedRef.current && !deepEqual(dataRef.current, fullData)) {
+        dataRef.current = fullData;
+        ReactDOM3.flushSync(() => {
+          setData(fullData);
+        });
+      }
+    });
+  }, [latestMiddleware, placement, strategy, platformRef, openRef]);
+  index2(() => {
+    if (open === false && dataRef.current.isPositioned) {
+      dataRef.current.isPositioned = false;
+      setData((data2) => ({
+        ...data2,
+        isPositioned: false
+      }));
+    }
+  }, [open]);
+  const isMountedRef = React54.useRef(false);
+  index2(() => {
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
+  index2(() => {
+    if (referenceEl) referenceRef.current = referenceEl;
+    if (floatingEl) floatingRef.current = floatingEl;
+    if (referenceEl && floatingEl) {
+      if (whileElementsMountedRef.current) {
+        return whileElementsMountedRef.current(referenceEl, floatingEl, update);
+      }
+      update();
+    }
+  }, [referenceEl, floatingEl, update, whileElementsMountedRef, hasWhileElementsMounted]);
+  const refs = React54.useMemo(() => ({
+    reference: referenceRef,
+    floating: floatingRef,
+    setReference,
+    setFloating
+  }), [setReference, setFloating]);
+  const elements = React54.useMemo(() => ({
+    reference: referenceEl,
+    floating: floatingEl
+  }), [referenceEl, floatingEl]);
+  const floatingStyles = React54.useMemo(() => {
+    const initialStyles = {
+      position: strategy,
+      left: 0,
+      top: 0
+    };
+    if (!elements.floating) {
+      return initialStyles;
+    }
+    const x = roundByDPR(elements.floating, data.x);
+    const y = roundByDPR(elements.floating, data.y);
+    if (transform) {
+      return {
+        ...initialStyles,
+        transform: "translate(" + x + "px, " + y + "px)",
+        ...getDPR(elements.floating) >= 1.5 && {
+          willChange: "transform"
+        }
+      };
+    }
+    return {
+      position: strategy,
+      left: x,
+      top: y
+    };
+  }, [strategy, transform, elements.floating, data.x, data.y]);
+  return React54.useMemo(() => ({
+    ...data,
+    update,
+    refs,
+    elements,
+    floatingStyles
+  }), [data, update, refs, elements, floatingStyles]);
+}
+var arrow$1 = (options) => {
+  function isRef(value) {
+    return {}.hasOwnProperty.call(value, "current");
+  }
+  return {
+    name: "arrow",
+    options,
+    fn(state) {
+      const {
+        element,
+        padding
+      } = typeof options === "function" ? options(state) : options;
+      if (element && isRef(element)) {
+        if (element.current != null) {
+          return arrow2({
+            element: element.current,
+            padding
+          }).fn(state);
+        }
+        return {};
+      }
+      if (element) {
+        return arrow2({
+          element,
+          padding
+        }).fn(state);
+      }
+      return {};
+    }
+  };
+};
+var offset3 = (options, deps) => ({
+  ...offset2(options),
+  options: [options, deps]
+});
+var flip3 = (options, deps) => ({
+  ...flip2(options),
+  options: [options, deps]
+});
+var arrow3 = (options, deps) => ({
+  ...arrow$1(options),
+  options: [options, deps]
+});
+
+// node_modules/.pnpm/@floating-ui+react@0.27.17_react-dom@18.2.0_react@18.2.0__react@18.2.0/node_modules/@floating-ui/react/dist/floating-ui.react.mjs
+var ARROW_LEFT = "ArrowLeft";
+var ARROW_RIGHT = "ArrowRight";
+var ARROW_UP = "ArrowUp";
+var ARROW_DOWN = "ArrowDown";
+var horizontalKeys = [ARROW_LEFT, ARROW_RIGHT];
+var verticalKeys = [ARROW_UP, ARROW_DOWN];
+var allKeys = [...horizontalKeys, ...verticalKeys];
+var SafeReact2 = {
+  ...React55
+};
+var serverHandoffComplete = false;
+var count3 = 0;
+var genId = () => (
+  // Ensure the id is unique with multiple independent versions of Floating UI
+  // on <React 18
+  "floating-ui-" + Math.random().toString(36).slice(2, 6) + count3++
+);
+function useFloatingId() {
+  const [id, setId] = React55.useState(() => serverHandoffComplete ? genId() : void 0);
+  index(() => {
+    if (id == null) {
+      setId(genId());
+    }
+  }, []);
+  React55.useEffect(() => {
+    serverHandoffComplete = true;
+  }, []);
+  return id;
+}
+var useReactId2 = SafeReact2.useId;
+var useId2 = useReactId2 || useFloatingId;
+if (false) {
+  devMessageSet = /* @__PURE__ */ new Set();
+}
+var FloatingArrow = /* @__PURE__ */ React55.forwardRef(function FloatingArrow2(props, ref) {
+  const {
+    context: {
+      placement,
+      elements: {
+        floating
+      },
+      middlewareData: {
+        arrow: arrow4,
+        shift: shift4
+      }
+    },
+    width = 14,
+    height = 7,
+    tipRadius = 0,
+    strokeWidth = 0,
+    staticOffset,
+    stroke,
+    d: d2,
+    style: {
+      transform,
+      ...restStyle
+    } = {},
+    ...rest
+  } = props;
+  if (false) {
+    if (!ref) {
+      warn("The `ref` prop is required for `FloatingArrow`.");
+    }
+  }
+  const clipPathId = useId2();
+  const [isRTL2, setIsRTL] = React55.useState(false);
+  index(() => {
+    if (!floating) return;
+    const isRTL3 = getComputedStyle2(floating).direction === "rtl";
+    if (isRTL3) {
+      setIsRTL(true);
+    }
+  }, [floating]);
+  if (!floating) {
+    return null;
+  }
+  const [side, alignment] = placement.split("-");
+  const isVerticalSide = side === "top" || side === "bottom";
+  let computedStaticOffset = staticOffset;
+  if (isVerticalSide && shift4 != null && shift4.x || !isVerticalSide && shift4 != null && shift4.y) {
+    computedStaticOffset = null;
+  }
+  const computedStrokeWidth = strokeWidth * 2;
+  const halfStrokeWidth = computedStrokeWidth / 2;
+  const svgX = width / 2 * (tipRadius / -8 + 1);
+  const svgY = height / 2 * tipRadius / 4;
+  const isCustomShape = !!d2;
+  const yOffsetProp = computedStaticOffset && alignment === "end" ? "bottom" : "top";
+  let xOffsetProp = computedStaticOffset && alignment === "end" ? "right" : "left";
+  if (computedStaticOffset && isRTL2) {
+    xOffsetProp = alignment === "end" ? "left" : "right";
+  }
+  const arrowX = (arrow4 == null ? void 0 : arrow4.x) != null ? computedStaticOffset || arrow4.x : "";
+  const arrowY = (arrow4 == null ? void 0 : arrow4.y) != null ? computedStaticOffset || arrow4.y : "";
+  const dValue = d2 || "M0,0" + (" H" + width) + (" L" + (width - svgX) + "," + (height - svgY)) + (" Q" + width / 2 + "," + height + " " + svgX + "," + (height - svgY)) + " Z";
+  const rotation = {
+    top: isCustomShape ? "rotate(180deg)" : "",
+    left: isCustomShape ? "rotate(90deg)" : "rotate(-90deg)",
+    bottom: isCustomShape ? "" : "rotate(180deg)",
+    right: isCustomShape ? "rotate(-90deg)" : "rotate(90deg)"
+  }[side];
+  return /* @__PURE__ */ (0, import_jsx_runtime44.jsxs)("svg", {
+    ...rest,
+    "aria-hidden": true,
+    ref,
+    width: isCustomShape ? width : width + computedStrokeWidth,
+    height: width,
+    viewBox: "0 0 " + width + " " + (height > width ? height : width),
+    style: {
+      position: "absolute",
+      pointerEvents: "none",
+      [xOffsetProp]: arrowX,
+      [yOffsetProp]: arrowY,
+      [side]: isVerticalSide || isCustomShape ? "100%" : "calc(100% - " + computedStrokeWidth / 2 + "px)",
+      transform: [rotation, transform].filter((t) => !!t).join(" "),
+      ...restStyle
+    },
+    children: [computedStrokeWidth > 0 && /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("path", {
+      clipPath: "url(#" + clipPathId + ")",
+      fill: "none",
+      stroke,
+      strokeWidth: computedStrokeWidth + (d2 ? 0 : 1),
+      d: dValue
+    }), /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("path", {
+      stroke: computedStrokeWidth && !d2 ? rest.fill : "none",
+      d: dValue
+    }), /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("clipPath", {
+      id: clipPathId,
+      children: /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("rect", {
+        x: -halfStrokeWidth,
+        y: halfStrokeWidth * (isCustomShape ? -1 : 1),
+        width: width + computedStrokeWidth,
+        height: width
+      })
+    })]
+  });
+});
+function createEventEmitter() {
+  const map = /* @__PURE__ */ new Map();
+  return {
+    emit(event, data) {
+      var _map$get;
+      (_map$get = map.get(event)) == null || _map$get.forEach((listener) => listener(data));
+    },
+    on(event, listener) {
+      if (!map.has(event)) {
+        map.set(event, /* @__PURE__ */ new Set());
+      }
+      map.get(event).add(listener);
+    },
+    off(event, listener) {
+      var _map$get2;
+      (_map$get2 = map.get(event)) == null || _map$get2.delete(listener);
+    }
+  };
+}
+var FloatingNodeContext = /* @__PURE__ */ React55.createContext(null);
+var FloatingTreeContext = /* @__PURE__ */ React55.createContext(null);
+var useFloatingParentNodeId = () => {
+  var _React$useContext;
+  return ((_React$useContext = React55.useContext(FloatingNodeContext)) == null ? void 0 : _React$useContext.id) || null;
+};
+var useFloatingTree = () => React55.useContext(FloatingTreeContext);
+function useFloatingRootContext(options) {
+  const {
+    open = false,
+    onOpenChange: onOpenChangeProp,
+    elements: elementsProp
+  } = options;
+  const floatingId = useId2();
+  const dataRef = React55.useRef({});
+  const [events] = React55.useState(() => createEventEmitter());
+  const nested = useFloatingParentNodeId() != null;
+  if (false) {
+    const optionDomReference = elementsProp.reference;
+    if (optionDomReference && !isElement(optionDomReference)) {
+      error("Cannot pass a virtual element to the `elements.reference` option,", "as it must be a real DOM element. Use `refs.setPositionReference()`", "instead.");
+    }
+  }
+  const [positionReference, setPositionReference] = React55.useState(elementsProp.reference);
+  const onOpenChange = useEffectEvent((open2, event, reason) => {
+    dataRef.current.openEvent = open2 ? event : void 0;
+    events.emit("openchange", {
+      open: open2,
+      event,
+      reason,
+      nested
+    });
+    onOpenChangeProp == null || onOpenChangeProp(open2, event, reason);
+  });
+  const refs = React55.useMemo(() => ({
+    setPositionReference
+  }), []);
+  const elements = React55.useMemo(() => ({
+    reference: positionReference || elementsProp.reference || null,
+    floating: elementsProp.floating || null,
+    domReference: elementsProp.reference
+  }), [positionReference, elementsProp.reference, elementsProp.floating]);
+  return React55.useMemo(() => ({
+    dataRef,
+    open,
+    onOpenChange,
+    elements,
+    events,
+    floatingId,
+    refs
+  }), [open, onOpenChange, elements, events, floatingId, refs]);
+}
+function useFloating2(options) {
+  if (options === void 0) {
+    options = {};
+  }
+  const {
+    nodeId
+  } = options;
+  const internalRootContext = useFloatingRootContext({
+    ...options,
+    elements: {
+      reference: null,
+      floating: null,
+      ...options.elements
+    }
+  });
+  const rootContext = options.rootContext || internalRootContext;
+  const computedElements = rootContext.elements;
+  const [_domReference, setDomReference] = React55.useState(null);
+  const [positionReference, _setPositionReference] = React55.useState(null);
+  const optionDomReference = computedElements == null ? void 0 : computedElements.domReference;
+  const domReference = optionDomReference || _domReference;
+  const domReferenceRef = React55.useRef(null);
+  const tree = useFloatingTree();
+  index(() => {
+    if (domReference) {
+      domReferenceRef.current = domReference;
+    }
+  }, [domReference]);
+  const position = useFloating({
+    ...options,
+    elements: {
+      ...computedElements,
+      ...positionReference && {
+        reference: positionReference
+      }
+    }
+  });
+  const setPositionReference = React55.useCallback((node) => {
+    const computedPositionReference = isElement(node) ? {
+      getBoundingClientRect: () => node.getBoundingClientRect(),
+      getClientRects: () => node.getClientRects(),
+      contextElement: node
+    } : node;
+    _setPositionReference(computedPositionReference);
+    position.refs.setReference(computedPositionReference);
+  }, [position.refs]);
+  const setReference = React55.useCallback((node) => {
+    if (isElement(node) || node === null) {
+      domReferenceRef.current = node;
+      setDomReference(node);
+    }
+    if (isElement(position.refs.reference.current) || position.refs.reference.current === null || // Don't allow setting virtual elements using the old technique back to
+    // `null` to support `positionReference` + an unstable `reference`
+    // callback ref.
+    node !== null && !isElement(node)) {
+      position.refs.setReference(node);
+    }
+  }, [position.refs]);
+  const refs = React55.useMemo(() => ({
+    ...position.refs,
+    setReference,
+    setPositionReference,
+    domReference: domReferenceRef
+  }), [position.refs, setReference, setPositionReference]);
+  const elements = React55.useMemo(() => ({
+    ...position.elements,
+    domReference
+  }), [position.elements, domReference]);
+  const context = React55.useMemo(() => ({
+    ...position,
+    ...rootContext,
+    refs,
+    elements,
+    nodeId
+  }), [position, refs, elements, nodeId, rootContext]);
+  index(() => {
+    rootContext.dataRef.current.floatingContext = context;
+    const node = tree == null ? void 0 : tree.nodesRef.current.find((node2) => node2.id === nodeId);
+    if (node) {
+      node.context = context;
+    }
+  });
+  return React55.useMemo(() => ({
+    ...position,
+    context,
+    refs,
+    elements
+  }), [position, refs, elements, context]);
+}
+
+// node_modules/.pnpm/react-datepicker@9.1.0_react-dom@18.2.0_react@18.2.0__react@18.2.0/node_modules/react-datepicker/dist/index.es.js
+var import_react_dom4 = __toESM(require("react-dom"));
+var _extendStatics = function extendStatics2(d2, b) {
+  _extendStatics = Object.setPrototypeOf || {
+    __proto__: []
+  } instanceof Array && function(d3, b2) {
+    d3.__proto__ = b2;
+  } || function(d3, b2) {
+    for (var p in b2) if (Object.prototype.hasOwnProperty.call(b2, p)) d3[p] = b2[p];
+  };
+  return _extendStatics(d2, b);
+};
+function __extends2(d2, b) {
+  if (typeof b !== "function" && b !== null) throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
+  _extendStatics(d2, b);
+  function __() {
+    this.constructor = d2;
+  }
+  d2.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+}
+var _assign = function __assign2() {
+  _assign = Object.assign || function __assign3(t) {
+    for (var s, i = 1, n = arguments.length; i < n; i++) {
+      s = arguments[i];
+      for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p)) t[p] = s[p];
+    }
+    return t;
+  };
+  return _assign.apply(this, arguments);
+};
+function __spreadArray2(to, from, pack) {
+  if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
+    if (ar || !(i in from)) {
+      if (!ar) ar = Array.prototype.slice.call(from, 0, i);
+      ar[i] = from[i];
+    }
+  }
+  return to.concat(ar || Array.prototype.slice.call(from));
+}
+var CalendarContainer = function(_a2) {
+  var _b = _a2.showTimeSelectOnly, showTimeSelectOnly = _b === void 0 ? false : _b, _c = _a2.showTime, showTime = _c === void 0 ? false : _c, className = _a2.className, children = _a2.children, inline4 = _a2.inline;
+  var ariaLabel = showTimeSelectOnly ? "Choose Time" : "Choose Date".concat(showTime ? " and Time" : "");
+  return import_react42.default.createElement("div", { className, "aria-label": ariaLabel, role: inline4 ? void 0 : "dialog", "aria-modal": inline4 ? void 0 : "true", translate: "no" }, children);
+};
+var useDetectClickOutside = function(onClickOutside, ignoreClass) {
+  var ref = (0, import_react42.useRef)(null);
+  var onClickOutsideRef = (0, import_react42.useRef)(onClickOutside);
+  (0, import_react42.useEffect)(function() {
+    onClickOutsideRef.current = onClickOutside;
+  }, [onClickOutside]);
+  var handleClickOutside = (0, import_react42.useCallback)(function(event) {
+    var _a2;
+    var target = event.composed && event.composedPath && event.composedPath().find(function(eventTarget) {
+      return eventTarget instanceof Node;
+    }) || event.target;
+    if (ref.current && !ref.current.contains(target)) {
+      if (!(ignoreClass && target instanceof HTMLElement && target.classList.contains(ignoreClass))) {
+        (_a2 = onClickOutsideRef.current) === null || _a2 === void 0 ? void 0 : _a2.call(onClickOutsideRef, event);
+      }
+    }
+  }, [ignoreClass]);
+  (0, import_react42.useEffect)(function() {
+    document.addEventListener("mousedown", handleClickOutside);
+    return function() {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [handleClickOutside]);
+  return ref;
+};
+var ClickOutsideWrapper = function(_a2) {
+  var children = _a2.children, onClickOutside = _a2.onClickOutside, className = _a2.className, containerRef = _a2.containerRef, style = _a2.style, ignoreClass = _a2.ignoreClass;
+  var detectRef = useDetectClickOutside(onClickOutside, ignoreClass);
+  return import_react42.default.createElement("div", { className, style, ref: function(node) {
+    detectRef.current = node;
+    if (containerRef) {
+      containerRef.current = node;
+    }
+  } }, children);
+};
+var dateFnsTz = null;
+var dateFnsTzLoadAttempted = false;
+function getDateFnsTz() {
+  if (dateFnsTzLoadAttempted) {
+    return dateFnsTz;
+  }
+  dateFnsTzLoadAttempted = true;
+  try {
+    var dateFnsTzModuleName = "date-fns-tz";
+    dateFnsTz = require(dateFnsTzModuleName);
+  } catch (_a2) {
+    dateFnsTz = null;
+  }
+  return dateFnsTz;
+}
+function toZonedTime(date, timeZone) {
+  if (!timeZone) {
+    return date;
+  }
+  var tz = getDateFnsTz();
+  if (!tz) {
+    if (false) {
+      console.warn('react-datepicker: timeZone prop requires "date-fns-tz" package. Please install it: npm install date-fns-tz');
+    }
+    return date;
+  }
+  return tz.toZonedTime(date, timeZone);
+}
+function fromZonedTime(date, timeZone) {
+  if (!timeZone) {
+    return date;
+  }
+  var tz = getDateFnsTz();
+  if (!tz) {
+    if (false) {
+      console.warn('react-datepicker: timeZone prop requires "date-fns-tz" package. Please install it: npm install date-fns-tz');
+    }
+    return date;
+  }
+  return tz.fromZonedTime(date, timeZone);
+}
+var KeyType;
+(function(KeyType2) {
+  KeyType2["ArrowUp"] = "ArrowUp";
+  KeyType2["ArrowDown"] = "ArrowDown";
+  KeyType2["ArrowLeft"] = "ArrowLeft";
+  KeyType2["ArrowRight"] = "ArrowRight";
+  KeyType2["PageUp"] = "PageUp";
+  KeyType2["PageDown"] = "PageDown";
+  KeyType2["Home"] = "Home";
+  KeyType2["End"] = "End";
+  KeyType2["Enter"] = "Enter";
+  KeyType2["Space"] = " ";
+  KeyType2["Tab"] = "Tab";
+  KeyType2["Escape"] = "Escape";
+  KeyType2["Backspace"] = "Backspace";
+  KeyType2["X"] = "x";
+})(KeyType || (KeyType = {}));
+function getLocaleScope() {
+  var scope = typeof window !== "undefined" ? window : globalThis;
+  return scope;
+}
+var DEFAULT_YEAR_ITEM_NUMBER = 12;
+function newDate(value) {
+  if (value == null) {
+    return /* @__PURE__ */ new Date();
+  }
+  var d2 = typeof value === "string" ? parseISO(value) : toDate(value);
+  return isValid2(d2) ? d2 : /* @__PURE__ */ new Date();
+}
+function parseDate2(value, dateFormat, locale, strictParsing, refDate) {
+  if (refDate === void 0) {
+    refDate = newDate();
+  }
+  var localeObject = getLocaleObject(locale) || getLocaleObject(getDefaultLocale());
+  var formats = Array.isArray(dateFormat) ? dateFormat : [dateFormat];
+  for (var _i = 0, formats_1 = formats; _i < formats_1.length; _i++) {
+    var format_1 = formats_1[_i];
+    var parsedDate = parse(value, format_1, refDate, {
+      locale: localeObject,
+      useAdditionalWeekYearTokens: true,
+      useAdditionalDayOfYearTokens: true
+    });
+    if (isValid2(parsedDate) && (!strictParsing || value === formatDate2(parsedDate, format_1, locale))) {
+      return parsedDate;
+    }
+  }
+  if (!strictParsing && value && value.length >= 8) {
+    var nativeDate = new Date(value);
+    if (isValid(nativeDate)) {
+      return nativeDate;
+    }
+  }
+  return null;
+}
+function parseDateForNavigation(value, refDate) {
+  if (refDate === void 0) {
+    refDate = newDate();
+  }
+  if (!value)
+    return null;
+  var yearMatch = value.match(/\b(1\d{3}|2\d{3})\b/);
+  if (!yearMatch || !yearMatch[1])
+    return null;
+  var year = parseInt(yearMatch[1], 10);
+  var monthMatch = value.match(/(?:^|[/\-\s])?(0?[1-9]|1[0-2])(?:[/\-\s]|$)/);
+  var month = monthMatch && monthMatch[1] ? parseInt(monthMatch[1], 10) - 1 : refDate.getMonth();
+  return new Date(year, month, 1);
+}
+function isValid2(date) {
+  return isValid(date);
+}
+function safeToDate(date) {
+  if (date == null) {
+    return null;
+  }
+  if (isDate(date) && isValid(date)) {
+    return date;
+  }
+  return null;
+}
+function formatDate2(date, formatStr, locale) {
+  if (locale === "en") {
+    return format(date, formatStr, {
+      useAdditionalWeekYearTokens: true,
+      useAdditionalDayOfYearTokens: true
+    });
+  }
+  var localeObj = locale ? getLocaleObject(locale) : void 0;
+  if (locale && !localeObj) {
+    console.warn('A locale object was not found for the provided string ["'.concat(locale, '"].'));
+  }
+  localeObj = localeObj || getLocaleObject(getDefaultLocale());
+  return format(date, formatStr, {
+    locale: localeObj,
+    useAdditionalWeekYearTokens: true,
+    useAdditionalDayOfYearTokens: true
+  });
+}
+function safeDateFormat(date, _a2) {
+  var dateFormat = _a2.dateFormat, locale = _a2.locale;
+  var formatStr = Array.isArray(dateFormat) && dateFormat.length > 0 ? dateFormat[0] : dateFormat;
+  return date && formatDate2(date, formatStr, locale) || "";
+}
+var DATE_RANGE_SEPARATOR = " - ";
+function safeDateRangeFormat(startDate, endDate, props) {
+  if (!startDate && !endDate) {
+    return "";
+  }
+  var formattedStartDate = startDate ? safeDateFormat(startDate, props) : "";
+  var formattedEndDate = endDate ? safeDateFormat(endDate, props) : "";
+  var dateRangeSeparator = props.rangeSeparator || DATE_RANGE_SEPARATOR;
+  return "".concat(formattedStartDate).concat(dateRangeSeparator).concat(formattedEndDate);
+}
+function safeMultipleDatesFormat(dates, props) {
+  if (!(dates === null || dates === void 0 ? void 0 : dates.length)) {
+    return "";
+  }
+  var formattedFirstDate = dates[0] ? safeDateFormat(dates[0], props) : "";
+  if (dates.length === 1) {
+    return formattedFirstDate;
+  }
+  if (dates.length === 2 && dates[1]) {
+    var formattedSecondDate = safeDateFormat(dates[1], props);
+    return "".concat(formattedFirstDate, ", ").concat(formattedSecondDate);
+  }
+  var extraDatesCount = dates.length - 1;
+  return "".concat(formattedFirstDate, " (+").concat(extraDatesCount, ")");
+}
+function setTime(date, _a2) {
+  var _b = _a2.hour, hour = _b === void 0 ? 0 : _b, _c = _a2.minute, minute = _c === void 0 ? 0 : _c, _d = _a2.second, second = _d === void 0 ? 0 : _d;
+  return setHours(setMinutes(setSeconds(date, second), minute), hour);
+}
+function getWeek2(date) {
+  return getISOWeek(date);
+}
+function getDayOfWeekCode(day, locale) {
+  return formatDate2(day, "ddd", locale);
+}
+function getStartOfDay(date) {
+  return startOfDay(date);
+}
+function getStartOfWeek(date, locale, calendarStartDay) {
+  var localeObj = locale ? getLocaleObject(locale) : getLocaleObject(getDefaultLocale());
+  return startOfWeek(date, {
+    locale: localeObj,
+    weekStartsOn: calendarStartDay
+  });
+}
+function getStartOfMonth(date) {
+  return startOfMonth(date);
+}
+function getStartOfYear(date) {
+  return startOfYear(date);
+}
+function getStartOfQuarter(date) {
+  return startOfQuarter(date);
+}
+function getStartOfToday() {
+  return startOfDay(newDate());
+}
+function getEndOfDay(date) {
+  return endOfDay(date);
+}
+function getEndOfWeek(date) {
+  return endOfWeek(date);
+}
+function getEndOfMonth(date) {
+  return endOfMonth(date);
+}
+function isSameYear2(date1, date2) {
+  if (date1 && date2) {
+    return isSameYear(date1, date2);
+  } else {
+    return !date1 && !date2;
+  }
+}
+function isSameMonth2(date1, date2) {
+  if (date1 && date2) {
+    return isSameMonth(date1, date2);
+  } else {
+    return !date1 && !date2;
+  }
+}
+function isSameQuarter2(date1, date2) {
+  if (date1 && date2) {
+    return isSameQuarter(date1, date2);
+  } else {
+    return !date1 && !date2;
+  }
+}
+function isSameDay2(date1, date2) {
+  if (date1 && date2) {
+    return isSameDay(date1, date2);
+  } else {
+    return !date1 && !date2;
+  }
+}
+function isEqual2(date1, date2) {
+  if (date1 && date2) {
+    return isEqual(date1, date2);
+  } else {
+    return !date1 && !date2;
+  }
+}
+function isDayInRange(day, startDate, endDate) {
+  var valid;
+  var start = startOfDay(startDate);
+  var end = endOfDay(endDate);
+  try {
+    valid = isWithinInterval(day, { start, end });
+  } catch (err) {
+    valid = false;
+  }
+  return valid;
+}
+function getDefaultLocale() {
+  var scope = getLocaleScope();
+  return scope.__localeId__;
+}
+function getLocaleObject(localeSpec) {
+  if (typeof localeSpec === "string") {
+    var scope = getLocaleScope();
+    return scope.__localeData__ ? scope.__localeData__[localeSpec] : void 0;
+  } else {
+    return localeSpec;
+  }
+}
+function getFormattedWeekdayInLocale(date, formatFunc, locale) {
+  return formatFunc(formatDate2(date, "EEEE", locale));
+}
+function getWeekdayMinInLocale(date, locale) {
+  return formatDate2(date, "EEEEEE", locale);
+}
+function getWeekdayShortInLocale(date, locale) {
+  return formatDate2(date, "EEE", locale);
+}
+function getMonthInLocale(month, locale) {
+  return formatDate2(setMonth(newDate(), month), "LLLL", locale);
+}
+function getMonthShortInLocale(month, locale) {
+  return formatDate2(setMonth(newDate(), month), "LLL", locale);
+}
+function getQuarterShortInLocale(quarter, locale) {
+  return formatDate2(setQuarter(newDate(), quarter), "QQQ", locale);
+}
+function isDayDisabled(day, _a2) {
+  var _b = _a2 === void 0 ? {} : _a2, minDate = _b.minDate, maxDate = _b.maxDate, excludeDates = _b.excludeDates, excludeDateIntervals = _b.excludeDateIntervals, includeDates = _b.includeDates, includeDateIntervals = _b.includeDateIntervals, filterDate = _b.filterDate, disabled = _b.disabled;
+  if (disabled) {
+    return true;
+  }
+  return isOutOfBounds(day, { minDate, maxDate }) || excludeDates && excludeDates.some(function(excludeDate) {
+    if (excludeDate instanceof Date) {
+      return isSameDay2(day, excludeDate);
+    } else {
+      return isSameDay2(day, excludeDate.date);
+    }
+  }) || excludeDateIntervals && excludeDateIntervals.some(function(_a3) {
+    var start = _a3.start, end = _a3.end;
+    return isWithinInterval(day, { start, end });
+  }) || includeDates && !includeDates.some(function(includeDate) {
+    return isSameDay2(day, includeDate);
+  }) || includeDateIntervals && !includeDateIntervals.some(function(_a3) {
+    var start = _a3.start, end = _a3.end;
+    return isWithinInterval(day, { start, end });
+  }) || filterDate && !filterDate(newDate(day)) || false;
+}
+function isDayExcluded(day, _a2) {
+  var _b = _a2 === void 0 ? {} : _a2, excludeDates = _b.excludeDates, excludeDateIntervals = _b.excludeDateIntervals;
+  if (excludeDateIntervals && excludeDateIntervals.length > 0) {
+    return excludeDateIntervals.some(function(_a3) {
+      var start = _a3.start, end = _a3.end;
+      return isWithinInterval(day, { start, end });
+    });
+  }
+  return excludeDates && excludeDates.some(function(excludeDate) {
+    var _a3;
+    if (excludeDate instanceof Date) {
+      return isSameDay2(day, excludeDate);
+    } else {
+      return isSameDay2(day, (_a3 = excludeDate.date) !== null && _a3 !== void 0 ? _a3 : /* @__PURE__ */ new Date());
+    }
+  }) || false;
+}
+function isMonthDisabled(month, _a2) {
+  var _b = _a2 === void 0 ? {} : _a2, minDate = _b.minDate, maxDate = _b.maxDate, excludeDates = _b.excludeDates, includeDates = _b.includeDates, filterDate = _b.filterDate;
+  return isOutOfBounds(month, {
+    minDate: minDate ? startOfMonth(minDate) : void 0,
+    maxDate: maxDate ? endOfMonth(maxDate) : void 0
+  }) || (excludeDates === null || excludeDates === void 0 ? void 0 : excludeDates.some(function(excludeDate) {
+    return isSameMonth2(month, excludeDate instanceof Date ? excludeDate : excludeDate.date);
+  })) || includeDates && !includeDates.some(function(includeDate) {
+    return isSameMonth2(month, includeDate);
+  }) || filterDate && !filterDate(newDate(month)) || false;
+}
+function isMonthInRange(startDate, endDate, m, day) {
+  var startDateYear = getYear(startDate);
+  var startDateMonth = getMonth(startDate);
+  var endDateYear = getYear(endDate);
+  var endDateMonth = getMonth(endDate);
+  var dayYear = getYear(day);
+  if (startDateYear === endDateYear && startDateYear === dayYear) {
+    return startDateMonth <= m && m <= endDateMonth;
+  } else if (startDateYear < endDateYear) {
+    return dayYear === startDateYear && startDateMonth <= m || dayYear === endDateYear && endDateMonth >= m || dayYear < endDateYear && dayYear > startDateYear;
+  }
+  return false;
+}
+function isMonthYearDisabled(date, _a2) {
+  var _b = _a2 === void 0 ? {} : _a2, minDate = _b.minDate, maxDate = _b.maxDate, excludeDates = _b.excludeDates, includeDates = _b.includeDates;
+  return isOutOfBounds(date, { minDate, maxDate }) || excludeDates && excludeDates.some(function(excludedDate) {
+    return isSameMonth2(excludedDate instanceof Date ? excludedDate : excludedDate.date, date);
+  }) || includeDates && !includeDates.some(function(includedDate) {
+    return isSameMonth2(includedDate, date);
+  }) || false;
+}
+function isQuarterDisabled(quarter, _a2) {
+  var _b = _a2 === void 0 ? {} : _a2, minDate = _b.minDate, maxDate = _b.maxDate, excludeDates = _b.excludeDates, includeDates = _b.includeDates, filterDate = _b.filterDate, disabled = _b.disabled;
+  if (disabled) {
+    return true;
+  }
+  return isOutOfBounds(quarter, { minDate, maxDate }) || (excludeDates === null || excludeDates === void 0 ? void 0 : excludeDates.some(function(excludeDate) {
+    return isSameQuarter2(quarter, excludeDate instanceof Date ? excludeDate : excludeDate.date);
+  })) || includeDates && !includeDates.some(function(includeDate) {
+    return isSameQuarter2(quarter, includeDate);
+  }) || filterDate && !filterDate(newDate(quarter)) || false;
+}
+function isYearInRange(year, start, end) {
+  if (!start || !end)
+    return false;
+  if (!isValid(start) || !isValid(end))
+    return false;
+  var startYear = getYear(start);
+  var endYear = getYear(end);
+  return startYear <= year && endYear >= year;
+}
+function isYearDisabled(year, _a2) {
+  var _b = _a2 === void 0 ? {} : _a2, minDate = _b.minDate, maxDate = _b.maxDate, excludeDates = _b.excludeDates, includeDates = _b.includeDates, filterDate = _b.filterDate, disabled = _b.disabled;
+  if (disabled) {
+    return true;
+  }
+  var date = new Date(year, 0, 1);
+  return isOutOfBounds(date, {
+    minDate: minDate ? startOfYear(minDate) : void 0,
+    maxDate: maxDate ? endOfYear(maxDate) : void 0
+  }) || (excludeDates === null || excludeDates === void 0 ? void 0 : excludeDates.some(function(excludeDate) {
+    return isSameYear2(date, excludeDate instanceof Date ? excludeDate : excludeDate.date);
+  })) || includeDates && !includeDates.some(function(includeDate) {
+    return isSameYear2(date, includeDate);
+  }) || filterDate && !filterDate(newDate(date)) || false;
+}
+function isQuarterInRange(startDate, endDate, q2, day) {
+  var startDateYear = getYear(startDate);
+  var startDateQuarter = getQuarter(startDate);
+  var endDateYear = getYear(endDate);
+  var endDateQuarter = getQuarter(endDate);
+  var dayYear = getYear(day);
+  if (startDateYear === endDateYear && startDateYear === dayYear) {
+    return startDateQuarter <= q2 && q2 <= endDateQuarter;
+  } else if (startDateYear < endDateYear) {
+    return dayYear === startDateYear && startDateQuarter <= q2 || dayYear === endDateYear && endDateQuarter >= q2 || dayYear < endDateYear && dayYear > startDateYear;
+  }
+  return false;
+}
+function isOutOfBounds(day, _a2) {
+  var _b;
+  var _c = _a2 === void 0 ? {} : _a2, minDate = _c.minDate, maxDate = _c.maxDate;
+  return (_b = minDate && differenceInCalendarDays(day, minDate) < 0 || maxDate && differenceInCalendarDays(day, maxDate) > 0) !== null && _b !== void 0 ? _b : false;
+}
+function isTimeInList(time, times) {
+  return times.some(function(listTime) {
+    return getHours(listTime) === getHours(time) && getMinutes(listTime) === getMinutes(time) && getSeconds(listTime) === getSeconds(time);
+  });
+}
+function isTimeDisabled(time, _a2) {
+  var _b = _a2 === void 0 ? {} : _a2, excludeTimes = _b.excludeTimes, includeTimes = _b.includeTimes, filterTime = _b.filterTime;
+  return excludeTimes && isTimeInList(time, excludeTimes) || includeTimes && !isTimeInList(time, includeTimes) || filterTime && !filterTime(time) || false;
+}
+function isTimeInDisabledRange(time, _a2) {
+  var minTime2 = _a2.minTime, maxTime2 = _a2.maxTime;
+  if (!minTime2 || !maxTime2) {
+    throw new Error("Both minTime and maxTime props required");
+  }
+  var baseTime = newDate();
+  baseTime = setHours(baseTime, getHours(time));
+  baseTime = setMinutes(baseTime, getMinutes(time));
+  baseTime = setSeconds(baseTime, getSeconds(time));
+  var min3 = newDate();
+  min3 = setHours(min3, getHours(minTime2));
+  min3 = setMinutes(min3, getMinutes(minTime2));
+  min3 = setSeconds(min3, getSeconds(minTime2));
+  var max3 = newDate();
+  max3 = setHours(max3, getHours(maxTime2));
+  max3 = setMinutes(max3, getMinutes(maxTime2));
+  max3 = setSeconds(max3, getSeconds(maxTime2));
+  var valid;
+  try {
+    valid = !isWithinInterval(baseTime, { start: min3, end: max3 });
+  } catch (err) {
+    valid = false;
+  }
+  return valid;
+}
+function monthDisabledBefore(day, _a2) {
+  var _b = _a2 === void 0 ? {} : _a2, minDate = _b.minDate, includeDates = _b.includeDates;
+  var previousMonth = subMonths(day, 1);
+  return minDate && differenceInCalendarMonths(minDate, previousMonth) > 0 || includeDates && includeDates.every(function(includeDate) {
+    return differenceInCalendarMonths(includeDate, previousMonth) > 0;
+  }) || false;
+}
+function monthDisabledAfter(day, _a2) {
+  var _b = _a2 === void 0 ? {} : _a2, maxDate = _b.maxDate, includeDates = _b.includeDates;
+  var nextMonth = addMonths(day, 1);
+  return maxDate && differenceInCalendarMonths(nextMonth, maxDate) > 0 || includeDates && includeDates.every(function(includeDate) {
+    return differenceInCalendarMonths(nextMonth, includeDate) > 0;
+  }) || false;
+}
+function quarterDisabledBefore(date, _a2) {
+  var _b = _a2 === void 0 ? {} : _a2, minDate = _b.minDate, includeDates = _b.includeDates;
+  var firstDateOfYear = startOfYear(date);
+  var previousQuarter = subQuarters(firstDateOfYear, 1);
+  return minDate && differenceInCalendarQuarters(minDate, previousQuarter) > 0 || includeDates && includeDates.every(function(includeDate) {
+    return differenceInCalendarQuarters(includeDate, previousQuarter) > 0;
+  }) || false;
+}
+function quarterDisabledAfter(date, _a2) {
+  var _b = _a2 === void 0 ? {} : _a2, maxDate = _b.maxDate, includeDates = _b.includeDates;
+  var lastDateOfYear = endOfYear(date);
+  var nextQuarter = addQuarters(lastDateOfYear, 1);
+  return maxDate && differenceInCalendarQuarters(nextQuarter, maxDate) > 0 || includeDates && includeDates.every(function(includeDate) {
+    return differenceInCalendarQuarters(nextQuarter, includeDate) > 0;
+  }) || false;
+}
+function yearDisabledBefore(day, _a2) {
+  var _b = _a2 === void 0 ? {} : _a2, minDate = _b.minDate, includeDates = _b.includeDates;
+  var previousYear = subYears(day, 1);
+  return minDate && differenceInCalendarYears(minDate, previousYear) > 0 || includeDates && includeDates.every(function(includeDate) {
+    return differenceInCalendarYears(includeDate, previousYear) > 0;
+  }) || false;
+}
+function yearsDisabledBefore(day, _a2) {
+  var _b = _a2 === void 0 ? {} : _a2, minDate = _b.minDate, _c = _b.yearItemNumber, yearItemNumber = _c === void 0 ? DEFAULT_YEAR_ITEM_NUMBER : _c;
+  var previousYear = getStartOfYear(subYears(day, yearItemNumber));
+  var endPeriod = getYearsPeriod(previousYear, yearItemNumber).endPeriod;
+  var minDateYear = minDate && getYear(minDate);
+  return minDateYear && minDateYear > endPeriod || false;
+}
+function yearDisabledAfter(day, _a2) {
+  var _b = _a2 === void 0 ? {} : _a2, maxDate = _b.maxDate, includeDates = _b.includeDates;
+  var nextYear = addYears(day, 1);
+  return maxDate && differenceInCalendarYears(nextYear, maxDate) > 0 || includeDates && includeDates.every(function(includeDate) {
+    return differenceInCalendarYears(nextYear, includeDate) > 0;
+  }) || false;
+}
+function yearsDisabledAfter(day, _a2) {
+  var _b = _a2 === void 0 ? {} : _a2, maxDate = _b.maxDate, _c = _b.yearItemNumber, yearItemNumber = _c === void 0 ? DEFAULT_YEAR_ITEM_NUMBER : _c;
+  var nextYear = addYears(day, yearItemNumber);
+  var startPeriod = getYearsPeriod(nextYear, yearItemNumber).startPeriod;
+  var maxDateYear = maxDate && getYear(maxDate);
+  return maxDateYear && maxDateYear < startPeriod || false;
+}
+function getEffectiveMinDate(_a2) {
+  var minDate = _a2.minDate, includeDates = _a2.includeDates;
+  if (includeDates && minDate) {
+    var minDates = includeDates.filter(function(includeDate) {
+      return differenceInCalendarDays(includeDate, minDate) >= 0;
+    });
+    return min(minDates);
+  } else if (includeDates) {
+    return min(includeDates);
+  } else {
+    return minDate;
+  }
+}
+function getEffectiveMaxDate(_a2) {
+  var maxDate = _a2.maxDate, includeDates = _a2.includeDates;
+  if (includeDates && maxDate) {
+    var maxDates = includeDates.filter(function(includeDate) {
+      return differenceInCalendarDays(includeDate, maxDate) <= 0;
+    });
+    return max(maxDates);
+  } else if (includeDates) {
+    return max(includeDates);
+  } else {
+    return maxDate;
+  }
+}
+function getHighLightDaysMap(highlightDates, defaultClassName) {
+  var _a2;
+  if (highlightDates === void 0) {
+    highlightDates = [];
+  }
+  if (defaultClassName === void 0) {
+    defaultClassName = "react-datepicker__day--highlighted";
+  }
+  var dateClasses = /* @__PURE__ */ new Map();
+  for (var i = 0, len = highlightDates.length; i < len; i++) {
+    var obj = highlightDates[i];
+    if (isDate(obj)) {
+      var key = formatDate2(obj, "MM.dd.yyyy");
+      var classNamesArr = dateClasses.get(key) || [];
+      if (!classNamesArr.includes(defaultClassName)) {
+        classNamesArr.push(defaultClassName);
+        dateClasses.set(key, classNamesArr);
+      }
+    } else if (typeof obj === "object") {
+      var keys = Object.keys(obj);
+      var className = (_a2 = keys[0]) !== null && _a2 !== void 0 ? _a2 : "";
+      var arrOfDates = obj[className];
+      if (typeof className === "string" && Array.isArray(arrOfDates)) {
+        for (var k = 0, len_1 = arrOfDates.length; k < len_1; k++) {
+          var dateK = arrOfDates[k];
+          if (dateK) {
+            var key = formatDate2(dateK, "MM.dd.yyyy");
+            var classNamesArr = dateClasses.get(key) || [];
+            if (!classNamesArr.includes(className)) {
+              classNamesArr.push(className);
+              dateClasses.set(key, classNamesArr);
+            }
+          }
+        }
+      }
+    }
+  }
+  return dateClasses;
+}
+function arraysAreEqual(array1, array2) {
+  if (array1.length !== array2.length) {
+    return false;
+  }
+  return array1.every(function(value, index3) {
+    return value === array2[index3];
+  });
+}
+function getHolidaysMap(holidayDates, defaultClassName) {
+  if (holidayDates === void 0) {
+    holidayDates = [];
+  }
+  if (defaultClassName === void 0) {
+    defaultClassName = "react-datepicker__day--holidays";
+  }
+  var dateClasses = /* @__PURE__ */ new Map();
+  holidayDates.forEach(function(holiday) {
+    var dateObj = holiday.date, holidayName = holiday.holidayName;
+    if (!isDate(dateObj)) {
+      return;
+    }
+    var key = formatDate2(dateObj, "MM.dd.yyyy");
+    var classNamesObj = dateClasses.get(key) || {
+      className: "",
+      holidayNames: []
+    };
+    if ("className" in classNamesObj && classNamesObj["className"] === defaultClassName && arraysAreEqual(classNamesObj["holidayNames"], [holidayName])) {
+      return;
+    }
+    classNamesObj["className"] = defaultClassName;
+    var holidayNameArr = classNamesObj["holidayNames"];
+    classNamesObj["holidayNames"] = holidayNameArr ? __spreadArray2(__spreadArray2([], holidayNameArr, true), [holidayName], false) : [holidayName];
+    dateClasses.set(key, classNamesObj);
+  });
+  return dateClasses;
+}
+function timesToInjectAfter(startOfDay2, currentTime, currentMultiplier, intervals, injectedTimes) {
+  var l = injectedTimes.length;
+  var times = [];
+  for (var i = 0; i < l; i++) {
+    var injectedTime = startOfDay2;
+    var injectedTimeValue = injectedTimes[i];
+    if (injectedTimeValue) {
+      injectedTime = addHours(injectedTime, getHours(injectedTimeValue));
+      injectedTime = addMinutes(injectedTime, getMinutes(injectedTimeValue));
+      injectedTime = addSeconds(injectedTime, getSeconds(injectedTimeValue));
+    }
+    var nextTime = addMinutes(startOfDay2, (currentMultiplier + 1) * intervals);
+    if (isAfter(injectedTime, currentTime) && isBefore(injectedTime, nextTime) && injectedTimeValue != void 0) {
+      times.push(injectedTimeValue);
+    }
+  }
+  return times;
+}
+function addZero(i) {
+  return i < 10 ? "0".concat(i) : "".concat(i);
+}
+function getYearsPeriod(date, yearItemNumber) {
+  if (yearItemNumber === void 0) {
+    yearItemNumber = DEFAULT_YEAR_ITEM_NUMBER;
+  }
+  var endPeriod = Math.ceil(getYear(date) / yearItemNumber) * yearItemNumber;
+  var startPeriod = endPeriod - (yearItemNumber - 1);
+  return { startPeriod, endPeriod };
+}
+function getHoursInDay(d2) {
+  var startOfDay2 = new Date(d2.getFullYear(), d2.getMonth(), d2.getDate());
+  var startOfTheNextDay = new Date(d2.getFullYear(), d2.getMonth(), d2.getDate(), 24);
+  return Math.round((+startOfTheNextDay - +startOfDay2) / 36e5);
+}
+function startOfMinute(d2) {
+  var seconds = d2.getSeconds();
+  var milliseconds = d2.getMilliseconds();
+  return toDate(d2.getTime() - seconds * 1e3 - milliseconds);
+}
+function isSameMinute(d1, d2) {
+  return startOfMinute(d1).getTime() === startOfMinute(d2).getTime();
+}
+function getMidnightDate(date) {
+  if (!isDate(date)) {
+    throw new Error("Invalid date");
+  }
+  var dateWithoutTime = new Date(date);
+  dateWithoutTime.setHours(0, 0, 0, 0);
+  return dateWithoutTime;
+}
+function isDateBefore(date, dateToCompare) {
+  if (!isDate(date) || !isDate(dateToCompare)) {
+    throw new Error("Invalid date received");
+  }
+  var midnightDate = getMidnightDate(date);
+  var midnightDateToCompare = getMidnightDate(dateToCompare);
+  return isBefore(midnightDate, midnightDateToCompare);
+}
+function isSpaceKeyDown(event) {
+  return event.key === KeyType.Space;
+}
+var InputTime = (
+  /** @class */
+  function(_super) {
+    __extends2(InputTime2, _super);
+    function InputTime2(props) {
+      var _this = _super.call(this, props) || this;
+      _this.inputRef = import_react42.default.createRef();
+      _this.onTimeChange = function(time) {
+        var _a2, _b;
+        _this.setState({ time });
+        var propDate = _this.props.date;
+        var isPropDateValid = propDate instanceof Date && !isNaN(+propDate);
+        var date = isPropDateValid ? propDate : /* @__PURE__ */ new Date();
+        if (time === null || time === void 0 ? void 0 : time.includes(":")) {
+          var _c = time.split(":"), hours = _c[0], minutes = _c[1];
+          date.setHours(Number(hours));
+          date.setMinutes(Number(minutes));
+        }
+        (_b = (_a2 = _this.props).onChange) === null || _b === void 0 ? void 0 : _b.call(_a2, date);
+      };
+      _this.renderTimeInput = function() {
+        var time = _this.state.time;
+        var _a2 = _this.props, date = _a2.date, timeString = _a2.timeString, customTimeInput = _a2.customTimeInput;
+        if (customTimeInput) {
+          return (0, import_react42.cloneElement)(customTimeInput, {
+            date,
+            value: time,
+            onChange: _this.onTimeChange
+          });
+        }
+        return import_react42.default.createElement("input", { type: "time", className: "react-datepicker-time__input", placeholder: "Time", name: "time-input", ref: _this.inputRef, onClick: function() {
+          var _a3;
+          (_a3 = _this.inputRef.current) === null || _a3 === void 0 ? void 0 : _a3.focus();
+        }, required: true, value: time, onChange: function(event) {
+          _this.onTimeChange(event.target.value || timeString);
+        } });
+      };
+      _this.state = {
+        time: _this.props.timeString
+      };
+      return _this;
+    }
+    InputTime2.getDerivedStateFromProps = function(props, state) {
+      if (props.timeString !== state.time) {
+        return {
+          time: props.timeString
+        };
+      }
+      return null;
+    };
+    InputTime2.prototype.render = function() {
+      return import_react42.default.createElement(
+        "div",
+        { className: "react-datepicker__input-time-container" },
+        import_react42.default.createElement("div", { className: "react-datepicker-time__caption" }, this.props.timeInputLabel),
+        import_react42.default.createElement(
+          "div",
+          { className: "react-datepicker-time__input-container" },
+          import_react42.default.createElement("div", { className: "react-datepicker-time__input" }, this.renderTimeInput())
+        )
+      );
+    };
+    return InputTime2;
+  }(import_react42.Component)
+);
+var Day = (
+  /** @class */
+  function(_super) {
+    __extends2(Day2, _super);
+    function Day2() {
+      var _this = _super !== null && _super.apply(this, arguments) || this;
+      _this.dayEl = (0, import_react42.createRef)();
+      _this.handleClick = function(event) {
+        if (!_this.isDisabled() && _this.props.onClick) {
+          _this.props.onClick(event);
+        }
+      };
+      _this.handleMouseEnter = function(event) {
+        if (!_this.isDisabled() && _this.props.onMouseEnter) {
+          _this.props.onMouseEnter(event);
+        }
+      };
+      _this.handleOnKeyDown = function(event) {
+        var _a2, _b;
+        var eventKey = event.key;
+        if (eventKey === KeyType.Space) {
+          event.preventDefault();
+          event.key = KeyType.Enter;
+        }
+        (_b = (_a2 = _this.props).handleOnKeyDown) === null || _b === void 0 ? void 0 : _b.call(_a2, event);
+      };
+      _this.isSameDay = function(other) {
+        return isSameDay2(_this.props.day, other);
+      };
+      _this.isKeyboardSelected = function() {
+        var _a2;
+        if (_this.props.disabledKeyboardNavigation) {
+          return false;
+        }
+        var isSelectedDate = _this.props.selectsMultiple ? (_a2 = _this.props.selectedDates) === null || _a2 === void 0 ? void 0 : _a2.some(function(date) {
+          return _this.isSameDayOrWeek(date);
+        }) : _this.isSameDayOrWeek(_this.props.selected);
+        var isDisabled = _this.props.preSelection && _this.isDisabled(_this.props.preSelection);
+        return !isSelectedDate && _this.isSameDayOrWeek(_this.props.preSelection) && !isDisabled;
+      };
+      _this.isDisabled = function(day) {
+        if (day === void 0) {
+          day = _this.props.day;
+        }
+        return isDayDisabled(day, {
+          minDate: _this.props.minDate,
+          maxDate: _this.props.maxDate,
+          excludeDates: _this.props.excludeDates,
+          excludeDateIntervals: _this.props.excludeDateIntervals,
+          includeDateIntervals: _this.props.includeDateIntervals,
+          includeDates: _this.props.includeDates,
+          filterDate: _this.props.filterDate,
+          disabled: _this.props.disabled
+        });
+      };
+      _this.isExcluded = function() {
+        return isDayExcluded(_this.props.day, {
+          excludeDates: _this.props.excludeDates,
+          excludeDateIntervals: _this.props.excludeDateIntervals
+        });
+      };
+      _this.isStartOfWeek = function() {
+        return isSameDay2(_this.props.day, getStartOfWeek(_this.props.day, _this.props.locale, _this.props.calendarStartDay));
+      };
+      _this.isSameWeek = function(other) {
+        return _this.props.showWeekPicker && isSameDay2(other, getStartOfWeek(_this.props.day, _this.props.locale, _this.props.calendarStartDay));
+      };
+      _this.isSameDayOrWeek = function(other) {
+        return _this.isSameDay(other) || _this.isSameWeek(other);
+      };
+      _this.getHighLightedClass = function() {
+        var _a2 = _this.props, day = _a2.day, highlightDates = _a2.highlightDates;
+        if (!highlightDates) {
+          return false;
+        }
+        var dayStr = formatDate2(day, "MM.dd.yyyy");
+        return highlightDates.get(dayStr);
+      };
+      _this.getHolidaysClass = function() {
+        var _a2;
+        var _b = _this.props, day = _b.day, holidays = _b.holidays;
+        if (!holidays) {
+          return [void 0];
+        }
+        var dayStr = formatDate2(day, "MM.dd.yyyy");
+        if (holidays.has(dayStr)) {
+          return [(_a2 = holidays.get(dayStr)) === null || _a2 === void 0 ? void 0 : _a2.className];
+        }
+        return [void 0];
+      };
+      _this.isInRange = function() {
+        var _a2 = _this.props, day = _a2.day, startDate = _a2.startDate, endDate = _a2.endDate;
+        if (!startDate || !endDate) {
+          return false;
+        }
+        return isDayInRange(day, startDate, endDate);
+      };
+      _this.isInSelectingRange = function() {
+        var _a2;
+        var _b = _this.props, day = _b.day, selectsStart = _b.selectsStart, selectsEnd = _b.selectsEnd, selectsRange = _b.selectsRange, selectsDisabledDaysInRange = _b.selectsDisabledDaysInRange, startDate = _b.startDate, swapRange = _b.swapRange, endDate = _b.endDate;
+        var selectingDate = (_a2 = _this.props.selectingDate) !== null && _a2 !== void 0 ? _a2 : _this.props.preSelection;
+        if (_this.isAfterMonth() || _this.isBeforeMonth()) {
+          return false;
+        }
+        if (!(selectsStart || selectsEnd || selectsRange) || !selectingDate || !selectsDisabledDaysInRange && _this.isDisabled()) {
+          return false;
+        }
+        if (selectsStart && endDate && (isBefore(selectingDate, endDate) || isEqual2(selectingDate, endDate))) {
+          return isDayInRange(day, selectingDate, endDate);
+        }
+        if (selectsEnd && startDate && (isAfter(selectingDate, startDate) || isEqual2(selectingDate, startDate))) {
+          return isDayInRange(day, startDate, selectingDate);
+        }
+        if (selectsRange && startDate && !endDate) {
+          if (isEqual2(selectingDate, startDate)) {
+            return isDayInRange(day, startDate, selectingDate);
+          }
+          if (isAfter(selectingDate, startDate)) {
+            return isDayInRange(day, startDate, selectingDate);
+          }
+          if (swapRange && isBefore(selectingDate, startDate)) {
+            return isDayInRange(day, selectingDate, startDate);
+          }
+        }
+        return false;
+      };
+      _this.isSelectingRangeStart = function() {
+        var _a2;
+        if (!_this.isInSelectingRange()) {
+          return false;
+        }
+        var _b = _this.props, day = _b.day, startDate = _b.startDate, selectsStart = _b.selectsStart, swapRange = _b.swapRange, selectsRange = _b.selectsRange;
+        var selectingDate = (_a2 = _this.props.selectingDate) !== null && _a2 !== void 0 ? _a2 : _this.props.preSelection;
+        if (selectsStart) {
+          return isSameDay2(day, selectingDate);
+        }
+        if (selectsRange && swapRange && startDate && selectingDate) {
+          return isSameDay2(day, isBefore(selectingDate, startDate) ? selectingDate : startDate);
+        }
+        return isSameDay2(day, startDate);
+      };
+      _this.isSelectingRangeEnd = function() {
+        var _a2;
+        if (!_this.isInSelectingRange()) {
+          return false;
+        }
+        var _b = _this.props, day = _b.day, endDate = _b.endDate, selectsEnd = _b.selectsEnd, selectsRange = _b.selectsRange, swapRange = _b.swapRange, startDate = _b.startDate;
+        var selectingDate = (_a2 = _this.props.selectingDate) !== null && _a2 !== void 0 ? _a2 : _this.props.preSelection;
+        if (selectsEnd) {
+          return isSameDay2(day, selectingDate);
+        }
+        if (selectsRange && swapRange && startDate && selectingDate) {
+          return isSameDay2(day, isBefore(selectingDate, startDate) ? startDate : selectingDate);
+        }
+        if (selectsRange) {
+          return isSameDay2(day, selectingDate);
+        }
+        return isSameDay2(day, endDate);
+      };
+      _this.isRangeStart = function() {
+        var _a2 = _this.props, day = _a2.day, startDate = _a2.startDate, endDate = _a2.endDate;
+        if (!startDate || !endDate) {
+          return false;
+        }
+        return isSameDay2(startDate, day);
+      };
+      _this.isRangeEnd = function() {
+        var _a2 = _this.props, day = _a2.day, startDate = _a2.startDate, endDate = _a2.endDate;
+        if (!startDate || !endDate) {
+          return false;
+        }
+        return isSameDay2(endDate, day);
+      };
+      _this.isWeekend = function() {
+        var weekday = getDay(_this.props.day);
+        return weekday === 0 || weekday === 6;
+      };
+      _this.isAfterMonth = function() {
+        return _this.props.month !== void 0 && (_this.props.month + 1) % 12 === getMonth(_this.props.day);
+      };
+      _this.isBeforeMonth = function() {
+        return _this.props.month !== void 0 && (getMonth(_this.props.day) + 1) % 12 === _this.props.month;
+      };
+      _this.isCurrentDay = function() {
+        return _this.isSameDay(newDate());
+      };
+      _this.isSelected = function() {
+        var _a2;
+        if (_this.props.selectsMultiple) {
+          return (_a2 = _this.props.selectedDates) === null || _a2 === void 0 ? void 0 : _a2.some(function(date) {
+            return _this.isSameDayOrWeek(date);
+          });
+        }
+        return _this.isSameDayOrWeek(_this.props.selected);
+      };
+      _this.getClassNames = function(date) {
+        var dayClassName = _this.props.dayClassName ? _this.props.dayClassName(date) : void 0;
+        return clsx("react-datepicker__day", dayClassName, "react-datepicker__day--" + getDayOfWeekCode(_this.props.day), {
+          "react-datepicker__day--disabled": _this.isDisabled(),
+          "react-datepicker__day--excluded": _this.isExcluded(),
+          "react-datepicker__day--selected": _this.isSelected(),
+          "react-datepicker__day--keyboard-selected": _this.isKeyboardSelected(),
+          "react-datepicker__day--range-start": _this.isRangeStart(),
+          "react-datepicker__day--range-end": _this.isRangeEnd(),
+          "react-datepicker__day--in-range": _this.isInRange(),
+          "react-datepicker__day--in-selecting-range": _this.isInSelectingRange(),
+          "react-datepicker__day--selecting-range-start": _this.isSelectingRangeStart(),
+          "react-datepicker__day--selecting-range-end": _this.isSelectingRangeEnd(),
+          "react-datepicker__day--today": _this.isCurrentDay(),
+          "react-datepicker__day--weekend": _this.isWeekend(),
+          "react-datepicker__day--outside-month": _this.isAfterMonth() || _this.isBeforeMonth()
+        }, _this.getHighLightedClass(), _this.getHolidaysClass());
+      };
+      _this.getAriaLabel = function() {
+        var _a2 = _this.props, day = _a2.day, _b = _a2.ariaLabelPrefixWhenEnabled, ariaLabelPrefixWhenEnabled = _b === void 0 ? "Choose" : _b, _c = _a2.ariaLabelPrefixWhenDisabled, ariaLabelPrefixWhenDisabled = _c === void 0 ? "Not available" : _c;
+        var prefix = _this.isDisabled() || _this.isExcluded() ? ariaLabelPrefixWhenDisabled : ariaLabelPrefixWhenEnabled;
+        return "".concat(prefix, " ").concat(formatDate2(day, "PPPP", _this.props.locale));
+      };
+      _this.getTitle = function() {
+        var _a2 = _this.props, day = _a2.day, _b = _a2.holidays, holidays = _b === void 0 ? /* @__PURE__ */ new Map() : _b, excludeDates = _a2.excludeDates;
+        var compareDt = formatDate2(day, "MM.dd.yyyy");
+        var titles = [];
+        if (holidays.has(compareDt)) {
+          titles.push.apply(titles, holidays.get(compareDt).holidayNames);
+        }
+        if (_this.isExcluded()) {
+          titles.push(excludeDates === null || excludeDates === void 0 ? void 0 : excludeDates.filter(function(excludeDate) {
+            if (excludeDate instanceof Date) {
+              return isSameDay2(excludeDate, day);
+            }
+            return isSameDay2(excludeDate === null || excludeDate === void 0 ? void 0 : excludeDate.date, day);
+          }).map(function(excludeDate) {
+            if (excludeDate instanceof Date) {
+              return void 0;
+            }
+            return excludeDate === null || excludeDate === void 0 ? void 0 : excludeDate.message;
+          }));
+        }
+        return titles.join(", ");
+      };
+      _this.getTabIndex = function() {
+        var selectedDay = _this.props.selected;
+        var preSelectionDay = _this.props.preSelection;
+        var tabIndex = !(_this.props.showWeekPicker && (_this.props.showWeekNumber || !_this.isStartOfWeek())) && (_this.isKeyboardSelected() || _this.isSameDay(selectedDay) && isSameDay2(preSelectionDay, selectedDay)) ? 0 : -1;
+        return tabIndex;
+      };
+      _this.handleFocusDay = function() {
+        var _a2;
+        _this.shouldFocusDay() && ((_a2 = _this.dayEl.current) === null || _a2 === void 0 ? void 0 : _a2.focus({ preventScroll: true }));
+      };
+      _this.renderDayContents = function() {
+        if (_this.props.monthShowsDuplicateDaysEnd && _this.isAfterMonth())
+          return null;
+        if (_this.props.monthShowsDuplicateDaysStart && _this.isBeforeMonth())
+          return null;
+        return _this.props.renderDayContents ? _this.props.renderDayContents(getDate(_this.props.day), _this.props.day) : getDate(_this.props.day);
+      };
+      _this.render = function() {
+        return (
+          // TODO: Use <option> instead of the "option" role to ensure accessibility across all devices.
+          import_react42.default.createElement(
+            "div",
+            { ref: _this.dayEl, className: _this.getClassNames(_this.props.day), onKeyDown: _this.handleOnKeyDown, onClick: _this.handleClick, onMouseEnter: !_this.props.usePointerEvent ? _this.handleMouseEnter : void 0, onPointerEnter: _this.props.usePointerEvent ? _this.handleMouseEnter : void 0, tabIndex: _this.getTabIndex(), "aria-label": _this.getAriaLabel(), role: "gridcell", title: _this.getTitle(), "aria-disabled": _this.isDisabled(), "aria-current": _this.isCurrentDay() ? "date" : void 0, "aria-selected": _this.isSelected() || _this.isInRange() },
+            _this.renderDayContents(),
+            _this.getTitle() !== "" && import_react42.default.createElement("span", { className: "overlay" }, _this.getTitle())
+          )
+        );
+      };
+      return _this;
+    }
+    Day2.prototype.componentDidMount = function() {
+      this.handleFocusDay();
+    };
+    Day2.prototype.componentDidUpdate = function() {
+      this.handleFocusDay();
+    };
+    Day2.prototype.shouldFocusDay = function() {
+      var shouldFocusDay = false;
+      if (this.getTabIndex() === 0 && this.isSameDay(this.props.preSelection)) {
+        if (!document.activeElement || document.activeElement === document.body) {
+          shouldFocusDay = true;
+        }
+        if (this.props.inline && !this.props.shouldFocusDayInline) {
+          shouldFocusDay = false;
+        }
+        if (this.isDayActiveElement()) {
+          shouldFocusDay = true;
+        }
+        if (this.isDuplicateDay()) {
+          shouldFocusDay = false;
+        }
+      }
+      return shouldFocusDay;
+    };
+    Day2.prototype.isDayActiveElement = function() {
+      var _a2, _b, _c;
+      return ((_b = (_a2 = this.props.containerRef) === null || _a2 === void 0 ? void 0 : _a2.current) === null || _b === void 0 ? void 0 : _b.contains(document.activeElement)) && ((_c = document.activeElement) === null || _c === void 0 ? void 0 : _c.classList.contains("react-datepicker__day"));
+    };
+    Day2.prototype.isDuplicateDay = function() {
+      return (
+        //day is one of the non rendered duplicate days
+        this.props.monthShowsDuplicateDaysEnd && this.isAfterMonth() || this.props.monthShowsDuplicateDaysStart && this.isBeforeMonth()
+      );
+    };
+    return Day2;
+  }(import_react42.Component)
+);
+var WeekNumber = (
+  /** @class */
+  function(_super) {
+    __extends2(WeekNumber2, _super);
+    function WeekNumber2() {
+      var _this = _super !== null && _super.apply(this, arguments) || this;
+      _this.weekNumberEl = (0, import_react42.createRef)();
+      _this.handleClick = function(event) {
+        if (_this.props.onClick) {
+          _this.props.onClick(event);
+        }
+      };
+      _this.handleOnKeyDown = function(event) {
+        var _a2, _b;
+        var eventKey = event.key;
+        if (eventKey === KeyType.Space) {
+          event.preventDefault();
+          event.key = KeyType.Enter;
+        }
+        (_b = (_a2 = _this.props).handleOnKeyDown) === null || _b === void 0 ? void 0 : _b.call(_a2, event);
+      };
+      _this.isKeyboardSelected = function() {
+        return !_this.props.disabledKeyboardNavigation && !isSameDay2(_this.props.date, _this.props.selected) && isSameDay2(_this.props.date, _this.props.preSelection);
+      };
+      _this.getTabIndex = function() {
+        return _this.props.showWeekPicker && _this.props.showWeekNumber && (_this.isKeyboardSelected() || isSameDay2(_this.props.date, _this.props.selected) && isSameDay2(_this.props.preSelection, _this.props.selected)) ? 0 : -1;
+      };
+      _this.handleFocusWeekNumber = function(prevProps) {
+        var shouldFocusWeekNumber = false;
+        if (_this.getTabIndex() === 0 && !(prevProps === null || prevProps === void 0 ? void 0 : prevProps.isInputFocused) && isSameDay2(_this.props.date, _this.props.preSelection)) {
+          if (!document.activeElement || document.activeElement === document.body) {
+            shouldFocusWeekNumber = true;
+          }
+          if (_this.props.inline && !_this.props.shouldFocusDayInline) {
+            shouldFocusWeekNumber = false;
+          }
+          if (_this.props.containerRef && _this.props.containerRef.current && _this.props.containerRef.current.contains(document.activeElement) && document.activeElement && document.activeElement.classList.contains("react-datepicker__week-number")) {
+            shouldFocusWeekNumber = true;
+          }
+        }
+        shouldFocusWeekNumber && _this.weekNumberEl.current && _this.weekNumberEl.current.focus({ preventScroll: true });
+      };
+      return _this;
+    }
+    Object.defineProperty(WeekNumber2, "defaultProps", {
+      get: function() {
+        return {
+          ariaLabelPrefix: "week "
+        };
+      },
+      enumerable: false,
+      configurable: true
+    });
+    WeekNumber2.prototype.componentDidMount = function() {
+      this.handleFocusWeekNumber();
+    };
+    WeekNumber2.prototype.componentDidUpdate = function(prevProps) {
+      this.handleFocusWeekNumber(prevProps);
+    };
+    WeekNumber2.prototype.render = function() {
+      var _a2 = this.props, weekNumber = _a2.weekNumber, isWeekDisabled = _a2.isWeekDisabled, _b = _a2.ariaLabelPrefix, ariaLabelPrefix = _b === void 0 ? WeekNumber2.defaultProps.ariaLabelPrefix : _b, onClick = _a2.onClick;
+      var weekNumberClasses = {
+        "react-datepicker__week-number": true,
+        "react-datepicker__week-number--clickable": !!onClick && !isWeekDisabled,
+        "react-datepicker__week-number--selected": !!onClick && isSameDay2(this.props.date, this.props.selected)
+      };
+      return import_react42.default.createElement("div", { ref: this.weekNumberEl, className: clsx(weekNumberClasses), "aria-label": "".concat(ariaLabelPrefix, " ").concat(this.props.weekNumber), onClick: this.handleClick, onKeyDown: this.handleOnKeyDown, tabIndex: this.getTabIndex(), role: "gridcell" }, weekNumber);
+    };
+    return WeekNumber2;
+  }(import_react42.Component)
+);
+var Week = (
+  /** @class */
+  function(_super) {
+    __extends2(Week2, _super);
+    function Week2() {
+      var _this = _super !== null && _super.apply(this, arguments) || this;
+      _this.isDisabled = function(day) {
+        return isDayDisabled(day, {
+          minDate: _this.props.minDate,
+          maxDate: _this.props.maxDate,
+          excludeDates: _this.props.excludeDates,
+          excludeDateIntervals: _this.props.excludeDateIntervals,
+          includeDateIntervals: _this.props.includeDateIntervals,
+          includeDates: _this.props.includeDates,
+          filterDate: _this.props.filterDate
+        });
+      };
+      _this.handleDayClick = function(day, event) {
+        if (_this.props.onDayClick) {
+          _this.props.onDayClick(day, event);
+        }
+      };
+      _this.handleDayMouseEnter = function(day) {
+        if (_this.props.onDayMouseEnter) {
+          _this.props.onDayMouseEnter(day);
+        }
+      };
+      _this.handleWeekClick = function(day, weekNumber, event) {
+        var _a2, _b, _c;
+        var enabledWeekDay = new Date(day);
+        for (var i = 0; i < 7; i++) {
+          var processingDay = new Date(day);
+          processingDay.setDate(processingDay.getDate() + i);
+          var isEnabled = !_this.isDisabled(processingDay);
+          if (isEnabled) {
+            enabledWeekDay = processingDay;
+            break;
+          }
+        }
+        if (typeof _this.props.onWeekSelect === "function") {
+          _this.props.onWeekSelect(enabledWeekDay, weekNumber, event);
+        }
+        if (_this.props.showWeekPicker) {
+          _this.handleDayClick(enabledWeekDay, event);
+        }
+        if ((_a2 = _this.props.shouldCloseOnSelect) !== null && _a2 !== void 0 ? _a2 : Week2.defaultProps.shouldCloseOnSelect) {
+          (_c = (_b = _this.props).setOpen) === null || _c === void 0 ? void 0 : _c.call(_b, false);
+        }
+      };
+      _this.formatWeekNumber = function(date) {
+        if (_this.props.formatWeekNumber) {
+          return _this.props.formatWeekNumber(date);
+        }
+        return getWeek2(date);
+      };
+      _this.isWeekDisabled = function() {
+        var startOfWeek2 = _this.startOfWeek();
+        var endOfWeek2 = addDays2(startOfWeek2, 6);
+        var processingDate = new Date(startOfWeek2);
+        while (processingDate <= endOfWeek2) {
+          if (!_this.isDisabled(processingDate))
+            return false;
+          processingDate = addDays2(processingDate, 1);
+        }
+        return true;
+      };
+      _this.renderDays = function() {
+        var startOfWeek2 = _this.startOfWeek();
+        var days = [];
+        var weekNumber = _this.formatWeekNumber(startOfWeek2);
+        if (_this.props.showWeekNumber) {
+          var onClickAction = _this.props.onWeekSelect || _this.props.showWeekPicker ? _this.handleWeekClick.bind(_this, startOfWeek2, weekNumber) : void 0;
+          days.push(import_react42.default.createElement(WeekNumber, _assign({ key: "W" }, Week2.defaultProps, _this.props, { weekNumber, isWeekDisabled: _this.isWeekDisabled(), date: startOfWeek2, onClick: onClickAction })));
+        }
+        return days.concat([0, 1, 2, 3, 4, 5, 6].map(function(offset4) {
+          var day = addDays2(startOfWeek2, offset4);
+          return import_react42.default.createElement(Day, _assign({}, Week2.defaultProps, _this.props, { ariaLabelPrefixWhenEnabled: _this.props.chooseDayAriaLabelPrefix, ariaLabelPrefixWhenDisabled: _this.props.disabledDayAriaLabelPrefix, key: day.valueOf(), day, onClick: _this.handleDayClick.bind(_this, day), onMouseEnter: _this.handleDayMouseEnter.bind(_this, day) }));
+        }));
+      };
+      _this.startOfWeek = function() {
+        return getStartOfWeek(_this.props.day, _this.props.locale, _this.props.calendarStartDay);
+      };
+      _this.isKeyboardSelected = function() {
+        return !_this.props.disabledKeyboardNavigation && !isSameDay2(_this.startOfWeek(), _this.props.selected) && isSameDay2(_this.startOfWeek(), _this.props.preSelection);
+      };
+      return _this;
+    }
+    Object.defineProperty(Week2, "defaultProps", {
+      get: function() {
+        return {
+          shouldCloseOnSelect: true
+        };
+      },
+      enumerable: false,
+      configurable: true
+    });
+    Week2.prototype.render = function() {
+      var weekNumberClasses = {
+        "react-datepicker__week": true,
+        "react-datepicker__week--selected": isSameDay2(this.startOfWeek(), this.props.selected),
+        "react-datepicker__week--keyboard-selected": this.isKeyboardSelected()
+      };
+      var customWeekClassName = this.props.weekClassName ? this.props.weekClassName(this.startOfWeek()) : void 0;
+      return import_react42.default.createElement("div", { className: clsx(weekNumberClasses, customWeekClassName), role: "row" }, this.renderDays());
+    };
+    return Week2;
+  }(import_react42.Component)
+);
+var _a;
+var FIXED_HEIGHT_STANDARD_WEEK_COUNT = 6;
+var MONTH_COLUMNS_LAYOUT = {
+  TWO_COLUMNS: "two_columns",
+  THREE_COLUMNS: "three_columns",
+  FOUR_COLUMNS: "four_columns"
+};
+var MONTH_COLUMNS = (_a = {}, _a[MONTH_COLUMNS_LAYOUT.TWO_COLUMNS] = {
+  grid: [
+    [0, 1],
+    [2, 3],
+    [4, 5],
+    [6, 7],
+    [8, 9],
+    [10, 11]
+  ],
+  verticalNavigationOffset: 2
+}, _a[MONTH_COLUMNS_LAYOUT.THREE_COLUMNS] = {
+  grid: [
+    [0, 1, 2],
+    [3, 4, 5],
+    [6, 7, 8],
+    [9, 10, 11]
+  ],
+  verticalNavigationOffset: 3
+}, _a[MONTH_COLUMNS_LAYOUT.FOUR_COLUMNS] = {
+  grid: [
+    [0, 1, 2, 3],
+    [4, 5, 6, 7],
+    [8, 9, 10, 11]
+  ],
+  verticalNavigationOffset: 4
+}, _a);
+var MONTH_NAVIGATION_HORIZONTAL_OFFSET = 1;
+function getMonthColumnsLayout(showFourColumnMonthYearPicker, showTwoColumnMonthYearPicker) {
+  if (showFourColumnMonthYearPicker) {
+    return MONTH_COLUMNS_LAYOUT.FOUR_COLUMNS;
+  }
+  if (showTwoColumnMonthYearPicker) {
+    return MONTH_COLUMNS_LAYOUT.TWO_COLUMNS;
+  }
+  return MONTH_COLUMNS_LAYOUT.THREE_COLUMNS;
+}
+var Month = (
+  /** @class */
+  function(_super) {
+    __extends2(Month2, _super);
+    function Month2() {
+      var _this = _super !== null && _super.apply(this, arguments) || this;
+      _this.MONTH_REFS = __spreadArray2([], Array(12), true).map(function() {
+        return (0, import_react42.createRef)();
+      });
+      _this.QUARTER_REFS = __spreadArray2([], Array(4), true).map(function() {
+        return (0, import_react42.createRef)();
+      });
+      _this.isDisabled = function(day) {
+        return isDayDisabled(day, {
+          minDate: _this.props.minDate,
+          maxDate: _this.props.maxDate,
+          excludeDates: _this.props.excludeDates,
+          excludeDateIntervals: _this.props.excludeDateIntervals,
+          includeDateIntervals: _this.props.includeDateIntervals,
+          includeDates: _this.props.includeDates,
+          filterDate: _this.props.filterDate,
+          disabled: _this.props.disabled
+        });
+      };
+      _this.isExcluded = function(day) {
+        return isDayExcluded(day, {
+          excludeDates: _this.props.excludeDates,
+          excludeDateIntervals: _this.props.excludeDateIntervals
+        });
+      };
+      _this.handleDayClick = function(day, event) {
+        var _a2, _b;
+        (_b = (_a2 = _this.props).onDayClick) === null || _b === void 0 ? void 0 : _b.call(_a2, day, event, _this.props.orderInDisplay);
+      };
+      _this.handleDayMouseEnter = function(day) {
+        var _a2, _b;
+        (_b = (_a2 = _this.props).onDayMouseEnter) === null || _b === void 0 ? void 0 : _b.call(_a2, day);
+      };
+      _this.handleMouseLeave = function() {
+        var _a2, _b;
+        (_b = (_a2 = _this.props).onMouseLeave) === null || _b === void 0 ? void 0 : _b.call(_a2);
+      };
+      _this.isRangeStartMonth = function(m) {
+        var _a2 = _this.props, day = _a2.day, startDate = _a2.startDate, endDate = _a2.endDate;
+        if (!startDate || !endDate) {
+          return false;
+        }
+        return isSameMonth2(setMonth(day, m), startDate);
+      };
+      _this.isRangeStartQuarter = function(q2) {
+        var _a2 = _this.props, day = _a2.day, startDate = _a2.startDate, endDate = _a2.endDate;
+        if (!startDate || !endDate) {
+          return false;
+        }
+        return isSameQuarter2(setQuarter(day, q2), startDate);
+      };
+      _this.isRangeEndMonth = function(m) {
+        var _a2 = _this.props, day = _a2.day, startDate = _a2.startDate, endDate = _a2.endDate;
+        if (!startDate || !endDate) {
+          return false;
+        }
+        return isSameMonth2(setMonth(day, m), endDate);
+      };
+      _this.isRangeEndQuarter = function(q2) {
+        var _a2 = _this.props, day = _a2.day, startDate = _a2.startDate, endDate = _a2.endDate;
+        if (!startDate || !endDate) {
+          return false;
+        }
+        return isSameQuarter2(setQuarter(day, q2), endDate);
+      };
+      _this.isInSelectingRangeMonth = function(m) {
+        var _a2;
+        var _b = _this.props, day = _b.day, selectsStart = _b.selectsStart, selectsEnd = _b.selectsEnd, selectsRange = _b.selectsRange, startDate = _b.startDate, endDate = _b.endDate;
+        var selectingDate = (_a2 = _this.props.selectingDate) !== null && _a2 !== void 0 ? _a2 : _this.props.preSelection;
+        if (!(selectsStart || selectsEnd || selectsRange) || !selectingDate) {
+          return false;
+        }
+        if (selectsStart && endDate) {
+          return isMonthInRange(selectingDate, endDate, m, day);
+        }
+        if (selectsEnd && startDate) {
+          return isMonthInRange(startDate, selectingDate, m, day);
+        }
+        if (selectsRange && startDate && !endDate) {
+          return isMonthInRange(startDate, selectingDate, m, day);
+        }
+        return false;
+      };
+      _this.isSelectingMonthRangeStart = function(m) {
+        var _a2;
+        if (!_this.isInSelectingRangeMonth(m)) {
+          return false;
+        }
+        var _b = _this.props, day = _b.day, startDate = _b.startDate, selectsStart = _b.selectsStart;
+        var _month = setMonth(day, m);
+        var selectingDate = (_a2 = _this.props.selectingDate) !== null && _a2 !== void 0 ? _a2 : _this.props.preSelection;
+        if (selectsStart) {
+          return isSameMonth2(_month, selectingDate);
+        } else {
+          return isSameMonth2(_month, startDate);
+        }
+      };
+      _this.isSelectingMonthRangeEnd = function(m) {
+        var _a2;
+        if (!_this.isInSelectingRangeMonth(m)) {
+          return false;
+        }
+        var _b = _this.props, day = _b.day, endDate = _b.endDate, selectsEnd = _b.selectsEnd, selectsRange = _b.selectsRange;
+        var _month = setMonth(day, m);
+        var selectingDate = (_a2 = _this.props.selectingDate) !== null && _a2 !== void 0 ? _a2 : _this.props.preSelection;
+        if (selectsEnd || selectsRange) {
+          return isSameMonth2(_month, selectingDate);
+        } else {
+          return isSameMonth2(_month, endDate);
+        }
+      };
+      _this.isInSelectingRangeQuarter = function(q2) {
+        var _a2;
+        var _b = _this.props, day = _b.day, selectsStart = _b.selectsStart, selectsEnd = _b.selectsEnd, selectsRange = _b.selectsRange, startDate = _b.startDate, endDate = _b.endDate;
+        var selectingDate = (_a2 = _this.props.selectingDate) !== null && _a2 !== void 0 ? _a2 : _this.props.preSelection;
+        if (!(selectsStart || selectsEnd || selectsRange) || !selectingDate) {
+          return false;
+        }
+        if (selectsStart && endDate) {
+          return isQuarterInRange(selectingDate, endDate, q2, day);
+        }
+        if (selectsEnd && startDate) {
+          return isQuarterInRange(startDate, selectingDate, q2, day);
+        }
+        if (selectsRange && startDate && !endDate) {
+          return isQuarterInRange(startDate, selectingDate, q2, day);
+        }
+        return false;
+      };
+      _this.isWeekInMonth = function(startOfWeek2) {
+        var day = _this.props.day;
+        var endOfWeek2 = addDays2(startOfWeek2, 6);
+        return isSameMonth2(startOfWeek2, day) || isSameMonth2(endOfWeek2, day);
+      };
+      _this.isCurrentMonth = function(day, m) {
+        return getYear(day) === getYear(newDate()) && m === getMonth(newDate());
+      };
+      _this.isCurrentQuarter = function(day, q2) {
+        return getYear(day) === getYear(newDate()) && q2 === getQuarter(newDate());
+      };
+      _this.isSelectedMonth = function(day, m, selected) {
+        return getMonth(selected) === m && getYear(day) === getYear(selected);
+      };
+      _this.isSelectMonthInList = function(day, m, selectedDates) {
+        return selectedDates.some(function(selectedDate) {
+          return _this.isSelectedMonth(day, m, selectedDate);
+        });
+      };
+      _this.isSelectedQuarter = function(day, q2, selected) {
+        return getQuarter(selected) === q2 && getYear(day) === getYear(selected);
+      };
+      _this.isSelectQuarterInList = function(day, q2, selectedDates) {
+        return selectedDates.some(function(selectedDate) {
+          return _this.isSelectedQuarter(day, q2, selectedDate);
+        });
+      };
+      _this.isMonthSelected = function() {
+        var _a2 = _this.props, day = _a2.day, selected = _a2.selected, selectedDates = _a2.selectedDates, selectsMultiple = _a2.selectsMultiple;
+        var monthIdx = getMonth(day);
+        if (selectsMultiple) {
+          return selectedDates === null || selectedDates === void 0 ? void 0 : selectedDates.some(function(date) {
+            return _this.isSelectedMonth(day, monthIdx, date);
+          });
+        }
+        return !!selected && _this.isSelectedMonth(day, monthIdx, selected);
+      };
+      _this.isQuarterSelected = function() {
+        var _a2 = _this.props, day = _a2.day, selected = _a2.selected, selectedDates = _a2.selectedDates, selectsMultiple = _a2.selectsMultiple;
+        var quarterIdx = getQuarter(day);
+        if (selectsMultiple) {
+          return selectedDates === null || selectedDates === void 0 ? void 0 : selectedDates.some(function(selectedDate) {
+            return _this.isSelectedQuarter(day, quarterIdx, selectedDate);
+          });
+        }
+        return !!selected && _this.isSelectedQuarter(day, quarterIdx, selected);
+      };
+      _this.renderWeeks = function() {
+        if (!isValid2(_this.props.day)) {
+          return [];
+        }
+        var weeks = [];
+        var isFixedHeight = _this.props.fixedHeight;
+        var i = 0;
+        var breakAfterNextPush = false;
+        var currentWeekStart = getStartOfWeek(getStartOfMonth(_this.props.day), _this.props.locale, _this.props.calendarStartDay);
+        var isPreSelected = function(preSelection2) {
+          return _this.props.showWeekPicker ? getStartOfWeek(preSelection2, _this.props.locale, _this.props.calendarStartDay) : _this.props.preSelection;
+        };
+        var isSelected = function(selected2) {
+          return _this.props.showWeekPicker ? getStartOfWeek(selected2, _this.props.locale, _this.props.calendarStartDay) : _this.props.selected;
+        };
+        var selected = _this.props.selected ? isSelected(_this.props.selected) : void 0;
+        var preSelection = _this.props.preSelection ? isPreSelected(_this.props.preSelection) : void 0;
+        while (true) {
+          weeks.push(import_react42.default.createElement(Week, _assign({}, _this.props, { ariaLabelPrefix: _this.props.weekAriaLabelPrefix, key: i, day: currentWeekStart, month: getMonth(_this.props.day), onDayClick: _this.handleDayClick, onDayMouseEnter: _this.handleDayMouseEnter, selected, preSelection, showWeekNumber: _this.props.showWeekNumbers })));
+          if (breakAfterNextPush)
+            break;
+          i++;
+          currentWeekStart = addWeeks(currentWeekStart, 1);
+          var isFixedAndFinalWeek = isFixedHeight && i >= FIXED_HEIGHT_STANDARD_WEEK_COUNT;
+          var isNonFixedAndOutOfMonth = !isFixedHeight && !_this.isWeekInMonth(currentWeekStart);
+          if (isFixedAndFinalWeek || isNonFixedAndOutOfMonth) {
+            if (_this.props.peekNextMonth) {
+              breakAfterNextPush = true;
+            } else {
+              break;
+            }
+          }
+        }
+        return weeks;
+      };
+      _this.onMonthClick = function(event, m) {
+        var _a2 = _this.isMonthDisabledForLabelDate(m), isDisabled = _a2.isDisabled, labelDate = _a2.labelDate;
+        if (isDisabled) {
+          return;
+        }
+        _this.handleDayClick(getStartOfMonth(labelDate), event);
+      };
+      _this.onMonthMouseEnter = function(m) {
+        var _a2 = _this.isMonthDisabledForLabelDate(m), isDisabled = _a2.isDisabled, labelDate = _a2.labelDate;
+        if (isDisabled) {
+          return;
+        }
+        _this.handleDayMouseEnter(getStartOfMonth(labelDate));
+      };
+      _this.handleMonthNavigation = function(newMonth, newDate2) {
+        var _a2, _b, _c, _d;
+        (_b = (_a2 = _this.props).setPreSelection) === null || _b === void 0 ? void 0 : _b.call(_a2, newDate2);
+        (_d = (_c = _this.MONTH_REFS[newMonth]) === null || _c === void 0 ? void 0 : _c.current) === null || _d === void 0 ? void 0 : _d.focus();
+      };
+      _this.handleKeyboardNavigation = function(event, eventKey, month) {
+        var _a2;
+        var _b = _this.props, selected = _b.selected, preSelection = _b.preSelection, setPreSelection = _b.setPreSelection, minDate = _b.minDate, maxDate = _b.maxDate, showFourColumnMonthYearPicker = _b.showFourColumnMonthYearPicker, showTwoColumnMonthYearPicker = _b.showTwoColumnMonthYearPicker;
+        if (!preSelection)
+          return;
+        var monthColumnsLayout = getMonthColumnsLayout(showFourColumnMonthYearPicker, showTwoColumnMonthYearPicker);
+        var verticalOffset = _this.getVerticalOffset(monthColumnsLayout);
+        var monthsGrid = (_a2 = MONTH_COLUMNS[monthColumnsLayout]) === null || _a2 === void 0 ? void 0 : _a2.grid;
+        var calculateNewDateAndMonth = function(eventKey2, date, month2) {
+          var _a3, _b2;
+          var newCalculatedDate2 = date;
+          var newCalculatedMonth2 = month2;
+          switch (eventKey2) {
+            case KeyType.ArrowRight:
+              newCalculatedDate2 = addMonths(date, MONTH_NAVIGATION_HORIZONTAL_OFFSET);
+              newCalculatedMonth2 = month2 === 11 ? 0 : month2 + MONTH_NAVIGATION_HORIZONTAL_OFFSET;
+              break;
+            case KeyType.ArrowLeft:
+              newCalculatedDate2 = subMonths(date, MONTH_NAVIGATION_HORIZONTAL_OFFSET);
+              newCalculatedMonth2 = month2 === 0 ? 11 : month2 - MONTH_NAVIGATION_HORIZONTAL_OFFSET;
+              break;
+            case KeyType.ArrowUp:
+              newCalculatedDate2 = subMonths(date, verticalOffset);
+              newCalculatedMonth2 = ((_a3 = monthsGrid === null || monthsGrid === void 0 ? void 0 : monthsGrid[0]) === null || _a3 === void 0 ? void 0 : _a3.includes(month2)) ? month2 + 12 - verticalOffset : month2 - verticalOffset;
+              break;
+            case KeyType.ArrowDown:
+              newCalculatedDate2 = addMonths(date, verticalOffset);
+              newCalculatedMonth2 = ((_b2 = monthsGrid === null || monthsGrid === void 0 ? void 0 : monthsGrid[monthsGrid.length - 1]) === null || _b2 === void 0 ? void 0 : _b2.includes(month2)) ? month2 - 12 + verticalOffset : month2 + verticalOffset;
+              break;
+          }
+          return { newCalculatedDate: newCalculatedDate2, newCalculatedMonth: newCalculatedMonth2 };
+        };
+        var getNewDateAndMonth = function(eventKey2, selectedDate, month2) {
+          var MAX_ITERATIONS = 40;
+          var eventKeyCopy = eventKey2;
+          var validDateFound = false;
+          var iterations = 0;
+          var _a3 = calculateNewDateAndMonth(eventKeyCopy, selectedDate, month2), newCalculatedDate2 = _a3.newCalculatedDate, newCalculatedMonth2 = _a3.newCalculatedMonth;
+          while (!validDateFound) {
+            if (iterations >= MAX_ITERATIONS) {
+              newCalculatedDate2 = selectedDate;
+              newCalculatedMonth2 = month2;
+              break;
+            }
+            if (minDate && newCalculatedDate2 < minDate) {
+              eventKeyCopy = KeyType.ArrowRight;
+              var obj = calculateNewDateAndMonth(eventKeyCopy, newCalculatedDate2, newCalculatedMonth2);
+              newCalculatedDate2 = obj.newCalculatedDate;
+              newCalculatedMonth2 = obj.newCalculatedMonth;
+            }
+            if (maxDate && newCalculatedDate2 > maxDate) {
+              eventKeyCopy = KeyType.ArrowLeft;
+              var obj = calculateNewDateAndMonth(eventKeyCopy, newCalculatedDate2, newCalculatedMonth2);
+              newCalculatedDate2 = obj.newCalculatedDate;
+              newCalculatedMonth2 = obj.newCalculatedMonth;
+            }
+            if (isMonthYearDisabled(newCalculatedDate2, _this.props)) {
+              var obj = calculateNewDateAndMonth(eventKeyCopy, newCalculatedDate2, newCalculatedMonth2);
+              newCalculatedDate2 = obj.newCalculatedDate;
+              newCalculatedMonth2 = obj.newCalculatedMonth;
+            } else {
+              validDateFound = true;
+            }
+            iterations++;
+          }
+          return { newCalculatedDate: newCalculatedDate2, newCalculatedMonth: newCalculatedMonth2 };
+        };
+        if (eventKey === KeyType.Enter) {
+          if (!_this.isMonthDisabled(month)) {
+            _this.onMonthClick(event, month);
+            setPreSelection === null || setPreSelection === void 0 ? void 0 : setPreSelection(selected);
+          }
+          return;
+        }
+        var _c = getNewDateAndMonth(eventKey, preSelection, month), newCalculatedDate = _c.newCalculatedDate, newCalculatedMonth = _c.newCalculatedMonth;
+        switch (eventKey) {
+          case KeyType.ArrowRight:
+          case KeyType.ArrowLeft:
+          case KeyType.ArrowUp:
+          case KeyType.ArrowDown:
+            _this.handleMonthNavigation(newCalculatedMonth, newCalculatedDate);
+            break;
+        }
+      };
+      _this.getVerticalOffset = function(monthColumnsLayout) {
+        var _a2, _b;
+        return (_b = (_a2 = MONTH_COLUMNS[monthColumnsLayout]) === null || _a2 === void 0 ? void 0 : _a2.verticalNavigationOffset) !== null && _b !== void 0 ? _b : 0;
+      };
+      _this.onMonthKeyDown = function(event, month) {
+        var _a2 = _this.props, disabledKeyboardNavigation = _a2.disabledKeyboardNavigation, handleOnMonthKeyDown = _a2.handleOnMonthKeyDown;
+        var eventKey = event.key;
+        if (eventKey !== KeyType.Tab) {
+          event.preventDefault();
+        }
+        if (!disabledKeyboardNavigation) {
+          _this.handleKeyboardNavigation(event, eventKey, month);
+        }
+        handleOnMonthKeyDown && handleOnMonthKeyDown(event);
+      };
+      _this.onQuarterClick = function(event, q2) {
+        var labelDate = setQuarter(_this.props.day, q2);
+        if (isQuarterDisabled(labelDate, _this.props)) {
+          return;
+        }
+        _this.handleDayClick(getStartOfQuarter(labelDate), event);
+      };
+      _this.onQuarterMouseEnter = function(q2) {
+        var labelDate = setQuarter(_this.props.day, q2);
+        if (isQuarterDisabled(labelDate, _this.props)) {
+          return;
+        }
+        _this.handleDayMouseEnter(getStartOfQuarter(labelDate));
+      };
+      _this.handleQuarterNavigation = function(newQuarter, newDate2) {
+        var _a2, _b, _c, _d;
+        if (_this.isDisabled(newDate2) || _this.isExcluded(newDate2)) {
+          return;
+        }
+        (_b = (_a2 = _this.props).setPreSelection) === null || _b === void 0 ? void 0 : _b.call(_a2, newDate2);
+        (_d = (_c = _this.QUARTER_REFS[newQuarter - 1]) === null || _c === void 0 ? void 0 : _c.current) === null || _d === void 0 ? void 0 : _d.focus();
+      };
+      _this.onQuarterKeyDown = function(event, quarter) {
+        var _a2, _b;
+        var eventKey = event.key;
+        if (!_this.props.disabledKeyboardNavigation) {
+          switch (eventKey) {
+            case KeyType.Enter:
+              _this.onQuarterClick(event, quarter);
+              (_b = (_a2 = _this.props).setPreSelection) === null || _b === void 0 ? void 0 : _b.call(_a2, _this.props.selected);
+              break;
+            case KeyType.ArrowRight:
+              if (!_this.props.preSelection) {
+                break;
+              }
+              _this.handleQuarterNavigation(quarter === 4 ? 1 : quarter + 1, addQuarters(_this.props.preSelection, 1));
+              break;
+            case KeyType.ArrowLeft:
+              if (!_this.props.preSelection) {
+                break;
+              }
+              _this.handleQuarterNavigation(quarter === 1 ? 4 : quarter - 1, subQuarters(_this.props.preSelection, 1));
+              break;
+          }
+        }
+      };
+      _this.isMonthDisabledForLabelDate = function(month) {
+        var _a2;
+        var _b = _this.props, day = _b.day, disabled = _b.disabled, minDate = _b.minDate, maxDate = _b.maxDate, excludeDates = _b.excludeDates, includeDates = _b.includeDates;
+        var labelDate = setMonth(day, month);
+        if (disabled) {
+          return {
+            isDisabled: true,
+            labelDate: setMonth(day, month)
+          };
+        }
+        return {
+          isDisabled: (_a2 = (minDate || maxDate || excludeDates || includeDates) && isMonthDisabled(labelDate, _this.props)) !== null && _a2 !== void 0 ? _a2 : false,
+          labelDate
+        };
+      };
+      _this.isMonthDisabled = function(month) {
+        var isDisabled = _this.isMonthDisabledForLabelDate(month).isDisabled;
+        return isDisabled;
+      };
+      _this.getMonthClassNames = function(m) {
+        var _a2 = _this.props, day = _a2.day, startDate = _a2.startDate, endDate = _a2.endDate, preSelection = _a2.preSelection, monthClassName = _a2.monthClassName;
+        var _monthClassName = monthClassName ? monthClassName(setMonth(day, m)) : void 0;
+        var selection = _this.getSelection();
+        return clsx("react-datepicker__month-text", "react-datepicker__month-".concat(m), _monthClassName, {
+          "react-datepicker__month-text--disabled": _this.isMonthDisabled(m),
+          "react-datepicker__month-text--selected": selection ? _this.isSelectMonthInList(day, m, selection) : void 0,
+          "react-datepicker__month-text--keyboard-selected": !_this.props.disabledKeyboardNavigation && preSelection && _this.isSelectedMonth(day, m, preSelection) && !_this.isMonthSelected() && !_this.isMonthDisabled(m),
+          "react-datepicker__month-text--in-selecting-range": _this.isInSelectingRangeMonth(m),
+          "react-datepicker__month-text--in-range": startDate && endDate ? isMonthInRange(startDate, endDate, m, day) : void 0,
+          "react-datepicker__month-text--range-start": _this.isRangeStartMonth(m),
+          "react-datepicker__month-text--range-end": _this.isRangeEndMonth(m),
+          "react-datepicker__month-text--selecting-range-start": _this.isSelectingMonthRangeStart(m),
+          "react-datepicker__month-text--selecting-range-end": _this.isSelectingMonthRangeEnd(m),
+          "react-datepicker__month-text--today": _this.isCurrentMonth(day, m)
+        });
+      };
+      _this.getTabIndex = function(m) {
+        if (_this.props.preSelection == null) {
+          return "-1";
+        }
+        var preSelectedMonth = getMonth(_this.props.preSelection);
+        var isPreSelectedMonthDisabled = _this.isMonthDisabledForLabelDate(preSelectedMonth).isDisabled;
+        var tabIndex = m === preSelectedMonth && !(isPreSelectedMonthDisabled || _this.props.disabledKeyboardNavigation) ? "0" : "-1";
+        return tabIndex;
+      };
+      _this.getQuarterTabIndex = function(q2) {
+        if (_this.props.preSelection == null) {
+          return "-1";
+        }
+        var preSelectedQuarter = getQuarter(_this.props.preSelection);
+        var isCurrentQuarterDisabled = isQuarterDisabled(_this.props.day, _this.props);
+        var tabIndex = q2 === preSelectedQuarter && !(isCurrentQuarterDisabled || _this.props.disabledKeyboardNavigation) ? "0" : "-1";
+        return tabIndex;
+      };
+      _this.getAriaLabel = function(month) {
+        var _a2 = _this.props, _b = _a2.chooseDayAriaLabelPrefix, chooseDayAriaLabelPrefix = _b === void 0 ? "Choose" : _b, _c = _a2.disabledDayAriaLabelPrefix, disabledDayAriaLabelPrefix = _c === void 0 ? "Not available" : _c, day = _a2.day, locale = _a2.locale;
+        var labelDate = setMonth(day, month);
+        var prefix = _this.isDisabled(labelDate) || _this.isExcluded(labelDate) ? disabledDayAriaLabelPrefix : chooseDayAriaLabelPrefix;
+        return "".concat(prefix, " ").concat(formatDate2(labelDate, "MMMM yyyy", locale));
+      };
+      _this.getQuarterClassNames = function(q2) {
+        var _a2 = _this.props, day = _a2.day, startDate = _a2.startDate, endDate = _a2.endDate, minDate = _a2.minDate, maxDate = _a2.maxDate, excludeDates = _a2.excludeDates, includeDates = _a2.includeDates, filterDate = _a2.filterDate, preSelection = _a2.preSelection, disabledKeyboardNavigation = _a2.disabledKeyboardNavigation, disabled = _a2.disabled;
+        var isDisabled = (minDate || maxDate || excludeDates || includeDates || filterDate || disabled) && isQuarterDisabled(setQuarter(day, q2), _this.props);
+        var selection = _this.getSelection();
+        return clsx("react-datepicker__quarter-text", "react-datepicker__quarter-".concat(q2), {
+          "react-datepicker__quarter-text--disabled": isDisabled,
+          "react-datepicker__quarter-text--selected": selection ? _this.isSelectQuarterInList(day, q2, selection) : void 0,
+          "react-datepicker__quarter-text--keyboard-selected": !disabledKeyboardNavigation && preSelection && _this.isSelectedQuarter(day, q2, preSelection) && !_this.isQuarterSelected() && !isDisabled,
+          "react-datepicker__quarter-text--in-selecting-range": _this.isInSelectingRangeQuarter(q2),
+          "react-datepicker__quarter-text--in-range": startDate && endDate ? isQuarterInRange(startDate, endDate, q2, day) : void 0,
+          "react-datepicker__quarter-text--range-start": _this.isRangeStartQuarter(q2),
+          "react-datepicker__quarter-text--range-end": _this.isRangeEndQuarter(q2),
+          "react-datepicker__quarter-text--today": _this.isCurrentQuarter(day, q2)
+        });
+      };
+      _this.getMonthContent = function(m) {
+        var _a2 = _this.props, showFullMonthYearPicker = _a2.showFullMonthYearPicker, renderMonthContent = _a2.renderMonthContent, locale = _a2.locale, day = _a2.day;
+        var shortMonthText = getMonthShortInLocale(m, locale);
+        var fullMonthText = getMonthInLocale(m, locale);
+        if (renderMonthContent) {
+          return renderMonthContent(m, shortMonthText, fullMonthText, day);
+        }
+        return showFullMonthYearPicker ? fullMonthText : shortMonthText;
+      };
+      _this.getQuarterContent = function(q2) {
+        var _a2;
+        var _b = _this.props, renderQuarterContent = _b.renderQuarterContent, locale = _b.locale;
+        var shortQuarter = getQuarterShortInLocale(q2, locale);
+        return (_a2 = renderQuarterContent === null || renderQuarterContent === void 0 ? void 0 : renderQuarterContent(q2, shortQuarter)) !== null && _a2 !== void 0 ? _a2 : shortQuarter;
+      };
+      _this.renderMonths = function() {
+        var _a2;
+        var _b = _this.props, showTwoColumnMonthYearPicker = _b.showTwoColumnMonthYearPicker, showFourColumnMonthYearPicker = _b.showFourColumnMonthYearPicker, day = _b.day, selected = _b.selected;
+        var monthColumns = (_a2 = MONTH_COLUMNS[getMonthColumnsLayout(showFourColumnMonthYearPicker, showTwoColumnMonthYearPicker)]) === null || _a2 === void 0 ? void 0 : _a2.grid;
+        return monthColumns === null || monthColumns === void 0 ? void 0 : monthColumns.map(function(month, i) {
+          return import_react42.default.createElement("div", { className: "react-datepicker__month-wrapper", key: i }, month.map(function(m, j) {
+            return import_react42.default.createElement("div", { ref: _this.MONTH_REFS[m], key: j, onClick: function(event) {
+              _this.onMonthClick(event, m);
+            }, onKeyDown: function(event) {
+              if (isSpaceKeyDown(event)) {
+                event.preventDefault();
+                event.key = KeyType.Enter;
+              }
+              _this.onMonthKeyDown(event, m);
+            }, onMouseEnter: !_this.props.usePointerEvent ? function() {
+              return _this.onMonthMouseEnter(m);
+            } : void 0, onPointerEnter: _this.props.usePointerEvent ? function() {
+              return _this.onMonthMouseEnter(m);
+            } : void 0, tabIndex: Number(_this.getTabIndex(m)), className: _this.getMonthClassNames(m), "aria-disabled": _this.isMonthDisabled(m), role: "option", "aria-label": _this.getAriaLabel(m), "aria-current": _this.isCurrentMonth(day, m) ? "date" : void 0, "aria-selected": selected ? _this.isSelectedMonth(day, m, selected) : void 0 }, _this.getMonthContent(m));
+          }));
+        });
+      };
+      _this.renderQuarters = function() {
+        var _a2 = _this.props, day = _a2.day, selected = _a2.selected;
+        var quarters = [1, 2, 3, 4];
+        return import_react42.default.createElement("div", { className: "react-datepicker__quarter-wrapper" }, quarters.map(function(q2, j) {
+          return import_react42.default.createElement("div", { key: j, ref: _this.QUARTER_REFS[j], role: "option", onClick: function(event) {
+            _this.onQuarterClick(event, q2);
+          }, onKeyDown: function(event) {
+            _this.onQuarterKeyDown(event, q2);
+          }, onMouseEnter: !_this.props.usePointerEvent ? function() {
+            return _this.onQuarterMouseEnter(q2);
+          } : void 0, onPointerEnter: _this.props.usePointerEvent ? function() {
+            return _this.onQuarterMouseEnter(q2);
+          } : void 0, className: _this.getQuarterClassNames(q2), "aria-selected": selected ? _this.isSelectedQuarter(day, q2, selected) : void 0, tabIndex: Number(_this.getQuarterTabIndex(q2)), "aria-current": _this.isCurrentQuarter(day, q2) ? "date" : void 0 }, _this.getQuarterContent(q2));
+        }));
+      };
+      _this.getClassNames = function() {
+        var _a2 = _this.props, selectingDate = _a2.selectingDate, selectsStart = _a2.selectsStart, selectsEnd = _a2.selectsEnd, showMonthYearPicker = _a2.showMonthYearPicker, showQuarterYearPicker = _a2.showQuarterYearPicker, showWeekPicker = _a2.showWeekPicker;
+        return clsx("react-datepicker__month", {
+          "react-datepicker__month--selecting-range": selectingDate && (selectsStart || selectsEnd)
+        }, { "react-datepicker__monthPicker": showMonthYearPicker }, { "react-datepicker__quarterPicker": showQuarterYearPicker }, { "react-datepicker__weekPicker": showWeekPicker });
+      };
+      return _this;
+    }
+    Month2.prototype.getSelection = function() {
+      var _a2 = this.props, selected = _a2.selected, selectedDates = _a2.selectedDates, selectsMultiple = _a2.selectsMultiple;
+      if (selectsMultiple) {
+        return selectedDates;
+      }
+      if (selected) {
+        return [selected];
+      }
+      return void 0;
+    };
+    Month2.prototype.render = function() {
+      var _a2 = this.props, showMonthYearPicker = _a2.showMonthYearPicker, showQuarterYearPicker = _a2.showQuarterYearPicker, day = _a2.day, _b = _a2.ariaLabelPrefix, ariaLabelPrefix = _b === void 0 ? "Month " : _b;
+      var formattedAriaLabelPrefix = ariaLabelPrefix ? ariaLabelPrefix.trim() + " " : "";
+      var formattedAriaLabel = isValid2(day) ? "".concat(formattedAriaLabelPrefix).concat(formatDate2(day, "MMMM, yyyy", this.props.locale)) : "";
+      var shouldUseListboxRole = showMonthYearPicker || showQuarterYearPicker;
+      if (shouldUseListboxRole) {
+        return import_react42.default.createElement("div", { className: this.getClassNames(), onMouseLeave: !this.props.usePointerEvent ? this.handleMouseLeave : void 0, onPointerLeave: this.props.usePointerEvent ? this.handleMouseLeave : void 0, "aria-label": formattedAriaLabel, role: "listbox" }, showMonthYearPicker ? this.renderMonths() : this.renderQuarters());
+      }
+      return import_react42.default.createElement(
+        "div",
+        { role: "table" },
+        this.props.dayNamesHeader && import_react42.default.createElement("div", { role: "rowgroup" }, this.props.dayNamesHeader),
+        this.props.monthHeader && import_react42.default.createElement("div", { role: "rowgroup" }, this.props.monthHeader),
+        import_react42.default.createElement("div", { className: this.getClassNames(), onMouseLeave: !this.props.usePointerEvent ? this.handleMouseLeave : void 0, onPointerLeave: this.props.usePointerEvent ? this.handleMouseLeave : void 0, "aria-label": formattedAriaLabel, role: "rowgroup" }, this.renderWeeks()),
+        this.props.monthFooter && import_react42.default.createElement("div", { role: "rowgroup" }, this.props.monthFooter)
+      );
+    };
+    return Month2;
+  }(import_react42.Component)
+);
+var MonthDropdownOptions = (
+  /** @class */
+  function(_super) {
+    __extends2(MonthDropdownOptions2, _super);
+    function MonthDropdownOptions2() {
+      var _this = _super !== null && _super.apply(this, arguments) || this;
+      _this.monthOptionButtonsRef = {};
+      _this.isSelectedMonth = function(i) {
+        return _this.props.month === i;
+      };
+      _this.handleOptionKeyDown = function(i, e) {
+        var _a2;
+        switch (e.key) {
+          case "Enter":
+            e.preventDefault();
+            _this.onChange(i);
+            break;
+          case "Escape":
+            e.preventDefault();
+            _this.props.onCancel();
+            break;
+          case "ArrowUp":
+          case "ArrowDown": {
+            e.preventDefault();
+            var newMonth = (i + (e.key === "ArrowUp" ? -1 : 1) + _this.props.monthNames.length) % _this.props.monthNames.length;
+            (_a2 = _this.monthOptionButtonsRef[newMonth]) === null || _a2 === void 0 ? void 0 : _a2.focus();
+            break;
+          }
+        }
+      };
+      _this.renderOptions = function() {
+        _this.monthOptionButtonsRef = {};
+        return _this.props.monthNames.map(function(month, i) {
+          return import_react42.default.createElement(
+            "div",
+            { ref: function(el) {
+              _this.monthOptionButtonsRef[i] = el;
+              if (_this.isSelectedMonth(i)) {
+                el === null || el === void 0 ? void 0 : el.focus();
+              }
+            }, role: "button", tabIndex: 0, className: _this.isSelectedMonth(i) ? "react-datepicker__month-option react-datepicker__month-option--selected_month" : "react-datepicker__month-option", key: month, onClick: _this.onChange.bind(_this, i), onKeyDown: _this.handleOptionKeyDown.bind(_this, i), "aria-selected": _this.isSelectedMonth(i) ? "true" : void 0 },
+            _this.isSelectedMonth(i) ? import_react42.default.createElement("span", { className: "react-datepicker__month-option--selected" }, "\u2713") : "",
+            month
+          );
+        });
+      };
+      _this.onChange = function(month) {
+        return _this.props.onChange(month);
+      };
+      _this.handleClickOutside = function() {
+        return _this.props.onCancel();
+      };
+      return _this;
+    }
+    MonthDropdownOptions2.prototype.render = function() {
+      return import_react42.default.createElement(ClickOutsideWrapper, { className: "react-datepicker__month-dropdown", onClickOutside: this.handleClickOutside }, this.renderOptions());
+    };
+    return MonthDropdownOptions2;
+  }(import_react42.Component)
+);
+var MonthDropdown = (
+  /** @class */
+  function(_super) {
+    __extends2(MonthDropdown2, _super);
+    function MonthDropdown2() {
+      var _this = _super !== null && _super.apply(this, arguments) || this;
+      _this.state = {
+        dropdownVisible: false
+      };
+      _this.renderSelectOptions = function(monthNames) {
+        return monthNames.map(function(m, i) {
+          return import_react42.default.createElement("option", { key: m, value: i }, m);
+        });
+      };
+      _this.renderSelectMode = function(monthNames) {
+        return import_react42.default.createElement("select", { value: _this.props.month, className: "react-datepicker__month-select", onChange: function(e) {
+          return _this.onChange(parseInt(e.target.value));
+        } }, _this.renderSelectOptions(monthNames));
+      };
+      _this.renderReadView = function(visible, monthNames) {
+        return import_react42.default.createElement(
+          "button",
+          { key: "read", type: "button", style: { visibility: visible ? "visible" : "hidden" }, className: "react-datepicker__month-read-view", onClick: _this.toggleDropdown },
+          import_react42.default.createElement("span", { className: "react-datepicker__month-read-view--down-arrow" }),
+          import_react42.default.createElement("span", { className: "react-datepicker__month-read-view--selected-month" }, monthNames[_this.props.month])
+        );
+      };
+      _this.renderDropdown = function(monthNames) {
+        return import_react42.default.createElement(MonthDropdownOptions, _assign({ key: "dropdown" }, _this.props, { monthNames, onChange: _this.onChange, onCancel: _this.toggleDropdown }));
+      };
+      _this.renderScrollMode = function(monthNames) {
+        var dropdownVisible = _this.state.dropdownVisible;
+        var result = [_this.renderReadView(!dropdownVisible, monthNames)];
+        if (dropdownVisible) {
+          result.unshift(_this.renderDropdown(monthNames));
+        }
+        return result;
+      };
+      _this.onChange = function(month) {
+        _this.toggleDropdown();
+        if (month !== _this.props.month) {
+          _this.props.onChange(month);
+        }
+      };
+      _this.toggleDropdown = function() {
+        return _this.setState({
+          dropdownVisible: !_this.state.dropdownVisible
+        });
+      };
+      return _this;
+    }
+    MonthDropdown2.prototype.render = function() {
+      var _this = this;
+      var monthNames = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11].map(this.props.useShortMonthInDropdown ? function(m) {
+        return getMonthShortInLocale(m, _this.props.locale);
+      } : function(m) {
+        return getMonthInLocale(m, _this.props.locale);
+      });
+      var renderedDropdown;
+      switch (this.props.dropdownMode) {
+        case "scroll":
+          renderedDropdown = this.renderScrollMode(monthNames);
+          break;
+        case "select":
+          renderedDropdown = this.renderSelectMode(monthNames);
+          break;
+      }
+      return import_react42.default.createElement("div", { className: "react-datepicker__month-dropdown-container react-datepicker__month-dropdown-container--".concat(this.props.dropdownMode) }, renderedDropdown);
+    };
+    return MonthDropdown2;
+  }(import_react42.Component)
+);
+var DEFAULT_YEAR_RANGE$1 = 5;
+function generateMonthYears(minDate, maxDate, currentDate) {
+  var list = [];
+  var effectiveMinDate = minDate !== null && minDate !== void 0 ? minDate : subYears(currentDate, DEFAULT_YEAR_RANGE$1);
+  var effectiveMaxDate = maxDate !== null && maxDate !== void 0 ? maxDate : addYears(currentDate, DEFAULT_YEAR_RANGE$1);
+  var currDate = getStartOfMonth(effectiveMinDate);
+  var lastDate = getStartOfMonth(effectiveMaxDate);
+  while (!isAfter(currDate, lastDate)) {
+    list.push(newDate(currDate));
+    currDate = addMonths(currDate, 1);
+  }
+  return list;
+}
+var MonthYearDropdownOptions = (
+  /** @class */
+  function(_super) {
+    __extends2(MonthYearDropdownOptions2, _super);
+    function MonthYearDropdownOptions2(props) {
+      var _this = _super.call(this, props) || this;
+      _this.renderOptions = function() {
+        return _this.state.monthYearsList.map(function(monthYear) {
+          var monthYearPoint = getTime(monthYear);
+          var isSameMonthYear = isSameYear2(_this.props.date, monthYear) && isSameMonth2(_this.props.date, monthYear);
+          return import_react42.default.createElement(
+            "div",
+            { className: isSameMonthYear ? "react-datepicker__month-year-option--selected_month-year" : "react-datepicker__month-year-option", key: monthYearPoint, onClick: _this.onChange.bind(_this, monthYearPoint), "aria-selected": isSameMonthYear ? "true" : void 0 },
+            isSameMonthYear ? import_react42.default.createElement("span", { className: "react-datepicker__month-year-option--selected" }, "\u2713") : "",
+            formatDate2(monthYear, _this.props.dateFormat, _this.props.locale)
+          );
+        });
+      };
+      _this.onChange = function(monthYear) {
+        return _this.props.onChange(monthYear);
+      };
+      _this.handleClickOutside = function() {
+        _this.props.onCancel();
+      };
+      _this.state = {
+        monthYearsList: generateMonthYears(_this.props.minDate, _this.props.maxDate, _this.props.date)
+      };
+      return _this;
+    }
+    MonthYearDropdownOptions2.prototype.render = function() {
+      var dropdownClass = clsx({
+        "react-datepicker__month-year-dropdown": true,
+        "react-datepicker__month-year-dropdown--scrollable": this.props.scrollableMonthYearDropdown
+      });
+      return import_react42.default.createElement(ClickOutsideWrapper, { className: dropdownClass, onClickOutside: this.handleClickOutside }, this.renderOptions());
+    };
+    return MonthYearDropdownOptions2;
+  }(import_react42.Component)
+);
+var DEFAULT_YEAR_RANGE = 5;
+var MonthYearDropdown = (
+  /** @class */
+  function(_super) {
+    __extends2(MonthYearDropdown2, _super);
+    function MonthYearDropdown2() {
+      var _this = _super !== null && _super.apply(this, arguments) || this;
+      _this.state = {
+        dropdownVisible: false
+      };
+      _this.renderSelectOptions = function() {
+        var _a2, _b;
+        var minDate = (_a2 = _this.props.minDate) !== null && _a2 !== void 0 ? _a2 : subYears(_this.props.date, DEFAULT_YEAR_RANGE);
+        var maxDate = (_b = _this.props.maxDate) !== null && _b !== void 0 ? _b : addYears(_this.props.date, DEFAULT_YEAR_RANGE);
+        var currDate = getStartOfMonth(minDate);
+        var lastDate = getStartOfMonth(maxDate);
+        var options = [];
+        while (!isAfter(currDate, lastDate)) {
+          var timePoint = getTime(currDate);
+          options.push(import_react42.default.createElement("option", { key: timePoint, value: timePoint }, formatDate2(currDate, _this.props.dateFormat, _this.props.locale)));
+          currDate = addMonths(currDate, 1);
+        }
+        return options;
+      };
+      _this.onSelectChange = function(event) {
+        _this.onChange(parseInt(event.target.value));
+      };
+      _this.renderSelectMode = function() {
+        return import_react42.default.createElement("select", { value: getTime(getStartOfMonth(_this.props.date)), className: "react-datepicker__month-year-select", onChange: _this.onSelectChange }, _this.renderSelectOptions());
+      };
+      _this.renderReadView = function(visible) {
+        var yearMonth = formatDate2(_this.props.date, _this.props.dateFormat, _this.props.locale);
+        return import_react42.default.createElement(
+          "div",
+          { key: "read", style: { visibility: visible ? "visible" : "hidden" }, className: "react-datepicker__month-year-read-view", onClick: _this.toggleDropdown },
+          import_react42.default.createElement("span", { className: "react-datepicker__month-year-read-view--down-arrow" }),
+          import_react42.default.createElement("span", { className: "react-datepicker__month-year-read-view--selected-month-year" }, yearMonth)
+        );
+      };
+      _this.renderDropdown = function() {
+        return import_react42.default.createElement(MonthYearDropdownOptions, _assign({ key: "dropdown" }, _this.props, { onChange: _this.onChange, onCancel: _this.toggleDropdown }));
+      };
+      _this.renderScrollMode = function() {
+        var dropdownVisible = _this.state.dropdownVisible;
+        var result = [_this.renderReadView(!dropdownVisible)];
+        if (dropdownVisible) {
+          result.unshift(_this.renderDropdown());
+        }
+        return result;
+      };
+      _this.onChange = function(monthYearPoint) {
+        _this.toggleDropdown();
+        var changedDate = newDate(monthYearPoint);
+        if (isSameYear2(_this.props.date, changedDate) && isSameMonth2(_this.props.date, changedDate)) {
+          return;
+        }
+        _this.props.onChange(changedDate);
+      };
+      _this.toggleDropdown = function() {
+        return _this.setState({
+          dropdownVisible: !_this.state.dropdownVisible
+        });
+      };
+      return _this;
+    }
+    MonthYearDropdown2.prototype.render = function() {
+      var renderedDropdown;
+      switch (this.props.dropdownMode) {
+        case "scroll":
+          renderedDropdown = this.renderScrollMode();
+          break;
+        case "select":
+          renderedDropdown = this.renderSelectMode();
+          break;
+      }
+      return import_react42.default.createElement("div", { className: "react-datepicker__month-year-dropdown-container react-datepicker__month-year-dropdown-container--".concat(this.props.dropdownMode) }, renderedDropdown);
+    };
+    return MonthYearDropdown2;
+  }(import_react42.Component)
+);
+var Time = (
+  /** @class */
+  function(_super) {
+    __extends2(Time2, _super);
+    function Time2() {
+      var _this = _super !== null && _super.apply(this, arguments) || this;
+      _this.state = {
+        height: null
+      };
+      _this.scrollToTheSelectedTime = function() {
+        requestAnimationFrame(function() {
+          var _a2, _b, _c;
+          if (!_this.list)
+            return;
+          _this.list.scrollTop = (_c = _this.centerLi && Time2.calcCenterPosition(_this.props.monthRef ? _this.props.monthRef.clientHeight - ((_b = (_a2 = _this.header) === null || _a2 === void 0 ? void 0 : _a2.clientHeight) !== null && _b !== void 0 ? _b : 0) : _this.list.clientHeight, _this.centerLi)) !== null && _c !== void 0 ? _c : 0;
+        });
+      };
+      _this.handleClick = function(time) {
+        var _a2, _b;
+        if ((_this.props.minTime || _this.props.maxTime) && isTimeInDisabledRange(time, _this.props) || (_this.props.excludeTimes || _this.props.includeTimes || _this.props.filterTime) && isTimeDisabled(time, _this.props)) {
+          return;
+        }
+        (_b = (_a2 = _this.props).onChange) === null || _b === void 0 ? void 0 : _b.call(_a2, time);
+      };
+      _this.isSelectedTime = function(time) {
+        var selected = safeToDate(_this.props.selected);
+        return selected && isSameMinute(selected, time);
+      };
+      _this.isDisabledTime = function(time) {
+        return (_this.props.minTime || _this.props.maxTime) && isTimeInDisabledRange(time, _this.props) || (_this.props.excludeTimes || _this.props.includeTimes || _this.props.filterTime) && isTimeDisabled(time, _this.props);
+      };
+      _this.liClasses = function(time) {
+        var _a2;
+        var classes = [
+          "react-datepicker__time-list-item",
+          _this.props.timeClassName ? _this.props.timeClassName(time) : void 0
+        ];
+        if (_this.isSelectedTime(time)) {
+          classes.push("react-datepicker__time-list-item--selected");
+        }
+        if (_this.isDisabledTime(time)) {
+          classes.push("react-datepicker__time-list-item--disabled");
+        }
+        if (_this.props.injectTimes && (getHours(time) * 3600 + getMinutes(time) * 60 + getSeconds(time)) % (((_a2 = _this.props.intervals) !== null && _a2 !== void 0 ? _a2 : Time2.defaultProps.intervals) * 60) !== 0) {
+          classes.push("react-datepicker__time-list-item--injected");
+        }
+        return classes.join(" ");
+      };
+      _this.handleOnKeyDown = function(event, time) {
+        var _a2, _b;
+        if (event.key === KeyType.Space) {
+          event.preventDefault();
+          event.key = KeyType.Enter;
+        }
+        if ((event.key === KeyType.ArrowUp || event.key === KeyType.ArrowLeft) && event.target instanceof HTMLElement && event.target.previousSibling) {
+          event.preventDefault();
+          event.target.previousSibling instanceof HTMLElement && event.target.previousSibling.focus();
+        }
+        if ((event.key === KeyType.ArrowDown || event.key === KeyType.ArrowRight) && event.target instanceof HTMLElement && event.target.nextSibling) {
+          event.preventDefault();
+          event.target.nextSibling instanceof HTMLElement && event.target.nextSibling.focus();
+        }
+        if (event.key === KeyType.Enter) {
+          _this.handleClick(time);
+        }
+        (_b = (_a2 = _this.props).handleOnKeyDown) === null || _b === void 0 ? void 0 : _b.call(_a2, event);
+      };
+      _this.renderTimes = function() {
+        var _a2;
+        var times = [];
+        var format2 = typeof _this.props.format === "string" ? _this.props.format : "p";
+        var intervals = (_a2 = _this.props.intervals) !== null && _a2 !== void 0 ? _a2 : Time2.defaultProps.intervals;
+        var activeDate = safeToDate(_this.props.selected) || safeToDate(_this.props.openToDate) || newDate();
+        var base = getStartOfDay(activeDate);
+        var sortedInjectTimes = _this.props.injectTimes && _this.props.injectTimes.sort(function(a, b) {
+          return a.getTime() - b.getTime();
+        });
+        var minutesInDay = 60 * getHoursInDay(activeDate);
+        var multiplier = minutesInDay / intervals;
+        for (var i = 0; i < multiplier; i++) {
+          var currentTime = addMinutes(base, i * intervals);
+          times.push(currentTime);
+          if (sortedInjectTimes) {
+            var timesToInject = timesToInjectAfter(base, currentTime, i, intervals, sortedInjectTimes);
+            times = times.concat(timesToInject);
+          }
+        }
+        var timeToFocus = times.reduce(function(prev, time) {
+          if (time.getTime() <= activeDate.getTime()) {
+            return time;
+          }
+          return prev;
+        }, times[0]);
+        return times.map(function(time) {
+          return import_react42.default.createElement("li", { key: time.valueOf(), onClick: _this.handleClick.bind(_this, time), className: _this.liClasses(time), ref: function(li) {
+            if (time === timeToFocus) {
+              _this.centerLi = li;
+            }
+          }, onKeyDown: function(event) {
+            _this.handleOnKeyDown(event, time);
+          }, tabIndex: time === timeToFocus ? 0 : -1, role: "option", "aria-selected": _this.isSelectedTime(time) ? "true" : void 0, "aria-disabled": _this.isDisabledTime(time) ? "true" : void 0 }, formatDate2(time, format2, _this.props.locale));
+        });
+      };
+      _this.renderTimeCaption = function() {
+        if (_this.props.showTimeCaption === false) {
+          return import_react42.default.createElement(import_react42.default.Fragment, null);
+        }
+        return import_react42.default.createElement(
+          "div",
+          { className: "react-datepicker__header react-datepicker__header--time ".concat(_this.props.showTimeSelectOnly ? "react-datepicker__header--time--only" : ""), ref: function(header) {
+            _this.header = header;
+          } },
+          import_react42.default.createElement("div", { className: "react-datepicker-time__header" }, _this.props.timeCaption)
+        );
+      };
+      return _this;
+    }
+    Object.defineProperty(Time2, "defaultProps", {
+      get: function() {
+        return {
+          intervals: 30,
+          todayButton: null,
+          timeCaption: "Time",
+          showTimeCaption: true
+        };
+      },
+      enumerable: false,
+      configurable: true
+    });
+    Time2.prototype.componentDidMount = function() {
+      this.scrollToTheSelectedTime();
+      this.observeDatePickerHeightChanges();
+    };
+    Time2.prototype.componentWillUnmount = function() {
+      var _a2;
+      (_a2 = this.resizeObserver) === null || _a2 === void 0 ? void 0 : _a2.disconnect();
+    };
+    Time2.prototype.observeDatePickerHeightChanges = function() {
+      var _this = this;
+      var monthRef = this.props.monthRef;
+      this.updateContainerHeight();
+      if (monthRef) {
+        this.resizeObserver = new ResizeObserver(function() {
+          _this.updateContainerHeight();
+        });
+        this.resizeObserver.observe(monthRef);
+      }
+    };
+    Time2.prototype.updateContainerHeight = function() {
+      if (this.props.monthRef && this.header) {
+        var newHeight = this.props.monthRef.clientHeight - this.header.clientHeight;
+        if (this.state.height !== newHeight) {
+          this.setState({
+            height: newHeight
+          });
+        }
+      }
+    };
+    Time2.prototype.render = function() {
+      var _this = this;
+      var _a2;
+      var height = this.state.height;
+      return import_react42.default.createElement(
+        "div",
+        { className: "react-datepicker__time-container ".concat(((_a2 = this.props.todayButton) !== null && _a2 !== void 0 ? _a2 : Time2.defaultProps.todayButton) ? "react-datepicker__time-container--with-today-button" : "") },
+        this.renderTimeCaption(),
+        import_react42.default.createElement(
+          "div",
+          { className: "react-datepicker__time" },
+          import_react42.default.createElement(
+            "div",
+            { className: "react-datepicker__time-box" },
+            import_react42.default.createElement("ul", { className: "react-datepicker__time-list", ref: function(list) {
+              _this.list = list;
+            }, style: height ? { height } : {}, role: "listbox", "aria-label": this.props.timeCaption }, this.renderTimes())
+          )
+        )
+      );
+    };
+    Time2.calcCenterPosition = function(listHeight, centerLiRef) {
+      return centerLiRef.offsetTop - (listHeight / 2 - centerLiRef.clientHeight / 2);
+    };
+    return Time2;
+  }(import_react42.Component)
+);
+var VERTICAL_NAVIGATION_OFFSET = 3;
+var Year = (
+  /** @class */
+  function(_super) {
+    __extends2(Year2, _super);
+    function Year2(props) {
+      var _this = _super.call(this, props) || this;
+      _this.YEAR_REFS = __spreadArray2([], Array(_this.props.yearItemNumber), true).map(function() {
+        return (0, import_react42.createRef)();
+      });
+      _this.isDisabled = function(date) {
+        return isDayDisabled(date, {
+          minDate: _this.props.minDate,
+          maxDate: _this.props.maxDate,
+          excludeDates: _this.props.excludeDates,
+          includeDates: _this.props.includeDates,
+          filterDate: _this.props.filterDate
+        });
+      };
+      _this.isExcluded = function(date) {
+        return isDayExcluded(date, {
+          excludeDates: _this.props.excludeDates
+        });
+      };
+      _this.selectingDate = function() {
+        var _a2;
+        return (_a2 = _this.props.selectingDate) !== null && _a2 !== void 0 ? _a2 : _this.props.preSelection;
+      };
+      _this.updateFocusOnPaginate = function(refIndex) {
+        var waitForReRender = function() {
+          var _a2, _b;
+          (_b = (_a2 = _this.YEAR_REFS[refIndex]) === null || _a2 === void 0 ? void 0 : _a2.current) === null || _b === void 0 ? void 0 : _b.focus();
+        };
+        window.requestAnimationFrame(waitForReRender);
+      };
+      _this.handleYearClick = function(day, event) {
+        if (_this.props.onDayClick) {
+          _this.props.onDayClick(day, event);
+        }
+      };
+      _this.handleYearNavigation = function(newYear, newDate2) {
+        var _a2, _b, _c, _d;
+        var _e = _this.props, date = _e.date, yearItemNumber = _e.yearItemNumber;
+        if (date === void 0 || yearItemNumber === void 0) {
+          return;
+        }
+        var startPeriod = getYearsPeriod(date, yearItemNumber).startPeriod;
+        if (_this.isDisabled(newDate2) || _this.isExcluded(newDate2)) {
+          return;
+        }
+        (_b = (_a2 = _this.props).setPreSelection) === null || _b === void 0 ? void 0 : _b.call(_a2, newDate2);
+        if (newYear - startPeriod < 0) {
+          _this.updateFocusOnPaginate(yearItemNumber - (startPeriod - newYear));
+        } else if (newYear - startPeriod >= yearItemNumber) {
+          _this.updateFocusOnPaginate(Math.abs(yearItemNumber - (newYear - startPeriod)));
+        } else
+          (_d = (_c = _this.YEAR_REFS[newYear - startPeriod]) === null || _c === void 0 ? void 0 : _c.current) === null || _d === void 0 ? void 0 : _d.focus();
+      };
+      _this.isSameDay = function(y, other) {
+        return isSameDay2(y, other);
+      };
+      _this.isCurrentYear = function(y) {
+        return y === getYear(newDate());
+      };
+      _this.isRangeStart = function(y) {
+        return _this.props.startDate && _this.props.endDate && isSameYear2(setYear(newDate(), y), _this.props.startDate);
+      };
+      _this.isRangeEnd = function(y) {
+        return _this.props.startDate && _this.props.endDate && isSameYear2(setYear(newDate(), y), _this.props.endDate);
+      };
+      _this.isInRange = function(y) {
+        return isYearInRange(y, _this.props.startDate, _this.props.endDate);
+      };
+      _this.isInSelectingRange = function(y) {
+        var _a2 = _this.props, selectsStart = _a2.selectsStart, selectsEnd = _a2.selectsEnd, selectsRange = _a2.selectsRange, startDate = _a2.startDate, endDate = _a2.endDate;
+        if (!(selectsStart || selectsEnd || selectsRange) || !_this.selectingDate()) {
+          return false;
+        }
+        if (selectsStart && endDate) {
+          return isYearInRange(y, _this.selectingDate(), endDate);
+        }
+        if (selectsEnd && startDate) {
+          return isYearInRange(y, startDate, _this.selectingDate());
+        }
+        if (selectsRange && startDate && !endDate) {
+          return isYearInRange(y, startDate, _this.selectingDate());
+        }
+        return false;
+      };
+      _this.isSelectingRangeStart = function(y) {
+        var _a2;
+        if (!_this.isInSelectingRange(y)) {
+          return false;
+        }
+        var _b = _this.props, startDate = _b.startDate, selectsStart = _b.selectsStart;
+        var _year = setYear(newDate(), y);
+        if (selectsStart) {
+          return isSameYear2(_year, (_a2 = _this.selectingDate()) !== null && _a2 !== void 0 ? _a2 : null);
+        }
+        return isSameYear2(_year, startDate !== null && startDate !== void 0 ? startDate : null);
+      };
+      _this.isSelectingRangeEnd = function(y) {
+        var _a2;
+        if (!_this.isInSelectingRange(y)) {
+          return false;
+        }
+        var _b = _this.props, endDate = _b.endDate, selectsEnd = _b.selectsEnd, selectsRange = _b.selectsRange;
+        var _year = setYear(newDate(), y);
+        if (selectsEnd || selectsRange) {
+          return isSameYear2(_year, (_a2 = _this.selectingDate()) !== null && _a2 !== void 0 ? _a2 : null);
+        }
+        return isSameYear2(_year, endDate !== null && endDate !== void 0 ? endDate : null);
+      };
+      _this.isKeyboardSelected = function(y) {
+        if (_this.props.disabledKeyboardNavigation || _this.props.date === void 0 || _this.props.preSelection == null) {
+          return;
+        }
+        var _a2 = _this.props, minDate = _a2.minDate, maxDate = _a2.maxDate, excludeDates = _a2.excludeDates, includeDates = _a2.includeDates, filterDate = _a2.filterDate, selected = _a2.selected;
+        var date = getStartOfYear(setYear(_this.props.date, y));
+        var isDisabled = (minDate || maxDate || excludeDates || includeDates || filterDate) && isYearDisabled(y, _this.props);
+        var isSelectedDay = !!selected && isSameDay2(date, getStartOfYear(selected));
+        var isKeyboardSelectedDay = isSameDay2(date, getStartOfYear(_this.props.preSelection));
+        return !_this.props.inline && !isSelectedDay && isKeyboardSelectedDay && !isDisabled;
+      };
+      _this.isSelectedYear = function(year) {
+        var _a2 = _this.props, selectsMultiple = _a2.selectsMultiple, selected = _a2.selected, selectedDates = _a2.selectedDates;
+        if (selectsMultiple) {
+          return selectedDates === null || selectedDates === void 0 ? void 0 : selectedDates.some(function(date) {
+            return year === getYear(date);
+          });
+        }
+        return !!selected && year === getYear(selected);
+      };
+      _this.onYearClick = function(event, y) {
+        var date = _this.props.date;
+        if (date === void 0) {
+          return;
+        }
+        _this.handleYearClick(getStartOfYear(setYear(date, y)), event);
+      };
+      _this.onYearKeyDown = function(event, y) {
+        var _a2, _b;
+        var key = event.key;
+        var _c = _this.props, date = _c.date, yearItemNumber = _c.yearItemNumber, handleOnKeyDown = _c.handleOnKeyDown;
+        if (key !== KeyType.Tab) {
+          event.preventDefault();
+        }
+        if (!_this.props.disabledKeyboardNavigation) {
+          switch (key) {
+            case KeyType.Enter:
+              if (_this.props.selected == null) {
+                break;
+              }
+              _this.onYearClick(event, y);
+              (_b = (_a2 = _this.props).setPreSelection) === null || _b === void 0 ? void 0 : _b.call(_a2, _this.props.selected);
+              break;
+            case KeyType.ArrowRight:
+              if (_this.props.preSelection == null) {
+                break;
+              }
+              _this.handleYearNavigation(y + 1, addYears(_this.props.preSelection, 1));
+              break;
+            case KeyType.ArrowLeft:
+              if (_this.props.preSelection == null) {
+                break;
+              }
+              _this.handleYearNavigation(y - 1, subYears(_this.props.preSelection, 1));
+              break;
+            case KeyType.ArrowUp: {
+              if (date === void 0 || yearItemNumber === void 0 || _this.props.preSelection == null) {
+                break;
+              }
+              var startPeriod = getYearsPeriod(date, yearItemNumber).startPeriod;
+              var offset4 = VERTICAL_NAVIGATION_OFFSET;
+              var newYear = y - offset4;
+              if (newYear < startPeriod) {
+                var leftOverOffset = yearItemNumber % offset4;
+                if (y >= startPeriod && y < startPeriod + leftOverOffset) {
+                  offset4 = leftOverOffset;
+                } else {
+                  offset4 += leftOverOffset;
+                }
+                newYear = y - offset4;
+              }
+              _this.handleYearNavigation(newYear, subYears(_this.props.preSelection, offset4));
+              break;
+            }
+            case KeyType.ArrowDown: {
+              if (date === void 0 || yearItemNumber === void 0 || _this.props.preSelection == null) {
+                break;
+              }
+              var endPeriod = getYearsPeriod(date, yearItemNumber).endPeriod;
+              var offset4 = VERTICAL_NAVIGATION_OFFSET;
+              var newYear = y + offset4;
+              if (newYear > endPeriod) {
+                var leftOverOffset = yearItemNumber % offset4;
+                if (y <= endPeriod && y > endPeriod - leftOverOffset) {
+                  offset4 = leftOverOffset;
+                } else {
+                  offset4 += leftOverOffset;
+                }
+                newYear = y + offset4;
+              }
+              _this.handleYearNavigation(newYear, addYears(_this.props.preSelection, offset4));
+              break;
+            }
+          }
+        }
+        handleOnKeyDown && handleOnKeyDown(event);
+      };
+      _this.getYearClassNames = function(y) {
+        var _a2 = _this.props, date = _a2.date, disabled = _a2.disabled, minDate = _a2.minDate, maxDate = _a2.maxDate, excludeDates = _a2.excludeDates, includeDates = _a2.includeDates, filterDate = _a2.filterDate, yearClassName = _a2.yearClassName;
+        return clsx("react-datepicker__year-text", "react-datepicker__year-".concat(y), date ? yearClassName === null || yearClassName === void 0 ? void 0 : yearClassName(setYear(date, y)) : void 0, {
+          "react-datepicker__year-text--selected": _this.isSelectedYear(y),
+          "react-datepicker__year-text--disabled": (minDate || maxDate || excludeDates || includeDates || filterDate || disabled) && isYearDisabled(y, _this.props),
+          "react-datepicker__year-text--keyboard-selected": _this.isKeyboardSelected(y),
+          "react-datepicker__year-text--range-start": _this.isRangeStart(y),
+          "react-datepicker__year-text--range-end": _this.isRangeEnd(y),
+          "react-datepicker__year-text--in-range": _this.isInRange(y),
+          "react-datepicker__year-text--in-selecting-range": _this.isInSelectingRange(y),
+          "react-datepicker__year-text--selecting-range-start": _this.isSelectingRangeStart(y),
+          "react-datepicker__year-text--selecting-range-end": _this.isSelectingRangeEnd(y),
+          "react-datepicker__year-text--today": _this.isCurrentYear(y)
+        });
+      };
+      _this.getYearTabIndex = function(y) {
+        if (_this.props.disabledKeyboardNavigation || _this.props.preSelection == null) {
+          return "-1";
+        }
+        var preSelected = getYear(_this.props.preSelection);
+        var isPreSelectedYearDisabled = isYearDisabled(y, _this.props);
+        return y === preSelected && !isPreSelectedYearDisabled ? "0" : "-1";
+      };
+      _this.getYearContent = function(y) {
+        return _this.props.renderYearContent ? _this.props.renderYearContent(y) : y;
+      };
+      return _this;
+    }
+    Year2.prototype.render = function() {
+      var _this = this;
+      var yearsList = [];
+      var _a2 = this.props, date = _a2.date, yearItemNumber = _a2.yearItemNumber, onYearMouseEnter = _a2.onYearMouseEnter, onYearMouseLeave = _a2.onYearMouseLeave;
+      if (date === void 0) {
+        return null;
+      }
+      var _b = getYearsPeriod(date, yearItemNumber), startPeriod = _b.startPeriod, endPeriod = _b.endPeriod;
+      var _loop_1 = function(y2) {
+        yearsList.push(import_react42.default.createElement("div", { ref: this_1.YEAR_REFS[y2 - startPeriod], onClick: function(event) {
+          _this.onYearClick(event, y2);
+        }, onKeyDown: function(event) {
+          if (isSpaceKeyDown(event)) {
+            event.preventDefault();
+            event.key = KeyType.Enter;
+          }
+          _this.onYearKeyDown(event, y2);
+        }, tabIndex: Number(this_1.getYearTabIndex(y2)), className: this_1.getYearClassNames(y2), onMouseEnter: !this_1.props.usePointerEvent ? function(event) {
+          return onYearMouseEnter(event, y2);
+        } : void 0, onPointerEnter: this_1.props.usePointerEvent ? function(event) {
+          return onYearMouseEnter(event, y2);
+        } : void 0, onMouseLeave: !this_1.props.usePointerEvent ? function(event) {
+          return onYearMouseLeave(event, y2);
+        } : void 0, onPointerLeave: this_1.props.usePointerEvent ? function(event) {
+          return onYearMouseLeave(event, y2);
+        } : void 0, key: y2, "aria-current": this_1.isCurrentYear(y2) ? "date" : void 0 }, this_1.getYearContent(y2)));
+      };
+      var this_1 = this;
+      for (var y = startPeriod; y <= endPeriod; y++) {
+        _loop_1(y);
+      }
+      return import_react42.default.createElement(
+        "div",
+        { className: "react-datepicker__year" },
+        import_react42.default.createElement("div", { className: "react-datepicker__year-wrapper", onMouseLeave: !this.props.usePointerEvent ? this.props.clearSelectingDate : void 0, onPointerLeave: this.props.usePointerEvent ? this.props.clearSelectingDate : void 0 }, yearsList)
+      );
+    };
+    return Year2;
+  }(import_react42.Component)
+);
+function generateYears(year, noOfYear, minDate, maxDate) {
+  var list = [];
+  for (var i = 0; i < 2 * noOfYear + 1; i++) {
+    var newYear = year + noOfYear - i;
+    var isInRange = true;
+    if (minDate) {
+      isInRange = getYear(minDate) <= newYear;
+    }
+    if (maxDate && isInRange) {
+      isInRange = getYear(maxDate) >= newYear;
+    }
+    if (isInRange) {
+      list.push(newYear);
+    }
+  }
+  return list;
+}
+var YearDropdownOptions = (
+  /** @class */
+  function(_super) {
+    __extends2(YearDropdownOptions2, _super);
+    function YearDropdownOptions2(props) {
+      var _this = _super.call(this, props) || this;
+      _this.yearOptionButtonsRef = {};
+      _this.handleOptionKeyDown = function(year, e) {
+        var _a2;
+        switch (e.key) {
+          case "Enter":
+            e.preventDefault();
+            _this.onChange(year);
+            break;
+          case "Escape":
+            e.preventDefault();
+            _this.props.onCancel();
+            break;
+          case "ArrowUp":
+          case "ArrowDown": {
+            e.preventDefault();
+            var newYear = year + (e.key === "ArrowUp" ? 1 : -1);
+            if (_this.yearOptionButtonsRef[newYear]) {
+              (_a2 = _this.yearOptionButtonsRef[newYear]) === null || _a2 === void 0 ? void 0 : _a2.focus();
+            }
+            break;
+          }
+        }
+      };
+      _this.renderOptions = function() {
+        _this.yearOptionButtonsRef = {};
+        var selectedYear = _this.props.year;
+        var options = _this.state.yearsList.map(function(year) {
+          return import_react42.default.createElement(
+            "div",
+            { ref: function(el) {
+              _this.yearOptionButtonsRef[year] = el;
+              if (year === selectedYear) {
+                el === null || el === void 0 ? void 0 : el.focus();
+              }
+            }, role: "button", tabIndex: 0, className: selectedYear === year ? "react-datepicker__year-option react-datepicker__year-option--selected_year" : "react-datepicker__year-option", key: year, onClick: _this.onChange.bind(_this, year), onKeyDown: _this.handleOptionKeyDown.bind(_this, year), "aria-selected": selectedYear === year ? "true" : void 0 },
+            selectedYear === year ? import_react42.default.createElement("span", { className: "react-datepicker__year-option--selected" }, "\u2713") : "",
+            year
+          );
+        });
+        var minYear = _this.props.minDate ? getYear(_this.props.minDate) : null;
+        var maxYear = _this.props.maxDate ? getYear(_this.props.maxDate) : null;
+        if (!maxYear || !_this.state.yearsList.find(function(year) {
+          return year === maxYear;
+        })) {
+          options.unshift(import_react42.default.createElement(
+            "div",
+            { className: "react-datepicker__year-option", key: "upcoming", onClick: _this.incrementYears },
+            import_react42.default.createElement("a", { className: "react-datepicker__navigation react-datepicker__navigation--years react-datepicker__navigation--years-upcoming" })
+          ));
+        }
+        if (!minYear || !_this.state.yearsList.find(function(year) {
+          return year === minYear;
+        })) {
+          options.push(import_react42.default.createElement(
+            "div",
+            { className: "react-datepicker__year-option", key: "previous", onClick: _this.decrementYears },
+            import_react42.default.createElement("a", { className: "react-datepicker__navigation react-datepicker__navigation--years react-datepicker__navigation--years-previous" })
+          ));
+        }
+        return options;
+      };
+      _this.onChange = function(year) {
+        _this.props.onChange(year);
+      };
+      _this.handleClickOutside = function() {
+        _this.props.onCancel();
+      };
+      _this.shiftYears = function(amount) {
+        var years = _this.state.yearsList.map(function(year) {
+          return year + amount;
+        });
+        _this.setState({
+          yearsList: years
+        });
+      };
+      _this.incrementYears = function() {
+        return _this.shiftYears(1);
+      };
+      _this.decrementYears = function() {
+        return _this.shiftYears(-1);
+      };
+      var yearDropdownItemNumber = props.yearDropdownItemNumber, scrollableYearDropdown = props.scrollableYearDropdown;
+      var noOfYear = yearDropdownItemNumber || (scrollableYearDropdown ? 10 : 5);
+      _this.state = {
+        yearsList: generateYears(_this.props.year, noOfYear, _this.props.minDate, _this.props.maxDate)
+      };
+      _this.dropdownRef = (0, import_react42.createRef)();
+      return _this;
+    }
+    YearDropdownOptions2.prototype.componentDidMount = function() {
+      var dropdownCurrent = this.dropdownRef.current;
+      if (dropdownCurrent) {
+        var dropdownCurrentChildren = dropdownCurrent.children ? Array.from(dropdownCurrent.children) : null;
+        var selectedYearOptionEl = dropdownCurrentChildren ? dropdownCurrentChildren.find(function(childEl) {
+          return childEl.ariaSelected;
+        }) : null;
+        dropdownCurrent.scrollTop = selectedYearOptionEl && selectedYearOptionEl instanceof HTMLElement ? selectedYearOptionEl.offsetTop + (selectedYearOptionEl.clientHeight - dropdownCurrent.clientHeight) / 2 : (dropdownCurrent.scrollHeight - dropdownCurrent.clientHeight) / 2;
+      }
+    };
+    YearDropdownOptions2.prototype.render = function() {
+      var dropdownClass = clsx({
+        "react-datepicker__year-dropdown": true,
+        "react-datepicker__year-dropdown--scrollable": this.props.scrollableYearDropdown
+      });
+      return import_react42.default.createElement(ClickOutsideWrapper, { className: dropdownClass, containerRef: this.dropdownRef, onClickOutside: this.handleClickOutside }, this.renderOptions());
+    };
+    return YearDropdownOptions2;
+  }(import_react42.Component)
+);
+var YearDropdown = (
+  /** @class */
+  function(_super) {
+    __extends2(YearDropdown2, _super);
+    function YearDropdown2() {
+      var _this = _super !== null && _super.apply(this, arguments) || this;
+      _this.state = {
+        dropdownVisible: false
+      };
+      _this.renderSelectOptions = function() {
+        var minYear = _this.props.minDate ? getYear(_this.props.minDate) : 1900;
+        var maxYear = _this.props.maxDate ? getYear(_this.props.maxDate) : 2100;
+        var options = [];
+        for (var i = minYear; i <= maxYear; i++) {
+          options.push(import_react42.default.createElement("option", { key: i, value: i }, i));
+        }
+        return options;
+      };
+      _this.onSelectChange = function(event) {
+        _this.onChange(parseInt(event.target.value));
+      };
+      _this.renderSelectMode = function() {
+        return import_react42.default.createElement("select", { value: _this.props.year, className: "react-datepicker__year-select", onChange: _this.onSelectChange }, _this.renderSelectOptions());
+      };
+      _this.renderReadView = function(visible) {
+        return import_react42.default.createElement(
+          "button",
+          { key: "read", type: "button", style: { visibility: visible ? "visible" : "hidden" }, className: "react-datepicker__year-read-view", onClick: _this.toggleDropdown },
+          import_react42.default.createElement("span", { className: "react-datepicker__year-read-view--down-arrow" }),
+          import_react42.default.createElement("span", { className: "react-datepicker__year-read-view--selected-year" }, _this.props.year)
+        );
+      };
+      _this.renderDropdown = function() {
+        return import_react42.default.createElement(YearDropdownOptions, _assign({ key: "dropdown" }, _this.props, { onChange: _this.onChange, onCancel: _this.toggleDropdown }));
+      };
+      _this.renderScrollMode = function() {
+        var dropdownVisible = _this.state.dropdownVisible;
+        var result = [_this.renderReadView(!dropdownVisible)];
+        if (dropdownVisible) {
+          result.unshift(_this.renderDropdown());
+        }
+        return result;
+      };
+      _this.onChange = function(year) {
+        _this.toggleDropdown();
+        if (year === _this.props.year)
+          return;
+        _this.props.onChange(year);
+      };
+      _this.toggleDropdown = function(event) {
+        _this.setState({
+          dropdownVisible: !_this.state.dropdownVisible
+        }, function() {
+          if (_this.props.adjustDateOnChange) {
+            _this.handleYearChange(_this.props.date, event);
+          }
+        });
+      };
+      _this.handleYearChange = function(date, event) {
+        var _a2;
+        (_a2 = _this.onSelect) === null || _a2 === void 0 ? void 0 : _a2.call(_this, date, event);
+        _this.setOpen();
+      };
+      _this.onSelect = function(date, event) {
+        var _a2, _b;
+        (_b = (_a2 = _this.props).onSelect) === null || _b === void 0 ? void 0 : _b.call(_a2, date, event);
+      };
+      _this.setOpen = function() {
+        var _a2, _b;
+        (_b = (_a2 = _this.props).setOpen) === null || _b === void 0 ? void 0 : _b.call(_a2, true);
+      };
+      return _this;
+    }
+    YearDropdown2.prototype.render = function() {
+      var renderedDropdown;
+      switch (this.props.dropdownMode) {
+        case "scroll":
+          renderedDropdown = this.renderScrollMode();
+          break;
+        case "select":
+          renderedDropdown = this.renderSelectMode();
+          break;
+      }
+      return import_react42.default.createElement("div", { className: "react-datepicker__year-dropdown-container react-datepicker__year-dropdown-container--".concat(this.props.dropdownMode) }, renderedDropdown);
+    };
+    return YearDropdown2;
+  }(import_react42.Component)
+);
+var DROPDOWN_FOCUS_CLASSNAMES = [
+  "react-datepicker__year-select",
+  "react-datepicker__month-select",
+  "react-datepicker__month-year-select"
+];
+var OUTSIDE_CLICK_IGNORE_CLASS = "react-datepicker-ignore-onclickoutside";
+var isDropdownSelect = function(element) {
+  var classNames = (element.className || "").split(/\s+/);
+  return DROPDOWN_FOCUS_CLASSNAMES.some(function(testClassname) {
+    return classNames.indexOf(testClassname) >= 0;
+  });
+};
+var Calendar = (
+  /** @class */
+  function(_super) {
+    __extends2(Calendar2, _super);
+    function Calendar2(props) {
+      var _this = _super.call(this, props) || this;
+      _this.monthContainer = void 0;
+      _this.handleClickOutside = function(event) {
+        _this.props.onClickOutside(event);
+      };
+      _this.setClickOutsideRef = function() {
+        return _this.containerRef.current;
+      };
+      _this.handleDropdownFocus = function(event) {
+        var _a2, _b;
+        if (isDropdownSelect(event.target)) {
+          (_b = (_a2 = _this.props).onDropdownFocus) === null || _b === void 0 ? void 0 : _b.call(_a2, event);
+        }
+      };
+      _this.getDateInView = function() {
+        var _a2 = _this.props, preSelection = _a2.preSelection, selected = _a2.selected, openToDate = _a2.openToDate;
+        var minDate = getEffectiveMinDate(_this.props);
+        var maxDate = getEffectiveMaxDate(_this.props);
+        var current = newDate();
+        var initialDate = openToDate || selected || preSelection;
+        if (initialDate) {
+          return initialDate;
+        } else {
+          if (minDate && isBefore(current, minDate)) {
+            return minDate;
+          } else if (maxDate && isAfter(current, maxDate)) {
+            return maxDate;
+          }
+        }
+        return current;
+      };
+      _this.increaseMonth = function() {
+        _this.setState(function(_a2) {
+          var date = _a2.date;
+          return {
+            date: addMonths(date, 1)
+          };
+        }, function() {
+          return _this.handleMonthChange(_this.state.date);
+        });
+      };
+      _this.decreaseMonth = function() {
+        _this.setState(function(_a2) {
+          var date = _a2.date;
+          return {
+            date: subMonths(date, 1)
+          };
+        }, function() {
+          return _this.handleMonthChange(_this.state.date);
+        });
+      };
+      _this.handleDayClick = function(day, event, monthSelectedIn) {
+        _this.props.onSelect(day, event, monthSelectedIn);
+        _this.props.setPreSelection && _this.props.setPreSelection(day);
+      };
+      _this.handleDayMouseEnter = function(day) {
+        _this.setState({ selectingDate: day });
+        _this.props.onDayMouseEnter && _this.props.onDayMouseEnter(day);
+      };
+      _this.handleMonthMouseLeave = function() {
+        _this.setState({ selectingDate: void 0 });
+        _this.props.onMonthMouseLeave && _this.props.onMonthMouseLeave();
+      };
+      _this.handleYearMouseEnter = function(event, year) {
+        _this.setState({ selectingDate: setYear(newDate(), year) });
+        !!_this.props.onYearMouseEnter && _this.props.onYearMouseEnter(event, year);
+      };
+      _this.handleYearMouseLeave = function(event, year) {
+        !!_this.props.onYearMouseLeave && _this.props.onYearMouseLeave(event, year);
+      };
+      _this.handleYearChange = function(date) {
+        var _a2, _b, _c, _d;
+        (_b = (_a2 = _this.props).onYearChange) === null || _b === void 0 ? void 0 : _b.call(_a2, date);
+        _this.setState({ isRenderAriaLiveMessage: true });
+        if (_this.props.adjustDateOnChange) {
+          _this.props.onSelect(date);
+          (_d = (_c = _this.props).setOpen) === null || _d === void 0 ? void 0 : _d.call(_c, true);
+        }
+        _this.props.setPreSelection && _this.props.setPreSelection(date);
+      };
+      _this.getEnabledPreSelectionDateForMonth = function(date) {
+        if (!isDayDisabled(date, _this.props)) {
+          return date;
+        }
+        var startOfMonth2 = getStartOfMonth(date);
+        var endOfMonth2 = getEndOfMonth(date);
+        var totalDays = differenceInDays(endOfMonth2, startOfMonth2);
+        var preSelectedDate = null;
+        for (var dayIdx = 0; dayIdx <= totalDays; dayIdx++) {
+          var processingDate = addDays2(startOfMonth2, dayIdx);
+          if (!isDayDisabled(processingDate, _this.props)) {
+            preSelectedDate = processingDate;
+            break;
+          }
+        }
+        return preSelectedDate;
+      };
+      _this.handleMonthChange = function(date) {
+        var _a2, _b, _c;
+        var enabledPreSelectionDate = (_a2 = _this.getEnabledPreSelectionDateForMonth(date)) !== null && _a2 !== void 0 ? _a2 : date;
+        _this.handleCustomMonthChange(enabledPreSelectionDate);
+        if (_this.props.adjustDateOnChange) {
+          _this.props.onSelect(enabledPreSelectionDate);
+          (_c = (_b = _this.props).setOpen) === null || _c === void 0 ? void 0 : _c.call(_b, true);
+        }
+        _this.props.setPreSelection && _this.props.setPreSelection(enabledPreSelectionDate);
+      };
+      _this.handleCustomMonthChange = function(date) {
+        var _a2, _b;
+        (_b = (_a2 = _this.props).onMonthChange) === null || _b === void 0 ? void 0 : _b.call(_a2, date);
+        _this.setState({ isRenderAriaLiveMessage: true });
+      };
+      _this.handleMonthYearChange = function(date) {
+        _this.handleYearChange(date);
+        _this.handleMonthChange(date);
+      };
+      _this.changeYear = function(year) {
+        _this.setState(function(_a2) {
+          var date = _a2.date;
+          return {
+            date: setYear(date, Number(year))
+          };
+        }, function() {
+          return _this.handleYearChange(_this.state.date);
+        });
+      };
+      _this.changeMonth = function(month) {
+        _this.setState(function(_a2) {
+          var date = _a2.date;
+          return {
+            date: setMonth(date, Number(month))
+          };
+        }, function() {
+          var _a2, _b;
+          _this.handleMonthChange(_this.state.date);
+          (_b = (_a2 = _this.props).onMonthSelectedInChange) === null || _b === void 0 ? void 0 : _b.call(_a2, 0);
+        });
+      };
+      _this.changeMonthYear = function(monthYear) {
+        _this.setState(function(_a2) {
+          var date = _a2.date;
+          return {
+            date: setYear(setMonth(date, getMonth(monthYear)), getYear(monthYear))
+          };
+        }, function() {
+          return _this.handleMonthYearChange(_this.state.date);
+        });
+      };
+      _this.header = function(date, customDayNameCount) {
+        if (date === void 0) {
+          date = _this.state.date;
+        }
+        if (customDayNameCount === void 0) {
+          customDayNameCount = 0;
+        }
+        if (!isValid2(date)) {
+          return [];
+        }
+        var disabled = _this.props.disabled;
+        var startOfWeek2 = getStartOfWeek(date, _this.props.locale, _this.props.calendarStartDay);
+        var dayNames = [];
+        if (_this.props.showWeekNumbers) {
+          dayNames.push(import_react42.default.createElement(
+            "div",
+            { key: "W", className: "react-datepicker__day-name ".concat(disabled ? "react-datepicker__day-name--disabled" : ""), role: "columnheader" },
+            import_react42.default.createElement("span", { className: "react-datepicker__sr-only" }, "Week number"),
+            import_react42.default.createElement("span", { "aria-hidden": "true" }, _this.props.weekLabel || "#")
+          ));
+        }
+        return dayNames.concat([0, 1, 2, 3, 4, 5, 6].map(function(offset4) {
+          var day = addDays2(startOfWeek2, offset4);
+          var weekDayName = _this.formatWeekday(day, _this.props.locale);
+          var fullDayName = formatDate2(day, "EEEE", _this.props.locale);
+          var weekDayClassName = _this.props.weekDayClassName ? _this.props.weekDayClassName(day) : void 0;
+          if (_this.props.renderCustomDayName) {
+            var customContent = _this.props.renderCustomDayName({
+              day,
+              shortName: weekDayName,
+              fullName: fullDayName,
+              locale: _this.props.locale,
+              customDayNameCount
+            });
+            return import_react42.default.createElement("div", { key: offset4, role: "columnheader", className: clsx("react-datepicker__day-name", weekDayClassName, disabled ? "react-datepicker__day-name--disabled" : "") }, customContent);
+          }
+          return import_react42.default.createElement(
+            "div",
+            { key: offset4, role: "columnheader", className: clsx("react-datepicker__day-name", weekDayClassName, disabled ? "react-datepicker__day-name--disabled" : "") },
+            import_react42.default.createElement("span", { className: "react-datepicker__sr-only" }, fullDayName),
+            import_react42.default.createElement("span", { "aria-hidden": "true" }, weekDayName)
+          );
+        }));
+      };
+      _this.formatWeekday = function(day, locale) {
+        if (_this.props.formatWeekDay) {
+          return getFormattedWeekdayInLocale(day, _this.props.formatWeekDay, locale);
+        }
+        return _this.props.useWeekdaysShort ? getWeekdayShortInLocale(day, locale) : getWeekdayMinInLocale(day, locale);
+      };
+      _this.decreaseYear = function() {
+        _this.setState(function(_a2) {
+          var _b;
+          var date = _a2.date;
+          return {
+            date: subYears(date, _this.props.showYearPicker ? (_b = _this.props.yearItemNumber) !== null && _b !== void 0 ? _b : Calendar2.defaultProps.yearItemNumber : 1)
+          };
+        }, function() {
+          return _this.handleYearChange(_this.state.date);
+        });
+      };
+      _this.clearSelectingDate = function() {
+        _this.setState({ selectingDate: void 0 });
+      };
+      _this.renderPreviousButton = function() {
+        var _a2, _b, _c;
+        if (_this.props.renderCustomHeader) {
+          return;
+        }
+        var monthsShown = (_a2 = _this.props.monthsShown) !== null && _a2 !== void 0 ? _a2 : Calendar2.defaultProps.monthsShown;
+        var monthsToSubtract = _this.props.showPreviousMonths ? monthsShown - 1 : 0;
+        var monthSelectedIn = (_b = _this.props.monthSelectedIn) !== null && _b !== void 0 ? _b : monthsToSubtract;
+        var fromMonthDate = subMonths(_this.state.date, monthSelectedIn);
+        var allPrevDaysDisabled;
+        switch (true) {
+          case _this.props.disabled:
+            allPrevDaysDisabled = true;
+            break;
+          case _this.props.showMonthYearPicker:
+            allPrevDaysDisabled = yearDisabledBefore(_this.state.date, _this.props);
+            break;
+          case _this.props.showYearPicker:
+            allPrevDaysDisabled = yearsDisabledBefore(_this.state.date, _this.props);
+            break;
+          case _this.props.showQuarterYearPicker:
+            allPrevDaysDisabled = quarterDisabledBefore(_this.state.date, _this.props);
+            break;
+          default:
+            allPrevDaysDisabled = monthDisabledBefore(fromMonthDate, _this.props);
+            break;
+        }
+        if (!((_c = _this.props.forceShowMonthNavigation) !== null && _c !== void 0 ? _c : Calendar2.defaultProps.forceShowMonthNavigation) && !_this.props.showDisabledMonthNavigation && allPrevDaysDisabled || _this.props.showTimeSelectOnly) {
+          return;
+        }
+        var iconClasses = [
+          "react-datepicker__navigation-icon",
+          "react-datepicker__navigation-icon--previous"
+        ];
+        var classes = [
+          "react-datepicker__navigation",
+          "react-datepicker__navigation--previous"
+        ];
+        var clickHandler = _this.decreaseMonth;
+        if (_this.props.showMonthYearPicker || _this.props.showQuarterYearPicker || _this.props.showYearPicker) {
+          clickHandler = _this.decreaseYear;
+        }
+        if (allPrevDaysDisabled && _this.props.showDisabledMonthNavigation) {
+          classes.push("react-datepicker__navigation--previous--disabled");
+          clickHandler = void 0;
+        }
+        var isForYear = _this.props.showMonthYearPicker || _this.props.showQuarterYearPicker || _this.props.showYearPicker;
+        var _d = _this.props, _e = _d.previousMonthButtonLabel, previousMonthButtonLabel = _e === void 0 ? Calendar2.defaultProps.previousMonthButtonLabel : _e, _f = _d.previousYearButtonLabel, previousYearButtonLabel = _f === void 0 ? Calendar2.defaultProps.previousYearButtonLabel : _f;
+        var _g = _this.props, _h = _g.previousMonthAriaLabel, previousMonthAriaLabel = _h === void 0 ? typeof previousMonthButtonLabel === "string" ? previousMonthButtonLabel : "Previous Month" : _h, _j = _g.previousYearAriaLabel, previousYearAriaLabel = _j === void 0 ? typeof previousYearButtonLabel === "string" ? previousYearButtonLabel : "Previous Year" : _j;
+        return import_react42.default.createElement(
+          "button",
+          { type: "button", className: classes.join(" "), onClick: clickHandler, onKeyDown: _this.props.handleOnKeyDown, "aria-label": isForYear ? previousYearAriaLabel : previousMonthAriaLabel },
+          import_react42.default.createElement("span", { className: iconClasses.join(" ") }, isForYear ? previousYearButtonLabel : previousMonthButtonLabel)
+        );
+      };
+      _this.increaseYear = function() {
+        _this.setState(function(_a2) {
+          var _b;
+          var date = _a2.date;
+          return {
+            date: addYears(date, _this.props.showYearPicker ? (_b = _this.props.yearItemNumber) !== null && _b !== void 0 ? _b : Calendar2.defaultProps.yearItemNumber : 1)
+          };
+        }, function() {
+          return _this.handleYearChange(_this.state.date);
+        });
+      };
+      _this.renderNextButton = function() {
+        var _a2;
+        if (_this.props.renderCustomHeader) {
+          return;
+        }
+        var allNextDaysDisabled;
+        switch (true) {
+          case _this.props.disabled:
+            allNextDaysDisabled = true;
+            break;
+          case _this.props.showMonthYearPicker:
+            allNextDaysDisabled = yearDisabledAfter(_this.state.date, _this.props);
+            break;
+          case _this.props.showYearPicker:
+            allNextDaysDisabled = yearsDisabledAfter(_this.state.date, _this.props);
+            break;
+          case _this.props.showQuarterYearPicker:
+            allNextDaysDisabled = quarterDisabledAfter(_this.state.date, _this.props);
+            break;
+          default:
+            allNextDaysDisabled = monthDisabledAfter(_this.state.date, _this.props);
+            break;
+        }
+        if (!((_a2 = _this.props.forceShowMonthNavigation) !== null && _a2 !== void 0 ? _a2 : Calendar2.defaultProps.forceShowMonthNavigation) && !_this.props.showDisabledMonthNavigation && allNextDaysDisabled || _this.props.showTimeSelectOnly) {
+          return;
+        }
+        var classes = [
+          "react-datepicker__navigation",
+          "react-datepicker__navigation--next"
+        ];
+        var iconClasses = [
+          "react-datepicker__navigation-icon",
+          "react-datepicker__navigation-icon--next"
+        ];
+        if (_this.props.showTimeSelect) {
+          classes.push("react-datepicker__navigation--next--with-time");
+        }
+        if (_this.props.todayButton) {
+          classes.push("react-datepicker__navigation--next--with-today-button");
+        }
+        var clickHandler = _this.increaseMonth;
+        if (_this.props.showMonthYearPicker || _this.props.showQuarterYearPicker || _this.props.showYearPicker) {
+          clickHandler = _this.increaseYear;
+        }
+        if (allNextDaysDisabled && _this.props.showDisabledMonthNavigation) {
+          classes.push("react-datepicker__navigation--next--disabled");
+          clickHandler = void 0;
+        }
+        var isForYear = _this.props.showMonthYearPicker || _this.props.showQuarterYearPicker || _this.props.showYearPicker;
+        var _b = _this.props, _c = _b.nextMonthButtonLabel, nextMonthButtonLabel = _c === void 0 ? Calendar2.defaultProps.nextMonthButtonLabel : _c, _d = _b.nextYearButtonLabel, nextYearButtonLabel = _d === void 0 ? Calendar2.defaultProps.nextYearButtonLabel : _d;
+        var _e = _this.props, _f = _e.nextMonthAriaLabel, nextMonthAriaLabel = _f === void 0 ? typeof nextMonthButtonLabel === "string" ? nextMonthButtonLabel : "Next Month" : _f, _g = _e.nextYearAriaLabel, nextYearAriaLabel = _g === void 0 ? typeof nextYearButtonLabel === "string" ? nextYearButtonLabel : "Next Year" : _g;
+        return import_react42.default.createElement(
+          "button",
+          { type: "button", className: classes.join(" "), onClick: clickHandler, onKeyDown: _this.props.handleOnKeyDown, "aria-label": isForYear ? nextYearAriaLabel : nextMonthAriaLabel },
+          import_react42.default.createElement("span", { className: iconClasses.join(" ") }, isForYear ? nextYearButtonLabel : nextMonthButtonLabel)
+        );
+      };
+      _this.renderCurrentMonth = function(date) {
+        if (date === void 0) {
+          date = _this.state.date;
+        }
+        var classes = ["react-datepicker__current-month"];
+        if (_this.props.showYearDropdown) {
+          classes.push("react-datepicker__current-month--hasYearDropdown");
+        }
+        if (_this.props.showMonthDropdown) {
+          classes.push("react-datepicker__current-month--hasMonthDropdown");
+        }
+        if (_this.props.showMonthYearDropdown) {
+          classes.push("react-datepicker__current-month--hasMonthYearDropdown");
+        }
+        return import_react42.default.createElement("h2", { className: classes.join(" ") }, isValid2(date) ? formatDate2(date, _this.props.dateFormat, _this.props.locale) : "");
+      };
+      _this.renderYearDropdown = function(overrideHide) {
+        if (overrideHide === void 0) {
+          overrideHide = false;
+        }
+        if (!_this.props.showYearDropdown || overrideHide) {
+          return;
+        }
+        return import_react42.default.createElement(YearDropdown, _assign({}, Calendar2.defaultProps, _this.props, { date: _this.state.date, onChange: _this.changeYear, year: getYear(_this.state.date) }));
+      };
+      _this.renderMonthDropdown = function(overrideHide) {
+        if (overrideHide === void 0) {
+          overrideHide = false;
+        }
+        if (!_this.props.showMonthDropdown || overrideHide) {
+          return;
+        }
+        return import_react42.default.createElement(MonthDropdown, _assign({}, Calendar2.defaultProps, _this.props, { month: getMonth(_this.state.date), onChange: _this.changeMonth }));
+      };
+      _this.renderMonthYearDropdown = function(overrideHide) {
+        if (overrideHide === void 0) {
+          overrideHide = false;
+        }
+        if (!_this.props.showMonthYearDropdown || overrideHide) {
+          return;
+        }
+        return import_react42.default.createElement(MonthYearDropdown, _assign({}, Calendar2.defaultProps, _this.props, { date: _this.state.date, onChange: _this.changeMonthYear }));
+      };
+      _this.handleTodayButtonClick = function(event) {
+        _this.props.onSelect(getStartOfToday(), event);
+        _this.props.setPreSelection && _this.props.setPreSelection(getStartOfToday());
+      };
+      _this.renderTodayButton = function() {
+        if (!_this.props.todayButton || _this.props.showTimeSelectOnly) {
+          return;
+        }
+        return import_react42.default.createElement("div", { className: "react-datepicker__today-button", onClick: _this.handleTodayButtonClick }, _this.props.todayButton);
+      };
+      _this.renderDayNamesHeader = function(monthDate, customDayNameCount) {
+        if (customDayNameCount === void 0) {
+          customDayNameCount = 0;
+        }
+        return import_react42.default.createElement("div", { className: "react-datepicker__day-names", role: "row" }, _this.header(monthDate, customDayNameCount));
+      };
+      _this.renderDefaultHeader = function(_a2) {
+        var monthDate = _a2.monthDate, i = _a2.i;
+        var headerContent = import_react42.default.createElement(
+          "div",
+          { className: clsx("react-datepicker__header", {
+            "react-datepicker__header--has-time-select": _this.props.showTimeSelect,
+            "react-datepicker__header--middle": _this.props.monthHeaderPosition === "middle",
+            "react-datepicker__header--bottom": _this.props.monthHeaderPosition === "bottom"
+          }) },
+          _this.renderCurrentMonth(monthDate),
+          import_react42.default.createElement(
+            "div",
+            { className: "react-datepicker__header__dropdown react-datepicker__header__dropdown--".concat(_this.props.dropdownMode), onFocus: _this.handleDropdownFocus },
+            _this.renderMonthDropdown(i !== 0),
+            _this.renderMonthYearDropdown(i !== 0),
+            _this.renderYearDropdown(i !== 0)
+          )
+        );
+        if (_this.props.monthHeaderPosition === "top") {
+          return headerContent;
+        }
+        return import_react42.default.createElement(
+          "div",
+          { className: "react-datepicker__header-wrapper" },
+          _this.renderPreviousButton() || null,
+          _this.renderNextButton() || null,
+          headerContent
+        );
+      };
+      _this.renderCustomHeader = function(headerArgs) {
+        var _a2, _b;
+        var monthDate = headerArgs.monthDate, i = headerArgs.i;
+        if (_this.props.showTimeSelect && !_this.state.monthContainer || _this.props.showTimeSelectOnly) {
+          return null;
+        }
+        var _c = _this.props, showYearPicker = _c.showYearPicker, yearItemNumber = _c.yearItemNumber;
+        var visibleYearsRange;
+        if (showYearPicker) {
+          var _d = getYearsPeriod(monthDate, yearItemNumber), startYear = _d.startPeriod, endYear = _d.endPeriod;
+          visibleYearsRange = {
+            startYear,
+            endYear
+          };
+        }
+        var prevMonthButtonDisabled = monthDisabledBefore(_this.state.date, _this.props);
+        var nextMonthButtonDisabled = monthDisabledAfter(_this.state.date, _this.props);
+        var prevYearButtonDisabled = yearDisabledBefore(_this.state.date, _this.props);
+        var nextYearButtonDisabled = yearDisabledAfter(_this.state.date, _this.props);
+        return import_react42.default.createElement("div", { className: "react-datepicker__header react-datepicker__header--custom", onFocus: _this.props.onDropdownFocus }, (_b = (_a2 = _this.props).renderCustomHeader) === null || _b === void 0 ? void 0 : _b.call(_a2, _assign(_assign(_assign({}, _this.state), showYearPicker && { visibleYearsRange }), { customHeaderCount: i, monthDate, changeMonth: _this.changeMonth, changeYear: _this.changeYear, decreaseMonth: _this.decreaseMonth, increaseMonth: _this.increaseMonth, decreaseYear: _this.decreaseYear, increaseYear: _this.increaseYear, prevMonthButtonDisabled, nextMonthButtonDisabled, prevYearButtonDisabled, nextYearButtonDisabled })));
+      };
+      _this.renderYearHeader = function(_a2) {
+        var monthDate = _a2.monthDate;
+        var _b = _this.props, showYearPicker = _b.showYearPicker, _c = _b.yearItemNumber, yearItemNumber = _c === void 0 ? Calendar2.defaultProps.yearItemNumber : _c;
+        var _d = getYearsPeriod(monthDate, yearItemNumber), startPeriod = _d.startPeriod, endPeriod = _d.endPeriod;
+        return import_react42.default.createElement("div", { className: "react-datepicker__header react-datepicker-year-header" }, showYearPicker ? "".concat(startPeriod, " - ").concat(endPeriod) : getYear(monthDate));
+      };
+      _this.renderHeader = function(_a2) {
+        var monthDate = _a2.monthDate, _b = _a2.i, i = _b === void 0 ? 0 : _b;
+        var headerArgs = { monthDate, i };
+        switch (true) {
+          case _this.props.renderCustomHeader !== void 0:
+            return _this.renderCustomHeader(headerArgs);
+          case (_this.props.showMonthYearPicker || _this.props.showQuarterYearPicker || _this.props.showYearPicker):
+            return _this.renderYearHeader(headerArgs);
+          default:
+            return _this.renderDefaultHeader(headerArgs);
+        }
+      };
+      _this.renderMonths = function() {
+        var _a2, _b;
+        if (_this.props.showTimeSelectOnly || _this.props.showYearPicker) {
+          return;
+        }
+        var monthList = [];
+        var monthsShown = (_a2 = _this.props.monthsShown) !== null && _a2 !== void 0 ? _a2 : Calendar2.defaultProps.monthsShown;
+        var monthsToSubtract = _this.props.showPreviousMonths ? monthsShown - 1 : 0;
+        var fromMonthDate = _this.props.showMonthYearPicker || _this.props.showQuarterYearPicker ? addYears(_this.state.date, monthsToSubtract) : subMonths(_this.state.date, monthsToSubtract);
+        var monthSelectedIn = (_b = _this.props.monthSelectedIn) !== null && _b !== void 0 ? _b : monthsToSubtract;
+        for (var i = 0; i < monthsShown; ++i) {
+          var monthsToAdd = i - monthSelectedIn + monthsToSubtract;
+          var monthDate = _this.props.showMonthYearPicker || _this.props.showQuarterYearPicker ? addYears(fromMonthDate, monthsToAdd) : addMonths(fromMonthDate, monthsToAdd);
+          var monthKey = "month-".concat(i);
+          var monthShowsDuplicateDaysEnd = i < monthsShown - 1;
+          var monthShowsDuplicateDaysStart = i > 0;
+          monthList.push(import_react42.default.createElement(
+            "div",
+            { key: monthKey, ref: function(div) {
+              _this.monthContainer = div !== null && div !== void 0 ? div : void 0;
+            }, className: "react-datepicker__month-container" },
+            _this.props.monthHeaderPosition === "top" && _this.renderHeader({ monthDate, i }),
+            import_react42.default.createElement(Month, _assign({}, Calendar2.defaultProps, _this.props, { containerRef: _this.containerRef, ariaLabelPrefix: _this.props.monthAriaLabelPrefix, day: monthDate, onDayClick: _this.handleDayClick, handleOnKeyDown: _this.props.handleOnDayKeyDown, handleOnMonthKeyDown: _this.props.handleOnKeyDown, onDayMouseEnter: _this.handleDayMouseEnter, onMouseLeave: _this.handleMonthMouseLeave, orderInDisplay: i, selectingDate: _this.state.selectingDate, monthShowsDuplicateDaysEnd, monthShowsDuplicateDaysStart, dayNamesHeader: _this.renderDayNamesHeader(monthDate, i), monthHeader: _this.props.monthHeaderPosition === "middle" ? _this.renderHeader({ monthDate, i }) : void 0, monthFooter: _this.props.monthHeaderPosition === "bottom" ? _this.renderHeader({ monthDate, i }) : void 0 }))
+          ));
+        }
+        return monthList;
+      };
+      _this.renderYears = function() {
+        if (_this.props.showTimeSelectOnly) {
+          return;
+        }
+        if (_this.props.showYearPicker) {
+          return import_react42.default.createElement(
+            "div",
+            { className: "react-datepicker__year--container" },
+            _this.renderHeader({ monthDate: _this.state.date }),
+            import_react42.default.createElement(Year, _assign({}, Calendar2.defaultProps, _this.props, { selectingDate: _this.state.selectingDate, date: _this.state.date, onDayClick: _this.handleDayClick, clearSelectingDate: _this.clearSelectingDate, onYearMouseEnter: _this.handleYearMouseEnter, onYearMouseLeave: _this.handleYearMouseLeave }))
+          );
+        }
+        return;
+      };
+      _this.renderTimeSection = function() {
+        if (_this.props.showTimeSelect && (_this.state.monthContainer || _this.props.showTimeSelectOnly)) {
+          return import_react42.default.createElement(Time, _assign({}, Calendar2.defaultProps, _this.props, { onChange: _this.props.onTimeChange, format: _this.props.timeFormat, intervals: _this.props.timeIntervals, monthRef: _this.state.monthContainer }));
+        }
+        return;
+      };
+      _this.renderInputTimeSection = function() {
+        var _a2, _b;
+        if (!_this.props.showTimeInput) {
+          return;
+        }
+        if (_this.props.selectsRange) {
+          var _c = _this.props, startDate = _c.startDate, endDate = _c.endDate;
+          var startTime = startDate ? new Date(startDate) : void 0;
+          var startTimeValid = startTime && isValid2(startTime) && Boolean(startDate);
+          var startTimeString = startTimeValid ? "".concat(addZero(startTime.getHours()), ":").concat(addZero(startTime.getMinutes())) : "";
+          var endTime = endDate ? new Date(endDate) : void 0;
+          var endTimeValid = endTime && isValid2(endTime) && Boolean(endDate);
+          var endTimeString = endTimeValid ? "".concat(addZero(endTime.getHours()), ":").concat(addZero(endTime.getMinutes())) : "";
+          return import_react42.default.createElement(
+            import_react42.default.Fragment,
+            null,
+            import_react42.default.createElement(InputTime, _assign({}, Calendar2.defaultProps, _this.props, { date: startTime, timeString: startTimeString, onChange: function(time2) {
+              var _a3, _b2;
+              (_b2 = (_a3 = _this.props).onTimeChange) === null || _b2 === void 0 ? void 0 : _b2.call(_a3, time2, "start");
+            }, timeInputLabel: ((_a2 = _this.props.timeInputLabel) !== null && _a2 !== void 0 ? _a2 : "Time") + " (Start)" })),
+            import_react42.default.createElement(InputTime, _assign({}, Calendar2.defaultProps, _this.props, { date: endTime, timeString: endTimeString, onChange: function(time2) {
+              var _a3, _b2;
+              (_b2 = (_a3 = _this.props).onTimeChange) === null || _b2 === void 0 ? void 0 : _b2.call(_a3, time2, "end");
+            }, timeInputLabel: ((_b = _this.props.timeInputLabel) !== null && _b !== void 0 ? _b : "Time") + " (End)" }))
+          );
+        }
+        var time = _this.props.selected ? new Date(_this.props.selected) : void 0;
+        var timeValid = time && isValid2(time) && Boolean(_this.props.selected);
+        var timeString = timeValid ? "".concat(addZero(time.getHours()), ":").concat(addZero(time.getMinutes())) : "";
+        return import_react42.default.createElement(InputTime, _assign({}, Calendar2.defaultProps, _this.props, { date: time, timeString, onChange: function(time2) {
+          var _a3, _b2;
+          (_b2 = (_a3 = _this.props).onTimeChange) === null || _b2 === void 0 ? void 0 : _b2.call(_a3, time2);
+        } }));
+      };
+      _this.renderAriaLiveRegion = function() {
+        var _a2;
+        if (!isValid2(_this.state.date)) {
+          return import_react42.default.createElement("span", { role: "alert", "aria-live": "polite", className: "react-datepicker__aria-live" });
+        }
+        var _b = getYearsPeriod(_this.state.date, (_a2 = _this.props.yearItemNumber) !== null && _a2 !== void 0 ? _a2 : Calendar2.defaultProps.yearItemNumber), startPeriod = _b.startPeriod, endPeriod = _b.endPeriod;
+        var ariaLiveMessage;
+        if (_this.props.showYearPicker) {
+          ariaLiveMessage = "".concat(startPeriod, " - ").concat(endPeriod);
+        } else if (_this.props.showMonthYearPicker || _this.props.showQuarterYearPicker) {
+          ariaLiveMessage = getYear(_this.state.date);
+        } else {
+          ariaLiveMessage = "".concat(getMonthInLocale(getMonth(_this.state.date), _this.props.locale), " ").concat(getYear(_this.state.date));
+        }
+        return import_react42.default.createElement("span", { role: "alert", "aria-live": "polite", className: "react-datepicker__aria-live" }, _this.state.isRenderAriaLiveMessage && ariaLiveMessage);
+      };
+      _this.renderChildren = function() {
+        if (_this.props.children) {
+          return import_react42.default.createElement("div", { className: "react-datepicker__children-container" }, _this.props.children);
+        }
+        return;
+      };
+      _this.containerRef = (0, import_react42.createRef)();
+      _this.state = {
+        date: _this.getDateInView(),
+        selectingDate: void 0,
+        monthContainer: void 0,
+        isRenderAriaLiveMessage: false
+      };
+      return _this;
+    }
+    Object.defineProperty(Calendar2, "defaultProps", {
+      get: function() {
+        return {
+          monthsShown: 1,
+          forceShowMonthNavigation: false,
+          outsideClickIgnoreClass: OUTSIDE_CLICK_IGNORE_CLASS,
+          timeCaption: "Time",
+          previousYearButtonLabel: "Previous Year",
+          nextYearButtonLabel: "Next Year",
+          previousMonthButtonLabel: "Previous Month",
+          nextMonthButtonLabel: "Next Month",
+          yearItemNumber: DEFAULT_YEAR_ITEM_NUMBER,
+          monthHeaderPosition: "top"
+        };
+      },
+      enumerable: false,
+      configurable: true
+    });
+    Calendar2.prototype.componentDidMount = function() {
+      var _this = this;
+      if (this.props.showTimeSelect) {
+        this.assignMonthContainer = function() {
+          _this.setState({ monthContainer: _this.monthContainer });
+        }();
+      }
+    };
+    Calendar2.prototype.componentDidUpdate = function(prevProps) {
+      var _this = this;
+      if (this.props.preSelection && isValid2(this.props.preSelection) && (!isSameDay2(this.props.preSelection, prevProps.preSelection) || this.props.monthSelectedIn !== prevProps.monthSelectedIn)) {
+        var hasMonthChanged_1 = !isSameMonth2(this.state.date, this.props.preSelection);
+        this.setState({
+          date: this.props.preSelection
+        }, function() {
+          return hasMonthChanged_1 && _this.handleCustomMonthChange(_this.state.date);
+        });
+      } else if (this.props.openToDate && !isSameDay2(this.props.openToDate, prevProps.openToDate)) {
+        this.setState({
+          date: this.props.openToDate
+        });
+      }
+    };
+    Calendar2.prototype.render = function() {
+      var Container = this.props.container || CalendarContainer;
+      return import_react42.default.createElement(
+        ClickOutsideWrapper,
+        { onClickOutside: this.handleClickOutside, style: { display: "contents" }, ignoreClass: this.props.outsideClickIgnoreClass },
+        import_react42.default.createElement(
+          "div",
+          { style: { display: "contents" }, ref: this.containerRef },
+          import_react42.default.createElement(
+            Container,
+            { className: clsx("react-datepicker", this.props.className, {
+              "react-datepicker--time-only": this.props.showTimeSelectOnly
+            }), showTime: this.props.showTimeSelect || this.props.showTimeInput, showTimeSelectOnly: this.props.showTimeSelectOnly, inline: this.props.inline },
+            this.renderAriaLiveRegion(),
+            this.props.monthHeaderPosition === "top" && this.renderPreviousButton(),
+            this.props.monthHeaderPosition === "top" && this.renderNextButton(),
+            this.renderMonths(),
+            this.renderYears(),
+            this.renderTodayButton(),
+            this.renderTimeSection(),
+            this.renderInputTimeSection(),
+            this.renderChildren()
+          )
+        )
+      );
+    };
+    return Calendar2;
+  }(import_react42.Component)
+);
+var CalendarIcon = function(_a2) {
+  var icon = _a2.icon, _b = _a2.className, className = _b === void 0 ? "" : _b, onClick = _a2.onClick;
+  var defaultClass = "react-datepicker__calendar-icon";
+  if (typeof icon === "string") {
+    return import_react42.default.createElement("i", { className: "".concat(defaultClass, " ").concat(icon, " ").concat(className), "aria-hidden": "true", onClick });
+  }
+  if (import_react42.default.isValidElement(icon)) {
+    var iconElement_1 = icon;
+    return import_react42.default.cloneElement(iconElement_1, {
+      className: "".concat(iconElement_1.props.className || "", " ").concat(defaultClass, " ").concat(className),
+      onClick: function(event) {
+        if (typeof iconElement_1.props.onClick === "function") {
+          iconElement_1.props.onClick(event);
+        }
+        if (typeof onClick === "function") {
+          onClick(event);
+        }
+      }
+    });
+  }
+  return import_react42.default.createElement(
+    "svg",
+    { className: "".concat(defaultClass, " ").concat(className), xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 448 512", onClick },
+    import_react42.default.createElement("path", { d: "M96 32V64H48C21.5 64 0 85.5 0 112v48H448V112c0-26.5-21.5-48-48-48H352V32c0-17.7-14.3-32-32-32s-32 14.3-32 32V64H160V32c0-17.7-14.3-32-32-32S96 14.3 96 32zM448 192H0V464c0 26.5 21.5 48 48 48H400c26.5 0 48-21.5 48-48V192z" })
+  );
+};
+var Portal3 = (
+  /** @class */
+  function(_super) {
+    __extends2(Portal4, _super);
+    function Portal4(props) {
+      var _this = _super.call(this, props) || this;
+      _this.portalRoot = null;
+      _this.el = document.createElement("div");
+      return _this;
+    }
+    Portal4.prototype.componentDidMount = function() {
+      this.portalRoot = (this.props.portalHost || document).getElementById(this.props.portalId);
+      if (!this.portalRoot) {
+        this.portalRoot = document.createElement("div");
+        this.portalRoot.setAttribute("id", this.props.portalId);
+        (this.props.portalHost || document.body).appendChild(this.portalRoot);
+      }
+      this.portalRoot.appendChild(this.el);
+    };
+    Portal4.prototype.componentWillUnmount = function() {
+      if (this.portalRoot) {
+        this.portalRoot.removeChild(this.el);
+      }
+    };
+    Portal4.prototype.render = function() {
+      return import_react_dom4.default.createPortal(this.props.children, this.el);
+    };
+    return Portal4;
+  }(import_react42.Component)
+);
+var focusableElementsSelector = "[tabindex], a, button, input, select, textarea";
+var focusableFilter = function(node) {
+  if (node instanceof HTMLAnchorElement) {
+    return node.tabIndex !== -1;
+  }
+  return !node.disabled && node.tabIndex !== -1;
+};
+var TabLoop = (
+  /** @class */
+  function(_super) {
+    __extends2(TabLoop2, _super);
+    function TabLoop2(props) {
+      var _this = _super.call(this, props) || this;
+      _this.getTabChildren = function() {
+        var _a2;
+        return Array.prototype.slice.call((_a2 = _this.tabLoopRef.current) === null || _a2 === void 0 ? void 0 : _a2.querySelectorAll(focusableElementsSelector), 1, -1).filter(focusableFilter);
+      };
+      _this.handleFocusStart = function() {
+        var tabChildren = _this.getTabChildren();
+        tabChildren && tabChildren.length > 1 && tabChildren[tabChildren.length - 1].focus();
+      };
+      _this.handleFocusEnd = function() {
+        var tabChildren = _this.getTabChildren();
+        tabChildren && tabChildren.length > 1 && tabChildren[0].focus();
+      };
+      _this.tabLoopRef = (0, import_react42.createRef)();
+      return _this;
+    }
+    TabLoop2.prototype.render = function() {
+      var _a2;
+      if (!((_a2 = this.props.enableTabLoop) !== null && _a2 !== void 0 ? _a2 : TabLoop2.defaultProps.enableTabLoop)) {
+        return this.props.children;
+      }
+      return import_react42.default.createElement(
+        "div",
+        { className: "react-datepicker__tab-loop", ref: this.tabLoopRef },
+        import_react42.default.createElement("div", { className: "react-datepicker__tab-loop__start", tabIndex: 0, onFocus: this.handleFocusStart }),
+        this.props.children,
+        import_react42.default.createElement("div", { className: "react-datepicker__tab-loop__end", tabIndex: 0, onFocus: this.handleFocusEnd })
+      );
+    };
+    TabLoop2.defaultProps = {
+      enableTabLoop: true
+    };
+    return TabLoop2;
+  }(import_react42.Component)
+);
+function withFloating(Component2) {
+  function WithFloating(props) {
+    var _a2;
+    var hidePopper = typeof props.hidePopper === "boolean" ? props.hidePopper : true;
+    var arrowRef = (0, import_react42.useRef)(null);
+    var floatingProps = useFloating2(_assign({ open: !hidePopper, whileElementsMounted: autoUpdate, placement: props.popperPlacement, middleware: __spreadArray2([
+      flip3({ padding: 15 }),
+      offset3(10),
+      // eslint-disable-next-line react-hooks/refs -- Floating UI requires refs to be passed during render
+      arrow3({ element: arrowRef })
+    ], (_a2 = props.popperModifiers) !== null && _a2 !== void 0 ? _a2 : [], true) }, props.popperProps));
+    var componentProps = _assign(_assign({}, props), { hidePopper, popperProps: _assign(_assign({}, floatingProps), { arrowRef }) });
+    return import_react42.default.createElement(Component2, _assign({}, componentProps));
+  }
+  WithFloating.displayName = "withFloating(".concat(Component2.displayName || Component2.name || "Component", ")");
+  return WithFloating;
+}
+var PopperComponent$1 = function(props) {
+  var className = props.className, wrapperClassName = props.wrapperClassName, _a2 = props.hidePopper, hidePopper = _a2 === void 0 ? true : _a2, popperComponent = props.popperComponent, targetComponent = props.targetComponent, enableTabLoop = props.enableTabLoop, popperOnKeyDown = props.popperOnKeyDown, portalId = props.portalId, portalHost = props.portalHost, popperProps = props.popperProps, showArrow = props.showArrow, popperTargetRef = props.popperTargetRef, monthHeaderPosition = props.monthHeaderPosition;
+  (0, import_react42.useEffect)(function() {
+    if (popperTargetRef === null || popperTargetRef === void 0 ? void 0 : popperTargetRef.current) {
+      popperProps.refs.setPositionReference(popperTargetRef.current);
+    }
+  }, [popperTargetRef, popperProps.refs]);
+  var popper = void 0;
+  if (!hidePopper) {
+    var classes = clsx("react-datepicker-popper", !showArrow && "react-datepicker-popper-offset", monthHeaderPosition === "middle" && "react-datepicker-popper--header-middle", monthHeaderPosition === "bottom" && "react-datepicker-popper--header-bottom", className);
+    popper = import_react42.default.createElement(
+      TabLoop,
+      { enableTabLoop },
+      import_react42.default.createElement(
+        "div",
+        { ref: popperProps.refs.setFloating, style: popperProps.floatingStyles, className: classes, "data-placement": popperProps.placement, onKeyDown: popperOnKeyDown },
+        popperComponent,
+        showArrow && import_react42.default.createElement(FloatingArrow, { ref: popperProps.arrowRef, context: popperProps.context, fill: "currentColor", strokeWidth: 1, height: 8, width: 16, style: { transform: "translateY(-1px)" }, className: "react-datepicker__triangle" })
+      )
+    );
+  }
+  if (props.popperContainer) {
+    popper = (0, import_react42.createElement)(props.popperContainer, {}, popper);
+  }
+  if (portalId && !hidePopper) {
+    popper = import_react42.default.createElement(Portal3, { portalId, portalHost }, popper);
+  }
+  var wrapperClasses = clsx("react-datepicker-wrapper", wrapperClassName);
+  return import_react42.default.createElement(
+    import_react42.default.Fragment,
+    null,
+    import_react42.default.createElement("div", { ref: popperProps.refs.setReference, className: wrapperClasses }, targetComponent),
+    popper
+  );
+};
+var PopperComponent = withFloating(PopperComponent$1);
+function hasPreSelectionChanged(date1, date2) {
+  if (date1 && date2) {
+    return getMonth(date1) !== getMonth(date2) || getYear(date1) !== getYear(date2);
+  }
+  return date1 !== date2;
+}
+var INPUT_ERR_1 = "Date input not valid.";
+var DatePicker = (
+  /** @class */
+  function(_super) {
+    __extends2(DatePicker2, _super);
+    function DatePicker2(props) {
+      var _this = _super.call(this, props) || this;
+      _this.calendar = null;
+      _this.input = null;
+      _this.getPreSelection = function() {
+        var timeZone = _this.props.timeZone;
+        var baseDate = _this.props.openToDate ? _this.props.openToDate : _this.props.selectsEnd && _this.props.startDate ? _this.props.startDate : _this.props.selectsStart && _this.props.endDate ? _this.props.endDate : newDate();
+        return timeZone ? toZonedTime(baseDate, timeZone) : baseDate;
+      };
+      _this.modifyHolidays = function() {
+        var _a2;
+        return (_a2 = _this.props.holidays) === null || _a2 === void 0 ? void 0 : _a2.reduce(function(accumulator, holiday) {
+          var date = parseDate2(holiday.date, "yyyy-MM-dd", void 0, false);
+          if (!date) {
+            return accumulator;
+          }
+          return __spreadArray2(__spreadArray2([], accumulator, true), [_assign(_assign({}, holiday), { date })], false);
+        }, []);
+      };
+      _this.calcInitialState = function() {
+        var timeZone = _this.props.timeZone;
+        var defaultPreSelection = _this.getPreSelection();
+        var minDate = getEffectiveMinDate(_this.props);
+        var maxDate = getEffectiveMaxDate(_this.props);
+        var boundedPreSelection = minDate && isBefore(defaultPreSelection, getStartOfDay(minDate)) ? minDate : maxDate && isAfter(defaultPreSelection, getEndOfDay(maxDate)) ? maxDate : defaultPreSelection;
+        var initialPreSelection = _this.props.selectsRange ? _this.props.startDate : _this.props.selected;
+        if (initialPreSelection && timeZone) {
+          initialPreSelection = toZonedTime(initialPreSelection, timeZone);
+        }
+        return {
+          open: _this.props.startOpen || false,
+          preventFocus: false,
+          inputValue: null,
+          preSelection: initialPreSelection !== null && initialPreSelection !== void 0 ? initialPreSelection : boundedPreSelection,
+          // transforming highlighted days (perhaps nested array)
+          // to flat Map for faster access in day.jsx
+          highlightDates: getHighLightDaysMap(_this.props.highlightDates),
+          focused: false,
+          // used to focus day in inline version after month has changed, but not on
+          // initial render
+          shouldFocusDayInline: false,
+          isRenderAriaLiveMessage: false,
+          wasHidden: false
+        };
+      };
+      _this.getInputValue = function() {
+        var _a2;
+        var _b = _this.props, locale = _b.locale, startDate = _b.startDate, endDate = _b.endDate, rangeSeparator = _b.rangeSeparator, selected = _b.selected, selectedDates = _b.selectedDates, selectsMultiple = _b.selectsMultiple, selectsRange = _b.selectsRange, formatMultipleDates = _b.formatMultipleDates, value = _b.value;
+        var dateFormat = (_a2 = _this.props.dateFormat) !== null && _a2 !== void 0 ? _a2 : DatePicker2.defaultProps.dateFormat;
+        var inputValue = _this.state.inputValue;
+        if (typeof value === "string") {
+          return value;
+        } else if (typeof inputValue === "string") {
+          return inputValue;
+        } else if (selectsRange) {
+          return safeDateRangeFormat(startDate, endDate, {
+            dateFormat,
+            locale,
+            rangeSeparator
+          });
+        } else if (selectsMultiple) {
+          if (formatMultipleDates) {
+            var formatDateFn = function(date) {
+              return safeDateFormat(date, { dateFormat, locale });
+            };
+            return formatMultipleDates(selectedDates !== null && selectedDates !== void 0 ? selectedDates : [], formatDateFn);
+          }
+          return safeMultipleDatesFormat(selectedDates !== null && selectedDates !== void 0 ? selectedDates : [], {
+            dateFormat,
+            locale
+          });
+        }
+        return safeDateFormat(selected, {
+          dateFormat,
+          locale
+        });
+      };
+      _this.resetHiddenStatus = function() {
+        _this.setState(_assign(_assign({}, _this.state), { wasHidden: false }));
+      };
+      _this.setHiddenStatus = function() {
+        _this.setState(_assign(_assign({}, _this.state), { wasHidden: true }));
+      };
+      _this.setHiddenStateOnVisibilityHidden = function() {
+        if (document.visibilityState !== "hidden") {
+          return;
+        }
+        _this.setHiddenStatus();
+      };
+      _this.clearPreventFocusTimeout = function() {
+        if (_this.preventFocusTimeout) {
+          clearTimeout(_this.preventFocusTimeout);
+        }
+      };
+      _this.setFocus = function() {
+        var _a2, _b;
+        (_b = (_a2 = _this.input) === null || _a2 === void 0 ? void 0 : _a2.focus) === null || _b === void 0 ? void 0 : _b.call(_a2, { preventScroll: true });
+      };
+      _this.setBlur = function() {
+        var _a2, _b;
+        (_b = (_a2 = _this.input) === null || _a2 === void 0 ? void 0 : _a2.blur) === null || _b === void 0 ? void 0 : _b.call(_a2);
+        _this.cancelFocusInput();
+      };
+      _this.deferBlur = function() {
+        requestAnimationFrame(function() {
+          _this.setBlur();
+        });
+      };
+      _this.setOpen = function(open, skipSetBlur) {
+        if (skipSetBlur === void 0) {
+          skipSetBlur = false;
+        }
+        _this.setState({
+          open,
+          preSelection: open && _this.state.open ? _this.state.preSelection : _this.calcInitialState().preSelection,
+          lastPreSelectChange: PRESELECT_CHANGE_VIA_NAVIGATE
+        }, function() {
+          if (!open) {
+            _this.setState(function(prev) {
+              return {
+                focused: skipSetBlur ? prev.focused : false
+              };
+            }, function() {
+              !skipSetBlur && _this.deferBlur();
+              _this.setState({ inputValue: null });
+            });
+          }
+        });
+      };
+      _this.inputOk = function() {
+        return isDate(_this.state.preSelection);
+      };
+      _this.isCalendarOpen = function() {
+        return _this.props.open === void 0 ? _this.state.open && !_this.props.disabled && !_this.props.readOnly : _this.props.open;
+      };
+      _this.handleFocus = function(event) {
+        var _a2, _b;
+        var isAutoReFocus = _this.state.wasHidden;
+        var isOpenAllowed = isAutoReFocus ? _this.state.open : true;
+        if (isAutoReFocus) {
+          _this.resetHiddenStatus();
+        }
+        if (!_this.state.preventFocus) {
+          (_b = (_a2 = _this.props).onFocus) === null || _b === void 0 ? void 0 : _b.call(_a2, event);
+          if (isOpenAllowed && !_this.props.preventOpenOnFocus && !_this.props.readOnly) {
+            _this.setOpen(true);
+          }
+        }
+        _this.setState({ focused: true });
+      };
+      _this.sendFocusBackToInput = function() {
+        if (_this.preventFocusTimeout) {
+          _this.clearPreventFocusTimeout();
+        }
+        _this.setState({ preventFocus: true }, function() {
+          _this.preventFocusTimeout = setTimeout(function() {
+            _this.setFocus();
+            _this.setState({ preventFocus: false });
+          });
+        });
+      };
+      _this.cancelFocusInput = function() {
+        clearTimeout(_this.inputFocusTimeout);
+        _this.inputFocusTimeout = void 0;
+      };
+      _this.deferFocusInput = function() {
+        _this.cancelFocusInput();
+        _this.inputFocusTimeout = setTimeout(function() {
+          return _this.setFocus();
+        }, 1);
+      };
+      _this.handleDropdownFocus = function() {
+        _this.cancelFocusInput();
+      };
+      _this.resetInputValue = function() {
+        _this.setState(_assign(_assign({}, _this.state), { inputValue: null }));
+      };
+      _this.handleBlur = function(event) {
+        var _a2, _b;
+        if (!_this.state.open || _this.props.withPortal || _this.props.showTimeInput) {
+          (_b = (_a2 = _this.props).onBlur) === null || _b === void 0 ? void 0 : _b.call(_a2, event);
+        }
+        var inputValue = _this.state.inputValue;
+        if (typeof inputValue === "string" && inputValue.length > 0) {
+          var hasDateCharacters = /[a-zA-Z0-9]/.test(inputValue);
+          if (!hasDateCharacters && _this.props.selected) {
+            _this.setSelected(null, void 0, true);
+          }
+        }
+        _this.resetInputValue();
+        if (_this.state.open && _this.props.open === false) {
+          _this.setOpen(false);
+        }
+        _this.setState({ focused: false });
+      };
+      _this.handleCalendarClickOutside = function(event) {
+        var _a2, _b;
+        (_b = (_a2 = _this.props).onClickOutside) === null || _b === void 0 ? void 0 : _b.call(_a2, event);
+        if (!_this.props.inline && !event.defaultPrevented) {
+          _this.setOpen(false);
+        }
+        if (_this.props.withPortal) {
+          event.preventDefault();
+        }
+      };
+      _this.handleChange = function() {
+        var _a2, _b, _c, _d, _e, _f, _g, _h;
+        var allArgs = [];
+        for (var _i = 0; _i < arguments.length; _i++) {
+          allArgs[_i] = arguments[_i];
+        }
+        var event = allArgs[0];
+        if (_this.props.onChangeRaw) {
+          _this.props.onChangeRaw.apply(_this, allArgs);
+          if (!event || typeof event.isDefaultPrevented !== "function" || event.isDefaultPrevented()) {
+            return;
+          }
+        }
+        _this.setState({
+          inputValue: (event === null || event === void 0 ? void 0 : event.target) instanceof HTMLInputElement ? event.target.value : null,
+          lastPreSelectChange: PRESELECT_CHANGE_VIA_INPUT
+        });
+        var _j = _this.props, selectsRange = _j.selectsRange, startDate = _j.startDate, endDate = _j.endDate;
+        var dateFormat = (_a2 = _this.props.dateFormat) !== null && _a2 !== void 0 ? _a2 : DatePicker2.defaultProps.dateFormat;
+        var strictParsing = (_b = _this.props.strictParsing) !== null && _b !== void 0 ? _b : DatePicker2.defaultProps.strictParsing;
+        var value = (event === null || event === void 0 ? void 0 : event.target) instanceof HTMLInputElement ? event.target.value : "";
+        if (selectsRange) {
+          var rangeSeparator = _this.props.rangeSeparator;
+          var trimmedRangeSeparator = rangeSeparator.trim();
+          var _k = value.split(dateFormat.includes(trimmedRangeSeparator) ? rangeSeparator : trimmedRangeSeparator, 2).map(function(val) {
+            return val.trim();
+          }), valueStart = _k[0], valueEnd = _k[1];
+          var startDateNew = parseDate2(valueStart !== null && valueStart !== void 0 ? valueStart : "", dateFormat, _this.props.locale, strictParsing);
+          var endDateNew = startDateNew ? parseDate2(valueEnd !== null && valueEnd !== void 0 ? valueEnd : "", dateFormat, _this.props.locale, strictParsing) : null;
+          var startChanged = ((_c = safeToDate(startDate)) === null || _c === void 0 ? void 0 : _c.getTime()) !== (startDateNew === null || startDateNew === void 0 ? void 0 : startDateNew.getTime());
+          var endChanged = ((_d = safeToDate(endDate)) === null || _d === void 0 ? void 0 : _d.getTime()) !== (endDateNew === null || endDateNew === void 0 ? void 0 : endDateNew.getTime());
+          if (!startChanged && !endChanged) {
+            return;
+          }
+          if (startDateNew && isDayDisabled(startDateNew, _this.props)) {
+            return;
+          }
+          if (endDateNew && isDayDisabled(endDateNew, _this.props)) {
+            return;
+          }
+          if (startDateNew) {
+            _this.setState({ preSelection: startDateNew });
+          }
+          (_f = (_e = _this.props).onChange) === null || _f === void 0 ? void 0 : _f.call(_e, [startDateNew, endDateNew], event);
+        } else {
+          var date = parseDate2(value, dateFormat, _this.props.locale, strictParsing, (_g = _this.props.selected) !== null && _g !== void 0 ? _g : void 0);
+          if (date || !value) {
+            _this.setSelected(date, event, true);
+          } else if (!_this.props.inline) {
+            var navDate = parseDateForNavigation(value, (_h = _this.state.preSelection) !== null && _h !== void 0 ? _h : void 0);
+            if (navDate && (!_this.props.minDate || !isBefore(navDate, _this.props.minDate)) && (!_this.props.maxDate || !isAfter(navDate, _this.props.maxDate))) {
+              _this.setState({ preSelection: navDate });
+            }
+          }
+        }
+      };
+      _this.handleSelect = function(date, event, monthSelectedIn) {
+        var _a2;
+        if (_this.props.readOnly)
+          return;
+        var _b = _this.props, selectsRange = _b.selectsRange, startDate = _b.startDate, endDate = _b.endDate, locale = _b.locale, swapRange = _b.swapRange;
+        var dateFormat = (_a2 = _this.props.dateFormat) !== null && _a2 !== void 0 ? _a2 : DatePicker2.defaultProps.dateFormat;
+        var isDateSelectionComplete = !selectsRange || startDate && !endDate && (swapRange || !isDateBefore(date, startDate));
+        if (_this.props.shouldCloseOnSelect && !_this.props.showTimeSelect && isDateSelectionComplete) {
+          _this.sendFocusBackToInput();
+        }
+        if (_this.props.onChangeRaw) {
+          var formattedDate = safeDateFormat(date, {
+            dateFormat,
+            locale
+          });
+          _this.props.onChangeRaw(event, { date, formattedDate });
+        }
+        _this.setSelected(date, event, false, monthSelectedIn);
+        if (_this.props.showDateSelect) {
+          _this.setState({ isRenderAriaLiveMessage: true });
+        }
+        if (!_this.props.shouldCloseOnSelect || _this.props.showTimeSelect) {
+          _this.setPreSelection(date);
+        } else if (isDateSelectionComplete) {
+          _this.setOpen(false);
+        }
+      };
+      _this.setSelected = function(date, event, keepInput, monthSelectedIn) {
+        var _a2, _b;
+        var timeZone = _this.props.timeZone;
+        var changedDate = date;
+        if (changedDate && timeZone) {
+          changedDate = fromZonedTime(changedDate, timeZone);
+        }
+        if (_this.props.showYearPicker) {
+          if (changedDate !== null && isYearDisabled(getYear(changedDate), _this.props)) {
+            return;
+          }
+        } else if (_this.props.showMonthYearPicker) {
+          if (changedDate !== null && isMonthDisabled(changedDate, _this.props)) {
+            return;
+          }
+        } else {
+          if (changedDate !== null && isDayDisabled(changedDate, _this.props)) {
+            return;
+          }
+        }
+        var _c = _this.props, onChange = _c.onChange, selectsRange = _c.selectsRange, startDate = _c.startDate, endDate = _c.endDate, selectsMultiple = _c.selectsMultiple, selectedDates = _c.selectedDates, minTime2 = _c.minTime, swapRange = _c.swapRange;
+        if (!isEqual2(_this.props.selected, changedDate) || _this.props.allowSameDay || selectsRange || selectsMultiple) {
+          if (changedDate !== null) {
+            if (_this.props.selected && (!keepInput || !_this.props.showTimeSelect && !_this.props.showTimeSelectOnly && !_this.props.showTimeInput)) {
+              changedDate = setTime(changedDate, {
+                hour: getHours(_this.props.selected),
+                minute: getMinutes(_this.props.selected),
+                second: getSeconds(_this.props.selected)
+              });
+            }
+            if (!keepInput && (_this.props.showTimeSelect || _this.props.showTimeSelectOnly)) {
+              if (minTime2) {
+                changedDate = setTime(changedDate, {
+                  hour: minTime2.getHours(),
+                  minute: minTime2.getMinutes(),
+                  second: minTime2.getSeconds()
+                });
+              }
+            }
+            if (!_this.props.inline) {
+              _this.setState({
+                preSelection: changedDate
+              });
+            }
+            if (!_this.props.focusSelectedMonth) {
+              _this.setState({ monthSelectedIn });
+            }
+          }
+          if (selectsRange) {
+            var onChangeRange = onChange;
+            var noRanges = !startDate && !endDate;
+            var hasStartRange = startDate && !endDate;
+            var hasOnlyEndRange = !startDate && !!endDate;
+            var isRangeFilled = startDate && endDate;
+            if (noRanges) {
+              onChangeRange === null || onChangeRange === void 0 ? void 0 : onChangeRange([changedDate, null], event);
+            } else if (hasStartRange) {
+              if (changedDate === null) {
+                onChangeRange === null || onChangeRange === void 0 ? void 0 : onChangeRange([null, null], event);
+              } else if (isDateBefore(changedDate, startDate)) {
+                if (swapRange) {
+                  onChangeRange === null || onChangeRange === void 0 ? void 0 : onChangeRange([changedDate, startDate], event);
+                } else {
+                  onChangeRange === null || onChangeRange === void 0 ? void 0 : onChangeRange([changedDate, null], event);
+                }
+              } else {
+                onChangeRange === null || onChangeRange === void 0 ? void 0 : onChangeRange([startDate, changedDate], event);
+              }
+            } else if (hasOnlyEndRange) {
+              if (changedDate && isDateBefore(changedDate, endDate)) {
+                onChangeRange === null || onChangeRange === void 0 ? void 0 : onChangeRange([changedDate, endDate], event);
+              } else {
+                onChangeRange === null || onChangeRange === void 0 ? void 0 : onChangeRange([changedDate, null], event);
+              }
+            }
+            if (isRangeFilled) {
+              onChangeRange === null || onChangeRange === void 0 ? void 0 : onChangeRange([changedDate, null], event);
+            }
+          } else if (selectsMultiple) {
+            var onChangeMultiple = onChange;
+            if (changedDate !== null) {
+              if (!(selectedDates === null || selectedDates === void 0 ? void 0 : selectedDates.length)) {
+                onChangeMultiple === null || onChangeMultiple === void 0 ? void 0 : onChangeMultiple([changedDate], event);
+              } else {
+                var isChangedDateAlreadySelected = selectedDates.some(function(selectedDate) {
+                  return isSameDay2(selectedDate, changedDate);
+                });
+                if (isChangedDateAlreadySelected) {
+                  var nextDates = selectedDates.filter(function(selectedDate) {
+                    return !isSameDay2(selectedDate, changedDate);
+                  });
+                  onChangeMultiple === null || onChangeMultiple === void 0 ? void 0 : onChangeMultiple(nextDates, event);
+                } else {
+                  onChangeMultiple === null || onChangeMultiple === void 0 ? void 0 : onChangeMultiple(__spreadArray2(__spreadArray2([], selectedDates, true), [changedDate], false), event);
+                }
+              }
+            }
+          } else {
+            onChange === null || onChange === void 0 ? void 0 : onChange(changedDate, event);
+          }
+        }
+        if (!keepInput) {
+          (_b = (_a2 = _this.props).onSelect) === null || _b === void 0 ? void 0 : _b.call(_a2, changedDate, event);
+          _this.setState({ inputValue: null });
+        }
+      };
+      _this.setPreSelection = function(date) {
+        if (_this.props.readOnly)
+          return;
+        var hasMinDate = isDate(_this.props.minDate);
+        var hasMaxDate = isDate(_this.props.maxDate);
+        var isValidDateSelection = true;
+        if (date) {
+          var dateStartOfDay = getStartOfDay(date);
+          if (hasMinDate && hasMaxDate) {
+            isValidDateSelection = isDayInRange(date, _this.props.minDate, _this.props.maxDate);
+          } else if (hasMinDate) {
+            var minDateStartOfDay = getStartOfDay(_this.props.minDate);
+            isValidDateSelection = isAfter(date, minDateStartOfDay) || isEqual2(dateStartOfDay, minDateStartOfDay);
+          } else if (hasMaxDate) {
+            var maxDateEndOfDay = getEndOfDay(_this.props.maxDate);
+            isValidDateSelection = isBefore(date, maxDateEndOfDay) || isEqual2(dateStartOfDay, maxDateEndOfDay);
+          }
+        }
+        if (isValidDateSelection) {
+          _this.setState({
+            preSelection: date
+          });
+        }
+      };
+      _this.toggleCalendar = function() {
+        _this.setOpen(!_this.state.open);
+      };
+      _this.handleTimeChange = function(time, modifyDateType) {
+        var _a2, _b;
+        if (_this.props.selectsMultiple) {
+          return;
+        }
+        var _c = _this.props, selectsRange = _c.selectsRange, startDate = _c.startDate, endDate = _c.endDate, onChange = _c.onChange, timeZone = _c.timeZone;
+        if (selectsRange) {
+          var onChangeRange = onChange;
+          if (modifyDateType === "start") {
+            if (startDate) {
+              var changedStartDate = setTime(startDate, {
+                hour: getHours(time),
+                minute: getMinutes(time)
+              });
+              _this.setState({
+                preSelection: changedStartDate
+              });
+              if (timeZone) {
+                changedStartDate = fromZonedTime(changedStartDate, timeZone);
+              }
+              onChangeRange === null || onChangeRange === void 0 ? void 0 : onChangeRange([
+                changedStartDate,
+                endDate ? timeZone ? fromZonedTime(endDate, timeZone) : endDate : null
+              ], void 0);
+            }
+          } else if (modifyDateType === "end") {
+            if (endDate) {
+              var changedEndDate = setTime(endDate, {
+                hour: getHours(time),
+                minute: getMinutes(time)
+              });
+              _this.setState({
+                preSelection: changedEndDate
+              });
+              if (timeZone) {
+                changedEndDate = fromZonedTime(changedEndDate, timeZone);
+              }
+              onChangeRange === null || onChangeRange === void 0 ? void 0 : onChangeRange([
+                startDate ? timeZone ? fromZonedTime(startDate, timeZone) : startDate : null,
+                changedEndDate
+              ], void 0);
+            }
+          } else {
+            var hasStartRange = startDate && !endDate;
+            if (hasStartRange) {
+              var changedStartDate = setTime(startDate, {
+                hour: getHours(time),
+                minute: getMinutes(time)
+              });
+              _this.setState({
+                preSelection: changedStartDate
+              });
+              if (timeZone) {
+                changedStartDate = fromZonedTime(changedStartDate, timeZone);
+              }
+              onChangeRange === null || onChangeRange === void 0 ? void 0 : onChangeRange([changedStartDate, null], void 0);
+            } else if (startDate && endDate) {
+              var changedEndDate = setTime(endDate, {
+                hour: getHours(time),
+                minute: getMinutes(time)
+              });
+              _this.setState({
+                preSelection: changedEndDate
+              });
+              if (timeZone) {
+                changedEndDate = fromZonedTime(changedEndDate, timeZone);
+              }
+              onChangeRange === null || onChangeRange === void 0 ? void 0 : onChangeRange([
+                timeZone ? fromZonedTime(startDate, timeZone) : startDate,
+                changedEndDate
+              ], void 0);
+            } else {
+              var changedDate = setTime(_this.getPreSelection(), {
+                hour: getHours(time),
+                minute: getMinutes(time)
+              });
+              _this.setState({
+                preSelection: changedDate
+              });
+            }
+          }
+        } else {
+          var selected = _this.props.selected ? _this.props.selected : _this.getPreSelection();
+          var changedDate = _this.props.selected ? time : setTime(selected, {
+            hour: getHours(time),
+            minute: getMinutes(time)
+          });
+          _this.setState({
+            preSelection: changedDate
+          });
+          if (changedDate && timeZone) {
+            changedDate = fromZonedTime(changedDate, timeZone);
+          }
+          (_b = (_a2 = _this.props).onChange) === null || _b === void 0 ? void 0 : _b.call(_a2, changedDate);
+        }
+        if (_this.props.shouldCloseOnSelect && !_this.props.showTimeInput) {
+          _this.sendFocusBackToInput();
+          _this.setOpen(false);
+        }
+        if (_this.props.showTimeInput) {
+          _this.setOpen(true);
+        }
+        if (_this.props.showTimeSelectOnly || _this.props.showTimeSelect) {
+          _this.setState({ isRenderAriaLiveMessage: true });
+        }
+        _this.setState({ inputValue: null });
+      };
+      _this.onInputClick = function() {
+        var _a2, _b;
+        if (!_this.props.disabled && !_this.props.readOnly) {
+          _this.setOpen(true);
+        }
+        (_b = (_a2 = _this.props).onInputClick) === null || _b === void 0 ? void 0 : _b.call(_a2);
+      };
+      _this.handleTimeOnlyArrowKey = function(eventKey) {
+        var _a2, _b, _c, _d;
+        var currentTime = safeToDate(_this.props.selected) || _this.state.preSelection || newDate();
+        var timeIntervals = (_a2 = _this.props.timeIntervals) !== null && _a2 !== void 0 ? _a2 : 30;
+        var dateFormat = (_b = _this.props.dateFormat) !== null && _b !== void 0 ? _b : DatePicker2.defaultProps.dateFormat;
+        var formatStr = Array.isArray(dateFormat) ? dateFormat[0] : dateFormat;
+        var baseDate = getStartOfDay(currentTime);
+        var currentMinutes = getHours(currentTime) * 60 + getMinutes(currentTime);
+        var maxMinutes = 23 * 60 + 60 - timeIntervals;
+        var newTime;
+        if (eventKey === KeyType.ArrowUp) {
+          var newMinutes = Math.max(0, currentMinutes - timeIntervals);
+          newTime = addMinutes(baseDate, newMinutes);
+        } else {
+          var newMinutes = Math.min(maxMinutes, currentMinutes + timeIntervals);
+          newTime = addMinutes(baseDate, newMinutes);
+        }
+        var formattedTime = formatDate2(newTime, formatStr || DatePicker2.defaultProps.dateFormat, _this.props.locale);
+        _this.setState({
+          preSelection: newTime,
+          inputValue: formattedTime
+        });
+        if (_this.props.selectsRange || _this.props.selectsMultiple) {
+          return;
+        }
+        var selected = _this.props.selected ? _this.props.selected : _this.getPreSelection();
+        var changedDate = _this.props.selected ? newTime : setTime(selected, {
+          hour: getHours(newTime),
+          minute: getMinutes(newTime)
+        });
+        (_d = (_c = _this.props).onChange) === null || _d === void 0 ? void 0 : _d.call(_c, changedDate);
+        if (_this.props.showTimeSelectOnly || _this.props.showTimeSelect) {
+          _this.setState({ isRenderAriaLiveMessage: true });
+        }
+        requestAnimationFrame(function() {
+          _this.scrollToTimeOption(newTime);
+        });
+      };
+      _this.handleTimeOnlyEnterKey = function(event) {
+        var _a2, _b, _c, _d;
+        var inputElement = event.target;
+        var inputValue = inputElement.value;
+        var dateFormat = (_a2 = _this.props.dateFormat) !== null && _a2 !== void 0 ? _a2 : DatePicker2.defaultProps.dateFormat;
+        var timeFormat = _this.props.timeFormat || "p";
+        var defaultTime = _this.state.preSelection || safeToDate(_this.props.selected) || newDate();
+        var parsedDate = parseDate2(inputValue, dateFormat, _this.props.locale, (_b = _this.props.strictParsing) !== null && _b !== void 0 ? _b : false, defaultTime);
+        var timeToCommit = defaultTime;
+        if (parsedDate && isValid2(parsedDate)) {
+          timeToCommit = parsedDate;
+        } else {
+          var highlightedItem = ((_c = _this.calendar) === null || _c === void 0 ? void 0 : _c.containerRef.current) instanceof Element && _this.calendar.containerRef.current.querySelector(".react-datepicker__time-list-item[tabindex='0']");
+          if (highlightedItem instanceof HTMLElement) {
+            var itemText = (_d = highlightedItem.textContent) === null || _d === void 0 ? void 0 : _d.trim();
+            if (itemText) {
+              var itemTime = parseDate2(itemText, timeFormat, _this.props.locale, false, defaultTime);
+              if (itemTime && isValid2(itemTime)) {
+                timeToCommit = itemTime;
+              }
+            }
+          }
+        }
+        _this.handleTimeChange(timeToCommit);
+        _this.setOpen(false);
+        _this.sendFocusBackToInput();
+      };
+      _this.scrollToTimeOption = function(time) {
+        var _a2, _b;
+        if (!((_a2 = _this.calendar) === null || _a2 === void 0 ? void 0 : _a2.containerRef.current)) {
+          return;
+        }
+        var container = _this.calendar.containerRef.current;
+        var timeListItems = Array.from(container.querySelectorAll(".react-datepicker__time-list-item"));
+        var targetItem = null;
+        var closestTimeDiff = Infinity;
+        var timeFormat = _this.props.timeFormat || "p";
+        for (var _i = 0, timeListItems_1 = timeListItems; _i < timeListItems_1.length; _i++) {
+          var item = timeListItems_1[_i];
+          var itemText = (_b = item.textContent) === null || _b === void 0 ? void 0 : _b.trim();
+          if (itemText) {
+            var itemTime = parseDate2(itemText, timeFormat, _this.props.locale, false, time);
+            if (itemTime && isValid2(itemTime)) {
+              if (isSameMinute(itemTime, time)) {
+                targetItem = item;
+                break;
+              }
+              var timeDiff = Math.abs(itemTime.getTime() - time.getTime());
+              if (timeDiff < closestTimeDiff) {
+                closestTimeDiff = timeDiff;
+                targetItem = item;
+              }
+            }
+          }
+        }
+        if (targetItem) {
+          timeListItems.forEach(function(item2) {
+            item2.setAttribute("tabindex", "-1");
+          });
+          targetItem.setAttribute("tabindex", "0");
+          targetItem.scrollIntoView({
+            behavior: "smooth",
+            block: "center"
+          });
+        }
+      };
+      _this.onInputKeyDown = function(event) {
+        var _a2, _b, _c, _d, _e, _f;
+        (_b = (_a2 = _this.props).onKeyDown) === null || _b === void 0 ? void 0 : _b.call(_a2, event);
+        var eventKey = event.key;
+        if (!_this.state.open && !_this.props.inline && !_this.props.preventOpenOnFocus) {
+          if (eventKey === KeyType.ArrowDown || eventKey === KeyType.ArrowUp || eventKey === KeyType.Enter) {
+            (_c = _this.onInputClick) === null || _c === void 0 ? void 0 : _c.call(_this);
+          }
+          return;
+        }
+        if (_this.state.open && _this.props.showTimeSelectOnly) {
+          if (eventKey === KeyType.ArrowDown || eventKey === KeyType.ArrowUp) {
+            event.preventDefault();
+            _this.handleTimeOnlyArrowKey(eventKey);
+            return;
+          }
+          if (eventKey === KeyType.Enter) {
+            event.preventDefault();
+            _this.handleTimeOnlyEnterKey(event);
+            return;
+          }
+        }
+        if (_this.state.open) {
+          if (eventKey === KeyType.ArrowDown || eventKey === KeyType.ArrowUp) {
+            event.preventDefault();
+            var selectorString = _this.props.showTimeSelectOnly ? ".react-datepicker__time-list-item[tabindex='0']" : _this.props.showWeekPicker && _this.props.showWeekNumbers ? '.react-datepicker__week-number[tabindex="0"]' : _this.props.showFullMonthYearPicker || _this.props.showMonthYearPicker ? '.react-datepicker__month-text[tabindex="0"]' : '.react-datepicker__day[tabindex="0"]';
+            var selectedItem = ((_d = _this.calendar) === null || _d === void 0 ? void 0 : _d.containerRef.current) instanceof Element && _this.calendar.containerRef.current.querySelector(selectorString);
+            selectedItem instanceof HTMLElement && selectedItem.focus({ preventScroll: true });
+            return;
+          }
+          var copy = newDate(_this.state.preSelection);
+          if (eventKey === KeyType.Enter) {
+            event.preventDefault();
+            event.target.blur();
+            if (_this.inputOk() && _this.state.lastPreSelectChange === PRESELECT_CHANGE_VIA_NAVIGATE) {
+              _this.handleSelect(copy, event);
+              !_this.props.shouldCloseOnSelect && _this.setPreSelection(copy);
+            } else {
+              _this.setOpen(false);
+            }
+          } else if (eventKey === KeyType.Escape) {
+            event.preventDefault();
+            event.target.blur();
+            _this.sendFocusBackToInput();
+            _this.setOpen(false);
+          } else if (eventKey === KeyType.Tab) {
+            _this.setOpen(false);
+          }
+          if (!_this.inputOk()) {
+            (_f = (_e = _this.props).onInputError) === null || _f === void 0 ? void 0 : _f.call(_e, { code: 1, msg: INPUT_ERR_1 });
+          }
+        }
+      };
+      _this.onPortalKeyDown = function(event) {
+        var eventKey = event.key;
+        if (eventKey === KeyType.Escape) {
+          event.preventDefault();
+          _this.setState({
+            preventFocus: true
+          }, function() {
+            _this.setOpen(false);
+            setTimeout(function() {
+              _this.setFocus();
+              _this.setState({ preventFocus: false });
+            });
+          });
+        }
+      };
+      _this.onDayKeyDown = function(event) {
+        var _a2, _b, _c, _d, _e, _f;
+        var _g = _this.props, minDate = _g.minDate, maxDate = _g.maxDate, disabledKeyboardNavigation = _g.disabledKeyboardNavigation, showWeekPicker = _g.showWeekPicker, shouldCloseOnSelect = _g.shouldCloseOnSelect, locale = _g.locale, calendarStartDay = _g.calendarStartDay, adjustDateOnChange = _g.adjustDateOnChange, inline4 = _g.inline;
+        (_b = (_a2 = _this.props).onKeyDown) === null || _b === void 0 ? void 0 : _b.call(_a2, event);
+        if (disabledKeyboardNavigation)
+          return;
+        var eventKey = event.key;
+        var isShiftKeyActive = event.shiftKey;
+        var copy = newDate(_this.state.preSelection);
+        var calculateNewDate = function(eventKey2, date) {
+          var newCalculatedDate = date;
+          switch (eventKey2) {
+            case KeyType.ArrowRight:
+              newCalculatedDate = showWeekPicker ? addWeeks(date, 1) : addDays2(date, 1);
+              break;
+            case KeyType.ArrowLeft:
+              newCalculatedDate = showWeekPicker ? subWeeks(date, 1) : subDays(date, 1);
+              break;
+            case KeyType.ArrowUp:
+              newCalculatedDate = subWeeks(date, 1);
+              break;
+            case KeyType.ArrowDown:
+              newCalculatedDate = addWeeks(date, 1);
+              break;
+            case KeyType.PageUp:
+              newCalculatedDate = isShiftKeyActive ? subYears(date, 1) : subMonths(date, 1);
+              break;
+            case KeyType.PageDown:
+              newCalculatedDate = isShiftKeyActive ? addYears(date, 1) : addMonths(date, 1);
+              break;
+            case KeyType.Home:
+              newCalculatedDate = getStartOfWeek(date, locale, calendarStartDay);
+              break;
+            case KeyType.End:
+              newCalculatedDate = getEndOfWeek(date);
+              break;
+          }
+          return newCalculatedDate;
+        };
+        var getNewDate = function(eventKey2, date) {
+          var MAX_ITERATIONS = 40;
+          var eventKeyCopy = eventKey2;
+          var validDateFound = false;
+          var iterations = 0;
+          var newSelection2 = calculateNewDate(eventKey2, date);
+          while (!validDateFound) {
+            if (iterations >= MAX_ITERATIONS) {
+              newSelection2 = date;
+              break;
+            }
+            if (minDate && newSelection2 < minDate) {
+              eventKeyCopy = KeyType.ArrowRight;
+              newSelection2 = isDayDisabled(minDate, _this.props) ? calculateNewDate(eventKeyCopy, newSelection2) : minDate;
+            }
+            if (maxDate && newSelection2 > maxDate) {
+              eventKeyCopy = KeyType.ArrowLeft;
+              newSelection2 = isDayDisabled(maxDate, _this.props) ? calculateNewDate(eventKeyCopy, newSelection2) : maxDate;
+            }
+            if (isDayDisabled(newSelection2, _this.props)) {
+              if (eventKeyCopy === KeyType.PageUp || eventKeyCopy === KeyType.Home) {
+                eventKeyCopy = KeyType.ArrowRight;
+              }
+              if (eventKeyCopy === KeyType.PageDown || eventKeyCopy === KeyType.End) {
+                eventKeyCopy = KeyType.ArrowLeft;
+              }
+              newSelection2 = calculateNewDate(eventKeyCopy, newSelection2);
+            } else {
+              validDateFound = true;
+            }
+            iterations++;
+          }
+          return newSelection2;
+        };
+        if (eventKey === KeyType.Enter) {
+          event.preventDefault();
+          _this.handleSelect(copy, event);
+          !shouldCloseOnSelect && _this.setPreSelection(copy);
+          return;
+        } else if (eventKey === KeyType.Escape) {
+          event.preventDefault();
+          _this.setOpen(false);
+          if (!_this.inputOk()) {
+            (_d = (_c = _this.props).onInputError) === null || _d === void 0 ? void 0 : _d.call(_c, { code: 1, msg: INPUT_ERR_1 });
+          }
+          return;
+        }
+        var newSelection = null;
+        switch (eventKey) {
+          case KeyType.ArrowLeft:
+          case KeyType.ArrowRight:
+          case KeyType.ArrowUp:
+          case KeyType.ArrowDown:
+          case KeyType.PageUp:
+          case KeyType.PageDown:
+          case KeyType.Home:
+          case KeyType.End:
+            newSelection = getNewDate(eventKey, copy);
+            break;
+        }
+        if (!newSelection) {
+          (_f = (_e = _this.props).onInputError) === null || _f === void 0 ? void 0 : _f.call(_e, { code: 1, msg: INPUT_ERR_1 });
+          return;
+        }
+        event.preventDefault();
+        _this.setState({ lastPreSelectChange: PRESELECT_CHANGE_VIA_NAVIGATE });
+        if (adjustDateOnChange) {
+          _this.setSelected(newSelection);
+        }
+        _this.setPreSelection(newSelection);
+        if (inline4) {
+          _this.setState({ shouldFocusDayInline: true });
+        }
+      };
+      _this.onPopperKeyDown = function(event) {
+        var eventKey = event.key;
+        if (eventKey === KeyType.Escape) {
+          event.preventDefault();
+          _this.sendFocusBackToInput();
+          _this.setOpen(false);
+        }
+      };
+      _this.onClearClick = function(event) {
+        if (event) {
+          if (event.preventDefault) {
+            event.preventDefault();
+          }
+        }
+        _this.sendFocusBackToInput();
+        var _a2 = _this.props, selectsRange = _a2.selectsRange, onChange = _a2.onChange;
+        if (selectsRange) {
+          onChange === null || onChange === void 0 ? void 0 : onChange([null, null], event);
+        } else {
+          onChange === null || onChange === void 0 ? void 0 : onChange(null, event);
+        }
+        _this.setState({ inputValue: null });
+      };
+      _this.clear = function() {
+        _this.onClearClick();
+      };
+      _this.onScroll = function(event) {
+        if (typeof _this.props.closeOnScroll === "boolean" && _this.props.closeOnScroll) {
+          if (event.target === document || event.target === document.documentElement || event.target === document.body) {
+            _this.setOpen(false);
+          }
+        } else if (typeof _this.props.closeOnScroll === "function") {
+          if (_this.props.closeOnScroll(event)) {
+            _this.setOpen(false);
+          }
+        }
+      };
+      _this.handleMonthSelectedInChange = function(monthSelectedIn) {
+        _this.setState({ monthSelectedIn });
+      };
+      _this.renderCalendar = function() {
+        var _a2, _b;
+        if (!_this.props.inline && !_this.isCalendarOpen()) {
+          return null;
+        }
+        return import_react42.default.createElement(Calendar, _assign({ showMonthYearDropdown: void 0, ref: function(elem) {
+          _this.calendar = elem;
+        } }, _this.props, _this.state, { setOpen: _this.setOpen, dateFormat: (_a2 = _this.props.dateFormatCalendar) !== null && _a2 !== void 0 ? _a2 : DatePicker2.defaultProps.dateFormatCalendar, onSelect: _this.handleSelect, onClickOutside: _this.handleCalendarClickOutside, holidays: getHolidaysMap(_this.modifyHolidays()), outsideClickIgnoreClass: _this.props.outsideClickIgnoreClass, onDropdownFocus: _this.handleDropdownFocus, onTimeChange: _this.handleTimeChange, className: _this.props.calendarClassName, container: _this.props.calendarContainer, handleOnKeyDown: _this.props.onKeyDown, handleOnDayKeyDown: _this.onDayKeyDown, setPreSelection: _this.setPreSelection, dropdownMode: (_b = _this.props.dropdownMode) !== null && _b !== void 0 ? _b : DatePicker2.defaultProps.dropdownMode, onMonthSelectedInChange: _this.handleMonthSelectedInChange }), _this.props.children);
+      };
+      _this.renderAriaLiveRegion = function() {
+        var _a2;
+        var locale = _this.props.locale;
+        var dateFormat = (_a2 = _this.props.dateFormat) !== null && _a2 !== void 0 ? _a2 : DatePicker2.defaultProps.dateFormat;
+        var isContainsTime = _this.props.showTimeInput || _this.props.showTimeSelect;
+        var longDateFormat = isContainsTime ? "PPPPp" : "PPPP";
+        var ariaLiveMessage;
+        if (_this.props.selectsRange) {
+          ariaLiveMessage = "Selected start date: ".concat(safeDateFormat(_this.props.startDate, {
+            dateFormat: longDateFormat,
+            locale
+          }), ". ").concat(_this.props.endDate ? "End date: " + safeDateFormat(_this.props.endDate, {
+            dateFormat: longDateFormat,
+            locale
+          }) : "");
+        } else {
+          if (_this.props.showTimeSelectOnly) {
+            ariaLiveMessage = "Selected time: ".concat(safeDateFormat(_this.props.selected, { dateFormat, locale }));
+          } else if (_this.props.showYearPicker) {
+            ariaLiveMessage = "Selected year: ".concat(safeDateFormat(_this.props.selected, { dateFormat: "yyyy", locale }));
+          } else if (_this.props.showMonthYearPicker) {
+            ariaLiveMessage = "Selected month: ".concat(safeDateFormat(_this.props.selected, { dateFormat: "MMMM yyyy", locale }));
+          } else if (_this.props.showQuarterYearPicker) {
+            ariaLiveMessage = "Selected quarter: ".concat(safeDateFormat(_this.props.selected, {
+              dateFormat: "yyyy, QQQ",
+              locale
+            }));
+          } else {
+            ariaLiveMessage = "Selected date: ".concat(safeDateFormat(_this.props.selected, {
+              dateFormat: longDateFormat,
+              locale
+            }));
+          }
+        }
+        return import_react42.default.createElement("span", { role: "alert", "aria-live": "polite", className: "react-datepicker__aria-live" }, ariaLiveMessage);
+      };
+      _this.renderDateInput = function() {
+        var _a2, _b;
+        var _c, _d, _e, _f, _g;
+        var className = clsx(_this.props.className, (_a2 = {}, _a2[_this.props.outsideClickIgnoreClass || DatePicker2.defaultProps.outsideClickIgnoreClass] = _this.state.open, _a2));
+        var customInput = _this.props.customInput || import_react42.default.createElement("input", { type: "text" });
+        var customInputRef = _this.props.customInputRef || "ref";
+        var ariaProps = {};
+        var ariaDescribedBy = (_c = _this.props["aria-describedby"]) !== null && _c !== void 0 ? _c : _this.props.ariaDescribedBy;
+        var ariaInvalid = (_d = _this.props["aria-invalid"]) !== null && _d !== void 0 ? _d : _this.props.ariaInvalid;
+        var ariaLabel = (_e = _this.props["aria-label"]) !== null && _e !== void 0 ? _e : _this.props.ariaLabel;
+        var ariaLabelledBy = (_f = _this.props["aria-labelledby"]) !== null && _f !== void 0 ? _f : _this.props.ariaLabelledBy;
+        var ariaRequired = (_g = _this.props["aria-required"]) !== null && _g !== void 0 ? _g : _this.props.ariaRequired;
+        if (ariaDescribedBy != null)
+          ariaProps["aria-describedby"] = ariaDescribedBy;
+        if (ariaInvalid != null)
+          ariaProps["aria-invalid"] = ariaInvalid;
+        if (ariaLabel != null)
+          ariaProps["aria-label"] = ariaLabel;
+        if (ariaLabelledBy != null)
+          ariaProps["aria-labelledby"] = ariaLabelledBy;
+        if (ariaRequired != null)
+          ariaProps["aria-required"] = ariaRequired;
+        return (0, import_react42.cloneElement)(customInput, _assign((_b = {}, _b[customInputRef] = function(input) {
+          _this.input = input;
+        }, _b.value = _this.getInputValue(), _b.onBlur = _this.handleBlur, _b.onChange = _this.handleChange, _b.onClick = _this.onInputClick, _b.onFocus = _this.handleFocus, _b.onKeyDown = _this.onInputKeyDown, _b.id = _this.props.id, _b.name = _this.props.name, _b.form = _this.props.form, _b.autoFocus = _this.props.autoFocus, _b.placeholder = _this.props.placeholderText, _b.disabled = _this.props.disabled, _b.autoComplete = _this.props.autoComplete, _b.className = clsx(customInput.props.className, className), _b.title = _this.props.title, _b.readOnly = _this.props.readOnly, _b.required = _this.props.required, _b.tabIndex = _this.props.tabIndex, _b), ariaProps));
+      };
+      _this.renderClearButton = function() {
+        var _a2 = _this.props, isClearable = _a2.isClearable, disabled = _a2.disabled, selected = _a2.selected, startDate = _a2.startDate, endDate = _a2.endDate, clearButtonTitle = _a2.clearButtonTitle, _b = _a2.clearButtonClassName, clearButtonClassName = _b === void 0 ? "" : _b, _c = _a2.ariaLabelClose, ariaLabelClose = _c === void 0 ? "Close" : _c, selectedDates = _a2.selectedDates, readOnly = _a2.readOnly;
+        if (isClearable && !readOnly && (selected != null || startDate != null || endDate != null || (selectedDates === null || selectedDates === void 0 ? void 0 : selectedDates.length))) {
+          return import_react42.default.createElement("button", { type: "button", className: clsx("react-datepicker__close-icon", clearButtonClassName, { "react-datepicker__close-icon--disabled": disabled }), disabled, "aria-label": ariaLabelClose, onClick: _this.onClearClick, title: clearButtonTitle, tabIndex: -1 });
+        } else {
+          return null;
+        }
+      };
+      _this.state = _this.calcInitialState();
+      _this.preventFocusTimeout = void 0;
+      return _this;
+    }
+    Object.defineProperty(DatePicker2, "defaultProps", {
+      get: function() {
+        return {
+          allowSameDay: false,
+          dateFormat: "MM/dd/yyyy",
+          dateFormatCalendar: "LLLL yyyy",
+          disabled: false,
+          disabledKeyboardNavigation: false,
+          dropdownMode: "scroll",
+          preventOpenOnFocus: false,
+          monthsShown: 1,
+          outsideClickIgnoreClass: OUTSIDE_CLICK_IGNORE_CLASS,
+          readOnly: false,
+          rangeSeparator: DATE_RANGE_SEPARATOR,
+          withPortal: false,
+          selectsDisabledDaysInRange: false,
+          shouldCloseOnSelect: true,
+          showTimeSelect: false,
+          showTimeInput: false,
+          showPreviousMonths: false,
+          showMonthYearPicker: false,
+          showFullMonthYearPicker: false,
+          showTwoColumnMonthYearPicker: false,
+          showFourColumnMonthYearPicker: false,
+          showYearPicker: false,
+          showQuarterYearPicker: false,
+          showWeekPicker: false,
+          strictParsing: false,
+          swapRange: false,
+          timeIntervals: 30,
+          timeCaption: "Time",
+          previousMonthAriaLabel: "Previous Month",
+          previousMonthButtonLabel: "Previous Month",
+          nextMonthAriaLabel: "Next Month",
+          nextMonthButtonLabel: "Next Month",
+          previousYearAriaLabel: "Previous Year",
+          previousYearButtonLabel: "Previous Year",
+          nextYearAriaLabel: "Next Year",
+          nextYearButtonLabel: "Next Year",
+          timeInputLabel: "Time",
+          enableTabLoop: true,
+          yearItemNumber: DEFAULT_YEAR_ITEM_NUMBER,
+          focusSelectedMonth: false,
+          showPopperArrow: true,
+          excludeScrollbar: true,
+          customTimeInput: null,
+          calendarStartDay: void 0,
+          toggleCalendarOnIconClick: false,
+          usePointerEvent: false
+        };
+      },
+      enumerable: false,
+      configurable: true
+    });
+    DatePicker2.prototype.componentDidMount = function() {
+      window.addEventListener("scroll", this.onScroll, true);
+      document.addEventListener("visibilitychange", this.setHiddenStateOnVisibilityHidden);
+    };
+    DatePicker2.prototype.componentDidUpdate = function(prevProps, prevState) {
+      var _a2, _b, _c, _d;
+      if (this.props.selectsRange && hasPreSelectionChanged(prevProps.startDate, this.props.startDate)) {
+        this.setPreSelection(this.props.startDate);
+      } else if (hasPreSelectionChanged(prevProps.selected, this.props.selected)) {
+        this.setPreSelection(this.props.selected);
+      }
+      if (this.state.monthSelectedIn !== void 0 && prevProps.monthsShown !== this.props.monthsShown) {
+        this.setState({ monthSelectedIn: 0 });
+      }
+      if (this.props.selectsRange && prevState.open === false && this.state.open === true && this.state.monthSelectedIn !== 0) {
+        this.setState({ monthSelectedIn: 0 });
+      }
+      if (prevProps.highlightDates !== this.props.highlightDates) {
+        this.setState({
+          highlightDates: getHighLightDaysMap(this.props.highlightDates)
+        });
+      }
+      if (!prevState.focused && !isEqual2(prevProps.selected, this.props.selected)) {
+        this.setState({ inputValue: null });
+      }
+      if (prevState.open !== this.state.open) {
+        if (prevState.open === false && this.state.open === true) {
+          (_b = (_a2 = this.props).onCalendarOpen) === null || _b === void 0 ? void 0 : _b.call(_a2);
+        }
+        if (prevState.open === true && this.state.open === false) {
+          (_d = (_c = this.props).onCalendarClose) === null || _d === void 0 ? void 0 : _d.call(_c);
+        }
+      }
+    };
+    DatePicker2.prototype.componentWillUnmount = function() {
+      this.clearPreventFocusTimeout();
+      window.removeEventListener("scroll", this.onScroll, true);
+      document.removeEventListener("visibilitychange", this.setHiddenStateOnVisibilityHidden);
+    };
+    DatePicker2.prototype.renderInputContainer = function() {
+      var _a2 = this.props, showIcon = _a2.showIcon, icon = _a2.icon, calendarIconClassname = _a2.calendarIconClassname, calendarIconClassName = _a2.calendarIconClassName, toggleCalendarOnIconClick = _a2.toggleCalendarOnIconClick;
+      var open = this.state.open;
+      if (calendarIconClassname) {
+        console.warn("calendarIconClassname props is deprecated. should use calendarIconClassName props.");
+      }
+      return import_react42.default.createElement(
+        "div",
+        { className: "react-datepicker__input-container".concat(showIcon ? " react-datepicker__view-calendar-icon" : "") },
+        showIcon && import_react42.default.createElement(CalendarIcon, _assign({ icon, className: clsx(calendarIconClassName, !calendarIconClassName && calendarIconClassname, open && "react-datepicker-ignore-onclickoutside") }, toggleCalendarOnIconClick ? {
+          onClick: this.toggleCalendar
+        } : null)),
+        this.state.isRenderAriaLiveMessage && this.renderAriaLiveRegion(),
+        this.renderDateInput(),
+        this.renderClearButton()
+      );
+    };
+    DatePicker2.prototype.render = function() {
+      var calendar = this.renderCalendar();
+      if (this.props.inline)
+        return calendar;
+      if (this.props.withPortal) {
+        var portalContainer = this.state.open ? import_react42.default.createElement(
+          TabLoop,
+          { enableTabLoop: this.props.enableTabLoop },
+          import_react42.default.createElement("div", { className: "react-datepicker__portal", tabIndex: -1, onKeyDown: this.onPortalKeyDown }, calendar)
+        ) : null;
+        if (this.state.open && this.props.portalId) {
+          portalContainer = import_react42.default.createElement(Portal3, _assign({ portalId: this.props.portalId }, this.props), portalContainer);
+        }
+        return import_react42.default.createElement(
+          import_react42.default.Fragment,
+          null,
+          this.renderInputContainer(),
+          portalContainer
+        );
+      }
+      return import_react42.default.createElement(PopperComponent, _assign({}, this.props, { className: this.props.popperClassName, hidePopper: !this.isCalendarOpen(), targetComponent: this.renderInputContainer(), popperComponent: calendar, popperOnKeyDown: this.onPopperKeyDown, showArrow: this.props.showPopperArrow, monthHeaderPosition: this.props.monthHeaderPosition }));
+    };
+    return DatePicker2;
+  }(import_react42.Component)
+);
+var PRESELECT_CHANGE_VIA_INPUT = "input";
+var PRESELECT_CHANGE_VIA_NAVIGATE = "navigate";
+
+// src/pages/FebruaryPage.jsx
+var import_jsx_runtime45 = require("react/jsx-runtime");
+var MIN_GUESTS = 4;
+var MAX_GUESTS = 12;
+var PARTY_PRICES_CENTS = {
+  4: 3e4,
+  5: 36e3,
+  6: 42e3,
+  7: 49e3,
+  8: 52e3,
+  9: 58500,
+  10: 65e3,
+  11: 71500,
+  12: 78e3
+};
+var getPartyPrice = (guests) => {
+  const clamped = Math.min(MAX_GUESTS, Math.max(MIN_GUESTS, guests));
+  return PARTY_PRICES_CENTS[clamped] || PARTY_PRICES_CENTS[MIN_GUESTS];
+};
+var getFebruaryYear = () => {
+  const now = /* @__PURE__ */ new Date();
+  const month = now.getMonth();
+  const year = now.getFullYear();
+  return month > 1 ? year + 1 : year;
+};
+var pad2 = (value) => String(value).padStart(2, "0");
+var formatMoney2 = (cents) => (cents / 100).toFixed(2);
+var clampGuests = (value) => {
+  const parsed = parseInt(value, 10);
+  if (Number.isNaN(parsed)) return MIN_GUESTS;
+  return Math.min(MAX_GUESTS, Math.max(MIN_GUESTS, parsed));
+};
+var isValidEmail2 = (value) => /.+@.+\..+/.test(value.trim());
+var normalizePhone2 = (value) => value.replace(/\D/g, "").slice(0, 10);
+var formatPhone2 = (value) => {
+  const digits = normalizePhone2(value);
+  if (digits.length <= 3) return digits;
+  if (digits.length <= 6) return `(${digits.slice(0, 3)}) ${digits.slice(3)}`;
+  return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
+};
+var formatPostal2 = (value) => value.replace(/\D/g, "").slice(0, 5);
+var FebruaryPage = () => {
+  const year = (0, import_react44.useMemo)(() => getFebruaryYear(), []);
+  const monthLabel = (0, import_react44.useMemo)(() => `February ${year}`, [year]);
+  const febStart = (0, import_react44.useMemo)(() => new Date(year, 1, 1, 12, 0, 0), [year]);
+  const febEnd = (0, import_react44.useMemo)(() => new Date(year, 2, 0, 12, 0, 0), [year]);
+  const [selectedDate, setSelectedDate] = (0, import_react44.useState)(null);
+  const [guestCount, setGuestCount] = (0, import_react44.useState)(MIN_GUESTS);
+  const [customer, setCustomer] = (0, import_react44.useState)({ name: "", email: "", phone: "" });
+  const [address, setAddress] = (0, import_react44.useState)({ line1: "", line2: "", city: "", state: "MN", postal: "" });
+  const [preferredTime, setPreferredTime] = (0, import_react44.useState)("6:00 PM");
+  const [dietaryNotes, setDietaryNotes] = (0, import_react44.useState)("");
+  const [notes, setNotes] = (0, import_react44.useState)("");
+  const [status, setStatus] = (0, import_react44.useState)("idle");
+  const [error, setError] = (0, import_react44.useState)("");
+  const [paymentId, setPaymentId] = (0, import_react44.useState)("");
+  const [emailStatus, setEmailStatus] = (0, import_react44.useState)(null);
+  const [bookedDates, setBookedDates] = (0, import_react44.useState)([]);
+  const stepLabels = ["Pick a date", "Name + address", "Dietary + notes", "Reserve"];
+  const [activeStep, setActiveStep] = (0, import_react44.useState)(0);
+  const trackRef = (0, import_react44.useRef)(null);
+  const KNOWN_SOLD_OUT = ["2026-02-05", "2026-02-26"];
+  const FORCE_AVAILABLE = (0, import_react44.useMemo)(() => [`${year}-02-12`], [year]);
+  (0, import_react44.useEffect)(() => {
+    const fetchBookedDates = async () => {
+      try {
+        console.log("[FebruaryPage] Fetching booked dates...");
+        const resp = await fetch("/api/february/booked-dates");
+        console.log("[FebruaryPage] Response status:", resp.status);
+        if (resp.ok) {
+          const data = await resp.json();
+          console.log("[FebruaryPage] Booked dates:", data.bookedDates);
+          const merged = [.../* @__PURE__ */ new Set([...data.bookedDates || [], ...KNOWN_SOLD_OUT])];
+          const filtered = merged.filter((date) => !FORCE_AVAILABLE.includes(date));
+          setBookedDates(filtered);
+        } else {
+          console.warn("[FebruaryPage] API response not ok, using fallback");
+          setBookedDates(KNOWN_SOLD_OUT.filter((date) => !FORCE_AVAILABLE.includes(date)));
+        }
+      } catch (err) {
+        console.warn("[FebruaryPage] Failed to fetch booked dates, using fallback", err);
+        setBookedDates(KNOWN_SOLD_OUT.filter((date) => !FORCE_AVAILABLE.includes(date)));
+      }
+    };
+    fetchBookedDates();
+  }, []);
+  const { cardLoaded, error: cardError, loadingScript, tokenize, verifyBuyer } = useSquareCard(
+    "#february-card-container",
+    true,
+    []
+    // Don't reinitialize card when date changes
+  );
+  const [fallbackUrl, setFallbackUrl] = (0, import_react44.useState)("");
+  const [fallbackStatus, setFallbackStatus] = (0, import_react44.useState)({ loading: false, error: "" });
+  const checkoutAttemptRef = (0, import_react44.useRef)("");
+  const attemptStorageKey = "le:checkoutAttempt:february";
+  const resolveCheckoutAttemptId = (0, import_react44.useCallback)(() => {
+    if (checkoutAttemptRef.current) return checkoutAttemptRef.current;
+    const next = getOrCreateCheckoutAttemptId(attemptStorageKey);
+    checkoutAttemptRef.current = next;
+    return next;
+  }, []);
+  const clearCheckoutAttempt = (0, import_react44.useCallback)(() => {
+    checkoutAttemptRef.current = "";
+    clearCheckoutAttemptId(attemptStorageKey);
+  }, []);
+  const totalGuests = clampGuests(guestCount);
+  const totalCents = getPartyPrice(totalGuests);
+  const selectedIso = selectedDate ? `${selectedDate.getFullYear()}-${pad2(selectedDate.getMonth() + 1)}-${pad2(selectedDate.getDate())}` : "";
+  const buildFallbackLink = (0, import_react44.useCallback)(async () => {
+    if (fallbackStatus.loading) return;
+    if (!selectedIso) {
+      setFallbackStatus({ loading: false, error: "Select a date to build hosted checkout." });
+      return;
+    }
+    setFallbackStatus({ loading: true, error: "" });
+    try {
+      const response = await fetch("/api/february/payment-link", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          date: selectedIso,
+          guestCount: totalGuests,
+          preferredTime,
+          customer,
+          address,
+          dietaryNotes,
+          notes
+        })
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(data?.error || "Unable to create hosted checkout.");
+      setFallbackUrl(data?.url || "");
+    } catch (err) {
+      setFallbackStatus({ loading: false, error: err?.message || "Unable to create hosted checkout." });
+      return;
+    }
+    setFallbackStatus({ loading: false, error: "" });
+  }, [fallbackStatus.loading, selectedIso, totalGuests, preferredTime, customer, address, dietaryNotes, notes]);
+  const isDateBooked = (0, import_react44.useCallback)((date) => {
+    if (!date) return false;
+    const iso = `${date.getFullYear()}-${pad2(date.getMonth() + 1)}-${pad2(date.getDate())}`;
+    return bookedDates.includes(iso);
+  }, [bookedDates]);
+  const isAvailableDate = (0, import_react44.useCallback)((date) => {
+    if (!date) return false;
+    if (date.getMonth() !== 1) return false;
+    const day = date.getDay();
+    if (day !== 4 && day !== 6) return false;
+    if (isDateBooked(date)) return false;
+    return true;
+  }, [isDateBooked]);
+  const getDayClassName = (0, import_react44.useCallback)((date) => {
+    if (!date || date.getMonth() !== 1) return "february-date-unavailable";
+    const day = date.getDay();
+    if (day !== 4 && day !== 6) return "february-date-unavailable";
+    if (isDateBooked(date)) return "february-date-soldout";
+    return "february-date-available";
+  }, [isDateBooked]);
+  const canSubmit = () => {
+    if (!selectedDate) return false;
+    if (!customer.name.trim()) return false;
+    if (!isValidEmail2(customer.email)) return false;
+    if (normalizePhone2(customer.phone).length !== 10) return false;
+    if (!address.line1.trim() || !address.city.trim() || address.postal.trim().length < 5) return false;
+    if (!cardLoaded) return false;
+    return true;
+  };
+  const resetStatus = () => {
+    if (status !== "idle") {
+      setStatus("idle");
+      setError("");
+    }
+  };
+  const scrollToStep = (0, import_react44.useCallback)((index3, behavior = "smooth") => {
+    const track = trackRef.current;
+    if (!track) return;
+    const width = track.clientWidth || 1;
+    track.scrollTo({ left: index3 * width, behavior });
+    setActiveStep(index3);
+  }, []);
+  (0, import_react44.useEffect)(() => {
+    const track = trackRef.current;
+    if (!track) return void 0;
+    let rafId = null;
+    const handleScroll = () => {
+      if (rafId) return;
+      rafId = requestAnimationFrame(() => {
+        rafId = null;
+        const width = track.clientWidth || 1;
+        const nextIndex = Math.round(track.scrollLeft / width);
+        if (nextIndex !== activeStep) {
+          setActiveStep(nextIndex);
+        }
+      });
+    };
+    track.addEventListener("scroll", handleScroll, { passive: true });
+    return () => {
+      track.removeEventListener("scroll", handleScroll);
+      if (rafId) cancelAnimationFrame(rafId);
+    };
+  }, [activeStep]);
+  (0, import_react44.useEffect)(() => {
+    const handleResize = () => scrollToStep(activeStep, "auto");
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, [activeStep, scrollToStep]);
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    if (status === "submitting") return;
+    setError("");
+    if (!selectedDate) {
+      setError("Select an available February date first.");
+      return;
+    }
+    if (!canSubmit()) {
+      setError("Please complete all required fields before booking.");
+      return;
+    }
+    setStatus("submitting");
+    try {
+      const token = await tokenize();
+      const verificationDetails = {
+        amount: (totalCents / 100).toFixed(2),
+        currencyCode: "USD",
+        intent: "CHARGE",
+        billingContact: {
+          givenName: customer?.name?.split(" ")?.[0] || void 0,
+          familyName: customer?.name?.split(" ")?.slice(1).join(" ") || void 0,
+          email: customer?.email || void 0,
+          phone: customer?.phone || void 0,
+          addressLines: [address?.line1, address?.line2].filter(Boolean),
+          city: address?.city || void 0,
+          state: address?.state || void 0,
+          postalCode: address?.postal || void 0,
+          countryCode: "US"
+        }
+      };
+      const verificationToken = await verifyBuyer(token, verificationDetails);
+      const checkoutAttemptId = resolveCheckoutAttemptId();
+      const payload = {
+        date: selectedIso,
+        guestCount: totalGuests,
+        preferredTime,
+        dietaryNotes,
+        notes,
+        customer,
+        address,
+        token,
+        verificationToken,
+        checkoutAttemptId
+      };
+      const response = await fetch("/api/february/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(data?.error || "Payment failed.");
+      }
+      setPaymentId(data?.paymentId || "");
+      setEmailStatus(data?.emailStatus || null);
+      setStatus("success");
+      clearCheckoutAttempt();
+    } catch (err) {
+      setStatus("error");
+      setError(err?.message || "Unable to complete booking.");
+    }
+  };
+  return /* @__PURE__ */ (0, import_jsx_runtime45.jsxs)("div", { className: "fullpage-demo february-page", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime45.jsxs)(import_react_helmet_async10.Helmet, { children: [
+      /* @__PURE__ */ (0, import_jsx_runtime45.jsxs)("title", { children: [
+        "February Chef Dinner | ",
+        SITE_NAME
+      ] }),
+      /* @__PURE__ */ (0, import_jsx_runtime45.jsx)(
+        "meta",
+        {
+          name: "description",
+          content: "Reserve a private chef dinner in your home this February. Thursday and Saturday dates available."
+        }
+      ),
+      /* @__PURE__ */ (0, import_jsx_runtime45.jsx)("link", { rel: "canonical", href: `${SITE_URL}/february` }),
+      /* @__PURE__ */ (0, import_jsx_runtime45.jsx)("meta", { property: "og:type", content: "website" }),
+      /* @__PURE__ */ (0, import_jsx_runtime45.jsx)("meta", { property: "og:url", content: `${SITE_URL}/february` }),
+      /* @__PURE__ */ (0, import_jsx_runtime45.jsx)("meta", { property: "og:title", content: `February Chef Dinner | ${SITE_NAME}` }),
+      /* @__PURE__ */ (0, import_jsx_runtime45.jsx)("meta", { property: "og:description", content: "Reserve a private chef dinner in your home this February. Thursday and Saturday dates available." }),
+      /* @__PURE__ */ (0, import_jsx_runtime45.jsx)("meta", { property: "og:image", content: "https://res.cloudinary.com/dokyhfvyd/image/upload/v1769975355/jo5t7cv3zuvuuvsyuh8c.jpg" }),
+      /* @__PURE__ */ (0, import_jsx_runtime45.jsx)("meta", { property: "og:image:width", content: "1200" }),
+      /* @__PURE__ */ (0, import_jsx_runtime45.jsx)("meta", { property: "og:image:height", content: "630" }),
+      /* @__PURE__ */ (0, import_jsx_runtime45.jsx)("meta", { name: "twitter:card", content: "summary_large_image" }),
+      /* @__PURE__ */ (0, import_jsx_runtime45.jsx)("meta", { name: "twitter:url", content: `${SITE_URL}/february` }),
+      /* @__PURE__ */ (0, import_jsx_runtime45.jsx)("meta", { name: "twitter:title", content: `February Chef Dinner | ${SITE_NAME}` }),
+      /* @__PURE__ */ (0, import_jsx_runtime45.jsx)("meta", { name: "twitter:description", content: "Reserve a private chef dinner in your home this February. Thursday and Saturday dates available." }),
+      /* @__PURE__ */ (0, import_jsx_runtime45.jsx)("meta", { name: "twitter:image", content: "https://res.cloudinary.com/dokyhfvyd/image/upload/v1769975355/jo5t7cv3zuvuuvsyuh8c.jpg" })
+    ] }),
+    /* @__PURE__ */ (0, import_jsx_runtime45.jsx)("nav", { className: "february-breadcrumb", children: /* @__PURE__ */ (0, import_jsx_runtime45.jsx)("a", { href: "/#small-events", children: "\u2190 Small Events" }) }),
+    /* @__PURE__ */ (0, import_jsx_runtime45.jsxs)("div", { className: "february-grid", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime45.jsxs)("div", { className: "february-col february-col-left", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime45.jsx)("div", { className: "february-hero-media", children: /* @__PURE__ */ (0, import_jsx_runtime45.jsx)(
+          U,
+          {
+            src: "https://res.cloudinary.com/dokyhfvyd/image/upload/v1769975355/jo5t7cv3zuvuuvsyuh8c.jpg",
+            alt: "Chef-prepared dinner served in a home setting",
+            zoom: "200"
+          }
+        ) }),
+        /* @__PURE__ */ (0, import_jsx_runtime45.jsxs)("div", { className: "february-info-box february-info-box-mobile", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime45.jsx)("h2", { children: "Dinner in your Home" }),
+          /* @__PURE__ */ (0, import_jsx_runtime45.jsx)("p", { children: "We'll come over an hour before dinner time and prepare the meal in your kitchen. We'll use your pots and pans, and we'll bring anything specialized that we need. Your dinner price includes dishware and flatware, service, and cleanup when we're done. The experience is intended to feel like your home has transformed into a restaurant." })
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime45.jsxs)("div", { className: "february-hero-text", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime45.jsxs)("div", { className: "february-pricing", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime45.jsx)("h2", { children: "Party of 4 \u2014 $300" }),
+            /* @__PURE__ */ (0, import_jsx_runtime45.jsx)("h2", { children: "Party of 6 \u2014 $420" }),
+            /* @__PURE__ */ (0, import_jsx_runtime45.jsx)("h2", { children: "Party of 8+ \u2014 $65/person" })
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime45.jsx)("p", { children: "Dinners in February are the toughest, from a farm-to-table perspective. This menu is comfort-food forward, and focuses on a seasonal preoccupation: dairy." }),
+          /* @__PURE__ */ (0, import_jsx_runtime45.jsx)("p", { children: "We're making our own ricotta, cottage cheese, labneh, butter, marscapone, and ranch dressing from milk and cream by Autumnwood Farm in Forest Lake. We've also got lamb neck from Petersen Meats in Porter, and confit mushrooms from R&R, which are grown year-round in tents." }),
+          /* @__PURE__ */ (0, import_jsx_runtime45.jsx)("p", { children: "Meanwhile, citrus is fully in season in Southern California." })
+        ] })
+      ] }),
+      /* @__PURE__ */ (0, import_jsx_runtime45.jsxs)("div", { className: "february-col february-col-right", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime45.jsxs)("section", { className: "february-reservation", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime45.jsxs)("div", { className: "february-step-nav", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime45.jsx)("div", { className: "february-step-tabs", role: "tablist", "aria-label": "Reservation steps", children: stepLabels.map((label, index3) => /* @__PURE__ */ (0, import_jsx_runtime45.jsxs)(
+              "button",
+              {
+                type: "button",
+                role: "tab",
+                "aria-selected": activeStep === index3,
+                className: `february-step-tab ${activeStep === index3 ? "is-active" : ""}`,
+                onClick: () => scrollToStep(index3),
+                children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime45.jsx)("span", { className: "february-step-index", children: index3 + 1 }),
+                  label
+                ]
+              },
+              label
+            )) }),
+            /* @__PURE__ */ (0, import_jsx_runtime45.jsxs)("div", { className: "february-step-actions", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime45.jsx)(
+                "button",
+                {
+                  type: "button",
+                  className: "february-step-arrow",
+                  onClick: () => scrollToStep(Math.max(0, activeStep - 1)),
+                  disabled: activeStep === 0,
+                  "aria-label": "Previous step",
+                  children: "\u2039"
+                }
+              ),
+              /* @__PURE__ */ (0, import_jsx_runtime45.jsx)(
+                "button",
+                {
+                  type: "button",
+                  className: "february-step-button",
+                  onClick: () => scrollToStep(Math.max(0, activeStep - 1)),
+                  disabled: activeStep === 0,
+                  children: "Back"
+                }
+              ),
+              /* @__PURE__ */ (0, import_jsx_runtime45.jsx)(
+                "button",
+                {
+                  type: "button",
+                  className: "february-step-button is-primary",
+                  onClick: () => scrollToStep(Math.min(stepLabels.length - 1, activeStep + 1)),
+                  disabled: activeStep === stepLabels.length - 1,
+                  children: "Next"
+                }
+              ),
+              /* @__PURE__ */ (0, import_jsx_runtime45.jsx)(
+                "button",
+                {
+                  type: "button",
+                  className: "february-step-arrow",
+                  onClick: () => scrollToStep(Math.min(stepLabels.length - 1, activeStep + 1)),
+                  disabled: activeStep === stepLabels.length - 1,
+                  "aria-label": "Next step",
+                  children: "\u203A"
+                }
+              )
+            ] })
+          ] }),
+          status === "success" && /* @__PURE__ */ (0, import_jsx_runtime45.jsxs)("div", { className: "february-success", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime45.jsx)("div", { className: "february-success-title", children: "Booking confirmed" }),
+            /* @__PURE__ */ (0, import_jsx_runtime45.jsx)("div", { className: "february-success-copy", children: "Payment received. A confirmation email is on the way with your details." }),
+            paymentId && /* @__PURE__ */ (0, import_jsx_runtime45.jsxs)("div", { className: "february-success-meta", children: [
+              "Payment ID: ",
+              paymentId
+            ] }),
+            emailStatus?.customer === false && /* @__PURE__ */ (0, import_jsx_runtime45.jsx)("div", { className: "february-warning", children: "We could not send the customer email. Please contact us." })
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime45.jsxs)("form", { className: "february-reservation-track", onSubmit: handleSubmit, ref: trackRef, children: [
+            /* @__PURE__ */ (0, import_jsx_runtime45.jsxs)("section", { className: "february-card february-step february-step-calendar february-step-compact", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime45.jsx)("div", { className: "february-step-title", children: "1. Pick a date" }),
+              /* @__PURE__ */ (0, import_jsx_runtime45.jsx)("div", { className: "february-datepicker", children: /* @__PURE__ */ (0, import_jsx_runtime45.jsx)(
+                DatePicker,
+                {
+                  inline: true,
+                  selected: selectedDate,
+                  onChange: (date) => {
+                    if (isAvailableDate(date)) {
+                      setSelectedDate(date);
+                      resetStatus();
+                    }
+                  },
+                  minDate: febStart,
+                  maxDate: febEnd,
+                  filterDate: isAvailableDate,
+                  dayClassName: getDayClassName
+                }
+              ) })
+            ] }),
+            /* @__PURE__ */ (0, import_jsx_runtime45.jsxs)("section", { className: "february-card february-step february-step-compact", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime45.jsx)("div", { className: "february-step-title", children: "2. Name + address" }),
+              /* @__PURE__ */ (0, import_jsx_runtime45.jsxs)("div", { className: "february-form-grid", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime45.jsxs)("div", { children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime45.jsxs)("label", { className: "form-fun-label", htmlFor: "feb-name", children: [
+                    "Name ",
+                    /* @__PURE__ */ (0, import_jsx_runtime45.jsx)("span", { className: "required-indicator", children: "*" })
+                  ] }),
+                  /* @__PURE__ */ (0, import_jsx_runtime45.jsx)(
+                    "input",
+                    {
+                      id: "feb-name",
+                      className: "input",
+                      value: customer.name,
+                      onChange: (e) => {
+                        setCustomer((prev) => ({ ...prev, name: e.target.value }));
+                        resetStatus();
+                      },
+                      placeholder: "Your full name",
+                      required: true
+                    }
+                  )
+                ] }),
+                /* @__PURE__ */ (0, import_jsx_runtime45.jsxs)("div", { children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime45.jsxs)("label", { className: "form-fun-label", htmlFor: "feb-email", children: [
+                    "Email ",
+                    /* @__PURE__ */ (0, import_jsx_runtime45.jsx)("span", { className: "required-indicator", children: "*" })
+                  ] }),
+                  /* @__PURE__ */ (0, import_jsx_runtime45.jsx)(
+                    "input",
+                    {
+                      id: "feb-email",
+                      type: "email",
+                      className: "input",
+                      value: customer.email,
+                      onChange: (e) => {
+                        setCustomer((prev) => ({ ...prev, email: e.target.value }));
+                        resetStatus();
+                      },
+                      placeholder: "you@example.com",
+                      required: true
+                    }
+                  )
+                ] }),
+                /* @__PURE__ */ (0, import_jsx_runtime45.jsxs)("div", { children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime45.jsxs)("label", { className: "form-fun-label", htmlFor: "feb-phone", children: [
+                    "Phone ",
+                    /* @__PURE__ */ (0, import_jsx_runtime45.jsx)("span", { className: "required-indicator", children: "*" })
+                  ] }),
+                  /* @__PURE__ */ (0, import_jsx_runtime45.jsx)(
+                    "input",
+                    {
+                      id: "feb-phone",
+                      type: "tel",
+                      className: "input",
+                      value: customer.phone,
+                      onChange: (e) => {
+                        setCustomer((prev) => ({ ...prev, phone: formatPhone2(e.target.value) }));
+                        resetStatus();
+                      },
+                      required: true
+                    }
+                  )
+                ] }),
+                /* @__PURE__ */ (0, import_jsx_runtime45.jsxs)("div", { children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime45.jsxs)("label", { className: "form-fun-label", htmlFor: "feb-guests", children: [
+                    "Guest count ",
+                    /* @__PURE__ */ (0, import_jsx_runtime45.jsx)("span", { className: "required-indicator", children: "*" })
+                  ] }),
+                  /* @__PURE__ */ (0, import_jsx_runtime45.jsx)(
+                    "input",
+                    {
+                      id: "feb-guests",
+                      type: "number",
+                      className: "input",
+                      min: MIN_GUESTS,
+                      max: MAX_GUESTS,
+                      value: guestCount,
+                      onChange: (e) => {
+                        setGuestCount(clampGuests(e.target.value));
+                        resetStatus();
+                      },
+                      required: true
+                    }
+                  )
+                ] }),
+                /* @__PURE__ */ (0, import_jsx_runtime45.jsxs)("div", { className: "february-form-span", children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime45.jsxs)("label", { className: "form-fun-label", htmlFor: "feb-address1", children: [
+                    "Address ",
+                    /* @__PURE__ */ (0, import_jsx_runtime45.jsx)("span", { className: "required-indicator", children: "*" })
+                  ] }),
+                  /* @__PURE__ */ (0, import_jsx_runtime45.jsx)(
+                    "input",
+                    {
+                      id: "feb-address1",
+                      className: "input",
+                      value: address.line1,
+                      onChange: (e) => {
+                        setAddress((prev) => ({ ...prev, line1: e.target.value }));
+                        resetStatus();
+                      },
+                      placeholder: "Street address",
+                      required: true
+                    }
+                  )
+                ] }),
+                /* @__PURE__ */ (0, import_jsx_runtime45.jsx)("div", { className: "february-form-span", children: /* @__PURE__ */ (0, import_jsx_runtime45.jsx)(
+                  "input",
+                  {
+                    id: "feb-address2",
+                    className: "input",
+                    value: address.line2,
+                    onChange: (e) => {
+                      setAddress((prev) => ({ ...prev, line2: e.target.value }));
+                      resetStatus();
+                    },
+                    placeholder: "Unit, suite, etc. (optional)"
+                  }
+                ) }),
+                /* @__PURE__ */ (0, import_jsx_runtime45.jsxs)("div", { children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime45.jsxs)("label", { className: "form-fun-label", htmlFor: "feb-city", children: [
+                    "City ",
+                    /* @__PURE__ */ (0, import_jsx_runtime45.jsx)("span", { className: "required-indicator", children: "*" })
+                  ] }),
+                  /* @__PURE__ */ (0, import_jsx_runtime45.jsx)(
+                    "input",
+                    {
+                      id: "feb-city",
+                      className: "input",
+                      value: address.city,
+                      onChange: (e) => {
+                        setAddress((prev) => ({ ...prev, city: e.target.value }));
+                        resetStatus();
+                      },
+                      placeholder: "Minneapolis",
+                      required: true
+                    }
+                  )
+                ] }),
+                /* @__PURE__ */ (0, import_jsx_runtime45.jsxs)("div", { children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime45.jsxs)("label", { className: "form-fun-label", htmlFor: "feb-state", children: [
+                    "State ",
+                    /* @__PURE__ */ (0, import_jsx_runtime45.jsx)("span", { className: "required-indicator", children: "*" })
+                  ] }),
+                  /* @__PURE__ */ (0, import_jsx_runtime45.jsx)(
+                    "input",
+                    {
+                      id: "feb-state",
+                      className: "input",
+                      value: address.state,
+                      onChange: (e) => {
+                        setAddress((prev) => ({ ...prev, state: e.target.value }));
+                        resetStatus();
+                      },
+                      required: true
+                    }
+                  )
+                ] }),
+                /* @__PURE__ */ (0, import_jsx_runtime45.jsxs)("div", { children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime45.jsxs)("label", { className: "form-fun-label", htmlFor: "feb-postal", children: [
+                    "ZIP ",
+                    /* @__PURE__ */ (0, import_jsx_runtime45.jsx)("span", { className: "required-indicator", children: "*" })
+                  ] }),
+                  /* @__PURE__ */ (0, import_jsx_runtime45.jsx)(
+                    "input",
+                    {
+                      id: "feb-postal",
+                      className: "input",
+                      value: address.postal,
+                      onChange: (e) => {
+                        setAddress((prev) => ({ ...prev, postal: formatPostal2(e.target.value) }));
+                        resetStatus();
+                      },
+                      placeholder: "55401",
+                      required: true
+                    }
+                  )
+                ] }),
+                /* @__PURE__ */ (0, import_jsx_runtime45.jsxs)("div", { className: "february-form-span", children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime45.jsx)("label", { className: "form-fun-label", htmlFor: "feb-time", children: "Preferred start time" }),
+                  /* @__PURE__ */ (0, import_jsx_runtime45.jsx)(
+                    "input",
+                    {
+                      id: "feb-time",
+                      className: "input",
+                      value: preferredTime,
+                      onChange: (e) => {
+                        setPreferredTime(e.target.value);
+                        resetStatus();
+                      },
+                      placeholder: "6:00 PM"
+                    }
+                  )
+                ] })
+              ] })
+            ] }),
+            /* @__PURE__ */ (0, import_jsx_runtime45.jsxs)("section", { className: "february-card february-step february-step-notes february-step-compact", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime45.jsx)("div", { className: "february-step-title", children: "3. Dietary + notes" }),
+              /* @__PURE__ */ (0, import_jsx_runtime45.jsxs)("div", { className: "february-form-grid", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime45.jsxs)("div", { className: "february-form-span", children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime45.jsx)("label", { className: "form-fun-label", htmlFor: "feb-dietary", children: "Dietary notes" }),
+                  /* @__PURE__ */ (0, import_jsx_runtime45.jsx)(
+                    "textarea",
+                    {
+                      id: "feb-dietary",
+                      className: "textarea february-textarea-lg",
+                      rows: 6,
+                      value: dietaryNotes,
+                      onChange: (e) => {
+                        setDietaryNotes(e.target.value);
+                        resetStatus();
+                      },
+                      placeholder: "Allergies, restrictions, preferences"
+                    }
+                  )
+                ] }),
+                /* @__PURE__ */ (0, import_jsx_runtime45.jsxs)("div", { className: "february-form-span", children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime45.jsx)("label", { className: "form-fun-label", htmlFor: "feb-notes", children: "Additional notes" }),
+                  /* @__PURE__ */ (0, import_jsx_runtime45.jsx)(
+                    "textarea",
+                    {
+                      id: "feb-notes",
+                      className: "textarea february-textarea-lg",
+                      rows: 6,
+                      value: notes,
+                      onChange: (e) => {
+                        setNotes(e.target.value);
+                        resetStatus();
+                      },
+                      placeholder: "Parking details, kitchen notes, celebrations"
+                    }
+                  )
+                ] })
+              ] })
+            ] }),
+            /* @__PURE__ */ (0, import_jsx_runtime45.jsxs)("section", { className: "february-card february-step february-step-compact", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime45.jsx)("div", { className: "february-step-title", children: "4. Reserve" }),
+              /* @__PURE__ */ (0, import_jsx_runtime45.jsxs)("div", { className: "february-form-grid", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime45.jsxs)("div", { className: "february-form-span", children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime45.jsx)("label", { className: "form-fun-label", children: "Payment" }),
+                  /* @__PURE__ */ (0, import_jsx_runtime45.jsxs)("div", { className: "february-payment", children: [
+                    /* @__PURE__ */ (0, import_jsx_runtime45.jsx)("div", { id: "february-card-container", className: "february-card-container" }),
+                    loadingScript && /* @__PURE__ */ (0, import_jsx_runtime45.jsx)("div", { className: "february-payment-status", children: "Loading secure payment form..." }),
+                    cardError && /* @__PURE__ */ (0, import_jsx_runtime45.jsx)("div", { className: "february-payment-error", children: cardError }),
+                    (cardError || status === "error") && /* @__PURE__ */ (0, import_jsx_runtime45.jsxs)("div", { className: "february-payment-status", children: [
+                      /* @__PURE__ */ (0, import_jsx_runtime45.jsx)(
+                        "button",
+                        {
+                          type: "button",
+                          className: "february-link-button",
+                          onClick: buildFallbackLink,
+                          disabled: fallbackStatus.loading,
+                          children: fallbackStatus.loading ? "Building hosted checkout..." : "Use hosted Square checkout"
+                        }
+                      ),
+                      fallbackStatus.error && /* @__PURE__ */ (0, import_jsx_runtime45.jsx)("div", { className: "february-payment-error", children: fallbackStatus.error }),
+                      fallbackUrl && /* @__PURE__ */ (0, import_jsx_runtime45.jsx)("div", { children: /* @__PURE__ */ (0, import_jsx_runtime45.jsx)("a", { href: fallbackUrl, target: "_blank", rel: "noopener noreferrer", children: "Open hosted checkout" }) })
+                    ] })
+                  ] })
+                ] }),
+                error && /* @__PURE__ */ (0, import_jsx_runtime45.jsx)("div", { className: "february-error", children: error }),
+                /* @__PURE__ */ (0, import_jsx_runtime45.jsx)(
+                  "button",
+                  {
+                    type: "submit",
+                    className: "february-submit",
+                    disabled: !canSubmit() || status === "submitting" || status === "success",
+                    children: status === "submitting" ? "Processing..." : `Book dinner for $${formatMoney2(totalCents)}`
+                  }
+                ),
+                /* @__PURE__ */ (0, import_jsx_runtime45.jsxs)("div", { className: "required-note", children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime45.jsx)("span", { className: "required-indicator", children: "*" }),
+                  "Required fields"
+                ] }),
+                /* @__PURE__ */ (0, import_jsx_runtime45.jsx)("div", { className: "february-form-footnote", children: "Payments are processed securely by Square. You will receive a confirmation email after booking." })
+              ] })
+            ] })
+          ] })
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime45.jsxs)("div", { className: "february-info-box february-info-box-desktop", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime45.jsx)("h2", { children: "Dinner in your Home" }),
+          /* @__PURE__ */ (0, import_jsx_runtime45.jsx)("p", { children: "We'll come over an hour before dinner time and prepare the meal in your kitchen. We'll use your pots and pans, and we'll bring anything specialized that we need. Your dinner price includes dishware and flatware, service, and cleanup when we're done. The experience is intended to feel like your home has transformed into a restaurant." })
+        ] })
+      ] })
+    ] })
+  ] });
+};
+var FebruaryPage_default = FebruaryPage;
+
+// src/ssr/StaticApp.jsx
+var import_jsx_runtime46 = require("react/jsx-runtime");
 function StaticApp({ helmetContext }) {
-  const location = (0, import_react_router_dom7.useLocation)();
+  const location = (0, import_react_router_dom8.useLocation)();
   const isFullPageHome = location.pathname === "/";
-  return /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(import_react_helmet_async10.HelmetProvider, { context: helmetContext, children: /* @__PURE__ */ (0, import_jsx_runtime44.jsxs)(CartProvider, { children: [
-    /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(DefaultSeo_default, {}),
-    /* @__PURE__ */ (0, import_jsx_runtime44.jsxs)("div", { className: "app-root min-h-screen flex flex-col", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(Header, {}),
-      /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("main", { className: "flex-1", style: { paddingTop: isFullPageHome ? 0 : "5rem" }, children: /* @__PURE__ */ (0, import_jsx_runtime44.jsxs)(import_react_router_dom7.Routes, { children: [
-        /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(import_react_router_dom7.Route, { path: "/", element: /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(FullPageDemoPage_default, {}) }),
-        /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(import_react_router_dom7.Route, { path: "/blog", element: /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(BlogList_default, {}) }),
-        /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(import_react_router_dom7.Route, { path: "/blog/:slug", element: /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(BlogPost_default, {}) }),
-        /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(import_react_router_dom7.Route, { path: "/releases", element: /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(ReleasesPage_default, {}) }),
-        /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(import_react_router_dom7.Route, { path: "/sale", element: /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(SalePage_default, {}) }),
-        /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(import_react_router_dom7.Route, { path: "/weekly", element: /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(WeeklyList_default, {}) }),
-        /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(import_react_router_dom7.Route, { path: "/happymonday", element: /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(happymondaypage_default, {}) }),
-        /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(import_react_router_dom7.Route, { path: "/pizza-party", element: /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(PizzaPartyPage_default, {}) }),
-        /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(import_react_router_dom7.Route, { path: "/psyche", element: /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(PsychePage_default, {}) })
+  return /* @__PURE__ */ (0, import_jsx_runtime46.jsx)(import_react_helmet_async11.HelmetProvider, { context: helmetContext, children: /* @__PURE__ */ (0, import_jsx_runtime46.jsxs)(CartProvider, { children: [
+    /* @__PURE__ */ (0, import_jsx_runtime46.jsx)(DefaultSeo_default, {}),
+    /* @__PURE__ */ (0, import_jsx_runtime46.jsxs)("div", { className: "app-root min-h-screen flex flex-col", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime46.jsx)(Header, {}),
+      /* @__PURE__ */ (0, import_jsx_runtime46.jsx)("main", { className: "flex-1", style: { paddingTop: isFullPageHome ? 0 : "5rem" }, children: /* @__PURE__ */ (0, import_jsx_runtime46.jsxs)(import_react_router_dom8.Routes, { children: [
+        /* @__PURE__ */ (0, import_jsx_runtime46.jsx)(import_react_router_dom8.Route, { path: "/", element: /* @__PURE__ */ (0, import_jsx_runtime46.jsx)(FullPageDemoPage_default, {}) }),
+        /* @__PURE__ */ (0, import_jsx_runtime46.jsx)(import_react_router_dom8.Route, { path: "/blog", element: /* @__PURE__ */ (0, import_jsx_runtime46.jsx)(BlogList_default, {}) }),
+        /* @__PURE__ */ (0, import_jsx_runtime46.jsx)(import_react_router_dom8.Route, { path: "/blog/:slug", element: /* @__PURE__ */ (0, import_jsx_runtime46.jsx)(BlogPost_default, {}) }),
+        /* @__PURE__ */ (0, import_jsx_runtime46.jsx)(import_react_router_dom8.Route, { path: "/releases", element: /* @__PURE__ */ (0, import_jsx_runtime46.jsx)(ReleasesPage_default, {}) }),
+        /* @__PURE__ */ (0, import_jsx_runtime46.jsx)(import_react_router_dom8.Route, { path: "/sale", element: /* @__PURE__ */ (0, import_jsx_runtime46.jsx)(SalePage_default, {}) }),
+        /* @__PURE__ */ (0, import_jsx_runtime46.jsx)(import_react_router_dom8.Route, { path: "/weekly", element: /* @__PURE__ */ (0, import_jsx_runtime46.jsx)(WeeklyList_default, {}) }),
+        /* @__PURE__ */ (0, import_jsx_runtime46.jsx)(import_react_router_dom8.Route, { path: "/happymonday", element: /* @__PURE__ */ (0, import_jsx_runtime46.jsx)(happymondaypage_default, {}) }),
+        /* @__PURE__ */ (0, import_jsx_runtime46.jsx)(import_react_router_dom8.Route, { path: "/pizza-party", element: /* @__PURE__ */ (0, import_jsx_runtime46.jsx)(PizzaPartyPage_default, {}) }),
+        /* @__PURE__ */ (0, import_jsx_runtime46.jsx)(import_react_router_dom8.Route, { path: "/psyche", element: /* @__PURE__ */ (0, import_jsx_runtime46.jsx)(PsychePage_default, {}) }),
+        /* @__PURE__ */ (0, import_jsx_runtime46.jsx)(import_react_router_dom8.Route, { path: "/february", element: /* @__PURE__ */ (0, import_jsx_runtime46.jsx)(FebruaryPage_default, {}) })
       ] }) })
     ] })
   ] }) });
@@ -15895,4 +27644,11 @@ function StaticApp({ helmetContext }) {
 
 dompurify/dist/purify.es.mjs:
   (*! @license DOMPurify 3.3.1 | (c) Cure53 and other contributors | Released under the Apache license 2.0 and Mozilla Public License 2.0 | github.com/cure53/DOMPurify/blob/3.3.1/LICENSE *)
+
+react-datepicker/dist/index.es.js:
+  (*!
+    react-datepicker v9.1.0
+    https://github.com/Hacker0x01/react-datepicker
+    Released under the MIT License.
+  *)
 */
