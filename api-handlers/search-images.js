@@ -19,6 +19,28 @@ if (CLOUD_NAME && CLOUD_KEY && CLOUD_SECRET) {
   console.warn('Cloudinary environment variables are not fully configured. Please set CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET.');
 }
 
+const buildUnavailablePayload = (reason) => ({
+  images: [],
+  total_count: 0,
+  next_cursor: null,
+  unavailable: true,
+  reason,
+});
+
+const promiseWithTimeout = async (promise, timeoutMs, timeoutReason) => {
+  let timer = null;
+  try {
+    return await Promise.race([
+      promise,
+      new Promise((_, reject) => {
+        timer = setTimeout(() => reject(new Error(timeoutReason)), timeoutMs);
+      }),
+    ]);
+  } finally {
+    if (timer) clearTimeout(timer);
+  }
+};
+
 async function handler(req, res) {
   // Add CORS headers for local dev / preview
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -33,17 +55,8 @@ async function handler(req, res) {
   const perPage = Math.min(100, parseInt(per_page, 10) || 24);
 
   try {
-    // Defensive: ensure Cloudinary credentials are present before calling the API
     if (!CLOUD_NAME || !CLOUD_KEY || !CLOUD_SECRET) {
-      return res.status(500).json({ error: 'Cloudinary not configured on server', details: 'Missing CLOUDINARY_CLOUD_NAME/API_KEY/SECRET' });
-    }
-
-    // Optional: verify Cloudinary credentials quickly
-    try {
-      await cloudinary.api.ping();
-    } catch (pingErr) {
-      console.error('Cloudinary ping failed:', pingErr && (pingErr.message || pingErr));
-      return res.status(500).json({ error: 'Cloudinary ping failed', details: String(pingErr) });
+      return res.status(200).json(buildUnavailablePayload('cloudinary-not-configured'));
     }
 
     // Support a friendly `collection` query param (e.g. collection=home)
@@ -131,7 +144,11 @@ async function handler(req, res) {
 
     if (next_cursor) builder.next_cursor(next_cursor);
 
-    const result = await builder.execute();
+    const result = await promiseWithTimeout(
+      builder.execute(),
+      8000,
+      'cloudinary-timeout'
+    );
 
     const images = (result.resources || []).map((r) => {
       const publicId = r.public_id || '';
@@ -166,7 +183,7 @@ async function handler(req, res) {
     });
   } catch (error) {
     console.error('Cloudinary error:', error);
-    res.status(500).json({ error: 'Failed to fetch images', details: error.message });
+    res.status(200).json(buildUnavailablePayload('cloudinary-unavailable'));
   }
 }
 

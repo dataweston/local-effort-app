@@ -59,7 +59,6 @@ const pizzafunderPaymentLinkHandler = require('../../api-handlers/pizzafunder/pa
 const foodTruckDepositLinkHandler = require('../../api-handlers/food-truck/deposit-link');
 const happymondayProcessPaymentHandler = require('../../api-handlers/happymonday/process-payment');
 const happymondayPaymentLinkHandler = require('../../api-handlers/happymonday/payment-link');
-const dynamicSitemapHandler = require('../../api/sitemap.xml.js');
 const { createMessagesRouter } = require('./routes/messages');
 const { createSmallEventsRouter } = require('./routes/smallEvents');
 const { createPlannerRouter } = require('./routes/planner');
@@ -496,11 +495,13 @@ app.get('/.well-known/ucp', (req, res) => sendUcpProfile(res));
 app.get('/.well-known/ucp.json', (req, res) => sendUcpProfile(res));
 app.get('/api/sitemap.xml', async (req, res) => {
   try {
-    await dynamicSitemapHandler(req, res);
+    const sitemapPath = path.resolve(__dirname, '../../public/sitemap.xml');
+    const xml = await fs.promises.readFile(sitemapPath, 'utf8');
+    return res.status(200).type('application/xml; charset=utf-8').send(xml);
   } catch (err) {
     logger.error({ err }, 'dynamic sitemap route failed');
     if (!res.headersSent) {
-      res.status(500).type('text/plain').send('Failed to generate sitemap');
+      res.status(500).type('text/plain').send('Failed to load sitemap');
     }
   }
 });
@@ -1453,6 +1454,7 @@ const FEEDBACK_FALLBACK_MAX = 50;
 const FEEDBACK_FALLBACK_WINDOW_MS = 7 * 24 * 60 * 60 * 1000;
 const FEEDBACK_COMMENT_LIMIT = 2000;
 const feedbackFallbackEntries = [];
+const FEEDBACK_QUERY_TIMEOUT_MS = 8000;
 
 const isFirestoreUnavailable = (err) =>
   !!(err && typeof err === 'object' && err.code === 'firestore-unavailable');
@@ -1476,12 +1478,20 @@ const listFallbackFeedback = (sinceRaw, limitRaw) => {
   const limit = resolveFeedbackLimit(limitRaw);
   return feedbackFallbackEntries
     .filter((entry) => entry.createdAt >= since)
-    .slice(0, limit);
+    .slice(0, limit)
+    .map((entry) => ({
+      id: entry.id,
+      name: entry.name,
+      comment: entry.comment,
+      rating: entry.rating,
+      createdAt: entry.createdAt instanceof Date ? entry.createdAt.toISOString() : entry.createdAt,
+    }));
 };
 
-const addFallbackFeedback = ({ rating, comment, customerId, orderId }) => {
+const addFallbackFeedback = ({ name, rating, comment, customerId, orderId }) => {
   const entry = {
     id: `feedback-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+    name: name || 'Anonymous',
     rating,
     comment,
     customerId: customerId || null,
@@ -1517,26 +1527,52 @@ const parseFeedbackBody = (body) => {
   return { rating, comment, customerId, orderId };
 };
 
+const withFeedbackTimeout = async (promise) => {
+  let timer = null;
+  try {
+    return await Promise.race([
+      promise,
+      new Promise((_, reject) => {
+        timer = setTimeout(() => reject(new Error('feedback-timeout')), FEEDBACK_QUERY_TIMEOUT_MS);
+      }),
+    ]);
+  } finally {
+    if (timer) clearTimeout(timer);
+  }
+};
+
 app.get('/api/feedback', async (req, res) => {
   try {
+    const limitRaw = Array.isArray(req.query.limit) ? req.query.limit[0] : req.query.limit;
     const supabase = getSupabase();
     if (!supabase) {
-      return res.status(503).json({ ok: false, error: 'database-unavailable' });
+      return res.json({
+        ok: true,
+        items: listFallbackFeedback(null, limitRaw),
+        fallback: true,
+        source: 'memory',
+      });
     }
 
-    const limitRaw = Array.isArray(req.query.limit) ? req.query.limit[0] : req.query.limit;
     let limit = parseInt(limitRaw) || 200;
     limit = Math.min(Math.max(limit, 1), 500);
 
-    const { data, error } = await supabase
-      .from('crowdfund_feedback')
-      .select('id, name, comment, rating, created_at')
-      .order('created_at', { ascending: false })
-      .limit(limit);
+    const { data, error } = await withFeedbackTimeout(
+      supabase
+        .from('crowdfund_feedback')
+        .select('id, name, comment, rating, created_at')
+        .order('created_at', { ascending: false })
+        .limit(limit)
+    );
 
     if (error) {
       console.error('[feedback.get] Supabase error:', error.message);
-      return res.status(500).json({ ok: false, error: 'internal-error' });
+      return res.json({
+        ok: true,
+        items: listFallbackFeedback(null, limitRaw),
+        fallback: true,
+        source: 'memory',
+      });
     }
 
     const items = (data || []).map(item => ({
@@ -1550,17 +1586,18 @@ app.get('/api/feedback', async (req, res) => {
     res.json({ ok: true, items });
   } catch (err) {
     if (logger?.error) logger.error({ err }, 'feedback list error');
-    res.status(500).json({ ok: false, error: 'internal-error' });
+    const limitRaw = Array.isArray(req.query.limit) ? req.query.limit[0] : req.query.limit;
+    res.json({
+      ok: true,
+      items: listFallbackFeedback(null, limitRaw),
+      fallback: true,
+      source: 'memory',
+    });
   }
 });
 
 app.post('/api/feedback', async (req, res) => {
   try {
-    const supabase = getSupabase();
-    if (!supabase) {
-      return res.status(503).json({ ok: false, error: 'database-unavailable' });
-    }
-
     const body = req.body ?? {};
     const name = typeof body.name === 'string' ? body.name.trim().substring(0, 200) : 'Anonymous';
     const comment = typeof body.comment === 'string' ? body.comment.trim().substring(0, 2000) : '';
@@ -1573,21 +1610,38 @@ app.post('/api/feedback', async (req, res) => {
       return res.status(400).json({ ok: false, error: 'invalid-rating' });
     }
 
-    const { data, error } = await supabase
-      .from('crowdfund_feedback')
-      .insert({ name, comment, rating })
-      .select()
-      .single();
+    const supabase = getSupabase();
+    if (!supabase) {
+      const fallback = addFallbackFeedback({ name, comment, rating });
+      return res.status(201).json({ ok: true, id: fallback.id, fallback: true, source: 'memory' });
+    }
+
+    const { data, error } = await withFeedbackTimeout(
+      supabase
+        .from('crowdfund_feedback')
+        .insert({ name, comment, rating })
+        .select()
+        .single()
+    );
 
     if (error) {
       console.error('[feedback.post] Supabase error:', error.message);
-      return res.status(500).json({ ok: false, error: 'internal-error' });
+      const fallback = addFallbackFeedback({ name, comment, rating });
+      return res.status(201).json({ ok: true, id: fallback.id, fallback: true, source: 'memory' });
     }
 
-    res.json({ ok: true, id: data.id });
+    res.status(201).json({ ok: true, id: data.id });
   } catch (err) {
     if (logger?.error) logger.error({ err }, 'feedback create error');
-    res.status(500).json({ ok: false, error: 'internal-error' });
+    const body = req.body ?? {};
+    const name = typeof body.name === 'string' ? body.name.trim().substring(0, 200) : 'Anonymous';
+    const comment = typeof body.comment === 'string' ? body.comment.trim().substring(0, 2000) : '';
+    const rating = Number(body.rating);
+    if (!comment || !Number.isInteger(rating) || rating < 1 || rating > 5) {
+      return res.status(500).json({ ok: false, error: 'internal-error' });
+    }
+    const fallback = addFallbackFeedback({ name, comment, rating });
+    res.status(201).json({ ok: true, id: fallback.id, fallback: true, source: 'memory' });
   }
 });
 
