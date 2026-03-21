@@ -4065,11 +4065,11 @@ var FoodItemModal_exports = {};
 __export(FoodItemModal_exports, {
   default: () => FoodItemModal_default
 });
-var import_react31, import_framer_motion5, import_jsx_runtime37, backdrop, modal, FoodItemModal, FoodItemModal_default;
+var import_react31, import_framer_motion7, import_jsx_runtime37, backdrop, modal, FoodItemModal, FoodItemModal_default;
 var init_FoodItemModal = __esm({
   "src/components/menu/FoodItemModal.jsx"() {
     import_react31 = __toESM(require("react"));
-    import_framer_motion5 = require("framer-motion");
+    import_framer_motion7 = require("framer-motion");
     import_jsx_runtime37 = require("react/jsx-runtime");
     backdrop = {
       visible: { opacity: 1 },
@@ -4081,7 +4081,7 @@ var init_FoodItemModal = __esm({
     };
     FoodItemModal = ({ item, onClose }) => {
       return /* @__PURE__ */ (0, import_jsx_runtime37.jsx)(
-        import_framer_motion5.motion.div,
+        import_framer_motion7.motion.div,
         {
           className: "fixed inset-0 bg-black bg-opacity-60 z-50 flex justify-center items-center p-4",
           variants: backdrop,
@@ -4090,7 +4090,7 @@ var init_FoodItemModal = __esm({
           exit: "hidden",
           onClick: onClose,
           children: /* @__PURE__ */ (0, import_jsx_runtime37.jsxs)(
-            import_framer_motion5.motion.div,
+            import_framer_motion7.motion.div,
             {
               variants: modal,
               className: "bg-white rounded-lg shadow-xl max-w-lg w-full p-8 relative",
@@ -4125,11 +4125,11 @@ var FeedbackForm_exports = {};
 __export(FeedbackForm_exports, {
   default: () => FeedbackForm_default
 });
-var import_react32, import_framer_motion6, import_jsx_runtime38, FeedbackForm, FeedbackForm_default;
+var import_react32, import_framer_motion8, import_jsx_runtime38, FeedbackForm, FeedbackForm_default;
 var init_FeedbackForm = __esm({
   "src/components/menu/FeedbackForm.jsx"() {
     import_react32 = __toESM(require("react"));
-    import_framer_motion6 = require("framer-motion");
+    import_framer_motion8 = require("framer-motion");
     import_jsx_runtime38 = require("react/jsx-runtime");
     FeedbackForm = () => {
       const [formData, setFormData] = (0, import_react32.useState)({
@@ -4264,7 +4264,7 @@ var init_FeedbackForm = __esm({
         ),
         /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)("div", { className: "flex items-center justify-between", children: [
           /* @__PURE__ */ (0, import_jsx_runtime38.jsx)(
-            import_framer_motion6.motion.button,
+            import_framer_motion8.motion.button,
             {
               type: "submit",
               className: "btn btn-primary",
@@ -4293,14 +4293,14 @@ var LoadingSpinner_exports = {};
 __export(LoadingSpinner_exports, {
   LoadingSpinner: () => LoadingSpinner
 });
-var import_react33, import_framer_motion7, import_jsx_runtime39, LoadingSpinner;
+var import_react33, import_framer_motion9, import_jsx_runtime39, LoadingSpinner;
 var init_LoadingSpinner = __esm({
   "src/components/layout/LoadingSpinner.jsx"() {
     import_react33 = __toESM(require("react"));
-    import_framer_motion7 = require("framer-motion");
+    import_framer_motion9 = require("framer-motion");
     import_jsx_runtime39 = require("react/jsx-runtime");
     LoadingSpinner = () => /* @__PURE__ */ (0, import_jsx_runtime39.jsx)(
-      import_framer_motion7.motion.div,
+      import_framer_motion9.motion.div,
       {
         className: "min-h-screen flex items-center justify-center bg-gradient-to-br from-orange-50 to-red-50",
         initial: { opacity: 0 },
@@ -4308,7 +4308,7 @@ var init_LoadingSpinner = __esm({
         exit: { opacity: 0 },
         children: /* @__PURE__ */ (0, import_jsx_runtime39.jsxs)("div", { className: "text-center", children: [
           /* @__PURE__ */ (0, import_jsx_runtime39.jsx)(
-            import_framer_motion7.motion.div,
+            import_framer_motion9.motion.div,
             {
               className: "w-16 h-16 mx-auto mb-4 border-4 border-orange-200 border-t-orange-500 rounded-full",
               animate: { rotate: 360 },
@@ -4316,7 +4316,7 @@ var init_LoadingSpinner = __esm({
             }
           ),
           /* @__PURE__ */ (0, import_jsx_runtime39.jsx)(
-            import_framer_motion7.motion.p,
+            import_framer_motion9.motion.p,
             {
               className: "text-gray-600 font-medium",
               initial: { opacity: 0, y: 10 },
@@ -4363,6 +4363,7 @@ var Header = () => {
   const navigate = (0, import_react_router_dom.useNavigate)();
   const location = (0, import_react_router_dom.useLocation)();
   const navItems = FULLPAGE_PAGES.slice(1);
+  const isBlogRoute = location.pathname === "/blog" || location.pathname.startsWith("/blog/");
   (0, import_react.useEffect)(() => {
     document.body.style.overflow = isOpen ? "hidden" : "auto";
     return () => {
@@ -4400,6 +4401,10 @@ var Header = () => {
     if (event.currentTarget.dataset.active === "true") return;
     event.currentTarget.style.backgroundColor = "transparent";
     event.currentTarget.style.color = "var(--color-text-primary)";
+  };
+  const handleBlogNavigate = () => {
+    navigate("/blog");
+    setIsOpen(false);
   };
   return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(
     "header",
@@ -4448,29 +4453,48 @@ var Header = () => {
               ]
             }
           ),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("nav", { className: "hidden md:flex gap-1", children: navItems.map((page, index3) => {
-            const pageIndex = index3 + 1;
-            return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("nav", { className: "hidden md:flex gap-1", children: [
+            navItems.map((page, index3) => {
+              const pageIndex = index3 + 1;
+              return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+                "button",
+                {
+                  type: "button",
+                  "data-menu-btn": true,
+                  "data-page-index": pageIndex,
+                  "data-active": "false",
+                  onClick: () => handleNavigate(pageIndex),
+                  className: "px-4 py-2 rounded-md text-sm font-medium transition-all group",
+                  style: {
+                    backgroundColor: "transparent",
+                    color: "var(--color-text-primary)",
+                    fontFamily: "'Office Code Pro', monospace"
+                  },
+                  onMouseEnter: handleHoverOn,
+                  onMouseLeave: handleHoverOff,
+                  children: page.label
+                },
+                page.id
+              );
+            }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
               "button",
               {
                 type: "button",
-                "data-menu-btn": true,
-                "data-page-index": pageIndex,
-                "data-active": "false",
-                onClick: () => handleNavigate(pageIndex),
+                "data-active": isBlogRoute ? "true" : "false",
+                onClick: handleBlogNavigate,
                 className: "px-4 py-2 rounded-md text-sm font-medium transition-all group",
                 style: {
-                  backgroundColor: "transparent",
+                  backgroundColor: isBlogRoute ? "var(--color-bg-secondary)" : "transparent",
                   color: "var(--color-text-primary)",
                   fontFamily: "'Office Code Pro', monospace"
                 },
                 onMouseEnter: handleHoverOn,
                 onMouseLeave: handleHoverOff,
-                children: page.label
-              },
-              page.id
-            );
-          }) }),
+                children: "Blog"
+              }
+            )
+          ] }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(
             "button",
             {
@@ -4507,7 +4531,7 @@ var Header = () => {
             animate: { opacity: 1 },
             exit: { opacity: 0 },
             className: "md:hidden fixed inset-0 bg-[var(--color-bg-page)]",
-            children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+            children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(
               import_framer_motion.motion.nav,
               {
                 initial: "hidden",
@@ -4521,18 +4545,31 @@ var Header = () => {
                   }
                 },
                 className: "flex flex-col items-center justify-center h-full space-y-6 px-6",
-                children: FULLPAGE_PAGES.map((page, index3) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
-                  import_framer_motion.motion.button,
-                  {
-                    type: "button",
-                    onClick: () => handleNavigate(index3),
-                    className: "text-3xl uppercase text-center text-slate-900",
-                    style: { fontFamily: "'Office Code Pro', monospace" },
-                    variants: { hidden: { y: 10, opacity: 0 }, show: { y: 0, opacity: 1 } },
-                    children: page.label
-                  },
-                  page.id
-                ))
+                children: [
+                  FULLPAGE_PAGES.map((page, index3) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+                    import_framer_motion.motion.button,
+                    {
+                      type: "button",
+                      onClick: () => handleNavigate(index3),
+                      className: "text-3xl uppercase text-center text-slate-900",
+                      style: { fontFamily: "'Office Code Pro', monospace" },
+                      variants: { hidden: { y: 10, opacity: 0 }, show: { y: 0, opacity: 1 } },
+                      children: page.label
+                    },
+                    page.id
+                  )),
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+                    import_framer_motion.motion.button,
+                    {
+                      type: "button",
+                      onClick: handleBlogNavigate,
+                      className: "text-3xl uppercase text-center text-slate-900",
+                      style: { fontFamily: "'Office Code Pro', monospace" },
+                      variants: { hidden: { y: 10, opacity: 0 }, show: { y: 0, opacity: 1 } },
+                      children: "Blog"
+                    }
+                  )
+                ]
               }
             )
           }
@@ -4666,8 +4703,8 @@ var PUBLIC_ROUTES = [
   },
   {
     path: "/blog",
-    title: "Blog - Local Effort Food Co.",
-    description: "Stories, updates, and kitchen notes from Local Effort Food Co.",
+    title: "Local Report - Local Effort Food Co.",
+    description: "Dispatches, updates, and kitchen notes from Local Effort Food Co.",
     prerender: true
   },
   {
@@ -12553,60 +12590,204 @@ var FullPageDemoPage_default = FullPageDemoPage;
 var import_react14 = __toESM(require("react"));
 var import_react_helmet_async2 = __toESM(require_lib());
 var import_react_router_dom4 = require("react-router-dom");
+var import_framer_motion4 = require("framer-motion");
 var import_jsx_runtime23 = require("react/jsx-runtime");
+var formatDate = (value) => {
+  if (!value) return "";
+  try {
+    return new Intl.DateTimeFormat("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric"
+    }).format(new Date(value));
+  } catch (error) {
+    return "";
+  }
+};
 var BlogList = () => {
+  const [searchParams, setSearchParams] = (0, import_react_router_dom4.useSearchParams)();
   const [posts, setPosts] = (0, import_react14.useState)([]);
+  const [categories, setCategories] = (0, import_react14.useState)([]);
+  const [categoriesTotal, setCategoriesTotal] = (0, import_react14.useState)(0);
   const [error, setError] = (0, import_react14.useState)("");
   const [loading, setLoading] = (0, import_react14.useState)(true);
+  const selectedCategory = searchParams.get("category") || "";
+  const selectedCategoryLabel = categories.find((entry) => entry.slug === selectedCategory)?.category || "";
   (0, import_react14.useEffect)(() => {
     let mounted = true;
-    (async () => {
-      try {
-        const response = await fetch("/api/v1/posts?limit=50");
-        const payload = await response.json().catch(() => ({}));
-        if (!response.ok || payload?.ok === false) {
-          throw new Error(payload?.error || "Failed to load blog posts");
-        }
-        if (mounted) setPosts(Array.isArray(payload?.posts) ? payload.posts : []);
-      } catch (e) {
-        if (mounted) setError(e?.message || "Failed to load blog posts");
-      } finally {
-        if (mounted) setLoading(false);
+    const load = async () => {
+      setLoading(true);
+      setError("");
+      const postParams = new URLSearchParams({ limit: "50" });
+      if (selectedCategory) {
+        postParams.set("category", selectedCategory);
       }
-    })();
+      try {
+        const [postsResult, categoriesResult] = await Promise.allSettled([
+          fetch(`/api/v1/posts?${postParams.toString()}`),
+          fetch("/api/v1/categories")
+        ]);
+        if (postsResult.status !== "fulfilled") {
+          throw postsResult.reason;
+        }
+        const postsPayload = await postsResult.value.json().catch(() => ({}));
+        if (!postsResult.value.ok || postsPayload?.ok === false) {
+          throw new Error(postsPayload?.error || "Failed to load Local Report");
+        }
+        if (mounted) {
+          setPosts(Array.isArray(postsPayload?.posts) ? postsPayload.posts : []);
+          setCategoriesTotal(Number(postsPayload?.count) || 0);
+        }
+        if (categoriesResult.status === "fulfilled") {
+          const categoriesPayload = await categoriesResult.value.json().catch(() => ({}));
+          if (categoriesResult.value.ok && categoriesPayload?.ok !== false && mounted) {
+            setCategories(Array.isArray(categoriesPayload?.categories) ? categoriesPayload.categories : []);
+            setCategoriesTotal(Number(categoriesPayload?.totalPosts) || Number(postsPayload?.count) || 0);
+          }
+        } else if (mounted) {
+          setCategories([]);
+        }
+      } catch (loadError) {
+        if (mounted) {
+          setError(loadError?.message || "Failed to load Local Report");
+        }
+      } finally {
+        if (mounted) {
+          setLoading(false);
+        }
+      }
+    };
+    load();
     return () => {
       mounted = false;
     };
-  }, []);
-  return /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { className: "mx-auto max-w-3xl px-4 md:px-6 lg:px-8 py-10", children: [
+  }, [selectedCategory]);
+  const handleCategoryChange = (slug) => {
+    const nextParams = new URLSearchParams(searchParams);
+    if (slug) {
+      nextParams.set("category", slug);
+    } else {
+      nextParams.delete("category");
+    }
+    setSearchParams(nextParams, { replace: true });
+  };
+  const summaryText = selectedCategory && selectedCategoryLabel ? `${posts.length} stories in ${selectedCategoryLabel}` : `${categoriesTotal || posts.length} published dispatches`;
+  return /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { className: "blog-page fullpage-demo-scope", children: [
     /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)(import_react_helmet_async2.Helmet, { children: [
-      /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("title", { children: "Blog | Local Effort" }),
-      /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("meta", { name: "description", content: "News, stories, and updates from Local Effort Food Co." }),
+      /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("title", { children: "Local Report | Local Effort" }),
+      /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("meta", { name: "description", content: "Dispatches, stories, and kitchen notes from Local Effort Food Co." }),
       /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("link", { rel: "canonical", href: `${SITE_URL}/blog` }),
-      /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("link", { rel: "alternate", type: "application/rss+xml", title: "Local Effort Blog RSS", href: "/api/feeds/blog.rss" }),
-      /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("link", { rel: "alternate", type: "application/atom+xml", title: "Local Effort Blog Atom", href: "/api/feeds/blog.atom" }),
-      /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("link", { rel: "alternate", type: "application/feed+json", title: "Local Effort Blog JSON Feed", href: "/api/feeds/blog.json" }),
-      /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("link", { rel: "alternate", type: "application/activity+json", title: "Local Effort ActivityPub Actor", href: "/api/activitypub/actor" })
+      /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("link", { rel: "alternate", type: "application/rss+xml", title: "Local Report RSS", href: "/api/feeds/blog.rss" }),
+      /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("link", { rel: "alternate", type: "application/atom+xml", title: "Local Report Atom", href: "/api/feeds/blog.atom" }),
+      /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("link", { rel: "alternate", type: "application/feed+json", title: "Local Report JSON Feed", href: "/api/feeds/blog.json" }),
+      /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("link", { rel: "alternate", type: "application/activity+json", title: "Local Report ActivityPub Actor", href: "/api/activitypub/actor" })
     ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("h1", { className: "heading-xl heading-balance mb-6", children: "Blog" }),
-    error && /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("div", { className: "text-red-700 bg-red-50 border border-red-200 p-3 rounded mb-4", children: error }),
-    /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("ul", { className: "space-y-4", children: [
-      posts.map((p) => /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("li", { className: "border rounded-lg p-4 hover:bg-gray-50", children: [
-        (p.mainImageUrl || p.ogImageUrl) && /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(
-          "img",
-          {
-            src: p.mainImageUrl || p.ogImageUrl,
-            alt: p.mainImageAlt || p.ogImageAlt || p.title || "Blog post image",
-            loading: "lazy",
-            className: "mb-3 h-52 w-full rounded-md object-cover"
-          }
-        ),
-        /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(import_react_router_dom4.Link, { to: `/blog/${p.slug}`, className: "text-xl font-semibold hover:underline", children: p.title }),
-        /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("div", { className: "text-sm text-gray-500 mt-1", children: p.publishedAt ? new Date(p.publishedAt).toLocaleDateString() : "" }),
-        p.excerpt && /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("p", { className: "text-gray-700 mt-2", children: p.excerpt })
-      ] }, p.slug)),
-      !posts.length && !error && !loading && /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("li", { children: "No posts yet." }),
-      loading && !error && /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("li", { children: "Loading..." })
+    /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { className: "blog-page-shell", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)(
+        import_framer_motion4.motion.section,
+        {
+          className: "blog-page-hero",
+          initial: { opacity: 0, y: 18 },
+          animate: { opacity: 1, y: 0 },
+          transition: { duration: 0.35, ease: "easeOut" },
+          children: [
+            /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("p", { className: "blog-page-kicker", children: "Local Report" }),
+            /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("h1", { className: "blog-page-headline", children: "Field notes from the kitchen." }),
+            /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("p", { className: "blog-page-deck", children: "Stories from service, sourcing, menu development, and the day-to-day work behind Local Effort." }),
+            /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { className: "blog-page-summary", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("span", { children: /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("strong", { children: summaryText }) }),
+              /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("span", { children: "Route stays at /blog" }),
+              selectedCategoryLabel && /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("span", { children: [
+                "Filtered by ",
+                selectedCategoryLabel
+              ] })
+            ] })
+          ]
+        }
+      ),
+      /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { className: "blog-page-layout", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("aside", { children: /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { className: "blog-page-sidebar-card", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("p", { className: "blog-page-sidebar-label", children: "Categories" }),
+          /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("p", { className: "blog-page-sidebar-copy", children: "Use the left rail to jump between report sections. This list is driven by the Sanity category field." }),
+          /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { className: "blog-page-filter-list", role: "tablist", "aria-label": "Blog categories", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)(
+              "button",
+              {
+                type: "button",
+                className: `blog-page-filter-btn ${selectedCategory ? "" : "is-active"}`,
+                onClick: () => handleCategoryChange(""),
+                children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("span", { children: "All posts" }),
+                  /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("span", { className: "blog-page-filter-count", children: categoriesTotal || posts.length })
+                ]
+              }
+            ),
+            categories.map((entry) => /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)(
+              "button",
+              {
+                type: "button",
+                className: `blog-page-filter-btn ${selectedCategory === entry.slug ? "is-active" : ""}`,
+                onClick: () => handleCategoryChange(entry.slug),
+                children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("span", { children: entry.category }),
+                  /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("span", { className: "blog-page-filter-count", children: entry.postCount })
+                ]
+              },
+              entry.slug
+            ))
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("p", { className: "blog-page-feed-note", children: [
+            "Subscribe via ",
+            /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("a", { href: "/api/feeds/blog.rss", children: "RSS" }),
+            " or ",
+            /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("a", { href: "/api/feeds/blog.atom", children: "Atom" }),
+            "."
+          ] })
+        ] }) }),
+        /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("section", { className: "blog-page-main", "aria-live": "polite", children: [
+          error && /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("div", { className: "blog-page-error", children: error }),
+          loading && !error && /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("div", { className: "blog-page-loading", children: "Loading Local Report..." }),
+          !loading && !error && selectedCategoryLabel && /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { className: "blog-page-note", children: [
+            "Showing posts in ",
+            /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("strong", { children: selectedCategoryLabel }),
+            "."
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("div", { className: "blog-page-cards", children: posts.map((post, index3) => /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)(
+            import_framer_motion4.motion.article,
+            {
+              className: "blog-page-card",
+              initial: { opacity: 0, y: 20 },
+              animate: { opacity: 1, y: 0 },
+              transition: { duration: 0.3, delay: Math.min(index3 * 0.05, 0.3), ease: "easeOut" },
+              children: [
+                /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("div", { className: "blog-page-card-media", children: post.mainImageUrl || post.ogImageUrl ? /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(
+                  "img",
+                  {
+                    src: post.mainImageUrl || post.ogImageUrl,
+                    alt: post.mainImageAlt || post.ogImageAlt || post.title || "Blog post image",
+                    loading: "lazy"
+                  }
+                ) : null }),
+                /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { className: "blog-page-card-body", children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { className: "blog-page-card-meta", children: [
+                    post.category && /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("span", { className: "blog-page-chip is-accent", children: post.category }),
+                    post.publishedAt && /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("span", { children: formatDate(post.publishedAt) }),
+                    post.readingTimeMinutes ? /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("span", { children: [
+                      post.readingTimeMinutes,
+                      " min read"
+                    ] }) : null
+                  ] }),
+                  /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("h2", { className: "blog-page-card-title", children: /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(import_react_router_dom4.Link, { to: `/blog/${post.slug}`, className: "blog-page-title-link", children: post.title }) }),
+                  post.excerpt && /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("p", { className: "blog-page-card-excerpt", children: post.excerpt }),
+                  (post.tags || []).length > 0 && /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("div", { className: "blog-page-tag-row", "aria-label": "Post tags", children: post.tags.slice(0, 3).map((tag) => /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("span", { className: "blog-page-chip", children: tag }, tag)) })
+                ] })
+              ]
+            },
+            post.slug
+          )) }),
+          !posts.length && !error && !loading && /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("div", { className: "blog-page-empty", children: "No posts matched this category yet." })
+        ] })
+      ] })
     ] })
   ] });
 };
@@ -12617,6 +12798,7 @@ var import_react16 = __toESM(require("react"));
 var import_react_helmet_async3 = __toESM(require_lib());
 var import_react_router_dom5 = require("react-router-dom");
 var import_react17 = require("@portabletext/react");
+var import_framer_motion5 = require("framer-motion");
 
 // src/utils/portableTextComponents.jsx
 var import_react15 = __toESM(require("react"));
@@ -12742,6 +12924,18 @@ var portableTextComponents = createPortableTextComponents();
 
 // src/pages/BlogPost.jsx
 var import_jsx_runtime25 = require("react/jsx-runtime");
+var formatDate2 = (value) => {
+  if (!value) return "";
+  try {
+    return new Intl.DateTimeFormat("en-US", {
+      month: "long",
+      day: "numeric",
+      year: "numeric"
+    }).format(new Date(value));
+  } catch (error) {
+    return "";
+  }
+};
 var BlogPost = () => {
   const { slug } = (0, import_react_router_dom5.useParams)();
   const [post, setPost] = (0, import_react16.useState)(null);
@@ -12764,10 +12958,10 @@ var BlogPost = () => {
           setPost(payload?.post || null);
           setStatusCode(200);
         }
-      } catch (err) {
+      } catch (requestError) {
         if (mounted) {
           setStatusCode(500);
-          setError(err?.message || "Failed to load post");
+          setError(requestError?.message || "Failed to load post");
         }
       }
     })();
@@ -12775,20 +12969,28 @@ var BlogPost = () => {
       mounted = false;
     };
   }, [slug]);
-  if (error && statusCode === 404) return /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("div", { className: "mx-auto max-w-3xl px-4 py-10 text-red-700", children: "Post not found." });
-  if (error && statusCode === 403) return /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("div", { className: "mx-auto max-w-3xl px-4 py-10 text-red-700", children: "This post is for members only." });
-  if (error) return /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("div", { className: "mx-auto max-w-3xl px-4 py-10 text-red-700", children: error });
-  if (!post) return /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("div", { className: "mx-auto max-w-3xl px-4 py-10", children: "Loading..." });
   const canonicalUrl = post?.canonicalUrl || `${SITE_URL}/blog/${slug}`;
-  const pageTitle = post?.metaTitle || (post?.title ? `${post.title} | Blog | Local Effort` : "Blog | Local Effort");
+  const pageTitle = post?.metaTitle || (post?.title ? `${post.title} | Local Report | Local Effort` : "Local Report | Local Effort");
   const description = post?.metaDescription || post?.excerpt || "";
   const ogImage = post?.ogImageUrl || "";
-  return /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { className: "mx-auto max-w-3xl px-4 md:px-6 lg:px-8 py-10", children: [
+  if (error && statusCode === 404) {
+    return /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("div", { className: "blog-page fullpage-demo-scope", children: /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("div", { className: "blog-page-shell", children: /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("div", { className: "blog-page-error", children: "Post not found." }) }) });
+  }
+  if (error && statusCode === 403) {
+    return /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("div", { className: "blog-page fullpage-demo-scope", children: /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("div", { className: "blog-page-shell", children: /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("div", { className: "blog-page-error", children: "This post is for members only." }) }) });
+  }
+  if (error) {
+    return /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("div", { className: "blog-page fullpage-demo-scope", children: /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("div", { className: "blog-page-shell", children: /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("div", { className: "blog-page-error", children: error }) }) });
+  }
+  if (!post) {
+    return /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("div", { className: "blog-page fullpage-demo-scope", children: /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("div", { className: "blog-page-shell", children: /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("div", { className: "blog-page-loading", children: "Loading Local Report..." }) }) });
+  }
+  return /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { className: "blog-page fullpage-demo-scope", children: [
     /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)(import_react_helmet_async3.Helmet, { children: [
       /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("title", { children: pageTitle }),
       description && /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("meta", { name: "description", content: description }),
       /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("meta", { property: "og:type", content: "article" }),
-      /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("meta", { property: "og:title", content: post?.metaTitle || post?.title || "Blog" }),
+      /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("meta", { property: "og:title", content: post?.metaTitle || post?.title || "Local Report" }),
       description && /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("meta", { property: "og:description", content: description }),
       /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("meta", { property: "og:url", content: canonicalUrl }),
       ogImage && /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("meta", { property: "og:image", content: ogImage }),
@@ -12802,19 +13004,65 @@ var BlogPost = () => {
         }
       )
     ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(import_react_router_dom5.Link, { to: "/blog", className: "text-sm underline", children: "Back to blog" }),
-    /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("h1", { className: "heading-xl heading-balance mt-4", children: post.title }),
-    /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("div", { className: "text-sm text-gray-500 mt-1", children: post.publishedAt ? new Date(post.publishedAt).toLocaleDateString() : "" }),
-    (post?.mainImageUrl || post?.ogImageUrl) && /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(
-      "img",
+    /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("div", { className: "blog-page-shell", children: /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)(
+      import_framer_motion5.motion.div,
       {
-        src: post.mainImageUrl || post.ogImageUrl,
-        alt: post.mainImageAlt || post.ogImageAlt || post.title || "Blog post image",
-        loading: "lazy",
-        className: "mt-6 w-full rounded-lg object-cover"
+        className: "blog-page-detail-grid",
+        initial: { opacity: 0, y: 18 },
+        animate: { opacity: 1, y: 0 },
+        transition: { duration: 0.35, ease: "easeOut" },
+        children: [
+          /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("aside", { children: /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { className: "blog-page-meta-card", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)(import_react_router_dom5.Link, { to: "/blog", className: "blog-page-back-link", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("span", { "aria-hidden": "true", children: "\u2190" }),
+              /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("span", { children: "Back to Local Report" })
+            ] }),
+            /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { className: "blog-page-meta-list", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { children: [
+                /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("p", { className: "blog-page-meta-label", children: "Section" }),
+                /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("p", { className: "blog-page-meta-copy", children: post.category || "General report" })
+              ] }),
+              /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { children: [
+                /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("p", { className: "blog-page-meta-label", children: "Published" }),
+                /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("p", { className: "blog-page-meta-copy", children: formatDate2(post.publishedAt) || "Unscheduled" })
+              ] }),
+              /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { children: [
+                /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("p", { className: "blog-page-meta-label", children: "Reading time" }),
+                /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("p", { className: "blog-page-meta-copy", children: [
+                  post.readingTimeMinutes || 1,
+                  " min read"
+                ] })
+              ] }),
+              (post.authors || []).length > 0 && /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { children: [
+                /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("p", { className: "blog-page-meta-label", children: "Byline" }),
+                /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("p", { className: "blog-page-meta-copy", children: post.authors.map((author) => author.name).join(", ") })
+              ] })
+            ] })
+          ] }) }),
+          /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("article", { className: "blog-page-post", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("header", { className: "blog-page-post-header", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("p", { className: "blog-page-kicker", children: "Local Report" }),
+              /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { className: "blog-page-post-meta", children: [
+                post.category && /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("span", { className: "blog-page-chip is-accent", children: post.category }),
+                post.publishedAt && /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("span", { children: formatDate2(post.publishedAt) })
+              ] }),
+              /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("h1", { className: "blog-page-post-title", children: post.title }),
+              post.excerpt && /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("p", { className: "blog-page-post-excerpt", children: post.excerpt }),
+              (post.tags || []).length > 0 && /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("div", { className: "blog-page-tag-row", "aria-label": "Post tags", children: post.tags.map((tag) => /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("span", { className: "blog-page-chip", children: tag }, tag)) })
+            ] }),
+            (post.mainImageUrl || post.ogImageUrl) && /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("div", { className: "blog-page-image-frame", children: /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(
+              "img",
+              {
+                src: post.mainImageUrl || post.ogImageUrl,
+                alt: post.mainImageAlt || post.ogImageAlt || post.title || "Blog post image",
+                loading: "lazy"
+              }
+            ) }),
+            /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("div", { className: "blog-page-richtext", children: Array.isArray(post.body) && post.body.length > 0 ? /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(import_react17.PortableText, { value: post.body, components: portableTextComponents }) : /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("div", { dangerouslySetInnerHTML: { __html: post?.html || "" } }) })
+          ] })
+        ]
       }
-    ),
-    /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("article", { className: "prose max-w-none mt-6", children: Array.isArray(post.body) && post.body.length > 0 ? /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(import_react17.PortableText, { value: post.body, components: portableTextComponents }) : /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("div", { dangerouslySetInnerHTML: { __html: post?.html || "" } }) })
+    ) })
   ] });
 };
 var BlogPost_default = BlogPost;
@@ -12834,7 +13082,7 @@ var portableComponents = createPortableTextComponents({
     }
   }
 });
-function formatDate(value) {
+function formatDate3(value) {
   if (!value) return "";
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return "";
@@ -12897,7 +13145,7 @@ var ReleasesPage = () => {
     error && /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "rounded-md border border-red-200 bg-red-50 p-3 text-red-700 mb-6", children: error }),
     !error && releases.length === 0 && /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "rounded-md border border-neutral-200 bg-neutral-50 p-4 text-neutral-700", children: "No releases have been published yet." }),
     /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "space-y-10", children: releases.map((release) => /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("article", { id: release.slug || release._id, className: "rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("p", { className: "text-sm text-neutral-500", children: formatDate(release.publishedAt) }),
+      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("p", { className: "text-sm text-neutral-500", children: formatDate3(release.publishedAt) }),
       /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("h2", { className: "mt-1 text-2xl font-semibold text-neutral-900", children: release.title }),
       release.summary && /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("p", { className: "mt-3 text-neutral-700", children: release.summary }),
       release.heroImage?.url && /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(
@@ -13630,7 +13878,7 @@ function CartDrawer({ store = "sale" }) {
 
 // src/store/data/generatedSalePageData.json
 var generatedSalePageData_default = {
-  generatedAt: "2026-03-11T02:29:21.668Z",
+  generatedAt: "2026-03-21T20:16:15.681Z",
   page: {
     title: "Local Effort Sale",
     subheading: "holiday pie sale",
@@ -14021,15 +14269,15 @@ var WeeklyList_default = WeeklyList;
 // src/pages/happymondaypage.jsx
 var import_react34 = __toESM(require("react"));
 var import_react_helmet_async7 = __toESM(require_lib());
-var import_framer_motion8 = require("framer-motion");
+var import_framer_motion10 = require("framer-motion");
 
 // src/components/menu/FoodItemCard.jsx
 var import_react28 = __toESM(require("react"));
-var import_framer_motion4 = require("framer-motion");
+var import_framer_motion6 = require("framer-motion");
 var import_jsx_runtime34 = require("react/jsx-runtime");
 var FoodItemCard = ({ item, onClick }) => {
   return /* @__PURE__ */ (0, import_jsx_runtime34.jsxs)(
-    import_framer_motion4.motion.div,
+    import_framer_motion6.motion.div,
     {
       variants: fadeInUp,
       onClick,
@@ -14144,7 +14392,7 @@ var HappyMondayPage = () => {
         ] }),
         /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("div", { className: "text-center mb-8", children: /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("h2", { className: "text-2xl font-semibold", children: "Ingredient Lists" }) }),
         /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(import_react34.Suspense, { fallback: /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("div", { className: "flex justify-center items-center h-64", children: "Loading\u2026" }), children: isLoading ? /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("div", { className: "flex justify-center items-center h-64", children: /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(LoadingSpinner2, {}) }) : /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(
-          import_framer_motion8.motion.div,
+          import_framer_motion10.motion.div,
           {
             className: "grid md:grid-cols-2 lg:grid-cols-3 gap-6",
             initial: "initial",
@@ -14161,7 +14409,7 @@ var HappyMondayPage = () => {
       ] }),
       /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(Separator, {})
     ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(import_framer_motion8.AnimatePresence, { children: selectedItem && /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(ErrorBoundary_default, { children: /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(import_react34.Suspense, { fallback: /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("div", { className: "fixed inset-0 flex items-center justify-center", children: "Loading\u2026" }), children: /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(FoodItemModal2, { item: selectedItem, onClose: handleCloseModal }) }) }) })
+    /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(import_framer_motion10.AnimatePresence, { children: selectedItem && /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(ErrorBoundary_default, { children: /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(import_react34.Suspense, { fallback: /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("div", { className: "fixed inset-0 flex items-center justify-center", children: "Loading\u2026" }), children: /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(FoodItemModal2, { item: selectedItem, onClose: handleCloseModal }) }) }) })
   ] });
 };
 var happymondaypage_default = HappyMondayPage;
@@ -14169,7 +14417,7 @@ var happymondaypage_default = HappyMondayPage;
 // src/pages/PizzaPartyPage.jsx
 var import_react36 = __toESM(require("react"));
 var import_react_helmet_async8 = __toESM(require_lib());
-var import_framer_motion9 = require("framer-motion");
+var import_framer_motion11 = require("framer-motion");
 
 // src/hooks/useSquareCard.js
 var import_react35 = require("react");
@@ -15157,7 +15405,7 @@ var PizzaPartyPage = () => {
           error
         ] }),
         /* @__PURE__ */ (0, import_jsx_runtime41.jsxs)("div", { className: "columns-2 md:columns-3 lg:columns-4 gap-3 [column-fill:_balance]", children: [
-          images.map((img, idx) => /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(import_framer_motion9.motion.figure, { className: "mb-3 break-inside-avoid rounded-lg overflow-hidden shadow-sm bg-neutral-100", whileHover: { scale: 1.02 }, children: /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(
+          images.map((img, idx) => /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(import_framer_motion11.motion.figure, { className: "mb-3 break-inside-avoid rounded-lg overflow-hidden shadow-sm bg-neutral-100", whileHover: { scale: 1.02 }, children: /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(
             "img",
             {
               src: img.thumbnail_url,
@@ -15189,10 +15437,10 @@ var PizzaPartyPage = () => {
         ] })
       ] })
     ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(import_framer_motion9.AnimatePresence, { children: showModal && /* @__PURE__ */ (0, import_jsx_runtime41.jsxs)(import_framer_motion9.motion.div, { className: "fixed inset-0 z-50 flex items-start justify-center p-4 overflow-y-auto", initial: { opacity: 0 }, animate: { opacity: 1 }, exit: { opacity: 0 }, children: [
+    /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(import_framer_motion11.AnimatePresence, { children: showModal && /* @__PURE__ */ (0, import_jsx_runtime41.jsxs)(import_framer_motion11.motion.div, { className: "fixed inset-0 z-50 flex items-start justify-center p-4 overflow-y-auto", initial: { opacity: 0 }, animate: { opacity: 1 }, exit: { opacity: 0 }, children: [
       /* @__PURE__ */ (0, import_jsx_runtime41.jsx)("div", { className: "absolute inset-0 bg-black/40 backdrop-blur-sm", onClick: closeModal }),
       /* @__PURE__ */ (0, import_jsx_runtime41.jsxs)(
-        import_framer_motion9.motion.div,
+        import_framer_motion11.motion.div,
         {
           initial: { scale: 0.9, opacity: 0 },
           animate: { scale: 1, opacity: 1 },
@@ -22336,7 +22584,7 @@ function parseDate2(value, dateFormat, locale, strictParsing, refDate) {
       useAdditionalWeekYearTokens: true,
       useAdditionalDayOfYearTokens: true
     });
-    if (isValid2(parsedDate) && (!strictParsing || value === formatDate2(parsedDate, format_1, locale))) {
+    if (isValid2(parsedDate) && (!strictParsing || value === formatDate4(parsedDate, format_1, locale))) {
       return parsedDate;
     }
   }
@@ -22374,7 +22622,7 @@ function safeToDate(date) {
   }
   return null;
 }
-function formatDate2(date, formatStr, locale) {
+function formatDate4(date, formatStr, locale) {
   if (locale === "en") {
     return format(date, formatStr, {
       useAdditionalWeekYearTokens: true,
@@ -22395,7 +22643,7 @@ function formatDate2(date, formatStr, locale) {
 function safeDateFormat(date, _a2) {
   var dateFormat = _a2.dateFormat, locale = _a2.locale;
   var formatStr = Array.isArray(dateFormat) && dateFormat.length > 0 ? dateFormat[0] : dateFormat;
-  return date && formatDate2(date, formatStr, locale) || "";
+  return date && formatDate4(date, formatStr, locale) || "";
 }
 var DATE_RANGE_SEPARATOR = " - ";
 function safeDateRangeFormat(startDate, endDate, props) {
@@ -22430,7 +22678,7 @@ function getWeek2(date) {
   return getISOWeek(date);
 }
 function getDayOfWeekCode(day, locale) {
-  return formatDate2(day, "ddd", locale);
+  return formatDate4(day, "ddd", locale);
 }
 function getStartOfDay(date) {
   return startOfDay(date);
@@ -22522,22 +22770,22 @@ function getLocaleObject(localeSpec) {
   }
 }
 function getFormattedWeekdayInLocale(date, formatFunc, locale) {
-  return formatFunc(formatDate2(date, "EEEE", locale));
+  return formatFunc(formatDate4(date, "EEEE", locale));
 }
 function getWeekdayMinInLocale(date, locale) {
-  return formatDate2(date, "EEEEEE", locale);
+  return formatDate4(date, "EEEEEE", locale);
 }
 function getWeekdayShortInLocale(date, locale) {
-  return formatDate2(date, "EEE", locale);
+  return formatDate4(date, "EEE", locale);
 }
 function getMonthInLocale(month, locale) {
-  return formatDate2(setMonth(newDate(), month), "LLLL", locale);
+  return formatDate4(setMonth(newDate(), month), "LLLL", locale);
 }
 function getMonthShortInLocale(month, locale) {
-  return formatDate2(setMonth(newDate(), month), "LLL", locale);
+  return formatDate4(setMonth(newDate(), month), "LLL", locale);
 }
 function getQuarterShortInLocale(quarter, locale) {
-  return formatDate2(setQuarter(newDate(), quarter), "QQQ", locale);
+  return formatDate4(setQuarter(newDate(), quarter), "QQQ", locale);
 }
 function isDayDisabled(day, _a2) {
   var _b = _a2 === void 0 ? {} : _a2, minDate = _b.minDate, maxDate = _b.maxDate, excludeDates = _b.excludeDates, excludeDateIntervals = _b.excludeDateIntervals, includeDates = _b.includeDates, includeDateIntervals = _b.includeDateIntervals, filterDate = _b.filterDate, disabled = _b.disabled;
@@ -22792,7 +23040,7 @@ function getHighLightDaysMap(highlightDates, defaultClassName) {
   for (var i = 0, len = highlightDates.length; i < len; i++) {
     var obj = highlightDates[i];
     if (isDate(obj)) {
-      var key = formatDate2(obj, "MM.dd.yyyy");
+      var key = formatDate4(obj, "MM.dd.yyyy");
       var classNamesArr = dateClasses.get(key) || [];
       if (!classNamesArr.includes(defaultClassName)) {
         classNamesArr.push(defaultClassName);
@@ -22806,7 +23054,7 @@ function getHighLightDaysMap(highlightDates, defaultClassName) {
         for (var k = 0, len_1 = arrOfDates.length; k < len_1; k++) {
           var dateK = arrOfDates[k];
           if (dateK) {
-            var key = formatDate2(dateK, "MM.dd.yyyy");
+            var key = formatDate4(dateK, "MM.dd.yyyy");
             var classNamesArr = dateClasses.get(key) || [];
             if (!classNamesArr.includes(className)) {
               classNamesArr.push(className);
@@ -22840,7 +23088,7 @@ function getHolidaysMap(holidayDates, defaultClassName) {
     if (!isDate(dateObj)) {
       return;
     }
-    var key = formatDate2(dateObj, "MM.dd.yyyy");
+    var key = formatDate4(dateObj, "MM.dd.yyyy");
     var classNamesObj = dateClasses.get(key) || {
       className: "",
       holidayNames: []
@@ -23056,7 +23304,7 @@ var Day = (
         if (!highlightDates) {
           return false;
         }
-        var dayStr = formatDate2(day, "MM.dd.yyyy");
+        var dayStr = formatDate4(day, "MM.dd.yyyy");
         return highlightDates.get(dayStr);
       };
       _this.getHolidaysClass = function() {
@@ -23065,7 +23313,7 @@ var Day = (
         if (!holidays) {
           return [void 0];
         }
-        var dayStr = formatDate2(day, "MM.dd.yyyy");
+        var dayStr = formatDate4(day, "MM.dd.yyyy");
         if (holidays.has(dayStr)) {
           return [(_a2 = holidays.get(dayStr)) === null || _a2 === void 0 ? void 0 : _a2.className];
         }
@@ -23197,11 +23445,11 @@ var Day = (
       _this.getAriaLabel = function() {
         var _a2 = _this.props, day = _a2.day, _b = _a2.ariaLabelPrefixWhenEnabled, ariaLabelPrefixWhenEnabled = _b === void 0 ? "Choose" : _b, _c = _a2.ariaLabelPrefixWhenDisabled, ariaLabelPrefixWhenDisabled = _c === void 0 ? "Not available" : _c;
         var prefix = _this.isDisabled() || _this.isExcluded() ? ariaLabelPrefixWhenDisabled : ariaLabelPrefixWhenEnabled;
-        return "".concat(prefix, " ").concat(formatDate2(day, "PPPP", _this.props.locale));
+        return "".concat(prefix, " ").concat(formatDate4(day, "PPPP", _this.props.locale));
       };
       _this.getTitle = function() {
         var _a2 = _this.props, day = _a2.day, _b = _a2.holidays, holidays = _b === void 0 ? /* @__PURE__ */ new Map() : _b, excludeDates = _a2.excludeDates;
-        var compareDt = formatDate2(day, "MM.dd.yyyy");
+        var compareDt = formatDate4(day, "MM.dd.yyyy");
         var titles = [];
         if (holidays.has(compareDt)) {
           titles.push.apply(titles, holidays.get(compareDt).holidayNames);
@@ -23948,7 +24196,7 @@ var Month = (
         var _a2 = _this.props, _b = _a2.chooseDayAriaLabelPrefix, chooseDayAriaLabelPrefix = _b === void 0 ? "Choose" : _b, _c = _a2.disabledDayAriaLabelPrefix, disabledDayAriaLabelPrefix = _c === void 0 ? "Not available" : _c, day = _a2.day, locale = _a2.locale;
         var labelDate = setMonth(day, month);
         var prefix = _this.isDisabled(labelDate) || _this.isExcluded(labelDate) ? disabledDayAriaLabelPrefix : chooseDayAriaLabelPrefix;
-        return "".concat(prefix, " ").concat(formatDate2(labelDate, "MMMM yyyy", locale));
+        return "".concat(prefix, " ").concat(formatDate4(labelDate, "MMMM yyyy", locale));
       };
       _this.getQuarterClassNames = function(q2) {
         var _a2 = _this.props, day = _a2.day, startDate = _a2.startDate, endDate = _a2.endDate, minDate = _a2.minDate, maxDate = _a2.maxDate, excludeDates = _a2.excludeDates, includeDates = _a2.includeDates, filterDate = _a2.filterDate, preSelection = _a2.preSelection, disabledKeyboardNavigation = _a2.disabledKeyboardNavigation, disabled = _a2.disabled;
@@ -24038,7 +24286,7 @@ var Month = (
     Month2.prototype.render = function() {
       var _a2 = this.props, showMonthYearPicker = _a2.showMonthYearPicker, showQuarterYearPicker = _a2.showQuarterYearPicker, day = _a2.day, _b = _a2.ariaLabelPrefix, ariaLabelPrefix = _b === void 0 ? "Month " : _b;
       var formattedAriaLabelPrefix = ariaLabelPrefix ? ariaLabelPrefix.trim() + " " : "";
-      var formattedAriaLabel = isValid2(day) ? "".concat(formattedAriaLabelPrefix).concat(formatDate2(day, "MMMM, yyyy", this.props.locale)) : "";
+      var formattedAriaLabel = isValid2(day) ? "".concat(formattedAriaLabelPrefix).concat(formatDate4(day, "MMMM, yyyy", this.props.locale)) : "";
       var shouldUseListboxRole = showMonthYearPicker || showQuarterYearPicker;
       if (shouldUseListboxRole) {
         return import_react42.default.createElement("div", { className: this.getClassNames(), onMouseLeave: !this.props.usePointerEvent ? this.handleMouseLeave : void 0, onPointerLeave: this.props.usePointerEvent ? this.handleMouseLeave : void 0, "aria-label": formattedAriaLabel, role: "listbox" }, showMonthYearPicker ? this.renderMonths() : this.renderQuarters());
@@ -24214,7 +24462,7 @@ var MonthYearDropdownOptions = (
             "div",
             { className: isSameMonthYear ? "react-datepicker__month-year-option--selected_month-year" : "react-datepicker__month-year-option", key: monthYearPoint, onClick: _this.onChange.bind(_this, monthYearPoint), "aria-selected": isSameMonthYear ? "true" : void 0 },
             isSameMonthYear ? import_react42.default.createElement("span", { className: "react-datepicker__month-year-option--selected" }, "\u2713") : "",
-            formatDate2(monthYear, _this.props.dateFormat, _this.props.locale)
+            formatDate4(monthYear, _this.props.dateFormat, _this.props.locale)
           );
         });
       };
@@ -24258,7 +24506,7 @@ var MonthYearDropdown = (
         var options = [];
         while (!isAfter(currDate, lastDate)) {
           var timePoint = getTime(currDate);
-          options.push(import_react42.default.createElement("option", { key: timePoint, value: timePoint }, formatDate2(currDate, _this.props.dateFormat, _this.props.locale)));
+          options.push(import_react42.default.createElement("option", { key: timePoint, value: timePoint }, formatDate4(currDate, _this.props.dateFormat, _this.props.locale)));
           currDate = addMonths(currDate, 1);
         }
         return options;
@@ -24270,7 +24518,7 @@ var MonthYearDropdown = (
         return import_react42.default.createElement("select", { value: getTime(getStartOfMonth(_this.props.date)), className: "react-datepicker__month-year-select", onChange: _this.onSelectChange }, _this.renderSelectOptions());
       };
       _this.renderReadView = function(visible) {
-        var yearMonth = formatDate2(_this.props.date, _this.props.dateFormat, _this.props.locale);
+        var yearMonth = formatDate4(_this.props.date, _this.props.dateFormat, _this.props.locale);
         return import_react42.default.createElement(
           "div",
           { key: "read", style: { visibility: visible ? "visible" : "hidden" }, className: "react-datepicker__month-year-read-view", onClick: _this.toggleDropdown },
@@ -24419,7 +24667,7 @@ var Time = (
             }
           }, onKeyDown: function(event) {
             _this.handleOnKeyDown(event, time);
-          }, tabIndex: time === timeToFocus ? 0 : -1, role: "option", "aria-selected": _this.isSelectedTime(time) ? "true" : void 0, "aria-disabled": _this.isDisabledTime(time) ? "true" : void 0 }, formatDate2(time, format2, _this.props.locale));
+          }, tabIndex: time === timeToFocus ? 0 : -1, role: "option", "aria-selected": _this.isSelectedTime(time) ? "true" : void 0, "aria-disabled": _this.isDisabledTime(time) ? "true" : void 0 }, formatDate4(time, format2, _this.props.locale));
         });
       };
       _this.renderTimeCaption = function() {
@@ -25191,7 +25439,7 @@ var Calendar = (
         return dayNames.concat([0, 1, 2, 3, 4, 5, 6].map(function(offset4) {
           var day = addDays2(startOfWeek2, offset4);
           var weekDayName = _this.formatWeekday(day, _this.props.locale);
-          var fullDayName = formatDate2(day, "EEEE", _this.props.locale);
+          var fullDayName = formatDate4(day, "EEEE", _this.props.locale);
           var weekDayClassName = _this.props.weekDayClassName ? _this.props.weekDayClassName(day) : void 0;
           if (_this.props.renderCustomDayName) {
             var customContent = _this.props.renderCustomDayName({
@@ -25368,7 +25616,7 @@ var Calendar = (
         if (_this.props.showMonthYearDropdown) {
           classes.push("react-datepicker__current-month--hasMonthYearDropdown");
         }
-        return import_react42.default.createElement("h2", { className: classes.join(" ") }, isValid2(date) ? formatDate2(date, _this.props.dateFormat, _this.props.locale) : "");
+        return import_react42.default.createElement("h2", { className: classes.join(" ") }, isValid2(date) ? formatDate4(date, _this.props.dateFormat, _this.props.locale) : "");
       };
       _this.renderYearDropdown = function(overrideHide) {
         if (overrideHide === void 0) {
@@ -26382,7 +26630,7 @@ var DatePicker = (
           var newMinutes = Math.min(maxMinutes, currentMinutes + timeIntervals);
           newTime = addMinutes(baseDate, newMinutes);
         }
-        var formattedTime = formatDate2(newTime, formatStr || DatePicker2.defaultProps.dateFormat, _this.props.locale);
+        var formattedTime = formatDate4(newTime, formatStr || DatePicker2.defaultProps.dateFormat, _this.props.locale);
         _this.setState({
           preSelection: newTime,
           inputValue: formattedTime

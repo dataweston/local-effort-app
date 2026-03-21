@@ -1,0 +1,11 @@
+{
+  "requiredEntrees": 0,
+  "addOnMax": 0,
+  "maxTotalItems": 20,
+  "allowDuplicates": true,
+  "sectionRules": {
+    "breakfast": { "min": 0, "max": 8, "label": "Breakfast" },
+    "lunch": { "min": 0, "max": 6, "label": "Lunch" },
+    "dinner": { "min": 0, "max": 3, "label": "Dinner" }
+  }
+}

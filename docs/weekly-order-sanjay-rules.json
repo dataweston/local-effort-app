@@ -1,0 +1,9 @@
+{
+  "requiredEntrees": 0,
+  "addOnMax": 0,
+  "maxTotalItems": 10,
+  "allowDuplicates": true,
+  "sectionRules": {
+    "dinner": { "min": 5, "max": 5, "label": "Dinner" }
+  }
+}

@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
   Dialog,
@@ -738,6 +738,9 @@ const WeeklyOrderPage = () => {
             </div>
             <div className="weekly-order-meta-row">
               <span className="weekly-order-customer">{data?.customer?.name || 'Weekly Menu'}</span>
+              <Link to={`/weekly-order/${effectiveSlug}/portal`}>
+                <Button variant="outline" size="sm">My Portal</Button>
+              </Link>
               <Button variant="outline" size="sm" onClick={signOut}>Sign out</Button>
             </div>
           </div>

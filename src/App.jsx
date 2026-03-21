@@ -42,6 +42,7 @@ const SmallEventsAdminAvailabilityPage = lazy(() => import('./pages/SmallEventsA
 const WeeklyOrderPage = lazy(() => import('./pages/WeeklyOrderPage'));
 const AdminWeeklyOrderPage = lazy(() => import('./pages/AdminWeeklyOrderPage'));
 const WeeklyDemoPage = lazy(() => import('./pages/WeeklyDemoPage'));
+const SubscriberPortalPage = lazy(() => import('./pages/SubscriberPortalPage'));
 const CatherineSchedulePage = lazy(() => import('./pages/CatherineSchedulePage'));
 
 const AppContent = () => {
@@ -222,6 +223,14 @@ const AppContent = () => {
                   element={
                     <AnimatedPage>
                       <AdminWeeklyOrderPage />
+                    </AnimatedPage>
+                  }
+                />
+                <Route
+                  path="/weekly-order/:customerSlug/portal"
+                  element={
+                    <AnimatedPage>
+                      <SubscriberPortalPage />
                     </AnimatedPage>
                   }
                 />

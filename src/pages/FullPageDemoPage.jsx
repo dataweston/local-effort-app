@@ -21,7 +21,6 @@ import {
   DialogTitle,
 } from '../components/ui/dialog';
 import { FULLPAGE_PAGES } from '../config/fullPageNav';
-import '../styles/fullpage-demo-theme.css';
 
 const SMALL_EVENT_CONFIG = {
   dinner: {

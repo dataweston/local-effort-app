@@ -126,6 +126,8 @@ model User {
   customer   Customer? @relation(fields: [customerId], references: [id])
   overrides  UserPriceOverride[]
   orders     Order[]
+  feedback   DishFeedback[]
+  chefNotes  ChefNote[]
 }
 
 model Customer {
@@ -141,6 +143,7 @@ model Customer {
   overrides        CustomerPriceOverride[]
   visibility       DishVisibility[]
   plans            CustomerPlan[]
+  profile          CustomerProfile?
 }
 
 model Dish {
@@ -161,6 +164,7 @@ model Dish {
   sourceLinks DishSourceLink[]
   orderItems  OrderItem[]
   drafts      DishDraft[]
+  feedback    DishFeedback[]
 }
 
 model MenuWeek {
@@ -178,6 +182,7 @@ model MenuWeek {
   orders     Order[]
   plans      CustomerPlan[]
   userOverrides UserPriceOverride[]
+  feedback   DishFeedback[]
 }
 
 model MenuWeekItem {
@@ -422,4 +427,42 @@ model GoogleCalendarToken {
   calendarId   String?
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
+}
+
+model CustomerProfile {
+  id               String   @id @default(uuid())
+  customerId       String   @unique
+  householdSize    String?
+  phone            String?
+  address          String?
+  deliveryNotes    String?
+  intakeSurvey     Json?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  customer         Customer @relation(fields: [customerId], references: [id])
+}
+
+model DishFeedback {
+  id         String   @id @default(uuid())
+  userId     String
+  dishId     String
+  menuWeekId String
+  thumbsUp   Boolean
+  notes      String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  user       User     @relation(fields: [userId], references: [id])
+  dish       Dish     @relation(fields: [dishId], references: [id])
+  menuWeek   MenuWeek @relation(fields: [menuWeekId], references: [id])
+
+  @@unique([userId, dishId, menuWeekId])
+}
+
+model ChefNote {
+  id         String   @id @default(uuid())
+  userId     String
+  customerId String
+  message    String
+  createdAt  DateTime @default(now())
+  user       User     @relation(fields: [userId], references: [id])
 }

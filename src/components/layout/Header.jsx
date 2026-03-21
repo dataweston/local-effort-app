@@ -8,6 +8,7 @@ export const Header = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const navItems = FULLPAGE_PAGES.slice(1);
+  const isBlogRoute = location.pathname === '/blog' || location.pathname.startsWith('/blog/');
 
   useEffect(() => {
     document.body.style.overflow = isOpen ? 'hidden' : 'auto';
@@ -53,6 +54,11 @@ export const Header = () => {
     if (event.currentTarget.dataset.active === 'true') return;
     event.currentTarget.style.backgroundColor = 'transparent';
     event.currentTarget.style.color = 'var(--color-text-primary)';
+  };
+
+  const handleBlogNavigate = () => {
+    navigate('/blog');
+    setIsOpen(false);
   };
 
   return (
@@ -118,6 +124,21 @@ export const Header = () => {
               </button>
             );
           })}
+          <button
+            type="button"
+            data-active={isBlogRoute ? 'true' : 'false'}
+            onClick={handleBlogNavigate}
+            className="px-4 py-2 rounded-md text-sm font-medium transition-all group"
+            style={{
+              backgroundColor: isBlogRoute ? 'var(--color-bg-secondary)' : 'transparent',
+              color: 'var(--color-text-primary)',
+              fontFamily: "'Office Code Pro', monospace",
+            }}
+            onMouseEnter={handleHoverOn}
+            onMouseLeave={handleHoverOff}
+          >
+            Blog
+          </button>
         </nav>
 
         <button
@@ -170,6 +191,15 @@ export const Header = () => {
                   {page.label}
                 </motion.button>
               ))}
+              <motion.button
+                type="button"
+                onClick={handleBlogNavigate}
+                className="text-3xl uppercase text-center text-slate-900"
+                style={{ fontFamily: "'Office Code Pro', monospace" }}
+                variants={{ hidden: { y: 10, opacity: 0 }, show: { y: 0, opacity: 1 } }}
+              >
+                Blog
+              </motion.button>
             </motion.nav>
           </motion.div>
         )}

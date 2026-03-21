@@ -1,0 +1,11 @@
+{
+  "requiredEntrees": 0,
+  "addOnMax": 4,
+  "maxTotalItems": 12,
+  "allowDuplicates": true,
+  "sectionRules": {
+    "dinner": { "min": 3, "max": 3, "label": "Dinner" },
+    "lunch": { "min": 3, "max": 3, "label": "Lunch" },
+    "snacks": { "min": 0, "max": 4, "label": "Snacks" }
+  }
+}

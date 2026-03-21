@@ -10,8 +10,8 @@ export const PUBLIC_ROUTES = [
   },
   {
     path: '/blog',
-    title: 'Blog - Local Effort Food Co.',
-    description: 'Stories, updates, and kitchen notes from Local Effort Food Co.',
+    title: 'Local Report - Local Effort Food Co.',
+    description: 'Dispatches, updates, and kitchen notes from Local Effort Food Co.',
     prerender: true,
   },
   {

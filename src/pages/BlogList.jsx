@@ -1,64 +1,238 @@
 import React, { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
+import { motion } from 'framer-motion';
+
 import { SITE_URL } from '../config/siteMetadata';
 
+const formatDate = (value) => {
+  if (!value) return '';
+  try {
+    return new Intl.DateTimeFormat('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+    }).format(new Date(value));
+  } catch (error) {
+    return '';
+  }
+};
+
 const BlogList = () => {
+  const [searchParams, setSearchParams] = useSearchParams();
   const [posts, setPosts] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [categoriesTotal, setCategoriesTotal] = useState(0);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
 
+  const selectedCategory = searchParams.get('category') || '';
+  const selectedCategoryLabel = categories.find((entry) => entry.slug === selectedCategory)?.category || '';
+
   useEffect(() => {
     let mounted = true;
-    (async () => {
-      try {
-        const response = await fetch('/api/v1/posts?limit=50');
-        const payload = await response.json().catch(() => ({}));
-        if (!response.ok || payload?.ok === false) {
-          throw new Error(payload?.error || 'Failed to load blog posts');
-        }
-        if (mounted) setPosts(Array.isArray(payload?.posts) ? payload.posts : []);
-      } catch (e) {
-        if (mounted) setError(e?.message || 'Failed to load blog posts');
-      } finally {
-        if (mounted) setLoading(false);
+
+    const load = async () => {
+      setLoading(true);
+      setError('');
+
+      const postParams = new URLSearchParams({ limit: '50' });
+      if (selectedCategory) {
+        postParams.set('category', selectedCategory);
       }
-    })();
-    return () => { mounted = false };
-  }, []);
+
+      try {
+        const [postsResult, categoriesResult] = await Promise.allSettled([
+          fetch(`/api/v1/posts?${postParams.toString()}`),
+          fetch('/api/v1/categories'),
+        ]);
+
+        if (postsResult.status !== 'fulfilled') {
+          throw postsResult.reason;
+        }
+
+        const postsPayload = await postsResult.value.json().catch(() => ({}));
+        if (!postsResult.value.ok || postsPayload?.ok === false) {
+          throw new Error(postsPayload?.error || 'Failed to load Local Report');
+        }
+
+        if (mounted) {
+          setPosts(Array.isArray(postsPayload?.posts) ? postsPayload.posts : []);
+          setCategoriesTotal(Number(postsPayload?.count) || 0);
+        }
+
+        if (categoriesResult.status === 'fulfilled') {
+          const categoriesPayload = await categoriesResult.value.json().catch(() => ({}));
+          if (categoriesResult.value.ok && categoriesPayload?.ok !== false && mounted) {
+            setCategories(Array.isArray(categoriesPayload?.categories) ? categoriesPayload.categories : []);
+            setCategoriesTotal(Number(categoriesPayload?.totalPosts) || Number(postsPayload?.count) || 0);
+          }
+        } else if (mounted) {
+          setCategories([]);
+        }
+      } catch (loadError) {
+        if (mounted) {
+          setError(loadError?.message || 'Failed to load Local Report');
+        }
+      } finally {
+        if (mounted) {
+          setLoading(false);
+        }
+      }
+    };
+
+    load();
+
+    return () => {
+      mounted = false;
+    };
+  }, [selectedCategory]);
+
+  const handleCategoryChange = (slug) => {
+    const nextParams = new URLSearchParams(searchParams);
+    if (slug) {
+      nextParams.set('category', slug);
+    } else {
+      nextParams.delete('category');
+    }
+    setSearchParams(nextParams, { replace: true });
+  };
+
+  const summaryText = selectedCategory && selectedCategoryLabel
+    ? `${posts.length} stories in ${selectedCategoryLabel}`
+    : `${categoriesTotal || posts.length} published dispatches`;
 
   return (
-    <div className="mx-auto max-w-3xl px-4 md:px-6 lg:px-8 py-10">
+    <div className="blog-page fullpage-demo-scope">
       <Helmet>
-        <title>Blog | Local Effort</title>
-        <meta name="description" content="News, stories, and updates from Local Effort Food Co." />
+        <title>Local Report | Local Effort</title>
+        <meta name="description" content="Dispatches, stories, and kitchen notes from Local Effort Food Co." />
         <link rel="canonical" href={`${SITE_URL}/blog`} />
-        <link rel="alternate" type="application/rss+xml" title="Local Effort Blog RSS" href="/api/feeds/blog.rss" />
-        <link rel="alternate" type="application/atom+xml" title="Local Effort Blog Atom" href="/api/feeds/blog.atom" />
-        <link rel="alternate" type="application/feed+json" title="Local Effort Blog JSON Feed" href="/api/feeds/blog.json" />
-        <link rel="alternate" type="application/activity+json" title="Local Effort ActivityPub Actor" href="/api/activitypub/actor" />
+        <link rel="alternate" type="application/rss+xml" title="Local Report RSS" href="/api/feeds/blog.rss" />
+        <link rel="alternate" type="application/atom+xml" title="Local Report Atom" href="/api/feeds/blog.atom" />
+        <link rel="alternate" type="application/feed+json" title="Local Report JSON Feed" href="/api/feeds/blog.json" />
+        <link rel="alternate" type="application/activity+json" title="Local Report ActivityPub Actor" href="/api/activitypub/actor" />
       </Helmet>
-      <h1 className="heading-xl heading-balance mb-6">Blog</h1>
-      {error && <div className="text-red-700 bg-red-50 border border-red-200 p-3 rounded mb-4">{error}</div>}
-      <ul className="space-y-4">
-        {posts.map((p) => (
-          <li key={p.slug} className="border rounded-lg p-4 hover:bg-gray-50">
-            {(p.mainImageUrl || p.ogImageUrl) && (
-              <img
-                src={p.mainImageUrl || p.ogImageUrl}
-                alt={p.mainImageAlt || p.ogImageAlt || p.title || 'Blog post image'}
-                loading="lazy"
-                className="mb-3 h-52 w-full rounded-md object-cover"
-              />
+
+      <div className="blog-page-shell">
+        <motion.section
+          className="blog-page-hero"
+          initial={{ opacity: 0, y: 18 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.35, ease: 'easeOut' }}
+        >
+          <p className="blog-page-kicker">Local Report</p>
+          <h1 className="blog-page-headline">Field notes from the kitchen.</h1>
+          <p className="blog-page-deck">
+            Stories from service, sourcing, menu development, and the day-to-day work behind Local Effort.
+          </p>
+          <div className="blog-page-summary">
+            <span><strong>{summaryText}</strong></span>
+            <span>Route stays at /blog</span>
+            {selectedCategoryLabel && <span>Filtered by {selectedCategoryLabel}</span>}
+          </div>
+        </motion.section>
+
+        <div className="blog-page-layout">
+          <aside>
+            <div className="blog-page-sidebar-card">
+              <p className="blog-page-sidebar-label">Categories</p>
+              <p className="blog-page-sidebar-copy">
+                Use the left rail to jump between report sections. This list is driven by the Sanity category field.
+              </p>
+
+              <div className="blog-page-filter-list" role="tablist" aria-label="Blog categories">
+                <button
+                  type="button"
+                  className={`blog-page-filter-btn ${selectedCategory ? '' : 'is-active'}`}
+                  onClick={() => handleCategoryChange('')}
+                >
+                  <span>All posts</span>
+                  <span className="blog-page-filter-count">{categoriesTotal || posts.length}</span>
+                </button>
+
+                {categories.map((entry) => (
+                  <button
+                    key={entry.slug}
+                    type="button"
+                    className={`blog-page-filter-btn ${selectedCategory === entry.slug ? 'is-active' : ''}`}
+                    onClick={() => handleCategoryChange(entry.slug)}
+                  >
+                    <span>{entry.category}</span>
+                    <span className="blog-page-filter-count">{entry.postCount}</span>
+                  </button>
+                ))}
+              </div>
+
+              <p className="blog-page-feed-note">
+                Subscribe via <a href="/api/feeds/blog.rss">RSS</a> or <a href="/api/feeds/blog.atom">Atom</a>.
+              </p>
+            </div>
+          </aside>
+
+          <section className="blog-page-main" aria-live="polite">
+            {error && <div className="blog-page-error">{error}</div>}
+            {loading && !error && <div className="blog-page-loading">Loading Local Report...</div>}
+            {!loading && !error && selectedCategoryLabel && (
+              <div className="blog-page-note">
+                Showing posts in <strong>{selectedCategoryLabel}</strong>.
+              </div>
             )}
-            <Link to={`/blog/${p.slug}`} className="text-xl font-semibold hover:underline">{p.title}</Link>
-            <div className="text-sm text-gray-500 mt-1">{p.publishedAt ? new Date(p.publishedAt).toLocaleDateString() : ''}</div>
-            {p.excerpt && <p className="text-gray-700 mt-2">{p.excerpt}</p>}
-          </li>
-        ))}
-        {!posts.length && !error && !loading && <li>No posts yet.</li>}
-        {loading && !error && <li>Loading...</li>}
-      </ul>
+
+            <div className="blog-page-cards">
+              {posts.map((post, index) => (
+                <motion.article
+                  key={post.slug}
+                  className="blog-page-card"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3, delay: Math.min(index * 0.05, 0.3), ease: 'easeOut' }}
+                >
+                  <div className="blog-page-card-media">
+                    {(post.mainImageUrl || post.ogImageUrl) ? (
+                      <img
+                        src={post.mainImageUrl || post.ogImageUrl}
+                        alt={post.mainImageAlt || post.ogImageAlt || post.title || 'Blog post image'}
+                        loading="lazy"
+                      />
+                    ) : null}
+                  </div>
+
+                  <div className="blog-page-card-body">
+                    <div className="blog-page-card-meta">
+                      {post.category && <span className="blog-page-chip is-accent">{post.category}</span>}
+                      {post.publishedAt && <span>{formatDate(post.publishedAt)}</span>}
+                      {post.readingTimeMinutes ? <span>{post.readingTimeMinutes} min read</span> : null}
+                    </div>
+
+                    <h2 className="blog-page-card-title">
+                      <Link to={`/blog/${post.slug}`} className="blog-page-title-link">
+                        {post.title}
+                      </Link>
+                    </h2>
+
+                    {post.excerpt && <p className="blog-page-card-excerpt">{post.excerpt}</p>}
+
+                    {(post.tags || []).length > 0 && (
+                      <div className="blog-page-tag-row" aria-label="Post tags">
+                        {post.tags.slice(0, 3).map((tag) => (
+                          <span key={tag} className="blog-page-chip">{tag}</span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </motion.article>
+              ))}
+            </div>
+
+            {!posts.length && !error && !loading && (
+              <div className="blog-page-empty">
+                No posts matched this category yet.
+              </div>
+            )}
+          </section>
+        </div>
+      </div>
     </div>
   );
 };

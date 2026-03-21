@@ -8,6 +8,8 @@ const SupabaseAuthContext = createContext({
   loading: true,
   isAdmin: false,
   signInWithGoogle: async () => {},
+  signInWithEmail: async () => {},
+  signUpWithEmail: async () => {},
   signOut: async () => {},
 });
 
@@ -143,6 +145,24 @@ export const SupabaseAuthProvider = ({ children }) => {
     }
   };
 
+  const signInWithEmail = async (email, password) => {
+    if (!supabase) throw new Error('Supabase not configured');
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) throw error;
+    return data;
+  };
+
+  const signUpWithEmail = async (email, password, metadata = {}) => {
+    if (!supabase) throw new Error('Supabase not configured');
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: { data: metadata },
+    });
+    if (error) throw error;
+    return data;
+  };
+
   const value = {
     user,
     session,
@@ -150,6 +170,8 @@ export const SupabaseAuthProvider = ({ children }) => {
     loading,
     isAdmin: user?.email ? isAdmin(user.email) : false,
     signInWithGoogle,
+    signInWithEmail,
+    signUpWithEmail,
     signOut,
   };
 

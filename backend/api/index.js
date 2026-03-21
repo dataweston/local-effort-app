@@ -54,6 +54,10 @@ const februaryBookedDatesHandler = require('../../api-handlers/february/booked-d
 const februaryCheckoutHandler = require('../../api-handlers/february/checkout');
 const februaryPaymentLinkHandler = require('../../api-handlers/february/payment-link');
 const weeklyOrderCheckoutLinkHandler = require('../../api-handlers/weekly-order/checkout-link');
+const weeklyOrderProfileHandler = require('../../api-handlers/weekly-order/profile');
+const weeklyOrderHistoryHandler = require('../../api-handlers/weekly-order/history');
+const weeklyOrderFeedbackHandler = require('../../api-handlers/weekly-order/feedback');
+const weeklyOrderChefNoteHandler = require('../../api-handlers/weekly-order/chef-note');
 const psycheCheckoutHandler = require('../../api-handlers/psyche/checkout');
 const pizzafunderPaymentLinkHandler = require('../../api-handlers/pizzafunder/payment-link');
 const foodTruckDepositLinkHandler = require('../../api-handlers/food-truck/deposit-link');
@@ -384,7 +388,7 @@ const publishingService = createPublishingService({
   siteUrl: publicSiteUrl,
 });
 const activityPubUsername = String(process.env.ACTIVITYPUB_USERNAME || 'localeffort').trim() || 'localeffort';
-const activityPubActorName = String(process.env.ACTIVITYPUB_ACTOR_NAME || 'Local Effort Blog').trim() || 'Local Effort Blog';
+const activityPubActorName = String(process.env.ACTIVITYPUB_ACTOR_NAME || 'Local Report').trim() || 'Local Report';
 const activityPubPublicKeyPem = String(process.env.ACTIVITYPUB_PUBLIC_KEY_PEM || '').trim();
 const activityPubPrivateKeyPem = String(process.env.ACTIVITYPUB_PRIVATE_KEY_PEM || '').trim();
 const activityPubInboxEnabled = /^(1|true|yes)$/i.test(String(process.env.ACTIVITYPUB_INBOX_ENABLED || ''));
@@ -1226,6 +1230,42 @@ app.all('/api/weekly-order/checkout-link', async (req, res, next) => {
   }
 });
 
+app.all('/api/weekly-order/profile', async (req, res, next) => {
+  try {
+    await weeklyOrderProfileHandler(req, res);
+  } catch (err) {
+    logger.error({ err, method: req.method }, 'weekly order profile handler failed');
+    next(err);
+  }
+});
+
+app.all('/api/weekly-order/history', async (req, res, next) => {
+  try {
+    await weeklyOrderHistoryHandler(req, res);
+  } catch (err) {
+    logger.error({ err, method: req.method }, 'weekly order history handler failed');
+    next(err);
+  }
+});
+
+app.all('/api/weekly-order/feedback', async (req, res, next) => {
+  try {
+    await weeklyOrderFeedbackHandler(req, res);
+  } catch (err) {
+    logger.error({ err, method: req.method }, 'weekly order feedback handler failed');
+    next(err);
+  }
+});
+
+app.all('/api/weekly-order/chef-note', async (req, res, next) => {
+  try {
+    await weeklyOrderChefNoteHandler(req, res);
+  } catch (err) {
+    logger.error({ err, method: req.method }, 'weekly order chef-note handler failed');
+    next(err);
+  }
+});
+
 app.all('/api/recipes/ingest', async (req, res, next) => {
   try {
     await require('../../api-handlers/recipes/ingest')(req, res);
@@ -1792,12 +1832,13 @@ function sanitizeMemberContext(memberContext) {
   };
 }
 
-async function fetchPublicBlogPosts({ limit = 50, authorSlug = '', tag = '' } = {}) {
+async function fetchPublicBlogPosts({ limit = 50, authorSlug = '', tag = '', category = '' } = {}) {
   const posts = await publishingService.fetchRawPosts({ limit: Math.max(limit * 3, limit) });
   const publicPosts = publishingService.filterByAccess(posts, baseAnonymousMemberContext());
   const byAuthor = publishingService.filterByAuthor(publicPosts, authorSlug);
   const byTag = publishingService.filterByTag(byAuthor, tag);
-  return byTag.slice(0, limit);
+  const byCategory = publishingService.filterByCategory(byTag, category);
+  return byCategory.slice(0, limit);
 }
 
 function sendActivityJson(res, payload, { status = 200, cacheControl = 'public, max-age=300' } = {}) {
@@ -2381,12 +2422,14 @@ app.get('/api/v1/posts', sanityQueryRateLimit, async (req, res) => {
     const includeHtml = include.has('html') || include.has('full');
     const author = String(req.query?.author || '').trim();
     const tag = String(req.query?.tag || '').trim();
+    const category = String(req.query?.category || '').trim();
     const memberContext = await publishingService.loadMemberContext(req);
     const posts = await publishingService.fetchRawPosts({ limit: Math.max(limit * 3, limit) });
     const allowedPosts = publishingService.filterByAccess(posts, memberContext);
     const byAuthor = publishingService.filterByAuthor(allowedPosts, author);
     const byTag = publishingService.filterByTag(byAuthor, tag);
-    const serialized = byTag
+    const byCategory = publishingService.filterByCategory(byTag, category);
+    const serialized = byCategory
       .slice(0, limit)
       .map((post) => publishingService.serializePost(post, { includeBody, includeHtml }));
 
@@ -2489,9 +2532,48 @@ app.get('/api/v1/tags', sanityQueryRateLimit, async (req, res) => {
   }
 });
 
+app.get('/api/v1/categories', sanityQueryRateLimit, async (req, res) => {
+  try {
+    const memberContext = await publishingService.loadMemberContext(req);
+    const posts = await publishingService.fetchRawPosts({ limit: 200 });
+    const allowedPosts = publishingService.filterByAccess(posts, memberContext);
+    const map = new Map();
+
+    for (const post of allowedPosts) {
+      const serialized = publishingService.serializePost(post, { includeBody: false, includeHtml: false });
+      if (!serialized.category || !serialized.categorySlug) continue;
+      const key = serialized.categorySlug;
+      const existing = map.get(key) || {
+        category: serialized.category,
+        slug: serialized.categorySlug,
+        postCount: 0,
+      };
+      existing.postCount += 1;
+      map.set(key, existing);
+    }
+
+    const categories = Array.from(map.values())
+      .sort((a, b) => b.postCount - a.postCount || a.category.localeCompare(b.category));
+    return res.json({
+      ok: true,
+      count: categories.length,
+      totalPosts: allowedPosts.length,
+      categories,
+      member: sanitizeMemberContext(memberContext),
+    });
+  } catch (err) {
+    logger.error({ err }, 'v1 categories list failed');
+    return res.status(500).json({ ok: false, error: 'categories-list-failed' });
+  }
+});
+
 app.get('/api/feeds/blog.rss', async (req, res) => {
   try {
-    const posts = await fetchPublicBlogPosts({ limit: 50, tag: req.query?.tag || '' });
+    const posts = await fetchPublicBlogPosts({
+      limit: 50,
+      tag: req.query?.tag || '',
+      category: req.query?.category || '',
+    });
     const items = posts.map((post) => {
       const item = publishingService.serializeFeedItem(post);
       const pubDate = new Date(item.publishedAt || item.updatedAt || Date.now()).toUTCString();
@@ -2509,7 +2591,7 @@ app.get('/api/feeds/blog.rss', async (req, res) => {
     const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>Local Effort Blog</title>
+    <title>Local Report</title>
     <link>${escapeXml(publicSiteUrl)}/blog</link>
     <description>News, stories, and updates from Local Effort Food Co.</description>
     <language>en-us</language>
@@ -2531,7 +2613,11 @@ app.get('/api/feeds/blog.rss', async (req, res) => {
 
 app.get('/api/feeds/blog.atom', async (req, res) => {
   try {
-    const posts = await fetchPublicBlogPosts({ limit: 50, tag: req.query?.tag || '' });
+    const posts = await fetchPublicBlogPosts({
+      limit: 50,
+      tag: req.query?.tag || '',
+      category: req.query?.category || '',
+    });
     const updated = posts[0]?.publishedAt || new Date().toISOString();
     const entries = posts.map((post) => {
       const item = publishingService.serializeFeedItem(post);
@@ -2551,7 +2637,7 @@ app.get('/api/feeds/blog.atom', async (req, res) => {
     const xml = `<?xml version="1.0" encoding="utf-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
   <id>${escapeXml(publicSiteUrl)}/api/feeds/blog.atom</id>
-  <title>Local Effort Blog</title>
+  <title>Local Report</title>
   <updated>${escapeXml(new Date(updated).toISOString())}</updated>
   <link rel="self" href="${escapeXml(publicSiteUrl)}/api/feeds/blog.atom" />
   <link rel="alternate" href="${escapeXml(publicSiteUrl)}/blog" />${entries}
@@ -2570,7 +2656,11 @@ app.get('/api/feeds/blog.atom', async (req, res) => {
 
 app.get('/api/feeds/blog.json', async (req, res) => {
   try {
-    const posts = await fetchPublicBlogPosts({ limit: 50, tag: req.query?.tag || '' });
+    const posts = await fetchPublicBlogPosts({
+      limit: 50,
+      tag: req.query?.tag || '',
+      category: req.query?.category || '',
+    });
     const items = posts.map((post) => {
       const item = publishingService.serializeFeedItem(post);
       return {
@@ -2587,7 +2677,7 @@ app.get('/api/feeds/blog.json', async (req, res) => {
     });
     return res.json({
       version: 'https://jsonfeed.org/version/1.1',
-      title: 'Local Effort Blog',
+      title: 'Local Report',
       home_page_url: `${publicSiteUrl}/blog`,
       feed_url: `${publicSiteUrl}/api/feeds/blog.json`,
       description: 'News, stories, and updates from Local Effort Food Co.',
@@ -2626,9 +2716,9 @@ app.get('/api/feeds/blog/author/:slug.rss', async (req, res) => {
     const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0" xmlns:content="http://purl.org/rss/1.0/modules/content/">
   <channel>
-    <title>Local Effort Blog - ${escapeXml(authorName)}</title>
+    <title>Local Report - ${escapeXml(authorName)}</title>
     <link>${escapeXml(publicSiteUrl)}/blog?author=${escapeXml(authorQueryValue)}</link>
-    <description>Posts by ${escapeXml(authorName)} on Local Effort Blog.</description>
+    <description>Posts by ${escapeXml(authorName)} on Local Report.</description>
     <language>en-us</language>
     <lastBuildDate>${new Date().toUTCString()}</lastBuildDate>${items}
   </channel>
@@ -3002,7 +3092,7 @@ app.post('/api/events/confirm', requireAllowedUser, async (req, res) => {
 // Optional: { publishedAt, emailOnPublish, emailTo[] }
 app.post('/api/blog/publish', publishRateLimit, requireAllowedUser, async (req, res) => {
   try {
-    const { title, bodyBlocks, text, publishedAt, emailOnPublish = false, emailTo } = req.body || {};
+    const { title, bodyBlocks, text, publishedAt, emailOnPublish = false, emailTo, category } = req.body || {};
     if (!title) return res.status(400).json({ error: 'missing-title' });
     const sc = getSanityClient();
     if (!sc) return res.status(500).json({ error: 'sanity-not-configured' });
@@ -3021,6 +3111,7 @@ app.post('/api/blog/publish', publishRateLimit, requireAllowedUser, async (req, 
       _type: 'blogPost',
       title,
       slug: { current: `${slugBase}-${Date.now().toString(36)}` },
+      category: typeof category === 'string' && category.trim() ? category.trim() : undefined,
       body: blocks,
       publishedAt: publishedAt || now,
       emailOnPublish: !!emailOnPublish,
@@ -3124,8 +3215,8 @@ app.post('/api/webhooks/sanity/blog', webhookRateLimit, async (req, res) => {
       const payload = {
         to: recipients.map((e) => ({ email: e })),
         sender: { email: process.env.SENDER_EMAIL || recipients[0], name: 'Local Effort' },
-        subject: `New post: ${doc?.title || title || 'Local Effort Blog'}`,
-        htmlContent: `<h2>${escapeXml(doc?.title || title || 'Local Effort Blog')}</h2><p>${escapeXml(snippet)}...</p><p><a href="${base}/blog/${slugValue}">Read on the site</a></p>`,
+        subject: `New post: ${doc?.title || title || 'Local Report'}`,
+        htmlContent: `<h2>${escapeXml(doc?.title || title || 'Local Report')}</h2><p>${escapeXml(snippet)}...</p><p><a href="${base}/blog/${slugValue}">Read on the site</a></p>`,
         tags: ['blog', 'auto'],
       };
       const queued = await emailOutboxService.enqueue({
@@ -3713,6 +3804,7 @@ app.get('/api/public/site', (req, res) => {
           { path: '/api/v1/posts/:slug', method: 'GET' },
           { path: '/api/v1/authors', method: 'GET' },
           { path: '/api/v1/tags', method: 'GET' },
+          { path: '/api/v1/categories', method: 'GET' },
           { path: '/api/activitypub/actor', method: 'GET' },
           { path: '/api/activitypub/outbox', method: 'GET' },
           { path: '/.well-known/webfinger', method: 'GET' },

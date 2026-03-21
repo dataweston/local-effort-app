@@ -116,6 +116,15 @@ function deriveAuthors(rawAuthors = []) {
     .filter(Boolean);
 }
 
+function normalizeCategory(rawCategory) {
+  const name = String(rawCategory || '').trim();
+  if (!name) return null;
+  return {
+    name,
+    slug: toSlug(name),
+  };
+}
+
 function createPublishingService({ getSanityClient, getSanityReadClient, memberTokenSecret, siteUrl }) {
   const resolvedSite = String(siteUrl || 'https://localeffortfood.com').replace(/\/$/, '');
   const tokenSecret = String(memberTokenSecret || '').trim();
@@ -193,6 +202,7 @@ function createPublishingService({ getSanityClient, getSanityReadClient, memberT
   function serializePost(post, { includeBody = false, includeHtml = false } = {}) {
     const authors = deriveAuthors(post?.authors || []);
     const tags = Array.isArray(post?.tags) ? post.tags.map((entry) => String(entry || '').trim()).filter(Boolean) : [];
+    const category = normalizeCategory(post?.category);
     const bodyText = textFromPortableBlocks(post?.body || []);
     const bodyHtml = portableBlocksToHtml(post?.body || []);
     const payload = {
@@ -202,6 +212,8 @@ function createPublishingService({ getSanityClient, getSanityReadClient, memberT
       excerpt: buildExcerpt(post),
       publishedAt: post?.publishedAt || null,
       updatedAt: post?._updatedAt || null,
+      category: category?.name || null,
+      categorySlug: category?.slug || null,
       visibility: normalizeVisibility(post?.visibility),
       requiredTierSlugs: coerceTierSlugs(post?.requiredTierSlugs || []),
       authors,
@@ -233,7 +245,7 @@ function createPublishingService({ getSanityClient, getSanityReadClient, memberT
     const sc = (getSanityReadClient && getSanityReadClient()) || (getSanityClient && getSanityClient());
     if (!sc) throw new Error('sanity-not-configured');
     const cappedLimit = Math.max(1, Math.min(200, Number(limit) || 50));
-    const query = '*[_type == "blogPost" && defined(slug.current)] | order(coalesce(publishedAt, _createdAt) desc)[0...$limit]{ _id, _updatedAt, title, "slug": slug.current, excerpt, publishedAt, body, mainImage{asset->{url}, alt}, visibility, requiredTierSlugs, canonicalUrl, metaTitle, metaDescription, ogImage{asset->{url}, alt}, emailSegment, tags, newsletter->{_id, name, "slug": slug.current}, authors[]->{_id, name, "slug": slug.current} }';
+    const query = '*[_type == "blogPost" && defined(slug.current)] | order(coalesce(publishedAt, _createdAt) desc)[0...$limit]{ _id, _updatedAt, title, "slug": slug.current, excerpt, publishedAt, category, body, mainImage{asset->{url}, alt}, visibility, requiredTierSlugs, canonicalUrl, metaTitle, metaDescription, ogImage{asset->{url}, alt}, emailSegment, tags, newsletter->{_id, name, "slug": slug.current}, authors[]->{_id, name, "slug": slug.current} }';
     return sc.fetch(query, { limit: cappedLimit });
   }
 
@@ -242,7 +254,7 @@ function createPublishingService({ getSanityClient, getSanityReadClient, memberT
     if (!normalized) return null;
     const sc = (getSanityReadClient && getSanityReadClient()) || (getSanityClient && getSanityClient());
     if (!sc) throw new Error('sanity-not-configured');
-    const query = '*[_type == "blogPost" && slug.current == $slug][0]{ _id, _updatedAt, title, "slug": slug.current, excerpt, publishedAt, body, mainImage{asset->{url}, alt}, visibility, requiredTierSlugs, canonicalUrl, metaTitle, metaDescription, ogImage{asset->{url}, alt}, emailSegment, tags, newsletter->{_id, name, "slug": slug.current}, authors[]->{_id, name, "slug": slug.current} }';
+    const query = '*[_type == "blogPost" && slug.current == $slug][0]{ _id, _updatedAt, title, "slug": slug.current, excerpt, publishedAt, category, body, mainImage{asset->{url}, alt}, visibility, requiredTierSlugs, canonicalUrl, metaTitle, metaDescription, ogImage{asset->{url}, alt}, emailSegment, tags, newsletter->{_id, name, "slug": slug.current}, authors[]->{_id, name, "slug": slug.current} }';
     return sc.fetch(query, { slug: normalized });
   }
 
@@ -265,6 +277,12 @@ function createPublishingService({ getSanityClient, getSanityReadClient, memberT
     });
   }
 
+  function filterByCategory(posts, category) {
+    if (!category) return posts;
+    const normalized = toSlug(category);
+    return posts.filter((post) => toSlug(post?.category) === normalized);
+  }
+
   function serializeFeedItem(post) {
     const serialized = serializePost(post, { includeHtml: true });
     return {
@@ -281,6 +299,7 @@ function createPublishingService({ getSanityClient, getSanityReadClient, memberT
     filterByAccess,
     filterByAuthor,
     filterByTag,
+    filterByCategory,
     serializePost,
     serializeFeedItem,
     canonicalForPost,

@@ -15,6 +15,12 @@ export default defineType({
       validation: (rule) => rule.min(1),
     }),
     defineField({
+      name: 'category',
+      title: 'Category',
+      type: 'string',
+      description: 'Primary section label shown in Local Report navigation and post headers.',
+    }),
+    defineField({
       name: 'tags',
       title: 'Tags',
       type: 'array',
