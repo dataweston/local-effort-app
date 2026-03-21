@@ -8,15 +8,15 @@ const BREVO_API_KEY = process.env.BREVO_API_KEY;
 const ADMIN_EMAIL = process.env.WEEKLY_ORDER_ADMIN_EMAIL || 'yum@localeffortfood.com';
 const SENDER_EMAIL = process.env.SENDER_EMAIL || 'hello@localeffortfood.com';
 
-async function notifyAdmin(user, dish, feedback) {
+async function notifyAdmin(userEmail, dish, feedback) {
   if (!BREVO_API_KEY) return;
   const emoji = feedback.thumbsUp ? '👍' : '👎';
-  const subject = `${emoji} Dish Feedback: ${dish.title} — ${user.email}`;
+  const subject = `${emoji} Dish Feedback: ${dish.title} — ${userEmail}`;
   const htmlContent = `
 <div style="font-family:sans-serif;max-width:560px;margin:0 auto;padding:20px;">
   <h2 style="color:#1f2937;">${emoji} Dish Feedback</h2>
   <p><strong>Dish:</strong> ${dish.title}</p>
-  <p><strong>From:</strong> ${user.email}</p>
+  <p><strong>From:</strong> ${userEmail}</p>
   <p><strong>Rating:</strong> ${feedback.thumbsUp ? 'Thumbs Up' : 'Thumbs Down'}</p>
   ${feedback.notes ? `<p><strong>Notes:</strong> ${feedback.notes}</p>` : ''}
 </div>`;
@@ -27,6 +27,7 @@ async function notifyAdmin(user, dish, feedback) {
       body: JSON.stringify({
         to: [{ email: ADMIN_EMAIL }],
         sender: { email: SENDER_EMAIL, name: 'Local Effort' },
+        replyTo: { email: userEmail },
         subject,
         htmlContent,
       }),
@@ -42,8 +43,19 @@ module.exports = async (req, res) => {
   const supabaseUser = await verifySupabaseToken(req);
   if (!supabaseUser) return res.status(401).json({ error: 'Unauthorized' });
 
-  const user = await prisma.user.findFirst({ where: { email: supabaseUser.email } });
-  if (!user) return res.status(404).json({ error: 'User not found' });
+  // Find or create a user record for this email
+  let user = await prisma.user.findFirst({ where: { email: supabaseUser.email } });
+  if (!user) {
+    const slug = req.body?.customerSlug || req.query?.customerSlug;
+    let customerId = null;
+    if (slug) {
+      const cust = await prisma.customer.findFirst({ where: { slug } });
+      customerId = cust?.id || null;
+    }
+    user = await prisma.user.create({
+      data: { email: supabaseUser.email, role: 'subscriber', ...(customerId ? { customerId } : {}) },
+    });
+  }
 
   if (req.method === 'POST') {
     const { dishId, menuWeekId, thumbsUp, notes } = req.body || {};
@@ -59,7 +71,7 @@ module.exports = async (req, res) => {
       create: { userId: user.id, dishId, menuWeekId, thumbsUp, notes: notes || null },
     });
 
-    notifyAdmin(user, dish || { title: 'Unknown dish' }, { thumbsUp, notes });
+    notifyAdmin(supabaseUser.email, dish || { title: 'Unknown dish' }, { thumbsUp, notes });
 
     return res.status(200).json({ feedback });
   }

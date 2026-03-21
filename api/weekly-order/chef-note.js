@@ -18,33 +18,49 @@ module.exports = async (req, res) => {
   const supabaseUser = await verifySupabaseToken(req);
   if (!supabaseUser) return res.status(401).json({ error: 'Unauthorized' });
 
-  const user = await prisma.user.findFirst({
-    where: { email: supabaseUser.email },
-    include: { customer: true },
-  });
-  if (!user?.customer) return res.status(404).json({ error: 'No customer found' });
-
-  const { message } = req.body || {};
+  const { customerSlug, message } = req.body || {};
   if (!message || !message.trim()) {
     return res.status(400).json({ error: 'Message is required' });
   }
 
+  // Resolve customer by slug first, then email fallback
+  let customer = null;
+  if (customerSlug) {
+    customer = await prisma.customer.findFirst({ where: { slug: customerSlug } });
+  }
+  if (!customer) {
+    const user = await prisma.user.findFirst({
+      where: { email: supabaseUser.email },
+      include: { customer: true },
+    });
+    customer = user?.customer || null;
+  }
+  if (!customer) return res.status(404).json({ error: 'No customer found' });
+
+  // Find or create user record for the logged-in person
+  let dbUser = await prisma.user.findFirst({ where: { email: supabaseUser.email } });
+  if (!dbUser) {
+    dbUser = await prisma.user.create({
+      data: { email: supabaseUser.email, role: 'subscriber', customerId: customer.id },
+    });
+  }
+
   const note = await prisma.chefNote.create({
     data: {
-      userId: user.id,
-      customerId: user.customer.id,
+      userId: dbUser.id,
+      customerId: customer.id,
       message: message.trim(),
     },
   });
 
   // Send email via Brevo
   if (BREVO_API_KEY) {
-    const customerName = user.customer.name || user.customer.slug;
-    const subject = `📝 Note from ${customerName} — ${user.email}`;
+    const customerName = customer.name || customer.slug;
+    const subject = `📝 Note from ${customerName} — ${supabaseUser.email}`;
     const htmlContent = `
 <div style="font-family:sans-serif;max-width:560px;margin:0 auto;padding:20px;">
   <h2 style="color:#1f2937;">📝 Note to the Chef</h2>
-  <p><strong>From:</strong> ${customerName} (${user.email})</p>
+  <p><strong>From:</strong> ${customerName} (${supabaseUser.email})</p>
   <div style="margin:16px 0;padding:16px;background:#f1f5f9;border-radius:8px;border-left:4px solid #3b82f6;">
     <p style="margin:0;white-space:pre-wrap;color:#334155;">${message.trim()}</p>
   </div>
@@ -57,7 +73,7 @@ module.exports = async (req, res) => {
         body: JSON.stringify({
           to: [{ email: ADMIN_EMAIL }],
           sender: { email: SENDER_EMAIL, name: 'Local Effort' },
-          replyTo: { email: user.email, name: customerName },
+          replyTo: { email: supabaseUser.email, name: customerName },
           subject,
           htmlContent,
         }),

@@ -98,10 +98,6 @@ const BlogList = () => {
     setSearchParams(nextParams, { replace: true });
   };
 
-  const summaryText = selectedCategory && selectedCategoryLabel
-    ? `${posts.length} stories in ${selectedCategoryLabel}`
-    : `${categoriesTotal || posts.length} published dispatches`;
-
   return (
     <div className="blog-page fullpage-demo-scope">
       <Helmet>
@@ -122,24 +118,16 @@ const BlogList = () => {
           transition={{ duration: 0.35, ease: 'easeOut' }}
         >
           <p className="blog-page-kicker">Local Report</p>
-          <h1 className="blog-page-headline">Field notes from the kitchen.</h1>
+          <h1 className="blog-page-headline">The whole story.</h1>
           <p className="blog-page-deck">
-            Stories from service, sourcing, menu development, and the day-to-day work behind Local Effort.
+            The longer explanations and the stories that connect.
           </p>
-          <div className="blog-page-summary">
-            <span><strong>{summaryText}</strong></span>
-            <span>Route stays at /blog</span>
-            {selectedCategoryLabel && <span>Filtered by {selectedCategoryLabel}</span>}
-          </div>
         </motion.section>
 
         <div className="blog-page-layout">
           <aside>
             <div className="blog-page-sidebar-card">
               <p className="blog-page-sidebar-label">Categories</p>
-              <p className="blog-page-sidebar-copy">
-                Use the left rail to jump between report sections. This list is driven by the Sanity category field.
-              </p>
 
               <div className="blog-page-filter-list" role="tablist" aria-label="Blog categories">
                 <button

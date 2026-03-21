@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useSupabaseAuth } from '../contexts/SupabaseAuthContext';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '../components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../components/ui/card';
@@ -366,7 +366,7 @@ const IntakeSurveyView = ({ survey }) => {
 };
 
 /* ─── Note to Chef tab ─── */
-const ChefNoteTab = ({ accessToken }) => {
+const ChefNoteTab = ({ accessToken, customerSlug }) => {
   const [message, setMessage] = useState('');
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
@@ -385,7 +385,7 @@ const ChefNoteTab = ({ accessToken }) => {
           'Content-Type': 'application/json',
           ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
         },
-        body: JSON.stringify({ message: message.trim() }),
+        body: JSON.stringify({ customerSlug: customerSlug || undefined, message: message.trim() }),
       });
       if (!resp.ok) {
         const data = await resp.json().catch(() => ({}));
@@ -427,7 +427,8 @@ const ChefNoteTab = ({ accessToken }) => {
 
 /* ─── Main Portal Page ─── */
 const SubscriberPortalPage = () => {
-  const { customerSlug } = useParams();
+  const { customerSlug: urlSlug } = useParams();
+  const navigate = useNavigate();
   const { user, accessToken, signOut } = useSupabaseAuth();
   const [profile, setProfile] = useState(null);
   const [customer, setCustomer] = useState(null);
@@ -436,33 +437,41 @@ const SubscriberPortalPage = () => {
   const [loadingProfile, setLoadingProfile] = useState(true);
   const [loadingHistory, setLoadingHistory] = useState(true);
 
+  // Use the slug from URL, or fall back to whatever the API resolves
+  const customerSlug = urlSlug || customer?.slug || '';
   const headers = accessToken ? { Authorization: `Bearer ${accessToken}` } : {};
+
+  const slugParam = customerSlug ? `?customerSlug=${encodeURIComponent(customerSlug)}` : '';
 
   const loadProfile = useCallback(async () => {
     setLoadingProfile(true);
     try {
-      const resp = await fetch('/api/weekly-order/profile', { headers });
+      const resp = await fetch(`/api/weekly-order/profile${slugParam}`, { headers });
       if (resp.ok) {
         const data = await resp.json();
         setProfile(data.profile);
         setCustomer(data.customer);
         setUsers(data.users);
+        // If we're on the generic /weekly-order/portal URL, redirect to the slug-specific one
+        if (!urlSlug && data.customer?.slug) {
+          navigate(`/weekly-order/${data.customer.slug}/portal`, { replace: true });
+        }
       }
     } catch { /* ignore */ }
     finally { setLoadingProfile(false); }
-  }, [accessToken]);
+  }, [accessToken, slugParam, urlSlug, navigate]);
 
   const loadHistory = useCallback(async () => {
     setLoadingHistory(true);
     try {
-      const resp = await fetch('/api/weekly-order/history', { headers });
+      const resp = await fetch(`/api/weekly-order/history${slugParam}`, { headers });
       if (resp.ok) {
         const data = await resp.json();
         setHistory(data.weeks || []);
       }
     } catch { /* ignore */ }
     finally { setLoadingHistory(false); }
-  }, [accessToken]);
+  }, [accessToken, slugParam]);
 
   useEffect(() => {
     if (user && accessToken) {
@@ -534,7 +543,7 @@ const SubscriberPortalPage = () => {
             </TabsContent>
 
             <TabsContent value="chef-note">
-              <ChefNoteTab accessToken={accessToken} customerName={customerName} />
+              <ChefNoteTab accessToken={accessToken} customerSlug={customerSlug} />
             </TabsContent>
           </Tabs>
         </div>

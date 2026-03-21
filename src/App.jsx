@@ -227,6 +227,14 @@ const AppContent = () => {
                   }
                 />
                 <Route
+                  path="/weekly-order/portal"
+                  element={
+                    <AnimatedPage>
+                      <SubscriberPortalPage />
+                    </AnimatedPage>
+                  }
+                />
+                <Route
                   path="/weekly-order/:customerSlug/portal"
                   element={
                     <AnimatedPage>

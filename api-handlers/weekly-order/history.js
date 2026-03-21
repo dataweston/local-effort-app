@@ -14,17 +14,35 @@ module.exports = async (req, res) => {
   const supabaseUser = await verifySupabaseToken(req);
   if (!supabaseUser) return res.status(401).json({ error: 'Unauthorized' });
 
-  const user = await prisma.user.findFirst({
-    where: { email: supabaseUser.email },
-    include: { customer: true },
-  });
-  if (!user?.customer) return res.status(404).json({ error: 'No customer found' });
+  // Try resolving customer by slug first, then fall back to email lookup
+  const slug = req.query?.customerSlug;
+  let user = null;
+  let customer = null;
+
+  if (slug) {
+    customer = await prisma.customer.findFirst({ where: { slug } });
+  }
+  if (!customer) {
+    user = await prisma.user.findFirst({
+      where: { email: supabaseUser.email },
+      include: { customer: true },
+    });
+    customer = user?.customer || null;
+  }
+  if (!customer) return res.status(404).json({ error: 'No customer found' });
+
+  // Resolve the user if not already found (for feedback lookup)
+  if (!user) {
+    user = await prisma.user.findFirst({
+      where: { email: supabaseUser.email },
+    });
+  }
 
   const limit = Math.min(parseInt(req.query?.limit, 10) || 20, 50);
 
   const orders = await prisma.order.findMany({
     where: {
-      customerId: user.customer.id,
+      customerId: customer.id,
       status: { in: ['paid', 'submitted'] },
     },
     include: {
@@ -35,10 +53,10 @@ module.exports = async (req, res) => {
     take: limit,
   });
 
-  const feedback = await prisma.dishFeedback.findMany({
+  const feedback = user ? await prisma.dishFeedback.findMany({
     where: { userId: user.id },
     select: { dishId: true, menuWeekId: true, thumbsUp: true, notes: true },
-  });
+  }) : [];
   const feedbackMap = {};
   feedback.forEach((f) => {
     feedbackMap[`${f.dishId}-${f.menuWeekId}`] = { thumbsUp: f.thumbsUp, notes: f.notes };

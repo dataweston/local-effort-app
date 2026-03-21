@@ -10,13 +10,23 @@ module.exports = async (req, res) => {
   const supabaseUser = await verifySupabaseToken(req);
   if (!supabaseUser) return res.status(401).json({ error: 'Unauthorized' });
 
-  const user = await prisma.user.findFirst({
-    where: { email: supabaseUser.email },
-    include: { customer: true },
-  });
-  if (!user?.customer) return res.status(404).json({ error: 'No customer profile found' });
+  // Try resolving customer by slug first, then fall back to email lookup
+  const slug = req.query?.customerSlug;
+  let customer = null;
 
-  const customerId = user.customer.id;
+  if (slug) {
+    customer = await prisma.customer.findFirst({ where: { slug } });
+  }
+  if (!customer) {
+    const user = await prisma.user.findFirst({
+      where: { email: supabaseUser.email },
+      include: { customer: true },
+    });
+    customer = user?.customer || null;
+  }
+  if (!customer) return res.status(404).json({ error: 'No customer profile found' });
+
+  const customerId = customer.id;
 
   if (req.method === 'GET') {
     const profile = await prisma.customerProfile.findUnique({ where: { customerId } });
@@ -26,9 +36,9 @@ module.exports = async (req, res) => {
     });
     return res.status(200).json({
       customer: {
-        id: user.customer.id,
-        slug: user.customer.slug,
-        name: user.customer.name,
+        id: customer.id,
+        slug: customer.slug,
+        name: customer.name,
       },
       profile: profile || {},
       users,
