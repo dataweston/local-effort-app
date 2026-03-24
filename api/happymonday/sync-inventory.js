@@ -112,10 +112,14 @@ module.exports = async function handler(req, res) {
   }
 
   try {
-    const { orderId, triggeredBy } = req.body;
+    const { orderId, triggeredBy, direction = 'increase' } = req.body;
 
     if (!orderId) {
       return res.status(400).json({ error: 'Order ID is required' });
+    }
+
+    if (direction !== 'increase' && direction !== 'decrease') {
+      return res.status(400).json({ error: 'direction must be "increase" or "decrease"' });
     }
 
     // Get Square integration
@@ -151,11 +155,17 @@ module.exports = async function handler(req, res) {
       return res.status(404).json({ error: 'Order not found' });
     }
 
-    // Check if already synced
-    if (order.inventory_sync_status === 'synced') {
+    // Check if already synced (allow reverse sync of already-synced orders)
+    if (direction === 'increase' && order.inventory_sync_status === 'synced') {
       return res.status(400).json({
         error: 'Already synced',
         message: 'This order has already been synced to Square inventory'
+      });
+    }
+    if (direction === 'decrease' && order.inventory_sync_status !== 'synced') {
+      return res.status(400).json({
+        error: 'Not synced yet',
+        message: 'This order has not been synced to Square inventory, so it cannot be reversed'
       });
     }
 
@@ -213,16 +223,19 @@ module.exports = async function handler(req, res) {
       // Use variation ID if available, otherwise use catalog object ID
       const catalogObjectId = mapping.square_catalog_variation_id || mapping.square_catalog_object_id;
 
+      const fromState = direction === 'increase' ? 'NONE' : 'IN_STOCK';
+      const toState = direction === 'increase' ? 'IN_STOCK' : 'NONE';
+
       changes.push({
         type: 'ADJUSTMENT',
         adjustment: {
           catalogObjectId,
           locationId: integration.location_id,
-          fromState: 'NONE',      // Coming from external source
-          toState: 'IN_STOCK',    // Adding to inventory
+          fromState,
+          toState,
           quantity: String(quantity),
           occurredAt: new Date().toISOString(),
-          referenceId: order.order_number,
+          referenceId: `${order.order_number}${direction === 'decrease' ? '-RETURN' : ''}`,
         },
       });
 
@@ -293,7 +306,7 @@ module.exports = async function handler(req, res) {
     await supabase
       .from('happymonday_orders')
       .update({
-        inventory_sync_status: 'synced',
+        inventory_sync_status: direction === 'increase' ? 'synced' : 'returned',
         inventory_synced_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       })

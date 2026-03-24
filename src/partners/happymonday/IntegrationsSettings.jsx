@@ -129,6 +129,31 @@ const IntegrationsSettings = () => {
           is_active: true,
         }));
 
+      // Validate catalog IDs when manually entered (not from dropdown)
+      if (catalogItems.length === 0) {
+        const invalid = mappingsArray.filter(m => {
+          const objId = m.square_catalog_object_id || '';
+          // Square catalog IDs are alphanumeric strings, typically uppercase with hyphens or underscores
+          return objId && objId.trim().length < 5;
+        });
+        if (invalid.length > 0) {
+          const names = invalid.map(m => m.local_item_name).join(', ');
+          alert(`Some catalog IDs look too short (< 5 chars) and may be invalid: ${names}.\n\nTip: Load your Square catalog first to pick from a dropdown instead of typing IDs manually.`);
+          setSavingMappings(false);
+          return;
+        }
+      }
+
+      // Warn about unmapped items
+      const unmappedCount = MENU_ITEMS.length - mappingsArray.length;
+      if (unmappedCount > 0 && mappingsArray.length > 0) {
+        const proceed = confirm(`${unmappedCount} of ${MENU_ITEMS.length} items are not mapped. Unmapped items will be skipped during inventory sync.\n\nContinue saving?`);
+        if (!proceed) {
+          setSavingMappings(false);
+          return;
+        }
+      }
+
       const res = await fetch('/api/happymonday/catalog-mapping', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -184,8 +209,46 @@ const IntegrationsSettings = () => {
   const qb = integrationStatus?.quickbooks || {};
   const sq = integrationStatus?.square || {};
 
+  // Determine setup completion steps
+  const setupSteps = [
+    { label: 'Connect Square POS', done: !!sq.connected, action: 'Expand the Square section below and click "Connect Square".' },
+    { label: 'Load Square catalog', done: catalogItems.length > 0 || Object.values(mappings).some(m => m.square_catalog_object_id), action: 'Click "Load Square Catalog" in the mapping section to pull your items.' },
+    { label: 'Map menu items', done: Object.values(mappings).filter(m => m.square_catalog_object_id).length >= 3, action: 'Match at least 3 Local Effort items to your Square catalog items, then save.' },
+    { label: 'Connect QuickBooks (optional)', done: !!qb.connected, action: 'Expand the QuickBooks section and click "Connect QuickBooks" for bookkeeping exports.' },
+  ];
+  const completedSteps = setupSteps.filter(s => s.done).length;
+  const allDone = completedSteps >= 3; // QB is optional
+
   return (
     <div className="space-y-6">
+      {/* Setup Guide */}
+      {!allDone && (
+        <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl shadow-xl p-6 border-2 border-blue-200">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-10 h-10 rounded-full bg-blue-500 text-white flex items-center justify-center font-bold text-lg">
+              {completedSteps}
+            </div>
+            <div>
+              <h2 className="text-xl font-bold text-slate-800">Getting Started</h2>
+              <p className="text-sm text-slate-600">{completedSteps} of {setupSteps.length} steps complete</p>
+            </div>
+          </div>
+          <div className="space-y-3">
+            {setupSteps.map((step, i) => (
+              <div key={i} className={`flex items-start gap-3 p-3 rounded-lg ${step.done ? 'bg-green-50 border border-green-200' : 'bg-white border border-slate-200'}`}>
+                <div className={`w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 ${step.done ? 'bg-green-500 text-white' : 'bg-slate-200 text-slate-500'}`}>
+                  {step.done ? <CheckCircle2 className="w-4 h-4" /> : <span className="text-xs font-bold">{i + 1}</span>}
+                </div>
+                <div>
+                  <p className={`font-medium ${step.done ? 'text-green-700 line-through' : 'text-slate-800'}`}>{step.label}</p>
+                  {!step.done && <p className="text-sm text-slate-500 mt-0.5">{step.action}</p>}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       <div className="bg-white rounded-2xl shadow-xl p-6">
         <div className="flex items-center gap-3 mb-6">
           <Settings className="w-6 h-6 text-blue-500" />

@@ -148,6 +148,8 @@ const App = () => {
   const [reportSending, setReportSending] = useState(false);
   const [syncingInventory, setSyncingInventory] = useState(false);
   const [syncingQuickBooks, setSyncingQuickBooks] = useState(false);
+  const [selectedOrderIds, setSelectedOrderIds] = useState(new Set());
+  const [batchProcessing, setBatchProcessing] = useState(false);
 
   const getQuickBooksSyncStatus = (invoice) => {
     if (!invoice) return 'not_sent';
@@ -177,7 +179,8 @@ const App = () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
           orderId,
-          triggeredBy: hmUser?.id 
+          triggeredBy: hmUser?.id,
+          direction: 'increase',
         }),
       });
       const data = await res.json();
@@ -198,6 +201,43 @@ const App = () => {
     } catch (err) {
       console.error('Sync inventory error:', err);
       alert('Error syncing inventory');
+    } finally {
+      setSyncingInventory(false);
+    }
+  };
+
+  // Reverse sync (return to supplier) - DECREASES Square inventory
+  const handleReverseSync = async (orderId) => {
+    if (!confirm("Return to Supplier? This will DECREASE inventory counts in Square for the mapped items in this order.")) return;
+    setSyncingInventory(true);
+    try {
+      const res = await fetch('/api/happymonday/sync-inventory', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          orderId,
+          triggeredBy: hmUser?.id,
+          direction: 'decrease',
+        }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        let message = `🔄 Inventory reversed for order ${data.orderNumber}\n\nItems adjusted: ${data.changesApplied}`;
+        if (data.itemsSkipped?.length > 0) {
+          message += `\n\nSkipped items:\n${data.itemsSkipped.map(s => `• ${s.item_name}: ${s.reason}`).join('\n')}`;
+        }
+        alert(message);
+        const refreshedOrders = await loadOrdersData();
+        if (selectedInvoice?.id === orderId) {
+          const updated = refreshedOrders.find(o => o.id === orderId);
+          if (updated) setSelectedInvoice(updated);
+        }
+      } else {
+        alert('Error reversing inventory: ' + (data.error || data.message || 'Unknown error'));
+      }
+    } catch (err) {
+      console.error('Reverse sync error:', err);
+      alert('Error reversing inventory');
     } finally {
       setSyncingInventory(false);
     }
@@ -408,6 +448,49 @@ const App = () => {
       }
       const totalCents = Math.round(calculateEditTotal() * 100);
 
+      // Build audit trail — compute diff of what changed
+      const changes = [];
+      const oldItems = selectedInvoice.items || {};
+      const newItems = editCart;
+      // Item changes
+      const allItemIds = new Set([...Object.keys(oldItems), ...Object.keys(newItems)]);
+      for (const id of allItemIds) {
+        const oldQty = oldItems[id] || 0;
+        const newQty = newItems[id] || 0;
+        if (oldQty !== newQty) {
+          const item = getItemById(parseInt(id));
+          const name = item?.name || `Item ${id}`;
+          if (oldQty === 0) changes.push(`Added ${name} x${newQty}`);
+          else if (newQty === 0) changes.push(`Removed ${name} (was x${oldQty})`);
+          else changes.push(`${name}: qty ${oldQty} → ${newQty}`);
+        }
+      }
+      // Date change
+      const oldDate = selectedInvoice.order_date?.split('T')[0];
+      if (oldDate !== editOrderDate) {
+        changes.push(`Date: ${oldDate} → ${editOrderDate}`);
+      }
+      // Notes change
+      if ((selectedInvoice.notes || '') !== editNotes) {
+        changes.push('Notes updated');
+      }
+      // Adjustment changes
+      const oldAdjCount = Array.isArray(selectedInvoice.adjustments) ? selectedInvoice.adjustments.length : 0;
+      if (oldAdjCount !== editAdjustments.length) {
+        changes.push(`Adjustments: ${oldAdjCount} → ${editAdjustments.length}`);
+      }
+      // Total change
+      if (selectedInvoice.total_cents !== totalCents) {
+        changes.push(`Total: $${(selectedInvoice.total_cents / 100).toFixed(2)} → $${(totalCents / 100).toFixed(2)}`);
+      }
+
+      const editEntry = {
+        editedBy: hmUser.email,
+        editedAt: new Date().toISOString(),
+        changes,
+      };
+      const existingHistory = Array.isArray(selectedInvoice.edit_history) ? selectedInvoice.edit_history : [];
+
       await updateOrder(selectedInvoice.id, {
         items: editCart,
         adjustments: editAdjustments,
@@ -415,6 +498,7 @@ const App = () => {
         notes: editNotes,
         orderDate: editOrderDate,
         editedBy: hmUser.id,
+        editHistory: [...existingHistory, editEntry],
       });
 
       // Reload data
@@ -541,6 +625,91 @@ const App = () => {
       alert("Error updating order. Please try again.");
     }
     setLoading(false);
+  };
+
+  // Batch operations
+  const toggleOrderSelection = (orderId) => {
+    setSelectedOrderIds(prev => {
+      const next = new Set(prev);
+      if (next.has(orderId)) next.delete(orderId);
+      else next.add(orderId);
+      return next;
+    });
+  };
+
+  const toggleSelectAllOrders = () => {
+    if (selectedOrderIds.size === orders.length) {
+      setSelectedOrderIds(new Set());
+    } else {
+      setSelectedOrderIds(new Set(orders.map(o => o.id)));
+    }
+  };
+
+  const batchMarkAsPaid = async () => {
+    const unpaidIds = [...selectedOrderIds].filter(id => {
+      const order = orders.find(o => o.id === id);
+      return order && order.status !== 'paid';
+    });
+    if (unpaidIds.length === 0) {
+      alert('No unpaid orders selected.');
+      return;
+    }
+    if (!confirm(`Mark ${unpaidIds.length} order(s) as paid? Credits will be applied where available.`)) return;
+    setBatchProcessing(true);
+    let successCount = 0;
+    let failCount = 0;
+    for (const orderId of unpaidIds) {
+      try {
+        const { error } = await supabase.rpc('mark_happymonday_order_paid', {
+          p_order_id: orderId,
+          p_processed_by: hmUser.id,
+        });
+        if (error) throw error;
+        successCount++;
+      } catch {
+        failCount++;
+      }
+    }
+    await loadUserData();
+    setSelectedOrderIds(new Set());
+    let msg = `${successCount} order(s) marked as paid.`;
+    if (failCount > 0) msg += ` ${failCount} failed.`;
+    alert(msg);
+    setBatchProcessing(false);
+  };
+
+  const batchSyncToSquare = async () => {
+    const syncableIds = [...selectedOrderIds].filter(id => {
+      const order = orders.find(o => o.id === id);
+      return order && order.inventory_sync_status !== 'synced' && order.inventory_sync_status !== 'returned';
+    });
+    if (syncableIds.length === 0) {
+      alert('No orders eligible for inventory sync (already synced or returned).');
+      return;
+    }
+    if (!confirm(`Sync ${syncableIds.length} order(s) to Square inventory? This will INCREASE inventory counts.`)) return;
+    setBatchProcessing(true);
+    let successCount = 0;
+    let failCount = 0;
+    for (const orderId of syncableIds) {
+      try {
+        const res = await fetch('/api/happymonday/sync-inventory', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ orderId, triggeredBy: hmUser?.id, direction: 'increase' }),
+        });
+        if (res.ok) successCount++;
+        else failCount++;
+      } catch {
+        failCount++;
+      }
+    }
+    await loadOrdersData();
+    setSelectedOrderIds(new Set());
+    let msg = `${successCount} order(s) synced to Square.`;
+    if (failCount > 0) msg += ` ${failCount} failed.`;
+    alert(msg);
+    setBatchProcessing(false);
   };
 
   const handlePrintInvoice = (invoice) => {
@@ -1667,7 +1836,32 @@ const App = () => {
         )}
         {currentView === "invoices" && !selectedInvoice && (
           <div className="bg-white rounded-2xl shadow-xl p-6">
-            <h2 className="text-2xl font-bold text-slate-800 mb-6">Past Orders</h2>
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-2xl font-bold text-slate-800">Past Orders</h2>
+              {isAdmin && orders.length > 0 && (
+                <div className="flex items-center gap-2">
+                  {selectedOrderIds.size > 0 && (
+                    <>
+                      <span className="text-sm text-slate-500">{selectedOrderIds.size} selected</span>
+                      <button
+                        onClick={batchMarkAsPaid}
+                        disabled={batchProcessing}
+                        className="px-3 py-1.5 bg-green-500 hover:bg-green-600 text-white rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
+                      >
+                        {batchProcessing ? 'Processing...' : 'Batch Mark Paid'}
+                      </button>
+                      <button
+                        onClick={batchSyncToSquare}
+                        disabled={batchProcessing}
+                        className="px-3 py-1.5 bg-purple-500 hover:bg-purple-600 text-white rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
+                      >
+                        {batchProcessing ? 'Processing...' : 'Batch Sync Square'}
+                      </button>
+                    </>
+                  )}
+                </div>
+              )}
+            </div>
             
             {/* Admin Summary */}
             {isAdmin && orders.length > 0 && (
@@ -1723,8 +1917,31 @@ const App = () => {
               <p className="text-slate-500 text-center py-8">No orders yet</p>
             ) : (
               <div className="space-y-4">
+                {isAdmin && orders.length > 1 && (
+                  <label className="flex items-center gap-2 cursor-pointer text-sm text-slate-600 pb-2 border-b border-slate-100">
+                    <input
+                      type="checkbox"
+                      checked={selectedOrderIds.size === orders.length}
+                      onChange={toggleSelectAllOrders}
+                      className="w-4 h-4 text-blue-500 border-slate-300 rounded focus:ring-blue-500"
+                    />
+                    Select All
+                  </label>
+                )}
                 {orders.map((order) => (
-                  <div key={order.id} onClick={() => setSelectedInvoice(order)} className="p-4 border border-slate-200 rounded-xl hover:border-blue-300 cursor-pointer transition-all hover:shadow-md">
+                  <div key={order.id} className="flex items-start gap-3">
+                    {isAdmin && (
+                      <input
+                        type="checkbox"
+                        checked={selectedOrderIds.has(order.id)}
+                        onChange={() => toggleOrderSelection(order.id)}
+                        className="w-4 h-4 mt-4 text-blue-500 border-slate-300 rounded focus:ring-blue-500 flex-shrink-0"
+                      />
+                    )}
+                    <div
+                      onClick={() => setSelectedInvoice(order)}
+                      className="flex-1 p-4 border border-slate-200 rounded-xl hover:border-blue-300 cursor-pointer transition-all hover:shadow-md"
+                    >
                     <div className="flex justify-between items-start">
                       <div>
                         <h3 className="font-semibold text-slate-800">{order.order_number || order.id}</h3>
@@ -1754,6 +1971,7 @@ const App = () => {
                       </div>
                     </div>
                   </div>
+                  </div>
                 ))}
               </div>
             )}
@@ -1772,6 +1990,11 @@ const App = () => {
                 {selectedInvoice.inventory_sync_status === 'synced' && (
                   <span className="flex items-center gap-1 text-xs font-medium text-green-700 bg-green-100 px-2 py-1 rounded-full">
                     <Package size={12} /> Synced to Square
+                  </span>
+                )}
+                {selectedInvoice.inventory_sync_status === 'returned' && (
+                  <span className="flex items-center gap-1 text-xs font-medium text-orange-700 bg-orange-100 px-2 py-1 rounded-full">
+                    <Package size={12} /> Returned
                   </span>
                 )}
                 {isAdmin && (
@@ -1805,7 +2028,7 @@ const App = () => {
                       </button>
                     )}
                     {/* Sync to Square button - only for admin and not already synced */}
-                    {isAdmin && selectedInvoice.inventory_sync_status !== 'synced' && (
+                    {isAdmin && selectedInvoice.inventory_sync_status !== 'synced' && selectedInvoice.inventory_sync_status !== 'returned' && (
                       <button
                         onClick={() => handleSyncInventory(selectedInvoice.id)}
                         disabled={syncingInventory}
@@ -1813,6 +2036,17 @@ const App = () => {
                       >
                         {syncingInventory ? <RefreshCw size={18} className="animate-spin" /> : <Package size={18} />}
                         Sync to Square
+                      </button>
+                    )}
+                    {/* Return to Supplier - only for admin and already synced */}
+                    {isAdmin && selectedInvoice.inventory_sync_status === 'synced' && (
+                      <button
+                        onClick={() => handleReverseSync(selectedInvoice.id)}
+                        disabled={syncingInventory}
+                        className="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg font-medium transition-colors flex items-center gap-2 disabled:opacity-50"
+                      >
+                        {syncingInventory ? <RefreshCw size={18} className="animate-spin" /> : <Package size={18} />}
+                        Return to Supplier
                       </button>
                     )}
                     {isAdmin && selectedInvoice.status === 'unpaid' && !selectedInvoice.is_closed && (
@@ -1914,6 +2148,28 @@ const App = () => {
                     </div>
                   )}
                 </div>
+                {/* Edit History */}
+                {isAdmin && Array.isArray(selectedInvoice.edit_history) && selectedInvoice.edit_history.length > 0 && (
+                  <div className="mb-6">
+                    <h3 className="font-semibold text-slate-800 mb-3">Edit History</h3>
+                    <div className="space-y-2">
+                      {selectedInvoice.edit_history.map((entry, idx) => (
+                        <div key={idx} className="p-3 bg-amber-50 border border-amber-200 rounded-lg text-sm">
+                          <p className="font-medium text-amber-800">
+                            Edited by {entry.editedBy} on {new Date(entry.editedAt).toLocaleString()}
+                          </p>
+                          {entry.changes?.length > 0 && (
+                            <ul className="mt-1 space-y-0.5 text-amber-700 list-disc list-inside">
+                              {entry.changes.map((change, ci) => (
+                                <li key={ci}>{change}</li>
+                              ))}
+                            </ul>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </>
             ) : (
               <>

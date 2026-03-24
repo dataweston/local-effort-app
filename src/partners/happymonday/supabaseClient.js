@@ -243,7 +243,7 @@ export const updateOrderStatus = async (orderId, status) => {
  * Update unpaid order items, total, notes, date, and adjustments (admin only)
  * Supports negative quantities for credit entries and explicit adjustments
  */
-export const updateOrder = async (orderId, { items, adjustments = [], totalCents, notes, orderDate, editedBy }) => {
+export const updateOrder = async (orderId, { items, adjustments = [], totalCents, notes, orderDate, editedBy, editHistory }) => {
   if (!supabase) throw new Error('Supabase not configured');
 
   const { data, error } = await supabase.rpc('update_happymonday_order', {
@@ -259,6 +259,18 @@ export const updateOrder = async (orderId, { items, adjustments = [], totalCents
   if (error) {
     console.error('[HappyMonday] Error updating order:', error);
     throw error;
+  }
+
+  // Save edit history if provided (stored as JSON column on the order)
+  if (editHistory) {
+    const { error: historyError } = await supabase
+      .from('happymonday_orders')
+      .update({ edit_history: editHistory })
+      .eq('id', orderId);
+
+    if (historyError) {
+      console.warn('[HappyMonday] Could not save edit history:', historyError.message);
+    }
   }
 
   return data;

@@ -113,8 +113,8 @@ module.exports = async function handler(req, res) {
 
     // Send email to both admin and client
     const recipientEmails = [
-      'dataweston@gmail.com',
-      'hello@happymonday.company',
+      process.env.TEAM_INBOX_EMAIL || 'dataweston@gmail.com',
+      process.env.HAPPY_MONDAY_CLIENT_EMAIL || 'hello@happymonday.company',
     ];
 
     await sendInvoiceNotification({
