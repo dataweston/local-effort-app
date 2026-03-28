@@ -5,8 +5,8 @@
 const { getSquareClient } = require('../_lib/squareClient');
 const { createBrevoService } = require('../../backend/api/services/brevo');
 
-const PRODUCT_PRICE_CENTS = 9000;
-const MAX_QUANTITY = 4;
+const PRODUCT_PRICE_CENTS = 7000;
+const MAX_QUANTITY = 1;
 const DELIVERY_FEE_CENTS = 1000;
 const SHIPPING_FEE_CENTS = 1000;
 

@@ -9,8 +9,9 @@ import { SITE_NAME, SITE_URL } from '../config/siteMetadata';
 import '../styles/fullpage-demo-theme.css';
 
 const HERO_IMAGE = '/gallery/Screenshot%20%28172%29.png';
-const PRODUCT_PRICE_CENTS = 9000;
-const MAX_QUANTITY = 4;
+const ORIGINAL_PRICE_CENTS = 9000;
+const PRODUCT_PRICE_CENTS = 7000;
+const MAX_QUANTITY = 1;
 const DELIVERY_FEE_CENTS = 1000;
 const SHIPPING_FEE_CENTS = 1000;
 
@@ -44,9 +45,9 @@ const buildProductJsonLd = () => ({
       },
       offers: {
         '@type': 'Offer',
-        price: '90.00',
+        price: '70.00',
         priceCurrency: 'USD',
-        availability: 'https://schema.org/InStock',
+        availability: 'https://schema.org/LimitedAvailability',
         url: `${SITE_URL}/psyche`,
         priceValidUntil: '2026-12-31',
         itemCondition: 'https://schema.org/NewCondition',
@@ -294,7 +295,7 @@ const PsychePage = () => {
         <title>Buy Psyche Olive Oil — 3L Extra-Virgin | {SITE_NAME}</title>
         <meta
           name="description"
-          content="Buy Psyche extra-virgin olive oil (3 L bag-in-box) from Local Effort Food Co. in Minneapolis. Single-estate koroneiki from Greece — bright, peppery, EVA-certified. $90 with free local delivery."
+          content="Buy Psyche extra-virgin olive oil (3 L bag-in-box) from Local Effort Food Co. in Minneapolis. Single-estate koroneiki from Greece — bright, peppery, EVA-certified. Now $70 (was $90) — last bottle! Free local delivery."
         />
         <meta
           name="keywords"
@@ -306,21 +307,21 @@ const PsychePage = () => {
         <meta property="og:title" content="Buy Psyche Olive Oil — 3L Extra-Virgin | Local Effort Food Co." />
         <meta
           property="og:description"
-          content="Single-estate koroneiki extra-virgin olive oil from Greece. Bright, peppery, EVA-certified. $90 for a 3-liter bag-in-box with free local delivery in Minneapolis–St. Paul."
+          content="Single-estate koroneiki extra-virgin olive oil from Greece. Bright, peppery, EVA-certified. Now $70 (was $90) — last bottle! 3-liter bag-in-box with free local delivery in Minneapolis–St. Paul."
         />
         <meta property="og:image" content={`${SITE_URL}${HERO_IMAGE}`} />
         <meta property="og:image:width" content="1200" />
         <meta property="og:image:height" content="630" />
         <meta property="og:image:alt" content="Psyche olive oil 3-liter bag-in-box" />
-        <meta property="product:price:amount" content="90.00" />
+        <meta property="product:price:amount" content="70.00" />
         <meta property="product:price:currency" content="USD" />
-        <meta property="product:availability" content="in stock" />
+        <meta property="product:availability" content="limited availability" />
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:url" content={`${SITE_URL}/psyche`} />
         <meta name="twitter:title" content="Buy Psyche Olive Oil — 3L Extra-Virgin | Local Effort Food Co." />
         <meta
           name="twitter:description"
-          content="Single-estate koroneiki extra-virgin olive oil from Greece. $90 for a 3-liter bag-in-box. Free local delivery in Minneapolis–St. Paul."
+          content="Single-estate koroneiki extra-virgin olive oil from Greece. Now $70 (was $90) — last bottle! Free local delivery in Minneapolis–St. Paul."
         />
         <meta name="twitter:image" content={`${SITE_URL}${HERO_IMAGE}`} />
         <meta name="twitter:image:alt" content="Psyche olive oil 3-liter bag-in-box" />
@@ -362,7 +363,7 @@ const PsychePage = () => {
               medicine.
             </blockquote>
             <p>
-              We're offering this olive oil 20% cheaper than his website because... we can.
+              We're offering this olive oil cheaper than his website because... we can.
             </p>
             <p>
               <a href="https://www.aboutoliveoil.org/extra-virgin-alliance/eva-psyche" target="_blank" rel="noreferrer">
@@ -399,11 +400,13 @@ const PsychePage = () => {
             <div className="february-card-header">
               <div>
                 <div className="february-card-title">Buy Psyche olive oil</div>
-                <div className="february-card-subtitle">
-                  Price per bottle: $90.00
+                <div className="february-card-subtitle" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+                  Price per bottle:{' '}
+                  <span style={{ textDecoration: 'line-through', color: '#999', fontSize: '0.95em' }}>${formatMoney(ORIGINAL_PRICE_CENTS)}</span>
+                  <span style={{ color: '#dc2626', fontWeight: 700, fontSize: '1.15em' }}>${formatMoney(PRODUCT_PRICE_CENTS)}</span>
                 </div>
-                <div className="february-card-subtitle">
-                  Quantity: {quantity} (max {MAX_QUANTITY})
+                <div className="february-card-subtitle" style={{ color: '#dc2626', fontStyle: 'italic', fontWeight: 600, marginTop: '0.25rem' }}>
+                  Only 1 remaining — last bottle!
                 </div>
                 <div className="february-card-subtitle">
                   {fulfillment === 'shipping'
@@ -436,14 +439,7 @@ const PsychePage = () => {
                       resetStatus();
                     }}
                   >
-                    {Array.from({ length: MAX_QUANTITY }, (_, idx) => {
-                      const value = idx + 1;
-                      return (
-                        <option key={value} value={value}>
-                          {value}
-                        </option>
-                      );
-                    })}
+                    <option value={1}>1</option>
                   </select>
                 </div>
                 <div>
