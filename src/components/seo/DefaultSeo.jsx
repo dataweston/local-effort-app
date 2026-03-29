@@ -151,6 +151,7 @@ export const DefaultSeo = () => {
         name="robots"
         content={shouldNoindex ? "noindex, nofollow" : "index,follow,max-snippet:-1,max-image-preview:large,max-video-preview:-1"}
       />
+      {shouldNoindex ? <meta name="googlebot" content="noindex, nofollow, noarchive" /> : null}
       <link rel="canonical" href={canonicalUrl} />
       <link rel="alternate" type="text/plain" href={`${SITE_URL}/ai.txt`} />
       <link rel="alternate" type="application/json" href={`${SITE_URL}/ai/manifest.json`} />

@@ -33,10 +33,13 @@ export default defineConfig({
             S.listItem()
               .title('Sales')
               .child(S.documentTypeList('sale').title('Sales')),
+            S.listItem()
+              .title('Decision Priorities')
+              .child(S.documentTypeList('decisionPriority').title('Decision Priorities')),
             S.divider(),
             // Fallback: all other types
             ...S.documentTypeListItems().filter(
-              (li) => li.getId() && !['product', 'sale'].includes(li.getId()!),
+              (li) => li.getId() && !['product', 'sale', 'decisionPriority'].includes(li.getId()!),
             ),
           ]),
     }),
