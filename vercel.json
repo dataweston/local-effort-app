@@ -15,6 +15,12 @@
       "use": "@vercel/node"
     }
   ],
+  "crons": [
+    {
+      "path": "/api/digest/meal-feedback",
+      "schedule": "0 2 * * *"
+    }
+  ],
   "routes": [
     {
       "src": "/(.*)",
@@ -74,6 +80,10 @@
     {
       "src": "^/psyche$",
       "dest": "/prerender/psyche/index.html"
+    },
+    {
+      "src": "^/book$",
+      "dest": "/prerender/book/index.html"
     },
     {
       "src": "^/salepage$",

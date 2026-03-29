@@ -53,14 +53,31 @@ module.exports = async (req, res) => {
     take: limit,
   });
 
-  // Also load all feedback for this user so the frontend can show existing thumbs
-  const feedback = user ? await prisma.dishFeedback.findMany({
+  const menuWeekIds = [...new Set(orders.map((o) => o.menuWeek.id))];
+
+  // Current user's own feedback
+  const myFeedback = user ? await prisma.dishFeedback.findMany({
     where: { userId: user.id },
     select: { dishId: true, menuWeekId: true, thumbsUp: true, notes: true },
   }) : [];
-  const feedbackMap = {};
-  feedback.forEach((f) => {
-    feedbackMap[`${f.dishId}-${f.menuWeekId}`] = { thumbsUp: f.thumbsUp, notes: f.notes };
+  const myFeedbackMap = {};
+  myFeedback.forEach((f) => {
+    myFeedbackMap[`${f.dishId}-${f.menuWeekId}`] = { thumbsUp: f.thumbsUp, notes: f.notes };
+  });
+
+  // All users' feedback for the same menu weeks
+  const allFeedback = menuWeekIds.length ? await prisma.dishFeedback.findMany({
+    where: { menuWeekId: { in: menuWeekIds } },
+    select: { dishId: true, menuWeekId: true, thumbsUp: true, notes: true },
+  }) : [];
+  // Aggregate: { [dishId-menuWeekId]: { up: n, down: n, notes: string[] } }
+  const allFeedbackMap = {};
+  allFeedback.forEach((f) => {
+    const key = `${f.dishId}-${f.menuWeekId}`;
+    if (!allFeedbackMap[key]) allFeedbackMap[key] = { up: 0, down: 0, notes: [] };
+    if (f.thumbsUp) allFeedbackMap[key].up++;
+    else allFeedbackMap[key].down++;
+    if (f.notes) allFeedbackMap[key].notes.push(f.notes);
   });
 
   const weeks = orders.map((order) => ({
@@ -78,7 +95,8 @@ module.exports = async (req, res) => {
       allergens: item.dish?.allergens || [],
       quantity: item.quantity,
       isAddon: item.isAddon,
-      feedback: feedbackMap[`${item.dishId}-${order.menuWeek.id}`] || null,
+      feedback: myFeedbackMap[`${item.dishId}-${order.menuWeek.id}`] || null,
+      allFeedback: allFeedbackMap[`${item.dishId}-${order.menuWeek.id}`] || null,
     })),
   }));
 

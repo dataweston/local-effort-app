@@ -103,42 +103,45 @@ export const Header = () => {
         <nav className="hidden md:flex gap-1">
           {navItems.map((page, index) => {
             const pageIndex = index + 1;
+            const href = `/#${page.id}`;
             return (
-              <button
+              <a
                 key={page.id}
-                type="button"
+                href={href}
                 data-menu-btn
                 data-page-index={pageIndex}
                 data-active="false"
-                onClick={() => handleNavigate(pageIndex)}
+                onClick={(e) => { e.preventDefault(); handleNavigate(pageIndex); }}
                 className="px-4 py-2 rounded-md text-sm font-medium transition-all group"
                 style={{
                   backgroundColor: 'transparent',
                   color: 'var(--color-text-primary)',
                   fontFamily: "'Office Code Pro', monospace",
+                  textDecoration: 'none',
                 }}
                 onMouseEnter={handleHoverOn}
                 onMouseLeave={handleHoverOff}
               >
                 {page.label}
-              </button>
+              </a>
             );
           })}
-          <button
-            type="button"
+          <a
+            href="/blog"
             data-active={isBlogRoute ? 'true' : 'false'}
-            onClick={handleBlogNavigate}
+            onClick={(e) => { e.preventDefault(); handleBlogNavigate(); }}
             className="px-4 py-2 rounded-md text-sm font-medium transition-all group"
             style={{
               backgroundColor: isBlogRoute ? 'var(--color-bg-secondary)' : 'transparent',
               color: 'var(--color-text-primary)',
               fontFamily: "'Office Code Pro', monospace",
+              textDecoration: 'none',
             }}
             onMouseEnter={handleHoverOn}
             onMouseLeave={handleHoverOff}
           >
             Blog
-          </button>
+          </a>
         </nav>
 
         <button
@@ -180,26 +183,26 @@ export const Header = () => {
               className="flex flex-col items-center justify-center h-full space-y-6 px-6"
             >
               {FULLPAGE_PAGES.map((page, index) => (
-                <motion.button
+                <motion.a
                   key={page.id}
-                  type="button"
-                  onClick={() => handleNavigate(index)}
+                  href={page.id === 'home' ? '/' : `/#${page.id}`}
+                  onClick={(e) => { e.preventDefault(); handleNavigate(index); }}
                   className="text-3xl uppercase text-center text-slate-900"
-                  style={{ fontFamily: "'Office Code Pro', monospace" }}
+                  style={{ fontFamily: "'Office Code Pro', monospace", textDecoration: 'none' }}
                   variants={{ hidden: { y: 10, opacity: 0 }, show: { y: 0, opacity: 1 } }}
                 >
                   {page.label}
-                </motion.button>
+                </motion.a>
               ))}
-              <motion.button
-                type="button"
-                onClick={handleBlogNavigate}
+              <motion.a
+                href="/blog"
+                onClick={(e) => { e.preventDefault(); handleBlogNavigate(); }}
                 className="text-3xl uppercase text-center text-slate-900"
-                style={{ fontFamily: "'Office Code Pro', monospace" }}
+                style={{ fontFamily: "'Office Code Pro', monospace", textDecoration: 'none' }}
                 variants={{ hidden: { y: 10, opacity: 0 }, show: { y: 0, opacity: 1 } }}
               >
                 Blog
-              </motion.button>
+              </motion.a>
             </motion.nav>
           </motion.div>
         )}

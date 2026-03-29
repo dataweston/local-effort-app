@@ -42,7 +42,8 @@
       "Bash(grep -E \"\\\\.\\(js|jsx\\)$\")",
       "Bash(ls -la /c/Users/user/local-effort-app/checkout*)",
       "Bash(ls -la /c/Users/user/local-effort-app/public/checkout*)",
-      "Bash(ls -la /c/Users/user/local-effort-app/*.html)"
+      "Bash(ls -la /c/Users/user/local-effort-app/*.html)",
+      "Bash(pnpm run:*)"
     ],
     "deny": [],
     "ask": []

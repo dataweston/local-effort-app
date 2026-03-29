@@ -80,6 +80,12 @@ export const PUBLIC_ROUTES = [
     description: 'Event and booking calendar for Local Effort Food Co.',
     prerender: false,
   },
+  {
+    path: '/book',
+    title: 'Book a Private Event - Local Effort Food Co.',
+    description: 'Book a chef-led dinner party, pizza party, wedding, or small event with Local Effort Food Co. in Minneapolis-St. Paul. Get an instant estimate and hold your date with a deposit.',
+    prerender: true,
+  },
 ];
 
 // Dynamic routes - slugs resolved from Sanity at build time

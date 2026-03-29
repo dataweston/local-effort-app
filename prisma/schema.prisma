@@ -466,3 +466,39 @@ model ChefNote {
   createdAt  DateTime @default(now())
   user       User     @relation(fields: [userId], references: [id])
 }
+
+model DecisionAssignment {
+  id            String   @id @default(uuid())
+  experimentKey String
+  sessionId     String
+  variant       String
+  bucket        Int
+  path          String?
+  pageType      String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@unique([experimentKey, sessionId])
+  @@index([experimentKey, variant])
+}
+
+model DecisionEvent {
+  id                  String   @id @default(uuid())
+  schemaVersion       String
+  sessionId           String
+  eventType           String
+  occurredAt          DateTime
+  path                String
+  strategy            String
+  experimentKey       String?
+  variant             String?
+  bucket              Int?
+  reasonCodes         String[] @default([])
+  selectedPriorityIds String[] @default([])
+  metadata            Json?
+  createdAt           DateTime @default(now())
+
+  @@index([sessionId, createdAt])
+  @@index([eventType, createdAt])
+  @@index([experimentKey, variant])
+}

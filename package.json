@@ -179,7 +179,9 @@
     "weekly-order:import": "node scripts/weekly-order-import.js",
     "weekly-order:seed": "node scripts/weekly-order-seed.js",
     "weekly-order:prices": "node scripts/weekly-order-prices.js",
-    "weekly-order:customer-setup": "node scripts/weekly-order-customer-setup.js"
+    "weekly-order:customer-setup": "node scripts/weekly-order-customer-setup.js",
+    "decision:seed-priorities:dry": "node scripts/seed-decision-priorities.mjs",
+    "decision:seed-priorities": "node scripts/seed-decision-priorities.mjs --apply"
   },
   "browserslist": {
     "production": [

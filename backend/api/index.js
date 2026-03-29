@@ -66,6 +66,9 @@ const happymondayPaymentLinkHandler = require('../../api-handlers/happymonday/pa
 const { createMessagesRouter } = require('./routes/messages');
 const { createSmallEventsRouter } = require('./routes/smallEvents');
 const { createPlannerRouter } = require('./routes/planner');
+const { createPublicContextRouter } = require('./routes/publicContext');
+const { createSupportRouter } = require('./routes/support');
+const { createDecisionRouter } = require('./routes/decision');
 const {
   CHECKOUT_SCOPES,
   createUcpRouter,
@@ -94,11 +97,23 @@ if (!process.env.SQUARE_ACCESS_TOKEN || !process.env.BREVO_API_KEY) {
 }
 
 // Import Square Client (defensive: handle varying export shapes across versions)
+// v37: exports { Client, Environment }; v43+: exports { SquareClient, SquareEnvironment }
+// v43+ ships a legacy compat layer at 'square/legacy' with the same API surface as v37
 let Client, Environment;
 try {
   const squarePkg = require('square');
-  Client = squarePkg.Client || (squarePkg.default && squarePkg.default.Client);
-  Environment = squarePkg.Environment || (squarePkg.default && squarePkg.default.Environment) || null;
+  Client = squarePkg.Client;
+  Environment = squarePkg.Environment;
+  if (!Client && squarePkg.SquareClient) {
+    // v43+ detected — use official legacy compat layer
+    const legacy = require('square/legacy');
+    Client = legacy.Client;
+    Environment = legacy.Environment;
+  }
+  if (!Client) {
+    Client = (squarePkg.default && squarePkg.default.Client) || null;
+    Environment = (squarePkg.default && squarePkg.default.Environment) || null;
+  }
 } catch (err) {
   console.warn('Square SDK not available or failed to load:', err && err.message);
 }
@@ -134,6 +149,8 @@ const GALLANT_ALLOWED = new Set([
 
 // AI manifest path (machine-readable site schema) used by /api/public/site
 const AI_MANIFEST_PATH = path.resolve(__dirname, '../../public/ai/manifest.json');
+const PRICING_FAQ_PATH = path.resolve(__dirname, '../../src/data/pricingFaq.json');
+const ESTIMATOR_HELP_PATH = path.resolve(__dirname, '../../src/data/estimatorHelp.json');
 
 async function authenticateAllowedUser(req) {
   const authHeader = req.headers.authorization || '';
@@ -346,7 +363,6 @@ function extractBrevoEvents(body) {
 // --- INITIALIZE SQUARE CLIENT (defensive) ---
 let squareClient = null;
 if (Client) {
-  // Resolve environment: prefer SDK Environment enum when available
   const envName = process.env.SQUARE_ENVIRONMENT || 'Sandbox';
   let resolvedEnv = null;
   if (Environment && Environment[envName]) {
@@ -354,7 +370,6 @@ if (Client) {
   } else if (Environment && Environment.Sandbox) {
     resolvedEnv = Environment.Sandbox;
   } else {
-    // fall back to string (some SDK versions tolerate this)
     resolvedEnv = envName;
   }
 
@@ -1694,6 +1709,14 @@ app.use('/api', createMessagesRouter({
   emailOutboxService,
   auditLogger: (event, details) => logger.info({ audit: true, event, ...details }, 'messages audit'),
 }));
+app.use('/api', createPublicContextRouter({
+  logger,
+  manifestPath: AI_MANIFEST_PATH,
+  pricingFaqPath: PRICING_FAQ_PATH,
+  estimatorHelpPath: ESTIMATOR_HELP_PATH,
+}));
+app.use('/api', createSupportRouter({ logger }));
+app.use('/api', createDecisionRouter({ logger }));
 
 // Diagnostic endpoint (safe): reports whether required env vars are present
 // and attempts a lightweight Cloudinary ping if configured. Do NOT expose
@@ -2779,22 +2802,6 @@ app.post('/api/sanity/query', requireAllowedUser, async (req, res) => {
   }
 });
 
-// Mount support search endpoint (Supabase-powered hybrid search)
-try {
-  const { registerSupportSearch } = require('./supportSearch');
-  if (registerSupportSearch) registerSupportSearch(app);
-} catch (err) {
-  logger.warn({ err: err?.message }, 'support search not available');
-}
-
-// Mount support ingestion endpoints (manual sync + webhook)
-try {
-  const { registerSupportIngest } = require('./supportIngest');
-  if (registerSupportIngest) registerSupportIngest(app);
-} catch (err) {
-  logger.warn({ err: err?.message }, 'support ingest not available');
-}
-
 // (removed legacy lightweight messages/submit — unified below with Brevo-enabled version)
 
 // Helpful startup log for local debugging
@@ -3767,126 +3774,6 @@ app.post('/api/push/notify', async (req, res) => {
   } catch (err) {
   logger.error({ err }, 'push notify error');
     return res.status(500).json({ error: 'notify-failed' });
-  }
-});
-
-// --- Public, machine-readable JSON endpoints ---
-// Lightweight, JS-free data for crawlers/LLMs and integrations.
-app.get('/api/public/site', (req, res) => {
-  try {
-    let manifest = null;
-    if (fs.existsSync(AI_MANIFEST_PATH)) {
-      try {
-        const raw = fs.readFileSync(AI_MANIFEST_PATH, 'utf8');
-        manifest = JSON.parse(raw);
-      } catch (parseErr) {
-        console.warn('Failed to parse AI manifest JSON:', parseErr.message);
-      }
-    }
-
-    const siteUrl =
-      (manifest && manifest.site) ||
-      process.env.PUBLIC_SITE_URL ||
-      process.env.NEXT_PUBLIC_SITE_URL ||
-      process.env.PUBLIC_URL ||
-      'https://www.localeffortfood.com';
-    const trimmedSite = siteUrl.replace(/\/$/, '');
-    const navigation = Array.isArray(manifest?.navigation) ? manifest.navigation : [];
-    const mcp = Array.isArray(manifest?.mcpServers) ? manifest.mcpServers : [];
-    const ucp = Array.isArray(manifest?.ucpServers) ? manifest.ucpServers : [];
-    const apis = Array.isArray(manifest?.apis)
-      ? manifest.apis
-      : [
-          { path: '/api/support/search', method: 'GET', query: { q: 'query string' } },
-          { path: '/api/messages/submit', method: 'POST' },
-          { path: '/api/events/request', method: 'POST' },
-          { path: '/api/v1/posts', method: 'GET' },
-          { path: '/api/v1/posts/:slug', method: 'GET' },
-          { path: '/api/v1/authors', method: 'GET' },
-          { path: '/api/v1/tags', method: 'GET' },
-          { path: '/api/v1/categories', method: 'GET' },
-          { path: '/api/activitypub/actor', method: 'GET' },
-          { path: '/api/activitypub/outbox', method: 'GET' },
-          { path: '/.well-known/webfinger', method: 'GET' },
-          { path: '/.well-known/nodeinfo', method: 'GET' },
-          { path: '/api/public/pricing-faq', method: 'GET' },
-          { path: '/api/public/estimator-help', method: 'GET' },
-        ];
-    const feeds = Array.isArray(manifest?.feeds)
-      ? manifest.feeds
-      : [
-          { type: 'sitemap', url: `${trimmedSite}/sitemap.xml` },
-          { type: 'sitemap', url: `${trimmedSite}/api/sitemap.xml` },
-          { type: 'rss', url: `${trimmedSite}/api/feeds/blog.rss` },
-          { type: 'atom', url: `${trimmedSite}/api/feeds/blog.atom` },
-          { type: 'json', url: `${trimmedSite}/api/feeds/blog.json` },
-          { type: 'activitypub', url: `${trimmedSite}/api/activitypub/actor` },
-          { type: 'rss', url: `${trimmedSite}/api/feeds/releases.rss` },
-          { type: 'atom', url: `${trimmedSite}/api/feeds/releases.atom` },
-        ];
-
-    return res.json({
-      name: manifest?.name || 'Local Effort',
-      url: siteUrl,
-      navigation,
-      endpoints: apis,
-      feeds,
-      support: manifest?.support || { email: 'yum@localeffortfood.com' },
-      mcp,
-      ucp,
-      sitemap: `${trimmedSite}/sitemap.xml`,
-      aiTxt: `${trimmedSite}/ai.txt`,
-      manifest: `${trimmedSite}/ai/manifest.json`,
-      updatedAt: manifest?.updated || new Date().toISOString(),
-    });
-  } catch (err) {
-  logger.error({ err }, 'public site error');
-    return res.status(500).json({ error: 'public-site-failed' });
-  }
-});
-
-function readJsonFileSafe(filePath, fallback = []) {
-  try {
-    const raw = fs.readFileSync(filePath, 'utf8');
-    return JSON.parse(raw);
-  } catch (e) {
-    return fallback;
-  }
-}
-
-app.get('/api/public/pricing-faq', (req, res) => {
-  try {
-    const file = path.resolve(__dirname, '../../src/data/pricingFaq.json');
-    const items = readJsonFileSafe(file, []);
-    let updatedAt = null;
-    try {
-      const st = fs.statSync(file);
-      updatedAt = st.mtime.toISOString();
-    } catch (e) {
-      updatedAt = null;
-    }
-    return res.json({ items, updatedAt });
-  } catch (err) {
-  logger.error({ err }, 'public pricing faq error');
-    return res.status(500).json({ error: 'public-pricing-faq-failed' });
-  }
-});
-
-app.get('/api/public/estimator-help', (req, res) => {
-  try {
-    const file = path.resolve(__dirname, '../../src/data/estimatorHelp.json');
-    const items = readJsonFileSafe(file, []);
-    let updatedAt = null;
-    try {
-      const st = fs.statSync(file);
-      updatedAt = st.mtime.toISOString();
-    } catch (e) {
-      updatedAt = null;
-    }
-    return res.json({ items, updatedAt });
-  } catch (err) {
-  logger.error({ err }, 'public estimator help error');
-    return res.status(500).json({ error: 'public-estimator-help-failed' });
   }
 });
 

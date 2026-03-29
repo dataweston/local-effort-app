@@ -21,6 +21,7 @@ import {
   DialogTitle,
 } from '../components/ui/dialog';
 import { FULLPAGE_PAGES } from '../config/fullPageNav';
+import SmallEventsWizard from '../components/smallEvents/SmallEventsWizard';
 
 const SMALL_EVENT_CONFIG = {
   dinner: {
@@ -4061,50 +4062,26 @@ const clampGuestCount = (value, config) => {
       </Dialog>
 
       <Dialog open={smallEventsDialog === 'dinner'} onOpenChange={(open) => setSmallEventsDialog(open ? 'dinner' : null)}>
-        <DialogContent className="fullpage-demo-scope small-events-dialog max-h-[85vh] overflow-y-auto sm:max-w-[980px]">
-          <DialogHeader>
-            <DialogTitle className="small-events-title">Dinner party in my home</DialogTitle>
-            <DialogDescription className="small-events-description">
-              Chef-led, multi-course dinners with seasonal menus, staffing, and a 15% deposit to hold the date.
-            </DialogDescription>
-          </DialogHeader>
-          {renderSmallEventDialogContent('dinner')}
+        <DialogContent className="fullpage-demo-scope small-events-dialog max-h-[90vh] overflow-y-auto sm:max-w-[680px]">
+          <SmallEventsWizard initialType="dinner" onClose={() => setSmallEventsDialog(null)} />
         </DialogContent>
       </Dialog>
 
       <Dialog open={smallEventsDialog === 'pizza'} onOpenChange={(open) => setSmallEventsDialog(open ? 'pizza' : null)}>
-        <DialogContent className="fullpage-demo-scope small-events-dialog max-h-[85vh] overflow-y-auto sm:max-w-[980px]">
-          <DialogHeader>
-            <DialogTitle className="small-events-title">Pizza Party</DialogTitle>
-            <DialogDescription className="small-events-description">
-              Wood-fired pizza parties with full service, staffing, and a 15% deposit to hold the date.
-            </DialogDescription>
-          </DialogHeader>
-          {renderSmallEventDialogContent('pizza')}
+        <DialogContent className="fullpage-demo-scope small-events-dialog max-h-[90vh] overflow-y-auto sm:max-w-[680px]">
+          <SmallEventsWizard initialType="pizza" onClose={() => setSmallEventsDialog(null)} />
         </DialogContent>
       </Dialog>
 
       <Dialog open={smallEventsDialog === 'weddings'} onOpenChange={(open) => setSmallEventsDialog(open ? 'weddings' : null)}>
-        <DialogContent className="fullpage-demo-scope small-events-dialog max-h-[85vh] overflow-y-auto sm:max-w-[980px]">
-          <DialogHeader>
-            <DialogTitle className="small-events-title">Weddings</DialogTitle>
-            <DialogDescription className="small-events-description">
-              Flexible packages for rehearsal dinners, receptions, and late-night bites with deposit holds.
-            </DialogDescription>
-          </DialogHeader>
-          {renderSmallEventDialogContent('weddings')}
+        <DialogContent className="fullpage-demo-scope small-events-dialog max-h-[90vh] overflow-y-auto sm:max-w-[680px]">
+          <SmallEventsWizard initialType="weddings" onClose={() => setSmallEventsDialog(null)} />
         </DialogContent>
       </Dialog>
 
       <Dialog open={smallEventsDialog === 'holiday'} onOpenChange={(open) => setSmallEventsDialog(open ? 'holiday' : null)}>
-        <DialogContent className="fullpage-demo-scope small-events-dialog max-h-[85vh] overflow-y-auto sm:max-w-[980px]">
-          <DialogHeader>
-            <DialogTitle className="small-events-title">Small events and holiday parties</DialogTitle>
-            <DialogDescription className="small-events-description">
-              Drop-off or staffed menus for work parties, milestones, and holiday hosting.
-            </DialogDescription>
-          </DialogHeader>
-          {renderSmallEventDialogContent('holiday')}
+        <DialogContent className="fullpage-demo-scope small-events-dialog max-h-[90vh] overflow-y-auto sm:max-w-[680px]">
+          <SmallEventsWizard initialType="holiday" onClose={() => setSmallEventsDialog(null)} />
         </DialogContent>
       </Dialog>
 

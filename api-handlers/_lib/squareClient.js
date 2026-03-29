@@ -1,10 +1,13 @@
 let Client = null;
 let Environment = null;
+let _isV43Plus = false;
 
 try {
   const squarePkg = require('square');
-  Client = squarePkg.Client || (squarePkg.default && squarePkg.default.Client) || null;
-  Environment = squarePkg.Environment || (squarePkg.default && squarePkg.default.Environment) || null;
+  // v37: { Client, Environment }; v43+: { SquareClient, SquareEnvironment }
+  Client = squarePkg.Client || squarePkg.SquareClient || (squarePkg.default && (squarePkg.default.Client || squarePkg.default.SquareClient)) || null;
+  Environment = squarePkg.Environment || squarePkg.SquareEnvironment || (squarePkg.default && (squarePkg.default.Environment || squarePkg.default.SquareEnvironment)) || null;
+  _isV43Plus = !!squarePkg.SquareClient;
 } catch (error) {
   console.warn('[square] SDK unavailable', error.message);
 }
@@ -36,10 +39,16 @@ function getSquareClient() {
 
   try {
     const env = (Environment && Environment[environmentName]) || (Environment && Environment.Production) || environmentName;
-    const client = new Client({ accessToken, environment: env });
+    // v43+ uses { token } instead of { accessToken }
+    const ctorOpts = _isV43Plus
+      ? { token: accessToken, environment: env }
+      : { accessToken, environment: env };
+    const client = new Client(ctorOpts);
     
-    // Validate that the client has the required catalog API
-    if (!client.catalogApi || typeof client.catalogApi.listCatalog !== 'function') {
+    // Validate that the client has the required catalog API (v37: catalogApi, v43: catalog)
+    const hasCatalog = (client.catalogApi && typeof client.catalogApi.listCatalog === 'function')
+      || (client.catalog && typeof client.catalog.list === 'function');
+    if (!hasCatalog) {
       throw new Error('Square client missing catalogApi or listCatalog method');
     }
     

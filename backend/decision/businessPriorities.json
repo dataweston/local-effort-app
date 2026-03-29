@@ -1,0 +1,102 @@
+[
+  {
+    "id": "home-small-events",
+    "label": "Guide planners toward small-events intake",
+    "weight": 0.9,
+    "active": true,
+    "strategy": "orient",
+    "reasons": ["service-fit", "b2b-path"],
+    "messageFacts": [
+      "Small events are the fastest place to start for planning support and tailored estimates.",
+      "The small-events flow is built for hosts, teams, and event planners."
+    ],
+    "cta": {
+      "label": "Plan an event",
+      "href": "/#small-events"
+    },
+    "match": {
+      "pageTypes": ["home"],
+      "pathPrefixes": ["/"]
+    }
+  },
+  {
+    "id": "sale-catalog-guidance",
+    "label": "Guide shoppers into the active sale catalog",
+    "weight": 0.88,
+    "active": true,
+    "strategy": "promote",
+    "reasons": ["sale-page", "commerce-priority"],
+    "messageFacts": [
+      "Active sale pages should move visitors directly into the current catalog.",
+      "Shoppers on sale surfaces should see the fastest buying path first."
+    ],
+    "cta": {
+      "label": "Shop the sale",
+      "href": "/sale"
+    },
+    "match": {
+      "pathPrefixes": ["/sale"],
+      "pageTypes": ["sale", "commerce"]
+    }
+  },
+  {
+    "id": "weekly-order-retention",
+    "label": "Reassure weekly-order customers and returning buyers",
+    "weight": 0.86,
+    "active": true,
+    "strategy": "reassure",
+    "reasons": ["repeat-flow", "operational-fit"],
+    "messageFacts": [
+      "Weekly ordering works best when returning customers can confirm the current menu quickly.",
+      "Returning subscribers should get to ordering and account context with minimal friction."
+    ],
+    "cta": {
+      "label": "Open weekly order",
+      "href": "/weekly-order"
+    },
+    "match": {
+      "pathPrefixes": ["/weekly-order"],
+      "pageTypes": ["commerce"]
+    }
+  },
+  {
+    "id": "pizza-party-booking",
+    "label": "Route pizza-party traffic into booking and deposit flow",
+    "weight": 0.84,
+    "active": true,
+    "strategy": "promote",
+    "reasons": ["service-fit", "event-booking"],
+    "messageFacts": [
+      "Pizza party pages should guide visitors into booking, dates, and deposit readiness.",
+      "Event traffic is higher intent when it lands directly on a booking-oriented service page."
+    ],
+    "cta": {
+      "label": "Book a pizza party",
+      "href": "/pizza-party"
+    },
+    "match": {
+      "pathPrefixes": ["/pizza-party"],
+      "pageTypes": ["service"]
+    }
+  },
+  {
+    "id": "psyche-product-education",
+    "label": "Reassure product visitors with clear orientation",
+    "weight": 0.8,
+    "active": true,
+    "strategy": "reassure",
+    "reasons": ["product-fit", "education"],
+    "messageFacts": [
+      "Product-detail visitors need confidence and clarity before checkout.",
+      "Product pages should balance product education with a direct buying path."
+    ],
+    "cta": {
+      "label": "View product",
+      "href": "/psyche"
+    },
+    "match": {
+      "pathPrefixes": ["/psyche", "/product/"],
+      "pageTypes": ["product"]
+    }
+  }
+]

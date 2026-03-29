@@ -151,8 +151,19 @@ const DishFeedbackRow = ({ item, menuWeekId, accessToken, onSaved }) => {
   const [saving, setSaving] = useState(false);
   const [dirty, setDirty] = useState(false);
 
+  // Optimistic aggregate: start from server totals, adjust for current user's vote
+  const agg = item.allFeedback || { up: 0, down: 0, notes: [] };
+  // allFeedback already includes this user's vote, so display as-is after save
+  const [aggUp, setAggUp] = useState(agg.up);
+  const [aggDown, setAggDown] = useState(agg.down);
+  const [aggNotes] = useState(agg.notes || []);
+
   const save = async (newThumbsUp, newNotes) => {
     setSaving(true);
+    // Optimistically update aggregate
+    const prev = item.feedback?.thumbsUp ?? null;
+    setAggUp((n) => n + (newThumbsUp ? 1 : 0) - (prev === true ? 1 : 0));
+    setAggDown((n) => n + (!newThumbsUp ? 1 : 0) - (prev === false ? 1 : 0));
     try {
       const resp = await fetch('/api/weekly-order/feedback', {
         method: 'POST',
@@ -174,6 +185,9 @@ const DishFeedbackRow = ({ item, menuWeekId, accessToken, onSaved }) => {
     setThumbsUp(val);
     save(val, notes);
   };
+
+  const totalVotes = aggUp + aggDown;
+  const othersNotes = aggNotes.filter((n) => n && n !== notes);
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 6, padding: '8px 0', borderBottom: '1px solid #f1f5f9' }}>
@@ -210,6 +224,25 @@ const DishFeedbackRow = ({ item, menuWeekId, accessToken, onSaved }) => {
           >👎</button>
         </div>
       </div>
+
+      {/* Aggregate tally across all subscribers */}
+      {totalVotes > 0 && (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: '0.8rem', color: '#64748b' }}>
+          <span>Everyone: {aggUp > 0 && <span style={{ color: '#16a34a' }}>👍 {aggUp}</span>}{aggUp > 0 && aggDown > 0 && ' · '}{aggDown > 0 && <span style={{ color: '#dc2626' }}>👎 {aggDown}</span>}</span>
+        </div>
+      )}
+
+      {/* Notes from other subscribers */}
+      {othersNotes.length > 0 && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+          {othersNotes.map((n, i) => (
+            <p key={i} style={{ margin: 0, fontSize: '0.8rem', color: '#475569', paddingLeft: 8, borderLeft: '2px solid #e2e8f0' }}>
+              {n}
+            </p>
+          ))}
+        </div>
+      )}
+
       <div style={{ display: 'flex', gap: 6 }}>
         <Input
           placeholder="Leave a note about this dish…"

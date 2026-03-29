@@ -1,0 +1,95 @@
+﻿.decision-welcome-banner {
+  padding: 1rem 1rem 0;
+}
+
+.decision-welcome-banner__inner {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) auto;
+  gap: 1rem;
+  align-items: center;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 1rem 1.1rem;
+  border: 1px solid rgba(18, 41, 69, 0.12);
+  border-radius: 1.35rem;
+  background:
+    radial-gradient(circle at left top, rgba(246, 162, 87, 0.18), transparent 28%),
+    linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(240,244,249,0.96) 100%);
+  box-shadow: 0 18px 60px rgba(27, 39, 54, 0.08);
+}
+
+.decision-welcome-banner__copy p {
+  margin: 0.35rem 0 0;
+  font-size: 1rem;
+  line-height: 1.55;
+  color: #16314d;
+}
+
+.decision-welcome-banner__eyebrow {
+  display: inline-block;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #a34a16;
+}
+
+.decision-welcome-banner__meta {
+  display: flex;
+  gap: 0.55rem;
+  flex-wrap: wrap;
+  margin-top: 0.75rem;
+}
+
+.decision-welcome-banner__meta span {
+  padding: 0.28rem 0.6rem;
+  border-radius: 999px;
+  background: rgba(22, 49, 77, 0.08);
+  color: #35506f;
+  font-size: 0.78rem;
+}
+
+.decision-welcome-banner__actions {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.decision-welcome-banner__button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.5rem;
+  padding: 0.72rem 1rem;
+  border-radius: 999px;
+  text-decoration: none;
+  background: #183252;
+  color: #fff;
+  font-weight: 700;
+  transition: transform 120ms ease, background 120ms ease;
+}
+
+.decision-welcome-banner__button:hover {
+  background: #10243d;
+  transform: translateY(-1px);
+}
+
+.decision-welcome-banner__dismiss {
+  border: 0;
+  background: transparent;
+  color: #5a6778;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+@media (max-width: 900px) {
+  .decision-welcome-banner__inner {
+    grid-template-columns: 1fr;
+  }
+
+  .decision-welcome-banner__actions {
+    justify-content: flex-start;
+  }
+}

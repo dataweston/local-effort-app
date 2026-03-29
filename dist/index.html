@@ -35,11 +35,51 @@
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
-        "@type": "Organization",
+        "@type": "LocalBusiness",
+        "@id": "https://www.localeffortfood.com/#business",
         "name": "Local Effort",
+        "description": "Personal chef, event catering, and weekly meal service in the Twin Cities metro area.",
         "url": "https://www.localeffortfood.com/",
         "logo": "https://www.localeffortfood.com/gallery/logo.png",
-        "sameAs": []
+        "image": "https://www.localeffortfood.com/gallery/logo.png",
+        "telephone": "",
+        "email": "",
+        "address": {
+          "@type": "PostalAddress",
+          "addressLocality": "Roseville",
+          "addressRegion": "MN",
+          "addressCountry": "US"
+        },
+        "areaServed": [
+          {
+            "@type": "City",
+            "name": "Minneapolis",
+            "sameAs": "https://www.wikidata.org/wiki/Q36091"
+          },
+          {
+            "@type": "City",
+            "name": "Saint Paul",
+            "sameAs": "https://www.wikidata.org/wiki/Q49111"
+          },
+          {
+            "@type": "AdministrativeArea",
+            "name": "Twin Cities metro area"
+          }
+        ],
+        "servesCuisine": ["American", "Seasonal", "Local"],
+        "priceRange": "$$-$$$",
+        "openingHoursSpecification": [
+          {
+            "@type": "OpeningHoursSpecification",
+            "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+            "opens": "09:00",
+            "closes": "18:00"
+          }
+        ],
+        "sameAs": [
+          "https://www.instagram.com/localeffortfood",
+          "https://www.facebook.com/localeffortfood"
+        ]
       }
     </script>
     <script type="application/ld+json">
@@ -47,12 +87,29 @@
         "@context": "https://schema.org",
         "@type": "WebSite",
         "name": "Local Effort",
-        "url": "https://www.localeffortfood.com/",
-        "potentialAction": {
-          "@type": "SearchAction",
-          "target": "https://www.localeffortfood.com/api/support/search?q={search_term_string}",
-          "query-input": "required name=search_term_string"
-        }
+        "url": "https://www.localeffortfood.com/"
+      }
+    </script>
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "Service",
+        "name": "Weekly Meal Service",
+        "provider": { "@id": "https://www.localeffortfood.com/#business" },
+        "areaServed": { "@type": "AdministrativeArea", "name": "Twin Cities metro area" },
+        "description": "Weekly prepared meal delivery and pickup from a personal chef in the Twin Cities.",
+        "url": "https://www.localeffortfood.com/#weekly-meals"
+      }
+    </script>
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "Service",
+        "name": "Private Event Catering",
+        "provider": { "@id": "https://www.localeffortfood.com/#business" },
+        "areaServed": { "@type": "AdministrativeArea", "name": "Twin Cities metro area" },
+        "description": "Chef-led dinner parties, pizza parties, weddings, and small event catering in the Twin Cities.",
+        "url": "https://www.localeffortfood.com/#small-events"
       }
     </script>
 <!-- Google tag (gtag.js) -->
@@ -91,8 +148,8 @@ fbq('init', '1528653228301060');
 fbq('track', 'PageView');
 </script>
 <!-- End Meta Pixel Code -->
-    <script type="module" crossorigin src="/assets/index-BRvZcPhe.js"></script>
-    <link rel="stylesheet" crossorigin href="/assets/index-DTwHCNXB.css">
+    <script type="module" crossorigin src="/assets/index-EL6d5VvZ.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-BX5-FnF0.css">
   </head>
   <body>
   <!-- Meta Pixel (noscript) moved to body per HTML spec -->
@@ -107,7 +164,7 @@ fbq('track', 'PageView');
   </noscript>
   <!-- Optional runtime Sanity config (generated at deploy-time) -->
   <script src="/runtime-sanity-config.js" defer></script>
-  <div id="root"></div>
+  <div id="root"></div>
 
   </body>
 </html>

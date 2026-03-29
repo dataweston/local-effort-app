@@ -1,25 +1,28 @@
 import React, { useState } from 'react';
 import { useCart } from '../cart/CartContext';
+import '../../styles/le-checkout.css';
 
-export default function CheckoutPanel({ store = 'sale' }) {
-  const { items, subtotal, open, closeCart, clear, remove, updateQty } = useCart();
+const fmt = (cents) => `$${(cents / 100).toFixed(2)}`;
+
+export default function CheckoutPanel({ store = 'sale', onBack }) {
+  const { items, subtotal, open, closeCart, clear } = useCart();
   const [processing, setProcessing] = useState(false);
   const [error, setError] = useState('');
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
-  const [pickup, setPickup] = useState(true);
   const [phone, setPhone] = useState('');
+  const [pickup, setPickup] = useState(true);
   const [address, setAddress] = useState({ line1: '', line2: '', city: '', state: '', postal: '' });
-  // Square Web Payments SDK handles its own internal state; we keep refs only
+  const [orderResult, setOrderResult] = useState(null); // { name, email, pickup }
   const cardRef = React.useRef(null);
   const cardElRef = React.useRef(null);
 
-  // Load Square Web Payments SDK once panel opens
+  // Load Square Web Payments SDK once panel opens with items
   React.useEffect(() => {
     const appId = import.meta?.env?.VITE_SQUARE_APP_ID || window?.__SQUARE_APP_ID__;
     const locationId = import.meta?.env?.VITE_SQUARE_LOCATION_ID || window?.__SQUARE_LOCATION_ID__;
     if (!open) return;
-    if (!items || items.length === 0) return; // mount form only when there are items
+    if (!items || items.length === 0) return;
     setError('');
     if (!appId || !locationId) {
       setError('Square not configured');
@@ -28,25 +31,24 @@ export default function CheckoutPanel({ store = 'sale' }) {
     let canceled = false;
     (async () => {
       try {
-        // Ensure SDK is loaded
         if (!document.getElementById('sq-wpsdk')) {
           await new Promise((resolve, reject) => {
             const s = document.createElement('script');
             s.id = 'sq-wpsdk';
             s.src = 'https://web.squarecdn.com/v1/square.js';
-            s.onload = resolve; s.onerror = () => reject(new Error('Square SDK failed'));
+            s.onload = resolve;
+            s.onerror = () => reject(new Error('Square SDK failed'));
             document.head.appendChild(s);
           });
         }
         if (canceled) return;
-        // Wait for global
         const ensureSquare = () => new Promise((resolve, reject) => {
           let tries = 0;
           const t = setInterval(() => {
             tries++;
             if (window.Square && typeof window.Square.payments === 'function') {
               clearInterval(t); resolve();
-            } else if (tries > 50) { // ~5s
+            } else if (tries > 50) {
               clearInterval(t); reject(new Error('Square SDK not ready'));
             }
           }, 100);
@@ -54,29 +56,36 @@ export default function CheckoutPanel({ store = 'sale' }) {
         await ensureSquare();
         const p = window.Square ? window.Square.payments(appId, locationId) : null;
         if (!p) throw new Error('Square payments unavailable');
-        // Destroy any existing card before creating a new one
         if (cardRef.current && typeof cardRef.current.destroy === 'function') {
           try { cardRef.current.destroy(); } catch (e) { /* ignore */ }
           cardRef.current = null;
         }
-        // Recreate card each time we open with items
         const card = await p.card();
         cardRef.current = card;
         if (cardElRef.current) {
           await card.attach('#sq-card');
         }
       } catch (e) {
-        setError(e?.message ? `Payment form failed: ${e.message}` : 'Payment form failed to load');
+        if (!canceled) setError(e?.message ? `Payment form failed: ${e.message}` : 'Payment form failed to load');
       }
     })();
     return () => { canceled = true; };
   }, [open, items]);
 
-  // Cleanup card when panel closes to avoid stale mounts
   React.useEffect(() => {
     if (!open && cardRef.current && typeof cardRef.current.destroy === 'function') {
       try { cardRef.current.destroy(); } catch (e) { /* ignore */ }
       cardRef.current = null;
+    }
+    if (!open) {
+      // Reset form state when drawer closes
+      setOrderResult(null);
+      setError('');
+      setName('');
+      setEmail('');
+      setPhone('');
+      setPickup(true);
+      setAddress({ line1: '', line2: '', city: '', state: '', postal: '' });
     }
   }, [open]);
 
@@ -101,16 +110,21 @@ export default function CheckoutPanel({ store = 'sale' }) {
           customer: { name, email, phone },
           pickup,
           address: pickup ? null : address,
-          items: items.map(i => ({ productId: i.productId, variationId: i.variationId, qty: i.qty, unitPrice: i.unitPrice, title: i.title })),
+          items: items.map((i) => ({
+            productId: i.productId,
+            variationId: i.variationId,
+            qty: i.qty,
+            unitPrice: i.unitPrice,
+            title: i.title,
+          })),
           token,
           store,
         }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Checkout failed');
+      setOrderResult({ name, email, pickup });
       clear();
-      closeCart();
-      alert('Order placed!');
     } catch (e) {
       setError(e.message || 'Checkout failed');
     } finally {
@@ -119,126 +133,254 @@ export default function CheckoutPanel({ store = 'sale' }) {
   };
 
   if (!open) return null;
-  return (
-    <div className="fixed inset-0 bg-black/40 z-50">
-      <div className="absolute right-0 top-0 bottom-0 w-full max-w-md bg-white shadow-xl p-4 overflow-auto">
-        <div className="flex items-center justify-between mb-3">
-          <h3 className="text-xl font-semibold">Your Cart</h3>
-          <button className="btn" onClick={closeCart}>Close</button>
+
+  // Success state — replaces form
+  if (orderResult) {
+    return (
+      <>
+        <div className="le-checkout-drawer-header">
+          <span className="le-checkout-drawer-title">Order confirmed</span>
+          <button
+            type="button"
+            className="le-cart-close"
+            onClick={closeCart}
+            aria-label="Close"
+          >✕</button>
         </div>
-        {items.length === 0 ? (
-          <p className="text-sm text-neutral-600">Your cart is empty.</p>
+        <div style={{ padding: '1.5rem' }}>
+          <div className="le-checkout-success">
+            <div className="le-checkout-success-title">Order placed</div>
+            <p className="le-checkout-success-copy">
+              Thanks{orderResult.name ? `, ${orderResult.name.split(' ')[0]}` : ''}. A confirmation email is on the way to {orderResult.email}.
+            </p>
+            <p className="le-checkout-success-copy" style={{ marginTop: '0.5rem' }}>
+              {orderResult.pickup
+                ? "We\u2019ll be in touch with pickup details."
+                : "We\u2019ll be in touch with delivery details."}
+            </p>
+          </div>
+          <button
+            type="button"
+            className="le-checkout-submit"
+            onClick={closeCart}
+          >
+            Continue shopping
+          </button>
+        </div>
+      </>
+    );
+  }
+
+  return (
+    <>
+      <div className="le-checkout-drawer-header">
+        {onBack ? (
+          <button type="button" className="le-checkout-drawer-back" onClick={onBack}>
+            ← Bag
+          </button>
         ) : (
-          <>
-            <ul className="divide-y">
-              {items.map((i) => (
-                <li key={i.key} className="py-2 flex items-center gap-3">
-                  {i.image && <img src={i.image} alt="" className="w-12 h-12 object-cover rounded" />}
-                  <div className="flex-1">
-                    <div className="font-medium text-sm">{i.title}</div>
-                    <div className="text-xs text-neutral-600">${(i.unitPrice/100).toFixed(2)} each</div>
-                    <div className="flex items-center gap-2 mt-2">
-                      <button 
-                        type="button"
-                        onClick={() => updateQty(i.key, Math.max(0, i.qty - 1))} 
-                        className="h-7 w-7 rounded-full border border-neutral-300 text-sm font-semibold text-neutral-600 hover:border-neutral-400 hover:text-neutral-900"
-                        aria-label="Decrease quantity"
-                      >
-                        −
-                      </button>
-                      <span className="min-w-[2rem] text-center text-sm font-semibold">{i.qty}</span>
-                      <button 
-                        type="button"
-                        onClick={() => updateQty(i.key, i.qty + 1)} 
-                        className="h-7 w-7 rounded-full border border-neutral-300 text-sm font-semibold text-neutral-600 hover:border-neutral-400 hover:text-neutral-900"
-                        aria-label="Increase quantity"
-                      >
-                        +
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => remove(i.key)}
-                        className="ml-auto text-xs text-red-600 hover:text-red-800 underline"
-                        aria-label="Remove item"
-                      >
-                        Remove
-                      </button>
-                    </div>
-                  </div>
-                </li>
-              ))}
-            </ul>
-            <div className="mt-4 border-t pt-3">
-              <div className="flex justify-between items-center text-sm mb-2">
-                <span>Subtotal</span>
-                <span>${(subtotal/100).toFixed(2)}</span>
-              </div>
-              <button
-                type="button"
-                onClick={() => {
-                  if (window.confirm('Are you sure you want to clear your cart?')) {
-                    clear();
-                  }
-                }}
-                className="text-xs text-red-600 hover:text-red-800 underline"
-              >
-                Clear cart
-              </button>
-              <p className="text-xs text-neutral-500 mt-1">Tax calculated by Square.</p>
-            </div>
-            <form onSubmit={onSubmit} className="mt-4 space-y-3">
-              <div>
-                <label className="label" htmlFor="co-name">Name</label>
-                <input id="co-name" className="input w-full" value={name} onChange={(e) => setName(e.target.value)} required />
-              </div>
-              <div>
-                <label className="label" htmlFor="co-email">Email</label>
-                <input id="co-email" type="email" className="input w-full" value={email} onChange={(e) => setEmail(e.target.value)} required />
-              </div>
-              <div>
-                <label className="label" htmlFor="co-phone">Phone</label>
-                <input id="co-phone" type="tel" className="input w-full" value={phone} onChange={(e) => setPhone(e.target.value)} />
-              </div>
-              <div className="flex items-center gap-2 text-sm">
-                <input id="pickup" type="checkbox" checked={pickup} onChange={(e) => setPickup(e.target.checked)} />
-                <label htmlFor="pickup">Pickup / local service</label>
-              </div>
-              {!pickup && (
-                <div className="grid grid-cols-1 gap-2">
-                  <div>
-                    <label className="label" htmlFor="addr1">Address line 1</label>
-                    <input id="addr1" className="input w-full" value={address.line1} onChange={(e) => setAddress({ ...address, line1: e.target.value })} required />
-                  </div>
-                  <div>
-                    <label className="label" htmlFor="addr2">Address line 2 (optional)</label>
-                    <input id="addr2" className="input w-full" value={address.line2} onChange={(e) => setAddress({ ...address, line2: e.target.value })} />
-                  </div>
-                  <div className="grid grid-cols-2 gap-2">
-                    <div>
-                      <label className="label" htmlFor="city">City</label>
-                      <input id="city" className="input w-full" value={address.city} onChange={(e) => setAddress({ ...address, city: e.target.value })} required />
-                    </div>
-                    <div>
-                      <label className="label" htmlFor="state">State</label>
-                      <input id="state" className="input w-full" value={address.state} onChange={(e) => setAddress({ ...address, state: e.target.value })} required />
-                    </div>
-                  </div>
-                  <div>
-                    <label className="label" htmlFor="zip">Postal code</label>
-                    <input id="zip" className="input w-full" value={address.postal} onChange={(e) => setAddress({ ...address, postal: e.target.value })} required />
-                  </div>
-                </div>
-              )}
-              {/* Square Card placeholder: we’ll render Web Payments SDK after backend is wired */}
-              <div className="rounded-md border p-3 text-sm text-neutral-600">
-                <div id="sq-card" ref={cardElRef} className="min-h-[52px]" />
-              </div>
-              {error && <div className="text-sm text-red-600">{error}</div>}
-              <button type="submit" className="btn btn-primary w-full" disabled={processing}>{processing ? 'Processing…' : 'Checkout'}</button>
-            </form>
-          </>
+          <span className="le-checkout-drawer-title">Checkout</span>
         )}
+        <button
+          type="button"
+          className="le-cart-close"
+          onClick={closeCart}
+          aria-label="Close"
+        >✕</button>
       </div>
-    </div>
+
+      {items.length === 0 ? (
+        <p className="le-cart-empty" style={{ padding: '2rem 1.5rem' }}>Your bag is empty.</p>
+      ) : (
+        <div className="le-checkout-drawer" style={{ overflowY: 'auto', flex: '1 1 0' }}>
+
+          {/* Order summary */}
+          <div className="le-checkout-section" style={{ paddingTop: 0 }}>
+            <div className="le-checkout-section-title">Your order</div>
+            {items.map((item) => (
+              <div key={item.key} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: '0.5rem' }}>
+                <span style={{ fontSize: '0.8125rem', color: '#111' }}>
+                  {item.title}
+                  {item.qty > 1 && (
+                    <span style={{ fontFamily: 'ui-monospace, SF Mono, monospace', color: '#6b655d', marginLeft: '0.4rem' }}>
+                      ×{item.qty}
+                    </span>
+                  )}
+                </span>
+                <span style={{ fontFamily: 'ui-monospace, SF Mono, monospace', fontSize: '0.8125rem', color: '#111', whiteSpace: 'nowrap' }}>
+                  {fmt(item.unitPrice * item.qty)}
+                </span>
+              </div>
+            ))}
+            <div className="le-checkout-summary" style={{ marginTop: '0.5rem' }}>
+              <span className="le-checkout-summary-label">Subtotal</span>
+              <span className="le-checkout-summary-value">{fmt(subtotal)}</span>
+            </div>
+            <p style={{ fontSize: '0.7rem', color: '#6b655d', margin: '0.25rem 0 0', fontFamily: 'ui-monospace, SF Mono, monospace' }}>
+              Tax and fulfillment calculated at checkout.
+            </p>
+          </div>
+
+          <form onSubmit={onSubmit} className="le-checkout-form">
+
+            {/* Contact */}
+            <div className="le-checkout-section">
+              <div className="le-checkout-section-title">Contact</div>
+              <div className="le-checkout-field">
+                <label className="le-checkout-label" htmlFor="co-name">Name</label>
+                <input
+                  id="co-name"
+                  className="le-checkout-input"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  autoComplete="name"
+                  required
+                />
+              </div>
+              <div className="le-checkout-field">
+                <label className="le-checkout-label" htmlFor="co-email">Email</label>
+                <input
+                  id="co-email"
+                  type="email"
+                  className="le-checkout-input"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  autoComplete="email"
+                  required
+                />
+              </div>
+              <div className="le-checkout-field">
+                <label className="le-checkout-label" htmlFor="co-phone">Phone</label>
+                <input
+                  id="co-phone"
+                  type="tel"
+                  className="le-checkout-input"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  autoComplete="tel"
+                />
+              </div>
+            </div>
+
+            {/* Fulfillment */}
+            <div className="le-checkout-section">
+              <div className="le-checkout-section-title">Fulfillment</div>
+              <div className="le-checkout-pickup-selector" role="group" aria-label="Fulfillment method">
+                <button
+                  type="button"
+                  className={`le-checkout-pickup-pill${pickup ? ' is-selected' : ''}`}
+                  onClick={() => setPickup(true)}
+                  aria-pressed={pickup}
+                >
+                  Pickup
+                </button>
+                <button
+                  type="button"
+                  className={`le-checkout-pickup-pill${!pickup ? ' is-selected' : ''}`}
+                  onClick={() => setPickup(false)}
+                  aria-pressed={!pickup}
+                >
+                  Local delivery
+                </button>
+              </div>
+
+              {!pickup && (
+                <>
+                  <div className="le-checkout-field">
+                    <label className="le-checkout-label" htmlFor="addr1">Street address</label>
+                    <input
+                      id="addr1"
+                      className="le-checkout-input"
+                      value={address.line1}
+                      onChange={(e) => setAddress({ ...address, line1: e.target.value })}
+                      autoComplete="address-line1"
+                      required
+                    />
+                  </div>
+                  <div className="le-checkout-field">
+                    <label className="le-checkout-label" htmlFor="addr2">Unit / suite <span style={{ fontWeight: 400, textTransform: 'none', letterSpacing: 0 }}>(optional)</span></label>
+                    <input
+                      id="addr2"
+                      className="le-checkout-input"
+                      value={address.line2}
+                      onChange={(e) => setAddress({ ...address, line2: e.target.value })}
+                      autoComplete="address-line2"
+                    />
+                  </div>
+                  <div className="le-checkout-field-row">
+                    <div className="le-checkout-field">
+                      <label className="le-checkout-label" htmlFor="co-city">City</label>
+                      <input
+                        id="co-city"
+                        className="le-checkout-input"
+                        value={address.city}
+                        onChange={(e) => setAddress({ ...address, city: e.target.value })}
+                        autoComplete="address-level2"
+                        required
+                      />
+                    </div>
+                    <div className="le-checkout-field">
+                      <label className="le-checkout-label" htmlFor="co-state">State</label>
+                      <input
+                        id="co-state"
+                        className="le-checkout-input"
+                        value={address.state}
+                        onChange={(e) => setAddress({ ...address, state: e.target.value })}
+                        autoComplete="address-level1"
+                        required
+                      />
+                    </div>
+                  </div>
+                  <div className="le-checkout-field">
+                    <label className="le-checkout-label" htmlFor="co-zip">ZIP</label>
+                    <input
+                      id="co-zip"
+                      className="le-checkout-input"
+                      value={address.postal}
+                      onChange={(e) => setAddress({ ...address, postal: e.target.value })}
+                      autoComplete="postal-code"
+                      required
+                    />
+                  </div>
+                </>
+              )}
+            </div>
+
+            {/* Payment */}
+            <div className="le-checkout-section">
+              <div className="le-checkout-section-title">Payment</div>
+              <div className="le-checkout-payment">
+                <div className="le-checkout-card-container">
+                  <div id="sq-card" ref={cardElRef} />
+                </div>
+                <div className="le-checkout-trust">
+                  <svg className="le-checkout-trust-icon" viewBox="0 0 12 14" fill="none" aria-hidden="true">
+                    <rect x="1" y="5" width="10" height="8" rx="1" stroke="currentColor" strokeWidth="1.2"/>
+                    <path d="M4 5V4a2 2 0 0 1 4 0v1" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>
+                  </svg>
+                  Secured by Square
+                  <span className="le-checkout-trust-sep">·</span>
+                  Visa, MC, Amex, Discover
+                </div>
+              </div>
+            </div>
+
+            {error && <div className="le-checkout-error">{error}</div>}
+
+            <button
+              type="submit"
+              className="le-checkout-submit"
+              disabled={processing}
+            >
+              {processing ? 'Processing…' : `Pay ${fmt(subtotal)}`}
+            </button>
+
+            <p className="le-checkout-footnote">
+              A confirmation email will be sent after purchase.
+            </p>
+          </form>
+        </div>
+      )}
+    </>
   );
 }

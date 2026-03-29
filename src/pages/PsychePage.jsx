@@ -7,6 +7,7 @@ import { getOrCreateCheckoutAttemptId, clearCheckoutAttemptId } from '../lib/che
 import { trackEvent } from '../lib/trackEvent';
 import { SITE_NAME, SITE_URL } from '../config/siteMetadata';
 import '../styles/fullpage-demo-theme.css';
+import '../styles/le-checkout.css';
 
 const HERO_IMAGE = '/gallery/Screenshot%20%28172%29.png';
 const ORIGINAL_PRICE_CENTS = 9000;
@@ -290,7 +291,7 @@ const PsychePage = () => {
   };
 
   return (
-    <div className="fullpage-demo february-page psyche-page">
+    <div className="le-checkout-page psyche-page">
       <Helmet>
         <title>Buy Psyche Olive Oil — 3L Extra-Virgin | {SITE_NAME}</title>
         <meta
@@ -328,35 +329,42 @@ const PsychePage = () => {
         <script type="application/ld+json">{JSON.stringify(buildProductJsonLd())}</script>
       </Helmet>
 
-      <nav className="february-breadcrumb">
-        <a href="/">&lt;- Home</a>
+      <nav className="le-checkout-nav">
+        <a className="le-checkout-back" href="/">← Home</a>
       </nav>
 
-      <div className="february-grid">
-        <div className="february-col february-col-left">
-          <div className="february-hero-media psyche-hero-media">
-            <ImageZoom
-              src={HERO_IMAGE}
-              alt="Psyche olive oil bottle"
-              zoom="200"
-            />
+      <div className="le-checkout-layout">
+
+        {/* ── Left: product context ── */}
+        <div className="le-checkout-context">
+          <ImageZoom
+            src={HERO_IMAGE}
+            alt="Psyche olive oil 3-liter bag-in-box"
+            zoom="200"
+            className="le-checkout-product-img"
+          />
+
+          <div>
+            <h1 className="le-checkout-product-title">Psyche Olive Oil</h1>
+            <div className="le-checkout-price-row" style={{ marginTop: '0.5rem' }}>
+              <span className="le-checkout-price-original">${formatMoney(ORIGINAL_PRICE_CENTS)}</span>
+              <span className="le-checkout-price-current">${formatMoney(PRODUCT_PRICE_CENTS)}</span>
+              <span className="le-checkout-price-note">Only 1 remaining</span>
+            </div>
           </div>
-          <div className="february-hero-text">
+
+          <div className="le-checkout-product-meta">
             <p>
-              <strong>Psyche Olive Oil</strong>
+              3 Liters — plastic bag with aluminum lining
               <br />
-              3 Liters - plastic bag with aluminum lining
-              <br />
-              <a href="https://psycheoliveoil.com/" target="_blank" rel="noreferrer">
-                psycheoliveoil.com
-              </a>
+              <a href="https://psycheoliveoil.com/" target="_blank" rel="noreferrer">psycheoliveoil.com</a>
             </p>
             <p>
               Psyche is the highly regarded olive oil project by Ohio-born artist Theophilos Constantinou.
               Single-estate, late-season koroneiki olives from the Karambotsos family in Ampelofito, Greece.
               Very fresh, medium strength. We don't have polyphenol labs on this yet, but, from Constantinou:
             </p>
-            <blockquote className="psyche-quote">
+            <blockquote className="le-checkout-product-quote">
               PSYCHE is different because they are not competing with or comparing it to other olive oil
               brands. It is built on the principle of quality and transparency in the supply chain. It is
               a philosophy towards life. You are buying into a lifestyle, an ideology rooted in food as
@@ -367,275 +375,262 @@ const PsychePage = () => {
             </p>
             <p>
               <a href="https://www.aboutoliveoil.org/extra-virgin-alliance/eva-psyche" target="_blank" rel="noreferrer">
-                https://www.aboutoliveoil.org/extra-virgin-alliance/eva-psyche
+                EVA certification
               </a>
-              <br />
+              {' · '}
               <a href="https://www.instagram.com/psycheoliveoil" target="_blank" rel="noreferrer">
-                https://www.instagram.com/psycheoliveoil
+                @psycheoliveoil
               </a>
             </p>
           </div>
-        </div>
 
-        <div className="february-col february-col-right">
-          {status === 'success' && (
-            <div className="february-success">
-              <div className="february-success-title">Order confirmed</div>
-              <div className="february-success-copy">
-                Payment received. A confirmation email is on the way with your details.
+          {/* Fulfillment selector */}
+          <div>
+            <span className="le-checkout-selector-label">Fulfillment</span>
+            <div className="le-checkout-pills" role="group" aria-label="Fulfillment method">
+              <button
+                type="button"
+                className={`le-checkout-pill${fulfillment === 'delivery' ? ' is-selected' : ''}`}
+                onClick={() => { setFulfillment('delivery'); resetStatus(); }}
+                aria-pressed={fulfillment === 'delivery'}
+              >
+                Delivery
+                <span className="le-checkout-pill-sub">from 55113</span>
+              </button>
+              <button
+                type="button"
+                className={`le-checkout-pill${fulfillment === 'shipping' ? ' is-selected' : ''}`}
+                onClick={() => { setFulfillment('shipping'); resetStatus(); }}
+                aria-pressed={fulfillment === 'shipping'}
+              >
+                Shipping
+                <span className="le-checkout-pill-sub">Midwest, $10 flat</span>
+              </button>
+            </div>
+          </div>
+
+          {fulfillment === 'delivery' && (
+            <div>
+              <span className="le-checkout-selector-label">Delivery distance</span>
+              <div className="le-checkout-pills" role="group" aria-label="Delivery distance">
+                <button
+                  type="button"
+                  className={`le-checkout-pill${deliveryZone === 'local' ? ' is-selected' : ''}`}
+                  onClick={() => { setDeliveryZone('local'); resetStatus(); }}
+                  aria-pressed={deliveryZone === 'local'}
+                >
+                  Within 10 miles
+                  <span className="le-checkout-pill-sub">free</span>
+                </button>
+                <button
+                  type="button"
+                  className={`le-checkout-pill${deliveryZone === 'extended' ? ' is-selected' : ''}`}
+                  onClick={() => { setDeliveryZone('extended'); resetStatus(); }}
+                  aria-pressed={deliveryZone === 'extended'}
+                >
+                  Over 10 miles
+                  <span className="le-checkout-pill-sub">+$10</span>
+                </button>
               </div>
-              {paymentId && (
-                <div className="february-success-meta">Payment ID: {paymentId}</div>
-              )}
-              {emailStatus?.customer === false && (
-                <div className="february-warning">We could not send the customer email. Please contact us.</div>
-              )}
-              {emailStatus?.admin === false && (
-                <div className="february-warning">We could not send the admin email. Please contact us.</div>
-              )}
             </div>
           )}
 
-          <section className="february-card">
-            <div className="february-card-header">
-              <div>
-                <div className="february-card-title">Buy Psyche olive oil</div>
-                <div className="february-card-subtitle" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
-                  Price per bottle:{' '}
-                  <span style={{ textDecoration: 'line-through', color: '#999', fontSize: '0.95em' }}>${formatMoney(ORIGINAL_PRICE_CENTS)}</span>
-                  <span style={{ color: '#dc2626', fontWeight: 700, fontSize: '1.15em' }}>${formatMoney(PRODUCT_PRICE_CENTS)}</span>
-                </div>
-                <div className="february-card-subtitle" style={{ color: '#dc2626', fontStyle: 'italic', fontWeight: 600, marginTop: '0.25rem' }}>
-                  Only 1 remaining — last bottle!
-                </div>
-                <div className="february-card-subtitle">
-                  {fulfillment === 'shipping'
-                    ? 'Midwest shipping $10 flat.'
-                    : deliveryZone === 'extended'
-                      ? 'Delivery over 10 miles from 55113 is $10.'
-                      : 'Delivery within 10 miles of 55113 is free.'}
-                </div>
-              </div>
-              <div className="february-card-total">
-                <div className="february-card-total-label">Total</div>
-                <div className="february-card-total-value">${formatMoney(totalCents)}</div>
-                <div className="february-card-subtitle">
+          {/* Live total */}
+          <div className="le-checkout-summary">
+            <span className="le-checkout-summary-label">Total</span>
+            <div style={{ textAlign: 'right' }}>
+              <div className="le-checkout-summary-value">${formatMoney(totalCents)}</div>
+              {fulfillmentFeeCents > 0 && (
+                <div className="le-checkout-summary-breakdown">
                   ${formatMoney(subtotalCents)} + ${formatMoney(fulfillmentFeeCents)}
                 </div>
-              </div>
+              )}
             </div>
+          </div>
+        </div>
 
-            <form className="february-form" onSubmit={handleSubmit}>
-              <div className="february-form-grid">
-                <div>
-                  <label className="form-fun-label" htmlFor="psyche-quantity">Quantity <span className="required-indicator">*</span></label>
-                  <select
-                    id="psyche-quantity"
-                    className="input"
-                    value={quantity}
-                    onChange={(e) => {
-                      const next = Math.min(MAX_QUANTITY, Math.max(1, Number(e.target.value) || 1));
-                      setQuantity(next);
-                      resetStatus();
-                    }}
-                  >
-                    <option value={1}>1</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="form-fun-label" htmlFor="psyche-name">Name <span className="required-indicator">*</span></label>
+        {/* ── Right: checkout form ── */}
+        <div className="le-checkout-form-panel">
+
+          {status === 'success' ? (
+            <div className="le-checkout-success">
+              <div className="le-checkout-success-title">Order confirmed</div>
+              <p className="le-checkout-success-copy">
+                Payment received. A confirmation email is on the way with your details.
+              </p>
+              {paymentId && (
+                <div className="le-checkout-success-meta">Payment ID: {paymentId}</div>
+              )}
+              {emailStatus?.customer === false && (
+                <div className="le-checkout-warning">We could not send the customer email. Please contact us.</div>
+              )}
+              {emailStatus?.admin === false && (
+                <div className="le-checkout-warning">We could not send the admin email. Please contact us.</div>
+              )}
+            </div>
+          ) : (
+            <form className="le-checkout-form" onSubmit={handleSubmit} noValidate>
+
+              {/* Contact */}
+              <div className="le-checkout-section">
+                <div className="le-checkout-section-title">Contact</div>
+                <div className="le-checkout-field">
+                  <label className="le-checkout-label" htmlFor="psyche-name">Name</label>
                   <input
                     id="psyche-name"
-                    className="input"
+                    className="le-checkout-input"
                     value={customer.name}
-                    onChange={(e) => {
-                      setCustomer((prev) => ({ ...prev, name: e.target.value }));
-                      resetStatus();
-                    }}
+                    onChange={(e) => { setCustomer((prev) => ({ ...prev, name: e.target.value })); resetStatus(); }}
                     placeholder="Your full name"
+                    autoComplete="name"
                     required
                   />
                 </div>
-                <div>
-                  <label className="form-fun-label" htmlFor="psyche-email">Email <span className="required-indicator">*</span></label>
+                <div className="le-checkout-field">
+                  <label className="le-checkout-label" htmlFor="psyche-email">Email</label>
                   <input
                     id="psyche-email"
                     type="email"
-                    className="input"
+                    className="le-checkout-input"
                     value={customer.email}
-                    onChange={(e) => {
-                      setCustomer((prev) => ({ ...prev, email: e.target.value }));
-                      resetStatus();
-                    }}
+                    onChange={(e) => { setCustomer((prev) => ({ ...prev, email: e.target.value })); resetStatus(); }}
                     placeholder="you@example.com"
+                    autoComplete="email"
                     required
                   />
                 </div>
-                <div>
-                  <label className="form-fun-label" htmlFor="psyche-phone">Phone <span className="required-indicator">*</span></label>
+                <div className="le-checkout-field">
+                  <label className="le-checkout-label" htmlFor="psyche-phone">Phone</label>
                   <input
                     id="psyche-phone"
                     type="tel"
-                    className="input"
+                    className="le-checkout-input"
                     value={customer.phone}
-                    onChange={(e) => {
-                      setCustomer((prev) => ({ ...prev, phone: formatPhone(e.target.value) }));
-                      resetStatus();
-                    }}
+                    onChange={(e) => { setCustomer((prev) => ({ ...prev, phone: formatPhone(e.target.value) })); resetStatus(); }}
+                    autoComplete="tel"
                     required
                   />
                 </div>
-                <div>
-                  <label className="form-fun-label" htmlFor="psyche-fulfillment">Fulfillment <span className="required-indicator">*</span></label>
-                  <select
-                    id="psyche-fulfillment"
-                    className="input"
-                    value={fulfillment}
-                    onChange={(e) => {
-                      setFulfillment(e.target.value);
-                      resetStatus();
-                    }}
-                  >
-                    <option value="delivery">Delivery (from 55113)</option>
-                    <option value="shipping">Midwest shipping ($10 flat)</option>
-                  </select>
-                </div>
-                {fulfillment === 'delivery' && (
-                  <div>
-                    <label className="form-fun-label" htmlFor="psyche-delivery-zone">Delivery distance <span className="required-indicator">*</span></label>
-                    <select
-                      id="psyche-delivery-zone"
-                      className="input"
-                      value={deliveryZone}
-                      onChange={(e) => {
-                        setDeliveryZone(e.target.value);
-                        resetStatus();
-                      }}
-                    >
-                      <option value="local">Within 10 miles of 55113 (free)</option>
-                      <option value="extended">Over 10 miles (+$10)</option>
-                    </select>
-                  </div>
-                )}
-                <div className="february-form-span">
-                  <label className="form-fun-label" htmlFor="psyche-address1">Address <span className="required-indicator">*</span></label>
+              </div>
+
+              {/* Deliver to */}
+              <div className="le-checkout-section">
+                <div className="le-checkout-section-title">Deliver to</div>
+                <div className="le-checkout-field">
+                  <label className="le-checkout-label" htmlFor="psyche-address1">Street address</label>
                   <input
                     id="psyche-address1"
-                    className="input"
+                    className="le-checkout-input"
                     value={address.line1}
-                    onChange={(e) => {
-                      setAddress((prev) => ({ ...prev, line1: e.target.value }));
-                      resetStatus();
-                    }}
+                    onChange={(e) => { setAddress((prev) => ({ ...prev, line1: e.target.value })); resetStatus(); }}
                     placeholder="Street address"
+                    autoComplete="address-line1"
                     required
                   />
                 </div>
-                <div className="february-form-span">
+                <div className="le-checkout-field">
+                  <label className="le-checkout-label" htmlFor="psyche-address2">Unit / suite <span style={{ fontWeight: 400, textTransform: 'none', letterSpacing: 0 }}>(optional)</span></label>
                   <input
                     id="psyche-address2"
-                    className="input"
+                    className="le-checkout-input"
                     value={address.line2}
-                    onChange={(e) => {
-                      setAddress((prev) => ({ ...prev, line2: e.target.value }));
-                      resetStatus();
-                    }}
-                    placeholder="Unit, suite, etc. (optional)"
+                    onChange={(e) => { setAddress((prev) => ({ ...prev, line2: e.target.value })); resetStatus(); }}
+                    placeholder="Apt, suite, etc."
+                    autoComplete="address-line2"
                   />
                 </div>
-                <div>
-                  <label className="form-fun-label" htmlFor="psyche-city">City <span className="required-indicator">*</span></label>
-                  <input
-                    id="psyche-city"
-                    className="input"
-                    value={address.city}
-                    onChange={(e) => {
-                      setAddress((prev) => ({ ...prev, city: e.target.value }));
-                      resetStatus();
-                    }}
-                    placeholder="Saint Paul"
-                    required
-                  />
+                <div className="le-checkout-field-row">
+                  <div className="le-checkout-field">
+                    <label className="le-checkout-label" htmlFor="psyche-city">City</label>
+                    <input
+                      id="psyche-city"
+                      className="le-checkout-input"
+                      value={address.city}
+                      onChange={(e) => { setAddress((prev) => ({ ...prev, city: e.target.value })); resetStatus(); }}
+                      placeholder="Saint Paul"
+                      autoComplete="address-level2"
+                      required
+                    />
+                  </div>
+                  <div className="le-checkout-field">
+                    <label className="le-checkout-label" htmlFor="psyche-postal">ZIP</label>
+                    <input
+                      id="psyche-postal"
+                      className="le-checkout-input"
+                      value={address.postal}
+                      onChange={(e) => { setAddress((prev) => ({ ...prev, postal: formatPostal(e.target.value) })); resetStatus(); }}
+                      placeholder="55113"
+                      autoComplete="postal-code"
+                      required
+                    />
+                  </div>
                 </div>
-                <div>
-                  <label className="form-fun-label" htmlFor="psyche-state">State <span className="required-indicator">*</span></label>
-                  <input
-                    id="psyche-state"
-                    className="input"
-                    value={address.state}
-                    onChange={(e) => {
-                      setAddress((prev) => ({ ...prev, state: e.target.value }));
-                      resetStatus();
-                    }}
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="form-fun-label" htmlFor="psyche-postal">ZIP <span className="required-indicator">*</span></label>
-                  <input
-                    id="psyche-postal"
-                    className="input"
-                    value={address.postal}
-                    onChange={(e) => {
-                      setAddress((prev) => ({ ...prev, postal: formatPostal(e.target.value) }));
-                      resetStatus();
-                    }}
-                    placeholder="55113"
-                    required
-                  />
-                </div>
-                <div className="february-form-span">
-                  <label className="form-fun-label" htmlFor="psyche-notes">Delivery or shipping notes</label>
+                <div className="le-checkout-field">
+                  <label className="le-checkout-label" htmlFor="psyche-notes">Delivery notes <span style={{ fontWeight: 400, textTransform: 'none', letterSpacing: 0 }}>(optional)</span></label>
                   <textarea
                     id="psyche-notes"
-                    className="textarea february-textarea-lg"
-                    rows={4}
+                    className="le-checkout-textarea"
+                    rows={3}
                     value={deliveryNotes}
-                    onChange={(e) => {
-                      setDeliveryNotes(e.target.value);
-                      resetStatus();
-                    }}
+                    onChange={(e) => { setDeliveryNotes(e.target.value); resetStatus(); }}
                     placeholder="Gate codes, preferred drop-off, etc."
                   />
                 </div>
-                <div className="february-form-span">
-                  <label className="form-fun-label">Payment</label>
-                  <div className="february-payment">
-                    {/* Express pay (Apple Pay / Google Pay) — shown when available */}
-                    <div
-                      id="psyche-express-pay"
-                      style={{ display: expressPayAvailable ? 'block' : 'none', marginBottom: '0.75rem' }}
-                    />
-                    {expressPayAvailable && (
-                      <div className="february-payment-status" style={{ textAlign: 'center', margin: '0.5rem 0', fontSize: '0.75rem', color: 'var(--color-text-muted, #888)' }}>
-                        — or pay with card —
-                      </div>
-                    )}
-                    {/* Manual card form — always rendered so Square can attach */}
-                    <div id="psyche-card-container" className="february-card-container" />
-                    {loadingScript && <div className="february-payment-status">Loading secure payment form...</div>}
-                    {cardError && <div className="february-payment-error">{cardError}</div>}
+              </div>
+
+              {/* Payment */}
+              <div className="le-checkout-section">
+                <div className="le-checkout-section-title">Payment</div>
+                <div className="le-checkout-payment">
+                  {/* Express pay — Apple Pay / Google Pay */}
+                  <div
+                    id="psyche-express-pay"
+                    className="le-checkout-express"
+                    style={{ display: expressPayAvailable ? 'block' : 'none' }}
+                  />
+                  {expressPayAvailable && (
+                    <div className="le-checkout-express-divider">or pay with card</div>
+                  )}
+                  {/* Card iframe */}
+                  <div className="le-checkout-card-container">
+                    <div id="psyche-card-container" />
+                  </div>
+                  {loadingScript && (
+                    <div className="le-checkout-card-loading">Loading secure payment form…</div>
+                  )}
+                  {cardError && (
+                    <div className="le-checkout-error">{cardError}</div>
+                  )}
+                  {/* Trust row */}
+                  <div className="le-checkout-trust">
+                    <svg className="le-checkout-trust-icon" viewBox="0 0 12 14" fill="none" aria-hidden="true">
+                      <rect x="1" y="5" width="10" height="8" rx="1" stroke="currentColor" strokeWidth="1.2"/>
+                      <path d="M4 5V4a2 2 0 0 1 4 0v1" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>
+                    </svg>
+                    Secured by Square
+                    <span className="le-checkout-trust-sep">·</span>
+                    Visa, Mastercard, Amex, Discover
                   </div>
                 </div>
               </div>
-              {error && <div className="february-error">{error}</div>}
+
+              {error && <div className="le-checkout-error">{error}</div>}
+
               <button
                 type="submit"
-                className="february-submit"
+                className="le-checkout-submit"
                 disabled={!canSubmit() || status === 'submitting' || status === 'success'}
               >
-                {status === 'submitting' ? 'Processing...' : `Pay $${formatMoney(totalCents)}`}
+                {status === 'submitting' ? 'Processing…' : `Pay $${formatMoney(totalCents)}`}
               </button>
-              <div className="required-note">
-                <span className="required-indicator">*</span>Required fields
-              </div>
-              <div className="february-form-footnote">
-                Payments are processed securely by Square. A confirmation email will be sent after purchase.
-              </div>
-            </form>
-          </section>
 
+              <p className="le-checkout-footnote">
+                A confirmation email will be sent after purchase.
+              </p>
+            </form>
+          )}
         </div>
+
       </div>
     </div>
   );

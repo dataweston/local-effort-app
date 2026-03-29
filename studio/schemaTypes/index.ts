@@ -37,6 +37,7 @@ import newsletter from './newsletter'
 import membershipTier from './membershipTier'
 import activityPubFollower from './activityPubFollower'
 import activityPubDelivery from './activityPubDelivery'
+import decisionPriority from './decisionPriority'
 
 export const schemaTypes = [
 	page,
@@ -77,6 +78,7 @@ export const schemaTypes = [
 	emailOutbox,
 	emailEvent,
 	cloudinaryImage,
+	decisionPriority,
 ]
 
 export default schemaTypes;

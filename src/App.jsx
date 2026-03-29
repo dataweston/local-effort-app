@@ -8,6 +8,7 @@ import { Header } from './components/layout/Header';
 import { Footer } from './components/layout/Footer';
 import { LoadingSpinner } from './components/layout/LoadingSpinner';
 import { AnimatedPage } from './components/layout/AnimatedPage';
+import { DecisionWelcomeBanner } from './components/decision/DecisionWelcomeBanner';
 import { CartProvider } from './store/cart/CartContext';
 import { ToastProvider } from './components/common/ToastProvider';
 import { DefaultSeo } from './components/seo/DefaultSeo';
@@ -41,9 +42,11 @@ const SmallEventsAdminRequestsPage = lazy(() => import('./pages/SmallEventsAdmin
 const SmallEventsAdminAvailabilityPage = lazy(() => import('./pages/SmallEventsAdminAvailabilityPage'));
 const WeeklyOrderPage = lazy(() => import('./pages/WeeklyOrderPage'));
 const AdminWeeklyOrderPage = lazy(() => import('./pages/AdminWeeklyOrderPage'));
+const AdminDecisionPreviewPage = lazy(() => import('./pages/AdminDecisionPreviewPage'));
 const WeeklyDemoPage = lazy(() => import('./pages/WeeklyDemoPage'));
 const SubscriberPortalPage = lazy(() => import('./pages/SubscriberPortalPage'));
 const CatherineSchedulePage = lazy(() => import('./pages/CatherineSchedulePage'));
+const BookPage = lazy(() => import('./pages/BookPage'));
 
 const AppContent = () => {
   const location = useLocation();
@@ -80,6 +83,7 @@ const AppContent = () => {
               paddingTop: !hideHeader && !isFullPageHome ? '5rem' : 0,
             }}
           >
+          <DecisionWelcomeBanner />
           <Suspense fallback={<LoadingSpinner />}>
             <AnimatePresence mode="wait">
               <Routes location={location} key={location.pathname}>
@@ -227,6 +231,14 @@ const AppContent = () => {
                   }
                 />
                 <Route
+                  path="/admin/decision-preview"
+                  element={
+                    <AnimatedPage>
+                      <AdminDecisionPreviewPage />
+                    </AnimatedPage>
+                  }
+                />
+                <Route
                   path="/weekly-order/portal"
                   element={
                     <AnimatedPage>
@@ -274,7 +286,15 @@ const AppContent = () => {
                     </AnimatedPage>
                   }
                 />
-                <Route path="/events" element={<Navigate to="/" replace />} />
+                <Route path="/events" element={<Navigate to="/book" replace />} />
+                <Route
+                  path="/book"
+                  element={
+                    <AnimatedPage>
+                      <BookPage />
+                    </AnimatedPage>
+                  }
+                />
                 <Route
                   path="/weekly"
                   element={
