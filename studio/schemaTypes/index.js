@@ -1,5 +1,83 @@
-// schemas/index.js
-// This file imports all your schemas and exports them as an array.
+import page from './page'
+import siteSettings from './siteSettings'
+import person from './person'
+import service from './service'
+import menu from './menu'
+import menuSection from './menuSection'
+import pricingFaq from './pricingFaq'
+import crowdfundingCampaign from './crowdfundingCampaign'
+import campaignUpdate from './campaignUpdate'
+import rewardTier from './rewardTier'
+import partner from './partner'
+import mealPrepMenu from './mealPrepMenu'
+import testimonial from './testimonial'
+import contact from './contact'
+import message from './message'
+import campaign from './campaign'
+import pushSubscription from './pushSubscription'
+import menuItems from './menuItems'
+import happyMondayPage from './happyMondayPage'
+import happyMondaySalePage from './happyMondaySalePage'
+import tinyDinerSalePage from './tinyDinerSalePage'
+import product from './product'
+import salePage from './salePage'
+import publicEvent from './publicEvent'
+import referralParticipant from './referralParticipant'
+import blogPost from './blogPost'
+import cloudinaryImage from './objects/cloudinaryImage'
+import sale from './sale'
+import saleProduct from './objects/saleProduct'
+import saleFaq from './objects/saleFaq'
+import release from './release'
+import emailSubscriber from './emailSubscriber'
+import emailOutbox from './emailOutbox'
+import emailEvent from './emailEvent'
+import newsletter from './newsletter'
+import membershipTier from './membershipTier'
+import activityPubFollower from './activityPubFollower'
+import activityPubDelivery from './activityPubDelivery'
+import decisionPriority from './decisionPriority'
 
-// Redirect JS consumers to the TypeScript index to avoid divergence between local and hosted builds.
-export { schemaTypes as default, schemaTypes } from './index.ts'
+export const schemaTypes = [
+  page,
+  siteSettings,
+  person,
+  service,
+  menu,
+  menuSection,
+  pricingFaq,
+  crowdfundingCampaign,
+  rewardTier,
+  campaignUpdate,
+  partner,
+  mealPrepMenu,
+  testimonial,
+  contact,
+  message,
+  campaign,
+  pushSubscription,
+  product,
+  sale,
+  saleProduct,
+  saleFaq,
+  menuItems,
+  happyMondayPage,
+  happyMondaySalePage,
+  tinyDinerSalePage,
+  salePage,
+  publicEvent,
+  referralParticipant,
+  blogPost,
+  release,
+  newsletter,
+  membershipTier,
+  activityPubFollower,
+  activityPubDelivery,
+  emailSubscriber,
+  emailOutbox,
+  emailEvent,
+  cloudinaryImage,
+  decisionPriority,
+]
+
+export default schemaTypes

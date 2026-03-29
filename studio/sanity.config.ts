@@ -5,7 +5,7 @@ import type {Template} from 'sanity'
 import {structureTool} from 'sanity/structure'
 import {visionTool} from '@sanity/vision'
 import {iconPicker} from 'sanity-plugin-icon-picker'
-import {schemaTypes} from './schemaTypes'
+import {schemaTypes} from './schemaTypes/index.js'
 
 export default defineConfig({
   name: 'default',
