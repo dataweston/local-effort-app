@@ -43,6 +43,7 @@ function normalizePriorityDoc(priority, existingId) {
     weight: priority.weight,
     strategy: priority.strategy,
     reasons: Array.isArray(priority.reasons) ? priority.reasons : [],
+    audienceTags: Array.isArray(priority.audienceTags) ? priority.audienceTags : [],
     messageFacts: Array.isArray(priority.messageFacts) ? priority.messageFacts : [],
     ctaLabel: priority.cta?.label || null,
     ctaHref: priority.cta?.href || null,
@@ -50,7 +51,22 @@ function normalizePriorityDoc(priority, existingId) {
       pageTypes: Array.isArray(priority.match?.pageTypes) ? priority.match.pageTypes : [],
       pathPrefixes: Array.isArray(priority.match?.pathPrefixes) ? priority.match.pathPrefixes : [],
       acquisitionSources: Array.isArray(priority.match?.acquisitionSources) ? priority.match.acquisitionSources : [],
+      campaignClasses: Array.isArray(priority.match?.campaignClasses) ? priority.match.campaignClasses : [],
+      commercialModes: Array.isArray(priority.match?.commercialModes) ? priority.match.commercialModes : [],
     },
+    activeWindow: priority.activeWindow
+      ? {
+          startAt: priority.activeWindow.startAt || null,
+          endAt: priority.activeWindow.endAt || null,
+        }
+      : null,
+    suppression: priority.suppression
+      ? {
+          pathPrefixes: Array.isArray(priority.suppression.pathPrefixes) ? priority.suppression.pathPrefixes : [],
+          acquisitionSources: Array.isArray(priority.suppression.acquisitionSources) ? priority.suppression.acquisitionSources : [],
+          commercialModes: Array.isArray(priority.suppression.commercialModes) ? priority.suppression.commercialModes : [],
+        }
+      : null,
   };
 }
 

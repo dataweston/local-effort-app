@@ -1,14 +1,14 @@
 [
   {
     "id": "home-small-events",
-    "label": "Guide planners toward small-events intake",
-    "weight": 0.9,
+    "label": "Guide wholesale and planner traffic toward small-events intake",
+    "weight": 0.95,
     "active": true,
     "strategy": "orient",
-    "reasons": ["service-fit", "b2b-path"],
+    "reasons": ["service-fit", "b2b-path", "acquisition-fit"],
     "messageFacts": [
-      "Small events are the fastest place to start for planning support and tailored estimates.",
-      "The small-events flow is built for hosts, teams, and event planners."
+      "Small events are the fastest place to start when you need planning support, headcount coordination, or a tailored estimate.",
+      "The small-events flow is built for hosts, teams, and wholesale-style inquiries that need specifics before checkout."
     ],
     "cta": {
       "label": "Plan an event",
@@ -16,7 +16,92 @@
     },
     "match": {
       "pageTypes": ["home"],
-      "pathPrefixes": ["/"]
+      "pathPrefixes": ["/"],
+      "commercialModes": ["b2b", "planner"]
+    }
+  },
+  {
+    "id": "home-subscriber-return",
+    "label": "Guide subscriber and retention traffic toward weekly ordering",
+    "weight": 0.93,
+    "active": true,
+    "strategy": "reassure",
+    "reasons": ["retention-path", "repeat-flow"],
+    "messageFacts": [
+      "Returning customers should get back to the weekly ordering flow quickly instead of starting from scratch.",
+      "Subscriber and email traffic usually has clearer intent around menu confirmation than broad browsing."
+    ],
+    "cta": {
+      "label": "Open weekly order",
+      "href": "/weekly-order"
+    },
+    "match": {
+      "pageTypes": ["home"],
+      "pathPrefixes": ["/"],
+      "commercialModes": ["subscriber"]
+    }
+  },
+  {
+    "id": "home-consumer-sale-path",
+    "label": "Guide consumer home traffic into the current sale path",
+    "weight": 0.91,
+    "active": true,
+    "strategy": "promote",
+    "reasons": ["consumer-path", "campaign-fit"],
+    "messageFacts": [
+      "If the visitor is browsing for something to order now, the current sale is the fastest path into available items.",
+      "Search and paid consumer traffic should see the clearest buying path before broader orientation copy."
+    ],
+    "cta": {
+      "label": "Shop the sale",
+      "href": "/sale"
+    },
+    "match": {
+      "pageTypes": ["home"],
+      "pathPrefixes": ["/"],
+      "commercialModes": ["consumer"]
+    }
+  },
+  {
+    "id": "home-general-orientation",
+    "label": "Give unknown home traffic a neutral first step",
+    "weight": 0.72,
+    "active": true,
+    "strategy": "orient",
+    "reasons": ["home-orientation", "unknown-intent"],
+    "messageFacts": [
+      "When intent is still unclear, the cleanest next step is to show a concrete shopping path instead of over-explaining.",
+      "Unknown home traffic should get one clear action rather than a crowded set of choices."
+    ],
+    "cta": {
+      "label": "See what is available",
+      "href": "/sale"
+    },
+    "match": {
+      "pageTypes": ["home"],
+      "pathPrefixes": ["/"],
+      "commercialModes": ["unknown"]
+    }
+  },
+  {
+    "id": "sale-subscriber-return",
+    "label": "Redirect subscriber traffic from sale pages back to weekly ordering",
+    "weight": 0.92,
+    "active": true,
+    "strategy": "reassure",
+    "reasons": ["subscriber-context", "repeat-flow"],
+    "messageFacts": [
+      "If this visitor already behaves like a subscriber, weekly ordering is usually the better path than browsing sale pages.",
+      "Returning customers benefit from getting back to the menu and account context quickly."
+    ],
+    "cta": {
+      "label": "Open weekly order",
+      "href": "/weekly-order"
+    },
+    "match": {
+      "pathPrefixes": ["/sale"],
+      "pageTypes": ["sale", "commerce"],
+      "commercialModes": ["subscriber"]
     }
   },
   {
@@ -36,7 +121,8 @@
     },
     "match": {
       "pathPrefixes": ["/sale"],
-      "pageTypes": ["sale", "commerce"]
+      "pageTypes": ["sale", "commerce"],
+      "commercialModes": ["consumer", "unknown"]
     }
   },
   {
@@ -56,7 +142,8 @@
     },
     "match": {
       "pathPrefixes": ["/weekly-order"],
-      "pageTypes": ["commerce"]
+      "pageTypes": ["commerce"],
+      "commercialModes": ["subscriber", "unknown"]
     }
   },
   {
@@ -76,7 +163,8 @@
     },
     "match": {
       "pathPrefixes": ["/pizza-party"],
-      "pageTypes": ["service"]
+      "pageTypes": ["service"],
+      "commercialModes": ["planner", "b2b", "unknown"]
     }
   },
   {
@@ -96,7 +184,8 @@
     },
     "match": {
       "pathPrefixes": ["/psyche", "/product/"],
-      "pageTypes": ["product"]
+      "pageTypes": ["product"],
+      "commercialModes": ["consumer", "unknown"]
     }
   }
 ]

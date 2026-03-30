@@ -48,12 +48,20 @@ function inferCampaignClass({ source, medium, campaign, referrer } = {}) {
 
 function inferCommercialMode({ path, pageType, routeFamily, acquisition = {}, visitor = {}, session = {} } = {}) {
   const pathname = normalizePath(path);
+  const acquisitionSource = String(acquisition.source || '').toLowerCase();
+  const campaignClass = String(acquisition.campaignClass || inferCampaignClass(acquisition) || '').toLowerCase();
   if (pathname.startsWith('/weekly-order')) return 'subscriber';
   if (pathname.startsWith('/pizza-party') || pathname.includes('small-events')) return 'b2b';
+  if (acquisitionSource.includes('wholesale')) return 'b2b';
   if (pageType === 'service' || routeFamily === 'events') return 'planner';
   if (pageType === 'product' || pageType === 'sale' || routeFamily === 'catalog' || routeFamily === 'campaign') return 'consumer';
   if (visitor.isReturning && Number(session.cartItemCount || 0) > 0) return 'subscriber';
-  if (String(acquisition.source || '').toLowerCase().includes('wholesale')) return 'b2b';
+  if (campaignClass === 'retention' || acquisitionSource.includes('newsletter') || acquisitionSource.includes('email')) {
+    return 'subscriber';
+  }
+  if (campaignClass === 'paid-acquisition' || campaignClass === 'promotion' || campaignClass === 'search') {
+    return 'consumer';
+  }
   return 'unknown';
 }
 

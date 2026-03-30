@@ -19,7 +19,9 @@ const DEFAULT_FORM = {
   deviceType: 'desktop',
   geoRegion: '',
   language: 'en-US',
+  commercialMode: '',
   cartItemCount: 0,
+  viewedProductSlugs: '',
   maxWords: 35,
   tone: 'helpful, concise, non-pushy',
   variantOverride: '',
@@ -48,6 +50,61 @@ async function fetchJson(url, options = {}) {
 function formatJson(value) {
   return JSON.stringify(value, null, 2);
 }
+
+function parseCommaList(value) {
+  return String(value || '')
+    .split(',')
+    .map((entry) => entry.trim())
+    .filter(Boolean);
+}
+
+function buildObservedSignalChips(preview) {
+  const context = preview?.context;
+  if (!context) return [];
+
+  const chips = [
+    `path:${context.page.path}`,
+    `page:${context.page.type || 'unknown'}`,
+  ];
+
+  if (context.acquisition?.source) chips.push(`source:${context.acquisition.source}`);
+  if (context.acquisition?.campaign) chips.push(`campaign:${context.acquisition.campaign}`);
+  if (context.acquisition?.medium) chips.push(`medium:${context.acquisition.medium}`);
+  if (context.visitor?.deviceType) chips.push(`device:${context.visitor.deviceType}`);
+  if (context.visitor?.language) chips.push(`language:${context.visitor.language}`);
+  chips.push(`cart_items:${context.session?.cartItemCount || 0}`);
+
+  for (const slug of context.session?.viewedProductSlugs || []) {
+    chips.push(`viewed:${slug}`);
+  }
+
+  return chips;
+}
+
+function buildInferredSignalChips(preview) {
+  const context = preview?.context;
+  const selected = preview?.selected;
+  if (!context || !selected) return [];
+
+  const chips = [];
+
+  if (context.acquisition?.campaignClass) chips.push(`campaign_class:${context.acquisition.campaignClass}`);
+  if (context.visitor?.commercialMode) chips.push(`commercial_mode:${context.visitor.commercialMode}`);
+  if (context.session?.depth) chips.push(`session_depth:${context.session.depth}`);
+  chips.push(`high_intent:${context.session?.hasHighIntent ? 'yes' : 'no'}`);
+
+  for (const hypothesis of selected.visitorHypotheses || []) {
+    chips.push(`hypothesis:${hypothesis.label} (${Math.round((hypothesis.confidence || 0) * 100)}%)`);
+  }
+
+  return chips;
+}
+
+const UNUSED_SIGNAL_CHIPS = [
+  'No Google Analytics / GA4 import',
+  'No ad-platform audience sync',
+  'No demographic enrichment layer',
+];
 
 function renderMatchState(detail) {
   if (detail?.matched) return 'matched';
@@ -109,9 +166,11 @@ const AdminDecisionPreviewPage = () => {
           deviceType: form.deviceType || undefined,
           geoRegion: form.geoRegion || undefined,
           language: form.language || undefined,
+          commercialMode: form.commercialMode || undefined,
         },
         session: {
           cartItemCount: Number(form.cartItemCount) || 0,
+          viewedProductSlugs: parseCommaList(form.viewedProductSlugs),
         },
         constraints: {
           maxWords: Number(form.maxWords) || undefined,
@@ -204,6 +263,8 @@ const AdminDecisionPreviewPage = () => {
 
   const matchedPriorities = preview?.debug?.priorityEvaluations?.filter((entry) => entry.matched) || [];
   const unmatchedPriorities = preview?.debug?.priorityEvaluations?.filter((entry) => !entry.matched) || [];
+  const observedSignals = useMemo(() => buildObservedSignalChips(preview), [preview]);
+  const inferredSignals = useMemo(() => buildInferredSignalChips(preview), [preview]);
 
   if (loading) {
     return (
@@ -361,8 +422,16 @@ const AdminDecisionPreviewPage = () => {
                   <input value={form.language} onChange={(event) => updateField('language', event.target.value)} />
                 </label>
                 <label>
+                  <span>Commercial mode</span>
+                  <input value={form.commercialMode} onChange={(event) => updateField('commercialMode', event.target.value)} placeholder="consumer | subscriber | b2b | planner" />
+                </label>
+                <label>
                   <span>Cart items</span>
                   <input type="number" min="0" value={form.cartItemCount} onChange={(event) => updateField('cartItemCount', event.target.value)} />
+                </label>
+                <label>
+                  <span>Viewed product slugs</span>
+                  <input value={form.viewedProductSlugs} onChange={(event) => updateField('viewedProductSlugs', event.target.value)} placeholder="slug-one, slug-two" />
                 </label>
                 <label>
                   <span>Max words</span>
@@ -389,6 +458,7 @@ const AdminDecisionPreviewPage = () => {
                 <Button onClick={handlePreview} disabled={loadingPreview}>{loadingPreview ? 'Running...' : 'Run preview'}</Button>
                 <Button variant="outline" onClick={() => setForm(DEFAULT_FORM)}>Reset fields</Button>
               </div>
+              <p className="text-sm text-slate-600">This preview uses request payload fields, browser-style context, cart state, and decision-event telemetry. It does not read Google Analytics.</p>
             </CardContent>
           </Card>
 
@@ -441,6 +511,46 @@ const AdminDecisionPreviewPage = () => {
                   </>
                 ) : (
                   <p className="text-sm text-slate-600">Run a preview to inspect the current decision output.</p>
+                )}
+              </CardContent>
+            </Card>
+
+            <Card className="decision-preview-admin-panel">
+              <CardHeader>
+                <CardTitle>How It Reads The Visitor</CardTitle>
+                <CardDescription>Observed facts are normalized first, then the engine infers higher-level signals before matching priorities.</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {preview ? (
+                  <>
+                    <div>
+                      <div className="decision-preview-admin-section-label">Observed inputs</div>
+                      <div className="decision-preview-admin-chip-row">
+                        {observedSignals.map((signal) => (
+                          <span key={signal} className="decision-preview-admin-chip">{signal}</span>
+                        ))}
+                      </div>
+                    </div>
+                    <div>
+                      <div className="decision-preview-admin-section-label">Inferred signals</div>
+                      <div className="decision-preview-admin-chip-row">
+                        {inferredSignals.length ? inferredSignals.map((signal) => (
+                          <span key={signal} className="decision-preview-admin-chip is-accent">{signal}</span>
+                        )) : <span className="decision-preview-admin-chip is-muted">No inferred signals</span>}
+                      </div>
+                    </div>
+                    <div>
+                      <div className="decision-preview-admin-section-label">Explicitly not used</div>
+                      <div className="decision-preview-admin-chip-row">
+                        {UNUSED_SIGNAL_CHIPS.map((signal) => (
+                          <span key={signal} className="decision-preview-admin-chip is-muted">{signal}</span>
+                        ))}
+                      </div>
+                    </div>
+                    <p className="text-sm text-slate-600">The backend decides from normalized request context and Sanity priorities. GA/GA4 is not part of the decision payload anywhere in this flow.</p>
+                  </>
+                ) : (
+                  <p className="text-sm text-slate-600">Run a preview to see which signals are directly observed versus inferred.</p>
                 )}
               </CardContent>
             </Card>

@@ -4,6 +4,7 @@ import { useCart } from '../../store/cart/CartContext';
 import '../../styles/decision-welcome-banner.css';
 
 const ELIGIBLE_PREFIXES = ['/', '/sale', '/weekly-order', '/pizza-party', '/psyche', '/product/'];
+const VIEWED_PRODUCTS_KEY = 'le_decision_viewed_products';
 
 function isEligiblePath(pathname) {
   if (!pathname) return false;
@@ -48,6 +49,38 @@ function markReturningState() {
   }
 }
 
+function inferViewedProductSlug(pathname) {
+  if (!pathname) return null;
+  if (pathname === '/psyche') return 'psyche';
+  if (!pathname.startsWith('/product/')) return null;
+  const [, productSlug] = pathname.split('/').filter(Boolean);
+  return productSlug || null;
+}
+
+function readViewedProducts() {
+  try {
+    const raw = window.sessionStorage.getItem(VIEWED_PRODUCTS_KEY);
+    const parsed = raw ? JSON.parse(raw) : [];
+    return Array.isArray(parsed) ? parsed.filter(Boolean) : [];
+  } catch (_err) {
+    return [];
+  }
+}
+
+function rememberViewedProduct(pathname) {
+  const current = inferViewedProductSlug(pathname);
+  const existing = readViewedProducts();
+  if (!current) return existing;
+
+  const next = [current, ...existing.filter((entry) => entry !== current)].slice(0, 5);
+  try {
+    window.sessionStorage.setItem(VIEWED_PRODUCTS_KEY, JSON.stringify(next));
+  } catch (_err) {
+    // ignore storage failures
+  }
+  return next;
+}
+
 async function postDecisionEvent(payload) {
   try {
     await fetch('/api/decision/events', {
@@ -89,6 +122,7 @@ export function DecisionWelcomeBanner() {
     const params = new URLSearchParams(location.search || '');
     const sessionId = getSessionId();
     const returning = readReturningState();
+    const viewedProductSlugs = rememberViewedProduct(location.pathname);
     markReturningState();
 
     const payload = {
@@ -109,6 +143,7 @@ export function DecisionWelcomeBanner() {
       },
       session: {
         cartItemCount: totalQty || 0,
+        viewedProductSlugs,
       },
       constraints: {
         maxWords: 28,
