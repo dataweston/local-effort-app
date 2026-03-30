@@ -30,8 +30,6 @@ import saleProduct from './objects/saleProduct'
 import saleFaq from './objects/saleFaq'
 import release from './release'
 import emailSubscriber from './emailSubscriber'
-import emailOutbox from './emailOutbox'
-import emailEvent from './emailEvent'
 import newsletter from './newsletter'
 import membershipTier from './membershipTier'
 import activityPubFollower from './activityPubFollower'
@@ -74,8 +72,6 @@ export const schemaTypes = [
   activityPubFollower,
   activityPubDelivery,
   emailSubscriber,
-  emailOutbox,
-  emailEvent,
   cloudinaryImage,
   decisionPriority,
 ]
