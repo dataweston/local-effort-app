@@ -1,6 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
-import { Link } from 'react-router-dom';
 
 import { SITE_URL } from '../config/siteMetadata';
 import { useCart } from '../store/cart/CartContext';
@@ -10,10 +9,6 @@ import { ptToHtml } from '../store/data/ptToHtml';
 
 const STORE_SLUG = 'chez-garage';
 const PAGE_TITLE = 'chez garage';
-const PAGE_SUBHEADING = 'Freezer-ready mains, pantry staples, and dessert in one compact drop.';
-const PAGE_INTRO = `A smaller sale page built on the same bag-and-checkout flow as the main store.
-
-Stock the freezer with lamb chili and pizzas, then round things out with chocolate, pork belly, and olive oil.`;
 
 const getProductSummary = (product) => {
   const portableText = ptToHtml(product?.longDescriptionBlocks);
@@ -151,15 +146,7 @@ const ChezGaragePage = () => {
         <script type="application/ld+json">{JSON.stringify(schema)}</script>
       </Helmet>
 
-      <a
-        href="#products"
-        className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-[200] focus:bg-white focus:px-3 focus:py-2 focus:text-xs focus:uppercase focus:tracking-widest focus:border focus:border-black"
-      >
-        Skip to products
-      </a>
-
       <header className="le-sale-header">
-        <Link to="/" className="le-sale-home-link">Local Effort</Link>
         <button
           type="button"
           className="le-sale-bag-btn"
@@ -171,44 +158,21 @@ const ChezGaragePage = () => {
       </header>
 
       <main id="products" className="le-sale-main">
+        <h1 className="sr-only">{PAGE_TITLE}</h1>
         <section className="le-sale-hero" aria-labelledby="chez-garage-title">
-          <div className="le-sale-hero-copy">
-            <p className="le-sale-eyebrow">Minneapolis sale</p>
-            <h1 id="chez-garage-title" className="le-sale-title">{PAGE_TITLE}</h1>
-            <p className="le-sale-subheading">{PAGE_SUBHEADING}</p>
-            <div className="le-sale-intro">
-              {PAGE_INTRO.split(/\n{2,}/).filter(Boolean).map((paragraph) => (
-                <p key={paragraph}>{paragraph}</p>
-              ))}
-            </div>
-          </div>
-
-          <aside className="le-sale-summary" aria-label="Sale details">
-            <div className="le-sale-summary-card">
-              <span className="le-sale-summary-label">Products live</span>
-              <strong className="le-sale-summary-value">{loading ? 'Updating' : products.length}</strong>
-            </div>
-            <div className="le-sale-summary-card">
-              <span className="le-sale-summary-label">Fulfillment</span>
-              <strong className="le-sale-summary-value">Pickup + local delivery</strong>
-            </div>
-            <div className="le-sale-summary-card">
-              <span className="le-sale-summary-label">How to shop</span>
-              <strong className="le-sale-summary-value">Add to bag, then pay once</strong>
-            </div>
-          </aside>
+          <h2 id="chez-garage-title" className="sr-only">Products</h2>
         </section>
 
         <section className="le-sale-products" aria-labelledby="chez-garage-products-title">
-          <div className="le-sale-products-header">
-            <div>
-              <h2 id="chez-garage-products-title" className="le-sale-section-title">Current catalog</h2>
-              <p className="le-sale-section-copy">
-                This page uses the same bag and checkout drawer as the main sale page, so guests can combine items before paying.
-              </p>
-            </div>
-          </div>
-          <ProductGrid products={products} skuPrefix="CG" loading={loading} basePath={`/${STORE_SLUG}`} />
+          <h2 id="chez-garage-products-title" className="sr-only">Current catalog</h2>
+          <ProductGrid
+            products={products}
+            skuPrefix="CG"
+            loading={loading}
+            basePath={`/${STORE_SLUG}`}
+            showSku={false}
+            showDetailRow={false}
+          />
         </section>
       </main>
 

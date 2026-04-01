@@ -26,7 +26,14 @@ const getProductSummary = (product) => {
   return summary.length > 220 ? `${summary.slice(0, 217).trim()}...` : summary;
 };
 
-export default function ProductGrid({ products = [], skuPrefix = 'LE', loading = false, basePath = '/sale' }) {
+export default function ProductGrid({
+  products = [],
+  skuPrefix = 'LE',
+  loading = false,
+  basePath = '/sale',
+  showSku = true,
+  showDetailRow = true
+}) {
   const [selected, setSelected] = useState(null);
 
   const selectedSku = selected
@@ -74,6 +81,8 @@ export default function ProductGrid({ products = [], skuPrefix = 'LE', loading =
                   product={product}
                   sku={sku}
                   onSelect={setSelected}
+                  showSku={showSku}
+                  showDetailRow={showDetailRow}
                 />
               </li>
             );

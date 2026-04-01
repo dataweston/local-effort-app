@@ -15,7 +15,7 @@ import { ptToHtml } from '../data/ptToHtml';
 
 const fmt = (cents) => `$${(cents / 100).toFixed(2)}`;
 
-export default function ProductTile({ product, sku, onSelect }) {
+export default function ProductTile({ product, sku, onSelect, showSku = true, showDetailRow = true }) {
   const { map } = useCart();
   const imgRef = useRef(null);
 
@@ -72,7 +72,7 @@ export default function ProductTile({ product, sku, onSelect }) {
         {product.salePrice && <span className="le-tile-badge">Sale</span>}
       </span>
       <span className="le-tile-meta">
-        <span className="le-tile-sku">{sku}</span>
+        {showSku ? <span className="le-tile-sku">{sku}</span> : <span />}
         <span className="le-tile-price">
           {product.salePrice && (
             <>
@@ -87,10 +87,12 @@ export default function ProductTile({ product, sku, onSelect }) {
       <span className="le-tile-copy">
         <span className="le-tile-title">{product.title}</span>
         {summary && <span className="le-tile-description">{summary}</span>}
-        <span className="le-tile-detail-row">
-          <span className="le-tile-detail-text">{detailBits}</span>
-          <span className="le-tile-detail-link">View details</span>
-        </span>
+        {showDetailRow ? (
+          <span className="le-tile-detail-row">
+            <span className="le-tile-detail-text">{detailBits}</span>
+            <span className="le-tile-detail-link">View details</span>
+          </span>
+        ) : null}
       </span>
     </button>
   );
