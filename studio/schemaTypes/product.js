@@ -25,6 +25,7 @@ export default {
       options: {
         list: [
           { title: 'Main Store (/sale)', value: 'sale' },
+          { title: 'Chez Garage (/chez-garage)', value: 'chez-garage' },
           { title: 'Happy Monday (/happy-monday)', value: 'happy-monday' },
           { title: 'Tiny Diner (/tiny-diner)', value: 'tiny-diner' }
         ],

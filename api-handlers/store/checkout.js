@@ -142,6 +142,12 @@ module.exports = async (req, res) => {
         time: 'TBD',
         address: 'Details will be sent separately',
       },
+      'chez-garage': {
+        name: 'Chez Garage',
+        date: 'TBD',
+        time: 'TBD',
+        address: 'Details will be sent separately',
+      },
     };
     const pickupDetails = storePickupInfo[store] || storePickupInfo['sale'];
 

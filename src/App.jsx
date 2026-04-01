@@ -21,6 +21,7 @@ const BlogPost = lazy(() => import('./pages/BlogPost'));
 const WeeklyList = lazy(() => import('./pages/WeeklyList'));
 const WeeklyPost = lazy(() => import('./pages/WeeklyPost'));
 const SalePage = lazy(() => import('./pages/SalePage'));
+const ChezGaragePage = lazy(() => import('./pages/ChezGaragePage'));
 const HappyMondayPage = lazy(() => import('./pages/happymondaypage'));
 const ProductPage = lazy(() => import('./pages/ProductPage'));
 const InboxPage = lazy(() => import('./pages/InboxPage'));
@@ -60,6 +61,7 @@ const AppContent = () => {
   const hideFooter =
     location.pathname === '/' ||
     location.pathname === '/sale' ||
+    location.pathname === '/chez-garage' ||
     location.pathname === '/winterdinner' ||
     location.pathname === '/winterpizza' ||
     location.pathname === '/januarymeals' ||
@@ -157,6 +159,14 @@ const AppContent = () => {
                   }
                 />
                 <Route path="/salepage" element={<Navigate to="/sale" replace />} />
+                <Route
+                  path="/chez-garage"
+                  element={
+                    <AnimatedPage>
+                      <ChezGaragePage />
+                    </AnimatedPage>
+                  }
+                />
                 <Route
                   path="/product/:slug"
                   element={

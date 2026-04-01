@@ -56,6 +56,9 @@ export default function ProductDetail({ product, sku, onClose }) {
     : 0;
   const dairyFreeExtra = isDairyFree && product.offerDairyFree ? (product.dairyFreeCost || 0) : 0;
   const unitPrice = basePrice + addOnTotal + dairyFreeExtra;
+  const unitPriceLabel = product.priceDisplay && addOnTotal === 0 && dairyFreeExtra === 0
+    ? product.priceDisplay
+    : fmt(unitPrice);
 
   const variationId = chosen?.squareVariationId || product.squareVariationId || null;
   const cartKey = `${product.id}:${variationId || ''}`;
@@ -188,7 +191,7 @@ export default function ProductDetail({ product, sku, onClose }) {
                 </>
               )}
               <span className="sr-only">{product.salePrice ? 'Sale price: ' : 'Price: '}</span>
-              <span className="le-detail-price-current">{fmt(unitPrice)}</span>
+              <span className="le-detail-price-current">{unitPriceLabel}</span>
             </div>
 
             {leadText && <p className="le-detail-lead">{leadText}</p>}

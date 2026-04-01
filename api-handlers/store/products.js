@@ -24,6 +24,7 @@ module.exports = async (req, res) => {
       images[]{asset->{url}},
       price,
       salePrice,
+      priceDisplay,
       inventoryManaged,
       inventory,
       squareItemId,
@@ -46,6 +47,7 @@ module.exports = async (req, res) => {
       images: (d.images || []).map((i) => i?.asset?.url).filter(Boolean),
       price: d.price ?? 0, // Already in cents from Sanity
       salePrice: d.salePrice ?? null, // Already in cents from Sanity
+      priceDisplay: d.priceDisplay || null,
       inventoryManaged: !!d.inventoryManaged,
       inventory: typeof d.inventory === 'number' ? d.inventory : null,
       squareItemId: d.squareItemId || null,

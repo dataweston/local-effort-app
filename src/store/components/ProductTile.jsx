@@ -21,6 +21,7 @@ export default function ProductTile({ product, sku, onSelect }) {
 
   const primary = Array.isArray(product.images) ? product.images[0] : null;
   const displayPrice = product.salePrice ?? product.price;
+  const displayPriceLabel = product.priceDisplay || fmt(displayPrice);
   const summary = useMemo(() => {
     const text = (ptToHtml(product?.longDescriptionBlocks) || product?.longDescription || product?.shortDescription || '')
       .replace(/\s+/g, ' ')
@@ -80,7 +81,7 @@ export default function ProductTile({ product, sku, onSelect }) {
               <span className="sr-only">Sale price: </span>
             </>
           )}
-          {fmt(displayPrice)}
+          {displayPriceLabel}
         </span>
       </span>
       <span className="le-tile-copy">

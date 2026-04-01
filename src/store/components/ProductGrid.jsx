@@ -26,7 +26,7 @@ const getProductSummary = (product) => {
   return summary.length > 220 ? `${summary.slice(0, 217).trim()}...` : summary;
 };
 
-export default function ProductGrid({ products = [], skuPrefix = 'LE', loading = false }) {
+export default function ProductGrid({ products = [], skuPrefix = 'LE', loading = false, basePath = '/sale' }) {
   const [selected, setSelected] = useState(null);
 
   const selectedSku = selected
@@ -60,7 +60,7 @@ export default function ProductGrid({ products = [], skuPrefix = 'LE', loading =
                 {product.images?.[0] && <meta itemProp="image" content={product.images[0]} />}
                 {summary && <meta itemProp="description" content={summary} />}
                 <meta itemProp="sku" content={sku} />
-                <meta itemProp="url" content={`${SITE_URL}/sale#${anchorId}`} />
+                <meta itemProp="url" content={`${SITE_URL}${basePath}#${anchorId}`} />
                 <div itemProp="brand" itemScope itemType="https://schema.org/Brand">
                   <meta itemProp="name" content="Local Effort Food Co." />
                 </div>
@@ -68,7 +68,7 @@ export default function ProductGrid({ products = [], skuPrefix = 'LE', loading =
                   <meta itemProp="priceCurrency" content="USD" />
                   <meta itemProp="price" content={((product.salePrice ?? product.price) / 100).toFixed(2)} />
                   <meta itemProp="availability" content={availability} />
-                  <meta itemProp="url" content={`${SITE_URL}/sale#${anchorId}`} />
+                  <meta itemProp="url" content={`${SITE_URL}${basePath}#${anchorId}`} />
                 </div>
                 <ProductTile
                   product={product}

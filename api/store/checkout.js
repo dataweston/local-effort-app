@@ -50,6 +50,12 @@ module.exports = async (req, res) => {
         date: 'TBD',
         time: 'TBD',
         address: 'Details will be sent separately'
+      },
+      'chez-garage': {
+        name: 'Chez Garage',
+        date: 'TBD',
+        time: 'TBD',
+        address: 'Details will be sent separately'
       }
     };
 

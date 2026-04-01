@@ -28,6 +28,17 @@ export function SalePickupDetails({ sale, theme }: { sale: NormalizedSale; theme
 
   const start = formatDate(pickup.start, pickup.timezone);
   const end = formatDate(pickup.end, pickup.timezone);
+  const hasDateRange = Boolean(start || end);
+  const hasLocation = Boolean(pickup.locationName || (Array.isArray(pickup.addressLines) && pickup.addressLines.length > 0));
+  const hasInstructions = Boolean(pickup.instructions);
+
+  if (!hasDateRange && !hasLocation && !hasInstructions) {
+    return null;
+  }
+
+  const dateLabel = hasDateRange
+    ? `${start && end ? `${start} - ${end}` : start ?? end}${pickup.timezone ? ` (${pickup.timezone})` : ''}`
+    : null;
 
   return (
     <section
@@ -35,19 +46,16 @@ export function SalePickupDetails({ sale, theme }: { sale: NormalizedSale; theme
       style={{ backgroundColor: theme.surface, borderColor: theme.border, color: theme.foreground }}
     >
       <div className="space-y-1">
-  <h2 className="text-xl font-semibold">Pickup window</h2>
-  <p style={{ color: theme.muted }}>
-          {start && end ? `${start} – ${end}` : start ?? end ?? 'See instructions below'}
-          {pickup.timezone ? ` (${pickup.timezone})` : ''}
-        </p>
+        <h2 className="text-xl font-semibold">Pickup window</h2>
+        {dateLabel ? <p style={{ color: theme.muted }}>{dateLabel}</p> : null}
       </div>
 
-      {pickup.locationName ? (
+      {hasLocation ? (
         <div>
           <p className="text-sm font-semibold uppercase tracking-wide" style={{ color: theme.muted }}>
             Location
           </p>
-          <p className="text-base font-medium">{pickup.locationName}</p>
+          {pickup.locationName ? <p className="text-base font-medium">{pickup.locationName}</p> : null}
           {Array.isArray(pickup.addressLines) && pickup.addressLines.length > 0 ? (
             <address className="not-italic text-sm" style={{ color: theme.muted }}>
               {pickup.addressLines.map((line) => (
