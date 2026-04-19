@@ -43,6 +43,7 @@
     "firebase": "^12.3.0",
     "firebase-admin": "^12.7.0",
     "framer-motion": "^12.23.12",
+    "googleapis": "^171.4.0",
     "idb-keyval": "^6.2.2",
     "jose": "^6.1.0",
     "lottie-web": "^5.13.0",
