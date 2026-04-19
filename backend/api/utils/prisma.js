@@ -42,4 +42,7 @@ if (process.env.NODE_ENV !== 'production') {
   globalRef.__localEffortPrisma = prisma;
 }
 
-module.exports = { prisma, ensureDatabaseUrl };
+// getPrisma() — factory-style accessor used by brain modules
+const getPrisma = () => prisma;
+
+module.exports = { prisma, getPrisma, ensureDatabaseUrl };

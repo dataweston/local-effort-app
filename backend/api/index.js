@@ -53,6 +53,14 @@ const winterDinnerPaymentLinkHandler = require('../../api-handlers/winter-dinner
 const februaryBookedDatesHandler = require('../../api-handlers/february/booked-dates');
 const februaryCheckoutHandler = require('../../api-handlers/february/checkout');
 const februaryPaymentLinkHandler = require('../../api-handlers/february/payment-link');
+const { ingestSquarePayment } = require('./brain/squareIngest');
+const { registerGmailRoutes } = require('./brain/gmailRoutes');
+const { registerInboxRoutes } = require('./brain/inboxRoutes');
+const { registerInferenceRoutes } = require('./brain/inferenceRoutes');
+const { runInferencePass } = require('./brain/inferenceEngine');
+const { registerMenuRoutes } = require('./brain/menuRoutes');
+const { registerOntologyRoutes } = require('./brain/ontologyRoutes');
+const { registerSidecarRoutes } = require('./brain/sidecarRoutes');
 const weeklyOrderCheckoutLinkHandler = require('../../api-handlers/weekly-order/checkout-link');
 const weeklyOrderProfileHandler = require('../../api-handlers/weekly-order/profile');
 const weeklyOrderHistoryHandler = require('../../api-handlers/weekly-order/history');
@@ -484,6 +492,8 @@ app.post('/api/square/webhook', express.raw({ type: '*/*', limit: '2mb' }), asyn
     }
 
     await applyCompletedPayment(payment, { db });
+    // Brain ingestion — fire-and-forget, never blocks the payment response
+    ingestSquarePayment(payment, { logger }).catch(() => {});
     return res.status(200).json({ ok: true });
   } catch (err) {
     if (logger?.error) {
@@ -524,6 +534,45 @@ app.get('/api/sitemap.xml', async (req, res) => {
     }
   }
 });
+
+// Brain routes
+registerInboxRoutes(app, { logger });
+registerGmailRoutes(app, { logger });
+registerInferenceRoutes(app, { logger });
+registerMenuRoutes(app, { logger });
+registerOntologyRoutes(app, { logger });
+registerSidecarRoutes(app, { logger });
+
+// Nightly brain jobs — 02:00: Python sidecar extraction, then inference pass
+{
+  const { spawn } = require('child_process');
+  const path = require('path');
+  let lastNightlyDay = null;
+
+  function runNightly() {
+    const sidecarDir = path.resolve(__dirname, '../../brain-sidecar');
+    const pythonBin = process.env.BRAIN_PYTHON_BIN || 'python3';
+    const child = spawn(pythonBin, ['run.py'], { cwd: sidecarDir, env: { ...process.env } });
+    child.stdout.on('data', d => logger.info({ line: d.toString().trim() }, 'brain/sidecar: nightly'));
+    child.stderr.on('data', d => logger.warn({ line: d.toString().trim() }, 'brain/sidecar: stderr'));
+    child.on('close', code => {
+      logger.info({ code }, 'brain/sidecar: nightly complete — starting inference');
+      runInferencePass({ logger }).catch(err =>
+        logger.error({ err }, 'brain/inference: nightly cron failed')
+      );
+    });
+  }
+
+  setInterval(() => {
+    const now = new Date();
+    const hour = now.getHours();
+    const day = now.toDateString();
+    if (hour === 2 && lastNightlyDay !== day) {
+      lastNightlyDay = day;
+      runNightly();
+    }
+  }, 30 * 60 * 1000);
+}
 
 // MCP HTTP bridge removed (mcpTransport not initialized in this process). If needed, reintroduce with proper import.
 // --- MCP STREAMABLE HTTP BRIDGE ---

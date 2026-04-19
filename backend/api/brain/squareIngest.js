@@ -1,0 +1,92 @@
+/**
+ * Square → Brain ingestion.
+ * Called as a side-effect from the existing Square webhook handler in index.js.
+ * Does not replace existing payment handling — runs alongside it.
+ *
+ * On COMPLETED payment:
+ *   1. Write LedgerEvent (payment.completed)
+ *   2. If merchant name matches a known Vendor entity → write ORDERED assertion
+ *   3. Otherwise → create BrainInboxItem for founder triage
+ */
+
+const { writeLedgerEvent, findVendorByName, createInboxItem } = require('./ledger');
+const { getPrisma } = require('../utils/prisma');
+
+async function ingestSquarePayment(payment, { logger } = {}) {
+  try {
+    if (!payment?.id) return;
+    if (String(payment.status || '').toUpperCase() !== 'COMPLETED') return;
+
+    const occurredAt = payment.created_at || payment.createdAt || new Date().toISOString();
+    const amountCents = Number(payment?.amount_money?.amount ?? payment?.amountMoney?.amount ?? 0);
+    const merchantName = payment.note || payment.buyer_email_address || null;
+    const squarePaymentId = payment.id;
+    const locationId = payment.location_id || payment.locationId || null;
+    const receiptUrl = payment.receipt_url || payment.receiptUrl || null;
+
+    // 1. Write ledger event — immutable record
+    const ledgerEvent = await writeLedgerEvent({
+      eventType: 'payment.completed',
+      occurredAt,
+      source: 'square',
+      sourceId: squarePaymentId,
+      actorType: 'system',
+      payload: {
+        squarePaymentId,
+        amountCents,
+        merchantName,
+        locationId,
+        receiptUrl,
+        status: payment.status,
+        orderId: payment.order_id || payment.orderId || null,
+        customerId: payment.customer_id || payment.customerId || null,
+      },
+    });
+
+    // 2. Try to match to a known Vendor
+    if (merchantName) {
+      const vendorEntityId = await findVendorByName(merchantName);
+      if (vendorEntityId) {
+        const prisma = getPrisma();
+        // Write PRICED_AT assertion: Vendor paid $X on this date
+        await prisma.brainAssertion.create({
+          data: {
+            srcId: vendorEntityId,
+            dstId: vendorEntityId, // self-referencing for payment events — vendor paid
+            relType: 'PAYMENT_RECEIVED',
+            metadata: {
+              squarePaymentId,
+              amountCents,
+              receiptUrl,
+              occurredAt,
+            },
+            validFrom: new Date(occurredAt),
+            knownFrom: new Date(),
+            confidence: 1.0,
+            sourceType: 'ledger_event',
+            sourceId: ledgerEvent.id,
+            createdBy: 'system',
+          },
+        });
+        if (logger?.info) logger.info({ squarePaymentId, vendorEntityId }, 'brain: square payment linked to vendor');
+        return;
+      }
+    }
+
+    // 3. No vendor match — create inbox item for triage
+    const amountDollars = (amountCents / 100).toFixed(2);
+    await createInboxItem({
+      rawContent: `Square payment $${amountDollars}${merchantName ? ` from ${merchantName}` : ''} (${squarePaymentId})`,
+      source: 'square',
+      attachments: receiptUrl ? [{ url: receiptUrl, mimeType: 'text/html', label: 'Square receipt' }] : null,
+    });
+
+    if (logger?.info) logger.info({ squarePaymentId }, 'brain: square payment queued to inbox (no vendor match)');
+  } catch (err) {
+    // Never throw — brain ingestion is never allowed to break the payment flow
+    if (logger?.error) logger.error({ err, squarePaymentId: payment?.id }, 'brain: square ingest error');
+    else console.error('[brain/squareIngest] error', err?.message);
+  }
+}
+
+module.exports = { ingestSquarePayment };

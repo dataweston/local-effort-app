@@ -48,6 +48,7 @@ const WeeklyDemoPage = lazy(() => import('./pages/WeeklyDemoPage'));
 const SubscriberPortalPage = lazy(() => import('./pages/SubscriberPortalPage'));
 const CatherineSchedulePage = lazy(() => import('./pages/CatherineSchedulePage'));
 const BookPage = lazy(() => import('./pages/BookPage'));
+const BrainPortalPage = lazy(() => import('./pages/BrainPortalPage'));
 
 const AppContent = () => {
   const location = useLocation();
@@ -271,6 +272,10 @@ const AppContent = () => {
                       <WeeklyDemoPage />
                     </AnimatedPage>
                   }
+                />
+                <Route
+                  path="/portal/:shareToken"
+                  element={<BrainPortalPage />}
                 />
                 <Route
                   path="/catherine-schedule"

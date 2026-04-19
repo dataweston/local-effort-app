@@ -1,5 +1,5 @@
-import React, { useEffect } from 'react';
-import { DollarSign, RotateCcw, Calendar, LayoutGrid, BarChart3, LogIn, LogOut } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { DollarSign, RotateCcw, Calendar, LayoutGrid, BarChart3, LogIn, LogOut, Inbox } from 'lucide-react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '../components/ui/tabs';
 import { usePlannerState } from '../components/weeklyplanner/usePlannerState';
 import { usePlannerNav } from '../components/weeklyplanner/usePlannerNav';
@@ -10,6 +10,8 @@ import { EditPanel } from '../components/weeklyplanner/EditPanel';
 import { RecurringChangeDialog } from '../components/weeklyplanner/RecurringChangeDialog';
 import { GoogleCalendarSync } from '../components/weeklyplanner/GoogleCalendarSync';
 import { useSupabaseAuth } from '../contexts/SupabaseAuthContext';
+import { useBrainInbox } from '../hooks/useBrainInbox';
+import { BrainInboxDrawer } from '../components/brain/BrainInboxDrawer';
 
 export default function WeeklyDemoPage() {
   // Prevent search engines from indexing this page
@@ -38,6 +40,12 @@ export default function WeeklyDemoPage() {
   } = nav;
 
   const auth = useSupabaseAuth();
+
+  const [inboxOpen, setInboxOpen] = useState(false);
+  const inbox = useBrainInbox({ accessToken: auth.accessToken, enabled: !!auth.isAdmin });
+
+  const [captureText, setCaptureText] = useState('');
+  const [captureActive, setCaptureActive] = useState(false);
   const mode = auth.loading ? null : (auth.user ? 'persisted' : 'demo');
   const planner = usePlannerState({ mode, accessToken: auth.accessToken, weekStart, selectedMonth });
 
@@ -162,6 +170,31 @@ export default function WeeklyDemoPage() {
                   weekStart={weekStart}
                 />
               )}
+              {auth.isAdmin && (
+                <button
+                  onClick={() => setInboxOpen(v => !v)}
+                  className="relative p-2 rounded-lg transition-colors touch-target-ios"
+                  style={{ color: 'var(--color-text-secondary)' }}
+                  title="Brain inbox"
+                >
+                  <Inbox size={16} />
+                  {inbox.total > 0 && (
+                    <span
+                      className="absolute -top-0.5 -right-0.5 text-xs font-bold leading-none flex items-center justify-center rounded-full"
+                      style={{
+                        minWidth: '16px',
+                        height: '16px',
+                        padding: '0 3px',
+                        backgroundColor: 'var(--brand-rose, #e07070)',
+                        color: '#fff',
+                        fontSize: '10px',
+                      }}
+                    >
+                      {inbox.total > 99 ? '99+' : inbox.total}
+                    </span>
+                  )}
+                </button>
+              )}
               <button
                 onClick={planner.handlers.handleReset}
                 className="p-2 rounded-lg transition-colors touch-target-ios"
@@ -230,6 +263,47 @@ export default function WeeklyDemoPage() {
             </span>
           </div>
         </div>
+
+        {/* Quick-capture bar — admin only */}
+        {auth.isAdmin && (
+          <form
+            onSubmit={async e => {
+              e.preventDefault();
+              if (!captureText.trim()) return;
+              setCaptureActive(true);
+              await inbox.capture({ rawContent: captureText.trim(), source: 'admin_ux' });
+              setCaptureText('');
+              setCaptureActive(false);
+            }}
+            className="mx-4 mb-2 mt-1 flex gap-2"
+          >
+            <input
+              type="text"
+              value={captureText}
+              onChange={e => setCaptureText(e.target.value)}
+              placeholder="Capture a note, task, or vendor to brain inbox…"
+              className="flex-1 text-[16px] sm:text-sm rounded-lg px-3 py-1.5 border outline-none"
+              style={{
+                backgroundColor: 'var(--color-bg-card)',
+                borderColor: 'var(--color-border-default)',
+                color: 'var(--color-text-primary)',
+              }}
+              disabled={captureActive}
+            />
+            <button
+              type="submit"
+              disabled={!captureText.trim() || captureActive}
+              className="px-3 py-1.5 text-xs font-medium rounded-lg transition-colors"
+              style={{
+                backgroundColor: 'var(--color-action-primary-bg)',
+                color: 'var(--color-action-primary-text)',
+                opacity: !captureText.trim() || captureActive ? 0.5 : 1,
+              }}
+            >
+              {captureActive ? '…' : 'Add'}
+            </button>
+          </form>
+        )}
       </div>
 
       {/* View tabs + content */}
@@ -320,6 +394,15 @@ export default function WeeklyDemoPage() {
         pendingChange={planner.pendingChange}
         onConfirm={planner.handlers.confirmChange}
         onCancel={planner.handlers.cancelChange}
+      />
+
+      {/* Brain inbox drawer */}
+      <BrainInboxDrawer
+        open={inboxOpen}
+        onClose={() => setInboxOpen(false)}
+        items={inbox.items}
+        triage={inbox.triage}
+        loading={inbox.loading}
       />
     </div>
   );

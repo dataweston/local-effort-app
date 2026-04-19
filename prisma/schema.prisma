@@ -502,3 +502,211 @@ model DecisionEvent {
   @@index([eventType, createdAt])
   @@index([experimentKey, variant])
 }
+
+// ============================================================================
+// COMPANY BRAIN — Layer 1: Ledger
+// ============================================================================
+
+model LedgerEventSchema {
+  eventType String
+  version   Int
+  schema    Json
+  createdAt DateTime @default(now())
+
+  @@id([eventType, version])
+}
+
+model LedgerEvent {
+  id              String    @id @default(uuid())
+  eventType       String
+  schemaVersion   Int       @default(1)
+  occurredAt      DateTime
+  source          String
+  sourceId        String?
+  actorType       String?
+  actorId         String?
+  payload         Json
+  createdAt       DateTime  @default(now())
+  tombstonedAt    DateTime?
+  tombstoneReason String?
+
+  assertions BrainAssertion[]
+
+  @@index([eventType, occurredAt])
+  @@index([source, sourceId])
+  @@index([occurredAt])
+  @@index([tombstonedAt])
+}
+
+// ============================================================================
+// COMPANY BRAIN — Layer 2: Graph
+// ============================================================================
+
+model BrainEntity {
+  id          String    @id @default(uuid())
+  entityType  String
+  name        String
+  properties  Json?
+  status      String    @default("active")
+  snoozeUntil DateTime?
+  visibility  String    @default("private")
+  shareToken  String?   @unique
+
+  tombstonedAt    DateTime?
+  tombstoneReason String?
+
+  localEffortCustomerId String?
+  localEffortDishId     String?
+  localBudgetVendorId   String?
+  squareCustomerId      String?
+  plannerCardId         String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  aliases       BrainEntityAlias[]
+  srcAssertions BrainAssertion[]   @relation("assertionSrc")
+  dstAssertions BrainAssertion[]   @relation("assertionDst")
+  srcInferences BrainInference[]   @relation("inferenceSrc")
+  dstInferences BrainInference[]   @relation("inferenceDst")
+  inboxItems    BrainInboxItem[]
+
+  @@index([entityType])
+  @@index([status])
+  @@index([shareToken])
+  @@index([localEffortCustomerId])
+  @@index([localEffortDishId])
+  @@index([localBudgetVendorId])
+}
+
+model BrainEntityAlias {
+  id        String      @id @default(uuid())
+  entityId  String
+  alias     String
+  source    String
+  createdAt DateTime    @default(now())
+
+  entity BrainEntity @relation(fields: [entityId], references: [id])
+
+  @@unique([entityId, alias])
+  @@index([alias])
+}
+
+model BrainAssertion {
+  id       String @id @default(uuid())
+  srcId    String
+  dstId    String
+  relType  String
+
+  metadata Json?
+
+  validFrom  DateTime  @default(now())
+  validUntil DateTime?
+  knownFrom  DateTime  @default(now())
+  knownUntil DateTime?
+
+  confidence  Float   @default(1.0)
+  sourceType  String
+  sourceId    String?
+  createdBy   String
+
+  supersededBy     String?
+  supersededAt     DateTime?
+  supersededReason String?
+
+  retractedAt        DateTime?
+  retractedBy        String?
+  retractedReason    String?
+  retractionSourceId String?
+
+  provisional Boolean   @default(false)
+  confirmedAt DateTime?
+  confirmedBy String?
+
+  createdAt DateTime @default(now())
+
+  src         BrainEntity  @relation("assertionSrc", fields: [srcId], references: [id])
+  dst         BrainEntity  @relation("assertionDst", fields: [dstId], references: [id])
+  ledgerEvent LedgerEvent? @relation(fields: [sourceId], references: [id])
+
+  @@index([srcId, relType])
+  @@index([dstId, relType])
+  @@index([validUntil])
+  @@index([knownUntil])
+  @@index([provisional])
+  @@index([retractedAt])
+}
+
+// ============================================================================
+// COMPANY BRAIN — Layer 3: Inference
+// ============================================================================
+
+model BrainInference {
+  id            String @id @default(uuid())
+  srcId         String
+  dstId         String
+  inferenceType String
+
+  confidence Float
+  decayRate  String
+
+  knownFrom  DateTime  @default(now())
+  knownUntil DateTime?
+
+  computedAt   DateTime
+  computedFrom String[]
+
+  summary String
+
+  staleAt      DateTime?
+  staleReason  String?
+  supersededBy String?
+
+  src BrainEntity @relation("inferenceSrc", fields: [srcId], references: [id])
+  dst BrainEntity @relation("inferenceDst", fields: [dstId], references: [id])
+
+  @@index([srcId, inferenceType])
+  @@index([confidence])
+  @@index([staleAt])
+  @@index([knownUntil])
+}
+
+// ============================================================================
+// COMPANY BRAIN — Capture + Auth
+// ============================================================================
+
+model BrainInboxItem {
+  id             String      @id @default(uuid())
+  rawContent     String
+  source         String
+  attachments    Json?
+  capturedAt     DateTime    @default(now())
+  status         String      @default("pending")
+  processedAt    DateTime?
+  resultEntityId String?
+
+  resultEntity BrainEntity? @relation(fields: [resultEntityId], references: [id])
+
+  @@index([status, capturedAt])
+}
+
+model BrainApiToken {
+  id         String    @id @default(uuid())
+  label      String
+  tokenHash  String    @unique
+  scopes     String[]
+  lastUsedAt DateTime?
+  createdAt  DateTime  @default(now())
+}
+
+model BrainSeedReview {
+  id          String    @id @default(uuid())
+  entityAId   String
+  entityBId   String
+  matchScore  Float
+  matchReason String
+  status      String    @default("pending")
+  resolvedAt  DateTime?
+  resolvedBy  String?
+  createdAt   DateTime  @default(now())
+}

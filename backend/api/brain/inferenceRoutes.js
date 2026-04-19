@@ -1,0 +1,85 @@
+/**
+ * Brain inference routes.
+ *
+ * POST /api/brain/inference/run   — trigger a pass manually (admin only)
+ * GET  /api/brain/inference       — list recent inferences (admin only)
+ */
+
+const { createAdminVerifier } = require('../utils/adminVerifier');
+const { runInferencePass } = require('./inferenceEngine');
+const { getPrisma } = require('../utils/prisma');
+
+const verifyAdminRequest = createAdminVerifier();
+
+// Track last run in memory to prevent double-runs
+let running = false;
+let lastRun = null;
+
+function registerInferenceRoutes(app, { logger } = {}) {
+  const prisma = getPrisma();
+
+  // POST /api/brain/inference/run
+  app.post('/api/brain/inference/run', async (req, res) => {
+    try {
+      const admin = await verifyAdminRequest(req);
+      if (!admin) return res.status(403).json({ error: 'admin only' });
+
+      if (running) {
+        return res.status(409).json({ error: 'inference already running', lastRun });
+      }
+
+      running = true;
+      // Run async so the HTTP response returns immediately
+      runInferencePass({ logger })
+        .then(result => {
+          lastRun = { completedAt: new Date().toISOString(), ...result };
+          logger?.info(lastRun, 'brain/inference: pass finished');
+        })
+        .catch(err => {
+          logger?.error({ err }, 'brain/inference: pass error');
+        })
+        .finally(() => { running = false; });
+
+      return res.json({ ok: true, status: 'started', lastRun });
+    } catch (err) {
+      logger?.error({ err }, 'brain/inference: run trigger error');
+      return res.status(500).json({ error: 'internal-error' });
+    }
+  });
+
+  // GET /api/brain/inference
+  app.get('/api/brain/inference', async (req, res) => {
+    try {
+      const admin = await verifyAdminRequest(req);
+      if (!admin) return res.status(403).json({ error: 'admin only' });
+
+      const { inferenceType, entityId, limit = '50' } = req.query;
+      const where = {
+        knownUntil: null,
+        supersededBy: null,
+      };
+      if (inferenceType) where.inferenceType = inferenceType;
+      if (entityId) where.srcId = entityId;
+
+      const inferences = await prisma.brainInference.findMany({
+        where,
+        orderBy: { computedAt: 'desc' },
+        take: Math.min(parseInt(limit) || 50, 200),
+        include: {
+          src: { select: { id: true, name: true, entityType: true } },
+        },
+      });
+
+      return res.json({
+        ok: true,
+        inferences,
+        runStatus: { running, lastRun },
+      });
+    } catch (err) {
+      logger?.error({ err }, 'brain/inference: list error');
+      return res.status(500).json({ error: 'internal-error' });
+    }
+  });
+}
+
+module.exports = { registerInferenceRoutes };

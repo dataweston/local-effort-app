@@ -43,7 +43,8 @@
       "Bash(ls -la /c/Users/user/local-effort-app/checkout*)",
       "Bash(ls -la /c/Users/user/local-effort-app/public/checkout*)",
       "Bash(ls -la /c/Users/user/local-effort-app/*.html)",
-      "Bash(pnpm run:*)"
+      "Bash(pnpm run:*)",
+      "WebSearch"
     ],
     "deny": [],
     "ask": []
