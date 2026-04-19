@@ -20,14 +20,26 @@ export default function BrainPortalPage() {
   const [nameConfirmed, setNameConfirmed] = useState(false);
   const [feedback, setFeedback] = useState({}); // dishName → { rating, notes, submitted }
   const [submitting, setSubmitting] = useState(null);
+  const [submitError, setSubmitError] = useState(null);
 
   useEffect(() => {
     if (!shareToken) return;
     fetch(`${API_BASE}/api/brain/portal/${shareToken}`)
       .then(r => r.json())
       .then(data => {
-        if (data.ok) setMenu(data.menu);
-        else setError(data.error || 'Menu not found');
+        if (data.ok) {
+          setMenu(data.menu);
+          // Hydrate any previously-submitted feedback from the portal response
+          if (data.feedback) {
+            const hydrated = {};
+            for (const f of data.feedback) {
+              hydrated[f.dishName] = { rating: f.rating, notes: f.notes || '', submitted: true };
+            }
+            setFeedback(hydrated);
+          }
+        } else {
+          setError(data.error || 'Menu not found');
+        }
       })
       .catch(() => setError('Could not load menu'))
       .finally(() => setLoading(false));
@@ -36,18 +48,25 @@ export default function BrainPortalPage() {
   async function submitFeedback(dishName, rating, notes = '') {
     if (submitting) return;
     setSubmitting(dishName);
+    setSubmitError(null);
     try {
-      const res = await fetch(`${API_BASE}/api/brain/menu/${menu.id}/feedback?token=${shareToken}`, {
+      // Token goes in Authorization header, not query string (avoids server logs / referrer leakage)
+      const res = await fetch(`${API_BASE}/api/brain/menu/${menu.id}/feedback`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ dishName, rating, notes, customerName: customerName || null, token: shareToken }),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${shareToken}`,
+        },
+        body: JSON.stringify({ dishName, rating, notes, customerName: customerName || null }),
       });
       const data = await res.json();
       if (data.ok) {
         setFeedback(prev => ({ ...prev, [dishName]: { rating, notes, submitted: true } }));
+      } else {
+        setSubmitError(`Couldn't save feedback for "${dishName}" — please try again.`);
       }
     } catch {
-      // silent
+      setSubmitError(`Couldn't save feedback for "${dishName}" — check your connection and try again.`);
     } finally {
       setSubmitting(null);
     }
@@ -118,6 +137,13 @@ export default function BrainPortalPage() {
           );
         })}
       </div>
+
+      {/* Submit error */}
+      {submitError && (
+        <p style={{ color: 'var(--brand-rose, #c0392b)', textAlign: 'center', marginTop: '1rem', fontSize: '0.82rem' }}>
+          {submitError}
+        </p>
+      )}
 
       {/* Footer */}
       <p style={{ ...styles.muted, textAlign: 'center', marginTop: '2.5rem', fontSize: '0.7rem' }}>

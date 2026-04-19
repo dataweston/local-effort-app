@@ -269,11 +269,15 @@ export default function WeeklyDemoPage() {
           <form
             onSubmit={async e => {
               e.preventDefault();
-              if (!captureText.trim()) return;
+              const text = captureText.trim();
+              if (!text) return;
               setCaptureActive(true);
-              await inbox.capture({ rawContent: captureText.trim(), source: 'admin_ux' });
-              setCaptureText('');
-              setCaptureActive(false);
+              try {
+                const id = await inbox.capture({ rawContent: text, source: 'admin_ux' });
+                if (id) setCaptureText('');
+              } finally {
+                setCaptureActive(false);
+              }
             }}
             className="mx-4 mb-2 mt-1 flex gap-2"
           >

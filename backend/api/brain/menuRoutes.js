@@ -271,8 +271,9 @@ function registerMenuRoutes(app, { logger } = {}) {
       const menu = await prisma.brainEntity.findUnique({ where: { id: req.params.id } });
       if (!menu || menu.entityType !== 'Menu') return res.status(404).json({ error: 'not found' });
 
-      // Verify shareToken in query or header
-      const token = req.query.token || req.body?.token;
+      // Token must come via Authorization header (not query string — avoids log/referrer leakage)
+      const authHeader = String(req.headers.authorization || '');
+      const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7).trim() : null;
       if (!token || token !== menu.shareToken) {
         return res.status(401).json({ error: 'invalid token' });
       }

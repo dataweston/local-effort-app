@@ -12,10 +12,14 @@ const { getAuthUrl, exchangeCodeForTokens, storeGmailTokens, syncGmailThreads } 
 
 function registerGmailRoutes(app, { logger } = {}) {
   // Auth redirect — admin only
+  // Accepts either a Supabase JWT (Authorization: Bearer) OR ?key=BRAIN_ADMIN_KEY
+  // The key bypass exists because this route must be visited in a browser to initiate OAuth,
+  // and browsers don't send Authorization headers on direct URL visits.
   app.get('/api/brain/gmail/auth', async (req, res) => {
     try {
       const isAdmin = await verifyAdminRequest(req);
-      if (!isAdmin) return res.status(403).json({ error: 'admin only' });
+      const keyOk = process.env.BRAIN_ADMIN_KEY && req.query.key === process.env.BRAIN_ADMIN_KEY;
+      if (!isAdmin && !keyOk) return res.status(403).json({ error: 'admin only — pass ?key=BRAIN_ADMIN_KEY or Authorization: Bearer <token>' });
 
       if (!process.env.GMAIL_CLIENT_ID || !process.env.GMAIL_CLIENT_SECRET) {
         return res.status(500).json({
