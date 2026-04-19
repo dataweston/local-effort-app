@@ -21,6 +21,7 @@ import time
 from datetime import datetime
 
 DRY_RUN = '--dry-run' in sys.argv
+FULL_REEMBED = '--full-reembed' in sys.argv
 JOBS_ARG = [a for a in sys.argv[1:] if not a.startswith('-')]
 
 
@@ -42,11 +43,13 @@ def main():
     from jobs.extract_gmail import run as run_gmail
     from jobs.extract_square import run as run_square
     from jobs.triage_inbox import run as run_inbox
+    from jobs.embed import run as run_embed
 
     all_jobs = {
         'gmail':  (run_gmail,  {}),
         'square': (run_square, {}),
         'inbox':  (run_inbox,  {}),
+        'embed':  (run_embed,  {'full_reembed': FULL_REEMBED}),
     }
 
     jobs_to_run = JOBS_ARG if JOBS_ARG else list(all_jobs.keys())

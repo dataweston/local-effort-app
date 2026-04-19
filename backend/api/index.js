@@ -61,6 +61,7 @@ const { runInferencePass } = require('./brain/inferenceEngine');
 const { registerMenuRoutes } = require('./brain/menuRoutes');
 const { registerOntologyRoutes } = require('./brain/ontologyRoutes');
 const { registerSidecarRoutes } = require('./brain/sidecarRoutes');
+const { registerSearchRoutes } = require('./brain/searchRoutes');
 const weeklyOrderCheckoutLinkHandler = require('../../api-handlers/weekly-order/checkout-link');
 const weeklyOrderProfileHandler = require('../../api-handlers/weekly-order/profile');
 const weeklyOrderHistoryHandler = require('../../api-handlers/weekly-order/history');
@@ -542,6 +543,7 @@ registerInferenceRoutes(app, { logger });
 registerMenuRoutes(app, { logger });
 registerOntologyRoutes(app, { logger });
 registerSidecarRoutes(app, { logger });
+registerSearchRoutes(app, { logger });
 
 // Nightly brain jobs — 02:00: Python sidecar extraction, then inference pass
 {
