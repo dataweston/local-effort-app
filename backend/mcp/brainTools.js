@@ -836,6 +836,90 @@ function registerBrainMenuTools(server) {
   );
 }
 
+// ── Semantic search tool ──────────────────────────────────────────────────────
+
+function registerBrainSearchTools(server) {
+  const { spawn } = require('child_process');
+  const path = require('path');
+  const prisma = getPrisma();
+
+  const SIDECAR_DIR = path.resolve(__dirname, '../../brain-sidecar');
+
+  async function vectorSearch(query, { limit = 8, table } = {}) {
+    return new Promise((resolve, reject) => {
+      const pythonBin = process.env.BRAIN_PYTHON_BIN || 'python3';
+      const script = `
+import sys, json
+sys.path.insert(0, r'${SIDECAR_DIR.replace(/\\/g, '\\\\')}')
+from dotenv import load_dotenv; load_dotenv()
+from vector_store import VectorStore
+vs = VectorStore()
+results = vs.search(${JSON.stringify(query)}, limit=${limit}${table ? `, table_filter=${JSON.stringify(table)}` : ''})
+print(json.dumps(results))
+`;
+      const child = spawn(pythonBin, ['-c', script], { env: { ...process.env }, cwd: SIDECAR_DIR });
+      let out = ''; let err = '';
+      child.stdout.on('data', d => { out += d; });
+      child.stderr.on('data', d => { err += d; });
+      child.on('close', code => {
+        if (code !== 0) return reject(new Error(err.slice(0, 200) || `exit ${code}`));
+        try { resolve(JSON.parse(out.trim())); } catch { reject(new Error('invalid JSON from sidecar')); }
+      });
+      setTimeout(() => { child.kill(); reject(new Error('sidecar timeout')); }, 10_000);
+    });
+  }
+
+  server.registerTool(
+    'brain.search',
+    {
+      title: 'Semantic search',
+      description: 'Vector search across all brain entities and inbox items. Use this to find vendors, customers, ingredients, or inbox content by meaning — not just exact name match. Falls back to keyword search if embeddings are unavailable.',
+      inputSchema: z.object({
+        query: z.string().min(1).describe('Natural language search query'),
+        limit: z.number().int().min(1).max(20).optional().describe('Max results (default 8)'),
+        table: z.enum(['entity', 'inbox']).optional().describe('Restrict to entity or inbox results'),
+      }),
+    },
+    async ({ query, limit = 8, table }) => {
+      let results;
+      let method = 'vector';
+
+      try {
+        results = await vectorSearch(query, { limit, table });
+      } catch {
+        method = 'keyword';
+        results = [];
+        if (!table || table === 'entity') {
+          const entities = await prisma.brainEntity.findMany({
+            where: { tombstonedAt: null, name: { contains: query, mode: 'insensitive' } },
+            take: limit,
+            select: { id: true, entityType: true, name: true },
+          });
+          results.push(...entities.map(e => ({
+            id: `entity:${e.id}`, table: 'entity',
+            text: `${e.entityType}: ${e.name}`, score: null,
+            metadata: { entityId: e.id, entityType: e.entityType, name: e.name },
+          })));
+        }
+        if (!table || table === 'inbox') {
+          const items = await prisma.brainInboxItem.findMany({
+            where: { status: 'pending', rawContent: { contains: query, mode: 'insensitive' } },
+            take: limit,
+            select: { id: true, rawContent: true, source: true },
+          });
+          results.push(...items.map(i => ({
+            id: `inbox:${i.id}`, table: 'inbox',
+            text: i.rawContent.slice(0, 200), score: null,
+            metadata: { inboxId: i.id, source: i.source },
+          })));
+        }
+      }
+
+      return json({ query, method, results, count: results.length });
+    }
+  );
+}
+
 // ── Registration entry point ──────────────────────────────────────────────────
 
 function registerBrainTools(server) {
@@ -843,6 +927,7 @@ function registerBrainTools(server) {
   registerBrainWriteTools(server);
   registerBrainOntologyTools(server);
   registerBrainMenuTools(server);
+  registerBrainSearchTools(server);
 }
 
 module.exports = { registerBrainTools };

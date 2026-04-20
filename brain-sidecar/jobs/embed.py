@@ -19,7 +19,7 @@ from vector_store import VectorStore
 
 
 def _entity_to_text(row: dict) -> str:
-    parts = [f"{row['entity_type']}: {row['name']}"]
+    parts = [f"{row['entityType']}: {row['name']}"]
     props = row.get('properties') or {}
     if isinstance(props, str):
         try:
@@ -38,7 +38,7 @@ def _entity_to_text(row: dict) -> str:
 
 
 def _inbox_to_text(row: dict) -> str:
-    return row.get('raw_content') or ''
+    return row.get('rawContent') or ''
 
 
 def run(dry_run: bool = False, full_reembed: bool = False) -> dict:
@@ -53,14 +53,14 @@ def run(dry_run: bool = False, full_reembed: bool = False) -> dict:
 
     since_str = since.isoformat()
 
-    # Fetch entities
+    # Fetch entities (full re-embed uses a very old since date)
     entities = db_query(
         '''
-        SELECT id, entity_type, name, properties, updated_at
+        SELECT id, "entityType", name, properties, "updatedAt"
         FROM "BrainEntity"
-        WHERE tombstoned_at IS NULL
-          AND updated_at > %s
-        ORDER BY updated_at DESC
+        WHERE "tombstonedAt" IS NULL
+          AND "createdAt" > %s
+        ORDER BY "createdAt" DESC
         LIMIT 500
         ''',
         (since_str,)
@@ -69,10 +69,10 @@ def run(dry_run: bool = False, full_reembed: bool = False) -> dict:
     # Fetch pending/recent inbox items
     inbox_items = db_query(
         '''
-        SELECT id, raw_content, source, status, updated_at
+        SELECT id, "rawContent", source, status, "capturedAt"
         FROM "BrainInboxItem"
-        WHERE updated_at > %s
-        ORDER BY updated_at DESC
+        WHERE "capturedAt" > %s
+        ORDER BY "capturedAt" DESC
         LIMIT 200
         ''',
         (since_str,)
@@ -90,7 +90,7 @@ def run(dry_run: bool = False, full_reembed: bool = False) -> dict:
             'text': text,
             'metadata': {
                 'entityId': e['id'],
-                'entityType': e['entity_type'],
+                'entityType': e['entityType'],
                 'name': e['name'],
             },
         })
