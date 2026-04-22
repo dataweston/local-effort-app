@@ -22,7 +22,9 @@ function registerInferenceRoutes(app, { logger } = {}) {
   app.post('/api/brain/inference/run', async (req, res) => {
     try {
       const admin = await verifyAdminRequest(req);
-      if (!admin) return res.status(403).json({ error: 'admin only' });
+      const isCron = req.headers['x-vercel-cron'] === '1';
+      const keyOk = process.env.BRAIN_ADMIN_KEY && req.query.key === process.env.BRAIN_ADMIN_KEY;
+      if (!admin && !isCron && !keyOk) return res.status(403).json({ error: 'admin only' });
 
       if (running) {
         return res.status(409).json({ error: 'inference already running', lastRun });

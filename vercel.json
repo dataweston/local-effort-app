@@ -19,6 +19,14 @@
     {
       "path": "/api/digest/meal-feedback",
       "schedule": "0 2 * * *"
+    },
+    {
+      "path": "/api/brain/inference/run",
+      "schedule": "0 3 * * *"
+    },
+    {
+      "path": "/api/brain/hypothesis/run",
+      "schedule": "30 3 * * *"
     }
   ],
   "headers": [

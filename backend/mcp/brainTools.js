@@ -836,6 +836,74 @@ function registerBrainMenuTools(server) {
   );
 }
 
+// ── Hypothesis tools ──────────────────────────────────────────────────────────
+
+function registerBrainHypothesisTools(server) {
+  const prisma = getPrisma();
+
+  server.registerTool(
+    'brain.hypothesis.list',
+    {
+      title: 'List hypotheses',
+      description: 'Return all active hypotheses with their current status, confidence, and sample size. Use this to check which theories are being tracked and how they are progressing.',
+      inputSchema: z.object({}),
+    },
+    async () => {
+      const hypotheses = await prisma.brainEntity.findMany({
+        where: { entityType: 'Hypothesis', tombstonedAt: null, status: { not: 'archived' } },
+        orderBy: { createdAt: 'desc' },
+      });
+      return json({ hypotheses, count: hypotheses.length });
+    }
+  );
+
+  server.registerTool(
+    'brain.hypothesis.create',
+    {
+      title: 'Create hypothesis',
+      description: 'Create a new machine-checkable hypothesis with a predicate. The predicate has a condition (subject state) and prediction (expected outcome). Supported functions: orderCount(days), spendTotal(days), vendorCount(days), feedbackRating(dish, days), daysSinceLastOrder.',
+      inputSchema: z.object({
+        name: z.string().min(1).describe('Short name for the hypothesis'),
+        statement: z.string().min(1).describe('Plain English statement of the theory'),
+        condition: z.string().min(1).describe('e.g. "orderCount(first_30_days) >= 2"'),
+        prediction: z.string().min(1).describe('e.g. "orderCount(days_60_to_90) >= 4"'),
+        evidenceWindow: z.string().optional().describe('e.g. "90 days"'),
+        minSampleSize: z.number().int().min(1).optional().describe('Min data points before concluding (default 3)'),
+        subjectEntityId: z.string().optional().describe('Entity this hypothesis is about'),
+        notes: z.string().optional(),
+      }),
+    },
+    async ({ name, statement, condition, prediction, evidenceWindow, minSampleSize, subjectEntityId, notes }) => {
+      const entity = await prisma.brainEntity.create({
+        data: {
+          entityType: 'Hypothesis',
+          name,
+          status: 'active',
+          properties: {
+            statement,
+            predicate: { condition, prediction, evidenceWindow: evidenceWindow || '90 days', minSampleSize: minSampleSize || 3 },
+            subjectEntityId: subjectEntityId || null,
+            notes: notes || null,
+            status: 'collecting',
+            confidence: null,
+            sampleSize: 0,
+            confirmedCount: 0,
+            rejectedCount: 0,
+            lastEvaluatedAt: null,
+          },
+        },
+      });
+      await writeLedgerEvent({
+        eventType: 'hypothesis.created',
+        source: 'mcp',
+        actorType: 'claude',
+        payload: { hypothesisId: entity.id, name, statement },
+      });
+      return json({ ok: true, id: entity.id, name, message: 'Hypothesis created. It will be evaluated in the next nightly pass.' });
+    }
+  );
+}
+
 // ── Semantic search tool ──────────────────────────────────────────────────────
 
 function registerBrainSearchTools(server) {
@@ -927,6 +995,7 @@ function registerBrainTools(server) {
   registerBrainWriteTools(server);
   registerBrainOntologyTools(server);
   registerBrainMenuTools(server);
+  registerBrainHypothesisTools(server);
   registerBrainSearchTools(server);
 }
 
