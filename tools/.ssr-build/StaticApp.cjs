@@ -4946,6 +4946,7 @@ var DefaultSeo = () => {
         content: shouldNoindex ? "noindex, nofollow" : "index,follow,max-snippet:-1,max-image-preview:large,max-video-preview:-1"
       }
     ),
+    shouldNoindex ? /* @__PURE__ */ (0, import_jsx_runtime3.jsx)("meta", { name: "googlebot", content: "noindex, nofollow, noarchive" }) : null,
     /* @__PURE__ */ (0, import_jsx_runtime3.jsx)("link", { rel: "canonical", href: canonicalUrl }),
     /* @__PURE__ */ (0, import_jsx_runtime3.jsx)("link", { rel: "alternate", type: "text/plain", href: `${SITE_URL}/ai.txt` }),
     /* @__PURE__ */ (0, import_jsx_runtime3.jsx)("link", { rel: "alternate", type: "application/json", href: `${SITE_URL}/ai/manifest.json` }),
@@ -13525,12 +13526,10 @@ var createProxyClient = () => {
 };
 var client = null;
 try {
-  if (projectId && dataset) {
-    if (typeof window !== "undefined") {
-      client = createProxyClient();
-    } else {
-      client = (0, import_client.createClient)({ projectId, dataset, useCdn: true, apiVersion: "2023-05-03" });
-    }
+  if (typeof window !== "undefined") {
+    client = createProxyClient();
+  } else if (projectId && dataset) {
+    client = (0, import_client.createClient)({ projectId, dataset, useCdn: true, apiVersion: "2023-05-03" });
   } else {
     client = {
       fetch: async () => {
@@ -13885,11 +13884,12 @@ function ptToHtml(blocks) {
 // src/store/components/ProductTile.jsx
 var import_jsx_runtime28 = require("react/jsx-runtime");
 var fmt = (cents) => `$${(cents / 100).toFixed(2)}`;
-function ProductTile({ product, sku, onSelect }) {
+function ProductTile({ product, sku, onSelect, showSku = true, showDetailRow = true }) {
   const { map } = useCart();
   const imgRef = (0, import_react21.useRef)(null);
   const primary = Array.isArray(product.images) ? product.images[0] : null;
   const displayPrice = product.salePrice ?? product.price;
+  const displayPriceLabel = product.priceDisplay || fmt(displayPrice);
   const summary = (0, import_react21.useMemo)(() => {
     const text2 = (ptToHtml(product?.longDescriptionBlocks) || product?.longDescription || product?.shortDescription || "").replace(/\s+/g, " ").trim();
     if (!text2) return "";
@@ -13935,23 +13935,23 @@ function ProductTile({ product, sku, onSelect }) {
           product.salePrice && /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("span", { className: "le-tile-badge", children: "Sale" })
         ] }),
         /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("span", { className: "le-tile-meta", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("span", { className: "le-tile-sku", children: sku }),
+          showSku ? /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("span", { className: "le-tile-sku", children: sku }) : /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("span", {}),
           /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("span", { className: "le-tile-price", children: [
             product.salePrice && /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)(import_jsx_runtime28.Fragment, { children: [
               /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("span", { className: "sr-only", children: "Original price: " }),
               /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("span", { className: "le-tile-price-original", children: fmt(product.price) }),
               /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("span", { className: "sr-only", children: "Sale price: " })
             ] }),
-            fmt(displayPrice)
+            displayPriceLabel
           ] })
         ] }),
         /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("span", { className: "le-tile-copy", children: [
           /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("span", { className: "le-tile-title", children: product.title }),
           summary && /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("span", { className: "le-tile-description", children: summary }),
-          /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("span", { className: "le-tile-detail-row", children: [
+          showDetailRow ? /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("span", { className: "le-tile-detail-row", children: [
             /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("span", { className: "le-tile-detail-text", children: detailBits }),
             /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("span", { className: "le-tile-detail-link", children: "View details" })
-          ] })
+          ] }) : null
         ] })
       ]
     }
@@ -14006,6 +14006,7 @@ function ProductDetail({ product, sku, onClose }) {
   ) : 0;
   const dairyFreeExtra = isDairyFree && product.offerDairyFree ? product.dairyFreeCost || 0 : 0;
   const unitPrice = basePrice + addOnTotal + dairyFreeExtra;
+  const unitPriceLabel = product.priceDisplay && addOnTotal === 0 && dairyFreeExtra === 0 ? product.priceDisplay : fmt2(unitPrice);
   const variationId = chosen?.squareVariationId || product.squareVariationId || null;
   const cartKey = `${product.id}:${variationId || ""}`;
   const inCartQty = map?.[cartKey]?.qty || 0;
@@ -14123,7 +14124,7 @@ function ProductDetail({ product, sku, onClose }) {
                   /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("span", { className: "le-detail-price-original", children: fmt2(product.price) })
                 ] }),
                 /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("span", { className: "sr-only", children: product.salePrice ? "Sale price: " : "Price: " }),
-                /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("span", { className: "le-detail-price-current", children: fmt2(unitPrice) })
+                /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("span", { className: "le-detail-price-current", children: unitPriceLabel })
               ] }),
               leadText && /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("p", { className: "le-detail-lead", children: leadText }),
               /* @__PURE__ */ (0, import_jsx_runtime30.jsxs)("div", { className: "le-detail-facts", "aria-label": "Product details", children: [
@@ -14247,7 +14248,14 @@ var getProductSummary = (product) => {
   const summary = (ptToHtml(product?.longDescriptionBlocks) || product?.longDescription || product?.shortDescription || "").replace(/\s+/g, " ").trim();
   return summary.length > 220 ? `${summary.slice(0, 217).trim()}...` : summary;
 };
-function ProductGrid({ products = [], skuPrefix = "LE", loading = false }) {
+function ProductGrid({
+  products = [],
+  skuPrefix = "LE",
+  loading = false,
+  basePath = "/sale",
+  showSku = true,
+  showDetailRow = true
+}) {
   const [selected, setSelected] = (0, import_react25.useState)(null);
   const selectedSku = selected ? `${skuPrefix}-${padded(products.indexOf(selected) + 1)}` : null;
   return /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)(import_jsx_runtime31.Fragment, { children: [
@@ -14268,20 +14276,22 @@ function ProductGrid({ products = [], skuPrefix = "LE", loading = false }) {
             product.images?.[0] && /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("meta", { itemProp: "image", content: product.images[0] }),
             summary && /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("meta", { itemProp: "description", content: summary }),
             /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("meta", { itemProp: "sku", content: sku }),
-            /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("meta", { itemProp: "url", content: `${SITE_URL}/sale#${anchorId}` }),
+            /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("meta", { itemProp: "url", content: `${SITE_URL}${basePath}#${anchorId}` }),
             /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("div", { itemProp: "brand", itemScope: true, itemType: "https://schema.org/Brand", children: /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("meta", { itemProp: "name", content: "Local Effort Food Co." }) }),
             /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)("div", { itemProp: "offers", itemScope: true, itemType: "https://schema.org/Offer", children: [
               /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("meta", { itemProp: "priceCurrency", content: "USD" }),
               /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("meta", { itemProp: "price", content: ((product.salePrice ?? product.price) / 100).toFixed(2) }),
               /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("meta", { itemProp: "availability", content: availability }),
-              /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("meta", { itemProp: "url", content: `${SITE_URL}/sale#${anchorId}` })
+              /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("meta", { itemProp: "url", content: `${SITE_URL}${basePath}#${anchorId}` })
             ] }),
             /* @__PURE__ */ (0, import_jsx_runtime31.jsx)(
               ProductTile,
               {
                 product,
                 sku,
-                onSelect: setSelected
+                onSelect: setSelected,
+                showSku,
+                showDetailRow
               }
             )
           ]
@@ -14964,7 +14974,7 @@ function CartDrawer({ store = "sale" }) {
 
 // src/store/data/generatedSalePageData.json
 var generatedSalePageData_default = {
-  generatedAt: "2026-03-29T21:14:13.971Z",
+  generatedAt: "2026-04-22T22:27:32.802Z",
   page: {
     title: "Local Effort Sale",
     subheading: "holiday pie sale",

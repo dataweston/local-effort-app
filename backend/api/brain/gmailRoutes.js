@@ -58,10 +58,11 @@ function registerGmailRoutes(app, { logger } = {}) {
   app.post('/api/brain/gmail/sync', async (req, res) => {
     try {
       const isAdmin = await verifyAdminRequest(req);
-      if (!isAdmin) return res.status(403).json({ error: 'admin only' });
+      const keyOk = process.env.BRAIN_ADMIN_KEY && req.query.key === process.env.BRAIN_ADMIN_KEY;
+      if (!isAdmin && !keyOk) return res.status(403).json({ error: 'admin only' });
 
-      const { maxThreads = 20, daysBack = 7 } = req.body || {};
-      const result = await syncGmailThreads({ maxThreads, daysBack, logger });
+      const { daysBack = 730, maxPerQuery = 5000, yumAddress = 'yum@localeffortfood.com' } = req.body || {};
+      const result = await syncGmailThreads({ daysBack, maxPerQuery, yumAddress, logger });
 
       return res.json({ ok: true, ...result });
     } catch (err) {

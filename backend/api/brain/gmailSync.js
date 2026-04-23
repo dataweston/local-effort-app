@@ -87,7 +87,21 @@ async function loadGmailTokens() {
   const tokenPath = path.resolve(process.cwd(), '.gmail-tokens.json');
   if (!fs.existsSync(tokenPath)) return null;
   try {
-    return JSON.parse(fs.readFileSync(tokenPath, 'utf8'));
+    const raw = JSON.parse(fs.readFileSync(tokenPath, 'utf8'));
+    // Normalize python google-auth-oauthlib format → googleapis format
+    // Python writes: { token, refresh_token, token_uri, client_id, client_secret, scopes }
+    // googleapis expects: { access_token, refresh_token, expiry_date, ... }
+    if (raw.token && !raw.access_token) {
+      return {
+        access_token: raw.token,
+        refresh_token: raw.refresh_token,
+        token_uri: raw.token_uri,
+        client_id: raw.client_id,
+        client_secret: raw.client_secret,
+        scope: Array.isArray(raw.scopes) ? raw.scopes.join(' ') : raw.scopes,
+      };
+    }
+    return raw;
   } catch {
     return null;
   }
@@ -95,43 +109,66 @@ async function loadGmailTokens() {
 
 // ── Sync logic ───────────────────────────────────────────────────────────────
 
-// Keywords that indicate a thread is operationally relevant
-const RELEVANT_KEYWORDS = [
-  'invoice', 'order', 'delivery', 'pickup', 'quote', 'estimate', 'receipt',
-  'payment', 'bill', 'purchase', 'vendor', 'supplier', 'farm', 'produce',
-  'catering', 'event', 'booking', 'deposit', 'contract', 'menu', 'weekly',
-  'csa', 'wholesale', 'pricing', 'price', 'proposal',
-];
-
-function isRelevantSubject(subject) {
-  if (!subject) return false;
-  const lower = subject.toLowerCase();
-  return RELEVANT_KEYWORDS.some(kw => lower.includes(kw));
-}
-
-function extractPlainText(parts) {
-  if (!parts) return '';
-  for (const part of parts) {
-    if (part.mimeType === 'text/plain' && part.body?.data) {
-      return Buffer.from(part.body.data, 'base64').toString('utf8').slice(0, 500);
-    }
-    if (part.parts) {
-      const nested = extractPlainText(part.parts);
-      if (nested) return nested;
-    }
-  }
-  return '';
+/**
+ * Paginate through all results of a Gmail threads.list query.
+ * Returns an array of { id, snippet } thread stubs.
+ */
+async function listAllThreads(gmail, q, maxResults = 5000) {
+  const threads = [];
+  let pageToken;
+  do {
+    const res = await gmail.users.threads.list({
+      userId: 'me',
+      q,
+      maxResults: Math.min(500, maxResults - threads.length),
+      ...(pageToken ? { pageToken } : {}),
+    });
+    const page = res.data.threads || [];
+    threads.push(...page);
+    pageToken = res.data.nextPageToken;
+  } while (pageToken && threads.length < maxResults);
+  return threads;
 }
 
 /**
- * Sync recent Gmail threads into brain inbox.
- * @param {object} options
- * @param {number} options.maxThreads - max threads to process (default 20)
- * @param {number} options.daysBack - how far back to look (default 7)
- * @param {object} options.logger
- * @returns {{ processed: number, skipped: number, errors: number }}
+ * Collect all unique participant addresses across all messages in a thread.
  */
-async function syncGmailThreads({ maxThreads = 20, daysBack = 7, logger } = {}) {
+function collectParticipants(messages) {
+  const seen = new Set();
+  const FIELDS = ['from', 'to', 'cc', 'bcc'];
+  for (const msg of messages) {
+    for (const h of (msg.payload?.headers || [])) {
+      if (FIELDS.includes(h.name.toLowerCase())) {
+        // Each header value may contain multiple comma-separated addresses
+        for (const addr of h.value.split(',')) {
+          const trimmed = addr.trim();
+          if (trimmed) seen.add(trimmed);
+        }
+      }
+    }
+  }
+  return [...seen];
+}
+
+/**
+ * Full historical Gmail sync.
+ *
+ * Runs two queries and unions their results by threadId:
+ *   1. in:sent after:<2yr ago>           — everything the founder sent
+ *   2. yum@localeffortfood.com           — any thread involving the yum@ address
+ *
+ * Threads are indexed at the thread level (one ledger event per thread).
+ * Each thread gets metadata from the first message plus all participants
+ * aggregated across every message in the thread.
+ *
+ * @param {object} options
+ * @param {number} options.daysBack       - how far back for sent query (default 730 = 2yr)
+ * @param {number} options.maxPerQuery    - max threads per query (default 5000)
+ * @param {string} options.yumAddress     - the yum@ address to search (default yum@localeffortfood.com)
+ * @param {object} options.logger
+ * @returns {{ processed, skipped, errors, queryCounts }}
+ */
+async function syncGmailThreads({ daysBack = 730, maxPerQuery = 5000, yumAddress = 'yum@localeffortfood.com', logger } = {}) {
   const tokens = await loadGmailTokens();
   if (!tokens) {
     throw new Error('Gmail not authorized — visit /api/brain/gmail/auth to connect');
@@ -141,7 +178,6 @@ async function syncGmailThreads({ maxThreads = 20, daysBack = 7, logger } = {}) 
   const oauth2Client = getOAuthClient();
   oauth2Client.setCredentials(tokens);
 
-  // Auto-refresh tokens
   oauth2Client.on('tokens', async (newTokens) => {
     if (newTokens.refresh_token) {
       await storeGmailTokens({ ...tokens, ...newTokens });
@@ -149,96 +185,99 @@ async function syncGmailThreads({ maxThreads = 20, daysBack = 7, logger } = {}) 
   });
 
   const gmail = google.gmail({ version: 'v1', auth: oauth2Client });
-
-  // Query: unread or recent threads, not spam/trash
-  const afterDate = Math.floor((Date.now() - daysBack * 86400000) / 1000);
-  const query = `after:${afterDate} -in:spam -in:trash`;
-
   const prisma = getPrisma();
-  let processed = 0, skipped = 0, errors = 0;
 
-  try {
-    const listRes = await gmail.users.threads.list({
-      userId: 'me',
-      q: query,
-      maxResults: maxThreads,
-    });
+  // Build after: date string for Gmail query (YYYY/MM/DD)
+  const after = new Date(Date.now() - daysBack * 86400000);
+  const afterStr = `${after.getFullYear()}/${String(after.getMonth() + 1).padStart(2, '0')}/${String(after.getDate()).padStart(2, '0')}`;
 
-    const threads = listRes.data.threads || [];
-    if (logger?.info) logger.info({ count: threads.length }, 'brain/gmail: fetched thread list');
+  const queries = [
+    { label: 'sent', q: `in:sent after:${afterStr}` },
+    { label: 'yum', q: yumAddress },
+  ];
 
-    for (const thread of threads) {
-      try {
-        // Check if already ingested
-        const existing = await prisma.ledgerEvent.findFirst({
-          where: { source: 'gmail', sourceId: thread.id },
-        });
-        if (existing) { skipped++; continue; }
-
-        // Fetch full thread
-        const threadRes = await gmail.users.threads.get({
-          userId: 'me',
-          id: thread.id,
-          format: 'metadata',
-          metadataHeaders: ['Subject', 'From', 'Date', 'To'],
-        });
-
-        const messages = threadRes.data.messages || [];
-        if (!messages.length) { skipped++; continue; }
-
-        const firstMsg = messages[0];
-        const headers = Object.fromEntries(
-          (firstMsg.payload?.headers || []).map(h => [h.name.toLowerCase(), h.value])
-        );
-
-        const subject = headers['subject'] || '(no subject)';
-        const from = headers['from'] || '';
-        const date = headers['date'] || '';
-        const messageCount = messages.length;
-
-        // Filter to relevant threads only
-        if (!isRelevantSubject(subject)) { skipped++; continue; }
-
-        // Write ledger event
-        const occurredAt = date ? new Date(date) : new Date();
-        const ledgerEvent = await writeLedgerEvent({
-          eventType: 'email.thread',
-          occurredAt,
-          source: 'gmail',
-          sourceId: thread.id,
-          actorType: 'system',
-          payload: {
-            threadId: thread.id,
-            subject,
-            from,
-            messageCount,
-            snippet: threadRes.data.snippet || '',
-          },
-        });
-
-        // Create inbox item for triage
-        await createInboxItem({
-          rawContent: `Email: "${subject}" from ${from} (${messageCount} message${messageCount !== 1 ? 's' : ''})${threadRes.data.snippet ? '\n' + threadRes.data.snippet : ''}`,
-          source: 'gmail',
-          attachments: [{
-            url: `https://mail.google.com/mail/u/0/#inbox/${thread.id}`,
-            mimeType: 'text/html',
-            label: 'Open in Gmail',
-          }],
-        });
-
-        processed++;
-      } catch (err) {
-        errors++;
-        if (logger?.warn) logger.warn({ err, threadId: thread.id }, 'brain/gmail: thread error');
-      }
-    }
-  } catch (err) {
-    if (logger?.error) logger.error({ err }, 'brain/gmail: sync failed');
-    throw err;
+  // Collect all thread IDs from both queries, dedup
+  const threadIdSet = new Set();
+  const queryCounts = {};
+  for (const { label, q } of queries) {
+    logger?.info({ q }, `brain/gmail: listing threads for query "${label}"`);
+    const stubs = await listAllThreads(gmail, q, maxPerQuery);
+    queryCounts[label] = stubs.length;
+    for (const t of stubs) threadIdSet.add(t.id);
   }
 
-  return { processed, skipped, errors };
+  const allThreadIds = [...threadIdSet];
+  logger?.info({ total: allThreadIds.length, ...queryCounts }, 'brain/gmail: thread union complete');
+
+  let processed = 0, skipped = 0, errors = 0;
+
+  for (const threadId of allThreadIds) {
+    try {
+      // Skip already-ingested threads (idempotent)
+      const existing = await prisma.ledgerEvent.findFirst({
+        where: { source: 'gmail', sourceId: threadId },
+      });
+      if (existing) { skipped++; continue; }
+
+      const threadRes = await gmail.users.threads.get({
+        userId: 'me',
+        id: threadId,
+        format: 'metadata',
+        metadataHeaders: ['Subject', 'From', 'To', 'Cc', 'Bcc', 'Date'],
+      });
+
+      const messages = threadRes.data.messages || [];
+      if (!messages.length) { skipped++; continue; }
+
+      const firstMsg = messages[0];
+      const headers = Object.fromEntries(
+        (firstMsg.payload?.headers || []).map(h => [h.name.toLowerCase(), h.value])
+      );
+
+      const subject = headers['subject'] || '(no subject)';
+      const from = headers['from'] || '';
+      const to = headers['to'] || '';
+      const date = headers['date'] || '';
+      const messageCount = messages.length;
+      const participants = collectParticipants(messages);
+
+      const occurredAt = date ? new Date(date) : new Date();
+
+      await writeLedgerEvent({
+        eventType: 'email.thread',
+        occurredAt,
+        source: 'gmail',
+        sourceId: threadId,
+        actorType: 'system',
+        payload: {
+          threadId,
+          subject,
+          from,
+          to,
+          messageCount,
+          participants,
+          snippet: threadRes.data.snippet || '',
+        },
+      });
+
+      await createInboxItem({
+        rawContent: `Email thread: "${subject}"\nFrom: ${from}\nTo: ${to}\nMessages: ${messageCount}\nSnippet: ${threadRes.data.snippet || ''}`.trim(),
+        source: 'gmail',
+        attachments: [{
+          url: `https://mail.google.com/mail/u/0/#all/${threadId}`,
+          mimeType: 'text/html',
+          label: 'Open in Gmail',
+        }],
+      });
+
+      processed++;
+    } catch (err) {
+      errors++;
+      logger?.warn({ err, threadId }, 'brain/gmail: thread error');
+    }
+  }
+
+  return { processed, skipped, errors, queryCounts };
 }
 
 module.exports = { getAuthUrl, exchangeCodeForTokens, storeGmailTokens, syncGmailThreads };

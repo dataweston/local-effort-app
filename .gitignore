@@ -9,6 +9,9 @@ node_modules
 nul
 .env.vercel
 
+# Local OAuth token storage
+.gmail-tokens.json
+
 # Logs
 *.log
 backend-log.txt

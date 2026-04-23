@@ -1,15 +1,26 @@
 const { createClient } = require('@sanity/client');
 
+const DEFAULT_SANITY_PROJECT_ID = 'd6l9d0ea';
+const DEFAULT_SANITY_DATASET = 'localeffort';
+
 let sanityClient = null;
 let sanityReadClient = null;
 
 function resolveConfig() {
-  const projectId = process.env.SANITY_PROJECT_ID;
+  const projectId =
+    process.env.SANITY_PROJECT_ID ||
+    process.env.VITE_SANITY_PROJECT_ID ||
+    process.env.VITE_APP_SANITY_PROJECT_ID ||
+    DEFAULT_SANITY_PROJECT_ID;
   if (!projectId) {
     console.warn('SANITY_PROJECT_ID not set - Sanity client unavailable.');
     return null;
   }
-  const dataset = process.env.SANITY_DATASET || 'localeffort';
+  const dataset =
+    process.env.SANITY_DATASET ||
+    process.env.VITE_SANITY_DATASET ||
+    process.env.VITE_APP_SANITY_DATASET ||
+    DEFAULT_SANITY_DATASET;
   return { projectId, dataset };
 }
 

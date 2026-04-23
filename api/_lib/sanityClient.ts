@@ -1,7 +1,18 @@
 import { createClient, type SanityClient } from '@sanity/client';
 
-const projectId = process.env.SANITY_PROJECT_ID || process.env.VITE_SANITY_PROJECT_ID;
-const dataset = process.env.SANITY_DATASET || process.env.VITE_SANITY_DATASET || 'production';
+const DEFAULT_SANITY_PROJECT_ID = 'd6l9d0ea';
+const DEFAULT_SANITY_DATASET = 'localeffort';
+
+const projectId =
+  process.env.SANITY_PROJECT_ID ||
+  process.env.VITE_SANITY_PROJECT_ID ||
+  process.env.VITE_APP_SANITY_PROJECT_ID ||
+  DEFAULT_SANITY_PROJECT_ID;
+const dataset =
+  process.env.SANITY_DATASET ||
+  process.env.VITE_SANITY_DATASET ||
+  process.env.VITE_APP_SANITY_DATASET ||
+  DEFAULT_SANITY_DATASET;
 const apiVersion = process.env.SANITY_API_VERSION || '2023-05-03';
 const token = process.env.SANITY_API_TOKEN || process.env.SANITY_WRITE_TOKEN;
 
