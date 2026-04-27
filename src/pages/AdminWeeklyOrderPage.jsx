@@ -1547,7 +1547,7 @@ const MenuIngestTab = ({ authHeaders, customers, onPublished }) => {
         body: JSON.stringify(body),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Parse failed');
+      if (!res.ok) throw new Error(data.detail || data.error || 'Parse failed');
       setDishes(data.dishes.map(d => ({ ...d, _clientSlugs: d.clientSlugs || [] })));
     } catch (err) {
       setParseError(err.message);

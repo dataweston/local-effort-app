@@ -21,6 +21,10 @@ const { PrismaClient } = require('@prisma/client');
 const { requireWeeklyOrderAdmin } = require('../../../api-handlers/weekly-order/admin/_auth');
 
 const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY || '';
+const OPENAI_API_KEY = process.env.OPENAI_API_KEY || '';
+const OPENAI_BASE_URL = process.env.OPENAI_BASE_URL || 'https://api.openai.com/v1';
+const OPENAI_MODEL = process.env.MENU_INGEST_OPENAI_MODEL || process.env.DECISION_LLM_MODEL || 'gpt-5.4-mini';
+const ANTHROPIC_MODEL = process.env.MENU_INGEST_ANTHROPIC_MODEL || 'claude-3-5-sonnet-latest';
 
 let prisma = null;
 try { prisma = new PrismaClient(); } catch (_) { prisma = null; }
@@ -40,6 +44,29 @@ If the input contains section headers like "Lunch:", "Kids:", "Dinner:" — use 
 
 Respond with ONLY valid JSON: { "dishes": [...], "rawText": "the normalized text you saw" }`;
 
+function extractJson(text) {
+  const fenceMatch = text.match(/```(?:json)?\s*([\s\S]*?)```/);
+  const raw = fenceMatch ? fenceMatch[1].trim() : text.trim();
+  return JSON.parse(raw);
+}
+
+function extractOpenAiOutputText(response) {
+  if (typeof response?.output_text === 'string' && response.output_text.trim()) {
+    return response.output_text.trim();
+  }
+  if (Array.isArray(response?.output)) {
+    for (const item of response.output) {
+      if (!Array.isArray(item?.content)) continue;
+      for (const content of item.content) {
+        if (typeof content?.text === 'string' && content.text.trim()) {
+          return content.text.trim();
+        }
+      }
+    }
+  }
+  return '';
+}
+
 async function callClaude(messages) {
   const res = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
@@ -49,7 +76,7 @@ async function callClaude(messages) {
       'content-type': 'application/json',
     },
     body: JSON.stringify({
-      model: 'claude-sonnet-4-6',
+      model: ANTHROPIC_MODEL,
       max_tokens: 4096,
       system: SYSTEM_PROMPT,
       messages,
@@ -62,10 +89,163 @@ async function callClaude(messages) {
   return res.json();
 }
 
-function extractJson(text) {
-  const fenceMatch = text.match(/```(?:json)?\s*([\s\S]*?)```/);
-  const raw = fenceMatch ? fenceMatch[1].trim() : text.trim();
-  return JSON.parse(raw);
+async function callOpenAi({ text, imageBase64, mimeType, imageUrl }) {
+  const content = [];
+
+  if (text) {
+    content.push({
+      type: 'input_text',
+      text: `Parse all dishes from this menu text:\n\n${text}`,
+    });
+  } else {
+    content.push({
+      type: 'input_text',
+      text: 'Parse all dishes from this menu image into the JSON format described.',
+    });
+    if (imageBase64) {
+      const safeMimeType = (mimeType || 'image/jpeg').replace(/[^a-z0-9/+.-]/gi, '') || 'image/jpeg';
+      content.push({
+        type: 'input_image',
+        image_url: `data:${safeMimeType};base64,${imageBase64}`,
+      });
+    } else if (imageUrl) {
+      content.push({
+        type: 'input_image',
+        image_url: imageUrl,
+      });
+    }
+  }
+
+  const response = await fetch(`${OPENAI_BASE_URL.replace(/\/$/, '')}/responses`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${OPENAI_API_KEY}`,
+    },
+    body: JSON.stringify({
+      model: OPENAI_MODEL,
+      max_output_tokens: 2500,
+      input: [
+        {
+          role: 'system',
+          content: [{ type: 'input_text', text: SYSTEM_PROMPT }],
+        },
+        {
+          role: 'user',
+          content,
+        },
+      ],
+      text: {
+        format: {
+          type: 'json_schema',
+          name: 'weekly_order_menu_ingest',
+          schema: {
+            type: 'object',
+            additionalProperties: false,
+            properties: {
+              dishes: {
+                type: 'array',
+                items: {
+                  type: 'object',
+                  additionalProperties: false,
+                  properties: {
+                    title: { type: 'string' },
+                    description: { type: 'string' },
+                    tags: {
+                      type: 'array',
+                      items: { type: 'string' },
+                    },
+                    allergens: {
+                      type: 'array',
+                      items: { type: 'string' },
+                    },
+                    clientSlugs: {
+                      type: 'array',
+                      items: { type: 'string' },
+                    },
+                    notes: { type: 'string' },
+                  },
+                  required: ['title', 'description', 'tags', 'allergens', 'clientSlugs', 'notes'],
+                },
+              },
+              rawText: { type: 'string' },
+            },
+            required: ['dishes', 'rawText'],
+          },
+        },
+      },
+    }),
+  });
+
+  if (!response.ok) {
+    const body = await response.text();
+    throw new Error(`OpenAI API error ${response.status}: ${body}`);
+  }
+
+  const data = await response.json();
+  const raw = extractOpenAiOutputText(data);
+  return extractJson(raw);
+}
+
+async function parseMenu(payload) {
+  const failures = [];
+
+  if (OPENAI_API_KEY) {
+    try {
+      return await callOpenAi(payload);
+    } catch (err) {
+      failures.push(`OpenAI: ${err.message}`);
+    }
+  }
+
+  if (ANTHROPIC_API_KEY) {
+    try {
+      let content;
+      if (payload.imageBase64) {
+        const type = (payload.mimeType || 'image/jpeg').replace(/[^a-z/]/g, '');
+        content = [
+          {
+            type: 'image',
+            source: { type: 'base64', media_type: type, data: payload.imageBase64 },
+          },
+          {
+            type: 'text',
+            text: 'Parse all dishes from this menu image into the JSON format described.',
+          },
+        ];
+      } else if (payload.imageUrl) {
+        content = [
+          {
+            type: 'image',
+            source: { type: 'url', url: payload.imageUrl },
+          },
+          {
+            type: 'text',
+            text: 'Parse all dishes from this menu image into the JSON format described.',
+          },
+        ];
+      } else {
+        content = [
+          {
+            type: 'text',
+            text: `Parse all dishes from this menu text:\n\n${payload.text}`,
+          },
+        ];
+      }
+
+      const response = await callClaude([{ role: 'user', content }]);
+      const raw = response.content?.[0]?.text || '';
+      return extractJson(raw);
+    } catch (err) {
+      failures.push(`Anthropic: ${err.message}`);
+    }
+  }
+
+  if (!OPENAI_API_KEY && !ANTHROPIC_API_KEY) {
+    throw new Error('No AI provider configured');
+  }
+
+  throw new Error(failures.join(' | '));
 }
 
 module.exports = async (req, res) => {
@@ -75,7 +255,6 @@ module.exports = async (req, res) => {
   }
   const admin = await requireWeeklyOrderAdmin(req, res);
   if (!admin) return;
-  if (!ANTHROPIC_API_KEY) return res.status(500).json({ error: 'ANTHROPIC_API_KEY not configured' });
 
   const { text, imageBase64, mimeType, imageUrl, clientSlugs = [] } = req.body || {};
 
@@ -83,47 +262,11 @@ module.exports = async (req, res) => {
     return res.status(400).json({ error: 'Provide text, imageBase64, or imageUrl' });
   }
 
-  // Build the Claude message content
-  let content;
-  if (imageBase64) {
-    const type = (mimeType || 'image/jpeg').replace(/[^a-z/]/g, '');
-    content = [
-      {
-        type: 'image',
-        source: { type: 'base64', media_type: type, data: imageBase64 },
-      },
-      {
-        type: 'text',
-        text: 'Parse all dishes from this menu image into the JSON format described.',
-      },
-    ];
-  } else if (imageUrl) {
-    content = [
-      {
-        type: 'image',
-        source: { type: 'url', url: imageUrl },
-      },
-      {
-        type: 'text',
-        text: 'Parse all dishes from this menu image into the JSON format described.',
-      },
-    ];
-  } else {
-    content = [
-      {
-        type: 'text',
-        text: `Parse all dishes from this menu text:\n\n${text}`,
-      },
-    ];
-  }
-
   let parsed;
   try {
-    const response = await callClaude([{ role: 'user', content }]);
-    const raw = response.content?.[0]?.text || '';
-    parsed = extractJson(raw);
+    parsed = await parseMenu({ text, imageBase64, mimeType, imageUrl });
   } catch (err) {
-    console.error('[menu-ingest] Claude parse error', err);
+    console.error('[menu-ingest] parse error', err);
     return res.status(502).json({ error: 'Failed to parse menu', detail: err.message });
   }
 
