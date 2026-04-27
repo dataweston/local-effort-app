@@ -104,6 +104,7 @@ export const INTERNAL_ROUTES = [
   '/admin/',
   '/weeklydemo',
   '/weekly-order',
+  '/portal/',
   '/catherine-schedule',
   '/partners/',
   '/schedule/',

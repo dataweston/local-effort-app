@@ -1,25 +1,35 @@
 /**
- * Gmail OAuth + sync routes — registered in index.js.
+ * Gmail OAuth + sync routes - registered in index.js.
  *
- * GET  /api/brain/gmail/auth     → redirect to Google OAuth (admin only)
- * GET  /api/brain/gmail/callback → receive OAuth code, store tokens
- * POST /api/brain/gmail/sync     → run sync (admin only, or cron)
+ * GET  /api/brain/gmail/auth     -> redirect to Google OAuth (admin only)
+ * GET  /api/brain/gmail/callback -> receive OAuth code, store tokens
+ * POST /api/brain/gmail/sync     -> run sync (admin only, or cron)
  */
 
+const crypto = require('crypto');
 const { createAdminVerifier } = require('../utils/adminVerifier');
 const verifyAdminRequest = createAdminVerifier();
-const { getAuthUrl, exchangeCodeForTokens, storeGmailTokens, syncGmailThreads } = require('./gmailSync');
+const {
+  getAuthUrl,
+  exchangeCodeForTokens,
+  storeGmailTokens,
+  syncGmailThreads,
+  verifyOAuthState,
+} = require('./gmailSync');
+
+function hasBrainAdminHeader(req) {
+  const provided = String(req.headers['x-brain-admin-key'] || '');
+  const expected = process.env.BRAIN_ADMIN_KEY || '';
+  if (!provided || !expected || provided.length !== expected.length) return false;
+  return crypto.timingSafeEqual(Buffer.from(provided), Buffer.from(expected));
+}
 
 function registerGmailRoutes(app, { logger } = {}) {
-  // Auth redirect — admin only
-  // Accepts either a Supabase JWT (Authorization: Bearer) OR ?key=BRAIN_ADMIN_KEY
-  // The key bypass exists because this route must be visited in a browser to initiate OAuth,
-  // and browsers don't send Authorization headers on direct URL visits.
   app.get('/api/brain/gmail/auth', async (req, res) => {
     try {
       const isAdmin = await verifyAdminRequest(req);
-      const keyOk = process.env.BRAIN_ADMIN_KEY && req.query.key === process.env.BRAIN_ADMIN_KEY;
-      if (!isAdmin && !keyOk) return res.status(403).json({ error: 'admin only — pass ?key=BRAIN_ADMIN_KEY or Authorization: Bearer <token>' });
+      const keyOk = hasBrainAdminHeader(req);
+      if (!isAdmin && !keyOk) return res.status(403).json({ error: 'admin only' });
 
       if (!process.env.GMAIL_CLIENT_ID || !process.env.GMAIL_CLIENT_SECRET) {
         return res.status(500).json({
@@ -36,12 +46,12 @@ function registerGmailRoutes(app, { logger } = {}) {
     }
   });
 
-  // OAuth callback — receives code from Google
   app.get('/api/brain/gmail/callback', async (req, res) => {
     try {
-      const { code, error } = req.query;
+      const { code, error, state } = req.query;
       if (error) return res.status(400).send(`OAuth error: ${error}`);
       if (!code) return res.status(400).send('Missing code');
+      if (!verifyOAuthState(state)) return res.status(400).send('Invalid OAuth state');
 
       const tokens = await exchangeCodeForTokens(code);
       await storeGmailTokens(tokens);
@@ -54,11 +64,10 @@ function registerGmailRoutes(app, { logger } = {}) {
     }
   });
 
-  // Manual or cron-triggered sync
   app.post('/api/brain/gmail/sync', async (req, res) => {
     try {
       const isAdmin = await verifyAdminRequest(req);
-      const keyOk = process.env.BRAIN_ADMIN_KEY && req.query.key === process.env.BRAIN_ADMIN_KEY;
+      const keyOk = hasBrainAdminHeader(req);
       if (!isAdmin && !keyOk) return res.status(403).json({ error: 'admin only' });
 
       const { daysBack = 730, maxPerQuery = 5000, yumAddress = 'yum@localeffortfood.com' } = req.body || {};
@@ -68,7 +77,6 @@ function registerGmailRoutes(app, { logger } = {}) {
     } catch (err) {
       const message = err?.message || 'sync-failed';
       logger?.error({ err }, 'brain/gmail sync error');
-      // Not-authorized is a user-fixable error
       if (message.includes('not authorized')) {
         return res.status(401).json({ error: message, authUrl: '/api/brain/gmail/auth' });
       }

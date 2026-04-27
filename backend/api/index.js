@@ -63,6 +63,7 @@ const { registerOntologyRoutes } = require('./brain/ontologyRoutes');
 const { registerSidecarRoutes } = require('./brain/sidecarRoutes');
 const { registerSearchRoutes } = require('./brain/searchRoutes');
 const { registerHypothesisRoutes } = require('./brain/hypothesisRoutes');
+const { registerEntityRoutes } = require('./brain/entityRoutes');
 const weeklyOrderCheckoutLinkHandler = require('../../api-handlers/weekly-order/checkout-link');
 const weeklyOrderProfileHandler = require('../../api-handlers/weekly-order/profile');
 const weeklyOrderHistoryHandler = require('../../api-handlers/weekly-order/history');
@@ -546,6 +547,7 @@ registerOntologyRoutes(app, { logger });
 registerSidecarRoutes(app, { logger });
 registerSearchRoutes(app, { logger });
 registerHypothesisRoutes(app, { logger });
+registerEntityRoutes(app, { logger });
 
 // Nightly brain jobs — 02:00: Python sidecar extraction, then inference pass
 {
@@ -3524,7 +3526,7 @@ app.put('/api/notes/:id', requireAllowedUser, async (req, res) => {
 });
 
 // Save campaign (draft) to Sanity
-app.post('/api/campaigns/save', async (req, res) => {
+app.post('/api/campaigns/save', requireAllowedUser, async (req, res) => {
   try {
     const { name, html } = req.body || {};
     if (!name) return res.status(400).json({ error: 'Missing name' });
@@ -3539,7 +3541,7 @@ app.post('/api/campaigns/save', async (req, res) => {
 });
 
 // Team: send outbound message
-app.post('/api/messages/send', async (req, res) => {
+app.post('/api/messages/send', requireAllowedUser, async (req, res) => {
   try {
     const { to, subject, html, text, threadId, fromName, fromEmail } = req.body || {};
     if (!to || !Array.isArray(to) || to.length === 0) return res.status(400).json({ error: 'Missing recipients' });
@@ -3598,7 +3600,7 @@ app.post('/api/messages/send', async (req, res) => {
 });
 
 // Team: read inbox (basic, newest first)
-app.get('/api/inbox', async (req, res) => {
+app.get('/api/inbox', requireAllowedUser, async (req, res) => {
   try {
     const sc = getSanityClient();
     if (!sc) return res.status(500).json({ error: 'Sanity not configured' });
@@ -3803,7 +3805,7 @@ app.post('/api/push/subscribe', async (req, res) => {
   }
 });
 
-app.post('/api/push/notify', async (req, res) => {
+app.post('/api/push/notify', requireAllowedUser, async (req, res) => {
   try {
     if (!webPush) return res.status(500).json({ error: 'web-push not configured' });
     const { title, body, url = '/' } = req.body || {};
@@ -3851,7 +3853,7 @@ app.post('/api/referrals/validate', async (req, res) => {
 
 // --- Square Customers: list and import ---
 // List Square customers (minimal fields) with pagination cursor support
-app.get('/api/square/customers', async (req, res) => {
+app.get('/api/square/customers', requireAllowedUser, async (req, res) => {
   try {
     if (!squareClient) return res.status(500).json({ error: 'square-not-configured' });
     const { cursor } = req.query || {};
@@ -3910,7 +3912,7 @@ async function mirrorContactInSanity({ email, firstName, lastName, phone, tags }
 
 // Import Square customers into Sanity contacts (and optionally Brevo)
 // POST body: { cursor?, limit?, upsertBrevo?: boolean }
-app.post('/api/square/customers/import', async (req, res) => {
+app.post('/api/square/customers/import', requireAllowedUser, async (req, res) => {
   try {
     if (!squareClient) return res.status(500).json({ error: 'square-not-configured' });
     const { cursor, upsertBrevo = false } = req.body || {};

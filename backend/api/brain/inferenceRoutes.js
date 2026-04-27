@@ -11,6 +11,13 @@ const { getPrisma } = require('../utils/prisma');
 
 const verifyAdminRequest = createAdminVerifier();
 
+function hasBrainAdminHeader(req) {
+  const provided = String(req.headers['x-brain-admin-key'] || '');
+  const expected = process.env.BRAIN_ADMIN_KEY || '';
+  if (!provided || !expected || provided.length !== expected.length) return false;
+  return require('crypto').timingSafeEqual(Buffer.from(provided), Buffer.from(expected));
+}
+
 // Track last run in memory to prevent double-runs
 let running = false;
 let lastRun = null;
@@ -23,7 +30,7 @@ function registerInferenceRoutes(app, { logger } = {}) {
     try {
       const admin = await verifyAdminRequest(req);
       const isCron = req.headers['x-vercel-cron'] === '1';
-      const keyOk = process.env.BRAIN_ADMIN_KEY && req.query.key === process.env.BRAIN_ADMIN_KEY;
+      const keyOk = hasBrainAdminHeader(req);
       if (!admin && !isCron && !keyOk) return res.status(403).json({ error: 'admin only' });
 
       if (running) {

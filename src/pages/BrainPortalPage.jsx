@@ -23,6 +23,18 @@ export default function BrainPortalPage() {
   const [submitError, setSubmitError] = useState(null);
 
   useEffect(() => {
+    let meta = document.querySelector('meta[name="referrer"]');
+    if (!meta) {
+      meta = document.createElement('meta');
+      meta.setAttribute('name', 'referrer');
+      document.head.appendChild(meta);
+    }
+    const previous = meta.getAttribute('content') || '';
+    meta.setAttribute('content', 'no-referrer');
+    return () => { meta.setAttribute('content', previous); };
+  }, []);
+
+  useEffect(() => {
     if (!shareToken) return;
     fetch(`${API_BASE}/api/brain/portal/${shareToken}`)
       .then(r => r.json())
@@ -50,12 +62,10 @@ export default function BrainPortalPage() {
     setSubmitting(dishName);
     setSubmitError(null);
     try {
-      // Token goes in Authorization header, not query string (avoids server logs / referrer leakage)
-      const res = await fetch(`${API_BASE}/api/brain/menu/${menu.id}/feedback`, {
+      const res = await fetch(`${API_BASE}/api/brain/portal/${shareToken}/feedback`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${shareToken}`,
         },
         body: JSON.stringify({ dishName, rating, notes, customerName: customerName || null }),
       });

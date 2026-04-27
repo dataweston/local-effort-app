@@ -44,12 +44,40 @@ def main():
     from jobs.extract_square import run as run_square
     from jobs.triage_inbox import run as run_inbox
     from jobs.embed import run as run_embed
+    from jobs.clear_inbox import run as run_clear_inbox
+    from jobs.extract_static import run as run_static
+    from jobs.extract_orders import run as run_orders
+    from jobs.extract_planner import run as run_planner
+    from jobs.extract_january import run as run_january
+    from jobs.extract_sanity import run as run_sanity
+    from jobs.extract_brevo import run as run_brevo
+    from jobs.extract_square_catalog import run as run_square_catalog
+    from jobs.extract_xlsx_model import run as run_xlsx_model
+    from jobs.extract_square_csv import run as run_square_csv
+    from jobs.extract_receipts import run as run_receipts
+    from jobs.extract_cpw_prices import run as run_cpw_prices
 
     all_jobs = {
-        'gmail':  (run_gmail,  {}),
-        'square': (run_square, {}),
-        'inbox':  (run_inbox,  {}),
-        'embed':  (run_embed,  {'full_reembed': FULL_REEMBED}),
+        # Phase 0 — Gmail (existing, LLM-based)
+        'gmail':        (run_gmail,       {'max_workers': 4}),
+        # Phase 1 — Zero-LLM structured sources
+        'static':       (run_static,      {}),
+        'orders':       (run_orders,      {}),
+        'planner':      (run_planner,     {}),
+        'january':      (run_january,     {}),
+        # Phase 2 — CMS / external APIs
+        'sanity':       (run_sanity,      {}),
+        'brevo':        (run_brevo,       {}),
+        'square_catalog': (run_square_catalog, {}),
+        'xlsx_model':   (run_xlsx_model,     {}),
+        'square_csv':   (run_square_csv,     {}),
+        'receipts':     (run_receipts,       {}),
+        'cpw_prices':   (run_cpw_prices,     {}),
+        # Existing jobs
+        'square':       (run_square,      {}),
+        'inbox':        (run_inbox,       {}),
+        'embed':        (run_embed,       {'full_reembed': FULL_REEMBED}),
+        'clear_inbox':  (run_clear_inbox, {'source': 'gmail'}),
     }
 
     jobs_to_run = JOBS_ARG if JOBS_ARG else list(all_jobs.keys())

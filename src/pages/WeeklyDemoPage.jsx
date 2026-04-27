@@ -407,6 +407,7 @@ export default function WeeklyDemoPage() {
         items={inbox.items}
         triage={inbox.triage}
         loading={inbox.loading}
+        accessToken={auth.accessToken}
       />
     </div>
   );

@@ -11,6 +11,9 @@ Disallow: /inbox
 Disallow: /campaigns
 Disallow: /admin/
 Disallow: /weeklydemo
+Disallow: /portal/
+Disallow: /weekly-order/portal
+Disallow: /weekly-order/*/portal
 Disallow: /catherine-schedule
 Disallow: /partners/
 

@@ -695,6 +695,7 @@ model BrainApiToken {
   label      String
   tokenHash  String    @unique
   scopes     String[]
+  tokenData  Json?
   lastUsedAt DateTime?
   createdAt  DateTime  @default(now())
 }

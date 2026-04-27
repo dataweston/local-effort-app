@@ -1,5 +1,14 @@
 // GET /api/store/pizza-party-bookings?limit=50
-// Returns recent pizza party bookings (requires ADMIN_API_KEY header or ?key= param matching process.env.ADMIN_API_KEY)
+// Returns recent pizza party bookings (requires x-admin-key matching process.env.ADMIN_API_KEY)
+
+const crypto = require('crypto');
+
+function isValidAdminKey(value) {
+  const supplied = String(value || '');
+  const expected = process.env.ADMIN_API_KEY || '';
+  if (!supplied || !expected || supplied.length !== expected.length) return false;
+  return crypto.timingSafeEqual(Buffer.from(supplied), Buffer.from(expected));
+}
 
 let db = null;
 try {
@@ -11,8 +20,7 @@ try {
 module.exports = async (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
   if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' });
-  const supplied = req.headers['x-admin-key'] || req.query.key;
-  if (!process.env.ADMIN_API_KEY || supplied !== process.env.ADMIN_API_KEY) {
+  if (!isValidAdminKey(req.headers['x-admin-key'])) {
     return res.status(401).json({ error: 'Unauthorized' });
   }
   if (!db) return res.status(500).json({ error: 'DB not available' });

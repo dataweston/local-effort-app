@@ -16,6 +16,12 @@ const { writeLedgerEvent, createInboxItem } = require('./ledger');
 
 const verifyAdminRequest = createAdminVerifier();
 
+function setPortalPrivacyHeaders(res) {
+  res.setHeader('X-Robots-Tag', 'noindex, nofollow, noarchive');
+  res.setHeader('Referrer-Policy', 'no-referrer');
+  res.setHeader('Cache-Control', 'private, no-store');
+}
+
 // ── Constraint check ──────────────────────────────────────────────────────────
 
 /**
@@ -72,6 +78,43 @@ async function checkConstraints(prisma, customerId, dishNames) {
 
 function registerMenuRoutes(app, { logger } = {}) {
   const prisma = getPrisma();
+
+  async function saveMenuFeedback(menu, body = {}) {
+    const { dishName, rating, notes, customerName } = body;
+    if (!dishName || !rating) {
+      return { status: 400, body: { error: 'dishName and rating required' } };
+    }
+    if (!['love', 'like', 'ok', 'dislike'].includes(rating)) {
+      return { status: 400, body: { error: 'rating must be love|like|ok|dislike' } };
+    }
+
+    const cleanNotes = typeof notes === 'string' ? notes.trim().slice(0, 2000) : '';
+    const cleanCustomerName = typeof customerName === 'string' ? customerName.trim().slice(0, 120) : '';
+
+    const ledgerEvent = await writeLedgerEvent({
+      eventType: 'menu.feedback',
+      source: 'portal',
+      actorType: 'customer',
+      payload: {
+        menuId: menu.id,
+        menuName: menu.name,
+        dishName,
+        rating,
+        notes: cleanNotes || null,
+        customerName: cleanCustomerName || null,
+      },
+    });
+
+    if (rating === 'dislike') {
+      await createInboxItem({
+        rawContent: `Menu feedback - ${cleanCustomerName || 'customer'} disliked "${dishName}" on menu "${menu.name}"${cleanNotes ? ': ' + cleanNotes : ''}`,
+        source: 'portal',
+      });
+    }
+
+    logger?.info({ menuId: menu.id, dishName, rating }, 'brain: menu feedback received');
+    return { status: 200, body: { ok: true, ledgerEventId: ledgerEvent.id } };
+  }
 
   // POST /api/brain/menu — create Menu entity
   app.post('/api/brain/menu', async (req, res) => {
@@ -268,6 +311,7 @@ function registerMenuRoutes(app, { logger } = {}) {
   // POST /api/brain/menu/:id/feedback — customer feedback (token-gated via shareToken)
   app.post('/api/brain/menu/:id/feedback', async (req, res) => {
     try {
+      setPortalPrivacyHeaders(res);
       const menu = await prisma.brainEntity.findUnique({ where: { id: req.params.id } });
       if (!menu || menu.entityType !== 'Menu') return res.status(404).json({ error: 'not found' });
 
@@ -316,8 +360,27 @@ function registerMenuRoutes(app, { logger } = {}) {
   });
 
   // GET /api/brain/portal/:shareToken — public portal (no auth)
+  app.post('/api/brain/portal/:shareToken/feedback', async (req, res) => {
+    try {
+      setPortalPrivacyHeaders(res);
+      const menu = await prisma.brainEntity.findUnique({
+        where: { shareToken: req.params.shareToken },
+      });
+      if (!menu || menu.entityType !== 'Menu' || menu.status !== 'active') {
+        return res.status(404).json({ error: 'not found' });
+      }
+
+      const result = await saveMenuFeedback(menu, req.body || {});
+      return res.status(result.status).json(result.body);
+    } catch (err) {
+      logger?.error({ err }, 'brain: portal feedback error');
+      return res.status(500).json({ error: 'internal-error' });
+    }
+  });
+
   app.get('/api/brain/portal/:shareToken', async (req, res) => {
     try {
+      setPortalPrivacyHeaders(res);
       const menu = await prisma.brainEntity.findUnique({
         where: { shareToken: req.params.shareToken },
       });
@@ -333,9 +396,7 @@ function registerMenuRoutes(app, { logger } = {}) {
       return res.json({
         ok: true,
         menu: {
-          id: menu.id,
           name: menu.name,
-          shareToken: menu.shareToken,
           weekOf: menu.properties?.weekOf,
           dishes: menu.properties?.dishes || [],
           notes: menu.properties?.notes,

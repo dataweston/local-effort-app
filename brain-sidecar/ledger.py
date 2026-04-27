@@ -12,8 +12,8 @@ def write_ledger_event(
     event_type: str,
     source: str,
     payload: dict,
-    occurred_at: datetime | None = None,
-    source_id: str | None = None,
+    occurred_at=None,
+    source_id=None,
     actor_type: str = 'system',
     schema_version: int = 1,
 ) -> str:
@@ -40,8 +40,8 @@ def write_assertion(
     rel_type: str,
     ledger_event_id: str,
     confidence: float = 0.8,
-    metadata: dict | None = None,
-    valid_from: datetime | None = None,
+    metadata=None,
+    valid_from=None,
     provisional: bool = True,
     created_by: str = 'python_extractor',
 ) -> str:
@@ -112,3 +112,15 @@ def already_processed(source: str, source_id: str) -> bool:
         (source, source_id),
     )
     return len(rows) > 0
+
+
+def bulk_already_processed(source: str, source_ids: list) -> set:
+    """Return the set of source_ids that have already been processed."""
+    if not source_ids:
+        return set()
+    placeholders = ','.join(['%s'] * len(source_ids))
+    rows = query(
+        f'SELECT "sourceId" FROM "LedgerEvent" WHERE source = %s AND "sourceId" IN ({placeholders})',
+        (source, *source_ids),
+    )
+    return {r['sourceId'] for r in rows}

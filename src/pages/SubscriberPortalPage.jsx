@@ -114,6 +114,60 @@ const DashboardTab = ({ profile, history, customerName }) => (
   </div>
 );
 
+/* ─── This Week tab ─── */
+const ThisWeekTab = ({ accessToken, customerSlug }) => {
+  const [menuWeek, setMenuWeek] = useState(null);
+  const [items, setItems] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const slugParam = customerSlug ? `?customerSlug=${encodeURIComponent(customerSlug)}` : '';
+    fetch(`/api/weekly-order/upcoming${slugParam}`, {
+      headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : {},
+    })
+      .then(r => r.ok ? r.json() : null)
+      .then(data => {
+        if (data) { setMenuWeek(data.menuWeek); setItems(data.items || []); }
+      })
+      .finally(() => setLoading(false));
+  }, [accessToken, customerSlug]);
+
+  if (loading) return <div className="weekly-order-loading">Loading…</div>;
+  if (!menuWeek) return <p style={{ padding: 16, color: '#64748b' }}>No upcoming menu yet — check back soon!</p>;
+
+  const weekLabel = formatWeek(menuWeek.weekStart);
+  const isPast = new Date(menuWeek.weekStart) < new Date();
+
+  return (
+    <div className="space-y-4">
+      <Card>
+        <CardHeader>
+          <CardTitle>{isPast ? 'Current Week' : 'Upcoming Week'}: {weekLabel}</CardTitle>
+          {menuWeek.status === 'draft' && (
+            <p style={{ fontSize: '0.8rem', color: '#94a3b8', margin: 0 }}>Menu is being finalized — dishes may change.</p>
+          )}
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            {items.map((item) => (
+              <DishFeedbackRow
+                key={item.dishId}
+                item={{ ...item, quantity: 1 }}
+                menuWeekId={menuWeek.id}
+                accessToken={accessToken}
+                onSaved={() => {}}
+              />
+            ))}
+            {items.length === 0 && (
+              <p style={{ color: '#64748b', fontSize: '0.9rem' }}>No dishes assigned for this week yet.</p>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+};
+
 /* ─── Past Menus tab with feedback ─── */
 const PastMenusTab = ({ history, accessToken, onFeedbackSaved }) => {
   if (!history.length) return <p style={{ padding: 16, color: '#64748b' }}>No past orders yet.</p>;
@@ -537,13 +591,18 @@ const SubscriberPortalPage = () => {
             </div>
           </header>
 
-          <Tabs defaultValue="dashboard" style={{ marginTop: 24 }}>
+          <Tabs defaultValue="this-week" style={{ marginTop: 24 }}>
             <TabsList>
+              <TabsTrigger value="this-week">This Week</TabsTrigger>
               <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
               <TabsTrigger value="past-menus">Past Menus</TabsTrigger>
               <TabsTrigger value="profile">Profile</TabsTrigger>
               <TabsTrigger value="chef-note">Note to Chef</TabsTrigger>
             </TabsList>
+
+            <TabsContent value="this-week">
+              <ThisWeekTab accessToken={accessToken} customerSlug={customerSlug} />
+            </TabsContent>
 
             <TabsContent value="dashboard">
               {loadingProfile ? (

@@ -1,5 +1,5 @@
 const { PrismaClient } = require('@prisma/client');
-const { verifySupabaseToken } = require('./_auth');
+const { resolveAuthorizedCustomer } = require('./_auth');
 
 let prisma = null;
 try { prisma = new PrismaClient(); } catch (_) { prisma = null; }
@@ -11,32 +11,9 @@ module.exports = async (req, res) => {
   }
   if (!prisma) return res.status(503).json({ error: 'Database unavailable' });
 
-  const supabaseUser = await verifySupabaseToken(req);
-  if (!supabaseUser) return res.status(401).json({ error: 'Unauthorized' });
-
-  // Try resolving customer by slug first, then fall back to email lookup
-  const slug = req.query?.customerSlug;
-  let user = null;
-  let customer = null;
-
-  if (slug) {
-    customer = await prisma.customer.findFirst({ where: { slug } });
-  }
-  if (!customer) {
-    user = await prisma.user.findFirst({
-      where: { email: supabaseUser.email },
-      include: { customer: true },
-    });
-    customer = user?.customer || null;
-  }
-  if (!customer) return res.status(404).json({ error: 'No customer found' });
-
-  // Resolve the user if not already found (for feedback lookup)
-  if (!user) {
-    user = await prisma.user.findFirst({
-      where: { email: supabaseUser.email },
-    });
-  }
+  const auth = await resolveAuthorizedCustomer(req, prisma);
+  if (auth.error) return res.status(auth.status).json({ error: auth.error });
+  const { dbUser: user, customer } = auth;
 
   const limit = Math.min(parseInt(req.query?.limit, 10) || 20, 50);
 

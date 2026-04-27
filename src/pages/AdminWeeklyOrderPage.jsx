@@ -8,6 +8,7 @@ import '../styles/fullpage-demo-theme.css';
 import '../styles/weekly-order-admin.css';
 
 const TABS = [
+  { id: 'menu-ingest', label: '📷 Menu Ingest' },
   { id: 'ingest', label: 'Ingest Inbox' },
   { id: 'drafts', label: 'Dish Drafts' },
   { id: 'dishes', label: 'Dish Catalog' },
@@ -401,6 +402,10 @@ const AdminWeeklyOrderPage = () => {
             </button>
           ))}
         </div>
+
+        {activeTab === 'menu-ingest' && (
+          <MenuIngestTab authHeaders={authHeaders} customers={customers} onPublished={loadMenuWeeks} />
+        )}
 
         {activeTab === 'ingest' && (
           <section className="weekly-order-admin-section">
@@ -1438,6 +1443,352 @@ const AdminWeeklyOrderPage = () => {
         )}
       </div>
     </div>
+  );
+};
+
+// ─── Menu Ingest Tab ──────────────────────────────────────────────────────────
+
+const ALL_CLIENT_SLUGS_PLACEHOLDER = '__all__';
+
+const MenuIngestTab = ({ authHeaders, customers, onPublished }) => {
+  const [inputMode, setInputMode] = useState('text'); // 'text' | 'image'
+  const [textInput, setTextInput] = useState('');
+  const [imageBase64, setImageBase64] = useState('');
+  const [imageMime, setImageMime] = useState('image/jpeg');
+  const [imagePreview, setImagePreview] = useState('');
+  const [parsing, setParsing] = useState(false);
+  const [parseError, setParseError] = useState('');
+  const [dishes, setDishes] = useState(null); // null = not yet parsed
+  const [weekStart, setWeekStart] = useState('');
+  const [publishing, setPublishing] = useState(false);
+  const [publishResult, setPublishResult] = useState(null);
+  const [publishError, setPublishError] = useState('');
+  const [blogPosting, setBlogPosting] = useState(false);
+  const [blogResult, setBlogResult] = useState(null);
+
+  // Default weekStart to next Monday
+  React.useEffect(() => {
+    const today = new Date();
+    const day = today.getDay();
+    const daysUntilMonday = day === 0 ? 1 : (8 - day) % 7 || 7;
+    const nextMonday = new Date(today);
+    nextMonday.setDate(today.getDate() + daysUntilMonday);
+    setWeekStart(nextMonday.toISOString().slice(0, 10));
+  }, []);
+
+  const handleImageFile = (file) => {
+    if (!file) return;
+    setImageMime(file.type || 'image/jpeg');
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const dataUrl = e.target.result;
+      setImagePreview(dataUrl);
+      // Strip the data:...;base64, prefix
+      setImageBase64(dataUrl.split(',')[1] || '');
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleParse = async () => {
+    setParsing(true);
+    setParseError('');
+    setDishes(null);
+    setPublishResult(null);
+    try {
+      const body = inputMode === 'image'
+        ? { imageBase64, mimeType: imageMime }
+        : { text: textInput };
+      const res = await fetch('/api/weekly-order/admin/menu-ingest', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...authHeaders },
+        body: JSON.stringify(body),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Parse failed');
+      setDishes(data.dishes.map(d => ({ ...d, _clientSlugs: d.clientSlugs || [] })));
+    } catch (err) {
+      setParseError(err.message);
+    } finally {
+      setParsing(false);
+    }
+  };
+
+  const updateDish = (i, patch) => {
+    setDishes(prev => prev.map((d, idx) => idx === i ? { ...d, ...patch } : d));
+  };
+
+  const removeDish = (i) => {
+    setDishes(prev => prev.filter((_, idx) => idx !== i));
+  };
+
+  const handlePublish = async () => {
+    if (!weekStart || !dishes?.length) return;
+    setPublishing(true);
+    setPublishError('');
+    setPublishResult(null);
+    try {
+      const payload = {
+        weekStart,
+        dishes: dishes.map(d => ({
+          title: d.title,
+          description: d.description,
+          tags: d.tags,
+          allergens: d.allergens,
+          notes: d.notes,
+          matchedDishId: d.matchedDishId || null,
+          clientSlugs: d._clientSlugs || [],
+        })),
+      };
+      const res = await fetch('/api/weekly-order/admin/menu-publish', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...authHeaders },
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Publish failed');
+      setPublishResult(data);
+      onPublished?.();
+    } catch (err) {
+      setPublishError(err.message);
+    } finally {
+      setPublishing(false);
+    }
+  };
+
+  const handleBlogPost = async () => {
+    if (!publishResult?.menuWeekId) return;
+    setBlogPosting(true);
+    setBlogResult(null);
+    try {
+      const res = await fetch('/api/weekly-order/admin/menu-blog', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...authHeaders },
+        body: JSON.stringify({ menuWeekId: publishResult.menuWeekId }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Blog post failed');
+      setBlogResult(data);
+    } catch (err) {
+      setBlogResult({ error: err.message });
+    } finally {
+      setBlogPosting(false);
+    }
+  };
+
+  const customerOptions = customers.map(c => ({ id: c.id, slug: c.slug, name: c.name || c.slug }));
+
+  return (
+    <section className="weekly-order-admin-section">
+      <div className="weekly-order-admin-section-header">
+        <h2>Menu Ingest</h2>
+        <span style={{ fontSize: '0.8rem', color: '#64748b' }}>
+          Photo or text → parse → review → publish to week
+        </span>
+      </div>
+
+      {/* Step 1: Input */}
+      <Card style={{ marginBottom: '1rem' }}>
+        <CardHeader><CardTitle>Step 1 — Upload menu</CardTitle></CardHeader>
+        <CardContent>
+          <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.75rem' }}>
+            <Button size="sm" variant={inputMode === 'text' ? 'default' : 'outline'} onClick={() => setInputMode('text')}>
+              Text / Typed
+            </Button>
+            <Button size="sm" variant={inputMode === 'image' ? 'default' : 'outline'} onClick={() => setInputMode('image')}>
+              Photo / Image
+            </Button>
+          </div>
+
+          {inputMode === 'text' && (
+            <textarea
+              rows={10}
+              value={textInput}
+              onChange={e => setTextInput(e.target.value)}
+              placeholder={'Paste or type your menu here.\n\nExamples:\nChicken Tikka Masala - basmati rice, naan, cilantro\nCaesar Salad - romaine, parmesan, croutons\n\nOr use section headers:\nDinner:\n- Pork Belly\nKids:\n- Mac and Cheese'}
+              style={{ width: '100%', fontFamily: 'monospace', fontSize: '0.85rem', padding: '0.5rem', border: '1px solid #d1d5db', borderRadius: '0.375rem', resize: 'vertical' }}
+            />
+          )}
+
+          {inputMode === 'image' && (
+            <div>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={e => handleImageFile(e.target.files?.[0])}
+                style={{ marginBottom: '0.5rem' }}
+              />
+              {imagePreview && (
+                <img src={imagePreview} alt="Menu preview" style={{ maxWidth: '100%', maxHeight: 320, borderRadius: '0.375rem', marginTop: '0.5rem', border: '1px solid #e2e8f0' }} />
+              )}
+            </div>
+          )}
+
+          {parseError && <p style={{ color: '#ef4444', marginTop: '0.5rem', fontSize: '0.85rem' }}>{parseError}</p>}
+
+          <Button
+            style={{ marginTop: '0.75rem' }}
+            onClick={handleParse}
+            disabled={parsing || (inputMode === 'text' ? !textInput.trim() : !imageBase64)}
+          >
+            {parsing ? 'Parsing with Claude…' : 'Parse Menu'}
+          </Button>
+        </CardContent>
+      </Card>
+
+      {/* Step 2: Review */}
+      {dishes && (
+        <Card style={{ marginBottom: '1rem' }}>
+          <CardHeader>
+            <CardTitle>Step 2 — Review dishes ({dishes.length})</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+              {dishes.map((dish, i) => (
+                <div key={i} style={{ border: '1px solid #e2e8f0', borderRadius: '0.5rem', padding: '0.75rem', backgroundColor: '#fafafa' }}>
+                  <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.5rem', alignItems: 'flex-start' }}>
+                    <div style={{ flex: 1 }}>
+                      <label style={{ fontSize: '0.75rem', fontWeight: 600, color: '#475569' }}>Dish name</label>
+                      <input
+                        value={dish.title}
+                        onChange={e => updateDish(i, { title: e.target.value })}
+                        style={{ width: '100%', padding: '0.3rem 0.5rem', border: '1px solid #d1d5db', borderRadius: '0.375rem', fontSize: '0.9rem', fontWeight: 600 }}
+                      />
+                    </div>
+                    <Button size="sm" variant="outline" style={{ color: '#ef4444', marginTop: '1.1rem', flexShrink: 0 }} onClick={() => removeDish(i)}>
+                      Remove
+                    </Button>
+                  </div>
+                  <label style={{ fontSize: '0.75rem', fontWeight: 600, color: '#475569' }}>Ingredients</label>
+                  <input
+                    value={dish.description}
+                    onChange={e => updateDish(i, { description: e.target.value })}
+                    placeholder="comma-separated ingredients"
+                    style={{ width: '100%', padding: '0.3rem 0.5rem', border: '1px solid #d1d5db', borderRadius: '0.375rem', fontSize: '0.85rem', marginBottom: '0.4rem' }}
+                  />
+                  <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', marginBottom: '0.4rem' }}>
+                    <div>
+                      <label style={{ fontSize: '0.75rem', fontWeight: 600, color: '#475569' }}>Tags</label>
+                      <input
+                        value={(dish.tags || []).join(', ')}
+                        onChange={e => updateDish(i, { tags: e.target.value.split(',').map(t => t.trim()).filter(Boolean) })}
+                        placeholder="dinner, kids…"
+                        style={{ display: 'block', padding: '0.3rem 0.5rem', border: '1px solid #d1d5db', borderRadius: '0.375rem', fontSize: '0.8rem', width: 180 }}
+                      />
+                    </div>
+                    <div>
+                      <label style={{ fontSize: '0.75rem', fontWeight: 600, color: '#475569' }}>Allergens</label>
+                      <input
+                        value={(dish.allergens || []).join(', ')}
+                        onChange={e => updateDish(i, { allergens: e.target.value.split(',').map(t => t.trim()).filter(Boolean) })}
+                        placeholder="dairy, wheat…"
+                        style={{ display: 'block', padding: '0.3rem 0.5rem', border: '1px solid #d1d5db', borderRadius: '0.375rem', fontSize: '0.8rem', width: 180 }}
+                      />
+                    </div>
+                  </div>
+                  {customerOptions.length > 0 && (
+                    <div>
+                      <label style={{ fontSize: '0.75rem', fontWeight: 600, color: '#475569' }}>Clients</label>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem', marginTop: '0.25rem' }}>
+                        {customerOptions.map(c => (
+                          <label key={c.slug} style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', fontSize: '0.8rem', cursor: 'pointer' }}>
+                            <input
+                              type="checkbox"
+                              checked={(dish._clientSlugs || []).includes(c.slug)}
+                              onChange={e => {
+                                const prev = dish._clientSlugs || [];
+                                const next = e.target.checked ? [...prev, c.slug] : prev.filter(s => s !== c.slug);
+                                updateDish(i, { _clientSlugs: next });
+                              }}
+                            />
+                            {c.name}
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  {dish.matchedDishTitle && (
+                    <p style={{ fontSize: '0.75rem', color: '#6b7280', marginTop: '0.4rem' }}>
+                      ↳ Matched existing dish: <strong>{dish.matchedDishTitle}</strong> ({Math.round((dish.matchScore || 0) * 100)}% confidence)
+                      {' · '}
+                      <button
+                        style={{ color: '#ef4444', background: 'none', border: 'none', cursor: 'pointer', fontSize: '0.75rem', padding: 0 }}
+                        onClick={() => updateDish(i, { matchedDishId: null, matchedDishTitle: null, matchScore: 0 })}
+                      >
+                        Create new instead
+                      </button>
+                    </p>
+                  )}
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Step 3: Publish */}
+      {dishes && dishes.length > 0 && (
+        <Card style={{ marginBottom: '1rem' }}>
+          <CardHeader><CardTitle>Step 3 — Publish to week</CardTitle></CardHeader>
+          <CardContent>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.75rem' }}>
+              <label style={{ fontWeight: 600, fontSize: '0.85rem' }}>Week of</label>
+              <input
+                type="date"
+                value={weekStart}
+                onChange={e => setWeekStart(e.target.value)}
+                style={{ padding: '0.35rem 0.5rem', border: '1px solid #d1d5db', borderRadius: '0.375rem' }}
+              />
+            </div>
+            {publishError && <p style={{ color: '#ef4444', fontSize: '0.85rem', marginBottom: '0.5rem' }}>{publishError}</p>}
+            <Button onClick={handlePublish} disabled={publishing || !weekStart}>
+              {publishing ? 'Publishing…' : `Publish ${dishes.length} dish${dishes.length !== 1 ? 'es' : ''} to week`}
+            </Button>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Result */}
+      {publishResult && (
+        <Card>
+          <CardHeader><CardTitle>Published ✓</CardTitle></CardHeader>
+          <CardContent>
+            <p style={{ fontSize: '0.85rem', color: '#16a34a', marginBottom: '0.75rem' }}>
+              {publishResult.dishes?.filter(d => !d.skipped).length} dishes added to week of{' '}
+              {new Date(publishResult.weekStart).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}.
+            </p>
+
+            {/* Sticker input */}
+            <details style={{ marginBottom: '0.75rem' }}>
+              <summary style={{ fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer', color: '#475569' }}>
+                Sticker input.txt (copy → paste into make_stickers.py)
+              </summary>
+              <textarea
+                readOnly
+                value={publishResult.stickerInput || ''}
+                rows={Math.min(20, (publishResult.stickerInput || '').split('\n').length + 2)}
+                style={{ width: '100%', fontFamily: 'monospace', fontSize: '0.8rem', marginTop: '0.5rem', padding: '0.5rem', border: '1px solid #d1d5db', borderRadius: '0.375rem', resize: 'vertical' }}
+                onClick={e => e.target.select()}
+              />
+            </details>
+
+            {/* Blog post button */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+              <Button variant="outline" size="sm" onClick={handleBlogPost} disabled={blogPosting}>
+                {blogPosting ? 'Creating blog post…' : 'Create blog post in Sanity'}
+              </Button>
+              {blogResult?.studioUrl && (
+                <a href={blogResult.studioUrl} target="_blank" rel="noopener noreferrer" style={{ fontSize: '0.85rem', color: '#2563eb' }}>
+                  Open in Sanity Studio →
+                </a>
+              )}
+              {blogResult?.error && (
+                <span style={{ fontSize: '0.85rem', color: '#ef4444' }}>{blogResult.error}</span>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+    </section>
   );
 };
 

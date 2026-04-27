@@ -46,7 +46,50 @@ function getAuthUrl() {
     access_type: 'offline',
     scope: GMAIL_SCOPES,
     prompt: 'consent',
+    state: createOAuthState(),
   });
+}
+
+function getStateSecret() {
+  return process.env.GMAIL_OAUTH_STATE_SECRET ||
+    process.env.BRAIN_ADMIN_KEY ||
+    process.env.GMAIL_CLIENT_SECRET ||
+    '';
+}
+
+function base64url(value) {
+  return Buffer.from(value).toString('base64url');
+}
+
+function createOAuthState() {
+  const crypto = require('crypto');
+  const secret = getStateSecret();
+  if (!secret) throw new Error('Gmail OAuth state secret not configured');
+  const payload = JSON.stringify({
+    ts: Date.now(),
+    nonce: crypto.randomBytes(16).toString('hex'),
+  });
+  const encoded = base64url(payload);
+  const sig = crypto.createHmac('sha256', secret).update(encoded).digest('base64url');
+  return `${encoded}.${sig}`;
+}
+
+function verifyOAuthState(state, maxAgeMs = 15 * 60 * 1000) {
+  const crypto = require('crypto');
+  const secret = getStateSecret();
+  if (!secret || typeof state !== 'string') return false;
+  const [encoded, sig] = state.split('.');
+  if (!encoded || !sig) return false;
+  const expected = crypto.createHmac('sha256', secret).update(encoded).digest('base64url');
+  const a = Buffer.from(sig);
+  const b = Buffer.from(expected);
+  if (a.length !== b.length || !crypto.timingSafeEqual(a, b)) return false;
+  try {
+    const payload = JSON.parse(Buffer.from(encoded, 'base64url').toString('utf8'));
+    return Number.isFinite(payload.ts) && Date.now() - payload.ts <= maxAgeMs;
+  } catch {
+    return false;
+  }
 }
 
 async function exchangeCodeForTokens(code) {
@@ -63,48 +106,40 @@ async function storeGmailTokens(tokens) {
 
   await prisma.brainApiToken.upsert({
     where: { tokenHash },
-    update: { lastUsedAt: new Date() },
+    update: { lastUsedAt: new Date(), tokenData: tokens },
     create: {
       label: GMAIL_TOKEN_LABEL,
       tokenHash,
       scopes: GMAIL_SCOPES,
+      tokenData: tokens,
     },
   });
 
-  // Store actual token data separately — tokenHash is just the index key
-  // We use a simple JSON file in a secure location for the actual OAuth tokens
-  // In production this should use a secrets manager or encrypted DB field
-  const fs = require('fs');
-  const path = require('path');
-  const tokenPath = path.resolve(process.cwd(), '.gmail-tokens.json');
-  fs.writeFileSync(tokenPath, tokenData, { mode: 0o600 });
   return tokenHash;
 }
 
 async function loadGmailTokens() {
-  const fs = require('fs');
-  const path = require('path');
-  const tokenPath = path.resolve(process.cwd(), '.gmail-tokens.json');
-  if (!fs.existsSync(tokenPath)) return null;
-  try {
-    const raw = JSON.parse(fs.readFileSync(tokenPath, 'utf8'));
-    // Normalize python google-auth-oauthlib format → googleapis format
-    // Python writes: { token, refresh_token, token_uri, client_id, client_secret, scopes }
-    // googleapis expects: { access_token, refresh_token, expiry_date, ... }
-    if (raw.token && !raw.access_token) {
-      return {
-        access_token: raw.token,
-        refresh_token: raw.refresh_token,
-        token_uri: raw.token_uri,
-        client_id: raw.client_id,
-        client_secret: raw.client_secret,
-        scope: Array.isArray(raw.scopes) ? raw.scopes.join(' ') : raw.scopes,
-      };
-    }
-    return raw;
-  } catch {
-    return null;
+  const prisma = getPrisma();
+  const row = await prisma.brainApiToken.findFirst({
+    where: { label: GMAIL_TOKEN_LABEL },
+    orderBy: { lastUsedAt: 'desc' },
+  });
+  if (!row?.tokenData) return null;
+  const raw = row.tokenData;
+  // Normalize python google-auth-oauthlib format → googleapis format
+  // Python writes: { token, refresh_token, token_uri, client_id, client_secret, scopes }
+  // googleapis expects: { access_token, refresh_token, expiry_date, ... }
+  if (raw.token && !raw.access_token) {
+    return {
+      access_token: raw.token,
+      refresh_token: raw.refresh_token,
+      token_uri: raw.token_uri,
+      client_id: raw.client_id,
+      client_secret: raw.client_secret,
+      scope: Array.isArray(raw.scopes) ? raw.scopes.join(' ') : raw.scopes,
+    };
   }
+  return raw;
 }
 
 // ── Sync logic ───────────────────────────────────────────────────────────────
@@ -280,4 +315,4 @@ async function syncGmailThreads({ daysBack = 730, maxPerQuery = 5000, yumAddress
   return { processed, skipped, errors, queryCounts };
 }
 
-module.exports = { getAuthUrl, exchangeCodeForTokens, storeGmailTokens, syncGmailThreads };
+module.exports = { getAuthUrl, exchangeCodeForTokens, storeGmailTokens, syncGmailThreads, verifyOAuthState };

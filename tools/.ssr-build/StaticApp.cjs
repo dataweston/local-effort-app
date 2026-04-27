@@ -4803,6 +4803,7 @@ var INTERNAL_ROUTES = [
   "/admin/",
   "/weeklydemo",
   "/weekly-order",
+  "/portal/",
   "/catherine-schedule",
   "/partners/",
   "/schedule/"
@@ -14974,7 +14975,7 @@ function CartDrawer({ store = "sale" }) {
 
 // src/store/data/generatedSalePageData.json
 var generatedSalePageData_default = {
-  generatedAt: "2026-04-22T22:27:32.802Z",
+  generatedAt: "2026-04-23T05:09:38.549Z",
   page: {
     title: "Local Effort Sale",
     subheading: "holiday pie sale",

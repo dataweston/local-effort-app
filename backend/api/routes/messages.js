@@ -98,6 +98,44 @@ function createMessagesRouter({ logger, brevoService, getSanityClient, db, getSu
     if (logger?.info) logger.info({ event, ...details }, 'messages audit');
   };
 
+  const parseAdminEmails = (value) => String(value || '')
+    .split(/[\s,]+/)
+    .map((entry) => entry.trim().toLowerCase())
+    .filter(Boolean);
+
+  const isTeamEmail = (email) => {
+    const normalized = String(email || '').trim().toLowerCase();
+    if (!normalized) return false;
+    const configured = parseAdminEmails(
+      process.env.ADMIN_EMAILS ||
+        process.env.VITE_ADMIN_EMAILS ||
+        process.env.NEXT_PUBLIC_ADMIN_EMAILS
+    );
+    const adminEmails = configured.length > 0
+      ? configured
+      : ['dataweston@gmail.com', 'colsen03@gmail.com'];
+    return adminEmails.includes(normalized) || normalized.endsWith('@localeffortfood.com');
+  };
+
+  const requireTeamUser = async (req, res, next) => {
+    const authHeader = String(req.headers.authorization || '');
+    const match = authHeader.match(/^Bearer\s+(.+)$/i);
+    const supabase = getSupabase ? getSupabase() : null;
+    if (!match || !supabase) return res.status(401).json({ error: 'Unauthorized' });
+
+    try {
+      const {
+        data: { user },
+        error,
+      } = await supabase.auth.getUser(match[1].trim());
+      if (error || !isTeamEmail(user?.email)) return res.status(403).json({ error: 'Forbidden' });
+      req.user = { email: user.email, uid: user.id };
+      return next();
+    } catch (_err) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+  };
+
   const subscriberDocId = (email) => {
     const safe = String(email || '').toLowerCase().replace(/@/g, '-at-').replace(/\./g, '-').replace(/[^a-z0-9-]/g, '-');
     return `email-subscriber-${safe}`;
@@ -920,7 +958,7 @@ function createMessagesRouter({ logger, brevoService, getSanityClient, db, getSu
     }
   });
 
-  router.post('/messages/send', async (req, res) => {
+  router.post('/messages/send', requireTeamUser, async (req, res) => {
     try {
       const { to, subject, html, text, threadId, fromName, fromEmail } = req.body || {};
       if (!to || !Array.isArray(to) || to.length === 0) return res.status(400).json({ error: 'Missing recipients' });
@@ -973,7 +1011,7 @@ function createMessagesRouter({ logger, brevoService, getSanityClient, db, getSu
     }
   });
 
-  router.get('/inbox', async (req, res) => {
+  router.get('/inbox', requireTeamUser, async (req, res) => {
     try {
       const sc = getSanityClient ? getSanityClient() : null;
       if (!sc) return res.status(500).json({ error: 'Sanity not configured' });

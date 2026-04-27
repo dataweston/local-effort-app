@@ -1,5 +1,5 @@
 const { PrismaClient } = require('@prisma/client');
-const { verifySupabaseToken } = require('./_auth');
+const { findUserByEmail, resolveAuthorizedCustomer } = require('./_auth');
 
 let prisma = null;
 try { prisma = new PrismaClient(); } catch (_) { prisma = null; }
@@ -8,17 +8,24 @@ const BREVO_API_KEY = process.env.BREVO_API_KEY;
 const ADMIN_EMAIL = process.env.WEEKLY_ORDER_ADMIN_EMAIL || 'yum@localeffortfood.com';
 const SENDER_EMAIL = process.env.SENDER_EMAIL || 'hello@localeffortfood.com';
 
+const escapeHtml = (value = '') => String(value)
+  .replace(/&/g, '&amp;')
+  .replace(/</g, '&lt;')
+  .replace(/>/g, '&gt;')
+  .replace(/"/g, '&quot;')
+  .replace(/'/g, '&#39;');
+
 async function notifyAdmin(userEmail, dish, feedback) {
   if (!BREVO_API_KEY) return;
-  const emoji = feedback.thumbsUp ? '👍' : '👎';
-  const subject = `${emoji} Dish Feedback: ${dish.title} — ${userEmail}`;
+  const label = feedback.thumbsUp ? 'Thumbs Up' : 'Thumbs Down';
+  const subject = `Dish Feedback: ${dish.title} - ${userEmail}`;
   const htmlContent = `
 <div style="font-family:sans-serif;max-width:560px;margin:0 auto;padding:20px;">
-  <h2 style="color:#1f2937;">${emoji} Dish Feedback</h2>
-  <p><strong>Dish:</strong> ${dish.title}</p>
-  <p><strong>From:</strong> ${userEmail}</p>
-  <p><strong>Rating:</strong> ${feedback.thumbsUp ? 'Thumbs Up' : 'Thumbs Down'}</p>
-  ${feedback.notes ? `<p><strong>Notes:</strong> ${feedback.notes}</p>` : ''}
+  <h2 style="color:#1f2937;">Dish Feedback</h2>
+  <p><strong>Dish:</strong> ${escapeHtml(dish.title)}</p>
+  <p><strong>From:</strong> ${escapeHtml(userEmail)}</p>
+  <p><strong>Rating:</strong> ${label}</p>
+  ${feedback.notes ? `<p><strong>Notes:</strong> ${escapeHtml(feedback.notes).replace(/\n/g, '<br />')}</p>` : ''}
 </div>`;
   try {
     await fetch('https://api.brevo.com/v3/smtp/email', {
@@ -40,22 +47,12 @@ async function notifyAdmin(userEmail, dish, feedback) {
 module.exports = async (req, res) => {
   if (!prisma) return res.status(503).json({ error: 'Database unavailable' });
 
-  const supabaseUser = await verifySupabaseToken(req);
-  if (!supabaseUser) return res.status(401).json({ error: 'Unauthorized' });
+  const auth = await resolveAuthorizedCustomer(req, prisma, { requireCustomer: req.method !== 'GET' });
+  if (auth.error) return res.status(auth.status).json({ error: auth.error });
+  const { supabaseUser, customer, isAdmin } = auth;
 
-  // Find or create a user record for this email
-  let user = await prisma.user.findFirst({ where: { email: supabaseUser.email } });
-  if (!user) {
-    const slug = req.body?.customerSlug || req.query?.customerSlug;
-    let customerId = null;
-    if (slug) {
-      const cust = await prisma.customer.findFirst({ where: { slug } });
-      customerId = cust?.id || null;
-    }
-    user = await prisma.user.create({
-      data: { email: supabaseUser.email, role: 'subscriber', ...(customerId ? { customerId } : {}) },
-    });
-  }
+  const user = auth.dbUser || await findUserByEmail(prisma, supabaseUser.email);
+  if (!user) return res.status(403).json({ error: 'Forbidden' });
 
   if (req.method === 'POST') {
     const { dishId, menuWeekId, thumbsUp, notes } = req.body || {};
@@ -64,14 +61,29 @@ module.exports = async (req, res) => {
     }
 
     const dish = await prisma.dish.findUnique({ where: { id: dishId }, select: { title: true } });
+    if (!dish) return res.status(404).json({ error: 'Dish not found' });
 
+    if (!isAdmin) {
+      const matchingOrder = await prisma.order.findFirst({
+        where: {
+          customerId: customer.id,
+          menuWeekId,
+          status: { in: ['paid', 'submitted'] },
+          items: { some: { dishId } },
+        },
+        select: { id: true },
+      });
+      if (!matchingOrder) return res.status(403).json({ error: 'Forbidden' });
+    }
+
+    const cleanNotes = typeof notes === 'string' ? notes.trim().slice(0, 2000) : '';
     const feedback = await prisma.dishFeedback.upsert({
       where: { userId_dishId_menuWeekId: { userId: user.id, dishId, menuWeekId } },
-      update: { thumbsUp, notes: notes || null },
-      create: { userId: user.id, dishId, menuWeekId, thumbsUp, notes: notes || null },
+      update: { thumbsUp, notes: cleanNotes || null },
+      create: { userId: user.id, dishId, menuWeekId, thumbsUp, notes: cleanNotes || null },
     });
 
-    notifyAdmin(supabaseUser.email, dish || { title: 'Unknown dish' }, { thumbsUp, notes });
+    notifyAdmin(supabaseUser.email, dish, { thumbsUp, notes: cleanNotes });
 
     return res.status(200).json({ feedback });
   }
