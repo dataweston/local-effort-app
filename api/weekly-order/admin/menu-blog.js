@@ -13,28 +13,14 @@
  * Response: { ok, sanityDocId, slug, studioUrl }
  */
 
-const crypto = require('crypto');
 const { PrismaClient } = require('@prisma/client');
 const { getSanityClient } = require('../../../backend/api/sanityClient');
+const { requireWeeklyOrderAdmin } = require('../../../api-handlers/weekly-order/admin/_auth');
 
-const ADMIN_TOKEN = process.env.WEEKLY_ORDER_ADMIN_TOKEN || '';
 const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY || '';
 
 let prisma = null;
 try { prisma = new PrismaClient(); } catch (_) { prisma = null; }
-
-const safeEqual = (a, b) => {
-  if (a.length !== b.length) return false;
-  return crypto.timingSafeEqual(Buffer.from(a), Buffer.from(b));
-};
-
-const checkAdmin = (req) => {
-  if (!ADMIN_TOKEN) return false;
-  const header = req.headers['x-admin-token'] || '';
-  const auth = req.headers.authorization || '';
-  const bearer = auth.startsWith('Bearer ') ? auth.slice(7) : '';
-  return safeEqual(header, ADMIN_TOKEN) || safeEqual(bearer, ADMIN_TOKEN);
-};
 
 function slugify(s) {
   return s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
@@ -145,7 +131,8 @@ module.exports = async (req, res) => {
     res.setHeader('Allow', 'POST');
     return res.status(405).json({ error: 'Method not allowed' });
   }
-  if (!checkAdmin(req)) return res.status(401).json({ error: 'Unauthorized' });
+  const admin = await requireWeeklyOrderAdmin(req, res);
+  if (!admin) return;
   if (!prisma) return res.status(500).json({ error: 'Database not configured' });
 
   const sanity = getSanityClient();

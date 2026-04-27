@@ -17,27 +17,13 @@
  *   { dishes: [{ title, description, tags, allergens, clientSlugs }], rawText }
  */
 
-const crypto = require('crypto');
 const { PrismaClient } = require('@prisma/client');
+const { requireWeeklyOrderAdmin } = require('../../../api-handlers/weekly-order/admin/_auth');
 
-const ADMIN_TOKEN = process.env.WEEKLY_ORDER_ADMIN_TOKEN || '';
 const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY || '';
 
 let prisma = null;
 try { prisma = new PrismaClient(); } catch (_) { prisma = null; }
-
-const safeEqual = (a, b) => {
-  if (a.length !== b.length) return false;
-  return crypto.timingSafeEqual(Buffer.from(a), Buffer.from(b));
-};
-
-const checkAdmin = (req) => {
-  if (!ADMIN_TOKEN) return false;
-  const header = req.headers['x-admin-token'] || '';
-  const auth = req.headers.authorization || '';
-  const bearer = auth.startsWith('Bearer ') ? auth.slice(7) : '';
-  return safeEqual(header, ADMIN_TOKEN) || safeEqual(bearer, ADMIN_TOKEN);
-};
 
 const SYSTEM_PROMPT = `You are a structured data extractor for a meal prep business. Your job is to parse menus — whether typed, photographed, or handwritten — into clean JSON.
 
@@ -87,7 +73,8 @@ module.exports = async (req, res) => {
     res.setHeader('Allow', 'POST');
     return res.status(405).json({ error: 'Method not allowed' });
   }
-  if (!checkAdmin(req)) return res.status(401).json({ error: 'Unauthorized' });
+  const admin = await requireWeeklyOrderAdmin(req, res);
+  if (!admin) return;
   if (!ANTHROPIC_API_KEY) return res.status(500).json({ error: 'ANTHROPIC_API_KEY not configured' });
 
   const { text, imageBase64, mimeType, imageUrl, clientSlugs = [] } = req.body || {};

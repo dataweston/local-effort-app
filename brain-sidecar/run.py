@@ -56,6 +56,7 @@ def main():
     from jobs.extract_square_csv import run as run_square_csv
     from jobs.extract_receipts import run as run_receipts
     from jobs.extract_cpw_prices import run as run_cpw_prices
+    from jobs.extract_vendor_crossref import run as run_vendor_crossref
 
     all_jobs = {
         # Phase 0 — Gmail (existing, LLM-based)
@@ -73,6 +74,7 @@ def main():
         'square_csv':   (run_square_csv,     {}),
         'receipts':     (run_receipts,       {}),
         'cpw_prices':   (run_cpw_prices,     {}),
+        'vendor_crossref': (run_vendor_crossref, {}),
         # Existing jobs
         'square':       (run_square,      {}),
         'inbox':        (run_inbox,       {}),

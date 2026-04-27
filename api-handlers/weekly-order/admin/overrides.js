@@ -1,7 +1,5 @@
-const crypto = require('crypto');
 const { PrismaClient } = require('@prisma/client');
-
-const ADMIN_TOKEN = process.env.WEEKLY_ORDER_ADMIN_TOKEN || '';
+const { requireWeeklyOrderAdmin } = require('./_auth');
 
 let prisma = null;
 try {
@@ -10,26 +8,12 @@ try {
   prisma = null;
 }
 
-const safeEqual = (a, b) => {
-  if (a.length !== b.length) return false;
-  return crypto.timingSafeEqual(Buffer.from(a), Buffer.from(b));
-};
-
-const checkAdmin = (req) => {
-  if (!ADMIN_TOKEN) return false;
-  const header = req.headers['x-admin-token'] || '';
-  const auth = req.headers.authorization || '';
-  const bearer = auth.startsWith('Bearer ') ? auth.slice(7) : '';
-  return safeEqual(header, ADMIN_TOKEN) || safeEqual(bearer, ADMIN_TOKEN);
-};
-
 module.exports = async (req, res) => {
   if (!prisma) {
     return res.status(500).json({ error: 'Database not configured' });
   }
-  if (!checkAdmin(req)) {
-    return res.status(401).json({ error: 'Unauthorized' });
-  }
+  const admin = await requireWeeklyOrderAdmin(req, res);
+  if (!admin) return;
 
   if (req.method === 'GET') {
     const menuWeekId = req.query?.menuWeekId;

@@ -1426,6 +1426,42 @@ app.all('/api/weekly-order/admin/user-overrides', async (req, res, next) => {
   }
 });
 
+app.all('/api/weekly-order/admin/menu-ingest', async (req, res, next) => {
+  try {
+    await require('../../api/weekly-order/admin/menu-ingest')(req, res);
+  } catch (err) {
+    logger.error({ err, method: req.method }, 'weekly order menu ingest handler failed');
+    next(err);
+  }
+});
+
+app.all('/api/weekly-order/admin/menu-publish', async (req, res, next) => {
+  try {
+    await require('../../api/weekly-order/admin/menu-publish')(req, res);
+  } catch (err) {
+    logger.error({ err, method: req.method }, 'weekly order menu publish handler failed');
+    next(err);
+  }
+});
+
+app.all('/api/weekly-order/admin/menu-blog', async (req, res, next) => {
+  try {
+    await require('../../api/weekly-order/admin/menu-blog')(req, res);
+  } catch (err) {
+    logger.error({ err, method: req.method }, 'weekly order menu blog handler failed');
+    next(err);
+  }
+});
+
+app.all('/api/weekly-order/admin/menu-preplist', async (req, res, next) => {
+  try {
+    await require('../../api/weekly-order/admin/menu-preplist')(req, res);
+  } catch (err) {
+    logger.error({ err, method: req.method }, 'weekly order menu preplist handler failed');
+    next(err);
+  }
+});
+
 // --- Calendar API Routes ---
 app.all('/api/calendar/events', async (req, res, next) => {
   try {

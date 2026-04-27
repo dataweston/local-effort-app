@@ -280,3 +280,213 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* ─── Prep List ────────────────────────────────────────────────────────────── */
+
+.prep-list-doc {
+  background: #fff;
+  border: 1px solid var(--color-border-default);
+  border-radius: 1rem;
+  padding: 2rem;
+  max-width: 860px;
+  font-family: var(--font-body, 'Source Sans 3', sans-serif);
+}
+
+.prep-list-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  padding-bottom: 1.25rem;
+  border-bottom: 2px solid #1a1a1a;
+  margin-bottom: 1.5rem;
+}
+
+.prep-list-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin: 0 0 0.2rem;
+  color: #1a1a1a;
+}
+
+.prep-list-subtitle {
+  font-size: 0.95rem;
+  color: #64748b;
+  margin: 0;
+}
+
+.prep-list-summary-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  align-items: center;
+}
+
+.prep-list-badge {
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+  background: #f1f5f9;
+  color: #334155;
+  border: 1px solid #e2e8f0;
+}
+
+.prep-list-badge--meal {
+  background: #fef9c3;
+  border-color: #fde68a;
+  color: #78350f;
+}
+
+.prep-list-group {
+  margin-bottom: 2rem;
+}
+
+.prep-list-group-heading {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #64748b;
+  border-bottom: 1px solid #e2e8f0;
+  padding-bottom: 0.35rem;
+  margin: 0 0 0.75rem;
+}
+
+.prep-list-dish {
+  padding: 0.65rem 0;
+  border-bottom: 1px dashed #e2e8f0;
+}
+
+.prep-list-dish:last-child {
+  border-bottom: none;
+}
+
+.prep-list-dish-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 0.5rem;
+  margin-bottom: 0.35rem;
+}
+
+.prep-list-dish-title-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.prep-list-dish-name {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #1a1a1a;
+}
+
+.prep-list-allergens {
+  font-size: 0.72rem;
+  color: #b45309;
+  background: #fef3c7;
+  padding: 0.15rem 0.45rem;
+  border-radius: 999px;
+  border: 1px solid #fde68a;
+}
+
+.prep-list-client-count {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #1a1a1a;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.prep-list-client-names {
+  font-weight: 400;
+  color: #64748b;
+}
+
+.prep-list-ingredients {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 0.75rem;
+  padding-left: 0.25rem;
+}
+
+.prep-list-ingredient {
+  font-size: 0.85rem;
+  color: #374151;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.prep-list-checkbox {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border: 1.5px solid #94a3b8;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+
+.prep-list-description {
+  font-size: 0.85rem;
+  color: #374151;
+  margin: 0.2rem 0 0;
+}
+
+.prep-list-shopping {
+  margin-top: 2.5rem;
+  padding-top: 1.5rem;
+  border-top: 2px solid #1a1a1a;
+}
+
+.prep-list-shopping-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 0.35rem 1.5rem;
+}
+
+.prep-list-shopping-item {
+  font-size: 0.85rem;
+  color: #374151;
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.prep-list-footer {
+  margin-top: 1.5rem;
+  font-size: 0.72rem;
+  color: #94a3b8;
+  text-align: right;
+}
+
+/* Print styles */
+@media print {
+  .weekly-order-admin-hero,
+  .weekly-order-admin-tabs,
+  .weekly-order-admin-section-header button,
+  select {
+    display: none !important;
+  }
+
+  .prep-list-doc {
+    border: none;
+    padding: 0;
+    max-width: 100%;
+  }
+
+  .prep-list-dish {
+    page-break-inside: avoid;
+  }
+
+  .prep-list-group {
+    page-break-inside: avoid;
+  }
+
+  .prep-list-shopping {
+    page-break-before: always;
+  }
+}

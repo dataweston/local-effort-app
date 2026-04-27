@@ -9,6 +9,7 @@ import '../styles/weekly-order-admin.css';
 
 const TABS = [
   { id: 'menu-ingest', label: '📷 Menu Ingest' },
+  { id: 'prep-list', label: '📋 Prep List' },
   { id: 'ingest', label: 'Ingest Inbox' },
   { id: 'drafts', label: 'Dish Drafts' },
   { id: 'dishes', label: 'Dish Catalog' },
@@ -405,6 +406,10 @@ const AdminWeeklyOrderPage = () => {
 
         {activeTab === 'menu-ingest' && (
           <MenuIngestTab authHeaders={authHeaders} customers={customers} onPublished={loadMenuWeeks} />
+        )}
+
+        {activeTab === 'prep-list' && (
+          <PrepListTab authHeaders={authHeaders} menuWeeks={menuWeeks} />
         )}
 
         {activeTab === 'ingest' && (
@@ -1787,6 +1792,172 @@ const MenuIngestTab = ({ authHeaders, customers, onPublished }) => {
             </div>
           </CardContent>
         </Card>
+      )}
+    </section>
+  );
+};
+
+// ─── Prep List Tab ───────────────────────────────────────────────────────────
+
+const MEAL_TYPE_LABELS = {
+  breakfast: 'Breakfast',
+  lunch: 'Lunch',
+  dinner: 'Dinner',
+  snack: 'Snack',
+  kids: 'Kids',
+  other: 'Other',
+};
+
+const PrepListTab = ({ authHeaders, menuWeeks }) => {
+  const [selectedWeekId, setSelectedWeekId] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [prepList, setPrepList] = useState(null);
+  const [printMode, setPrintMode] = useState(false);
+
+  // Default to the first (most recent) week
+  React.useEffect(() => {
+    if (!selectedWeekId && menuWeeks?.length) {
+      setSelectedWeekId(menuWeeks[0].id);
+    }
+  }, [menuWeeks]);
+
+  const loadPrepList = async () => {
+    if (!selectedWeekId) return;
+    setLoading(true);
+    setError('');
+    setPrepList(null);
+    try {
+      const res = await fetch(`/api/weekly-order/admin/menu-preplist?menuWeekId=${selectedWeekId}`, {
+        headers: authHeaders,
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to load prep list');
+      setPrepList(data);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  React.useEffect(() => {
+    if (selectedWeekId) loadPrepList();
+  }, [selectedWeekId]);
+
+  const handlePrint = () => {
+    window.print();
+  };
+
+  return (
+    <section className="weekly-order-admin-section">
+      <div className="weekly-order-admin-section-header" style={{ flexWrap: 'wrap', gap: '0.5rem' }}>
+        <h2>Prep List</h2>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
+          <select
+            value={selectedWeekId}
+            onChange={e => setSelectedWeekId(e.target.value)}
+            style={{ padding: '0.35rem 0.5rem', border: '1px solid #d1d5db', borderRadius: '0.375rem', fontSize: '0.85rem' }}
+          >
+            <option value="">— select a week —</option>
+            {menuWeeks.map(w => (
+              <option key={w.id} value={w.id}>
+                {new Date(w.weekStart).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+                {' '}({w.status})
+              </option>
+            ))}
+          </select>
+          <Button size="sm" variant="outline" onClick={loadPrepList} disabled={loading || !selectedWeekId}>
+            {loading ? 'Loading…' : 'Refresh'}
+          </Button>
+          {prepList && (
+            <Button size="sm" variant="outline" onClick={handlePrint}>
+              Print / Save PDF
+            </Button>
+          )}
+        </div>
+      </div>
+
+      {error && <p style={{ color: '#ef4444', fontSize: '0.85rem', margin: '0.5rem 0' }}>{error}</p>}
+
+      {prepList && (
+        <div className="prep-list-doc">
+          {/* Header */}
+          <div className="prep-list-header">
+            <div>
+              <h1 className="prep-list-title">Kitchen Prep List</h1>
+              <p className="prep-list-subtitle">Week of {prepList.weekLabel}</p>
+            </div>
+            <div className="prep-list-summary-badges">
+              <span className="prep-list-badge">{prepList.summary.totalDishes} dishes</span>
+              <span className="prep-list-badge">{prepList.summary.totalClients} clients</span>
+              {Object.entries(prepList.summary.byMealType).map(([meal, count]) => (
+                <span key={meal} className="prep-list-badge prep-list-badge--meal">
+                  {MEAL_TYPE_LABELS[meal] || meal}: {count}
+                </span>
+              ))}
+            </div>
+          </div>
+
+          {/* Dish groups by meal type */}
+          {prepList.groups.map(group => (
+            <div key={group.mealType} className="prep-list-group">
+              <h2 className="prep-list-group-heading">{MEAL_TYPE_LABELS[group.mealType] || group.mealType}</h2>
+              {group.dishes.map((dish, i) => (
+                <div key={i} className="prep-list-dish">
+                  <div className="prep-list-dish-header">
+                    <div className="prep-list-dish-title-row">
+                      <span className="prep-list-dish-name">{dish.title}</span>
+                      {dish.allergens?.length > 0 && (
+                        <span className="prep-list-allergens">
+                          ⚠ {dish.allergens.join(', ')}
+                        </span>
+                      )}
+                    </div>
+                    <div className="prep-list-client-count">
+                      ×{dish.clientCount}
+                      {dish.clientNames?.length > 0 && (
+                        <span className="prep-list-client-names"> ({dish.clientNames.join(', ')})</span>
+                      )}
+                    </div>
+                  </div>
+                  {dish.ingredients?.length > 0 && (
+                    <div className="prep-list-ingredients">
+                      {dish.ingredients.map((ing, j) => (
+                        <span key={j} className="prep-list-ingredient">
+                          <span className="prep-list-checkbox" />
+                          {ing}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                  {dish.description && dish.ingredients?.length === 0 && (
+                    <p className="prep-list-description">{dish.description}</p>
+                  )}
+                </div>
+              ))}
+            </div>
+          ))}
+
+          {/* Shopping / ingredient master list */}
+          {prepList.allIngredients?.length > 0 && (
+            <div className="prep-list-group prep-list-shopping">
+              <h2 className="prep-list-group-heading">Shopping List (all ingredients)</h2>
+              <div className="prep-list-shopping-grid">
+                {prepList.allIngredients.map((ing, i) => (
+                  <div key={i} className="prep-list-shopping-item">
+                    <span className="prep-list-checkbox" />
+                    {ing}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <p className="prep-list-footer">
+            Generated {new Date(prepList.generatedAt).toLocaleString('en-US', { month: 'long', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' })}
+          </p>
+        </div>
       )}
     </section>
   );

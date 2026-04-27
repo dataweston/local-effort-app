@@ -469,18 +469,18 @@ def run(limit: int = 2000, batch_size: int = 75, dry_run: bool = False, max_work
 
     processed = skipped = ignored = assertions_written = menus_found = 0
     all_errors = []
-    offset = 0
     batch_num = 0
+    consecutive_all_ignored = 0
 
-    while offset < total_rows:
-        # Always re-query with offset=0 since written extraction.email events
-        # shift the unextracted set — offset stays 0 between batches.
+    while True:
+        # Re-fetch OFFSET 0 each time: writing extraction.email events shifts
+        # processed threads out of the unextracted set automatically.
         rows = query(FETCH_SQL, (batch_size, 0))
         if not rows:
             break
 
         batch_num += 1
-        print(f'\n[extract_gmail] batch {batch_num}: {len(rows)} threads (offset {offset})')
+        print(f'\n[extract_gmail] batch {batch_num}: {len(rows)} threads')
 
         p, s, i, a, m, errs = _process_batch(rows, dry_run, max_workers)
         processed += p
@@ -493,9 +493,17 @@ def run(limit: int = 2000, batch_size: int = 75, dry_run: bool = False, max_work
         print(f'[extract_gmail] batch {batch_num} done: '
               f'+{p} processed, +{s} skipped, +{i} ignored, +{a} assertions, +{m} menus')
 
-        offset += len(rows)
-        if len(rows) < batch_size:
-            break
+        # If an entire batch was ignored (all got extraction.email written),
+        # they drop out of the query next iteration — no infinite loop risk.
+        # But if nothing was written at all (skipped=batch), we'd loop forever.
+        # Guard: if batch produced zero ledger writes, stop.
+        if p == 0 and i == 0 and s == len(rows):
+            consecutive_all_ignored += 1
+            if consecutive_all_ignored >= 2:
+                print('[extract_gmail] stopping: batches returning only skipped threads')
+                break
+        else:
+            consecutive_all_ignored = 0
 
     print(f'\n[extract_gmail] complete: {processed} processed, {skipped} skipped, '
           f'{ignored} ignored, {assertions_written} assertions, {menus_found} menus')
