@@ -14975,7 +14975,7 @@ function CartDrawer({ store = "sale" }) {
 
 // src/store/data/generatedSalePageData.json
 var generatedSalePageData_default = {
-  generatedAt: "2026-04-27T02:56:11.785Z",
+  generatedAt: "2026-04-27T05:07:18.415Z",
   page: {
     title: "Local Effort Sale",
     subheading: "holiday pie sale",

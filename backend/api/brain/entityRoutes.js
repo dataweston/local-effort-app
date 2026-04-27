@@ -163,6 +163,79 @@ function registerEntityRoutes(app, { logger } = {}) {
       return res.status(500).json({ error: 'internal-error' });
     }
   });
+
+  // PATCH /api/brain/entities/:id — edit name, status, or properties
+  app.patch('/api/brain/entities/:id', async (req, res) => {
+    try {
+      const admin = await verifyAdminRequest(req);
+      if (!admin) return res.status(403).json({ error: 'admin only' });
+
+      const entity = await prisma.brainEntity.findUnique({ where: { id: req.params.id } });
+      if (!entity) return res.status(404).json({ error: 'not found' });
+
+      const { name, status, properties } = req.body || {};
+      const data = {};
+      if (name && typeof name === 'string') data.name = name.trim();
+      if (status && typeof status === 'string') data.status = status;
+      if (properties && typeof properties === 'object') {
+        data.properties = { ...(entity.properties || {}), ...properties };
+      }
+      if (!Object.keys(data).length) return res.status(400).json({ error: 'nothing to update' });
+
+      const updated = await prisma.brainEntity.update({ where: { id: req.params.id }, data });
+      logger?.info({ id: req.params.id, data }, 'brain: entity updated');
+      return res.json({ ok: true, entity: updated });
+    } catch (err) {
+      logger?.error({ err }, 'brain: entity update error');
+      return res.status(500).json({ error: 'internal-error' });
+    }
+  });
+
+  // POST /api/brain/assertions/:id/confirm — confirm a provisional assertion
+  app.post('/api/brain/assertions/:id/confirm', async (req, res) => {
+    try {
+      const admin = await verifyAdminRequest(req);
+      if (!admin) return res.status(403).json({ error: 'admin only' });
+
+      const assertion = await prisma.brainAssertion.findUnique({ where: { id: req.params.id } });
+      if (!assertion) return res.status(404).json({ error: 'not found' });
+
+      await prisma.brainAssertion.update({
+        where: { id: req.params.id },
+        data: { provisional: false, confirmedAt: new Date(), confirmedBy: 'admin' },
+      });
+
+      return res.json({ ok: true });
+    } catch (err) {
+      logger?.error({ err }, 'brain: assertion confirm error');
+      return res.status(500).json({ error: 'internal-error' });
+    }
+  });
+
+  // POST /api/brain/assertions/:id/retract — retract (soft-delete) an assertion
+  app.post('/api/brain/assertions/:id/retract', async (req, res) => {
+    try {
+      const admin = await verifyAdminRequest(req);
+      if (!admin) return res.status(403).json({ error: 'admin only' });
+
+      const assertion = await prisma.brainAssertion.findUnique({ where: { id: req.params.id } });
+      if (!assertion) return res.status(404).json({ error: 'not found' });
+
+      await prisma.brainAssertion.update({
+        where: { id: req.params.id },
+        data: {
+          retractedAt: new Date(),
+          retractedBy: 'admin',
+          retractedReason: req.body?.reason || 'admin_retraction',
+        },
+      });
+
+      return res.json({ ok: true });
+    } catch (err) {
+      logger?.error({ err }, 'brain: assertion retract error');
+      return res.status(500).json({ error: 'internal-error' });
+    }
+  });
 }
 
 module.exports = { registerEntityRoutes };

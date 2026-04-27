@@ -18,6 +18,7 @@
     "@radix-ui/react-radio-group": "^1.1.2",
     "@radix-ui/react-switch": "^1.2.6",
     "@radix-ui/react-tabs": "^1.1.13",
+    "@react-sigma/core": "^5.0.6",
     "@react-three/drei": "^10.7.6",
     "@react-three/fiber": "^9.4.0",
     "@sanity/block-content-to-react": "^3.0.0",
@@ -44,10 +45,14 @@
     "firebase-admin": "^12.7.0",
     "framer-motion": "^12.23.12",
     "googleapis": "^171.4.0",
+    "graphology": "^0.26.0",
+    "graphology-layout": "^0.6.1",
+    "graphology-layout-forceatlas2": "^0.10.1",
     "idb-keyval": "^6.2.2",
     "jose": "^6.1.0",
     "lottie-web": "^5.13.0",
     "lucide-react": "^0.451.0",
+    "neo4j-driver": "^6.0.1",
     "node-fetch": "^3.3.2",
     "pino": "^9.4.0",
     "pino-http": "^10.1.0",
@@ -62,6 +67,7 @@
     "react-router": "^6.30.3",
     "react-router-dom": "^6.25.1",
     "recharts": "^2.10.3",
+    "sigma": "^3.0.2",
     "square": "^37.0.0",
     "swr": "^2.3.0",
     "tailwind-merge": "^2.5.2",
@@ -182,7 +188,10 @@
     "weekly-order:prices": "node scripts/weekly-order-prices.js",
     "weekly-order:customer-setup": "node scripts/weekly-order-customer-setup.js",
     "decision:seed-priorities:dry": "node scripts/seed-decision-priorities.mjs",
-    "decision:seed-priorities": "node scripts/seed-decision-priorities.mjs --apply"
+    "decision:seed-priorities": "node scripts/seed-decision-priorities.mjs --apply",
+    "neo4j:test": "node scripts/brain-neo4j-test.js",
+    "neo4j:brain:sync": "node scripts/brain-neo4j-sync.js",
+    "neo4j:brain:sync:reset": "node scripts/brain-neo4j-sync.js --reset"
   },
   "browserslist": {
     "production": [

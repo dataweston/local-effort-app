@@ -1,8 +1,26 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useSupabaseAuth } from '../contexts/SupabaseAuthContext';
 import { API_BASE } from '../lib/apiBase';
+import { SigmaContainer, useLoadGraph, useRegisterEvents, useSigma } from '@react-sigma/core';
+import Graph from 'graphology';
+import { circular } from 'graphology-layout';
+import forceAtlas2 from 'graphology-layout-forceatlas2';
+import '@react-sigma/core/lib/style.css';
 
 const ENTITY_TYPES = ['Vendor', 'Customer', 'Dish', 'Ingredient', 'Menu', 'Product', 'Note', 'Task', 'Event'];
+
+const TYPE_COLORS = {
+  Vendor:     '#4a6741',
+  Customer:   '#3b5bdb',
+  Dish:       '#c0392b',
+  Ingredient: '#1a7f5a',
+  Menu:       '#b86e00',
+  Product:    '#7048e8',
+  Note:       '#888',
+  Task:       '#d97706',
+  Event:      '#0891b2',
+};
+
 const REL_TYPE_COLORS = {
   PRICED_AT: 'bg-blue-100 text-blue-800',
   CONTAINS: 'bg-green-100 text-green-800',
@@ -27,11 +45,17 @@ function relBadge(relType, provisional) {
   );
 }
 
-function EntityDetail({ id, accessToken, onClose }) {
+// ── Entity detail panel ───────────────────────────────────────────────────────
+
+function EntityDetail({ id, accessToken, onClose, onUpdated }) {
   const [entity, setEntity] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [editing, setEditing] = useState(false);
+  const [editName, setEditName] = useState('');
+  const [saving, setSaving] = useState(false);
+  const [actionId, setActionId] = useState(null);
 
-  useEffect(() => {
+  const load = useCallback(() => {
     setLoading(true);
     fetch(`${API_BASE}/api/brain/entities/${id}`, {
       headers: { Authorization: `Bearer ${accessToken}` },
@@ -41,23 +65,96 @@ function EntityDetail({ id, accessToken, onClose }) {
       .catch(() => setLoading(false));
   }, [id, accessToken]);
 
+  useEffect(() => { load(); }, [load]);
+
+  async function handleSaveName() {
+    if (!editName.trim() || editName === entity.name) { setEditing(false); return; }
+    setSaving(true);
+    await fetch(`${API_BASE}/api/brain/entities/${id}`, {
+      method: 'PATCH',
+      headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: editName }),
+    });
+    setSaving(false);
+    setEditing(false);
+    onUpdated?.();
+    load();
+  }
+
+  async function handleTombstone() {
+    if (!confirm(`Archive "${entity.name}"? This removes it from active views.`)) return;
+    setSaving(true);
+    await fetch(`${API_BASE}/api/brain/entities/${id}/tombstone`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
+    setSaving(false);
+    onUpdated?.();
+    onClose();
+  }
+
+  async function handleAssertionAction(assertionId, action) {
+    setActionId(assertionId + action);
+    await fetch(`${API_BASE}/api/brain/assertions/${assertionId}/${action}`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
+    setActionId(null);
+    load();
+  }
+
   if (loading) return <div className="p-6 text-sm text-gray-400">Loading…</div>;
   if (!entity) return <div className="p-6 text-sm text-red-500">Not found</div>;
 
-  const srcAssertions = entity.srcAssertions || [];
-  const dstAssertions = entity.dstAssertions || [];
+  const srcAssertions = (entity.srcAssertions || []).filter(a => !a.retractedAt);
+  const dstAssertions = (entity.dstAssertions || []).filter(a => !a.retractedAt);
 
   return (
     <div className="flex flex-col h-full overflow-hidden">
+      {/* Header */}
       <div className="flex items-start justify-between p-4 border-b border-gray-200 shrink-0">
-        <div>
+        <div className="flex-1 min-w-0 mr-2">
           <div className="text-xs text-gray-400 font-mono uppercase tracking-wide mb-1">{entity.entityType}</div>
-          <h2 className="text-lg font-semibold text-gray-900 leading-tight">{entity.name}</h2>
+          {editing ? (
+            <div className="flex items-center gap-2">
+              <input
+                autoFocus
+                className="flex-1 text-base font-semibold border-b border-gray-400 focus:outline-none bg-transparent"
+                value={editName}
+                onChange={e => setEditName(e.target.value)}
+                onKeyDown={e => {
+                  if (e.key === 'Enter') handleSaveName();
+                  if (e.key === 'Escape') setEditing(false);
+                }}
+              />
+              <button onClick={handleSaveName} disabled={saving}
+                className="text-xs px-2 py-1 bg-gray-900 text-white rounded disabled:opacity-50">
+                {saving ? '…' : 'Save'}
+              </button>
+              <button onClick={() => setEditing(false)} className="text-xs px-2 py-1 border rounded">Cancel</button>
+            </div>
+          ) : (
+            <div className="flex items-center gap-2 flex-wrap">
+              <h2 className="text-lg font-semibold text-gray-900 leading-tight">{entity.name}</h2>
+              <button
+                onClick={() => { setEditName(entity.name); setEditing(true); }}
+                className="text-gray-400 hover:text-gray-700 text-xs px-1.5 py-0.5 border rounded shrink-0"
+              >
+                Rename
+              </button>
+            </div>
+          )}
           {entity.status !== 'active' && (
             <span className="text-xs text-amber-600 font-mono">{entity.status}</span>
           )}
         </div>
-        <button onClick={onClose} className="text-gray-400 hover:text-gray-600 p-1 text-xl leading-none">×</button>
+        <div className="flex items-center gap-1 shrink-0">
+          <button onClick={handleTombstone} disabled={saving}
+            className="text-xs px-2 py-1 border border-red-200 text-red-600 rounded hover:bg-red-50 disabled:opacity-50">
+            Archive
+          </button>
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 p-1 text-xl leading-none ml-1">×</button>
+        </div>
       </div>
 
       <div className="overflow-y-auto flex-1 p-4 space-y-4">
@@ -73,13 +170,13 @@ function EntityDetail({ id, accessToken, onClose }) {
         {srcAssertions.length > 0 && (
           <div>
             <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
-              Outgoing assertions ({srcAssertions.length})
+              Outgoing ({srcAssertions.length})
             </div>
             <div className="space-y-1.5">
               {srcAssertions.map(a => (
-                <div key={a.id} className="flex items-start gap-2 text-sm">
+                <div key={a.id} className="flex items-start gap-2 text-sm group">
                   <div className="shrink-0 mt-0.5">{relBadge(a.relType, a.provisional)}</div>
-                  <div className="min-w-0">
+                  <div className="min-w-0 flex-1">
                     <span className="text-gray-500 text-xs font-mono">{a.dst?.entityType}:</span>{' '}
                     <span className="text-gray-900">{a.dst?.name || '—'}</span>
                     {a.metadata && Object.keys(a.metadata).length > 0 && (
@@ -90,6 +187,26 @@ function EntityDetail({ id, accessToken, onClose }) {
                       </div>
                     )}
                   </div>
+                  <div className="flex gap-1 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                    {a.provisional && (
+                      <button
+                        onClick={() => handleAssertionAction(a.id, 'confirm')}
+                        disabled={!!actionId}
+                        title="Confirm this assertion"
+                        className="text-xs px-1.5 py-0.5 bg-green-100 text-green-700 rounded hover:bg-green-200 disabled:opacity-50"
+                      >
+                        ✓
+                      </button>
+                    )}
+                    <button
+                      onClick={() => handleAssertionAction(a.id, 'retract')}
+                      disabled={!!actionId}
+                      title="Retract this assertion"
+                      className="text-xs px-1.5 py-0.5 bg-red-100 text-red-600 rounded hover:bg-red-200 disabled:opacity-50"
+                    >
+                      ✕
+                    </button>
+                  </div>
                 </div>
               ))}
             </div>
@@ -99,14 +216,34 @@ function EntityDetail({ id, accessToken, onClose }) {
         {dstAssertions.length > 0 && (
           <div>
             <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
-              Incoming assertions ({dstAssertions.length})
+              Incoming ({dstAssertions.length})
             </div>
             <div className="space-y-1.5">
               {dstAssertions.map(a => (
-                <div key={a.id} className="flex items-start gap-2 text-sm">
+                <div key={a.id} className="flex items-start gap-2 text-sm group">
                   <span className="text-gray-500 text-xs font-mono shrink-0 mt-0.5">{a.src?.entityType}:</span>
                   <span className="text-gray-800 shrink-0">{a.src?.name || '—'}</span>
                   <div className="shrink-0">{relBadge(a.relType, a.provisional)}</div>
+                  <div className="flex gap-1 shrink-0 ml-auto opacity-0 group-hover:opacity-100 transition-opacity">
+                    {a.provisional && (
+                      <button
+                        onClick={() => handleAssertionAction(a.id, 'confirm')}
+                        disabled={!!actionId}
+                        title="Confirm"
+                        className="text-xs px-1.5 py-0.5 bg-green-100 text-green-700 rounded hover:bg-green-200 disabled:opacity-50"
+                      >
+                        ✓
+                      </button>
+                    )}
+                    <button
+                      onClick={() => handleAssertionAction(a.id, 'retract')}
+                      disabled={!!actionId}
+                      title="Retract"
+                      className="text-xs px-1.5 py-0.5 bg-red-100 text-red-600 rounded hover:bg-red-200 disabled:opacity-50"
+                    >
+                      ✕
+                    </button>
+                  </div>
                 </div>
               ))}
             </div>
@@ -122,6 +259,8 @@ function EntityDetail({ id, accessToken, onClose }) {
   );
 }
 
+// ── Search bar ────────────────────────────────────────────────────────────────
+
 function SearchBar({ value, onChange, onSubmit }) {
   return (
     <form onSubmit={onSubmit} className="flex gap-2">
@@ -131,19 +270,101 @@ function SearchBar({ value, onChange, onSubmit }) {
         value={value}
         onChange={e => onChange(e.target.value)}
       />
-      <button
-        type="submit"
-        className="px-4 py-2 bg-gray-900 text-white text-sm rounded hover:bg-gray-700"
-      >
+      <button type="submit" className="px-4 py-2 bg-gray-900 text-white text-sm rounded hover:bg-gray-700">
         Search
       </button>
     </form>
   );
 }
 
+// ── Sigma graph internals ─────────────────────────────────────────────────────
+
+function GraphLoader({ entities, onNodeClick }) {
+  const loadGraph = useLoadGraph();
+  const registerEvents = useRegisterEvents();
+  const sigma = useSigma();
+
+  useEffect(() => {
+    if (!entities.length) return;
+    const graph = new Graph({ multi: false, type: 'directed' });
+
+    entities.forEach(e => {
+      if (!graph.hasNode(e.id)) {
+        graph.addNode(e.id, {
+          label: e.name,
+          size: Math.max(4, Math.min(18, 4 + Math.sqrt(e.assertionCount || 0) * 2)),
+          color: TYPE_COLORS[e.entityType] || '#999',
+          x: Math.random(),
+          y: Math.random(),
+        });
+      }
+    });
+
+    loadGraph(graph);
+    circular.assign(graph);
+    forceAtlas2.assign(graph, { iterations: 120, settings: { gravity: 1, scalingRatio: 2, barnesHutOptimize: true } });
+  }, [entities, loadGraph]);
+
+  useEffect(() => {
+    registerEvents({
+      clickNode: ({ node }) => onNodeClick(node),
+      doubleClickStage: () => sigma.getCamera().setState({ x: 0.5, y: 0.5, ratio: 1 }),
+    });
+  }, [registerEvents, onNodeClick, sigma]);
+
+  return null;
+}
+
+function GraphView({ entities, onNodeClick, selectedId }) {
+  if (!entities.length) {
+    return (
+      <div className="flex-1 flex items-center justify-center text-sm text-gray-400">
+        No entities to display
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex-1 relative" style={{ minHeight: 0 }}>
+      {/* Type legend */}
+      <div className="absolute top-3 left-3 z-10 bg-white/90 backdrop-blur rounded shadow-sm p-2 flex flex-wrap gap-x-3 gap-y-1 max-w-xs text-xs text-gray-600">
+        {Object.entries(TYPE_COLORS).map(([type, color]) => (
+          <span key={type} className="flex items-center gap-1">
+            <span className="w-2.5 h-2.5 rounded-full inline-block shrink-0" style={{ backgroundColor: color }} />
+            {type}
+          </span>
+        ))}
+      </div>
+      <SigmaContainer
+        style={{ width: '100%', height: '100%' }}
+        settings={{
+          renderLabels: entities.length < 150,
+          labelSize: 11,
+          labelColor: { color: '#374151' },
+          defaultEdgeColor: '#d1d5db',
+          defaultEdgeType: 'arrow',
+          nodeReducer: (node, data) => ({
+            ...data,
+            highlighted: node === selectedId,
+            size: node === selectedId ? data.size * 1.5 : data.size,
+          }),
+        }}
+      >
+        <GraphLoader entities={entities} onNodeClick={onNodeClick} />
+      </SigmaContainer>
+      <div className="absolute bottom-3 right-3 text-xs text-gray-400 bg-white/80 rounded px-2 py-1 pointer-events-none">
+        scroll=zoom · drag=pan · click=inspect · dbl-click=reset
+      </div>
+    </div>
+  );
+}
+
+// ── Main page ─────────────────────────────────────────────────────────────────
+
 export default function BrainBrowserPage() {
   const auth = useSupabaseAuth();
 
+  const [viewMode, setViewMode] = useState('table');
   const [typeFilter, setTypeFilter] = useState('');
   const [searchInput, setSearchInput] = useState('');
   const [activeQuery, setActiveQuery] = useState('');
@@ -189,6 +410,8 @@ export default function BrainBrowserPage() {
     setSelectedId(null);
   };
 
+  const handleRefresh = () => fetchEntities(activeQuery, typeFilter, sort, offset);
+
   if (!auth.isAdmin) {
     return (
       <div className="min-h-screen flex items-center justify-center text-gray-400 text-sm">
@@ -197,11 +420,13 @@ export default function BrainBrowserPage() {
     );
   }
 
+  const showDetail = !!selectedId;
+
   return (
     <div className="fullpage-demo-scope min-h-screen bg-gray-50 flex flex-col">
       {/* Header */}
       <div className="bg-white border-b border-gray-200 px-4 py-3 shrink-0">
-        <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
+        <div className="max-w-7xl mx-auto flex items-center justify-between gap-4 flex-wrap">
           <div>
             <h1 className="text-base font-semibold font-display text-gray-900">Brain Browser</h1>
             <div className="text-xs text-gray-400">{total.toLocaleString()} entities</div>
@@ -209,17 +434,36 @@ export default function BrainBrowserPage() {
           <div className="flex-1 max-w-md">
             <SearchBar value={searchInput} onChange={setSearchInput} onSubmit={handleSearch} />
           </div>
-          <div className="flex items-center gap-2 text-xs text-gray-500">
-            <span>Sort:</span>
-            {['updatedAt', 'name', 'assertionCount'].map(s => (
+          <div className="flex items-center gap-3">
+            {/* View toggle */}
+            <div className="flex rounded border border-gray-300 overflow-hidden text-xs">
               <button
-                key={s}
-                onClick={() => { setSort(s); setOffset(0); }}
-                className={`px-2 py-1 rounded ${sort === s ? 'bg-gray-900 text-white' : 'hover:bg-gray-100'}`}
+                onClick={() => setViewMode('table')}
+                className={`px-3 py-1.5 ${viewMode === 'table' ? 'bg-gray-900 text-white' : 'text-gray-600 hover:bg-gray-50'}`}
               >
-                {s === 'updatedAt' ? 'recent' : s === 'assertionCount' ? 'activity' : 'name'}
+                Table
               </button>
-            ))}
+              <button
+                onClick={() => setViewMode('graph')}
+                className={`px-3 py-1.5 ${viewMode === 'graph' ? 'bg-gray-900 text-white' : 'text-gray-600 hover:bg-gray-50'}`}
+              >
+                Graph
+              </button>
+            </div>
+            {viewMode === 'table' && (
+              <div className="flex items-center gap-2 text-xs text-gray-500">
+                <span>Sort:</span>
+                {['updatedAt', 'name', 'assertionCount'].map(s => (
+                  <button
+                    key={s}
+                    onClick={() => { setSort(s); setOffset(0); }}
+                    className={`px-2 py-1 rounded ${sort === s ? 'bg-gray-900 text-white' : 'hover:bg-gray-100'}`}
+                  >
+                    {s === 'updatedAt' ? 'recent' : s === 'assertionCount' ? 'activity' : 'name'}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -245,86 +489,121 @@ export default function BrainBrowserPage() {
         </div>
       </div>
 
-      {/* Main */}
-      <div className="flex-1 flex overflow-hidden max-w-7xl w-full mx-auto">
-        {/* Entity list */}
-        <div className={`flex flex-col overflow-hidden ${selectedId ? 'w-1/2' : 'w-full'} border-r border-gray-200`}>
-          {loading ? (
-            <div className="flex-1 flex items-center justify-center text-sm text-gray-400">Loading…</div>
-          ) : entities.length === 0 ? (
-            <div className="flex-1 flex items-center justify-center text-sm text-gray-400">No entities found</div>
-          ) : (
-            <>
-              <div className="flex-1 overflow-y-auto">
-                <table className="w-full text-sm">
-                  <thead className="sticky top-0 bg-gray-50 border-b border-gray-200">
-                    <tr>
-                      <th className="text-left px-4 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wide w-28">Type</th>
-                      <th className="text-left px-4 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wide">Name</th>
-                      <th className="text-right px-4 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wide w-20">Links</th>
-                      <th className="text-right px-4 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wide w-28 hidden md:table-cell">Last signal</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-100">
-                    {entities.map(e => (
-                      <tr
-                        key={e.id}
-                        onClick={() => setSelectedId(e.id === selectedId ? null : e.id)}
-                        className={`cursor-pointer transition-colors ${e.id === selectedId ? 'bg-gray-900 text-white' : 'hover:bg-gray-50'}`}
+      {/* Main content */}
+      <div className="flex-1 flex overflow-hidden max-w-7xl w-full mx-auto" style={{ minHeight: 0 }}>
+        {viewMode === 'graph' ? (
+          <>
+            <div className={`flex overflow-hidden ${showDetail ? 'w-1/2' : 'w-full'}`} style={{ minHeight: 0 }}>
+              {loading ? (
+                <div className="flex-1 flex items-center justify-center text-sm text-gray-400">Loading…</div>
+              ) : (
+                <GraphView
+                  entities={entities}
+                  selectedId={selectedId}
+                  onNodeClick={id => setSelectedId(id === selectedId ? null : id)}
+                />
+              )}
+            </div>
+            {showDetail && (
+              <div className="w-1/2 bg-white border-l border-gray-200 overflow-hidden flex flex-col">
+                <EntityDetail
+                  id={selectedId}
+                  accessToken={auth.accessToken}
+                  onClose={() => setSelectedId(null)}
+                  onUpdated={handleRefresh}
+                />
+              </div>
+            )}
+          </>
+        ) : (
+          <>
+            {/* Table view */}
+            <div className={`flex flex-col overflow-hidden ${showDetail ? 'w-1/2' : 'w-full'} border-r border-gray-200`}>
+              {loading ? (
+                <div className="flex-1 flex items-center justify-center text-sm text-gray-400">Loading…</div>
+              ) : entities.length === 0 ? (
+                <div className="flex-1 flex items-center justify-center text-sm text-gray-400">No entities found</div>
+              ) : (
+                <>
+                  <div className="flex-1 overflow-y-auto">
+                    <table className="w-full text-sm">
+                      <thead className="sticky top-0 bg-gray-50 border-b border-gray-200">
+                        <tr>
+                          <th className="text-left px-4 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wide w-28">Type</th>
+                          <th className="text-left px-4 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wide">Name</th>
+                          <th className="text-right px-4 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wide w-20">Links</th>
+                          <th className="text-right px-4 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wide w-28 hidden md:table-cell">Last signal</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-100">
+                        {entities.map(e => (
+                          <tr
+                            key={e.id}
+                            onClick={() => setSelectedId(e.id === selectedId ? null : e.id)}
+                            className={`cursor-pointer transition-colors ${e.id === selectedId ? 'bg-gray-900 text-white' : 'hover:bg-gray-50'}`}
+                          >
+                            <td className="px-4 py-2.5">
+                              <span
+                                className="text-xs font-mono px-1.5 py-0.5 rounded"
+                                style={e.id !== selectedId
+                                  ? { backgroundColor: (TYPE_COLORS[e.entityType] || '#999') + '22', color: TYPE_COLORS[e.entityType] || '#555' }
+                                  : { backgroundColor: '#374151', color: '#e5e7eb' }
+                                }
+                              >
+                                {e.entityType}
+                              </span>
+                            </td>
+                            <td className="px-4 py-2.5 font-medium truncate max-w-0">
+                              <span className="block truncate">{e.name}</span>
+                            </td>
+                            <td className={`px-4 py-2.5 text-right font-mono text-xs ${e.id === selectedId ? 'text-gray-300' : 'text-gray-400'}`}>
+                              {e.assertionCount}
+                            </td>
+                            <td className={`px-4 py-2.5 text-right font-mono text-xs hidden md:table-cell ${e.id === selectedId ? 'text-gray-300' : 'text-gray-400'}`}>
+                              {e.lastSignalAt ? new Date(e.lastSignalAt).toLocaleDateString() : '—'}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+
+                  {/* Pagination */}
+                  <div className="shrink-0 border-t border-gray-200 px-4 py-2 flex items-center justify-between bg-white text-xs text-gray-500">
+                    <span>{offset + 1}–{Math.min(offset + LIMIT, total)} of {total.toLocaleString()}</span>
+                    <div className="flex gap-2">
+                      <button
+                        disabled={offset === 0}
+                        onClick={() => setOffset(Math.max(0, offset - LIMIT))}
+                        className="px-3 py-1 border border-gray-300 rounded disabled:opacity-40 hover:bg-gray-50"
                       >
-                        <td className="px-4 py-2.5">
-                          <span className={`text-xs font-mono px-1.5 py-0.5 rounded ${e.id === selectedId ? 'bg-gray-700 text-gray-200' : 'bg-gray-100 text-gray-500'}`}>
-                            {e.entityType}
-                          </span>
-                        </td>
-                        <td className="px-4 py-2.5 font-medium truncate max-w-0">
-                          <span className="block truncate">{e.name}</span>
-                        </td>
-                        <td className={`px-4 py-2.5 text-right font-mono text-xs ${e.id === selectedId ? 'text-gray-300' : 'text-gray-400'}`}>
-                          {e.assertionCount}
-                        </td>
-                        <td className={`px-4 py-2.5 text-right font-mono text-xs hidden md:table-cell ${e.id === selectedId ? 'text-gray-300' : 'text-gray-400'}`}>
-                          {e.lastSignalAt ? new Date(e.lastSignalAt).toLocaleDateString() : '—'}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                        ← Prev
+                      </button>
+                      <button
+                        disabled={offset + LIMIT >= total}
+                        onClick={() => setOffset(offset + LIMIT)}
+                        className="px-3 py-1 border border-gray-300 rounded disabled:opacity-40 hover:bg-gray-50"
+                      >
+                        Next →
+                      </button>
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
 
-              {/* Pagination */}
-              <div className="shrink-0 border-t border-gray-200 px-4 py-2 flex items-center justify-between bg-white text-xs text-gray-500">
-                <span>{offset + 1}–{Math.min(offset + LIMIT, total)} of {total.toLocaleString()}</span>
-                <div className="flex gap-2">
-                  <button
-                    disabled={offset === 0}
-                    onClick={() => setOffset(Math.max(0, offset - LIMIT))}
-                    className="px-3 py-1 border border-gray-300 rounded disabled:opacity-40 hover:bg-gray-50"
-                  >
-                    ← Prev
-                  </button>
-                  <button
-                    disabled={offset + LIMIT >= total}
-                    onClick={() => setOffset(offset + LIMIT)}
-                    className="px-3 py-1 border border-gray-300 rounded disabled:opacity-40 hover:bg-gray-50"
-                  >
-                    Next →
-                  </button>
-                </div>
+            {/* Detail panel */}
+            {showDetail && (
+              <div className="w-1/2 bg-white overflow-hidden flex flex-col">
+                <EntityDetail
+                  id={selectedId}
+                  accessToken={auth.accessToken}
+                  onClose={() => setSelectedId(null)}
+                  onUpdated={handleRefresh}
+                />
               </div>
-            </>
-          )}
-        </div>
-
-        {/* Detail panel */}
-        {selectedId && (
-          <div className="w-1/2 bg-white overflow-hidden flex flex-col">
-            <EntityDetail
-              id={selectedId}
-              accessToken={auth.accessToken}
-              onClose={() => setSelectedId(null)}
-            />
-          </div>
+            )}
+          </>
         )}
       </div>
     </div>

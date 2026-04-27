@@ -135,14 +135,18 @@ def _run_receipt_transaction_match(dry_run: bool, ledger_id: str) -> dict:
           AND (a.metadata->>'store' = %s OR a.metadata->>'store' ILIKE %s)
     """, (EASTSIDE_VENDOR, '%eastside%'))
 
-    # Fetch all Eastside-matching LB transactions once
+    # Fetch all Eastside-matching LB transactions once (business only — exclude PERSONAL)
     lb_txns = _lb_query("""
-        SELECT id, date, amount, "merchantName", description
-        FROM transactions
-        WHERE "merchantName" ILIKE '%%eastside%%'
-           OR "merchantName" ILIKE '%%eastside food%%'
-           OR description ILIKE '%%eastside%%'
-        ORDER BY date
+        SELECT t.id, t.date, t.amount, t."merchantName", t.description
+        FROM transactions t
+        LEFT JOIN categories c ON c.id = t."categoryId"
+        WHERE (t."merchantName" ILIKE '%%eastside%%'
+           OR t."merchantName" ILIKE '%%eastside food%%'
+           OR t.description ILIKE '%%eastside%%')
+          AND (c."defaultClassification" IS NULL
+               OR c."defaultClassification" != 'PERSONAL')
+          AND (t.classification IS NULL OR t.classification != 'PERSONAL')
+        ORDER BY t.date
     """)
 
     print(f'  [crossref] {len(receipts)} receipt PAYMENT_SENT assertions, {len(lb_txns)} LB Eastside transactions')
@@ -355,12 +359,16 @@ def _run_lb_spend_summary(dry_run: bool, ledger_id: str) -> dict:
         rows = _lb_query("""
             SELECT
                 COUNT(*) as txn_count,
-                SUM(amount) as total_spend,
-                MIN(date) as first_txn,
-                MAX(date) as last_txn,
-                AVG(amount) as avg_txn
-            FROM transactions
-            WHERE "merchantName" ILIKE %s
+                SUM(t.amount) as total_spend,
+                MIN(t.date) as first_txn,
+                MAX(t.date) as last_txn,
+                AVG(t.amount) as avg_txn
+            FROM transactions t
+            LEFT JOIN categories c ON c.id = t."categoryId"
+            WHERE t."merchantName" ILIKE %s
+              AND (c."defaultClassification" IS NULL
+                   OR c."defaultClassification" != 'PERSONAL')
+              AND (t.classification IS NULL OR t.classification != 'PERSONAL')
         """, (pattern,))
 
         if not rows or rows[0]['txn_count'] == 0:
