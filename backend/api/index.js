@@ -507,7 +507,7 @@ app.post('/api/square/webhook', express.raw({ type: '*/*', limit: '2mb' }), asyn
     return res.status(500).json({ ok: false, error: 'internal-error' });
   }
 });
-app.use(express.json({ limit: '2mb' }));
+app.use(express.json({ limit: '8mb' }));
 
 const sendUcpProfile = (res) => {
   try {
@@ -4136,6 +4136,9 @@ if (sentryEnabled) {
 // Ensure JSON error responses for unhandled errors.
 app.use((err, req, res, next) => {
   if (res.headersSent) return next(err);
+  if (err?.type === 'entity.too.large') {
+    return res.status(413).json({ error: 'request-too-large' });
+  }
   res.status(500).json({ error: 'internal-error' });
 });
 

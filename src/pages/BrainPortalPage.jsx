@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { ThumbsUp, ThumbsDown, Heart, Minus, CheckCircle } from 'lucide-react';
-
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+import { API_BASE } from '../lib/apiBase';
 
 const RATINGS = [
   { value: 'love',    label: 'Love it',  icon: Heart,      color: '#e07070' },

@@ -1455,6 +1455,40 @@ const AdminWeeklyOrderPage = () => {
 
 const ALL_CLIENT_SLUGS_PLACEHOLDER = '__all__';
 
+async function loadImageAsOptimizedDataUrl(file, { maxDimension = 1600, quality = 0.82 } = {}) {
+  const sourceDataUrl = await new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = (event) => resolve(event.target?.result || '');
+    reader.onerror = () => reject(new Error('Could not read image'));
+    reader.readAsDataURL(file);
+  });
+
+  const image = await new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => resolve(img);
+    img.onerror = () => reject(new Error('Could not load image'));
+    img.src = sourceDataUrl;
+  });
+
+  const { width, height } = image;
+  const scale = Math.min(1, maxDimension / Math.max(width, height));
+  const targetWidth = Math.max(1, Math.round(width * scale));
+  const targetHeight = Math.max(1, Math.round(height * scale));
+
+  const canvas = document.createElement('canvas');
+  canvas.width = targetWidth;
+  canvas.height = targetHeight;
+
+  const context = canvas.getContext('2d');
+  if (!context) {
+    throw new Error('Could not prepare image');
+  }
+  context.drawImage(image, 0, 0, targetWidth, targetHeight);
+
+  const outputMime = file.type === 'image/png' ? 'image/png' : 'image/jpeg';
+  return canvas.toDataURL(outputMime, outputMime === 'image/jpeg' ? quality : undefined);
+}
+
 const MenuIngestTab = ({ authHeaders, customers, onPublished }) => {
   const [inputMode, setInputMode] = useState('text'); // 'text' | 'image'
   const [textInput, setTextInput] = useState('');
@@ -1483,15 +1517,19 @@ const MenuIngestTab = ({ authHeaders, customers, onPublished }) => {
 
   const handleImageFile = (file) => {
     if (!file) return;
-    setImageMime(file.type || 'image/jpeg');
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const dataUrl = e.target.result;
-      setImagePreview(dataUrl);
-      // Strip the data:...;base64, prefix
-      setImageBase64(dataUrl.split(',')[1] || '');
-    };
-    reader.readAsDataURL(file);
+    setParseError('');
+    loadImageAsOptimizedDataUrl(file)
+      .then((dataUrl) => {
+        const mimeMatch = /^data:([^;]+);base64,/.exec(dataUrl);
+        setImageMime(mimeMatch?.[1] || file.type || 'image/jpeg');
+        setImagePreview(dataUrl);
+        setImageBase64(dataUrl.split(',')[1] || '');
+      })
+      .catch((err) => {
+        setImagePreview('');
+        setImageBase64('');
+        setParseError(err.message || 'Could not prepare image');
+      });
   };
 
   const handleParse = async () => {

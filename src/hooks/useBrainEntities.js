@@ -1,6 +1,5 @@
 import { useState, useCallback, useEffect } from 'react';
-
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+import { API_BASE } from '../lib/apiBase';
 
 export function useBrainEntities({ accessToken, enabled = true }) {
   const [entities, setEntities] = useState([]);
