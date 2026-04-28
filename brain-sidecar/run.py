@@ -57,10 +57,17 @@ def main():
     from jobs.extract_receipts import run as run_receipts
     from jobs.extract_cpw_prices import run as run_cpw_prices
     from jobs.extract_vendor_crossref import run as run_vendor_crossref
+    from jobs.seed_ontology import run as run_seed_ontology
+    from jobs.harvest_sent_gmail import run as run_harvest_sent_gmail
+    from jobs.audit_graph import run as run_audit_graph
 
     all_jobs = {
+        # Phase 0 — Ontology seed (idempotent, no LLM)
+        'seed_ontology': (run_seed_ontology, {}),
         # Phase 0 — Gmail (existing, LLM-based)
         'gmail':        (run_gmail,       {'max_workers': 4}),
+        # Gmail sent-mail harvest (deterministic, no LLM)
+        'gmail_sent':   (run_harvest_sent_gmail, {'days_back': 730}),
         # Phase 1 — Zero-LLM structured sources
         'static':       (run_static,      {}),
         'orders':       (run_orders,      {}),
@@ -80,6 +87,7 @@ def main():
         'inbox':        (run_inbox,       {}),
         'embed':        (run_embed,       {'full_reembed': FULL_REEMBED}),
         'clear_inbox':  (run_clear_inbox, {'source': 'gmail'}),
+        'audit_graph':  (run_audit_graph, {}),
     }
 
     jobs_to_run = JOBS_ARG if JOBS_ARG else list(all_jobs.keys())

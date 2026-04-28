@@ -20,7 +20,32 @@
  */
 
 const { getPrisma } = require('../utils/prisma');
-const { writeLedgerEvent } = require('./ledger');
+const { writeLedgerEvent, canonicalName } = require('./ledger');
+const { normalizeRelType, validateRelationship } = require('./relationshipDictionary');
+
+async function createBrainAssertion(prisma, data) {
+  const [src, dst] = await Promise.all([
+    prisma.brainEntity.findUnique({ where: { id: data.srcId }, select: { id: true, entityType: true } }),
+    prisma.brainEntity.findUnique({ where: { id: data.dstId }, select: { id: true, entityType: true } }),
+  ]);
+  const validation = validateRelationship({
+    relType: data.relType,
+    srcType: src?.entityType,
+    dstType: dst?.entityType,
+    srcId: data.srcId,
+    dstId: data.dstId,
+  });
+  return prisma.brainAssertion.create({
+    data: {
+      ...data,
+      relType: normalizeRelType(data.relType),
+      metadata: {
+        ...(data.metadata || {}),
+        ...(validation.warnings.length ? { relationshipWarnings: validation.warnings } : {}),
+      },
+    },
+  });
+}
 
 // ── Ingredient helpers ────────────────────────────────────────────────────────
 
@@ -36,6 +61,7 @@ async function createIngredient({ name, unit = 'unit', defaultVendorId = null, c
     data: {
       entityType: 'Ingredient',
       name,
+      canonicalName: canonicalName(name),
       status: 'active',
       properties: { unit, defaultVendorId },
     },
@@ -66,19 +92,17 @@ async function setPricing({ ingredientId, vendorId, pricePerUnit, unit, effectiv
     payload: { ingredientId, vendorId, pricePerUnit, unit, effectiveDate },
   });
 
-  const assertion = await prisma.brainAssertion.create({
-    data: {
-      srcId: ingredientId,
-      dstId: vendorId,
-      relType: 'PRICED_AT',
-      metadata: { pricePerUnit, unit, currency: 'USD', effectiveDate: effectiveDate || new Date().toISOString() },
-      validFrom: effectiveDate ? new Date(effectiveDate) : new Date(),
-      knownFrom: new Date(),
-      confidence: 1.0,
-      sourceType: 'ledger_event',
-      sourceId: ledgerEvent.id,
-      createdBy: 'founder',
-    },
+  const assertion = await createBrainAssertion(prisma, {
+    srcId: ingredientId,
+    dstId: vendorId,
+    relType: 'PRICED_AT',
+    metadata: { pricePerUnit, unit, currency: 'USD', effectiveDate: effectiveDate || new Date().toISOString() },
+    validFrom: effectiveDate ? new Date(effectiveDate) : new Date(),
+    knownFrom: new Date(),
+    confidence: 1.0,
+    sourceType: 'ledger_event',
+    sourceId: ledgerEvent.id,
+    createdBy: 'founder',
   });
 
   if (prior) {
@@ -118,6 +142,7 @@ async function createRecipe({ name, dishEntityId = null, yieldPortions = 1, line
     data: {
       entityType: 'Recipe',
       name,
+      canonicalName: canonicalName(name),
       status: 'active',
       properties: { version, yieldPortions, notes, dishEntityId },
     },
@@ -125,35 +150,31 @@ async function createRecipe({ name, dishEntityId = null, yieldPortions = 1, line
 
   // Link to Dish entity
   if (dishEntityId) {
-    await prisma.brainAssertion.create({
-      data: {
-        srcId: recipe.id,
-        dstId: dishEntityId,
-        relType: 'VERSION_OF',
-        confidence: 1.0,
-        sourceType: 'manual',
-        createdBy,
-        knownFrom: new Date(),
-        validFrom: new Date(),
-      },
+    await createBrainAssertion(prisma, {
+      srcId: recipe.id,
+      dstId: dishEntityId,
+      relType: 'VERSION_OF',
+      confidence: 1.0,
+      sourceType: 'manual',
+      createdBy,
+      knownFrom: new Date(),
+      validFrom: new Date(),
     });
   }
 
   // Create CONTAINS assertions for each ingredient line
   for (const line of lines) {
     if (!line.ingredientId) continue;
-    await prisma.brainAssertion.create({
-      data: {
-        srcId: recipe.id,
-        dstId: line.ingredientId,
-        relType: 'CONTAINS',
-        metadata: { quantity: line.quantity, unit: line.unit || 'unit', notes: line.notes || null },
-        confidence: 1.0,
-        sourceType: 'manual',
-        createdBy,
-        knownFrom: new Date(),
-        validFrom: new Date(),
-      },
+    await createBrainAssertion(prisma, {
+      srcId: recipe.id,
+      dstId: line.ingredientId,
+      relType: 'CONTAINS',
+      metadata: { quantity: line.quantity, unit: line.unit || 'unit', notes: line.notes || null },
+      confidence: 1.0,
+      sourceType: 'manual',
+      createdBy,
+      knownFrom: new Date(),
+      validFrom: new Date(),
     });
   }
 
@@ -179,6 +200,7 @@ async function recordBatch({ recipeId, madeAt = null, portionsMade, actualCostCe
     data: {
       entityType: 'Batch',
       name: `${recipe.name} batch ${new Date(madeAt || Date.now()).toISOString().slice(0, 10)}`,
+      canonicalName: canonicalName(`${recipe.name} batch ${new Date(madeAt || Date.now()).toISOString().slice(0, 10)}`),
       status: 'active',
       properties: {
         recipeId,
@@ -191,17 +213,15 @@ async function recordBatch({ recipeId, madeAt = null, portionsMade, actualCostCe
     },
   });
 
-  await prisma.brainAssertion.create({
-    data: {
-      srcId: batch.id,
-      dstId: recipeId,
-      relType: 'REALIZED_IN',
-      confidence: 1.0,
-      sourceType: 'manual',
-      createdBy: 'founder',
-      knownFrom: new Date(),
-      validFrom: new Date(madeAt || Date.now()),
-    },
+  await createBrainAssertion(prisma, {
+    srcId: batch.id,
+    dstId: recipeId,
+    relType: 'REALIZED_IN',
+    confidence: 1.0,
+    sourceType: 'manual',
+    createdBy: 'founder',
+    knownFrom: new Date(),
+    validFrom: new Date(madeAt || Date.now()),
   });
 
   await writeLedgerEvent({
@@ -212,6 +232,68 @@ async function recordBatch({ recipeId, madeAt = null, portionsMade, actualCostCe
   });
 
   return batch;
+}
+
+async function createFactNode({
+  entityType,
+  name,
+  properties = {},
+  links = [],
+  source = 'admin_ux',
+  createdBy = 'founder',
+}) {
+  const prisma = getPrisma();
+  const allowedTypes = new Set([
+    'Invoice', 'Payment', 'Order', 'Receipt', 'EmailThread',
+    'Feedback', 'Decision', 'PriceQuote', 'LedgerTransaction',
+  ]);
+  if (!allowedTypes.has(entityType)) {
+    throw new Error(`entityType ${entityType} is not a promotable fact node type`);
+  }
+  if (!name || typeof name !== 'string') {
+    throw new Error('name is required');
+  }
+
+  const ledgerEvent = await writeLedgerEvent({
+    eventType: 'fact.promoted',
+    source,
+    actorType: createdBy === 'founder' ? 'founder' : 'system',
+    payload: { entityType, name, properties, links },
+  });
+
+  const fact = await prisma.brainEntity.create({
+    data: {
+      entityType,
+      name: name.trim(),
+      canonicalName: canonicalName(name),
+      status: 'active',
+      properties: { ...properties, promotedFrom: source },
+    },
+  });
+
+  const assertions = [];
+  for (const link of links) {
+    if (!link?.relType || !link?.dstId) continue;
+    const assertion = await createBrainAssertion(prisma, {
+      srcId: link.srcId || fact.id,
+      dstId: link.dstId,
+      relType: link.relType,
+      confidence: Number(link.confidence ?? 1),
+      metadata: {
+        ...(link.metadata || {}),
+        promotedFactNodeId: fact.id,
+      },
+      sourceType: 'ledger_event',
+      sourceId: ledgerEvent.id,
+      createdBy,
+      knownFrom: new Date(),
+      validFrom: link.validFrom ? new Date(link.validFrom) : new Date(),
+      provisional: !!link.provisional,
+    });
+    assertions.push(assertion);
+  }
+
+  return { fact, assertions, ledgerEventId: ledgerEvent.id };
 }
 
 // ── Margin calculator ─────────────────────────────────────────────────────────
@@ -341,4 +423,12 @@ async function computeDishMargin(dishEntityId) {
   };
 }
 
-module.exports = { createIngredient, setPricing, createRecipe, recordBatch, computeRecipeCost, computeDishMargin };
+module.exports = {
+  createIngredient,
+  setPricing,
+  createRecipe,
+  recordBatch,
+  createFactNode,
+  computeRecipeCost,
+  computeDishMargin,
+};

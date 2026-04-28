@@ -21,6 +21,7 @@ const { getPrisma } = require('../utils/prisma');
 const {
   createIngredient, setPricing,
   createRecipe, recordBatch,
+  createFactNode,
   computeRecipeCost, computeDishMargin,
 } = require('./ontologyHelpers');
 
@@ -28,6 +29,35 @@ const verifyAdminRequest = createAdminVerifier();
 
 function registerOntologyRoutes(app, { logger } = {}) {
   const prisma = getPrisma();
+
+  app.post('/api/brain/facts/promote', async (req, res) => {
+    try {
+      const admin = await verifyAdminRequest(req);
+      if (!admin) return res.status(403).json({ error: 'admin only' });
+
+      const { entityType, name, properties, links } = req.body || {};
+      if (!entityType || !name) return res.status(400).json({ error: 'entityType and name required' });
+      if (!Array.isArray(links) || links.length === 0) return res.status(400).json({ error: 'links array required' });
+
+      const result = await createFactNode({
+        entityType,
+        name,
+        properties: properties || {},
+        links,
+        source: 'admin_ux',
+        createdBy: 'founder',
+      });
+      return res.status(201).json({
+        ok: true,
+        fact: result.fact,
+        assertionIds: result.assertions.map(a => a.id),
+        ledgerEventId: result.ledgerEventId,
+      });
+    } catch (err) {
+      logger?.error({ err }, 'brain: promote fact error');
+      return res.status(500).json({ error: err.message || 'internal-error' });
+    }
+  });
 
   // ── Ingredients ─────────────────────────────────────────────────────────────
 

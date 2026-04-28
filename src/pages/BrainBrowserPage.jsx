@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useSupabaseAuth } from '../contexts/SupabaseAuthContext';
 import { API_BASE } from '../lib/apiBase';
 import { SigmaContainer, useLoadGraph, useRegisterEvents, useSigma } from '@react-sigma/core';
@@ -7,32 +7,86 @@ import { circular } from 'graphology-layout';
 import forceAtlas2 from 'graphology-layout-forceatlas2';
 import '@react-sigma/core/lib/style.css';
 
-const ENTITY_TYPES = ['Vendor', 'Customer', 'Dish', 'Ingredient', 'Menu', 'Product', 'Note', 'Task', 'Event'];
+const ENTITY_TYPES = [
+  'Vendor', 'Customer', 'Dish', 'Ingredient', 'Menu', 'Product',
+  'Invoice', 'Payment', 'Order', 'Receipt', 'EmailThread', 'Feedback', 'Decision',
+  'PriceQuote', 'LedgerTransaction',
+  'BusinessLine', 'Offer', 'Occasion', 'Channel', 'CustomerSegment',
+  'ProcessStep', 'Constraint', 'Asset', 'Opportunity', 'Risk', 'Metric',
+  'NarrativeTheme', 'Supplier', 'Task', 'Note', 'Event',
+];
 
 const TYPE_COLORS = {
-  Vendor:     '#4a6741',
-  Customer:   '#3b5bdb',
-  Dish:       '#c0392b',
-  Ingredient: '#1a7f5a',
-  Menu:       '#b86e00',
-  Product:    '#7048e8',
-  Note:       '#888',
-  Task:       '#d97706',
-  Event:      '#0891b2',
+  // Core
+  Vendor:         '#4a6741',
+  Customer:       '#3b5bdb',
+  Dish:           '#c0392b',
+  Ingredient:     '#1a7f5a',
+  Menu:           '#b86e00',
+  Product:        '#7048e8',
+  Invoice:        '#7c2d12',
+  Payment:        '#047857',
+  Order:          '#6d28d9',
+  Receipt:        '#92400e',
+  EmailThread:    '#0369a1',
+  Feedback:       '#be185d',
+  Decision:       '#111827',
+  PriceQuote:     '#0f766e',
+  LedgerTransaction: '#475569',
+  Supplier:       '#2d6a4f',
+  // Business model
+  BusinessLine:   '#0f4c81',
+  Offer:          '#1565c0',
+  Occasion:       '#6a0dad',
+  Channel:        '#00838f',
+  CustomerSegment:'#1b5e20',
+  // Operations
+  ProcessStep:    '#e65100',
+  Constraint:     '#b71c1c',
+  Asset:          '#4e342e',
+  // Strategy
+  Opportunity:    '#2e7d32',
+  Risk:           '#c62828',
+  Metric:         '#283593',
+  NarrativeTheme: '#880e4f',
+  // Utility
+  Task:           '#d97706',
+  Note:           '#888',
+  Event:          '#0891b2',
 };
 
 const REL_TYPE_COLORS = {
-  PRICED_AT: 'bg-blue-100 text-blue-800',
-  CONTAINS: 'bg-green-100 text-green-800',
-  ORDERED: 'bg-purple-100 text-purple-800',
-  PAYMENT_SENT: 'bg-red-100 text-red-800',
-  PAYMENT_RECEIVED: 'bg-emerald-100 text-emerald-800',
-  SOURCED_FROM: 'bg-amber-100 text-amber-800',
-  RECONCILED_WITH: 'bg-sky-100 text-sky-800',
-  SPEND_HISTORY: 'bg-orange-100 text-orange-800',
-  MENU_SNAPSHOT: 'bg-indigo-100 text-indigo-800',
-  APPEARS_ON: 'bg-violet-100 text-violet-800',
-  GAVE_FEEDBACK: 'bg-pink-100 text-pink-800',
+  // Existing
+  PRICED_AT:          'bg-blue-100 text-blue-800',
+  CONTAINS:           'bg-green-100 text-green-800',
+  ORDERED:            'bg-purple-100 text-purple-800',
+  PAYMENT_SENT:       'bg-red-100 text-red-800',
+  PAYMENT_RECEIVED:   'bg-emerald-100 text-emerald-800',
+  SOURCED_FROM:       'bg-amber-100 text-amber-800',
+  RECONCILED_WITH:    'bg-sky-100 text-sky-800',
+  SPEND_HISTORY:      'bg-orange-100 text-orange-800',
+  MENU_SNAPSHOT:      'bg-indigo-100 text-indigo-800',
+  APPEARS_ON:         'bg-violet-100 text-violet-800',
+  GAVE_FEEDBACK:      'bg-pink-100 text-pink-800',
+  // New ontology rel types
+  GENERATES_REVENUE_FOR: 'bg-green-200 text-green-900',
+  SERVES_SEGMENT:        'bg-blue-200 text-blue-900',
+  USES_INGREDIENT:       'bg-lime-100 text-lime-800',
+  DEPENDS_ON_SUPPLIER:   'bg-yellow-100 text-yellow-800',
+  TRIGGERED_BY_OCCASION: 'bg-purple-200 text-purple-900',
+  CONSTRAINED_BY:        'bg-red-200 text-red-900',
+  CREATES_CONTENT_ANGLE: 'bg-fuchsia-100 text-fuchsia-800',
+  HAS_REPEAT_PATTERN:    'bg-teal-100 text-teal-800',
+  CAUSES_COMPLEXITY:     'bg-orange-200 text-orange-900',
+  CAN_BE_PACKAGED_AS:    'bg-cyan-100 text-cyan-800',
+  EVIDENCED_BY:          'bg-gray-200 text-gray-800',
+  CROSS_SELLS_TO:        'bg-indigo-200 text-indigo-900',
+  SHOULD_SCALE_BECAUSE:  'bg-emerald-200 text-emerald-900',
+  SHOULD_NOT_SCALE_BECAUSE: 'bg-rose-200 text-rose-900',
+  HAS_MARGIN_DRIVER:     'bg-green-300 text-green-900',
+  SUPPLIED_BY:           'bg-amber-200 text-amber-900',
+  USDA_VERIFIED:         'bg-gray-100 text-gray-600',
+  ABOUT:                 'bg-gray-100 text-gray-600',
 };
 
 function relBadge(relType, provisional) {
@@ -47,7 +101,7 @@ function relBadge(relType, provisional) {
 
 // ── Entity detail panel ───────────────────────────────────────────────────────
 
-function EntityDetail({ id, accessToken, onClose, onUpdated }) {
+function EntityDetail({ id, accessToken, onClose, onUpdated, reviewMode = false }) {
   const [entity, setEntity] = useState(null);
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(false);
@@ -57,13 +111,14 @@ function EntityDetail({ id, accessToken, onClose, onUpdated }) {
 
   const load = useCallback(() => {
     setLoading(true);
-    fetch(`${API_BASE}/api/brain/entities/${id}`, {
+    const params = reviewMode ? '?provisionalOnly=true' : '';
+    fetch(`${API_BASE}/api/brain/entities/${id}${params}`, {
       headers: { Authorization: `Bearer ${accessToken}` },
     })
       .then(r => r.json())
       .then(d => { setEntity(d.entity); setLoading(false); })
       .catch(() => setLoading(false));
-  }, [id, accessToken]);
+  }, [id, accessToken, reviewMode]);
 
   useEffect(() => { load(); }, [load]);
 
@@ -369,6 +424,7 @@ export default function BrainBrowserPage() {
   const [searchInput, setSearchInput] = useState('');
   const [activeQuery, setActiveQuery] = useState('');
   const [sort, setSort] = useState('updatedAt');
+  const [reviewMode, setReviewMode] = useState(false);
   const [entities, setEntities] = useState([]);
   const [total, setTotal] = useState(0);
   const [offset, setOffset] = useState(0);
@@ -382,6 +438,7 @@ export default function BrainBrowserPage() {
     const params = new URLSearchParams({ limit: LIMIT, offset: off, sort: sortField, order: 'desc' });
     if (type) params.set('type', type);
     if (q) params.set('q', q);
+    if (reviewMode) params.set('provisionalOnly', 'true');
     fetch(`${API_BASE}/api/brain/entities?${params}`, {
       headers: { Authorization: `Bearer ${auth.accessToken}` },
     })
@@ -392,7 +449,7 @@ export default function BrainBrowserPage() {
         setLoading(false);
       })
       .catch(() => setLoading(false));
-  }, [auth.accessToken]);
+  }, [auth.accessToken, reviewMode]);
 
   useEffect(() => {
     fetchEntities(activeQuery, typeFilter, sort, offset);
@@ -435,6 +492,12 @@ export default function BrainBrowserPage() {
             <SearchBar value={searchInput} onChange={setSearchInput} onSubmit={handleSearch} />
           </div>
           <div className="flex items-center gap-3">
+            <button
+              onClick={() => { setReviewMode(v => !v); setOffset(0); setSelectedId(null); }}
+              className={`px-3 py-1.5 rounded border text-xs font-medium ${reviewMode ? 'bg-amber-100 text-amber-900 border-amber-300' : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-50'}`}
+            >
+              Provisional review
+            </button>
             {/* View toggle */}
             <div className="flex rounded border border-gray-300 overflow-hidden text-xs">
               <button
@@ -511,6 +574,7 @@ export default function BrainBrowserPage() {
                   accessToken={auth.accessToken}
                   onClose={() => setSelectedId(null)}
                   onUpdated={handleRefresh}
+                  reviewMode={reviewMode}
                 />
               </div>
             )}
@@ -555,6 +619,11 @@ export default function BrainBrowserPage() {
                             </td>
                             <td className="px-4 py-2.5 font-medium truncate max-w-0">
                               <span className="block truncate">{e.name}</span>
+                              {e.provisionalCount > 0 && (
+                                <span className={`inline-block mt-1 text-[10px] font-mono px-1.5 py-0.5 rounded ${e.id === selectedId ? 'bg-amber-200 text-amber-950' : 'bg-amber-100 text-amber-800'}`}>
+                                  {e.provisionalCount} provisional
+                                </span>
+                              )}
                             </td>
                             <td className={`px-4 py-2.5 text-right font-mono text-xs ${e.id === selectedId ? 'text-gray-300' : 'text-gray-400'}`}>
                               {e.assertionCount}
@@ -600,6 +669,7 @@ export default function BrainBrowserPage() {
                   accessToken={auth.accessToken}
                   onClose={() => setSelectedId(null)}
                   onUpdated={handleRefresh}
+                  reviewMode={reviewMode}
                 />
               </div>
             )}

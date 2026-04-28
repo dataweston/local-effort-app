@@ -28,7 +28,7 @@ from extractor import (
     invalidate_entity_cache,
     MODEL,
 )
-from models import EmailThreadExtraction, VendorSignal, CustomerSignal, MenuExtraction
+from models import EmailThreadExtraction, VendorSignal, CustomerSignal, MenuExtraction, StrategicSignal
 
 REEXTRACT = '--reextract' in sys.argv
 
@@ -195,6 +195,47 @@ def write_customer_signal(
     return 1
 
 
+def write_strategic_signal(
+    signal: StrategicSignal,
+    extraction_event_id: str,
+    thread_id: str,
+    occurred_at: datetime,
+) -> int:
+    """Write one StrategicSignal as a BrainAssertion. Returns 1 if written, 0 if skipped."""
+    if not signal.src_name or not signal.dst_name:
+        return 0
+
+    src_id, src_created = find_or_create_entity(signal.src_type, signal.src_name)
+    if src_created:
+        print(f'    [new {signal.src_type}] {signal.src_name}')
+        invalidate_entity_cache()
+
+    dst_id, dst_created = find_or_create_entity(signal.dst_type, signal.dst_name)
+    if dst_created:
+        print(f'    [new {signal.dst_type}] {signal.dst_name}')
+        invalidate_entity_cache()
+
+    metadata = {
+        'source': 'gmail',
+        'threadId': thread_id,
+        'rationale': signal.rationale,
+    }
+    if signal.source_span:
+        metadata['sourceSpan'] = signal.source_span[:500]
+
+    write_assertion(
+        src_id=src_id,
+        dst_id=dst_id,
+        rel_type=signal.rel_type,
+        ledger_event_id=extraction_event_id,
+        confidence=signal.confidence,
+        metadata=metadata,
+        valid_from=occurred_at,
+        provisional=True,
+    )
+    return 1
+
+
 def write_menu(
     menu: MenuExtraction,
     extraction_event_id: str,
@@ -301,7 +342,7 @@ def write_menu(
     return 1
 
 
-FETCH_SQL = """
+FETCH_ALL_SQL = """
     SELECT le.id, le."sourceId", le.payload, le."occurredAt"
     FROM "LedgerEvent" le
     WHERE le."eventType" = 'email.thread'
@@ -312,18 +353,36 @@ FETCH_SQL = """
           AND le2."sourceId" = le."sourceId"
       )
     ORDER BY le."occurredAt" DESC
-    LIMIT %s OFFSET %s
+    LIMIT %s
 """
 
 
 def _process_batch(rows, dry_run, max_workers):
-    """Extract one batch of threads, write results, return counters."""
+    """
+    Extract one batch of threads, write results, return counters.
+
+    DB connection is explicitly released before LLM calls so that the
+    minutes-long extraction phase doesn't hold an idle connection open.
+    Postgres will kill connections idle for too long (server-side timeout),
+    which caused the 'server closed connection unexpectedly' failures.
+    """
+    import db as _db
     processed = skipped = ignored = assertions_written = menus_found = 0
     errors = []
+
+    # Phase 1: LLM extraction — no DB connection held during this.
+    # Release any open connection before starting the slow work.
+    if _db._conn is not None:
+        try:
+            _db._conn.close()
+        except Exception:
+            pass
+        _db._conn = None
 
     results = extract_threads_parallel(
         rows, max_workers=max_workers, fetch_bodies=True, dry_run=dry_run
     )
+    # DB connection will be re-established lazily on first write below.
 
     for row, extraction, error in results:
         payload = row['payload']
@@ -378,8 +437,9 @@ def _process_batch(rows, dry_run, max_workers):
             n_vendor = len(extraction.vendor_signals)
             n_customer = len(extraction.customer_signals)
             n_menus = len(extraction.menus)
+            n_strategic = len(extraction.strategic_signals)
             print(f'  [{extraction.category}] {subject[:50]} '
-                  f'→ {n_vendor}v {n_customer}c {n_menus}m '
+                  f'→ {n_vendor}v {n_customer}c {n_menus}m {n_strategic}s '
                   f'conf={extraction.extraction_confidence:.2f}')
             processed += 1
             continue
@@ -387,7 +447,8 @@ def _process_batch(rows, dry_run, max_workers):
         try:
             total_signals = (len(extraction.vendor_signals) +
                              len(extraction.customer_signals) +
-                             len(extraction.menus))
+                             len(extraction.menus) +
+                             len(extraction.strategic_signals))
 
             extraction_event_id = write_ledger_event(
                 event_type='extraction.email',
@@ -402,6 +463,7 @@ def _process_batch(rows, dry_run, max_workers):
                     'vendorSignals': len(extraction.vendor_signals),
                     'customerSignals': len(extraction.customer_signals),
                     'menus': len(extraction.menus),
+                    'strategicSignals': len(extraction.strategic_signals),
                     'needsHumanReview': extraction.needs_human_review,
                     'reviewReason': extraction.review_reason,
                     'model': MODEL,
@@ -432,6 +494,14 @@ def _process_batch(rows, dry_run, max_workers):
                 except Exception as e:
                     errors.append(f'{thread_id} menu: {e}')
 
+            for signal in extraction.strategic_signals:
+                try:
+                    assertions_written += write_strategic_signal(
+                        signal, extraction_event_id, thread_id, occurred_at
+                    )
+                except Exception as e:
+                    errors.append(f'{thread_id} strategic signal: {e}')
+
             processed += 1
 
         except Exception as e:
@@ -445,42 +515,25 @@ def run(limit: int = 2000, batch_size: int = 75, dry_run: bool = False, max_work
         print('[extract_gmail] --reextract: deleting existing extraction.email events...')
         execute('DELETE FROM "LedgerEvent" WHERE "eventType" = \'extraction.email\'')
 
-    # Count total to extract
-    total_rows = query(
-        """
-        SELECT COUNT(*) AS n FROM "LedgerEvent" le
-        WHERE le."eventType" = 'email.thread'
-          AND le."tombstonedAt" IS NULL
-          AND NOT EXISTS (
-            SELECT 1 FROM "LedgerEvent" le2
-            WHERE le2."eventType" = 'extraction.email'
-              AND le2."sourceId" = le."sourceId"
-          )
-        """
-    )[0]['n']
-
-    total_rows = min(total_rows, limit)
-    if total_rows == 0:
+    # Fetch all unextracted rows upfront in one query, then slice into batches.
+    # This avoids the re-query-at-offset-0 pattern which causes an infinite loop
+    # when threads never leave the unextracted set (dry-run, errors, or skipped).
+    all_rows = query(FETCH_ALL_SQL, (limit,))
+    if not all_rows:
         print('[extract_gmail] nothing to extract')
         return {'processed': 0, 'skipped': 0, 'ignored': 0,
                 'assertions_written': 0, 'menus_found': 0, 'errors': []}
 
-    print(f'[extract_gmail] {total_rows} threads to extract in batches of {batch_size} ({max_workers} workers)...')
+    total = len(all_rows)
+    n_batches = (total + batch_size - 1) // batch_size
+    print(f'[extract_gmail] {total} threads to extract in {n_batches} batches of {batch_size} ({max_workers} workers)...')
 
     processed = skipped = ignored = assertions_written = menus_found = 0
     all_errors = []
-    batch_num = 0
-    consecutive_all_ignored = 0
 
-    while True:
-        # Re-fetch OFFSET 0 each time: writing extraction.email events shifts
-        # processed threads out of the unextracted set automatically.
-        rows = query(FETCH_SQL, (batch_size, 0))
-        if not rows:
-            break
-
-        batch_num += 1
-        print(f'\n[extract_gmail] batch {batch_num}: {len(rows)} threads')
+    for batch_num, offset in enumerate(range(0, total, batch_size), start=1):
+        rows = all_rows[offset:offset + batch_size]
+        print(f'\n[extract_gmail] batch {batch_num}/{n_batches}: {len(rows)} threads')
 
         p, s, i, a, m, errs = _process_batch(rows, dry_run, max_workers)
         processed += p
@@ -492,18 +545,6 @@ def run(limit: int = 2000, batch_size: int = 75, dry_run: bool = False, max_work
 
         print(f'[extract_gmail] batch {batch_num} done: '
               f'+{p} processed, +{s} skipped, +{i} ignored, +{a} assertions, +{m} menus')
-
-        # If an entire batch was ignored (all got extraction.email written),
-        # they drop out of the query next iteration — no infinite loop risk.
-        # But if nothing was written at all (skipped=batch), we'd loop forever.
-        # Guard: if batch produced zero ledger writes, stop.
-        if p == 0 and i == 0 and s == len(rows):
-            consecutive_all_ignored += 1
-            if consecutive_all_ignored >= 2:
-                print('[extract_gmail] stopping: batches returning only skipped threads')
-                break
-        else:
-            consecutive_all_ignored = 0
 
     print(f'\n[extract_gmail] complete: {processed} processed, {skipped} skipped, '
           f'{ignored} ignored, {assertions_written} assertions, {menus_found} menus')

@@ -22,9 +22,13 @@ import time
 from pathlib import Path
 from typing import Optional
 
+from dotenv import load_dotenv
+
 import voyageai
 import lancedb
 from lancedb.pydantic import LanceModel, Vector
+
+load_dotenv(dotenv_path=Path(__file__).parent.parent / '.env')
 
 VOYAGE_MODEL = 'voyage-3-lite'
 EMBED_DIM = 512  # voyage-3-lite output dimension
@@ -98,6 +102,12 @@ class VectorStore:
             pass
         self._table.add(rows)
         return len(rows)
+
+    def clear(self) -> None:
+        try:
+            self._table.delete("id IS NOT NULL")
+        except Exception:
+            pass
 
     def search(self, query: str, limit: int = 8, table_filter: Optional[str] = None) -> list[dict]:
         client = _get_voyage_client()

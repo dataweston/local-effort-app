@@ -8,6 +8,12 @@ from datetime import datetime, timezone
 from db import execute, query
 
 
+def canonical_name(name: str) -> str:
+    """Stable lookup key for entity names."""
+    import re
+    return re.sub(r'\s+', ' ', re.sub(r'[^a-z0-9]+', ' ', (name or '').lower())).strip()
+
+
 def write_ledger_event(
     event_type: str,
     source: str,
@@ -18,6 +24,20 @@ def write_ledger_event(
     schema_version: int = 1,
 ) -> str:
     """Insert a LedgerEvent row. Returns the new id."""
+    if source_id:
+        existing = query(
+            """
+            SELECT id FROM "LedgerEvent"
+            WHERE "eventType" = %s AND source = %s AND "sourceId" = %s
+              AND "tombstonedAt" IS NULL
+            ORDER BY "createdAt" DESC
+            LIMIT 1
+            """,
+            (event_type, source, source_id),
+        )
+        if existing:
+            return existing[0]['id']
+
     eid = str(uuid.uuid4())
     ts = (occurred_at or datetime.now(timezone.utc)).isoformat()
     import json
@@ -47,6 +67,21 @@ def write_assertion(
 ) -> str:
     """Insert a BrainAssertion row. Returns the new id."""
     import json
+    rel = rel_type.upper()
+    if ledger_event_id:
+        existing = query(
+            """
+            SELECT id FROM "BrainAssertion"
+            WHERE "srcId" = %s AND "dstId" = %s AND "relType" = %s
+              AND "sourceId" = %s AND "retractedAt" IS NULL
+            ORDER BY "createdAt" DESC
+            LIMIT 1
+            """,
+            (src_id, dst_id, rel, ledger_event_id),
+        )
+        if existing:
+            return existing[0]['id']
+
     aid = str(uuid.uuid4())
     ts = (valid_from or datetime.now(timezone.utc)).isoformat()
     execute(
@@ -56,7 +91,7 @@ def write_assertion(
              confidence, "sourceType", "sourceId", "createdBy", provisional, "createdAt")
         VALUES (%s, %s, %s, %s, %s::jsonb, %s, NOW(), %s, 'python_extractor', %s, %s, %s, NOW())
         """,
-        (aid, src_id, dst_id, rel_type.upper(),
+        (aid, src_id, dst_id, rel,
          json.dumps(metadata or {}), ts,
          confidence, ledger_event_id, created_by, provisional),
     )
@@ -68,41 +103,61 @@ def find_or_create_entity(entity_type: str, name: str) -> tuple[str, bool]:
     Look up an entity by type+name (case-insensitive).
     Creates it if missing. Returns (entity_id, created).
     """
-    rows = query(
-        """
-        SELECT id FROM "BrainEntity"
-        WHERE "entityType" = %s AND LOWER(name) = LOWER(%s) AND "tombstonedAt" IS NULL
-        LIMIT 1
-        """,
-        (entity_type, name),
-    )
-    if rows:
-        return rows[0]['id'], False
-
-    # Check aliases
-    alias_rows = query(
-        """
-        SELECT ea."entityId" FROM "BrainEntityAlias" ea
-        JOIN "BrainEntity" e ON e.id = ea."entityId"
-        WHERE LOWER(ea.alias) = LOWER(%s) AND e."entityType" = %s AND e."tombstonedAt" IS NULL
-        LIMIT 1
-        """,
-        (name, entity_type),
-    )
-    if alias_rows:
-        return alias_rows[0]['entityId'], False
-
+    norm = canonical_name(name)
     import json
-    eid = str(uuid.uuid4())
-    execute(
-        """
-        INSERT INTO "BrainEntity"
-            (id, "entityType", name, status, "createdAt", "updatedAt")
-        VALUES (%s, %s, %s, 'active', NOW(), NOW())
-        """,
-        (eid, entity_type, name),
-    )
-    return eid, True
+    from db import get_conn
+    conn = get_conn()
+    try:
+        with conn.cursor() as cur:
+            cur.execute('SELECT pg_advisory_xact_lock(hashtext(%s))', (f'{entity_type}:{norm}',))
+            cur.execute(
+                """
+                SELECT id FROM "BrainEntity"
+                WHERE "entityType" = %s
+                  AND COALESCE("canonicalName", LOWER(name)) = %s
+                  AND "tombstonedAt" IS NULL
+                LIMIT 1
+                """,
+                (entity_type, norm),
+            )
+            row = cur.fetchone()
+            if row:
+                conn.rollback()
+                return row['id'], False
+
+            cur.execute(
+                """
+                SELECT ea."entityId" FROM "BrainEntityAlias" ea
+                JOIN "BrainEntity" e ON e.id = ea."entityId"
+                WHERE (
+                    LOWER(ea.alias) = LOWER(%s)
+                    OR COALESCE(e."canonicalName", LOWER(e.name)) = %s
+                  )
+                  AND e."entityType" = %s
+                  AND e."tombstonedAt" IS NULL
+                LIMIT 1
+                """,
+                (name, norm, entity_type),
+            )
+            row = cur.fetchone()
+            if row:
+                conn.rollback()
+                return row['entityId'], False
+
+            eid = str(uuid.uuid4())
+            cur.execute(
+                """
+                INSERT INTO "BrainEntity"
+                    (id, "entityType", name, "canonicalName", status, properties, "createdAt", "updatedAt")
+                VALUES (%s, %s, %s, %s, 'active', %s::jsonb, NOW(), NOW())
+                """,
+                (eid, entity_type, name, norm, json.dumps({})),
+            )
+        conn.commit()
+        return eid, True
+    except Exception:
+        conn.rollback()
+        raise
 
 
 def already_processed(source: str, source_id: str) -> bool:

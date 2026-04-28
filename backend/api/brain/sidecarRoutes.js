@@ -14,6 +14,14 @@ const verifyAdminRequest = createAdminVerifier();
 let lastRun = null;
 let running = false;
 
+function brainPythonBin() {
+  return process.env.BRAIN_PYTHON_BIN
+    || process.env.PYTHON_BIN
+    || (process.platform === 'win32'
+      ? 'C:/Users/user/AppData/Local/Programs/Python/Python310/python.exe'
+      : 'python3');
+}
+
 function registerSidecarRoutes(app, { logger } = {}) {
   app.post('/api/brain/sidecar/run', async (req, res) => {
     try {
@@ -31,7 +39,7 @@ function registerSidecarRoutes(app, { logger } = {}) {
 
       // Spawn Python sidecar — fire and forget, stream output to logger
       // Python 3.10+ required for instructor/pydantic union syntax
-      const pythonBin = process.env.BRAIN_PYTHON_BIN || 'python3';
+      const pythonBin = brainPythonBin();
       const child = spawn(pythonBin, ['run.py', ...args], {
         cwd: sidecarDir,
         env: { ...process.env },

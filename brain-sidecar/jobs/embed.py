@@ -41,9 +41,30 @@ def _inbox_to_text(row: dict) -> str:
     return row.get('rawContent') or ''
 
 
+def _assertion_to_text(row: dict) -> str:
+    meta = row.get('metadata') or {}
+    if isinstance(meta, str):
+        try:
+            meta = json.loads(meta)
+        except Exception:
+            meta = {}
+    parts = [
+        f"{row.get('srcType')}: {row.get('srcName')}",
+        row.get('relType'),
+        f"{row.get('dstType')}: {row.get('dstName')}",
+    ]
+    for key in ('signalType', 'rationale', 'notes', 'sourceSpan', 'summary'):
+        if meta.get(key):
+            parts.append(str(meta[key])[:500])
+    return ' | '.join(p for p in parts if p)
+
+
 def run(dry_run: bool = False, full_reembed: bool = False) -> dict:
     vs = VectorStore()
     existing_count = vs.count()
+    if full_reembed and not dry_run:
+        vs.clear()
+        existing_count = 0
 
     # Look back window: 7 days incremental, or everything for full re-embed
     if full_reembed or existing_count == 0:
@@ -59,9 +80,26 @@ def run(dry_run: bool = False, full_reembed: bool = False) -> dict:
         SELECT id, "entityType", name, properties, "updatedAt"
         FROM "BrainEntity"
         WHERE "tombstonedAt" IS NULL
-          AND "createdAt" > %s
-        ORDER BY "createdAt" DESC
-        LIMIT 500
+          AND "updatedAt" > %s
+        ORDER BY "updatedAt" DESC
+        LIMIT 20000
+        ''',
+        (since_str,)
+    )
+
+    assertions = db_query(
+        '''
+        SELECT a.id, a."relType", a.metadata, a.confidence, a.provisional, a."createdAt",
+               src.name AS "srcName", src."entityType" AS "srcType",
+               dst.name AS "dstName", dst."entityType" AS "dstType"
+        FROM "BrainAssertion" a
+        JOIN "BrainEntity" src ON src.id = a."srcId"
+        JOIN "BrainEntity" dst ON dst.id = a."dstId"
+        WHERE a."retractedAt" IS NULL
+          AND a."knownUntil" IS NULL
+          AND a."createdAt" > %s
+        ORDER BY a."createdAt" DESC
+        LIMIT 50000
         ''',
         (since_str,)
     )
@@ -73,7 +111,7 @@ def run(dry_run: bool = False, full_reembed: bool = False) -> dict:
         FROM "BrainInboxItem"
         WHERE "capturedAt" > %s
         ORDER BY "capturedAt" DESC
-        LIMIT 200
+        LIMIT 20000
         ''',
         (since_str,)
     )
@@ -110,8 +148,28 @@ def run(dry_run: bool = False, full_reembed: bool = False) -> dict:
             },
         })
 
+    for assertion in assertions:
+        text = _assertion_to_text(assertion)
+        if not text.strip():
+            continue
+        records.append({
+            'id': f"assertion:{assertion['id']}",
+            'table': 'assertion',
+            'text': text[:1500],
+            'metadata': {
+                'assertionId': assertion['id'],
+                'relType': assertion['relType'],
+                'srcName': assertion['srcName'],
+                'srcType': assertion['srcType'],
+                'dstName': assertion['dstName'],
+                'dstType': assertion['dstType'],
+                'confidence': assertion.get('confidence'),
+                'provisional': assertion.get('provisional'),
+            },
+        })
+
     if dry_run:
-        print(f'  [embed dry-run] would embed {len(records)} records ({len(entities)} entities, {len(inbox_items)} inbox)')
+        print(f'  [embed dry-run] would embed {len(records)} records ({len(entities)} entities, {len(assertions)} assertions, {len(inbox_items)} inbox)')
         return {'embedded': 0, 'dry_run': True, 'would_embed': len(records)}
 
     if not records:
@@ -123,6 +181,7 @@ def run(dry_run: bool = False, full_reembed: bool = False) -> dict:
     return {
         'embedded': embedded,
         'entities': len(entities),
+        'assertions': len(assertions),
         'inbox': len(inbox_items),
         'total_in_store': total,
     }

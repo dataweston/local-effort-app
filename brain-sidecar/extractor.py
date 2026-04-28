@@ -20,13 +20,14 @@ from pathlib import Path
 from dotenv import load_dotenv
 load_dotenv(dotenv_path=Path(__file__).parent.parent / '.env')
 
-import anthropic
+import openai
 import instructor
 from models import (
     EmailThreadExtraction,
     SquarePaymentSignal,
     InboxTriageDecision,
     VendorRelationshipExtraction,
+    StrategicSignal,
 )
 
 # ── Ignore list — never call LLM on these ────────────────────────────────────
@@ -200,7 +201,7 @@ def fetch_thread_body(thread_id: str, max_chars: int = 6000) -> str:
         return ''
 
 
-# ── Anthropic / Instructor client ─────────────────────────────────────────────
+# ── OpenAI / Instructor client ────────────────────────────────────────────────
 
 _instructor_client = None
 
@@ -208,12 +209,12 @@ _instructor_client = None
 def get_client() -> instructor.Instructor:
     global _instructor_client
     if _instructor_client is None:
-        raw = anthropic.Anthropic(api_key=os.environ['ANTHROPIC_API_KEY'])
-        _instructor_client = instructor.from_anthropic(raw)
+        raw = openai.OpenAI(api_key=os.environ['OPENAI_API_KEY'])
+        _instructor_client = instructor.from_openai(raw)
     return _instructor_client
 
 
-MODEL = 'claude-haiku-4-5-20251001'
+MODEL = 'gpt-4o'
 
 
 # ── Entity context loader ─────────────────────────────────────────────────────
@@ -263,23 +264,55 @@ def invalidate_entity_cache():
 
 SYSTEM_PROMPT = """You are extracting structured knowledge from emails for a small food business called Local Effort Food, run by Weston Smith (dataweston@gmail.com, yum@localeffortfood.com).
 
-The business:
-- Sources ingredients from local farms and specialty vendors
-- Runs weekly meal subscription service for households
-- Does catering events (dinners, weddings, corporate)
-- Operates a pizza concept (Local Effort Pizza)
-- Is based in Minnesota
+The business has multiple revenue lines:
+- Weekly Meal Subscription: weekly meal boxes for households
+- Private Dinners & Events: seated dinners, buffets, weddings, corporate lunches
+- Local Effort Pizza: pizza pop-up events
+- Wholesale & Bread: wholesale bread supply to other businesses
+- Farmers Market: direct retail at markets
+
+Strategic entity types in the knowledge graph:
+- Vendor / Supplier: ingredient sources, food producers, farms
+- Customer: people/companies who buy from Local Effort
+- Dish / Menu / Ingredient: food product data
+- Event: specific happenings (pop-ups, dinners, markets)
+- Offer: named service packages (e.g. "Wedding Catering", "Weekly Meal Box", "Pizza Pop-Up")
+- BusinessLine: the five revenue lines above
+- CustomerSegment: groups like "Busy Families", "Event Hosts", "Corporate Accounts", "Wedding Couples"
+- Occasion: buying triggers like "Wedding Reception", "Birthday Dinner", "Corporate Team Lunch"
+- Channel: how customers find us (word of mouth, Instagram, email list, wedding platforms)
+- ProcessStep: operational steps (Menu Planning, Ingredient Sourcing, Cooking & Production, etc.)
+- Constraint: capacity limits (Oven Capacity, Labor Hours, Delivery Radius, Shelf Life)
+- NarrativeTheme: brand content pillars (Local Sourcing, Craft & Seasonality, Founder Transparency)
+- Metric: tracked business KPIs (Gross Margin per Meal Box, Customer Retention Rate, etc.)
+- Opportunity: potential growth areas
+- Risk: operational or business risks
+- Asset: physical or intangible assets
+
+Key relationship types to extract:
+- SUPPLIES: Vendor/Supplier supplies an Ingredient to Local Effort
+- APPEARED_ON: Dish appeared on a Menu
+- SERVES_SEGMENT: Offer or Channel serves a CustomerSegment
+- TRIGGERED_BY_OCCASION: Offer is triggered by an Occasion (e.g. Wedding Catering by Wedding Reception)
+- CONSTRAINED_BY: Offer or ProcessStep is constrained by a Constraint
+- GENERATES_REVENUE_FOR: Offer generates revenue for a BusinessLine
+- CREATES_CONTENT_ANGLE: NarrativeTheme creates content angle for an Offer
+- HAS_REPEAT_PATTERN: Customer or Occasion has a repeat pattern
+- CAUSES_COMPLEXITY: something causes operational complexity
+- CAN_BE_PACKAGED_AS: ingredient or dish can be packaged as an Offer
+- EVIDENCED_BY: assertion evidenced by a specific email/transaction
 
 {entity_context}
 
 RULES:
-1. Use exact vendor/entity names from the known entities list when you recognize them. Do not create variations.
+1. Use exact entity names from the known entities list when you recognize them. Do not create variations.
 2. IGNORE: SaaS receipts (QuickBooks, Intuit, Stripe, etc.), marketing emails, newsletters, social media, non-food e-commerce.
 3. Detect direction: if Weston/yum@localeffortfood.com is the SENDER, it's outbound. If they're the RECIPIENT, it's inbound.
-4. For menus: extract every dish you can find. Menus often appear as lists with dish names and descriptions. They may be in catering proposals, weekly meal emails, or event planning threads.
+4. For menus: extract every dish you can find. Menus often appear as lists with dish names and descriptions.
 5. For vendor signals: capture invoice numbers, order numbers, amounts, line items, and dates precisely as written.
-6. Source spans: include the exact text excerpt that supports each extracted fact.
-7. If uncertain, lower confidence and set needs_human_review=True rather than guessing.
+6. For strategic signals: if an email mentions a specific occasion (wedding, corporate lunch, birthday), customer segment, or channel, extract it in strategic_signals.
+7. Source spans: include the exact text excerpt that supports each extracted fact.
+8. If uncertain, lower confidence and set needs_human_review=True rather than guessing.
 """
 
 
@@ -315,8 +348,10 @@ Email content:
     return client.chat.completions.create(
         model=MODEL,
         max_tokens=2048,
-        system=system,
-        messages=[{'role': 'user', 'content': user_prompt}],
+        messages=[
+            {'role': 'system', 'content': system},
+            {'role': 'user', 'content': user_prompt},
+        ],
         response_model=EmailThreadExtraction,
     )
 
@@ -331,32 +366,36 @@ def fetch_bodies_sequential(
     Fetch Gmail bodies one at a time with a per-request timeout.
     Returns dict of thread_id → body text.
     Sequential avoids SSL connection sharing issues across threads.
-    """
-    import signal
 
-    def _timeout_handler(signum, frame):
-        raise TimeoutError('body fetch timed out')
+    Timeout is enforced via a single-worker ThreadPoolExecutor so it works
+    on Windows (signal.SIGALRM is Unix-only and silently does nothing here).
+    """
+    from concurrent.futures import ThreadPoolExecutor, TimeoutError as FuturesTimeout
 
     bodies = {}
-    for i, row in enumerate(threads):
-        thread_id = row['payload'].get('threadId') or row.get('sourceId', '')
-        if not thread_id:
-            continue
-        # Proactively refresh token every 50 fetches so it never expires mid-run
-        if i > 0 and i % 50 == 0:
+    with ThreadPoolExecutor(max_workers=1) as _timeout_pool:
+        for i, row in enumerate(threads):
+            thread_id = row['payload'].get('threadId') or row.get('sourceId', '')
+            if not thread_id:
+                continue
+            # Proactively refresh token every 50 fetches so it never expires mid-run
+            if i > 0 and i % 50 == 0:
+                try:
+                    _load_credentials()
+                    _thread_local.gmail = None  # force client rebuild with fresh token
+                except Exception as e:
+                    print(f'[extractor] token refresh warning: {e}')
             try:
-                _load_credentials()
-                _thread_local.gmail = None  # force client rebuild with fresh token
+                fut = _timeout_pool.submit(fetch_thread_body, thread_id)
+                bodies[thread_id] = fut.result(timeout=timeout_per_fetch)
+            except FuturesTimeout:
+                print(f'[extractor] body fetch timed out after {timeout_per_fetch}s: {thread_id}')
+                bodies[thread_id] = ''
             except Exception as e:
-                print(f'[extractor] token refresh warning: {e}')
-        try:
-            body = fetch_thread_body(thread_id)
-            bodies[thread_id] = body
-        except Exception as e:
-            print(f'[extractor] body fetch failed {thread_id}: {e}')
-            bodies[thread_id] = ''
-        if (i + 1) % 100 == 0:
-            print(f'[extractor] fetched {i+1}/{len(threads)} bodies...')
+                print(f'[extractor] body fetch failed {thread_id}: {e}')
+                bodies[thread_id] = ''
+            if (i + 1) % 100 == 0:
+                print(f'[extractor] fetched {i+1}/{len(threads)} bodies...')
     return bodies
 
 

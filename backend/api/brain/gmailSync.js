@@ -244,16 +244,20 @@ async function syncGmailThreads({ daysBack = 730, maxPerQuery = 5000, yumAddress
   const allThreadIds = [...threadIdSet];
   logger?.info({ total: allThreadIds.length, ...queryCounts }, 'brain/gmail: thread union complete');
 
-  let processed = 0, skipped = 0, errors = 0;
+  // Batch idempotency check — one query instead of N round-trips
+  const alreadyIngested = new Set(
+    (await prisma.ledgerEvent.findMany({
+      where: { source: 'gmail', sourceId: { in: allThreadIds } },
+      select: { sourceId: true },
+    })).map(r => r.sourceId)
+  );
+  const newThreadIds = allThreadIds.filter(id => !alreadyIngested.has(id));
+  logger?.info({ total: allThreadIds.length, alreadyIngested: alreadyIngested.size, toProcess: newThreadIds.length }, 'brain/gmail: idempotency check complete');
 
-  for (const threadId of allThreadIds) {
+  let processed = 0, skipped = alreadyIngested.size, errors = 0;
+
+  for (const threadId of newThreadIds) {
     try {
-      // Skip already-ingested threads (idempotent)
-      const existing = await prisma.ledgerEvent.findFirst({
-        where: { source: 'gmail', sourceId: threadId },
-      });
-      if (existing) { skipped++; continue; }
-
       const threadRes = await gmail.users.threads.get({
         userId: 'me',
         id: threadId,

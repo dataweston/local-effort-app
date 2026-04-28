@@ -2,7 +2,7 @@
  * Hybrid semantic search over brain entities + inbox items.
  *
  * POST /api/brain/search  — admin only
- *   body: { query: string, limit?: number, table?: 'entity'|'inbox' }
+ *   body: { query: string, limit?: number, table?: 'entity'|'assertion'|'inbox' }
  *   returns: { ok, results: [{ id, table, text, score, metadata }] }
  *
  * Delegates to Python sidecar for vector search (LanceDB + Voyage AI).
@@ -17,14 +17,22 @@ const { getPrisma } = require('../utils/prisma');
 const verifyAdminRequest = createAdminVerifier();
 const SIDECAR_DIR = path.resolve(__dirname, '../../../brain-sidecar');
 
+function brainPythonBin() {
+  return process.env.BRAIN_PYTHON_BIN
+    || process.env.PYTHON_BIN
+    || (process.platform === 'win32'
+      ? 'C:/Users/user/AppData/Local/Programs/Python/Python310/python.exe'
+      : 'python3');
+}
+
 async function vectorSearch(query, { limit = 8, table } = {}) {
   return new Promise((resolve, reject) => {
-    const pythonBin = process.env.BRAIN_PYTHON_BIN || 'python3';
+    const pythonBin = brainPythonBin();
     const args = ['-c', `
 import sys, json, os
 sys.path.insert(0, r'${SIDECAR_DIR.replace(/\\/g, '\\\\')}')
 from dotenv import load_dotenv
-load_dotenv()
+load_dotenv(dotenv_path=os.path.join(r'${SIDECAR_DIR.replace(/\\/g, '\\\\')}', '..', '.env'))
 from vector_store import VectorStore
 vs = VectorStore()
 results = vs.search(${JSON.stringify(query)}, limit=${limit}${table ? `, table_filter=${JSON.stringify(table)}` : ''})
@@ -74,6 +82,33 @@ async function keywordFallback(prisma, query, { limit = 8, table } = {}) {
         text: `${e.entityType}: ${e.name}`,
         score: null,
         metadata: { entityId: e.id, entityType: e.entityType, name: e.name },
+      });
+    }
+  }
+
+  if (!table || table === 'assertion') {
+    const assertions = await prisma.brainAssertion.findMany({
+      where: {
+        retractedAt: null,
+        OR: [
+          { relType: { contains: query, mode: 'insensitive' } },
+          { src: { name: { contains: query, mode: 'insensitive' } } },
+          { dst: { name: { contains: query, mode: 'insensitive' } } },
+        ],
+      },
+      take: limit,
+      include: {
+        src: { select: { id: true, entityType: true, name: true } },
+        dst: { select: { id: true, entityType: true, name: true } },
+      },
+    });
+    for (const a of assertions) {
+      results.push({
+        id: `assertion:${a.id}`,
+        table: 'assertion',
+        text: `${a.src?.entityType}: ${a.src?.name} ${a.relType} ${a.dst?.entityType}: ${a.dst?.name}`,
+        score: null,
+        metadata: { assertionId: a.id, relType: a.relType, src: a.src, dst: a.dst },
       });
     }
   }

@@ -8,10 +8,25 @@
 
 const { getPrisma } = require('../utils/prisma');
 const { createAdminVerifier } = require('../utils/adminVerifier');
+const { RELATIONSHIPS } = require('./relationshipDictionary');
+const { canonicalName: canonicalEntityName } = require('./ledger');
 
 const verifyAdminRequest = createAdminVerifier();
 
-const VALID_TYPES = ['Vendor', 'Customer', 'Menu', 'Dish', 'Ingredient', 'Task', 'Note', 'Event'];
+const VALID_TYPES = [
+  // Core operational
+  'Vendor', 'Customer', 'Menu', 'Dish', 'Ingredient', 'Task', 'Note', 'Event',
+  'Invoice', 'Payment', 'Order', 'Receipt', 'EmailThread', 'Feedback', 'Decision',
+  'PriceQuote', 'LedgerTransaction',
+  // Business model
+  'BusinessLine', 'Offer', 'Occasion', 'Channel', 'CustomerSegment',
+  // Operations
+  'ProcessStep', 'Constraint', 'Asset',
+  // Strategy
+  'Opportunity', 'Risk', 'Metric', 'NarrativeTheme',
+  // Supply
+  'Supplier', 'Product',
+];
 const VALID_SORT = ['name', 'assertionCount', 'updatedAt', 'createdAt'];
 
 function registerEntityRoutes(app, { logger } = {}) {
@@ -31,6 +46,8 @@ function registerEntityRoutes(app, { logger } = {}) {
         limit = '50',
         offset = '0',
         includeArchived = 'false',
+        provisionalOnly = 'false',
+        relType,
       } = req.query;
 
       const take = Math.min(parseInt(limit) || 50, 200);
@@ -47,6 +64,20 @@ function registerEntityRoutes(app, { logger } = {}) {
       }
       if (q && q.trim()) {
         where.name = { contains: q.trim(), mode: 'insensitive' };
+      }
+      if (JSON.parse(provisionalOnly)) {
+        where.OR = [
+          { srcAssertions: { some: { provisional: true, retractedAt: null, knownUntil: null } } },
+          { dstAssertions: { some: { provisional: true, retractedAt: null, knownUntil: null } } },
+        ];
+      }
+      if (relType && String(relType).trim()) {
+        const normalizedRel = String(relType).trim().toUpperCase();
+        where.OR = [
+          ...(where.OR || []),
+          { srcAssertions: { some: { relType: normalizedRel, retractedAt: null, knownUntil: null } } },
+          { dstAssertions: { some: { relType: normalizedRel, retractedAt: null, knownUntil: null } } },
+        ];
       }
 
       const orderBy = sortField === 'assertionCount'
@@ -78,14 +109,44 @@ function registerEntityRoutes(app, { logger } = {}) {
       const ids = entities.map(e => e.id);
       const lastSignals = ids.length > 0
         ? await prisma.$queryRaw`
-            SELECT DISTINCT ON (a."srcId") a."srcId" AS id, a."createdAt" AS "lastSignalAt"
-            FROM "BrainAssertion" a
-            WHERE a."srcId" = ANY(${ids})
-            ORDER BY a."srcId", a."createdAt" DESC
+            SELECT DISTINCT ON (x.id) x.id, x."lastSignalAt"
+            FROM (
+              SELECT a."srcId" AS id, a."createdAt" AS "lastSignalAt"
+              FROM "BrainAssertion" a
+              WHERE a."srcId" = ANY(${ids})
+                AND a."retractedAt" IS NULL
+              UNION ALL
+              SELECT a."dstId" AS id, a."createdAt" AS "lastSignalAt"
+              FROM "BrainAssertion" a
+              WHERE a."dstId" = ANY(${ids})
+                AND a."retractedAt" IS NULL
+            ) x
+            ORDER BY x.id, x."lastSignalAt" DESC
+          `
+        : [];
+
+      const provisionalCounts = ids.length > 0
+        ? await prisma.$queryRaw`
+            SELECT id, COUNT(*)::int AS "provisionalCount"
+            FROM (
+              SELECT a."srcId" AS id
+              FROM "BrainAssertion" a
+              WHERE a."srcId" = ANY(${ids})
+                AND a.provisional = true
+                AND a."retractedAt" IS NULL
+              UNION ALL
+              SELECT a."dstId" AS id
+              FROM "BrainAssertion" a
+              WHERE a."dstId" = ANY(${ids})
+                AND a.provisional = true
+                AND a."retractedAt" IS NULL
+            ) x
+            GROUP BY id
           `
         : [];
 
       const lastSignalMap = Object.fromEntries(lastSignals.map(r => [r.id, r.lastSignalAt]));
+      const provisionalMap = Object.fromEntries(provisionalCounts.map(r => [r.id, Number(r.provisionalCount || 0)]));
 
       const enriched = entities.map(e => ({
         id: e.id,
@@ -98,6 +159,7 @@ function registerEntityRoutes(app, { logger } = {}) {
         tombstonedAt: e.tombstonedAt,
         assertionCount: (e._count.srcAssertions || 0) + (e._count.dstAssertions || 0),
         lastSignalAt: lastSignalMap[e.id] || null,
+        provisionalCount: provisionalMap[e.id] || 0,
       }));
 
       return res.json({ ok: true, entities: enriched, total });
@@ -113,19 +175,23 @@ function registerEntityRoutes(app, { logger } = {}) {
       const admin = await verifyAdminRequest(req);
       if (!admin) return res.status(403).json({ error: 'admin only' });
 
+      const provisionalOnly = String(req.query.provisionalOnly || 'false') === 'true';
+      const assertionWhere = provisionalOnly ? { provisional: true, retractedAt: null } : {};
       const entity = await prisma.brainEntity.findUnique({
         where: { id: req.params.id },
         include: {
           srcAssertions: {
-            orderBy: { createdAt: 'desc' },
-            take: 20,
+            where: assertionWhere,
+            orderBy: [{ provisional: 'desc' }, { createdAt: 'desc' }],
+            take: provisionalOnly ? 100 : 40,
             include: {
               dst: { select: { id: true, name: true, entityType: true } },
             },
           },
           dstAssertions: {
-            orderBy: { createdAt: 'desc' },
-            take: 10,
+            where: assertionWhere,
+            orderBy: [{ provisional: 'desc' }, { createdAt: 'desc' }],
+            take: provisionalOnly ? 100 : 30,
             include: {
               src: { select: { id: true, name: true, entityType: true } },
             },
@@ -175,7 +241,10 @@ function registerEntityRoutes(app, { logger } = {}) {
 
       const { name, status, properties } = req.body || {};
       const data = {};
-      if (name && typeof name === 'string') data.name = name.trim();
+      if (name && typeof name === 'string') {
+        data.name = name.trim();
+        data.canonicalName = canonicalEntityName(data.name);
+      }
       if (status && typeof status === 'string') data.status = status;
       if (properties && typeof properties === 'object') {
         data.properties = { ...(entity.properties || {}), ...properties };
@@ -233,6 +302,118 @@ function registerEntityRoutes(app, { logger } = {}) {
       return res.json({ ok: true });
     } catch (err) {
       logger?.error({ err }, 'brain: assertion retract error');
+      return res.status(500).json({ error: 'internal-error' });
+    }
+  });
+
+  // GET /api/brain/assertions/provisional — review queue
+  app.get('/api/brain/assertions/provisional', async (req, res) => {
+    try {
+      const admin = await verifyAdminRequest(req);
+      if (!admin) return res.status(403).json({ error: 'admin only' });
+
+      const { limit = '100', relType } = req.query;
+      const assertions = await prisma.brainAssertion.findMany({
+        where: {
+          provisional: true,
+          retractedAt: null,
+          knownUntil: null,
+          ...(relType ? { relType: String(relType).trim().toUpperCase() } : {}),
+        },
+        orderBy: [{ confidence: 'asc' }, { createdAt: 'desc' }],
+        take: Math.min(parseInt(limit) || 100, 250),
+        include: {
+          src: { select: { id: true, entityType: true, name: true } },
+          dst: { select: { id: true, entityType: true, name: true } },
+          ledgerEvent: { select: { eventType: true, source: true, sourceId: true, occurredAt: true, payload: true } },
+        },
+      });
+      return res.json({ ok: true, assertions, count: assertions.length });
+    } catch (err) {
+      logger?.error({ err }, 'brain: provisional assertions list error');
+      return res.status(500).json({ error: 'internal-error' });
+    }
+  });
+
+  // GET /api/brain/quality — compact graph cleanup dashboard data.
+  app.get('/api/brain/quality', async (req, res) => {
+    try {
+      const admin = await verifyAdminRequest(req);
+      if (!admin) return res.status(403).json({ error: 'admin only' });
+
+      const [
+        duplicateEntities,
+        duplicateSourceIds,
+        selfEdges,
+        provisional,
+        orphaned,
+      ] = await Promise.all([
+        prisma.$queryRaw`
+          SELECT "entityType",
+                 COALESCE("canonicalName", lower(name)) AS canonical,
+                 COUNT(*)::int AS n,
+                 ARRAY_AGG(name ORDER BY "createdAt") AS names
+          FROM "BrainEntity"
+          WHERE "tombstonedAt" IS NULL
+          GROUP BY 1, 2
+          HAVING COUNT(*) > 1
+          ORDER BY n DESC
+          LIMIT 50
+        `,
+        prisma.$queryRaw`
+          SELECT "eventType", source, "sourceId", COUNT(*)::int AS n
+          FROM "LedgerEvent"
+          WHERE "sourceId" IS NOT NULL AND "tombstonedAt" IS NULL
+          GROUP BY 1, 2, 3
+          HAVING COUNT(*) > 1
+          ORDER BY n DESC
+          LIMIT 50
+        `,
+        prisma.$queryRaw`
+          SELECT a."relType", e."entityType", COUNT(*)::int AS n
+          FROM "BrainAssertion" a
+          JOIN "BrainEntity" e ON e.id = a."srcId"
+          WHERE a."srcId" = a."dstId" AND a."retractedAt" IS NULL
+          GROUP BY 1, 2
+          ORDER BY n DESC
+          LIMIT 50
+        `,
+        prisma.brainAssertion.count({ where: { provisional: true, retractedAt: null } }),
+        prisma.$queryRaw`
+          SELECT e."entityType", COUNT(*)::int AS n
+          FROM "BrainEntity" e
+          WHERE e."tombstonedAt" IS NULL
+            AND NOT EXISTS (
+              SELECT 1 FROM "BrainAssertion" a
+              WHERE (a."srcId" = e.id OR a."dstId" = e.id)
+                AND a."retractedAt" IS NULL
+            )
+          GROUP BY 1
+          ORDER BY n DESC
+          LIMIT 50
+        `,
+      ]);
+
+      return res.json({
+        ok: true,
+        duplicateEntities,
+        duplicateSourceIds,
+        selfEdges,
+        provisionalAssertions: provisional,
+        orphanedEntitiesByType: orphaned,
+      });
+    } catch (err) {
+      logger?.error({ err }, 'brain: quality report error');
+      return res.status(500).json({ error: 'internal-error' });
+    }
+  });
+
+  app.get('/api/brain/relationships', async (req, res) => {
+    try {
+      const admin = await verifyAdminRequest(req);
+      if (!admin) return res.status(403).json({ error: 'admin only' });
+      return res.json({ ok: true, relationships: RELATIONSHIPS });
+    } catch (err) {
       return res.status(500).json({ error: 'internal-error' });
     }
   });

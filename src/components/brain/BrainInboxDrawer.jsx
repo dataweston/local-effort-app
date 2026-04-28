@@ -2,7 +2,14 @@ import React, { useEffect, useRef, useState } from 'react';
 import { X, Trash2, Plus, Link2, CheckSquare, ChevronDown, ChevronUp, Inbox, Database, Search, RefreshCw } from 'lucide-react';
 import { useBrainEntities } from '../../hooks/useBrainEntities';
 
-const ENTITY_TYPES = ['', 'Vendor', 'Customer', 'Menu', 'Dish', 'Ingredient', 'Task', 'Note'];
+const ENTITY_TYPES = [
+  '', 'Vendor', 'Customer', 'Dish', 'Ingredient', 'Menu', 'Product',
+  'Invoice', 'Payment', 'Order', 'Receipt', 'EmailThread', 'Feedback', 'Decision',
+  'PriceQuote', 'LedgerTransaction',
+  'BusinessLine', 'Offer', 'Occasion', 'Channel', 'CustomerSegment',
+  'ProcessStep', 'Constraint', 'Asset', 'Opportunity', 'Risk', 'Metric',
+  'NarrativeTheme', 'Supplier', 'Task', 'Note', 'Event',
+];
 
 const ENTITY_TYPE_COLORS = {
   Vendor:     { bg: '#f0f4ec', text: '#4a6741' },

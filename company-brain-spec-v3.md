@@ -514,6 +514,24 @@ Hybrid query: pgvector similarity + graph traversal combined (semantic similarit
 
 ---
 
+## Fact modeling rules
+
+Detailed guidance lives in `docs/architecture/brain-fact-modeling.md`; executable relationship rules live in `backend/api/brain/relationshipDictionary.js`.
+
+Short version:
+
+1. Ledger events preserve raw source events.
+2. Entities are durable navigable things.
+3. Assertions connect durable things with controlled `relType` values.
+4. Self-edges are allowed only for compact snapshots like `Menu -> MENU_SNAPSHOT -> Menu`.
+5. Promote a fact into a node when it has lifecycle, line items, reconciliation, status, or multiple relationships.
+
+Promote these into nodes when they become important: `Invoice`, `Payment`, `Order`, `Receipt`, `EmailThread`, `Feedback`, `Decision`, and `PriceQuote`.
+
+Keep these as assertions: `Vendor -> SUPPLIES -> Ingredient`, `Dish -> CONTAINS -> Ingredient`, `Offer -> SERVES_SEGMENT -> CustomerSegment`, `Offer -> CONSTRAINED_BY -> Constraint`, `Ingredient -> PRICED_AT -> Vendor`.
+
+---
+
 ## Build sequence
 
 | Step | What | Usable after? |

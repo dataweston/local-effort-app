@@ -71,9 +71,19 @@ function registerGmailRoutes(app, { logger } = {}) {
       if (!isAdmin && !keyOk) return res.status(403).json({ error: 'admin only' });
 
       const { daysBack = 730, maxPerQuery = 5000, yumAddress = 'yum@localeffortfood.com' } = req.body || {};
-      const result = await syncGmailThreads({ daysBack, maxPerQuery, yumAddress, logger });
 
-      return res.json({ ok: true, ...result });
+      // Respond immediately — the sync can take many minutes for a 2-year backfill.
+      // Running it inside the HTTP response would hit serverless timeouts and DB
+      // connection limits. The job logs its own progress and errors.
+      res.json({ ok: true, started: true, message: 'Gmail sync started in background' });
+
+      syncGmailThreads({ daysBack, maxPerQuery, yumAddress, logger })
+        .then(result => {
+          logger?.info(result, 'brain/gmail: sync complete');
+        })
+        .catch(err => {
+          logger?.error({ err }, 'brain/gmail: sync failed');
+        });
     } catch (err) {
       const message = err?.message || 'sync-failed';
       logger?.error({ err }, 'brain/gmail sync error');

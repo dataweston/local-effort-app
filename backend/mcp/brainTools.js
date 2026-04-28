@@ -28,7 +28,8 @@
 
 const { z } = require('zod');
 const { getPrisma } = require('../api/utils/prisma');
-const { writeLedgerEvent } = require('../api/brain/ledger');
+const { writeLedgerEvent, canonicalName } = require('../api/brain/ledger');
+const { RELATIONSHIPS, normalizeRelType, validateRelationship } = require('../api/brain/relationshipDictionary');
 
 // ── helpers ──────────────────────────────────────────────────────────────────
 
@@ -469,6 +470,14 @@ function registerBrainReadTools(server) {
 
 const FORBIDDEN_REL_TYPES = ['MEDICAL_CONSTRAINT'];
 
+function brainPythonBin() {
+  return process.env.BRAIN_PYTHON_BIN
+    || process.env.PYTHON_BIN
+    || (process.platform === 'win32'
+      ? 'C:/Users/user/AppData/Local/Programs/Python/Python310/python.exe'
+      : 'python3');
+}
+
 function registerBrainWriteTools(server) {
   const prisma = getPrisma();
 
@@ -489,32 +498,44 @@ function registerBrainWriteTools(server) {
       }),
     },
     async ({ srcId, dstId, relType, confidence = 0.5, metadata, validFrom, rationale }) => {
-      if (FORBIDDEN_REL_TYPES.includes(relType.toUpperCase())) {
+      const normalizedRel = normalizeRelType(relType);
+      if (FORBIDDEN_REL_TYPES.includes(normalizedRel)) {
         throw new Error(`relType '${relType}' requires founder confirmation via the inbox — Claude cannot assert this directly`);
       }
 
       // Verify both entities exist
       const [src, dst] = await Promise.all([
-        prisma.brainEntity.findUnique({ where: { id: srcId }, select: { id: true, name: true } }),
-        prisma.brainEntity.findUnique({ where: { id: dstId }, select: { id: true, name: true } }),
+        prisma.brainEntity.findUnique({ where: { id: srcId }, select: { id: true, name: true, entityType: true } }),
+        prisma.brainEntity.findUnique({ where: { id: dstId }, select: { id: true, name: true, entityType: true } }),
       ]);
       if (!src) throw new Error(`srcId '${srcId}' not found`);
       if (!dst) throw new Error(`dstId '${dstId}' not found`);
+      const validation = validateRelationship({
+        relType: normalizedRel,
+        srcType: src.entityType,
+        dstType: dst.entityType,
+        srcId,
+        dstId,
+      });
 
       const ledgerEvent = await writeLedgerEvent({
         eventType: 'assertion.provisional',
         source: 'mcp_claude',
         actorType: 'system',
-        payload: { srcId, dstId, relType, confidence, rationale },
+        payload: { srcId, dstId, relType: normalizedRel, confidence, rationale, relationshipWarnings: validation.warnings },
       });
 
       const assertion = await prisma.brainAssertion.create({
         data: {
           srcId,
           dstId,
-          relType: relType.toUpperCase(),
+          relType: normalizedRel,
           confidence,
-          metadata: metadata || null,
+          metadata: {
+            ...(metadata || {}),
+            rationale,
+            ...(validation.warnings.length ? { relationshipWarnings: validation.warnings } : {}),
+          },
           validFrom: validFrom ? new Date(validFrom) : new Date(),
           knownFrom: new Date(),
           sourceType: 'mcp_claude',
@@ -524,7 +545,13 @@ function registerBrainWriteTools(server) {
         },
       });
 
-      return json({ ok: true, assertionId: assertion.id, provisional: true, message: 'Assertion created. Awaiting founder confirmation.' });
+      return json({
+        ok: true,
+        assertionId: assertion.id,
+        provisional: true,
+        relationshipWarnings: validation.warnings,
+        message: 'Assertion created. Awaiting founder confirmation.',
+      });
     }
   );
 
@@ -544,7 +571,14 @@ function registerBrainWriteTools(server) {
     async ({ entityType, name, properties, rationale }) => {
       // Check for existing entity with same name+type
       const existing = await prisma.brainEntity.findFirst({
-        where: { entityType, name: { equals: name, mode: 'insensitive' }, tombstonedAt: null },
+        where: {
+          entityType,
+          tombstonedAt: null,
+          OR: [
+            { name: { equals: name, mode: 'insensitive' } },
+            { canonicalName: canonicalName(name) },
+          ],
+        },
         select: { id: true, name: true },
       });
       if (existing) {
@@ -562,6 +596,7 @@ function registerBrainWriteTools(server) {
         data: {
           entityType,
           name,
+          canonicalName: canonicalName(name),
           properties: properties || null,
           status: 'provisional',
         },
@@ -586,6 +621,16 @@ function registerBrainWriteTools(server) {
 function registerBrainOntologyTools(server) {
   const { computeRecipeCost, computeDishMargin, createIngredient, createRecipe, recordBatch } = require('../api/brain/ontologyHelpers');
   const prisma = getPrisma();
+
+  server.registerTool(
+    'brain.ontology.relationships',
+    {
+      title: 'Relationship dictionary',
+      description: 'Return the controlled relationship dictionary, including allowed source/destination types and promotion guidance.',
+      inputSchema: z.object({}),
+    },
+    async () => json({ relationships: RELATIONSHIPS })
+  );
 
   server.registerTool(
     'brain.recipe.get',
@@ -915,7 +960,7 @@ function registerBrainSearchTools(server) {
 
   async function vectorSearch(query, { limit = 8, table } = {}) {
     return new Promise((resolve, reject) => {
-      const pythonBin = process.env.BRAIN_PYTHON_BIN || 'python3';
+      const pythonBin = brainPythonBin();
       const script = `
 import sys, json
 sys.path.insert(0, r'${SIDECAR_DIR.replace(/\\/g, '\\\\')}')
@@ -945,7 +990,7 @@ print(json.dumps(results))
       inputSchema: z.object({
         query: z.string().min(1).describe('Natural language search query'),
         limit: z.number().int().min(1).max(20).optional().describe('Max results (default 8)'),
-        table: z.enum(['entity', 'inbox']).optional().describe('Restrict to entity or inbox results'),
+        table: z.enum(['entity', 'assertion', 'inbox']).optional().describe('Restrict to entity, assertion, or inbox results'),
       }),
     },
     async ({ query, limit = 8, table }) => {
@@ -967,6 +1012,29 @@ print(json.dumps(results))
             id: `entity:${e.id}`, table: 'entity',
             text: `${e.entityType}: ${e.name}`, score: null,
             metadata: { entityId: e.id, entityType: e.entityType, name: e.name },
+          })));
+        }
+        if (!table || table === 'assertion') {
+          const assertions = await prisma.brainAssertion.findMany({
+            where: {
+              retractedAt: null,
+              OR: [
+                { relType: { contains: query, mode: 'insensitive' } },
+                { src: { name: { contains: query, mode: 'insensitive' } } },
+                { dst: { name: { contains: query, mode: 'insensitive' } } },
+              ],
+            },
+            take: limit,
+            include: {
+              src: { select: { id: true, entityType: true, name: true } },
+              dst: { select: { id: true, entityType: true, name: true } },
+            },
+          });
+          results.push(...assertions.map(a => ({
+            id: `assertion:${a.id}`, table: 'assertion',
+            text: `${a.src?.entityType}: ${a.src?.name} ${a.relType} ${a.dst?.entityType}: ${a.dst?.name}`,
+            score: null,
+            metadata: { assertionId: a.id, relType: a.relType, src: a.src, dst: a.dst },
           })));
         }
         if (!table || table === 'inbox') {

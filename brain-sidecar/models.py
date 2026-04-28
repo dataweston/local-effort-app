@@ -164,6 +164,43 @@ class CustomerSignal(BaseModel):
     rationale: str
 
 
+# ── Strategic graph signals ───────────────────────────────────────────────────
+
+StrategicRelType = Literal[
+    'SERVES_SEGMENT',
+    'TRIGGERED_BY_OCCASION',
+    'CONSTRAINED_BY',
+    'GENERATES_REVENUE_FOR',
+    'CREATES_CONTENT_ANGLE',
+    'HAS_REPEAT_PATTERN',
+    'CAUSES_COMPLEXITY',
+    'CAN_BE_PACKAGED_AS',
+    'EVIDENCED_BY',
+    'CROSS_SELLS_TO',
+    'SHOULD_SCALE_BECAUSE',
+    'SHOULD_NOT_SCALE_BECAUSE',
+    'HAS_MARGIN_DRIVER',
+]
+
+StrategicEntityType = Literal[
+    'Offer', 'BusinessLine', 'CustomerSegment', 'Occasion', 'Channel',
+    'ProcessStep', 'Constraint', 'NarrativeTheme', 'Metric',
+    'Opportunity', 'Risk', 'Asset', 'Supplier',
+]
+
+
+class StrategicSignal(BaseModel):
+    """A strategic relationship extracted from an email thread."""
+    src_type: StrategicEntityType = Field(description="Entity type of the source node")
+    src_name: str = Field(description="Name of the source entity — use exact names from the known entities list")
+    rel_type: StrategicRelType = Field(description="Relationship type")
+    dst_type: StrategicEntityType = Field(description="Entity type of the destination node")
+    dst_name: str = Field(description="Name of the destination entity")
+    source_span: str | None = Field(None, description="Exact text excerpt that supports this signal")
+    confidence: float = Field(0.7, ge=0.1, le=1.0)
+    rationale: str = Field(description="One sentence: why you extracted this signal from this email")
+
+
 # ── Full email thread extraction ──────────────────────────────────────────────
 
 class EmailThreadExtraction(BaseModel):
@@ -187,6 +224,10 @@ class EmailThreadExtraction(BaseModel):
     vendor_signals: list[VendorSignal] = Field(default_factory=list)
     customer_signals: list[CustomerSignal] = Field(default_factory=list)
     menus: list[MenuExtraction] = Field(default_factory=list)
+    strategic_signals: list[StrategicSignal] = Field(
+        default_factory=list,
+        description="Strategic graph signals: occasions, segments, channels, constraints, offers, etc."
+    )
 
     # Loose structured fields for things that don't fit a signal
     ingredients_mentioned: list[str] = Field(

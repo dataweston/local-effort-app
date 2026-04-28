@@ -546,6 +546,7 @@ model BrainEntity {
   id          String    @id @default(uuid())
   entityType  String
   name        String
+  canonicalName String?
   properties  Json?
   status      String    @default("active")
   snoozeUntil DateTime?
@@ -572,6 +573,7 @@ model BrainEntity {
   inboxItems    BrainInboxItem[]
 
   @@index([entityType])
+  @@index([entityType, canonicalName])
   @@index([status])
   @@index([shareToken])
   @@index([localEffortCustomerId])

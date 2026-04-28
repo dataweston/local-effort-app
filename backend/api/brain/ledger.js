@@ -5,6 +5,14 @@
 
 const { getPrisma } = require('../utils/prisma');
 
+function canonicalName(name) {
+  return String(name || '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
 /**
  * Write an immutable ledger event. Returns the created row.
  * All ingestion paths must call this before writing any BrainAssertion or BrainInboxItem.
@@ -20,6 +28,18 @@ async function writeLedgerEvent({
   payload,
 }) {
   const prisma = getPrisma();
+  if (sourceId) {
+    const existing = await prisma.ledgerEvent.findFirst({
+      where: {
+        eventType,
+        source,
+        sourceId: String(sourceId),
+        tombstonedAt: null,
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+    if (existing) return { ...existing, _existing: true };
+  }
   return prisma.ledgerEvent.create({
     data: {
       eventType,
@@ -32,6 +52,34 @@ async function writeLedgerEvent({
       payload,
     },
   });
+}
+
+async function findOrCreateEntity({ entityType, name, properties = null, status = 'active' }) {
+  const prisma = getPrisma();
+  const normalized = canonicalName(name);
+  const existing = await prisma.brainEntity.findFirst({
+    where: {
+      entityType,
+      tombstonedAt: null,
+      OR: [
+        { canonicalName: normalized },
+        { name: { equals: name, mode: 'insensitive' } },
+        { aliases: { some: { alias: { equals: name, mode: 'insensitive' } } } },
+      ],
+    },
+  });
+  if (existing) return { entity: existing, created: false };
+
+  const entity = await prisma.brainEntity.create({
+    data: {
+      entityType,
+      name,
+      canonicalName: normalized,
+      properties,
+      status,
+    },
+  });
+  return { entity, created: true };
 }
 
 /**
@@ -93,4 +141,4 @@ async function createInboxItem({ rawContent, source, attachments = null, ledgerE
   });
 }
 
-module.exports = { writeLedgerEvent, findVendorByName, createInboxItem };
+module.exports = { writeLedgerEvent, findVendorByName, createInboxItem, findOrCreateEntity, canonicalName };
