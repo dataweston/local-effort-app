@@ -70,27 +70,28 @@ export const Header = () => {
         borderBottom: '1px solid var(--color-border-default)',
       }}
     >
-      <div className="flex items-center justify-between px-6 py-4">
+      <div className="flex items-center justify-between px-4 py-4 sm:px-6">
         <button
           type="button"
           onClick={() => handleNavigate(0)}
-          className="flex items-center gap-3"
+          className="flex min-w-0 items-center gap-3"
         >
           <motion.span
-            className="text-2xl font-bold tracking-tight"
+            className="text-lg font-bold sm:text-xl lg:text-2xl"
             style={{
               color: 'var(--color-text-primary)',
               fontFamily: "'National Park', 'General Sans', sans-serif",
               fontWeight: 700,
-              letterSpacing: '-0.02em',
+              letterSpacing: 0,
+              lineHeight: 1,
             }}
             whileHover={{ scale: 1.03 }}
             transition={{ type: 'spring', stiffness: 300, damping: 20 }}
           >
-            Local Effort
+            Local Effort Cooperative
           </motion.span>
           <span
-            className="text-sm font-medium"
+            className="hidden text-sm font-medium xl:inline"
             style={{
               color: 'var(--color-text-primary)',
               fontFamily: "'Office Code Pro', monospace",
@@ -100,7 +101,7 @@ export const Header = () => {
           </span>
         </button>
 
-        <nav className="hidden md:flex gap-1">
+        <nav className="hidden lg:flex gap-1">
           {navItems.map((page, index) => {
             const pageIndex = index + 1;
             const href = `/#${page.id}`;
@@ -146,7 +147,7 @@ export const Header = () => {
 
         <button
           onClick={() => setIsOpen((v) => !v)}
-          className="md:hidden z-50 w-9 h-7 flex flex-col justify-between"
+          className="z-50 flex h-7 w-9 flex-col justify-between lg:hidden"
           aria-label="Toggle menu"
         >
           <span
@@ -167,7 +168,7 @@ export const Header = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="md:hidden fixed inset-0 bg-[var(--color-bg-page)]"
+            className="fixed inset-0 bg-[var(--color-bg-page)] lg:hidden"
           >
             <motion.nav
               initial="hidden"

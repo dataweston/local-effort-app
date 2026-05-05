@@ -1,0 +1,1015 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Native Mobile Hub Preview</title>
+  <style>
+    :root {
+      --wall: #262722;
+      --paper: #f6f2e9;
+      --paper-2: #eee8dc;
+      --card: #fffdf8;
+      --ink: #20211d;
+      --muted: #706d65;
+      --line: #d9d1c2;
+      --green: #263d31;
+      --green-soft: #dce8dc;
+      --brick: #a3483c;
+      --brick-soft: #f0ded9;
+      --blue: #2b527b;
+      --blue-soft: #dbe8f3;
+      --gold: #e8c66e;
+      --gold-soft: #f7edcf;
+      --ios: #0a84ff;
+      --android: #2f6f4e;
+      --sans: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --mono: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+    }
+
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; }
+    body {
+      background: var(--wall);
+      color: var(--ink);
+      font-family: var(--sans);
+      -webkit-font-smoothing: antialiased;
+      line-height: 1.35;
+    }
+
+    button, input { font: inherit; }
+    button { cursor: pointer; }
+
+    .page {
+      min-height: 100vh;
+      padding: 22px;
+      display: grid;
+      gap: 18px;
+      background:
+        radial-gradient(circle at 12% 0%, rgba(232, 198, 110, .13), transparent 32rem),
+        radial-gradient(circle at 82% 12%, rgba(43, 82, 123, .14), transparent 28rem),
+        var(--wall);
+    }
+
+    .header {
+      max-width: 1460px;
+      margin: 0 auto;
+      width: 100%;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 18px;
+      align-items: end;
+      color: #fbf6ec;
+    }
+
+    .header h1 {
+      margin: 0;
+      font-size: clamp(24px, 3vw, 40px);
+      line-height: 1.02;
+      letter-spacing: 0;
+    }
+
+    .header p {
+      max-width: 860px;
+      margin: 8px 0 0;
+      color: rgba(251, 246, 236, .72);
+      font-size: 14px;
+    }
+
+    .source-strip {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: end;
+    }
+
+    .source-pill {
+      min-height: 28px;
+      padding: 5px 9px;
+      border: 1px solid rgba(255,255,255,.18);
+      border-radius: 999px;
+      color: rgba(251, 246, 236, .8);
+      background: rgba(255,255,255,.06);
+      font-size: 12px;
+      font-family: var(--mono);
+    }
+
+    .stage {
+      max-width: 1460px;
+      width: 100%;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 320px repeat(2, minmax(300px, 410px)) minmax(300px, 1fr);
+      gap: 18px;
+      align-items: start;
+    }
+
+    .product-panel {
+      background: var(--paper);
+      border: 1px solid #4b463e;
+      border-radius: 12px;
+      padding: 18px;
+      display: grid;
+      gap: 14px;
+      box-shadow: 0 18px 42px rgba(0,0,0,.22);
+    }
+
+    .product-panel h2,
+    .product-panel h3 {
+      margin: 0;
+      letter-spacing: 0;
+    }
+
+    .product-panel h2 {
+      font-size: 22px;
+      line-height: 1.1;
+    }
+
+    .product-panel h3 {
+      font-size: 14px;
+      margin-bottom: 7px;
+    }
+
+    .note {
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .map-list,
+    .principle-list {
+      display: grid;
+      gap: 8px;
+    }
+
+    .map-row {
+      padding: 10px;
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      display: grid;
+      gap: 3px;
+    }
+
+    .map-row strong {
+      font-size: 13px;
+    }
+
+    .map-row span {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .principle {
+      display: grid;
+      grid-template-columns: 28px 1fr;
+      gap: 9px;
+      align-items: start;
+      padding: 9px 0;
+      border-top: 1px solid var(--line);
+    }
+
+    .principle:first-child { border-top: 0; }
+
+    .num {
+      width: 28px;
+      height: 28px;
+      border-radius: 999px;
+      display: grid;
+      place-items: center;
+      background: var(--green);
+      color: #fff;
+      font-family: var(--mono);
+      font-size: 11px;
+    }
+
+    .device-card {
+      display: grid;
+      gap: 10px;
+    }
+
+    .device-title {
+      color: rgba(251, 246, 236, .78);
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+
+    .phone {
+      height: 820px;
+      padding: 12px;
+      background: #111;
+      border: 1px solid rgba(255,255,255,.18);
+      box-shadow: 0 20px 48px rgba(0,0,0,.32);
+      overflow: hidden;
+    }
+
+    .iphone { border-radius: 34px; }
+    .android { border-radius: 24px; }
+
+    .screen {
+      height: 100%;
+      overflow: hidden;
+      background: var(--paper);
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      position: relative;
+    }
+
+    .iphone .screen { border-radius: 26px; }
+    .android .screen { border-radius: 15px; }
+
+    .ios-status,
+    .android-status {
+      height: 30px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 18px;
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--ink);
+      background: var(--card);
+    }
+
+    .ios-home-indicator {
+      position: absolute;
+      left: 50%;
+      bottom: 6px;
+      width: 112px;
+      height: 4px;
+      transform: translateX(-50%);
+      background: #141414;
+      border-radius: 999px;
+      z-index: 10;
+    }
+
+    .ios-top {
+      padding: 12px 16px 10px;
+      background: var(--card);
+      border-bottom: 1px solid var(--line);
+    }
+
+    .ios-nav-row,
+    .material-appbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .ios-small {
+      color: var(--ios);
+      font-size: 14px;
+      font-weight: 650;
+    }
+
+    .ios-top h2,
+    .material-title h2 {
+      margin: 8px 0 0;
+      font-size: 31px;
+      line-height: 1.02;
+      letter-spacing: 0;
+    }
+
+    .segment {
+      margin-top: 13px;
+      padding: 3px;
+      border-radius: 9px;
+      background: var(--paper-2);
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 3px;
+    }
+
+    .segment button {
+      height: 30px;
+      border: 0;
+      border-radius: 7px;
+      background: transparent;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .segment button.active {
+      background: #fff;
+      color: var(--ink);
+      box-shadow: 0 1px 3px rgba(0,0,0,.08);
+    }
+
+    .scroll {
+      overflow: auto;
+      padding: 14px;
+      display: grid;
+      gap: 12px;
+      align-content: start;
+    }
+
+    .hero-card,
+    .card,
+    .android-card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 13px;
+      display: grid;
+      gap: 10px;
+    }
+
+    .android-card { border-radius: 14px; }
+
+    .kicker {
+      font-family: var(--mono);
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      color: var(--brick);
+      font-size: 10px;
+    }
+
+    .hero-title {
+      margin: 0;
+      font-size: 20px;
+      font-weight: 780;
+      line-height: 1.12;
+    }
+
+    .meta {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .chip-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .chip {
+      min-height: 24px;
+      padding: 4px 8px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 700;
+      background: var(--paper-2);
+      color: var(--muted);
+      border: 1px solid var(--line);
+    }
+
+    .chip.green { background: var(--green-soft); color: var(--green); border-color: #c5d7c5; }
+    .chip.blue { background: var(--blue-soft); color: var(--blue); border-color: #bfd4e7; }
+    .chip.brick { background: var(--brick-soft); color: #7c3229; border-color: #e2c4bd; }
+    .chip.gold { background: var(--gold-soft); color: #6a520f; border-color: #ebd99d; }
+
+    .task-row,
+    .thread-row,
+    .portal-row {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 10px;
+      align-items: center;
+      padding: 10px;
+      border: 1px solid var(--line);
+      border-radius: 9px;
+      background: #fff;
+    }
+
+    .task-row strong,
+    .thread-row strong,
+    .portal-row strong {
+      display: block;
+      font-size: 13px;
+    }
+
+    .task-row span,
+    .thread-row span,
+    .portal-row span {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+      margin-top: 2px;
+    }
+
+    .check {
+      width: 24px;
+      height: 24px;
+      border-radius: 999px;
+      border: 2px solid var(--ios);
+      display: grid;
+      place-items: center;
+      color: var(--ios);
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .ios-tabs,
+    .android-nav {
+      border-top: 1px solid var(--line);
+      background: rgba(255,253,248,.96);
+      display: grid;
+      align-items: center;
+      gap: 2px;
+      padding: 5px 8px 12px;
+    }
+
+    .ios-tabs { grid-template-columns: repeat(5, 1fr); min-height: 66px; }
+    .android-nav { grid-template-columns: repeat(4, 1fr); min-height: 72px; padding-bottom: 8px; }
+
+    .tab {
+      border: 0;
+      border-radius: 10px;
+      background: transparent;
+      color: var(--muted);
+      display: grid;
+      justify-items: center;
+      gap: 3px;
+      padding: 7px 2px;
+      min-width: 0;
+      font-size: 10px;
+      font-weight: 700;
+    }
+
+    .tab .icon {
+      font-size: 17px;
+      line-height: 1;
+      font-family: var(--mono);
+    }
+
+    .tab.active-ios { color: var(--ios); }
+    .tab.active-android { color: var(--android); background: var(--green-soft); }
+
+    .material-appbar {
+      min-height: 76px;
+      padding: 12px 14px;
+      background: var(--green);
+      color: #fff;
+    }
+
+    .material-title h2 {
+      margin: 2px 0 0;
+      font-size: 24px;
+      color: #fff;
+    }
+
+    .material-title span {
+      color: rgba(255,255,255,.76);
+      font-size: 12px;
+      font-family: var(--mono);
+    }
+
+    .material-icon {
+      width: 38px;
+      height: 38px;
+      border-radius: 999px;
+      border: 0;
+      background: rgba(255,255,255,.12);
+      color: #fff;
+      display: grid;
+      place-items: center;
+      font-size: 18px;
+    }
+
+    .fab {
+      position: absolute;
+      right: 18px;
+      bottom: 86px;
+      width: 56px;
+      height: 56px;
+      border: 0;
+      border-radius: 18px;
+      background: var(--gold);
+      color: #211d13;
+      box-shadow: 0 8px 20px rgba(0,0,0,.22);
+      font-size: 24px;
+      font-weight: 700;
+      z-index: 4;
+    }
+
+    .android-tabs {
+      display: flex;
+      gap: 8px;
+      overflow: auto;
+      padding: 12px 14px 0;
+      background: var(--paper);
+    }
+
+    .android-tabs .chip {
+      border-radius: 8px;
+      white-space: nowrap;
+    }
+
+    .detail-panel {
+      background: var(--paper);
+      border: 1px solid #4b463e;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 18px 42px rgba(0,0,0,.22);
+    }
+
+    .detail-head {
+      padding: 16px;
+      background: var(--card);
+      border-bottom: 1px solid var(--line);
+    }
+
+    .detail-head h2 {
+      margin: 0;
+      font-size: 22px;
+      line-height: 1.1;
+    }
+
+    .detail-body {
+      padding: 16px;
+      display: grid;
+      gap: 14px;
+    }
+
+    .flow {
+      display: grid;
+      gap: 9px;
+    }
+
+    .flow-step {
+      display: grid;
+      grid-template-columns: 32px 1fr;
+      gap: 10px;
+      align-items: start;
+      padding: 11px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--card);
+    }
+
+    .flow-step strong {
+      display: block;
+      font-size: 13px;
+    }
+
+    .flow-step span {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+      margin-top: 2px;
+    }
+
+    .badge {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      display: grid;
+      place-items: center;
+      background: var(--green);
+      color: #fff;
+      font-family: var(--mono);
+      font-size: 11px;
+    }
+
+    .native-rule {
+      padding: 12px;
+      border-radius: 8px;
+      border: 1px solid var(--line);
+      background: var(--card);
+    }
+
+    .native-rule strong {
+      display: block;
+      font-size: 13px;
+      margin-bottom: 4px;
+    }
+
+    .native-rule p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    @media (max-width: 1320px) {
+      .stage {
+        grid-template-columns: repeat(2, minmax(300px, 1fr));
+      }
+    }
+
+    @media (max-width: 760px) {
+      .page { padding: 12px; }
+      .header { grid-template-columns: 1fr; }
+      .source-strip { justify-content: start; }
+      .stage { grid-template-columns: 1fr; }
+      .phone { height: 780px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header class="header">
+      <div>
+        <h1>Native iPhone and Android Community Hub</h1>
+        <p>The subscriber portal becomes a mobile operating layer: current menu becomes Today, dish feedback becomes object feedback, note-to-chef becomes a private thread, linked accounts become gated roles, and past menus become history inside a member profile.</p>
+      </div>
+      <div class="source-strip" aria-label="Reference patterns">
+        <span class="source-pill">Lark: action in chat</span>
+        <span class="source-pill">Todoist: Today + capture</span>
+        <span class="source-pill">Cinny: spaces + threads</span>
+      </div>
+    </header>
+
+    <main class="stage">
+      <aside class="product-panel">
+        <div>
+          <h2>The product overlap</h2>
+          <p class="note">The current portal is already a gated relationship app. This version generalizes it from weekly meals into any recurring real-world group.</p>
+        </div>
+
+        <section>
+          <h3>Subscriber portal becomes</h3>
+          <div class="map-list">
+            <div class="map-row">
+              <strong>This Week</strong>
+              <span>Today and upcoming schedule objects</span>
+            </div>
+            <div class="map-row">
+              <strong>Past Menus</strong>
+              <span>History of events, orders, feedback, attendance</span>
+            </div>
+            <div class="map-row">
+              <strong>Dish Feedback</strong>
+              <span>Feedback on dishes, events, resources, shifts</span>
+            </div>
+            <div class="map-row">
+              <strong>Note to Chef</strong>
+              <span>Object-bound private thread with staff routing</span>
+            </div>
+            <div class="map-row">
+              <strong>Linked Accounts</strong>
+              <span>Households, teams, vendors, customers, staff</span>
+            </div>
+          </div>
+        </section>
+
+        <section>
+          <h3>Native design rules</h3>
+          <div class="principle-list">
+            <div class="principle">
+              <span class="num">1</span>
+              <div>
+                <strong>Today is the home screen</strong>
+                <p class="note">No generic feed first. Lead with what changed, what is due, and where the user needs to be.</p>
+              </div>
+            </div>
+            <div class="principle">
+              <span class="num">2</span>
+              <div>
+                <strong>Spaces are gated groups</strong>
+                <p class="note">Customers, staff, vendors, and guests can share selected objects without sharing the whole workspace.</p>
+              </div>
+            </div>
+            <div class="principle">
+              <span class="num">3</span>
+              <div>
+                <strong>Threads attach to objects</strong>
+                <p class="note">A shift, event, resource, or order owns its discussion and task trail.</p>
+              </div>
+            </div>
+            <div class="principle">
+              <span class="num">4</span>
+              <div>
+                <strong>Tasks stay lightweight</strong>
+                <p class="note">Todoist-like capture, due dates, assigned work, and clear completion states.</p>
+              </div>
+            </div>
+          </div>
+        </section>
+      </aside>
+
+      <section class="device-card">
+        <div class="device-title">
+          <span>iPhone</span>
+          <span>member / staff daily app</span>
+        </div>
+        <div class="phone iphone">
+          <div class="screen">
+            <div>
+              <div class="ios-status">
+                <span>9:41</span>
+                <span>LTE 100%</span>
+              </div>
+              <header class="ios-top">
+                <div class="ios-nav-row">
+                  <span class="ios-small">Local Effort</span>
+                  <span class="ios-small">Profile</span>
+                </div>
+                <h2>Today</h2>
+                <div class="segment" aria-label="iOS segmented control">
+                  <button class="active">Now</button>
+                  <button>Spaces</button>
+                  <button>History</button>
+                </div>
+              </header>
+            </div>
+
+            <section class="scroll">
+              <article class="hero-card">
+                <div class="kicker">Next up</div>
+                <p class="hero-title">Weekly menu closes tonight</p>
+                <div class="meta">Customer portal overlap: This Week, profile, feedback, notes.</div>
+                <div class="chip-row">
+                  <span class="chip green">subscriber</span>
+                  <span class="chip gold">due 8:00 PM</span>
+                  <span class="chip blue">chef thread open</span>
+                </div>
+              </article>
+
+              <article class="card">
+                <div class="kicker">Action list</div>
+                <div class="task-row">
+                  <span>
+                    <strong>Choose two add-ons</strong>
+                    <span>Weekly Meal Prep / May 11</span>
+                  </span>
+                  <span class="check"></span>
+                </div>
+                <div class="task-row">
+                  <span>
+                    <strong>Confirm delivery note</strong>
+                    <span>Profile needs review</span>
+                  </span>
+                  <span class="check">!</span>
+                </div>
+                <div class="task-row">
+                  <span>
+                    <strong>Rate last week's salad</strong>
+                    <span>Feedback helps menu planning</span>
+                  </span>
+                  <span class="check"></span>
+                </div>
+              </article>
+
+              <article class="card">
+                <div class="kicker">Spaces</div>
+                <div class="portal-row">
+                  <span>
+                    <strong>Subscriber household</strong>
+                    <span>Orders, history, chef notes</span>
+                  </span>
+                  <span class="chip green">private</span>
+                </div>
+                <div class="portal-row">
+                  <span>
+                    <strong>VIP supper club</strong>
+                    <span>Events, RSVP, social thread</span>
+                  </span>
+                  <span class="chip blue">shared</span>
+                </div>
+                <div class="portal-row">
+                  <span>
+                    <strong>Pickup crew</strong>
+                    <span>Shift claim and check-in</span>
+                  </span>
+                  <span class="chip brick">staff</span>
+                </div>
+              </article>
+
+              <article class="card">
+                <div class="kicker">Threads</div>
+                <div class="thread-row">
+                  <span>
+                    <strong>Chef note / May 11 menu</strong>
+                    <span>Kara: Can we avoid cilantro this week?</span>
+                  </span>
+                  <span class="chip gold">2</span>
+                </div>
+                <div class="thread-row">
+                  <span>
+                    <strong>Event / Friday prep</strong>
+                    <span>Maya moved dough prep to 3:30 PM</span>
+                  </span>
+                  <span class="chip brick">new</span>
+                </div>
+              </article>
+            </section>
+
+            <nav class="ios-tabs" aria-label="iPhone tabs">
+              <button class="tab active-ios"><span class="icon">T</span><span>Today</span></button>
+              <button class="tab"><span class="icon">S</span><span>Spaces</span></button>
+              <button class="tab"><span class="icon">M</span><span>Threads</span></button>
+              <button class="tab"><span class="icon">D</span><span>Docs</span></button>
+              <button class="tab"><span class="icon">P</span><span>Profile</span></button>
+            </nav>
+            <div class="ios-home-indicator"></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="device-card">
+        <div class="device-title">
+          <span>Android</span>
+          <span>Material task and thread flow</span>
+        </div>
+        <div class="phone android">
+          <div class="screen">
+            <div>
+              <div class="android-status">
+                <span>9:41</span>
+                <span>5G 100%</span>
+              </div>
+              <header class="material-appbar">
+                <button class="material-icon" title="Menu">=</button>
+                <div class="material-title">
+                  <span>VIP supper club</span>
+                  <h2>Friday Dinner</h2>
+                </div>
+                <button class="material-icon" title="Search">?</button>
+              </header>
+              <div class="android-tabs">
+                <span class="chip green">Overview</span>
+                <span class="chip">RSVP</span>
+                <span class="chip">Threads</span>
+                <span class="chip">Resources</span>
+              </div>
+            </div>
+
+            <section class="scroll">
+              <article class="android-card">
+                <div class="kicker">Event object</div>
+                <p class="hero-title">Pasta night and patio service</p>
+                <div class="meta">6:30 PM at Local Effort. Guests can see event details and lounge thread; staff sees run-of-show and shift tasks.</div>
+                <div class="chip-row">
+                  <span class="chip blue">RSVP: going</span>
+                  <span class="chip green">86 attending</span>
+                  <span class="chip gold">10 waitlist</span>
+                </div>
+              </article>
+
+              <article class="android-card">
+                <div class="kicker">Object tasks</div>
+                <div class="task-row">
+                  <span>
+                    <strong>Claim setup shift</strong>
+                    <span>Staff-only task, 4:00-6:00 PM</span>
+                  </span>
+                  <span class="chip brick">open</span>
+                </div>
+                <div class="task-row">
+                  <span>
+                    <strong>Acknowledge allergy SOP</strong>
+                    <span>Required before check-in</span>
+                  </span>
+                  <span class="chip gold">due</span>
+                </div>
+                <div class="task-row">
+                  <span>
+                    <strong>Bring dessert menu live</strong>
+                    <span>Admin approval pending</span>
+                  </span>
+                  <span class="chip blue">approval</span>
+                </div>
+              </article>
+
+              <article class="android-card">
+                <div class="kicker">Cinny-style rooms</div>
+                <div class="thread-row">
+                  <span>
+                    <strong>Event / Friday Dinner</strong>
+                    <span>Main thread tied to this event object</span>
+                  </span>
+                  <span class="chip green">8</span>
+                </div>
+                <div class="thread-row">
+                  <span>
+                    <strong>Guests / Patio lounge</strong>
+                    <span>Shared social room for confirmed guests</span>
+                  </span>
+                  <span class="chip blue">21</span>
+                </div>
+                <div class="thread-row">
+                  <span>
+                    <strong>Staff / Run-of-show</strong>
+                    <span>Private operations room</span>
+                  </span>
+                  <span class="chip brick">5</span>
+                </div>
+              </article>
+
+              <article class="android-card">
+                <div class="kicker">Profile continuity</div>
+                <div class="portal-row">
+                  <span>
+                    <strong>Dietary profile</strong>
+                    <span>Used for menus, events, and check-in</span>
+                  </span>
+                  <span class="chip green">synced</span>
+                </div>
+                <div class="portal-row">
+                  <span>
+                    <strong>Past activity</strong>
+                    <span>Menus, RSVPs, notes, feedback</span>
+                  </span>
+                  <span class="chip">history</span>
+                </div>
+              </article>
+            </section>
+
+            <button class="fab" title="Quick capture">+</button>
+            <nav class="android-nav" aria-label="Android navigation">
+              <button class="tab active-android"><span class="icon">T</span><span>Today</span></button>
+              <button class="tab"><span class="icon">S</span><span>Spaces</span></button>
+              <button class="tab"><span class="icon">M</span><span>Threads</span></button>
+              <button class="tab"><span class="icon">P</span><span>Profile</span></button>
+            </nav>
+          </div>
+        </div>
+      </section>
+
+      <aside class="detail-panel">
+        <div class="detail-head">
+          <h2>Proposed native version</h2>
+          <p class="note">Build one React Native app with iOS and Android-specific navigation and visual polish. The model is shared; the chrome is native.</p>
+        </div>
+        <div class="detail-body">
+          <section>
+            <h3>Core mobile tabs</h3>
+            <div class="flow">
+              <div class="flow-step">
+                <span class="badge">TD</span>
+                <div>
+                  <strong>Today</strong>
+                  <span>Due tasks, upcoming shifts/events, schedule changes, unread critical threads.</span>
+                </div>
+              </div>
+              <div class="flow-step">
+                <span class="badge">SP</span>
+                <div>
+                  <strong>Spaces</strong>
+                  <span>Groups and communities: household, VIP, vendors, staff, volunteers.</span>
+                </div>
+              </div>
+              <div class="flow-step">
+                <span class="badge">TH</span>
+                <div>
+                  <strong>Threads</strong>
+                  <span>Object-bound rooms with private, shared, and guest-visible access.</span>
+                </div>
+              </div>
+              <div class="flow-step">
+                <span class="badge">DC</span>
+                <div>
+                  <strong>Docs</strong>
+                  <span>SOPs, menus, run-of-show, delivery notes, policies, acknowledgements.</span>
+                </div>
+              </div>
+              <div class="flow-step">
+                <span class="badge">PF</span>
+                <div>
+                  <strong>Profile</strong>
+                  <span>Linked accounts, dietary profile, roles, history, notification preferences.</span>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section>
+            <h3>Reference translation</h3>
+            <div class="native-rule">
+              <strong>Lark influence</strong>
+              <p>Chat is not isolated. Messages can produce tasks, approvals, reminders, and schedule changes inside the same object.</p>
+            </div>
+            <div class="native-rule">
+              <strong>Todoist influence</strong>
+              <p>Everything actionable lands in Today, with fast capture, due dates, assigned work, filters, and completion.</p>
+            </div>
+            <div class="native-rule">
+              <strong>Cinny influence</strong>
+              <p>Spaces and rooms map cleanly to gated communities and object threads without pretending everything is one feed.</p>
+            </div>
+          </section>
+
+          <section>
+            <h3>MVP screens</h3>
+            <div class="map-list">
+              <div class="map-row">
+                <strong>Member Today</strong>
+                <span>Current menu, events, shifts, urgent updates, quick feedback.</span>
+              </div>
+              <div class="map-row">
+                <strong>Object Detail</strong>
+                <span>Event/shift/menu/resource with thread, tasks, RSVP, check-in.</span>
+              </div>
+              <div class="map-row">
+                <strong>Thread Room</strong>
+                <span>Scoped discussion with visibility label and object context.</span>
+              </div>
+              <div class="map-row">
+                <strong>Profile</strong>
+                <span>Household/staff/customer identity, linked users, history, preferences.</span>
+              </div>
+            </div>
+          </section>
+        </div>
+      </aside>
+    </main>
+  </div>
+</body>
+</html>

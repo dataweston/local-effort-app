@@ -1,6 +1,10 @@
 """
 Job: extract_square_csv
 
+Legacy extractor for Square sales transaction CSV exports. Disabled by default
+because local-budget is the transaction source of truth for Square activity.
+Set BRAIN_INGEST_SQUARE_TRANSACTIONS=true to run it.
+
 Extracts customer purchase data from Square sales transaction CSV exports.
 These CSVs are richer than the API — they include customer names even when
 no Square Customer profile is linked.
@@ -93,6 +97,17 @@ def _extract_product_from_description(desc: str) -> str | None:
 
 
 def run(dry_run: bool = False) -> dict:
+    if os.environ.get('BRAIN_INGEST_SQUARE_TRANSACTIONS', '').lower() != 'true':
+        return {
+            'files_processed': 0,
+            'rows_processed': 0,
+            'customers_written': 0,
+            'assertions_written': 0,
+            'errors': [],
+            'disabled': True,
+            'reason': 'Square CSV transaction extraction is disabled; local-budget owns Square transactions.',
+        }
+
     csv_files = _find_transaction_csvs()
     if not csv_files:
         print(f'[extract_square_csv] no transaction CSV files found in {DOWNLOADS_DIR}')

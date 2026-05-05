@@ -8,14 +8,15 @@
 
 const { getPrisma } = require('../utils/prisma');
 const { createAdminVerifier } = require('../utils/adminVerifier');
-const { RELATIONSHIPS } = require('./relationshipDictionary');
+const { RELATIONSHIPS, validateRelationship } = require('./relationshipDictionary');
 const { canonicalName: canonicalEntityName } = require('./ledger');
 
 const verifyAdminRequest = createAdminVerifier();
 
 const VALID_TYPES = [
   // Core operational
-  'Vendor', 'Customer', 'Menu', 'Dish', 'Ingredient', 'Task', 'Note', 'Event',
+  'Vendor', 'Customer', 'Person', 'Menu', 'Dish', 'Ingredient', 'Task', 'Note', 'Event',
+  'Shift', 'Resource', 'Group', 'StaffRole',
   'Invoice', 'Payment', 'Order', 'Receipt', 'EmailThread', 'Feedback', 'Decision',
   'PriceQuote', 'LedgerTransaction',
   // Business model
@@ -28,6 +29,197 @@ const VALID_TYPES = [
   'Supplier', 'Product',
 ];
 const VALID_SORT = ['name', 'assertionCount', 'updatedAt', 'createdAt'];
+const AUTO_CONFIRM_SOURCES = new Set([
+  'extract_xlsx_model',
+  'extract_static',
+  'extract_sanity',
+  'extract_square_catalog',
+  'extract_orders',
+  'extract_january',
+  'extract_planner',
+  'extract_receipts',
+  'extract_square_csv',
+  'ledger_event',
+  'manual',
+]);
+
+function compactText(value, max = 900) {
+  if (value == null) return '';
+  const text = typeof value === 'string' ? value : JSON.stringify(value, null, 2);
+  return text.replace(/\s+/g, ' ').trim().slice(0, max);
+}
+
+function assertionPattern(assertion) {
+  return [
+    assertion.relType,
+    assertion.src?.entityType || 'Unknown',
+    assertion.dst?.entityType || 'Unknown',
+    assertion.sourceType || 'unknown',
+  ].join('|');
+}
+
+function assertionReviewWarnings(assertion) {
+  return validateRelationship({
+    relType: assertion.relType,
+    srcType: assertion.src?.entityType,
+    dstType: assertion.dst?.entityType,
+    srcId: assertion.srcId,
+    dstId: assertion.dstId,
+  }).warnings;
+}
+
+function structuralWarnings(assertion) {
+  return assertionReviewWarnings(assertion).filter(w =>
+    w.includes('is not modeled as a self-edge') ||
+    w.includes('usually starts from') ||
+    w.includes('usually points to')
+  );
+}
+
+function isTrustedAutoConfirm(assertion) {
+  const ledgerSource = assertion.ledgerEvent?.source || '';
+  return AUTO_CONFIRM_SOURCES.has(assertion.sourceType) ||
+    AUTO_CONFIRM_SOURCES.has(assertion.createdBy) ||
+    AUTO_CONFIRM_SOURCES.has(ledgerSource);
+}
+
+function sourceSummary(ledgerEvent) {
+  if (!ledgerEvent) return null;
+  const payload = ledgerEvent.payload || {};
+  const subject = payload.subject || payload.emailSubject || payload.title || payload.name || '';
+  const snippet = payload.snippet || payload.summary || payload.rawContent || '';
+  const body = payload.body || payload.text || payload.excerpt || payload.content || '';
+  const rows = payload.row || payload.rows || payload.record || payload.data || null;
+  const signals = payload.signals || payload.extractions || payload.items || null;
+  const excerpt = compactText([subject, snippet, body].filter(Boolean).join('\n\n') || rows || signals || payload);
+  return {
+    id: ledgerEvent.id,
+    eventType: ledgerEvent.eventType,
+    source: ledgerEvent.source,
+    sourceId: ledgerEvent.sourceId,
+    occurredAt: ledgerEvent.occurredAt,
+    subject: compactText(subject, 180),
+    excerpt,
+    payload,
+  };
+}
+
+function decorateAssertion(assertion) {
+  const warnings = assertionReviewWarnings(assertion);
+  return {
+    ...assertion,
+    review: {
+      warnings,
+      structuralWarnings: structuralWarnings(assertion),
+      trustedAutoConfirm: isTrustedAutoConfirm(assertion),
+      source: sourceSummary(assertion.ledgerEvent),
+    },
+  };
+}
+
+function automationCandidates(assertions) {
+  const confirm = [];
+  const retract = [];
+  for (const assertion of assertions) {
+    const bad = structuralWarnings(assertion);
+    if (bad.length > 0) {
+      retract.push({ id: assertion.id, reason: bad[0] });
+      continue;
+    }
+    if (isTrustedAutoConfirm(assertion)) {
+      confirm.push({ id: assertion.id, reason: 'trusted deterministic source with valid relationship shape' });
+    }
+  }
+  return { confirm, retract };
+}
+
+function buildReviewSuggestions({ pending, reviewed }) {
+  const statsByPattern = new Map();
+
+  for (const assertion of reviewed) {
+    const key = assertionPattern(assertion);
+    const existing = statsByPattern.get(key) || { confirmed: 0, retracted: 0, total: 0 };
+    if (assertion.confirmedAt) existing.confirmed += 1;
+    if (assertion.retractedAt) existing.retracted += 1;
+    existing.total += 1;
+    statsByPattern.set(key, existing);
+  }
+
+  const groups = new Map();
+  for (const assertion of pending) {
+    const key = assertionPattern(assertion);
+    const warnings = structuralWarnings(assertion);
+    const stats = statsByPattern.get(key) || { confirmed: 0, retracted: 0, total: 0 };
+    const confirmRate = stats.total ? stats.confirmed / stats.total : 0;
+    const retractRate = stats.total ? stats.retracted / stats.total : 0;
+
+    let action = null;
+    let score = 0;
+    let reason = '';
+
+    if (warnings.length > 0) {
+      action = 'retract';
+      score = 0.92;
+      reason = warnings[0];
+    } else if (isTrustedAutoConfirm(assertion)) {
+      action = 'confirm';
+      score = 0.93;
+      reason = 'Trusted deterministic source with valid relationship shape.';
+    } else if (stats.total >= 3 && confirmRate >= 0.85) {
+      action = 'confirm';
+      score = Math.min(0.98, confirmRate);
+      reason = `You confirmed ${stats.confirmed}/${stats.total} reviewed assertions with this pattern.`;
+    } else if (stats.total >= 3 && retractRate >= 0.85) {
+      action = 'retract';
+      score = Math.min(0.98, retractRate);
+      reason = `You retracted ${stats.retracted}/${stats.total} reviewed assertions with this pattern.`;
+    } else if ((assertion.confidence || 0) >= 0.65) {
+      action = 'confirm';
+      score = 0.68;
+      reason = 'Valid relationship dictionary match with high extraction confidence.';
+    }
+
+    if (!action) continue;
+
+    const groupKey = `${action}|${key}|${reason}`;
+    const group = groups.get(groupKey) || {
+      key: groupKey,
+      action,
+      relType: assertion.relType,
+      srcType: assertion.src?.entityType || 'Unknown',
+      dstType: assertion.dst?.entityType || 'Unknown',
+      sourceType: assertion.sourceType || 'unknown',
+      reason,
+      score,
+      reviewed: stats,
+      assertionIds: [],
+      samples: [],
+    };
+
+    group.assertionIds.push(assertion.id);
+    group.score = Math.max(group.score, score);
+    if (group.samples.length < 4) {
+      group.samples.push({
+        id: assertion.id,
+        confidence: assertion.confidence,
+        src: assertion.src ? { id: assertion.src.id, entityType: assertion.src.entityType, name: assertion.src.name } : null,
+        dst: assertion.dst ? { id: assertion.dst.id, entityType: assertion.dst.entityType, name: assertion.dst.name } : null,
+        metadata: assertion.metadata || null,
+      });
+    }
+    groups.set(groupKey, group);
+  }
+
+  return [...groups.values()]
+    .map(group => ({
+      ...group,
+      totalCount: group.assertionIds.length,
+      assertionIds: group.assertionIds.slice(0, 500),
+      count: Math.min(group.assertionIds.length, 500),
+    }))
+    .sort((a, b) => (b.score - a.score) || (b.count - a.count))
+    .slice(0, 12);
+}
 
 function registerEntityRoutes(app, { logger } = {}) {
   const prisma = getPrisma();
@@ -186,6 +378,7 @@ function registerEntityRoutes(app, { logger } = {}) {
             take: provisionalOnly ? 100 : 40,
             include: {
               dst: { select: { id: true, name: true, entityType: true } },
+              ledgerEvent: { select: { id: true, eventType: true, source: true, sourceId: true, occurredAt: true, payload: true } },
             },
           },
           dstAssertions: {
@@ -194,6 +387,7 @@ function registerEntityRoutes(app, { logger } = {}) {
             take: provisionalOnly ? 100 : 30,
             include: {
               src: { select: { id: true, name: true, entityType: true } },
+              ledgerEvent: { select: { id: true, eventType: true, source: true, sourceId: true, occurredAt: true, payload: true } },
             },
           },
         },
@@ -201,7 +395,14 @@ function registerEntityRoutes(app, { logger } = {}) {
 
       if (!entity) return res.status(404).json({ error: 'not found' });
 
-      return res.json({ ok: true, entity });
+      return res.json({
+        ok: true,
+        entity: {
+          ...entity,
+          srcAssertions: (entity.srcAssertions || []).map(decorateAssertion),
+          dstAssertions: (entity.dstAssertions || []).map(decorateAssertion),
+        },
+      });
     } catch (err) {
       logger?.error({ err }, 'brain: entity detail error');
       return res.status(500).json({ error: 'internal-error' });
@@ -261,6 +462,111 @@ function registerEntityRoutes(app, { logger } = {}) {
   });
 
   // POST /api/brain/assertions/:id/confirm — confirm a provisional assertion
+  app.get('/api/brain/assertion/:id', async (req, res) => {
+    try {
+      const admin = await verifyAdminRequest(req);
+      if (!admin) return res.status(403).json({ error: 'admin only' });
+
+      const assertion = await prisma.brainAssertion.findUnique({
+        where: { id: req.params.id },
+        include: {
+          src: { select: { id: true, entityType: true, name: true } },
+          dst: { select: { id: true, entityType: true, name: true } },
+          ledgerEvent: { select: { id: true, eventType: true, source: true, sourceId: true, occurredAt: true, payload: true } },
+        },
+      });
+      if (!assertion) return res.status(404).json({ error: 'not found' });
+
+      return res.json({ ok: true, assertion: decorateAssertion(assertion), relationships: RELATIONSHIPS });
+    } catch (err) {
+      logger?.error({ err }, 'brain: assertion detail error');
+      return res.status(500).json({ error: 'internal-error' });
+    }
+  });
+
+  app.patch('/api/brain/assertion/:id', async (req, res) => {
+    try {
+      const admin = await verifyAdminRequest(req);
+      if (!admin) return res.status(403).json({ error: 'admin only' });
+
+      const existing = await prisma.brainAssertion.findUnique({
+        where: { id: req.params.id },
+        include: {
+          src: { select: { id: true, entityType: true, name: true } },
+          dst: { select: { id: true, entityType: true, name: true } },
+        },
+      });
+      if (!existing) return res.status(404).json({ error: 'not found' });
+
+      const data = {};
+      let src = existing.src;
+      let dst = existing.dst;
+      const relType = req.body?.relType ? String(req.body.relType).trim().toUpperCase() : existing.relType;
+
+      if (req.body?.srcId && req.body.srcId !== existing.srcId) {
+        src = await prisma.brainEntity.findUnique({
+          where: { id: String(req.body.srcId) },
+          select: { id: true, entityType: true, name: true },
+        });
+        if (!src) return res.status(400).json({ error: 'srcId not found' });
+        data.srcId = src.id;
+      }
+      if (req.body?.dstId && req.body.dstId !== existing.dstId) {
+        dst = await prisma.brainEntity.findUnique({
+          where: { id: String(req.body.dstId) },
+          select: { id: true, entityType: true, name: true },
+        });
+        if (!dst) return res.status(400).json({ error: 'dstId not found' });
+        data.dstId = dst.id;
+      }
+
+      if (relType !== existing.relType) data.relType = relType;
+      if (req.body?.metadata !== undefined) {
+        if (!req.body.metadata || typeof req.body.metadata !== 'object' || Array.isArray(req.body.metadata)) {
+          return res.status(400).json({ error: 'metadata must be an object' });
+        }
+        data.metadata = req.body.metadata;
+      }
+      if (req.body?.confidence !== undefined) {
+        const confidence = Number(req.body.confidence);
+        if (!Number.isFinite(confidence) || confidence < 0 || confidence > 1) {
+          return res.status(400).json({ error: 'confidence must be 0..1' });
+        }
+        data.confidence = confidence;
+      }
+      if (!Object.keys(data).length) return res.status(400).json({ error: 'nothing to update' });
+
+      const validation = validateRelationship({
+        relType,
+        srcType: src.entityType,
+        dstType: dst.entityType,
+        srcId: src.id,
+        dstId: dst.id,
+      });
+      const metadata = data.metadata ?? existing.metadata ?? {};
+      data.metadata = {
+        ...metadata,
+        relationshipWarnings: validation.warnings,
+        reviewedEditAt: new Date().toISOString(),
+      };
+
+      const updated = await prisma.brainAssertion.update({
+        where: { id: req.params.id },
+        data,
+        include: {
+          src: { select: { id: true, entityType: true, name: true } },
+          dst: { select: { id: true, entityType: true, name: true } },
+          ledgerEvent: { select: { id: true, eventType: true, source: true, sourceId: true, occurredAt: true, payload: true } },
+        },
+      });
+
+      return res.json({ ok: true, assertion: decorateAssertion(updated) });
+    } catch (err) {
+      logger?.error({ err }, 'brain: assertion update error');
+      return res.status(500).json({ error: 'internal-error' });
+    }
+  });
+
   app.post('/api/brain/assertions/:id/confirm', async (req, res) => {
     try {
       const admin = await verifyAdminRequest(req);
@@ -325,17 +631,189 @@ function registerEntityRoutes(app, { logger } = {}) {
         include: {
           src: { select: { id: true, entityType: true, name: true } },
           dst: { select: { id: true, entityType: true, name: true } },
-          ledgerEvent: { select: { eventType: true, source: true, sourceId: true, occurredAt: true, payload: true } },
+          ledgerEvent: { select: { id: true, eventType: true, source: true, sourceId: true, occurredAt: true, payload: true } },
         },
       });
-      return res.json({ ok: true, assertions, count: assertions.length });
+      return res.json({ ok: true, assertions: assertions.map(decorateAssertion), count: assertions.length });
     } catch (err) {
       logger?.error({ err }, 'brain: provisional assertions list error');
       return res.status(500).json({ error: 'internal-error' });
     }
   });
 
+  // GET /api/brain/assertions/provisional/suggestions
+  // Smart review queue. Learns from confirmed/retracted assertions and groups
+  // matching provisionals into bulk-review suggestions.
+  app.get('/api/brain/assertions/provisional/suggestions', async (req, res) => {
+    try {
+      const admin = await verifyAdminRequest(req);
+      if (!admin) return res.status(403).json({ error: 'admin only' });
+
+      const { limit = '1000', relType } = req.query;
+      const take = Math.min(parseInt(limit) || 1000, 2000);
+      const relFilter = relType ? { relType: String(relType).trim().toUpperCase() } : {};
+
+      const [pending, reviewed] = await Promise.all([
+        prisma.brainAssertion.findMany({
+          where: {
+            provisional: true,
+            retractedAt: null,
+            knownUntil: null,
+            ...relFilter,
+          },
+          orderBy: [{ confidence: 'desc' }, { createdAt: 'desc' }],
+          take,
+          include: {
+            src: { select: { id: true, entityType: true, name: true } },
+            dst: { select: { id: true, entityType: true, name: true } },
+            ledgerEvent: { select: { id: true, eventType: true, source: true, sourceId: true, occurredAt: true, payload: true } },
+          },
+        }),
+        prisma.brainAssertion.findMany({
+          where: {
+            OR: [
+              { confirmedAt: { not: null } },
+              { retractedAt: { not: null } },
+            ],
+            ...relFilter,
+          },
+          orderBy: { createdAt: 'desc' },
+          take: 5000,
+          include: {
+            src: { select: { id: true, entityType: true, name: true } },
+            dst: { select: { id: true, entityType: true, name: true } },
+            ledgerEvent: { select: { id: true, eventType: true, source: true, sourceId: true, occurredAt: true, payload: true } },
+          },
+        }),
+      ]);
+      const automation = automationCandidates(pending);
+
+      return res.json({
+        ok: true,
+        pendingCount: pending.length,
+        reviewedCount: reviewed.length,
+        automation: {
+          confirmCount: automation.confirm.length,
+          retractCount: automation.retract.length,
+          confirmIds: automation.confirm.slice(0, 500).map(x => x.id),
+          retractIds: automation.retract.slice(0, 500).map(x => x.id),
+        },
+        suggestions: buildReviewSuggestions({ pending, reviewed }),
+      });
+    } catch (err) {
+      logger?.error({ err }, 'brain: provisional suggestions error');
+      return res.status(500).json({ error: 'internal-error' });
+    }
+  });
+
+  // POST /api/brain/assertions/provisional/bulk
+  app.post('/api/brain/assertions/provisional/bulk', async (req, res) => {
+    try {
+      const admin = await verifyAdminRequest(req);
+      if (!admin) return res.status(403).json({ error: 'admin only' });
+
+      const action = String(req.body?.action || '').toLowerCase();
+      const assertionIds = Array.isArray(req.body?.assertionIds)
+        ? req.body.assertionIds.filter(Boolean).slice(0, 500)
+        : [];
+      if (!['confirm', 'retract'].includes(action)) {
+        return res.status(400).json({ error: 'action must be confirm or retract' });
+      }
+      if (assertionIds.length === 0) {
+        return res.status(400).json({ error: 'assertionIds required' });
+      }
+
+      const where = {
+        id: { in: assertionIds },
+        provisional: true,
+        retractedAt: null,
+        knownUntil: null,
+      };
+
+      const result = action === 'confirm'
+        ? await prisma.brainAssertion.updateMany({
+            where,
+            data: {
+              provisional: false,
+              confirmedAt: new Date(),
+              confirmedBy: 'admin:smart-review',
+            },
+          })
+        : await prisma.brainAssertion.updateMany({
+            where,
+            data: {
+              retractedAt: new Date(),
+              retractedBy: 'admin:smart-review',
+              retractedReason: req.body?.reason || 'smart_review_batch',
+            },
+          });
+
+      return res.json({ ok: true, action, count: result.count });
+    } catch (err) {
+      logger?.error({ err }, 'brain: provisional bulk review error');
+      return res.status(500).json({ error: 'internal-error' });
+    }
+  });
+
   // GET /api/brain/quality — compact graph cleanup dashboard data.
+  app.post('/api/brain/assertions/provisional/auto', async (req, res) => {
+    try {
+      const admin = await verifyAdminRequest(req);
+      if (!admin) return res.status(403).json({ error: 'admin only' });
+
+      const dryRun = req.body?.dryRun !== false;
+      const limit = Math.min(parseInt(req.body?.limit) || 1000, 2000);
+      const pending = await prisma.brainAssertion.findMany({
+        where: { provisional: true, retractedAt: null, knownUntil: null },
+        orderBy: [{ confidence: 'desc' }, { createdAt: 'desc' }],
+        take: limit,
+        include: {
+          src: { select: { id: true, entityType: true, name: true } },
+          dst: { select: { id: true, entityType: true, name: true } },
+          ledgerEvent: { select: { id: true, eventType: true, source: true, sourceId: true, occurredAt: true, payload: true } },
+        },
+      });
+      const candidates = automationCandidates(pending);
+      const confirmIds = candidates.confirm.slice(0, 500).map(x => x.id);
+      const retractIds = candidates.retract.slice(0, 500).map(x => x.id);
+
+      if (dryRun) {
+        return res.json({
+          ok: true,
+          dryRun: true,
+          confirmCount: confirmIds.length,
+          retractCount: retractIds.length,
+          confirmSamples: candidates.confirm.slice(0, 5),
+          retractSamples: candidates.retract.slice(0, 5),
+        });
+      }
+
+      const [confirmed, retracted] = await Promise.all([
+        confirmIds.length
+          ? prisma.brainAssertion.updateMany({
+              where: { id: { in: confirmIds }, provisional: true, retractedAt: null, knownUntil: null },
+              data: { provisional: false, confirmedAt: new Date(), confirmedBy: 'admin:auto-review' },
+            })
+          : { count: 0 },
+        retractIds.length
+          ? prisma.brainAssertion.updateMany({
+              where: { id: { in: retractIds }, provisional: true, retractedAt: null, knownUntil: null },
+              data: {
+                retractedAt: new Date(),
+                retractedBy: 'admin:auto-review',
+                retractedReason: 'structural_relationship_violation',
+              },
+            })
+          : { count: 0 },
+      ]);
+
+      return res.json({ ok: true, dryRun: false, confirmed: confirmed.count, retracted: retracted.count });
+    } catch (err) {
+      logger?.error({ err }, 'brain: provisional auto review error');
+      return res.status(500).json({ error: 'internal-error' });
+    }
+  });
+
   app.get('/api/brain/quality', async (req, res) => {
     try {
       const admin = await verifyAdminRequest(req);

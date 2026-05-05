@@ -467,6 +467,134 @@ model ChefNote {
   user       User     @relation(fields: [userId], references: [id])
 }
 
+model HubOrganization {
+  id        String   @id @default(uuid())
+  name      String
+  slug      String?  @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  spaces    HubSpace[]
+}
+
+model HubSpace {
+  id             String   @id @default(uuid())
+  organizationId String
+  key            String
+  title          String
+  visibility     String   @default("staff")
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  organization HubOrganization @relation(fields: [organizationId], references: [id])
+  memberships  HubSpaceMembership[]
+
+  @@unique([organizationId, key])
+  @@index([organizationId])
+}
+
+model HubSpaceMembership {
+  id             String   @id @default(uuid())
+  organizationId String
+  spaceId        String
+  userId         String?
+  customerId     String?
+  role           String
+  visibility     String   @default("customer")
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  space HubSpace @relation(fields: [spaceId], references: [id])
+
+  @@index([organizationId, spaceId])
+  @@index([userId])
+  @@index([customerId])
+}
+
+model ObjectThread {
+  id             String   @id @default(uuid())
+  organizationId String?
+  spaceId        String?
+  objectType     String
+  objectId       String
+  visibility     String
+  title          String
+  createdBy      String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  messages ObjectThreadMessage[]
+
+  @@index([organizationId, spaceId])
+  @@index([objectType, objectId])
+  @@index([visibility])
+}
+
+model ObjectThreadMessage {
+  id         String    @id @default(uuid())
+  threadId   String
+  senderId   String?
+  senderRole String?
+  body       String
+  attachments Json?
+  createdAt  DateTime  @default(now())
+  editedAt   DateTime?
+  deletedAt  DateTime?
+
+  thread ObjectThread @relation(fields: [threadId], references: [id])
+
+  @@index([threadId, createdAt])
+  @@index([senderId])
+}
+
+model HubCapture {
+  id              String   @id @default(uuid())
+  organizationId  String?
+  spaceId         String?
+  objectId        String?
+  objectType      String?
+  visibility      String?
+  source          String
+  sourceId        String?
+  actorId         String?
+  actorRole       String?
+  occurredAt      DateTime @default(now())
+  rawContent      String
+  attachments     Json?
+  clientCreatedAt DateTime?
+  offlineQueueId  String?
+  captureIntent   String
+  ledgerEventId   String?
+  status          String   @default("captured")
+  routingSuggestions Json?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([source, sourceId])
+  @@index([organizationId, spaceId])
+  @@index([objectType, objectId])
+  @@index([actorId])
+  @@index([status, createdAt])
+  @@index([offlineQueueId])
+  @@index([ledgerEventId])
+}
+
+model MobilePushToken {
+  id                String   @id @default(uuid())
+  userId            String?
+  supabaseUid       String?
+  platform          String
+  pushToken         String   @unique
+  deviceId          String?
+  permissionsStatus String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  lastSeenAt        DateTime @default(now())
+
+  @@index([userId])
+  @@index([supabaseUid])
+  @@index([platform])
+}
+
 model DecisionAssignment {
   id            String   @id @default(uuid())
   experimentKey String

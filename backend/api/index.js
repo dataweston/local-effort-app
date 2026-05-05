@@ -1273,6 +1273,132 @@ app.all('/api/sanity-query', sanityQueryRateLimit, async (req, res) => {
   }
 });
 
+app.all('/api/hub/today', async (req, res, next) => {
+  try {
+    await require('../../api-handlers/hub/today')(req, res);
+  } catch (err) {
+    logger.error({ err, method: req.method }, 'hub today handler failed');
+    next(err);
+  }
+});
+
+app.all('/api/hub/calendar', async (req, res, next) => {
+  try {
+    await require('../../api-handlers/hub/calendar')(req, res);
+  } catch (err) {
+    logger.error({ err, method: req.method }, 'hub calendar handler failed');
+    next(err);
+  }
+});
+
+app.all('/api/hub/inbox', async (req, res, next) => {
+  try {
+    await require('../../api-handlers/hub/inbox')(req, res);
+  } catch (err) {
+    logger.error({ err, method: req.method }, 'hub inbox handler failed');
+    next(err);
+  }
+});
+
+app.all('/api/hub/spaces', async (req, res, next) => {
+  try {
+    await require('../../api-handlers/hub/spaces')(req, res);
+  } catch (err) {
+    logger.error({ err, method: req.method }, 'hub spaces handler failed');
+    next(err);
+  }
+});
+
+app.all('/api/hub/objects/:id/plan', async (req, res, next) => {
+  try {
+    await require('../../api-handlers/hub/object-plan')(req, res);
+  } catch (err) {
+    logger.error({ err, method: req.method }, 'hub object plan handler failed');
+    next(err);
+  }
+});
+
+app.all('/api/hub/objects/:id', async (req, res, next) => {
+  try {
+    await require('../../api-handlers/hub/objects')(req, res);
+  } catch (err) {
+    logger.error({ err, method: req.method }, 'hub object handler failed');
+    next(err);
+  }
+});
+
+app.all('/api/hub/objects', async (req, res, next) => {
+  try {
+    await require('../../api-handlers/hub/objects')(req, res);
+  } catch (err) {
+    logger.error({ err, method: req.method }, 'hub object handler failed');
+    next(err);
+  }
+});
+
+app.all('/api/hub/threads/:id/messages', async (req, res, next) => {
+  try {
+    await require('../../api-handlers/hub/thread-messages')(req, res);
+  } catch (err) {
+    logger.error({ err, method: req.method }, 'hub thread messages handler failed');
+    next(err);
+  }
+});
+
+app.all('/api/hub/threads', async (req, res, next) => {
+  try {
+    await require('../../api-handlers/hub/threads')(req, res);
+  } catch (err) {
+    logger.error({ err, method: req.method }, 'hub threads handler failed');
+    next(err);
+  }
+});
+
+app.all('/api/hub/capture/suggestions', async (req, res, next) => {
+  try {
+    await require('../../api-handlers/hub/capture-suggestions')(req, res);
+  } catch (err) {
+    logger.error({ err, method: req.method }, 'hub capture suggestions handler failed');
+    next(err);
+  }
+});
+
+app.all('/api/hub/feedback', async (req, res, next) => {
+  try {
+    await require('../../api-handlers/hub/feedback')(req, res);
+  } catch (err) {
+    logger.error({ err, method: req.method }, 'hub feedback handler failed');
+    next(err);
+  }
+});
+
+app.all('/api/hub/capture', async (req, res, next) => {
+  try {
+    await require('../../api-handlers/hub/capture')(req, res);
+  } catch (err) {
+    logger.error({ err, method: req.method }, 'hub capture handler failed');
+    next(err);
+  }
+});
+
+app.all('/api/hub/checkins', async (req, res, next) => {
+  try {
+    await require('../../api-handlers/hub/checkins')(req, res);
+  } catch (err) {
+    logger.error({ err, method: req.method }, 'hub checkins handler failed');
+    next(err);
+  }
+});
+
+app.all('/api/hub/push/register', async (req, res, next) => {
+  try {
+    await require('../../api-handlers/hub/push-register')(req, res);
+  } catch (err) {
+    logger.error({ err, method: req.method }, 'hub push register handler failed');
+    next(err);
+  }
+});
+
 app.all('/api/weekly-order/active', async (req, res, next) => {
   try {
     await require('../../api-handlers/weekly-order/active')(req, res);

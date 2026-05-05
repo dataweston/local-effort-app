@@ -1,4 +1,8 @@
 /**
+ * Disabled by default because local-budget is the source of truth for Square
+ * transactions. Set BRAIN_INGEST_SQUARE_PAYMENTS=true only for deliberate
+ * legacy payment ingestion.
+ *
  * Square → Brain ingestion.
  * Called as a side-effect from the existing Square webhook handler in index.js.
  * Does not replace existing payment handling — runs alongside it.
@@ -14,6 +18,11 @@ const { getPrisma } = require('../utils/prisma');
 
 async function ingestSquarePayment(payment, { logger } = {}) {
   try {
+    if (process.env.BRAIN_INGEST_SQUARE_PAYMENTS !== 'true') {
+      if (logger?.debug) logger.debug({ squarePaymentId: payment?.id }, 'brain: square payment ingest disabled');
+      return;
+    }
+
     if (!payment?.id) return;
     if (String(payment.status || '').toUpperCase() !== 'COMPLETED') return;
 

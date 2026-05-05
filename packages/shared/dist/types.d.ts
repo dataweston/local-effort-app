@@ -1,11 +1,11 @@
-export declare type OrderStatus = "pending" | "redeemed" | "void";
-export declare type OrderItem = {
+export type OrderStatus = "pending" | "redeemed" | "void";
+export type OrderItem = {
     sku: string;
     name: string;
     qty: number;
     unit: number;
 };
-export declare type Order = {
+export type Order = {
     oid: string;
     n: string;
     email: string;

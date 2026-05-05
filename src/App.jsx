@@ -45,6 +45,7 @@ const AdminWeeklyOrderPage = lazy(() => import('./pages/AdminWeeklyOrderPage'));
 const AdminDecisionPreviewPage = lazy(() => import('./pages/AdminDecisionPreviewPage'));
 const WeeklyDemoPage = lazy(() => import('./pages/WeeklyDemoPage'));
 const SubscriberPortalPage = lazy(() => import('./pages/SubscriberPortalPage'));
+const NativeMobileHubPage = lazy(() => import('./pages/NativeMobileHubPage'));
 const CatherineSchedulePage = lazy(() => import('./pages/CatherineSchedulePage'));
 const BookPage = lazy(() => import('./pages/BookPage'));
 const BrainPortalPage = lazy(() => import('./pages/BrainPortalPage'));
@@ -58,7 +59,8 @@ const AppContent = () => {
     location.pathname === '/winterdinner' ||
     location.pathname === '/winterpizza' ||
     location.pathname === '/januarymeals' ||
-    location.pathname === '/catherine-schedule';
+    location.pathname === '/catherine-schedule' ||
+    location.pathname === '/native-mobile-hub';
   const hideFooter =
     location.pathname === '/' ||
     location.pathname === '/sale' ||
@@ -66,7 +68,8 @@ const AppContent = () => {
     location.pathname === '/winterdinner' ||
     location.pathname === '/winterpizza' ||
     location.pathname === '/januarymeals' ||
-    location.pathname === '/catherine-schedule';
+    location.pathname === '/catherine-schedule' ||
+    location.pathname === '/native-mobile-hub';
 
   useEffect(() => {
     document.fonts?.ready?.then(() => document.body.classList.add('fonts-loaded'));
@@ -269,6 +272,14 @@ const AppContent = () => {
                   element={
                     <AnimatedPage>
                       <WeeklyDemoPage />
+                    </AnimatedPage>
+                  }
+                />
+                <Route
+                  path="/native-mobile-hub"
+                  element={
+                    <AnimatedPage>
+                      <NativeMobileHubPage />
                     </AnimatedPage>
                   }
                 />

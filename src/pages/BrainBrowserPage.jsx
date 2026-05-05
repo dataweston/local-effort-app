@@ -101,6 +101,246 @@ function relBadge(relType, provisional) {
 
 // ── Entity detail panel ───────────────────────────────────────────────────────
 
+function EntityPicker({ label, value, accessToken, onChange }) {
+  const [query, setQuery] = useState('');
+  const [results, setResults] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (!query.trim() || query.trim().length < 2 || !accessToken) {
+      setResults([]);
+      return;
+    }
+    let cancelled = false;
+    setLoading(true);
+    const params = new URLSearchParams({ q: query.trim(), limit: '8', sort: 'name', order: 'asc' });
+    fetch(`${API_BASE}/api/brain/entities?${params}`, {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    })
+      .then(r => r.json())
+      .then(d => { if (!cancelled) setResults(d.entities || []); })
+      .catch(() => { if (!cancelled) setResults([]); })
+      .finally(() => { if (!cancelled) setLoading(false); });
+    return () => { cancelled = true; };
+  }, [query, accessToken]);
+
+  return (
+    <div>
+      <div className="text-[10px] font-semibold text-gray-500 uppercase tracking-wide mb-1">{label}</div>
+      <div className="rounded border border-gray-200 bg-gray-50 px-2 py-1.5">
+        <div className="text-xs font-medium text-gray-900 truncate">{value?.name || 'None selected'}</div>
+        <div className="text-[10px] text-gray-400 font-mono truncate">{value?.entityType || 'Entity'} {value?.id || ''}</div>
+      </div>
+      <input
+        className="mt-1 w-full border border-gray-300 rounded px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-gray-400"
+        placeholder={`Search ${label.toLowerCase()}...`}
+        value={query}
+        onChange={e => setQuery(e.target.value)}
+      />
+      {loading && <div className="mt-1 text-[10px] text-gray-400">Searching...</div>}
+      {results.length > 0 && (
+        <div className="mt-1 max-h-28 overflow-y-auto border border-gray-200 rounded bg-white">
+          {results.map(result => (
+            <button
+              key={result.id}
+              type="button"
+              onClick={() => { onChange(result); setQuery(''); setResults([]); }}
+              className="block w-full text-left px-2 py-1.5 hover:bg-gray-50 border-b last:border-b-0 border-gray-100"
+            >
+              <span className="block text-xs text-gray-900 truncate">{result.name}</span>
+              <span className="block text-[10px] text-gray-400 font-mono">{result.entityType}</span>
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function AssertionReviewRow({ assertion, direction, accessToken, onChanged }) {
+  const [expanded, setExpanded] = useState(false);
+  const [detail, setDetail] = useState(assertion);
+  const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
+  const [relType, setRelType] = useState(assertion.relType || '');
+  const [src, setSrc] = useState(assertion.src || null);
+  const [dst, setDst] = useState(assertion.dst || null);
+  const [confidence, setConfidence] = useState(assertion.confidence ?? 0.5);
+  const [metadataText, setMetadataText] = useState(JSON.stringify(assertion.metadata || {}, null, 2));
+  const [relationships, setRelationships] = useState({});
+
+  const current = detail || assertion;
+  const source = current.review?.source;
+  const warnings = current.review?.warnings || [];
+
+  async function openReview() {
+    setExpanded(v => !v);
+    if (expanded || loading) return;
+    setLoading(true);
+    setError('');
+    try {
+      const res = await fetch(`${API_BASE}/api/brain/assertion/${assertion.id}`, {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      });
+      const data = await res.json();
+      if (!data.ok) throw new Error(data.error || 'Could not load assertion');
+      setDetail(data.assertion);
+      setRelationships(data.relationships || {});
+      setRelType(data.assertion.relType || '');
+      setSrc(data.assertion.src || null);
+      setDst(data.assertion.dst || null);
+      setConfidence(data.assertion.confidence ?? 0.5);
+      setMetadataText(JSON.stringify(data.assertion.metadata || {}, null, 2));
+    } catch (err) {
+      setError(err.message || 'Could not load assertion');
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function save({ confirmAfter = false } = {}) {
+    setSaving(true);
+    setError('');
+    try {
+      let metadata = {};
+      try {
+        metadata = metadataText.trim() ? JSON.parse(metadataText) : {};
+      } catch {
+        throw new Error('Metadata must be valid JSON.');
+      }
+      const res = await fetch(`${API_BASE}/api/brain/assertion/${assertion.id}`, {
+        method: 'PATCH',
+        headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ relType, srcId: src?.id, dstId: dst?.id, confidence, metadata }),
+      });
+      const data = await res.json();
+      if (!data.ok) throw new Error(data.error || 'Could not save assertion');
+      setDetail(data.assertion);
+      if (confirmAfter) {
+        await fetch(`${API_BASE}/api/brain/assertions/${assertion.id}/confirm`, {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${accessToken}` },
+        });
+      }
+      onChanged?.();
+    } catch (err) {
+      setError(err.message || 'Could not save assertion');
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function action(kind) {
+    setSaving(true);
+    setError('');
+    try {
+      await fetch(`${API_BASE}/api/brain/assertions/${assertion.id}/${kind}`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${accessToken}` },
+      });
+      onChanged?.();
+    } catch {
+      setError(`Could not ${kind} assertion`);
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <div className="rounded border border-gray-100 bg-white">
+      <div className="flex items-start gap-2 text-sm group p-2">
+        {(direction === 'in' || direction === 'queue') && <span className="text-gray-500 text-xs font-mono shrink-0 mt-0.5">{current.src?.entityType}:</span>}
+        {(direction === 'in' || direction === 'queue') && <span className="text-gray-800 shrink-0 truncate max-w-[9rem]">{current.src?.name || '-'}</span>}
+        <div className="shrink-0 mt-0.5">{relBadge(current.relType, current.provisional)}</div>
+        <div className="min-w-0 flex-1">
+          {(direction === 'out' || direction === 'queue') && (
+            <>
+              <span className="text-gray-500 text-xs font-mono">{current.dst?.entityType}:</span>{' '}
+              <span className="text-gray-900">{current.dst?.name || '-'}</span>
+            </>
+          )}
+          {warnings.length > 0 && <div className="mt-0.5 text-[10px] text-red-600 truncate">{warnings[0]}</div>}
+          {!warnings.length && current.provisional && current.review?.trustedAutoConfirm && (
+            <div className="mt-0.5 text-[10px] text-green-700">trusted source shape</div>
+          )}
+          {current.metadata && Object.keys(current.metadata).length > 0 && (
+            <div className="text-xs text-gray-400 font-mono mt-0.5 truncate">
+              {Object.entries(current.metadata).slice(0, 3).map(([k, v]) =>
+                `${k}=${typeof v === 'object' ? '...' : v}`
+              ).join('  ')}
+            </div>
+          )}
+        </div>
+        <div className="flex gap-1 shrink-0">
+          {current.provisional && (
+            <button onClick={openReview} disabled={saving} className="text-xs px-1.5 py-0.5 bg-amber-100 text-amber-800 rounded hover:bg-amber-200 disabled:opacity-50">
+              Review
+            </button>
+          )}
+          {current.provisional && (
+            <button onClick={() => action('confirm')} disabled={saving} className="text-xs px-1.5 py-0.5 bg-green-100 text-green-700 rounded hover:bg-green-200 disabled:opacity-50">
+              OK
+            </button>
+          )}
+          <button onClick={() => action('retract')} disabled={saving} className="text-xs px-1.5 py-0.5 bg-red-100 text-red-600 rounded hover:bg-red-200 disabled:opacity-50">
+            Drop
+          </button>
+        </div>
+      </div>
+
+      {expanded && (
+        <div className="border-t border-gray-100 p-3 bg-gray-50 space-y-3">
+          {loading ? (
+            <div className="text-xs text-gray-400">Loading source...</div>
+          ) : (
+            <>
+              {error && <div className="text-xs text-red-700">{error}</div>}
+              <div className="grid grid-cols-2 gap-2">
+                <EntityPicker label="Source entity" value={src} accessToken={accessToken} onChange={setSrc} />
+                <EntityPicker label="Target entity" value={dst} accessToken={accessToken} onChange={setDst} />
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <div className="text-[10px] font-semibold text-gray-500 uppercase tracking-wide mb-1">Relationship</div>
+                  <input list={`rels-${assertion.id}`} value={relType} onChange={e => setRelType(e.target.value.toUpperCase())} className="w-full border border-gray-300 rounded px-2 py-1 text-xs font-mono" />
+                  <datalist id={`rels-${assertion.id}`}>
+                    {Object.keys(relationships).map(rel => <option key={rel} value={rel} />)}
+                  </datalist>
+                </div>
+                <div>
+                  <div className="text-[10px] font-semibold text-gray-500 uppercase tracking-wide mb-1">Confidence</div>
+                  <input type="number" min="0" max="1" step="0.05" value={confidence} onChange={e => setConfidence(Number(e.target.value))} className="w-full border border-gray-300 rounded px-2 py-1 text-xs" />
+                </div>
+              </div>
+              {source && (
+                <div>
+                  <div className="text-[10px] font-semibold text-gray-500 uppercase tracking-wide mb-1">Source evidence</div>
+                  <div className="rounded border border-gray-200 bg-white p-2">
+                    <div className="text-[10px] text-gray-400 font-mono mb-1">{source.eventType} / {source.source} / {source.sourceId}</div>
+                    {source.subject && <div className="text-xs font-semibold text-gray-800 mb-1">{source.subject}</div>}
+                    <div className="text-xs text-gray-700 whitespace-pre-wrap max-h-32 overflow-y-auto">{source.excerpt || 'No readable excerpt in this ledger event.'}</div>
+                  </div>
+                </div>
+              )}
+              <div>
+                <div className="text-[10px] font-semibold text-gray-500 uppercase tracking-wide mb-1">Metadata JSON</div>
+                <textarea value={metadataText} onChange={e => setMetadataText(e.target.value)} rows={5} className="w-full border border-gray-300 rounded px-2 py-1 text-xs font-mono" />
+              </div>
+              <div className="flex gap-2 justify-end">
+                <button onClick={() => save()} disabled={saving} className="text-xs px-2 py-1 border rounded bg-white hover:bg-gray-50 disabled:opacity-50">Save</button>
+                {current.provisional && (
+                  <button onClick={() => save({ confirmAfter: true })} disabled={saving} className="text-xs px-2 py-1 rounded bg-gray-900 text-white hover:bg-gray-700 disabled:opacity-50">Save + confirm</button>
+                )}
+              </div>
+            </>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function EntityDetail({ id, accessToken, onClose, onUpdated, reviewMode = false }) {
   const [entity, setEntity] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -334,6 +574,205 @@ function SearchBar({ value, onChange, onSubmit }) {
 
 // ── Sigma graph internals ─────────────────────────────────────────────────────
 
+function SmartReviewPanel({ accessToken, enabled, onApplied }) {
+  const [loading, setLoading] = useState(false);
+  const [suggestions, setSuggestions] = useState([]);
+  const [queue, setQueue] = useState([]);
+  const [automation, setAutomation] = useState({ confirmCount: 0, retractCount: 0 });
+  const [summary, setSummary] = useState({ pendingCount: 0, reviewedCount: 0 });
+  const [actionKey, setActionKey] = useState(null);
+  const [error, setError] = useState('');
+
+  const load = useCallback(() => {
+    if (!enabled || !accessToken) return;
+    setLoading(true);
+    setError('');
+    Promise.all([
+      fetch(`${API_BASE}/api/brain/assertions/provisional/suggestions?limit=1000`, {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      }).then(r => r.json()),
+      fetch(`${API_BASE}/api/brain/assertions/provisional?limit=25`, {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      }).then(r => r.json()),
+    ])
+      .then(([suggestionData, queueData]) => {
+        if (!suggestionData.ok) throw new Error(suggestionData.error || 'smart review failed');
+        if (!queueData.ok) throw new Error(queueData.error || 'review queue failed');
+        setSuggestions(suggestionData.suggestions || []);
+        setQueue(queueData.assertions || []);
+        setAutomation(suggestionData.automation || { confirmCount: 0, retractCount: 0 });
+        setSummary({ pendingCount: suggestionData.pendingCount || 0, reviewedCount: suggestionData.reviewedCount || 0 });
+        setLoading(false);
+      })
+      .catch(err => {
+        setError(err.message || 'Could not load smart review suggestions');
+        setLoading(false);
+      });
+  }, [enabled, accessToken]);
+
+  useEffect(() => { load(); }, [load]);
+
+  async function applySuggestion(suggestion) {
+    const actionLabel = suggestion.action === 'confirm' ? 'confirm' : 'retract';
+    const totalLabel = suggestion.totalCount && suggestion.totalCount > suggestion.count
+      ? `${suggestion.count} of ${suggestion.totalCount}`
+      : suggestion.count;
+    if (!confirm(`${actionLabel} ${totalLabel} provisional assertion${suggestion.count === 1 ? '' : 's'}?`)) return;
+    setActionKey(suggestion.key);
+    setError('');
+    try {
+      const res = await fetch(`${API_BASE}/api/brain/assertions/provisional/bulk`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: suggestion.action,
+          assertionIds: suggestion.assertionIds,
+          reason: suggestion.reason,
+        }),
+      });
+      const data = await res.json();
+      if (!data.ok) throw new Error(data.error || 'bulk review failed');
+      onApplied?.();
+      load();
+    } catch (err) {
+      setError(err.message || 'Bulk review failed');
+    } finally {
+      setActionKey(null);
+    }
+  }
+
+  async function applyAutomation() {
+    const total = (automation.confirmCount || 0) + (automation.retractCount || 0);
+    if (!total) return;
+    if (!confirm(`Apply automatic review rules to ${total} assertion${total === 1 ? '' : 's'}?`)) return;
+    setActionKey('automation');
+    setError('');
+    try {
+      const res = await fetch(`${API_BASE}/api/brain/assertions/provisional/auto`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ dryRun: false, limit: 1000 }),
+      });
+      const data = await res.json();
+      if (!data.ok) throw new Error(data.error || 'auto review failed');
+      onApplied?.();
+      load();
+    } catch (err) {
+      setError(err.message || 'Auto review failed');
+    } finally {
+      setActionKey(null);
+    }
+  }
+
+  if (!enabled) return null;
+
+  return (
+    <div className="border-b border-amber-200 bg-amber-50 px-4 py-3 shrink-0">
+      <div className="max-w-7xl mx-auto">
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <div className="text-xs font-semibold text-amber-950 uppercase tracking-wide">Smart review</div>
+            <div className="text-xs text-amber-800 mt-0.5">
+              {loading
+                ? 'Learning from prior decisions...'
+                : `${summary.pendingCount.toLocaleString()} provisionals scanned; ${summary.reviewedCount.toLocaleString()} prior decisions available.`}
+            </div>
+          </div>
+          <button
+            onClick={load}
+            disabled={loading}
+            className="text-xs px-2.5 py-1 rounded border border-amber-300 bg-white text-amber-900 hover:bg-amber-100 disabled:opacity-50"
+          >
+            Refresh
+          </button>
+        </div>
+
+        {error && <div className="mt-2 text-xs text-red-700">{error}</div>}
+
+        {((automation.confirmCount || 0) > 0 || (automation.retractCount || 0) > 0) && (
+          <div className="mt-3 flex items-center justify-between gap-3 rounded border border-amber-200 bg-white px-3 py-2">
+            <div className="text-xs text-amber-900">
+              Rules can confirm {automation.confirmCount || 0} trusted-valid and retract {automation.retractCount || 0} structurally invalid assertion{((automation.confirmCount || 0) + (automation.retractCount || 0)) === 1 ? '' : 's'}.
+            </div>
+            <button
+              onClick={applyAutomation}
+              disabled={!!actionKey}
+              className="shrink-0 text-xs px-2.5 py-1 rounded bg-gray-900 text-white hover:bg-gray-700 disabled:opacity-50"
+            >
+              {actionKey === 'automation' ? 'Applying...' : 'Apply rules'}
+            </button>
+          </div>
+        )}
+
+        {!loading && suggestions.length === 0 && (
+          <div className="mt-2 text-xs text-amber-800">
+            No safe batch suggestions yet. Confirm or retract a few examples and this panel will start grouping similar ones.
+          </div>
+        )}
+
+        {suggestions.length > 0 && (
+          <div className="mt-3 grid gap-2 md:grid-cols-2 xl:grid-cols-3">
+            {suggestions.map(s => (
+              <div key={s.key} className="bg-white border border-amber-200 rounded p-3 text-xs">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      {relBadge(s.relType, true)}
+                      <span className="text-gray-500 font-mono">{s.srcType} -&gt; {s.dstType}</span>
+                    </div>
+                    <div className="mt-1 text-gray-700 line-clamp-2">{s.reason}</div>
+                  </div>
+                  <button
+                    onClick={() => applySuggestion(s)}
+                    disabled={!!actionKey}
+                    className={`shrink-0 px-2 py-1 rounded font-medium disabled:opacity-50 ${
+                      s.action === 'confirm'
+                        ? 'bg-green-100 text-green-800 hover:bg-green-200'
+                        : 'bg-red-100 text-red-700 hover:bg-red-200'
+                    }`}
+                  >
+                    {actionKey === s.key ? '...' : `${s.action} ${s.count}`}
+                  </button>
+                </div>
+                <div className="mt-2 text-gray-400 font-mono">
+                  score {Math.round((s.score || 0) * 100)}% &middot; source {s.sourceType}
+                  {s.totalCount > s.count ? `; first ${s.count} of ${s.totalCount}` : ''}
+                </div>
+                {s.samples?.length > 0 && (
+                  <div className="mt-2 space-y-1 text-gray-500">
+                    {s.samples.slice(0, 2).map(sample => (
+                      <div key={sample.id} className="truncate">
+                        {sample.src?.name || 'unknown'} -&gt; {sample.dst?.name || 'unknown'}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+
+        {queue.length > 0 && (
+          <div className="mt-4">
+            <div className="text-xs font-semibold text-amber-950 uppercase tracking-wide mb-2">Review queue</div>
+            <div className="grid gap-2 lg:grid-cols-2">
+              {queue.map(assertion => (
+                <AssertionReviewRow
+                  key={assertion.id}
+                  assertion={assertion}
+                  direction="queue"
+                  accessToken={accessToken}
+                  onChanged={() => { onApplied?.(); load(); }}
+                />
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function GraphLoader({ entities, onNodeClick }) {
   const loadGraph = useLoadGraph();
   const registerEvents = useRegisterEvents();
@@ -551,6 +990,12 @@ export default function BrainBrowserPage() {
           ))}
         </div>
       </div>
+
+      <SmartReviewPanel
+        accessToken={auth.accessToken}
+        enabled={reviewMode}
+        onApplied={handleRefresh}
+      />
 
       {/* Main content */}
       <div className="flex-1 flex overflow-hidden max-w-7xl w-full mx-auto" style={{ minHeight: 0 }}>

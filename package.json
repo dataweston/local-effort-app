@@ -187,6 +187,8 @@
     "weekly-order:seed": "node scripts/weekly-order-seed.js",
     "weekly-order:prices": "node scripts/weekly-order-prices.js",
     "weekly-order:customer-setup": "node scripts/weekly-order-customer-setup.js",
+    "hub:backfill-chef-notes:dry": "node scripts/backfill-hub-chef-notes.js",
+    "hub:backfill-chef-notes": "node scripts/backfill-hub-chef-notes.js --apply",
     "decision:seed-priorities:dry": "node scripts/seed-decision-priorities.mjs",
     "decision:seed-priorities": "node scripts/seed-decision-priorities.mjs --apply",
     "neo4j:test": "node scripts/brain-neo4j-test.js",

@@ -1,10 +1,10 @@
 """
 Job: extract_square
-Pulls payment.completed ledger events where merchantName is ambiguous
-(not yet matched to a Vendor entity), runs Instructor classification,
-writes vendor or customer assertions.
 
-Run: python -m jobs.extract_square
+Legacy Square payment classifier. Disabled by default because local-budget is
+the transaction source of truth for Square payments/orders.
+
+Set BRAIN_INGEST_SQUARE_TRANSACTIONS=true to run this legacy classifier.
 """
 
 import sys
@@ -16,10 +16,21 @@ from ledger import (
     write_ledger_event, write_assertion,
     find_or_create_entity,
 )
-from extractor import extract_square_payment
 
 
 def run(limit: int = 100, dry_run: bool = False) -> dict:
+    if os.environ.get('BRAIN_INGEST_SQUARE_TRANSACTIONS', '').lower() != 'true':
+        return {
+            'processed': 0,
+            'skipped': 0,
+            'assertions_written': 0,
+            'errors': [],
+            'disabled': True,
+            'reason': 'Square payment classification is disabled; local-budget owns Square transactions.',
+        }
+
+    from extractor import extract_square_payment
+
     processed = 0
     skipped = 0
     assertions_written = 0

@@ -6,7 +6,9 @@ Brain sidecar orchestrator.
 Usage:
   python run.py                    # run all jobs
   python run.py gmail              # run only gmail extraction
-  python run.py square             # run only square extraction
+  python run.py square_catalog     # run only Square catalog extraction
+  python run.py square_customers   # run only Square customer-directory extraction
+  python run.py unified_customers  # run only unified customer CSV extraction
   python run.py inbox              # run only inbox triage
   python run.py --dry-run          # print what would happen, write nothing
 
@@ -52,6 +54,8 @@ def main():
     from jobs.extract_sanity import run as run_sanity
     from jobs.extract_brevo import run as run_brevo
     from jobs.extract_square_catalog import run as run_square_catalog
+    from jobs.extract_square_customers import run as run_square_customers
+    from jobs.extract_unified_customers_csv import run as run_unified_customers
     from jobs.extract_xlsx_model import run as run_xlsx_model
     from jobs.extract_square_csv import run as run_square_csv
     from jobs.extract_receipts import run as run_receipts
@@ -77,6 +81,8 @@ def main():
         'sanity':       (run_sanity,      {}),
         'brevo':        (run_brevo,       {}),
         'square_catalog': (run_square_catalog, {}),
+        'square_customers': (run_square_customers, {}),
+        'unified_customers': (run_unified_customers, {}),
         'xlsx_model':   (run_xlsx_model,     {}),
         'square_csv':   (run_square_csv,     {}),
         'receipts':     (run_receipts,       {}),

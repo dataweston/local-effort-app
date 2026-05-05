@@ -1,0 +1,1274 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Private Hub MVP Preview</title>
+  <style>
+    :root {
+      --bg: #f4f1ea;
+      --panel: #fffdf8;
+      --panel-2: #ece7dc;
+      --ink: #1f211d;
+      --muted: #6f6d66;
+      --line: #d6d0c3;
+      --green: #283d32;
+      --green-2: #dce7d9;
+      --brick: #a44b3f;
+      --yellow: #e8c876;
+      --blue: #274f7b;
+      --blue-2: #d8e6f3;
+      --radius: 8px;
+      --sans: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --mono: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+    }
+
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; }
+    body {
+      background: #2c2d2a;
+      color: var(--ink);
+      font-family: var(--sans);
+      line-height: 1.4;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    button, input, select, textarea { font: inherit; }
+    button { cursor: pointer; }
+
+    .preview-shell {
+      min-height: 100vh;
+      padding: 18px;
+      display: grid;
+      gap: 18px;
+      background:
+        radial-gradient(circle at 15% 0%, rgba(232, 200, 118, .16), transparent 28rem),
+        radial-gradient(circle at 90% 10%, rgba(39, 79, 123, .12), transparent 24rem),
+        #2c2d2a;
+    }
+
+    .topbar {
+      max-width: 1440px;
+      width: 100%;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: center;
+      gap: 16px;
+      color: #f7f3ea;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+    }
+
+    .brand-mark {
+      width: 34px;
+      height: 34px;
+      border: 1px solid rgba(255,255,255,.28);
+      display: grid;
+      place-items: center;
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--yellow);
+      background: rgba(255,255,255,.07);
+      border-radius: 7px;
+      flex: 0 0 auto;
+    }
+
+    .brand h1 {
+      margin: 0;
+      font-size: clamp(17px, 2vw, 22px);
+      font-weight: 650;
+      letter-spacing: 0;
+    }
+
+    .brand p {
+      margin: 2px 0 0;
+      color: rgba(247,243,234,.72);
+      font-size: 13px;
+    }
+
+    .top-actions {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .icon-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 7px;
+      border: 1px solid rgba(255,255,255,.24);
+      background: rgba(255,255,255,.08);
+      color: #f7f3ea;
+      display: grid;
+      place-items: center;
+      font-size: 16px;
+    }
+
+    .canvas {
+      max-width: 1440px;
+      width: 100%;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 390px;
+      gap: 18px;
+      align-items: start;
+    }
+
+    .desktop-app {
+      min-height: calc(100vh - 98px);
+      background: var(--bg);
+      border: 1px solid #433f38;
+      box-shadow: 0 18px 44px rgba(0,0,0,.28);
+      display: grid;
+      grid-template-columns: 78px 236px minmax(420px, 1fr) 314px;
+      overflow: hidden;
+      border-radius: 8px;
+    }
+
+    .rail {
+      background: var(--green);
+      color: #f7f3ea;
+      padding: 12px 10px;
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      gap: 16px;
+    }
+
+    .org-switcher {
+      display: grid;
+      gap: 8px;
+      justify-items: center;
+    }
+
+    .org-dot {
+      width: 44px;
+      height: 44px;
+      border-radius: 8px;
+      border: 1px solid rgba(255,255,255,.25);
+      display: grid;
+      place-items: center;
+      font-family: var(--mono);
+      font-size: 12px;
+      background: rgba(255,255,255,.1);
+    }
+
+    .rail-nav {
+      display: grid;
+      gap: 8px;
+      align-content: start;
+    }
+
+    .rail-button {
+      height: 46px;
+      border: 0;
+      border-radius: 7px;
+      background: transparent;
+      color: rgba(247,243,234,.72);
+      display: grid;
+      place-items: center;
+      font-size: 18px;
+    }
+
+    .rail-button.is-active {
+      color: var(--green);
+      background: var(--yellow);
+    }
+
+    .workspace-nav {
+      border-right: 1px solid var(--line);
+      background: var(--panel);
+      padding: 16px 14px;
+      display: grid;
+      grid-template-rows: auto auto 1fr auto;
+      gap: 16px;
+      min-width: 0;
+    }
+
+    .search {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      align-items: center;
+      gap: 8px;
+      padding: 9px 10px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      color: var(--muted);
+      min-width: 0;
+    }
+
+    .search input {
+      border: 0;
+      outline: 0;
+      min-width: 0;
+      background: transparent;
+      color: var(--ink);
+      font-size: 13px;
+    }
+
+    .section-label {
+      margin: 0 0 8px;
+      font-size: 11px;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      font-family: var(--mono);
+      color: var(--muted);
+    }
+
+    .group-list,
+    .object-list {
+      display: grid;
+      gap: 6px;
+    }
+
+    .nav-row {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 10px;
+      align-items: center;
+      padding: 9px 10px;
+      border-radius: 7px;
+      color: var(--ink);
+      background: transparent;
+      border: 1px solid transparent;
+      width: 100%;
+      text-align: left;
+    }
+
+    .nav-row.is-active {
+      border-color: #c2b9aa;
+      background: var(--panel-2);
+    }
+
+    .nav-title {
+      font-size: 13px;
+      font-weight: 650;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .nav-meta {
+      margin-top: 2px;
+      color: var(--muted);
+      font-size: 12px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .count {
+      min-width: 22px;
+      height: 22px;
+      border-radius: 999px;
+      display: grid;
+      place-items: center;
+      font-size: 11px;
+      font-family: var(--mono);
+      background: var(--green-2);
+      color: var(--green);
+    }
+
+    .invite-block {
+      border-top: 1px solid var(--line);
+      padding-top: 14px;
+      display: grid;
+      gap: 8px;
+    }
+
+    .primary-button,
+    .secondary-button,
+    .quiet-button {
+      height: 36px;
+      padding: 0 12px;
+      border-radius: 7px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      white-space: nowrap;
+      font-size: 13px;
+      font-weight: 650;
+    }
+
+    .primary-button {
+      background: var(--green);
+      color: #fff;
+      border: 1px solid var(--green);
+    }
+
+    .secondary-button {
+      background: #fff;
+      color: var(--ink);
+      border: 1px solid var(--line);
+    }
+
+    .quiet-button {
+      background: transparent;
+      color: var(--muted);
+      border: 1px solid transparent;
+    }
+
+    .main-pane {
+      min-width: 0;
+      padding: 18px;
+      display: grid;
+      grid-template-rows: auto auto minmax(0, 1fr);
+      gap: 16px;
+      background: var(--bg);
+    }
+
+    .object-header {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 16px;
+      align-items: start;
+      padding-bottom: 14px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .crumb {
+      font-family: var(--mono);
+      color: var(--brick);
+      text-transform: uppercase;
+      letter-spacing: .12em;
+      font-size: 11px;
+      margin-bottom: 6px;
+    }
+
+    .object-header h2 {
+      margin: 0;
+      font-size: clamp(26px, 3vw, 40px);
+      line-height: 1.02;
+      letter-spacing: 0;
+    }
+
+    .object-summary {
+      margin: 8px 0 0;
+      max-width: 760px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .header-actions {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: end;
+      gap: 8px;
+    }
+
+    .status-strip {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .metric {
+      min-height: 78px;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 12px;
+      display: grid;
+      align-content: space-between;
+      gap: 8px;
+    }
+
+    .metric-label {
+      color: var(--muted);
+      font-family: var(--mono);
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      font-size: 10px;
+    }
+
+    .metric strong {
+      display: block;
+      font-size: 22px;
+      line-height: 1;
+      letter-spacing: 0;
+    }
+
+    .metric span {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .work-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.15fr) minmax(320px, .85fr);
+      gap: 14px;
+      min-height: 0;
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      min-width: 0;
+    }
+
+    .panel-head {
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .panel-head h3 {
+      margin: 0;
+      font-size: 14px;
+      letter-spacing: 0;
+    }
+
+    .panel-head span {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .feed {
+      display: grid;
+      gap: 0;
+    }
+
+    .feed-item {
+      padding: 14px;
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 12px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .feed-item:last-child { border-bottom: 0; }
+
+    .type-mark {
+      width: 34px;
+      height: 34px;
+      border-radius: 7px;
+      display: grid;
+      place-items: center;
+      font-family: var(--mono);
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--green);
+      background: var(--green-2);
+      flex: 0 0 auto;
+    }
+
+    .type-mark.brick {
+      color: #7a2e26;
+      background: #f1ded9;
+    }
+
+    .type-mark.blue {
+      color: var(--blue);
+      background: var(--blue-2);
+    }
+
+    .feed-top {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: baseline;
+      gap: 8px;
+      margin-bottom: 4px;
+    }
+
+    .feed-title {
+      font-weight: 700;
+      font-size: 14px;
+    }
+
+    .feed-time {
+      color: var(--muted);
+      font-size: 12px;
+      font-family: var(--mono);
+    }
+
+    .feed-body {
+      margin: 0;
+      color: var(--ink);
+      font-size: 13px;
+    }
+
+    .tag-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 9px;
+    }
+
+    .tag {
+      min-height: 23px;
+      padding: 3px 7px;
+      border-radius: 999px;
+      background: #f2eee5;
+      border: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    .thread-list {
+      display: grid;
+    }
+
+    .thread-row {
+      padding: 13px 14px;
+      border-bottom: 1px solid var(--line);
+      display: grid;
+      gap: 5px;
+    }
+
+    .thread-row:last-child { border-bottom: 0; }
+
+    .thread-topic {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .thread-preview {
+      color: var(--muted);
+      font-size: 12px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .side-pane {
+      border-left: 1px solid var(--line);
+      background: var(--panel);
+      padding: 14px;
+      display: grid;
+      align-content: start;
+      gap: 14px;
+      min-width: 0;
+    }
+
+    .side-section {
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: #fff;
+      overflow: hidden;
+    }
+
+    .side-section h3 {
+      margin: 0;
+      padding: 11px 12px;
+      border-bottom: 1px solid var(--line);
+      font-size: 13px;
+    }
+
+    .access-row,
+    .task-row,
+    .resource-row {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 8px;
+      align-items: center;
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .access-row:last-child,
+    .task-row:last-child,
+    .resource-row:last-child { border-bottom: 0; }
+
+    .access-row strong,
+    .task-row strong,
+    .resource-row strong {
+      display: block;
+      font-size: 13px;
+    }
+
+    .access-row span,
+    .task-row span,
+    .resource-row span {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+      margin-top: 2px;
+    }
+
+    .pill {
+      min-height: 24px;
+      padding: 3px 7px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 700;
+      background: #f2eee5;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+
+    .pill.green { background: var(--green-2); color: var(--green); }
+    .pill.brick { background: #f1ded9; color: #7a2e26; }
+    .pill.blue { background: var(--blue-2); color: var(--blue); }
+    .pill.yellow { background: #f7ecc7; color: #68500f; }
+
+    .mobile-wrap {
+      position: sticky;
+      top: 18px;
+      display: grid;
+      gap: 12px;
+      align-content: start;
+    }
+
+    .device-label {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: rgba(247,243,234,.78);
+      font-size: 12px;
+      font-family: var(--mono);
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+
+    .phone {
+      height: calc(100vh - 130px);
+      min-height: 650px;
+      max-height: 860px;
+      background: #111;
+      border-radius: 32px;
+      padding: 12px;
+      box-shadow: 0 18px 44px rgba(0,0,0,.34);
+      border: 1px solid rgba(255,255,255,.18);
+    }
+
+    .phone-screen {
+      height: 100%;
+      overflow: hidden;
+      background: var(--bg);
+      border-radius: 24px;
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      color: var(--ink);
+    }
+
+    .mobile-top {
+      padding: 18px 16px 12px;
+      border-bottom: 1px solid var(--line);
+      background: var(--panel);
+    }
+
+    .mobile-top-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 14px;
+    }
+
+    .avatar {
+      width: 34px;
+      height: 34px;
+      display: grid;
+      place-items: center;
+      border-radius: 999px;
+      background: var(--green);
+      color: #fff;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .mobile-top h2 {
+      margin: 0;
+      font-size: 25px;
+      line-height: 1.08;
+      letter-spacing: 0;
+    }
+
+    .mobile-scroll {
+      overflow: auto;
+      padding: 14px;
+      display: grid;
+      gap: 12px;
+      align-content: start;
+    }
+
+    .today-card,
+    .mobile-card {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 13px;
+    }
+
+    .today-card {
+      display: grid;
+      gap: 12px;
+      background: #fffdf8;
+    }
+
+    .card-kicker {
+      font-family: var(--mono);
+      color: var(--brick);
+      font-size: 10px;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+
+    .today-title {
+      margin: 0;
+      font-size: 18px;
+      font-weight: 750;
+      line-height: 1.15;
+    }
+
+    .claim-row {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 10px;
+      align-items: center;
+      padding: 9px;
+      border-radius: 7px;
+      background: var(--panel-2);
+    }
+
+    .claim-row strong {
+      display: block;
+      font-size: 13px;
+    }
+
+    .claim-row span {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+      margin-top: 2px;
+    }
+
+    .mobile-card h3 {
+      margin: 0 0 9px;
+      font-size: 15px;
+    }
+
+    .mini-feed {
+      display: grid;
+      gap: 10px;
+    }
+
+    .mini-item {
+      display: grid;
+      gap: 2px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .mini-item:last-child {
+      padding-bottom: 0;
+      border-bottom: 0;
+    }
+
+    .mini-item strong {
+      font-size: 13px;
+    }
+
+    .mini-item span {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .mobile-tabs {
+      height: 64px;
+      border-top: 1px solid var(--line);
+      background: var(--panel);
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      align-items: center;
+      padding: 5px 8px 8px;
+      gap: 4px;
+    }
+
+    .mobile-tab {
+      border: 0;
+      background: transparent;
+      color: var(--muted);
+      display: grid;
+      justify-items: center;
+      gap: 2px;
+      font-size: 10px;
+      min-width: 0;
+      padding: 5px 0;
+      border-radius: 7px;
+    }
+
+    .mobile-tab strong {
+      font-size: 15px;
+      line-height: 1;
+      color: inherit;
+    }
+
+    .mobile-tab.is-active {
+      background: var(--green-2);
+      color: var(--green);
+    }
+
+    @media (max-width: 1220px) {
+      .canvas { grid-template-columns: 1fr; }
+      .mobile-wrap { position: static; max-width: 430px; width: 100%; margin: 0 auto; }
+      .phone { height: 720px; }
+    }
+
+    @media (max-width: 980px) {
+      .desktop-app {
+        grid-template-columns: 64px 210px minmax(0, 1fr);
+      }
+      .side-pane {
+        display: none;
+      }
+      .work-grid {
+        grid-template-columns: 1fr;
+      }
+      .status-strip {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 720px) {
+      .preview-shell { padding: 10px; }
+      .topbar { grid-template-columns: 1fr; }
+      .top-actions { display: none; }
+      .desktop-app {
+        min-height: auto;
+        grid-template-columns: 1fr;
+      }
+      .rail {
+        grid-template-columns: auto 1fr auto;
+        grid-template-rows: auto;
+        align-items: center;
+      }
+      .org-switcher { grid-auto-flow: column; }
+      .rail-nav {
+        grid-auto-flow: column;
+        overflow: auto;
+      }
+      .rail-button {
+        width: 42px;
+        height: 38px;
+      }
+      .workspace-nav {
+        border-right: 0;
+        border-bottom: 1px solid var(--line);
+      }
+      .object-header,
+      .header-actions {
+        grid-template-columns: 1fr;
+        justify-content: start;
+      }
+      .status-strip {
+        grid-template-columns: 1fr;
+      }
+      .phone {
+        height: 700px;
+        min-height: 620px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="preview-shell">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark">PH</div>
+        <div>
+          <h1>Private Hub MVP</h1>
+          <p>Gated groups, recurring schedules, structured threads, resources, and check-in.</p>
+        </div>
+      </div>
+      <div class="top-actions" aria-label="Preview actions">
+        <button class="icon-btn" title="Command palette">⌘</button>
+        <button class="icon-btn" title="Notifications">!</button>
+        <button class="icon-btn" title="Account">W</button>
+      </div>
+    </header>
+
+    <main class="canvas">
+      <section class="desktop-app" aria-label="Admin operations console preview">
+        <aside class="rail" aria-label="Global navigation">
+          <div class="org-switcher">
+            <div class="org-dot">LE</div>
+          </div>
+          <nav class="rail-nav">
+            <button class="rail-button is-active" title="Home">⌂</button>
+            <button class="rail-button" title="Calendar">□</button>
+            <button class="rail-button" title="Messages">≡</button>
+            <button class="rail-button" title="Resources">§</button>
+            <button class="rail-button" title="People">◎</button>
+            <button class="rail-button" title="Analytics">▥</button>
+          </nav>
+          <button class="rail-button" title="Settings">⚙</button>
+        </aside>
+
+        <aside class="workspace-nav" aria-label="Groups and objects">
+          <div class="search">
+            <span>⌕</span>
+            <input value="Johnson wedding" aria-label="Search" />
+          </div>
+
+          <div>
+            <p class="section-label">Groups</p>
+            <div class="group-list">
+              <button class="nav-row is-active">
+                <span>
+                  <span class="nav-title">Events team</span>
+                  <span class="nav-meta">staff + vendors</span>
+                </span>
+                <span class="count">4</span>
+              </button>
+              <button class="nav-row">
+                <span>
+                  <span class="nav-title">Pizza crew</span>
+                  <span class="nav-meta">prep, service, delivery</span>
+                </span>
+                <span class="count">2</span>
+              </button>
+              <button class="nav-row">
+                <span>
+                  <span class="nav-title">VIP customers</span>
+                  <span class="nav-meta">announcements + events</span>
+                </span>
+                <span class="count">9</span>
+              </button>
+              <button class="nav-row">
+                <span>
+                  <span class="nav-title">Vendors</span>
+                  <span class="nav-meta">delivery windows</span>
+                </span>
+                <span class="count">1</span>
+              </button>
+            </div>
+          </div>
+
+          <div>
+            <p class="section-label">Active Objects</p>
+            <div class="object-list">
+              <button class="nav-row is-active">
+                <span>
+                  <span class="nav-title">Johnson wedding</span>
+                  <span class="nav-meta">event · Sat 5:30 PM</span>
+                </span>
+                <span class="pill brick">live</span>
+              </button>
+              <button class="nav-row">
+                <span>
+                  <span class="nav-title">Friday dough prep</span>
+                  <span class="nav-meta">shift · 3 open roles</span>
+                </span>
+                <span class="pill yellow">needs</span>
+              </button>
+              <button class="nav-row">
+                <span>
+                  <span class="nav-title">Allergy policy update</span>
+                  <span class="nav-meta">resource · ack required</span>
+                </span>
+                <span class="pill blue">SOP</span>
+              </button>
+              <button class="nav-row">
+                <span>
+                  <span class="nav-title">Summer menu drop</span>
+                  <span class="nav-meta">announcement · draft</span>
+                </span>
+                <span class="pill">draft</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="invite-block">
+            <button class="primary-button">+ Invite</button>
+            <button class="secondary-button">Create group</button>
+          </div>
+        </aside>
+
+        <section class="main-pane">
+          <div class="object-header">
+            <div>
+              <div class="crumb">Events team / Event</div>
+              <h2>Johnson wedding</h2>
+              <p class="object-summary">Private event workspace with staff shifts, vendor arrivals, guest-facing RSVP, shared social thread, and pinned run-of-show.</p>
+            </div>
+            <div class="header-actions">
+              <button class="secondary-button">□ Preview guest view</button>
+              <button class="secondary-button">↗ Send update</button>
+              <button class="primary-button">Open check-in</button>
+            </div>
+          </div>
+
+          <div class="status-strip">
+            <div class="metric">
+              <div class="metric-label">Guests</div>
+              <div><strong>86 / 96</strong><span>10 awaiting RSVP</span></div>
+            </div>
+            <div class="metric">
+              <div class="metric-label">Staff</div>
+              <div><strong>11 / 14</strong><span>3 open shift claims</span></div>
+            </div>
+            <div class="metric">
+              <div class="metric-label">Changed</div>
+              <div><strong>2</strong><span>menu and dock arrival</span></div>
+            </div>
+            <div class="metric">
+              <div class="metric-label">Check-in</div>
+              <div><strong>0</strong><span>opens Saturday 4:30 PM</span></div>
+            </div>
+          </div>
+
+          <div class="work-grid">
+            <section class="panel">
+              <div class="panel-head">
+                <h3>Object Feed</h3>
+                <span>typed updates</span>
+              </div>
+              <div class="feed">
+                <article class="feed-item">
+                  <div class="type-mark brick">SC</div>
+                  <div>
+                    <div class="feed-top">
+                      <span class="feed-title">Schedule change</span>
+                      <span class="feed-time">11:42 AM</span>
+                    </div>
+                    <p class="feed-body">Load-in moved to Dock B. Vendor arrival window is now 2:15-2:45 PM. Sent to staff and vendors only.</p>
+                    <div class="tag-row">
+                      <span class="tag">Staff</span>
+                      <span class="tag">Vendors</span>
+                      <span class="tag">SMS sent</span>
+                    </div>
+                  </div>
+                </article>
+                <article class="feed-item">
+                  <div class="type-mark blue">RS</div>
+                  <div>
+                    <div class="feed-top">
+                      <span class="feed-title">Resource pinned</span>
+                      <span class="feed-time">9:18 AM</span>
+                    </div>
+                    <p class="feed-body">Final run-of-show and allergy sheet pinned to the event. Staff acknowledgement required before Friday noon.</p>
+                    <div class="tag-row">
+                      <span class="tag">Run-of-show</span>
+                      <span class="tag">Allergy policy</span>
+                      <span class="tag">8 acknowledged</span>
+                    </div>
+                  </div>
+                </article>
+                <article class="feed-item">
+                  <div class="type-mark">EV</div>
+                  <div>
+                    <div class="feed-top">
+                      <span class="feed-title">Guest RSVP opened</span>
+                      <span class="feed-time">Yesterday</span>
+                    </div>
+                    <p class="feed-body">Guest-facing page is live with location, arrival notes, dietary question, and social thread enabled for confirmed guests.</p>
+                    <div class="tag-row">
+                      <span class="tag">VIP customers</span>
+                      <span class="tag">Guests</span>
+                      <span class="tag">Social space</span>
+                    </div>
+                  </div>
+                </article>
+              </div>
+            </section>
+
+            <section class="panel">
+              <div class="panel-head">
+                <h3>Structured Threads</h3>
+                <span>Zulip-style topics</span>
+              </div>
+              <div class="thread-list">
+                <div class="thread-row">
+                  <div class="thread-topic">
+                    <span>Event / Johnson wedding</span>
+                    <span class="pill brick">12</span>
+                  </div>
+                  <div class="thread-preview">Maya: Updated ceremony timing in the run sheet...</div>
+                </div>
+                <div class="thread-row">
+                  <div class="thread-topic">
+                    <span>Kitchen / Family meal</span>
+                    <span class="pill green">4</span>
+                  </div>
+                  <div class="thread-preview">Luis: Staff meal is covered with pasta and salad...</div>
+                </div>
+                <div class="thread-row">
+                  <div class="thread-topic">
+                    <span>Guests / Reception lounge</span>
+                    <span class="pill blue">23</span>
+                  </div>
+                  <div class="thread-preview">Confirmed guests can coordinate rides and photos.</div>
+                </div>
+                <div class="thread-row">
+                  <div class="thread-topic">
+                    <span>Vendors / Dock B</span>
+                    <span class="pill yellow">6</span>
+                  </div>
+                  <div class="thread-preview">Florals and bar rental have separate windows.</div>
+                </div>
+              </div>
+            </section>
+          </div>
+        </section>
+
+        <aside class="side-pane" aria-label="Access and operations">
+          <section class="side-section">
+            <h3>Access Gate</h3>
+            <div class="access-row">
+              <span><strong>Admins</strong><span>Full control</span></span>
+              <span class="pill green">write</span>
+            </div>
+            <div class="access-row">
+              <span><strong>Events team</strong><span>Staff workspace</span></span>
+              <span class="pill green">write</span>
+            </div>
+            <div class="access-row">
+              <span><strong>Vendors</strong><span>Dock, timing, resources</span></span>
+              <span class="pill blue">limited</span>
+            </div>
+            <div class="access-row">
+              <span><strong>VIP guests</strong><span>RSVP + lounge thread</span></span>
+              <span class="pill yellow">social</span>
+            </div>
+          </section>
+
+          <section class="side-section">
+            <h3>Open Work</h3>
+            <div class="task-row">
+              <span><strong>Claim bar support</strong><span>5:00-9:30 PM</span></span>
+              <span class="pill brick">1</span>
+            </div>
+            <div class="task-row">
+              <span><strong>Acknowledge allergy sheet</strong><span>6 people remaining</span></span>
+              <span class="pill yellow">6</span>
+            </div>
+            <div class="task-row">
+              <span><strong>Confirm vendor arrival</strong><span>Florals pending</span></span>
+              <span class="pill blue">1</span>
+            </div>
+          </section>
+
+          <section class="side-section">
+            <h3>Pinned Resources</h3>
+            <div class="resource-row">
+              <span><strong>Run-of-show</strong><span>v4 · edited today</span></span>
+              <span class="pill green">SOP</span>
+            </div>
+            <div class="resource-row">
+              <span><strong>Allergy policy</strong><span>ack required</span></span>
+              <span class="pill brick">policy</span>
+            </div>
+            <div class="resource-row">
+              <span><strong>Dock instructions</strong><span>visible to vendors</span></span>
+              <span class="pill blue">vendor</span>
+            </div>
+          </section>
+        </aside>
+      </section>
+
+      <aside class="mobile-wrap" aria-label="Mobile member app preview">
+        <div class="device-label">
+          <span>Mobile Member Hub</span>
+          <span>customer / staff overlap</span>
+        </div>
+        <div class="phone">
+          <div class="phone-screen">
+            <header class="mobile-top">
+              <div class="mobile-top-row">
+                <div>
+                  <div class="card-kicker">Today</div>
+                  <h2>Events team</h2>
+                </div>
+                <div class="avatar">ML</div>
+              </div>
+              <div class="tag-row">
+                <span class="tag">staff</span>
+                <span class="tag">VIP lounge</span>
+                <span class="tag">2 alerts</span>
+              </div>
+            </header>
+
+            <section class="mobile-scroll">
+              <article class="today-card">
+                <div>
+                  <div class="card-kicker">Next event</div>
+                  <p class="today-title">Johnson wedding</p>
+                </div>
+                <div class="claim-row">
+                  <span><strong>Your shift</strong><span>Service lead · 4:30-10:00 PM</span></span>
+                  <span class="pill green">claimed</span>
+                </div>
+                <div class="claim-row">
+                  <span><strong>Check-in</strong><span>Opens Saturday at 4:30 PM</span></span>
+                  <button class="secondary-button">Wait</button>
+                </div>
+              </article>
+
+              <article class="mobile-card">
+                <h3>What changed</h3>
+                <div class="mini-feed">
+                  <div class="mini-item">
+                    <strong>Dock B for load-in</strong>
+                    <span>Sent to staff and vendors · 11:42 AM</span>
+                  </div>
+                  <div class="mini-item">
+                    <strong>Allergy sheet needs acknowledgement</strong>
+                    <span>Due Friday noon</span>
+                  </div>
+                </div>
+              </article>
+
+              <article class="mobile-card">
+                <h3>Threads</h3>
+                <div class="mini-feed">
+                  <div class="mini-item">
+                    <strong>Event / Johnson wedding</strong>
+                    <span>12 messages · staff only</span>
+                  </div>
+                  <div class="mini-item">
+                    <strong>Guests / Reception lounge</strong>
+                    <span>23 messages · shared social space</span>
+                  </div>
+                  <div class="mini-item">
+                    <strong>Vendors / Dock B</strong>
+                    <span>6 messages · limited access</span>
+                  </div>
+                </div>
+              </article>
+
+              <article class="mobile-card">
+                <h3>Resources</h3>
+                <div class="mini-feed">
+                  <div class="mini-item">
+                    <strong>Run-of-show v4</strong>
+                    <span>Pinned to event</span>
+                  </div>
+                  <div class="mini-item">
+                    <strong>Allergy policy</strong>
+                    <span>Acknowledgement required</span>
+                  </div>
+                </div>
+              </article>
+            </section>
+
+            <nav class="mobile-tabs" aria-label="Mobile tabs">
+              <button class="mobile-tab is-active"><strong>⌂</strong><span>Today</span></button>
+              <button class="mobile-tab"><strong>□</strong><span>Events</span></button>
+              <button class="mobile-tab"><strong>≡</strong><span>Threads</span></button>
+              <button class="mobile-tab"><strong>§</strong><span>Docs</span></button>
+              <button class="mobile-tab"><strong>◎</strong><span>People</span></button>
+            </nav>
+          </div>
+        </div>
+      </aside>
+    </main>
+  </div>
+</body>
+</html>

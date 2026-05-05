@@ -1,4 +1,4 @@
-export declare type TokenPayload = {
+export type TokenPayload = {
     oid: string;
     n: string;
     q: number;
