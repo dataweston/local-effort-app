@@ -212,7 +212,7 @@ module.exports = async function handler(req, res) {
       CustomerRef: {
         // This would be the QuickBooks Customer ID for "Local Effort"
         // You'd need to create this customer first or look it up
-        name: 'Local Effort Food Co.',
+        name: 'Local Effort Cooperative',
       },
       DocNumber: order.order_number,
       TxnDate: order.order_date.split('T')[0],

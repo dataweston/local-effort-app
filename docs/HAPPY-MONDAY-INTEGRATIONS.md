@@ -34,7 +34,7 @@ The integration provides two key features:
 For invoices to sync properly, you should have a customer set up in QuickBooks:
 
 1. In QuickBooks, go to **Sales** → **Customers**
-2. Create a new customer named **"Local Effort Food Co."**
+2. Create a new customer named **"Local Effort Cooperative"**
 3. Add the email: `hello@localeffortfood.com`
 4. Save the customer
 

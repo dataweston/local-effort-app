@@ -4,18 +4,15 @@ import { PortableText } from '@portabletext/react';
 import sanityClient from '../sanityClient';
 import { createPortableTextComponents } from '../utils/portableTextComponents';
 import { SITE_URL } from '../config/siteMetadata';
+import generatedReleasesPageData from '../store/data/generatedReleasesPageData.json';
 
 const RELEASES_QUERY = '*[_type == "release"] | order(coalesce(publishedAt, _createdAt) desc)[0...50]{ _id, title, "slug": slug.current, summary, publishedAt, body, canonicalUrl, metaDescription, heroImage{ alt, "url": asset->url } }';
 
-const portableComponents = createPortableTextComponents({
-  types: {
-    image: ({ value }) => {
-      const src = value?.asset?.url || '';
-      if (!src) return null;
-      return <img src={src} alt={value?.alt || ''} className="my-4 rounded-lg" loading="lazy" />;
-    },
-  },
-});
+const INITIAL_RELEASES = Array.isArray(generatedReleasesPageData?.releases)
+  ? generatedReleasesPageData.releases
+  : [];
+
+const portableComponents = createPortableTextComponents();
 
 function formatDate(value) {
   if (!value) return '';
@@ -25,7 +22,7 @@ function formatDate(value) {
 }
 
 const ReleasesPage = () => {
-  const [releases, setReleases] = useState([]);
+  const [releases, setReleases] = useState(INITIAL_RELEASES);
   const [error, setError] = useState('');
 
   useEffect(() => {
@@ -43,7 +40,7 @@ const ReleasesPage = () => {
 
   const pageDescription = useMemo(() => {
     if (releases[0]?.metaDescription) return releases[0].metaDescription;
-    return 'Press releases and media resources from Local Effort Food Co.';
+    return 'Press releases and media resources from Local Effort Cooperative.';
   }, [releases]);
 
   const schema = useMemo(() => {
@@ -80,7 +77,7 @@ const ReleasesPage = () => {
 
       <header className="mb-8">
         <h1 className="heading-xl heading-balance">Press Releases</h1>
-        <p className="text-neutral-600 mt-2">Company announcements and media updates from Local Effort Food Co.</p>
+        <p className="text-neutral-600 mt-2">Company announcements and media updates from Local Effort Cooperative.</p>
       </header>
 
       {error && (

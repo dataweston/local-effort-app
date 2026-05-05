@@ -143,7 +143,7 @@
   },
   "scripts": {
     "start": "vite",
-    "build": "node scripts/generate-sale-page-data.js && vite build && node tools/static-export.js && node tools/sync-vercel-routes.js && pnpm run build:prerender:copy",
+    "build": "node scripts/generate-sale-page-data.js && node scripts/generate-releases-page-data.js && vite build && node tools/static-export.js && node tools/sync-vercel-routes.js && pnpm run build:prerender:copy",
     "build:analyze": "SENTRY_AUTH_TOKEN=$SENTRY_AUTH_TOKEN vite build --mode production",
     "build:prerender:copy": "node tools/copy-prerender.js",
     "postinstall": "prisma generate",
@@ -189,6 +189,7 @@
     "weekly-order:customer-setup": "node scripts/weekly-order-customer-setup.js",
     "hub:backfill-chef-notes:dry": "node scripts/backfill-hub-chef-notes.js",
     "hub:backfill-chef-notes": "node scripts/backfill-hub-chef-notes.js --apply",
+    "hub:smoke:handlers": "node scripts/smoke-hub-handlers.js",
     "decision:seed-priorities:dry": "node scripts/seed-decision-priorities.mjs",
     "decision:seed-priorities": "node scripts/seed-decision-priorities.mjs --apply",
     "neo4j:test": "node scripts/brain-neo4j-test.js",

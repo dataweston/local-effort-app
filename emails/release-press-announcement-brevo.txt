@@ -1,9 +1,9 @@
-Local Effort Food Co. – Press Release
+Local Effort Cooperative – Press Release
 For Immediate Release | Sep 30, 2025
 
 Roseville-Based Local Effort Seeks Support to Craft 1,000 Fully Local Pizzas
 
-Roseville-based Local Effort Food Co. invites the community to back its most ambitious pizza initiative yet—building a thousand pies sourced entirely from Midwestern growers, millers, and producers.
+Roseville-based Local Effort Cooperative invites the community to back its most ambitious pizza initiative yet—building a thousand pies sourced entirely from Midwestern growers, millers, and producers.
 
 The crowdfunding campaign energizes Local Effort's obsession with 100% regional sourcing. Every crust, sauce, and topping will trace back to Minnesota and Midwest farms, mills, creameries, and co-ops that the chef team has partnered with since 2022.
 
@@ -25,7 +25,7 @@ CAMPAIGN SNAPSHOT
 - Timeline: 30-day crowdfunding campaign with weekly progress updates and community tastings.
 
 ABOUT LOCAL EFFORT
-Local Effort Food Co. is a Roseville-based personal chef and catering team specializing in locally sourced cuisine. Since 2022, the team has designed in-home dinners, weekly meal prep, and small events that keep Midwestern ingredients at the center of every menu.
+Local Effort Cooperative is a Roseville-based personal chef and catering team specializing in locally sourced cuisine. Since 2022, the team has designed in-home dinners, weekly meal prep, and small events that keep Midwestern ingredients at the center of every menu.
 
 FAST FACTS
 Founded: 2022
@@ -54,18 +54,18 @@ STORY ANGLES
 
 MEDIA CONTACT
 Weston Smith
-Local Effort Food Co.
+Local Effort Cooperative
 Email: yum@localeffortfood.com
 Website: https://localeffortfood.com?utm_source=brevo&utm_medium=email&utm_campaign=release_pizza1000_launch
 Instagram: https://www.instagram.com/localeffortfood
 TikTok: https://www.tiktok.com/@localeffort
 
 ARCHIVED PREVIOUS RELEASE (Excerpt)
-Minneapolis-based Local Effort Food Co. invites the community to back its most ambitious pizza initiative yet—building a thousand pies sourced entirely from Midwestern growers, millers, and makers. The campaign supports upgraded cold storage and a mobile pizza rig, enabling more pop-ups and delivery capacity across the Twin Cities and Western Wisconsin.
+Minneapolis-based Local Effort Cooperative invites the community to back its most ambitious pizza initiative yet—building a thousand pies sourced entirely from Midwestern growers, millers, and makers. The campaign supports upgraded cold storage and a mobile pizza rig, enabling more pop-ups and delivery capacity across the Twin Cities and Western Wisconsin.
 
 UNSUBSCRIBE / PREFERENCES
 Unsubscribe: {{ unsubscribe }}
 Manage Preferences: {{ update_profile }}
 
-© 2025 Local Effort Food Co. All rights reserved.
+© 2025 Local Effort Cooperative All rights reserved.
 You are receiving this message because you opted in or interacted with Local Effort offerings.

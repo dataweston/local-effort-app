@@ -54,7 +54,7 @@ const buildProductJsonLd = () => ({
         itemCondition: 'https://schema.org/NewCondition',
         seller: {
           '@type': 'LocalBusiness',
-          name: 'Local Effort Food Co.',
+          name: 'Local Effort Cooperative',
           url: SITE_URL,
           address: {
             '@type': 'PostalAddress',
@@ -296,16 +296,16 @@ const PsychePage = () => {
         <title>Buy Psyche Olive Oil — 3L Extra-Virgin | {SITE_NAME}</title>
         <meta
           name="description"
-          content="Buy Psyche extra-virgin olive oil (3 L bag-in-box) from Local Effort Food Co. in Minneapolis. Single-estate koroneiki from Greece — bright, peppery, EVA-certified. Now $70 (was $90) — last bottle! Free local delivery."
+          content="Buy Psyche extra-virgin olive oil (3 L bag-in-box) from Local Effort Cooperative in Minneapolis. Single-estate koroneiki from Greece — bright, peppery, EVA-certified. Now $70 (was $90) — last bottle! Free local delivery."
         />
         <meta
           name="keywords"
-          content="Psyche olive oil, buy olive oil Minneapolis, extra virgin olive oil, koroneiki, Greek olive oil, Local Effort Food Co., bag in box olive oil, finishing oil"
+          content="Psyche olive oil, buy olive oil Minneapolis, extra virgin olive oil, koroneiki, Greek olive oil, Local Effort Cooperative, bag in box olive oil, finishing oil"
         />
         <link rel="canonical" href={`${SITE_URL}/psyche`} />
         <meta property="og:type" content="product" />
         <meta property="og:url" content={`${SITE_URL}/psyche`} />
-        <meta property="og:title" content="Buy Psyche Olive Oil — 3L Extra-Virgin | Local Effort Food Co." />
+        <meta property="og:title" content="Buy Psyche Olive Oil — 3L Extra-Virgin | Local Effort Cooperative" />
         <meta
           property="og:description"
           content="Single-estate koroneiki extra-virgin olive oil from Greece. Bright, peppery, EVA-certified. Now $70 (was $90) — last bottle! 3-liter bag-in-box with free local delivery in Minneapolis–St. Paul."
@@ -319,7 +319,7 @@ const PsychePage = () => {
         <meta property="product:availability" content="limited availability" />
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:url" content={`${SITE_URL}/psyche`} />
-        <meta name="twitter:title" content="Buy Psyche Olive Oil — 3L Extra-Virgin | Local Effort Food Co." />
+        <meta name="twitter:title" content="Buy Psyche Olive Oil — 3L Extra-Virgin | Local Effort Cooperative" />
         <meta
           name="twitter:description"
           content="Single-estate koroneiki extra-virgin olive oil from Greece. Now $70 (was $90) — last bottle! Free local delivery in Minneapolis–St. Paul."

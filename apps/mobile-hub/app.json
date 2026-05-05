@@ -1,0 +1,21 @@
+{
+  "expo": {
+    "name": "Local Effort Hub",
+    "slug": "local-effort-hub",
+    "scheme": "localefforthub",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.localeffort.hub"
+    },
+    "android": {
+      "package": "com.localeffort.hub"
+    },
+    "extra": {
+      "apiBaseUrl": ""
+    }
+  }
+}

@@ -2521,7 +2521,7 @@ const clampGuestCount = (value, config) => {
         {
           '@type': 'FoodService',
           '@id': 'https://www.localeffortfood.com#catering',
-          name: 'Local Effort Food Co. — Private Event Catering',
+          name: 'Local Effort Cooperative — Private Event Catering',
           url: 'https://www.localeffortfood.com/#small-events',
           description: 'Private chef catering for intimate dinners, weddings, showers, corporate events, and holiday parties in Minneapolis–St. Paul. Farm-to-table menus with 100% Minnesota-sourced ingredients. 2–75 guests.',
           provider: { '@id': 'https://www.localeffortfood.com#business' },
@@ -2588,7 +2588,7 @@ const clampGuestCount = (value, config) => {
         {
           '@type': 'WebPage',
           '@id': 'https://www.localeffortfood.com/#small-events',
-          name: 'Private Event Catering — Dinners, Weddings & Parties | Local Effort Food Co.',
+          name: 'Private Event Catering — Dinners, Weddings & Parties | Local Effort Cooperative',
           description: 'Book private chef catering for intimate dinners, weddings, showers, and holiday parties in Minneapolis–St. Paul. Locally sourced, seasonal menus for 2–75 guests.',
           isPartOf: { '@id': 'https://www.localeffortfood.com#website' },
           about: { '@id': 'https://www.localeffortfood.com#catering' },
@@ -2622,7 +2622,7 @@ const clampGuestCount = (value, config) => {
         {
           '@type': 'LocalBusiness',
           '@id': 'https://www.localeffortfood.com#business',
-          name: 'Local Effort Food Co.',
+          name: 'Local Effort Cooperative',
           url: 'https://www.localeffortfood.com',
           description: 'Minneapolis-based chef team offering wholesale food supply, restaurant consulting, pizza shop development, and creative collaborations for cafes, bars, offices, and retail businesses across the Twin Cities.',
           email: 'weston@localeffortfood.com',
@@ -2721,7 +2721,7 @@ const clampGuestCount = (value, config) => {
         {
           '@type': 'WebPage',
           '@id': 'https://www.localeffortfood.com/#for-businesses',
-          name: 'For Businesses — Wholesale, Consulting & Collaborations | Local Effort Food Co.',
+          name: 'For Businesses — Wholesale, Consulting & Collaborations | Local Effort Cooperative',
           description: 'Commercial food services for Minneapolis businesses: wholesale supply for cafes and retail, restaurant consulting, pizza shop development, and creative food collaborations.',
           isPartOf: { '@id': 'https://www.localeffortfood.com#website' },
           about: { '@id': 'https://www.localeffortfood.com#business' },
@@ -3131,7 +3131,7 @@ const clampGuestCount = (value, config) => {
             <div className="sr-only">
               <h2>Private Event Catering in Minneapolis–St. Paul</h2>
               <p>
-                Local Effort Food Co. offers private chef catering for intimate dinners, weddings, showers,
+                Local Effort Cooperative offers private chef catering for intimate dinners, weddings, showers,
                 corporate events, and holiday parties across the Twin Cities. Farm-to-table seasonal menus
                 with 100% Minnesota-sourced ingredients. Book today — deposit holds your date.
               </p>
@@ -3145,7 +3145,7 @@ const clampGuestCount = (value, config) => {
             <div className="relative min-h-[520px] h-[70vh]">
               <img
                 src="https://res.cloudinary.com/dokyhfvyd/image/upload/c_limit,f_auto,q_auto,w_1600/vjuesai2mxfavpq9d2df"
-                alt="Private event catering by Local Effort Food Co. in Minneapolis"
+                alt="Private event catering by Local Effort Cooperative in Minneapolis"
                 className="absolute inset-0 w-full h-full object-cover"
                 style={{ objectPosition: 'center' }}
               />
@@ -3290,7 +3290,7 @@ const clampGuestCount = (value, config) => {
             <div className="sr-only">
               <h2>Commercial Food Services for Minneapolis Businesses</h2>
               <p>
-                Local Effort Food Co. provides wholesale food supply, restaurant consulting, pizza shop
+                Local Effort Cooperative provides wholesale food supply, restaurant consulting, pizza shop
                 development, and creative collaborations for cafes, bars, grocery stores, offices, and
                 organizations across the Twin Cities metro. Contact weston@localeffortfood.com.
               </p>

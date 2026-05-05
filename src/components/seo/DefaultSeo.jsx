@@ -20,12 +20,12 @@ import { cloudinaryConfig, heroPublicId, heroFallbackSrc, heroVersion } from '..
  */
 const SECTION_META = {
   '#small-events': {
-    title: 'Private Event Catering — Dinners, Weddings & Parties | Local Effort Food Co.',
+    title: 'Private Event Catering — Dinners, Weddings & Parties | Local Effort Cooperative',
     description:
       'Book private chef catering for intimate dinners, weddings, showers, and holiday parties in Minneapolis–St. Paul. Locally sourced, seasonal menus for 2–75 guests.',
   },
   '#for-businesses': {
-    title: 'For Businesses — Wholesale, Consulting & Collaborations | Local Effort Food Co.',
+    title: 'For Businesses — Wholesale, Consulting & Collaborations | Local Effort Cooperative',
     description:
       'Commercial food services for Minneapolis businesses: wholesale supply for cafes and retail, restaurant consulting, pizza shop development, and creative food collaborations.',
   },

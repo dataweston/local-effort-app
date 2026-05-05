@@ -2332,7 +2332,7 @@ app.get('/api/activitypub/actor', (req, res) => {
     type: 'Person',
     preferredUsername: activityPubUsername,
     name: activityPubActorName,
-    summary: 'Publishing feed for Local Effort Food Co. blog posts.',
+    summary: 'Publishing feed for Local Effort Cooperative blog posts.',
     discoverable: true,
     inbox: activityPubInboxUrl,
     outbox: activityPubOutboxUrl,
@@ -2604,7 +2604,7 @@ app.get('/api/feeds/releases.rss', async (req, res) => {
   <channel>
     <title>Local Effort Releases</title>
     <link>${escapeXml(site)}/releases</link>
-    <description>Press releases and media updates from Local Effort Food Co.</description>
+    <description>Press releases and media updates from Local Effort Cooperative</description>
     <language>en-us</language>
     <lastBuildDate>${new Date().toUTCString()}</lastBuildDate>${items}
   </channel>
@@ -2833,7 +2833,7 @@ app.get('/api/feeds/blog.rss', async (req, res) => {
   <channel>
     <title>Local Report</title>
     <link>${escapeXml(publicSiteUrl)}/blog</link>
-    <description>News, stories, and updates from Local Effort Food Co.</description>
+    <description>News, stories, and updates from Local Effort Cooperative</description>
     <language>en-us</language>
     <atom:link href="${escapeXml(publicSiteUrl)}/api/feeds/blog.rss" rel="self" type="application/rss+xml" />
     <lastBuildDate>${new Date().toUTCString()}</lastBuildDate>${items}
@@ -2920,7 +2920,7 @@ app.get('/api/feeds/blog.json', async (req, res) => {
       title: 'Local Report',
       home_page_url: `${publicSiteUrl}/blog`,
       feed_url: `${publicSiteUrl}/api/feeds/blog.json`,
-      description: 'News, stories, and updates from Local Effort Food Co.',
+      description: 'News, stories, and updates from Local Effort Cooperative',
       items,
     });
   } catch (err) {

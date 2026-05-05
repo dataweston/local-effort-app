@@ -317,12 +317,21 @@ Completed foundation:
 - Added a dry-run-by-default `ChefNote` thread backfill script:
   - `pnpm hub:backfill-chef-notes:dry`
   - `pnpm hub:backfill-chef-notes`
+- Added a protected-handler smoke script:
+  - `pnpm hub:smoke:handlers`
 - Added Brain relationship dictionary entries for assignment, attachment, RSVP, check-in, acknowledgement, group ownership, and shift scheduling.
+
+Applied to configured database:
+
+- Applied migration `20260504000100_native_mobile_hub_foundation` with `prisma migrate deploy`.
+- Confirmed `prisma migrate status` reports the database schema is up to date.
+- Ran `ChefNote` backfill dry run and apply; both found `0` notes, so no thread rows were created.
+- Ran unauthenticated hub handler smoke tests; all protected endpoints returned expected `401` responses.
+- Added `apps/mobile-hub`, an Expo SDK 55 native shell with static fixtures matching the shared hub contracts.
+- Started the Expo dev server locally at `http://localhost:8091`.
 
 Next:
 
-- Apply the migration to the target database.
 - Test hub endpoints with real Supabase tokens and customer slugs.
-- Run the `ChefNote` backfill after the migration is applied.
-- Add the Expo shell with static fixtures matching the new hub contracts.
+- Wire native Supabase auth and pass the access token into `apps/mobile-hub/src/api/hubClient.ts`.
 - Add tighter space/role permission checks after real `HubSpaceMembership` data exists.

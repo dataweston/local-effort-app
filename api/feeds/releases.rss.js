@@ -26,7 +26,7 @@ module.exports = async (req, res) => {
     const releases = getReleases();
   const items = releases.map(r => `\n    <item>\n      <guid isPermaLink="false">${esc(r.id)}</guid>\n      <title>${esc(r.title)}</title>\n      <link>${esc(r.url)}</link>\n      <pubDate>${new Date(r.date).toUTCString()}</pubDate>\n      <description>${esc(r.description)}</description>\n    </item>`).join('');
 
-    const xml = `<?xml version="1.0" encoding="UTF-8"?>\n<rss version="2.0">\n  <channel>\n    <title>Local Effort Releases</title>\n    <link>${esc(site)}/releases</link>\n    <description>Press releases and media updates from Local Effort Food Co.</description>\n    <language>en-us</language>\n    <lastBuildDate>${new Date().toUTCString()}</lastBuildDate>${items}\n  </channel>\n</rss>`;
+    const xml = `<?xml version="1.0" encoding="UTF-8"?>\n<rss version="2.0">\n  <channel>\n    <title>Local Effort Releases</title>\n    <link>${esc(site)}/releases</link>\n    <description>Press releases and media updates from Local Effort Cooperative</description>\n    <language>en-us</language>\n    <lastBuildDate>${new Date().toUTCString()}</lastBuildDate>${items}\n  </channel>\n</rss>`;
 
     res.statusCode = 200;
     res.setHeader('Content-Type', 'application/rss+xml; charset=utf-8');

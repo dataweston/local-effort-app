@@ -1,7 +1,7 @@
-export const SITE_NAME = 'Local Effort Food Co.';
+export const SITE_NAME = 'Local Effort Cooperative';
 export const SITE_URL = 'https://www.localeffortfood.com';
 export const DEFAULT_DESCRIPTION =
-  'Local Effort Food Co. is a Minneapolis personal chef team offering in-home dinners, meal prep Minneapolis plans, and small-event catering built around Minnesota-grown ingredients.';
+  'Local Effort Cooperative is a Minneapolis personal chef team offering in-home dinners, meal prep Minneapolis plans, and small-event catering built around Minnesota-grown ingredients.';
 export const DEFAULT_KEYWORDS = [
   'personal chef',
   'Twin Cities catering',
@@ -11,7 +11,7 @@ export const DEFAULT_KEYWORDS = [
   'how much does a personal chef cost',
   'private dining',
   'farm to table',
-  'Local Effort Food Co.',
+  'Local Effort Cooperative',
 ];
 export const CONTACT_EMAIL = 'yum@localeffortfood.com';
 export const SOCIAL_LINKS = [

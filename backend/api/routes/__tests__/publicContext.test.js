@@ -41,7 +41,7 @@ afterEach(() => {
 describe('public context router', () => {
   it('serves machine-readable site payload from manifest data', async () => {
     const manifestPath = writeJsonFixture('manifest.json', {
-      name: 'Local Effort Food Co.',
+      name: 'Local Effort Cooperative',
       site: 'https://example.test',
       updated: '2026-03-29T00:00:00.000Z',
       navigation: [{ path: '/', title: 'Home' }],
@@ -57,7 +57,7 @@ describe('public context router', () => {
 
     expect(res.status).toBe(200);
     expect(res.body).toEqual({
-      name: 'Local Effort Food Co.',
+      name: 'Local Effort Cooperative',
       url: 'https://example.test',
       navigation: [{ path: '/', title: 'Home' }],
       endpoints: [{ method: 'GET', path: '/api/support/search' }],

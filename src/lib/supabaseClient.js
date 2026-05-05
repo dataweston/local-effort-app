@@ -1,18 +1,16 @@
 import { createClient } from '@supabase/supabase-js';
 
-// Support Vite (VITE_), Next (NEXT_PUBLIC_), and raw SUPABASE_ env var prefixes
+// Browser code must only use explicitly public Supabase env vars.
 const supabaseUrl =
   import.meta.env.VITE_SUPABASE_URL ||
-  import.meta.env.NEXT_PUBLIC_SUPABASE_URL ||
-  import.meta.env.SUPABASE_URL;
+  import.meta.env.NEXT_PUBLIC_SUPABASE_URL;
 
 const supabaseAnonKey =
   import.meta.env.VITE_SUPABASE_ANON_KEY ||
-  import.meta.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
-  import.meta.env.SUPABASE_ANON_KEY;
+  import.meta.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
 if (!supabaseUrl || !supabaseAnonKey) {
-  console.error('Supabase configuration missing. Set SUPABASE_URL/SUPABASE_ANON_KEY with either VITE_ or NEXT_PUBLIC_ prefixes (or without) in your environment');
+  console.error('Supabase configuration missing. Set VITE_SUPABASE_URL/VITE_SUPABASE_ANON_KEY or NEXT_PUBLIC_SUPABASE_URL/NEXT_PUBLIC_SUPABASE_ANON_KEY in your environment');
 }
 
 export const supabase = supabaseUrl && supabaseAnonKey 

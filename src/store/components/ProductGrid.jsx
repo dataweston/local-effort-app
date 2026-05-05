@@ -69,7 +69,7 @@ export default function ProductGrid({
                 <meta itemProp="sku" content={sku} />
                 <meta itemProp="url" content={`${SITE_URL}${basePath}#${anchorId}`} />
                 <div itemProp="brand" itemScope itemType="https://schema.org/Brand">
-                  <meta itemProp="name" content="Local Effort Food Co." />
+                  <meta itemProp="name" content="Local Effort Cooperative" />
                 </div>
                 <div itemProp="offers" itemScope itemType="https://schema.org/Offer">
                   <meta itemProp="priceCurrency" content="USD" />

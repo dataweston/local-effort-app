@@ -677,7 +677,7 @@ function buildBusinessProfile(siteUrl) {
       capabilities,
     },
     business: {
-      name: 'Local Effort Food Co.',
+      name: 'Local Effort Cooperative',
       site: normalizedSite,
       products,
     },

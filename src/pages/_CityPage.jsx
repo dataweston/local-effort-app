@@ -3,7 +3,7 @@ import { Helmet } from 'react-helmet-async';
 
 const CityPage = ({ city, h1, title, description, canonical, images, faq }) => {
   const isMinneapolis = city?.toLowerCase() === 'minneapolis';
-  const pageTitle = title || `${city} Personal Chef — Local Effort Food Co. | In-home Chef • Event Catering`;
+  const pageTitle = title || `${city} Personal Chef — Local Effort Cooperative | In-home Chef • Event Catering`;
   const metaDesc = description;
   const imageJsonLd = images.map((img) => ({
     "@context": "https://schema.org",
@@ -12,7 +12,7 @@ const CityPage = ({ city, h1, title, description, canonical, images, faq }) => {
     thumbnail: img.thumb || img.src,
     name: img.alt,
     description: img.caption || img.alt,
-    copyrightHolder: "Local Effort Food Co."
+    copyrightHolder: "Local Effort Cooperative"
   }));
   const handleImageError = useCallback((event, fallbackSrc) => {
     if (!fallbackSrc) {
@@ -32,7 +32,7 @@ const CityPage = ({ city, h1, title, description, canonical, images, faq }) => {
   const serviceLd = useMemo(() => ({
     "@context": "https://schema.org",
     "@type": "ProfessionalService",
-    name: "Local Effort Food Co.",
+    name: "Local Effort Cooperative",
     url: canonical,
     description: metaDesc,
     areaServed: ["Minneapolis", "St. Paul", "Roseville", "Twin Cities"],

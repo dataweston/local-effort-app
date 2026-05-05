@@ -102,7 +102,7 @@ const BlogList = () => {
     <div className="blog-page fullpage-demo-scope">
       <Helmet>
         <title>Local Report | Local Effort</title>
-        <meta name="description" content="Dispatches, stories, and kitchen notes from Local Effort Food Co." />
+        <meta name="description" content="Dispatches, stories, and kitchen notes from Local Effort Cooperative" />
         <link rel="canonical" href={`${SITE_URL}/blog`} />
         <link rel="alternate" type="application/rss+xml" title="Local Report RSS" href="/api/feeds/blog.rss" />
         <link rel="alternate" type="application/atom+xml" title="Local Report Atom" href="/api/feeds/blog.atom" />

@@ -68,7 +68,7 @@ const ChezGaragePage = () => {
         sku: product.squareVariationId || product.squareItemId || product.id,
         brand: {
           '@type': 'Brand',
-          name: 'Local Effort Food Co.'
+          name: 'Local Effort Cooperative'
         },
         offers: {
           '@type': 'Offer',
@@ -80,7 +80,7 @@ const ChezGaragePage = () => {
             : 'https://schema.org/InStock',
           seller: {
             '@type': 'Organization',
-            name: 'Local Effort Food Co.',
+            name: 'Local Effort Cooperative',
             url: SITE_URL
           }
         }
@@ -130,16 +130,16 @@ const ChezGaragePage = () => {
   return (
     <div className="le-sale-page">
       <Helmet>
-        <title>{`${PAGE_TITLE} | Local Effort Food Co.`}</title>
+        <title>{`${PAGE_TITLE} | Local Effort Cooperative`}</title>
         <meta name="description" content={metaDescription} />
         <meta name="keywords" content="chez garage, Minneapolis food preorder, frozen pizza Minneapolis, lamb chili, olive oil, Local Effort" />
-        <meta property="og:title" content={`${PAGE_TITLE} | Local Effort Food Co.`} />
+        <meta property="og:title" content={`${PAGE_TITLE} | Local Effort Cooperative`} />
         <meta property="og:description" content={metaDescription} />
         <meta property="og:type" content="website" />
         <meta property="og:url" content={canonical} />
         {heroImage && <meta property="og:image" content={heroImage} />}
         {heroImage && <meta name="twitter:image" content={heroImage} />}
-        <meta name="twitter:title" content={`${PAGE_TITLE} | Local Effort Food Co.`} />
+        <meta name="twitter:title" content={`${PAGE_TITLE} | Local Effort Cooperative`} />
         <meta name="twitter:description" content={metaDescription} />
         <meta name="robots" content="index,follow,max-snippet:-1,max-image-preview:large,max-video-preview:-1" />
         <link rel="canonical" href={canonical} />
