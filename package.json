@@ -177,6 +177,7 @@
     "release:finalize": "node scripts/sentry-release.js finalize",
     "release:all": "node scripts/sentry-release.js all",
     "build:release": "node scripts/sentry-release.js build",
+    "releases:seed": "node scripts/seed-releases-page-content.js",
     "sale:smoke:webhook": "cross-env TS_NODE_PROJECT=tsconfig.ts-node.json node -r ts-node/register/transpile-only scripts/webhook-smoke-test.ts",
     "sale:smoke:webhook:sale": "cross-env TS_NODE_PROJECT=tsconfig.ts-node.json node -r ts-node/register/transpile-only scripts/webhook-smoke-test.ts",
     "sale:smoke:extract": "cross-env TS_NODE_PROJECT=tsconfig.ts-node.json node -r ts-node/register/transpile-only scripts/webhook-smoke-test.ts --extract-only",

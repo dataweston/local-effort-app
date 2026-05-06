@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   FlatList,
   Pressable,
@@ -10,7 +10,10 @@ import {
   TextInput,
   View,
 } from "react-native";
-import type { HubAction, HubPlannedObject, HubThreadSummary } from "@local-effort/shared";
+import type { HubAction, HubPlannedObject, HubThreadSummary, HubTodayResponse } from "@local-effort/shared";
+import { createHubClient } from "./src/api/hubClient";
+import { useHubAuth } from "./src/auth/useHubAuth";
+import { hubConfig, isHubApiConfigured } from "./src/config";
 import {
   calendarFixture,
   inboxFixture,
@@ -19,13 +22,14 @@ import {
   todayFixture,
 } from "./src/data/hubFixtures";
 
-type TabKey = "today" | "calendar" | "spaces" | "inbox";
+type TabKey = "today" | "calendar" | "spaces" | "inbox" | "profile";
 
 const tabs: Array<{ key: TabKey; label: string }> = [
   { key: "today", label: "Today" },
   { key: "calendar", label: "Calendar" },
   { key: "spaces", label: "Spaces" },
   { key: "inbox", label: "Inbox" },
+  { key: "profile", label: "Profile" },
 ];
 
 function formatTime(value?: string | null) {
@@ -45,6 +49,22 @@ function SectionHeader({ title, meta }: { title: string; meta?: string }) {
       <Text style={styles.sectionTitle}>{title}</Text>
       {meta ? <Text style={styles.sectionMeta}>{meta}</Text> : null}
     </View>
+  );
+}
+
+function Button({
+  label,
+  onPress,
+  variant = "primary",
+}: {
+  label: string;
+  onPress: () => void;
+  variant?: "primary" | "secondary";
+}) {
+  return (
+    <Pressable onPress={onPress} style={[styles.button, variant === "secondary" && styles.buttonSecondary]}>
+      <Text style={[styles.buttonText, variant === "secondary" && styles.buttonTextSecondary]}>{label}</Text>
+    </Pressable>
   );
 }
 
@@ -90,32 +110,32 @@ function ThreadCard({ thread }: { thread: HubThreadSummary }) {
   );
 }
 
-function TodayScreen() {
+function TodayScreen({ today }: { today: HubTodayResponse }) {
   return (
     <ScrollView contentContainerStyle={styles.screenContent}>
       <View style={styles.summaryGrid}>
         <View style={styles.summaryTile}>
-          <Text style={styles.summaryValue}>{todayFixture.summary.dueActionCount}</Text>
+          <Text style={styles.summaryValue}>{today.summary.dueActionCount}</Text>
           <Text style={styles.summaryLabel}>Open actions</Text>
         </View>
         <View style={styles.summaryTile}>
-          <Text style={styles.summaryValue}>{todayFixture.summary.unreadThreadCount}</Text>
+          <Text style={styles.summaryValue}>{today.summary.unreadThreadCount}</Text>
           <Text style={styles.summaryLabel}>Unread</Text>
         </View>
         <View style={styles.summaryTile}>
-          <Text style={styles.summaryValue}>{todayFixture.summary.inboxCount}</Text>
+          <Text style={styles.summaryValue}>{today.summary.inboxCount || 0}</Text>
           <Text style={styles.summaryLabel}>Inbox</Text>
         </View>
       </View>
 
-      <SectionHeader title="Now" meta={`${todayFixture.objects.length} objects`} />
-      {todayFixture.objects.map((object) => <ObjectCard key={object.id} object={object} />)}
+      <SectionHeader title="Now" meta={`${today.objects.length} objects`} />
+      {today.objects.map((object) => <ObjectCard key={object.id} object={object} />)}
 
-      <SectionHeader title="Actions" meta={`${todayFixture.actions.length} due`} />
-      {todayFixture.actions.map((action) => <ActionCard key={action.id} action={action} />)}
+      <SectionHeader title="Actions" meta={`${today.actions.length} due`} />
+      {today.actions.map((action) => <ActionCard key={action.id} action={action} />)}
 
       <SectionHeader title="Threads" meta="latest" />
-      {todayFixture.threads.map((thread) => <ThreadCard key={thread.id} thread={thread} />)}
+      {today.threads.map((thread) => <ThreadCard key={thread.id} thread={thread} />)}
     </ScrollView>
   );
 }
@@ -201,15 +221,180 @@ function InboxScreen() {
   );
 }
 
-function ActiveScreen({ tab }: { tab: TabKey }) {
+function ProfileScreen({
+  auth,
+  email,
+  password,
+  onEmailChange,
+  onPasswordChange,
+  onEmailSignIn,
+  onGoogleSignIn,
+  onSignOut,
+  onRefresh,
+  liveError,
+  loadingLive,
+}: {
+  auth: ReturnType<typeof useHubAuth>;
+  email: string;
+  password: string;
+  onEmailChange: (value: string) => void;
+  onPasswordChange: (value: string) => void;
+  onEmailSignIn: () => void;
+  onGoogleSignIn: () => void;
+  onSignOut: () => void;
+  onRefresh: () => void;
+  liveError: string | null;
+  loadingLive: boolean;
+}) {
+  const isSignedIn = auth.status === "signed_in";
+  return (
+    <ScrollView contentContainerStyle={styles.screenContent}>
+      <View style={styles.capturePanel}>
+        <View style={styles.rowTop}>
+          <Text style={styles.captureTitle}>Session</Text>
+          <Pill tone={isSignedIn ? "done" : "neutral"}>{auth.status.replace("_", " ")}</Pill>
+        </View>
+        <Text style={styles.rowSub}>{auth.user?.email || "Fixture mode"}</Text>
+        <Text style={styles.rowSub}>
+          API {isHubApiConfigured ? "configured" : "fixtures"} · Supabase {auth.isConfigured ? "configured" : "missing"}
+        </Text>
+        {auth.error || liveError ? <Text style={styles.errorText}>{auth.error || liveError}</Text> : null}
+      </View>
+
+      {!isSignedIn ? (
+        <View style={styles.capturePanel}>
+          <TextInput
+            value={email}
+            onChangeText={onEmailChange}
+            autoCapitalize="none"
+            keyboardType="email-address"
+            placeholder="Email"
+            placeholderTextColor="#7c8798"
+            style={styles.singleInput}
+          />
+          <TextInput
+            value={password}
+            onChangeText={onPasswordChange}
+            secureTextEntry
+            placeholder="Password"
+            placeholderTextColor="#7c8798"
+            style={styles.singleInput}
+          />
+          <View style={styles.buttonRow}>
+            <Button label="Email" onPress={onEmailSignIn} />
+            <Button label="Google" onPress={onGoogleSignIn} variant="secondary" />
+          </View>
+        </View>
+      ) : (
+        <View style={styles.buttonRow}>
+          <Button label={loadingLive ? "Loading" : "Refresh"} onPress={onRefresh} />
+          <Button label="Sign out" onPress={onSignOut} variant="secondary" />
+        </View>
+      )}
+    </ScrollView>
+  );
+}
+
+function ActiveScreen({
+  tab,
+  today,
+  auth,
+  email,
+  password,
+  onEmailChange,
+  onPasswordChange,
+  onEmailSignIn,
+  onGoogleSignIn,
+  onSignOut,
+  onRefresh,
+  liveError,
+  loadingLive,
+}: {
+  tab: TabKey;
+  today: HubTodayResponse;
+  auth: ReturnType<typeof useHubAuth>;
+  email: string;
+  password: string;
+  onEmailChange: (value: string) => void;
+  onPasswordChange: (value: string) => void;
+  onEmailSignIn: () => void;
+  onGoogleSignIn: () => void;
+  onSignOut: () => void;
+  onRefresh: () => void;
+  liveError: string | null;
+  loadingLive: boolean;
+}) {
   if (tab === "calendar") return <CalendarScreen />;
   if (tab === "spaces") return <SpacesScreen />;
   if (tab === "inbox") return <InboxScreen />;
-  return <TodayScreen />;
+  if (tab === "profile") {
+    return (
+      <ProfileScreen
+        auth={auth}
+        email={email}
+        password={password}
+        onEmailChange={onEmailChange}
+        onPasswordChange={onPasswordChange}
+        onEmailSignIn={onEmailSignIn}
+        onGoogleSignIn={onGoogleSignIn}
+        onSignOut={onSignOut}
+        onRefresh={onRefresh}
+        liveError={liveError}
+        loadingLive={loadingLive}
+      />
+    );
+  }
+  return <TodayScreen today={today} />;
 }
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<TabKey>("today");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [liveToday, setLiveToday] = useState<HubTodayResponse | null>(null);
+  const [loadingLive, setLoadingLive] = useState(false);
+  const [liveError, setLiveError] = useState<string | null>(null);
+  const auth = useHubAuth();
+  const today = liveToday || todayFixture;
+
+  const refreshToday = useCallback(async () => {
+    if (!auth.accessToken || !isHubApiConfigured) return;
+    setLoadingLive(true);
+    setLiveError(null);
+    try {
+      const client = createHubClient({
+        baseUrl: hubConfig.apiBaseUrl,
+        accessToken: auth.accessToken,
+      });
+      setLiveToday(await client.today());
+    } catch (err) {
+      setLiveError(err instanceof Error ? err.message : "Unable to load hub today");
+    } finally {
+      setLoadingLive(false);
+    }
+  }, [auth.accessToken]);
+
+  useEffect(() => {
+    refreshToday();
+  }, [refreshToday]);
+
+  const handleEmailSignIn = useCallback(() => {
+    auth.signInWithEmail(email.trim(), password).catch((err) => {
+      auth.setError(err instanceof Error ? err.message : "Unable to sign in");
+    });
+  }, [auth, email, password]);
+
+  const handleGoogleSignIn = useCallback(() => {
+    auth.signInWithGoogle().catch((err) => {
+      auth.setError(err instanceof Error ? err.message : "Unable to sign in with Google");
+    });
+  }, [auth]);
+
+  const handleSignOut = useCallback(() => {
+    auth.signOut().then(() => setLiveToday(null)).catch((err) => {
+      auth.setError(err instanceof Error ? err.message : "Unable to sign out");
+    });
+  }, [auth]);
 
   return (
     <SafeAreaView style={styles.shell}>
@@ -217,10 +402,10 @@ export default function App() {
       <View style={styles.header}>
         <View>
           <Text style={styles.eyebrow}>Local Effort Hub</Text>
-          <Text style={styles.title}>Today</Text>
+          <Text style={styles.title}>{activeTab[0].toUpperCase() + activeTab.slice(1)}</Text>
         </View>
         <View style={styles.profileDot}>
-          <Text style={styles.profileInitial}>W</Text>
+          <Text style={styles.profileInitial}>{auth.user?.email?.[0]?.toUpperCase() || "L"}</Text>
         </View>
       </View>
 
@@ -243,7 +428,21 @@ export default function App() {
         />
       </View>
 
-      <ActiveScreen tab={activeTab} />
+      <ActiveScreen
+        tab={activeTab}
+        today={today}
+        auth={auth}
+        email={email}
+        password={password}
+        onEmailChange={setEmail}
+        onPasswordChange={setPassword}
+        onEmailSignIn={handleEmailSignIn}
+        onGoogleSignIn={handleGoogleSignIn}
+        onSignOut={handleSignOut}
+        onRefresh={refreshToday}
+        liveError={liveError}
+        loadingLive={loadingLive}
+      />
     </SafeAreaView>
   );
 }
@@ -494,5 +693,50 @@ const styles = StyleSheet.create({
     color: "#ffffff",
     fontSize: 14,
     fontWeight: "800",
+  },
+  buttonRow: {
+    flexDirection: "row",
+    gap: 10,
+    alignItems: "center",
+  },
+  button: {
+    flex: 1,
+    minHeight: 42,
+    borderRadius: 21,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: colors.ink,
+    paddingHorizontal: 14,
+  },
+  buttonSecondary: {
+    backgroundColor: "#f9fafb",
+    borderWidth: 1,
+    borderColor: colors.line,
+  },
+  buttonText: {
+    color: "#ffffff",
+    fontSize: 14,
+    fontWeight: "800",
+  },
+  buttonTextSecondary: {
+    color: colors.ink,
+  },
+  singleInput: {
+    minHeight: 44,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: colors.line,
+    color: colors.ink,
+    paddingHorizontal: 12,
+    fontSize: 15,
+    backgroundColor: "#f9fafb",
+    marginBottom: 10,
+  },
+  errorText: {
+    color: colors.red,
+    fontSize: 13,
+    lineHeight: 18,
+    marginTop: 10,
+    fontWeight: "700",
   },
 });

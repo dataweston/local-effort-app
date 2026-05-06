@@ -1,4 +1,4 @@
-# AI crawling hints for Local Effort Food Co.
+# AI crawling hints for Local Effort Cooperative
 # Purpose: concise, truthful machine-readable guidance for search systems and LLM agents.
 
 site: https://www.localeffortfood.com/

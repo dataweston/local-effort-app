@@ -17,7 +17,8 @@ pnpm --filter @local-effort/mobile-hub start
 ```
 
 Set `EXPO_PUBLIC_HUB_API_BASE_URL` when testing against a deployed or local backend.
+Set `EXPO_PUBLIC_SUPABASE_URL` and `EXPO_PUBLIC_SUPABASE_ANON_KEY` to enable native auth.
 
 ## Next Wiring Step
 
-Use a Supabase access token from native auth and pass it into `createHubClient` in `src/api/hubClient.ts`.
+The app now creates a persisted Supabase session in `src/auth/useHubAuth.ts` and passes the access token into `createHubClient` when a hub API base URL is configured.

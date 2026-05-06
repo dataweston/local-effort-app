@@ -1,4 +1,265 @@
 {
-  "generatedAt": "2026-05-05T23:10:10.841Z",
-  "releases": []
+  "generatedAt": "2026-05-06T04:34:29.201Z",
+  "releases": [
+    {
+      "_id": "release-local-pizza-1000-2025-09-30",
+      "body": [
+        {
+          "_key": "b0",
+          "_type": "block",
+          "children": [
+            {
+              "_key": "s0",
+              "_type": "span",
+              "marks": [],
+              "text": "The crowdfunding campaign energizes Local Effort's obsession with 100% regional sourcing. Every crust, sauce, and topping will trace back to Minnesota and Midwest farms, mills, creameries, and co-ops that the chef team has partnered with since 2022."
+            }
+          ],
+          "markDefs": [],
+          "style": "normal"
+        },
+        {
+          "_key": "b1",
+          "_type": "block",
+          "children": [
+            {
+              "_key": "s1",
+              "_type": "span",
+              "marks": [],
+              "text": "Backers will help finance upgraded capacity and purchasing power, unlocking more neighborhood pop-ups, farmers market collaborations, and last-mile delivery runs throughout Minneapolis, St. Paul, and Western Wisconsin."
+            }
+          ],
+          "markDefs": [],
+          "style": "normal"
+        },
+        {
+          "_key": "b2",
+          "_type": "block",
+          "children": [
+            {
+              "_key": "s2",
+              "_type": "span",
+              "marks": [],
+              "text": "\"This is truly Local Pizza,\" said Weston Smith, chef and co-founder of Local Effort. \"The grain, the cheese, the tomatoes all tell a story about producing food in the Midwest. If we sell a thousand pies, we will focus on opening a shop.\""
+            }
+          ],
+          "markDefs": [],
+          "style": "blockquote"
+        },
+        {
+          "_key": "b3",
+          "_type": "block",
+          "children": [
+            {
+              "_key": "s3",
+              "_type": "span",
+              "marks": [],
+              "text": "Supporters can choose from tiered rewards including apple pies, special invite-only parties and events, premium home events, and exclusive seasonal toppings co-developed with local growers. Weekly progress bulletins and tasting events will keep the community connected as milestones are reached on the path to 1,000 pizzas."
+            }
+          ],
+          "markDefs": [],
+          "style": "normal"
+        },
+        {
+          "_key": "b4",
+          "_type": "block",
+          "children": [
+            {
+              "_key": "s4",
+              "_type": "span",
+              "marks": [],
+              "text": "Local Effort has grown from intimate in-home dinners to weekly meal prep and private events by doubling down on local-first commitments. The pizza program translates that ethos into a universally beloved format."
+            }
+          ],
+          "markDefs": [],
+          "style": "normal"
+        },
+        {
+          "_key": "b5",
+          "_type": "block",
+          "children": [
+            {
+              "_key": "s5",
+              "_type": "span",
+              "marks": [],
+              "text": "The crowdfunding page is live now at localeffortfood.com/crowdfunding. Early backers will unlock surprise collaborations with partner farms and organizations across the Twin Cities."
+            }
+          ],
+          "markDefs": [],
+          "style": "normal"
+        }
+      ],
+      "campaignHighlights": [
+        "Goal: Handcraft and deliver 1,000 wood-fired pizzas made with 100% local Midwest ingredients.",
+        "Purpose: Fund expanded capacity and improve quality control, in the service of opening a pizza shop next year.",
+        "Backer Rewards: Pizzas, pies, events, and premium special offers like sockeye bottarga.",
+        "Timeline: 30-day crowdfunding campaign with weekly progress updates and community tastings."
+      ],
+      "canonicalUrl": "https://www.localeffortfood.com/releases",
+      "heroImage": null,
+      "isArchived": false,
+      "leadership": [
+        {
+          "bio": "Trained in fine dining in New York after beginnings in Portland coffee. Leads culinary direction with a focus on Minnesota-grown ingredients.",
+          "name": "Weston Smith",
+          "title": "Chef & Co-Founder"
+        },
+        {
+          "bio": "Minneapolis native and veteran baker who brings warmth, hospitality, and deep local sourcing relationships to the kitchen.",
+          "name": "Catherine Olsen",
+          "title": "Chef & Co-Founder"
+        }
+      ],
+      "mediaContact": {
+        "email": "yum@localeffortfood.com",
+        "instagram": "https://www.instagram.com/localeffortfood",
+        "location": "Minneapolis, MN",
+        "name": "Weston Smith",
+        "organization": "Local Effort Cooperative",
+        "tiktok": "https://www.tiktok.com/@localeffort",
+        "website": "https://localeffortfood.com"
+      },
+      "metaDescription": "Press release and media resources for Local Effort Cooperative and its 1,000 fully local pizza crowdfunding initiative.",
+      "pressAssets": [
+        {
+          "href": "https://localeffortfood.com",
+          "label": "Website",
+          "value": "https://localeffortfood.com"
+        },
+        {
+          "href": "/crowdfunding",
+          "label": "Crowdfunding Hub",
+          "value": "Join the pizza campaign"
+        },
+        {
+          "href": "/gallery",
+          "label": "Media Gallery",
+          "value": "High-resolution kitchen & event photography"
+        },
+        {
+          "href": "/services",
+          "label": "Service Overview",
+          "value": "Menus, pricing, and service areas"
+        }
+      ],
+      "pressFacts": [
+        {
+          "label": "Founded",
+          "value": "2022"
+        },
+        {
+          "label": "Headquarters",
+          "value": "Minneapolis, Minnesota"
+        },
+        {
+          "label": "Service Areas",
+          "value": "Minneapolis, St. Paul, Roseville, the Twin Cities, and Western Wisconsin"
+        },
+        {
+          "label": "Core Services",
+          "value": "Personal chef experiences, weekly meal prep, intimate event catering, and 100% local pizzas"
+        }
+      ],
+      "pressKitUrl": null,
+      "publishedAt": "2025-09-30T09:00:00-05:00",
+      "slug": "local-pizza-1000-2025-09-30",
+      "storyAngles": [
+        "Farm-to-pizza supply chains featuring grain cooperatives, creameries, and seasonal produce.",
+        "Growing a chef-led small business through community-backed crowdfunding.",
+        "How Local Effort's weekly meal prep program informs fast-casual pizza innovation."
+      ],
+      "summary": "Roseville-based Local Effort Cooperative invites the community to back its most ambitious pizza initiative yet - building a thousand pies sourced entirely from Midwestern growers, millers, and producers.",
+      "title": "Roseville-Based Local Effort Seeks Support to Craft 1,000 Fully Local Pizzas"
+    },
+    {
+      "_id": "release-local-pizza-1000-2024-05-30",
+      "body": [
+        {
+          "_key": "b0",
+          "_type": "block",
+          "children": [
+            {
+              "_key": "s0",
+              "_type": "span",
+              "marks": [],
+              "text": "The crowdfunding campaign energizes Local Effort's obsession with 100% regional sourcing. Every crust, sauce, and topping will trace back to Minnesota and Midwest farms, mills, creameries, and co-ops that the chef team has partnered with since 2022."
+            }
+          ],
+          "markDefs": [],
+          "style": "normal"
+        },
+        {
+          "_key": "b1",
+          "_type": "block",
+          "children": [
+            {
+              "_key": "s1",
+              "_type": "span",
+              "marks": [],
+              "text": "Backers will help finance upgraded cold storage and a mobile pizza rig, unlocking more neighborhood pop-ups, farmers market collaborations, and last-mile delivery runs throughout Minneapolis, St. Paul, and Western Wisconsin."
+            }
+          ],
+          "markDefs": [],
+          "style": "normal"
+        },
+        {
+          "_key": "b2",
+          "_type": "block",
+          "children": [
+            {
+              "_key": "s2",
+              "_type": "span",
+              "marks": [],
+              "text": "\"Pizzas can tell the whole story of a foodshed,\" said Weston Smith, chef and co-founder of Local Effort. \"When we layer house-fermented dough with seasonal produce, heritage grains, and regional cheeses, we showcase the farms that feed us. This campaign invites people to invest in that community table.\""
+            }
+          ],
+          "markDefs": [],
+          "style": "blockquote"
+        },
+        {
+          "_key": "b3",
+          "_type": "block",
+          "children": [
+            {
+              "_key": "s3",
+              "_type": "span",
+              "marks": [],
+              "text": "Supporters can choose from tiered rewards including limited pizza drops, family meal prep bundles, and exclusive seasonal toppings co-developed with local growers. Weekly progress bulletins and tasting events will keep the community connected as milestones are reached on the path to 1,000 pizzas."
+            }
+          ],
+          "markDefs": [],
+          "style": "normal"
+        },
+        {
+          "_key": "b4",
+          "_type": "block",
+          "children": [
+            {
+              "_key": "s4",
+              "_type": "span",
+              "marks": [],
+              "text": "Local Effort has grown from intimate in-home dinners to weekly meal prep and community events by doubling down on relationships with Minnesota farmers, grain cooperatives, and dairy makers. The pizza program translates that ethos into a handheld, shareable format that can reach more tables without compromising sourcing."
+            }
+          ],
+          "markDefs": [],
+          "style": "normal"
+        }
+      ],
+      "campaignHighlights": null,
+      "canonicalUrl": null,
+      "heroImage": null,
+      "isArchived": true,
+      "leadership": null,
+      "mediaContact": null,
+      "metaDescription": null,
+      "pressAssets": null,
+      "pressFacts": null,
+      "pressKitUrl": null,
+      "publishedAt": "2024-05-30T09:00:00-05:00",
+      "slug": "local-pizza-1000-2024-05-30",
+      "storyAngles": null,
+      "summary": "Minneapolis-based Local Effort Cooperative invites the community to back its most ambitious pizza initiative yet - building a thousand pies sourced entirely from Midwestern growers, millers, and makers.",
+      "title": "Local Effort Launches Crowdfunding Campaign to Craft 1,000 Local Pizzas"
+    }
+  ]
 }

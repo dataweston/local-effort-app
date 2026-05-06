@@ -328,10 +328,12 @@ Applied to configured database:
 - Ran `ChefNote` backfill dry run and apply; both found `0` notes, so no thread rows were created.
 - Ran unauthenticated hub handler smoke tests; all protected endpoints returned expected `401` responses.
 - Added `apps/mobile-hub`, an Expo SDK 55 native shell with static fixtures matching the shared hub contracts.
+- Added persisted native Supabase auth wiring with email/password and Google OAuth entry points.
 - Started the Expo dev server locally at `http://localhost:8091`.
 
 Next:
 
 - Test hub endpoints with real Supabase tokens and customer slugs.
-- Wire native Supabase auth and pass the access token into `apps/mobile-hub/src/api/hubClient.ts`.
+- Configure native env vars and Supabase redirect URLs for `localefforthub://auth/callback`.
+- Use a real native session to load live `/api/hub/today` through `apps/mobile-hub/src/api/hubClient.ts`.
 - Add tighter space/role permission checks after real `HubSpaceMembership` data exists.

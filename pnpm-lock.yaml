@@ -423,15 +423,33 @@ importers:
       '@local-effort/shared':
         specifier: workspace:*
         version: link:../../packages/shared
+      '@react-native-async-storage/async-storage':
+        specifier: 2.2.0
+        version: 2.2.0(react-native@0.83.0(@babel/core@7.28.4)(@types/react@19.2.0)(react@18.2.0))
+      '@supabase/supabase-js':
+        specifier: ^2.105.3
+        version: 2.105.3
       expo:
         specifier: ^55.0.0
         version: 55.0.23(@babel/core@7.28.4)(@expo/dom-webview@55.0.6)(react-dom@18.2.0(react@18.2.0))(react-native@0.83.0(@babel/core@7.28.4)(@types/react@19.2.0)(react@18.2.0))(react@18.2.0)(typescript@5.6.3)
+      expo-auth-session:
+        specifier: ~55.0.15
+        version: 55.0.15(expo@55.0.23)(react-native@0.83.0(@babel/core@7.28.4)(@types/react@19.2.0)(react@18.2.0))(react@18.2.0)
+      expo-crypto:
+        specifier: ~55.0.14
+        version: 55.0.14(expo@55.0.23)
+      expo-web-browser:
+        specifier: ~55.0.15
+        version: 55.0.15(expo@55.0.23)(react-native@0.83.0(@babel/core@7.28.4)(@types/react@19.2.0)(react@18.2.0))
       react:
         specifier: 18.2.0
         version: 18.2.0
       react-native:
         specifier: 0.83.0
         version: 0.83.0(@babel/core@7.28.4)(@types/react@19.2.0)(react@18.2.0)
+      react-native-url-polyfill:
+        specifier: ^3.0.0
+        version: 3.0.0(react-native@0.83.0(@babel/core@7.28.4)(@types/react@19.2.0)(react@18.2.0))
     devDependencies:
       '@types/react':
         specifier: ^19.2.0
@@ -3335,6 +3353,11 @@ packages:
       '@types/react':
         optional: true
 
+  '@react-native-async-storage/async-storage@2.2.0':
+    resolution: {integrity: sha512-gvRvjR5JAaUZF8tv2Kcq/Gbt3JHwbKFYfmb445rhOj6NUMx3qPLixmDx5pZAyb9at1bYvJ4/eTUipU5aki45xw==}
+    peerDependencies:
+      react-native: ^0.0.0-0 || >=0.65 <1.0
+
   '@react-native/assets-registry@0.83.0':
     resolution: {integrity: sha512-EmGSKDvmnEnBrTK75T+0Syt6gy/HACOTfziw5+392Kr1Bb28Rv26GyOIkvptnT+bb2VDHU0hx9G0vSy5/S3rmQ==}
     engines: {node: '>= 20.19.4'}
@@ -3918,11 +3941,19 @@ packages:
     resolution: {integrity: sha512-JZlVFE6/dYpP9tQmV0/ADfn32L9uFarHWxfcRhReKUnljz1ZiUM5zpX+PH8h5CJs6lao3TuFqnPm9IJJCEkE2w==}
     engines: {node: '>=10.8'}
 
+  '@supabase/auth-js@2.105.3':
+    resolution: {integrity: sha512-hMFuzP++mjRfe0/BUq4/e82CXIDgyjUgg0khLN8waol/gzoM1t2iGmhfJSGvQHQ1dr3XqWpP6ThAw4bLHMot5Q==}
+    engines: {node: '>=20.0.0'}
+
   '@supabase/auth-js@2.65.0':
     resolution: {integrity: sha512-+wboHfZufAE2Y612OsKeVP4rVOeGZzzMLD/Ac3HrTQkkY4qXNjI6Af9gtmxwccE5nFvTiF114FEbIQ1hRq5uUw==}
 
   '@supabase/auth-js@2.95.3':
     resolution: {integrity: sha512-vD2YoS8E2iKIX0F7EwXTmqhUpaNsmbU6X2R0/NdFcs02oEfnHyNP/3M716f3wVJ2E5XHGiTFXki6lRckhJ0Thg==}
+    engines: {node: '>=20.0.0'}
+
+  '@supabase/functions-js@2.105.3':
+    resolution: {integrity: sha512-KyutUwLLUZ9fRXsiFACL6lq7akBVHFl0fnqQnrxjbsPco8jeb4EyirQuvr52QCLnikzjMRC0uxAHOSM54aDrZA==}
     engines: {node: '>=20.0.0'}
 
   '@supabase/functions-js@2.4.1':
@@ -3936,8 +3967,15 @@ packages:
     resolution: {integrity: sha512-1ibVeYUacxWYi9i0cf5efil6adJ9WRyZBLivgjs+AUpewx1F3xPi7gLgaASI2SmIQxPoCEjAsLAzKPgMJVgOUQ==}
     engines: {node: 4.x || >=6.0.0}
 
+  '@supabase/phoenix@0.4.1':
+    resolution: {integrity: sha512-hWGJkDAfWUNY8k0C080u3sGNFd2ncl9erhKgP7hnGkgJWEfT5Pd/SXal4QmWXBECVlZrannMAc9sBaaRyWpiUA==}
+
   '@supabase/postgrest-js@1.15.8':
     resolution: {integrity: sha512-YunjXpoQjQ0a0/7vGAvGZA2dlMABXFdVI/8TuVKtlePxyT71sl6ERl6ay1fmIeZcqxiuFQuZw/LXUuStUG9bbg==}
+
+  '@supabase/postgrest-js@2.105.3':
+    resolution: {integrity: sha512-jFVYRHcri0ZMcTzKpQ2r2wWOB8/rPsbj92kxmCmVJUiRrdgiMtuYlkS06Fhs8UJZhEOL0UpGhh06XDwh8JwtBQ==}
+    engines: {node: '>=20.0.0'}
 
   '@supabase/postgrest-js@2.95.3':
     resolution: {integrity: sha512-LTrRBqU1gOovxRm1vRXPItSMPBmEFqrfTqdPTRtzOILV4jPSueFz6pES5hpb4LRlkFwCPRmv3nQJ5N625V2Xrg==}
@@ -3946,8 +3984,16 @@ packages:
   '@supabase/realtime-js@2.10.2':
     resolution: {integrity: sha512-qyCQaNg90HmJstsvr2aJNxK2zgoKh9ZZA8oqb7UT2LCh3mj9zpa3Iwu167AuyNxsxrUE8eEJ2yH6wLCij4EApA==}
 
+  '@supabase/realtime-js@2.105.3':
+    resolution: {integrity: sha512-L+qPiJlq1RKh3QD2fORGCFo2RKDKlvG9mjvPtUEQJ2tMixrx70VIV6j8BdWzQkbc1Nao6mvTWajyDhX3TFgljw==}
+    engines: {node: '>=20.0.0'}
+
   '@supabase/realtime-js@2.95.3':
     resolution: {integrity: sha512-D7EAtfU3w6BEUxDACjowWNJo/ZRo7sDIuhuOGKHIm9FHieGeoJV5R6GKTLtga/5l/6fDr2u+WcW/m8I9SYmaIw==}
+    engines: {node: '>=20.0.0'}
+
+  '@supabase/storage-js@2.105.3':
+    resolution: {integrity: sha512-M7oPCCcHim/FsR6rKIs10Nd9mW051N2SQvA27jiVLa7oQMFFb7faX5dCQRV4GS5QeFsBcV5J/fWl4Ppoaw8cBQ==}
     engines: {node: '>=20.0.0'}
 
   '@supabase/storage-js@2.7.0':
@@ -3955,6 +4001,10 @@ packages:
 
   '@supabase/storage-js@2.95.3':
     resolution: {integrity: sha512-4GxkJiXI3HHWjxpC3sDx1BVrV87O0hfX+wvJdqGv67KeCu+g44SPnII8y0LL/Wr677jB7tpjAxKdtVWf+xhc9A==}
+    engines: {node: '>=20.0.0'}
+
+  '@supabase/supabase-js@2.105.3':
+    resolution: {integrity: sha512-5Dm9+I61LAWwjw+0zcqXhSmTxUJaYHBPyHwMCIBH4TBUNwDn2pYUIsi6oUu0I5r9HtLtaFl7w4wa+DV9gRsbDg==}
     engines: {node: '>=20.0.0'}
 
   '@supabase/supabase-js@2.45.3':
@@ -6424,10 +6474,21 @@ packages:
     resolution: {integrity: sha512-JhFGDVJ7tmDJItKhYgJCGLOWjuK9vPxiXoUFLwLDc99NlmklilbiQJwoctZtt13+xMw91MCk/REan6MWHqDjyA==}
     engines: {node: '>=12.0.0'}
 
+  expo-application@55.0.14:
+    resolution: {integrity: sha512-NgqDIt3eCf4aVLp1L6AcEanCYoyJeuBsGrgGSzOIvxAsOvp5X3SYKW3ROgpKUnLQEKMWlzwETpjsUGszcqkk8g==}
+    peerDependencies:
+      expo: '*'
+
   expo-asset@55.0.17:
     resolution: {integrity: sha512-pK9HHJuFqjE8kDUcbMFsZj3Cz8WdXpvZHZmYl7ouFQp59P83BvHln6VnqPDGlO+/4929G0Lm8ZUzbONuNRhi9w==}
     peerDependencies:
       expo: '*'
+      react: 18.2.0
+      react-native: '*'
+
+  expo-auth-session@55.0.15:
+    resolution: {integrity: sha512-RPnoLs6+FY2MMWnV0cqz4uNzi2b1dwjqE6vv7Izb5vWI2RCFUnBSMy1fgXp4BSWaFm0VZzeMl6UjsgVh2QFe0g==}
+    peerDependencies:
       react: 18.2.0
       react-native: '*'
 
@@ -6436,6 +6497,11 @@ packages:
     peerDependencies:
       expo: '*'
       react-native: '*'
+
+  expo-crypto@55.0.14:
+    resolution: {integrity: sha512-TfAADBGZNNv9OOmdKFJCz54wDj87ufxtzQNSY+Roycpm8e5tuCnDIL7EjqUOmNTGH99Jj8ftPGFt4KGG2Ii2fg==}
+    peerDependencies:
+      expo: '*'
 
   expo-file-system@55.0.19:
     resolution: {integrity: sha512-c4smCbMqELLI3YQrGpw21MwZIREXM2e53vQD/+KWQcae1q+hgw8J2TroEqcQ/jVOtFpZYVvyVfgu4HDKNEKmNw==}
@@ -6456,6 +6522,12 @@ packages:
       expo: '*'
       react: 18.2.0
 
+  expo-linking@55.0.15:
+    resolution: {integrity: sha512-/RQh2vkNqV8Bim9Owm/evVqn2fqTvCDYHkpYPoSKbLAdydSGdHC2xZNw7Odl4wu1i1/3L4Xz//LKd3NsPWYWBQ==}
+    peerDependencies:
+      react: 18.2.0
+      react-native: '*'
+
   expo-modules-autolinking@55.0.21:
     resolution: {integrity: sha512-P9KsJgOwI7JVwxmGfRvcXkXO4LNRvHRdWmb4ukLmX15G/vZ7b6SM17yiYkPceWq1F5KeeZ11KFjEcl0y17xy7w==}
     hasBin: true
@@ -6473,6 +6545,12 @@ packages:
   expo-server@55.0.9:
     resolution: {integrity: sha512-N5Ipn1NwqaJzEm+G97o0Jbe4g/th3R/16N1DabnYryXKCiZwDkK13/w3VfGkQN9LOOaBP+JIRxGf4M8lQKPzyA==}
     engines: {node: '>=20.16.0'}
+
+  expo-web-browser@55.0.15:
+    resolution: {integrity: sha512-6hwZQob3EF+RWwZ+IvWLZjj2wI1frqx21+m/uzBqdUEHUhp2cVJi7kmxDolDmrve+ZldryZi1qfN78ALdvjHSA==}
+    peerDependencies:
+      expo: '*'
+      react-native: '*'
 
   expo@55.0.23:
     resolution: {integrity: sha512-b+lKwfzJzFiSm9G0wVGWw3c2YoZyubbl9gHOF1ZFuK8FqtxSge8pDDJMuEFmTi14dbKwh/tirB7MiORq54r7CQ==}
@@ -7357,6 +7435,10 @@ packages:
     resolution: {integrity: sha512-Fd4gABb+ycGAmKou8eMftCupSir5lRxqf4aD/vd0cD2qc4HL07OjCeuHMr8Ro4CoMaeCKDB0/ECBOVWjTwUvPQ==}
     engines: {node: '>=8'}
 
+  is-plain-obj@2.1.0:
+    resolution: {integrity: sha512-YWnfyRwxL/+SsrWYfOpUtz5b3YD+nyfkHvjbcanzk8zgyO4ASD67uVMRt8k5bM4lLMDnXfriRhOpemw+NfT1eA==}
+    engines: {node: '>=8'}
+
   is-potential-custom-element-name@1.0.1:
     resolution: {integrity: sha512-bCYeRA2rVibKZd+s2625gGnGF/t7DSqDs4dP7CrLA1m7jKWz6pps0LpYLJN8Q64HtmPKJ1hrN3nzPNKFEKOUiQ==}
 
@@ -8001,6 +8083,10 @@ packages:
   merge-descriptors@2.0.0:
     resolution: {integrity: sha512-Snk314V5ayFLhp3fkUREub6WtjBfPdCPY1Ln8/8munuLuiYhsABgBVWsozAG+MWMbVEvcdcpbi9R7ww22l9Q3g==}
     engines: {node: '>=18'}
+
+  merge-options@3.0.4:
+    resolution: {integrity: sha512-2Sug1+knBjkaMsMgf1ctR1Ujx+Ayku4EdJN4Z+C2+JzoeF7A3OZ9KM2GY0CpQS51NR61LTurMJrRKPhSs3ZRTQ==}
+    engines: {node: '>=10'}
 
   merge-stream@2.0.0:
     resolution: {integrity: sha512-abv/qOcuPfk3URPfDzmZU1LKmuw8kT+0nIHvKrKgFrwifol/doWcdA4ZqsWQ8ENrFKkd67Mfpo/LovbIUsbt3w==}
@@ -9203,6 +9289,11 @@ packages:
 
   react-is@18.3.1:
     resolution: {integrity: sha512-/LLMVyas0ljjAtoYiPqYiL8VWXzUUdThrmU5+n20DZv+a+ClRoevUzw5JxU+Ieh5/c87ytoTBV9G1FiKfNJdmg==}
+
+  react-native-url-polyfill@3.0.0:
+    resolution: {integrity: sha512-aA5CiuUCUb/lbrliVCJ6lZ17/RpNJzvTO/C7gC/YmDQhTUoRD5q5HlJfwLWcxz4VgAhHwXKzhxH+wUN24tAdqg==}
+    peerDependencies:
+      react-native: '*'
 
   react-native@0.83.0:
     resolution: {integrity: sha512-a8wPjGfkktb1+Mjvzkky3d0u6j6zdWAzftZ2LdQtgRgqkMMfgQxD9S+ri3RNlfAFQpuCAOYUIyrNHiVkUQChxA==}
@@ -10758,6 +10849,10 @@ packages:
   webidl-conversions@4.0.2:
     resolution: {integrity: sha512-YQ+BmxuTgd6UXZW3+ICGfyqRyHXVlD5GtQr5+qjiNW7bF0cqrzX500HVXPBOvgXb5YnzDd+h0zqyv61KUD7+Sg==}
 
+  webidl-conversions@5.0.0:
+    resolution: {integrity: sha512-VlZwKPCkYKxQgeSbH5EyngOmRp7Ww7I9rQLERETtf5ofd9pGeswWiOtogpEO850jziPRarreGxn5QIiTqpb2wA==}
+    engines: {node: '>=8'}
+
   webidl-conversions@8.0.1:
     resolution: {integrity: sha512-BMhLD/Sw+GbJC21C/UgyaZX41nPt8bUTg+jWyDeg7e7YN4xOM05YPSIXceACnXVtqyEw/LMClUQMtMZ+PGGpqQ==}
     engines: {node: '>=20'}
@@ -10814,6 +10909,10 @@ packages:
 
   whatwg-url-minimum@0.1.1:
     resolution: {integrity: sha512-u2FNVjFVFZhdjb502KzXy1gKn1mEisQRJssmSJT8CPhZdZa0AP6VCbWlXERKyGu0l09t0k50FiDiralpGhBxgA==}
+
+  whatwg-url-without-unicode@8.0.0-3:
+    resolution: {integrity: sha512-HoKuzZrUlgpz35YO27XgD28uh/WJH4B0+3ttFqRo//lmq+9T/mIOJ6kqmINI9HpUpz1imRC/nR/lxKpJiv0uig==}
+    engines: {node: '>=10'}
 
   whatwg-url@16.0.1:
     resolution: {integrity: sha512-1to4zXBxmXHV3IiSSEInrreIlu02vUOvrhxJJH5vcxYTBDAx51cqZiKdyTxlecdKNSjj8EcxGBxNf6Vg+945gw==}
@@ -13794,6 +13893,11 @@ snapshots:
     optionalDependencies:
       '@types/react': 19.2.0
 
+  '@react-native-async-storage/async-storage@2.2.0(react-native@0.83.0(@babel/core@7.28.4)(@types/react@19.2.0)(react@18.2.0))':
+    dependencies:
+      merge-options: 3.0.4
+      react-native: 0.83.0(@babel/core@7.28.4)(@types/react@19.2.0)(react@18.2.0)
+
   '@react-native/assets-registry@0.83.0': {}
 
   '@react-native/babel-plugin-codegen@0.83.6(@babel/core@7.28.4)':
@@ -14646,11 +14750,19 @@ snapshots:
       '@stoplight/yaml-ast-parser': 0.0.50
       tslib: 2.8.1
 
+  '@supabase/auth-js@2.105.3':
+    dependencies:
+      tslib: 2.8.1
+
   '@supabase/auth-js@2.65.0':
     dependencies:
       '@supabase/node-fetch': 2.6.15
 
   '@supabase/auth-js@2.95.3':
+    dependencies:
+      tslib: 2.8.1
+
+  '@supabase/functions-js@2.105.3':
     dependencies:
       tslib: 2.8.1
 
@@ -14666,9 +14778,15 @@ snapshots:
     dependencies:
       whatwg-url: 5.0.0
 
+  '@supabase/phoenix@0.4.1': {}
+
   '@supabase/postgrest-js@1.15.8':
     dependencies:
       '@supabase/node-fetch': 2.6.15
+
+  '@supabase/postgrest-js@2.105.3':
+    dependencies:
+      tslib: 2.8.1
 
   '@supabase/postgrest-js@2.95.3':
     dependencies:
@@ -14684,6 +14802,16 @@ snapshots:
       - bufferutil
       - utf-8-validate
 
+  '@supabase/realtime-js@2.105.3':
+    dependencies:
+      '@supabase/phoenix': 0.4.1
+      '@types/ws': 8.18.1
+      tslib: 2.8.1
+      ws: 8.19.0
+    transitivePeerDependencies:
+      - bufferutil
+      - utf-8-validate
+
   '@supabase/realtime-js@2.95.3':
     dependencies:
       '@types/phoenix': 1.6.7
@@ -14694,6 +14822,11 @@ snapshots:
       - bufferutil
       - utf-8-validate
 
+  '@supabase/storage-js@2.105.3':
+    dependencies:
+      iceberg-js: 0.8.1
+      tslib: 2.8.1
+
   '@supabase/storage-js@2.7.0':
     dependencies:
       '@supabase/node-fetch': 2.6.15
@@ -14702,6 +14835,17 @@ snapshots:
     dependencies:
       iceberg-js: 0.8.1
       tslib: 2.8.1
+
+  '@supabase/supabase-js@2.105.3':
+    dependencies:
+      '@supabase/auth-js': 2.105.3
+      '@supabase/functions-js': 2.105.3
+      '@supabase/postgrest-js': 2.105.3
+      '@supabase/realtime-js': 2.105.3
+      '@supabase/storage-js': 2.105.3
+    transitivePeerDependencies:
+      - bufferutil
+      - utf-8-validate
 
   '@supabase/supabase-js@2.45.3':
     dependencies:
@@ -15051,7 +15195,7 @@ snapshots:
 
   '@types/ws@8.18.1':
     dependencies:
-      '@types/node': 24.6.2
+      '@types/node': 20.16.10
 
   '@types/yargs-parser@21.0.3': {}
 
@@ -17670,6 +17814,10 @@ snapshots:
 
   expect-type@1.2.2: {}
 
+  expo-application@55.0.14(expo@55.0.23):
+    dependencies:
+      expo: 55.0.23(@babel/core@7.28.4)(@expo/dom-webview@55.0.6)(react-dom@18.2.0(react@18.2.0))(react-native@0.83.0(@babel/core@7.28.4)(@types/react@19.2.0)(react@18.2.0))(react@18.2.0)(typescript@5.6.3)
+
   expo-asset@55.0.17(expo@55.0.23)(react-native@0.83.0(@babel/core@7.28.4)(@types/react@19.2.0)(react@18.2.0))(react@18.2.0)(typescript@5.6.3):
     dependencies:
       '@expo/image-utils': 0.8.14(typescript@5.6.3)
@@ -17681,6 +17829,20 @@ snapshots:
       - supports-color
       - typescript
 
+  expo-auth-session@55.0.15(expo@55.0.23)(react-native@0.83.0(@babel/core@7.28.4)(@types/react@19.2.0)(react@18.2.0))(react@18.2.0):
+    dependencies:
+      expo-application: 55.0.14(expo@55.0.23)
+      expo-constants: 55.0.16(expo@55.0.23)(react-native@0.83.0(@babel/core@7.28.4)(@types/react@19.2.0)(react@18.2.0))
+      expo-crypto: 55.0.14(expo@55.0.23)
+      expo-linking: 55.0.15(expo@55.0.23)(react-native@0.83.0(@babel/core@7.28.4)(@types/react@19.2.0)(react@18.2.0))(react@18.2.0)
+      expo-web-browser: 55.0.15(expo@55.0.23)(react-native@0.83.0(@babel/core@7.28.4)(@types/react@19.2.0)(react@18.2.0))
+      invariant: 2.2.4
+      react: 18.2.0
+      react-native: 0.83.0(@babel/core@7.28.4)(@types/react@19.2.0)(react@18.2.0)
+    transitivePeerDependencies:
+      - expo
+      - supports-color
+
   expo-constants@55.0.16(expo@55.0.23)(react-native@0.83.0(@babel/core@7.28.4)(@types/react@19.2.0)(react@18.2.0)):
     dependencies:
       '@expo/env': 2.1.2
@@ -17688,6 +17850,10 @@ snapshots:
       react-native: 0.83.0(@babel/core@7.28.4)(@types/react@19.2.0)(react@18.2.0)
     transitivePeerDependencies:
       - supports-color
+
+  expo-crypto@55.0.14(expo@55.0.23):
+    dependencies:
+      expo: 55.0.23(@babel/core@7.28.4)(@expo/dom-webview@55.0.6)(react-dom@18.2.0(react@18.2.0))(react-native@0.83.0(@babel/core@7.28.4)(@types/react@19.2.0)(react@18.2.0))(react@18.2.0)(typescript@5.6.3)
 
   expo-file-system@55.0.19(expo@55.0.23)(react-native@0.83.0(@babel/core@7.28.4)(@types/react@19.2.0)(react@18.2.0)):
     dependencies:
@@ -17706,6 +17872,16 @@ snapshots:
       expo: 55.0.23(@babel/core@7.28.4)(@expo/dom-webview@55.0.6)(react-dom@18.2.0(react@18.2.0))(react-native@0.83.0(@babel/core@7.28.4)(@types/react@19.2.0)(react@18.2.0))(react@18.2.0)(typescript@5.6.3)
       react: 18.2.0
 
+  expo-linking@55.0.15(expo@55.0.23)(react-native@0.83.0(@babel/core@7.28.4)(@types/react@19.2.0)(react@18.2.0))(react@18.2.0):
+    dependencies:
+      expo-constants: 55.0.16(expo@55.0.23)(react-native@0.83.0(@babel/core@7.28.4)(@types/react@19.2.0)(react@18.2.0))
+      invariant: 2.2.4
+      react: 18.2.0
+      react-native: 0.83.0(@babel/core@7.28.4)(@types/react@19.2.0)(react@18.2.0)
+    transitivePeerDependencies:
+      - expo
+      - supports-color
+
   expo-modules-autolinking@55.0.21(typescript@5.6.3):
     dependencies:
       '@expo/require-utils': 55.0.5(typescript@5.6.3)
@@ -17723,6 +17899,11 @@ snapshots:
       react-native: 0.83.0(@babel/core@7.28.4)(@types/react@19.2.0)(react@18.2.0)
 
   expo-server@55.0.9: {}
+
+  expo-web-browser@55.0.15(expo@55.0.23)(react-native@0.83.0(@babel/core@7.28.4)(@types/react@19.2.0)(react@18.2.0)):
+    dependencies:
+      expo: 55.0.23(@babel/core@7.28.4)(@expo/dom-webview@55.0.6)(react-dom@18.2.0(react@18.2.0))(react-native@0.83.0(@babel/core@7.28.4)(@types/react@19.2.0)(react@18.2.0))(react@18.2.0)(typescript@5.6.3)
+      react-native: 0.83.0(@babel/core@7.28.4)(@types/react@19.2.0)(react@18.2.0)
 
   expo@55.0.23(@babel/core@7.28.4)(@expo/dom-webview@55.0.6)(react-dom@18.2.0(react@18.2.0))(react-native@0.83.0(@babel/core@7.28.4)(@types/react@19.2.0)(react@18.2.0))(react@18.2.0)(typescript@5.6.3):
     dependencies:
@@ -18892,6 +19073,8 @@ snapshots:
 
   is-path-inside@3.0.3: {}
 
+  is-plain-obj@2.1.0: {}
+
   is-potential-custom-element-name@1.0.1:
     optional: true
 
@@ -19542,6 +19725,10 @@ snapshots:
   merge-descriptors@1.0.3: {}
 
   merge-descriptors@2.0.0: {}
+
+  merge-options@3.0.4:
+    dependencies:
+      is-plain-obj: 2.1.0
 
   merge-stream@2.0.0: {}
 
@@ -20866,6 +21053,11 @@ snapshots:
   react-is@16.13.1: {}
 
   react-is@18.3.1: {}
+
+  react-native-url-polyfill@3.0.0(react-native@0.83.0(@babel/core@7.28.4)(@types/react@19.2.0)(react@18.2.0)):
+    dependencies:
+      react-native: 0.83.0(@babel/core@7.28.4)(@types/react@19.2.0)(react@18.2.0)
+      whatwg-url-without-unicode: 8.0.0-3
 
   react-native@0.83.0(@babel/core@7.28.4)(@types/react@19.2.0)(react@18.2.0):
     dependencies:
@@ -22824,6 +23016,8 @@ snapshots:
 
   webidl-conversions@4.0.2: {}
 
+  webidl-conversions@5.0.0: {}
+
   webidl-conversions@8.0.1:
     optional: true
 
@@ -22903,6 +23097,12 @@ snapshots:
     optional: true
 
   whatwg-url-minimum@0.1.1: {}
+
+  whatwg-url-without-unicode@8.0.0-3:
+    dependencies:
+      buffer: 5.7.1
+      punycode: 2.3.1
+      webidl-conversions: 5.0.0
 
   whatwg-url@16.0.1(@noble/hashes@2.2.0):
     dependencies:

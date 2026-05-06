@@ -25,6 +25,14 @@ const RELEASES_QUERY = `*[_type == "release"] | order(coalesce(publishedAt, _cre
   body,
   canonicalUrl,
   metaDescription,
+  isArchived,
+  mediaContact{ name, organization, email, website, location, instagram, tiktok },
+  campaignHighlights,
+  pressFacts[]{ label, value },
+  leadership[]{ name, title, bio },
+  pressAssets[]{ label, value, href },
+  pressKitUrl,
+  storyAngles,
   heroImage{ alt, "url": asset->url }
 }`;
 

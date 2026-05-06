@@ -4416,33 +4416,34 @@ var Header = () => {
         borderBottom: "1px solid var(--color-border-default)"
       },
       children: [
-        /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "flex items-center justify-between px-6 py-4", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "flex items-center justify-between px-4 py-4 sm:px-6", children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(
             "button",
             {
               type: "button",
               onClick: () => handleNavigate(0),
-              className: "flex items-center gap-3",
+              className: "flex min-w-0 items-center gap-3",
               children: [
                 /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
                   import_framer_motion.motion.span,
                   {
-                    className: "text-2xl font-bold tracking-tight",
+                    className: "text-lg font-bold sm:text-xl lg:text-2xl",
                     style: {
                       color: "var(--color-text-primary)",
                       fontFamily: "'National Park', 'General Sans', sans-serif",
                       fontWeight: 700,
-                      letterSpacing: "-0.02em"
+                      letterSpacing: 0,
+                      lineHeight: 1
                     },
                     whileHover: { scale: 1.03 },
                     transition: { type: "spring", stiffness: 300, damping: 20 },
-                    children: "Local Effort"
+                    children: "Local Effort Cooperative"
                   }
                 ),
                 /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
                   "span",
                   {
-                    className: "text-sm font-medium",
+                    className: "hidden text-sm font-medium xl:inline",
                     style: {
                       color: "var(--color-text-primary)",
                       fontFamily: "'Office Code Pro', monospace"
@@ -4453,7 +4454,7 @@ var Header = () => {
               ]
             }
           ),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("nav", { className: "hidden md:flex gap-1", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("nav", { className: "hidden lg:flex gap-1", children: [
             navItems.map((page, index3) => {
               const pageIndex = index3 + 1;
               const href = `/#${page.id}`;
@@ -4508,7 +4509,7 @@ var Header = () => {
             "button",
             {
               onClick: () => setIsOpen((v) => !v),
-              className: "md:hidden z-50 w-9 h-7 flex flex-col justify-between",
+              className: "z-50 flex h-7 w-9 flex-col justify-between lg:hidden",
               "aria-label": "Toggle menu",
               children: [
                 /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
@@ -4539,7 +4540,7 @@ var Header = () => {
             initial: { opacity: 0 },
             animate: { opacity: 1 },
             exit: { opacity: 0 },
-            className: "md:hidden fixed inset-0 bg-[var(--color-bg-page)]",
+            className: "fixed inset-0 bg-[var(--color-bg-page)] lg:hidden",
             children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(
               import_framer_motion.motion.nav,
               {
@@ -4686,9 +4687,9 @@ var import_react_helmet_async = __toESM(require_lib());
 var import_react_router_dom2 = require("react-router-dom");
 
 // src/config/siteMetadata.js
-var SITE_NAME = "Local Effort Food Co.";
+var SITE_NAME = "Local Effort Cooperative";
 var SITE_URL = "https://www.localeffortfood.com";
-var DEFAULT_DESCRIPTION = "Local Effort Food Co. is a Minneapolis personal chef team offering in-home dinners, meal prep Minneapolis plans, and small-event catering built around Minnesota-grown ingredients.";
+var DEFAULT_DESCRIPTION = "Local Effort Cooperative is a Minneapolis personal chef team offering in-home dinners, meal prep Minneapolis plans, and small-event catering built around Minnesota-grown ingredients.";
 var DEFAULT_KEYWORDS = [
   "personal chef",
   "Twin Cities catering",
@@ -4698,7 +4699,7 @@ var DEFAULT_KEYWORDS = [
   "how much does a personal chef cost",
   "private dining",
   "farm to table",
-  "Local Effort Food Co."
+  "Local Effort Cooperative"
 ];
 var CONTACT_EMAIL = "yum@localeffortfood.com";
 var SOCIAL_LINKS = [
@@ -4712,86 +4713,86 @@ var SOCIAL_LINKS = [
 var PUBLIC_ROUTES = [
   {
     path: "/",
-    title: "Local Effort Food Co. - Minneapolis Personal Chef",
-    description: "Local Effort Food Co. is a Minneapolis personal chef team offering in-home dinners, meal prep plans, and small-event catering built around Minnesota-grown ingredients.",
+    title: "Local Effort Cooperative - Minneapolis Personal Chef",
+    description: "Local Effort Cooperative is a Minneapolis personal chef team offering in-home dinners, meal prep plans, and small-event catering built around Minnesota-grown ingredients.",
     prerender: true
   },
   {
     path: "/blog",
-    title: "Local Report - Local Effort Food Co.",
-    description: "Dispatches, updates, and kitchen notes from Local Effort Food Co.",
+    title: "Local Report - Local Effort Cooperative",
+    description: "Dispatches, updates, and kitchen notes from Local Effort Cooperative",
     prerender: true
   },
   {
     path: "/releases",
-    title: "Press & Releases - Local Effort Food Co.",
-    description: "News, press coverage, and updates from Local Effort Food Co.",
+    title: "Press & Releases - Local Effort Cooperative",
+    description: "News, press coverage, and updates from Local Effort Cooperative",
     prerender: true
   },
   {
     path: "/sale",
-    title: "Shop Seasonal Food Drops & Preorders - Local Effort Food Co.",
+    title: "Shop Seasonal Food Drops & Preorders - Local Effort Cooperative",
     description: "Shop the Local Effort sale for seasonal food drops, pantry goods, and limited preorders with Minneapolis pickup and local delivery.",
     prerender: true
   },
   {
     path: "/weekly",
-    title: "Weekly Updates - Local Effort Food Co.",
+    title: "Weekly Updates - Local Effort Cooperative",
     description: "Weekly menus, stories, and updates from the Local Effort kitchen.",
     prerender: true
   },
   {
     path: "/happymonday",
-    title: "For Happy Monday - Local Effort Food Co.",
+    title: "For Happy Monday - Local Effort Cooperative",
     description: "Local Effort menu and ordering for Happy Monday.",
     prerender: true
   },
   {
     path: "/pizza-party",
-    title: "Pizza Party - Local Effort Food Co.",
+    title: "Pizza Party - Local Effort Cooperative",
     description: "Book a wood-fired pizza party with Local Effort in Minneapolis-St. Paul.",
     prerender: true
   },
   {
     path: "/winterdinner",
-    title: "Winter Dinner - Local Effort Food Co.",
+    title: "Winter Dinner - Local Effort Cooperative",
     description: "Seasonal winter dinner experience from Local Effort.",
     prerender: false
   },
   {
     path: "/winterpizza",
-    title: "Winter Pizza - Local Effort Food Co.",
+    title: "Winter Pizza - Local Effort Cooperative",
     description: "Winter pizza pop-up from Local Effort.",
     prerender: false
   },
   {
     path: "/february",
-    title: "February Menu - Local Effort Food Co.",
-    description: "February seasonal menu from Local Effort Food Co.",
+    title: "February Menu - Local Effort Cooperative",
+    description: "February seasonal menu from Local Effort Cooperative",
     prerender: true
   },
   {
     path: "/psyche",
-    title: "Buy Psyche Olive Oil - 3L Extra-Virgin | Local Effort Food Co.",
-    description: "Buy Psyche extra-virgin olive oil (3 L bag-in-box) from Local Effort Food Co. in Minneapolis. Single-estate koroneiki from Greece - bright, peppery, EVA-certified. $90 with free local delivery.",
+    title: "Buy Psyche Olive Oil - 3L Extra-Virgin | Local Effort Cooperative",
+    description: "Buy Psyche extra-virgin olive oil (3 L bag-in-box) from Local Effort Cooperative in Minneapolis. Single-estate koroneiki from Greece - bright, peppery, EVA-certified. $90 with free local delivery.",
     prerender: true
   },
   {
     path: "/januarymeals",
-    title: "January Meals - Local Effort Food Co.",
+    title: "January Meals - Local Effort Cooperative",
     description: "January meal prep offerings from Local Effort.",
     prerender: false
   },
   {
     path: "/calendar",
-    title: "Calendar - Local Effort Food Co.",
-    description: "Event and booking calendar for Local Effort Food Co.",
+    title: "Calendar - Local Effort Cooperative",
+    description: "Event and booking calendar for Local Effort Cooperative",
     prerender: false
   },
   {
     path: "/book",
-    title: "Book a Private Event - Local Effort Food Co.",
-    description: "Book a chef-led dinner party, pizza party, wedding, or small event with Local Effort Food Co. in Minneapolis-St. Paul. Get an instant estimate and hold your date with a deposit.",
+    title: "Book a Private Event - Local Effort Cooperative",
+    description: "Book a chef-led dinner party, pizza party, wedding, or small event with Local Effort Cooperative in Minneapolis-St. Paul. Get an instant estimate and hold your date with a deposit.",
     prerender: true
   }
 ];
@@ -4822,11 +4823,11 @@ var heroFallbackSrc = "/gallery/IMG_3145.jpg";
 var import_jsx_runtime3 = require("react/jsx-runtime");
 var SECTION_META = {
   "#small-events": {
-    title: "Private Event Catering \u2014 Dinners, Weddings & Parties | Local Effort Food Co.",
+    title: "Private Event Catering \u2014 Dinners, Weddings & Parties | Local Effort Cooperative",
     description: "Book private chef catering for intimate dinners, weddings, showers, and holiday parties in Minneapolis\u2013St. Paul. Locally sourced, seasonal menus for 2\u201375 guests."
   },
   "#for-businesses": {
-    title: "For Businesses \u2014 Wholesale, Consulting & Collaborations | Local Effort Food Co.",
+    title: "For Businesses \u2014 Wholesale, Consulting & Collaborations | Local Effort Cooperative",
     description: "Commercial food services for Minneapolis businesses: wholesale supply for cafes and retail, restaurant consulting, pizza shop development, and creative food collaborations."
   }
 };
@@ -8074,7 +8075,7 @@ var AskChefForm = ({ open, onOpenChange, dialogClassName = "" }) => {
 
 // public/business.json?raw
 var business_default = {
-  name: "Local Effort Food Co.",
+  name: "Local Effort Cooperative",
   description: "Personal chef and event catering serving Minneapolis, St. Paul, Roseville, and the Twin Cities. In-home private dinners, weekly meal prep, and small event catering.",
   services: ["personal chef", "meal prep", "event catering"],
   serviceArea: ["Minneapolis", "St. Paul", "Roseville", "Twin Cities", "Minnesota", "Western Wisconsin"],
@@ -8130,7 +8131,7 @@ var thumbtack_default = [
     context: "Thumbtack \xB7 Verified \xB7 Mar 26, 2023 \xB7 5\u2605"
   },
   {
-    quote: "[b]Weston with Local Effort Food Co is phenomenal![/b] We hired him for our anniversary and the food was spectacular! He was incredibly responsive in the planning process and we enjoyed hearing his stories while he cooked. [b]Plus, we scheduled him after the kids went to bed [/b] which was the perfect ending to our day! We will absolutely be hiring him again!",
+    quote: "[b]Weston with Local Effort Cooperative is phenomenal![/b] We hired him for our anniversary and the food was spectacular! He was incredibly responsive in the planning process and we enjoyed hearing his stories while he cooked. [b]Plus, we scheduled him after the kids went to bed [/b] which was the perfect ending to our day! We will absolutely be hiring him again!",
     author: "Ashley G.",
     context: "Thumbtack \xB7 Verified \xB7 Oct 30, 2022 \xB7 5\u2605"
   },
@@ -11217,7 +11218,7 @@ var FullPageDemoPage = () => {
         {
           "@type": "FoodService",
           "@id": "https://www.localeffortfood.com#catering",
-          name: "Local Effort Food Co. \u2014 Private Event Catering",
+          name: "Local Effort Cooperative \u2014 Private Event Catering",
           url: "https://www.localeffortfood.com/#small-events",
           description: "Private chef catering for intimate dinners, weddings, showers, corporate events, and holiday parties in Minneapolis\u2013St. Paul. Farm-to-table menus with 100% Minnesota-sourced ingredients. 2\u201375 guests.",
           provider: { "@id": "https://www.localeffortfood.com#business" },
@@ -11284,7 +11285,7 @@ var FullPageDemoPage = () => {
         {
           "@type": "WebPage",
           "@id": "https://www.localeffortfood.com/#small-events",
-          name: "Private Event Catering \u2014 Dinners, Weddings & Parties | Local Effort Food Co.",
+          name: "Private Event Catering \u2014 Dinners, Weddings & Parties | Local Effort Cooperative",
           description: "Book private chef catering for intimate dinners, weddings, showers, and holiday parties in Minneapolis\u2013St. Paul. Locally sourced, seasonal menus for 2\u201375 guests.",
           isPartOf: { "@id": "https://www.localeffortfood.com#website" },
           about: { "@id": "https://www.localeffortfood.com#catering" }
@@ -11315,7 +11316,7 @@ var FullPageDemoPage = () => {
         {
           "@type": "LocalBusiness",
           "@id": "https://www.localeffortfood.com#business",
-          name: "Local Effort Food Co.",
+          name: "Local Effort Cooperative",
           url: "https://www.localeffortfood.com",
           description: "Minneapolis-based chef team offering wholesale food supply, restaurant consulting, pizza shop development, and creative collaborations for cafes, bars, offices, and retail businesses across the Twin Cities.",
           email: "weston@localeffortfood.com",
@@ -11414,7 +11415,7 @@ var FullPageDemoPage = () => {
         {
           "@type": "WebPage",
           "@id": "https://www.localeffortfood.com/#for-businesses",
-          name: "For Businesses \u2014 Wholesale, Consulting & Collaborations | Local Effort Food Co.",
+          name: "For Businesses \u2014 Wholesale, Consulting & Collaborations | Local Effort Cooperative",
           description: "Commercial food services for Minneapolis businesses: wholesale supply for cafes and retail, restaurant consulting, pizza shop development, and creative food collaborations.",
           isPartOf: { "@id": "https://www.localeffortfood.com#website" },
           about: { "@id": "https://www.localeffortfood.com#business" }
@@ -11804,7 +11805,7 @@ var FullPageDemoPage = () => {
                 /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("script", { type: "application/ld+json", dangerouslySetInnerHTML: { __html: smallEventsStructuredData } }),
                 /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { className: "sr-only", children: [
                   /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("h2", { children: "Private Event Catering in Minneapolis\u2013St. Paul" }),
-                  /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("p", { children: "Local Effort Food Co. offers private chef catering for intimate dinners, weddings, showers, corporate events, and holiday parties across the Twin Cities. Farm-to-table seasonal menus with 100% Minnesota-sourced ingredients. Book today \u2014 deposit holds your date." }),
+                  /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("p", { children: "Local Effort Cooperative offers private chef catering for intimate dinners, weddings, showers, corporate events, and holiday parties across the Twin Cities. Farm-to-table seasonal menus with 100% Minnesota-sourced ingredients. Book today \u2014 deposit holds your date." }),
                   /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("ul", { children: [
                     /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("li", { children: "Private dinner parties at your home \u2014 4 to 16 guests, multi-course seasonal menus from $85/guest" }),
                     /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("li", { children: "Wedding and shower catering \u2014 up to 50 guests, custom menus and full service from $45/guest" }),
@@ -11817,7 +11818,7 @@ var FullPageDemoPage = () => {
                     "img",
                     {
                       src: "https://res.cloudinary.com/dokyhfvyd/image/upload/c_limit,f_auto,q_auto,w_1600/vjuesai2mxfavpq9d2df",
-                      alt: "Private event catering by Local Effort Food Co. in Minneapolis",
+                      alt: "Private event catering by Local Effort Cooperative in Minneapolis",
                       className: "absolute inset-0 w-full h-full object-cover",
                       style: { objectPosition: "center" }
                     }
@@ -11962,7 +11963,7 @@ var FullPageDemoPage = () => {
                 /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("script", { type: "application/ld+json", dangerouslySetInnerHTML: { __html: b2bStructuredData } }),
                 /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { className: "sr-only", children: [
                   /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("h2", { children: "Commercial Food Services for Minneapolis Businesses" }),
-                  /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("p", { children: "Local Effort Food Co. provides wholesale food supply, restaurant consulting, pizza shop development, and creative collaborations for cafes, bars, grocery stores, offices, and organizations across the Twin Cities metro. Contact weston@localeffortfood.com." }),
+                  /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("p", { children: "Local Effort Cooperative provides wholesale food supply, restaurant consulting, pizza shop development, and creative collaborations for cafes, bars, grocery stores, offices, and organizations across the Twin Cities metro. Contact weston@localeffortfood.com." }),
                   /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("ul", { children: [
                     /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("li", { children: "Wholesale: pizza, sandwiches, salads for display cases and grab-and-go \u2014 delivered fresh within 15 miles of 55449" }),
                     /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("li", { children: "Restaurant consulting: FOH/BOH, tech stack, sourcing, menu design, service experience" }),
@@ -13375,7 +13376,7 @@ var BlogList = () => {
   return /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "blog-page fullpage-demo-scope", children: [
     /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)(import_react_helmet_async2.Helmet, { children: [
       /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("title", { children: "Local Report | Local Effort" }),
-      /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("meta", { name: "description", content: "Dispatches, stories, and kitchen notes from Local Effort Food Co." }),
+      /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("meta", { name: "description", content: "Dispatches, stories, and kitchen notes from Local Effort Cooperative" }),
       /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("link", { rel: "canonical", href: `${SITE_URL}/blog` }),
       /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("link", { rel: "alternate", type: "application/rss+xml", title: "Local Report RSS", href: "/api/feeds/blog.rss" }),
       /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("link", { rel: "alternate", type: "application/atom+xml", title: "Local Report Atom", href: "/api/feeds/blog.atom" }),
@@ -13760,25 +13761,323 @@ var BlogPost_default = BlogPost;
 var import_react19 = __toESM(require("react"));
 var import_react_helmet_async4 = __toESM(require_lib());
 var import_react20 = require("@portabletext/react");
-var import_jsx_runtime27 = require("react/jsx-runtime");
-var RELEASES_QUERY = '*[_type == "release"] | order(coalesce(publishedAt, _createdAt) desc)[0...50]{ _id, title, "slug": slug.current, summary, publishedAt, body, canonicalUrl, metaDescription, heroImage{ alt, "url": asset->url } }';
-var portableComponents = createPortableTextComponents({
-  types: {
-    image: ({ value }) => {
-      const src = value?.asset?.url || "";
-      if (!src) return null;
-      return /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("img", { src, alt: value?.alt || "", className: "my-4 rounded-lg", loading: "lazy" });
+
+// src/store/data/generatedReleasesPageData.json
+var generatedReleasesPageData_default = {
+  generatedAt: "2026-05-06T04:34:29.201Z",
+  releases: [
+    {
+      _id: "release-local-pizza-1000-2025-09-30",
+      body: [
+        {
+          _key: "b0",
+          _type: "block",
+          children: [
+            {
+              _key: "s0",
+              _type: "span",
+              marks: [],
+              text: "The crowdfunding campaign energizes Local Effort's obsession with 100% regional sourcing. Every crust, sauce, and topping will trace back to Minnesota and Midwest farms, mills, creameries, and co-ops that the chef team has partnered with since 2022."
+            }
+          ],
+          markDefs: [],
+          style: "normal"
+        },
+        {
+          _key: "b1",
+          _type: "block",
+          children: [
+            {
+              _key: "s1",
+              _type: "span",
+              marks: [],
+              text: "Backers will help finance upgraded capacity and purchasing power, unlocking more neighborhood pop-ups, farmers market collaborations, and last-mile delivery runs throughout Minneapolis, St. Paul, and Western Wisconsin."
+            }
+          ],
+          markDefs: [],
+          style: "normal"
+        },
+        {
+          _key: "b2",
+          _type: "block",
+          children: [
+            {
+              _key: "s2",
+              _type: "span",
+              marks: [],
+              text: '"This is truly Local Pizza," said Weston Smith, chef and co-founder of Local Effort. "The grain, the cheese, the tomatoes all tell a story about producing food in the Midwest. If we sell a thousand pies, we will focus on opening a shop."'
+            }
+          ],
+          markDefs: [],
+          style: "blockquote"
+        },
+        {
+          _key: "b3",
+          _type: "block",
+          children: [
+            {
+              _key: "s3",
+              _type: "span",
+              marks: [],
+              text: "Supporters can choose from tiered rewards including apple pies, special invite-only parties and events, premium home events, and exclusive seasonal toppings co-developed with local growers. Weekly progress bulletins and tasting events will keep the community connected as milestones are reached on the path to 1,000 pizzas."
+            }
+          ],
+          markDefs: [],
+          style: "normal"
+        },
+        {
+          _key: "b4",
+          _type: "block",
+          children: [
+            {
+              _key: "s4",
+              _type: "span",
+              marks: [],
+              text: "Local Effort has grown from intimate in-home dinners to weekly meal prep and private events by doubling down on local-first commitments. The pizza program translates that ethos into a universally beloved format."
+            }
+          ],
+          markDefs: [],
+          style: "normal"
+        },
+        {
+          _key: "b5",
+          _type: "block",
+          children: [
+            {
+              _key: "s5",
+              _type: "span",
+              marks: [],
+              text: "The crowdfunding page is live now at localeffortfood.com/crowdfunding. Early backers will unlock surprise collaborations with partner farms and organizations across the Twin Cities."
+            }
+          ],
+          markDefs: [],
+          style: "normal"
+        }
+      ],
+      campaignHighlights: [
+        "Goal: Handcraft and deliver 1,000 wood-fired pizzas made with 100% local Midwest ingredients.",
+        "Purpose: Fund expanded capacity and improve quality control, in the service of opening a pizza shop next year.",
+        "Backer Rewards: Pizzas, pies, events, and premium special offers like sockeye bottarga.",
+        "Timeline: 30-day crowdfunding campaign with weekly progress updates and community tastings."
+      ],
+      canonicalUrl: "https://www.localeffortfood.com/releases",
+      heroImage: null,
+      isArchived: false,
+      leadership: [
+        {
+          bio: "Trained in fine dining in New York after beginnings in Portland coffee. Leads culinary direction with a focus on Minnesota-grown ingredients.",
+          name: "Weston Smith",
+          title: "Chef & Co-Founder"
+        },
+        {
+          bio: "Minneapolis native and veteran baker who brings warmth, hospitality, and deep local sourcing relationships to the kitchen.",
+          name: "Catherine Olsen",
+          title: "Chef & Co-Founder"
+        }
+      ],
+      mediaContact: {
+        email: "yum@localeffortfood.com",
+        instagram: "https://www.instagram.com/localeffortfood",
+        location: "Minneapolis, MN",
+        name: "Weston Smith",
+        organization: "Local Effort Cooperative",
+        tiktok: "https://www.tiktok.com/@localeffort",
+        website: "https://localeffortfood.com"
+      },
+      metaDescription: "Press release and media resources for Local Effort Cooperative and its 1,000 fully local pizza crowdfunding initiative.",
+      pressAssets: [
+        {
+          href: "https://localeffortfood.com",
+          label: "Website",
+          value: "https://localeffortfood.com"
+        },
+        {
+          href: "/crowdfunding",
+          label: "Crowdfunding Hub",
+          value: "Join the pizza campaign"
+        },
+        {
+          href: "/gallery",
+          label: "Media Gallery",
+          value: "High-resolution kitchen & event photography"
+        },
+        {
+          href: "/services",
+          label: "Service Overview",
+          value: "Menus, pricing, and service areas"
+        }
+      ],
+      pressFacts: [
+        {
+          label: "Founded",
+          value: "2022"
+        },
+        {
+          label: "Headquarters",
+          value: "Minneapolis, Minnesota"
+        },
+        {
+          label: "Service Areas",
+          value: "Minneapolis, St. Paul, Roseville, the Twin Cities, and Western Wisconsin"
+        },
+        {
+          label: "Core Services",
+          value: "Personal chef experiences, weekly meal prep, intimate event catering, and 100% local pizzas"
+        }
+      ],
+      pressKitUrl: null,
+      publishedAt: "2025-09-30T09:00:00-05:00",
+      slug: "local-pizza-1000-2025-09-30",
+      storyAngles: [
+        "Farm-to-pizza supply chains featuring grain cooperatives, creameries, and seasonal produce.",
+        "Growing a chef-led small business through community-backed crowdfunding.",
+        "How Local Effort's weekly meal prep program informs fast-casual pizza innovation."
+      ],
+      summary: "Roseville-based Local Effort Cooperative invites the community to back its most ambitious pizza initiative yet - building a thousand pies sourced entirely from Midwestern growers, millers, and producers.",
+      title: "Roseville-Based Local Effort Seeks Support to Craft 1,000 Fully Local Pizzas"
+    },
+    {
+      _id: "release-local-pizza-1000-2024-05-30",
+      body: [
+        {
+          _key: "b0",
+          _type: "block",
+          children: [
+            {
+              _key: "s0",
+              _type: "span",
+              marks: [],
+              text: "The crowdfunding campaign energizes Local Effort's obsession with 100% regional sourcing. Every crust, sauce, and topping will trace back to Minnesota and Midwest farms, mills, creameries, and co-ops that the chef team has partnered with since 2022."
+            }
+          ],
+          markDefs: [],
+          style: "normal"
+        },
+        {
+          _key: "b1",
+          _type: "block",
+          children: [
+            {
+              _key: "s1",
+              _type: "span",
+              marks: [],
+              text: "Backers will help finance upgraded cold storage and a mobile pizza rig, unlocking more neighborhood pop-ups, farmers market collaborations, and last-mile delivery runs throughout Minneapolis, St. Paul, and Western Wisconsin."
+            }
+          ],
+          markDefs: [],
+          style: "normal"
+        },
+        {
+          _key: "b2",
+          _type: "block",
+          children: [
+            {
+              _key: "s2",
+              _type: "span",
+              marks: [],
+              text: '"Pizzas can tell the whole story of a foodshed," said Weston Smith, chef and co-founder of Local Effort. "When we layer house-fermented dough with seasonal produce, heritage grains, and regional cheeses, we showcase the farms that feed us. This campaign invites people to invest in that community table."'
+            }
+          ],
+          markDefs: [],
+          style: "blockquote"
+        },
+        {
+          _key: "b3",
+          _type: "block",
+          children: [
+            {
+              _key: "s3",
+              _type: "span",
+              marks: [],
+              text: "Supporters can choose from tiered rewards including limited pizza drops, family meal prep bundles, and exclusive seasonal toppings co-developed with local growers. Weekly progress bulletins and tasting events will keep the community connected as milestones are reached on the path to 1,000 pizzas."
+            }
+          ],
+          markDefs: [],
+          style: "normal"
+        },
+        {
+          _key: "b4",
+          _type: "block",
+          children: [
+            {
+              _key: "s4",
+              _type: "span",
+              marks: [],
+              text: "Local Effort has grown from intimate in-home dinners to weekly meal prep and community events by doubling down on relationships with Minnesota farmers, grain cooperatives, and dairy makers. The pizza program translates that ethos into a handheld, shareable format that can reach more tables without compromising sourcing."
+            }
+          ],
+          markDefs: [],
+          style: "normal"
+        }
+      ],
+      campaignHighlights: null,
+      canonicalUrl: null,
+      heroImage: null,
+      isArchived: true,
+      leadership: null,
+      mediaContact: null,
+      metaDescription: null,
+      pressAssets: null,
+      pressFacts: null,
+      pressKitUrl: null,
+      publishedAt: "2024-05-30T09:00:00-05:00",
+      slug: "local-pizza-1000-2024-05-30",
+      storyAngles: null,
+      summary: "Minneapolis-based Local Effort Cooperative invites the community to back its most ambitious pizza initiative yet - building a thousand pies sourced entirely from Midwestern growers, millers, and makers.",
+      title: "Local Effort Launches Crowdfunding Campaign to Craft 1,000 Local Pizzas"
     }
-  }
-});
+  ]
+};
+
+// src/pages/ReleasesPage.jsx
+var import_jsx_runtime27 = require("react/jsx-runtime");
+var RELEASES_QUERY = `*[_type == "release"] | order(coalesce(publishedAt, _createdAt) desc)[0...50]{
+  _id,
+  title,
+  "slug": slug.current,
+  summary,
+  publishedAt,
+  body,
+  canonicalUrl,
+  metaDescription,
+  isArchived,
+  mediaContact{ name, organization, email, website, location, instagram, tiktok },
+  campaignHighlights,
+  pressFacts[]{ label, value },
+  leadership[]{ name, title, bio },
+  pressAssets[]{ label, value, href },
+  pressKitUrl,
+  storyAngles,
+  heroImage{ alt, "url": asset->url }
+}`;
+var INITIAL_RELEASES = Array.isArray(generatedReleasesPageData_default?.releases) ? generatedReleasesPageData_default.releases : [];
+var portableComponents = createPortableTextComponents();
+var typewriterFonts = "'IBM Plex Mono', 'Courier Prime', 'Courier New', 'ui-monospace', 'SFMono-Regular', 'Menlo', 'monospace'";
 function formatDate3(value) {
   if (!value) return "";
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return "";
   return date.toLocaleDateString(void 0, { year: "numeric", month: "long", day: "numeric" });
 }
+function releaseUrl(release) {
+  return release.canonicalUrl || `${SITE_URL}/releases#${release.slug || release._id}`;
+}
+function hasItems(items) {
+  return Array.isArray(items) && items.length > 0;
+}
+function ContactBlock({ contact, compact = false }) {
+  if (!contact) return null;
+  return /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)("div", { className: compact ? "text-sm text-neutral-700" : "md:justify-self-end md:text-right text-sm text-neutral-700", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("p", { className: "font-semibold text-neutral-900", children: "Media Contact" }),
+    contact.name && /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("p", { children: contact.name }),
+    contact.organization && /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("p", { children: contact.organization }),
+    contact.location && compact && /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("p", { children: contact.location }),
+    contact.email && /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("p", { children: /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("a", { href: `mailto:${contact.email}`, className: "underline underline-offset-4 hover:opacity-80", children: contact.email }) }),
+    contact.website && /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("p", { children: /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("a", { href: contact.website, className: "underline underline-offset-4 hover:opacity-80", children: contact.website.replace(/^https?:\/\//, "") }) })
+  ] });
+}
 var ReleasesPage = () => {
-  const [releases, setReleases] = (0, import_react19.useState)([]);
+  const [releases, setReleases] = (0, import_react19.useState)(INITIAL_RELEASES);
   const [error, setError] = (0, import_react19.useState)("");
   (0, import_react19.useEffect)(() => {
     let mounted = true;
@@ -13796,7 +14095,7 @@ var ReleasesPage = () => {
   }, []);
   const pageDescription = (0, import_react19.useMemo)(() => {
     if (releases[0]?.metaDescription) return releases[0].metaDescription;
-    return "Press releases and media resources from Local Effort Food Co.";
+    return "Press releases and media resources from Local Effort Cooperative.";
   }, [releases]);
   const schema = (0, import_react19.useMemo)(() => {
     const list = releases.map((release, idx) => ({
@@ -13807,7 +14106,7 @@ var ReleasesPage = () => {
         headline: release.title,
         datePublished: release.publishedAt,
         description: release.summary,
-        url: release.canonicalUrl || `${SITE_URL}/releases#${release.slug || release._id}`
+        url: releaseUrl(release)
       }
     }));
     if (!list.length) return null;
@@ -13818,7 +14117,15 @@ var ReleasesPage = () => {
       itemListElement: list
     };
   }, [releases]);
-  return /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)("div", { className: "mx-auto max-w-4xl px-4 md:px-6 lg:px-8 py-10", children: [
+  const primaryRelease = (0, import_react19.useMemo)(
+    () => releases.find((release) => !release.isArchived) || releases[0] || null,
+    [releases]
+  );
+  const archivedReleases = (0, import_react19.useMemo)(
+    () => releases.filter((release) => release._id !== primaryRelease?._id),
+    [primaryRelease, releases]
+  );
+  return /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)("div", { className: "bg-neutral-50 py-16", children: [
     /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)(import_react_helmet_async4.Helmet, { children: [
       /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("title", { children: "Releases | Local Effort" }),
       /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("meta", { name: "description", content: pageDescription }),
@@ -13827,27 +14134,143 @@ var ReleasesPage = () => {
       /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("link", { rel: "alternate", type: "application/atom+xml", title: "Local Effort Releases Atom", href: "/api/feeds/releases.atom" }),
       schema && /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("script", { type: "application/ld+json", children: JSON.stringify(schema) })
     ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)("header", { className: "mb-8", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("h1", { className: "heading-xl heading-balance", children: "Press Releases" }),
-      /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("p", { className: "text-neutral-600 mt-2", children: "Company announcements and media updates from Local Effort Food Co." })
-    ] }),
-    error && /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("div", { className: "rounded-md border border-red-200 bg-red-50 p-3 text-red-700 mb-6", children: error }),
-    !error && releases.length === 0 && /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("div", { className: "rounded-md border border-neutral-200 bg-neutral-50 p-4 text-neutral-700", children: "No releases have been published yet." }),
-    /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("div", { className: "space-y-10", children: releases.map((release) => /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)("article", { id: release.slug || release._id, className: "rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("p", { className: "text-sm text-neutral-500", children: formatDate3(release.publishedAt) }),
-      /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("h2", { className: "mt-1 text-2xl font-semibold text-neutral-900", children: release.title }),
-      release.summary && /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("p", { className: "mt-3 text-neutral-700", children: release.summary }),
-      release.heroImage?.url && /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(
-        "img",
+    /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)("div", { className: "mx-auto max-w-5xl px-4 md:px-6 lg:px-8", children: [
+      error && /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("div", { className: "mb-6 rounded-md border border-red-200 bg-red-50 p-3 text-red-700", children: error }),
+      !error && releases.length === 0 && /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("div", { className: "rounded-md border border-neutral-200 bg-white p-4 text-neutral-700", children: "No releases have been published yet." }),
+      primaryRelease && /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)(
+        "article",
         {
-          src: release.heroImage.url,
-          alt: release.heroImage?.alt || "",
-          className: "mt-5 rounded-lg",
-          loading: "lazy"
+          id: primaryRelease.slug || primaryRelease._id,
+          className: "overflow-hidden rounded-lg border border-neutral-200 bg-white shadow-xl shadow-neutral-900/5",
+          style: { fontFamily: typewriterFonts },
+          children: [
+            /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("div", { className: "bg-neutral-900 px-6 py-3 text-xs uppercase tracking-[0.4em] text-neutral-100", children: "Press Release" }),
+            /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)("div", { className: "space-y-8 px-6 py-8 md:px-10 md:py-12", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)("header", { className: "space-y-4", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)("div", { className: "flex flex-col gap-1 text-sm uppercase tracking-[0.3em] text-neutral-600", children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("span", { children: "For Immediate Release" }),
+                  /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("span", { children: formatDate3(primaryRelease.publishedAt) })
+                ] }),
+                /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)("div", { className: "grid gap-3 md:grid-cols-[2fr,1fr] md:items-start", children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)("div", { className: "space-y-3", children: [
+                    /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("h1", { className: "heading-xl heading-balance", children: primaryRelease.title }),
+                    primaryRelease.summary && /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("p", { className: "text-base leading-relaxed text-neutral-700", children: primaryRelease.summary })
+                  ] }),
+                  /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(ContactBlock, { contact: primaryRelease.mediaContact })
+                ] })
+              ] }),
+              primaryRelease.heroImage?.url && /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(
+                "img",
+                {
+                  src: primaryRelease.heroImage.url,
+                  alt: primaryRelease.heroImage?.alt || "",
+                  className: "w-full rounded-lg",
+                  loading: "lazy"
+                }
+              ),
+              hasItems(primaryRelease.body) && /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("div", { className: "prose max-w-none text-[1.02rem] leading-relaxed text-neutral-800", children: /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(import_react20.PortableText, { value: primaryRelease.body, components: portableComponents }) }),
+              hasItems(primaryRelease.campaignHighlights) && /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)("section", { "aria-labelledby": "campaign-highlights", className: "space-y-3", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("h2", { id: "campaign-highlights", className: "heading-overline text-neutral-600", children: "Campaign Snapshot" }),
+                /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("ul", { className: "space-y-3 text-neutral-800", children: primaryRelease.campaignHighlights.map((item) => /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)("li", { className: "relative pl-5", children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("span", { className: "absolute left-0 top-2 h-2 w-2 rounded-full bg-neutral-900", "aria-hidden": "true" }),
+                  item
+                ] }, item)) })
+              ] }),
+              /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)("footer", { className: "border-t border-dashed border-neutral-300 pt-6", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("p", { className: "text-xs uppercase tracking-[0.3em] text-neutral-600", children: "About Local Effort" }),
+                /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("p", { className: "mt-3 text-[1.02rem] leading-relaxed text-neutral-800", children: "Local Effort Cooperative is a Roseville-based personal chef and catering team specializing in locally sourced cuisine. Since 2022, the team has designed in-home dinners, weekly meal prep, and small events that keep Midwestern ingredients at the center of every menu." })
+              ] })
+            ] })
+          ]
         }
       ),
-      Array.isArray(release.body) && release.body.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("div", { className: "prose max-w-none mt-6", children: /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(import_react20.PortableText, { value: release.body, components: portableComponents }) })
-    ] }, release._id)) })
+      primaryRelease && /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)("section", { className: "mt-16 space-y-8", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)("div", { className: "space-y-3", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("h2", { className: "heading-xl heading-balance", children: "Press Kit" }),
+          /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("p", { className: "max-w-3xl text-neutral-600", children: "Download-ready facts, leadership bios, and campaign details to support coverage of Local Effort's 1,000 pizza crowdfunding initiative." })
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)("div", { className: "grid gap-6 lg:grid-cols-2", children: [
+          hasItems(primaryRelease.pressFacts) && /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)("div", { className: "rounded-lg border border-neutral-200 bg-white p-6 shadow-sm", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("h3", { className: "text-lg font-semibold text-neutral-900", children: "Fast Facts" }),
+            /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("dl", { className: "mt-4 space-y-3 text-neutral-700", children: primaryRelease.pressFacts.map(({ label, value }) => /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)("div", { className: "flex flex-col", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("dt", { className: "text-xs uppercase tracking-[0.25em] text-neutral-500", children: label }),
+              /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("dd", { className: "text-base", children: value })
+            ] }, label)) })
+          ] }),
+          hasItems(primaryRelease.leadership) && /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)("div", { className: "rounded-lg border border-neutral-200 bg-white p-6 shadow-sm", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("h3", { className: "text-lg font-semibold text-neutral-900", children: "Leadership" }),
+            /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("ul", { className: "mt-4 space-y-4 text-neutral-700", children: primaryRelease.leadership.map(({ name, title, bio }) => /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)("li", { children: [
+              /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("p", { className: "text-base font-semibold text-neutral-900", children: name }),
+              /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("p", { className: "text-sm uppercase tracking-[0.2em] text-neutral-500", children: title }),
+              /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("p", { className: "mt-2 text-sm leading-relaxed", children: bio })
+            ] }, name)) })
+          ] }),
+          (hasItems(primaryRelease.pressAssets) || primaryRelease.pressKitUrl) && /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)("div", { className: "rounded-lg border border-neutral-200 bg-white p-6 shadow-sm lg:col-span-2", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("h3", { className: "text-lg font-semibold text-neutral-900", children: "Campaign Assets" }),
+            /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)("div", { className: "mt-4 grid gap-4 sm:grid-cols-2", children: [
+              (primaryRelease.pressAssets || []).map(({ label, value, href }) => /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)(
+                "a",
+                {
+                  href,
+                  className: "group flex flex-col justify-between rounded-lg border border-neutral-200 p-4 transition hover:border-neutral-400 hover:shadow",
+                  children: [
+                    /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("span", { className: "text-xs uppercase tracking-[0.25em] text-neutral-500", children: label }),
+                    /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("span", { className: "mt-2 text-base text-neutral-900 group-hover:underline group-hover:underline-offset-4", children: value })
+                  ]
+                },
+                label
+              )),
+              primaryRelease.pressKitUrl && /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)(
+                "a",
+                {
+                  href: primaryRelease.pressKitUrl,
+                  className: "group flex flex-col justify-between rounded-lg border border-neutral-200 p-4 transition hover:border-neutral-400 hover:shadow",
+                  children: [
+                    /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("span", { className: "text-xs uppercase tracking-[0.25em] text-neutral-500", children: "Press Kit PDF" }),
+                    /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("span", { className: "mt-2 text-base text-neutral-900 group-hover:underline group-hover:underline-offset-4", children: "Download press kit (PDF)" })
+                  ]
+                }
+              )
+            ] })
+          ] }),
+          primaryRelease.mediaContact && /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)("div", { className: "rounded-lg border border-neutral-200 bg-white p-6 shadow-sm", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("h3", { className: "text-lg font-semibold text-neutral-900", children: "Media Contact" }),
+            /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("div", { className: "mt-3", children: /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(ContactBlock, { contact: primaryRelease.mediaContact, compact: true }) }),
+            primaryRelease.mediaContact.instagram && /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)("p", { className: "mt-4 text-sm text-neutral-700", children: [
+              "Instagram:",
+              " ",
+              /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("a", { href: primaryRelease.mediaContact.instagram, className: "underline underline-offset-4 hover:opacity-80", children: "@localeffortfood" })
+            ] }),
+            primaryRelease.mediaContact.tiktok && /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)("p", { className: "mt-1 text-sm text-neutral-700", children: [
+              "TikTok:",
+              " ",
+              /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("a", { href: primaryRelease.mediaContact.tiktok, className: "underline underline-offset-4 hover:opacity-80", children: "@localeffort" })
+            ] })
+          ] }),
+          hasItems(primaryRelease.storyAngles) && /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)("div", { className: "rounded-lg border border-neutral-200 bg-white p-6 shadow-sm", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("h3", { className: "text-lg font-semibold text-neutral-900", children: "Story Angles" }),
+            /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("ul", { className: "mt-4 space-y-3 text-neutral-700", children: primaryRelease.storyAngles.map((angle) => /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)("li", { className: "relative pl-4", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("span", { className: "absolute left-0 top-2 h-2 w-2 rounded-full bg-neutral-900", "aria-hidden": "true" }),
+              angle
+            ] }, angle)) })
+          ] })
+        ] })
+      ] }),
+      hasItems(archivedReleases) && /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)("section", { className: "mt-24", "aria-labelledby": "archive-heading", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("h2", { id: "archive-heading", className: "heading-lg heading-balance mb-6", children: "Previous Releases" }),
+        /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("div", { className: "space-y-4", children: archivedReleases.map((release) => /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)("details", { className: "group rounded-lg border border-neutral-200 bg-white shadow-sm", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)("summary", { className: "flex cursor-pointer list-none items-center justify-between px-6 py-4", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("span", { className: "font-medium text-neutral-800", children: release.title }),
+            /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("span", { className: "text-xs text-neutral-500 group-open:hidden", children: "Expand" }),
+            /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("span", { className: "hidden text-xs text-neutral-500 group-open:inline", children: "Collapse" })
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)("div", { className: "space-y-5 px-6 pb-8 text-[0.97rem] leading-relaxed text-neutral-800", children: [
+            release.summary && /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("p", { children: release.summary }),
+            hasItems(release.body) && /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("div", { className: "prose max-w-none", children: /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(import_react20.PortableText, { value: release.body, components: portableComponents }) })
+          ] })
+        ] }, release._id)) })
+      ] })
+    ] })
   ] });
 };
 var ReleasesPage_default = ReleasesPage;
@@ -14278,7 +14701,7 @@ function ProductGrid({
             summary && /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("meta", { itemProp: "description", content: summary }),
             /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("meta", { itemProp: "sku", content: sku }),
             /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("meta", { itemProp: "url", content: `${SITE_URL}${basePath}#${anchorId}` }),
-            /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("div", { itemProp: "brand", itemScope: true, itemType: "https://schema.org/Brand", children: /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("meta", { itemProp: "name", content: "Local Effort Food Co." }) }),
+            /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("div", { itemProp: "brand", itemScope: true, itemType: "https://schema.org/Brand", children: /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("meta", { itemProp: "name", content: "Local Effort Cooperative" }) }),
             /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)("div", { itemProp: "offers", itemScope: true, itemType: "https://schema.org/Offer", children: [
               /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("meta", { itemProp: "priceCurrency", content: "USD" }),
               /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("meta", { itemProp: "price", content: ((product.salePrice ?? product.price) / 100).toFixed(2) }),
@@ -14975,7 +15398,7 @@ function CartDrawer({ store = "sale" }) {
 
 // src/store/data/generatedSalePageData.json
 var generatedSalePageData_default = {
-  generatedAt: "2026-05-04T03:31:38.481Z",
+  generatedAt: "2026-05-06T04:34:27.622Z",
   page: {
     title: "Local Effort Sale",
     subheading: "holiday pie sale",
@@ -15175,7 +15598,7 @@ var SalePage = () => {
         sku: product.squareVariationId || product.squareItemId || product.id,
         brand: {
           "@type": "Brand",
-          name: "Local Effort Food Co."
+          name: "Local Effort Cooperative"
         },
         offers: {
           "@type": "Offer",
@@ -15185,7 +15608,7 @@ var SalePage = () => {
           availability: product.inventoryManaged && (product.inventory ?? 0) <= 0 ? "https://schema.org/OutOfStock" : "https://schema.org/InStock",
           seller: {
             "@type": "Organization",
-            name: "Local Effort Food Co.",
+            name: "Local Effort Cooperative",
             url: SITE_URL
           }
         }
@@ -15232,16 +15655,16 @@ var SalePage = () => {
   }, [metaDescription, pageTitle, products]);
   return /* @__PURE__ */ (0, import_jsx_runtime34.jsxs)("div", { className: "le-sale-page", children: [
     /* @__PURE__ */ (0, import_jsx_runtime34.jsxs)(import_react_helmet_async5.Helmet, { children: [
-      /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("title", { children: `${pageTitle} | Local Effort Food Co.` }),
+      /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("title", { children: `${pageTitle} | Local Effort Cooperative` }),
       /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("meta", { name: "description", content: metaDescription }),
       /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("meta", { name: "keywords", content: "Local Effort sale, Minneapolis food preorder, prepared foods Minneapolis, pantry goods Minneapolis, local delivery food, seasonal food drop" }),
-      /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("meta", { property: "og:title", content: `${pageTitle} | Local Effort Food Co.` }),
+      /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("meta", { property: "og:title", content: `${pageTitle} | Local Effort Cooperative` }),
       /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("meta", { property: "og:description", content: metaDescription }),
       /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("meta", { property: "og:type", content: "website" }),
       /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("meta", { property: "og:url", content: `${SITE_URL}/sale` }),
       heroImage && /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("meta", { property: "og:image", content: heroImage }),
       heroImage && /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("meta", { name: "twitter:image", content: heroImage }),
-      /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("meta", { name: "twitter:title", content: `${pageTitle} | Local Effort Food Co.` }),
+      /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("meta", { name: "twitter:title", content: `${pageTitle} | Local Effort Cooperative` }),
       /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("meta", { name: "twitter:description", content: metaDescription }),
       /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("meta", { name: "robots", content: "index,follow,max-snippet:-1,max-image-preview:large,max-video-preview:-1" }),
       /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("link", { rel: "canonical", href: `${SITE_URL}/sale` }),
@@ -17057,7 +17480,7 @@ var buildProductJsonLd = () => ({
         itemCondition: "https://schema.org/NewCondition",
         seller: {
           "@type": "LocalBusiness",
-          name: "Local Effort Food Co.",
+          name: "Local Effort Cooperative",
           url: SITE_URL,
           address: {
             "@type": "PostalAddress",
@@ -17278,20 +17701,20 @@ var PsychePage = () => {
         "meta",
         {
           name: "description",
-          content: "Buy Psyche extra-virgin olive oil (3 L bag-in-box) from Local Effort Food Co. in Minneapolis. Single-estate koroneiki from Greece \u2014 bright, peppery, EVA-certified. Now $70 (was $90) \u2014 last bottle! Free local delivery."
+          content: "Buy Psyche extra-virgin olive oil (3 L bag-in-box) from Local Effort Cooperative in Minneapolis. Single-estate koroneiki from Greece \u2014 bright, peppery, EVA-certified. Now $70 (was $90) \u2014 last bottle! Free local delivery."
         }
       ),
       /* @__PURE__ */ (0, import_jsx_runtime45.jsx)(
         "meta",
         {
           name: "keywords",
-          content: "Psyche olive oil, buy olive oil Minneapolis, extra virgin olive oil, koroneiki, Greek olive oil, Local Effort Food Co., bag in box olive oil, finishing oil"
+          content: "Psyche olive oil, buy olive oil Minneapolis, extra virgin olive oil, koroneiki, Greek olive oil, Local Effort Cooperative, bag in box olive oil, finishing oil"
         }
       ),
       /* @__PURE__ */ (0, import_jsx_runtime45.jsx)("link", { rel: "canonical", href: `${SITE_URL}/psyche` }),
       /* @__PURE__ */ (0, import_jsx_runtime45.jsx)("meta", { property: "og:type", content: "product" }),
       /* @__PURE__ */ (0, import_jsx_runtime45.jsx)("meta", { property: "og:url", content: `${SITE_URL}/psyche` }),
-      /* @__PURE__ */ (0, import_jsx_runtime45.jsx)("meta", { property: "og:title", content: "Buy Psyche Olive Oil \u2014 3L Extra-Virgin | Local Effort Food Co." }),
+      /* @__PURE__ */ (0, import_jsx_runtime45.jsx)("meta", { property: "og:title", content: "Buy Psyche Olive Oil \u2014 3L Extra-Virgin | Local Effort Cooperative" }),
       /* @__PURE__ */ (0, import_jsx_runtime45.jsx)(
         "meta",
         {
@@ -17308,7 +17731,7 @@ var PsychePage = () => {
       /* @__PURE__ */ (0, import_jsx_runtime45.jsx)("meta", { property: "product:availability", content: "limited availability" }),
       /* @__PURE__ */ (0, import_jsx_runtime45.jsx)("meta", { name: "twitter:card", content: "summary_large_image" }),
       /* @__PURE__ */ (0, import_jsx_runtime45.jsx)("meta", { name: "twitter:url", content: `${SITE_URL}/psyche` }),
-      /* @__PURE__ */ (0, import_jsx_runtime45.jsx)("meta", { name: "twitter:title", content: "Buy Psyche Olive Oil \u2014 3L Extra-Virgin | Local Effort Food Co." }),
+      /* @__PURE__ */ (0, import_jsx_runtime45.jsx)("meta", { name: "twitter:title", content: "Buy Psyche Olive Oil \u2014 3L Extra-Virgin | Local Effort Cooperative" }),
       /* @__PURE__ */ (0, import_jsx_runtime45.jsx)(
         "meta",
         {

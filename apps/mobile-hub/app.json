@@ -16,6 +16,9 @@
     },
     "extra": {
       "apiBaseUrl": ""
-    }
+    },
+    "plugins": [
+      "expo-web-browser"
+    ]
   }
 }

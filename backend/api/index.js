@@ -243,7 +243,7 @@ const PUBLIC_SANITY_QUERY_ALLOWLIST = new Set([
   normalizeGroq('*[_type == "product" && active == true]{ _id, title, slug, shortDescription, longDescription, images[]{asset->{url}}, price, salePrice, squareItemId, squareVariationId, variants[]{name, squareVariationId, price}, } | order(title asc)'),
   normalizeGroq('*[_type == "product" && slug.current == $slug][0]{ _id, title, shortDescription, longDescription, images[]{asset->{url}}, price, salePrice }'),
   normalizeGroq('*[_type == "salePage"][0]{ title, titleIcon, subheading, intro }'),
-  normalizeGroq('*[_type == "release"] | order(coalesce(publishedAt, _createdAt) desc)[0...50]{ _id, title, "slug": slug.current, summary, publishedAt, body, canonicalUrl, metaDescription, heroImage{ alt, "url": asset->url } }'),
+  normalizeGroq('*[_type == "release"] | order(coalesce(publishedAt, _createdAt) desc)[0...50]{ _id, title, "slug": slug.current, summary, publishedAt, body, canonicalUrl, metaDescription, isArchived, mediaContact{ name, organization, email, website, location, instagram, tiktok }, campaignHighlights, pressFacts[]{ label, value }, leadership[]{ name, title, bio }, pressAssets[]{ label, value, href }, pressKitUrl, storyAngles, heroImage{ alt, "url": asset->url } }'),
   normalizeGroq('*[_type in ["pricingFaq","page","post"] && (defined(question) && question match $q || defined(answer) && answer match $q || defined(title) && title match $q || defined(body) && body match $q)] | order(_updatedAt desc)[0...10]{ _id, question, answer, title }'),
 ]);
 

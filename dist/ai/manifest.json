@@ -1,6 +1,6 @@
 {
   "site": "https://www.localeffortfood.com",
-  "name": "Local Effort Food Co.",
+  "name": "Local Effort Cooperative",
   "updated": "2026-03-10T00:00:00Z",
   "description": "Twin Cities personal chef, small-event catering, and product checkout surfaces with public machine-readable APIs, feeds, and agent commerce endpoints.",
   "mcpServers": [
@@ -61,7 +61,7 @@
     { "path": "/", "title": "Home", "summary": "Service overview, testimonials, catering sections, and business information." },
     { "path": "/sale", "title": "Sale", "summary": "Public sale catalog and checkout surface." },
     { "path": "/releases", "title": "Releases", "summary": "Press releases and media updates." },
-    { "path": "/blog", "title": "Blog", "summary": "News, stories, and updates from Local Effort Food Co." },
+    { "path": "/blog", "title": "Blog", "summary": "News, stories, and updates from Local Effort Cooperative" },
     { "path": "/happymonday", "title": "Happy Monday", "summary": "Weekly post and newsletter page." },
     { "path": "/pizza-party", "title": "Pizza Party", "summary": "Pizza party booking and deposit page." },
     { "path": "/psyche", "title": "Psyche Olive Oil", "summary": "Public product page for Psyche olive oil." },
@@ -124,7 +124,7 @@
     "press": "https://www.localeffortfood.com/releases"
   },
   "organization": {
-    "legalName": "Local Effort Food Co.",
+    "legalName": "Local Effort Cooperative",
     "description": "Locally sourced personal chef, meal prep, and intimate event catering in Minneapolis-Saint Paul.",
     "hq": "Roseville, Minnesota",
     "serviceArea": ["Minneapolis", "St. Paul", "Twin Cities", "Minnesota", "Western Wisconsin"],

@@ -12,9 +12,15 @@
   },
   "dependencies": {
     "@local-effort/shared": "workspace:*",
+    "@react-native-async-storage/async-storage": "2.2.0",
+    "@supabase/supabase-js": "^2.105.3",
     "expo": "^55.0.0",
+    "expo-auth-session": "~55.0.15",
+    "expo-crypto": "~55.0.14",
+    "expo-web-browser": "~55.0.15",
     "react": "19.2.0",
-    "react-native": "0.83.0"
+    "react-native": "0.83.0",
+    "react-native-url-polyfill": "^3.0.0"
   },
   "devDependencies": {
     "@types/react": "^19.2.0",
