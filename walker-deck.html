@@ -43,6 +43,7 @@
   --brick-deep:   #7e2e26;
   --green:        #2c3d2e;        /* deep institutional green */
   --green-soft:   #5b6b53;
+  --night:        #1e1c18;        /* dark warm charcoal, evening */
   --butter:       #e8c77a;        /* soft yellow */
 
   --display: 'National Park','National Park Typeface', ui-sans-serif, system-ui, sans-serif;
@@ -318,21 +319,21 @@ body{
    SLIDE 2 — OPENING STATEMENT
    ============================================================ */
 .s2 .col-text{
-  position:absolute; top:120px; left:48px; width: 660px;
-  bottom: 80px;
+  position:absolute; top:80px; left:48px; width: 660px;
+  bottom: 64px;
   display: flex; flex-direction: column;
 }
-.s2 .eyebrow{ margin-bottom: 16px; }
-.s2 .h2{ font-size: 50px; margin-bottom: 24px; }
-.s2 .body-lg{ max-width: 600px; margin-bottom: 18px; font-size: 21px; line-height: 1.4; }
-.s2 .body { font-size: 17px; }
+.s2 .eyebrow{ margin-bottom: 12px; }
+.s2 .h2{ font-size: 38px; margin-bottom: 20px; margin-top: 0px; }
+.s2 .body-lg{ max-width: 600px; margin-bottom: 14px; font-size: 21px; line-height: 1.4; }
+.s2 .body { font-size: 17px; line-height: 1.5; }
 .s2 .pull{
   margin-top: auto;
-  padding-top: 18px;
+  padding-top: 16px;
   border-top: 1px solid var(--ink);
   font-family: var(--display);
   font-weight: 500;
-  font-size: 28px;
+  font-size: 25px;
   line-height: 1.15;
   letter-spacing: -.005em;
   color: var(--brick);
@@ -340,7 +341,7 @@ body{
 }
 .s2 .col-image{
   position:absolute;
-  top: 120px; right: 48px; bottom: 80px;
+  top: 80px; right: 48px; bottom: 64px;
   width: 440px;
   background: var(--paper-deep);
   overflow: hidden;
@@ -358,44 +359,58 @@ body{
    SLIDE 3 — WHAT THE OPPORTUNITY CALLS FOR
    ============================================================ */
 .s3 .head{
-  position:absolute; top:130px; left:48px; right:48px;
+  position:absolute; top:80px; left:48px; right:48px;
 }
-.s3 .h2{ max-width: 820px; margin-top: 18px; }
+.s3 .eyebrow{ margin-bottom: 12px; }
+.s3 .h2{ max-width: 820px; margin-top: 0; }
+.s3-photo{
+  position:absolute; top:62px; right:48px;
+  width:480px; height:576px;
+  z-index:2; overflow:hidden;
+}
+.s3-photo img{ width:100%; height:100%; object-fit:cover; display:block; }
+.s3-photo .obj-label{
+  position:absolute; bottom:14px; left:14px;
+  background: var(--paper); padding: 8px 12px;
+  font-family: var(--mono); font-size: 9.5px;
+  letter-spacing: .18em; text-transform: uppercase;
+  color: var(--ink); line-height: 1.5;
+}
 .s3 .frags{
   position:absolute;
-  left:48px; right:48px; top:340px;
-  display:grid; grid-template-columns: repeat(12, 1fr); gap: 24px 28px;
+  left:48px; right:576px; top:235px;
+  display:grid; grid-template-columns: repeat(6, 1fr); gap: 20px 23px;
 }
 .s3 .frag{
-  grid-column: span 4;
+  grid-column: span 3;
   border-top: 1px solid var(--ink);
-  padding-top: 16px;
+  padding-top: 13px;
 }
 .s3 .frag .num{
   font-family: var(--mono);
-  font-size: 10px; letter-spacing: .18em;
+  font-size: 8px; letter-spacing: .18em;
   text-transform: uppercase;
   color: var(--ink-muted);
-  margin-bottom: 12px;
+  margin-bottom: 10px;
 }
 .s3 .frag .copy{
-  font-family: var(--display);
+  font-family: var(--body);
   font-weight: 400;
-  font-size: 22px;
-  line-height: 1.2;
-  letter-spacing: -.003em;
-  color: var(--ink);
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--ink-soft);
+  text-align: justify;
 }
 
 /* ============================================================
    SLIDE 4 — TWO COMMITMENTS
    ============================================================ */
 .s4 .head{
-  position:absolute; top:130px; left:48px; right:48px;
+  position:absolute; top:80px; left:48px; right:48px;
 }
-.s4 .h2{ margin-top: 18px; max-width: 820px; }
+.s4 .h2{ margin-top: 12px; max-width: 820px; }
 .s4 .cols{
-  position:absolute; top:300px; left:48px; right:48px;
+  position:absolute; top:220px; left:48px; right:48px;
   display:grid; grid-template-columns: 1fr 1fr; gap:64px;
 }
 .s4 .col{
@@ -445,76 +460,216 @@ body{
 /* ============================================================
    SLIDE 5 — FOUNDERS
    ============================================================ */
-.s5 .head{ position:absolute; top:130px; left:48px; right:48px; }
-.s5 .h2{ margin-top:18px; max-width: 800px; }
+.s5 .head{ position:absolute; top:80px; left:48px; right:48px; }
+.s5 .eyebrow{ margin-bottom: 12px; }
+.s5 .h3{ margin-top:0; max-width: 800px; }
 .s5 .cards{
-  position:absolute; top:300px; left:48px; right:48px;
-  display:grid; grid-template-columns: 1fr 1fr; gap: 56px;
+  position:absolute; top:205px; left:48px; right:48px;
+  display:grid; grid-template-columns: repeat(4, 1fr); gap: 24px;
 }
 .s5 .card{
-  display:grid; grid-template-columns: 220px 1fr;
-  gap: 28px; align-items: start;
+  display:flex; flex-direction: column;
+  gap: 10px; align-items: start;
 }
 .s5 .card .portrait{
-  width:220px; height:280px;
+  width:100%; aspect-ratio: 3/4;
+  max-height: 320px;
   background: var(--paper-deep);
   overflow:hidden;
   position:relative;
 }
-.s5 .card .portrait img{ width:100%; height:100%; object-fit: cover; display:block; }
-.s5 .card .portrait .pl{
-  position:absolute; left:8px; bottom:8px;
-  background: var(--paper); padding: 5px 8px;
-  font-family: var(--mono); font-size: 9px;
-  letter-spacing: .16em; text-transform: uppercase;
-  color: var(--ink);
-}
+.s5 .card .portrait img{ width:100%; height:100%; object-fit: cover; object-position: top; display:block; }
+.s5 .card .portrait .pl{ display: none; }
 .s5 .card .text .name{
   font-family: var(--display);
   font-weight: 600;
-  font-size: 30px; line-height: 1; letter-spacing: -.005em;
-  margin-bottom: 4px;
+  font-size: 18px; line-height: 1; letter-spacing: -.005em;
+  margin-bottom: 3px;
 }
 .s5 .card .text .role{
-  font-family: var(--mono); font-size: 11px;
+  font-family: var(--mono); font-size: 8.5px;
   letter-spacing: .18em; text-transform: uppercase;
   color: var(--brick);
-  margin-bottom: 18px;
+  margin-bottom: 8px;
 }
 .s5 .card .text .bio{
-  font-family: var(--body); font-size: 16.5px;
-  line-height: 1.5; color: var(--ink);
-  margin-bottom: 14px;
+  font-family: var(--body); font-size: 12.5px;
+  line-height: 1.45; color: var(--ink);
+  margin-bottom: 8px; text-align: justify;
 }
 .s5 .card .text .resp{
-  border-top: 1px solid var(--rule); padding-top: 10px;
-  font-family: var(--mono); font-size: 10.5px;
+  border-top: 1px solid var(--rule); padding-top: 6px;
+  font-family: var(--mono); font-size: 8px;
   letter-spacing: .12em; text-transform: uppercase;
   color: var(--ink-soft); line-height: 1.6;
 }
 .s5 .bottom-line{
   position:absolute; left:48px; right:48px; bottom: 80px;
   font-family: var(--display); font-style:italic;
-  font-weight:400; font-size: 19px; line-height: 1.35;
+  font-weight:400; font-size: 17px; line-height: 1.35;
   color: var(--ink-soft);
   max-width: 880px;
   border-top: 1px solid var(--rule); padding-top: 14px;
 }
 
 /* ============================================================
-   SLIDE 6 — INGREDIENT SOURCING (material study)
+   SLIDE 5 — FOOD & BEVERAGE COMMUNITY
    ============================================================ */
-.s6 .head{ position:absolute; top:130px; left:48px; right:580px; }
-.s6 .h2{ margin-top:18px; max-width: 540px; font-size: 46px; line-height: 1.04; }
+.s_community .head{ position:absolute; top:80px; left:48px; right:48px; }
+.s_community .h2{ margin-top:12px; }
+.s_community .logo-grid{
+  position:absolute; top:200px; left:32px; right:32px; bottom:48px;
+  display:grid; grid-template-columns: repeat(4, 1fr); grid-template-rows: repeat(3, 1fr);
+  gap: 12px; align-items: center; justify-items: center;
+}
+.s_community .logo-grid .logo-cell{
+  width:100%; height:100%;
+  display:flex; align-items:center; justify-content:center;
+  padding: 8px;
+}
+.s_community .logo-grid .logo-cell img{
+  max-width:100%; max-height:130px; object-fit:contain;
+}
+.s_community .logo-grid .logo-cell.placeholder{
+  border-bottom: 1px dashed var(--rule);
+  min-width: 120px; min-height: 48px;
+}
+.s_community .logo-grid .logo-cell.placeholder::after{
+  content: "logo";
+  font-family: var(--mono); font-size: 10px;
+  letter-spacing: .18em; text-transform: uppercase;
+  color: var(--ink-muted);
+}
+
+/* ============================================================
+   SLIDE 6 — ORG CHART / GOVERNANCE
+   ============================================================ */
+.s_orgchart{ padding: 48px; }
+.s_orgchart .oc-frame-top{
+  display:flex; justify-content:space-between; align-items:center;
+  font-family:var(--mono); font-size:10.5px; letter-spacing:.22em; text-transform:uppercase;
+  color:var(--ink-muted); margin-bottom:10px;
+}
+.s_orgchart .oc-frame-top .dot{
+  display:inline-block; width:7px; height:7px; border-radius:50%;
+  background:var(--brick); margin-right:10px; vertical-align:middle;
+}
+.s_orgchart .oc-frame-top .lhs{ display:flex; gap:24px; align-items:center; }
+.s_orgchart .hairline{ height:1px; background:var(--rule); margin-bottom:18px; }
+.s_orgchart .head{ margin-bottom:18px; }
+.s_orgchart .head .eyebrow{
+  font-family:var(--mono); font-size:10.5px; letter-spacing:.22em; text-transform:uppercase;
+  color:var(--ink-muted); margin-bottom:8px;
+}
+.s_orgchart .head h2{
+  font-family:var(--display); font-weight:500; font-size:28px;
+  line-height:1.06; letter-spacing:-.005em; color:var(--ink);
+}
+.s_orgchart .head h2 em{
+  font-family:var(--body); font-style:italic; font-weight:400; color:var(--brick);
+}
+.s_orgchart .governance-row{ display:flex; gap:20px; margin-bottom:6px; }
+.s_orgchart .tier-label{
+  width:148px; flex-shrink:0; padding:12px 0; border-top:1px solid var(--ink);
+}
+.s_orgchart .tier-label .tier-name{
+  font-family:var(--display); font-weight:700; font-size:15px;
+  line-height:1.1; letter-spacing:-.01em; color:var(--ink); margin-bottom:3px;
+}
+.s_orgchart .tier-label .tier-sub{
+  font-family:var(--mono); font-size:8px; letter-spacing:.16em;
+  text-transform:uppercase; color:var(--ink-muted); line-height:1.5;
+}
+.s_orgchart .tier-cards{
+  flex:1; display:flex; gap:8px; flex-wrap:wrap;
+  padding:12px 0; border-top:1px solid var(--rule);
+}
+.s_orgchart .card{
+  background:var(--paper-deep); padding:8px 12px;
+  min-width:100px; flex:1; max-width:220px;
+}
+.s_orgchart .card.accent{ background:var(--green); color:#f4f1ea; }
+.s_orgchart .card.accent .card-title{ color:#f4f1ea; }
+.s_orgchart .card.accent .card-detail{ color:rgba(244,241,234,.65); }
+.s_orgchart .card.accent .card-role{ color:var(--butter); }
+.s_orgchart .card.brick-accent{ background:var(--brick); color:#f4f1ea; }
+.s_orgchart .card.brick-accent .card-title{ color:#f4f1ea; }
+.s_orgchart .card.brick-accent .card-detail{ color:rgba(244,241,234,.65); }
+.s_orgchart .card.brick-accent .card-role{ color:var(--butter); }
+.s_orgchart .card-role{
+  font-family:var(--mono); font-size:8px; letter-spacing:.18em;
+  text-transform:uppercase; color:var(--brick); margin-bottom:2px;
+}
+.s_orgchart .card-title{
+  font-family:var(--display); font-weight:600; font-size:12px;
+  line-height:1.2; color:var(--ink); margin-bottom:2px;
+}
+.s_orgchart .card-detail{
+  font-family:var(--body); font-size:10px; line-height:1.3;
+  color:var(--ink-soft); font-style:italic;
+}
+.s_orgchart .flow-note{ display:flex; gap:20px; margin-bottom:2px; }
+.s_orgchart .flow-note-spacer{ width:148px; flex-shrink:0; }
+.s_orgchart .flow-note-content{
+  flex:1; display:flex; align-items:center; gap:8px;
+  font-family:var(--mono); font-size:8px; letter-spacing:.14em;
+  text-transform:uppercase; color:var(--brick);
+}
+.s_orgchart .flow-note-content .arrow{
+  display:inline-block; width:20px; height:1px; background:var(--brick); position:relative;
+}
+.s_orgchart .flow-note-content .arrow::after{
+  content:''; position:absolute; right:0; top:-3px;
+  border:3px solid transparent; border-left:5px solid var(--brick);
+}
+.s_orgchart .flow-note-content .arrow.up{
+  width:1px; height:12px; background:var(--brick);
+}
+.s_orgchart .flow-note-content .arrow.up::after{
+  top:auto; right:auto; left:-3px; bottom:auto; top:-1px;
+  border:3px solid transparent; border-bottom:5px solid var(--brick);
+}
+.s_orgchart .rights-legend{
+  display:flex; gap:20px; margin-top:8px; padding-top:8px; padding-bottom:32px;
+  border-top:1px solid var(--rule);
+}
+.s_orgchart .rights-legend .legend-item{ display:flex; align-items:center; gap:6px; }
+.s_orgchart .rights-legend .swatch{ width:10px; height:10px; border-radius:2px; }
+.s_orgchart .rights-legend .legend-text{
+  font-family:var(--mono); font-size:8px; letter-spacing:.14em;
+  text-transform:uppercase; color:var(--ink-muted);
+}
+.s_orgchart .side-note{
+  position:absolute; right:48px; top:110px; width:190px;
+  padding:12px 14px; border-left:2px solid var(--brick);
+  background:rgba(168,68,58,.04);
+}
+.s_orgchart .side-note .side-label{
+  font-family:var(--mono); font-size:8px; letter-spacing:.16em;
+  text-transform:uppercase; color:var(--brick); margin-bottom:5px;
+}
+.s_orgchart .side-note .side-body{
+  font-family:var(--body); font-size:11px; line-height:1.4; color:var(--ink-soft);
+}
+.s_orgchart .side-note .side-body em{ color:var(--ink); font-style:italic; }
+.s_orgchart .oc-frame-bot{
+  position:absolute; bottom:48px; left:48px; right:48px;
+  display:flex; justify-content:space-between;
+  font-family:var(--mono); font-size:10px; letter-spacing:.18em;
+  text-transform:uppercase; color:var(--ink-muted);
+}
+
+/* ============================================================
+   SLIDE 7 — INGREDIENT SOURCING (material study)
+   ============================================================ */
+.s6 .head{ position:absolute; top:80px; left:48px; right:580px; }
+.s6 .h2{ margin-top:12px; max-width: 540px; font-size: 38px; line-height: 1.04; }
 .s6 .lede{
   position:absolute; top:380px; left:48px; width: 540px;
   font-family: var(--body); font-size: 18px; line-height: 1.5;
   color: var(--ink);
 }
-.s6 .index{
-  position:absolute; top:495px; left:48px; width: 540px;
-  border-top: 1px solid var(--ink); padding-top: 16px;
-}
+.s6 .index{ display: none; }
 .s6 .index .index-title{
   font-family: var(--mono); font-size: 10px;
   letter-spacing: .22em; text-transform: uppercase;
@@ -530,9 +685,8 @@ body{
 }
 
 .s6 .study{
-  position:absolute; top:130px; right:48px;
-  width: 480px; height: 470px;
-  display:grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr;
+  position:absolute; top:200px; left:48px; right:48px; bottom:120px;
+  display:grid; grid-template-columns: repeat(5, 1fr); grid-template-rows: 1fr 1fr;
   gap: 8px;
 }
 .s6 .study .tile{
@@ -540,13 +694,7 @@ body{
   overflow:hidden;
 }
 .s6 .study .tile img{ width:100%; height:100%; object-fit: cover; display:block; }
-.s6 .study .tile .tag{
-  position:absolute; top:8px; left:8px;
-  background: var(--paper); padding: 4px 8px;
-  font-family: var(--mono); font-size: 9px;
-  letter-spacing: .16em; text-transform: uppercase;
-  color: var(--ink);
-}
+.s6 .study .tile .tag{ display: none; }
 .s6 .flow{
   position:absolute; right:48px; bottom: 80px;
   width: 480px;
@@ -560,40 +708,39 @@ body{
 /* ============================================================
    SLIDE 7 — SERVICE CONTINUUM (typographic ladder)
    ============================================================ */
-.s7 .head{ position:absolute; top:120px; left:48px; right:48px; }
-.s7 .h2{ margin-top:14px; max-width: 880px; font-size: 44px; line-height:1.04; }
-.s7 .ladder{
-  position:absolute; top:250px; left:48px; right:48px;
+.s7 .head{ position:absolute; top:80px; left:48px; right:48px; }
+.s7 .eyebrow{ margin-bottom:12px; }
+.s7 .h2{ margin-top:0; max-width:880px; font-size:38px; line-height:1.04; }
+.s7 .items{
+  position:absolute; top:210px; left:48px; right:48px; bottom:80px;
+  display:grid; grid-template-columns:1fr 1fr; gap:0 48px;
+}
+.s7 .item{
   border-top: 1px solid var(--ink);
+  padding-top: 14px;
+  padding-bottom: 18px;
 }
-.s7 .rung{
-  display:grid;
-  grid-template-columns: 60px 320px 1fr;
-  gap: 20px;
-  align-items: baseline;
-  padding: 6px 0 7px 0;
-  border-bottom: 1px solid var(--rule);
+.s7 .item .num{
+  font-family: var(--mono); font-size: 8px;
+  letter-spacing: .18em; text-transform: uppercase;
+  color: var(--ink-muted); margin-bottom: 8px;
 }
-.s7 .rung .num{
-  font-family: var(--mono); font-size: 10.5px;
-  letter-spacing: .18em; color: var(--ink-muted);
-}
-.s7 .rung .title{
+.s7 .item .title{
   font-family: var(--display); font-weight: 500;
-  font-size: 21px; line-height: 1.05; letter-spacing: -.003em;
-  color: var(--ink);
+  font-size: 19px; line-height: 1.1; letter-spacing: -.01em;
+  color: var(--ink); margin-bottom: 7px;
 }
-.s7 .rung .desc{
-  font-family: var(--body); font-size: 14.5px;
-  line-height: 1.4; color: var(--ink-soft);
+.s7 .item.featured .title{ color: var(--brick); }
+.s7 .item .desc{
+  font-family: var(--body); font-size: 14px;
+  line-height: 1.55; color: var(--ink-soft);
+  text-align: justify;
 }
-.s7 .rung.featured .title{ color: var(--brick); }
 .s7 .footnote{
-  position:absolute; left:48px; right:48px; bottom: 60px;
+  position:absolute; left:48px; right:48px; bottom:44px;
   font-family: var(--display); font-style: italic;
-  font-size: 17px; line-height: 1.4; color: var(--ink-soft);
-  max-width: 880px;
-  border-top: 1px solid var(--rule); padding-top: 12px;
+  font-size: 15px; line-height: 1.4; color: var(--ink-muted);
+  border-top: 1px solid var(--rule); padding-top: 10px;
 }
 
 /* ============================================================
@@ -656,6 +803,75 @@ body{
 .s8 .hairline-top{ left: calc(48% + 24px); }
 
 /* ============================================================
+   SLIDE 7 (combined) — CAFÉ & LUNCH
+   ============================================================ */
+.s_cafe_lunch .s_cafe_lunch-cols{
+  position:absolute; top:80px; left:48px; right:48px; bottom:48px;
+  display:grid; grid-template-columns: 1fr 1px 1fr; gap: 0 32px;
+}
+.s_cafe_lunch .s_cafe_lunch-divider{
+  background: var(--rule); width:1px; margin-top:8px;
+}
+.s_cafe_lunch .s_cafe_lunch-col{
+  padding-top: 8px;
+  display:flex; flex-direction:column;
+}
+.s_cafe_lunch .s_cafe_lunch-col .eyebrow{ margin-bottom:10px; }
+.s_cafe_lunch .s_cafe_lunch-col .h3{ margin-top:0; margin-bottom:14px; }
+.s_cafe_lunch .s_cafe_lunch-col .body{ font-size:15px; line-height:1.45; max-width:100%; }
+.s_cafe_lunch .col-img{
+  width:100%; overflow:hidden; margin-bottom:14px;
+}
+.s_cafe_lunch .col-img img{
+  width:100%; height:160px; object-fit:cover; object-position:center; display:block;
+}
+.s_cafe_lunch .col-img-foot{
+  width:100%; overflow:hidden; margin-top:18px; padding-top:14px;
+}
+.s_cafe_lunch .col-img-foot img{
+  width:100%; height:300px; object-fit:cover; object-position:center; display:block;
+}
+
+/* menu sections */
+.s_cafe_lunch .menu-section{
+  margin-top: 18px;
+  padding-top: 10px;
+  border-top: 1px solid var(--ink);
+}
+.s_cafe_lunch .menu-section .ms-label{
+  font-family: var(--mono); font-size: 8px;
+  letter-spacing: .16em; text-transform: uppercase;
+  color: var(--ink-muted); margin-bottom: 10px;
+}
+.s_cafe_lunch .menu-section .ms-items{
+  display: flex; flex-direction: column; gap: 0;
+}
+.s_cafe_lunch .menu-section .ms-items-2col{
+  display: block; column-count: 2; column-gap: 16px;
+}
+.s_cafe_lunch .menu-section .ms-items-2col .ms-item{
+  break-inside: avoid; border-bottom: 1px solid var(--rule);
+}
+.s_cafe_lunch .menu-section .ms-item{
+  display: flex; flex-direction: column;
+  padding: 7px 0;
+  border-bottom: 1px solid var(--rule);
+}
+.s_cafe_lunch .menu-section .ms-item:last-child,
+.s_cafe_lunch .menu-section .ms-item-no-border{
+  border-bottom: none;
+}
+.s_cafe_lunch .menu-section .ms-name{
+  font-family: var(--display); font-weight: 500;
+  font-size: 13.5px; line-height: 1.2;
+  color: var(--ink); margin-bottom: 2px;
+}
+.s_cafe_lunch .menu-section .ms-desc{
+  font-family: var(--body); font-size: 11px;
+  line-height: 1.4; color: var(--ink-muted);
+}
+
+/* ============================================================
    SLIDE 9 — LUNCH (tempo)
    ============================================================ */
 .s9 .head{ position:absolute; top:130px; left:48px; right:48px; }
@@ -702,111 +918,106 @@ body{
 /* ============================================================
    SLIDE 10 — LOCAL PIZZA
    ============================================================ */
-.s10{ background: var(--ink); color: var(--paper); }
+.s10{ background: var(--night); color: var(--paper); }
 .s10 .frame-top, .s10 .frame-bot{ color: rgba(244,241,234,.55); }
 .s10 .frame-top .dot{ background: var(--butter); }
 .s10 .hairline-top{ background: rgba(244,241,234,.18); }
 
 .s10 .left{
   position:absolute; left:48px; top:120px; bottom: 80px;
-  width: 540px;
+  width: 290px;
   display: flex; flex-direction: column;
 }
 .s10 .left .eyebrow{ color: var(--butter); }
-.s10 .left .h1{
-  color: var(--paper); font-size: 92px; line-height: .9;
-  margin-top: 18px;
-}
-.s10 .left .h1 em{
-  font-family: var(--body); font-style: italic; font-weight: 400;
-  color: var(--butter);
+.s10 .left .title-img{
+  margin-top: 14px; width: 100%; max-width: 270px; display: block;
 }
 .s10 .left .lede{
-  margin-top: 24px; font-family: var(--body); font-size: 17px;
-  line-height: 1.5; color: var(--paper); max-width: 480px;
+  margin-top: 18px; font-family: var(--body); font-size: 16px;
+  line-height: 1.5; color: var(--paper); max-width: 270px;
+  text-align: justify;
 }
 .s10 .left .second{
-  margin-top: 16px; font-family: var(--body); font-style: italic;
-  font-size: 15.5px; line-height: 1.5; color: rgba(244,241,234,.7);
-  max-width: 480px;
+  margin-top: 12px; font-family: var(--body); font-style: italic;
+  font-size: 15px; line-height: 1.5; color: rgba(244,241,234,.7);
+  max-width: 270px; text-align: justify;
 }
 .s10 .left .ice{
   margin-top: auto;
-  padding-top: 18px;
+  padding-top: 14px;
   border-top: 1px solid rgba(244,241,234,.25);
   font-family: var(--display); font-style: italic;
-  font-size: 24px; color: var(--butter);
+  font-size: 20px; color: var(--butter);
   line-height: 1.1;
 }
 
 .s10 .right{
-  position:absolute; right:48px; top:120px;
-  width: 560px; height: 380px;
-  background: #14140f; overflow:hidden;
+  position:absolute; right:48px; top:120px; bottom:80px;
+  left: 370px;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-rows: 1fr auto;
+  gap: 10px;
 }
-.s10 .right img{ width:100%; height:100%; object-fit: cover; display:block; }
+.s10 .right .photo{
+  overflow:hidden; background: var(--green-soft);
+}
+.s10 .right .photo img{ width:100%; height:100%; object-fit: cover; display:block; }
 
 .s10 .blocks{
-  position:absolute; right:48px; top: 530px; width: 560px;
-  display:grid; grid-template-columns: 1fr 1fr;
-  gap: 14px 20px;
-  border-top: 1px solid rgba(244,241,234,.25); padding-top: 14px;
+  grid-column: 1 / 4; grid-row: 2;
+  display:grid; grid-template-columns: 1fr 1fr 1fr 1fr;
+  gap: 10px 16px;
+  border-top: 1px solid rgba(244,241,234,.25); padding-top: 12px;
 }
 .s10 .blocks .b .lab{
-  font-family: var(--mono); font-size: 9.5px;
+  font-family: var(--mono); font-size: 8.5px;
   letter-spacing: .22em; text-transform:uppercase; color: var(--butter);
-  margin-bottom: 4px;
+  margin-bottom: 3px;
 }
 .s10 .blocks .b .v{
-  font-family: var(--body); font-size: 13.5px; color: var(--paper);
+  font-family: var(--body); font-size: 12px; color: var(--paper);
   line-height: 1.35;
 }
 
 /* ============================================================
    SLIDE 11 — DINNER / CHEF MENUS
    ============================================================ */
-.s11{ background: #181614; color: var(--paper); }
+.s11{ background: var(--night); color: var(--paper); }
 .s11 .frame-top, .s11 .frame-bot{ color: rgba(244,241,234,.55); }
 .s11 .frame-top .dot{ background: var(--brick); }
 .s11 .hairline-top{ background: rgba(244,241,234,.16); }
 
-.s11 .layout{
-  position:absolute; left:48px; right:48px; top:130px; bottom:80px;
-  display:grid; grid-template-columns: 380px 1fr;
-  gap: 56px;
+.s11 .cols{
+  position:absolute; left:48px; right:48px; top:80px; bottom:48px;
+  display:grid; grid-template-columns: 1fr 1px 1fr; gap: 0 32px;
 }
-.s11 .image{
-  background:#0e0c0a; overflow:hidden; height: 440px;
-  position:relative;
+.s11 .divider{ background: rgba(244,241,234,.18); width:1px; margin-top:8px; }
+.s11 .col{ padding-top:8px; display:flex; flex-direction:column; }
+.s11 .col .eyebrow{ color: var(--butter); margin-bottom:10px; }
+.s11 .col-img{ width:100%; overflow:hidden; margin-bottom:14px; }
+.s11 .col-img img{ width:100%; height:180px; object-fit:cover; object-position:center; display:block; }
+.s11 .col-img-foot{ width:88%; overflow:hidden; margin-top:18px; padding-top:14px; }
+.s11 .col-img-foot img{ width:100%; height:320px; object-fit:cover; object-position:center 20%; display:block; }
+
+.s11 .menu-section{ margin-top:18px; padding-top:10px; border-top:1px solid rgba(244,241,234,.25); }
+.s11 .menu-section .ms-label{
+  font-family:var(--mono); font-size:8px; letter-spacing:.16em; text-transform:uppercase;
+  color:rgba(244,241,234,.45); margin-bottom:10px;
 }
-.s11 .image img{ width:100%; height:100%; object-fit:cover; display:block; opacity:.92; }
-.s11 .image .obj{
-  position:absolute; left:10px; bottom:10px;
-  background: var(--ink); padding: 6px 10px;
-  font-family: var(--mono); font-size: 9px;
-  letter-spacing:.18em; text-transform: uppercase; color: var(--paper);
+.s11 .menu-section .ms-items{ display:flex; flex-direction:column; gap:0; }
+.s11 .menu-section .ms-item{
+  display:flex; flex-direction:column; padding:7px 0;
+  border-bottom:1px solid rgba(244,241,234,.12);
 }
-.s11 .text .eyebrow{ color: var(--butter); }
-.s11 .text .h2{ color: var(--paper); margin-top: 16px; max-width: 580px; font-size: 50px; }
-.s11 .text .lede{
-  margin-top: 22px; font-family: var(--body); font-size: 18px;
-  line-height: 1.55; color: var(--paper); max-width: 540px;
+.s11 .menu-section .ms-item:last-child{ border-bottom:none; }
+.s11 .menu-section .ms-name{
+  font-family:var(--display); font-weight:500; font-size:13.5px; line-height:1.2;
+  color:var(--paper); margin-bottom:2px;
 }
-.s11 .modes{
-  margin-top: 28px;
-  border-top: 1px solid rgba(244,241,234,.25); padding-top: 16px;
+.s11 .menu-section .ms-desc{
+  font-family:var(--body); font-size:11px; line-height:1.4; color:rgba(244,241,234,.6);
 }
-.s11 .modes .ml{
-  font-family: var(--mono); font-size: 10px;
-  letter-spacing: .22em; text-transform: uppercase;
-  color: rgba(244,241,234,.55); margin-bottom: 12px;
-}
-.s11 .modes ul{
-  list-style:none; padding:0; margin:0;
-  display:grid; grid-template-columns: repeat(3, 1fr); gap: 8px 24px;
-  font-family: var(--display); font-weight: 400; font-size: 18px;
-}
-.s11 .modes li{ color: var(--paper); }
 
 /* ============================================================
    SLIDE 12 — MEAL PREP (catalog logic)
@@ -856,6 +1067,11 @@ body{
   font-size: 15px; line-height: 1.35; color: var(--ink-soft);
   border-top: 1px solid var(--rule); padding-top: 10px;
 }
+.s12 .image2{
+  position:absolute; right:48px; top: 508px; width: 380px; height: 190px;
+  background: var(--paper-deep); overflow:hidden;
+}
+.s12 .image2 img{ width:100%; height:100%; object-fit:cover; display:block; }
 
 /* ============================================================
    SLIDE 13 — EVENTS / PATRONAGE
@@ -1070,8 +1286,8 @@ SLIDE 1 — COVER
 ============================================================ -->
 <section class="slide s1">
   <div class="cover-mark">
-    <div class="left">Local&nbsp;Effort &nbsp;·&nbsp; Restaurant Partnership Response</div>
-    <div class="right">№ 01 / 15</div>
+    <div class="left">Local&nbsp;Effort &nbsp;·&nbsp; Walker Art Center</div>
+    <div class="right">№ 01 / 14</div>
   </div>
 
   <div class="cover-title">
@@ -1088,19 +1304,18 @@ SLIDE 1 — COVER
 
   <div class="cover-sub">
     <div class="lede">
-      A food practice <em>for a cultural institution.</em>
+      Midwest-centered food practice<br><em>for a local cultural institution.</em>
     </div>
     <div class="meta">
-      <strong>Restaurant Partnership Response</strong><br>
-      April 2026<br>
+      May 2026<br>
       Prepared for Walker Art Center
     </div>
   </div>
 
   <div class="index-strip">
     <span class="ix-label">Material Index</span>
-    <span>grain</span><span>dough</span><span>dairy</span><span>eggs</span><span>fruit</span><span>vegetables</span>
-    <span>herbs</span><span>greens</span><span>preserves</span><span>proteins</span>
+    <span>grain</span><span>dairy</span><span>eggs</span><span>fruit</span><span>vegetables</span>
+    <span>herbs</span><span>greens</span><span>meat</span><span>labor</span>
   </div>
 </section>
 
@@ -1109,31 +1324,31 @@ SLIDE 2 — OPENING STATEMENT
 ============================================================ -->
 <section class="slide s2">
   <div class="frame-top">
-    <div class="lhs"><span class="dot"></span><span>Local Effort × Walker</span><span>Statement</span></div>
-    <div class="rhs">2 / 15</div>
+    <div class="lhs"><span class="dot"></span><span>Local Effort × Walker</span><span>Concept</span></div>
+    <div class="rhs">2 / 14</div>
   </div>
   <div class="hairline-top"></div>
 
   <div class="col-text">
     <div class="eyebrow">Statement</div>
-    <h2 class="h2">From pastry case<br>to chef menu.</h2>
-    <p class="body-lg">Local Effort proposes a sourcing-led food and hospitality practice for Walker: morning café and pastry, walk-in lunch, grab-and-go, Local Pizza, casual fine dining, chef menus, weekly meal prep, and institutional hospitality.</p>
-    <p class="body body-soft" style="max-width:560px;">The point is not to create separate concepts. The point is to let one ingredient culture take many useful forms.</p>
-    <div class="pull">Same sourcing.<br>Many forms of hospitality.</div>
+    <h2 class="h2">Exhibiting and celebrating Minnesotan excellence for a global audience.</h2>
+    <p class="body-lg" style="text-align:justify;">Hospitality at Walker Art Center should center Midwestern people, and Midwestern ingredients, for regional and international audiences, for patrons and visitors, for kids and for grownups, for families and for students. Local Effort proposes an obsessively local restaurant at Walker Art Center.</p>
+    <p class="body body-soft" style="max-width:560px;text-align:justify;">Local Effort represents local interests through highly curated ingredient selection, culinary and service excellence, and socially progressive labor practice. A collaboration with Local Effort is a commitment to Midwestern values.</p>
+    <div class="pull">From casual to refined formats,<br>a local-first commitment.</div>
   </div>
 
   <div class="col-image">
-    <img alt="Sourdough focaccia, freshly baked"
-         src="root-images/img3907-a3a937fb.jpg" />
+    <img alt="Leeks"
+         src="root-images/IMG_9364.jpg" />
     <div class="obj-label">
       Plate № 01<br>
-      <span style="color:var(--ink-muted)">Focaccia · sourdough · in-house bake</span>
+      <span style="color:var(--ink-muted)">Cherry Pie</span>
     </div>
   </div>
 
   <div class="frame-bot">
     <div>Local Effort</div>
-    <div class="pageno">02 / 15 — Statement</div>
+    <div class="pageno">02 / 14 — Statement</div>
   </div>
 </section>
 
@@ -1142,168 +1357,422 @@ SLIDE 3 — WHAT THE OPPORTUNITY CALLS FOR
 ============================================================ -->
 <section class="slide s3">
   <div class="frame-top">
-    <div class="lhs"><span class="dot"></span><span>Local Effort × Walker</span><span>The Opportunity</span></div>
-    <div class="rhs">3 / 15</div>
+    <div class="lhs"><span class="dot"></span><span>Local Effort × Walker</span><span>Concept</span></div>
+    <div class="rhs">3 / 14</div>
   </div>
   <div class="hairline-top"></div>
 
   <div class="head">
     <div class="eyebrow">The Opportunity</div>
-    <h2 class="h2">What the opportunity<br>calls for.</h2>
+    <h2 class="h3">Our collaboration brings local ingredients<br>to every visitor experience.</h3>
+  </div>
+
+  <div class="s3-photo">
+    <img src="root-images/IMG_8422.jpg" alt="Melon with ham" />
+    <div class="obj-label">
+      Plate № 02<br>
+      <span style="color:var(--ink-muted)">Melon with ham</span>
+    </div>
   </div>
 
   <div class="frags">
     <div class="frag">
       <div class="num">i.</div>
-      <div class="copy">A restaurant that understands a museum audience.</div>
+      <div class="copy">Year-round, world-class greenmarket sets the vibe during the day. Peak-harvest seasonal produce all summer. Get a locally-grown greenhouse cucumber in January.</div>
     </div>
     <div class="frag">
       <div class="num">ii.</div>
-      <div class="copy">A café that can serve daily flow.</div>
+      <div class="copy">Casual breakfast and lunch, with substantial grab-and-go options, for every type of diner. Refined, elevated dinner experiences with classic table service to show off our local culinary prowess.</div>
     </div>
     <div class="frag">
       <div class="num">iii.</div>
-      <div class="copy">A patio that can become a destination.</div>
+      <div class="copy">Genre-defining meal prep subscription program to feed families all week. Filling a huge gap and growing demand in our community, and celebrating home cooks and Midwestern home cooking.</div>
     </div>
     <div class="frag">
       <div class="num">iv.</div>
-      <div class="copy">A menu with accessible and refined entry points.</div>
+      <div class="copy">Robust on-site events capacity and vision. Supporting Walker's event needs, and showcasing Midwestern hospitality with style and substance.</div>
     </div>
     <div class="frag">
       <div class="num">v.</div>
-      <div class="copy">A partner for members, patrons, artists, and staff.</div>
+      <div class="copy">Tiered pricing for the public, memberships, Walker staff discounts. Meeting communities where they are at.</div>
     </div>
     <div class="frag">
       <div class="num">vi.</div>
-      <div class="copy">Hospitality that extends to cinema, theater, and events.</div>
+      <div class="copy">Ownership opportunity extended to all staff: committed to the 308b Cooperative structure. Real equity and profitshare. </div>
     </div>
   </div>
 
   <div class="frame-bot">
     <div>Local Effort</div>
-    <div class="pageno">03 / 15 — The Opportunity</div>
+    <div class="pageno">03 / 14 — The Opportunity</div>
   </div>
 </section>
 
 <!-- ============================================================
-SLIDE 4 — TWO COMMITMENTS
+SLIDE 4 — SERVICE CONTINUUM
 ============================================================ -->
-<section class="slide s4">
+<section class="slide s7">
   <div class="frame-top">
-    <div class="lhs"><span class="dot"></span><span>Local Effort × Walker</span><span>Commitments</span></div>
-    <div class="rhs">4 / 15</div>
+    <div class="lhs"><span class="dot"></span><span>Local Effort × Walker</span><span>Service Continuum</span></div>
+    <div class="rhs">4 / 14</div>
   </div>
   <div class="hairline-top"></div>
 
   <div class="head">
-    <div class="eyebrow">Commitments</div>
-    <h2 class="h2">Two commitments hold<br>the proposal together.</h2>
+    <div class="eyebrow">Service Continuum</div>
+    <h2 class="h2">Different forms of hospitality,<br>the same local ingredients.</h2>
   </div>
 
-  <div class="cols">
-    <div class="col">
-      <div class="one-of-two"><span>One of two</span><strong>I.</strong></div>
-      <div class="name">Sourcing</div>
-      <div class="lines">
-        <p>Local and regional ingredients.</p>
-        <p>Seasonal judgment.</p>
-        <p>Food with a relationship to place.</p>
-      </div>
+  <div class="items">
+    <div class="item">
+      <div class="num">i.</div>
+      <div class="title">Breakfast, Bakery &amp; Morning Drinks</div>
+      <div class="desc">Coffee, tea, shakes. Yogurt and granola. Cottage cheese. Cranberry bars. Everyday entry point — accessible to every visitor.</div>
     </div>
-    <div class="col">
-      <div class="one-of-two"><span>Two of two</span><strong>II.</strong></div>
-      <div class="name">Labor</div>
-      <div class="lines">
-        <p>308B cooperative structure.</p>
-        <p>Clear accountability.</p>
-        <p>A labor model aligned with the institution&rsquo;s values.</p>
-      </div>
+    <div class="item featured">
+      <div class="num">iv.</div>
+      <div class="title">Local Pizza</div>
+      <div class="desc">Flagship product, touching every menu. Hot and fresh, or take a frozen one home for later.</div>
+    </div>
+    <div class="item">
+      <div class="num">ii.</div>
+      <div class="title">Grab-and-go &amp; Walk-in Lunch</div>
+      <div class="desc">Counter service with seating. Bowls, salads, sandwiches, rotisserie chicken, breads and dips, charcuterie and cheese, picnic baskets and boxed lunches. Farmers market weekly with fresh produce and dairy daily.</div>
+    </div>
+    <div class="item">
+      <div class="num">v.</div>
+      <div class="title">Dinner</div>
+      <div class="desc">Elegant, humble Minnesotan farm-to-table, individual plates and shared platters. Classic dinner service with high personal touch, including host, reservations, walk-ins, bar seating, servers, wine, cocktails, NA beverages, locally produced dishware. Great for families, for dates, for international guests.</div>
+    </div>
+    <div class="item">
+      <div class="num">iii.</div>
+      <div class="title">Weekly Meal Prep</div>
+      <div class="desc">Derived from the farmer's market week to week. Breakfast, lunch, and dinner prepared and delivered to members weekly. Nutritionally focused comfort foods. Offered as grab and go.</div>
+    </div>
+    <div class="item">
+      <div class="num">vi.</div>
+      <div class="title">Chef Menus &amp; Patron Events</div>
+      <div class="desc">Tied to exhibitions, artists, cinema, theater, and other VIP moments: supporting Walker's event needs.</div>
     </div>
   </div>
 
-  <div class="footer-note">
-    <div class="quote">Ingredient sourcing is the authorship.<br>Labor structure is the accountability.</div>
-    <div class="caption" style="text-align:right;">Two-pillar<br>schema</div>
-  </div>
 
   <div class="frame-bot">
     <div>Local Effort</div>
-    <div class="pageno">04 / 15 — Commitments</div>
+    <div class="pageno">04 / 14 — Service Continuum</div>
   </div>
 </section>
 
 <!-- ============================================================
-SLIDE 5 — FOUNDERS
+SLIDE 5 — TEAM
 ============================================================ -->
 <section class="slide s5">
   <div class="frame-top">
-    <div class="lhs"><span class="dot"></span><span>Local Effort × Walker</span><span>Founders</span></div>
-    <div class="rhs">5 / 15</div>
+    <div class="lhs"><span class="dot"></span><span>Local Effort × Walker</span><span>Team</span></div>
+    <div class="rhs">5 / 14</div>
   </div>
   <div class="hairline-top"></div>
 
   <div class="head">
-    <div class="eyebrow">Founders</div>
-    <h2 class="h2">Founder-led food, sourcing,<br>and hospitality.</h2>
+    <div class="eyebrow">Team</div>
+    <h2 class="h3">Day One Leadership.</h2>
   </div>
 
   <div class="cards">
     <div class="card">
       <div class="portrait">
         <img alt="Weston, founder and chef"
-             src="root-images/eadcd518_411b_4926_9dd8_5ca8c582d899-d34a4992.jpg" />
+             src="root-images/img3939-b596f295.jpg" />
         <div class="pl">Portrait № 01</div>
       </div>
       <div class="text">
-        <div class="name">Weston</div>
+        <div class="name">Weston Smith</div>
         <div class="role">Co-founder · Chef</div>
-        <p class="bio">Leads the kitchen, the menu, and Local Pizza. Builds the food program through long-running relationships with regional growers, millers, dairies, and butchers.</p>
-        <div class="resp">At Walker — culinary direction · sourcing · pizza program · chef menus</div>
+        <p class="bio">California born, New York trained. 308b organizer, ingredient specialist. Weston makes bread and chocolate, oversees the Effort, and guarantees quality. </p>
       </div>
     </div>
 
     <div class="card">
       <div class="portrait">
         <img alt="Catherine, co-founder"
-             src="root-images/catherine_kysusw.jpg" />
+             src="root-images/IMG_0484.jpg" />
         <div class="pl">Portrait № 02</div>
       </div>
       <div class="text">
-        <div class="name">Catherine</div>
-        <div class="role">Co-founder · Operations &amp; Service</div>
-        <p class="bio">Leads service, hospitality standards, meal prep, and institutional partnerships. Holds the labor structure, the cooperative governance, and the institutional voice of the company.</p>
-        <div class="resp">At Walker — service · hospitality · 308B structure · institutional liaison</div>
+        <div class="name">Catherine Olsen</div>
+        <div class="role">Co-founder · Kitchen Manager · Pastry</div>
+        <p class="bio">Minneapolis born and raised. Many recognize her from Lucia's and Wuollet Bakery, or the Eastside Coop. Vibe setter, cake and pastry provider.</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="portrait">
+        <img alt="Alyssa Andes" src="root-images/586339047_18113315521599075_1092593117279939470_n.jpg" />
+        <div class="pl">Portrait № 03</div>
+      </div>
+      <div class="text">
+        <div class="name">Alyssa Andes</div>
+        <div class="role">Event Director · Communications</div>
+        <p class="bio">Best-in-class event coordinator, and a huge asset to our business and community. Check out Soup Sisters. </p>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="portrait">
+        <img alt="Maria Beck" src="root-images/575206233_18435219409098109_4699144598816371738_n.jpg" />
+        <div class="pl">Portrait № 04</div>
+      </div>
+      <div class="text">
+        <div class="name">Maria Beck</div>
+        <div class="role">Chef · Pastry</div>
+        <p class="bio">Maria ran pastry at Lynette and Hyacinth, and comes fresh off the Cardamom project. She's bringing effortless professionalism and good taste, besides being a bakery crusher.</p>
       </div>
     </div>
   </div>
 
-  <div class="bottom-line">
-    For Walker, founder involvement matters because sourcing, service, labor structure, and institutional relationship all need direct ownership.
-  </div>
+  
 
   <div class="frame-bot">
     <div>Local Effort</div>
-    <div class="pageno">05 / 15 — Founders</div>
+    <div class="pageno">05 / 14 — Team</div>
   </div>
 </section>
 
 <!-- ============================================================
-SLIDE 6 — INGREDIENT SOURCING
+SLIDE 5 — FOOD & BEVERAGE COMMUNITY
 ============================================================ -->
-<section class="slide s6">
+<section class="slide s_community">
   <div class="frame-top">
-    <div class="lhs"><span class="dot"></span><span>Local Effort × Walker</span><span>Sourcing</span></div>
-    <div class="rhs">6 / 15</div>
+    <div class="lhs"><span class="dot"></span><span>Local Effort × Walker</span><span>Community</span></div>
+    <div class="rhs">6 / 14</div>
   </div>
   <div class="hairline-top"></div>
 
   <div class="head">
-    <div class="eyebrow">Sourcing</div>
-    <h2 class="h2">Ingredient sourcing is the<br>irreplaceable detail.</h2>
+    <div class="eyebrow">Food &amp; Beverage Community</div>
+    <h2 class="h3">Backed by the best.</h3>
+  </div>
+
+  <div class="logo-grid">
+    <div class="logo-cell">
+      <img src="root-images/logosticker-2649969e.png" alt="Local Effort" />
+    </div>
+    <div class="logo-cell">
+      <img src="root-images/grande_cheese_logo-b5d8d420.png" alt="Grande Cheese" />
+    </div>
+    <div class="logo-cell">
+      <img src="root-images/bffbstackednavy-b416239f.png" alt="BFF" />
+    </div>
+    <div class="logo-cell">
+      <img src="root-images/F35DEDC6-5DC2-4F00-9A5F-5EB85AAAB220_4_5005_c.webp" alt="Logo" />
+    </div>
+    <div class="logo-cell">
+      <img src="root-images/Eastside_Primary_Logomark.webp" alt="Eastside" />
+    </div>
+    <div class="logo-cell">
+      <img src="root-images/Primary_Logo_Eagle-01.webp" alt="Eagle" />
+    </div>
+    <div class="logo-cell">
+      <img src="root-images/Y2IPBWuuRsaAnrYhcMBQ_Screen-Shot-2018-06-05-at-3.39.03-PM.png" alt="Logo" />
+    </div>
+    <div class="logo-cell">
+      <img src="root-images/560759_7ce0ad4a97454ea8a96ed75fbe732256~mv2.png" alt="Logo" />
+    </div>
+    <div class="logo-cell">
+      <img src="root-images/6321a3_45bf6f94843b472b9a6dc64846db8a1c~mv2.png" alt="Logo" />
+    </div>
+    <div class="logo-cell">
+      <img src="root-images/SmokingGooseLogo.webp" alt="Smoking Goose" />
+    </div>
+    <div class="logo-cell">
+      <img src="root-images/wgm-logo-transparent.avif" alt="Logo" />
+    </div>
+    <div class="logo-cell">
+      <img src="root-images/images.jpg" alt="Logo" />
+    </div>
+  </div>
+
+  <div class="frame-bot">
+    <div>Local Effort</div>
+    <div class="pageno">06 / 14 — Community</div>
+  </div>
+</section>
+
+<!-- ============================================================
+SLIDE 6 — ORG CHART / GOVERNANCE
+============================================================ -->
+<section class="slide s_orgchart">
+  <div class="oc-frame-top">
+    <div class="lhs"><span class="dot"></span><span>Local Effort × Walker</span><span>Organization</span></div>
+    <div class="rhs">7 / 14</div>
+  </div>
+  <div class="hairline"></div>
+
+  <div class="head">
+    <div class="eyebrow">308(b) Cooperative Structure</div>
+    <h2>Organization &amp; Operations<br><em>worker-owned and managed</em></h2>
+  </div>
+
+  <div class="governance-row">
+    <div class="tier-label">
+      <div class="tier-name">The Board</div>
+      <div class="tier-sub">Policy · Capital<br>Decisions</div>
+    </div>
+    <div class="tier-cards">
+      <div class="card accent">
+        <div class="card-role">Founders</div>
+        <div class="card-title">Founding Members</div>
+        <div class="card-detail">Full governance &amp; voting rights</div>
+      </div>
+      <div class="card accent">
+        <div class="card-role">Elected</div>
+        <div class="card-title">Staff Reps</div>
+        <div class="card-detail">Elected by staff-owners; full voting rights</div>
+      </div>
+      <div class="card">
+        <div class="card-role">Investors</div>
+        <div class="card-title">Capital Partners</div>
+        <div class="card-detail">Observation &amp; speaking rights; no vote</div>
+      </div>
+      <div class="card" style="opacity:.72;">
+        <div class="card-role">Observers</div>
+        <div class="card-title">Community &amp; Customer Members</div>
+        <div class="card-detail">Speaking &amp; observation rights; no vote</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="governance-row">
+    <div class="tier-label">
+      <div class="tier-name">Management</div>
+      <div class="tier-sub">Operations ·<br>Internal Governance ·<br>Day-to-Day Spending</div>
+    </div>
+    <div class="tier-cards">
+      <div class="card brick-accent">
+        <div class="card-role">Kitchen</div>
+        <div class="card-title">Executive Chef</div>
+        <div class="card-detail">Menu, sourcing, hiring; all food decisions</div>
+      </div>
+      <div class="card brick-accent">
+        <div class="card-role">Front of House</div>
+        <div class="card-title">General Manager</div>
+        <div class="card-detail">Greenmarket &amp; service operations</div>
+      </div>
+      <div class="card brick-accent">
+        <div class="card-role">Programming</div>
+        <div class="card-title">Events Director</div>
+        <div class="card-detail">On-site events &amp; Walker partnership</div>
+      </div>
+      <div class="card brick-accent">
+        <div class="card-role">Cooperative</div>
+        <div class="card-title">308(b) Director</div>
+        <div class="card-detail">Cooperative governance, compliance, equity admin</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="governance-row">
+    <div class="tier-label">
+      <div class="tier-name">Management</div>
+      <div class="tier-sub">Department Leads ·<br>Equity Owners</div>
+    </div>
+    <div class="tier-cards">
+      <div class="card">
+        <div class="card-role">← Exec Chef</div>
+        <div class="card-title">Sous Chefs</div>
+        <div class="card-detail">Meal prep program, bakery, daily production</div>
+      </div>
+      <div class="card">
+        <div class="card-role">← GM</div>
+        <div class="card-title">Service Managers &amp; Maître d'</div>
+        <div class="card-detail">Dinner &amp; daytime department leads</div>
+      </div>
+      <div class="card">
+        <div class="card-role">← 308(b) Director</div>
+        <div class="card-title">HR &amp; Staff Admin</div>
+        <div class="card-detail">People ops, cooperative specialist</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="flow-note">
+    <div class="flow-note-spacer"></div>
+    <div class="flow-note-content">
+      <span class="arrow up"></span>
+      Staff elects representatives to the board
+    </div>
+  </div>
+
+  <div class="governance-row">
+    <div class="tier-label">
+      <div class="tier-name">Staff</div>
+      <div class="tier-sub">Equity Ownership<br>Available to All Staff</div>
+    </div>
+    <div class="tier-cards">
+      <div class="card" style="background:transparent; border:1px dashed var(--rule);">
+        <div class="card-role">Kitchen</div>
+        <div class="card-title">Cooks</div>
+        <div class="card-detail">Line cooks, meal prep, bread/bakery</div>
+      </div>
+      <div class="card" style="background:transparent; border:1px dashed var(--rule);">
+        <div class="card-role">Service</div>
+        <div class="card-title">Counter Service</div>
+        <div class="card-detail">Baristas, bartenders, sales</div>
+      </div>
+      <div class="card" style="background:transparent; border:1px dashed var(--rule);">
+        <div class="card-role">Service</div>
+        <div class="card-title">Floor Service</div>
+        <div class="card-detail">Servers, food runners, hosts</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="rights-legend">
+    <div class="legend-item">
+      <div class="swatch" style="background:var(--green);"></div>
+      <div class="legend-text">Full governance — voting rights</div>
+    </div>
+    <div class="legend-item">
+      <div class="swatch" style="background:var(--brick);"></div>
+      <div class="legend-text">Operations leadership — equity owners</div>
+    </div>
+    <div class="legend-item">
+      <div class="swatch" style="background:var(--paper-deep); border:1px solid var(--rule);"></div>
+      <div class="legend-text">Staff-owners — internal governance rights</div>
+    </div>
+    <div class="legend-item">
+      <div class="swatch" style="background:var(--paper-deep); border:1px solid var(--rule); opacity:.6;"></div>
+      <div class="legend-text">Observers — no voting rights</div>
+    </div>
+  </div>
+
+  <div class="side-note">
+    <div class="side-label">308(b) Distinction</div>
+    <div class="side-body">Only <em>internal equity holders</em> — those working directly on the project — hold governance. External members observe and speak but <em>do not vote</em>.</div>
+  </div>
+
+  <div class="oc-frame-bot">
+    <div>Local Effort</div>
+    <div class="pageno">07 / 14 — Governance</div>
+  </div>
+</section>
+
+<!-- ============================================================
+SLIDE 7 — INGREDIENT SOURCING (MATERIAL STUDY)
+============================================================ -->
+<section class="slide s6">
+  <div class="frame-top">
+    <div class="lhs"><span class="dot"></span><span>Local Effort × Walker</span><span>Mission</span></div>
+    <div class="rhs">8 / 14</div>
+  </div>
+  <div class="hairline-top"></div>
+
+  <div class="head">
+    <div class="eyebrow"></div>
+    <h2 class="h3">We work <em>for the food</em>.</h3>
   </div>
 
   <div class="lede">
-    The food can be casual, fast, refined, take-home, or event-specific. The sourcing point of view should remain visible across all of it.
   </div>
 
   <div class="index">
@@ -1317,293 +1786,305 @@ SLIDE 6 — INGREDIENT SOURCING
 
   <div class="study">
     <div class="tile">
-      <img alt="Brussels sprouts on the stalk"
-           src="root-images/6ea0ecbe_e465_4dde_8185_8e2aba71dffe-230a9eb4.jpg" />
-      <div class="tag">Greens</div>
+      <img alt="Grain" src="root-images/IMG_4874.jpg" />
+      <div class="tag">Grain</div>
     </div>
     <div class="tile">
-      <img alt="Asparagus on a plate"
-           src="root-images/img9843-a2676b0c.jpg" />
-      <div class="tag">Vegetables</div>
+      <img alt="Dairy" src="root-images/img2261-9ef95c02.jpg" />
+      <div class="tag">Dairy</div>
     </div>
     <div class="tile">
-      <img alt="Whole eggs"
-           src="root-images/img2238-d168b97f.jpg" />
+      <img alt="Eggs" src="root-images/img2238-d168b97f.jpg" />
       <div class="tag">Eggs</div>
     </div>
     <div class="tile">
-      <img alt="Heirloom tomatoes at dinner"
-           src="https://res.cloudinary.com/dokyhfvyd/image/upload/c_fill,g_auto,w_500,h_500,q_auto,f_auto/v1756764868/cqpia7voplq65j1opdwz.jpg" />
+      <img alt="Fruit" src="root-images/img2303-c8939bf0.jpg" />
       <div class="tag">Fruit</div>
     </div>
+    <div class="tile">
+      <img alt="Vegetables" src="root-images/IMG_8769.jpg" />
+      <div class="tag">Vegetables</div>
+    </div>
+    <div class="tile">
+      <img alt="Herbs" src="root-images/img1304-d3bda42d.jpg" />
+      <div class="tag">Herbs</div>
+    </div>
+    <div class="tile">
+      <img alt="Greens" src="root-images/IMG_8530.jpg" />
+      <div class="tag">Greens</div>
+    </div>
+    <div class="tile">
+      <img alt="Meat" src="root-images/IMG_4240.jpg" />
+      <div class="tag">Meat</div>
+    </div>
+    <div class="tile">
+      <img alt="Meat" src="root-images/img2742-b5ad489c.jpg" />
+      <div class="tag">Meat</div>
+    </div>
+    <div class="tile">
+      <img alt="Labor" src="root-images/IMG_8833.jpg" />
+      <div class="tag">Labor</div>
+    </div>
   </div>
 
-  <div class="flow">
-    <span>producers</span>
-    <span class="arrow">→</span>
-    <span>shared&nbsp;prep</span>
-    <span class="arrow">→</span>
-    <span>forms&nbsp;of&nbsp;service</span>
-  </div>
+  
 
   <div class="frame-bot">
     <div>Local Effort</div>
-    <div class="pageno">06 / 15 — Sourcing</div>
+    <div class="pageno">08 / 14 — Mission</div>
   </div>
 </section>
 
+
 <!-- ============================================================
-SLIDE 7 — SERVICE CONTINUUM
+SLIDE 7 — CAFÉ / PASTRY & LUNCH (combined)
 ============================================================ -->
-<section class="slide s7">
+<section class="slide s_cafe_lunch">
   <div class="frame-top">
-    <div class="lhs"><span class="dot"></span><span>Local Effort × Walker</span><span>Service Continuum</span></div>
-    <div class="rhs">7 / 15</div>
+    <div class="lhs"><span class="dot"></span><span>Local Effort × Walker</span><span>Café &amp; Lunch</span></div>
+    <div class="rhs">9 / 14</div>
   </div>
   <div class="hairline-top"></div>
 
-  <div class="head">
-    <div class="eyebrow">Service Continuum</div>
-    <h2 class="h2">Several forms of hospitality,<br>one ingredient base.</h2>
-  </div>
+  <div class="s_cafe_lunch-cols">
+    <div class="s_cafe_lunch-col">
+      <div class="eyebrow">Morning &amp; Afternoon</div>
+      <div class="col-img">
+        <img src="root-images/IMG_8769.jpg" alt="Café" />
+      </div>
+      <div class="menu-section">
+        <div class="ms-label">Morning</div>
+        <div class="ms-items ms-items-2col">
+          <div class="ms-item">
+            <span class="ms-name">Coffee</span>
+            <span class="ms-desc">tea, juice, chocolate milk, nutritional shakes</span>
+          </div>
+          <div class="ms-item ms-item-no-border">
+            <span class="ms-name">Pastries and Breads</span>
+             <span class="ms-desc">Cinnamon Roll</span>
+             <span class="ms-desc">Biali, Romano and Hazelnut</span>
+             <span class="ms-desc">Popover, Gruyere and Ham</span>
+             <span class="ms-desc">Cherry Hand Tart</span>
+             <span class="ms-desc">Rugbrod</span>
+             <span class="ms-desc">Dinner rolls</span>
 
-  <div class="ladder">
-    <div class="rung">
-      <div class="num">i.</div>
-      <div class="title">Café &amp; pastry</div>
-      <div class="desc">Coffee, light bake, daily flow. The everyday entry point.</div>
-    </div>
-    <div class="rung">
-      <div class="num">ii.</div>
-      <div class="title">Grab-and-go</div>
-      <div class="desc">Portable food prepared from the same morning bake and prep.</div>
-    </div>
-    <div class="rung">
-      <div class="num">iii.</div>
-      <div class="title">Walk-in lunch</div>
-      <div class="desc">Bowls, salads, sandwiches, soup. Tempo for ten minutes or an hour.</div>
-    </div>
-    <div class="rung featured">
-      <div class="num">iv.</div>
-      <div class="title">Local Pizza</div>
-      <div class="desc">The clearest product expression. Lunch, dinner, event, take-home.</div>
-    </div>
-    <div class="rung">
-      <div class="num">v.</div>
-      <div class="title">Dinner</div>
-      <div class="desc">Seasonal plates, shareable food, bar dishes. Refined but not stiff.</div>
-    </div>
-    <div class="rung">
-      <div class="num">vi.</div>
-      <div class="title">Chef menus</div>
-      <div class="desc">Tied to exhibitions, artists, cinema, theater, seasons.</div>
-    </div>
-    <div class="rung">
-      <div class="num">vii.</div>
-      <div class="title">Weekly meal prep</div>
-      <div class="desc">Take-home format. Recurring relationship for staff and members.</div>
-    </div>
-    <div class="rung">
-      <div class="num">viii.</div>
-      <div class="title">Patron &amp; artist events</div>
-      <div class="desc">The most adaptable expression of the same practice.</div>
-    </div>
-  </div>
-
-  <div class="footnote">
-    The difference is not ingredient quality. The difference is format, setting, labor, timing, and refinement.
-  </div>
-
-  <div class="frame-bot">
-    <div>Local Effort</div>
-    <div class="pageno">07 / 15 — Service Continuum</div>
-  </div>
-</section>
-
-<!-- ============================================================
-SLIDE 8 — CAFÉ / PASTRY
-============================================================ -->
-<section class="slide s8">
-  <div class="image">
-    <img alt="Seasonal fruit pie, fresh from the bake"
-         src="root-images/IMG_9364.heic" />
-    <div class="obj">
-      Plate № 02<br>
-      <span style="color:var(--ink-muted)">Seasonal fruit pie · house bake</span>
-    </div>
-  </div>
-
-  <div class="frame-top">
-    <div class="lhs"><span class="dot"></span><span>Local Effort × Walker</span><span>Café &amp; Pastry</span></div>
-    <div class="rhs">8 / 15</div>
-  </div>
-  <div class="hairline-top"></div>
-
-  <div class="right">
-    <div class="eyebrow">Morning &amp; Afternoon</div>
-    <h2 class="h2">Morning and afternoon<br>should feel useful.</h2>
-    <p class="body">Coffee, pastry, light breakfast, afternoon snacks, and simple sweets give Walker an everyday point of entry — for staff, members, visitors, meetings, and Sculpture Garden traffic.</p>
-
-    <div class="menu">
-      <div class="menu-label">Forms / examples</div>
-      <ul>
-        <li>coffee</li><li>espresso</li>
-        <li>sweet bread</li><li>savory pastry</li>
-        <li>breakfast sandwich</li><li>cookie</li>
-        <li>cake</li><li>seasonal soda</li>
-      </ul>
+          </div>
+          <div class="ms-item">
+            <span class="ms-name">Duck Egg Sandwich</span>
+            <span class="ms-desc">Duck egg, duck bacon or sausage, colby cheese, tomato jam on english muffin.</span>
+          </div>
+          <div class="ms-item">
+            <span class="ms-name">Yogurt &amp; Granola</span>
+            <span class="ms-desc">Fresh yogurt made daily, local dairy, house-made chocolate granola, seasonal fruit.</span>
+          </div>
+          <div class="ms-item">
+            <span class="ms-name">Shakshuka</span>
+            <span class="ms-desc">Eggs, tomato, bellpepper, served with flatbread.</span>
+          </div>
+        </div>
+      </div>
+      <div class="menu-section">
+        <div class="ms-label">Grab &amp; Go</div>
+        <div class="ms-items ms-items-2col">
+          <div class="ms-item">
+            <span class="ms-name">Picnics &amp; Boxed Lunches</span>
+            <span class="ms-desc">Sandwiches, salads, charcuterie and cheese.</span>
+          </div> 
+          <div class="ms-item">
+            <span class="ms-name">Farmers Market Selections</span>
+            <span class="ms-desc">Peak produce, dairy, cheese.</span>
+          </div> 
+          <div class="ms-item">
+            <span class="ms-name">Meal Prep Selections</span>
+            <span class="ms-desc">Low-cost meals for later.</span>
+          </div>
+          <div class="ms-item">
+            <span class="ms-name">Rotisserie Chicken</span>
+            <span class="ms-desc">Pastured, herb-seasoned, available from noon. Optional with rice or potatoes.</span>
+          </div>
+        </div>
+      </div>
     </div>
 
-    <div class="ingredient-note">
-      The same dairy, grains, fruit, eggs, herbs, and preserves return later in lunch, dinner, meal prep, and events.
-    </div>
-  </div>
+    <div class="s_cafe_lunch-divider"></div>
 
-  <div class="frame-bot">
-    <div>Local Effort</div>
-    <div class="pageno">08 / 15 — Café &amp; Pastry</div>
-  </div>
-</section>
+    <div class="s_cafe_lunch-col">
+      <div class="eyebrow">Lunch</div>
+      <div class="menu-section">
+        <div class="ms-label">Counter Service</div>
+        <div class="ms-items">
+          <div class="ms-item">
+            <span class="ms-name">Salads &amp; Grain Bowls</span>
+            <span class="ms-desc">Market-driven, built to order. Grains, legumes, seasonal vegetables.</span>
+          </div> 
+          <div class="ms-item">
+            <span class="ms-name">Local Pizza</span>
+            <span class="ms-desc">100% midwest ingredients. Sourdough crusts. Multiple pepperonis.</span>
+          </div>
+           <div class="ms-item">
+            <span class="ms-name">Med Spread</span>
+            <span class="ms-desc">Fresh cultured labneh, hummus, pita, tomatoes, cucumbers, peas. Add roasted chicken or lamb.</span>
+          </div>
 
-<!-- ============================================================
-SLIDE 9 — LUNCH
-============================================================ -->
-<section class="slide s9">
-  <div class="frame-top">
-    <div class="lhs"><span class="dot"></span><span>Local Effort × Walker</span><span>Lunch</span></div>
-    <div class="rhs">9 / 15</div>
-  </div>
-  <div class="hairline-top"></div>
-
-  <div class="head">
-    <div class="eyebrow">Lunch</div>
-    <h2 class="h2">Lunch has to work<br>at different speeds.</h2>
-  </div>
-
-  <div class="layout">
-    <div>
-      <p class="body">A museum lunch guest may have ten minutes, an hour, a child, a member meeting, a film ticket, or a walk through the garden. The menu should allow for all of those without fragmenting the kitchen.</p>
-      <p class="body body-soft" style="margin-top:14px;">A single base of vegetables, grains, proteins, sauces, and bread expresses itself differently for a quick lunch, a seated meal, or a salad to take to the patio.</p>
-    </div>
-    <div class="image">
-      <img alt="Seasonal salad with peas, strawberry, herbs"
-           src="root-images/img9910-ff272552.jpg" />
-      <div class="obj">Plate № 03 · Seasonal lunch</div>
-    </div>
-  </div>
-
-  <div class="tempo">
-    <div class="tlabel">By tempo</div>
-    <ul>
-      <li><span class="pace">Fast</span>grab-and-go salads, bowls, sandwiches</li>
-      <li><span class="pace">Seated</span>seasonal plates, soup, lunch service</li>
-      <li><span class="pace">Patio</span>shareable boards, slice + salad</li>
-      <li><span class="pace">Take-home</span>same prep, packed for later</li>
-    </ul>
-  </div>
-
-  <div class="frame-bot">
-    <div>Local Effort</div>
-    <div class="pageno">09 / 15 — Lunch</div>
-  </div>
-</section>
-
-<!-- ============================================================
-SLIDE 10 — LOCAL PIZZA
-============================================================ -->
-<section class="slide s10">
-  <div class="frame-top">
-    <div class="lhs"><span class="dot"></span><span>Local Effort × Walker</span><span>Local Pizza</span></div>
-    <div class="rhs">10 / 15</div>
-  </div>
-  <div class="hairline-top"></div>
-
-  <div class="left">
-    <div class="eyebrow">Product Expression</div>
-    <h1 class="h1">Local<br>Pizza<em>.</em></h1>
-    <p class="lede">Local Pizza is an in-house Local Effort brand. It makes the broader food program easy to understand: familiar enough for lunch, strong enough for dinner, flexible enough for events, adaptable enough for take-home.</p>
-    <p class="second">It is not the full concept. It is the visible edge of a larger product language.</p>
-    <div class="ice">— the tip of the iceberg.</div>
-  </div>
-
-  <div class="right">
-    <img alt="A whole pie, fresh from the oven"
-         src="root-images/img3145-ae8732ea.jpg" />
-  </div>
-
-  <div class="blocks">
-    <div class="b">
-      <div class="lab">Lunch</div>
-      <div class="v">slices, whole pies, slice + salad</div>
-    </div>
-    <div class="b">
-      <div class="lab">Dinner</div>
-      <div class="v">pizza beside seasonal plates and bar food</div>
-    </div>
-    <div class="b">
-      <div class="lab">Events</div>
-      <div class="v">pizza boards, patio gatherings, late-service food</div>
-    </div>
-    <div class="b">
-      <div class="lab">Meal Prep</div>
-      <div class="v">frozen or par-baked take-home formats</div>
-    </div>
-  </div>
-
-  <div class="frame-bot">
-    <div>Local Effort</div>
-    <div class="pageno">10 / 15 — Local Pizza</div>
-  </div>
-</section>
-
-<!-- ============================================================
-SLIDE 11 — DINNER / CHEF MENUS
-============================================================ -->
-<section class="slide s11">
-  <div class="frame-top">
-    <div class="lhs"><span class="dot"></span><span>Local Effort × Walker</span><span>Dinner &amp; Chef Menus</span></div>
-    <div class="rhs">11 / 15</div>
-  </div>
-  <div class="hairline-top"></div>
-
-  <div class="layout">
-    <div class="image">
-      <img alt="Wine and dinner service, evening"
-           src="https://res.cloudinary.com/dokyhfvyd/image/upload/c_fill,g_auto,w_780,h_900,q_auto,f_auto/v1756925311/nxxsd4ozoiuohmmuafi7.jpg" />
-      <div class="obj">Service № 01 · Dinner &amp; wine</div>
-    </div>
-    <div class="text">
-      <div class="eyebrow">Dinner &amp; Chef Menus</div>
-      <h2 class="h2">Dinner should feel special<br>without becoming stiff.</h2>
-      <p class="lede">Dinner gives Walker a more refined restaurant layer: seasonal plates, shareable food, Local Pizza, bar-friendly dishes, and periodic chef menus connected to exhibitions, artists, cinema, theater, seasons, or patron gatherings.</p>
-
-      <div class="modes">
-        <div class="ml">Modes of dinner</div>
-        <ul>
-          <li>casual dinner</li>
-          <li>patio evening</li>
-          <li>chef menu</li>
-          <li>program tie-in</li>
-          <li>member &amp; donor evening</li>
-          <li>artist dinner</li>
-        </ul>
+          
+        </div>
+      </div>
+      <div class="col-img-foot">
+        <img src="root-images/img9910-ff272552.jpg" alt="Lunch" />
       </div>
     </div>
   </div>
 
   <div class="frame-bot">
     <div>Local Effort</div>
-    <div class="pageno">11 / 15 — Dinner</div>
+    <div class="pageno">09 / 14 — Café &amp; Lunch</div>
   </div>
 </section>
 
 <!-- ============================================================
-SLIDE 12 — MEAL PREP
+SLIDE 9 — LOCAL PIZZA
+============================================================ -->
+<section class="slide s10">
+  <div class="frame-top">
+    <div class="lhs"><span class="dot"></span><span>Local Effort × Walker</span><span>Local Pizza</span></div>
+    <div class="rhs">10 / 14</div>
+  </div>
+  <div class="hairline-top"></div>
+
+  <div class="left">
+    <div class="eyebrow">Product Expression</div>
+    <img class="title-img" src="root-images/local_effort-82ac0444.jpg" alt="Local Pizza" />
+    <p class="lede">Sourdough crusts from freshly milled local grain. Mozzarella and brick cheese from Wisconsin dairy. Tomatoes from our markets, or our backyards, or Dei Fretelli from Ohio. Classic and seasonal toppings, just have a good time.</p>
+    <p class="second">Local Pizza is an accessible, popular expression of our local-first mentality. We bring this local touch to every menu, every meal, every dish, every visitor.  </p>
+  </div>
+
+  <div class="right">
+    <div class="photo">
+      <img alt="A whole pie, fresh from the oven"
+           src="root-images/img3145-ae8732ea.jpg" />
+    </div>
+    <div class="photo">
+      <img alt="Pizza detail"
+           src="root-images/7f628e00_c212_4fde_8af1_6a07fe2b6987-b661ee56.jpg" />
+    </div>
+    <div class="photo">
+      <img alt="Pizza"
+           src="root-images/img2740-7e981fe1.jpg" />
+    </div>
+    <div class="blocks">
+      <div class="b">
+        <div class="lab">Lunch</div>
+        <div class="v">slices, whole pies, slice + salad</div>
+      </div>
+      <div class="b">
+        <div class="lab">Dinner</div>
+        <div class="v">pizza beside seasonal plates and bar food</div>
+      </div>
+      <div class="b">
+        <div class="lab">Events</div>
+        <div class="v">pizza boards, patio gatherings, late-service food</div>
+      </div>
+      <div class="b">
+        <div class="lab">Meal Prep</div>
+        <div class="v">frozen or par-baked take-home formats</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="frame-bot">
+    <div>Local Effort</div>
+    <div class="pageno">10 / 14 — Local Pizza</div>
+  </div>
+</section>
+
+<!-- ============================================================
+SLIDE 10 — DINNER / CHEF MENUS
+============================================================ -->
+<section class="slide s11">
+  <div class="frame-top">
+    <div class="lhs"><span class="dot"></span><span>Local Effort × Walker</span><span>Dinner &amp; Chef Menus</span></div>
+    <div class="rhs">11 / 14</div>
+  </div>
+  <div class="hairline-top"></div>
+
+  <div class="cols">
+    <div class="col">
+      <div class="eyebrow">Dinner</div>
+      <div class="col-img">
+        <img alt="Seasonal small plate, dinner service"
+             src="root-images/IMG_3841.jpg" />
+      </div>
+      <div class="menu-section">
+        <div class="ms-label">Plates</div>
+        <div class="ms-items">
+          <div class="ms-item">
+            <span class="ms-name">Seasonal Small Plates</span>
+            <span class="ms-desc">Market-driven, changes weekly. Vegetables, grains, charcuterie.</span>
+          </div>
+          <div class="ms-item">
+            <span class="ms-name">Local Pizza</span>
+            <span class="ms-desc">Whole pies, evening format. Sourdough crust, midwest ingredients.</span>
+          </div>
+          <div class="ms-item">
+            <span class="ms-name">Bar Food</span>
+            <span class="ms-desc">Snacks and shareable plates alongside wine and cocktails.</span>
+          </div>
+          <div class="ms-item">
+            <span class="ms-name">Cheese &amp; Charcuterie Board</span>
+            <span class="ms-desc">Local dairy, house-cured meats, seasonal accompaniments.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="col">
+      <div class="eyebrow">Chef Menus</div>
+      <div class="menu-section">
+        <div class="ms-label">Formats</div>
+        <div class="ms-items">
+          <div class="ms-item">
+            <span class="ms-name">Exhibition Dinner</span>
+            <span class="ms-desc">Menu tied to current exhibition — ingredient, region, or artist concept.</span>
+          </div>
+          <div class="ms-item">
+            <span class="ms-name">Artist &amp; Filmmaker Dinner</span>
+            <span class="ms-desc">Hosted meal during residencies, openings, or screenings.</span>
+          </div>
+          <div class="ms-item">
+            <span class="ms-name">Member &amp; Donor Evening</span>
+            <span class="ms-desc">Seasonal multi-course format for patrons and supporters.</span>
+          </div>
+          <div class="ms-item">
+            <span class="ms-name">Patio Evening</span>
+            <span class="ms-desc">Casual outdoor service, pizza and plates, late spring through fall.</span>
+          </div>
+          <div class="ms-item">
+            <span class="ms-name">Program Tie-In</span>
+            <span class="ms-desc">Food paired with cinema, theater, lecture, or performance schedule.</span>
+          </div>
+        </div>
+      </div>
+      <div class="col-img-foot">
+        <img alt="Wine service at dinner" src="root-images/IMG_9382.jpg" />
+      </div>
+    </div>
+  </div>
+
+  <div class="frame-bot">
+    <div>Local Effort</div>
+    <div class="pageno">11 / 14 — Dinner</div>
+  </div>
+</section>
+
+<!-- ============================================================
+SLIDE 11 — MEAL PREP
 ============================================================ -->
 <section class="slide s12">
   <div class="frame-top">
     <div class="lhs"><span class="dot"></span><span>Local Effort × Walker</span><span>Weekly Meal Prep</span></div>
-    <div class="rhs">12 / 15</div>
+    <div class="rhs">12 / 14</div>
   </div>
   <div class="hairline-top"></div>
 
@@ -1623,6 +2104,11 @@ SLIDE 12 — MEAL PREP
     <div class="obj">Format № 01 · Take-home</div>
   </div>
 
+  <div class="image2">
+    <img alt="Leeks prepped for meal prep"
+         src="root-images/IMG_4523.jpeg" />
+  </div>
+
   <div class="catalog">
     <div class="clab">Tiers / Catalog logic</div>
     <ul>
@@ -1637,12 +2123,12 @@ SLIDE 12 — MEAL PREP
 
   <div class="frame-bot">
     <div>Local Effort</div>
-    <div class="pageno">12 / 15 — Meal Prep</div>
+    <div class="pageno">12 / 14 — Meal Prep</div>
   </div>
 </section>
 
 <!-- ============================================================
-SLIDE 13 — EVENTS / PATRONAGE
+SLIDE 12 — EVENTS / PATRONAGE
 ============================================================ -->
 <section class="slide s13">
   <div class="image">
@@ -1656,7 +2142,7 @@ SLIDE 13 — EVENTS / PATRONAGE
 
   <div class="frame-top">
     <div class="lhs"><span class="dot"></span><span>Local Effort × Walker</span><span>Patronage &amp; Events</span></div>
-    <div class="rhs">13 / 15</div>
+    <div class="rhs">13 / 14</div>
   </div>
   <div class="hairline-top"></div>
 
@@ -1686,17 +2172,17 @@ SLIDE 13 — EVENTS / PATRONAGE
 
   <div class="frame-bot">
     <div>Local Effort</div>
-    <div class="pageno">13 / 15 — Patronage &amp; Events</div>
+    <div class="pageno">13 / 14 — Patronage &amp; Events</div>
   </div>
 </section>
 
 <!-- ============================================================
-SLIDE 14 — LABOR / 308B
+SLIDE 13 — LABOR / 308B
 ============================================================ -->
 <section class="slide s14">
   <div class="frame-top">
     <div class="lhs"><span class="dot"></span><span>Local Effort × Walker</span><span>Labor Structure</span></div>
-    <div class="rhs">14 / 15</div>
+    <div class="rhs">14 / 14</div>
   </div>
   <div class="hairline-top"></div>
 
@@ -1737,63 +2223,14 @@ SLIDE 14 — LABOR / 308B
 
   <div class="frame-bot">
     <div>Local Effort</div>
-    <div class="pageno">14 / 15 — Labor Structure</div>
-  </div>
-</section>
-
-<!-- ============================================================
-SLIDE 15 — WHAT WE NEED NEXT
-============================================================ -->
-<section class="slide s15">
-  <div class="frame-top">
-    <div class="lhs"><span class="dot"></span><span>Local Effort × Walker</span><span>Next Steps</span></div>
-    <div class="rhs">15 / 15</div>
-  </div>
-  <div class="hairline-top"></div>
-
-  <div class="head">
-    <div class="eyebrow">Next Steps</div>
-    <h2 class="h2">Designing the final proposal<br>around the actual Walker conditions.</h2>
-  </div>
-
-  <div class="layout">
-    <div class="lede">
-      The next step is to refine the proposal around the actual space, calendar, labor expectations, equipment, licensing path, and institutional priorities.<br><br>
-      With those particulars in hand, the document above becomes a working plan rather than a position.
-    </div>
-    <div class="needs">
-      <div class="ll">Information needed</div>
-      <ul>
-        <li>Floor plan &amp; seating map</li>
-        <li>Equipment list &amp; kitchen condition</li>
-        <li>Preferred operating hours</li>
-        <li>Event calendar &amp; formats</li>
-        <li>Alcohol license path</li>
-        <li>Member, donor, staff priorities</li>
-        <li>Sourcing &amp; procurement expectations</li>
-        <li>Labor expectations</li>
-        <li>Decision process &amp; timing</li>
-        <li>Scope of institutional partnership</li>
-      </ul>
-    </div>
-  </div>
-
-  <div class="close">
-    <div class="closing-line">
-      Local Effort is prepared to build a restaurant and hospitality practice that belongs to the Walker context.
-    </div>
-    <div class="sign">
-      <strong>Local Effort</strong><br>
-      April 2026<br>
-      Minneapolis
-    </div>
+    <div class="pageno">14 / 14 — Labor Structure</div>
   </div>
 </section>
 
 </div><!-- /.deck -->
 
 <div class="nav-controls">
-  <span>15 slides</span>
+  <span>14 slides</span>
   <a href="#" onclick="window.print(); return false;">Print → PDF</a>
 </div>
 

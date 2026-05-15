@@ -95,12 +95,12 @@ export default {
       group: 'theme',
       options: { collapsible: true, collapsed: true },
       fields: [
-        { name: 'backgroundColor', title: 'Background Color', type: 'string' },
-        { name: 'foregroundColor', title: 'Foreground Color', type: 'string' },
-        { name: 'surfaceColor', title: 'Surface Color', type: 'string' },
-        { name: 'borderColor', title: 'Border Color', type: 'string' },
-        { name: 'mutedColor', title: 'Muted Text Color', type: 'string' },
-        { name: 'accentColor', title: 'Accent Color', type: 'string' },
+        { name: 'backgroundColor', title: 'Background Color', type: 'color' },
+        { name: 'foregroundColor', title: 'Foreground Color', type: 'color' },
+        { name: 'surfaceColor', title: 'Surface Color', type: 'color' },
+        { name: 'borderColor', title: 'Border Color', type: 'color' },
+        { name: 'mutedColor', title: 'Muted Text Color', type: 'color' },
+        { name: 'accentColor', title: 'Accent Color', type: 'color' },
         {
           name: 'cardStyle',
           title: 'Card Style',

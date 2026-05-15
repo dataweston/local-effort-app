@@ -13297,12 +13297,8 @@ var import_jsx_runtime24 = require("react/jsx-runtime");
 var formatDate = (value) => {
   if (!value) return "";
   try {
-    return new Intl.DateTimeFormat("en-US", {
-      month: "short",
-      day: "numeric",
-      year: "numeric"
-    }).format(new Date(value));
-  } catch (error) {
+    return new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric", year: "numeric" }).format(new Date(value));
+  } catch {
     return "";
   }
 };
@@ -13314,24 +13310,19 @@ var BlogList = () => {
   const [error, setError] = (0, import_react15.useState)("");
   const [loading, setLoading] = (0, import_react15.useState)(true);
   const selectedCategory = searchParams.get("category") || "";
-  const selectedCategoryLabel = categories.find((entry) => entry.slug === selectedCategory)?.category || "";
   (0, import_react15.useEffect)(() => {
     let mounted = true;
     const load = async () => {
       setLoading(true);
       setError("");
       const postParams = new URLSearchParams({ limit: "50" });
-      if (selectedCategory) {
-        postParams.set("category", selectedCategory);
-      }
+      if (selectedCategory) postParams.set("category", selectedCategory);
       try {
         const [postsResult, categoriesResult] = await Promise.allSettled([
           fetch(`/api/v1/posts?${postParams.toString()}`),
           fetch("/api/v1/categories")
         ]);
-        if (postsResult.status !== "fulfilled") {
-          throw postsResult.reason;
-        }
+        if (postsResult.status !== "fulfilled") throw postsResult.reason;
         const postsPayload = await postsResult.value.json().catch(() => ({}));
         if (!postsResult.value.ok || postsPayload?.ok === false) {
           throw new Error(postsPayload?.error || "Failed to load Local Report");
@@ -13349,14 +13340,10 @@ var BlogList = () => {
         } else if (mounted) {
           setCategories([]);
         }
-      } catch (loadError) {
-        if (mounted) {
-          setError(loadError?.message || "Failed to load Local Report");
-        }
+      } catch (err) {
+        if (mounted) setError(err?.message || "Failed to load Local Report");
       } finally {
-        if (mounted) {
-          setLoading(false);
-        }
+        if (mounted) setLoading(false);
       }
     };
     load();
@@ -13365,14 +13352,12 @@ var BlogList = () => {
     };
   }, [selectedCategory]);
   const handleCategoryChange = (slug) => {
-    const nextParams = new URLSearchParams(searchParams);
-    if (slug) {
-      nextParams.set("category", slug);
-    } else {
-      nextParams.delete("category");
-    }
-    setSearchParams(nextParams, { replace: true });
+    const next = new URLSearchParams(searchParams);
+    if (slug) next.set("category", slug);
+    else next.delete("category");
+    setSearchParams(next, { replace: true });
   };
+  const [lead, ...rest] = posts;
   return /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "blog-page fullpage-demo-scope", children: [
     /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)(import_react_helmet_async2.Helmet, { children: [
       /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("title", { children: "Local Report | Local Effort" }),
@@ -13383,103 +13368,119 @@ var BlogList = () => {
       /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("link", { rel: "alternate", type: "application/feed+json", title: "Local Report JSON Feed", href: "/api/feeds/blog.json" }),
       /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("link", { rel: "alternate", type: "application/activity+json", title: "Local Report ActivityPub Actor", href: "/api/activitypub/actor" })
     ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "blog-page-shell", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "blog-shell", children: [
       /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)(
-        import_framer_motion4.motion.section,
+        import_framer_motion4.motion.div,
         {
-          className: "blog-page-hero",
+          className: "blog-masthead",
+          initial: { opacity: 0, y: 14 },
+          animate: { opacity: 1, y: 0 },
+          transition: { duration: 0.32, ease: "easeOut" },
+          children: [
+            /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("p", { className: "blog-masthead-kicker", children: "Local Report" }),
+            /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("h1", { className: "blog-masthead-headline", children: "The whole story." }),
+            /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("p", { className: "blog-masthead-deck", children: "The longer explanations and the stories that connect." })
+          ]
+        }
+      ),
+      /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "blog-filter-bar", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)(
+          "button",
+          {
+            type: "button",
+            className: `blog-filter-pill ${!selectedCategory ? "is-active" : ""}`,
+            onClick: () => handleCategoryChange(""),
+            children: [
+              /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("span", { children: "All" }),
+              /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("span", { className: "blog-filter-count", children: categoriesTotal || posts.length })
+            ]
+          }
+        ),
+        categories.map((entry) => /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)(
+          "button",
+          {
+            type: "button",
+            className: `blog-filter-pill ${selectedCategory === entry.slug ? "is-active" : ""}`,
+            onClick: () => handleCategoryChange(entry.slug),
+            children: [
+              /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("span", { children: entry.category }),
+              /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("span", { className: "blog-filter-count", children: entry.postCount })
+            ]
+          },
+          entry.slug
+        )),
+        /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("span", { className: "blog-feed-links", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("a", { href: "/api/feeds/blog.rss", children: "RSS" }),
+          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("span", { "aria-hidden": "true", children: "\xB7" }),
+          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("a", { href: "/api/feeds/blog.atom", children: "Atom" })
+        ] })
+      ] }),
+      error && /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("div", { className: "blog-state is-error", children: error }),
+      loading && !error && /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("div", { className: "blog-state", children: "Loading Local Report\u2026" }),
+      !loading && !error && lead && /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)(
+        import_framer_motion4.motion.div,
+        {
+          className: "blog-lead-card",
           initial: { opacity: 0, y: 18 },
           animate: { opacity: 1, y: 0 },
           transition: { duration: 0.35, ease: "easeOut" },
           children: [
-            /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("p", { className: "blog-page-kicker", children: "Local Report" }),
-            /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("h1", { className: "blog-page-headline", children: "The whole story." }),
-            /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("p", { className: "blog-page-deck", children: "The longer explanations and the stories that connect." })
+            /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("div", { className: "blog-lead-image", children: lead.mainImageUrl || lead.ogImageUrl ? /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
+              "img",
+              {
+                src: lead.mainImageUrl || lead.ogImageUrl,
+                alt: lead.mainImageAlt || lead.ogImageAlt || lead.title || "",
+                loading: "eager"
+              }
+            ) : /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("div", { className: "blog-lead-image-placeholder", children: /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("span", { children: "Local Report" }) }) }),
+            /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "blog-lead-body", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "blog-lead-meta", children: [
+                lead.category && /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("span", { className: "blog-chip is-category", children: lead.category }),
+                lead.publishedAt && /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("span", { className: "blog-meta-text", children: formatDate(lead.publishedAt) }),
+                lead.readingTimeMinutes ? /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("span", { className: "blog-meta-text", children: [
+                  lead.readingTimeMinutes,
+                  " min"
+                ] }) : null
+              ] }),
+              /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("h2", { className: "blog-lead-title", children: /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(import_react_router_dom4.Link, { to: `/blog/${lead.slug}`, children: lead.title }) }),
+              lead.excerpt && /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("p", { className: "blog-lead-excerpt", children: lead.excerpt }),
+              /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(import_react_router_dom4.Link, { to: `/blog/${lead.slug}`, className: "blog-lead-cta", children: "Read the full piece \u2192" })
+            ] })
           ]
         }
       ),
-      /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "blog-page-layout", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("aside", { children: /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "blog-page-sidebar-card", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("p", { className: "blog-page-sidebar-label", children: "Categories" }),
-          /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "blog-page-filter-list", role: "tablist", "aria-label": "Blog categories", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)(
-              "button",
+      !loading && !error && rest.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("div", { className: "blog-post-list", children: rest.map((post, index3) => /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
+        import_framer_motion4.motion.article,
+        {
+          initial: { opacity: 0, y: 12 },
+          animate: { opacity: 1, y: 0 },
+          transition: { duration: 0.28, delay: Math.min(index3 * 0.04, 0.24), ease: "easeOut" },
+          children: /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)(import_react_router_dom4.Link, { to: `/blog/${post.slug}`, className: "blog-post-row", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("div", { className: "blog-row-thumb", children: post.mainImageUrl || post.ogImageUrl ? /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
+              "img",
               {
-                type: "button",
-                className: `blog-page-filter-btn ${selectedCategory ? "" : "is-active"}`,
-                onClick: () => handleCategoryChange(""),
-                children: [
-                  /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("span", { children: "All posts" }),
-                  /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("span", { className: "blog-page-filter-count", children: categoriesTotal || posts.length })
-                ]
+                src: post.mainImageUrl || post.ogImageUrl,
+                alt: post.mainImageAlt || post.ogImageAlt || post.title || "",
+                loading: "lazy"
               }
-            ),
-            categories.map((entry) => /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)(
-              "button",
-              {
-                type: "button",
-                className: `blog-page-filter-btn ${selectedCategory === entry.slug ? "is-active" : ""}`,
-                onClick: () => handleCategoryChange(entry.slug),
-                children: [
-                  /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("span", { children: entry.category }),
-                  /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("span", { className: "blog-page-filter-count", children: entry.postCount })
-                ]
-              },
-              entry.slug
-            ))
-          ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("p", { className: "blog-page-feed-note", children: [
-            "Subscribe via ",
-            /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("a", { href: "/api/feeds/blog.rss", children: "RSS" }),
-            " or ",
-            /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("a", { href: "/api/feeds/blog.atom", children: "Atom" }),
-            "."
+            ) : /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("div", { className: "blog-row-thumb-empty" }) }),
+            /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "blog-row-body", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "blog-row-meta", children: [
+                post.category && /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("span", { className: "blog-chip is-category", children: post.category }),
+                post.publishedAt && /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("span", { className: "blog-meta-text", children: formatDate(post.publishedAt) }),
+                post.readingTimeMinutes ? /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("span", { className: "blog-meta-text", children: [
+                  post.readingTimeMinutes,
+                  " min"
+                ] }) : null
+              ] }),
+              /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("h3", { className: "blog-row-title", children: post.title }),
+              post.excerpt && /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("p", { className: "blog-row-excerpt", children: post.excerpt })
+            ] })
           ] })
-        ] }) }),
-        /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("section", { className: "blog-page-main", "aria-live": "polite", children: [
-          error && /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("div", { className: "blog-page-error", children: error }),
-          loading && !error && /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("div", { className: "blog-page-loading", children: "Loading Local Report..." }),
-          !loading && !error && selectedCategoryLabel && /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "blog-page-note", children: [
-            "Showing posts in ",
-            /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("strong", { children: selectedCategoryLabel }),
-            "."
-          ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("div", { className: "blog-page-cards", children: posts.map((post, index3) => /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)(
-            import_framer_motion4.motion.article,
-            {
-              className: "blog-page-card",
-              initial: { opacity: 0, y: 20 },
-              animate: { opacity: 1, y: 0 },
-              transition: { duration: 0.3, delay: Math.min(index3 * 0.05, 0.3), ease: "easeOut" },
-              children: [
-                /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("div", { className: "blog-page-card-media", children: post.mainImageUrl || post.ogImageUrl ? /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
-                  "img",
-                  {
-                    src: post.mainImageUrl || post.ogImageUrl,
-                    alt: post.mainImageAlt || post.ogImageAlt || post.title || "Blog post image",
-                    loading: "lazy"
-                  }
-                ) : null }),
-                /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "blog-page-card-body", children: [
-                  /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "blog-page-card-meta", children: [
-                    post.category && /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("span", { className: "blog-page-chip is-accent", children: post.category }),
-                    post.publishedAt && /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("span", { children: formatDate(post.publishedAt) }),
-                    post.readingTimeMinutes ? /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("span", { children: [
-                      post.readingTimeMinutes,
-                      " min read"
-                    ] }) : null
-                  ] }),
-                  /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("h2", { className: "blog-page-card-title", children: /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(import_react_router_dom4.Link, { to: `/blog/${post.slug}`, className: "blog-page-title-link", children: post.title }) }),
-                  post.excerpt && /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("p", { className: "blog-page-card-excerpt", children: post.excerpt }),
-                  (post.tags || []).length > 0 && /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("div", { className: "blog-page-tag-row", "aria-label": "Post tags", children: post.tags.slice(0, 3).map((tag) => /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("span", { className: "blog-page-chip", children: tag }, tag)) })
-                ] })
-              ]
-            },
-            post.slug
-          )) }),
-          !posts.length && !error && !loading && /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("div", { className: "blog-page-empty", children: "No posts matched this category yet." })
-        ] })
-      ] })
+        },
+        post.slug
+      )) }),
+      !posts.length && !error && !loading && /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("div", { className: "blog-state", children: "No posts in this category yet." })
     ] })
   ] });
 };
@@ -13617,15 +13618,15 @@ var import_jsx_runtime26 = require("react/jsx-runtime");
 var formatDate2 = (value) => {
   if (!value) return "";
   try {
-    return new Intl.DateTimeFormat("en-US", {
-      month: "long",
-      day: "numeric",
-      year: "numeric"
-    }).format(new Date(value));
-  } catch (error) {
+    return new Intl.DateTimeFormat("en-US", { month: "long", day: "numeric", year: "numeric" }).format(new Date(value));
+  } catch {
     return "";
   }
 };
+var ErrorState = ({ children }) => /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "blog-page fullpage-demo-scope", children: /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "blog-post-shell", children: [
+  /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(import_react_router_dom5.Link, { to: "/blog", className: "blog-post-back", children: "\u2190 Local Report" }),
+  /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "blog-state is-error", children })
+] }) });
 var BlogPost = () => {
   const { slug } = (0, import_react_router_dom5.useParams)();
   const [post, setPost] = (0, import_react17.useState)(null);
@@ -13648,10 +13649,10 @@ var BlogPost = () => {
           setPost(payload?.post || null);
           setStatusCode(200);
         }
-      } catch (requestError) {
+      } catch (err) {
         if (mounted) {
           setStatusCode(500);
-          setError(requestError?.message || "Failed to load post");
+          setError(err?.message || "Failed to load post");
         }
       }
     })();
@@ -13659,100 +13660,70 @@ var BlogPost = () => {
       mounted = false;
     };
   }, [slug]);
-  const canonicalUrl = post?.canonicalUrl || `${SITE_URL}/blog/${slug}`;
-  const pageTitle = post?.metaTitle || (post?.title ? `${post.title} | Local Report | Local Effort` : "Local Report | Local Effort");
-  const description = post?.metaDescription || post?.excerpt || "";
-  const ogImage = post?.ogImageUrl || "";
-  if (error && statusCode === 404) {
-    return /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "blog-page fullpage-demo-scope", children: /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "blog-page-shell", children: /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "blog-page-error", children: "Post not found." }) }) });
-  }
-  if (error && statusCode === 403) {
-    return /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "blog-page fullpage-demo-scope", children: /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "blog-page-shell", children: /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "blog-page-error", children: "This post is for members only." }) }) });
-  }
-  if (error) {
-    return /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "blog-page fullpage-demo-scope", children: /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "blog-page-shell", children: /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "blog-page-error", children: error }) }) });
-  }
+  if (error && statusCode === 404) return /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(ErrorState, { children: "Post not found." });
+  if (error && statusCode === 403) return /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(ErrorState, { children: "This post is for members only." });
+  if (error) return /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(ErrorState, { children: error });
   if (!post) {
-    return /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "blog-page fullpage-demo-scope", children: /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "blog-page-shell", children: /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "blog-page-loading", children: "Loading Local Report..." }) }) });
+    return /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "blog-page fullpage-demo-scope", children: /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "blog-post-shell", children: /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "blog-state", children: "Loading\u2026" }) }) });
   }
+  const canonicalUrl = post.canonicalUrl || `${SITE_URL}/blog/${slug}`;
+  const pageTitle = post.metaTitle || (post.title ? `${post.title} | Local Report | Local Effort` : "Local Report | Local Effort");
+  const description = post.metaDescription || post.excerpt || "";
+  const ogImage = post.ogImageUrl || "";
+  const heroSrc = post.mainImageUrl || post.ogImageUrl || "";
+  const heroAlt = post.mainImageAlt || post.ogImageAlt || post.title || "";
   return /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "blog-page fullpage-demo-scope", children: [
     /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)(import_react_helmet_async3.Helmet, { children: [
       /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("title", { children: pageTitle }),
       description && /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("meta", { name: "description", content: description }),
       /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("meta", { property: "og:type", content: "article" }),
-      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("meta", { property: "og:title", content: post?.metaTitle || post?.title || "Local Report" }),
+      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("meta", { property: "og:title", content: post.metaTitle || post.title || "Local Report" }),
       description && /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("meta", { property: "og:description", content: description }),
       /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("meta", { property: "og:url", content: canonicalUrl }),
       ogImage && /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("meta", { property: "og:image", content: ogImage }),
       /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("link", { rel: "canonical", href: canonicalUrl }),
-      post?.slug && /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(
-        "link",
+      post.slug && /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("link", { rel: "alternate", type: "application/activity+json", href: `/api/activitypub/objects/${encodeURIComponent(post.slug)}` })
+    ] }),
+    /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "blog-post-shell", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(import_react_router_dom5.Link, { to: "/blog", className: "blog-post-back", children: "\u2190 Local Report" }),
+      /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)(
+        import_framer_motion5.motion.div,
         {
-          rel: "alternate",
-          type: "application/activity+json",
-          href: `/api/activitypub/objects/${encodeURIComponent(post.slug)}`
+          initial: { opacity: 0, y: 16 },
+          animate: { opacity: 1, y: 0 },
+          transition: { duration: 0.32, ease: "easeOut" },
+          children: [
+            /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("header", { className: "blog-post-header", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "blog-post-header-meta", children: [
+                post.category && /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("span", { className: "blog-chip is-category", children: post.category }),
+                (post.tags || []).slice(0, 3).map((tag) => /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("span", { className: "blog-chip", children: tag }, tag))
+              ] }),
+              /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("h1", { className: "blog-post-title", children: post.title }),
+              post.excerpt && /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("p", { className: "blog-post-excerpt", children: post.excerpt }),
+              /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "blog-post-byline", children: [
+                (post.authors || []).length > 0 && /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "blog-post-byline-item", children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("span", { className: "blog-post-byline-label", children: "By" }),
+                  /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("span", { className: "blog-post-byline-value", children: post.authors.map((a) => a.name).join(", ") })
+                ] }),
+                post.publishedAt && /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "blog-post-byline-item", children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("span", { className: "blog-post-byline-label", children: "Published" }),
+                  /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("span", { className: "blog-post-byline-value", children: formatDate2(post.publishedAt) })
+                ] }),
+                post.readingTimeMinutes && /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "blog-post-byline-item", children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("span", { className: "blog-post-byline-label", children: "Read time" }),
+                  /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("span", { className: "blog-post-byline-value", children: [
+                    post.readingTimeMinutes,
+                    " min"
+                  ] })
+                ] })
+              ] })
+            ] }),
+            heroSrc && /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "blog-post-hero", children: /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("img", { src: heroSrc, alt: heroAlt, loading: "eager" }) }),
+            /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "blog-post-prose prose prose-lg", children: Array.isArray(post.body) && post.body.length > 0 ? /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(import_react18.PortableText, { value: post.body, components: portableTextComponents }) : /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { dangerouslySetInnerHTML: { __html: post?.html || "" } }) })
+          ]
         }
       )
-    ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "blog-page-shell", children: /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)(
-      import_framer_motion5.motion.div,
-      {
-        className: "blog-page-detail-grid",
-        initial: { opacity: 0, y: 18 },
-        animate: { opacity: 1, y: 0 },
-        transition: { duration: 0.35, ease: "easeOut" },
-        children: [
-          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("aside", { children: /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "blog-page-meta-card", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)(import_react_router_dom5.Link, { to: "/blog", className: "blog-page-back-link", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("span", { "aria-hidden": "true", children: "\u2190" }),
-              /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("span", { children: "Back to Local Report" })
-            ] }),
-            /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "blog-page-meta-list", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { children: [
-                /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("p", { className: "blog-page-meta-label", children: "Section" }),
-                /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("p", { className: "blog-page-meta-copy", children: post.category || "General report" })
-              ] }),
-              /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { children: [
-                /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("p", { className: "blog-page-meta-label", children: "Published" }),
-                /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("p", { className: "blog-page-meta-copy", children: formatDate2(post.publishedAt) || "Unscheduled" })
-              ] }),
-              /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { children: [
-                /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("p", { className: "blog-page-meta-label", children: "Reading time" }),
-                /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("p", { className: "blog-page-meta-copy", children: [
-                  post.readingTimeMinutes || 1,
-                  " min read"
-                ] })
-              ] }),
-              (post.authors || []).length > 0 && /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { children: [
-                /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("p", { className: "blog-page-meta-label", children: "Byline" }),
-                /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("p", { className: "blog-page-meta-copy", children: post.authors.map((author) => author.name).join(", ") })
-              ] })
-            ] })
-          ] }) }),
-          /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("article", { className: "blog-page-post", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("header", { className: "blog-page-post-header", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("p", { className: "blog-page-kicker", children: "Local Report" }),
-              /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "blog-page-post-meta", children: [
-                post.category && /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("span", { className: "blog-page-chip is-accent", children: post.category }),
-                post.publishedAt && /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("span", { children: formatDate2(post.publishedAt) })
-              ] }),
-              /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("h1", { className: "blog-page-post-title", children: post.title }),
-              post.excerpt && /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("p", { className: "blog-page-post-excerpt", children: post.excerpt }),
-              (post.tags || []).length > 0 && /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "blog-page-tag-row", "aria-label": "Post tags", children: post.tags.map((tag) => /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("span", { className: "blog-page-chip", children: tag }, tag)) })
-            ] }),
-            (post.mainImageUrl || post.ogImageUrl) && /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "blog-page-image-frame", children: /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(
-              "img",
-              {
-                src: post.mainImageUrl || post.ogImageUrl,
-                alt: post.mainImageAlt || post.ogImageAlt || post.title || "Blog post image",
-                loading: "lazy"
-              }
-            ) }),
-            /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "blog-page-richtext", children: Array.isArray(post.body) && post.body.length > 0 ? /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(import_react18.PortableText, { value: post.body, components: portableTextComponents }) : /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { dangerouslySetInnerHTML: { __html: post?.html || "" } }) })
-          ] })
-        ]
-      }
-    ) })
+    ] })
   ] });
 };
 var BlogPost_default = BlogPost;
@@ -13764,7 +13735,7 @@ var import_react20 = require("@portabletext/react");
 
 // src/store/data/generatedReleasesPageData.json
 var generatedReleasesPageData_default = {
-  generatedAt: "2026-05-06T04:34:29.201Z",
+  generatedAt: "2026-05-06T05:04:34.190Z",
   releases: [
     {
       _id: "release-local-pizza-1000-2025-09-30",
@@ -13935,96 +13906,6 @@ var generatedReleasesPageData_default = {
       ],
       summary: "Roseville-based Local Effort Cooperative invites the community to back its most ambitious pizza initiative yet - building a thousand pies sourced entirely from Midwestern growers, millers, and producers.",
       title: "Roseville-Based Local Effort Seeks Support to Craft 1,000 Fully Local Pizzas"
-    },
-    {
-      _id: "release-local-pizza-1000-2024-05-30",
-      body: [
-        {
-          _key: "b0",
-          _type: "block",
-          children: [
-            {
-              _key: "s0",
-              _type: "span",
-              marks: [],
-              text: "The crowdfunding campaign energizes Local Effort's obsession with 100% regional sourcing. Every crust, sauce, and topping will trace back to Minnesota and Midwest farms, mills, creameries, and co-ops that the chef team has partnered with since 2022."
-            }
-          ],
-          markDefs: [],
-          style: "normal"
-        },
-        {
-          _key: "b1",
-          _type: "block",
-          children: [
-            {
-              _key: "s1",
-              _type: "span",
-              marks: [],
-              text: "Backers will help finance upgraded cold storage and a mobile pizza rig, unlocking more neighborhood pop-ups, farmers market collaborations, and last-mile delivery runs throughout Minneapolis, St. Paul, and Western Wisconsin."
-            }
-          ],
-          markDefs: [],
-          style: "normal"
-        },
-        {
-          _key: "b2",
-          _type: "block",
-          children: [
-            {
-              _key: "s2",
-              _type: "span",
-              marks: [],
-              text: '"Pizzas can tell the whole story of a foodshed," said Weston Smith, chef and co-founder of Local Effort. "When we layer house-fermented dough with seasonal produce, heritage grains, and regional cheeses, we showcase the farms that feed us. This campaign invites people to invest in that community table."'
-            }
-          ],
-          markDefs: [],
-          style: "blockquote"
-        },
-        {
-          _key: "b3",
-          _type: "block",
-          children: [
-            {
-              _key: "s3",
-              _type: "span",
-              marks: [],
-              text: "Supporters can choose from tiered rewards including limited pizza drops, family meal prep bundles, and exclusive seasonal toppings co-developed with local growers. Weekly progress bulletins and tasting events will keep the community connected as milestones are reached on the path to 1,000 pizzas."
-            }
-          ],
-          markDefs: [],
-          style: "normal"
-        },
-        {
-          _key: "b4",
-          _type: "block",
-          children: [
-            {
-              _key: "s4",
-              _type: "span",
-              marks: [],
-              text: "Local Effort has grown from intimate in-home dinners to weekly meal prep and community events by doubling down on relationships with Minnesota farmers, grain cooperatives, and dairy makers. The pizza program translates that ethos into a handheld, shareable format that can reach more tables without compromising sourcing."
-            }
-          ],
-          markDefs: [],
-          style: "normal"
-        }
-      ],
-      campaignHighlights: null,
-      canonicalUrl: null,
-      heroImage: null,
-      isArchived: true,
-      leadership: null,
-      mediaContact: null,
-      metaDescription: null,
-      pressAssets: null,
-      pressFacts: null,
-      pressKitUrl: null,
-      publishedAt: "2024-05-30T09:00:00-05:00",
-      slug: "local-pizza-1000-2024-05-30",
-      storyAngles: null,
-      summary: "Minneapolis-based Local Effort Cooperative invites the community to back its most ambitious pizza initiative yet - building a thousand pies sourced entirely from Midwestern growers, millers, and makers.",
-      title: "Local Effort Launches Crowdfunding Campaign to Craft 1,000 Local Pizzas"
     }
   ]
 };
@@ -15398,7 +15279,7 @@ function CartDrawer({ store = "sale" }) {
 
 // src/store/data/generatedSalePageData.json
 var generatedSalePageData_default = {
-  generatedAt: "2026-05-06T04:34:27.622Z",
+  generatedAt: "2026-05-06T05:04:33.516Z",
   page: {
     title: "Local Effort Sale",
     subheading: "holiday pie sale",
