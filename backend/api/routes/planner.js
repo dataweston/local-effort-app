@@ -78,6 +78,11 @@ router.get('/cards', async (req, res) => {
       effectTarget: c.effectTarget,
       effectType: c.effectType,
       order: c.sortOrder,
+      status: c.status ?? 'todo',
+      projectId: c.projectId ?? null,
+      assigneeId: c.assigneeId ?? null,
+      priority: c.priority ?? 0,
+      dueDate: c.dueDate ?? null,
     }));
 
     return res.status(200).json({ cards: mapped });
@@ -111,6 +116,11 @@ router.post('/cards', async (req, res) => {
         effectTarget: c.effectTarget ?? null,
         effectType: c.effectType ?? null,
         sortOrder: c.order ?? c.sortOrder ?? 0,
+        status: c.status ?? 'todo',
+        projectId: c.projectId ?? null,
+        assigneeId: c.assigneeId ?? null,
+        priority: c.priority ?? 0,
+        dueDate: c.dueDate ?? null,
       }));
 
       await prisma.$transaction(async (tx) => {
@@ -142,6 +152,11 @@ router.post('/cards', async (req, res) => {
           enabled: card.enabled ?? true,
           effectType: card.effectType ?? null,
           effectTarget: card.effectTarget ?? null,
+          status: card.status ?? 'todo',
+          projectId: card.projectId ?? null,
+          assigneeId: card.assigneeId ?? null,
+          priority: card.priority ?? 0,
+          dueDate: card.dueDate ?? null,
         },
       });
       return res.status(200).json({ ok: true });
@@ -301,6 +316,127 @@ router.post('/cogs', async (req, res) => {
 router.post('/google-sync', async (req, res) => {
   // Placeholder — requires Google API credentials to function
   return res.status(501).json({ error: 'Google Calendar sync not yet configured. Set GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, and GOOGLE_REDIRECT_URI.' });
+});
+
+// ─── PROJECTS ────────────────────────────────────────────
+
+const CANONICAL_PROJECTS = [
+  { slug: 'weekly-ops',             title: 'Weekly Ops',              color: '#6b7c3f', sortOrder: 0, description: 'Menu cycles, dish assignments, weekly prep' },
+  { slug: 'subscriber-fulfillment', title: 'Subscriber Fulfillment',  color: '#4a7c9e', sortOrder: 1, description: 'Order processing, deliveries, subscriber issues' },
+  { slug: 'vendor-relations',       title: 'Vendor Relations',        color: '#b07d3a', sortOrder: 2, description: 'Purchase orders, price changes, delivery issues' },
+  { slug: 'kitchen-staffing',       title: 'Kitchen Staffing',        color: '#9e4a4a', sortOrder: 3, description: 'Shifts, labor targets, training' },
+  { slug: 'happy-monday',           title: 'Happy Monday / Partners', color: '#7c4a9e', sortOrder: 4, description: 'Wholesale order pipeline, partner management' },
+  { slug: 'brain-systems',          title: 'Brain / Systems',         color: '#4a5568', sortOrder: 5, description: 'Feature backlog and development work' },
+];
+
+const CANONICAL_SPACES = [
+  { key: 'all-hands',              title: 'All Hands',             visibility: 'staff' },
+  { key: 'kitchen',               title: 'Kitchen',               visibility: 'staff' },
+  { key: 'admin',                 title: 'Admin',                 visibility: 'admin' },
+  { key: 'ops-alerts',            title: 'Ops Alerts',            visibility: 'admin' },
+  { key: 'menu-announcements',    title: 'Menu Announcements',    visibility: 'customer' },
+  { key: 'chef-notes',            title: 'Chef Notes',            visibility: 'customer' },
+  { key: 'partner-announcements', title: 'Partner Announcements', visibility: 'staff' },
+];
+
+function slugify(str) {
+  return str.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+}
+
+function mapProject(p) {
+  return { id: p.id, slug: p.slug, title: p.title, description: p.description, color: p.color, spaceKey: p.spaceKey, targetDate: p.targetDate, sortOrder: p.sortOrder };
+}
+
+router.get('/projects', async (req, res) => {
+  try {
+    const projects = await prisma.plannerProject.findMany({
+      where: { supabaseUid: req.plannerUid },
+      orderBy: { sortOrder: 'asc' },
+    });
+    return res.status(200).json({ projects: projects.map(mapProject) });
+  } catch (err) {
+    console.error('GET /api/planner/projects error:', err);
+    return res.status(500).json({ error: 'Failed to load projects' });
+  }
+});
+
+router.post('/projects', async (req, res) => {
+  const uid = req.plannerUid;
+  const { action, project, projectId } = req.body || {};
+
+  if (action === 'seed-defaults') {
+    try {
+      for (const p of CANONICAL_PROJECTS) {
+        await prisma.plannerProject.upsert({
+          where: { supabaseUid_slug: { supabaseUid: uid, slug: p.slug } },
+          update: { title: p.title, color: p.color, description: p.description, sortOrder: p.sortOrder },
+          create: { supabaseUid: uid, ...p },
+        });
+      }
+
+      let org = await prisma.hubOrganization.findFirst({ where: { slug: 'local-effort' } });
+      if (!org) {
+        org = await prisma.hubOrganization.create({ data: { name: 'Local Effort', slug: 'local-effort' } });
+      }
+      for (const s of CANONICAL_SPACES) {
+        const exists = await prisma.hubSpace.findFirst({ where: { organizationId: org.id, key: s.key } });
+        if (!exists) {
+          await prisma.hubSpace.create({ data: { organizationId: org.id, key: s.key, title: s.title, visibility: s.visibility } });
+        }
+      }
+
+      const projects = await prisma.plannerProject.findMany({ where: { supabaseUid: uid }, orderBy: { sortOrder: 'asc' } });
+      return res.status(200).json({ ok: true, projects: projects.map(mapProject) });
+    } catch (err) {
+      console.error('POST /api/planner/projects seed-defaults error:', err);
+      return res.status(500).json({ error: 'Failed to seed defaults' });
+    }
+  }
+
+  if (action === 'create' && project?.title) {
+    try {
+      const slug = project.slug || slugify(project.title);
+      const created = await prisma.plannerProject.create({
+        data: { supabaseUid: uid, slug, title: project.title, description: project.description ?? null, color: project.color ?? null, spaceKey: project.spaceKey ?? null, targetDate: project.targetDate ?? null, sortOrder: project.sortOrder ?? 0 },
+      });
+      return res.status(201).json({ ok: true, project: mapProject(created) });
+    } catch (err) {
+      console.error('POST /api/planner/projects create error:', err);
+      return res.status(500).json({ error: 'Failed to create project' });
+    }
+  }
+
+  if (action === 'update' && projectId && project) {
+    try {
+      await prisma.plannerProject.updateMany({
+        where: { id: projectId, supabaseUid: uid },
+        data: {
+          ...(project.title !== undefined && { title: project.title }),
+          ...(project.description !== undefined && { description: project.description }),
+          ...(project.color !== undefined && { color: project.color }),
+          ...(project.spaceKey !== undefined && { spaceKey: project.spaceKey }),
+          ...(project.targetDate !== undefined && { targetDate: project.targetDate }),
+          ...(project.sortOrder !== undefined && { sortOrder: project.sortOrder }),
+        },
+      });
+      return res.status(200).json({ ok: true });
+    } catch (err) {
+      console.error('POST /api/planner/projects update error:', err);
+      return res.status(500).json({ error: 'Failed to update project' });
+    }
+  }
+
+  if (action === 'delete' && projectId) {
+    try {
+      await prisma.plannerProject.deleteMany({ where: { id: projectId, supabaseUid: uid } });
+      return res.status(200).json({ ok: true });
+    } catch (err) {
+      console.error('POST /api/planner/projects delete error:', err);
+      return res.status(500).json({ error: 'Failed to delete project' });
+    }
+  }
+
+  return res.status(400).json({ error: 'Unknown action' });
 });
 
 function createPlannerRouter() {

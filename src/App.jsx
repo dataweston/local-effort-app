@@ -50,6 +50,7 @@ const CatherineSchedulePage = lazy(() => import('./pages/CatherineSchedulePage')
 const BookPage = lazy(() => import('./pages/BookPage'));
 const BrainPortalPage = lazy(() => import('./pages/BrainPortalPage'));
 const BrainBrowserPage = lazy(() => import('./pages/BrainBrowserPage'));
+const HubPage = lazy(() => import('./pages/HubPage'));
 
 const AppContent = () => {
   const location = useLocation();
@@ -60,7 +61,8 @@ const AppContent = () => {
     location.pathname === '/winterpizza' ||
     location.pathname === '/januarymeals' ||
     location.pathname === '/catherine-schedule' ||
-    location.pathname === '/native-mobile-hub';
+    location.pathname === '/native-mobile-hub' ||
+    location.pathname === '/hub';
   const hideFooter =
     location.pathname === '/' ||
     location.pathname === '/sale' ||
@@ -69,7 +71,8 @@ const AppContent = () => {
     location.pathname === '/winterpizza' ||
     location.pathname === '/januarymeals' ||
     location.pathname === '/catherine-schedule' ||
-    location.pathname === '/native-mobile-hub';
+    location.pathname === '/native-mobile-hub' ||
+    location.pathname === '/hub';
 
   useEffect(() => {
     document.fonts?.ready?.then(() => document.body.classList.add('fonts-loaded'));
@@ -290,6 +293,10 @@ const AppContent = () => {
                 <Route
                   path="/brain"
                   element={<BrainBrowserPage />}
+                />
+                <Route
+                  path="/hub"
+                  element={<HubPage />}
                 />
                 <Route
                   path="/catherine-schedule"

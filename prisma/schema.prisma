@@ -386,12 +386,35 @@ model PlannerCard {
   effectTarget String?
   effectType   String?
   sortOrder    Float    @default(0)
+  status       String   @default("todo")
+  projectId    String?
+  assigneeId   String?
+  priority     Int      @default(0)
+  dueDate      String?
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
   @@index([supabaseUid])
   @@index([supabaseUid, date])
   @@index([supabaseUid, templateId])
+  @@index([supabaseUid, projectId])
+}
+
+model PlannerProject {
+  id          String   @id @default(uuid())
+  supabaseUid String
+  slug        String
+  title       String
+  description String?
+  color       String?
+  spaceKey    String?
+  targetDate  String?
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([supabaseUid, slug])
+  @@index([supabaseUid])
 }
 
 model PlannerOverhead {

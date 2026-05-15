@@ -3,8 +3,32 @@ import { X, Trash2 } from 'lucide-react';
 import { PEOPLE } from './defaultSchedule';
 import { getDayOfWeek } from './dateUtils';
 
-export function EditPanel({ card, onSave, onDelete, onClose }) {
+const STATUSES = [
+  { key: 'todo',        label: 'To Do' },
+  { key: 'in_progress', label: 'In Progress' },
+  { key: 'blocked',     label: 'Blocked' },
+  { key: 'done',        label: 'Done' },
+];
+
+const PRIORITY_LABELS = ['Low', 'Medium', 'High', 'Critical'];
+
+function useProjects(accessToken) {
+  const [projects, setProjects] = useState([]);
+  useEffect(() => {
+    if (!accessToken) return;
+    fetch('/api/planner/projects', {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    })
+      .then((r) => r.json())
+      .then((d) => { if (d.projects) setProjects(d.projects); })
+      .catch(() => {});
+  }, [accessToken]);
+  return projects;
+}
+
+export function EditPanel({ card, onSave, onDelete, onClose, accessToken }) {
   const [form, setForm] = useState(card);
+  const projects = useProjects(accessToken);
 
   useEffect(() => {
     setForm(card);
@@ -298,6 +322,85 @@ export function EditPanel({ card, onSave, onDelete, onClose }) {
             </button>
           </div>
         )}
+
+        {/* Status */}
+        <div>
+          <label className="block text-xs font-medium mb-1" style={{ color: 'var(--color-text-secondary)' }}>
+            Status
+          </label>
+          <div className="grid grid-cols-2 gap-1.5">
+            {STATUSES.map((s) => (
+              <button
+                key={s.key}
+                onClick={() => set('status', s.key)}
+                className="py-1.5 text-xs font-medium rounded-lg border transition-colors"
+                style={
+                  form.status === s.key
+                    ? { backgroundColor: 'color-mix(in srgb, var(--color-action-primary-bg) 20%, transparent)', borderColor: 'var(--color-action-primary-border)', color: 'var(--color-text-primary)' }
+                    : { backgroundColor: 'var(--color-bg-card)', borderColor: 'var(--color-border-default)', color: 'var(--color-text-secondary)' }
+                }
+              >
+                {s.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Project */}
+        {projects.length > 0 && (
+          <div>
+            <label className="block text-xs font-medium mb-1" style={{ color: 'var(--color-text-secondary)' }}>
+              Project
+            </label>
+            <select
+              value={form.projectId || ''}
+              onChange={(e) => set('projectId', e.target.value || null)}
+              className={inputClass}
+              style={{ backgroundColor: 'var(--color-bg-card)', border: '1px solid var(--color-border-default)', color: 'var(--color-text-primary)' }}
+            >
+              <option value="">No project</option>
+              {projects.map((p) => (
+                <option key={p.id} value={p.id}>{p.title}</option>
+              ))}
+            </select>
+          </div>
+        )}
+
+        {/* Priority */}
+        <div>
+          <label className="block text-xs font-medium mb-1" style={{ color: 'var(--color-text-secondary)' }}>
+            Priority
+          </label>
+          <div className="flex gap-1.5">
+            {PRIORITY_LABELS.map((label, i) => (
+              <button
+                key={i}
+                onClick={() => set('priority', i)}
+                className="flex-1 py-1.5 text-xs font-medium rounded-lg border transition-colors"
+                style={
+                  form.priority === i
+                    ? { backgroundColor: 'color-mix(in srgb, var(--color-action-primary-bg) 20%, transparent)', borderColor: 'var(--color-action-primary-border)', color: 'var(--color-text-primary)' }
+                    : { backgroundColor: 'var(--color-bg-card)', borderColor: 'var(--color-border-default)', color: 'var(--color-text-secondary)' }
+                }
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Due date */}
+        <div>
+          <label className="block text-xs font-medium mb-1" style={{ color: 'var(--color-text-secondary)' }}>
+            Due date
+          </label>
+          <input
+            type="date"
+            value={form.dueDate || ''}
+            onChange={(e) => set('dueDate', e.target.value || null)}
+            className={inputClass}
+          />
+        </div>
 
         {/* Effect target */}
         <div>

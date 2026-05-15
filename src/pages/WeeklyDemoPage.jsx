@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { DollarSign, RotateCcw, Calendar, LayoutGrid, BarChart3, LogIn, LogOut, Inbox } from 'lucide-react';
+import { DollarSign, RotateCcw, Calendar, LayoutGrid, BarChart3, LogIn, LogOut, Inbox, Layers } from 'lucide-react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '../components/ui/tabs';
 import { usePlannerState } from '../components/weeklyplanner/usePlannerState';
 import { usePlannerNav } from '../components/weeklyplanner/usePlannerNav';
 import { WeeklyView } from '../components/weeklyplanner/WeeklyView';
 import { DailyView } from '../components/weeklyplanner/DailyView';
 import { MonthlyView } from '../components/weeklyplanner/MonthlyView';
+import { ProjectsView } from '../components/weeklyplanner/ProjectsView';
 import { EditPanel } from '../components/weeklyplanner/EditPanel';
 import { RecurringChangeDialog } from '../components/weeklyplanner/RecurringChangeDialog';
 import { GoogleCalendarSync } from '../components/weeklyplanner/GoogleCalendarSync';
@@ -339,6 +340,15 @@ export default function WeeklyDemoPage() {
               <BarChart3 size={14} />
               <span className="hidden sm:inline">Monthly</span>
             </TabsTrigger>
+            {auth.user && (
+              <TabsTrigger
+                value="projects"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-md transition-all data-[state=active]:shadow-sm"
+              >
+                <Layers size={14} />
+                <span className="hidden sm:inline">Projects</span>
+              </TabsTrigger>
+            )}
           </TabsList>
 
           <TabsContent value="daily">
@@ -373,6 +383,33 @@ export default function WeeklyDemoPage() {
               onSelectWeek={selectWeekFromMonth}
             />
           </TabsContent>
+
+          <TabsContent value="projects">
+            <ProjectsView
+              cards={planner.cards}
+              onCardClick={planner.handlers.setEditingCard}
+              onAddCard={(project) => {
+                const today = new Date().toISOString().slice(0, 10);
+                planner.handlers.setEditingCard({
+                  id: `new-${Date.now()}`,
+                  title: '',
+                  date: today,
+                  dayOfWeek: new Date().toLocaleDateString('en-US', { weekday: 'long' }),
+                  zone: 'untimed',
+                  people: [],
+                  revenue: 0,
+                  cost: 0,
+                  optional: false,
+                  enabled: true,
+                  status: 'todo',
+                  projectId: project.id,
+                  priority: 0,
+                  _isNew: true,
+                });
+              }}
+              accessToken={auth.accessToken}
+            />
+          </TabsContent>
         </Tabs>
       </div>
 
@@ -389,6 +426,7 @@ export default function WeeklyDemoPage() {
             onSave={planner.handlers.handleSave}
             onDelete={planner.handlers.handleDelete}
             onClose={() => planner.handlers.setEditingCard(null)}
+            accessToken={auth.accessToken}
           />
         </>
       )}

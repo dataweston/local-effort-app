@@ -46,6 +46,11 @@ module.exports = async (req, res) => {
         effectTarget: c.effectTarget,
         effectType: c.effectType,
         order: c.sortOrder,
+        status: c.status ?? 'todo',
+        projectId: c.projectId ?? null,
+        assigneeId: c.assigneeId ?? null,
+        priority: c.priority ?? 0,
+        dueDate: c.dueDate ?? null,
       }));
 
       return res.status(200).json({ cards: mapped });
@@ -79,6 +84,11 @@ module.exports = async (req, res) => {
           effectTarget: c.effectTarget ?? null,
           effectType: c.effectType ?? null,
           sortOrder: c.order ?? c.sortOrder ?? 0,
+          status: c.status ?? 'todo',
+          projectId: c.projectId ?? null,
+          assigneeId: c.assigneeId ?? null,
+          priority: c.priority ?? 0,
+          dueDate: c.dueDate ?? null,
         }));
 
         await prisma.$transaction(async (tx) => {
@@ -114,6 +124,11 @@ module.exports = async (req, res) => {
             enabled: card.enabled ?? true,
             effectType: card.effectType ?? null,
             effectTarget: card.effectTarget ?? null,
+            status: card.status ?? 'todo',
+            projectId: card.projectId ?? null,
+            assigneeId: card.assigneeId ?? null,
+            priority: card.priority ?? 0,
+            dueDate: card.dueDate ?? null,
           },
         });
         return res.status(200).json({ ok: true });
