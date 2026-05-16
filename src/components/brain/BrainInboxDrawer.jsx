@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { X, Trash2, Plus, Link2, CheckSquare, ChevronDown, ChevronUp, Inbox, Database, Search, RefreshCw } from 'lucide-react';
+import { X, Trash2, Plus, Link2, CheckSquare, ChevronDown, ChevronUp, Inbox, Database, Search, RefreshCw, Sparkles, CheckCircle2, AlertCircle } from 'lucide-react';
 import { useBrainEntities } from '../../hooks/useBrainEntities';
 
 const ENTITY_TYPES = [
@@ -181,13 +181,44 @@ function InboxPanel({ items, triage, loading, onClose }) {
 
 function InboxItem({ item, active, triaging, onClick, onTriage }) {
   const [expanded, setExpanded] = useState(false);
+  const [hintExpanded, setHintExpanded] = useState(false);
 
   const sourceLabel = {
     gmail: 'Gmail', square: 'Square', admin_ux: 'Manual',
-    drafts: 'Drafts', obsidian: 'Obsidian', shortcut: 'Shortcut',
+    Drafts: 'Drafts', Obsidian: 'Obsidian', Shortcut: 'Shortcut',
   }[item.source] ?? item.source;
 
   const age = formatAge(item.capturedAt);
+  const hint = item.triageHint || null;
+
+  // Strip old-style text annotations from rawContent
+  const displayContent = (item.rawContent || '').replace(/\n\n\[AI suggestion:[^\]]+\]/g, '').trim();
+
+  // Derive pre-filled action payloads from AI hint
+  const hintAction = hint?.action;
+  const acceptPayload = hintAction === 'new_entity'
+    ? { entityType: hint.entityType || 'Vendor', name: hint.entityName || displayContent.slice(0, 60) }
+    : hintAction === 'append_entity'
+      ? { entityId: hint.matchedEntityId || null, note: hint.note || displayContent }
+      : hintAction === 'new_task'
+        ? { title: hint.taskTitle || displayContent.slice(0, 80) }
+        : null;
+
+  const HINT_COLORS = {
+    new_entity:    { bg: '#edf1fb', text: '#3b5bdb', border: '#c5d0fa' },
+    append_entity: { bg: '#f0f4ec', text: '#4a6741', border: '#c5d8b5' },
+    new_task:      { bg: '#f3eefb', text: '#7048e8', border: '#d3bff5' },
+    trash:         { bg: '#fce8e8', text: '#c0392b', border: '#f5c0c0' },
+    needs_human:   { bg: '#fef3e2', text: '#b07d3a', border: '#f5dfa0' },
+  };
+  const hintColor = hint ? (HINT_COLORS[hint.action] || HINT_COLORS.needs_human) : null;
+  const hintLabel = {
+    new_entity:    `New ${hint?.entityType || 'entity'}: ${hint?.entityName || '—'}`,
+    append_entity: `Append to ${hint?.entityName || 'entity'}`,
+    new_task:      `Task: ${hint?.taskTitle || '—'}`,
+    trash:         'Trash',
+    needs_human:   'Needs review',
+  }[hint?.action] ?? null;
 
   return (
     <div
@@ -199,13 +230,46 @@ function InboxItem({ item, active, triaging, onClick, onTriage }) {
         opacity: triaging ? 0.5 : 1,
       }}
     >
+      {/* AI hint chip */}
+      {hint && hintLabel && (
+        <div className="mb-2">
+          <div className="flex items-center gap-1.5">
+            <Sparkles size={11} style={{ color: hintColor.text, flexShrink: 0 }} />
+            <button
+              onClick={e => { e.stopPropagation(); setHintExpanded(v => !v); }}
+              className="flex items-center gap-1 text-xs font-medium rounded px-1.5 py-0.5 leading-none"
+              style={{
+                backgroundColor: hintColor.bg,
+                color: hintColor.text,
+                border: `1px solid ${hintColor.border}`,
+              }}
+            >
+              {hintLabel}
+              <span className="opacity-60 ml-0.5">{Math.round((hint.confidence || 0) * 100)}%</span>
+              {hintExpanded ? <ChevronUp size={10} /> : <ChevronDown size={10} />}
+            </button>
+            {hint.matchedEntity && (
+              <span className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
+                · {hint.matchedEntity.assertionCount ?? '?'} signals
+              </span>
+            )}
+          </div>
+          {hintExpanded && hint.rationale && (
+            <p className="text-xs mt-1 ml-4 leading-snug italic" style={{ color: 'var(--color-text-muted)' }}>
+              {hint.rationale}
+            </p>
+          )}
+        </div>
+      )}
+
+      {/* Content */}
       <div className="flex items-start justify-between gap-2">
         <p className="text-sm flex-1 leading-snug" style={{ color: 'var(--color-text-primary)' }}>
-          {item.rawContent.length > 120 && !expanded
-            ? item.rawContent.slice(0, 120) + '…'
-            : item.rawContent}
+          {displayContent.length > 120 && !expanded
+            ? displayContent.slice(0, 120) + '…'
+            : displayContent}
         </p>
-        {item.rawContent.length > 120 && (
+        {displayContent.length > 120 && (
           <button
             onClick={e => { e.stopPropagation(); setExpanded(v => !v); }}
             style={{ color: 'var(--color-text-tertiary)', flexShrink: 0 }}
@@ -214,6 +278,8 @@ function InboxItem({ item, active, triaging, onClick, onTriage }) {
           </button>
         )}
       </div>
+
+      {/* Meta row */}
       <div className="flex items-center gap-2 mt-1">
         <span
           className="text-xs px-1.5 py-0.5 rounded"
@@ -240,35 +306,69 @@ function InboxItem({ item, active, triaging, onClick, onTriage }) {
           </a>
         )}
       </div>
+
+      {/* Action buttons */}
       {active && (
-        <div className="flex items-center gap-2 mt-2">
+        <div className="flex flex-wrap items-center gap-1.5 mt-2">
+          {/* Accept AI suggestion — primary if hint exists */}
+          {hint && acceptPayload && hint.action !== 'needs_human' && (
+            <ActionButton
+              icon={<CheckCircle2 size={12} />}
+              label={`Accept: ${hint.action === 'trash' ? 'trash' : hintLabel}`}
+              shortcut="y"
+              primary
+              onClick={e => { e.stopPropagation(); onTriage(hint.action, acceptPayload); }}
+            />
+          )}
           <ActionButton icon={<Trash2 size={12} />} label="Trash" shortcut="t" danger
             onClick={e => { e.stopPropagation(); onTriage('trash'); }} />
-          <ActionButton icon={<Plus size={12} />} label="New entity" shortcut="n"
-            onClick={e => { e.stopPropagation(); onTriage('new_entity', { entityType: 'Vendor', name: item.rawContent.slice(0, 60) }); }} />
-          <ActionButton icon={<Link2 size={12} />} label="Append" shortcut="a"
-            onClick={e => { e.stopPropagation(); onTriage('append_entity', { entityId: null, note: item.rawContent }); }} />
-          <ActionButton icon={<CheckSquare size={12} />} label="Task" shortcut="k"
-            onClick={e => { e.stopPropagation(); onTriage('new_task', { title: item.rawContent.slice(0, 80) }); }} />
+          <ActionButton
+            icon={<Plus size={12} />}
+            label={hint?.action === 'new_entity' && hint.entityName ? `New ${hint.entityType}: ${hint.entityName.slice(0, 20)}` : 'New entity'}
+            shortcut="n"
+            onClick={e => { e.stopPropagation(); onTriage('new_entity', { entityType: hint?.entityType || 'Vendor', name: hint?.entityName || displayContent.slice(0, 60) }); }}
+          />
+          <ActionButton
+            icon={<Link2 size={12} />}
+            label={hint?.action === 'append_entity' && hint.entityName ? `Append → ${hint.entityName.slice(0, 20)}` : 'Append'}
+            shortcut="a"
+            onClick={e => { e.stopPropagation(); onTriage('append_entity', { entityId: hint?.matchedEntityId || null, note: hint?.note || displayContent }); }}
+          />
+          <ActionButton
+            icon={<CheckSquare size={12} />}
+            label={hint?.action === 'new_task' && hint.taskTitle ? `Task: ${hint.taskTitle.slice(0, 20)}` : 'Task'}
+            shortcut="k"
+            onClick={e => { e.stopPropagation(); onTriage('new_task', { title: hint?.taskTitle || displayContent.slice(0, 80) }); }}
+          />
         </div>
       )}
     </div>
   );
 }
 
-function ActionButton({ icon, label, shortcut, danger, onClick }) {
+function ActionButton({ icon, label, shortcut, danger, primary, onClick }) {
   return (
     <button
       onClick={onClick}
       className="flex items-center gap-1 px-2 py-1 rounded text-xs font-medium transition-colors"
       style={{
-        backgroundColor: danger ? 'var(--brand-rose, #fde8e8)' : 'var(--color-bg-page)',
-        color: danger ? 'var(--brand-rose-text, #c0392b)' : 'var(--color-text-secondary)',
-        border: '1px solid var(--color-border-default)',
+        backgroundColor: danger
+          ? 'var(--brand-rose, #fde8e8)'
+          : primary
+            ? 'color-mix(in srgb, var(--color-action-primary-bg) 15%, transparent)'
+            : 'var(--color-bg-page)',
+        color: danger
+          ? 'var(--brand-rose-text, #c0392b)'
+          : primary
+            ? 'var(--color-action-primary-bg)'
+            : 'var(--color-text-secondary)',
+        border: primary
+          ? '1px solid color-mix(in srgb, var(--color-action-primary-bg) 40%, transparent)'
+          : '1px solid var(--color-border-default)',
       }}
     >
       {icon}
-      <span>{label}</span>
+      <span className="max-w-[120px] truncate">{label}</span>
       <kbd className="ml-0.5 text-xs opacity-50" style={{ fontFamily: 'monospace' }}>{shortcut}</kbd>
     </button>
   );

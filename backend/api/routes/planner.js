@@ -1,6 +1,7 @@
 const express = require('express');
 const { prisma } = require('../utils/prisma');
 const { getSupabase } = require('../supabaseClient');
+const { postBotMessage } = require('../../../api-handlers/hub/_bot');
 
 const router = express.Router();
 
@@ -175,6 +176,29 @@ router.post('/cards', async (req, res) => {
     } catch (err) {
       console.error('POST delete-recurring error:', err);
       return res.status(500).json({ error: 'Failed to delete recurring cards' });
+    }
+  }
+
+  if (action === 'patch-status' && (cardId || card?.id) && card?.status !== undefined) {
+    try {
+      const id = cardId || card.id;
+      await prisma.plannerCard.updateMany({
+        where: { id, supabaseUid: uid },
+        data: { status: card.status },
+      });
+      if (card.status === 'done' && card.title) {
+        postBotMessage(prisma, {
+          objectType: 'planner_card',
+          objectId: String(id),
+          visibility: 'staff',
+          title: card.title,
+          body: `✓ ${card.title} marked done`,
+        }).catch(() => {});
+      }
+      return res.status(200).json({ ok: true });
+    } catch (err) {
+      console.error('POST patch-status error:', err);
+      return res.status(500).json({ error: 'Failed to update status' });
     }
   }
 

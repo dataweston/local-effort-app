@@ -2,6 +2,7 @@ const { PrismaClient } = require('@prisma/client');
 const { resolveHubViewer } = require('./_auth');
 const { methodNotAllowed, asIso, cleanString, safePrisma } = require('./_http');
 const { allowedVisibility, threadSummary } = require('./threads');
+const { findOrCreateThread } = require('./_bot');
 
 let prisma = null;
 try {
@@ -48,12 +49,28 @@ module.exports = async (req, res) => {
   const auth = await resolveHubViewer(req, prisma, { requireCustomer: false });
   if (auth.error) return res.status(auth.status).json({ error: auth.error });
 
-  const threadId = cleanString(req.params?.id || req.query?.id, 120);
-  if (!threadId) return res.status(400).json({ error: 'thread id is required' });
+  let threadId = cleanString(req.params?.id || req.query?.id, 120);
+  let thread = null;
 
   try {
-    const thread = await getThread(auth, threadId);
-    if (!thread) return res.status(404).json({ error: 'Thread not found' });
+    if (!threadId) {
+      // Find-or-create by objectType + objectId
+      const objectType = cleanString(req.query?.objectType, 80);
+      const objectId = cleanString(req.query?.objectId, 120);
+      if (!objectType || !objectId) return res.status(400).json({ error: 'thread id or objectType+objectId required' });
+
+      if (objectType === 'customer' && !auth.isAdmin && auth.customer?.id !== objectId) {
+        return res.status(403).json({ error: 'Forbidden' });
+      }
+
+      const visibility = cleanString(req.query?.visibility, 40) || 'customer';
+      const title = cleanString(req.query?.title, 200) || objectType;
+      thread = await findOrCreateThread(prisma, { objectType, objectId, visibility, title });
+      threadId = thread.id;
+    } else {
+      thread = await getThread(auth, threadId);
+      if (!thread) return res.status(404).json({ error: 'Thread not found' });
+    }
 
     if (req.method === 'POST') {
       const body = cleanString(req.body?.body, 6000);
@@ -84,10 +101,11 @@ module.exports = async (req, res) => {
       take: 100,
     });
 
+    const lastMsg = messages[messages.length - 1] || null;
     return res.status(200).json({
       ok: true,
       generatedAt: new Date().toISOString(),
-      thread: threadSummary(thread),
+      thread: threadSummary({ ...thread, messages: lastMsg ? [lastMsg] : [] }),
       messages: messages.map(publicMessage),
     });
   } catch (err) {

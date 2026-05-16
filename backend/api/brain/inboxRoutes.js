@@ -121,8 +121,30 @@ function registerInboxRoutes(app, { logger } = {}) {
         include: { resultEntity: { select: { id: true, name: true, entityType: true } } },
       });
 
+      // Resolve matched entities from triageHint.matchedEntityId
+      const matchedIds = [...new Set(
+        items
+          .map((i) => i.triageHint?.matchedEntityId)
+          .filter(Boolean),
+      )];
+      let matchedEntityMap = {};
+      if (matchedIds.length) {
+        const entities = await prisma.brainEntity.findMany({
+          where: { id: { in: matchedIds } },
+          select: { id: true, name: true, entityType: true, assertionCount: true },
+        });
+        matchedEntityMap = Object.fromEntries(entities.map((e) => [e.id, e]));
+      }
+
+      const enriched = items.map((item) => ({
+        ...item,
+        matchedEntity: item.triageHint?.matchedEntityId
+          ? (matchedEntityMap[item.triageHint.matchedEntityId] || null)
+          : null,
+      }));
+
       const total = await prisma.brainInboxItem.count({ where: { status } });
-      return res.json({ ok: true, items, total });
+      return res.json({ ok: true, items: enriched, total });
     } catch (err) {
       logger?.error({ err }, 'brain: inbox list error');
       return res.status(500).json({ error: 'internal-error' });

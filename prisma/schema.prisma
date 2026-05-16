@@ -837,6 +837,7 @@ model BrainInboxItem {
   status         String      @default("pending")
   processedAt    DateTime?
   resultEntityId String?
+  triageHint     Json?
 
   resultEntity BrainEntity? @relation(fields: [resultEntityId], references: [id])
 

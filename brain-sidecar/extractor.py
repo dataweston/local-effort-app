@@ -494,24 +494,63 @@ Extract vendor or customer name if clearly present.
 
 # ── Inbox triage ──────────────────────────────────────────────────────────────
 
+_SOURCE_HINTS = {
+    'gmail': (
+        'Came from Gmail. Likely a vendor quote, supplier invoice, customer inquiry, payment confirmation, '
+        'or a food-industry contact. Vendor and Ingredient entities are common here. '
+        'SaaS receipts, marketing emails, and personal emails → trash.'
+    ),
+    'square': (
+        'Came from Square. This is a payment or transaction record. '
+        'Likely a Customer payment or event sale. Financial data → needs_human unless clearly a routine payment.'
+    ),
+    'admin_ux': (
+        'Manually typed by the founder in the web app. Could be anything: a vendor name to remember, '
+        'a task, a quick note, a customer name, or a business idea. Read literally — capture exactly what was typed.'
+    ),
+    'Drafts': (
+        'Came from Apple Drafts (iOS notes app). Likely a quick capture during physical kitchen work: '
+        'vendor contact, ingredient price overheard, task reminder, or meeting note.'
+    ),
+    'Obsidian': (
+        'Came from Obsidian (structured notes). Likely a longer note, meeting summary, business decision, '
+        'or research finding. Note and Task entities are common here.'
+    ),
+    'Shortcut': (
+        'Came from an iOS Shortcut (quick capture button). Very brief, single-idea captures. '
+        'Often a vendor name, ingredient, or to-do.'
+    ),
+}
+
+
 def triage_inbox_item(raw_content: str, source: str) -> InboxTriageDecision:
     entity_context = load_entity_context()
+    source_hint = _SOURCE_HINTS.get(source, f'Source: {source}.')
+
     prompt = f"""You are triaging captured notes for Local Effort Food's knowledge graph.
+
+BUSINESS CONTEXT:
+Local Effort Food is a small Minneapolis food business run by Weston Smith.
+Revenue lines: Weekly Meal Subscription (household meal boxes), Private Dinners & Events,
+Local Effort Pizza (pop-up events), Happy Monday wholesale, and Catering.
+Key entity types: Vendor (food suppliers), Customer (subscribers/event clients),
+Ingredient, Dish, Menu, Task, Note, Event, StaffRole.
+
+SOURCE HINT:
+{source_hint}
 
 {entity_context}
 
-Source: {source}
-Content: {raw_content}
+RULES:
+- If entity_name closely matches a known entity above → prefer append_entity over new_entity.
+- If content is a to-do, reminder, or action for the founder → new_task.
+- If content names a person, company, or ingredient not in the known list → new_entity.
+- If content is clearly noise, a duplicate, or unrelated to the food business → trash.
+- If you are unsure about anything — stakes, category, or match — → needs_human.
+- Financial decisions, legal documents, or content affecting multiple parties → needs_human.
 
-Choose the best action:
-- new_entity: create a new Vendor, Customer, Ingredient, Menu, Dish, or other entity
-- append_entity: this is a note about an existing entity (match by name above)
-- new_task: this is a to-do item or action item
-- trash: noise, duplicate, or irrelevant
-- needs_human: ambiguous — requires founder judgment
-
-Be conservative: prefer needs_human over a wrong action.
-Medical, legal, and financial decisions must be needs_human.
+CONTENT:
+{raw_content}
 """
     client = get_client()
     return client.chat.completions.create(

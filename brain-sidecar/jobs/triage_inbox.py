@@ -5,9 +5,10 @@ auto-acts on high-confidence clear cases, leaves ambiguous items for human.
 
 Auto-acts on:
   - trash (confidence >= 0.9)
-  - new_entity (confidence >= 0.85, entity_type is Vendor or Ingredient)
+  - new_entity (confidence >= 0.85, entity_type in SAFE_AUTO_ENTITY_TYPES)
 
-Everything else stays pending for human triage.
+Everything else stays pending with a structured triageHint JSON for human review.
+rawContent is never mutated — the hint lives in the separate triageHint column.
 
 Run: python -m jobs.triage_inbox
 """
@@ -22,9 +23,24 @@ from datetime import datetime, timezone
 from db import query, execute
 from ledger import write_ledger_event, find_or_create_entity
 from extractor import triage_inbox_item
+from hub import post_to_space
 
 AUTO_ACT_THRESHOLD = 0.85
 SAFE_AUTO_ENTITY_TYPES = {'Vendor', 'Ingredient', 'Customer'}
+
+# Sources that should be routed to ops-alerts space
+OPS_SOURCES = {'gmail', 'square', 'Obsidian'}
+
+
+def _route_to_hub(source: str, action: str, raw: str, entity_name: str | None = None):
+    snippet = raw[:80].replace('\n', ' ')
+    label = entity_name or ''
+    body = f'[{source} → {action}] {snippet}' + (f' — {label}' if label else '')
+
+    if source in OPS_SOURCES:
+        post_to_space('ops-alerts', 'admin', 'Ops Alerts', body)
+    elif action == 'new_task':
+        post_to_space('admin', 'admin', 'Admin', body)
 
 
 def run(limit: int = 30, dry_run: bool = False) -> dict:
@@ -36,7 +52,7 @@ def run(limit: int = 30, dry_run: bool = False) -> dict:
         """
         SELECT id, "rawContent", source, "capturedAt"
         FROM "BrainInboxItem"
-        WHERE status = 'pending'
+        WHERE status = 'pending' AND "triageHint" IS NULL
         ORDER BY "capturedAt" DESC
         LIMIT %s
         """,
@@ -76,8 +92,6 @@ def run(limit: int = 30, dry_run: bool = False) -> dict:
                 )
                 acted += 1
                 continue
-
-            # Auto-create safe entity types with high confidence
             if (
                 decision.action == 'new_entity'
                 and decision.confidence >= AUTO_ACT_THRESHOLD
@@ -109,26 +123,35 @@ def run(limit: int = 30, dry_run: bool = False) -> dict:
                     """,
                     (entity_id, item_id),
                 )
+                _route_to_hub(source, decision.action, raw, decision.entity_name)
                 acted += 1
                 continue
 
-            # Everything else — annotate the item with the suggestion but leave pending
-            current = query('SELECT "rawContent" FROM "BrainInboxItem" WHERE id = %s', (item_id,))
-            if current:
-                suggestion = f'\n\n[AI suggestion: {decision.action}'
-                if decision.entity_name:
-                    suggestion += f' → {decision.entity_type}: {decision.entity_name}'
-                if decision.task_title:
-                    suggestion += f' → Task: {decision.task_title}'
-                suggestion += f' (conf {decision.confidence:.0%})]'
+            # Build structured hint — try to resolve entity ID for append_entity
+            hint = {
+                'action': decision.action,
+                'entityType': decision.entity_type,
+                'entityName': decision.entity_name,
+                'note': decision.note,
+                'taskTitle': decision.task_title,
+                'confidence': decision.confidence,
+                'rationale': decision.rationale,
+                'matchedEntityId': None,
+            }
 
-                # Only append if not already annotated
-                existing = current[0]['rawContent']
-                if '[AI suggestion:' not in existing:
-                    execute(
-                        'UPDATE "BrainInboxItem" SET "rawContent" = %s WHERE id = %s',
-                        (existing + suggestion, item_id),
-                    )
+            if decision.action == 'append_entity' and decision.entity_name:
+                matched = query(
+                    'SELECT id FROM "BrainEntity" WHERE LOWER(name) = LOWER(%s) AND "tombstonedAt" IS NULL LIMIT 1',
+                    (decision.entity_name,),
+                )
+                if matched:
+                    hint['matchedEntityId'] = matched[0]['id']
+
+            execute(
+                'UPDATE "BrainInboxItem" SET "triageHint" = %s WHERE id = %s',
+                (json.dumps(hint), item_id),
+            )
+            _route_to_hub(source, decision.action, raw, decision.entity_name or decision.task_title)
 
             deferred += 1
 

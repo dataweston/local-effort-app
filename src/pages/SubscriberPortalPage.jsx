@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useSupabaseAuth } from '../contexts/SupabaseAuthContext';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '../components/ui/tabs';
@@ -452,33 +452,56 @@ const IntakeSurveyView = ({ survey }) => {
   );
 };
 
-/* ─── Note to Chef tab ─── */
-const ChefNoteTab = ({ accessToken, customerSlug }) => {
+/* ─── Note to Chef tab — live thread ─── */
+const ChefNoteTab = ({ accessToken, customer }) => {
+  const [messages, setMessages] = useState([]);
+  const [threadId, setThreadId] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState('');
   const [sending, setSending] = useState(false);
-  const [sent, setSent] = useState(false);
   const [error, setError] = useState('');
+  const bottomRef = useRef(null);
+  const customerId = customer?.id;
+  const authHeader = accessToken ? { Authorization: `Bearer ${accessToken}` } : {};
+
+  const loadThread = useCallback(async () => {
+    if (!customerId) return;
+    setLoading(true);
+    try {
+      const title = encodeURIComponent(`${customer?.name || customerId} — Chef Notes`);
+      const resp = await fetch(
+        `/api/hub/thread-messages?objectType=customer&objectId=${encodeURIComponent(customerId)}&visibility=customer&title=${title}`,
+        { headers: authHeader },
+      );
+      if (resp.ok) {
+        const data = await resp.json();
+        setThreadId(data.thread?.id || null);
+        setMessages(data.messages || []);
+      }
+    } catch { /* ignore */ }
+    finally { setLoading(false); }
+  }, [customerId, accessToken]);
+
+  useEffect(() => { loadThread(); }, [loadThread]);
+  useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages]);
 
   const handleSend = async (e) => {
     e.preventDefault();
-    if (!message.trim()) return;
+    if (!message.trim() || !threadId) return;
     setSending(true);
     setError('');
-    setSent(false);
     try {
-      const resp = await fetch('/api/weekly-order/chef-note', {
+      const resp = await fetch(`/api/hub/thread-messages?id=${threadId}`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
-        },
-        body: JSON.stringify({ customerSlug: customerSlug || undefined, message: message.trim() }),
+        headers: { 'Content-Type': 'application/json', ...authHeader },
+        body: JSON.stringify({ body: message.trim() }),
       });
       if (!resp.ok) {
         const data = await resp.json().catch(() => ({}));
         throw new Error(data?.error || 'Failed to send');
       }
-      setSent(true);
+      const data = await resp.json();
+      setMessages((prev) => [...prev, data.message]);
       setMessage('');
     } catch (err) {
       setError(err?.message || 'Failed to send');
@@ -487,6 +510,14 @@ const ChefNoteTab = ({ accessToken, customerSlug }) => {
     }
   };
 
+  const fmtTime = (iso) => {
+    if (!iso) return '';
+    const d = new Date(iso);
+    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) + ' · ' + d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+  };
+
+  if (loading) return <Card><CardContent style={{ padding: '24px', color: '#64748b' }}>Loading…</CardContent></Card>;
+
   return (
     <Card>
       <CardHeader>
@@ -494,19 +525,46 @@ const ChefNoteTab = ({ accessToken, customerSlug }) => {
         <CardDescription>Have a request, allergy update, or just want to say something? Drop a note here and it'll go straight to the kitchen.</CardDescription>
       </CardHeader>
       <CardContent>
-        <form onSubmit={handleSend} className="space-y-3">
+        {messages.length === 0 && (
+          <p style={{ color: '#94a3b8', fontSize: '0.85rem', marginBottom: 16 }}>No messages yet — send a note to get started.</p>
+        )}
+        {messages.length > 0 && (
+          <div style={{ maxHeight: 360, overflowY: 'auto', marginBottom: 16, display: 'flex', flexDirection: 'column', gap: 10, padding: '4px 0' }}>
+            {messages.map((msg) => {
+              const isCustomer = msg.senderRole === 'customer';
+              const isAdmin = msg.senderRole === 'admin';
+              return (
+                <div key={msg.id} style={{
+                  padding: '10px 14px',
+                  borderRadius: 10,
+                  background: isAdmin ? '#f0fdf4' : isCustomer ? '#eff6ff' : '#f1f5f9',
+                  alignSelf: isCustomer ? 'flex-end' : 'flex-start',
+                  maxWidth: '80%',
+                }}>
+                  <p style={{ margin: 0, fontSize: '0.9rem', color: '#1e293b', whiteSpace: 'pre-wrap' }}>{msg.body}</p>
+                  <p style={{ margin: '4px 0 0', fontSize: '0.72rem', color: '#94a3b8' }}>
+                    {isAdmin ? 'Chef' : isCustomer ? 'You' : 'Kitchen'} · {fmtTime(msg.createdAt)}
+                  </p>
+                </div>
+              );
+            })}
+            <div ref={bottomRef} />
+          </div>
+        )}
+        <form onSubmit={handleSend} style={{ display: 'flex', gap: 8, alignItems: 'flex-end' }}>
           <Textarea
-            rows={4}
+            rows={2}
             placeholder="Hey chef, next week could we try…"
             value={message}
-            onChange={(e) => { setMessage(e.target.value); setSent(false); }}
+            style={{ flex: 1, resize: 'none' }}
+            onChange={(e) => setMessage(e.target.value)}
+            onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(e); } }}
           />
-          {error && <p style={{ color: '#ef4444', fontSize: '0.85rem' }}>{error}</p>}
-          {sent && <p style={{ color: '#22c55e', fontSize: '0.85rem' }}>Message sent! We'll get back to you soon.</p>}
           <Button type="submit" disabled={sending || !message.trim()}>
-            {sending ? 'Sending…' : 'Send Note'}
+            {sending ? '…' : 'Send'}
           </Button>
         </form>
+        {error && <p style={{ color: '#ef4444', fontSize: '0.85rem', marginTop: 8 }}>{error}</p>}
       </CardContent>
     </Card>
   );
@@ -635,7 +693,7 @@ const SubscriberPortalPage = () => {
             </TabsContent>
 
             <TabsContent value="chef-note">
-              <ChefNoteTab accessToken={accessToken} customerSlug={customerSlug} />
+              <ChefNoteTab accessToken={accessToken} customer={customer} />
             </TabsContent>
           </Tabs>
         </div>

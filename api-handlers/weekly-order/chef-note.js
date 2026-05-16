@@ -1,5 +1,6 @@
 const { PrismaClient } = require('@prisma/client');
 const { findUserByEmail, resolveAuthorizedCustomer } = require('./_auth');
+const { postUserMessage } = require('../hub/_bot');
 
 let prisma = null;
 try { prisma = new PrismaClient(); } catch (_) { prisma = null; }
@@ -74,6 +75,16 @@ module.exports = async (req, res) => {
       console.error('[chef-note] email notification failed', err);
     }
   }
+
+  postUserMessage(prisma, {
+    objectType: 'customer',
+    objectId: String(customer.id),
+    visibility: 'customer',
+    title: `${customer.name || customer.slug} — Chef Notes`,
+    body: message.trim(),
+    senderId: String(dbUser.id),
+    senderRole: 'customer',
+  }).catch((err) => console.error('[chef-note] thread post failed', err));
 
   return res.status(200).json({ success: true, note });
 };

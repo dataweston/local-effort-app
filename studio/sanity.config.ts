@@ -10,6 +10,7 @@ import {media} from 'sanity-plugin-media'
 import {assist} from '@sanity/assist'
 import {schemaTypes} from './schemaTypes/index.js'
 import {blogPostBadges, releaseBadges, productBadges} from './components/documentBadges.js'
+import {releasePressKitClipboardActions} from './components/ReleasePressKitClipboardActions.jsx'
 
 // Document types that appear in each sidebar group (used to exclude from fallback)
 const GROUPED_TYPES = [
@@ -38,6 +39,10 @@ export default defineConfig({
   dataset: 'localeffort',
 
   document: {
+    actions: (prev, context) => {
+      if (context.schemaType === 'release') return [...prev, ...releasePressKitClipboardActions]
+      return prev
+    },
     badges: (prev, context) => {
       const type = context.schemaType
       if (type === 'blogPost') return [...prev, ...blogPostBadges]
