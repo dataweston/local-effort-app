@@ -117,6 +117,21 @@ function decorateAssertion(assertion) {
   };
 }
 
+function compactLedgerPayload(payload) {
+  if (!payload || typeof payload !== 'object' || Array.isArray(payload)) return payload || null;
+  return {
+    ledgerPurpose: payload.ledgerPurpose || null,
+    ledgerEntry: payload.ledgerEntry || null,
+    definitions: payload.definitions || null,
+    basis: payload.basis || null,
+    equityTransfers: payload.equityTransfers || null,
+    resultingCapitalization: payload.resultingCapitalization || null,
+    entityIds: payload.entityIds || null,
+    clarificationOfLedgerEventId: payload.clarificationOfLedgerEventId || null,
+    clarificationOfLedgerEventIds: payload.clarificationOfLedgerEventIds || null,
+  };
+}
+
 function automationCandidates(assertions) {
   const confirm = [];
   const retract = [];
@@ -810,6 +825,124 @@ function registerEntityRoutes(app, { logger } = {}) {
       return res.json({ ok: true, dryRun: false, confirmed: confirmed.count, retracted: retracted.count });
     } catch (err) {
       logger?.error({ err }, 'brain: provisional auto review error');
+      return res.status(500).json({ error: 'internal-error' });
+    }
+  });
+
+  // GET /api/brain/ledger/lookup — focused provenance lookup for an entity name.
+  app.get('/api/brain/ledger/lookup', async (req, res) => {
+    try {
+      const admin = await verifyAdminRequest(req);
+      if (!admin) return res.status(403).json({ error: 'admin only' });
+
+      const q = String(req.query.q || '').trim();
+      const sourcePrefix = String(req.query.sourcePrefix || '').trim();
+      const take = Math.min(parseInt(req.query.limit, 10) || 100, 250);
+      if (q.length < 2) return res.status(400).json({ error: 'q must be at least 2 characters' });
+
+      const entities = await prisma.brainEntity.findMany({
+        where: {
+          tombstonedAt: null,
+          OR: [
+            { name: { contains: q, mode: 'insensitive' } },
+            { canonicalName: { contains: canonicalEntityName(q), mode: 'insensitive' } },
+            { aliases: { some: { alias: { contains: q, mode: 'insensitive' } } } },
+          ],
+        },
+        orderBy: [{ entityType: 'asc' }, { name: 'asc' }],
+        take: 12,
+        select: {
+          id: true,
+          entityType: true,
+          name: true,
+          canonicalName: true,
+          properties: true,
+          status: true,
+          aliases: { select: { alias: true, source: true }, take: 8 },
+        },
+      });
+
+      const entityIds = entities.map(e => e.id);
+      const assertionWhere = {
+        retractedAt: null,
+        sourceId: { not: null },
+        OR: [
+          { srcId: { in: entityIds } },
+          { dstId: { in: entityIds } },
+        ],
+        ledgerEvent: {
+          is: {
+            tombstonedAt: null,
+            ...(sourcePrefix ? { sourceId: { startsWith: sourcePrefix } } : {}),
+          },
+        },
+      };
+
+      const assertions = entityIds.length
+        ? await prisma.brainAssertion.findMany({
+            where: assertionWhere,
+            orderBy: [{ createdAt: 'desc' }],
+            take,
+            include: {
+              src: { select: { id: true, entityType: true, name: true } },
+              dst: { select: { id: true, entityType: true, name: true } },
+              ledgerEvent: { select: { id: true, eventType: true, source: true, sourceId: true, occurredAt: true, createdAt: true, actorType: true, payload: true } },
+            },
+          })
+        : [];
+
+      const directEvents = await prisma.$queryRaw`
+        SELECT id, "eventType", source, "sourceId", "occurredAt", "createdAt", "actorType", payload
+        FROM "LedgerEvent"
+        WHERE "tombstonedAt" IS NULL
+          AND (${sourcePrefix} = '' OR "sourceId" LIKE ${`${sourcePrefix}%`})
+          AND (
+            "sourceId" ILIKE ${`%${q}%`}
+            OR payload::text ILIKE ${`%${q}%`}
+          )
+        ORDER BY "occurredAt" DESC, "createdAt" DESC
+        LIMIT ${Math.min(take, 100)}
+      `;
+
+      const eventMap = new Map();
+      for (const assertion of assertions) {
+        if (assertion.ledgerEvent) eventMap.set(assertion.ledgerEvent.id, assertion.ledgerEvent);
+      }
+      for (const event of directEvents) eventMap.set(event.id, event);
+
+      const ledgerEvents = [...eventMap.values()]
+        .sort((a, b) => new Date(b.occurredAt || b.createdAt) - new Date(a.occurredAt || a.createdAt))
+        .map(event => ({
+          ...sourceSummary(event),
+          actorType: event.actorType,
+          createdAt: event.createdAt,
+          compactPayload: compactLedgerPayload(event.payload),
+        }));
+
+      return res.json({
+        ok: true,
+        query: q,
+        sourcePrefix: sourcePrefix || null,
+        entities,
+        assertions: assertions.map(assertion => ({
+          id: assertion.id,
+          relType: assertion.relType,
+          metadata: assertion.metadata,
+          confidence: assertion.confidence,
+          provisional: assertion.provisional,
+          createdAt: assertion.createdAt,
+          validFrom: assertion.validFrom,
+          sourceType: assertion.sourceType,
+          src: assertion.src,
+          dst: assertion.dst,
+          ledgerEventId: assertion.ledgerEvent?.id || assertion.sourceId,
+          ledgerSourceId: assertion.ledgerEvent?.sourceId || null,
+          ledgerEventType: assertion.ledgerEvent?.eventType || null,
+        })),
+        ledgerEvents,
+      });
+    } catch (err) {
+      logger?.error({ err }, 'brain: ledger lookup error');
       return res.status(500).json({ error: 'internal-error' });
     }
   });
