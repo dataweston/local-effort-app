@@ -11875,7 +11875,7 @@ var FullPageDemoPage = () => {
                     "a",
                     {
                       href: "/february",
-                      className: "px-8 py-5 rounded-md border-2 border-rose-400 bg-rose-500/90 text-white text-lg font-semibold hover:bg-rose-600 transition-colors shadow-lg",
+                      className: "px-8 py-5 rounded-md border-2 border-green-200/80 bg-green-800/90 text-white text-lg font-semibold hover:bg-green-900 transition-colors shadow-lg",
                       style: { fontFamily: "'Office Code Pro', monospace" },
                       children: "home dinners in february"
                     }
@@ -13735,7 +13735,7 @@ var import_react20 = require("@portabletext/react");
 
 // src/store/data/generatedReleasesPageData.json
 var generatedReleasesPageData_default = {
-  generatedAt: "2026-05-16T19:05:15.568Z",
+  generatedAt: "2026-05-17T21:17:20.200Z",
   releases: [
     {
       _id: "release-local-pizza-1000-2025-09-30",
@@ -15279,7 +15279,7 @@ function CartDrawer({ store = "sale" }) {
 
 // src/store/data/generatedSalePageData.json
 var generatedSalePageData_default = {
-  generatedAt: "2026-05-16T19:05:14.767Z",
+  generatedAt: "2026-05-17T21:17:19.358Z",
   page: {
     title: "Local Effort Sale",
     subheading: "holiday pie sale",
