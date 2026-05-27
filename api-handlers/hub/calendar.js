@@ -1,8 +1,9 @@
 const { PrismaClient } = require('@prisma/client');
-const { resolveHubViewer } = require('./_auth');
+const { resolveHubViewer, requireHubAccess } = require('./_auth');
 const { methodNotAllowed, asIso } = require('./_http');
 const { getPlannerObjects, rangeForView } = require('./_planner');
 const { getWeekEnd } = require('./_dates');
+const { masterPlannerUid } = require('./_masterPlanner');
 
 let prisma = null;
 try {
@@ -60,13 +61,15 @@ module.exports = async (req, res) => {
 
   const auth = await resolveHubViewer(req, prisma, { requireCustomer: false });
   if (auth.error) return res.status(auth.status).json({ error: auth.error });
+  const denied = requireHubAccess(auth);
+  if (denied) return res.status(denied.status).json({ error: denied.error });
 
   try {
     const view = String(req.query?.view || 'week').toLowerCase();
     const anchor = req.query?.date ? new Date(String(req.query.date)) : new Date();
     const planner = await getPlannerObjects({
       prisma,
-      supabaseUid: auth.viewer.supabaseUid,
+      supabaseUid: masterPlannerUid(auth),
       view,
       anchor,
       enabledOnly: false,

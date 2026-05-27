@@ -1,7 +1,7 @@
 const { PrismaClient } = require('@prisma/client');
 const { resolveHubViewer } = require('./_auth');
 const { methodNotAllowed, asIso, cleanString, safePrisma } = require('./_http');
-const { allowedVisibility, threadSummary } = require('./threads');
+const { allowedVisibility, threadSummary, canReadThread } = require('./threads');
 const { findOrCreateThread } = require('./_bot');
 
 let prisma = null;
@@ -25,7 +25,7 @@ async function getThread(auth, threadId) {
       },
     },
   }));
-  return thread;
+  return canReadThread(auth, thread) ? thread : null;
 }
 
 function publicMessage(message) {
@@ -65,6 +65,8 @@ module.exports = async (req, res) => {
 
       const visibility = cleanString(req.query?.visibility, 40) || 'customer';
       const title = cleanString(req.query?.title, 200) || objectType;
+      if (visibility === 'privileged' && !auth.isPrivileged) return res.status(403).json({ error: 'Forbidden' });
+      if (objectType === 'hub_dm') return res.status(400).json({ error: 'Use /api/hub/conversations for direct messages' });
       thread = await findOrCreateThread(prisma, { objectType, objectId, visibility, title });
       threadId = thread.id;
     } else {

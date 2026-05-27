@@ -17,10 +17,31 @@ function resolveAdminEmails() {
   return ['dataweston@gmail.com', 'colsen03@gmail.com'];
 }
 
+function resolveReadOnlyAdminEmails() {
+  const configured = parseAdminEmails(
+    process.env.READ_ONLY_ADMIN_EMAILS ||
+      process.env.VITE_READ_ONLY_ADMIN_EMAILS ||
+      process.env.NEXT_PUBLIC_READ_ONLY_ADMIN_EMAILS
+  );
+  if (configured.length > 0) return configured;
+  return ['hurdlezachary@gmail.com'];
+}
+
+function isReadOnlyMethod(method) {
+  return ['GET', 'HEAD', 'OPTIONS'].includes(String(method || 'GET').toUpperCase());
+}
+
+function isReadOnlyAdminEmail(email) {
+  const normalized = String(email || '').trim().toLowerCase();
+  if (!normalized) return false;
+  return resolveReadOnlyAdminEmails().includes(normalized);
+}
+
 function isAdminEmail(email) {
   const normalized = String(email || '').trim().toLowerCase();
   if (!normalized) return false;
   if (resolveAdminEmails().includes(normalized)) return true;
+  if (isReadOnlyAdminEmail(normalized)) return true;
   return normalized.endsWith('@localeffortfood.com');
 }
 
@@ -46,6 +67,9 @@ function createAdminVerifier({ getSupabaseImpl = getSupabase } = {}) {
       if (error || !user?.email || !isAdminEmail(user.email)) {
         return null;
       }
+      if (isReadOnlyAdminEmail(user.email) && !isReadOnlyMethod(req?.method)) {
+        return null;
+      }
       return user;
     } catch (_err) {
       return null;
@@ -57,5 +81,8 @@ module.exports = {
   createAdminVerifier,
   extractBearerToken,
   isAdminEmail,
+  isReadOnlyAdminEmail,
+  isReadOnlyMethod,
   resolveAdminEmails,
+  resolveReadOnlyAdminEmails,
 };

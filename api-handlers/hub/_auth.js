@@ -1,6 +1,8 @@
 const {
   verifySupabaseToken,
   isAdminEmail,
+  isReadOnlyAdminEmail,
+  isReadOnlyMethod,
   findUserByEmail,
 } = require('../weekly-order/_auth');
 
@@ -19,12 +21,34 @@ function coerceRole(value) {
   return 'member';
 }
 
+function coerceHubAccess(value) {
+  const access = String(value || '').toLowerCase();
+  if (access === 'privileged' || access === 'admin') return 'privileged';
+  return 'staff';
+}
+
+function hubAccessFor(auth) {
+  const accessLevel = auth?.hubProfile?.accessLevel
+    ? coerceHubAccess(auth.hubProfile.accessLevel)
+    : (auth?.isAdmin ? 'privileged' : null);
+  return {
+    accessLevel,
+    hasHubAccess: !!accessLevel,
+    isStaff: !!accessLevel,
+    isPrivileged: accessLevel === 'privileged' || !!auth?.isAdmin,
+  };
+}
+
 async function resolveHubViewer(req, prisma, { requireCustomer = false } = {}) {
   const supabaseUser = await verifySupabaseToken(req);
   if (!supabaseUser?.email) return { error: 'Unauthorized', status: 401 };
 
-  const dbUser = await findUserByEmail(prisma, supabaseUser.email, { customer: true });
+  const dbUser = await findUserByEmail(prisma, supabaseUser.email, { customer: true, hubProfile: true });
+  const isReadOnlyAdmin = isReadOnlyAdminEmail(supabaseUser.email);
   const isAdmin = isAdminEmail(supabaseUser.email) || dbUser?.role === 'admin';
+  if (isReadOnlyAdmin && !isReadOnlyMethod(req.method)) {
+    return { error: 'Read-only admin access', status: 403 };
+  }
   const requestedSlug = req.query?.customerSlug || req.body?.customerSlug || null;
 
   let customer = dbUser?.customer || null;
@@ -45,25 +69,42 @@ async function resolveHubViewer(req, prisma, { requireCustomer = false } = {}) {
 
   const roles = unique([
     coerceRole(dbUser?.role),
+    dbUser?.hubProfile ? coerceHubAccess(dbUser.hubProfile.accessLevel) : null,
+    dbUser?.hubProfile ? 'staff' : null,
     customer ? 'subscriber' : null,
     isAdmin ? 'admin' : null,
   ]);
+  const access = hubAccessFor({ hubProfile: dbUser?.hubProfile || null, isAdmin });
 
   return {
     supabaseUser,
     dbUser,
     customer,
+    hubProfile: dbUser?.hubProfile || null,
     isAdmin,
+    isReadOnlyAdmin,
+    ...access,
     roles,
     viewer: {
       supabaseUid: supabaseUser.id,
       email: supabaseUser.email,
       userId: dbUser?.id || null,
       customerId: customer?.id || null,
+      hubProfileId: dbUser?.hubProfile?.id || null,
+      accessLevel: access.accessLevel,
       roles,
       isAdmin,
+      isReadOnlyAdmin,
+      isPrivileged: access.isPrivileged,
     },
   };
 }
 
-module.exports = { resolveHubViewer };
+function requireHubAccess(auth, { privileged = false } = {}) {
+  if (auth.error) return auth;
+  if (!auth.hasHubAccess) return { error: 'Hub access required', status: 403 };
+  if (privileged && !auth.isPrivileged) return { error: 'Privileged access required', status: 403 };
+  return null;
+}
+
+module.exports = { resolveHubViewer, requireHubAccess, coerceHubAccess };

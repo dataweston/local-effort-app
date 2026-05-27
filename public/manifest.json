@@ -1,9 +1,17 @@
 {
-  "short_name": "Local Effort",
-  "name": "Local Effort App",
-  "icons": [],
-  "start_url": ".",
+  "short_name": "LE Hub",
+  "name": "Local Effort Hub",
+  "icons": [
+    {
+      "src": "/brand/local-effort-cooperative-logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "start_url": "/hub",
+  "scope": "/",
   "display": "standalone",
-  "theme_color": "#000000",
-  "background_color": "#ffffff"
+  "theme_color": "#345c51",
+  "background_color": "#f7f5ef"
 }

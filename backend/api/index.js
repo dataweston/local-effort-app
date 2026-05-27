@@ -456,7 +456,14 @@ if (sentryEnabled) {
 // --- CORS CONFIGURATION ---
 const allowedOrigins = [
   'https://localeffortfood.com',
-  'https://www.localeffortfood.com'
+  'https://www.localeffortfood.com',
+  'http://localhost:5173',
+  'http://localhost:5174',
+  'http://127.0.0.1:5173',
+  'http://127.0.0.1:5174',
+  /^http:\/\/192\.168\.\d+\.\d+:5174$/,
+  /^http:\/\/172\.\d+\.\d+\.\d+:5174$/,
+  /^http:\/\/10\.\d+\.\d+\.\d+:5174$/
 ];
 const corsOptions = { origin: allowedOrigins };
 app.use(cors(corsOptions));
@@ -1278,6 +1285,69 @@ app.all('/api/hub/today', async (req, res, next) => {
     await require('../../api-handlers/hub/today')(req, res);
   } catch (err) {
     logger.error({ err, method: req.method }, 'hub today handler failed');
+    next(err);
+  }
+});
+
+app.all('/api/hub/profile', async (req, res, next) => {
+  try {
+    await require('../../api-handlers/hub/profile')(req, res);
+  } catch (err) {
+    logger.error({ err, method: req.method }, 'hub profile handler failed');
+    next(err);
+  }
+});
+
+app.all('/api/hub/people', async (req, res, next) => {
+  try {
+    await require('../../api-handlers/hub/people')(req, res);
+  } catch (err) {
+    logger.error({ err, method: req.method }, 'hub people handler failed');
+    next(err);
+  }
+});
+
+app.all('/api/hub/docs', async (req, res, next) => {
+  try {
+    await require('../../api-handlers/hub/docs')(req, res);
+  } catch (err) {
+    logger.error({ err, method: req.method }, 'hub docs handler failed');
+    next(err);
+  }
+});
+
+app.all('/api/hub/conversations', async (req, res, next) => {
+  try {
+    await require('../../api-handlers/hub/conversations')(req, res);
+  } catch (err) {
+    logger.error({ err, method: req.method }, 'hub conversations handler failed');
+    next(err);
+  }
+});
+
+app.all('/api/hub/invites', async (req, res, next) => {
+  try {
+    await require('../../api-handlers/hub/invites')(req, res);
+  } catch (err) {
+    logger.error({ err, method: req.method }, 'hub invites handler failed');
+    next(err);
+  }
+});
+
+app.all('/api/hub/shifts', async (req, res, next) => {
+  try {
+    await require('../../api-handlers/hub/shifts')(req, res);
+  } catch (err) {
+    logger.error({ err, method: req.method }, 'hub shifts handler failed');
+    next(err);
+  }
+});
+
+app.all('/api/hub/brain-publish', async (req, res, next) => {
+  try {
+    await require('../../api-handlers/hub/brain-publish')(req, res);
+  } catch (err) {
+    logger.error({ err, method: req.method }, 'hub brain publish handler failed');
     next(err);
   }
 });

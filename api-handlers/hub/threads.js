@@ -10,9 +10,20 @@ try {
 }
 
 function allowedVisibility(auth) {
-  if (auth.isAdmin) return ['customer', 'household', 'staff', 'vendor', 'volunteer', 'guest', 'admin'];
+  if (auth.isPrivileged || auth.isAdmin) return ['customer', 'household', 'staff', 'privileged', 'vendor', 'volunteer', 'guest', 'admin'];
+  if (auth.hasHubAccess) return ['staff'];
   if (auth.customer) return ['customer', 'household', 'guest'];
   return ['guest'];
+}
+
+function canReadThread(auth, thread) {
+  if (!thread) return false;
+  if (thread.objectType === 'hub_dm') {
+    const participants = String(thread.objectId || '').split(':').filter(Boolean);
+    return !!auth.viewer.userId && participants.includes(auth.viewer.userId);
+  }
+  if (thread.visibility === 'privileged') return !!auth.isPrivileged;
+  return allowedVisibility(auth).includes(thread.visibility);
 }
 
 function threadSummary(thread) {
@@ -101,3 +112,4 @@ module.exports = async (req, res) => {
 
 module.exports.allowedVisibility = allowedVisibility;
 module.exports.threadSummary = threadSummary;
+module.exports.canReadThread = canReadThread;

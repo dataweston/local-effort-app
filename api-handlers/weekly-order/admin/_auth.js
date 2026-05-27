@@ -1,5 +1,10 @@
 const crypto = require('crypto');
-const { createAdminVerifier, extractBearerToken } = require('../../../backend/api/utils/adminVerifier');
+const {
+  createAdminVerifier,
+  extractBearerToken,
+  isReadOnlyAdminEmail,
+  isReadOnlyMethod,
+} = require('../../../backend/api/utils/adminVerifier');
 const { getSupabase } = require('../../../backend/api/supabaseClient');
 
 const ADMIN_TOKEN = process.env.WEEKLY_ORDER_ADMIN_TOKEN || '';
@@ -42,6 +47,24 @@ async function requireWeeklyOrderAdmin(req, res) {
           if (weeklyOrderUser?.role === 'admin') {
             return { authType: 'weekly-order-supabase', user, weeklyOrderUser };
           }
+          if (weeklyOrderUser?.role === 'readonly_admin' || isReadOnlyAdminEmail(email)) {
+            if (isReadOnlyMethod(req.method)) {
+              return { authType: 'weekly-order-readonly', user, weeklyOrderUser, readOnly: true };
+            }
+            if (res) {
+              res.status(403).json({ error: 'Read-only admin access' });
+            }
+            return null;
+          }
+          if (!weeklyOrderUser && isReadOnlyAdminEmail(email)) {
+            if (isReadOnlyMethod(req.method)) {
+              return { authType: 'weekly-order-readonly', user, weeklyOrderUser: null, readOnly: true };
+            }
+            if (res) {
+              res.status(403).json({ error: 'Read-only admin access' });
+            }
+            return null;
+          }
           if (res) {
             res.status(401).json({ error: 'Unauthorized' });
           }
@@ -55,7 +78,11 @@ async function requireWeeklyOrderAdmin(req, res) {
 
   const user = await verifyAdminRequest(req);
   if (user) {
-    return { authType: 'supabase-admin', user };
+    return {
+      authType: isReadOnlyAdminEmail(user.email) ? 'supabase-readonly-admin' : 'supabase-admin',
+      user,
+      readOnly: isReadOnlyAdminEmail(user.email),
+    };
   }
 
   if (res) {

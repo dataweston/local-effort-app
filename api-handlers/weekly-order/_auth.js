@@ -25,6 +25,26 @@ function parseAdminEmails(value) {
     .filter(Boolean);
 }
 
+function readOnlyAdminEmails() {
+  const configured = parseAdminEmails(
+    process.env.READ_ONLY_ADMIN_EMAILS ||
+      process.env.VITE_READ_ONLY_ADMIN_EMAILS ||
+      process.env.NEXT_PUBLIC_READ_ONLY_ADMIN_EMAILS
+  );
+  if (configured.length > 0) return configured;
+  return ['hurdlezachary@gmail.com'];
+}
+
+function isReadOnlyMethod(method) {
+  return ['GET', 'HEAD', 'OPTIONS'].includes(String(method || 'GET').toUpperCase());
+}
+
+function isReadOnlyAdminEmail(email) {
+  const normalized = String(email || '').trim().toLowerCase();
+  if (!normalized) return false;
+  return readOnlyAdminEmails().includes(normalized);
+}
+
 function isAdminEmail(email) {
   const normalized = String(email || '').trim().toLowerCase();
   if (!normalized) return false;
@@ -36,7 +56,7 @@ function isAdminEmail(email) {
   const adminEmails = configured.length > 0
     ? configured
     : ['dataweston@gmail.com', 'colsen03@gmail.com'];
-  return adminEmails.includes(normalized) || normalized.endsWith('@localeffortfood.com');
+  return adminEmails.includes(normalized) || isReadOnlyAdminEmail(normalized) || normalized.endsWith('@localeffortfood.com');
 }
 
 async function findUserByEmail(prisma, email, include = {}) {
@@ -55,7 +75,11 @@ async function resolveAuthorizedCustomer(req, prisma, { requireCustomer = true }
 
   const requestedSlug = req.query?.customerSlug || req.body?.customerSlug || null;
   const dbUser = await findUserByEmail(prisma, supabaseUser.email, { customer: true });
+  const isReadOnlyAdmin = isReadOnlyAdminEmail(supabaseUser.email);
   const isAdmin = isAdminEmail(supabaseUser.email) || dbUser?.role === 'admin';
+  if (isReadOnlyAdmin && !isReadOnlyMethod(req.method)) {
+    return { error: 'Read-only admin access', status: 403 };
+  }
 
   let customer = dbUser?.customer || null;
   if (requestedSlug) {
@@ -71,12 +95,14 @@ async function resolveAuthorizedCustomer(req, prisma, { requireCustomer = true }
     return { error: 'No customer profile found', status: 404 };
   }
 
-  return { supabaseUser, dbUser, customer, isAdmin };
+  return { supabaseUser, dbUser, customer, isAdmin, isReadOnlyAdmin };
 }
 
 module.exports = {
   verifySupabaseToken,
   isAdminEmail,
+  isReadOnlyAdminEmail,
+  isReadOnlyMethod,
   findUserByEmail,
   resolveAuthorizedCustomer,
 };

@@ -1,4 +1,4 @@
-import { supabase } from '../lib/supabaseClient';
+import { supabase, isReadOnlyAdmin } from '../lib/supabaseClient';
 
 export const getCurrentWeeklyOrderUser = async (email) => {
   if (!supabase || !email) return null;
@@ -11,8 +11,21 @@ export const getCurrentWeeklyOrderUser = async (email) => {
 
   if (error) {
     console.error('[WeeklyOrder] Error fetching user:', error);
+    if (isReadOnlyAdmin(email)) {
+      return {
+        email: email.toLowerCase(),
+        role: 'readonly_admin',
+        name: 'Read-only admin',
+      };
+    }
     return null;
   }
 
-  return data;
+  return data || (isReadOnlyAdmin(email)
+    ? {
+        email: email.toLowerCase(),
+        role: 'readonly_admin',
+        name: 'Read-only admin',
+      }
+    : null);
 };

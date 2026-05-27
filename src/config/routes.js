@@ -27,12 +27,6 @@ export const PUBLIC_ROUTES = [
     prerender: true,
   },
   {
-    path: '/weekly',
-    title: 'Weekly Updates - Local Effort Cooperative',
-    description: 'Weekly menus, stories, and updates from the Local Effort kitchen.',
-    prerender: true,
-  },
-  {
     path: '/happymonday',
     title: 'For Happy Monday - Local Effort Cooperative',
     description: 'Local Effort menu and ordering for Happy Monday.',
@@ -92,7 +86,6 @@ export const PUBLIC_ROUTES = [
 export const DYNAMIC_ROUTES = [
   { pattern: '/product/:slug', sanityQuery: '*[_type == "product" && defined(slug.current) && active == true][].slug.current' },
   { pattern: '/blog/:slug', sanityQuery: '*[_type == "blogPost" && defined(slug.current)][].slug.current' },
-  { pattern: '/weekly/:slug', sanityQuery: '*[_type == "weeklyPost" && defined(slug.current)][].slug.current' },
 ];
 
 // Internal routes - noindex, never prerendered

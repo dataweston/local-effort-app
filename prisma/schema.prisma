@@ -128,6 +128,10 @@ model User {
   orders     Order[]
   feedback   DishFeedback[]
   chefNotes  ChefNote[]
+  hubProfile HubProfile?
+  hubInvitesSent HubInvite[] @relation("hubInviteSentBy")
+  hubInvitesAccepted HubInvite[] @relation("hubInviteAcceptedBy")
+  hubDocuments HubDocument[] @relation("hubDocumentCreatedBy")
 }
 
 model Customer {
@@ -497,6 +501,83 @@ model HubOrganization {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   spaces    HubSpace[]
+}
+
+model HubProfile {
+  id          String    @id @default(uuid())
+  userId      String    @unique
+  email       String    @unique
+  displayName String
+  accessLevel String    @default("staff")
+  title       String?
+  phone       String?
+  status      String    @default("active")
+  lastSeenAt  DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([accessLevel])
+  @@index([status])
+}
+
+model HubInvite {
+  id              String    @id @default(uuid())
+  token           String    @unique
+  email           String
+  accessLevel     String    @default("staff")
+  displayNameHint String?
+  invitedByUserId String?
+  acceptedByUserId String?
+  acceptedAt      DateTime?
+  expiresAt       DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  invitedBy User? @relation("hubInviteSentBy", fields: [invitedByUserId], references: [id])
+  acceptedBy User? @relation("hubInviteAcceptedBy", fields: [acceptedByUserId], references: [id])
+
+  @@index([email])
+  @@index([accessLevel])
+}
+
+model HubDocument {
+  id          String   @id @default(uuid())
+  title       String
+  body        String
+  summary     String?
+  visibility  String   @default("staff")
+  category    String   @default("general")
+  tags        String[] @default([])
+  source      String   @default("manual")
+  sourceId    String?
+  createdByUserId String?
+  status      String   @default("published")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  createdBy User? @relation("hubDocumentCreatedBy", fields: [createdByUserId], references: [id])
+
+  @@index([visibility])
+  @@index([category])
+  @@index([status])
+  @@unique([source, sourceId])
+}
+
+model HubShiftClaim {
+  id            String   @id @default(uuid())
+  plannerCardId String
+  userId        String
+  status        String   @default("claimed")
+  note          String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@unique([plannerCardId, userId])
+  @@index([plannerCardId])
+  @@index([userId])
+  @@index([status])
 }
 
 model HubSpace {

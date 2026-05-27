@@ -151,10 +151,6 @@
       "dest": "/prerender/sale/index.html"
     },
     {
-      "src": "^/weekly$",
-      "dest": "/prerender/weekly/index.html"
-    },
-    {
       "src": "^/happymonday$",
       "dest": "/prerender/happymonday/index.html"
     },
@@ -173,6 +169,16 @@
     {
       "src": "^/book$",
       "dest": "/prerender/book/index.html"
+    },
+    {
+      "src": "^/weekly$",
+      "dest": "/blog",
+      "status": 308
+    },
+    {
+      "src": "^/weekly/(?<slug>.*)$",
+      "dest": "/blog/$1",
+      "status": 308
     },
     {
       "src": "^/salepage$",

@@ -1,0 +1,5 @@
+# TLS example for clusters with cert-manager installed.
+# This mirrors the upstream quick-setup fragment shape.
+
+certManager:
+  clusterIssuer: letsencrypt-prod

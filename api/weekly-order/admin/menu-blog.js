@@ -2,8 +2,8 @@
  * POST /api/weekly-order/admin/menu-blog
  *
  * Takes a menuWeekId, aggregates all dishes across all clients (deduplicated,
- * anonymized — no client names), then creates a Sanity blogPost document as a
- * weekly meal prep journal entry.
+ * anonymized — no client names), then creates a Sanity blogPost document for
+ * the Local Report publishing surface.
  *
  * Claude writes the intro paragraph. The dish list becomes Portable Text blocks.
  * The post is created in draft state (not published) so you can review in Sanity

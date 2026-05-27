@@ -84,7 +84,7 @@ export const getUserCredit = async (userId, userRole = null, userEmail = null) =
   let targetUserId = userId;
   let targetEmail = userEmail;
 
-  if (userRole === 'admin') {
+  if (userRole === 'admin' || userRole === 'readonly_admin') {
     const clientId = await getClientUserId();
     if (clientId) {
       targetUserId = clientId;

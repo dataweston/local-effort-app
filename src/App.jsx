@@ -17,8 +17,6 @@ import { SupabaseAuthProvider } from './contexts/SupabaseAuthContext';
 const ReleasesPage = lazy(() => import('./pages/ReleasesPage'));
 const BlogList = lazy(() => import('./pages/BlogList'));
 const BlogPost = lazy(() => import('./pages/BlogPost'));
-const WeeklyList = lazy(() => import('./pages/WeeklyList'));
-const WeeklyPost = lazy(() => import('./pages/WeeklyPost'));
 const SalePage = lazy(() => import('./pages/SalePage'));
 const ChezGaragePage = lazy(() => import('./pages/ChezGaragePage'));
 const HappyMondayPage = lazy(() => import('./pages/happymondaypage'));
@@ -333,19 +331,11 @@ const AppContent = () => {
                 />
                 <Route
                   path="/weekly"
-                  element={
-                    <AnimatedPage>
-                      <WeeklyList />
-                    </AnimatedPage>
-                  }
+                  element={<Navigate to="/blog" replace />}
                 />
                 <Route
                   path="/weekly/:slug"
-                  element={
-                    <AnimatedPage>
-                      <WeeklyPost />
-                    </AnimatedPage>
-                  }
+                  element={<Navigate to={`/blog/${location.pathname.split('/').filter(Boolean).slice(1).join('/')}`} replace />}
                 />
                 <Route
                   path="/pizza-party"

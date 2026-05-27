@@ -1,0 +1,26 @@
+# Example Element Server Suite hostnames for Local Effort.
+# Copy this file and replace placeholders before a real deployment.
+#
+# Matrix server names become part of user IDs and room aliases, so choose once.
+
+serverName: community.localeffortfood.com
+
+synapse:
+  ingress:
+    host: matrix.community.localeffortfood.com
+
+elementWeb:
+  ingress:
+    host: chat.community.localeffortfood.com
+
+elementAdmin:
+  ingress:
+    host: admin.community.localeffortfood.com
+
+matrixRTC:
+  ingress:
+    host: mrtc.community.localeffortfood.com
+
+matrixAuthenticationService:
+  ingress:
+    host: account.community.localeffortfood.com

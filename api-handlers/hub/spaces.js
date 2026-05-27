@@ -10,7 +10,24 @@ try {
 }
 
 function fallbackSpaces(auth) {
-  const spaces = [];
+  const spaces = [{
+    id: 'hub:general',
+    title: 'General',
+    role: auth.viewer.accessLevel || 'staff',
+    visibility: 'staff',
+    unreadCount: 0,
+    objectCount: 0,
+  }];
+  if (auth.hasHubAccess) {
+    spaces.push({
+      id: 'hub:documents',
+      title: 'Documents',
+      role: auth.viewer.accessLevel || 'staff',
+      visibility: 'staff',
+      unreadCount: 0,
+      objectCount: 0,
+    });
+  }
   if (auth.customer) {
     spaces.push({
       id: `customer:${auth.customer.id}`,
@@ -21,12 +38,12 @@ function fallbackSpaces(auth) {
       objectCount: 1,
     });
   }
-  if (auth.isAdmin) {
+  if (auth.isPrivileged || auth.isAdmin) {
     spaces.push({
       id: 'admin:operations',
       title: 'Operations',
-      role: 'admin',
-      visibility: 'admin',
+      role: 'privileged',
+      visibility: 'privileged',
       unreadCount: 0,
       objectCount: 0,
     });

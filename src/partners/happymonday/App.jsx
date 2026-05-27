@@ -63,6 +63,7 @@ const App = () => {
   const [clientUserId, setClientUserId] = useState(null); // Always the client ID
   const [creditBalance, setCreditBalance] = useState(null);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [isReadOnlyAdmin, setIsReadOnlyAdmin] = useState(false);
 
   // Login form state
   const [email, setEmail] = useState('');
@@ -150,6 +151,8 @@ const App = () => {
   const [syncingQuickBooks, setSyncingQuickBooks] = useState(false);
   const [selectedOrderIds, setSelectedOrderIds] = useState(new Set());
   const [batchProcessing, setBatchProcessing] = useState(false);
+  const canViewAdmin = isAdmin || isReadOnlyAdmin;
+  const accountLabel = isReadOnlyAdmin ? 'Read-only admin' : isAdmin ? 'Admin' : 'Client';
 
   const getQuickBooksSyncStatus = (invoice) => {
     if (!invoice) return 'not_sent';
@@ -282,6 +285,7 @@ const App = () => {
       setHmUser(null);
       setCreditBalance(null);
       setIsAdmin(false);
+      setIsReadOnlyAdmin(false);
       setOrders([]);
     }
   }, [user]);
@@ -304,6 +308,7 @@ const App = () => {
 
       setHmUser(userData);
       setIsAdmin(userData.role === 'admin');
+      setIsReadOnlyAdmin(userData.role === 'readonly_admin');
 
       // Always get the client's user ID (for payments and credit)
       const clientId = await getClientUserId();
@@ -522,6 +527,10 @@ const App = () => {
   };
 
   const submitOrder = async () => {
+    if (isReadOnlyAdmin) {
+      alert("This account has read-only access.");
+      return;
+    }
     const hasLineItems = Object.keys(cart).length > 0 || orderAdjustments.length > 0;
     if (!orderConfirmed || !hasLineItems || loading || !hmUser) return;
     setLoading(true);
@@ -536,7 +545,7 @@ const App = () => {
       }
       const totalCents = Math.round(calculateTotal() * 100);
       const orderNumber = `HM-${Date.now()}`;
-      const isClientOrder = !isAdmin; // Client orders trigger email
+      const isClientOrder = !isAdmin && !isReadOnlyAdmin; // Client orders trigger email
 
       await createOrder({
         createdBy: hmUser.id,
@@ -1447,6 +1456,10 @@ const App = () => {
   };
 
   const emailReport = async () => {
+    if (isReadOnlyAdmin) {
+      alert("This account has read-only access.");
+      return;
+    }
     if (!reportData.detailedRows.length || reportSending) {
       if (!reportData.detailedRows.length) {
         alert('No data to send. Try widening your filters first.');
@@ -1617,7 +1630,7 @@ const App = () => {
             <div>
               <h1 className="text-4xl font-bold text-slate-800 mb-2">Local Effort ↔ Happy Monday</h1>
               <p className="text-slate-600">Trade Order System</p>
-              <p className="text-sm text-slate-500 mt-1">Logged in as: {hmUser?.email} ({isAdmin ? 'Admin' : 'Client'})</p>
+              <p className="text-sm text-slate-500 mt-1">Logged in as: {hmUser?.email} ({accountLabel})</p>
             </div>
             <button
               onClick={signOut}
@@ -1646,7 +1659,7 @@ const App = () => {
                   </p>
                 )}
               </div>
-              {!isAdmin && (creditBalance?.balance_cents || 0) > 0 && (
+              {!canViewAdmin && (creditBalance?.balance_cents || 0) > 0 && (
                 <button
                   onClick={() => setShowPaymentModal(true)}
                   className="px-6 py-3 bg-green-500 hover:bg-green-600 text-white rounded-lg font-medium transition-colors flex items-center gap-2"
@@ -1670,7 +1683,7 @@ const App = () => {
               <BarChart2 size={20} /> Reports
             </button>
             {/* Hide costing for hello@happymonday.company */}
-            {hmUser?.email !== 'hello@happymonday.company' && (
+            {hmUser?.email !== 'hello@happymonday.company' && !isReadOnlyAdmin && (
               <button onClick={() => setCurrentView("costing")} className={`px-6 py-3 rounded-lg font-medium transition-all flex items-center gap-2 ${currentView === "costing" ? "bg-blue-500 text-white shadow-md" : "text-slate-600 hover:text-blue-500"}`}>
                 <ClipboardList size={20} /> Costing
               </button>
@@ -1864,7 +1877,7 @@ const App = () => {
             </div>
             
             {/* Admin Summary */}
-            {isAdmin && orders.length > 0 && (
+            {canViewAdmin && orders.length > 0 && (
               <div className="mb-8 p-6 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl border-2 border-blue-200">
                 <h3 className="text-lg font-bold text-slate-800 mb-4">Financial Summary</h3>
                 <div className="grid md:grid-cols-2 xl:grid-cols-4 gap-6">
@@ -1949,7 +1962,7 @@ const App = () => {
                           <Clock size={14} />
                           {formatDate(order.order_date)}
                         </p>
-                        {isAdmin && order.user && (
+                        {canViewAdmin && order.user && (
                           <p className="text-xs text-slate-500 mt-1">Client: {order.user.email}</p>
                         )}
                         {order.notes && (
@@ -1997,7 +2010,7 @@ const App = () => {
                     <Package size={12} /> Returned
                   </span>
                 )}
-                {isAdmin && (
+                {canViewAdmin && (
                   <span className={`flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-full ${quickBooksBadge.className}`}>
                     <FileText size={12} /> {quickBooksBadge.label}
                   </span>
@@ -2103,7 +2116,7 @@ const App = () => {
                         {selectedInvoice.status.toUpperCase()}
                       </span>
                     </p>
-                    {isAdmin && selectedInvoice.user && (
+                    {canViewAdmin && selectedInvoice.user && (
                       <p className="text-sm text-slate-600">Client: {selectedInvoice.user.email}</p>
                     )}
                     {selectedInvoice.notes && (
@@ -2149,7 +2162,7 @@ const App = () => {
                   )}
                 </div>
                 {/* Edit History */}
-                {isAdmin && Array.isArray(selectedInvoice.edit_history) && selectedInvoice.edit_history.length > 0 && (
+                {canViewAdmin && Array.isArray(selectedInvoice.edit_history) && selectedInvoice.edit_history.length > 0 && (
                   <div className="mb-6">
                     <h3 className="font-semibold text-slate-800 mb-3">Edit History</h3>
                     <div className="space-y-2">
@@ -2384,9 +2397,9 @@ const App = () => {
                 </button>
                 <button
                   onClick={emailReport}
-                  disabled={!reportData.detailedRows.length || reportSending}
+                  disabled={!reportData.detailedRows.length || reportSending || isReadOnlyAdmin}
                   className={`px-4 py-2 rounded-lg font-medium flex items-center gap-2 transition-colors ${
-                    !reportData.detailedRows.length || reportSending ? 'bg-slate-200 text-slate-500 cursor-not-allowed' : 'bg-green-600 hover:bg-green-700 text-white'
+                    !reportData.detailedRows.length || reportSending || isReadOnlyAdmin ? 'bg-slate-200 text-slate-500 cursor-not-allowed' : 'bg-green-600 hover:bg-green-700 text-white'
                   }`}
                 >
                   <Mail size={18} />

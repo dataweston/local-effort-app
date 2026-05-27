@@ -28,10 +28,18 @@ export const supabase = supabaseUrl && supabaseAnonKey
 export const isSupabaseConfigured = () => !!supabase;
 
 export const ADMIN_EMAILS = ['dataweston@gmail.com', 'colsen03@gmail.com'];
+export const READ_ONLY_ADMIN_EMAILS = ['hurdlezachary@gmail.com'];
+
+export const isReadOnlyAdmin = (email) => {
+  if (!email) return false;
+  const normalized = email.toLowerCase();
+  return READ_ONLY_ADMIN_EMAILS.includes(normalized);
+};
 
 export const isAdmin = (email) => {
   if (!email) return false;
   const normalized = email.toLowerCase();
   if (ADMIN_EMAILS.includes(normalized)) return true;
+  if (isReadOnlyAdmin(normalized)) return true;
   return normalized.endsWith('@localeffortfood.com');
 };

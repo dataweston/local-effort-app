@@ -1,0 +1,361 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Local Budget Profit &amp; Loss Statement 2026</title>
+  <style>
+    @page { size: Letter; margin: 0.55in; }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      color: #17202a;
+      font: 12px/1.45 Arial, Helvetica, sans-serif;
+      background: #fff;
+    }
+    header {
+      border-bottom: 2px solid #17202a;
+      padding-bottom: 14px;
+      margin-bottom: 18px;
+    }
+    h1 {
+      margin: 0;
+      font-size: 25px;
+      letter-spacing: 0;
+    }
+    .subhead {
+      margin-top: 5px;
+      color: #4f5f6f;
+      font-size: 12px;
+    }
+    .summary {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 10px;
+      margin: 14px 0 18px;
+    }
+    .metric {
+      border: 1px solid #d8dee6;
+      padding: 9px 10px;
+      min-height: 58px;
+    }
+    .metric .label {
+      color: #5d6b7a;
+      font-size: 10px;
+      text-transform: uppercase;
+    }
+    .metric .value {
+      margin-top: 3px;
+      font-size: 17px;
+      font-weight: 700;
+    }
+    .section {
+      margin-top: 18px;
+      break-inside: avoid;
+    }
+    h2 {
+      font-size: 15px;
+      margin: 0 0 8px;
+      padding-bottom: 4px;
+      border-bottom: 1px solid #d8dee6;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    th, td {
+      padding: 6px 7px;
+      border-bottom: 1px solid #e6eaf0;
+      vertical-align: top;
+    }
+    th {
+      background: #f5f7fa;
+      color: #3f4d5d;
+      font-size: 10px;
+      text-align: left;
+      text-transform: uppercase;
+    }
+    .num {
+      text-align: right;
+      white-space: nowrap;
+      font-variant-numeric: tabular-nums;
+    }
+    .statement td:first-child {
+      width: 70%;
+    }
+    .subtotal td {
+      font-weight: 700;
+      border-top: 1px solid #aeb8c4;
+      background: #fbfcfd;
+    }
+    .total td {
+      font-weight: 800;
+      border-top: 2px solid #17202a;
+      border-bottom: 2px solid #17202a;
+      background: #f5f7fa;
+    }
+    .negative { color: #a43d35; }
+    .positive { color: #19764a; }
+    .pill {
+      display: inline-block;
+      border: 1px solid #c8d0da;
+      border-radius: 999px;
+      padding: 1px 7px;
+      font-size: 9px;
+      font-weight: 700;
+      color: #314052;
+      background: #f7f9fb;
+      white-space: nowrap;
+    }
+    .income, .reimbursement { color: #17633f; border-color: #afd8c5; background: #eef8f3; }
+    .cogs { color: #86540a; border-color: #e7cb96; background: #fff8e8; }
+    .operating, .reimbursable { color: #8a3d36; border-color: #e5b8b4; background: #fff2f1; }
+    .personal { color: #4f4f72; border-color: #c9c9e8; background: #f6f6ff; }
+    .notes {
+      color: #4f5f6f;
+      font-size: 10.5px;
+    }
+    .muted { color: #647386; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Local Budget Profit &amp; Loss Statement 2026</h1>
+    <div class="subhead">Period: January 1, 2026 through May 22, 2026</div>
+    <div class="subhead">Generated: 2026-05-23T00:08:32.486Z from Local Budget database at C:\Users\user\Local Budget</div>
+  </header>
+
+  <section class="summary">
+    <div class="metric"><div class="label">Total Revenue</div><div class="value">$51,859.38</div></div>
+    <div class="metric"><div class="label">Gross Profit</div><div class="value">$38,064.94</div></div>
+    <div class="metric"><div class="label">Net Income</div><div class="value positive">$9,229.10</div></div>
+    <div class="metric"><div class="label">Gross Margin</div><div class="value">73.4%</div></div>
+    <div class="metric"><div class="label">Operating Margin</div><div class="value">33.4%</div></div>
+    <div class="metric"><div class="label">Net Margin</div><div class="value">17.8%</div></div>
+  </section>
+
+  <section class="section">
+    <h2>Statement</h2>
+    <table class="statement">
+      <tbody>
+        <tr><td>Revenue</td><td class="num">$40,394.86</td></tr>
+        <tr><td>Reimbursement Income</td><td class="num">$11,464.52</td></tr>
+        <tr class="subtotal"><td>Total Revenue</td><td class="num">$51,859.38</td></tr>
+        <tr><td>Cost of Goods Sold</td><td class="num">($13,794.44)</td></tr>
+        <tr class="subtotal"><td>Gross Profit</td><td class="num">$38,064.94</td></tr>
+        <tr><td>Operating Expenses</td><td class="num">($20,737.27)</td></tr>
+        <tr><td>Reimbursable Expenses</td><td class="num">($0.00)</td></tr>
+        <tr class="subtotal"><td>Operating Income</td><td class="num">$17,327.67</td></tr>
+        <tr><td>Personal Expenses</td><td class="num">($8,098.57)</td></tr>
+        <tr class="total"><td>Net Income</td><td class="num">$9,229.10</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="section">
+    <h2>Category Detail</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Class</th>
+          <th>Category</th>
+          <th class="num">Lines</th>
+          <th class="num">Share</th>
+          <th class="num">Amount</th>
+        </tr>
+      </thead>
+      <tbody>
+        
+        <tr>
+          <td><span class="pill income">INCOME</span></td>
+          <td>Income</td>
+          <td class="num">56</td>
+          <td class="num">31.8%</td>
+          <td class="num">$30,007.49</td>
+        </tr>
+        <tr>
+          <td><span class="pill operating">OPERATING</span></td>
+          <td>Rent</td>
+          <td class="num">12</td>
+          <td class="num">13.6%</td>
+          <td class="num">$12,840.33</td>
+        </tr>
+        <tr>
+          <td><span class="pill cogs">COGS</span></td>
+          <td>Inventory</td>
+          <td class="num">140</td>
+          <td class="num">13.1%</td>
+          <td class="num">$12,351.60</td>
+        </tr>
+        <tr>
+          <td><span class="pill reimbursement">REIMBURSEMENT</span></td>
+          <td>Reimbursed</td>
+          <td class="num">15</td>
+          <td class="num">12.1%</td>
+          <td class="num">$11,464.52</td>
+        </tr>
+        <tr>
+          <td><span class="pill income">INCOME</span></td>
+          <td>Investments</td>
+          <td class="num">3</td>
+          <td class="num">7.0%</td>
+          <td class="num">$6,630.00</td>
+        </tr>
+        <tr>
+          <td><span class="pill income">INCOME</span></td>
+          <td>Eastside</td>
+          <td class="num">9</td>
+          <td class="num">2.8%</td>
+          <td class="num">$2,605.03</td>
+        </tr>
+        <tr>
+          <td><span class="pill operating">OPERATING</span></td>
+          <td>Car</td>
+          <td class="num">2</td>
+          <td class="num">2.7%</td>
+          <td class="num">$2,572.53</td>
+        </tr>
+        <tr>
+          <td><span class="pill personal">PERSONAL</span></td>
+          <td>Uncategorized</td>
+          <td class="num">41</td>
+          <td class="num">2.6%</td>
+          <td class="num">$2,433.49</td>
+        </tr>
+        <tr>
+          <td><span class="pill personal">PERSONAL</span></td>
+          <td>Dining Out</td>
+          <td class="num">104</td>
+          <td class="num">2.2%</td>
+          <td class="num">$2,046.74</td>
+        </tr>
+        <tr>
+          <td><span class="pill operating">OPERATING</span></td>
+          <td>Amazon</td>
+          <td class="num">41</td>
+          <td class="num">1.7%</td>
+          <td class="num">$1,611.86</td>
+        </tr>
+        <tr>
+          <td><span class="pill cogs">COGS</span></td>
+          <td>Materials</td>
+          <td class="num">19</td>
+          <td class="num">1.5%</td>
+          <td class="num">$1,373.95</td>
+        </tr>
+        <tr>
+          <td><span class="pill personal">PERSONAL</span></td>
+          <td>Shopping</td>
+          <td class="num">28</td>
+          <td class="num">1.2%</td>
+          <td class="num">$1,163.95</td>
+        </tr>
+        <tr>
+          <td><span class="pill operating">OPERATING</span></td>
+          <td>Marketing</td>
+          <td class="num">19</td>
+          <td class="num">1.2%</td>
+          <td class="num">$1,162.81</td>
+        </tr>
+        <tr>
+          <td><span class="pill income">INCOME</span></td>
+          <td>Uncategorized</td>
+          <td class="num">5</td>
+          <td class="num">1.2%</td>
+          <td class="num">$1,152.34</td>
+        </tr>
+        <tr>
+          <td><span class="pill personal">PERSONAL</span></td>
+          <td>Transportation</td>
+          <td class="num">73</td>
+          <td class="num">1.2%</td>
+          <td class="num">$1,095.87</td>
+        </tr>
+        <tr>
+          <td><span class="pill operating">OPERATING</span></td>
+          <td>Gas</td>
+          <td class="num">39</td>
+          <td class="num">1.1%</td>
+          <td class="num">$1,035.07</td>
+        </tr>
+        <tr>
+          <td><span class="pill operating">OPERATING</span></td>
+          <td>Software &amp; Tools</td>
+          <td class="num">61</td>
+          <td class="num">0.8%</td>
+          <td class="num">$786.73</td>
+        </tr>
+        <tr>
+          <td><span class="pill personal">PERSONAL</span></td>
+          <td>Healthcare</td>
+          <td class="num">12</td>
+          <td class="num">0.5%</td>
+          <td class="num">$512.68</td>
+        </tr>
+        <tr>
+          <td><span class="pill personal">PERSONAL</span></td>
+          <td>Uncategorized</td>
+          <td class="num">23</td>
+          <td class="num">0.5%</td>
+          <td class="num">$472.41</td>
+        </tr>
+        <tr>
+          <td><span class="pill operating">OPERATING</span></td>
+          <td>Debt</td>
+          <td class="num">3</td>
+          <td class="num">0.4%</td>
+          <td class="num">$369.17</td>
+        </tr>
+        <tr>
+          <td><span class="pill operating">OPERATING</span></td>
+          <td>Licensing and Permits</td>
+          <td class="num">6</td>
+          <td class="num">0.4%</td>
+          <td class="num">$358.77</td>
+        </tr>
+        <tr>
+          <td><span class="pill personal">PERSONAL</span></td>
+          <td>cash spending</td>
+          <td class="num">5</td>
+          <td class="num">0.4%</td>
+          <td class="num">$336.43</td>
+        </tr>
+        <tr>
+          <td><span class="pill cogs">COGS</span></td>
+          <td>Amazon</td>
+          <td class="num">1</td>
+          <td class="num">0.1%</td>
+          <td class="num">$68.89</td>
+        </tr>
+        <tr>
+          <td><span class="pill personal">PERSONAL</span></td>
+          <td>Software &amp; Tools</td>
+          <td class="num">6</td>
+          <td class="num">0.0%</td>
+          <td class="num">$37.00</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="section notes">
+    <h2>Basis And Notes</h2>
+    <p>
+      This statement uses the Local Budget app's profit/loss method: explicit transaction
+      classification first, then category default classification, then transaction type fallback.
+      Transfers are excluded from P&L lines.
+    </p>
+    <p>
+      Transaction records in period: 1062. P&L lines considered:
+      723. Transfer lines excluded: 339.
+      Statuses present: PENDING: 12, POSTED: 1050.
+    </p>
+    <p>
+      Uncategorized lines: 46, totaling $3,585.83.
+      Average monthly net: $1,978.24.
+    </p>
+    <p class="muted">
+      Available database range: 2024-01-11 through 2026-05-22.
+    </p>
+  </section>
+</body>
+</html>

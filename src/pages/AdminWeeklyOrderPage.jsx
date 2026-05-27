@@ -191,7 +191,8 @@ const AdminWeeklyOrderPage = () => {
     setStatus('Dish saved');
   };
 
-  const isAdmin = adminUser?.role === 'admin';
+  const isAdmin = adminUser?.role === 'admin' || adminUser?.role === 'readonly_admin';
+  const isReadOnlyAdmin = adminUser?.role === 'readonly_admin';
 
   const signInWithEmail = async (event) => {
     event.preventDefault();
@@ -385,7 +386,9 @@ const AdminWeeklyOrderPage = () => {
             <span className="weekly-order-admin-eyebrow">Weekly Order Admin</span>
             <h1>Menu approval and pricing control</h1>
             <p className="weekly-order-admin-subtitle">
-              Manage Drafts ingest, catalog approvals, menu weeks, and pricing tiers.
+              {isReadOnlyAdmin
+                ? 'Read-only access to Drafts ingest, catalog approvals, menu weeks, and pricing tiers.'
+                : 'Manage Drafts ingest, catalog approvals, menu weeks, and pricing tiers.'}
             </p>
           </div>
           <div className="weekly-order-admin-status">{status}</div>

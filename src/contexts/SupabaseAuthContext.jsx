@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { supabase, isAdmin } from '../lib/supabaseClient';
+import { supabase, isAdmin, isReadOnlyAdmin } from '../lib/supabaseClient';
 
 const SupabaseAuthContext = createContext({
   user: null,
@@ -7,6 +7,7 @@ const SupabaseAuthContext = createContext({
   accessToken: null,
   loading: true,
   isAdmin: false,
+  isReadOnlyAdmin: false,
   signInWithGoogle: async () => {},
   signInWithEmail: async () => {},
   signUpWithEmail: async () => {},
@@ -169,6 +170,7 @@ export const SupabaseAuthProvider = ({ children }) => {
     accessToken: session?.access_token || null,
     loading,
     isAdmin: user?.email ? isAdmin(user.email) : false,
+    isReadOnlyAdmin: user?.email ? isReadOnlyAdmin(user.email) : false,
     signInWithGoogle,
     signInWithEmail,
     signUpWithEmail,
