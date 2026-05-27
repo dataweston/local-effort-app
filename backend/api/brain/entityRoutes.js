@@ -42,6 +42,19 @@ const AUTO_CONFIRM_SOURCES = new Set([
   'ledger_event',
   'manual',
 ]);
+const FOOD_ENTITY_TYPES = new Set(['Dish', 'Ingredient', 'Menu']);
+const FOOD_NOISE_PATTERNS = [
+  /unsubscribe/i,
+  /view in browser/i,
+  /sent from my iphone/i,
+  /do not reply/i,
+  /confidential/i,
+  /copyright/i,
+  /instagram|facebook|linkedin|twitter/i,
+  /\bhttps?:\/\//i,
+  /\bwww\./i,
+];
+const FOOD_SIGNOFF_PREFIXES = /^(thanks|thank you|regards|best|cheers|sincerely|hello|hi)\b/i;
 
 function compactText(value, max = 900) {
   if (value == null) return '';
@@ -104,6 +117,64 @@ function sourceSummary(ledgerEvent) {
   };
 }
 
+function foodNameLooksValid(name, entityType) {
+  const value = compactText(name, 120);
+  if (!value) return false;
+  if (value.length < 3 || value.length > 90) return false;
+  if (/[@]|\bhttps?:\/\/|\bwww\./i.test(value)) return false;
+  if (/\d{3,}/.test(value)) return false;
+  if (FOOD_SIGNOFF_PREFIXES.test(value)) return false;
+
+  const wordCount = value.split(/\s+/).filter(Boolean).length;
+  if (entityType === 'Ingredient') {
+    if (wordCount > 6) return false;
+    if (!/^[a-zA-Z][a-zA-Z\s\-,'()&]+$/.test(value)) return false;
+  }
+  if (entityType === 'Dish') {
+    if (wordCount > 12) return false;
+  }
+  if (entityType === 'Menu') {
+    if (wordCount > 14) return false;
+  }
+  return true;
+}
+
+function assertionTouchesFood(assertion) {
+  return FOOD_ENTITY_TYPES.has(assertion.src?.entityType) || FOOD_ENTITY_TYPES.has(assertion.dst?.entityType);
+}
+
+function collectAssertionText(assertion) {
+  const metadata = assertion.metadata || {};
+  const payload = assertion.ledgerEvent?.payload || {};
+  return compactText([
+    metadata.sourceSpan,
+    metadata.notes,
+    metadata.rationale,
+    payload.subject,
+    payload.snippet,
+    payload.summary,
+    payload.rawContent,
+    payload.body,
+  ].filter(Boolean).join(' '), 2400);
+}
+
+function isFoodParsingNoise(assertion) {
+  if (!assertionTouchesFood(assertion)) return false;
+
+  if (FOOD_ENTITY_TYPES.has(assertion.src?.entityType) && !foodNameLooksValid(assertion.src?.name, assertion.src?.entityType)) {
+    return { ok: true, reason: `Invalid ${assertion.src?.entityType} name shape: "${compactText(assertion.src?.name, 60)}".` };
+  }
+  if (FOOD_ENTITY_TYPES.has(assertion.dst?.entityType) && !foodNameLooksValid(assertion.dst?.name, assertion.dst?.entityType)) {
+    return { ok: true, reason: `Invalid ${assertion.dst?.entityType} name shape: "${compactText(assertion.dst?.name, 60)}".` };
+  }
+
+  const text = collectAssertionText(assertion);
+  if (text && FOOD_NOISE_PATTERNS.some(re => re.test(text))) {
+    return { ok: true, reason: 'Source text looks like footer/newsletter noise, not menu content.' };
+  }
+  return { ok: false, reason: '' };
+}
+
 function decorateAssertion(assertion) {
   const warnings = assertionReviewWarnings(assertion);
   return {
@@ -136,6 +207,12 @@ function automationCandidates(assertions) {
   const confirm = [];
   const retract = [];
   for (const assertion of assertions) {
+    const foodNoise = isFoodParsingNoise(assertion);
+    if (foodNoise.ok) {
+      retract.push({ id: assertion.id, reason: foodNoise.reason });
+      continue;
+    }
+
     const bad = structuralWarnings(assertion);
     if (bad.length > 0) {
       retract.push({ id: assertion.id, reason: bad[0] });
@@ -164,6 +241,7 @@ function buildReviewSuggestions({ pending, reviewed }) {
   for (const assertion of pending) {
     const key = assertionPattern(assertion);
     const warnings = structuralWarnings(assertion);
+    const foodNoise = isFoodParsingNoise(assertion);
     const stats = statsByPattern.get(key) || { confirmed: 0, retracted: 0, total: 0 };
     const confirmRate = stats.total ? stats.confirmed / stats.total : 0;
     const retractRate = stats.total ? stats.retracted / stats.total : 0;
@@ -172,7 +250,11 @@ function buildReviewSuggestions({ pending, reviewed }) {
     let score = 0;
     let reason = '';
 
-    if (warnings.length > 0) {
+    if (foodNoise.ok) {
+      action = 'retract';
+      score = 0.97;
+      reason = foodNoise.reason;
+    } else if (warnings.length > 0) {
       action = 'retract';
       score = 0.92;
       reason = warnings[0];

@@ -27,6 +27,9 @@ from extractor import (
     should_ignore,
     invalidate_entity_cache,
     MODEL,
+    _is_plausible_dish_name,
+    _clean_ingredient_names,
+    _looks_like_food_noise,
 )
 from models import EmailThreadExtraction, VendorSignal, CustomerSignal, MenuExtraction, StrategicSignal
 
@@ -244,7 +247,14 @@ def write_menu(
     subject: str,
 ) -> int:
     """Write a MenuExtraction as a Menu entity with Dish children."""
-    menu_name = menu.menu_name or f'Menu from {subject[:60]}'
+    menu_name = (menu.menu_name or '').strip()
+    if not menu_name or _looks_like_food_noise(menu_name):
+        menu_name = f'Menu from {subject[:60]}'
+
+    plausible_dishes = [d for d in menu.dishes if _is_plausible_dish_name(d.name)]
+    if not plausible_dishes and not menu.menu_name:
+        return 0
+
     menu_id, menu_created = find_or_create_entity('Menu', menu_name)
     if menu_created:
         print(f'    [new menu] {menu_name} ({len(menu.dishes)} dishes)')
@@ -284,7 +294,7 @@ def write_menu(
     )
 
     # Write each dish as a Dish entity linked to this menu
-    for dish in menu.dishes:
+    for dish in plausible_dishes:
         dish_id, dish_created = find_or_create_entity('Dish', dish.name)
         if dish_created:
             print(f'      [new dish] {dish.name}')
@@ -298,8 +308,9 @@ def write_menu(
         }
         if dish.description:
             dish_meta['description'] = dish.description
-        if dish.ingredients_mentioned:
-            dish_meta['ingredientsMentioned'] = dish.ingredients_mentioned
+        clean_ingredients = _clean_ingredient_names(dish.ingredients_mentioned)
+        if clean_ingredients:
+            dish_meta['ingredientsMentioned'] = clean_ingredients
         if dish.dietary_tags:
             dish_meta['dietaryTags'] = [
                 {'tag': t.tag, 'inferred': t.inferred} for t in dish.dietary_tags
@@ -324,7 +335,7 @@ def write_menu(
         )
 
         # Dish→Ingredient relationships
-        for ing_name in dish.ingredients_mentioned:
+        for ing_name in clean_ingredients:
             ing_id, ing_created = find_or_create_entity('Ingredient', ing_name)
             if ing_created:
                 invalidate_entity_cache()
@@ -340,6 +351,55 @@ def write_menu(
             )
 
     return 1
+
+
+def retract_existing_provisional_food_assertions(dry_run: bool = False) -> int:
+    """Retract prior provisional Dish/Ingredient/Menu assertions from Gmail extraction runs."""
+    rows = query(
+        """
+        SELECT a.id
+        FROM "BrainAssertion" a
+        LEFT JOIN "BrainEntity" s ON s.id = a."srcId"
+        LEFT JOIN "BrainEntity" d ON d.id = a."dstId"
+        LEFT JOIN "LedgerEvent" le ON le.id = a."sourceId"
+        WHERE a.provisional = true
+          AND a."retractedAt" IS NULL
+          AND (
+            s."entityType" IN ('Dish','Ingredient','Menu')
+            OR d."entityType" IN ('Dish','Ingredient','Menu')
+          )
+          AND (
+            a."sourceType" = 'python_extractor'
+            OR a."createdBy" = 'python_extractor'
+            OR le."eventType" = 'extraction.email'
+          )
+        """
+    )
+    ids = [r['id'] for r in rows]
+    if not ids:
+        return 0
+
+    if dry_run:
+        print(f'[extract_gmail] dry-run: would retract {len(ids)} provisional food assertions')
+        return len(ids)
+
+    updated = 0
+    chunk_size = 500
+    for i in range(0, len(ids), chunk_size):
+        chunk = ids[i:i + chunk_size]
+        execute(
+            """
+            UPDATE "BrainAssertion"
+            SET "retractedAt" = NOW(),
+                "retractedBy" = 'python_extractor:reextract',
+                "retractedReason" = 'gmail_food_reextract_reset'
+            WHERE id = ANY(%s)
+            """,
+            (chunk,),
+        )
+        updated += len(chunk)
+
+    return updated
 
 
 FETCH_ALL_SQL = """
@@ -512,8 +572,12 @@ def _process_batch(rows, dry_run, max_workers):
 
 def run(limit: int = 2000, batch_size: int = 75, dry_run: bool = False, max_workers: int = 4) -> dict:
     if REEXTRACT:
+        reset_count = retract_existing_provisional_food_assertions(dry_run=dry_run)
+        if reset_count:
+            print(f'[extract_gmail] retracted {reset_count} provisional food assertions before re-extract')
         print('[extract_gmail] --reextract: deleting existing extraction.email events...')
-        execute('DELETE FROM "LedgerEvent" WHERE "eventType" = \'extraction.email\'')
+        if not dry_run:
+            execute('DELETE FROM "LedgerEvent" WHERE "eventType" = \'extraction.email\'')
 
     # Fetch all unextracted rows upfront in one query, then slice into batches.
     # This avoids the re-query-at-offset-0 pattern which causes an infinite loop

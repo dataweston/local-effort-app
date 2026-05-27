@@ -309,11 +309,65 @@ RULES:
 2. IGNORE: SaaS receipts (QuickBooks, Intuit, Stripe, etc.), marketing emails, newsletters, social media, non-food e-commerce.
 3. Detect direction: if Weston/yum@localeffortfood.com is the SENDER, it's outbound. If they're the RECIPIENT, it's inbound.
 4. For menus: extract every dish you can find. Menus often appear as lists with dish names and descriptions.
+4a. Only extract menus/dishes when the content clearly includes food items. Do NOT extract signatures, legal footers, unsubscribe text, or contact blocks as dishes.
+4b. A dish should look like an actual food item name (not an email, URL, phone line, greeting, or sign-off).
 5. For vendor signals: capture invoice numbers, order numbers, amounts, line items, and dates precisely as written.
 6. For strategic signals: if an email mentions a specific occasion (wedding, corporate lunch, birthday), customer segment, or channel, extract it in strategic_signals.
 7. Source spans: include the exact text excerpt that supports each extracted fact.
 8. If uncertain, lower confidence and set needs_human_review=True rather than guessing.
 """
+
+_FOOD_NOISE_RE = re.compile(
+    r'unsubscribe|view in browser|sent from my iphone|confidential|do not reply|https?://|www\\.|'
+    r'instagram|facebook|linkedin|twitter|copyright',
+    re.I,
+)
+_SIGNOFF_RE = re.compile(r'^(thanks|thank you|regards|best|cheers|sincerely|hello|hi)\\b', re.I)
+
+
+def _looks_like_food_noise(text: str | None) -> bool:
+    value = (text or '').strip()
+    if not value:
+        return False
+    return bool(_FOOD_NOISE_RE.search(value) or _SIGNOFF_RE.search(value))
+
+
+def _is_plausible_dish_name(name: str | None) -> bool:
+    value = re.sub(r'\\s+', ' ', (name or '').strip())
+    if not value:
+        return False
+    if len(value) < 3 or len(value) > 90:
+        return False
+    if re.search(r'[@]|https?://|www\\.|\\d{3,}', value, re.I):
+        return False
+    if _looks_like_food_noise(value):
+        return False
+    if len(value.split()) > 12:
+        return False
+    return True
+
+
+def _clean_ingredient_names(values: list[str]) -> list[str]:
+    out = []
+    seen = set()
+    for raw in values or []:
+        value = re.sub(r'\\s+', ' ', (raw or '').strip())
+        if not value:
+            continue
+        lower = value.lower()
+        if lower in seen:
+            continue
+        if len(value) < 2 or len(value) > 48:
+            continue
+        if re.search(r'[@]|https?://|www\\.|\\d{3,}', value, re.I):
+            continue
+        if _looks_like_food_noise(value):
+            continue
+        if len(value.split()) > 6:
+            continue
+        seen.add(lower)
+        out.append(value)
+    return out
 
 
 def extract_email_thread(
