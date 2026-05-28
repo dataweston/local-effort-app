@@ -1502,6 +1502,7 @@ const MenuIngestTab = ({ authHeaders, customers, onPublished }) => {
   const [parseError, setParseError] = useState('');
   const [dishes, setDishes] = useState(null); // null = not yet parsed
   const [weekStart, setWeekStart] = useState('');
+  const [menuWeekStatus, setMenuWeekStatus] = useState('published');
   const [publishing, setPublishing] = useState(false);
   const [publishResult, setPublishResult] = useState(null);
   const [publishError, setPublishError] = useState('');
@@ -1575,6 +1576,7 @@ const MenuIngestTab = ({ authHeaders, customers, onPublished }) => {
     try {
       const payload = {
         weekStart,
+        menuWeekStatus,
         dishes: dishes.map(d => ({
           title: d.title,
           description: d.description,
@@ -1784,6 +1786,15 @@ const MenuIngestTab = ({ authHeaders, customers, onPublished }) => {
                 onChange={e => setWeekStart(e.target.value)}
                 style={{ padding: '0.35rem 0.5rem', border: '1px solid #d1d5db', borderRadius: '0.375rem' }}
               />
+              <label style={{ fontWeight: 600, fontSize: '0.85rem' }}>Status</label>
+              <select
+                value={menuWeekStatus}
+                onChange={(e) => setMenuWeekStatus(e.target.value)}
+                style={{ padding: '0.35rem 0.5rem', border: '1px solid #d1d5db', borderRadius: '0.375rem' }}
+              >
+                <option value="published">Published (visible to customers)</option>
+                <option value="draft">Draft (hidden from customers)</option>
+              </select>
             </div>
             {publishError && <p style={{ color: '#ef4444', fontSize: '0.85rem', marginBottom: '0.5rem' }}>{publishError}</p>}
             <Button onClick={handlePublish} disabled={publishing || !weekStart}>
@@ -1802,6 +1813,21 @@ const MenuIngestTab = ({ authHeaders, customers, onPublished }) => {
               {publishResult.dishes?.filter(d => !d.skipped).length} dishes added to week of{' '}
               {new Date(publishResult.weekStart).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}.
             </p>
+            {!!publishResult.missingPricing?.length && (
+              <div style={{ marginBottom: '0.75rem', padding: '0.75rem', borderRadius: '0.5rem', background: '#fff7ed', border: '1px solid #fdba74' }}>
+                <p style={{ margin: 0, fontSize: '0.85rem', color: '#9a3412', fontWeight: 600 }}>
+                  Pricing still missing for some dishes.
+                </p>
+                <p style={{ margin: '0.35rem 0 0', fontSize: '0.8rem', color: '#9a3412' }}>
+                  Add prices in the Pricing tab before customers place orders.
+                </p>
+                <ul style={{ margin: '0.5rem 0 0 1rem', padding: 0, color: '#9a3412', fontSize: '0.8rem' }}>
+                  {publishResult.missingPricing.map((row) => (
+                    <li key={row.dishId}>{row.title}: {row.missingTiers.join(', ')}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
 
             {/* Sticker input */}
             <details style={{ marginBottom: '0.75rem' }}>

@@ -74,7 +74,7 @@ module.exports = async (req, res) => {
     weekStart,
     cutoffAt,
     dishes,
-    menuWeekStatus = 'draft',
+    menuWeekStatus = 'published',
   } = req.body || {};
 
   if (!weekStart) return res.status(400).json({ error: 'weekStart required (ISO date string)' });
@@ -87,6 +87,7 @@ module.exports = async (req, res) => {
     return res.status(400).json({ error: 'weekStart must be a valid date' });
   }
   const cutoffDate = cutoffAt ? new Date(cutoffAt) : defaultCutoff(weekStartDate);
+  const normalizedMenuWeekStatus = menuWeekStatus === 'draft' ? 'draft' : 'published';
 
   // Resolve all clientSlugs mentioned across all dishes upfront
   const allSlugs = [...new Set(dishes.flatMap(d => d.clientSlugs || []))];
@@ -112,7 +113,15 @@ module.exports = async (req, res) => {
       data: {
         weekStart: weekStartDate,
         cutoffAt: cutoffDate,
-        status: menuWeekStatus,
+        status: normalizedMenuWeekStatus,
+      },
+    });
+  } else {
+    menuWeek = await prisma.menuWeek.update({
+      where: { id: menuWeek.id },
+      data: {
+        cutoffAt: cutoffAt ? cutoffDate : undefined,
+        status: normalizedMenuWeekStatus,
       },
     });
   }
@@ -201,6 +210,31 @@ module.exports = async (req, res) => {
   }
 
   const committed = results.filter(r => !r.skipped);
+  const committedDishIds = committed.map((row) => row.dishId).filter(Boolean);
+  const priceRows = committedDishIds.length
+    ? await prisma.dishPrice.findMany({
+        where: {
+          menuWeekId: menuWeek.id,
+          dishId: { in: committedDishIds },
+          tier: { in: ['subscriber', 'member'] },
+        },
+        select: { dishId: true, tier: true },
+      })
+    : [];
+
+  const priceCoverage = new Set(priceRows.map((row) => `${row.dishId}-${row.tier}`));
+  const missingPricing = committed
+    .map((row) => {
+      const missingTiers = ['subscriber', 'member'].filter((tier) => !priceCoverage.has(`${row.dishId}-${tier}`));
+      if (!missingTiers.length) return null;
+      return {
+        dishId: row.dishId,
+        title: row.title,
+        missingTiers,
+      };
+    })
+    .filter(Boolean);
+
   const stickerInput = buildStickerInput(
     committed.map(r => dishes[r.index])
   );
@@ -211,6 +245,7 @@ module.exports = async (req, res) => {
     weekStart: menuWeek.weekStart,
     status: menuWeek.status,
     dishes: results,
+    missingPricing,
     stickerInput,
   });
 };

@@ -119,20 +119,32 @@ const ThisWeekTab = ({ accessToken, customerSlug }) => {
   const [menuWeek, setMenuWeek] = useState(null);
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
   useEffect(() => {
     const slugParam = customerSlug ? `?customerSlug=${encodeURIComponent(customerSlug)}` : '';
+    setError('');
     fetch(`/api/weekly-order/upcoming${slugParam}`, {
       headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : {},
     })
-      .then(r => r.ok ? r.json() : null)
+      .then(async (r) => {
+        if (!r.ok) {
+          const data = await r.json().catch(() => ({}));
+          throw new Error(data?.error || 'Unable to load upcoming menu');
+        }
+        return r.json();
+      })
       .then(data => {
         if (data) { setMenuWeek(data.menuWeek); setItems(data.items || []); }
+      })
+      .catch((err) => {
+        setError(err?.message || 'Unable to load upcoming menu');
       })
       .finally(() => setLoading(false));
   }, [accessToken, customerSlug]);
 
   if (loading) return <div className="weekly-order-loading">Loading…</div>;
+  if (error) return <p style={{ padding: 16, color: '#ef4444' }}>{error}</p>;
   if (!menuWeek) return <p style={{ padding: 16, color: '#64748b' }}>No upcoming menu yet — check back soon!</p>;
 
   const weekLabel = formatWeek(menuWeek.weekStart);
@@ -581,6 +593,8 @@ const SubscriberPortalPage = () => {
   const [history, setHistory] = useState([]);
   const [loadingProfile, setLoadingProfile] = useState(true);
   const [loadingHistory, setLoadingHistory] = useState(true);
+  const [profileError, setProfileError] = useState('');
+  const [historyError, setHistoryError] = useState('');
 
   // Use the slug from URL, or fall back to whatever the API resolves
   const customerSlug = urlSlug || customer?.slug || '';
@@ -590,31 +604,41 @@ const SubscriberPortalPage = () => {
 
   const loadProfile = useCallback(async () => {
     setLoadingProfile(true);
+    setProfileError('');
     try {
       const resp = await fetch(`/api/weekly-order/profile${slugParam}`, { headers });
-      if (resp.ok) {
-        const data = await resp.json();
-        setProfile(data.profile);
-        setCustomer(data.customer);
-        setUsers(data.users);
-        // If we're on the generic /weekly-order/portal URL, redirect to the slug-specific one
-        if (!urlSlug && data.customer?.slug) {
-          navigate(`/weekly-order/${data.customer.slug}/portal`, { replace: true });
-        }
+      if (!resp.ok) {
+        const data = await resp.json().catch(() => ({}));
+        throw new Error(data?.error || 'Unable to load profile');
       }
-    } catch { /* ignore */ }
+      const data = await resp.json();
+      setProfile(data.profile);
+      setCustomer(data.customer);
+      setUsers(data.users);
+      // If we're on the generic /weekly-order/portal URL, redirect to the slug-specific one
+      if (!urlSlug && data.customer?.slug) {
+        navigate(`/weekly-order/${data.customer.slug}/portal`, { replace: true });
+      }
+    } catch (err) {
+      setProfileError(err?.message || 'Unable to load profile');
+    }
     finally { setLoadingProfile(false); }
   }, [accessToken, slugParam, urlSlug, navigate]);
 
   const loadHistory = useCallback(async () => {
     setLoadingHistory(true);
+    setHistoryError('');
     try {
       const resp = await fetch(`/api/weekly-order/history${slugParam}`, { headers });
-      if (resp.ok) {
-        const data = await resp.json();
-        setHistory(data.weeks || []);
+      if (!resp.ok) {
+        const data = await resp.json().catch(() => ({}));
+        throw new Error(data?.error || 'Unable to load order history');
       }
-    } catch { /* ignore */ }
+      const data = await resp.json();
+      setHistory(data.weeks || []);
+    } catch (err) {
+      setHistoryError(err?.message || 'Unable to load order history');
+    }
     finally { setLoadingHistory(false); }
   }, [accessToken, slugParam]);
 
@@ -665,6 +689,8 @@ const SubscriberPortalPage = () => {
             <TabsContent value="dashboard">
               {loadingProfile ? (
                 <div className="weekly-order-loading">Loading…</div>
+              ) : profileError ? (
+                <p style={{ color: '#ef4444', padding: 16 }}>{profileError}</p>
               ) : (
                 <DashboardTab profile={profile} history={history} customerName={customerName} />
               )}
@@ -673,6 +699,8 @@ const SubscriberPortalPage = () => {
             <TabsContent value="past-menus">
               {loadingHistory ? (
                 <div className="weekly-order-loading">Loading…</div>
+              ) : historyError ? (
+                <p style={{ color: '#ef4444', padding: 16 }}>{historyError}</p>
               ) : (
                 <PastMenusTab history={history} accessToken={accessToken} onFeedbackSaved={loadHistory} />
               )}
@@ -681,6 +709,8 @@ const SubscriberPortalPage = () => {
             <TabsContent value="profile">
               {loadingProfile ? (
                 <div className="weekly-order-loading">Loading…</div>
+              ) : profileError ? (
+                <p style={{ color: '#ef4444', padding: 16 }}>{profileError}</p>
               ) : (
                 <ProfileTab
                   profile={profile}

@@ -154,6 +154,28 @@ def _extract_text_from_parts(parts: list) -> str:
     return text
 
 
+    def _normalize_participants(participants: list | None) -> list[str]:
+        """Normalize participant values from mixed payload shapes into readable strings."""
+        out = []
+        for item in participants or []:
+            if isinstance(item, str):
+                value = item.strip()
+            elif isinstance(item, dict):
+                value = (
+                    item.get('email')
+                    or item.get('name')
+                    or item.get('address')
+                    or item.get('value')
+                    or ''
+                )
+                value = str(value).strip()
+            else:
+                value = str(item).strip()
+            if value:
+                out.append(value)
+        return out
+
+
 def fetch_thread_body(thread_id: str, max_chars: int = 6000) -> str:
     """
     Fetch the full plaintext body of a Gmail thread.
@@ -385,7 +407,7 @@ def extract_email_thread(
 
     # Build the content block — prioritize body over snippet
     content_text = body if body.strip() else snippet
-    participants_str = ', '.join(participants or [])
+    participants_str = ', '.join(_normalize_participants(participants))
 
     user_prompt = f"""Extract all structured information from this email thread.
 
@@ -427,10 +449,14 @@ def fetch_bodies_sequential(
     from concurrent.futures import ThreadPoolExecutor, TimeoutError as FuturesTimeout
 
     bodies = {}
+    auth_failed = False
     with ThreadPoolExecutor(max_workers=1) as _timeout_pool:
         for i, row in enumerate(threads):
             thread_id = row['payload'].get('threadId') or row.get('sourceId', '')
             if not thread_id:
+                continue
+            if auth_failed:
+                bodies[thread_id] = ''
                 continue
             # Proactively refresh token every 50 fetches so it never expires mid-run
             if i > 0 and i % 50 == 0:
@@ -446,6 +472,9 @@ def fetch_bodies_sequential(
                 print(f'[extractor] body fetch timed out after {timeout_per_fetch}s: {thread_id}')
                 bodies[thread_id] = ''
             except Exception as e:
+                if 'invalid_grant' in str(e):
+                    auth_failed = True
+                    print('[extractor] Gmail auth invalid_grant detected; skipping remaining body fetches and using snippets only')
                 print(f'[extractor] body fetch failed {thread_id}: {e}')
                 bodies[thread_id] = ''
             if (i + 1) % 100 == 0:

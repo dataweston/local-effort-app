@@ -146,15 +146,25 @@ function assertionTouchesFood(assertion) {
 function collectAssertionText(assertion) {
   const metadata = assertion.metadata || {};
   const payload = assertion.ledgerEvent?.payload || {};
+  const toText = (value) => {
+    if (value == null) return '';
+    if (typeof value === 'string') return value;
+    if (typeof value === 'number' || typeof value === 'boolean') return String(value);
+    try {
+      return JSON.stringify(value);
+    } catch {
+      return '';
+    }
+  };
   return compactText([
-    metadata.sourceSpan,
-    metadata.notes,
-    metadata.rationale,
-    payload.subject,
-    payload.snippet,
-    payload.summary,
-    payload.rawContent,
-    payload.body,
+    toText(metadata.sourceSpan),
+    toText(metadata.notes),
+    toText(metadata.rationale),
+    toText(payload.subject),
+    toText(payload.snippet),
+    toText(payload.summary),
+    toText(payload.rawContent),
+    toText(payload.body),
   ].filter(Boolean).join(' '), 2400);
 }
 

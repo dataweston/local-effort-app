@@ -1,4 +1,5 @@
 const { PrismaClient } = require('@prisma/client');
+const { verifySupabaseToken } = require('./_auth');
 
 let prisma = null;
 try {
@@ -135,8 +136,9 @@ module.exports = async (req, res) => {
 
   const slug = (req.query?.customerSlug || 'weekly-order').toString();
   const tier = (req.query?.tier || 'member').toString().toLowerCase();
-  // User-specific overrides require authentication — never trust query params for identity
-  const userEmail = null;
+  // User-specific overrides require authentication — never trust query params for identity.
+  const supabaseUser = await verifySupabaseToken(req);
+  const userEmail = supabaseUser?.email || null;
 
   if (!prisma) {
     return res.status(200).json(buildSampleWeeklyOrder(slug));

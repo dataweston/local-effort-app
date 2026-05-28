@@ -1478,6 +1478,15 @@ app.all('/api/weekly-order/active', async (req, res, next) => {
   }
 });
 
+app.all('/api/weekly-order/upcoming', async (req, res, next) => {
+  try {
+    await require('../../api-handlers/weekly-order/upcoming')(req, res);
+  } catch (err) {
+    logger.error({ err, method: req.method }, 'weekly order upcoming handler failed');
+    next(err);
+  }
+});
+
 app.all('/api/weekly-order/checkout', async (req, res, next) => {
   try {
     await require('../../api-handlers/weekly-order/checkout')(req, res);
