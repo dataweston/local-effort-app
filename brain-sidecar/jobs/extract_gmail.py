@@ -34,6 +34,7 @@ from extractor import (
 from models import EmailThreadExtraction, VendorSignal, CustomerSignal, MenuExtraction, StrategicSignal
 
 REEXTRACT = '--reextract' in sys.argv
+SNIPPET_ONLY = '--snippet-only' in sys.argv
 
 # Signal type → assertion rel type
 VENDOR_SIGNAL_TO_REL = {
@@ -417,7 +418,7 @@ FETCH_ALL_SQL = """
 """
 
 
-def _process_batch(rows, dry_run, max_workers):
+def _process_batch(rows, dry_run, max_workers, snippet_only=False):
     """
     Extract one batch of threads, write results, return counters.
 
@@ -440,7 +441,10 @@ def _process_batch(rows, dry_run, max_workers):
         _db._conn = None
 
     results = extract_threads_parallel(
-        rows, max_workers=max_workers, fetch_bodies=True, dry_run=dry_run
+        rows,
+        max_workers=max_workers,
+        fetch_bodies=not snippet_only,
+        dry_run=dry_run,
     )
     # DB connection will be re-established lazily on first write below.
 
@@ -570,7 +574,13 @@ def _process_batch(rows, dry_run, max_workers):
     return processed, skipped, ignored, assertions_written, menus_found, errors
 
 
-def run(limit: int = 2000, batch_size: int = 75, dry_run: bool = False, max_workers: int = 4) -> dict:
+def run(
+    limit: int = 2000,
+    batch_size: int = 75,
+    dry_run: bool = False,
+    max_workers: int = 4,
+    snippet_only: bool = False,
+) -> dict:
     if REEXTRACT:
         reset_count = retract_existing_provisional_food_assertions(dry_run=dry_run)
         if reset_count:
@@ -590,7 +600,11 @@ def run(limit: int = 2000, batch_size: int = 75, dry_run: bool = False, max_work
 
     total = len(all_rows)
     n_batches = (total + batch_size - 1) // batch_size
-    print(f'[extract_gmail] {total} threads to extract in {n_batches} batches of {batch_size} ({max_workers} workers)...')
+    mode = 'snippet-only' if snippet_only else 'full-body'
+    print(
+        f'[extract_gmail] {total} threads to extract in {n_batches} batches of {batch_size} '
+        f'({max_workers} workers, mode={mode})...'
+    )
 
     processed = skipped = ignored = assertions_written = menus_found = 0
     all_errors = []
@@ -599,7 +613,12 @@ def run(limit: int = 2000, batch_size: int = 75, dry_run: bool = False, max_work
         rows = all_rows[offset:offset + batch_size]
         print(f'\n[extract_gmail] batch {batch_num}/{n_batches}: {len(rows)} threads')
 
-        p, s, i, a, m, errs = _process_batch(rows, dry_run, max_workers)
+        p, s, i, a, m, errs = _process_batch(
+            rows,
+            dry_run,
+            max_workers,
+            snippet_only=snippet_only,
+        )
         processed += p
         skipped += s
         ignored += i
@@ -626,5 +645,6 @@ def run(limit: int = 2000, batch_size: int = 75, dry_run: bool = False, max_work
 if __name__ == '__main__':
     import json
     dry_run = '--dry-run' in sys.argv
-    result = run(dry_run=dry_run)
+    snippet_only = '--snippet-only' in sys.argv
+    result = run(dry_run=dry_run, snippet_only=snippet_only)
     print(json.dumps(result, indent=2))

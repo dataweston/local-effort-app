@@ -154,26 +154,26 @@ def _extract_text_from_parts(parts: list) -> str:
     return text
 
 
-    def _normalize_participants(participants: list | None) -> list[str]:
-        """Normalize participant values from mixed payload shapes into readable strings."""
-        out = []
-        for item in participants or []:
-            if isinstance(item, str):
-                value = item.strip()
-            elif isinstance(item, dict):
-                value = (
-                    item.get('email')
-                    or item.get('name')
-                    or item.get('address')
-                    or item.get('value')
-                    or ''
-                )
-                value = str(value).strip()
-            else:
-                value = str(item).strip()
-            if value:
-                out.append(value)
-        return out
+def _normalize_participants(participants: list | None) -> list[str]:
+    """Normalize participant values from mixed payload shapes into readable strings."""
+    out = []
+    for item in participants or []:
+        if isinstance(item, str):
+            value = item.strip()
+        elif isinstance(item, dict):
+            value = (
+                item.get('email')
+                or item.get('name')
+                or item.get('address')
+                or item.get('value')
+                or ''
+            )
+            value = str(value).strip()
+        else:
+            value = str(item).strip()
+        if value:
+            out.append(value)
+    return out
 
 
 def fetch_thread_body(thread_id: str, max_chars: int = 6000) -> str:

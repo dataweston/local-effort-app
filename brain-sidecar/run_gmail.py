@@ -8,6 +8,7 @@ Usage:
   python run_gmail.py --limit 50   # extract only first 50
   python run_gmail.py --dry-run    # preview without writing
   python run_gmail.py --reextract  # wipe and redo all
+    python run_gmail.py --snippet-only # skip Gmail body fetch; use ledger snippets only
 """
 
 import sys
@@ -37,19 +38,29 @@ log = logging.getLogger('gmail_extract')
 
 DRY_RUN  = '--dry-run'  in sys.argv
 REEXTRACT = '--reextract' in sys.argv
+SNIPPET_ONLY = '--snippet-only' in sys.argv
 LIMIT = 2000
 for i, arg in enumerate(sys.argv):
     if arg == '--limit' and i + 1 < len(sys.argv):
         LIMIT = int(sys.argv[i + 1])
 
-log.info(f'Starting gmail extraction: dry_run={DRY_RUN} reextract={REEXTRACT} limit={LIMIT}')
+log.info(
+    f'Starting gmail extraction: dry_run={DRY_RUN} reextract={REEXTRACT} '
+    f'snippet_only={SNIPPET_ONLY} limit={LIMIT}'
+)
 log.info(f'Log file: {log_path}')
 
 from jobs.extract_gmail import run
 
 start = time.time()
 try:
-    result = run(dry_run=DRY_RUN, max_workers=1, batch_size=25, limit=LIMIT)
+    result = run(
+        dry_run=DRY_RUN,
+        max_workers=1,
+        batch_size=25,
+        limit=LIMIT,
+        snippet_only=SNIPPET_ONLY,
+    )
     elapsed = round(time.time() - start, 1)
     log.info(f'Finished in {elapsed}s: {json.dumps(result, default=str)}')
 except Exception as e:
