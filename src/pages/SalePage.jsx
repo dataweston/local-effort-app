@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
-import { Link } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useCart } from '../store/cart/CartContext';
 import ProductGrid from '../store/components/ProductGrid';
 import CartDrawer from '../store/components/CartDrawer';
@@ -39,6 +39,9 @@ const formatGeneratedDate = (value) => {
 
 const SalePage = () => {
   const { totalQty, openCart } = useCart();
+  const location = useLocation();
+  const navigate = useNavigate();
+  const openSlug = location.hash ? location.hash.slice(1) : null;
   const [products, setProducts] = useState(INITIAL_PRODUCTS);
   const [loading, setLoading] = useState(INITIAL_PRODUCTS.length === 0);
   const [livePage, setLivePage] = useState(null);
@@ -249,7 +252,14 @@ const SalePage = () => {
               </p>
             </div>
           </div>
-          <ProductGrid products={products} skuPrefix="LE" loading={loading} />
+          <ProductGrid
+            products={products}
+            skuPrefix="LE"
+            loading={loading}
+            openSlug={openSlug}
+            onOpen={(slug) => navigate(`/sale#${slug}`, { replace: false })}
+            onClose={() => navigate('/sale', { replace: false })}
+          />
         </section>
       </main>
 

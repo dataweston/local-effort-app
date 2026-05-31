@@ -11,7 +11,7 @@
  *   <ProductGrid products={products} skuPrefix="LE" />
  */
 
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import ProductTile from './ProductTile';
 import ProductDetail from './ProductDetail';
 import { SITE_URL } from '../../config/siteMetadata';
@@ -32,9 +32,42 @@ export default function ProductGrid({
   loading = false,
   basePath = '/sale',
   showSku = true,
-  showDetailRow = true
+  showDetailRow = true,
+  openSlug = null,
+  onOpen = null,
+  onClose = null,
 }) {
   const [selected, setSelected] = useState(null);
+  const hasAutoOpened = useRef(false);
+
+  // Auto-open product when a slug arrives via URL hash
+  useEffect(() => {
+    if (!openSlug || loading || !products.length) return;
+    if (hasAutoOpened.current) return;
+    const product = products.find((p) => (p.slug || p.id) === openSlug);
+    if (product) {
+      hasAutoOpened.current = true;
+      setSelected(product);
+    }
+  }, [openSlug, products, loading]);
+
+  // Reset when slug is removed from URL (e.g. navigated back to /sale)
+  useEffect(() => {
+    if (!openSlug) {
+      hasAutoOpened.current = false;
+      setSelected(null);
+    }
+  }, [openSlug]);
+
+  const handleSelect = (product) => {
+    setSelected(product);
+    if (onOpen) onOpen(product.slug || product.id);
+  };
+
+  const handleClose = () => {
+    setSelected(null);
+    if (onClose) onClose();
+  };
 
   const selectedSku = selected
     ? `${skuPrefix}-${padded(products.indexOf(selected) + 1)}`
@@ -80,7 +113,7 @@ export default function ProductGrid({
                 <ProductTile
                   product={product}
                   sku={sku}
-                  onSelect={setSelected}
+                  onSelect={handleSelect}
                   showSku={showSku}
                   showDetailRow={showDetailRow}
                 />
@@ -94,7 +127,7 @@ export default function ProductGrid({
         <ProductDetail
           product={selected}
           sku={selectedSku}
-          onClose={() => setSelected(null)}
+          onClose={handleClose}
         />
       )}
     </>
