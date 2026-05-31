@@ -41,6 +41,7 @@ const SalePage = () => {
   const { totalQty, openCart } = useCart();
   const [products, setProducts] = useState(INITIAL_PRODUCTS);
   const [loading, setLoading] = useState(INITIAL_PRODUCTS.length === 0);
+  const [livePage, setLivePage] = useState(null);
 
   useEffect(() => {
     let alive = true;
@@ -48,8 +49,9 @@ const SalePage = () => {
       try {
         const res = await fetch('/api/store/products?store=sale');
         const data = res.ok ? await res.json() : { products: [] };
-        if (alive && Array.isArray(data.products)) {
-          setProducts(data.products);
+        if (alive) {
+          if (Array.isArray(data.products)) setProducts(data.products);
+          if (data.page && typeof data.page === 'object') setLivePage(data.page);
         }
       } catch (_) {
         // Keep the build-time snapshot when live refresh fails.
@@ -60,9 +62,9 @@ const SalePage = () => {
     return () => { alive = false; };
   }, []);
 
-  const pageTitle = INITIAL_PAGE.title || FALLBACK_TITLE;
-  const pageSubheading = INITIAL_PAGE.subheading || FALLBACK_SUBHEADING;
-  const introText = INITIAL_PAGE.introText || FALLBACK_INTRO;
+  const pageTitle = livePage?.title || INITIAL_PAGE.title || FALLBACK_TITLE;
+  const pageSubheading = livePage?.subheading || INITIAL_PAGE.subheading || FALLBACK_SUBHEADING;
+  const introText = livePage?.introText || INITIAL_PAGE.introText || FALLBACK_INTRO;
   const generatedLabel = formatGeneratedDate(INITIAL_GENERATED_AT);
 
   const metaDescription = useMemo(() => {

@@ -16,19 +16,26 @@ export default function CheckoutPanel({ store = 'sale', onBack }) {
   const [orderResult, setOrderResult] = useState(null); // { name, email, pickup }
   const cardRef = React.useRef(null);
   const cardElRef = React.useRef(null);
+  // Prevents re-initialization if items change while checkout is already open.
+  const sqInitRef = React.useRef(false);
 
-  // Load Square Web Payments SDK once panel opens with items
+  // Load Square Web Payments SDK once when the panel opens.
+  // Depends only on `open` — not on `items` — to avoid tearing down and
+  // re-attaching the card form every time the cart contents change.
   React.useEffect(() => {
     const appId = import.meta?.env?.VITE_SQUARE_APP_ID || window?.__SQUARE_APP_ID__;
     const locationId = import.meta?.env?.VITE_SQUARE_LOCATION_ID || window?.__SQUARE_LOCATION_ID__;
     if (!open) return;
     if (!items || items.length === 0) return;
+    // Already initialised for this open session — do not re-attach.
+    if (sqInitRef.current) return;
     setError('');
     if (!appId || !locationId) {
       setError('Square not configured');
       return;
     }
     let canceled = false;
+    sqInitRef.current = true;
     (async () => {
       try {
         if (!document.getElementById('sq-wpsdk')) {
@@ -54,6 +61,7 @@ export default function CheckoutPanel({ store = 'sale', onBack }) {
           }, 100);
         });
         await ensureSquare();
+        if (canceled) return;
         const p = window.Square ? window.Square.payments(appId, locationId) : null;
         if (!p) throw new Error('Square payments unavailable');
         if (cardRef.current && typeof cardRef.current.destroy === 'function') {
@@ -62,11 +70,16 @@ export default function CheckoutPanel({ store = 'sale', onBack }) {
         }
         const card = await p.card();
         cardRef.current = card;
+        if (canceled) return;
+        // Attach using the direct DOM ref for reliability.
         if (cardElRef.current) {
-          await card.attach('#sq-card');
+          await card.attach(cardElRef.current);
         }
       } catch (e) {
-        if (!canceled) setError(e?.message ? `Payment form failed: ${e.message}` : 'Payment form failed to load');
+        if (!canceled) {
+          sqInitRef.current = false;
+          setError(e?.message ? `Payment form failed: ${e.message}` : 'Payment form failed to load');
+        }
       }
     })();
     return () => { canceled = true; };
@@ -78,6 +91,7 @@ export default function CheckoutPanel({ store = 'sale', onBack }) {
       cardRef.current = null;
     }
     if (!open) {
+      sqInitRef.current = false;
       // Reset form state when drawer closes
       setOrderResult(null);
       setError('');
