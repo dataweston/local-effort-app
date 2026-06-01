@@ -43,6 +43,7 @@ const AdminWeeklyOrderPage = lazy(() => import('./pages/AdminWeeklyOrderPage'));
 const AdminDecisionPreviewPage = lazy(() => import('./pages/AdminDecisionPreviewPage'));
 const WeeklyDemoPage = lazy(() => import('./pages/WeeklyDemoPage'));
 const SubscriberPortalPage = lazy(() => import('./pages/SubscriberPortalPage'));
+const MealPrepIntakePage = lazy(() => import('./pages/MealPrepIntakePage'));
 const NativeMobileHubPage = lazy(() => import('./pages/NativeMobileHubPage'));
 const CatherineSchedulePage = lazy(() => import('./pages/CatherineSchedulePage'));
 const BookPage = lazy(() => import('./pages/BookPage'));
@@ -273,6 +274,14 @@ const AppContent = () => {
                   element={
                     <AnimatedPage>
                       <WeeklyDemoPage />
+                    </AnimatedPage>
+                  }
+                />
+                <Route
+                  path="/meal-prep-intake"
+                  element={
+                    <AnimatedPage>
+                      <MealPrepIntakePage />
                     </AnimatedPage>
                   }
                 />

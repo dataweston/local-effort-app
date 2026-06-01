@@ -53,6 +53,7 @@ const winterDinnerPaymentLinkHandler = require('../../api-handlers/winter-dinner
 const februaryBookedDatesHandler = require('../../api-handlers/february/booked-dates');
 const februaryCheckoutHandler = require('../../api-handlers/february/checkout');
 const februaryPaymentLinkHandler = require('../../api-handlers/february/payment-link');
+const { ingestMealPrepIntake } = require('./brain/mealPrepIntakeIngest');
 const { ingestSquarePayment } = require('./brain/squareIngest');
 const { registerGmailRoutes } = require('./brain/gmailRoutes');
 const { registerInboxRoutes } = require('./brain/inboxRoutes');
@@ -4232,13 +4233,54 @@ app.post('/api/intake/submit', async (req, res) => {
 
     // Group fields by category for better organization
     const sections = {
-      'Contact & Timing': ['email', 'phone', 'address', 'due_date', 'first_delivery'],
-      'Kara\'s Preferences': ['kara_proteins', 'kara_favorites', 'kara_dislikes', 'kara_allergies'],
-      'Dad\'s Preferences': ['dad_proteins', 'dad_favorites', 'dad_dislikes', 'dad_allergies'],
-      'Meal Logistics': ['servings_per_meal', 'meals_per_week', 'dietary_notes', 'fridge_freezer'],
-      'Cuisine & Cooking': ['cuisines', 'spice_level', 'cooking_equipment'],
+      'Contact & Timing': [
+        'client_name',
+        'email',
+        'phone',
+        'address',
+        'due_date',
+        'first_delivery',
+        'preferred_start_date',
+        'delivery_timing',
+      ],
+      'Household': ['household_size', 'servings_per_meal', 'meals_per_week', 'meal_mix'],
+      'Proteins': [
+        'proteins_selected',
+        'proteins_everyday',
+        'proteins_sub_pork',
+        'proteins_sub_beef',
+        'proteins_sub_fish_seafood',
+      ],
+      'Food Preferences': [
+        'kara_proteins',
+        'kara_favorites',
+        'kara_dislikes',
+        'kara_allergies',
+        'dad_proteins',
+        'dad_favorites',
+        'dad_dislikes',
+        'dad_allergies',
+        'favorite_foods',
+        'dislikes',
+        'allergies',
+        'dietary_notes',
+      ],
+      'Goals': ['meal_priorities', 'nutrition_goals'],
+      'Meal Logistics': [
+        'lunch_settings',
+        'dinner_settings',
+        'fridge_freezer',
+        'packaging_notes',
+      ],
+      'Cuisine & Cooking': ['cuisines', 'spice_level', 'flavor_notes', 'cooking_equipment'],
       'Breakfast & Snacks': ['breakfast_options', 'snack_options', 'other_requests'],
-      'Delivery & Billing': ['preferred_delivery_day', 'billing_preference', 'additional_notes'],
+      'Delivery & Billing': [
+        'preferred_delivery_day',
+        'budget_range',
+        'billing_preference',
+        'delivery_notes',
+        'additional_notes',
+      ],
     };
 
     let htmlContent = `
@@ -4316,6 +4358,11 @@ app.post('/api/intake/submit', async (req, res) => {
       </div>
     `;
 
+    const brainIngest = await ingestMealPrepIntake(formData, { logger });
+    if (!brainIngest?.ok) {
+      throw new Error(brainIngest?.error || 'Meal prep intake brain ingest failed');
+    }
+
     const senderEmail = process.env.SENDER_EMAIL || 'yum@localeffortfood.com';
     await brevoService.sendEmail({
       sender: { name: 'Local Effort', email: senderEmail },
@@ -4325,8 +4372,8 @@ app.post('/api/intake/submit', async (req, res) => {
       tags: ['intake', 'meal-plan'],
     });
 
-    logger.info({ client: formData.client_name }, 'intake form submitted');
-    return res.json({ success: true, message: 'Form submitted successfully' });
+    logger.info({ client: formData.client_name, brainIngest }, 'intake form submitted');
+    return res.json({ success: true, message: 'Form submitted successfully', brainIngest });
   } catch (err) {
     logger.error({ err }, 'intake form submission error');
     return res.status(500).json({ error: 'Failed to submit form' });
