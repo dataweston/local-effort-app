@@ -1,7 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { useCart } from '../store/cart/CartContext';
 import ProductGrid from '../store/components/ProductGrid';
 import CartDrawer from '../store/components/CartDrawer';
 import { SITE_URL } from '../config/siteMetadata';
@@ -13,9 +12,6 @@ const INITIAL_PAGE = generatedSalePageData?.page || {};
 const INITIAL_GENERATED_AT = generatedSalePageData?.generatedAt || '';
 
 const FALLBACK_TITLE = 'Local Effort Sale';
-const FALLBACK_SUBHEADING = 'Seasonal prepared foods, pantry goods, and limited preorders.';
-const FALLBACK_INTRO =
-  'Browse the current Local Effort sale for seasonal drops, limited runs, and pantry staples. Open any product for larger photos, full details, and checkout options.';
 
 const getProductSummary = (product) => {
   const portableText = ptToHtml(product?.longDescriptionBlocks);
@@ -26,19 +22,7 @@ const getProductSummary = (product) => {
   return summary.length > 170 ? `${summary.slice(0, 167).trim()}...` : summary;
 };
 
-const formatGeneratedDate = (value) => {
-  if (!value) return '';
-  const parsed = new Date(value);
-  if (Number.isNaN(parsed.getTime())) return '';
-  return parsed.toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-  });
-};
-
 const SalePage = () => {
-  const { totalQty, openCart } = useCart();
   const location = useLocation();
   const navigate = useNavigate();
   const openSlug = location.hash ? location.hash.slice(1) : null;
@@ -66,9 +50,6 @@ const SalePage = () => {
   }, []);
 
   const pageTitle = livePage?.title || INITIAL_PAGE.title || FALLBACK_TITLE;
-  const pageSubheading = livePage?.subheading || INITIAL_PAGE.subheading || FALLBACK_SUBHEADING;
-  const introText = livePage?.introText || INITIAL_PAGE.introText || FALLBACK_INTRO;
-  const generatedLabel = formatGeneratedDate(INITIAL_GENERATED_AT);
 
   const metaDescription = useMemo(() => {
     const names = products.slice(0, 3).map((product) => product.title).filter(Boolean);
@@ -173,85 +154,12 @@ const SalePage = () => {
         Skip to products
       </a>
 
-      <header className="le-sale-header">
-        <Link to="/" className="le-sale-home-link">Local Effort</Link>
-        <button
-          type="button"
-          className="le-sale-bag-btn"
-          onClick={openCart}
-          aria-label={`Open bag, ${totalQty} item${totalQty !== 1 ? 's' : ''}`}
-        >
-          Bag{totalQty > 0 ? ` (${totalQty})` : ''}
-        </button>
-      </header>
+      <nav className="le-sale-breadcrumb" aria-label="Breadcrumb">
+        <Link to="/" className="le-sale-breadcrumb-link">← Home</Link>
+      </nav>
 
       <main id="products" className="le-sale-main">
-        <section className="le-sale-hero" aria-labelledby="sale-title">
-          <div className="le-sale-hero-copy">
-            <p className="le-sale-eyebrow">Minneapolis sale</p>
-            <h1 id="sale-title" className="le-sale-title">{pageTitle}</h1>
-            <p className="le-sale-subheading">{pageSubheading}</p>
-            <div className="le-sale-intro">
-              {introText.split(/\n{2,}/).filter(Boolean).map((paragraph) => (
-                <p key={paragraph}>{paragraph}</p>
-              ))}
-            </div>
-          </div>
-
-          <aside className="le-sale-summary" aria-label="Sale details">
-            <div className="le-sale-summary-card">
-              <span className="le-sale-summary-label">Products live</span>
-              <strong className="le-sale-summary-value">{products.length || 'Updating'}</strong>
-            </div>
-            <div className="le-sale-summary-card">
-              <span className="le-sale-summary-label">Fulfillment</span>
-              <strong className="le-sale-summary-value">Pickup + local delivery</strong>
-            </div>
-            <div className="le-sale-summary-card">
-              <span className="le-sale-summary-label">How to shop</span>
-              <strong className="le-sale-summary-value">Open any item for full details</strong>
-            </div>
-            {generatedLabel && (
-              <div className="le-sale-summary-card">
-                <span className="le-sale-summary-label">Catalog snapshot</span>
-                <strong className="le-sale-summary-value">{generatedLabel}</strong>
-              </div>
-            )}
-          </aside>
-        </section>
-
-        <section className="le-sale-links" aria-labelledby="sale-links-title">
-          <div>
-            <h2 id="sale-links-title" className="le-sale-section-title">Looking for a specific event or drop?</h2>
-            <p className="le-sale-section-copy">
-              Some Local Effort offers live on dedicated landing pages with fuller booking and product context. These links help search engines and visitors move between the store, specialty drops, and private-event booking pages.
-            </p>
-          </div>
-          <div className="le-sale-link-grid">
-            <Link className="le-sale-link-card" to="/psyche">
-              <span className="le-sale-link-title">Psyche olive oil</span>
-              <span className="le-sale-link-copy">Dedicated product page with provenance, pricing, and fulfillment details.</span>
-            </Link>
-            <Link className="le-sale-link-card" to="/february">
-              <span className="le-sale-link-title">February chef dinner</span>
-              <span className="le-sale-link-copy">Private in-home dinner booking flow with date, pricing, and guest information.</span>
-            </Link>
-            <Link className="le-sale-link-card" to="/#small-events">
-              <span className="le-sale-link-title">Small events</span>
-              <span className="le-sale-link-copy">Private dinners, pizza parties, and other event windows from the main site.</span>
-            </Link>
-          </div>
-        </section>
-
         <section className="le-sale-products" aria-labelledby="sale-products-title">
-          <div className="le-sale-products-header">
-            <div>
-              <h2 id="sale-products-title" className="le-sale-section-title">Current sale catalog</h2>
-              <p className="le-sale-section-copy">
-                Product cards include visible names and summaries in the HTML so Google and AI crawlers can understand what the sale contains before JavaScript finishes loading.
-              </p>
-            </div>
-          </div>
           <ProductGrid
             products={products}
             skuPrefix="LE"
