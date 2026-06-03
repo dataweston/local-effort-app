@@ -24,6 +24,7 @@
 
 .meal-prep-intake-aside,
 .meal-prep-intake-card,
+.meal-prep-intake-estimate,
 .meal-prep-intake-summary {
   background: rgba(255, 252, 246, 0.92);
   border: 1px solid rgba(103, 91, 74, 0.18);
@@ -368,6 +369,90 @@
   padding: 0.85rem 1rem;
 }
 
+.meal-prep-intake-estimate {
+  border-radius: 1rem;
+  display: grid;
+  gap: 1rem;
+  padding: clamp(1.25rem, 3vw, 2rem);
+}
+
+.meal-prep-intake-estimate-main {
+  align-items: start;
+  display: flex;
+  gap: 1rem;
+  justify-content: space-between;
+}
+
+.meal-prep-intake-estimate h2 {
+  color: #24211d;
+  font-size: clamp(1.35rem, 3vw, 2rem);
+  letter-spacing: 0;
+  line-height: 1.16;
+  margin: 0.35rem 0 0;
+}
+
+.meal-prep-intake-estimate-toggle {
+  border: 1px solid rgba(68, 96, 71, 0.42);
+  border-radius: 999px;
+  background: rgba(68, 96, 71, 0.1);
+  color: #2f4b33;
+  cursor: pointer;
+  flex: 0 0 auto;
+  font-family: var(--font-office-code), monospace;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  min-height: 2.35rem;
+  padding: 0.68rem 1rem;
+  text-transform: uppercase;
+}
+
+.meal-prep-intake-estimate-breakdown {
+  background: rgba(255, 254, 251, 0.78);
+  border: 1px solid rgba(103, 91, 74, 0.14);
+  border-radius: 0.9rem;
+  display: grid;
+  gap: 0;
+  overflow: hidden;
+}
+
+.meal-prep-intake-estimate-line {
+  align-items: start;
+  border-bottom: 1px solid rgba(103, 91, 74, 0.12);
+  display: grid;
+  gap: 0.85rem;
+  grid-template-columns: minmax(0, 1fr) auto;
+  line-height: 1.45;
+  padding: 0.8rem 1rem;
+}
+
+.meal-prep-intake-estimate-line:last-child {
+  border-bottom: 0;
+}
+
+.meal-prep-intake-estimate-line span {
+  color: #4a433a;
+}
+
+.meal-prep-intake-estimate-line strong {
+  color: #24211d;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.meal-prep-intake-estimate-footnote {
+  color: #6f6a5f;
+  font-size: 0.85rem;
+  line-height: 1.5;
+  padding: 0.8rem 1rem;
+}
+
+.meal-prep-intake-estimate-note {
+  color: #625d54;
+  line-height: 1.55;
+  margin: 0;
+}
+
 .meal-prep-intake-summary {
   border-radius: 1rem;
   display: grid;
@@ -504,9 +589,19 @@
   .meal-prep-intake-protein-main,
   .meal-prep-intake-actions,
   .meal-prep-intake-response,
+  .meal-prep-intake-estimate-line,
   .meal-prep-intake-split-field,
   .meal-prep-intake-meal {
     grid-template-columns: 1fr;
+  }
+
+  .meal-prep-intake-estimate-main {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .meal-prep-intake-estimate-toggle {
+    width: 100%;
   }
 
   .meal-prep-intake-protein-main {

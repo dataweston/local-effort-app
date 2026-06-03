@@ -61,6 +61,91 @@ const formatProteinSummary = (answers) => {
   });
 };
 
+const moneyFormatter = new Intl.NumberFormat('en-US', {
+  style: 'currency',
+  currency: 'USD',
+  minimumFractionDigits: 0,
+  maximumFractionDigits: 2,
+});
+
+const parseFirstNumber = (value) => {
+  const match = String(value || '').match(/\d+(\.\d+)?/);
+  return match ? Number(match[0]) : null;
+};
+
+const getHouseholdCount = (value) => {
+  const count = parseFirstNumber(value);
+  return count && count > 0 ? count : 1;
+};
+
+const getRequestedMealDays = (details, meal) => {
+  const days = parseFirstNumber(details?.[meal]);
+  return days && days > 0 ? days : 1;
+};
+
+const calculateMealPrepEstimate = (answers) => {
+  const selected = Array.isArray(answers.meal_requests_selected) ? answers.meal_requests_selected : [];
+  const details = answers.meal_requests_details && typeof answers.meal_requests_details === 'object'
+    ? answers.meal_requests_details
+    : {};
+  const people = getHouseholdCount(answers.household_size);
+  const lines = [];
+  const notIncluded = [];
+
+  if (selected.includes('Breakfast')) {
+    const days = getRequestedMealDays(details, 'Breakfast');
+    const subtotal = people * days * 13.5;
+    lines.push({
+      id: 'breakfast',
+      label: `Breakfast, ${people} ${people === 1 ? 'person' : 'people'} x ${days} ${days === 1 ? 'day' : 'days'} at $13.50/person`,
+      subtotal,
+    });
+  }
+
+  if (selected.includes('Lunch')) {
+    const days = getRequestedMealDays(details, 'Lunch');
+    const subtotal = people * days * 18;
+    lines.push({
+      id: 'lunch',
+      label: `Lunch, ${people} ${people === 1 ? 'person' : 'people'} x ${days} ${days === 1 ? 'day' : 'days'} at $18/person`,
+      subtotal,
+    });
+  }
+
+  if (selected.includes('Dinner')) {
+    const days = getRequestedMealDays(details, 'Dinner');
+    let subtotal = days * 24;
+    let rateLabel = '$24 for a solo/single person dinner';
+
+    if (people === 2) {
+      subtotal = days * 45;
+      rateLabel = '$45 for a family of 2 dinner';
+    } else if (people >= 3) {
+      subtotal = people * days * 18;
+      rateLabel = '$18/person for a family dinner';
+    }
+
+    lines.push({
+      id: 'dinner',
+      label: `Dinner, ${people} ${people === 1 ? 'person' : 'people'} x ${days} ${days === 1 ? 'day' : 'days'} at ${rateLabel}`,
+      subtotal,
+    });
+  }
+
+  ['Additional meals', 'Snacks'].forEach((meal) => {
+    if (selected.includes(meal)) notIncluded.push(meal);
+  });
+
+  lines.push({
+    id: 'delivery',
+    label: 'Weekly delivery',
+    subtotal: 10,
+  });
+
+  const total = lines.reduce((sum, line) => sum + line.subtotal, 0);
+  return { total, lines, notIncluded };
+};
+
 const MealPrepIntakePage = () => {
   const [stepIndex, setStepIndex] = useState(0);
   const [answers, setAnswers] = useState({});
@@ -68,6 +153,7 @@ const MealPrepIntakePage = () => {
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState(null);
   const [validationMessage, setValidationMessage] = useState('');
+  const [estimateExpanded, setEstimateExpanded] = useState(false);
   const addressInputRef = useRef(null);
 
   const currentQuestion = QUESTIONS[stepIndex];
@@ -76,6 +162,8 @@ const MealPrepIntakePage = () => {
   const hasAddressField = currentQuestion?.fields?.some((field) => field.type === 'address') || false;
 
   const getAnswer = (id, fallback = '') => (answers[id] !== undefined ? answers[id] : fallback);
+
+  const weeklyEstimate = useMemo(() => calculateMealPrepEstimate(answers), [answers]);
 
   const summarySections = useMemo(() => {
     const item = (id, label, value = answers[id]) => (
@@ -692,6 +780,40 @@ const MealPrepIntakePage = () => {
                 Start Over
               </button>
             </div>
+            <section className="meal-prep-intake-estimate" aria-label="Estimated weekly cost">
+              <div className="meal-prep-intake-estimate-main">
+                <div>
+                  <div className="meal-prep-intake-tag">Estimate</div>
+                  <h2>the estimated weekly cost is {moneyFormatter.format(weeklyEstimate.total)}</h2>
+                </div>
+                <button
+                  type="button"
+                  className="meal-prep-intake-estimate-toggle"
+                  onClick={() => setEstimateExpanded((prev) => !prev)}
+                  aria-expanded={estimateExpanded}
+                >
+                  {estimateExpanded ? 'Hide breakdown' : 'Click to expand'}
+                </button>
+              </div>
+              {estimateExpanded && (
+                <div className="meal-prep-intake-estimate-breakdown">
+                  {weeklyEstimate.lines.map((line) => (
+                    <div key={line.id} className="meal-prep-intake-estimate-line">
+                      <span>{line.label}</span>
+                      <strong>{moneyFormatter.format(line.subtotal)}</strong>
+                    </div>
+                  ))}
+                  {weeklyEstimate.notIncluded.length > 0 && (
+                    <div className="meal-prep-intake-estimate-footnote">
+                      {weeklyEstimate.notIncluded.join(' and ')} are noted in your profile but not included in this estimate yet.
+                    </div>
+                  )}
+                </div>
+              )}
+              <p className="meal-prep-intake-estimate-note">
+                this might not be your final cost. we'll offer a more finely-tuned price that takes into account your needs and preferences, your portions, and other family-specific details. you can save 8% by switching to monthly billing, and you'll save on fees if you pay by ACH rather than credit. We're happy to explore cost with you to make sure it works with your life.
+              </p>
+            </section>
             <div className="meal-prep-intake-summary">
               <div className="meal-prep-intake-summary-heading">
                 <div className="meal-prep-intake-tag">Review</div>
