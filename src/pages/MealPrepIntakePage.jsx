@@ -23,6 +23,44 @@ const formatDisplayValue = (value) => {
   return String(value || '-');
 };
 
+const hasSummaryValue = (value) => {
+  if (Array.isArray(value)) return value.length > 0;
+  if (value && typeof value === 'object') {
+    return Object.values(value).some((entry) => hasSummaryValue(entry));
+  }
+  return String(value || '').trim().length > 0;
+};
+
+const formatDeliveryPreference = (value) => {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return '';
+  if (value.preference === 'No preference') return 'No preference';
+  return [value.day, value.time].filter(Boolean).join(', ');
+};
+
+const formatMealRequests = (answers) => {
+  const selected = Array.isArray(answers.meal_requests_selected) ? answers.meal_requests_selected : [];
+  const details = answers.meal_requests_details && typeof answers.meal_requests_details === 'object'
+    ? answers.meal_requests_details
+    : {};
+  return selected.map((meal) => {
+    const detail = String(details[meal] || '').trim();
+    return detail ? `${meal}: ${detail}` : meal;
+  });
+};
+
+const formatProteinSummary = (answers) => {
+  const selected = Array.isArray(answers.proteins_selected) ? answers.proteins_selected : [];
+  const everyday = Array.isArray(answers.proteins_everyday) ? answers.proteins_everyday : [];
+  return selected.map((protein) => {
+    const detailKey = `proteins_sub_${optionKey(protein)}`;
+    const details = Array.isArray(answers[detailKey]) && answers[detailKey].length
+      ? ` (${answers[detailKey].join(', ')})`
+      : '';
+    const everydayLabel = everyday.includes(protein) ? ' - would eat every day' : '';
+    return `${protein}${details}${everydayLabel}`;
+  });
+};
+
 const MealPrepIntakePage = () => {
   const [stepIndex, setStepIndex] = useState(0);
   const [answers, setAnswers] = useState({});
@@ -37,16 +75,67 @@ const MealPrepIntakePage = () => {
   const progress = Math.max(0, Math.min(1, stepIndex / totalSteps));
   const hasAddressField = currentQuestion?.fields?.some((field) => field.type === 'address') || false;
 
-  const answeredEntries = useMemo(
-    () => Object.entries(answers).filter(([, value]) => {
-      if (Array.isArray(value)) return value.length > 0;
-      if (value && typeof value === 'object') return Object.keys(value).length > 0;
-      return String(value || '').trim().length > 0;
-    }),
-    [answers],
-  );
-
   const getAnswer = (id, fallback = '') => (answers[id] !== undefined ? answers[id] : fallback);
+
+  const summarySections = useMemo(() => {
+    const item = (id, label, value = answers[id]) => (
+      hasSummaryValue(value) ? { id, label, value } : null
+    );
+
+    const sections = [
+      {
+        id: 'contact',
+        title: 'Contact and Delivery',
+        items: [
+          item('client_name', 'Name'),
+          item('email', 'Email'),
+          item('phone', 'Phone'),
+          item('address', 'Delivery address'),
+          item('preferred_start_date', 'Preferred start date'),
+          item('delivery_preference', 'Delivery preference', formatDeliveryPreference(answers.delivery_preference)),
+        ],
+      },
+      {
+        id: 'meals',
+        title: 'Meals',
+        items: [
+          item('household_size', 'Household'),
+          item('meal_requests', 'Meal requests', formatMealRequests(answers)),
+        ],
+      },
+      {
+        id: 'proteins',
+        title: 'Proteins',
+        items: [
+          item('proteins', 'Proteins to plan around', formatProteinSummary(answers)),
+        ],
+      },
+      {
+        id: 'preferences',
+        title: 'Preferences',
+        items: [
+          item('spice_heat_tolerance', 'Spice/heat tolerance'),
+          item('flavor_adventurousness', 'Flavor adventurousness'),
+          item('favorite_foods', 'Favorite foods'),
+          item('dislikes', 'Foods to avoid'),
+          item('allergies', 'Allergies or intolerances'),
+          item('nutritional_goals', 'Nutritional goals'),
+        ],
+      },
+      {
+        id: 'goals',
+        title: 'Goals',
+        items: [
+          item('meal_priorities', 'Top priorities'),
+          item('specific_needs_to_detail', 'Specific needs'),
+        ],
+      },
+    ];
+
+    return sections
+      .map((section) => ({ ...section, items: section.items.filter(Boolean) }))
+      .filter((section) => section.items.length > 0);
+  }, [answers]);
 
   const updateAnswer = (id, value) => {
     setAnswers((prev) => ({ ...prev, [id]: value }));
@@ -477,7 +566,7 @@ const MealPrepIntakePage = () => {
                       <input
                         className="meal-prep-intake-input meal-detail-input"
                         value={details?.[option] || ''}
-                        placeholder="e.g., 4 days"
+                        placeholder="how many days?"
                         onChange={(event) => updateMealRequestDetail(field.id, option, event.target.value)}
                       />
                     )}
@@ -562,6 +651,17 @@ const MealPrepIntakePage = () => {
     return null;
   };
 
+  const renderSummaryValue = (value) => {
+    if (Array.isArray(value)) {
+      return (
+        <ul className="meal-prep-intake-summary-list">
+          {value.map((entry, index) => <li key={`${entry}-${index}`}>{entry}</li>)}
+        </ul>
+      );
+    }
+    return <span>{formatDisplayValue(value)}</span>;
+  };
+
   if (submitted) {
     return (
       <div className="meal-prep-intake">
@@ -593,15 +693,32 @@ const MealPrepIntakePage = () => {
               </button>
             </div>
             <div className="meal-prep-intake-summary">
-              <h2>Your Responses</h2>
-              <dl>
-                {answeredEntries.map(([key, value]) => (
-                  <div key={key} className="meal-prep-intake-response">
-                    <dt>{formatLabel(key)}</dt>
-                    <dd>{formatDisplayValue(value)}</dd>
-                  </div>
-                ))}
-              </dl>
+              <div className="meal-prep-intake-summary-heading">
+                <div className="meal-prep-intake-tag">Review</div>
+                <h2>Your meal prep profile</h2>
+                <p>Here is what we captured. You can restart the form if anything needs to change.</p>
+              </div>
+              {summarySections.length > 0 ? (
+                <div className="meal-prep-intake-summary-sections">
+                  {summarySections.map((section) => (
+                    <section key={section.id} className="meal-prep-intake-summary-section">
+                      <h3>{section.title}</h3>
+                      <dl>
+                        {section.items.map((entry) => (
+                          <div key={entry.id} className="meal-prep-intake-response">
+                            <dt>{entry.label}</dt>
+                            <dd>{renderSummaryValue(entry.value)}</dd>
+                          </div>
+                        ))}
+                      </dl>
+                    </section>
+                  ))}
+                </div>
+              ) : (
+                <p className="meal-prep-intake-empty-summary">
+                  No preferences were entered yet. We will follow up to fill in the details.
+                </p>
+              )}
             </div>
           </main>
         </div>

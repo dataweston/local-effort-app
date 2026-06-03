@@ -21,14 +21,20 @@ export default async function handler(req, res) {
 
   try {
     if (!CLOUD_NAME || !CLOUD_KEY || !CLOUD_SECRET) {
+      console.warn('[localist/images] Cloudinary not configured');
       return res.status(503).json({ error: 'cloudinary-not-configured' });
     }
 
-    const result = await cloudinary.api.resources({
-      type: 'upload',
-      prefix: 'localist',
-      max_results: 100,
-    });
+    console.log('[localist/images] fetching images from localist folder');
+
+    // Use search API to find images in the localist folder
+    const result = await cloudinary.search
+      .expression('folder=localist')
+      .with_field('context')
+      .max_results(100)
+      .execute();
+
+    console.log('[localist/images] got', result.resources?.length || 0, 'images');
 
     const images = (result.resources || []).map((r) => {
       const publicId = r.public_id || '';
@@ -49,7 +55,7 @@ export default async function handler(req, res) {
 
     return res.status(200).json({ images, total_count: images.length });
   } catch (error) {
-    console.error('[localist/images] error:', error.message);
-    return res.status(500).json({ error: 'internal-error' });
+    console.error('[localist/images] error:', error.message || error);
+    return res.status(500).json({ error: 'internal-error', details: error.message });
   }
 }
