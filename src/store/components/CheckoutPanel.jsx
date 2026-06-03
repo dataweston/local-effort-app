@@ -130,6 +130,7 @@ export default function CheckoutPanel({ store = 'sale', onBack }) {
 
   const pricing = useServerPricing(items, subtotal);
   const amountCents = pricing.subtotal;
+  const deliveryAvailable = useMemo(() => items.every((item) => !!item.allowsDelivery), [items]);
   const enabled = open && items.length > 0 && status !== 'success';
   const { cardLoaded, error: cardError, loadingScript, tokenize, verifyBuyer, reset } = useSquareCard(
     '#store-card-container',
@@ -201,6 +202,10 @@ export default function CheckoutPanel({ store = 'sale', onBack }) {
       reset();
     }
   }, [clearCheckoutAttempt, open, reset]);
+
+  useEffect(() => {
+    if (!deliveryAvailable) setPickup(true);
+  }, [deliveryAvailable]);
 
   const verificationDetails = useMemo(() => {
     const nameParts = customer.name.trim().split(/\s+/).filter(Boolean);
@@ -466,24 +471,28 @@ export default function CheckoutPanel({ store = 'sale', onBack }) {
 
             <div className="le-checkout-section">
               <div className="le-checkout-section-title">Fulfillment</div>
-              <div className="le-checkout-pickup-selector" role="group" aria-label="Fulfillment method">
-                <button
-                  type="button"
-                  className={`le-checkout-pickup-pill${pickup ? ' is-selected' : ''}`}
-                  onClick={() => setPickup(true)}
-                  aria-pressed={pickup}
-                >
-                  Pickup
-                </button>
-                <button
-                  type="button"
-                  className={`le-checkout-pickup-pill${!pickup ? ' is-selected' : ''}`}
-                  onClick={() => setPickup(false)}
-                  aria-pressed={!pickup}
-                >
-                  Local delivery
-                </button>
-              </div>
+              {deliveryAvailable ? (
+                <div className="le-checkout-pickup-selector" role="group" aria-label="Fulfillment method">
+                  <button
+                    type="button"
+                    className={`le-checkout-pickup-pill${pickup ? ' is-selected' : ''}`}
+                    onClick={() => setPickup(true)}
+                    aria-pressed={pickup}
+                  >
+                    Pickup
+                  </button>
+                  <button
+                    type="button"
+                    className={`le-checkout-pickup-pill${!pickup ? ' is-selected' : ''}`}
+                    onClick={() => setPickup(false)}
+                    aria-pressed={!pickup}
+                  >
+                    Local delivery
+                  </button>
+                </div>
+              ) : (
+                <p className="le-checkout-footnote" style={{ margin: 0 }}>Pickup only</p>
+              )}
 
               {!pickup && (
                 <>

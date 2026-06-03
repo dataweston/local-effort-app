@@ -30,6 +30,7 @@ const normalizeGeneratedProduct = (product) => {
     offerDairyFree: !!product.offerDairyFree,
     dairyFreeCost: Number(product.dairyFreeCost) || 0,
     stores: Array.isArray(product.stores) ? product.stores : ['sale'],
+    allowsDelivery: false,
   };
 };
 
@@ -80,6 +81,7 @@ const generatedProductToResponse = (product) => ({
   offerDairyFree: product.offerDairyFree ?? false,
   dairyFreeCost: product.dairyFreeCost ?? 0,
   stores: Array.isArray(product.stores) ? product.stores : [],
+  allowsDelivery: product.allowsDelivery ?? false,
 });
 
 module.exports = {

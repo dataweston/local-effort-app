@@ -71,6 +71,7 @@ function reducer(state, action) {
         addOnIndices: rawAddOnIndices,
         dairyFree: rawDairyFree,
         optionSummary,
+        allowsDelivery,
       } = action.payload;
       const addOnIndices = normalizeAddOnIndices(rawAddOnIndices);
       const dairyFree = !!rawDairyFree;
@@ -91,6 +92,7 @@ function reducer(state, action) {
             addOnIndices,
             dairyFree,
             optionSummary: optionSummary || '',
+            allowsDelivery: !!allowsDelivery,
           };
       next.updatedAt = Date.now();
       return next;

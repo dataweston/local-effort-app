@@ -151,6 +151,13 @@ export default {
     },
     { name: 'tags', title: 'Tags', type: 'array', of: [{ type: 'string' }] },
     { name: 'active', title: 'Active', type: 'boolean', initialValue: true },
+    {
+      name: 'allowsDelivery',
+      title: 'Allow local delivery',
+      type: 'boolean',
+      description: 'If enabled, customers may choose local delivery at checkout. Leave unchecked to make this item pickup only.',
+      initialValue: false,
+    },
   ],
   preview: {
     select: { title: 'title', media: 'images.0' },

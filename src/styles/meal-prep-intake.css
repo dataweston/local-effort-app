@@ -5,7 +5,9 @@
     radial-gradient(circle at 88% 18%, rgba(189, 108, 72, 0.14) 0 190px, transparent 215px),
     linear-gradient(180deg, #fbfaf6 0%, #eef2ec 100%);
   color: #24211d;
-  font-family: var(--font-office-pro-mono), "Office Pro Mono", monospace;
+  font-family: var(--font-body, "Source Sans 3", sans-serif);
+  font-weight: 400;
+  line-height: 1.6;
   padding: clamp(2rem, 4vw, 4rem) clamp(1rem, 4vw, 3.5rem);
 }
 
@@ -61,7 +63,12 @@
 .meal-prep-intake-aside h2,
 .meal-prep-intake-card h1 {
   margin: 0;
-  letter-spacing: 0;
+  color: var(--color-text-primary, #3a2e3f);
+  font-family: var(--font-display, "General Sans", sans-serif);
+  font-weight: 650;
+  letter-spacing: -0.02em;
+  line-height: 1.08;
+  text-wrap: balance;
 }
 
 .meal-prep-intake-aside h2 {
@@ -120,9 +127,13 @@
 }
 
 .meal-prep-intake-question {
+  color: var(--color-text-primary, #3a2e3f);
+  font-family: var(--font-display, "General Sans", sans-serif);
   font-size: clamp(1.45rem, 2.8vw, 2.1rem);
-  font-weight: 700;
-  line-height: 1.2;
+  font-weight: 650;
+  letter-spacing: -0.02em;
+  line-height: 1.12;
+  text-wrap: balance;
 }
 
 .meal-prep-intake-group {
@@ -158,8 +169,9 @@
   border-radius: 0.75rem;
   background: #fffefb;
   color: #24211d;
-  font: inherit;
+  font-family: inherit;
   font-size: 1rem;
+  line-height: 1.45;
   padding: 0.85rem 0.95rem;
   transition: border-color 140ms ease, box-shadow 140ms ease;
 }
@@ -191,7 +203,8 @@
   border: 1px solid rgba(103, 91, 74, 0.22);
   background: #fffefb;
   color: #24211d;
-  font: inherit;
+  font-family: inherit;
+  font-size: 0.95rem;
 }
 
 .meal-prep-intake-choice {
@@ -278,7 +291,8 @@
   background: transparent;
   color: inherit;
   cursor: pointer;
-  font: inherit;
+  font-family: inherit;
+  font-size: inherit;
   padding: 0;
   text-align: left;
 }
@@ -384,11 +398,14 @@
 }
 
 .meal-prep-intake-estimate h2 {
-  color: #24211d;
+  color: var(--color-text-primary, #3a2e3f);
+  font-family: var(--font-display, "General Sans", sans-serif);
   font-size: clamp(1.35rem, 3vw, 2rem);
-  letter-spacing: 0;
+  font-weight: 650;
+  letter-spacing: -0.02em;
   line-height: 1.16;
   margin: 0.35rem 0 0;
+  text-wrap: balance;
 }
 
 .meal-prep-intake-estimate-toggle {
@@ -466,11 +483,14 @@
 }
 
 .meal-prep-intake-summary-heading h2 {
-  color: #24211d;
+  color: var(--color-text-primary, #3a2e3f);
+  font-family: var(--font-display, "General Sans", sans-serif);
   font-size: clamp(1.45rem, 3vw, 2.1rem);
-  letter-spacing: 0;
+  font-weight: 650;
+  letter-spacing: -0.02em;
   line-height: 1.15;
   margin: 0;
+  text-wrap: balance;
 }
 
 .meal-prep-intake-summary-heading p,

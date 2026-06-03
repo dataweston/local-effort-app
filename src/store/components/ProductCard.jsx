@@ -64,7 +64,7 @@ export default function ProductCard({ product }) {
       const left = (typeof product.inventory === 'number' ? product.inventory : Infinity) - inCart;
       if (left <= 0) return; // out of stock
     }
-    add({ productId: product.id, variationId, unitPrice: price, qty: 1, title: product.title, image: primary });
+    add({ productId: product.id, variationId, unitPrice: price, qty: 1, title: product.title, image: primary, allowsDelivery: !!product.allowsDelivery });
     notify('Added to cart', { actionLabel: open ? undefined : 'View cart', onAction: open ? undefined : openCart });
   };
 

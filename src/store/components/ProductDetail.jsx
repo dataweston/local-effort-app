@@ -103,6 +103,7 @@ export default function ProductDetail({ product, sku, onClose }) {
       addOnIndices: selectedAddOnIndices,
       dairyFree: isDairyFree,
       optionSummary,
+      allowsDelivery: !!product.allowsDelivery,
     });
     notify(`${product.title} added`, {
       actionLabel: 'View bag',
